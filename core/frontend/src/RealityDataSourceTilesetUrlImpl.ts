@@ -74,7 +74,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   // otherwise the full path to root document is given.
   // The base URL contains the base URL from which tile relative path are constructed.
   // The tile's path root will need to be reinserted for child tiles to return a 200
-  // If the original url includes search paramaters, they are stored in _searchParams to be reinserted into child tile requests.
+  // If the original root tileset url includes search paramaters, they are stored in _searchParams to be reinserted into child tile requests.
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     const newUrl = new URL(url);

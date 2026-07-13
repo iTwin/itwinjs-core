@@ -7,12 +7,14 @@ import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { compareWithTolerance, OrderedSet } from "@itwin/core-bentley";
 import { ClipPlane } from "../../clipping/ClipPlane";
+import { ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveChain } from "../../curve/CurveCollection";
 import { CurveOps } from "../../curve/CurveOps";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -21,6 +23,7 @@ import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { AxisIndex, Geometry } from "../../Geometry";
@@ -32,19 +35,22 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
-import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
+import { IndexedPolyfaceSubsetVisitor } from "../../polyface/IndexedPolyfaceVisitor";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { SweepContour } from "../../solid/SweepContour";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Sample } from "../GeometrySamples";
 import { RFunctions } from "../polyface/DrapeLinestring.test";
 
 /** Estimate a volume for a mesh that may be missing side faces.
@@ -98,7 +104,6 @@ describe("PolyfaceClip", () => {
     ck.testCoordinate(area, areaLeft + areaRight);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ClipPlane");
     expect(ck.getNumErrors()).toBe(0);
-
   });
 
   it("EdgeInClipPlane", () => {
@@ -646,16 +651,17 @@ describe("PolyfaceClip", () => {
     const shape3 = GrowableXYZArray.create([[0, 0], [0, 6], [4, 4], [4, 0], [3, 0], [3, 2], [1, 3], [1, 0]]);
     const shape4 = GrowableXYZArray.create([[0, 0], [0, 6], [4, 4], [4, 0], [3, 0], [3, 2], [1, 2], [1, 0], [0.5, 0], [0.5, 2], [0.25, 2], [0.25, 0]]);
     const shape5 = GrowableXYZArray.create(Sample.createSquareWave(Point3d.create(0, 0, 0), 0.5, 3, 0.75, 3, 4));
-    for (const points of [shape5, shape0, shape1, shape2, shape3, shape4, shape5]) {
+    for (const points of [shape0, shape1, shape2, shape3, shape4, shape5]) {
       const range = Range3d.createFromVariantData(points);
       range.expandInPlace(1.5);
-      range.high.z = range.low.z;
-
+      range.high.z = range.low.z = 0;
       const work = new GrowableXYZArray();
       GeometryCoreTestIO.createAndCaptureLoop(allGeometry, points, x0, y0);
-      for (const y of [2, 0, 1, 2, 3, 4, 5, 6]) {
+      points.pushWrap(1); // cover closure point handling
+
+      for (const y of [0, 1, 2, 3, 4, 5, 6]) {
         const plane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, y, 0), Vector3d.create(0, 1, 0))!;
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(-2, y, 22, y), x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(-2, y, 35, y), x0, y0);
         x0 += deltaX;
         const pointsA = points.clone();
         const numCrossingsA = IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(plane, pointsA, work, false);
@@ -672,6 +678,7 @@ describe("PolyfaceClip", () => {
         const numCrossingsB = IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(plane, pointsB, work, true);
         const loopsB = IndexedXYZCollectionPolygonOps.gatherCutLoopsFromPlaneClip(plane, pointsB);
         GeometryCoreTestIO.createAndCaptureLoop(allGeometry, pointsB, x0, y0 + gapDelta);
+
         for (const loop of loopsB.inputLoops)
           GeometryCoreTestIO.createAndCaptureLoop(allGeometry, loop.xyz, x0 + 10, y0 + gapDelta);
         IndexedXYZCollectionPolygonOps.reorderCutLoops(loopsB);
@@ -1257,7 +1264,7 @@ describe("PolyfaceClip", () => {
     const mesh = Sample.createMeshFromFrankeSurface(30, surfaceOptions);
     if (ck.testType(mesh, IndexedPolyface, "test mesh is defined")) {
       const regionOptions = StrokeOptions.createForCurves();
-      regionOptions.angleTol = Angle.createDegrees(5);
+      regionOptions.angleTol = Angle.createDegrees(0.5);
 
       const facetAndDrapeRegion = (label: string, regionXY: AnyRegion, knownAreaXY?: number, sweepDir?: Vector3d): IndexedPolyface | undefined => {
         let regionFacets: IndexedPolyface | undefined;
@@ -1273,7 +1280,7 @@ describe("PolyfaceClip", () => {
             const area = knownAreaXY ? knownAreaXY : RegionOps.computeXYArea(regionXY);
             if (ck.testDefined(area, `${label}: region area computed`)) {
               const projectedArea = PolyfaceQuery.sumFacetAreas(drapeMesh, sweepDir ? sweepDir : regionNormal);
-              ck.testCoordinateWithToleranceFactor(Math.abs(area), Math.abs(projectedArea), 1000, `${label}: projected area of draped mesh agrees with tool region area`);
+              ck.testNearNumber(Math.abs(area), Math.abs(projectedArea), 0.005, `${label}: projected area of draped mesh agrees with tool region area`);
             }
           }
         }
@@ -1535,6 +1542,184 @@ describe("PolyfaceClip", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ExtraneousHoleAfterClip");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
+
+// This suite measures the performance of curve segmentation via DTM facet clippers
+describe("PolyfaceClipPerformance", () => {
+  /** Return a rectangle to visualize a clip plane. */
+  function getClipPlaneForVisualization(clipPlane: ClipPlane): IndexedPolyface {
+    const normal = clipPlane.inwardNormalRef;
+    const origin = Point3d.createZero().plusScaled(normal, clipPlane.distance);
+    const perp0 = Matrix3d.createRigidHeadsUp(normal).columnX();
+    const perp1 = normal.crossProduct(perp0);
+    const s = 2;
+    const planeBuilder = PolyfaceBuilder.create();
+    planeBuilder.addQuadFacet([
+      origin.plusScaled(perp0, -s).plusScaled(perp1, -s),
+      origin.plusScaled(perp0, s).plusScaled(perp1, -s),
+      origin.plusScaled(perp0, s).plusScaled(perp1, s),
+      origin.plusScaled(perp0, -s).plusScaled(perp1, s),
+    ]);
+    return planeBuilder.claimPolyface(false);
+  }
+
+  interface SegmentResults {
+    /** Unordered array of profile curve segments, each a pair of points in format (distanceAlong, elevation, 0). */
+    profile: LineSegment3d[];
+    /** Number of facet intersections avoided during segmentation. */
+    numEarlyOuts: number;
+  }
+
+  /** Compute xy-intersections between the curve and the facets, and convert to elevation section (profile) coordinates. */
+  function segmentCurveByFacetsForElevationSection(visitor: PolyfaceVisitor, curve: CurvePrimitive): SegmentResults {
+    const primitiveRange = curve.range();
+    const facetRange = Range3d.createNull();
+    const facetPoints = [Point3d.create(), Point3d.create(), Point3d.create()];
+    let workClipShape: ClipShape | undefined;
+    const facetNormal = Ray3d.createZero();
+    const unitZ = Vector3d.unitZ();
+    const segments: LineSegment3d[] = [];
+    let numEarlyOuts = 0;
+
+    // generate a profile segment from the clip segment
+    const announcer: AnnounceNumberNumberCurvePrimitive = (a0, a1, cp) => {
+      const distanceAlong0 = cp.curveLengthBetweenFractions(0, a0);
+      const distanceAlong1 = cp.curveLengthBetweenFractions(0, a1);
+      const intersectionPoints = [cp.fractionToPoint(a0), cp.fractionToPoint(a1)];
+      if (undefined !== PolygonOps.centroidAreaNormal(visitor.point, facetNormal)) {
+        const scale = Geometry.safeDivideFraction(1.0, unitZ.dotProduct(facetNormal.getDirectionRef()), 0);
+        if (scale === 0) {
+          // for a vertical facet, arbitrarily assign facet z-extents from the facet range computed by the caller
+          intersectionPoints[0].z = facetRange.low.z;
+          intersectionPoints[1].z = facetRange.high.z;
+        } else {
+          const altitude0 = facetNormal.pointToFraction(intersectionPoints[0]);
+          const altitude1 = facetNormal.pointToFraction(intersectionPoints[1]);
+          intersectionPoints[0].z -= altitude0 * scale;
+          intersectionPoints[1].z -= altitude1 * scale;
+        }
+        // the endpoints of each 2D profile segment have these coords:
+        //    x = distance along the curve at the clip point
+        //    y = z-coordinate of the vertical projection of the clip point onto the facet
+        segments.push(LineSegment3d.createXYXY(distanceAlong0, intersectionPoints[0].z, distanceAlong1, intersectionPoints[1].z));
+      }
+    };
+
+    while (visitor.moveToNextFacet()) {
+      if (visitor.pointCount < 3)
+        continue; // facet is degenerate
+      visitor.range(facetRange);
+      if (!facetRange.intersectsRangeXY(primitiveRange)) {
+        numEarlyOuts++;
+        continue; // when ranges don't intersect, we know the curve doesn't intersect either
+      }
+      visitor.point.getPoint3dAtUncheckedPointIndex(0, facetPoints[0]);
+      visitor.point.getPoint3dAtUncheckedPointIndex(1, facetPoints[1]);
+      visitor.point.getPoint3dAtUncheckedPointIndex(2, facetPoints[2]);
+      workClipShape = ClipShape.createShape(facetPoints, undefined, undefined, undefined, undefined, undefined, workClipShape);
+      if (!workClipShape)
+        continue;
+      curve.announceClipIntervals(workClipShape, announcer);
+    }
+    return { profile: segments, numEarlyOuts };
+  }
+
+  it("MissAndHit", () => {
+    if (!GeometryCoreTestIO.enableLongTests)
+      return;
+
+    const ck = new Checker();
+    const polyfaceBuilder = PolyfaceBuilder.create();
+    polyfaceBuilder.addTriangleFacet([Point3d.create(0, 0, 14), Point3d.create(1, 0, 13), Point3d.create(0, 1, 13)]);
+    const polyface = polyfaceBuilder.claimPolyface(false);
+    const allGeometry: GeometryQuery[] = [];
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface);
+    ck.testExactNumber(1, polyface.facetCount, "polyface has one facet");
+    ck.testExactNumber(3, polyface.pointCount, "polyface has three points");
+
+    // polyface has a single triangle; visitor will visit that triangle nIterations times for performance testing
+    const nIterations = 100000;
+    const indices = new Array(nIterations).fill(0);
+    const visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, indices);
+
+    visitor.reset();
+    let actualIterations = 0;
+    while (visitor.moveToNextFacet())
+      actualIterations++;
+    ck.testExactNumber(nIterations, actualIterations, "visitor iterated the expected number of times");
+
+    const timings: string[] = [];
+
+    // clip plane all hit and all miss cases
+    visitor.reset();
+    let clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(10, 0, 0))!;
+    ck.testDefined(clipPlane, "created clip plane");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, getClipPlaneForVisualization(clipPlane));
+    let t0 = performance.now();
+    let clipPlaneResults = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
+    timings.push(`elapsed misses (clip plane): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(0, clipPlaneResults.length, "no results from sectionPolyfaceClipPlane (all misses)");
+
+    visitor.reset();
+    clipPlane = ClipPlane.createNormalAndPoint(Vector3d.unitX(), Point3d.create(0.5, 0.5))!;
+    ck.testDefined(clipPlane, "created clip plane");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, getClipPlaneForVisualization(clipPlane));
+    t0 = performance.now();
+    clipPlaneResults = PolyfaceClip.sectionPolyfaceClipPlane(visitor, clipPlane);
+    timings.push(`elapsed hits (clip plane): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(nIterations, clipPlaneResults.length, "all results from sectionPolyfaceClipPlane (all hits)");
+
+    // arc all hit and all miss cases
+    let dy = 5;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
+    visitor.reset();
+    let arc = Arc3d.createXY(Point3d.create(2, 2, 0), 1.0, AngleSweep.createStartEndDegrees(0, -90));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
+    t0 = performance.now();
+    let arcResults = segmentCurveByFacetsForElevationSection(visitor, arc);
+    timings.push(`elapsed misses (arc): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(0, arcResults.profile.length, "no results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+    ck.testExactNumber(nIterations, arcResults.numEarlyOuts, "all early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+
+    visitor.reset();
+    arc = Arc3d.createXY(Point3d.create(0.5, 0.5, 0), 0.5, AngleSweep.createStartEndDegrees(0, -90));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, 0, dy);
+    t0 = performance.now();
+    arcResults = segmentCurveByFacetsForElevationSection(visitor, arc);
+    timings.push(`elapsed hits (arc): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(nIterations, arcResults.profile.length, "all results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+    ck.testExactNumber(0, arcResults.numEarlyOuts, "no early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+
+    // spiral all hit and all miss cases
+    dy = 10;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, dy);
+    visitor.reset();
+    let localToWorld = Transform.createRefs(Point3d.create(10, 10, 0), Matrix3d.createIdentity());
+    let spiral = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0.0, 100, Angle.zero(), undefined, 10, Segment1d.create(0, 1), localToWorld)!;
+    ck.testDefined(spiral, "created spiral");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
+    t0 = performance.now();
+    let spiralResults = segmentCurveByFacetsForElevationSection(visitor, spiral);
+    timings.push(`elapsed misses (spiral): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(0, spiralResults.profile.length, "no results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+    ck.testExactNumber(nIterations, spiralResults.numEarlyOuts, "all early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all misses)");
+
+    visitor.reset();
+    localToWorld = Transform.createRefs(Point3d.create(), Matrix3d.createIdentity());
+    spiral = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0.0, 100, Angle.zero(), undefined, 100, Segment1d.create(0, 1), localToWorld)!;
+    ck.testDefined(spiral, "created spiral");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, 0, dy);
+    t0 = performance.now();
+    spiralResults = segmentCurveByFacetsForElevationSection(visitor, spiral);
+    timings.push(`elapsed hits (spiral): ${(performance.now() - t0).toFixed(4)} ms`);
+    ck.testExactNumber(nIterations, spiralResults.profile.length, "all results from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+    ck.testExactNumber(0, spiralResults.numEarlyOuts, "no early outs from sectionPolyfaceWithArcOrSpiralDistanceAlongCoords (all hits)");
+
+    for (const t of timings)
+      GeometryCoreTestIO.consoleLog(t);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClipPerformance", "MissAndHit");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

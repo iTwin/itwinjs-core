@@ -9,20 +9,20 @@
 
 // import { Point2d } from "./Geometry2d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { AxisOrder, AxisScaleSelect, Geometry } from "../Geometry";
-import { GrowableXYZArray } from "./GrowableXYZArray";
+import { IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Point3dArray } from "./PointHelpers";
 import { PolygonOps } from "./PolygonOps";
 import { Range3d } from "./Range";
 import { Transform } from "./Transform";
+import { XYAndZ } from "./XYZProps";
 
 /**
  * Helper class to accumulate points and vectors until there is enough data to define a coordinate system.
@@ -125,9 +125,9 @@ export class FrameBuilder {
   /**
    * Announce a new point. If this point is different from the origin, also compute and announce the vector from the origin.
    */
-  public announcePoint(point: Point3d): number {
+  public announcePoint(point: XYAndZ): number {
     if (!this._origin) {
-      this._origin = point.clone();
+      this._origin = Point3d.createFrom(point);
       return this.savedVectorCount();
     }
     // the new point may provide an additional vector
@@ -175,13 +175,19 @@ export class FrameBuilder {
       this.announcePoint(data);
     else if (data instanceof Vector3d)
       this.announceVector(data);
-    else if (Array.isArray(data)) {
+    else if (Geometry.isArrayOfNumberArray(data, 1, 3)) { // number[][] treated as xyz points
+      for (const pt of data)
+        this.announcePoint({ x: pt[0], y: pt[1], z: pt[2] });
+    } else if (Geometry.isArrayOfNumberArray(data, 1, 2)) { // number[][] treated as xy points
+      for (const pt of data)
+        this.announcePoint({ x: pt[0], y: pt[1], z: 0 });
+    } else if (Array.isArray(data)) {
       for (const child of data) {
         if (this.savedVectorCount() > 1)
           break;
         this.announce(child);
       }
-    } else if (data instanceof CurvePrimitive) {
+    } else if (data instanceof CurvePrimitive) { // local x-axis aligns to first tangent vector
       if (data instanceof LineSegment3d) {
         this.announcePoint(data.startPoint());
         this.announcePoint(data.endPoint());
@@ -203,15 +209,7 @@ export class FrameBuilder {
             this.announcePoint(point);
           else break;
         }
-      } else if (data instanceof InterpolationCurve3d) {
-        const point = Point3d.create();
-        for (let i = 0; this.savedVectorCount() < 2; i++) {
-          if (i < data.options.fitPoints.length) {
-            point.setFrom(data.options.fitPoints[i]);
-            this.announcePoint(point);
-          } else break;
-        }
-      } else { // unimplemented CurvePrimitive type
+      } else { // generic CurvePrimitive
         const frame = data.fractionToFrenetFrame(0.0);
         if (undefined !== frame) {
           this.announcePoint(frame.getOrigin());
@@ -226,7 +224,7 @@ export class FrameBuilder {
           if (this.savedVectorCount() > 1)
             break;
         }
-    } else if (data instanceof GrowableXYZArray) {
+    } else if (data instanceof IndexedXYZCollection) {
       const point = Point3d.create();
       for (let i = 0; this.savedVectorCount() < 2; i++) {
         if (data.getPoint3dAtCheckedPointIndex(i, point) instanceof Point3d)
@@ -234,7 +232,7 @@ export class FrameBuilder {
         else break;
       }
     } else if (data.hasOwnProperty("x") && data.hasOwnProperty("y") && data.hasOwnProperty("z")) {
-      this.announcePoint(Point3d.create(data.x, data.y, data.z));
+      this.announcePoint(data);
     }
   }
   /**

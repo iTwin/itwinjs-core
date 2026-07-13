@@ -6,6 +6,7 @@
  * @module IModelApp
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport, rpcOverIpcStrings } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -41,7 +42,7 @@ class LocalTransport extends IpcWebSocketTransport {
     this._next = -1;
 
     this._client.addEventListener("open", () => {
-      const pending = this._pending!;
+      const pending = expectDefined(this._pending);
       this._pending = undefined;
       pending.forEach((m) => this.send(m));
     });

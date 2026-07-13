@@ -5,7 +5,7 @@
 import * as path from "path";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost } from "@itwin/core-backend";
+import { BriefcaseDb, ECSqlStatement, EditTxn, Element, IModelDb, IModelHost, withEditTxn } from "@itwin/core-backend";
 import {
   Code, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
 } from "@itwin/core-common";
@@ -84,25 +84,25 @@ export class RobotWorldEngine {
   }
   // __PUBLISH_EXTRACT_END__
 
-  public static moveRobot(iModelDb: IModelDb, id: Id64String, location: Point3d) {
-    const r = iModelDb.elements.getElement<Robot>(id);
+  public static moveRobot(txn: EditTxn, id: Id64String, location: Point3d) {
+    const r = txn.iModel.elements.getElement<Robot>(id);
     r.placement.origin = location;
-    iModelDb.elements.updateElement(r.toJSON());
+    txn.updateElement(r.toJSON());
   }
 
   // __PUBLISH_EXTRACT_START__ Element.createGeometricElement3d.example-code
-  public static insertRobot(iModelDb: IModelDb, modelId: Id64String, name: string, location: Point3d, radius: number = 0.1): Id64String {
+  public static insertRobot(txn: EditTxn, modelId: Id64String, name: string, location: Point3d, radius: number = 0.1): Id64String {
     const props = {
       model: modelId,
       code: Code.createEmpty(),
       classFullName: RobotWorld.Class.Robot,      // In this example, I know what class and category to use.
-      category: Robot.getCategory(iModelDb).id,
+      category: Robot.getCategory(txn.iModel).id,
       geom: Robot.generateGeometry(radius),       // In this example, I know how to generate geometry, and I know that the placement is empty.
       placement: { origin: location, angles: new YawPitchRollAngles() },
       userLabel: name,
       radius,                                     // Add extra, Robot-specific properties. Be sure to spell them correctly, as the compiler won't help you here.
     };
-    return iModelDb.elements.insertElement(props);
+    return txn.insertElement(props);
   }
   // __PUBLISH_EXTRACT_END__
 
@@ -116,7 +116,7 @@ export class RobotWorldEngine {
       placement: { origin: location, angles: new YawPitchRollAngles(angle, Angle.zero(), Angle.zero()) },
       length,
     };
-    return iModelDb.elements.insertElement(props);
+    return withEditTxn(iModelDb, "insert barrier", (txn) => txn.insertElement(props));
   }
 
   public static async initialize(): Promise<void> {

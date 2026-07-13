@@ -21,13 +21,28 @@ As ECRelationshipClasses are ECClasses as well, they can be used in ECSQL like E
 > SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElements WHERE SourceECInstanceId=0x200000000c7
 > ```
 
-Like any ECClass, ECRelationshipClasses abstract away how they are actually persisted in the database. When working with plain database and SQL you need to know that. This usually depends on the cardinality of the relationship. For example M:N relationships (also known as _many to many_) require a separate link table which persists the pairs of related instances. For 1:N relationhips (also known as _one to many_) though, the id of the related instance is usually persisted as foreign key in the child table directly. **For ECRelationshipClasses you do not need to know that.**
+Like any ECClass, ECRelationshipClasses abstract away how they are actually persisted in the database. When working with plain database and SQL you need to know that. This usually depends on the cardinality of the relationship. For example M:N relationships (also known as _many to many_) require a separate link table which persists the pairs of related instances. For 1:N relationships (also known as _one to many_) though, the id of the related instance is usually persisted as foreign key in the child table directly. **For ECRelationshipClasses you do not need to know that.**
+
+A practical way to think about this is:
+
+- In a 1:N relationship, each child usually needs to point to only one parent, so a single foreign-key value on the child is often enough.
+- In an M:N relationship, each side can be related to many instances on the other side, so databases usually introduce a third table with one row per related pair.
+
+For example, use the same gym scenario as the ECSQL reference page. One light fixture can help satisfy more than one functional requirement, and one requirement can be satisfied by more than one fixture. A plain relational design often ends up with a third table whose rows look like this:
+
+| Relationship row | Meaning |
+| --- | --- |
+| `Fixture-A` -> `Light the Gym` | Fixture A helps satisfy the main lighting requirement |
+| `Fixture-A` -> `Provide Emergency Egress Lighting` | The same fixture also satisfies the emergency-lighting requirement |
+| `Fixture-B` -> `Light the Gym` | Another fixture also helps satisfy the main lighting requirement |
+
+The important beginner idea is that those middle rows are the relationship data. In ECSQL, the `ECRelationshipClass` is that middle concept. You query the relationship class directly and join through it, instead of first figuring out the physical link-table design.
 
 We will cover relationships more in the next chapter on joins.
 
 ## Joins
 
-Joins are a powerful feature of ECSQL to combine data from different classes. **The syntax is the same as as in SQL**.
+Joins are a powerful feature of ECSQL to combine data from different classes. **The syntax is the same as in SQL**.
 
 Unlike a plain database, ECSchemas provide first-class concepts like [ECRelationshipClasses](#ecrelationshipclasses) and [Navigation properties](./ECSQLDataTypes.md#navigation-properties) which are helpful when using joins in ECSQL. However, you can also use the joins as you did in SQL without being aware of the above-mentioned concepts.
 
@@ -56,6 +71,11 @@ We will also cover examples that compare ECSQL using navigation properties with 
 Relationships are basically pairs of ids of the related instances. They act as middle-man when joining instances from the two related classes. It does not matter how the relationship is actually persisted (which also depends on the cardinality of the relationship) (see also [ECRelationshipClasses](#ecrelationshipclasses)).
 
 General idea: **join from a class to the relationship class and then join from the relationship class to the related class**
+
+For many readers, it helps to picture this as a two-step hop:
+
+1. Find the relationship rows connected to the starting class.
+2. From those relationship rows, find the related instances on the other side.
 
 ### Ad-hoc Joins
 
@@ -112,6 +132,32 @@ Again for the purpose of learning, the same ECSQL expressed with relationship cl
 > ```sql
 > SELECT Model.ECInstanceId,Model.ModeledElement.Id ModeledElementId,Model.ParentModel.Id ParentModelId FROM bis.Element JOIN bis.ModelContainsElements rel ON Element.ECInstanceId=rel.TargetECInstanceId JOIN bis.Model ON rel.SourceECInstanceId=Model.ECInstanceId WHERE Element.CodeValue='Cut'
 > ```
+
+---
+
+## CROSS JOIN with optional ON clause
+
+`CROSS JOIN` produces a Cartesian product of two classes (every row of the left class paired with every row of the right class). It now also accepts an optional `ON` clause to filter that product, matching standard SQL and SQLite syntax.
+
+### Why use CROSS JOIN instead of INNER JOIN?
+
+SQLite applies a [special optimizer rule for CROSS JOIN](https://www.sqlite.org/lang_select.html#special_handling_of_cross_join_): it will **never reorder** the tables in a `CROSS JOIN`, whereas it is free to reorder tables in an `INNER JOIN` for performance. This means you can use `CROSS JOIN ... ON` to get the filtering behavior of an `INNER JOIN` while retaining explicit control over the join order and query plan — which matters in performance-sensitive queries.
+
+### Examples
+
+Unfiltered Cartesian product (classic `CROSS JOIN`):
+
+```sql
+SELECT p.ECInstanceId, i.ECInstanceId FROM bis.Element p CROSS JOIN bis.Model i LIMIT 5
+```
+
+Filtered with `ON` clause — result is the same as `INNER JOIN` but join order is fixed:
+
+```sql
+-- Join order is guaranteed: Element is always the outer table
+SELECT e.ECInstanceId, m.ECInstanceId
+FROM bis.Element e CROSS JOIN bis.Model m ON m.ECInstanceId = e.Model.Id
+```
 
 ---
 

@@ -182,7 +182,7 @@ export class ViewDetails3d extends ViewDetails {
   private _modelClipGroups?: ModelClipGroups;
 
   private get _json3d(): ViewDetails3dProps {
-    return this._json as ViewDetails3dProps;
+    return this._json;
   }
 
   /** Event raised when just before assignment to the [[modelClipGroups]] property. */

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { ByteStream, expectDefined, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { B3dmHeader, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
@@ -59,7 +59,7 @@ export class B3dmReader extends GltfReader {
       transformToRoot, header.batchTableJson, isCanceled, idMap, pseudoRtcBias, deduplicateVertices, tileData) : undefined;
   }
 
-  private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
+  public constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _batchTableLength: number, private _transformToRoot?: Transform, private _batchTableJson?: any
     , shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false, tileData?: LayerTileData) {
     super({
@@ -105,7 +105,7 @@ export class B3dmReader extends GltfReader {
                 instance[key] = value;
             }
             if (parentIds !== undefined) {
-              const thisParents = parentMap![instanceIndex];
+              const thisParents = expectDefined(parentMap)[instanceIndex];
               for (const parentId of thisParents) {
                 if (parentId !== instanceIndex)
                   getProperties(instance, parentId);

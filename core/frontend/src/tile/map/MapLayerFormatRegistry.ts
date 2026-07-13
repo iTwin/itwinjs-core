@@ -6,7 +6,7 @@
  * @module MapLayers
  */
 
-import { assert, Logger } from "@itwin/core-bentley";
+import { assert, expectDefined, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -96,6 +96,7 @@ export interface MapLayerSourceValidation {
  * Options supplied at startup via [[IModelAppOptions.mapLayerOptions]] to specify access keys for various map layer formats.
  * 'BingMaps' must have it's key value set to 'key'
  * 'MapboxImagery' must have it's key value set to 'access_token'
+ * Some format-specific options, including `BingMaps`, are retained for compatibility.
  *
  * @public
  */
@@ -106,7 +107,11 @@ export interface MapLayerOptions {
   /** Access key for Mapbox in the format `{ key: "access_token", value: "your-mapbox-key" }`. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   MapboxImagery?: MapLayerKey;
-  /** Access key for Bing Maps in the format `{ key: "key", value: "your-bing-maps-key" }`. */
+  /** Access key for Bing Maps in the format `{ key: "key", value: "your-bing-maps-key" }`.
+   * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. All Bing Maps APIs are deprecated. Supply custom providers via
+   * [[IModelAppOptions.geospatialProviders]].
+   * For basemap imagery, use `@itwin/map-layers-formats`.
+   */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   BingMaps?: MapLayerKey;
   /** Access keys for additional map layer formats. */
@@ -170,7 +175,7 @@ export class MapLayerFormatRegistry {
       Logger.logError(loggerCategory, `Could not find format '${layerSettings.formatId}' in registry`);
       return undefined;
     }
-    return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
+    return format.createMapLayerTree(layerSettings, layerIndex, iModel);
   }
 
   /**
@@ -181,7 +186,7 @@ export class MapLayerFormatRegistry {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
     if (this._configOptions[layerSettings.formatId] !== undefined) {
-      const keyValuePair = this._configOptions[layerSettings.formatId]!;
+      const keyValuePair = expectDefined(this._configOptions[layerSettings.formatId]);
       const key: MapLayerKey = { key: keyValuePair.key, value: keyValuePair.value };
       layerSettings = layerSettings.clone({ accessKey: key });
     }

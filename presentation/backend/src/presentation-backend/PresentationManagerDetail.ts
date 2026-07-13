@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
@@ -102,6 +103,7 @@ export class PresentationManagerDetail implements Disposable {
         params.workerThreadsCount ?? 2,
         IpcHost.isValid ? ipcUpdatesHandler : noopUpdatesHandler,
         params.caching,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         params.defaultFormats,
         params.useMmap,
       );
@@ -132,6 +134,8 @@ export class PresentationManagerDetail implements Disposable {
     }
     return this._nativePlatform!;
   }
+
+  /* eslint-disable @typescript-eslint/no-deprecated */
 
   public async getNodes(
     requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute,
@@ -199,6 +203,8 @@ export class PresentationManagerDetail implements Disposable {
     return paths;
   }
 
+  /* eslint-enable @typescript-eslint/no-deprecated */
+
   public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>>): Promise<string> {
     const { rulesetOrId, contentFlags, ...strippedOptions } = requestOptions;
     const params = {
@@ -250,7 +256,6 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContentSet,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
-      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
@@ -268,7 +273,6 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContent,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
-      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
@@ -452,6 +456,7 @@ export function getKeysForContentRequest(
   };
   const classInstancesMap = new Map<string, Set<string>>();
   keys.forEach((key) => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (Key.isNodeKey(key)) {
       result.nodeKeys.push(key);
     }
@@ -507,6 +512,7 @@ function createNativePlatform(
   workerThreadsCount: number,
   updateCallback: (updateInfo: UpdateInfo | undefined) => void,
   caching: PresentationManagerProps["caching"],
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats: FormatsMap | undefined,
   useMmap: boolean | number | undefined,
 ): NativePlatformDefinition {
@@ -514,6 +520,7 @@ function createNativePlatform(
     id,
     taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: workerThreadsCount },
     updateCallback,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     cacheConfig: createCacheConfig(caching?.hierarchies),
     contentCacheSize: caching?.content?.size,
     workerConnectionCacheSize: caching?.workerConnectionCacheSize,
@@ -521,6 +528,7 @@ function createNativePlatform(
     useMmap,
   }))();
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   function createCacheConfig(config?: HierarchyCacheConfig): IModelJsNative.ECPresentationHierarchyCacheConfig {
     switch (config?.mode) {
       case HierarchyCacheMode.Disk:
@@ -539,11 +547,13 @@ function createNativePlatform(
         return { mode: HierarchyCacheMode.Disk, directory: "" };
     }
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   function normalizeDirectory(directory?: string): string {
     return directory ? path.resolve(directory) : "";
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function toNativeUnitFormatsMap(map: FormatsMap | undefined): NativePresentationDefaultUnitFormats | undefined {
     if (!map) {
       return undefined;

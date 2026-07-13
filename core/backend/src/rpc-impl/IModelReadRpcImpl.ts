@@ -247,9 +247,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getAllCodeSpecs(tokenProps: IModelRpcProps): Promise<any[]> {
     const codeSpecs: any[] = [];
     const iModelDb = await getIModelForRpc(tokenProps);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModelDb.withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
-      for (const row of statement)
+    iModelDb.withQueryReader("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (reader) => {
+      for (const row of reader)
         codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
     });
     return codeSpecs;
@@ -328,7 +327,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header.
-   * @deprecated in 3.x - Use queryViewThumbnail instead
+   * @deprecated in 3.6.0 - might be removed in next major version. Use queryViewThumbnail instead
    */
   public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
     const iModelDb = await getIModelForRpc(tokenProps);

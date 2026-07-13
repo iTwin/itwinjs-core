@@ -5,12 +5,14 @@
 /** @packageDocumentation
  * @module Elements
  */
-import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { IModel } from "@itwin/core-common";
+import { assert, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { IModel, QueryBinder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { EditTxn } from "./EditTxn";
 import { DefinitionContainer, DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
+import { _implicitTxn } from "./internal/Symbols";
 
 const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 
@@ -35,12 +37,10 @@ function sortChildrenBeforeParents(iModel: IModelDb, ids: Id64Array): Array<Id64
 }
 
 function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return iModel.withPreparedStatement(`select count(*) from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
-    stmt.bindId(1, modelId);
-    stmt.step();
-    return stmt.getValue(0).getInteger() === 0;
-  });
+  return iModel.withQueryReader(`select count(*) from ${Element.classFullName} where Model.Id = ?`, (reader) => {
+    reader.step();
+    return reader.current[0] === 0;
+  }, new QueryBinder().bindId(1, modelId));
 }
 
 function isDefinitionModel(model: Model): boolean {
@@ -152,13 +152,11 @@ function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: Ele
   Logger.logTrace(loggerCategory, `${op} ${fmtModel(model)} ${scope ? scope.toString() : ""}`);
 
   if (logElements) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement(`select ecinstanceid from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
-      stmt.bindId(1, modelId);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        logElement(" - ", iModel, stmt.getValue(0).getId());
+    iModel.withQueryReader(`select ecinstanceid from ${Element.classFullName} where Model.Id = ?`, (reader) => {
+      for (const row of reader) {
+        logElement(" - ", iModel, row[0]);
       }
-    });
+    }, new QueryBinder().bindId(1, modelId));
   }
 }
 
@@ -174,7 +172,11 @@ function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: Ele
  * @beta
  */
 export abstract class ElementTreeBottomUp {
-  constructor(protected _iModel: IModelDb) { }
+  protected readonly txn: EditTxn;
+
+  constructor(iModelOrTxn: IModelDb | EditTxn) {
+    this.txn = iModelOrTxn instanceof EditTxn ? iModelOrTxn : iModelOrTxn[_implicitTxn];
+  }
 
   /** Return true if the search should recurse into this model  */
   protected shouldExploreModel(_model: Model, _scope: ElementTreeWalkerScope): boolean { return true; }
@@ -193,7 +195,7 @@ export abstract class ElementTreeBottomUp {
 
   /** The main tree-walking function */
   protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope) {
-    const subModel = this._iModel.models.tryGetModel<Model>(element);
+    const subModel = this.txn.iModel.models.tryGetModel<Model>(element);
     if (subModel !== undefined) {
       if (this.shouldExploreModel(subModel, scope))
         this._processSubModel(subModel, scope);
@@ -211,7 +213,7 @@ export abstract class ElementTreeBottomUp {
 
   /** process the children of the specified parent element */
   private _processChildren(parentElement: Id64String, parentScope: ElementTreeWalkerScope): void {
-    const children = this._iModel.elements.queryChildren(parentElement);
+    const children = this.txn.iModel.elements.queryChildren(parentElement);
     if (children.length === 0)
       return;
 
@@ -225,14 +227,12 @@ export abstract class ElementTreeBottomUp {
   private _processSubModel(model: Model, parenScope: ElementTreeWalkerScope): void {
     const scope = new ElementTreeWalkerScope(parenScope, model);
     // Visit only the top-level parents. processElementTree will visit their children (bottom-up).
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    model.iModel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (stmt) => {
-      stmt.bindId(1, model.id);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const elementId = stmt.getValue(0).getId();
+    model.iModel.withQueryReader(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (reader) => {
+      for (const row of reader) {
+        const elementId = row[0];
         this.processElementTree(elementId, scope);
       }
-    });
+    }, new QueryBinder().bindId(1, model.id));
   }
 }
 
@@ -241,6 +241,15 @@ class SpecialElements {
   public definitionModels: Id64Array = [];
   public definitions: Id64Array = [];
   public subjects: Id64Array = [];
+
+  public constructor(private readonly _txn?: EditTxn) { }
+
+  private getTxn(iModel: IModelDb): EditTxn {
+    if (undefined !== this._txn)
+      return this._txn;
+
+    return iModel[_implicitTxn];
+  }
 
   public recordSpecialElement(iModel: IModelDb, elementId: Id64String): boolean {
     // Defer Definitions and Subjects
@@ -263,6 +272,7 @@ class SpecialElements {
    * @note Caller must ensure that the special elements were recorded in a depth-first search.
    */
   public deleteSpecialElements(iModel: IModelDb) {
+    const txn = this.getTxn(iModel);
     // It's dangerous to pass a mixture of SubCategories and Categories to deleteDefinitionElements.
     // That function will delete the Categories first, which automatically deletes all their child
     // SubCategories (in native code). If a SubCategory in the list is one of those children, then
@@ -275,7 +285,7 @@ class SpecialElements {
       if (isTraceEnabled())
         definitions.forEach((e) => logElement("try delete", iModel, e));
 
-      iModel.elements.deleteDefinitionElements(definitions); // will not delete definitions that are still in use.
+      txn.deleteDefinitionElements(definitions); // will not delete definitions that are still in use.
     }
 
     for (const m of this.definitionModels) {
@@ -283,8 +293,8 @@ class SpecialElements {
         logModel("Model not empty - cannot delete - may contain Definitions that are still in use", iModel, m, undefined, true);
       } else {
         logModel("delete", iModel, m);
-        iModel.models.deleteModel(m);
-        iModel.elements.deleteElement(m);
+        txn.deleteModel(m);
+        txn.deleteElement(m);
       }
     }
 
@@ -293,7 +303,7 @@ class SpecialElements {
         logElement("Subject still has children - cannot delete - may have child DefinitionModels", iModel, e, undefined, true);
       } else {
         logElement("delete", iModel, e);
-        iModel.elements.deleteElement(e);
+        txn.deleteElement(e);
       }
     }
   }
@@ -307,7 +317,21 @@ class SpecialElements {
  * @beta
  */
 export class ElementTreeDeleter extends ElementTreeBottomUp {
-  protected _special: SpecialElements = new SpecialElements();
+  protected _special: SpecialElements;
+
+  /**
+   * Create an ElementTreeDeleter that uses an explicit EditTxn.
+   */
+  public constructor(txn: EditTxn);
+  /**
+   * Create an ElementTreeDeleter.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Supply an explicit EditTxn.
+   */
+  public constructor(iModel: IModelDb);
+  public constructor(iModelOrTxn: IModelDb | EditTxn) {
+    super(iModelOrTxn);
+    this._special = new SpecialElements(iModelOrTxn instanceof EditTxn ? iModelOrTxn : undefined);
+  }
 
   protected override shouldExploreModel(_model: Model): boolean { return true; }
   protected override shouldVisitElement(_elementId: Id64String): boolean { return true; }
@@ -317,14 +341,14 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
       return; // we recorded definition models in visitElement when we encountered the DefinitionPartition elements.
 
     // visitElement has already deleted the elements in the model. So, now it's safe to delete the model itself.
-    logModel("delete", this._iModel, model.id, _scope);
-    model.delete();
+    logModel("delete", this.txn.iModel, model.id, _scope);
+    this.txn.deleteModel(model.id);
   }
 
   protected override visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void {
-    if (!this._special.recordSpecialElement(this._iModel, elementId)) {
-      logElement("delete", this._iModel, elementId, _scope);
-      this._iModel.elements.deleteElement(elementId);
+    if (!this._special.recordSpecialElement(this.txn.iModel, elementId)) {
+      logElement("delete", this.txn.iModel, elementId, _scope);
+      this.txn.deleteElement(elementId);
     }
   }
 
@@ -335,7 +359,7 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
    * @see deleteSpecialElements
    */
   public deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void {
-    const topScope = scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, topElement);
+    const topScope = scope ?? ElementTreeWalkerScope.createTopScope(this.txn.iModel, topElement);
     this.processElementTree(topElement, topScope); //
   }
 
@@ -343,7 +367,7 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
    * function once after all element trees are processed by deleteNormalElements.
    */
   public deleteSpecialElements(): void {
-    this._special.deleteSpecialElements(this._iModel);
+    this._special.deleteSpecialElements(this.txn.iModel);
   }
 
 }
@@ -389,14 +413,12 @@ abstract class ElementTreeTopDown {
   private _processSubModel(subModel: Model, scope: ElementTreeWalkerScope) {
     const subModelScope = new ElementTreeWalkerScope(scope, subModel);
     // Visit only the top-level parents. processElementTree will recurse into their children.
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    this._iModel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (stmt) => {
-      stmt.bindId(1, subModel.id);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const elementId = stmt.getValue(0).getId();
+    this._iModel.withQueryReader(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (reader) => {
+      for (const row of reader) {
+        const elementId = row[0];
         this.processElementTree(elementId, subModelScope);
       }
-    });
+    }, new QueryBinder().bindId(1, subModel.id));
   }
 
 }
@@ -421,11 +443,22 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
    * @param iModel The iModel
    * @param topElement Where to start the search.
    * @param shouldPruneCb Callback that selects sub-trees that should be deleted.
+   * @param txn The EditTxn used to perform the deletes.
    * @see deleteElementSubTrees for a simple way to use this class.
    */
-  public constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter) {
-    super(iModel);
-    this._treeDeleter = new ElementTreeDeleter(this._iModel);
+  public constructor(txn: EditTxn, shouldPruneCb: ElementSubTreeDeleteFilter);
+  /** Construct an ElementSubTreeDeleter.
+   * @param iModel The iModel
+   * @param topElement Where to start the search.
+   * @param shouldPruneCb Callback that selects sub-trees that should be deleted.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Supply an explicit EditTxn.
+   * @see deleteElementSubTrees for a simple way to use this class.
+   */
+  public constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter);
+  public constructor(iModelOrTxn: IModelDb | EditTxn, shouldPruneCb: ElementSubTreeDeleteFilter) {
+    super(iModelOrTxn instanceof EditTxn ? iModelOrTxn.iModel : iModelOrTxn);
+    const effectiveTxn = iModelOrTxn instanceof EditTxn ? iModelOrTxn : iModelOrTxn[_implicitTxn];
+    this._treeDeleter = new ElementTreeDeleter(effectiveTxn);
     this._shouldPruneCb = shouldPruneCb;
   }
 
@@ -457,6 +490,8 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
 export interface DeleteElementTreeArgs {
   /** The iModel containing the elements to delete. */
   iModel: IModelDb;
+  /** The EditTxn used to perform the deletes. */
+  txn: EditTxn;
   /** The Id of the root element of the tree to delete. */
   topElement: Id64String;
   /** The maximum number of passes to make when deleting definition elements.
@@ -466,27 +501,49 @@ export interface DeleteElementTreeArgs {
 }
 
 /** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
+ * @param txn The EditTxn used to perform the deletes.
+ * @param topElement The parent of the sub-tree
+ * @param maxPasses The maximum number of passes to make when deleting definition elements.
+ * @beta
+ */
+export function deleteElementTree(txn: EditTxn, topElement: Id64String, maxPasses?: number): void;
+/** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
  * @param iModel The iModel
  * @param topElement The parent of the sub-tree
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Supply an explicit `txn`.
  * @beta
  */
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
 /** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
- * @param args Specifies the iModel and top element.
+ * @param args Specifies the transaction and top element.
  * @beta
  */
 export function deleteElementTree(args: DeleteElementTreeArgs): void;
+/** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
+ * @param args Specifies the iModel and top element.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Supply `txn` via [[DeleteElementTreeArgs]].
+ * @beta
+ */
+export function deleteElementTree(args: { iModel: IModelDb, topElement: Id64String, maxPasses?: number }): void;
 /** @internal */
-export function deleteElementTree(arg0: DeleteElementTreeArgs | IModelDb, arg1?: Id64String): void {
+export function deleteElementTree(arg0: DeleteElementTreeArgs | { iModel: IModelDb, topElement: Id64String, maxPasses?: number } | IModelDb | EditTxn, arg1?: Id64String, arg2?: number): void {
   let maxPasses;
+  let txn;
   let iModel: IModelDb;
   let topElement: Id64String;
-  if (arg0 instanceof IModelDb) {
+  if (arg0 instanceof EditTxn) {
+    assert(typeof arg1 === "string");
+    txn = arg0;
+    iModel = txn.iModel;
+    topElement = arg1;
+    maxPasses = arg2;
+  } else if (arg0 instanceof IModelDb) {
     assert(typeof arg1 === "string");
     iModel = arg0;
     topElement = arg1;
   } else {
     iModel = arg0.iModel;
+    txn = "txn" in arg0 ? arg0.txn : undefined;
     topElement = arg0.topElement;
     maxPasses = arg0.maxPasses;
   }
@@ -494,7 +551,8 @@ export function deleteElementTree(arg0: DeleteElementTreeArgs | IModelDb, arg1?:
   maxPasses = maxPasses ?? 5;
   let pass = 0;
   do {
-    const del = new ElementTreeDeleter(iModel);
+    const effectiveTxn = txn ?? iModel[_implicitTxn];
+    const del = new ElementTreeDeleter(effectiveTxn);
     del.deleteNormalElements(topElement);
     del.deleteSpecialElements();
   } while ((iModel.elements.tryGetElement(topElement) !== undefined) && (++pass < maxPasses));
@@ -504,13 +562,26 @@ export function deleteElementTree(arg0: DeleteElementTreeArgs | IModelDb, arg1?:
  * If the filter selects the top element itself, then the entire tree (including the top element) is deleted.
  * That has the same effect as calling [[deleteElementTree]] on the top element.
  * @note The caller may have to call this function multiple times if there are multiple layers of dependencies among definition elements.
- * @param iModel The iModel
+ * @param txn The EditTxn used to perform the deletes.
  * @param topElement Where to start the search.
  * @param filter Callback that selects sub-trees that should be deleted.
  * @beta
  */
-export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void {
-  const del = new ElementSubTreeDeleter(iModel, filter);
+export function deleteElementSubTrees(txn: EditTxn, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void;
+/** Deletes all element sub-trees that are selected by the supplied filter. Uses ElementSubTreeDeleter.
+ * If the filter selects the top element itself, then the entire tree (including the top element) is deleted.
+ * That has the same effect as calling [[deleteElementTree]] on the top element.
+ * @note The caller may have to call this function multiple times if there are multiple layers of dependencies among definition elements.
+ * @param iModel The iModel
+ * @param topElement Where to start the search.
+ * @param filter Callback that selects sub-trees that should be deleted.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Supply `txn` explicitly.
+ * @beta
+ */
+export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void;
+export function deleteElementSubTrees(arg0: EditTxn | IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void {
+  const effectiveTxn = arg0 instanceof EditTxn ? arg0 : arg0[_implicitTxn];
+  const del = new ElementSubTreeDeleter(effectiveTxn, filter);
   del.deleteNormalElementSubTrees(topElement);
   del.deleteSpecialElementSubTrees();
 }

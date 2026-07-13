@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="MixinTest" alias="mt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.01" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+
+  <ECEntityClass typeName="IBaseMixin" modifier="Abstract" displayLabel="TestLabel" description="Test Description">
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:PhysicalElement</AppliesToEntityClass>
+      </IsMixin>
+      <TestCustomAttribute/>
+    </ECCustomAttributes>
+    <ECProperty propertyName="StringProperty" typeName="string" displayLabel="String" description="String Property"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean" displayLabel="Boolean" description="Boolean Property"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="ITestMixin" modifier="Abstract" displayLabel="TestLabel" description="Test Description">
+    <BaseClass>IBaseMixin</BaseClass>
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:PhysicalElement</AppliesToEntityClass>
+      </IsMixin>
+    </ECCustomAttributes>
+    <ECProperty propertyName="StringProperty" typeName="string" displayLabel="String" description="String Property"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean" displayLabel="Boolean" description="Boolean Property"/>
+  </ECEntityClass>
+
+  <ECCustomAttributeClass typeName="TestCustomAttribute" appliesTo="EntityClass" modifier="Sealed"/>
+</ECSchema>

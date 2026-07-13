@@ -8,7 +8,7 @@ A clip vector can be constructed of any number of convex or concave shapes. Clip
 
 By default, only geometry inside of the clip will be displayed. A [ClipStyle]($common) can override this behavior by specifying a color to be applied to geometry inside and/or outside the clip.
 
-[This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=view-clip-sample&imodel=Retail+Building+Sample) demonstrates basic clipping.
+[This sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/View%20Clipping/) demonstrates basic clipping.
 
 The image below shows a clip plane applied to a house model to reveal the interior.
 

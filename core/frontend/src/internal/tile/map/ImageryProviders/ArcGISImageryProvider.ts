@@ -99,6 +99,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     if (this._accessTokenRequired && this._accessClient) {
       this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
         mapLayerUrl: new URL(this._settings.url),
+        portal: typeof this._settings.properties?.portal === "string" ? this._settings.properties.portal : undefined,
         userName: this._settings.userName,
         password: this._settings.password });
     }

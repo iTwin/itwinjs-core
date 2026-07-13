@@ -11,8 +11,9 @@ import { LabelDefinition } from "../LabelDefinition.js";
 import { CategoryDescription } from "./Category.js";
 import { Content } from "./Content.js";
 import { Descriptor } from "./Descriptor.js";
-import { Field, NestedContentField } from "./Fields.js";
+import { ArrayPropertiesField, Field, NestedContentField, PropertiesField, StructPropertiesField } from "./Fields.js";
 import { Item } from "./Item.js";
+import { Property } from "./Property.js";
 import { PropertyValueFormat, TypeDescription } from "./TypeDescription.js";
 import {
   DisplayValue,
@@ -283,33 +284,70 @@ export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldH
   }
 }
 
+/* c8 ignore start */
+
 /**
  * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
  * for different components.
  * @public
+ * @deprecated in 5.4 - will not be removed until after 2026-12-02. Use [[createContentTraverser]] instead.
  */
 export function traverseContent(visitor: IContentVisitor, content: Content) {
-  if (!visitor.startContent({ descriptor: content.descriptor })) {
-    return;
-  }
-
-  try {
-    const fieldHierarchies = createFieldHierarchies(content.descriptor.fields);
-    visitor.processFieldHierarchies({ hierarchies: fieldHierarchies });
-    content.contentSet.forEach((item) => {
-      traverseContentItemFields(visitor, fieldHierarchies, item);
-    });
-  } finally {
-    visitor.finishContent();
-  }
+  return createContentTraverser(visitor, content.descriptor)(content.contentSet);
 }
 
 /**
  * An utility for calling [[traverseContent]] when there's only one content item.
  * @public
+ * @deprecated in 5.4 - will not be removed until after 2026-12-02. Use [[createContentTraverser]] instead.
  */
 export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item) {
-  traverseContent(visitor, new Content(descriptor, [item]));
+  return createContentTraverser(visitor, descriptor)([item]);
+}
+
+/* c8 ignore end */
+
+/**
+ * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
+ * for different components.
+ *
+ * This overload takes only the visitor and returns a function that takes descriptor and items to traverse, which is
+ * more convenient when item sets need to be traversed with different descriptors.
+ *
+ * @public
+ */
+export function createContentTraverser(visitor: IContentVisitor): (descriptor: Descriptor, items: Item[]) => void;
+/**
+ * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
+ * for different components.
+ *
+ * This overload takes the visitor and descriptor and returns a function that takes items to traverse, which is more convenient
+ * when multiple sets of items need to be traversed with the same descriptor.
+ *
+ * @public
+ */
+export function createContentTraverser(visitor: IContentVisitor, descriptor: Descriptor): (items: Item[]) => void;
+/** @public */
+export function createContentTraverser(visitor: IContentVisitor, descriptorArg?: Descriptor) {
+  let memo: { descriptor: Descriptor; fieldHierarchies: FieldHierarchy[] } | undefined;
+  const traverseContentItems = (descriptor: Descriptor, items: Item[]) => {
+    if (!visitor.startContent({ descriptor })) {
+      return;
+    }
+    try {
+      if (memo?.descriptor !== descriptor) {
+        const fieldHierarchies = createFieldHierarchies(descriptor.selectedFields);
+        visitor.processFieldHierarchies({ hierarchies: fieldHierarchies });
+        memo = { descriptor, fieldHierarchies };
+      }
+      items.forEach((item) => {
+        traverseContentItemFields(visitor, memo!.fieldHierarchies, item);
+      });
+    } finally {
+      visitor.finishContent();
+    }
+  };
+  return descriptorArg ? (items: Item[]) => traverseContentItems(descriptorArg, items) : traverseContentItems;
 }
 
 class VisitedCategories implements Disposable {
@@ -373,9 +411,12 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
   try {
     const rootToThisField = createFieldPath(fieldHierarchy.field);
     let parentFieldName: string | undefined;
-    const pathUpToField = rootToThisField.slice(undefined, -1);
+    const pathUpToField: NestedContentField[] = rootToThisField.slice(undefined, -1).map((f) => {
+      assert(f.isNestedContentField());
+      return f;
+    });
     for (let i = 0; i < pathUpToField.length; ++i) {
-      const parentField = pathUpToField[i] as NestedContentField;
+      const parentField = pathUpToField[i];
       const nextField = rootToThisField[i + 1];
 
       if (item.isFieldMerged(parentField.name)) {
@@ -397,6 +438,7 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
       return;
     }
 
+    let valuesAccessor = fieldHierarchy.field.name;
     if (fieldHierarchy.field.isNestedContentField()) {
       fieldHierarchy = convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy, parentFieldName);
       const { emptyNestedItem, convertedItem } = convertNestedContentFieldHierarchyItemToStructArrayItem(item, fieldHierarchy);
@@ -404,18 +446,11 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
         return;
       }
       item = convertedItem;
+      valuesAccessor = fieldHierarchy.field.name;
     } else if (pathUpToField.length > 0) {
       fieldHierarchy = {
         ...fieldHierarchy,
-        field: (function () {
-          const clone = fieldHierarchy.field.clone();
-          clone.type = {
-            valueFormat: PropertyValueFormat.Array,
-            typeName: `${fieldHierarchy.field.type.typeName}[]`,
-            memberType: fieldHierarchy.field.type,
-          };
-          return clone;
-        })(),
+        field: new NestedContentArrayPropertiesField(fieldHierarchy.field, pathUpToField[pathUpToField.length - 1]),
       };
     }
 
@@ -425,8 +460,8 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
       item.mergedFieldNames,
       fieldHierarchy.field.type,
       parentFieldName,
-      item.values[fieldHierarchy.field.name],
-      item.displayValues[fieldHierarchy.field.name],
+      item.values[valuesAccessor],
+      item.displayValues[valuesAccessor],
     );
   } finally {
     visitor.finishField();
@@ -445,13 +480,19 @@ function traverseContentItemFieldValue(
   if (rawValue !== undefined) {
     if (valueType.valueFormat === PropertyValueFormat.Array) {
       assert(PresentationValue.isArray(rawValue));
-      assert(DisplayValue.isArray(displayValue));
-      return traverseContentItemArrayFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
+      // When content is retrieved with formatting omitted, display values are not provided. Synthesize an array
+      // of matching length so array items can still be traversed.
+      const arrayDisplayValues = displayValue === undefined ? rawValue.map(() => undefined) : displayValue;
+      assert(DisplayValue.isArray(arrayDisplayValues));
+      return traverseContentItemArrayFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, arrayDisplayValues);
     }
     if (valueType.valueFormat === PropertyValueFormat.Struct) {
       assert(PresentationValue.isMap(rawValue));
-      assert(DisplayValue.isMap(displayValue));
-      return traverseContentItemStructFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
+      // When content is retrieved with formatting omitted, display values are not provided. Use an empty map so
+      // struct members can still be traversed.
+      const structDisplayValues = displayValue === undefined ? {} : displayValue;
+      assert(DisplayValue.isMap(structDisplayValues));
+      return traverseContentItemStructFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, structDisplayValues);
     }
   }
   traverseContentItemPrimitiveFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
@@ -473,6 +514,10 @@ function traverseContentItemArrayFieldValue(
   }
 
   try {
+    if (fieldHierarchy.field.isPropertiesField() && fieldHierarchy.field.isArrayPropertiesField()) {
+      parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
+      fieldHierarchy = { field: fieldHierarchy.field.itemsField, childFields: [] };
+    }
     const itemType = valueType.memberType;
     rawValues.forEach((_, i) => {
       traverseContentItemFieldValue(visitor, fieldHierarchy, mergedFieldNames, itemType, parentFieldName, rawValues[i], displayValues[i]);
@@ -498,24 +543,31 @@ function traverseContentItemStructFieldValue(
   }
 
   try {
-    if (fieldHierarchy.field.isNestedContentField()) {
-      parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
-    }
+    // `fieldHierarchy.field` is either a nested content field or a struct property field - either way,
+    // we want to combine its name into the parent field name
+    parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
 
     valueType.members.forEach((memberDescription) => {
       let memberField = fieldHierarchy.childFields.find((f) => f.field.name === memberDescription.name);
       if (!memberField) {
-        // Not finding a member field means we're traversing an ECStruct. We still need to carry member information, so we
-        // create a fake field to represent the member
+        // Not finding a member field means we're traversing an ECStruct. If current field is `StructPropertiesField`
+        // try looking up member field in there. Otherwise, just create fake field to propagate information.
+        const structMemberField =
+          fieldHierarchy.field.isPropertiesField() && fieldHierarchy.field.isStructPropertiesField()
+            ? fieldHierarchy.field.memberFields.find((mf) => mf.name === memberDescription.name)
+            : undefined;
+
         memberField = {
-          field: new Field({
-            category: fieldHierarchy.field.category,
-            name: memberDescription.name,
-            label: memberDescription.label,
-            type: memberDescription.type,
-            isReadonly: fieldHierarchy.field.isReadonly,
-            priority: 0,
-          }),
+          field:
+            structMemberField ??
+            new Field({
+              category: fieldHierarchy.field.category,
+              name: memberDescription.name,
+              label: memberDescription.label,
+              type: memberDescription.type,
+              isReadonly: fieldHierarchy.field.isReadonly,
+              priority: 0,
+            }),
           childFields: [],
         };
       }
@@ -696,7 +748,13 @@ export const FIELD_NAMES_SEPARATOR = "$";
  * @public
  */
 export function combineFieldNames(fieldName: string, parentFieldName?: string) {
-  return parentFieldName ? `${parentFieldName}${FIELD_NAMES_SEPARATOR}${fieldName}` : fieldName;
+  if (parentFieldName) {
+    if (fieldName) {
+      return `${parentFieldName}${FIELD_NAMES_SEPARATOR}${fieldName}`;
+    }
+    return parentFieldName;
+  }
+  return fieldName;
 }
 /**
  * Parses given combined field names string, constructed using [[combineFieldNames]], into a list of individual field names.
@@ -827,4 +885,51 @@ function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<
     mergedFieldNames: converted.mergedFieldNames,
   });
   return { emptyNestedItem: false, convertedItem };
+}
+
+/**
+ * A synthetic field that extends `NestedContentField` and adds `ArrayPropertiesField` /
+ * `PropertiesField` surface so that consumers who narrow via `isNestedContentField()`,
+ * `isPropertiesField()`, and `isArrayPropertiesField()` get a genuine object.
+ *
+ * It's needed to properly propagate properties of nested content fields when they're converted
+ * into struct/array fields, so that consumers can use those properties when processing values.
+ */
+class NestedContentArrayPropertiesField extends NestedContentField {
+  public readonly properties: Property[];
+  public readonly itemsField: Field;
+
+  public constructor(sourceItemsField: Field, parentNestedField: NestedContentField) {
+    super({
+      ...parentNestedField,
+      ...sourceItemsField,
+      name: "",
+      type: {
+        valueFormat: PropertyValueFormat.Array,
+        typeName: `${sourceItemsField.type.typeName}[]`,
+        memberType: sourceItemsField.type,
+      },
+    });
+    this.properties = sourceItemsField.isPropertiesField() ? sourceItemsField.properties : [];
+    this.itemsField = sourceItemsField.clone();
+    this.itemsField.resetParentship();
+  }
+
+  public override isPropertiesField(): this is PropertiesField {
+    return true;
+  }
+
+  public isArrayPropertiesField(): this is ArrayPropertiesField {
+    return true;
+  }
+
+  public isStructPropertiesField(): this is StructPropertiesField {
+    return false;
+  }
+
+  public override clone() {
+    const clone = new NestedContentArrayPropertiesField(this.itemsField.clone(), this);
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
 }

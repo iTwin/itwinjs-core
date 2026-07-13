@@ -71,15 +71,19 @@ function findOrAddMaterialIndexForTexture(textureId: Id64String): number {
     GltfGlobals.gltf.images = [];
     GltfGlobals.gltf.samplers = [{}]; // Just use default sampler values
   }
+  const textures = GltfGlobals.gltf.textures;
+  const images = GltfGlobals.gltf.images;
+  if (textures === undefined || images === undefined)
+    throw new Error("glTF texture state was not initialized.");
 
   const textureInfo = GltfGlobals.iModel.elements.getElement<Texture>(textureId);
   const textureName = textureId + (textureInfo.format === ImageSourceFormat.Jpeg ? ".jpg" : ".png");
   const texturePath = path.join(GltfGlobals.texturesDir, textureName);
   fs.writeFile(texturePath, textureInfo.data, () => { }); // async is fine
 
-  const texture: GltfTexture = { source: GltfGlobals.gltf.images!.length, sampler: 0 };
-  GltfGlobals.gltf.textures.push(texture);
-  GltfGlobals.gltf.images!.push({ uri: textureName });
+  const texture: GltfTexture = { source: images.length, sampler: 0 };
+  textures.push(texture);
+  images.push({ uri: textureName });
 
   const pbrMetallicRoughness: GltfMaterialPbrMetallicRoughness = {
     baseColorTexture: { index: GltfGlobals.gltf.textures.length - 1 },

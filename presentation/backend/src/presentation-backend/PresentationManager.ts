@@ -10,8 +10,8 @@ import { firstValueFrom } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { IModelDb } from "@itwin/core-backend";
 import { BeEvent, Id64Array } from "@itwin/core-bentley";
-import { UnitSystemKey } from "@itwin/core-quantity";
-import { SchemaContext } from "@itwin/ecschema-metadata";
+import { FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaContext, SchemaFormatsProvider } from "@itwin/ecschema-metadata";
 import {
   UnitSystemFormat as CommonUnitSystemFormat,
   ComputeSelectionRequestOptions,
@@ -20,6 +20,7 @@ import {
   ContentFlags,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
+  createContentFormatter,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -59,9 +60,7 @@ import {
   WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
-  buildElementProperties,
-  ContentFormatter,
-  ContentPropertyValueFormatter,
+  createElementPropertiesBuilder,
   deepReplaceNullsToUndefined,
   isSingleElementPropertiesRequestOptions,
   LocalizationHelper,
@@ -75,9 +74,12 @@ import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetV
 import { SelectionScopesHelper } from "./SelectionScopesHelper.js";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils.js";
 
+/* eslint-disable @typescript-eslint/no-deprecated */
 /**
  * Presentation hierarchy cache mode.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export enum HierarchyCacheMode {
   /**
@@ -101,12 +103,16 @@ export enum HierarchyCacheMode {
 /**
  * Configuration for hierarchy cache.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
 
 /**
  * Base interface for all [[HierarchyCacheConfig]] implementations.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyCacheConfigBase {
   mode: HierarchyCacheMode;
@@ -117,6 +123,8 @@ export interface HierarchyCacheConfigBase {
  *
  * @see [Memory cache documentation page]($docs/presentation/advanced/Caching.md#memory-cache)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Memory;
@@ -127,6 +135,8 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
  *
  * @see [Disk cache documentation page]($docs/presentation/advanced/Caching.md#disk-cache)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
@@ -153,6 +163,8 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
  *
  * @see [Hybrid cache documentation page]($docs/presentation/advanced/Caching.md#hybrid-cache)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Hybrid;
@@ -160,6 +172,7 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
   /** Configuration for disk cache used to persist hierarchies. */
   disk?: DiskHierarchyCacheConfig;
 }
+/* eslint-enable @typescript-eslint/no-deprecated */
 
 /**
  * Configuration for content cache.
@@ -185,7 +198,10 @@ export interface PresentationManagerCachingConfig {
    * Hierarchies-related caching options.
    *
    * @see [Hierarchies cache documentation page]($docs/presentation/advanced/Caching.md#hierarchies-cache)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   hierarchies?: HierarchyCacheConfig;
 
   /**
@@ -211,8 +227,9 @@ export interface PresentationManagerCachingConfig {
  * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]]).
  *
  * @public
- * @deprecated in 4.3. The type has been moved to `@itwin/presentation-common` package.
+ * @deprecated in 4.3 - might be removed in next major version. The type has been moved to `@itwin/presentation-common` package.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type UnitSystemFormat = CommonUnitSystemFormat;
 
 /**
@@ -257,7 +274,7 @@ export interface PresentationManagerProps {
    *
    *   which means the assets can be found through a relative path `./assets/` from the `{source file being executed}`.
    *
-   * @deprecated in 4.2. This attribute is not used anymore - the package is not using private assets anymore.
+   * @deprecated in 4.2 - might be removed in next major version. This attribute is not used anymore - the package is not using private assets anymore.
    */
   presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 
@@ -288,8 +305,17 @@ export interface PresentationManagerProps {
   /**
    * A map of default unit formats to use for formatting properties that don't have a presentation format
    * in requested unit system.
+   *
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. Use `formatsProvider` instead. Still used as a fallback if `formatsProvider` is not supplied.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
+
+  /**
+   * A custom formats provider to use for formatting property values with units. Defaults to [SchemaFormatsProvider]($ecschema-metadata) if
+   * not supplied.
+   */
+  formatsProvider?: FormatsProvider;
 
   /**
    * A number of worker threads to use for handling presentation requests. Defaults to `2`.
@@ -301,7 +327,7 @@ export interface PresentationManagerProps {
    * data changes are not tracked at all.
    *
    * @beta
-   * @deprecated in 4.4. The manager now always tracks for iModel data changes without polling.
+   * @deprecated in 4.4 - might be removed in next major version. The manager now always tracks for iModel data changes without polling.
    */
   updatesPollInterval?: number;
 
@@ -328,7 +354,7 @@ export interface PresentationManagerProps {
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
    *
-   * @deprecated in 5.1. [IModelDb.schemaContext]($core-backend) is now used by default instead.
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. By default [IModelDb.schemaContext]($core-backend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
 
@@ -379,7 +405,7 @@ export class PresentationManager {
     this._detail[Symbol.dispose]();
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
@@ -418,9 +444,13 @@ export class PresentationManager {
     return this._detail.getRulesetId(rulesetOrId);
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
+
   /**
    * Retrieves nodes
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodes(
     requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute,
@@ -433,6 +463,8 @@ export class PresentationManager {
   /**
    * Retrieves nodes count
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodesCount(
     requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -443,6 +475,8 @@ export class PresentationManager {
   /**
    * Retrieves hierarchy level descriptor
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodesDescriptor(
     requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -456,6 +490,8 @@ export class PresentationManager {
    * Retrieves paths from root nodes to children nodes according to specified instance key paths. Intersecting paths will be merged.
    * TODO: Return results in pages
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodePaths(
     requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -468,6 +504,8 @@ export class PresentationManager {
    * Retrieves paths from root nodes to nodes containing filter text in their label.
    * TODO: Return results in pages
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getFilteredNodePaths(
     requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -475,6 +513,8 @@ export class PresentationManager {
     const result = await this._detail.getFilteredNodePaths(requestOptions);
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
+
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   /**
    * Get information about the sources of content when building it for specific ECClasses. Sources involve classes of the primary select instance,
@@ -510,9 +550,18 @@ export class PresentationManager {
     return this._detail.getContentSetSize(requestOptions);
   }
 
-  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }): ContentFormatter {
-    const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(imodel), this.props.defaultFormats);
-    return new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem ?? this.props.defaultUnitSystem);
+  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }) {
+    if (!unitSystem) {
+      unitSystem = this.props.defaultUnitSystem ?? "metric";
+    }
+    const schemaContext = this._schemaContextProvider(imodel);
+    const koqPropertyFormatter = new KoqPropertyValueFormatter({
+      schemaContext,
+      formatsProvider: this.props.formatsProvider ?? new SchemaFormatsProvider(schemaContext, unitSystem),
+    });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    koqPropertyFormatter.defaultFormats = this.props.defaultFormats;
+    return createContentFormatter({ propertyValueFormatter: koqPropertyFormatter, unitSystem });
   }
 
   /**
@@ -522,7 +571,7 @@ export class PresentationManager {
   public async getContentSet(
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Item[]> {
-    let items = await this._detail.getContentSet(requestOptions);
+    let items = await this._detail.getContentSet({ ...requestOptions, omitFormattedValues: true });
 
     if (!requestOptions.omitFormattedValues) {
       const formatter = this.createContentFormatter(requestOptions);
@@ -540,7 +589,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
       BackendDiagnosticsAttribute,
   ): Promise<Content | undefined> {
-    const content = await this._detail.getContent(requestOptions);
+    const content = await this._detail.getContent({ ...requestOptions, omitFormattedValues: true });
     if (!content) {
       return undefined;
     }
@@ -602,7 +651,7 @@ export class PresentationManager {
   ): Promise<TParsedContent | undefined> {
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const content = await this.getContent({
       ...optionsNoElementId,
       descriptor: {
@@ -622,9 +671,9 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
   ): Promise<MultiElementPropertiesResponse<TParsedContent>> {
     type TParser = Required<typeof requestOptions>["contentParser"];
-    const { contentParser, batchSize: batchSizeOption, ...contentOptions } = requestOptions;
+    const { contentParser, fieldsSelector: fieldsSelectorOption, batchSize: batchSizeOption, ...contentOptions } = requestOptions;
 
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const workerThreadsCount = this._props.workerThreadsCount ?? 2;
 
     // We don't want to request content for all classes at once - each class results in a huge content descriptor object that's cached in memory
@@ -658,8 +707,18 @@ export class PresentationManager {
       return { elementClasses: ["BisCore:Element"] };
     })();
 
-    const descriptorGetter = async (partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">) =>
-      this.getContentDescriptor({ ...contentOptions, displayType: DefaultContentDisplayTypes.Grid, contentFlags: ContentFlags.ShowLabels, ...partialProps });
+    const descriptorGetter = async (partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">) => {
+      const descr = await this.getContentDescriptor({
+        ...contentOptions,
+        displayType: DefaultContentDisplayTypes.Grid,
+        contentFlags: ContentFlags.ShowLabels,
+        ...partialProps,
+      });
+      if (descr) {
+        descr.fieldsSelector = fieldsSelectorOption?.(descr);
+      }
+      return descr;
+    };
     const contentSetGetter = async (
       partialProps: Pick<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>, "rulesetOrId" | "keys" | "descriptor">,
     ) => this.getContentSet({ ...contentOptions, ...partialProps });
@@ -688,7 +747,7 @@ export class PresentationManager {
       async *iterator() {
         for await (const itemsBatch of eachValueFrom(itemBatches)) {
           const { descriptor, items } = itemsBatch;
-          yield items.map((item) => parser(descriptor, item));
+          yield items.map((item): TParsedContent => parser(descriptor, item));
         }
       },
     };
@@ -719,7 +778,7 @@ export class PresentationManager {
   /**
    * Retrieves available selection scopes.
    * @public
-   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<SelectionScope[]> {
@@ -729,7 +788,7 @@ export class PresentationManager {
   /**
    * Computes selection based on provided element IDs and selection scope.
    * @public
-   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet> {
@@ -739,7 +798,10 @@ export class PresentationManager {
   /**
    * Compares two hierarchies specified in the request options
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo> {
     if (!requestOptions.prev.rulesetOrId && !requestOptions.prev.rulesetVariables) {
       return { changes: [] };

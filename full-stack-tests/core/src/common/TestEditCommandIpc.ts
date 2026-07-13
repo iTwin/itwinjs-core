@@ -8,6 +8,7 @@ import { EditCommandIpc } from "@itwin/editor-common";
 export const testCmdIds = {
   cmd1: "testcommand.1",
   cmd2: "testcommand.2",
+  fullStackTest: "full-stack-tests.fullStackTestCommand",
 };
 
 export interface TestCmdOjb1 {

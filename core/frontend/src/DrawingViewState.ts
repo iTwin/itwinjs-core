@@ -216,6 +216,7 @@ class SectionAttachment {
         is3d: true,
         scale: { x: 1, y: 1 },
       },
+      contours: view.getDisplayStyle3d().settings.contours
     };
 
     this._viewFlagOverrides = { ...view.viewFlags, lighting: false, shadows: false };
@@ -391,6 +392,7 @@ export class DrawingViewState extends ViewState2d {
         FROM bis.SectionDrawing
         WHERE ECInstanceId=${this.baseModelId}`;
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         spatialView = Id64.fromJSON(row.spatialView?.id);
         displaySpatialView = !!row.displaySpatialView;

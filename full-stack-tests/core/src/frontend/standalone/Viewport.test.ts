@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef, FontMap, FontType } from "@itwin/core-common";
 import {
@@ -191,4 +192,45 @@ describe("Viewport", () => {
     // Change useDepthBuffer to false
     test({ useDepthBuffer: false }, { groundBias: -10, transparency: false, useDepthBuffer: false, applyTerrain: false });
   });
+});
+
+describe("Viewport performance", () => {
+  let imodel: IModelConnection;
+  let spatialView: SpatialViewState;
+
+  const viewDiv = createViewDiv();
+
+  before(async () => {
+    await TestUtility.startFrontend(undefined, true);
+    imodel = await TestSnapshotConnection.openFile("test.bim");
+    spatialView = SpatialViewState.createBlank(
+      imodel,
+      new Point3d(),
+      new Point3d(),
+    );
+    spatialView.setStandardRotation(StandardViewId.RightIso);
+  });
+
+  after(async () => {
+    await imodel?.close();
+    await TestUtility.shutdownFrontend();
+  });
+
+  it("changeCategoryDisplay", async () => {
+    const vpView = spatialView.clone();
+    const vp = ScreenViewport.create(viewDiv, vpView);
+    const categories = generateCategoryIds(50_000);
+    const start = Date.now();
+    vp.changeCategoryDisplay(categories, true, undefined, true);
+    const elapsed = Date.now() - start;
+    expect(elapsed).to.be.lessThan(15_000, `changeCategoryDisplay for ${categories.length} categories took ${elapsed} ms`);
+  });
+
+  function generateCategoryIds(count: number): Id64String[] {
+    const ids: Id64String[] = [];
+    for (let i = 1; i <= count; i++)
+      ids.push(`0x${i.toString(16)}`);
+
+    return ids;
+  }
 });

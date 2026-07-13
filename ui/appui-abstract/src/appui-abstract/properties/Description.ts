@@ -86,7 +86,7 @@ export interface PropertyDescription {
   /** Quantity type key used to look up formatting and parsing specs. This is typically either the name of a quantity type used by a tool
    *  or the full name of a KOQ (schema:koq).
    * @alpha
-   * @deprecated in 5.0. Use `kindOfQuantityName` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `kindOfQuantityName` instead.
    */
   quantityType?: string;
   /** [[KindOfQuantity]] full name used to look up [[FormatProps]]

@@ -6,9 +6,9 @@
  * @module Core
  */
 
-import { BeEvent, isDisposable, isIDisposable } from "@itwin/core-bentley";
-import { QueryRowFormat } from "@itwin/core-common";
+import { assert, BeEvent, isDisposable, isIDisposable } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
+import { SchemaView } from "@itwin/ecschema-metadata";
 import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
 import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage.js";
 import { IModelConnectionInitializationHandler, imodelInitializationHandlers } from "../IModelConnectionInitialization.js";
@@ -103,7 +103,7 @@ export class FavoritePropertiesManager implements Disposable {
     }
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
@@ -111,7 +111,7 @@ export class FavoritePropertiesManager implements Disposable {
 
   /**
    * Initialize favorite properties for the provided IModelConnection.
-   * @deprecated in 4.5. Initialization is performed automatically by all async methods and only needed for deprecated [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]].
+   * @deprecated in 4.5 - might be removed in next major version. Initialization is performed automatically by all async methods and only needed for deprecated [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]].
    */
   public initializeConnection = async (imodel: IModelConnection) => {
     const imodelId = imodel.iModelId!;
@@ -355,7 +355,7 @@ export class FavoritePropertiesManager implements Disposable {
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to check for favorite properties. It also checks the more general scopes.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
-   * @deprecated in 4.5. Use [[FavoritePropertiesManager.hasAsync]] instead. This method is not async, therefore it requires early initialization by calling [[FavoritePropertiesManager.initializeConnection]].
+   * @deprecated in 4.5 - might be removed in next major version. Use [[FavoritePropertiesManager.hasAsync]] instead. This method is not async, therefore it requires early initialization by calling [[FavoritePropertiesManager.initializeConnection]].
    */
   public has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean {
     this.validateInitialization(imodel);
@@ -388,7 +388,7 @@ export class FavoritePropertiesManager implements Disposable {
    * @param imodel IModelConnection.
    * @param fields Array of Field's that needs to be sorted.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
-   * @deprecated in 4.5. Use [[FavoritePropertiesManager.sortFieldsAsync]] instead. This method is not async, therefore it requires early initialization by calling [[FavoritePropertiesManager.initializeConnection]].
+   * @deprecated in 4.5 - might be removed in next major version. Use [[FavoritePropertiesManager.sortFieldsAsync]] instead. This method is not async, therefore it requires early initialization by calling [[FavoritePropertiesManager.initializeConnection]].
    */
   public sortFields = (imodel: IModelConnection, fields: Field[]): Field[] => {
     this.validateInitialization(imodel);
@@ -438,44 +438,18 @@ export class FavoritePropertiesManager implements Disposable {
   }
 
   private _getBaseClassesByClass = async (imodel: IModelConnection, neededClasses: Set<string>): Promise<{ [className: string]: string[] }> => {
-    const iTwinId = imodel.iTwinId!;
-    const imodelId = imodel.iModelId!;
-
-    const imodelInfo = getiModelInfo(iTwinId, imodelId);
-    let baseClasses: { [className: string]: string[] };
-    if (this._imodelBaseClassesByClass.has(imodelInfo)) {
-      baseClasses = this._imodelBaseClassesByClass.get(imodelInfo)!;
-    } else {
-      this._imodelBaseClassesByClass.set(imodelInfo, (baseClasses = {}));
+    const schemaView = await imodel.getSchemaView();
+    const getBaseClassNames = (currClass: SchemaView.Class): string[] => {
+      const base = currClass.baseClass;
+      return base ? [base.fullName, ...getBaseClassNames(base)] : [];
     }
-
-    const missingClasses = new Set<string>();
-    neededClasses.forEach((className) => {
-      if (!baseClasses.hasOwnProperty(className)) {
-        missingClasses.add(className);
-      }
-    });
-    if (missingClasses.size === 0) {
-      return baseClasses;
+    const result: { [className: string]: string[] } = {};
+    for (const className of neededClasses) {
+      const currClass = schemaView.findClass(className);
+      assert(!!currClass);
+      result[className] = getBaseClassNames(currClass);
     }
-
-    const query = `
-    SELECT (derivedSchema.Name || ':' || derivedClass.Name) AS "ClassFullName", (baseSchema.Name || ':' || baseClass.Name) AS "BaseClassFullName"
-    FROM ECDbMeta.ClassHasAllBaseClasses baseClassRels
-    INNER JOIN ECDbMeta.ECClassDef derivedClass ON derivedClass.ECInstanceId = baseClassRels.SourceECInstanceId
-    INNER JOIN ECDbMeta.ECSchemaDef derivedSchema ON derivedSchema.ECInstanceId = derivedClass.Schema.Id
-    INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
-    INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
-    WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})`;
-    const reader = imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
-    while (await reader.step()) {
-      const row = reader.current.toRow();
-      if (!(row.classFullName in baseClasses)) {
-        baseClasses[row.classFullName] = [];
-      }
-      baseClasses[row.classFullName].push(row.baseClassFullName);
-    }
-    return baseClasses;
+    return result;
   };
 
   /** Changes field properties priorities to lower than another fields priority

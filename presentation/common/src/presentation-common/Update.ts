@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module Core
  */
@@ -24,6 +25,10 @@ export const UPDATE_FULL = "FULL";
 export interface UpdateInfo {
   [imodel: string]: {
     [rulesetId: string]: {
+      /**
+       * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+       * package for creating hierarchies.
+       */
       hierarchy?: HierarchyUpdateInfo;
       content?: ContentUpdateInfo;
     };
@@ -33,6 +38,8 @@ export interface UpdateInfo {
 /**
  * Information about a required hierarchy update.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type HierarchyUpdateInfo = typeof UPDATE_FULL;
 
@@ -45,12 +52,16 @@ export type ContentUpdateInfo = typeof UPDATE_FULL;
 /**
  * Information about a hierarchy change: insertion, deletion or node update.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
 
 /**
  * Information about node insertion.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface NodeInsertionInfo {
   type: "Insert";
@@ -65,6 +76,8 @@ export interface NodeInsertionInfo {
 /**
  * Information about node deletion.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface NodeDeletionInfo {
   type: "Delete";
@@ -77,6 +90,8 @@ export interface NodeDeletionInfo {
 /**
  * Information about node update.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface NodeUpdateInfo {
   type: "Update";
@@ -89,6 +104,8 @@ export interface NodeUpdateInfo {
 /**
  * Information about hierarchy modification / differences.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyCompareInfo {
   /** A list of hierarchy changes */

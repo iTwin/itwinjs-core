@@ -19,6 +19,7 @@ import {
   ContentRequestOptions,
   ContentSourcesRequestOptions,
   ContentUpdateInfo,
+  createContentFormatter,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -53,13 +54,7 @@ import {
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import {
-  buildElementProperties,
-  ContentFormatter,
-  ContentPropertyValueFormatter,
-  PresentationIpcEvents,
-  RpcRequestsHandler,
-} from "@itwin/presentation-common/internal";
+import { createElementPropertiesBuilder, PresentationIpcEvents, RpcRequestsHandler } from "@itwin/presentation-common/internal";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 import { ensureIModelInitialized, startIModelInitialization } from "./IModelConnectionInitialization.js";
 import { _presentation_manager_ipcRequestsHandler, _presentation_manager_rpcRequestsHandler } from "./InternalSymbols.js";
@@ -72,11 +67,14 @@ import { StreamedResponseGenerator } from "./StreamedResponseGenerator.js";
 /**
  * Data structure that describes IModel hierarchy change event arguments.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface IModelHierarchyChangeEventArgs {
   /** Id of ruleset that was used to create hierarchy. */
   rulesetId: string;
   /** Hierarchy changes info. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   updateInfo: HierarchyUpdateInfo;
   /** Key of iModel that was used to create hierarchy. It matches [[IModelConnection.key]] property. */
   imodelKey: string;
@@ -117,7 +115,10 @@ export type MultipleValuesRequestOptions = Paged<{
 /**
  * Options for requests that retrieve nodes.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
 /**
@@ -151,7 +152,7 @@ export interface PresentationManagerProps {
    * overriden for each request through request parameters. If not set, `IModelApp.quantityFormatter.activeUnitSystem`
    * is used by default.
    *
-   * @deprecated in 4.0. Use [IModelApp.quantityFormatter]($core-frontend) to set the active unit system.
+   * @deprecated in 4.0 - might be removed in next major version. Use [IModelApp.quantityFormatter]($core-frontend) to set the active unit system.
    */
   activeUnitSystem?: UnitSystemKey;
 
@@ -176,7 +177,7 @@ export interface PresentationManagerProps {
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
    *
-   * @deprecated in 5.1. [IModelConnection.schemaContext]($core-frontend) is now used by default instead.
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. By default [IModelConnection.schemaContext]($core-frontend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 
@@ -185,7 +186,11 @@ export interface PresentationManagerProps {
    * in requested unit system.
    *
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
+   *
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. All formats' logic is now handled by [IModelApp.formatsProvider]($core-frontend). Until the prop is removed, when
+   * supplied, this map will be used as a fallback if IModelApp's formats provider doesn't return anything for requested format.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
 }
 
@@ -209,12 +214,17 @@ export class PresentationManager implements Disposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _schemaContextProvider: (imodel: IModelConnection) => SchemaContext;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _defaultFormats?: FormatsMap;
   private _ipcRequestsHandler?: IpcRequestsHandler;
 
   /**
-   * An event raised when hierarchies created using specific ruleset change
+   * An event raised when hierarchies created using specific ruleset change.
+   *
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public onIModelHierarchyChanged = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
 
   /**
@@ -225,7 +235,7 @@ export class PresentationManager implements Disposable {
   /**
    * Get / set active unit system used to format property values with units.
    *
-   * @deprecated in 4.0. `IModelApp.quantityFormatter` should be used to get/set the active unit system. At the moment
+   * @deprecated in 4.0 - might be removed in next major version. `IModelApp.quantityFormatter` should be used to get/set the active unit system. At the moment
    * [[PresentationManager]] allows overriding it, but returns `IModelApp.quantityFormatter.activeUnitSystem` if override
    * is not set.
    */
@@ -250,6 +260,7 @@ export class PresentationManager implements Disposable {
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._schemaContextProvider = props?.schemaContextProvider ?? ((imodel: IModelConnection) => imodel.schemaContext);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._defaultFormats = props?.defaultFormats;
 
     if (IpcApp.isValid) {
@@ -274,7 +285,7 @@ export class PresentationManager implements Disposable {
     }
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
@@ -304,7 +315,9 @@ export class PresentationManager implements Disposable {
         if (updateInfo.content) {
           this.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.content, imodelKey });
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         if (updateInfo.hierarchy) {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           this.onIModelHierarchyChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.hierarchy, imodelKey });
         }
       }
@@ -398,7 +411,13 @@ export class PresentationManager implements Disposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
-  /** Returns an iterator that polls nodes asynchronously. */
+  /* eslint-disable @typescript-eslint/no-deprecated */
+
+  /**
+   * Returns an iterator that polls nodes asynchronously.
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getNodesIterator(
     requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
@@ -421,15 +440,19 @@ export class PresentationManager implements Disposable {
   }
 
   /**
-   * Retrieves nodes
-   * @deprecated in 4.5. Use [[getNodesIterator]] instead.
+   * Retrieves nodes.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getNodesIterator]] instead.
    */
   public async getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node[]> {
     const result = await this.getNodesIterator(requestOptions);
     return collect(result.items);
   }
 
-  /** Retrieves nodes count. */
+  /**
+   * Retrieves nodes count.
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number> {
     startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
@@ -439,7 +462,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves total nodes count and a single page of nodes.
-   * @deprecated in 4.5. Use [[getNodesIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getNodesIterator]] instead.
    */
   public async getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{ count: number; nodes: Node[] }> {
     const result = await this.getNodesIterator(requestOptions);
@@ -452,6 +475,8 @@ export class PresentationManager implements Disposable {
   /**
    * Retrieves hierarchy level descriptor.
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodesDescriptor(
     requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
@@ -468,7 +493,11 @@ export class PresentationManager implements Disposable {
     }
   }
 
-  /** Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged. */
+  /**
+   * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getNodePaths(
     requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
@@ -479,7 +508,11 @@ export class PresentationManager implements Disposable {
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
-  /** Retrieves paths from root nodes to nodes containing filter text in their label. */
+  /**
+   * Retrieves paths from root nodes to nodes containing filter text in their label.
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getFilteredNodePaths(
     requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
@@ -488,6 +521,8 @@ export class PresentationManager implements Disposable {
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
+
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   /**
    * Get information about the sources of content when building it for specific ECClasses. Sources involve classes of the primary select instance,
@@ -545,13 +580,16 @@ export class PresentationManager implements Disposable {
       ...(firstPageSize ? { paging: { ...requestOptions.paging, size: firstPageSize } } : undefined),
     });
 
-    let contentFormatter: ContentFormatter | undefined;
+    let contentFormatter: ReturnType<typeof createContentFormatter> | undefined;
     if (!requestOptions.omitFormattedValues) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
-      contentFormatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem,
-      );
+      const schemaContext = this._schemaContextProvider(requestOptions.imodel);
+      const unitSystem = requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem;
+      const koqPropertyFormatter = new KoqPropertyValueFormatter({
+        schemaContext,
+        formatsProvider: IModelApp.formatsProvider,
+      });
+      koqPropertyFormatter.defaultFormats = this._defaultFormats;
+      contentFormatter = createContentFormatter({ propertyValueFormatter: koqPropertyFormatter, unitSystem });
     }
 
     let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
@@ -615,7 +653,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves content which consists of a content descriptor and a page of records.
-   * @deprecated in 4.5. Use [[getContentIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getContentIterator]] instead.
    */
   public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -624,7 +662,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves content set size and content which consists of a content descriptor and a page of records.
-   * @deprecated in 4.5. Use [[getContentIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getContentIterator]] instead.
    */
   public async getContentAndSize(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
@@ -670,7 +708,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves distinct values of specific field from the content.
-   * @deprecated in 4.5. Use [[getDistinctValuesIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getDistinctValuesIterator]] instead.
    */
   public async getPagedDistinctValues(
     requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
@@ -692,7 +730,7 @@ export class PresentationManager implements Disposable {
     startIModelInitialization(requestOptions.imodel);
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const iter = await this.getContentIterator({
       ...optionsNoElementId,
       descriptor: {
@@ -778,7 +816,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves display label definition of specific items.
-   * @deprecated in 4.5. Use [[getDisplayLabelDefinitionsIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getDisplayLabelDefinitionsIterator]] instead.
    */
   public async getDisplayLabelDefinitions(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,

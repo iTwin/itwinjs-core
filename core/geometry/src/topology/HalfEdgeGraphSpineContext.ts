@@ -457,6 +457,8 @@ export class HalfEdgeGraphSpineContext {
       const nodeB = nodeA.faceSuccessor;
       nodeA.setMask(HalfEdgeMask.BOUNDARY_EDGE);
       nodeB.setMask(HalfEdgeMask.BOUNDARY_EDGE);
+      nodeA.setMask(HalfEdgeMask.PRIMARY_EDGE);
+      nodeB.setMask(HalfEdgeMask.PRIMARY_EDGE);
       if (pPreviousB === undefined) {
         pFirstA = nodeA;
       } else {
@@ -489,7 +491,7 @@ export class HalfEdgeGraphSpineContext {
     }
   }
   private static _regularize1 = true;
-  private static _regularize2 = false;
+  private static _regularize2 = true; // This was false.  why?  EDL April 2025
   /**
    * Triangulate the graph for the edges that have been inserted.
    * @param applyParity if true ()

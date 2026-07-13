@@ -43,7 +43,7 @@ export class PropertyCategories extends SchemaItems {
       const newPropCategory = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createPropertyCategory.bind(schema), propertyCategoryProps);
       return newPropCategory.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, propertyCategoryProps.name!, schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, propertyCategoryProps.name ?? "Unknown", schemaKey), e);
     }
   }
 
@@ -51,7 +51,7 @@ export class PropertyCategories extends SchemaItems {
     try {
       const propertyCategory = await this.getSchemaItem(propCategoryKey, MutablePropertyCategory);
       propertyCategory.setPriority(priority);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetPropertyCategoryPriority, new SchemaItemId(this.schemaItemType, propCategoryKey), e);
     }
   }

@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
-import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
+import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, Point4d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
@@ -85,7 +85,7 @@ class EllipsoidProjection extends MapTileProjection {
   public getPoint(u: number, v: number, height: number, result?: Point3d): Point3d {
     const angles = this._patch.uvFractionToAngles(u, v, height, EllipsoidProjection._scratchAngles);
     const ray = this._patch.anglesToUnitNormalRay(angles, EllipsoidProjection._scratchRay);
-    return Point3d.createFrom(ray!.origin, result);
+    return Point3d.createFrom(expectDefined(ray).origin, result);
   }
   public override get ellipsoidPatch() { return this._patch; }
 }
@@ -98,7 +98,7 @@ export class PlanarProjection extends MapTileProjection {
   constructor(patch: PlanarTilePatch, heightRange?: Range1d) {
     super();
     this.transformFromLocal = Transform.createOriginAndMatrix(patch.corners[0], Matrix3d.createRigidHeadsUp(patch.normal, AxisOrder.ZYX));
-    const planeCorners = this.transformFromLocal.multiplyInversePoint3dArray([patch.corners[0], patch.corners[1], patch.corners[2], patch.corners[3]])!;
+    const planeCorners = expectDefined(this.transformFromLocal.multiplyInversePoint3dArray([patch.corners[0], patch.corners[1], patch.corners[2], patch.corners[3]]));
     this.localRange = Range3d.createArray(planeCorners);
     this.localRange.low.z += heightRange ? heightRange.low : 0;
     this.localRange.high.z += heightRange ? heightRange.high : 0;
@@ -125,6 +125,9 @@ const scratchViewZ = Vector3d.create();
 const scratchPoint = Point3d.create();
 const scratchClipPlanes = [ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint)];
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
+const scratchXRange = Range1d.createNull();
+const scratchYRange = Range1d.createNull();
+const scratchPoint4d = Point4d.create();
 
 /** A [[Tile]] belonging to a [[MapTileTree]] representing a rectangular region of a map of the Earth.
  * @public
@@ -198,14 +201,22 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public getRangeCorners(result: Point3d[]): Point3d[] {
-    return this._patch instanceof PlanarTilePatch ? this._patch.getRangeCorners(this.heightRange!, result) : this.range.corners(result);
+    return this._patch instanceof PlanarTilePatch ? this._patch.getRangeCorners(expectDefined(this.heightRange), result) : this.range.corners(result);
   }
 
   /** @internal */
   public override getSizeProjectionCorners(): Point3d[] | undefined {
-    // Use only the first 4 corners -- On terrain tiles the height is initially exagerated to world height range which can cause excessive tile loading.
-    const rangeCorners = this.getRangeCorners(scratchCorners);
-    return rangeCorners.slice(0, 4);
+    if (this._patch instanceof PlanarTilePatch) {
+      // Use only the first 4 corners -- On terrain tiles the height is initially exaggerated to world height range which can cause excessive tile loading.
+      const rangeCorners = this._patch.getRangeCorners(expectDefined(this.heightRange), scratchCorners);
+      return rangeCorners.slice(0, 4);
+    }
+    // For globe (non-planar) tiles, use actual surface points from _cornerRays instead of the inflated ECEF AABB.
+    // The AABB extends deep into the Earth's interior, causing unreliable pixel-size calculations, especially on narrow viewports.
+    if (this._cornerRays)
+      return [this._cornerRays[0].origin, this._cornerRays[1].origin, this._cornerRays[3].origin, this._cornerRays[2].origin];
+
+    return this.range.corners(scratchCorners).slice(0, 4);
   }
 
   /** @internal */
@@ -265,7 +276,7 @@ export class MapTile extends RealityTile {
 
     const heightRange = (this.heightRange === undefined) ? Range1d.createXX(-1, 1) : this.heightRange;
     const lows = [], highs = [], reorder = [0, 1, 3, 2, 0];
-    const cornerRays = this._cornerRays!;
+    const cornerRays = expectDefined(this._cornerRays);
     if (this._patch instanceof PlanarTilePatch) {
       const normal = this._patch.normal;
       for (let i = 0; i < 5; i++) {
@@ -336,7 +347,7 @@ export class MapTile extends RealityTile {
 
       return ClipVector.createCapture([clipPrimitive]);
     } else {
-      return ClipVector.createCapture([ClipShape.createShape(points)!]);
+      return ClipVector.createCapture([expectDefined(ClipShape.createShape(points))]);
     }
   }
 
@@ -494,6 +505,54 @@ export class MapTile extends RealityTile {
     return this.isContentCulled(args);
   }
 
+  /** The default pixel-size calculation for reality tiles uses the geometric mean of the projected
+   * x and y ranges: `sqrt(xRange * yRange)`. For non-planar globe tiles, the projected surface corners
+   * can be significantly anisotropic, causing the geometric mean to underestimate screen coverage.
+   * Additionally, the projected pixel size scales linearly with viewport width-- on narrow viewports
+   * the reduced scale can push the geometric mean below `maximumSize`, stopping refinement at depth 3
+   * before reaching the planar imagery tiles at depth 8+.
+   *
+   * This override uses `max(xRange, yRange)` for non-planar tiles, which correctly reflects the tile's
+   * actual screen extent for LOD decisions.
+   * @internal
+   */
+  public override computeVisibilityFactor(args: TileDrawArgs): number {
+    if (this.isPlanar)
+      return super.computeVisibilityFactor(args);
+
+    // Let the base class handle frustum test and structural tiles.
+    const baseResult = super.computeVisibilityFactor(args);
+    if (baseResult <= 0)
+      return baseResult;
+
+    // baseResult > 0 means the tile passed the frustum test but pixel size used geometric mean.
+    // Recompute using max dimension of projected surface corners for a more accurate estimate.
+    const corners = this.getSizeProjectionCorners();
+    if (!corners || 0 === this.maximumSize)
+      return baseResult;
+
+    // Project corners to view space. For MapTileTree, args.location is identity,
+    // so the world-to-view transform applies directly.
+    const tileToView = args.worldToViewMap.transform0;
+    scratchXRange.setNull();
+    scratchYRange.setNull();
+
+    for (const corner of corners) {
+      const viewCorner = tileToView.multiplyPoint3d(corner, 1, scratchPoint4d);
+      if (viewCorner.w < 0)
+        return baseResult; // corner behind eye, fall back to base result
+
+      scratchXRange.extendX(viewCorner.x / viewCorner.w);
+      scratchYRange.extendX(viewCorner.y / viewCorner.w);
+    }
+
+    const maxDimension = Math.max(scratchXRange.length(), scratchYRange.length());
+    if (maxDimension < 1e-3)
+      return baseResult;
+
+    return this.maximumSize / args.context.adjustPixelSizeForLOD(maxDimension);
+  }
+
   /** @internal */
   public override isContentCulled(args: TileDrawArgs): boolean {
     return FrustumPlanes.Containment.Outside === args.frustumPlanes.computeContainment(this.getRangeCorners(scratchCorners));
@@ -535,7 +594,9 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public getClipShape(): Point3d[] {
-    return (this._patch instanceof PlanarTilePatch) ? this._patch.getClipShape() : [this._cornerRays![0].origin, this._cornerRays![1].origin, this._cornerRays![3].origin, this._cornerRays![2].origin];
+    if (undefined === this._cornerRays)
+      throw new Error("MapTile.getClipShape called before corner rays were set");
+    return (this._patch instanceof PlanarTilePatch) ? this._patch.getClipShape() : [this._cornerRays[0].origin, this._cornerRays[1].origin, this._cornerRays[3].origin, this._cornerRays[2].origin];
   }
 
   /** @internal */
@@ -581,12 +642,12 @@ export class MapTile extends RealityTile {
     if (undefined === this._heightRange)
       this._heightRange = Range1d.createXX(minHeight, maxHeight);
     else {
-      this._heightRange.low = Math.max(this.heightRange!.low, minHeight);
-      this._heightRange.high = Math.min(this.heightRange!.high, maxHeight);
+      this._heightRange.low = Math.max(expectDefined(this.heightRange).low, minHeight);
+      this._heightRange.high = Math.min(expectDefined(this.heightRange).high, maxHeight);
     }
 
     if (this.rangeCorners && this._patch instanceof PlanarTilePatch)
-      this._patch.getRangeCorners(this.heightRange!, this.rangeCorners);
+      this._patch.getRangeCorners(expectDefined(this.heightRange), this.rangeCorners);
   }
 
   /** Obtain a [[MapTileProjection]] to project positions within this tile's area into 3d space. */

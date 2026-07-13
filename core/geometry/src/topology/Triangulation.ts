@@ -7,6 +7,7 @@
  * @module Topology
  */
 
+import { assert } from "@itwin/core-bentley";
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Geometry } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -24,6 +25,7 @@ import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "./InsertA
 
 /**
  * Static methods for triangulating polygons and points.
+ * * Tolerances and tolerance usage are currently inconsistent, and not exposed to callers.
  * * @internal
  */
 export class Triangulator {
@@ -51,29 +53,36 @@ export class Triangulator {
     c.z = f.z;
   }
   /**
-   * * nodeA is a given node
-   * * nodeA1 is its nodeA.faceSuccessor
-   * * nodeA2 is nodeA1.faceSuccessor, i.e. 3rd node of triangle A
-   * * nodeB  is nodeA.edgeMate, i.e. a node in the "other" triangle at nodeA's edge
-   * * nodeB1 is nodeB.faceSuccessor
-   * * nodeB2 is nodeB1.faceSuccessor, i.e the 3rd node of triangle B
-   * Construct (as simple doubles, to avoid object creation) xy vectors from:
-   * * (ux,uy): nodeA to nodeA1, i.e. the shared edge
-   * * (vx,vy): nodeA to nodeA2,
-   * * (wx,wy): nodeA to nodeB2
-   * * this determinant is positive if nodeA is "in the circle" of nodeB2, nodeA1, nodeA2
-   * * Return true if clearly positive
-   * * Return false if clearly negative or almost zero.
-   * @param nodeA node on the diagonal edge of candidate for edge flip.
+   * Given a node in triangle A on the edge shared by triangle B, test whether the far vertex of B lies inside the circumcircle of A.
+   * @param nodeA node on the shared edge between triangles A and B.
+   * @return The following are equivalent:
+   *   * return true
+   *   * the computed determinant is strongly positive (greater than epsilon)
+   *   * the far vertex of B lies strictly inside the circumcircle of A
+   *   * the quad AB fails the Delaunay condition
+   *   * the quad CD obtained from AB by switching to the other diagonal satisfies the Delaunay condition
+   *   * to satisfy Delaunay, the caller should flip the diagonal of AB (obtaining CD)
    */
   public static computeCircumcircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean {
-    // Assume triangle A1,A2,B2 is ccw.
-    // Shift the triangle to the origin (by negated A coords).
-    // The Delaunay condition is computed by projecting the origin and the shifted triangle
-    // points up to the paraboloid z = x*x + y*y. Due to the radially symmetric convexity of
-    // this surface and the ccw orientation of this triangle, "A is inside the circumcircle of triangle A1,A2,B2"
-    // is equivalent to "the volume of the parallelepiped formed by the projected points is
-    // negative, as computed by the triple product."
+    // Confusingly enough, what we are actually doing here is testing the quad CD.
+    // * CD satisfies the Delaunay condition if and only if AB does not.
+    // * So let AB be convex, with CCW triangles (A,A1,A2) and (B,B1,B2) where A and B are edge mates.
+    //   Then CD consists of two CCW triangles that share an edge between the vertices at A2 and B2.
+    //   We only have to test one of the two triangles of CD---whether its circumcircle contains the far vertex.
+    //   By a beautiful theorem (Corollary 5.7.1 in O'Rourke, Computational Geometry in C, 2nd ed.), the following
+    //   are equivalent based on the radial symmetry and convexity of the paraboloid P defined by z = x*x + y*y,
+    //   and the CCW triangle orientation:
+    //   * A is outside the circumcircle of the CCW triangle with vertices (A1,A2,B2).
+    //   * The volume of the tetrahedron (determinant) formed by the projections of the quad points to P is negative.
+    //   * The volume of the parallelepiped (triple product) formed by vectors u=A1-A, v=A2-A, w=B2-A projected to P is negative.
+    //   * The triple product u.(v x w) is negative.
+    //   * The triple product w.(v x u) is positive <-- this is what we compute below.
+    //   * The quad CD satisfies the Delaunay condition.
+    //   * The quad AB fails the Delaunay condition.
+    //   * Return true.
+    // * When AB is non-convex, CD is convex and consists of a large CCW triangle that contains the other CW triangle.
+    //   This containment causes the triple product to be positive, which implies CD fails (and thus AB satisfies)
+    //   the Delaunay condition, so this method returns false.
     const nodeA1 = nodeA.faceSuccessor;
     const nodeA2 = nodeA1.faceSuccessor;
     if (nodeA2.faceSuccessor !== nodeA)
@@ -98,7 +107,8 @@ export class Triangulator {
     const q = Geometry.tripleProduct(
       wx, wy, tx,
       vx, vy, ty,
-      ux, uy, tz);
+      ux, uy, tz,
+    );
     if (q < 0)
       return false;
     const denom = Math.abs(wx * vy * tz) + Math.abs(wy * ty * ux) + Math.abs(tx * vx * uy)
@@ -109,10 +119,13 @@ export class Triangulator {
   /**
    *  *  Visit each node of the graph array
    *  *  If a flip would be possible, test the results of flipping using circumcircle condition
-   *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
+   *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited.
+   * * @returns number of edges flipped.
    */
   public static flipTriangles(graph: HalfEdgeGraph): number {
-    const edgeSet = MarkedEdgeSet.create(graph)!;
+    const edgeSet = MarkedEdgeSet.create(graph);
+    if (!edgeSet)
+      return 0;
     for (const node of graph.allHalfEdges)
       edgeSet.addToSet(node);
     const numFlip = this.flipTrianglesInEdgeSet(graph, edgeSet);
@@ -155,13 +168,12 @@ export class Triangulator {
   }
 
   /**
-   * Create a graph from an xy-triangulation of the given points.
+   * Create a graph from an xy-triangulation of the given points. The triangulation is Delaunay.
    * * The outer boundary of the graph is the xy-convex hull of the points; it is marked `HalfEdgeMask.EXTERIOR`.
-   * @param points the points to triangulate
+   * @param points the points to triangulate.
    * @param zRule optional rule for updating the z-coordinate of an existing vertex when an xy-duplicate point is
    * inserted into the graph. Default is `InsertedVertexZOptions.ReplaceIfLarger`.
-   * @param pointTolerance optional xy-distance tolerance for equating vertices. Default is
-   * `Geometry.smallMetricDistance`.
+   * @param pointTolerance optional xy-distance tolerance for equating vertices. Default is `Geometry.smallMetricDistance`.
    */
   public static createTriangulatedGraphFromPoints(
     points: Point3d[],
@@ -175,16 +187,14 @@ export class Triangulator {
     Point3dArray.computeConvexHullXY(points, hull, interior, true);
     const graph = new HalfEdgeGraph();
     const context = InsertAndRetriangulateContext.create(graph, pointTolerance);
+    assert(context !== undefined, "expect defined since a newly created graph has masks available");
     const face0 = Triangulator.createFaceLoopFromCoordinates(graph, hull, true, true);
     if (undefined === face0)
       return undefined;
     // HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
-    let numInsert = 0;
-    for (const p of interior) {
+    for (const p of interior)
       context.insertAndRetriangulate(p, zRule);
-      numInsert++; // eslint-disable-line @typescript-eslint/no-unused-vars
-    }
-    if (face0.countEdgesAroundFace() > 3) // all vertices are on the hull (or duplicates of them)
+    if (face0.countEdgesAroundFace() > 3) // no strictly interior vertices to split the hull polygon, so triangulate it
       return Triangulator.createTriangulatedGraphFromSingleLoop(hull);
     return graph;
   }
@@ -268,12 +278,15 @@ export class Triangulator {
    * * A random node is checked for each face; if it has the `HalfEdgeMask.EXTERIOR` mask, the face is ignored.
    * @param useLocalCoords whether to transform each face into local coords before triangulating.
    * This is useful if the graph has z-coordinates.
+   * @param noFlips if false (default) perform edge-flipping after each ear cut for better aspect ratio.
+   * Ignored if `useLocalCoords` is true, in which case flipping is not performed to avoid out-of-plane effects.
    * @returns whether all indicated faces were triangulated successfully
    * @see [[triangulateAllPositiveAreaFaces]]
    */
-  public static triangulateAllInteriorFaces(graph: HalfEdgeGraph, useLocalCoords?: boolean): boolean {
+  public static triangulateAllInteriorFaces(graph: HalfEdgeGraph, useLocalCoords?: boolean, noFlips?: boolean): boolean {
     const seeds = graph.collectFaceLoops();
     const visited = useLocalCoords ? graph.grabMask() : HalfEdgeMask.NULL_MASK;
+    noFlips = useLocalCoords || noFlips; // don't flip if using local coords
     let localToWorld: Transform | undefined;
     let nodes: Point3d[] | undefined;
     let nodeCount = 0;
@@ -288,8 +301,7 @@ export class Triangulator {
           localToWorld = this._workTransform = FrameBuilder.createRightHandedLocalToWorld(nodes, this._workTransform);
           localToWorld?.multiplyInversePoint3dArrayInPlace(nodes);
         }
-        // don't flip triangles if using local coords; an edge of this face can be flipped out of plane if the neighboring triangle is non-coplanar.
-        if (!Triangulator.triangulateSingleFace(graph, face, useLocalCoords))
+        if (!Triangulator.triangulateSingleFace(graph, face, noFlips))
           numFail++;
         if (localToWorld && nodes) {
           for (let iNewNode = nodeCount; iNewNode < graph.countNodes(); ++iNewNode)
@@ -303,7 +315,7 @@ export class Triangulator {
   }
 
   /**
-   * Triangulate the polygon made up of by a series of points.
+   * Triangulate the polygon made up of by a series of points. The triangulation is Delaunay.
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops.
    */
@@ -446,9 +458,13 @@ export class Triangulator {
     graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean,
   ): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
-    return Triangulator.maskAndOrientNewFaceLoop(graph, base, returnPositiveAreaLoop,
+    return Triangulator.maskAndOrientNewFaceLoop(
+      graph,
+      base,
+      returnPositiveAreaLoop,
       HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE,
-      markExterior ? HalfEdgeMask.EXTERIOR : HalfEdgeMask.NULL_MASK);
+      markExterior ? HalfEdgeMask.EXTERIOR : HalfEdgeMask.NULL_MASK,
+    );
   }
   /**
    * create a circular doubly linked list of internal and external nodes from polygon points.
@@ -499,31 +515,32 @@ export class Triangulator {
   /**
    * Perform 0, 1, or more edge flips to improve aspect ratio just behind an ear that was just cut.
    * @param ear the triangle corner which just served as the ear node.
-   * @returns the node at the back corner after flipping."appropriately positioned" node for the usual advance to ear.faceSuccessor.edgeMate.faceSuccessor.
+   * @returns the node at the back corner after flipping, "appropriately positioned" for the usual advance to `ear.faceSuccessor.edgeMate.faceSuccessor`.
    */
-  private static doPostCutFlips(ear: HalfEdge) {
-    //    B is the ear -- inside a (probably newly created) triangle ABC
-    //    CA is the recently added cut edge.
-    //    AB is the candidate to be flipped.
-    //    triangle B1 A1 D is on the other side of AB
-    //    The condition for flipping is:
-    //           ! both triangles must be TRIANGULATED_NODE_MASK
-    //           ! circumcircle condition flags D as in the circle of ABC
-    //     after flip, node A moves to the vertex of D, and is the effective "ear",  with the cap edge C A1
-    //      after flip, consider the A1 D (whose nodes are A1 and flipped A!!!)
+  private static doPostCutFlips(ear: HalfEdge): HalfEdge {
+    // B0 is at the ear vertex, inside ear triangle T = A0 B0 C.
+    // C is the recently cut edge added to form the ear cap.
+    // A0/B1 is the quad diagonal edge candidate to be flipped.
+    // Triangle T' = B1 A1 D1 is on the other side of the quad diagonal.
+    // The conditions for flipping are:
+    //   * both triangles T, T' must be masked with TRIANGULATED_FACE
+    //   * the Delaunay circumcircle condition flags the vertex at D1 as in the circumcircle of T
+    // After flip, node A0 becomes D1.vertexSuccessor, and is the effective "ear", with (same) cap edge C.
+    // The next quad diagonal edge candidate to consider in the loop is A1/D0.
     //
-    //                           *                                 *
-    //                       . C0|                             . / |
-    //                  .        |                        .  C0 /B1|
-    //               .           |                     .       /v  |
-    //           .              ^|                 .          /    |
-    //       .  A0 ---->       B0|             .            /     ^|
-    //   *=======================*   -->   * A1            /     B0*
-    //     \ A1     <----   B1/              \            /     /
-    //       \             /                   \        /    /
-    //         \         /                       \    ^/ D1/
-    //           \  D1 /                           \A0/  /
-    //              *                                 *
+    //                         *                                 *
+    //                     .  C|                             . / |
+    //                  .      |                          .  C/B1|
+    //              .          |                      .      /   |
+    //          .              |                  .         /    |
+    //      .  A0  ---->     B0|              .            /     |
+    //   *=====================*    -->    * A1           /   B0 *
+    //    \ A1     <----  B1 /              \            /     /
+    //      \              /                  \         /    /
+    //        \          /                      \      /   /
+    //          \      /                          \ A0/D1/
+    //         D0 \D1/                           D0 \/ /
+    //             *                                 *
     let b0 = ear;
     let a0 = b0.facePredecessor;
     let b1 = a0.edgeMate;
@@ -537,6 +554,7 @@ export class Triangulator {
       b0 = a0;
       a0 = b0.facePredecessor;
       b1 = a0.edgeMate;
+      // Move to next quad with diagonal a0/b1
     }
     return b0;
   }
@@ -545,7 +563,8 @@ export class Triangulator {
    * Main ear slicing loop which triangulates the face starting at `ear`.
    * @param graph containing graph to receive new edges
    * @param ear sector at which to start triangulation of the containing face.
-   * @param noFlips if false (default) perform edge-flipping after each ear cut for better aspect ratio. Pass true if your graph isn't planar.
+   * @param noFlips if false (default) perform edge-flipping after each ear cut for better aspect ratio.
+   * Pass true if your graph isn't planar; otherwise, an edge can be flipped out of plane if the neighboring triangle is non-coplanar.
    */
   private static triangulateSingleFace(graph: HalfEdgeGraph, ear?: HalfEdge, noFlips: boolean = false): boolean {
     if (!ear) {
@@ -573,7 +592,7 @@ export class Triangulator {
       // The earcut algorithm does not support self intersections, however we do handle the re-entrant triangle
       // case by pinching a bridge/hole into existence when vertices i and i+3 live in the same face loop, but not
       // the same vertex loop. Earcut whittles larger faces down into triangles, so this is the only case needed.
-      if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex(pred)) {
+      if (Triangulator.isAlmostEqualXAndYXY(next2, pred.x, pred.y) && !next2.findAroundVertex(pred)) {
         const next3 = next2.faceSuccessor;
         const hasBridgeEdgeOrHoleInside = this.nodeInTriangle(pred, ear, next, next3);
         if (hasBridgeEdgeOrHoleInside) {
@@ -657,7 +676,7 @@ export class Triangulator {
   private static findAroundOrAtVertex(a: HalfEdge, b: HalfEdge): boolean {
     if (a.findAroundVertex(b))
       return true;
-    return Geometry.isAlmostEqualXAndY(a, b);
+    return Triangulator.isAlmostEqualXAndYXY(a, b.x, b.y);
   }
 
   // for reuse over all calls to isEar ....
@@ -836,7 +855,7 @@ export class Triangulator {
   }
 
   /**
-   * Check if a point lies within a triangle.
+   * Check if a point lies within or on a triangle.
    * * In other words, the areas of the 3 triangles formed by an edge of abc and p all have zero or positive area.
    */
   private static pointInTriangle(ax: number, ay: number, bx: number, by: number, cx: number, cy: number, px: number, py: number) {
@@ -858,8 +877,7 @@ export class Triangulator {
     return 0.5 * ((q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y));
   }
 
-  /** signed area of a triangle, with small positive corrected to zero by relTol
-  */
+  /** signed area of a triangle, with small positive corrected to zero by relTol */
   private static signedTolerancedCCWTriangleArea(p: HalfEdge, q: HalfEdge, r: HalfEdge, relTol: number = 1.0e-12) {
     const ux = q.x - p.x;
     const uy = q.y - p.y;
@@ -1074,8 +1092,11 @@ class AssembleXYZXYZChains extends PointStreamXYZXYZHandlerBase {
       this._baseNode = this._nodeC;
       this._nodeB = this._baseNode.faceSuccessor;
     } else {
-      HalfEdge.pinch(this._nodeB!, this._nodeC);
-      this._nodeB = this._nodeC.faceSuccessor;
+      assert(this._nodeB !== undefined, "expect defined because baseNode and nodeB are un/defined in tandem");
+      if (this._nodeB) {
+        HalfEdge.pinch(this._nodeB, this._nodeC);
+        this._nodeB = this._nodeC.faceSuccessor;
+      }
     }
   }
   public override endChain(chainData: MultiLineStringDataVariant, isLeaf: boolean): void {

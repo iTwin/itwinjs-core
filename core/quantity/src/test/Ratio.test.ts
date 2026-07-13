@@ -1,5 +1,6 @@
 import { assert, describe, expect, it } from "vitest";
 import { Format } from "../Formatter/Format";
+import { FormatType } from "../Formatter/FormatEnums";
 import { Formatter } from "../Formatter/Formatter";
 
 import { FormatterSpec } from "../Formatter/FormatterSpec";
@@ -15,6 +16,16 @@ describe("Ratio format tests", () => {
     ratio: string;
     precision?: number;
     parseError?: ParseError;
+  }
+
+  async function createFormatAndSpecs(formatName: string, formatProps: FormatProps, persistenceUnitName: string = "Units.M_PER_M_LENGTH_RATIO") {
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format(formatName);
+    await format.fromJSON(unitsProvider, formatProps);
+    const persistenceUnit = await unitsProvider.findUnitByName(persistenceUnitName);
+    const formatterSpec = await FormatterSpec.create(formatName, format, unitsProvider, persistenceUnit);
+    const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
+    return { format, formatterSpec, parserSpec, persistenceUnit, unitsProvider };
   }
 
   async function testRatioType(ratioType: string, testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName) {
@@ -44,8 +55,7 @@ describe("Ratio format tests", () => {
     const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit); // persistence unit
 
     for (const entry of testData) {
-      if (null != entry.precision)
-        ratioFormatterSpec.format.precision = entry.precision;
+      if (null != entry.precision) ratioFormatterSpec.format.precision = entry.precision;
       const resultRatio = Formatter.formatQuantity(entry.magnitude, ratioFormatterSpec);
       expect(resultRatio).to.equal(entry.ratio);
 
@@ -54,10 +64,8 @@ describe("Ratio format tests", () => {
         assert.fail(`Expected a parsed from ratio string ${entry.ratio}`);
       }
 
-      if (null != entry.precision)
-        expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.magnitude}`).closeTo(entry.magnitude, 4.999 * (0.1 ** entry.precision));
-      else
-        expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.magnitude}`).closeTo(entry.magnitude, 4.999 * (0.1 ** defaultPrecision));
+      if (null != entry.precision) expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.magnitude}`).closeTo(entry.magnitude, 4.999 * 0.1 ** entry.precision);
+      else expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.magnitude}`).closeTo(entry.magnitude, 4.999 * 0.1 ** defaultPrecision);
     }
   }
 
@@ -116,7 +124,6 @@ describe("Ratio format tests", () => {
         { magnitude: 0.2857, ratio: "143:500" },
         { magnitude: 0.25, ratio: "1:4" },
         { magnitude: 0.6667, ratio: "667:1000" },
-
       ];
       await testRatioType("UseGreatestCommonDivisor", testData);
     });
@@ -141,26 +148,17 @@ describe("Ratio format tests", () => {
       await testRatioType("OneToN", testData);
     });
 
-    it("ratioType precision test | NToOne", async () => {
+    it("ratioType precision test | NToOne and ValueBased", async () => {
       const testData: TestData[] = [
         { magnitude: 3, ratio: "3:1", precision: 0 },
         { magnitude: 3, ratio: "3:1", precision: 1 },
         { magnitude: 3, ratio: "3:1", precision: 2 },
         { magnitude: 3, ratio: "3:1", precision: 3 },
       ];
+      // Both NToOne and ValueBased produce the same results for magnitude > 1
       await testRatioType("NToOne", testData);
-    });
-
-    it("ratioType precision test | valueBased", async () => {
-      const testData: TestData[] = [
-        { magnitude: 3, ratio: "3:1", precision: 0 },
-        { magnitude: 3, ratio: "3:1", precision: 1 },
-        { magnitude: 3, ratio: "3:1", precision: 2 },
-        { magnitude: 3, ratio: "3:1", precision: 3 },
-      ];
       await testRatioType("ValueBased", testData);
     });
-
   });
 
   describe("ratio formatting that should throw an error", () => {
@@ -209,6 +207,74 @@ describe("Ratio format tests", () => {
       }
     });
 
+    it("should throw an error if 2-unit composite has different phenomena", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        precision: 2,
+        composite: {
+          units: [
+            { name: "Units.IN" }, // LENGTH
+            { name: "Units.S" },  // TIME - different phenomenon
+          ],
+        },
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("InvalidComposite");
+      try {
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect.fail("Expected error was not thrown");
+      } catch (e: any) {
+        expect(e.message).toContain("2-unit composite with different phenomena");
+        expect(e.message).toContain("Both units must have the same phenomenon");
+        expect(e).toBeInstanceOf(QuantityError);
+      }
+    });
+
+    it("should throw an error if ratio format has no composite units", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        precision: 2,
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("NoUnits");
+      try {
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect.fail("Expected error was not thrown");
+      } catch (e: any) {
+        expect(e.message).toContain("must have 'composite' units");
+        expect(e).toBeInstanceOf(QuantityError);
+      }
+    });
+
+    it("should accept ratio format with duplicate units (metric scales)", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "OneToN",
+        ratioSeparator: ":",
+        precision: 1,
+        formatTraits: ["trailZeroes"],
+        composite: {
+          units: [
+            { name: "Units.M" },
+            { name: "Units.M" }, // duplicate unit - allowed for ratio formats
+          ],
+        },
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("MetricScaleDuplicateUnits");
+      // Should not throw - duplicate units are allowed for Ratio formats
+      await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+      expect(ratioFormat.type).to.equal(FormatType.Ratio);
+      expect(ratioFormat.units?.length).to.equal(2);
+      expect(ratioFormat.units![0][0].name).to.equal("Units.M");
+      expect(ratioFormat.units![1][0].name).to.equal("Units.M");
+    });
   });
 
   describe("RatioType Tests with special values", () => {
@@ -257,11 +323,231 @@ describe("Ratio format tests", () => {
     });
   });
 
-  describe("specific parse ratio string tests", () => {
-    async function testRatioParser(
-      testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName,
-    ) {
+  describe("Scale factor formatting tests", () => {
+    async function testImperialScales(testCases: Array<{ magnitude: number; expected: string }>, formatProps: FormatProps) {
+      const { formatterSpec } = await createFormatAndSpecs("ImperialScale", formatProps, "Units.IN_PER_FT_LENGTH_RATIO");
+      for (const { magnitude, expected } of testCases) {
+        expect(Formatter.formatQuantity(magnitude, formatterSpec)).to.equal(expected);
+      }
+    }
 
+    it("should format imperial scale factors as decimal", async () => {
+      const formatProps: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        precision: 4,
+        formatTraits: ["showUnitLabel"],
+        composite: {
+          units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+        },
+      };
+
+      // When persistence unit is IN_PER_FT_LENGTH_RATIO, magnitude is already in inches per foot
+      const testCases = [
+        // Architectural scales (magnitude in in/ft)
+        { magnitude: 12, expected: "12\"=1'" },     // Full scale (12 in/ft = 1:1)
+        { magnitude: 6, expected: "6\"=1'" },       // Half scale
+        { magnitude: 4, expected: "4\"=1'" },       // 1/3 scale
+        { magnitude: 3, expected: "3\"=1'" },       // Quarter scale
+        { magnitude: 2, expected: "2\"=1'" },       // 1/6 scale
+        { magnitude: 1.5, expected: "1.5\"=1'" },   // 1/8 scale
+        { magnitude: 1, expected: "1\"=1'" },       // 1/12 scale (1"=1')
+        { magnitude: 0.75, expected: "0.75\"=1'" }, // 1/16 scale (3/4"=1')
+        { magnitude: 0.5, expected: "0.5\"=1'" },   // 1/24 scale (1/2"=1')
+        { magnitude: 0.375, expected: "0.375\"=1'" }, // 1/32 scale (3/8"=1')
+        { magnitude: 0.25, expected: "0.25\"=1'" }, // 1/48 scale (1/4"=1')
+        { magnitude: 0.125, expected: "0.125\"=1'" }, // 1/96 scale (1/8"=1')
+        // Engineering scales
+        { magnitude: 1.2, expected: "1.2\"=1'" },   // 1/10 scale
+        { magnitude: 0.6, expected: "0.6\"=1'" },   // 1/20 scale
+        { magnitude: 0.4, expected: "0.4\"=1'" },   // 1/30 scale
+        { magnitude: 0.3, expected: "0.3\"=1'" },   // 1/40 scale
+        { magnitude: 0.24, expected: "0.24\"=1'" }, // 1/50 scale
+        { magnitude: 0.2, expected: "0.2\"=1'" },   // 1/60 scale
+        { magnitude: 0.12, expected: "0.12\"=1'" }, // 1/100 scale
+        // Civil/site scales
+        { magnitude: 0.1, expected: "0.1\"=1'" },   // 1/120 scale
+        { magnitude: 0.05, expected: "0.05\"=1'" }, // 1/240 scale
+        { magnitude: 0.025, expected: "0.025\"=1'" }, // 1/480 scale
+        { magnitude: 0.02, expected: "0.02\"=1'" }, // 1/600 scale
+        { magnitude: 0.01, expected: "0.01\"=1'" }, // 1/1200 scale
+      ];
+
+      await testImperialScales(testCases, formatProps);
+    });
+
+    it("should format imperial scale factors as fractional", async () => {
+      const formatProps: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        ratioFormatType: "Fractional",
+        precision: 16,
+        formatTraits: ["showUnitLabel"],
+        composite: {
+          units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+        },
+      };
+
+      // When persistence unit is IN_PER_FT_LENGTH_RATIO, magnitude is already in inches per foot
+      const testCases = [
+        { magnitude: 12, expected: "12\"=1'" },      // Full scale
+        { magnitude: 6, expected: "6\"=1'" },        // Half scale
+        { magnitude: 4, expected: "4\"=1'" },        // 1/3 scale
+        { magnitude: 3, expected: "3\"=1'" },        // Quarter scale
+        { magnitude: 2, expected: "2\"=1'" },        // 1/6 scale
+        { magnitude: 1.5, expected: "1 1/2\"=1'" },  // 1/8 scale
+        { magnitude: 1, expected: "1\"=1'" },        // 1/12 scale
+        { magnitude: 0.75, expected: "3/4\"=1'" },   // 1/16 scale
+        { magnitude: 0.5, expected: "1/2\"=1'" },    // 1/24 scale
+        { magnitude: 0.375, expected: "3/8\"=1'" },  // 1/32 scale
+        { magnitude: 0.25, expected: "1/4\"=1'" },   // 1/48 scale
+        { magnitude: 0.125, expected: "1/8\"=1'" },  // 1/96 scale
+        { magnitude: 0.0625, expected: "1/16\"=1'" }, // 1/192 scale
+        { magnitude: 1.2, expected: "1 3/16\"=1'" }, // 1/10 scale
+      ];
+
+      await testImperialScales(testCases, formatProps);
+    });
+
+    it("should format imperial scale factors as fractional with M_PER_M persistence unit", async () => {
+      const formatProps: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        ratioFormatType: "Fractional",
+        precision: 16,
+        formatTraits: ["showUnitLabel"],
+        composite: {
+          units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+        },
+      };
+
+      // When persistence unit is M_PER_M_LENGTH_RATIO, magnitude is dimensionless (m/m)
+      // Conversion: 1 m/m = 12 in/ft (since 1 ft = 12 in)
+      const testCases = [
+        { magnitude: 1, expected: "12\"=1'" },           // Full scale (1:1)
+        { magnitude: 0.5, expected: "6\"=1'" },          // Half scale (1:2)
+        { magnitude: 0.3333333, expected: "4\"=1'" },    // 1/3 scale (1:3)
+        { magnitude: 0.25, expected: "3\"=1'" },         // Quarter scale (1:4)
+        { magnitude: 0.125, expected: "1 1/2\"=1'" },    // 1/8 scale
+        { magnitude: 0.083333333, expected: "1\"=1'" },  // 1/12 scale
+        { magnitude: 0.0625, expected: "3/4\"=1'" },     // 1/16 scale
+        { magnitude: 0.041666667, expected: "1/2\"=1'" },// 1/24 scale
+        { magnitude: 0.03125, expected: "3/8\"=1'" },    // 1/32 scale
+      ];
+
+      const { formatterSpec } = await createFormatAndSpecs("ImperialScaleMetric", formatProps, "Units.M_PER_M_LENGTH_RATIO");
+      for (const { magnitude, expected } of testCases) {
+        expect(Formatter.formatQuantity(magnitude, formatterSpec)).to.equal(expected);
+      }
+    });
+
+    it("should format metric scale factors as decimal", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "OneToN",
+        precision: 1,
+        formatTraits: ["trailZeroes"],
+        composite: {
+          includeZero: true,
+          units: [{ name: "Units.M_PER_M_LENGTH_RATIO" }],
+        },
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("MetricScale");
+      await ratioFormat.fromJSON(unitsProvider, ratioJson);
+      expect(ratioFormat.hasUnits).to.be.true;
+
+      const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.M_PER_M_LENGTH_RATIO");
+      expect(persistenceUnit.isValid).to.be.true;
+
+      const formatterSpec = await FormatterSpec.create("MetricScale", ratioFormat, unitsProvider, persistenceUnit);
+
+      // Common metric map scale factors
+      expect(Formatter.formatQuantity(1.0, formatterSpec)).to.equal("1:1.0");
+      expect(Formatter.formatQuantity(0.5, formatterSpec)).to.equal("1:2.0");
+      expect(Formatter.formatQuantity(0.4, formatterSpec)).to.equal("1:2.5");
+      expect(Formatter.formatQuantity(0.2, formatterSpec)).to.equal("1:5.0");
+      expect(Formatter.formatQuantity(0.1, formatterSpec)).to.equal("1:10.0");
+      expect(Formatter.formatQuantity(0.05, formatterSpec)).to.equal("1:20.0");
+      expect(Formatter.formatQuantity(0.04, formatterSpec)).to.equal("1:25.0");
+      expect(Formatter.formatQuantity(0.02, formatterSpec)).to.equal("1:50.0");
+      expect(Formatter.formatQuantity(0.01, formatterSpec)).to.equal("1:100.0");
+      expect(Formatter.formatQuantity(0.005, formatterSpec)).to.equal("1:200.0");
+      expect(Formatter.formatQuantity(0.004, formatterSpec)).to.equal("1:250.0");
+      expect(Formatter.formatQuantity(0.0025, formatterSpec)).to.equal("1:400.0");
+      expect(Formatter.formatQuantity(0.002, formatterSpec)).to.equal("1:500.0");
+      expect(Formatter.formatQuantity(0.001, formatterSpec)).to.equal("1:1000.0");
+      expect(Formatter.formatQuantity(0.0002, formatterSpec)).to.equal("1:5000.0");
+      expect(Formatter.formatQuantity(0.0001, formatterSpec)).to.equal("1:10000.0");
+      expect(Formatter.formatQuantity(0.00004, formatterSpec)).to.equal("1:25000.0");
+      expect(Formatter.formatQuantity(0.00002, formatterSpec)).to.equal("1:50000.0");
+      expect(Formatter.formatQuantity(0.00001, formatterSpec)).to.equal("1:100000.0");
+      expect(Formatter.formatQuantity(0.000004, formatterSpec)).to.equal("1:250000.0");
+    });
+
+    it("should parse ratios with custom separator", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        precision: 4,
+        formatTraits: ["showUnitLabel"],
+        composite: {
+          units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+        },
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("ImperialScaleParse");
+      await ratioFormat.fromJSON(unitsProvider, ratioJson);
+      expect(ratioFormat.units?.length).to.equal(2);
+      expect(ratioFormat.ratioSeparator).to.equal("=");
+
+      const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+      expect(persistenceUnit.isValid).to.be.true;
+
+      const formatterSpec = await FormatterSpec.create("ImperialScaleParse", ratioFormat, unitsProvider, persistenceUnit);
+      const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+      // Test formatting with custom separator (magnitude 1 in/ft formats as 1"=1')
+      const formatted = Formatter.formatQuantity(1, formatterSpec);
+      expect(formatted).to.equal("1\"=1'");
+
+      // Test parsing with custom separator (results in in/ft)
+      const parseResult1 = Parser.parseQuantityString("12\"=1'", parserSpec);
+      expect(Parser.isParsedQuantity(parseResult1)).to.be.true;
+      if (Parser.isParsedQuantity(parseResult1)) {
+        expect(parseResult1.value).to.be.closeTo(12, 0.0001);
+      }
+
+      const parseResult2 = Parser.parseQuantityString("6\"=1'", parserSpec);
+      expect(Parser.isParsedQuantity(parseResult2)).to.be.true;
+      if (Parser.isParsedQuantity(parseResult2)) {
+        expect(parseResult2.value).to.be.closeTo(6, 0.0001);
+      }
+
+      const parseResult3 = Parser.parseQuantityString("1\"=1'", parserSpec);
+      expect(Parser.isParsedQuantity(parseResult3)).to.be.true;
+      if (Parser.isParsedQuantity(parseResult3)) {
+        expect(parseResult3.value).to.be.closeTo(1, 0.0001);
+      }
+
+      // Test that default separator doesn't work with custom separator format
+      const parseResult4 = Parser.parseQuantityString("1:1", parserSpec);
+      expect(Parser.isParseError(parseResult4)).to.be.true;
+      if (Parser.isParseError(parseResult4)) {
+        // Since the separator is "=", "1:1" uses the wrong separator and should fail
+        expect(parseResult4.error).to.equal(ParseError.UnableToConvertParseTokensToQuantity);
+      }
+    });
+  });
+
+  describe("specific parse ratio string tests", () => {
+    async function testRatioParser(testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName) {
       const ratioJson: FormatProps = {
         type: "Ratio",
         ratioType: "NToOne",
@@ -289,17 +575,14 @@ describe("Ratio format tests", () => {
       for (const entry of testData) {
         const parserRatioResult = Parser.parseQuantityString(entry.ratio, ratioParser);
 
-        if (entry.parseError) { // if it is expecting an error
+        if (entry.parseError) {
+          // if it is expecting an error
           expect(Parser.isParseError(parserRatioResult)).to.be.true;
           // Check if parserRatioResult has the err property, which signifies a ParseQuantityError
-          if ("error" in parserRatioResult)
-            expect(parserRatioResult.error).to.equal(entry.parseError);
-          else
-            assert.fail(`Expected parse error for input ratio string ${entry.ratio}`);
-
+          if ("error" in parserRatioResult) expect(parserRatioResult.error).to.equal(entry.parseError);
+          else assert.fail(`Expected parse error for input ratio string ${entry.ratio}`);
         } else {
-          if (!Parser.isParsedQuantity(parserRatioResult))
-            assert.fail(`Expected a parsed from ratio string ${entry.ratio}`);
+          if (!Parser.isParsedQuantity(parserRatioResult)) assert.fail(`Expected a parsed from ratio string ${entry.ratio}`);
 
           expect(parserRatioResult.value).to.equal(entry.magnitude);
         }
@@ -308,10 +591,10 @@ describe("Ratio format tests", () => {
 
     it("zero value", async () => {
       const testData: TestData[] = [
-        { magnitude: 0.0, ratio: "0:1", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
-        { magnitude: 0.0, ratio: "0:999", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
-        { magnitude: 0.0, ratio: "0:0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
-        { magnitude: 0.0, ratio: "0:0.0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
+        { magnitude: 0.0, ratio: "0:1", parseError: ParseError.InvalidMathResult },
+        { magnitude: 0.0, ratio: "0:999", parseError: ParseError.InvalidMathResult },
+        { magnitude: 0.0, ratio: "0:0", parseError: ParseError.InvalidMathResult },
+        { magnitude: 0.0, ratio: "0:0.0", parseError: ParseError.InvalidMathResult },
       ];
       await testRatioParser(testData, vHUnitName, hVUnitName);
     });
@@ -326,8 +609,8 @@ describe("Ratio format tests", () => {
 
     it("various parse Error expected", async () => {
       const testData: TestData[] = [
-        { magnitude: 1.0, ratio: "1:0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
-        { magnitude: 1.0, ratio: "10:0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
+        { magnitude: 1.0, ratio: "1:0", parseError: ParseError.InvalidMathResult },
+        { magnitude: 1.0, ratio: "10:0", parseError: ParseError.InvalidMathResult },
 
         { magnitude: 1.0, ratio: "", parseError: ParseError.NoValueOrUnitFoundInString },
         { magnitude: 1.0, ratio: "1:", parseError: ParseError.NoValueOrUnitFoundInString },
@@ -337,14 +620,11 @@ describe("Ratio format tests", () => {
       ];
       await testRatioParser(testData);
     });
-
   });
 
   describe("inverted unit tests", () => {
     it("zero value", async () => {
-      const testData: TestData[] = [
-        { magnitude: 0.0, ratio: "1:0" },
-      ];
+      const testData: TestData[] = [{ magnitude: 0.0, ratio: "1:0" }];
       await testRatioType("NToOne", testData, vHUnitName, hVUnitName);
       await testRatioType("NToOne", testData, hVUnitName, vHUnitName);
     });
@@ -371,9 +651,7 @@ describe("Ratio format tests", () => {
         precision: 0,
         composite: {
           includeZero: true,
-          units: [
-            { name: "Units.VERTICAL_PER_HORIZONTAL" },
-          ],
+          units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }],
         },
       };
 
@@ -383,9 +661,7 @@ describe("Ratio format tests", () => {
         precision: 0,
         composite: {
           includeZero: true,
-          units: [
-            { name: "Units.HORIZONTAL_PER_VERTICAL" },
-          ],
+          units: [{ name: "Units.HORIZONTAL_PER_VERTICAL" }],
         },
       };
 
@@ -421,12 +697,12 @@ describe("Ratio format tests", () => {
       const hVToVH = await unitsProvider.getConversion(hV, vH);
 
       const hVConverted = vphValue.convertTo(hV, vHTohV);
-      expect(hVConverted?.magnitude).to.equal(2.0);
-      expect(hVConverted?.unit.name).to.equal("Units.HORIZONTAL_PER_VERTICAL");
+      expect(hVConverted.magnitude).to.equal(2.0);
+      expect(hVConverted.unit.name).to.equal("Units.HORIZONTAL_PER_VERTICAL");
 
       const vHConverted = hpvValue.convertTo(vH, hVToVH);
-      expect(vHConverted?.magnitude).to.equal(0.5);
-      expect(vHConverted?.unit.name).to.equal("Units.VERTICAL_PER_HORIZONTAL");
+      expect(vHConverted.magnitude).to.equal(0.5);
+      expect(vHConverted.unit.name).to.equal("Units.VERTICAL_PER_HORIZONTAL");
 
       // Test all formatting scenarios
       const vphValueString = Formatter.formatQuantity(vphValue.magnitude, vphToVphFormatter);
@@ -465,6 +741,570 @@ describe("Ratio format tests", () => {
         assert.fail();
       }
       expect(hpvValueParsedConverted.value).to.equal(2.0);
+    });
+
+    it("imperial scale factor roundtrip", async () => {
+      const ratioFormatJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        ratioFormatType: "Fractional",
+        precision: 16,
+        formatTraits: ["showUnitLabel"],
+        composite: {
+          units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+        },
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("ImperialScaleRoundtrip");
+      await ratioFormat.fromJSON(unitsProvider, ratioFormatJson);
+      expect(ratioFormat.units?.length).to.equal(2);
+
+      const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+      expect(persistenceUnit.isValid).to.be.true;
+
+      const formatterSpec = await FormatterSpec.create("imperial_scale_formatter", ratioFormat, unitsProvider, persistenceUnit);
+      const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+      // Test roundtrip for architectural scales (magnitude in in/ft)
+      const testCases = [
+        { magnitude: 1.5, formatted: "1 1/2\"=1'" },  // Fractional with whole number
+        { magnitude: 0.375, formatted: "3/8\"=1'" },  // Pure fraction
+      ];
+
+      for (const testCase of testCases) {
+        // Format the magnitude
+        const formatted = Formatter.formatQuantity(testCase.magnitude, formatterSpec);
+        expect(formatted).to.equal(testCase.formatted);
+
+        // Parse it back
+        const parseResult = Parser.parseQuantityString(formatted, parserSpec);
+        if (!Parser.isParsedQuantity(parseResult)) {
+          assert.fail(`Failed to parse formatted string: ${formatted}`);
+        }
+
+        // Should round trip to the same value (within precision tolerance)
+        expect(parseResult.value).to.be.closeTo(testCase.magnitude, 0.0001);
+      }
+    });
+  });
+
+  describe("Parsing ratios with unit labels", () => {
+    describe("Imperial ratio parsing with unit labels", () => {
+      it("should parse decimal imperial scale ratios with unit labels", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: "=",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("ImperialScaleDecimal");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test parsing common architectural scales with unit labels (results in in/ft)
+        const testCases = [
+          { input: "12\"=1'", expected: 12 },
+          { input: "6\"=1'", expected: 6 },
+          { input: "3\"=1'", expected: 3 },
+          { input: "1.5\"=1'", expected: 1.5 },
+          { input: "1\"=1'", expected: 1 },
+          { input: "0.5\"=1'", expected: 0.5 },
+          { input: "0.25\"=1'", expected: 0.25 },
+        ];
+
+        for (const testCase of testCases) {
+          const result = Parser.parseQuantityString(testCase.input, parserSpec);
+          if (!Parser.isParsedQuantity(result)) {
+            assert.fail(`Failed to parse ${testCase.input}`);
+          }
+          expect(result.value, `Parsing ${testCase.input}`).to.be.closeTo(testCase.expected, 0.0001);
+        }
+      });
+
+      it("should parse fractional imperial scale ratios with unit labels", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: "=",
+          ratioFormatType: "Fractional",
+          precision: 16,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("ImperialScaleFractional");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test parsing common architectural scales with fractional notation (results in in/ft)
+        const testCases = [
+          { input: "12\"=1'", expected: 12 },
+          { input: "6\"=1'", expected: 6 },
+          { input: "4\"=1'", expected: 4 },
+          { input: "3\"=1'", expected: 3 },
+          { input: "2\"=1'", expected: 2 },
+          { input: "1 1/2\"=1'", expected: 1.5 },
+          { input: "1\"=1'", expected: 1 },
+          { input: "3/4\"=1'", expected: 0.75 },
+          { input: "1/2\"=1'", expected: 0.5 },
+          { input: "3/8\"=1'", expected: 0.375 },
+          { input: "1/4\"=1'", expected: 0.25 },
+          { input: "1/8\"=1'", expected: 0.125 },
+          { input: "1/16\"=1'", expected: 0.0625 },
+        ];
+
+        for (const testCase of testCases) {
+          const result = Parser.parseQuantityString(testCase.input, parserSpec);
+          if (!Parser.isParsedQuantity(result)) {
+            assert.fail(`Failed to parse ${testCase.input}`);
+          }
+          expect(result.value, `Parsing ${testCase.input}`).to.be.closeTo(testCase.expected, 0.0001);
+        }
+      });
+
+      it("should parse engineering scale ratios with unit labels", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: "=",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("EngineeringScale");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test parsing common engineering scales (results in in/ft)
+        const testCases = [
+          { input: "1.2\"=1'", expected: 1.2 },
+          { input: "1\"=1'", expected: 1 },
+          { input: "0.6\"=1'", expected: 0.6 },
+          { input: "0.4\"=1'", expected: 0.4 },
+          { input: "0.3\"=1'", expected: 0.3 },
+          { input: "0.24\"=1'", expected: 0.24 },
+          { input: "0.2\"=1'", expected: 0.2 },
+          { input: "0.12\"=1'", expected: 0.12 },
+        ];
+
+        for (const testCase of testCases) {
+          const result = Parser.parseQuantityString(testCase.input, parserSpec);
+          if (!Parser.isParsedQuantity(result)) {
+            assert.fail(`Failed to parse ${testCase.input}`);
+          }
+          expect(result.value, `Parsing ${testCase.input}`).to.be.closeTo(testCase.expected, 0.0001);
+        }
+      });
+
+      it("should parse ratios with custom unit label using 3-unit format", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: ":",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("CustomLabelRatio");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+        const formatterSpec = await FormatterSpec.create("CustomLabelRatio", ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test formatting with explicit unit labels (values in in/ft)
+        expect(Formatter.formatQuantity(12, formatterSpec)).to.equal("12in:1ft");
+        expect(Formatter.formatQuantity(1, formatterSpec)).to.equal("1in:1ft");
+        expect(Formatter.formatQuantity(6, formatterSpec)).to.equal("6in:1ft");
+
+        // Test parsing with the labels (results in in/ft)
+        const testCases = [
+          { input: "12in:1ft", expected: 12 },
+          { input: "6in:1ft", expected: 6 },
+          { input: "1in:1ft", expected: 1 },
+          { input: "0.5in:1ft", expected: 0.5 },
+        ];
+
+        for (const testCase of testCases) {
+          const result = Parser.parseQuantityString(testCase.input, parserSpec);
+          if (!Parser.isParsedQuantity(result)) {
+            assert.fail(`Failed to parse ${testCase.input}`);
+          }
+          expect(result.value, `Parsing ${testCase.input}`).to.be.closeTo(testCase.expected, 0.0001);
+        }
+      });
+    });
+
+    describe("Metric ratio parsing with unit labels", () => {
+      it("should parse metric scale ratios without unit labels", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "OneToN",
+          precision: 1,
+          formatTraits: ["trailZeroes"],
+          composite: {
+            includeZero: true,
+            units: [{ name: "Units.M_PER_M_LENGTH_RATIO" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("MetricScale");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.M_PER_M_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test parsing common metric map scales
+        const testCases = [
+          { input: "1:1.0", expected: 1.0 },
+          { input: "1:2.0", expected: 0.5 },
+          { input: "1:2.5", expected: 0.4 },
+          { input: "1:5.0", expected: 0.2 },
+          { input: "1:10.0", expected: 0.1 },
+          { input: "1:20.0", expected: 0.05 },
+          { input: "1:25.0", expected: 0.04 },
+          { input: "1:50.0", expected: 0.02 },
+          { input: "1:100.0", expected: 0.01 },
+          { input: "1:200.0", expected: 0.005 },
+          { input: "1:250.0", expected: 0.004 },
+          { input: "1:500.0", expected: 0.002 },
+          { input: "1:1000.0", expected: 0.001 },
+        ];
+
+        for (const testCase of testCases) {
+          const result = Parser.parseQuantityString(testCase.input, parserSpec);
+          if (!Parser.isParsedQuantity(result)) {
+            assert.fail(`Failed to parse ${testCase.input}`);
+          }
+          expect(result.value, `Parsing ${testCase.input}`).to.be.closeTo(testCase.expected, 0.00001);
+        }
+      });
+
+      it("should parse NToOne metric ratios", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          precision: 2,
+          composite: {
+            includeZero: true,
+            units: [{ name: "Units.M_PER_M_LENGTH_RATIO" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("MetricScaleNToOne");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.M_PER_M_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test parsing ratios in NToOne format
+        const testCases = [
+          { input: "1:1", expected: 1.0 },
+          { input: "2:1", expected: 2.0 },
+          { input: "0.5:1", expected: 0.5 },
+          { input: "0.1:1", expected: 0.1 },
+          { input: "0.01:1", expected: 0.01 },
+        ];
+
+        for (const testCase of testCases) {
+          const result = Parser.parseQuantityString(testCase.input, parserSpec);
+          if (!Parser.isParsedQuantity(result)) {
+            assert.fail(`Failed to parse ${testCase.input}`);
+          }
+          expect(result.value, `Parsing ${testCase.input}`).to.be.closeTo(testCase.expected, 0.00001);
+        }
+      });
+
+      it("should parse slope ratios (rise:run)", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          precision: 1,
+          composite: {
+            includeZero: true,
+            units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("SlopeRatio");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test parsing common slope ratios (rise:run)
+        const testCases = [
+          { input: "1:1", expected: 1.0 }, // 45° slope, 100% grade
+          { input: "1:2", expected: 0.5 }, // 26.6° slope, 50% grade
+          { input: "1:3", expected: 1 / 3 }, // 18.4° slope, 33.3% grade
+          { input: "1:4", expected: 0.25 }, // 14° slope, 25% grade
+          { input: "1:10", expected: 0.1 }, // 5.7° slope, 10% grade
+          { input: "1:20", expected: 0.05 }, // 2.9° slope, 5% grade
+          { input: "2:1", expected: 2.0 }, // 63.4° slope, 200% grade
+        ];
+
+        for (const testCase of testCases) {
+          const result = Parser.parseQuantityString(testCase.input, parserSpec);
+          if (!Parser.isParsedQuantity(result)) {
+            assert.fail(`Failed to parse ${testCase.input}`);
+          }
+          expect(result.value, `Parsing ${testCase.input}`).to.be.closeTo(testCase.expected, 0.0001);
+        }
+      });
+    });
+
+    describe("Edge cases and error handling", () => {
+      it("should handle ratios with mixed unit labels", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: "=",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("MixedUnits");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // These should parse correctly
+        const result1 = Parser.parseQuantityString("1\"=1'", parserSpec);
+        if (!Parser.isParsedQuantity(result1)) {
+          assert.fail("Failed to parse 1\"=1'");
+        }
+        // 1"=1' is 1 in/ft, persistence unit is IN_PER_FT so value is 1.0
+        expect(result1.value).to.be.closeTo(1.0, 0.0001);
+      });
+
+      it("should handle whitespace in ratio strings", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: "=",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("WhitespaceTest");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test with various whitespace configurations
+        // 1"=1' is 1 in/ft, persistence unit is IN_PER_FT so value is 1.0
+        const testCases = ["1\"=1'", " 1\" = 1' ", "1 \" = 1 '"];
+
+        for (const input of testCases) {
+          const result = Parser.parseQuantityString(input, parserSpec);
+          if (!Parser.isParsedQuantity(result)) {
+            assert.fail(`Failed to parse "${input}"`);
+          }
+          expect(result.value, `Parsing "${input}"`).to.be.closeTo(1.0, 0.0001);
+        }
+      });
+
+      it("should handle mismatched unit labels in input (labels are ignored, format's units are used)", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: "=",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("MismatchedLabels");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Input has wrong labels (m/ft instead of "/'), but parser ignores them
+        // and uses the format's defined unit conversion (composite units: IN and FT)
+        const result1 = Parser.parseQuantityString("12m=1ft", parserSpec);
+        if (!Parser.isParsedQuantity(result1)) {
+          assert.fail("Failed to parse 12m=1ft");
+        }
+        // Even though input says "12m=1ft", it's interpreted as 12:1 in the IN_PER_FT ratio
+        // which equals 12.0 in IN_PER_FT_LENGTH_RATIO
+        expect(result1.value).to.be.closeTo(12.0, 0.0001);
+
+        // Input with completely unrecognized labels
+        const result2 = Parser.parseQuantityString("6xyz=1abc", parserSpec);
+        if (!Parser.isParsedQuantity(result2)) {
+          assert.fail("Failed to parse 6xyz=1abc");
+        }
+        // Labels are ignored, numeric values 6:1 in IN_PER_FT ratio = 6.0 in IN_PER_FT_LENGTH_RATIO
+        expect(result2.value).to.be.closeTo(6.0, 0.0001);
+      });
+
+      it("should use alternate labels from parseLabels", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: "=",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("AlternateLabels");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test with alternate labels that should be in parseLabels
+        // Values are in IN_PER_FT_LENGTH_RATIO so 12"=1' = 12.0, 6"=1' = 6.0, 1"=1' = 1.0
+        const testCases = [
+          { input: "12IN=1FT", expected: 12.0 }, // using alternate labels
+          { input: "12\"=1'", expected: 12.0 }, // using custom labels
+          { input: "6IN=1F", expected: 6.0 }, // mixing alternate labels
+          { input: '1"=1FT', expected: 1.0 }, // mixing custom and alternate
+        ];
+
+        for (const testCase of testCases) {
+          const result = Parser.parseQuantityString(testCase.input, parserSpec);
+          if (!Parser.isParsedQuantity(result)) {
+            assert.fail(`Failed to parse ${testCase.input}`);
+          }
+          expect(result.value, `Parsing ${testCase.input}`).to.be.closeTo(testCase.expected, 0.0001);
+        }
+      });
+    });
+
+    describe("Ratio format unit label validation", () => {
+      it("should accept ratio format with no labels (1 unit)", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "OneToN",
+          precision: 2,
+          composite: {
+            includeZero: true,
+            units: [{ name: "Units.M_PER_M_LENGTH_RATIO" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("RatioNoLabels");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect(ratioFormat.type).to.equal(FormatType.Ratio);
+      });
+
+      it("should accept ratio format with 2-unit composite", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: "=",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("Ratio2UnitComposite");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect(ratioFormat.type).to.equal(FormatType.Ratio);
+        expect(ratioFormat.units?.length).to.equal(2);
+      });
+
+      it("should accept ratio format with explicit unit labels (2 units)", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "OneToN",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN" }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("RatioWithLabels");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect(ratioFormat.type).to.equal(FormatType.Ratio);
+      });
+
+      it("should mix custom labels with default unit labels", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "NToOne",
+          ratioSeparator: "=",
+          precision: 2,
+          formatTraits: ["showUnitLabel"],
+          composite: {
+            units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT" }],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("RatioMixedLabels");
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect(ratioFormat.type).to.equal(FormatType.Ratio);
+
+        const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.IN_PER_FT_LENGTH_RATIO");
+        const formatterSpec = await FormatterSpec.create("RatioMixedLabels", ratioFormat, unitsProvider, persistenceUnit);
+        const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+        // Test formatting - should use custom \" for inches and default ft for feet
+        // 12.0 in IN_PER_FT_LENGTH_RATIO = 12"=1ft (full scale)
+        expect(Formatter.formatQuantity(12.0, formatterSpec)).to.equal('12"=1ft');
+        expect(Formatter.formatQuantity(1.0, formatterSpec)).to.equal('1"=1ft');
+
+        // Test parsing with mixed labels
+        const result = Parser.parseQuantityString('12"=1ft', parserSpec);
+        if (!Parser.isParsedQuantity(result)) {
+          assert.fail('Failed to parse 12"=1ft');
+        }
+        expect(result.value).to.be.closeTo(12.0, 0.0001);
+      });
     });
   });
 });

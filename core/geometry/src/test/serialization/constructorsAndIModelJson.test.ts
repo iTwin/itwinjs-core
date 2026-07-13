@@ -136,7 +136,7 @@ describe("constructorsAndImodelJson", () => {
       emitIModelJson("Box.createDgnBox(cornerA, xVector, yVector, baseX, baseY, topX, topY, capped)",
         "box with sides slanting inward",
         Box.createDgnBox(cornerA, Vector3d.unitX(), Vector3d.unitY(),
-          cornerB, ax, ay, bx, by, true) as Box);
+          cornerB, ax, ay, bx, by, true));
     }
     {
       const frame = Transform.createOriginAndMatrix(Point3d.create(1, 1, 1), Matrix3d.createRigidViewAxesZTowardsEye(2, 0, 3));

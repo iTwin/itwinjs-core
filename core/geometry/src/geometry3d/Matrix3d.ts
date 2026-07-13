@@ -6,6 +6,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisIndex, AxisOrder, BeJSONFunctions, Geometry, StandardViewIndex } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
@@ -15,15 +16,14 @@ import { Transform } from "./Transform";
 import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 
 /* eslint-disable @itwin/prefer-get */
-// cSpell:words XXYZ YXYZ ZXYZ SaeedTorabi arctan newcommand diagonalization
+// cSpell:words XXYZ YXYZ ZXYZ SaeedTorabi arctan diagonalization
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
- * * The Float64Array contains the matrix entries in row-major order
+ * * The Float64Array contains the matrix entries in row-major order:
+ * ```equation
+ * \mij{a}
+ * ```
  * @internal
- * ```
- * equation
- * \newcommand[1]\mij{#1_{00}\ #1_{01}\ a_{02}}
- * ```
  */
 export class PackedMatrix3dOps {
   /**
@@ -185,13 +185,11 @@ export enum InverseMatrixState {
  * * A very common use is to hold a rigid body rotation (which has no scaling or skew), but the 3x3 contents can
  * also hold scaling and skewing.
  * * The matrix with 2-dimensional layout (note: a 2d array can be shown by a matrix)
- * ```
- * equation
+ * ```equation
  *      \matrixXY{A}
  * ```
  * is stored as 9 numbers in "row-major" order in a `Float64Array`, viz
- * ```
- * equation
+ * ```equation
  *      \rowMajorMatrixXY{A}
  * ```
  * * If the matrix inverse is known it is stored in the inverseCoffs array.
@@ -215,8 +213,7 @@ export class Matrix3d implements BeJSONFunctions {
   public static numComputeCache = 0;
   /**
    * Matrix contents as a flat array of numbers in row-major order.
-   * ```
-   * equation
+   * ```equation
    * \mxy{B}
    * \mij{B}
    * ```
@@ -225,8 +222,7 @@ export class Matrix3d implements BeJSONFunctions {
   public coffs: Float64Array;
   /**
    * Matrix inverse contents.
-   * ```
-   * equation
+   * ```equation
    * \mxy{A}
    * ```
    * * DO NOT directly modify this array. It will destroy integrity of the cached inverse state.
@@ -411,8 +407,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Returns a Matrix3d populated by numeric values given in row-major order.
    * Sets all entries in the matrix from call parameters appearing in row-major order, i.e.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}a_{xx}\ a_{xy}\ a_{xz}\\ a_{yx}\ a_{yy}\ a_{yz}\\ a_{zx}\ a_{zy}\ a_{zz}\end{bmatrix}
    * ```
    * @param axx Row x, column x(0, 0) entry
@@ -493,11 +488,12 @@ export class Matrix3d implements BeJSONFunctions {
    * This is for use by matrix * matrix multiplications which need to be sure the member is there to be
    * filled with method-specific content.
    */
-  private createInverseCoffsWithZeros() {
+  private createInverseCoffsWithZeros(): this is { inverseCoffs: Float64Array } {
     if (!this.inverseCoffs) {
       this.inverseState = InverseMatrixState.unknown;
       this.inverseCoffs = new Float64Array(9);
     }
+    return this.inverseCoffs !== undefined;
   }
   /**
    * Copy the transpose of the coffs to the inverseCoffs.
@@ -553,10 +549,11 @@ export class Matrix3d implements BeJSONFunctions {
       for (let i = 0; i < 9; i++)
         this.coffs[i] = other.coffs[i];
       if (other.inverseState === InverseMatrixState.inverseStored && other.inverseCoffs !== undefined) {
-        this.createInverseCoffsWithZeros();
-        for (let i = 0; i < 9; i++)
-          this.inverseCoffs![i] = other.inverseCoffs[i];
-        this.inverseState = InverseMatrixState.inverseStored;
+        if (this.createInverseCoffsWithZeros()) {
+          for (let i = 0; i < 9; i++)
+            this.inverseCoffs[i] = other.inverseCoffs[i];
+          this.inverseState = InverseMatrixState.inverseStored;
+        }
       } else if (other.inverseState !== InverseMatrixState.inverseStored) {
         this.inverseState = other.inverseState;
       } else {  // This is reached when other says stored but does not have coffs. This should not happen.
@@ -579,8 +576,7 @@ export class Matrix3d implements BeJSONFunctions {
    * * Note that for geometry transformations "all zeros" is not a useful default state.
    * * Hence, almost always use `createIdentity` for graphics transformations.
    * * "All zeros" is appropriate for summing moment data.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}0 & 0 & 0 \\ 0 & 0 & 0 \\ 0 & 0 & 0\end{bmatrix}
    * ```
    */
@@ -594,8 +590,7 @@ export class Matrix3d implements BeJSONFunctions {
    * * All diagonal entries (xx,yy,zz) are one
    * * All others are zero.
    * * This (rather than "all zeros") is the useful state for most graphics transformations.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1\end{bmatrix}
    * ```
    *
@@ -607,8 +602,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix with distinct x,y,z diagonal (scale) entries.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}s_x & 0 & 0 \\ 0 & s_y & 0\\ 0 & 0 & s_z\end{bmatrix}
    * ```
    */
@@ -636,8 +630,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix with uniform scale factor "s":
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}s & 0 & 0 \\ 0 & s & 0\\ 0 & 0 & s\end{bmatrix}
    * ```
    */
@@ -690,17 +683,18 @@ export class Matrix3d implements BeJSONFunctions {
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 0), vectorU);
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 1), vectorV);
     target.setColumn(Geometry.axisOrderToAxis(axisOrder, 2), vectorW);
+    target.inverseState = InverseMatrixState.unknown;
     return target;
   }
   /**
    * Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
-   * * `vectorA1 = Normalized vectorA` is placed in the column specified by **first** letter in
+   * * `vectorA1 = Normalized vectorA` is placed in the column specified by the **first** letter in
    * the AxisOrder name.
-   * * Normalized `vectorC1 = vectorA1 cross vectorB` is placed in the column specified by **third**
+   * * Normalized `vectorC1 = vectorA1 cross vectorB` is placed in the column specified by the **third**
    * letter in the AxisOrder name.
-   * * Normalized  `vectorC1 cross vectorA` is placed in the column specified by **second**
+   * * Normalized  `vectorC1 cross vectorA` is placed in the column specified by the **second**
    * letter in the AxisOrder name.
-   * * This function internally uses createShuffledColumns.
+   * * This function internally uses [[createShuffledColumns]].
    */
   public static createRigidFromColumns(
     vectorA: Vector3d, vectorB: Vector3d, axisOrder: AxisOrder, result?: Matrix3d,
@@ -837,8 +831,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix from column vectors.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ U_z & V_z & W_z \end{bmatrix}
    * ```
    */
@@ -853,8 +846,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix with each column's _x,y_ parts given `XAndY` and separate numeric z values.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ u & v & w \end{bmatrix}
    * ```
    */
@@ -1324,7 +1316,8 @@ export class Matrix3d implements BeJSONFunctions {
     } else if (!scaleXIsZero && !scaleYIsZero) { // rank 2
       column[0].scaleInPlace(1 / scale.x);
       column[1].scaleInPlace(1 / scale.y);
-      column[2] = column[0].unitCrossProduct(column[1], column[2])!;
+      const cross = column[0].unitCrossProduct(column[1], column[2]);
+      assert(cross !== undefined, "expect defined cross product because columns are perpendicular and non-zero");
       matrixV.setColumns(column[0], column[1], column[2]);
     } else if (!scaleXIsZero) { // rank 1
       matrixV = Matrix3d.createRigidHeadsUp(column[0], AxisOrder.XYZ, matrixV); // preserve column0
@@ -1449,6 +1442,10 @@ export class Matrix3d implements BeJSONFunctions {
   /** Return the Z row magnitude  */
   public rowZMagnitude(): number {
     return Geometry.hypotenuseXYZ(this.coffs[6], this.coffs[7], this.coffs[8]);
+  }
+  /** Return the cross product of column X with column Y. */
+  public columnXCrossColumnY(result?: Vector3d): Vector3d {
+    return Geometry.crossProductXYZXYZ(this.coffs[0], this.coffs[3], this.coffs[6], this.coffs[1], this.coffs[4], this.coffs[7], result);
   }
   /** Return the dot product of column X with column Y */
   public columnXDotColumnY(): number {
@@ -1612,8 +1609,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Create a matrix from row vectors.
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}U_x & U_y & U_z \\ V_x & V_y & V_z \\ W_x & W_y & W_z \end{bmatrix}
    * ```
    */
@@ -1634,8 +1630,7 @@ export class Matrix3d implements BeJSONFunctions {
    * mirror of the `vector` across the `plane`. In general, When scale != 0, the result is computed by first
    * projecting the `vector` to the `plane`, then translating that projection along the `direction` (if scale > 0)
    * or in opposite direction (if scale < 0).
-   * ```
-   * equation
+   * ```equation
    * \text{The matrix is } I + (s-1) D D^T
    * \\ \text{with }D\text{ being the normalized direction vector and }s\text{ being the scale.}
    * ```
@@ -1664,7 +1659,7 @@ export class Matrix3d implements BeJSONFunctions {
    * Specifically, `Mu = u + sw` is perpendicular to `n` for some scalar `s`, where `w` is the sweep direction, and
    * `n` is the plane normal.
    * * Symbolically, `M = I - w⊗n / w.n`, where `I` is the identity, and ⊗ is the vector outer product.
-   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix flattens to the plane.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix is a projection onto the plane.
    * @param planeNormal normal to the target plane
    */
   public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planeNormal: Vector3d): Matrix3d | undefined {
@@ -1691,8 +1686,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
   * Multiply `matrix * point`, treating the point as a column vector on the right.
-  * ```
-  * equation
+  * ```equation
   * \matrixXY{A}\columnSubXYZ{U}
   * ```
   * @return the point result
@@ -1710,8 +1704,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Multiply `matrix * vector`, treating the vector is a column vector on the right.
-   * ```
-   * equation
+   * ```equation
    * \matrixXY{A}\columnSubXYZ{U}
    * ```
    * @return the vector result
@@ -1796,8 +1789,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
    * Multiply the 4x4 matrix by `[x,y,z,w]`
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}M_0 & M_1 & M_2 & Ox \\ M_3 & M_4 & M_5 & Oy \\ M_6 & M_7 & M_8 & Oz \\ 0 & 0 & 0 & 1\end{bmatrix} * \begin{bmatrix}x \\ y \\ z \\ w\end{bmatrix}
    * ```
    * @param origin translation part (xyz in column 3)
@@ -1822,8 +1814,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Treat the 3x3 matrix and origin as upper 3x4 part of a 4x4 matrix, with 0001 as the final row.
    * Multiply the 4x4 matrix by `[x,y,z,w]`
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}M_0 & M_1 & M_2 & Ox \\ M_3 & M_4 & M_5 & Oy \\ M_6 & M_7 & M_8 & Oz \\ 0 & 0 & 0 & 1\end{bmatrix} * \begin{bmatrix}x \\ y \\ z \\ w\end{bmatrix}
    * ```
    * @param origin translation part (xyz in column 3)
@@ -1848,8 +1839,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Treat the 3x3 matrix and origin as a 3x4 matrix.
    * * Multiply the 3x4 matrix by `[x,y,z,1]`
-   * ```
-   * equation
+   * ```equation
    * \begin{bmatrix}M_0 & M_1 & M_2 & Ox \\ M_3 & M_4 & M_5 & Oy \\ M_6 & M_7 & M_8 & Oz\end{bmatrix} * \begin{bmatrix}x \\ y \\ z \\ 1\end{bmatrix}
    * ```
    * @param origin translation part (xyz in column 3)
@@ -1872,8 +1862,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply the transpose matrix times a vector.
    * * This produces the same x,y,z as treating the vector as a row on the left of the (un-transposed) matrix.
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    * \text{Treating U as a column to the right of transposed matrix\:  return column}&\columnSubXYZ{V}&=&\matrixTransposeSubXY{A}\columnSubXYZ{U} \\
    * \text{Treating U as a row to the left of untransposed matrix\: return row}&\rowSubXYZ{V}&=&\rowSubXYZ{U}\matrixXY{A}
@@ -1969,14 +1958,13 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply the transpose matrix times column using individual numeric inputs.
    * * This produces the same x,y,z as treating the vector as a row on the left of the (un-transposed) matrix.
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    * \text{treating the input as a column vector } \columnXYZ{x}{y}{z}\text{ compute  }&\columnSubXYZ{V} &= &A^T \columnXYZ{x}{y}{z} \\
    * \text{or as a row vector } \rowXYZ{x}{y}{z} \text{ compute }&\rowSubXYZ{V} &= &\rowXYZ{x}{y}{z} A \\
    * \phantom{8888}\text{and return V as a Vector3d} & & &
    * \end{matrix}
-   * ````
+   * ```
    * @param result the vector result (optional)
    */
   public multiplyTransposeXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d {
@@ -2081,6 +2069,22 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
+   * Multiply the point by the inverse matrix, and return its xy-coordinates.
+   * @param result optional pre-allocated result to populate and return
+   * @returns xy-coordinates of the transformed point, or `undefined` if the instance is singular.
+   * @see [[multiplyInverseXYZAsPoint3d]]
+   */
+  public multiplyInverseXYZAsPoint2d(x: number, y: number, z: number, result?: Point2d): Point2d | undefined {
+    if (this.computeCachedInverse(true)) {
+      return Point2d.create(
+        this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z,
+        this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z,
+        result,
+      );
+    }
+    return undefined;
+  }
+  /**
    * Invoke a given matrix*matrix operation to compute the inverse matrix and set this.inverseCoffs
    * * If either input coffA or coffB is `undefined`, set state to `InverseMatrixState.unknown` but
    * leave the inverseCoffs untouched.
@@ -2091,10 +2095,9 @@ export class Matrix3d implements BeJSONFunctions {
     f: (factorA: Float64Array, factorB: Float64Array, result: Float64Array) => void, coffA?: Float64Array,
     coffB?: Float64Array,
   ): void {
-    if (coffA && coffB) {
-      this.createInverseCoffsWithZeros();
+    if (coffA && coffB && this.createInverseCoffsWithZeros()) {
       this.inverseState = InverseMatrixState.inverseStored;
-      f(coffA, coffB, this.inverseCoffs!); // call function f (which is provided by user) to compute the inverse.
+      f(coffA, coffB, this.inverseCoffs);
     } else {
       this.inverseState = InverseMatrixState.unknown;
     }
@@ -2130,7 +2133,7 @@ export class Matrix3d implements BeJSONFunctions {
     if (!other.computeCachedInverse(true))
       return undefined;
     result = result ? result : new Matrix3d();
-    PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs!, Matrix3d._productBuffer);
+    PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs, Matrix3d._productBuffer);
     if (this.inverseState === InverseMatrixState.inverseStored)
       result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.coffs, this.inverseCoffs);
     else
@@ -2145,8 +2148,8 @@ export class Matrix3d implements BeJSONFunctions {
   public multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined {
     if (!this.computeCachedInverse(true))
       return undefined;
+    PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs, other.coffs, Matrix3d._productBuffer);
     result = result ? result : new Matrix3d();
-    PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs!, other.coffs, Matrix3d._productBuffer);
     if (other.inverseState === InverseMatrixState.inverseStored)
       result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.inverseCoffs, this.coffs);
     else
@@ -2156,8 +2159,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Multiply `this` matrix times the transpose of `other` matrix
-   * ```
-   * equation
+   * ```equation
    * \text{for instance matrix }A\text{ and matrix }B\text{ return matrix }C{\text where }\\\matrixXY{C}=\matrixXY{A}\matrixTransposeSubXY{B}
    * ```
    * @return the matrix result: this*otherTranspose
@@ -2175,8 +2177,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
   /**
    * Multiply the transpose of `this` matrix times `other` matrix
-   * ```
-   * equation
+   * ```equation
    * \matrixXY{result}=\matrixXY{\text{this}}\matrixTransposeSubXY{\text{other}}
    * ```
    * @return the matrix result: thisTranspose*other
@@ -2195,8 +2196,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply `this` Matrix3d (considered to be a Transform with 0 `origin`) times `other` Transform.
    * * **Note:** If `this = [A   0]` and `other = [B   b]`, then `this * other` is defined as [A*B   Ab] because:
-   * ```
-   * equation
+   * ```equation
    * \begin{matrix}
    * \text{this matrix }\bold{A}\text{ promoted to block Transform} & \blockTransform{A}{0} \\
    * \text{other Transform with `matrix` part }\bold{B}\text{ and origin part }\bold{b} & \blockTransform{B}{b}\\
@@ -2257,16 +2257,17 @@ export class Matrix3d implements BeJSONFunctions {
     if (result === this) {
       // swap the contents of this.coffs and this.inverseCoffs
       PackedMatrix3dOps.copy(this.coffs, Matrix3d._productBuffer);
-      PackedMatrix3dOps.copy(this.inverseCoffs!, this.coffs);
-      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs!);
+      PackedMatrix3dOps.copy(this.inverseCoffs, this.coffs);
+      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs);
       return result;
     }
     if (result === undefined) {
       result = Matrix3d.createIdentity();
     }
     result.createInverseCoffsWithZeros();
-    PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs!);
-    PackedMatrix3dOps.copy(this.inverseCoffs!, result.coffs);
+    assert(result.inverseCoffs !== undefined, "expect inverseCoffs defined by createInverseCoffsWithZeros");
+    PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs);
+    PackedMatrix3dOps.copy(this.inverseCoffs, result.coffs);
     result.inverseState = this.inverseState;
     return result;
   }
@@ -2407,38 +2408,40 @@ export class Matrix3d implements BeJSONFunctions {
    * recompute the inverse.
    * @returns return `true` if the inverse is computed. Return `false` if matrix is singular.
    */
-  public computeCachedInverse(useCacheIfAvailable: boolean): boolean {
+  public computeCachedInverse(useCacheIfAvailable: boolean): this is { inverseCoffs: Float64Array } {
     if (useCacheIfAvailable && Matrix3d.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
       Matrix3d.numUseCache++;
       return this.inverseState === InverseMatrixState.inverseStored;
     }
     this.inverseState = InverseMatrixState.unknown;
-    this.createInverseCoffsWithZeros();
-    const coffs = this.coffs;
-    const inverseCoffs = this.inverseCoffs!;
-    /**
-     * We calculate the inverse using cross products.
-     * Math details can be found at docs/learning/matrix/Matrix.md
-     *                    [   A   ]
-     * In summary, if M = [   B   ] then inverse of M = (1/det)[BxC   CxA   AxB] where
-     *                    [   C   ]
-     * det is the determinant of matrix M (which is equal to "A dot BxC").
-     */
-    Matrix3d.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0); // BxC
-    Matrix3d.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1); // CxA
-    Matrix3d.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2); // AxB
-    Matrix3d.numComputeCache++;
-    const det = Matrix3d.rowColumnDot(coffs, 0, inverseCoffs, 0); // A dot BxC
-    if (det === 0.0) {
-      this.inverseState = InverseMatrixState.singular;
-      this.inverseCoffs = undefined;
-      return false;
+    if (this.createInverseCoffsWithZeros()) {
+      const coffs = this.coffs;
+      const inverseCoffs = this.inverseCoffs;
+      /**
+       * We calculate the inverse using cross products.
+       * Math details can be found at docs/learning/matrix/Matrix.md
+       *                    [   A   ]
+       * In summary, if M = [   B   ] then inverse of M = (1/det)[BxC   CxA   AxB] where
+       *                    [   C   ]
+       * det is the determinant of matrix M (which is equal to "A dot BxC").
+       */
+      Matrix3d.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0); // BxC
+      Matrix3d.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1); // CxA
+      Matrix3d.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2); // AxB
+      Matrix3d.numComputeCache++;
+      const det = Matrix3d.rowColumnDot(coffs, 0, inverseCoffs, 0);  // A dot BxC
+      if (det === 0.0) {
+        this.inverseState = InverseMatrixState.singular;
+      } else {
+        const f = 1.0 / det;
+        for (let i = 0; i < 9; i++)
+          inverseCoffs[i] *= f;
+        this.inverseState = InverseMatrixState.inverseStored;
+        return true;
+      }
     }
-    const f = 1.0 / det;
-    for (let i = 0; i < 9; i++)
-      inverseCoffs[i] *= f;
-    this.inverseState = InverseMatrixState.inverseStored;
-    return true;
+    this.inverseCoffs = undefined;
+    return false;
   }
   /**
    * Convert a (row,column) index pair to the single index within flattened array of 9 numbers in row-major-order
@@ -2568,8 +2571,7 @@ export class Matrix3d implements BeJSONFunctions {
    * Add scaled values from an outer product of vectors U and V.
    * * The scaled outer product is a matrix with `rank 1` (all columns/rows are linearly dependent).
    * * This is useful in constructing mirrors and directional scales.
-   * ```
-   * equation
+   * ```equation
    * A += s \columnSubXYZ{U}\rowSubXYZ{V}
    * \\ \matrixXY{A} += s \begin{bmatrix}
    * U_x * V_x & U_x * V_y & U_x * V_z \\

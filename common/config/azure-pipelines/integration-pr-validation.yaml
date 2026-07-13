@@ -29,10 +29,10 @@ variables:
   - group: iTwin.js Integration Test Users
 
 jobs:
-  - job: Node_22_x
+  - job: Node_24_x
     condition: succeeded()
     pool:
-      vmImage: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
+      vmImage: ubuntu-latest
     steps:
       - checkout: self
         clean: true
@@ -40,4 +40,4 @@ jobs:
 
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 22.x
+          nodeVersion: 24.15.0

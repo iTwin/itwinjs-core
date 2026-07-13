@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { ECSchemaError, ECSchemaStatus } from "./Exception";
 
-const validECNameRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i;
+const validECNameRegex = /^[a-zA-Z_]\w*$/i;
 const ecNameReplacerRegex = /__x([0-9a-fA-F]{4})__/g;
 const leadingDigits = ["0000", "000", "00", "0", ""];
 

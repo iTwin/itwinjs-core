@@ -160,6 +160,10 @@ export enum DbResult {
   BE_SQLITE_ERROR_SchemaUpgradeRecommended = (BE_SQLITE_IOERR | 22 << 24),
   /** schema update require data transform */
   BE_SQLITE_ERROR_DataTransformRequired = (BE_SQLITE_IOERR | (23 << 24)),
+  /** Db not open */
+  BE_SQLITE_ERROR_NOTOPEN = (BE_SQLITE_ERROR | (1<<24)),
+  /** Error propagating changes during commit */
+  BE_SQLITE_ERROR_PropagateChangesFailed = (BE_SQLITE_ERROR | (2<<24)),
 
   BE_SQLITE_LOCKED_SHAREDCACHE = (BE_SQLITE_LOCKED | (1 << 8)),
   BE_SQLITE_BUSY_RECOVERY = (BE_SQLITE_BUSY | (1 << 8)),

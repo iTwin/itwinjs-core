@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, BentleyStatus, Dictionary, dispose, expectDefined, Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, RenderTextureParams, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
@@ -63,7 +63,7 @@ import { RenderState } from "./RenderState";
 import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
-import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
+import { ExternalTextureLoader, Texture, Texture2DCreateParams, Texture2DHandle, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";
@@ -71,7 +71,7 @@ import { RenderInstancesParams } from "../../../common/render/RenderInstancesPar
 import { _batch, _branch, _featureTable, _nodes } from "../../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../../internal/render/RenderInstancesParamsImpl";
 import { RenderSkyBoxParams } from "../RenderSkyBoxParams";
-import { RenderAreaPattern } from "../RenderAreaPattern";
+import { RenderAreaPattern } from "../../../internal/render/RenderAreaPattern";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -310,6 +310,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
+  private _lineCodeTextureListener?: () => void;
   private _noiseTexture?: TextureHandle;
   private _techniques?: Techniques;
   private _screenSpaceEffects?: ScreenSpaceEffects;
@@ -421,6 +422,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this._techniques = dispose(this._techniques);
     this._screenSpaceEffects = dispose(this._screenSpaceEffects);
     this._lineCodeTexture = dispose(this._lineCodeTexture);
+    if (this._lineCodeTextureListener) {
+      this._lineCodeTextureListener();
+      this._lineCodeTextureListener = undefined;
+    }
     this._noiseTexture = dispose(this._noiseTexture);
 
     // We must attempt to dispose of each idmap in the resourceCache (if idmap is already disposed, has no effect)
@@ -435,7 +440,18 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     }
   }
 
+  private reloadLineCodeTexture(): void {
+    if (!this._lineCodeTexture)
+      return;
+
+    const params = Texture2DCreateParams.createForData(LineCode.size, LineCode.capacity(), LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
+    (this._lineCodeTexture as Texture2DHandle).reload(params);
+  }
+
   public override onInitialized(): void {
+    // Initialize LineCode capacity BEFORE creating techniques (which compile shaders that use the capacity)
+    LineCode.initializeCapacity(this.maxTextureSize);
+
     this._techniques = Techniques.create(this.context);
 
     const noiseDim = 4;
@@ -443,8 +459,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this._noiseTexture = TextureHandle.createForData(noiseDim, noiseDim, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._noiseTexture, "System.noiseTexture not created.");
 
-    this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
+    this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.capacity(), LineCode.getTextureData(), true, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
+    this._lineCodeTextureListener = LineCode.onTextureUpdated(() => this.reloadLineCodeTexture());
 
     this._screenSpaceEffects = new ScreenSpaceEffects();
   }
@@ -841,7 +858,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   // Ensure *something* is bound to suppress 'no texture assigned to unit x' warnings.
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
-    this.lineCodeTexture!.bindSampler(uniform, unit);
+    expectDefined(this.lineCodeTexture).bindSampler(uniform, unit);
   }
 
   public override get maxRealityImageryLayers() {

@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb,
+  CategorySelector, DefinitionModel, DisplayStyle3d, EditTxn, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, withEditTxn,
 } from "@itwin/core-backend";
 import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
 
@@ -77,11 +77,15 @@ export class RealityModelContextIModelCreator {
       const cartoCenter = Cartographic.fromRadians({ longitude: (region[0] + region[2]) / 2.0, latitude: (region[1] + region[3]) / 2.0, height: (region[4] + region[5]) / 2.0 });
       const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
       this.iModelDb.setEcefLocation(ecefLocation);
-      const ecefToWorld = ecefLocation.getTransform().inverse()!;
+      const ecefToWorld = ecefLocation.getTransform().inverse();
+      if (undefined === ecefToWorld)
+        throw new TypeError("Unable to determine the reality model world transform.");
       worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
     } else {
       let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
-      const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
+      const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume);
+      if (undefined === range)
+        throw new TypeError("Unable to determine range from the reality model bounding volume.");
       if (undefined === rootTransform)
         rootTransform = Transform.createIdentity();
 
@@ -90,11 +94,17 @@ export class RealityModelContextIModelCreator {
         geoLocated = false;
         worldRange.extendRange(Range3d.fromJSON(tileRange));
       } else {
-        const ecefCenter = tileRange.localXYZToWorld(.5, .5, .5)!;
+        const ecefCenter = tileRange.localXYZToWorld(.5, .5, .5);
+        if (undefined === ecefCenter)
+          throw new TypeError("Unable to determine the reality model ECEF center.");
         const cartoCenter = Cartographic.fromEcef(ecefCenter);
-        const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+        if (undefined === cartoCenter)
+          throw new TypeError("Unable to convert the reality model ECEF center to cartographic coordinates.");
+        const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
         this.iModelDb.setEcefLocation(ecefLocation);
-        const ecefToWorld = ecefLocation.getTransform().inverse()!;
+        const ecefToWorld = ecefLocation.getTransform().inverse();
+        if (undefined === ecefToWorld)
+          throw new TypeError("Unable to determine the reality model world transform.");
         worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(tileRange)));
       }
     }
@@ -102,9 +112,6 @@ export class RealityModelContextIModelCreator {
   }
   /** Perform the import */
   public async create(): Promise<void> {
-    this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Definitions");
-    this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Empty Model");
-
     let geoLocated = false;
     const worldRange = new Range3d();
     const realityModels: ContextRealityModelProps[] = [];
@@ -134,14 +141,23 @@ export class RealityModelContextIModelCreator {
           modelUrl = modelUrl.replace(/ /g, "%20");
           const ecefRange = Range3d.fromJSON(model.extents);
           if (!worldToEcef) {
-            worldToEcef = RealityModelTileUtils.transformFromJson(model.transform)!;
-            const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
+            worldToEcef = RealityModelTileUtils.transformFromJson(model.transform);
+            if (undefined === worldToEcef)
+              throw new TypeError("Unable to determine the reality model transform.");
+            const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5);
+            if (undefined === ecefCenter)
+              throw new TypeError("Unable to determine the reality model ECEF center.");
             const cartoCenter = Cartographic.fromEcef(ecefCenter);
-            const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+            if (undefined === cartoCenter)
+              throw new TypeError("Unable to convert the reality model ECEF center to cartographic coordinates.");
+            const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
             this.iModelDb.setEcefLocation(ecefLocation);
             geoLocated = true;
           }
-          worldRange.extendRange(worldToEcef.inverse()!.multiplyRange(ecefRange));
+          const ecefToWorld = worldToEcef.inverse();
+          if (undefined === ecefToWorld)
+            throw new TypeError("Unable to determine the reality model world transform.");
+          worldRange.extendRange(ecefToWorld.multiplyRange(ecefRange));
           realityModels.push({ tilesetUrl: modelUrl, name: this._name ? this._name : model.name });
         }
       }
@@ -156,17 +172,20 @@ export class RealityModelContextIModelCreator {
       }
     }
 
-    this.insertSpatialView("Reality Model View", worldRange, realityModels, geoLocated);
-    this.iModelDb.updateProjectExtents(worldRange);
-    this.iModelDb.saveChanges();
+    await withEditTxn(this.iModelDb, "create reality model context", async (txn) => {
+      this.definitionModelId = DefinitionModel.insert(txn, IModelDb.rootSubjectId, "Definitions");
+      this.physicalModelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, "Empty Model");
+      this.insertSpatialView(txn, "Reality Model View", worldRange, realityModels, geoLocated);
+      txn.updateProjectExtents(worldRange);
+    });
   }
 
   /** Insert a SpatialView configured to display the GeoJSON data that was converted/imported. */
-  protected insertSpatialView(viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
-    const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
-    const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
+  protected insertSpatialView(txn: EditTxn, viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
+    const modelSelectorId: Id64String = ModelSelector.insert(txn, this.definitionModelId, viewName, [this.physicalModelId]);
+    const categorySelectorId: Id64String = CategorySelector.insert(txn, this.definitionModelId, viewName, []);
     const vf = new ViewFlags({ backgroundMap: geoLocated, renderMode: RenderMode.SmoothShade, lighting: true });
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
-    return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(txn, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
+    return OrthographicViewDefinition.insert(txn, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
   }
 }

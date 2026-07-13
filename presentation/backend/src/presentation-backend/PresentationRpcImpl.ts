@@ -225,10 +225,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
 
     if (this._requestTimeout === 0) {
       Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout not configured, returning promise without a timeout.`);
-      void resultPromise.finally(() => {
+      return resultPromise.finally(() => {
         this._pendingRequests.deleteValue(requestKey);
       });
-      return resultPromise;
     }
 
     Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Returning a promise with a timeout of ${this._requestTimeout}.`);
@@ -249,6 +248,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
         timeout.cancel();
       });
   }
+
+  /* eslint-disable @typescript-eslint/no-deprecated */
 
   public override async getNodesCount(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<number> {
     return this.makeRequest(token, "getNodesCount", requestOptions, async (options) => {
@@ -297,6 +298,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getFilteredNodePaths(options);
     });
   }
+
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   public override async getContentSources(
     token: IModelRpcProps,

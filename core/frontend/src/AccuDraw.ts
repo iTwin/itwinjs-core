@@ -1158,10 +1158,7 @@ export class AccuDraw {
       if (point.y < 0.0)
         adjustment = -adjustment;
       angle += adjustment; // This is the angle measured from design x...
-      angle = (Math.PI / 2) - angle; // Account for bearing direction convention...
-
-      if (angle < 0)
-        angle = (Math.PI * 2) + angle; // Negative bearings aren't valid?
+      // core-quantity now applies the north-measured conversion itself (#9465); don't do it here too.
     }
 
     const formatterSpec = this.getAngleFormatter();
@@ -1208,10 +1205,8 @@ export class AccuDraw {
       case ItemField.ANGLE_Item:
         parseResult = this.stringToAngle(input);
         if (Parser.isParsedQuantity(parseResult)) {
-          if (this.isBearingMode && this.flags.bearingFixToPlane2D)
-            this._angle = (Math.PI / 2) - parseResult.value;
-          else
-            this._angle = parseResult.value;
+          // core-quantity's Parser applies the north-measured conversion itself now (#9465).
+          this._angle = parseResult.value;
           break;
         }
         return BentleyStatus.ERROR;
@@ -1509,7 +1504,8 @@ export class AccuDraw {
   /** @internal */
   public static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined {
     const vp = (undefined !== currentVp) ? currentVp : snap.viewport;
-    const snapDetail = snap.primitive?.closestPoint(snap.snapPoint, false);
+    const snapCurve = snap.getCurvePrimitive(true);
+    const snapDetail = snapCurve?.closestPoint(snap.snapPoint, false);
     const frame = snapDetail?.curve?.fractionToFrenetFrame(snapDetail.fraction);
 
     if (undefined === frame && undefined === snap.normal)
@@ -1836,17 +1832,17 @@ export class AccuDraw {
     const useAcs = vp ? vp.isContextRotationRequired : false;
     switch (this.flags.baseRotation) {
       case RotationMode.Top: {
-        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, vp, useAcs)!;
+        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, vp, useAcs);
         break;
       }
 
       case RotationMode.Front: {
-        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Front, vp, useAcs)!;
+        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Front, vp, useAcs);
         break;
       }
 
       case RotationMode.Side: {
-        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Right, vp, useAcs)!;
+        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Right, vp, useAcs);
         break;
       }
 
@@ -2602,7 +2598,7 @@ export class AccuDraw {
     if (!this._distanceRoundOff.active || !this._distanceRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._distanceRoundOff.units.values().next().value!;
+    let roundValue = this._distanceRoundOff.units.values().next().value ?? 0;
 
     if (this._distanceRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...
@@ -2634,7 +2630,7 @@ export class AccuDraw {
     if (!this._angleRoundOff.active || !this._angleRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._angleRoundOff.units.values().next().value!;
+    let roundValue = this._angleRoundOff.units.values().next().value ?? 0;
 
     if (this._angleRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...
@@ -3128,6 +3124,15 @@ export class AccuDraw {
 
     // Make sure active tool updates its dynamics. NOTE: Need point adjusted for new locks, etc.
     IModelApp.toolAdmin.updateDynamics(undefined, undefined, true);
+  }
+
+  /** @internal */
+  public requestInputFocus(): void {
+    if (!this.isEnabled)
+      return;
+
+    this.grabInputFocus();
+    this.refreshDecorationsAndDynamics();
   }
 
   /** @internal */

@@ -93,6 +93,9 @@
     "ToggleRealityTileLogging": {
       "keyin": "fdt toggle reality logging"
     },
+    "ViewDefinitionDecorationTool": {
+      "keyin": "fdt toggle viewdef bounds"
+    },
     "ToggleSectionCut": {
       "keyin": "fdt section cut"
     },

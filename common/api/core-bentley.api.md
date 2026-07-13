@@ -128,6 +128,20 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
 
+// @beta
+export class BeUnorderedEvent<T extends Listener> {
+    addListener(listener: T, scope?: any): () => void;
+    addOnce(listener: T, scope?: any): () => void;
+    clear(): void;
+    get numberOfListeners(): number;
+    raiseEvent(...args: Parameters<T>): void;
+}
+
+// @beta
+export class BeUnorderedUiEvent<TEventArgs> extends BeUnorderedEvent<(args: TEventArgs) => void> {
+    emit(args: TEventArgs): void;
+}
+
 // @public
 export enum BriefcaseStatus {
     // (undocumented)
@@ -262,6 +276,7 @@ export namespace CompressedId64Set {
     export function compressSet(ids: Id64Set): CompressedId64Set;
     export function decompressArray(compressedIds: CompressedId64Set, out?: Id64Array): Id64Array;
     export function decompressSet(compressedIds: CompressedId64Set, out?: Id64Set): Id64Set;
+    export function isValid(ids: unknown): ids is CompressedId64Set;
     export function iterable(ids: CompressedId64Set): OrderedId64Iterable;
     export function iterator(ids: CompressedId64Set): Iterator<Id64String>;
     export function sortAndCompress(ids: Iterable<Id64String>): CompressedId64Set;
@@ -360,12 +375,14 @@ export enum DbResult {
     BE_SQLITE_ERROR_InvalidChangeSetVersion = 234881034,
     BE_SQLITE_ERROR_InvalidProfileVersion = 117440522,
     BE_SQLITE_ERROR_NoPropertyTable = 50331658,
+    BE_SQLITE_ERROR_NOTOPEN = 16777217,
     BE_SQLITE_ERROR_NoTxnActive = 83886090,
     BE_SQLITE_ERROR_ProfileTooNew = 201326602,
     BE_SQLITE_ERROR_ProfileTooNewForReadWrite = 184549386,
     BE_SQLITE_ERROR_ProfileTooOld = 167772170,
     BE_SQLITE_ERROR_ProfileTooOldForReadWrite = 150994954,
     BE_SQLITE_ERROR_ProfileUpgradeFailed = 134217738,
+    BE_SQLITE_ERROR_PropagateChangesFailed = 33554433,
     BE_SQLITE_ERROR_SchemaImportFailed = 335544330,
     BE_SQLITE_ERROR_SchemaLockFailed = 301989898,
     BE_SQLITE_ERROR_SchemaTooNew = 268435466,
@@ -462,6 +479,16 @@ export enum DbValueType {
     // (undocumented)
     TextVal = 3
 }
+
+// @public
+export type DeepReadonlyObject<T> = T extends object ? {
+    readonly [K in keyof T]: DeepReadonlyObject<T[K]>;
+} : T;
+
+// @public
+export type DeepRequiredObject<T> = T extends object ? {
+    [K in keyof T]-?: DeepRequiredObject<T[K]>;
+} : T;
 
 // @public
 export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
@@ -575,6 +602,12 @@ export abstract class ErrorCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
 }
+
+// @internal
+export function expectDefined<T>(value: T | undefined, message?: string): T;
+
+// @internal
+export function expectNotNull<T>(value: T | null, message?: string): T;
 
 // @public
 export enum GeoServiceStatus {
@@ -1233,8 +1266,10 @@ export class Logger {
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: LoggingMetaData): void;
+    static logError(category: string, error: unknown, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logError: LogFunction | undefined;
+    // @deprecated
     static logException(category: string, err: any, log?: LogFunction): void;
     static logExceptionCallstacks: boolean;
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
@@ -1356,6 +1391,11 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     reset(ids?: CompressedId64Set): void;
 }
 
+// @beta
+export type NestedValueOf<T> = ValueOf<{
+    [K in keyof T]: ValueOf<T[K]>;
+}>;
+
 // @public
 export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
 
@@ -1367,9 +1407,13 @@ export type NonFunctionPropertyNamesOf<T> = {
 // @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
+    addAll(items: Iterable<T>): number;
     clear(): void;
     delete(item: T): boolean;
+    deleteAll(items: Iterable<T>): number;
     readonly onAdded: BeEvent<(item: T) => void>;
+    readonly onBatchAdded: BeEvent<() => void>;
+    readonly onBatchDeleted: BeEvent<() => void>;
     readonly onCleared: BeEvent<() => void>;
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
@@ -1496,6 +1540,7 @@ export class ProcessDetector {
     static get isChromium(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
+    static get isIEBrowser(): boolean;
     static get isIOSAppBackend(): boolean;
     static get isIOSAppFrontend(): boolean;
     static get isIOSBrowser(): boolean;
@@ -1791,6 +1836,12 @@ export function using<T extends IDisposable, TResult>(resources: T | T[], func: 
 
 // @public
 export function utf8ToString(utf8: Uint8Array): string | undefined;
+
+// @beta
+export type ValueOf<T> = T[keyof T];
+
+// @beta
+export function wrapTimerCallback(timerPromises: Set<Promise<void>>, callback: () => Promise<void>): Promise<void>;
 
 // @public
 export class YieldManager {

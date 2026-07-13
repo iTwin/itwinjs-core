@@ -114,7 +114,7 @@ export interface NestedContentValue {
   mergedFieldNames: string[];
   /**
    * Label of the ECInstance that this `NestedContentValue` is based on.
-   * @deprecated in 5.x. Use [[label]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[label]] instead.
    */
   labelDefinition?: LabelDefinition;
   label?: LabelDefinition;

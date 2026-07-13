@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp } from "@itwin/core-frontend";
-import {GoogleMaps} from "@itwin/map-layers-formats";
+import { MapCartoRectangle, QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal";
+import {GoogleMaps, GoogleMapsCreateSessionOptions, MapLayersFormats} from "@itwin/map-layers-formats";
 
 // __PUBLISH_EXTRACT_START__GoogleMaps_BaseMapSimple
 function setGoogleMapsBaseMap() {
@@ -71,8 +72,43 @@ async function setGoogleMapsApiKey() {
   });
 }
 // __PUBLISH_EXTRACT_END__
+// __PUBLISH_EXTRACT_START__GoogleMaps_SetGoogleMapsSessionManager
+async function setGoogleMapsSessionManager() {
+  await MapLayersFormats.initialize(
+    {
+      googleMapsOpts: {
+        sessionManager: {
+          type: "GoogleMapsSessionManager",
+          createSession: async (_sessionOptions: GoogleMapsCreateSessionOptions) => {
+            return {
+              getTileSize: () => {
+                return 256;
+              } ,
+              getTileRequest: (position: QuadIdProps) => {
+                return {
+                  url: new URL(`https://tile.googleapis.com/v1/2dtiles/zoom=${position.level}/${position.row}/${position.column}&session=abc123`),
+                  authorization: "abc123"
+                };
+              },
+              getViewportInfoRequest: (rectangle: MapCartoRectangle, zoomLevel: number) => {
+                const degrees = rectangle.toDegrees();
+                return {
+                  url: new URL(`https://tile.googleapis.com/tile/v1/viewport?zoom=${zoomLevel}?north=${degrees.north}&south=${degrees.south}&east=${degrees.east}&west=${degrees.west}`),
+                  authorization: "abc123"
+                };
+              }
+            };
+          },
+        },
+      },
+    }
+
+  )
+}
+// __PUBLISH_EXTRACT_END__
 setGoogleMapsBaseMap();
 setGoogleMapsBaseMapOpts();
 attachGoogleMapsMapLayerSimple();
 attachGoogleMapsMapLayerOpts();
 setGoogleMapsApiKey().catch(() => {});
+setGoogleMapsSessionManager().catch(() => {});

@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
+import { FeatureAppearanceProvider, Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
 import { Decorations } from "../../../render/Decorations";
 import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
 import { GraphicList, RenderGraphic } from "../../../render/RenderGraphic";
@@ -47,6 +47,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
   private _translucentOverrides = false;
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
   private readonly _layers: LayerCommandLists;
+  public appearanceProvider?: FeatureAppearanceProvider;
 
   public get target(): Target { return this._target; }
 
@@ -107,6 +108,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._target = target;
     this._stack = stack;
     this._batchState = batchState;
+    this.appearanceProvider = undefined;
     this.clear();
   }
 
@@ -278,7 +280,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   public getCommands(pass: RenderPass): DrawCommands {
-    let idx = pass as number;
+    let idx = pass;
     assert(idx < this._commands.length);
     if (idx >= this._commands.length)
       idx -= 1;
@@ -287,7 +289,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   public replaceCommands(pass: RenderPass, cmds: DrawCommands): void {
-    const idx = pass as number;
+    const idx = pass;
     this._commands[idx].splice(0);
     this._commands[idx] = cmds;
   }
@@ -641,7 +643,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     assert(undefined === this._curBatch);
 
     // If all features are overridden to be invisible, draw no graphics in this batch
-    const overrides = batch.getOverrides(this.target);
+    const overrides = batch.getOverrides(this.target, this.appearanceProvider ?? this._stack.top);
     if (overrides.allHidden)
       return;
 

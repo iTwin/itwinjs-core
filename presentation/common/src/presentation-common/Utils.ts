@@ -66,6 +66,7 @@ export interface PagedResponse<T> {
  */
 export const getInstancesCount = (keys: Readonly<KeySet>): number => {
   let count = keys.instanceKeysCount;
+  /* eslint-disable @typescript-eslint/no-deprecated */
   keys.nodeKeys.forEach((key: NodeKey) => {
     if (NodeKey.isInstancesNodeKey(key)) {
       count += key.instanceKeys.length;
@@ -73,6 +74,7 @@ export const getInstancesCount = (keys: Readonly<KeySet>): number => {
       count += key.groupedInstancesCount;
     }
   });
+  /* eslint-enable @typescript-eslint/no-deprecated */
   return count;
 };
 

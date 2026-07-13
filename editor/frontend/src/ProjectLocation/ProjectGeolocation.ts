@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, LengthDescription, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
+import { AccuDrawHintBuilder, BeButtonEvent, CanvasDecoration, CoreTools, createQuantityDescription, DecorateContext, EventHandled, GraphicType, IModelApp, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
 import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
@@ -102,7 +102,10 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _latitudeProperty: DialogProperty<number> | undefined;
   public get latitudeProperty() {
     if (!this._latitudeProperty)
-      this._latitudeProperty = new DialogProperty<number>(new AngleDescription("latitude", translateMessage("Latitude")), 0.0);
+      this._latitudeProperty = new DialogProperty<number>(createQuantityDescription({
+        name: "latitude", displayLabel: translateMessage("Latitude"),
+        kindOfQuantityName: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD",
+      }), 0.0);
     return this._latitudeProperty;
   }
 
@@ -112,7 +115,10 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _longitudeProperty: DialogProperty<number> | undefined;
   public get longitudeProperty() {
     if (!this._longitudeProperty)
-      this._longitudeProperty = new DialogProperty<number>(new AngleDescription("longitude", translateMessage("Longitude")), 0.0);
+      this._longitudeProperty = new DialogProperty<number>(createQuantityDescription({
+        name: "longitude", displayLabel: translateMessage("Longitude"),
+        kindOfQuantityName: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD",
+      }), 0.0);
     return this._longitudeProperty;
   }
 
@@ -122,7 +128,10 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _altitudeProperty: DialogProperty<number> | undefined;
   public get altitudeProperty() {
     if (!this._altitudeProperty)
-      this._altitudeProperty = new DialogProperty<number>(new LengthDescription("altitude", CoreTools.translate("Measure.Labels.Altitude")), 0.0);
+      this._altitudeProperty = new DialogProperty<number>(createQuantityDescription({
+        name: "altitude", displayLabel: CoreTools.translate("Measure.Labels.Altitude"),
+        kindOfQuantityName: "DefaultToolsUnits.LENGTH", persistenceUnitName: "Units.M",
+      }), 0.0);
     return this._altitudeProperty;
   }
 
@@ -132,7 +141,10 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _northProperty: DialogProperty<number> | undefined;
   public get northProperty() {
     if (!this._northProperty)
-      this._northProperty = new DialogProperty<number>(new AngleDescription("north", translateMessage("North")), 0.0);
+      this._northProperty = new DialogProperty<number>(createQuantityDescription({
+        name: "north", displayLabel: translateMessage("North"),
+        kindOfQuantityName: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD",
+      }), 0.0);
     return this._northProperty;
   }
 
@@ -410,9 +422,9 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   }
 
   private getAdjustedPoint(ev: BeButtonEvent): Point3d | undefined {
-    if (undefined === this._origin)
+    if (undefined === this._origin || undefined === ev.viewport)
       return undefined;
-    return AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, this._origin, Vector3d.unitZ(), ev.viewport!, true);
+    return AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, this._origin, Vector3d.unitZ(), ev.viewport, true);
   }
 
   private unsuspendDecorations() {
@@ -641,4 +653,3 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
 
   public static async startTool() { return new ProjectGeolocationMoveTool().run(); }
 }
-

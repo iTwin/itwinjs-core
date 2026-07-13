@@ -94,7 +94,7 @@ export type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassId
 export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | EntityClassMixinDifference | CustomAttributeDifference | KindOfQuantityPresentationFormatDifference | FormatUnitDifference;
 
 // @alpha
-export type AnySchemaDifferenceConflict = SchemaDifferenceConflict<ConflictCode.ConflictingItemName, SchemaItemType> | SchemaDifferenceConflict<ConflictCode.ConflictingReferenceAlias, SchemaOtherTypes.SchemaReference> | SchemaDifferenceConflict<ConflictCode.ConflictingReferenceVersion, SchemaOtherTypes.SchemaReference> | SchemaDifferenceConflict<ConflictCode.ConflictingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.RemovingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.SealedBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingClassModifier, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumerationType, SchemaItemType.Enumeration> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumeratorValue, SchemaOtherTypes.Enumerator> | SchemaDifferenceConflict<ConflictCode.ConflictingPersistenceUnit, SchemaItemType.KindOfQuantity> | SchemaDifferenceConflict<ConflictCode.MixinAppliedMustDeriveFromConstraint, SchemaOtherTypes.EntityClassMixin> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyName, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantity, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantityUnit, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnit, SchemaOtherTypes.FormatUnit> | SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnitPhenomenon, SchemaOtherTypes.FormatUnit> | SchemaDifferenceConflict<ConflictCode.AbstractConstraintMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.DerivedConstraintsMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.ConstraintClassesDeriveFromAbstractConstraint, SchemaOtherTypes.RelationshipConstraint>;
+export type AnySchemaDifferenceConflict = SchemaDifferenceConflict<ConflictCode.ConflictingItemName, SchemaItemType> | SchemaDifferenceConflict<ConflictCode.ConflictingReferenceAlias, SchemaOtherTypes.SchemaReference> | SchemaDifferenceConflict<ConflictCode.ConflictingReferenceVersion, SchemaOtherTypes.SchemaReference> | SchemaDifferenceConflict<ConflictCode.ConflictingReferenceDynamic, SchemaOtherTypes.SchemaReference> | SchemaDifferenceConflict<ConflictCode.ConflictingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.RemovingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.SealedBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingClassModifier, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumerationType, SchemaItemType.Enumeration> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumeratorValue, SchemaOtherTypes.Enumerator> | SchemaDifferenceConflict<ConflictCode.ConflictingPersistenceUnit, SchemaItemType.KindOfQuantity> | SchemaDifferenceConflict<ConflictCode.MixinAppliedMustDeriveFromConstraint, SchemaOtherTypes.EntityClassMixin> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyName, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantity, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantityUnit, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnit, SchemaOtherTypes.FormatUnit> | SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnitPhenomenon, SchemaOtherTypes.FormatUnit> | SchemaDifferenceConflict<ConflictCode.AbstractConstraintMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.DerivedConstraintsMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.ConstraintClassesDeriveFromAbstractConstraint, SchemaOtherTypes.RelationshipConstraint>;
 
 // @alpha
 export type AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit;
@@ -228,6 +228,8 @@ export enum ConflictCode {
     ConflictingPropertyName = "C-1300",
     // (undocumented)
     ConflictingReferenceAlias = "C-002",
+    // (undocumented)
+    ConflictingReferenceDynamic = "C-004",
     // (undocumented)
     ConflictingReferenceVersion = "C-003",
     // (undocumented)
@@ -465,6 +467,7 @@ export const DiagnosticCodes: {
     ConstraintClassesDeriveFromAbstractConstraint: string;
     AtLeastOneConstraintClassDefined: string;
     AbstractConstraintMustExistWithMultipleConstraints: string;
+    NonPolymorphicConstraintMustBeConcrete: string;
 };
 
 // @beta
@@ -740,6 +743,17 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
+            category: DiagnosticCategory;
+        };
+    };
+    NonPolymorphicConstraintMustBeConcrete: {
+        new (constraint: RelationshipConstraint, messageArgs: [string, string, string], category?: DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: DiagnosticType;
+            ecDefinition: RelationshipConstraint;
+            messageArgs?: [string, string, string] | undefined;
             category: DiagnosticCategory;
         };
     };
@@ -2268,6 +2282,8 @@ export class SchemaItemMissing extends SchemaItemChange {
 // @beta
 export class SchemaMerger {
     constructor(editingContext: SchemaContext);
+    // @alpha
+    getMergeReport(): SchemaMergeReport | undefined;
     // @alpha
     merge(differenceResult: SchemaDifferenceResult, edits?: SchemaEdits): Promise<Schema>;
     // @alpha

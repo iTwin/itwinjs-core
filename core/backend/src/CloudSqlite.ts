@@ -11,13 +11,14 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, ITwinError, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch, wrapTimerCallback,
 } from "@itwin/core-bentley";
 import { CloudSqliteError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { RpcTrace } from "./rpc/tracing";
+import { getOnlineStatus } from "./internal/OnlineStatus";
 
 import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
@@ -55,13 +56,16 @@ export namespace CloudSqlite {
 
   /**
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
-   * If the service is unavailable or returns an error, an empty token is returned.
+   * If the backend is considered offline, this returns an empty token without calling the service.
    */
   export async function requestToken(args: RequestTokenArgs): Promise<AccessToken> {
     // allow the userToken to be supplied via args. If not supplied, or blank, use the backend's accessToken. If that fails, use the value from the current RPC request
     let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
     if (userToken === "")
       userToken = RpcTrace.currentActivity?.accessToken ?? "";
+    if (!getOnlineStatus())
+      return "";
+
     const response = await getBlobService().requestToken({ ...args, userToken });
     return response?.token ?? "";
   }
@@ -236,20 +240,36 @@ export namespace CloudSqlite {
   export interface BcvStats {
     /** The total number of cache slots that are currently in use or 'locked' by ongoing client read transactions. In daemonless mode, this value is always 0.
      *  A locked cache slot implies that it is not eligible for eviction in the event of a full cachefile.
+     *  NOTE: All values are returned as hex strings to avoid any possibility of overflow.
     */
-    readonly lockedCacheslots: number;
+    readonly lockedCacheslots: string;
     /** The current number of slots with data in them in the cache. */
-    readonly populatedCacheslots: number;
+    readonly populatedCacheslots: string;
     /** The configured size of the cache, in number of slots. */
-    readonly totalCacheslots: number;
+    readonly totalCacheslots: string;
     /** The total number of clients opened on this cache */
-    readonly totalClients?: number;
+    readonly totalClients?: string;
     /** The total number of ongoing prefetches on this cache */
-    readonly ongoingPrefetches?: number;
+    readonly ongoingPrefetches?: string;
     /** The total number of active clients on this cache. An active client is one which has an open read txn. */
-    readonly activeClients?: number;
+    readonly activeClients?: string;
     /** The total number of attached containers on this cache. */
-    readonly attachedContainers?: number;
+    readonly attachedContainers?: string;
+    /** The total amount of memory used by sqlite, in bytes. */
+    readonly memoryUsed?: string;
+    /** The maximum value of memoryUsed since high-water mark was last reset, in bytes. */
+    readonly memoryHighwater?: string;
+    /** The total amount of memory used for the manifests for each attached container, in bytes. */
+    readonly memoryManifest?: string;
+    /** Memory used for arrays of block references held in the daemon on behalf of clients, in bytes.
+     *  @note this value is only present when running in daemon mode.
+     */
+    readonly memoryClientArray?: string;
+    /** Memory used by manifests that are kept in memory only for clients use - not the newest manifest
+     * available held by the container object, in bytes.
+     * @note this value is only present when running in daemon mode.
+     */
+    readonly memoryClientManifest?: string;
   }
 
   /** The base name of a CloudSqlite database, without any version information.
@@ -480,7 +500,7 @@ export namespace CloudSqlite {
    * Notes:
    * - all methods and accessors of this interface (other than `initializeContainer`) require that the `connect` method be successfully called first.
    * Otherwise they will throw an exception or return meaningless values.
-   * - before a SQLiteDb in a container may be opened for write access, the container's write lock must be held (see [[acquireWriteLock]].)
+   * - before a SQLiteDb in a container may be opened for write access, the container's write lock must be held (see [[acquireWriteLock]]).
    * - a single CloudContainer may hold more than one SQLiteDb, but often they are 1:1.
    * - the write lock is per-Container, not per-SQLiteDb (which is the reason they are often 1:1)
    * - the accessToken (a SAS key) member provides time limited, restricted, access to the container. It must be refreshed before it expires.
@@ -678,6 +698,16 @@ export namespace CloudSqlite {
   }
 
   /**
+   * Determine if error is a "transfer already completed" error.
+   * @param err Any thrown error
+   * @returns true if the error is a "transfer already completed" error, or false otherwise.
+   * @internal
+   */
+  function isTransferAlreadyCompletedError(err: any): boolean {
+    return ITwinError.isError(err, "imodel-native", "BadArg") && err.message === "transfer already completed";
+  }
+
+  /**
    * Clean any unused deleted blocks from cloud storage. Unused deleted blocks can accumulate in cloud storage in a couple of ways:
    * 1) When a database is updated, a subset of its blocks are replaced by new versions, sometimes leaving the originals unused.
    * 2) A database is deleted with [[CloudContainer.deleteDatabase]]
@@ -688,19 +718,35 @@ export namespace CloudSqlite {
    */
   export async function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void> {
     let timer: NodeJS.Timeout | undefined;
+    const intervalPromises = new Set<Promise<void>>();
     try {
       const cleanJob = new NativeLibrary.nativeLib.CancellableCloudSqliteJob("cleanup", container, options);
       let total = 0;
       const onProgress = options?.onProgress;
       if (onProgress) {
-        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = cleanJob.getProgress();
-          total = progress.total;
-          const result = await onProgress(progress.loaded, progress.total);
-          if (result === 1)
-            cleanJob.stopAndSaveProgress();
-          else if (result !== 0)
-            cleanJob.cancelTransfer();
+        timer = setInterval(() => { // set an interval timer to show progress every 250ms
+          void wrapTimerCallback(intervalPromises, async () => {
+            try {
+              const progress = cleanJob.getProgress();
+              total = progress.total;
+              const result = await onProgress(progress.loaded, progress.total);
+              if (result === 1)
+                cleanJob.stopAndSaveProgress();
+              else if (result !== 0)
+                cleanJob.cancelTransfer();
+            } catch (err: any) {
+              if (timer) {
+                clearInterval(timer);
+                timer = undefined;
+              }
+              // A race condition exists where cleanJob has completed but the timer has not yet been cleared, or it
+              // completes while we are waiting on the onProgress callback. If this happens, we will get an error from any
+              // function call made to cleanJob after the job is done. In that case, just ignore the error.
+              if (isTransferAlreadyCompletedError(err))
+                return;
+              throw err;
+            }
+          });
         }, 250);
       }
       await cleanJob.promise;
@@ -715,6 +761,12 @@ export namespace CloudSqlite {
       if (timer)
         clearInterval(timer);
     }
+    // Note: if an error is thrown before we get here then we don't care about any possible errors from the interval
+    // callbacks, so we don't await the promises in that case. If we do get here, then we want to await any remaining
+    // promises to ensure all callbacks have completed before this function returns.
+    if (intervalPromises.size > 0) {
+      await Promise.all(intervalPromises);
+    }
   }
 
   /** @internal */
@@ -723,16 +775,32 @@ export namespace CloudSqlite {
       mkdirSync(dirname(props.localFileName), { recursive: true }); // make sure the directory exists before starting download
 
     let timer: NodeJS.Timeout | undefined;
+    const intervalPromises = new Set<Promise<void>>();
     try {
       const transfer = new NativeLibrary.nativeLib.CancellableCloudSqliteJob(direction, container, props);
       let total = 0;
       const onProgress = props.onProgress;
       if (onProgress) {
-        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = transfer.getProgress();
-          total = progress.total;
-          if (onProgress(progress.loaded, progress.total))
-            transfer.cancelTransfer();
+        timer = setInterval(() => { // set an interval timer to show progress every 250ms
+          void wrapTimerCallback(intervalPromises, async () => {
+            try {
+              const progress = transfer.getProgress();
+              total = progress.total;
+              if (onProgress(progress.loaded, progress.total))
+                transfer.cancelTransfer();
+            } catch (err: any) {
+              if (timer) {
+                clearInterval(timer);
+                timer = undefined;
+              }
+              // A race condition exists where transfer has completed but the timer has not yet been cleared. If this
+              // happens, we will get an error from any function call made to transfer after the job is done. In that
+              // case, just ignore the error.
+              if (isTransferAlreadyCompletedError(err))
+                return;
+              throw err;
+            }
+          });
         }, 250);
       }
       await transfer.promise;
@@ -745,7 +813,12 @@ export namespace CloudSqlite {
     } finally {
       if (timer)
         clearInterval(timer);
-
+    }
+    // Note: if an error is thrown before we get here then we don't care about any possible errors from the interval
+    // callbacks, so we don't await the promises in that case. If we do get here, then we want to await any remaining
+    // promises to ensure all callbacks have completed before this function returns.
+    if (intervalPromises.size > 0) {
+      await Promise.all(intervalPromises);
     }
   }
 
@@ -864,7 +937,7 @@ export namespace CloudSqlite {
   }
 
   export function validateDbVersion(version?: DbVersion) {
-    version = version ?? "0.0.0";
+    version = version || "0.0.0";
     const opts = { loose: true, includePrerelease: true };
     // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
     const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;

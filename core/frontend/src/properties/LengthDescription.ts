@@ -12,22 +12,25 @@ import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Length Property Description
+ * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
  * @beta
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class LengthDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     const defaultName = "length";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     super({
-      name: name ? name : defaultName,
-      displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "AecUnits.LENGTH",
+      name: name ?? defaultName,
+      displayLabel: displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
+      kindOfQuantityName: kindOfQuantityName ?? "DefaultToolsUnits.LENGTH",
       iconSpec,
     });
   }
 
   public get formatterQuantityType(): QuantityType { return QuantityType.Length; }
   /**
-   * @deprecated in 5.0. Use the `kindOfQuantityName` property instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use the `kindOfQuantityName` property instead.
    */
   public get quantityType(): string { return "Length"; }
 
@@ -36,22 +39,25 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 /**
  * Survey Length Property Description
+ * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) in new code. To preserve survey-length behavior, configure a dedicated [FormatsProvider]($quantity) such as [FormatSetFormatsProvider]($ecschema-metadata).
  * @beta
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class SurveyLengthDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     const defaultName = "surveyLength";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     super({
-      name: name ? name : defaultName,
-      displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "AecUnits.LENGTH",
+      name: name ?? defaultName,
+      displayLabel: displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
+      kindOfQuantityName: kindOfQuantityName ?? "CivilUnits.LENGTH",
       iconSpec,
     });
   }
 
   public get formatterQuantityType(): QuantityType { return QuantityType.LengthSurvey; }
   /**
-   * @deprecated in 5.0. Use the `kindOfQuantityName` property instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use the `kindOfQuantityName` property instead.
    */
   public get quantityType(): string { return "LengthSurvey"; }
 
@@ -60,23 +66,26 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
 
 /**
  * Engineering Length Property Description
+ * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
  * @beta
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class EngineeringLengthDescription extends FormattedQuantityDescription {
 
   constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     const defaultName = "engineeringLength";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     super({
-      name: name ? name : defaultName,
-      displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "AecUnits.LENGTH",
+      name: name ?? defaultName,
+      displayLabel: displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
+      kindOfQuantityName: kindOfQuantityName ?? "AecUnits.LENGTH",
       iconSpec,
     });
   }
 
   public get formatterQuantityType(): QuantityType { return QuantityType.LengthEngineering; }
   /**
-   * @deprecated in 5.0. Use the `kindOfQuantityName` property instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use the `kindOfQuantityName` property instead.
    */
   public get quantityType(): string { return "LengthEngineering"; }
 

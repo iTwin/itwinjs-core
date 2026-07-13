@@ -7,7 +7,8 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -20,6 +21,7 @@ import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
+import { ClipPlane } from "./ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
 import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "./ConvexClipPlaneSet";
 
@@ -31,7 +33,7 @@ export type UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[];
 
 /**
  * A collection of ConvexClipPlaneSets.
- * * A point is "in" the clip plane set if it is "in" one or more of  the ConvexClipPlaneSet
+ * * A point is "in" the clip plane set if it is "in" one or more of the ConvexClipPlaneSets.
  * * Hence the boolean logic is that the ClipPlaneSet is a UNION of its constituents.
  * @public
  */
@@ -194,7 +196,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     }
   }
   /** Returns 1, 2, or 3 based on whether point is strongly inside, ambiguous, or strongly outside respectively. */
-  public classifyPointContainment(points: Point3d[], onIsOutside: boolean): number {
+  public classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment {
     for (const convexSet of this._convexSets) {
       const thisStatus = convexSet.classifyPointContainment(points, onIsOutside);
       if (thisStatus !== ClipPlaneContainment.StronglyOutside)
@@ -203,34 +205,43 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     return ClipPlaneContainment.StronglyOutside;
   }
   /**
-   * Clip a polygon using this ClipPlaneSet, returning new polygon boundaries. Note that each polygon may lie
-   * next to the previous, or be disconnected.
+   * Clip a polygon to the planes of the clip sets, returning new polygon boundaries.
+   * * The output polygons may lie next to each other, or be disconnected.
+   * * For a convex input polygon, the output polygon(s) are also convex.
+   * * For non-convex input, the output polygon(s) may have double-back edges along plane intersections. This is still a
+   * valid clip in a parity sense (overlapping regions cancel).
+   * * This method differs from [[appendPolygonClip]] by clipping the same input polygon with each [[ConvexClipPlaneSet]]
+   * in the instance, and returning only the inside pieces.
+   * @param input polygon, usually convex. Unchanged.
+   * @param output output polygon
+   * @param work optional work array.
+   * @param planeToSkip if this plane is found in the convex set, it is NOT applied.
+   * This is useful when caller knows the polygon lies in one of the instance planes.
+   * @param tolerance distance tolerance for "on plane" decision. Default value is [[Geometry.smallMetricDistance]].
+   * @see appendPolygonClip
    */
-  public polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[]) {
+  public polygonClip(
+    input: GrowableXYZArray | Point3d[],
+    output: GrowableXYZArray[],
+    work?: GrowableXYZArray,
+    planeToSkip?: ClipPlane,
+    tolerance: number = Geometry.smallMetricDistance,
+  ): void {
     output.length = 0;
     if (Array.isArray(input))
       input = GrowableXYZArray.create(input);
-    const work = new GrowableXYZArray();
+    if (!work)
+      work = new GrowableXYZArray();
     for (const convexSet of this._convexSets) {
       const convexSetOutput = new GrowableXYZArray();
-      convexSet.polygonClip(input, convexSetOutput, work);
+      convexSet.polygonClip(input, convexSetOutput, work, planeToSkip, tolerance);
       if (convexSetOutput.length !== 0)
         output.push(convexSetOutput);
     }
   }
-  /**
-   * Announce clipSegment() for each convexSet in this ClipPlaneSet.
-   * * all clipPlaneSets are inspected.
-   * * announced intervals are for each individual clipPlaneSet -- adjacent intervals are not consolidated.
-   * @param f0 active interval start.
-   * @param f1 active interval end.
-   * @param pointA line segment start.
-   * @param pointB line segment end.
-   * @param announce function to announce interval.
-   * @returns Return true if any announcements are made.
-   */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void,
+    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
     let numAnnounce = 0;
     for (const convexSet of this._convexSets) {
@@ -239,21 +250,28 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     }
     return numAnnounce > 0;
   }
-  private static _clipArcFractionArray = new GrowableFloat64Array();
-  /**
-   * Find parts of an arc that are inside any member clipper.
-   * Announce each with `announce(startFraction, endFraction, this)`
-   */
+  private static _clipFractionArray = new GrowableFloat64Array();
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = UnionOfConvexClipPlaneSets._clipArcFractionArray;
+    const breaks = UnionOfConvexClipPlaneSets._clipFractionArray;
     breaks.clear();
-    for (const convexSet of this._convexSets) {
-      for (const clipPlane of convexSet.planes) {
+    for (const convexSet of this._convexSets)
+      for (const clipPlane of convexSet.planes)
         clipPlane.appendIntersectionRadians(arc, breaks);
-      }
-    }
     arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
+  }
+  /** Method from [[Clipper]] interface. */
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    const breaks = UnionOfConvexClipPlaneSets._clipFractionArray;
+    breaks.clear();
+    const results: CurveLocationDetail[] = [];
+    for (const convexSet of this._convexSets)
+      for (const clipPlane of convexSet.planes)
+        curve.appendPlaneIntersectionPoints(clipPlane, results);
+    for (const r of results)
+      breaks.push(r.fraction);
+    return ClipUtilities.selectIntervals01(curve, breaks, this, announce);
   }
   /**
    * Collect the output from computePlanePlanePlaneIntersections in all the contained convex sets.
@@ -307,12 +325,12 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   public addOutsideZClipSets(invisible: boolean, zLow?: number, zHigh?: number) {
     if (zLow) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
-      convexSet.addZClipPlanes(invisible, zLow);
+      convexSet.addZClipPlanes(invisible, undefined, zLow);
       this._convexSets.push(convexSet);
     }
     if (zHigh) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
-      convexSet.addZClipPlanes(invisible, undefined, zHigh);
+      convexSet.addZClipPlanes(invisible, zHigh);
       this._convexSets.push(convexSet);
     }
   }
@@ -325,12 +343,16 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   }
   /**
    * Implement appendPolygonClip, as defined in interface PolygonClipper.
+   * * This method differs from [[polygonClip]] by clipping the outside fragments resulting from the previous
+   * [[ConvexClipPlaneSet]] with the following one, and returning both inside and outside pieces.
+   * In this way, it always produces disjoint inside fragments, even if the clippers are not disjoint (uncommon).
    * @param xyz convex polygon. This is not changed.
    * @param insideFragments Array to receive "inside" fragments. Each fragment is a GrowableXYZArray grabbed from
    * the cache. This is NOT cleared.
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed from
    * the cache. This is NOT cleared.
    * @param arrayCache cache for reusable GrowableXYZArray.
+   * @see polygonClip
    */
   public appendPolygonClip(
     xyz: IndexedXYZCollection,

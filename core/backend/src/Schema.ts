@@ -12,6 +12,31 @@ import { ClassRegistry } from "./ClassRegistry";
 import { ECVersion, SchemaKey } from "@itwin/ecschema-metadata";
 
 /** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
+ *
+ * When subclassing from Schema, it is good practice to follow this pattern:
+ *
+ * ```typescript
+ * class MyCustomSchema extends Schema {
+ *   public static override get schemaName(): string { return "MyCustomSchema"; }
+ *   public static get classes(): typeof Entity[] {
+ *     return [MyOwnECClass, AnotherECClass];
+ *   }
+ *   public static registerSchema() {
+ *     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+ *       Schemas.unregisterSchema(this.schemaName);
+ *       Schemas.registerSchema(this);
+ *       for (const ecClass of this.classes) {
+ *         ClassRegistry.register(ecClass, this);
+ *       }
+ *     }
+ *   }
+ *
+ *   public static unregisterSchema() {
+ *     Schemas.unregisterSchema(this.schemaName);
+ *   }
+ * }
+ * ```
+ *
  * @public
  */
 export class Schema {
@@ -65,20 +90,20 @@ export class Schema {
 export class SchemaMap {
   private readonly _schemas = new Map<string, typeof Schema>();
 
-    /** @internal */
-    public get(schemaName: string): typeof Schema | undefined {
-      return this._schemas.get(schemaName.toLowerCase());
-    }
+  /** @internal */
+  public get(schemaName: string): typeof Schema | undefined {
+    return this._schemas.get(schemaName.toLowerCase());
+  }
 
-    /** @internal */
-    public set(schemaName: string, schema: typeof Schema): void {
-      this._schemas.set(schemaName.toLowerCase(), schema);
-    }
+  /** @internal */
+  public set(schemaName: string, schema: typeof Schema): void {
+    this._schemas.set(schemaName.toLowerCase(), schema);
+  }
 
-    /** @internal */
-    public delete(schemaName: string): boolean {
-      return this._schemas.delete(schemaName.toLowerCase());
-    }
+  /** @internal */
+  public delete(schemaName: string): boolean {
+    return this._schemas.delete(schemaName.toLowerCase());
+  }
 
   /** Register a schema prior to using it.
    * @throws [[IModelError]] if a schema of the same name is already registered.

@@ -55,6 +55,7 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     const iModelDb = await this.getIModelDatabase(tokenProps);
 
     const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModelDb.createQueryReader(schemaNameQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const schemaDefinitionRow = row.toRow() as SchemaNameRow;
       const schemaFullName = schemaDefinitionRow.schemaName;
@@ -73,12 +74,20 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
    * @param schemaName        The name of the schema that shall be returned.
    * @returns                 The SchemaProps.
    */
-  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
+  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps | undefined> {
     if (schemaName === undefined || schemaName.length < 1) {
       throw new Error(`Schema name must not be undefined or empty.`);
     }
 
     const iModelDb = await this.getIModelDatabase(tokenProps);
-    return iModelDb[backend._nativeDb].getSchemaProps(schemaName);
+
+    try {
+      return iModelDb[backend._nativeDb].getSchemaProps(schemaName);
+    } catch(e: any) {
+      if (e.message && e.message === "schema not found")
+        return undefined;
+
+      throw(e);
+    }
   }
 }

@@ -8,9 +8,11 @@ export * from "./AccuSnap";
 export * from "./AuxCoordSys";
 export * from "./BingLocation";
 export * from "./BriefcaseConnection";
+export * from "./GeoProviders";
 export * from "./BriefcaseTxns";
 export * from "./CatalogConnection";
 export * from "./CategorySelectorState";
+export * from "./CesiumAccessClient";
 export * from "./ChangeFlags";
 export * from "./CheckpointConnection";
 export * from "./common";
@@ -123,6 +125,7 @@ export {
   type TiledGraphicsProvider,
   type TileDrawArgParams, TileDrawArgs,
   type CollectTileStatus, type TileGeometryCollectorOptions, TileGeometryCollector, type GeometryTileTreeReference,
+  type GeometryTileTreeReferenceOptions,
   type TileParams,
   TileRequestChannels,
   type TileContentDecodingStatistics, TileRequestChannelStatistics, TileRequestChannel,
@@ -135,6 +138,7 @@ export {
   Tile, TileLoadStatus, TileVisibility, TileLoadPriority, TileBoundingBoxes,
   TileUsageMarker,
   TileUser,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   BingElevationProvider,
   QuadId, type QuadIdProps,
   MapTilingScheme, GeographicTilingScheme, WebMercatorProjection, WebMercatorTilingScheme,
@@ -165,6 +169,7 @@ export * from "./tools/IdleTool";
 export * from "./tools/MeasureTool";
 export * from "./tools/PrimitiveTool";
 export * from "./tools/SelectTool";
+export * from "./tools/SetupCameraTools";
 export * from "./tools/Tool";
 export * from "./tools/ToolSettings";
 export * from "./tools/ToolAdmin";

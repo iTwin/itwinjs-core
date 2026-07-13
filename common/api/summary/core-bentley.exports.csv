@@ -16,6 +16,8 @@ public;enum;BentleyLoggerCategory
 public;enum;BentleyStatus
 public;class;BeTimePoint
 public;class;BeUiEvent
+beta;class;BeUnorderedEvent
+beta;class;BeUnorderedUiEvent
 public;enum;BriefcaseStatus
 public;class;ByteStream
 public;enum;ChangeSetStatus
@@ -41,6 +43,8 @@ internal;enum;DbConflictResolution
 public;enum;DbOpcode
 public;enum;DbResult
 internal;enum;DbValueType
+public;type;DeepReadonlyObject
+public;type;DeepRequiredObject
 public;class;Dictionary
 public;interface;DictionaryEntry
 public;class;DisposableList
@@ -55,6 +59,8 @@ public;enum;DuplicatePolicy
 public;class;Entry
 public;interface;EntryContainer
 alpha;class;ErrorCategory
+internal;function;expectDefined
+internal;function;expectNotNull
 public;enum;GeoServiceStatus
 public;type;GetMetaDataFunction
 public;namespace;Guid
@@ -103,6 +109,7 @@ public;type;MarkRequired
 public;type;MaybePromise
 public;type;Mutable
 public;class;MutableCompressedId64Set
+beta;type;NestedValueOf
 public;type;NonFunctionPropertiesOf
 public;type;NonFunctionPropertyNamesOf
 public;class;ObservableSet
@@ -158,5 +165,7 @@ public;class;UnexpectedErrors
 public;function;using
 deprecated;function;using
 public;function;utf8ToString
+beta;type;ValueOf
+beta;function;wrapTimerCallback
 public;class;YieldManager
 public;interface;YieldManagerOptions

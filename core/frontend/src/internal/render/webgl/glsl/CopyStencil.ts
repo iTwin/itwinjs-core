@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { ColorDef, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
 import { BoundaryType, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
 import { FloatRgb, FloatRgba } from "../FloatRGBA";
@@ -142,10 +143,10 @@ export function createVolClassSetBlendProgram(context: WebGL2RenderingContext): 
       const hiliteAlpha = params.target.uniforms.hilite.hiliteSettings.visibleRatio;
       switch (geom.boundaryType) {
         case BoundaryType.Outside:
-          setScratchColor(params.target.activeVolumeClassifierProps!.flags.outside, hiliteColor, hiliteAlpha);
+          setScratchColor(expectDefined(params.target.activeVolumeClassifierProps).flags.outside, hiliteColor, hiliteAlpha);
           break;
         case BoundaryType.Inside:
-          setScratchColor(params.target.activeVolumeClassifierProps!.flags.inside, hiliteColor, hiliteAlpha);
+          setScratchColor(expectDefined(params.target.activeVolumeClassifierProps).flags.inside, hiliteColor, hiliteAlpha);
           break;
         case BoundaryType.Selected:
           // setScratchColor(params.target.activeVolumeClassifierProps!.flags.selected, hiliteColor, hiliteAlpha);

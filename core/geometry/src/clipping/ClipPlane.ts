@@ -7,8 +7,10 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -22,7 +24,7 @@ import { IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
-import { XYZProps } from "../geometry3d/XYZProps";
+import { XYAndZ, XYZProps } from "../geometry3d/XYZProps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { AnalyticRoots } from "../numerics/Polynomials";
@@ -51,7 +53,7 @@ export interface ClipPlaneProps {
  * More details can be found at docs/learning/geometry/Clipping.md
  *
  * Hence
- * * The halfspace function evaluation for "point" (x,y,z) is `(x,y,z) DOT (u,v,w) - signedDistance`.
+ * * The halfspace function evaluation for point (x,y,z) is `(x,y,z) DOT (u,v,w) - signedDistance`.
  * * POSITIVE values of the halfspace function are "inside".
  * * ZERO value of the halfspace function is "on".
  * * NEGATIVE value of the halfspace function is "outside".
@@ -64,7 +66,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   /**
    * Construct a parallel plane through the origin.
    * * Move it to the actual position.
-   * * _distanceFromOrigin is the distance it moved, with the (inward) normal direction as positive
+   * * _distanceFromOrigin is the distance it moved, with the (inward) normal direction as positive.
    */
   private _distanceFromOrigin: number;
   private _invisible: boolean;
@@ -145,7 +147,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * a vector from the origin.)
    */
   public static createNormalAndPoint(
-    normal: Vector3d, point: Point3d, invisible: boolean = false, interior: boolean = false, result?: ClipPlane,
+    normal: Vector3d, point: XYAndZ, invisible: boolean = false, interior: boolean = false, result?: ClipPlane,
   ): ClipPlane | undefined {
     const normalized = normal.normalize();
     if (normalized) {
@@ -244,11 +246,17 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   public get inwardNormalRef(): Vector3d {
     return this._inwardNormal;
   }
-  /**  Return the "interior" property flag. Interpretation of this flag is algorithm-specific. */
+  /**
+   * Return the "interior" property flag. Interpretation of this flag is algorithm-specific.
+   * * One way this flag is used is to indicate a plane that has been added to partition the exterior region of a masked ClipShape.
+   */
   public get interior() {
     return this._interior;
   }
-  /**  Return the "invisible" property flag. Interpretation of this flag is algorithm-specific. */
+  /**
+   * Return the "invisible" property flag. Interpretation of this flag is algorithm-specific.
+   * * One way this flag is used is to indicate a plane that should not be used to compute intersection edges.
+   */
   public get invisible() {
     return this._invisible;
   }
@@ -279,11 +287,23 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     return undefined;
   }
   /** Create a plane perpendicular to the edge between the xy parts of point0 and point1. */
-  public static createEdgeXY(point0: Point3d, point1: Point3d, result?: ClipPlane): ClipPlane | undefined {
+  public static createEdgeXY(point0: XYAndZ, point1: XYAndZ, result?: ClipPlane): ClipPlane | undefined {
     const normal = Vector3d.create(point0.y - point1.y, point1.x - point0.x);
     if (normal.normalizeInPlace())
       return ClipPlane.createNormalAndPoint(normal, point0, false, false, result);
     return undefined;
+  }
+  /**
+   * Variant of [[createEdgeXY]] that computes the plane using the edge midpoint instead of its start point.
+   * * This is more stable for creating a pair of clip planes from a long edge and its reversal, as is commonly found
+   * in a [[UnionOfConvexClipPlaneSets]].
+   */
+  public static createMidPointEdgeXY(point0: XYAndZ, point1: XYAndZ, result?: ClipPlane): ClipPlane | undefined {
+    return ClipPlane.createNormalAndPointXYZXYZ(
+      point0.y - point1.y, point1.x - point0.x, 0,
+      0.5 * (point0.x + point1.x), 0.5 * (point0.y + point1.y), 0,
+      false, false, result,
+    );
   }
   /**
    * Return the Plane3d form of the plane.
@@ -292,11 +312,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    */
   public getPlane3d(): Plane3dByOriginAndUnitNormal {
     const d = this._distanceFromOrigin;
-    // normal should be normalized, will not return undefined
-    return Plane3dByOriginAndUnitNormal.create(
-      Point3d.create(this._inwardNormal.x * d, this._inwardNormal.y * d, this._inwardNormal.z * d),
-      this._inwardNormal,
-    )!;
+    const origin = Point3d.create(this._inwardNormal.x * d, this._inwardNormal.y * d, this._inwardNormal.z * d);
+    const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
+    const result = Plane3dByOriginAndUnitNormal.create(origin, this._inwardNormal, plane);
+    assert(result !== undefined, "this._inwardNormal should be normalized by constructors. Fix caller if this fails.");
+    return plane;
   }
   /**
    * Return the Point4d d form of the plane.
@@ -414,11 +434,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     return Math.abs(this.altitude(point)) <= tolerance;
   }
   /**
-   * Compute intersections of an (UNBOUNDED) arc with the plane.  Append them (as radians) to a growing array.
-   * @param arc arc to test.  The angle limits of the arc are NOT considered.
-   * @param intersectionRadians array to receive results
+   * Compute intersections of an (UNBOUNDED) arc with the plane. Append them (as radians) to a growing array.
+   * @param arc arc to test. The angle limits of the arc are NOT considered.
+   * @param intersectionRadians array to receive results.
    */
-  public appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array) {
+  public appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array): void {
     const arcVectors = arc.toVectors();
     const alpha = this.altitude(arc.center);
     const beta = this.velocity(arcVectors.vector0);
@@ -427,17 +447,24 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
       alpha, beta, gamma, undefined, undefined, intersectionRadians,
     );
   }
-  private static _clipArcFractionArray = new GrowableFloat64Array();
-  /**
-   * Announce fractional intervals of arc clip.
-   * * Each call to `announce(fraction0, fraction1, arc)` announces one interval that is inside the clip plane.
-   */
+  private static _clipFractionArray = new GrowableFloat64Array();
+  /** Method from [[Clipper]] interface. */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    const breaks = ClipPlane._clipArcFractionArray;
+    const breaks = ClipPlane._clipFractionArray;
     breaks.clear();
     this.appendIntersectionRadians(arc, breaks);
     arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
+  }
+  /** Method from [[Clipper]] interface. */
+  public announceClippedCurveIntervals(curve: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    const breaks = ClipPlane._clipFractionArray;
+    breaks.clear();
+    const results: CurveLocationDetail[] = [];
+    curve.appendPlaneIntersectionPoints(this, results);
+    for (const r of results)
+      breaks.push(r.fraction);
+    return ClipUtilities.selectIntervals01(curve, breaks, this, announce);
   }
   /**
    * Compute intersection of (unbounded) segment with the plane.
@@ -494,16 +521,22 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * Clip a polygon to the inside or outside of the plane.
    * * Results with 2 or fewer points are ignored.
    * * Other than ensuring capacity in the arrays, there are no object allocations during execution of this function.
+   * * For a convex input polygon, the output polygon is also convex.
+   * * For non-convex input, the output polygon may have double-back edges along plane intersections. This is still a
+   * valid clip in a parity sense (overlapping regions cancel).
    * @param xyz input points.
-   * @param work work buffer
-   * @param tolerance tolerance for "on plane" decision.
+   * @param work optional work buffer
+   * @param inside whether the positive side of the plane survives (true, default), or negative side (false).
+   * @param tolerance distance tolerance for "on plane" decision. Default value is [[Geometry.smallMetricDistance]].
+   * @return the number of crossings. If this is larger than 2, the input polygon was non-convex.
+   * @see appendPolygonClip
    */
   public clipConvexPolygonInPlace(
     xyz: GrowableXYZArray,
-    work: GrowableXYZArray,
+    work?: GrowableXYZArray,
     inside: boolean = true,
     tolerance: number = Geometry.smallMetricDistance,
-  ) {
+  ): number {
     return IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(this, xyz, work, inside, tolerance);
   }
   /**
@@ -533,9 +566,9 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     this.setPlane4d(plane);
     return true;
   }
-  /** Announce the interval (if any) where a line is within the clip plane half space. */
+  /** Method from [[Clipper]] interface. */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void,
+    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
   ): boolean {
     if (f1 < f0)
       return false;
@@ -607,6 +640,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed
    * from the cache. This is NOT cleared.
    * @param arrayCache cache for reusable GrowableXYZArray.
+   * @see clipConvexPolygonInPlace
    */
   public appendPolygonClip(
     xyz: IndexedXYZCollection,

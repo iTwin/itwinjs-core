@@ -8,13 +8,16 @@
 
 // cspell:ignore cset csets ecchanges
 
-import * as path from "path";
+import * as path from "node:path";
+import * as os from "node:os";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch,
+  AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
 } from "@itwin/core-bentley";
 import {
+  Base64EncodedString,
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps,
+  TxnProps,
 } from "@itwin/core-common";
 import { AcquireNewBriefcaseIdArg, DownloadChangesetArg, DownloadChangesetRangeArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -25,8 +28,17 @@ import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
+import { StashManager, StashProps } from "./StashManager";
+import { ChangeInstance, ChangeMeta } from "./ChangesetReaderTypes";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
+
+/** The argument for patch instances during semantic rebase
+ * @internal
+ */
+export interface InstancePatch extends Omit<ChangeInstance, "$meta"> {
+  $meta: Pick<ChangeMeta, "op" | "stage" | "isIndirectChange">;
+}
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @public
@@ -56,7 +68,8 @@ export interface PushChangesArgs extends TokenArg {
   /** The delay to wait between retry attempts on failed pushes. Default is 3 seconds. */
   pushRetryDelay?: BeDuration;
   /**
-   *  For testing purpose
+   *  (unused)
+   * @deprecated in 5.1.8 - will not be removed until after 2026-10-01. Not used by BriefcaseManager. Caller should remove this flag.
    * @internal
    */
   noFastForward?: true;
@@ -80,7 +93,8 @@ export type PullChangesArgs = ToChangesetArgs & {
    */
   onProgress?: ProgressFunction;
   /**
-   *  For testing purpose
+   *  (unused)
+   * @deprecated in 5.1.8 - will not be removed until after 2026-10-01. Not used by BriefcaseManager. Caller should remove this flag.
    * @internal
    */
   noFastForward?: true;
@@ -94,16 +108,26 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
-  /** The index of the changeset to revert to */
+  /** The first changeset index to revert (inclusive). All changesets from `toIndex` through the current index are reverted, leaving the briefcase at `toIndex - 1`. */
   toIndex: ChangesetIndex;
   /** If present, schema changes are skipped during the revert operation. */
   skipSchemaChanges?: true;
+  /**
+   * Specifies the action to take in case of failure during the revert operation. Default is `"revert"`.
+   * - `"revert"`: Reverse all local transactions and delete them, restoring the briefcase to its pre-revert state.
+   * - `"retain"`: Keep local changes as-is for caller inspection or manual recovery.
+   * - `"delete"`: Close the briefcase and delete the local file. If an `accessToken` is available, also release the briefcaseId from iModelHub.
+   */
+  inCaseOfFailure?: "retain" | "revert" | "delete";
 };
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
  * @public
  */
 export class BriefcaseManager {
+  /** @internal */
+  public static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
+
   /** Get the local path of the folder storing files that are associated with an imodel */
   public static getIModelPath(iModelId: GuidString): LocalDirName { return path.join(this._cacheDir, iModelId); }
 
@@ -229,7 +253,7 @@ export class BriefcaseManager {
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
    */
   public static async downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
-    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId(arg);
+    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId({ deviceName: `${os.hostname()}:${os.type()}:${os.arch()}`, ...arg });
     const fileName = arg.fileName ?? this.getFileName({ ...arg, briefcaseId });
 
     if (IModelJsFs.existsSync(fileName))
@@ -324,6 +348,9 @@ export class BriefcaseManager {
       };
       db.closeFile();
 
+      if (this.isValidBriefcaseId(briefcase.briefcaseId))
+        this.cleanupRebaseFolders(filePath, briefcase.briefcaseId); // cleanup rebase folders
+
       if (accessToken) {
         if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
           await BriefcaseManager.releaseBriefcase(accessToken, briefcase);
@@ -336,7 +363,7 @@ export class BriefcaseManager {
       if (IModelJsFs.existsSync(filePath))
         IModelJsFs.unlinkSync(filePath);
     } catch (err) {
-      throw new IModelError(IModelStatus.BadRequest, `cannot delete briefcase file ${err}`);
+      throw new IModelError(IModelStatus.BadRequest, `cannot delete briefcase file ${String(err)}`);
     }
 
     // next, delete all files that start with the briefcase's filePath (e.g. "a.bim-locks", "a.bim-journal", etc.)
@@ -359,7 +386,7 @@ export class BriefcaseManager {
     try {
       IModelJsFs.unlinkSync(pathname);
     } catch (error) {
-      Logger.logError(loggerCategory, `Cannot delete file ${pathname}, ${error}`);
+      Logger.logError(loggerCategory, `Cannot delete file ${pathname}, ${String(error)}`);
       return false;
     }
     return true;
@@ -456,11 +483,11 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean) {
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean, noUpdateLoop?: boolean) {
     if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    db[_nativeDb].applyChangeset(changesetFile, fastForward);
+    db[_nativeDb].applyChangeset(changesetFile, fastForward, noUpdateLoop);
     db.changeset = db[_nativeDb].getCurrentChangeset();
 
     // we're done with this changeset, delete it
@@ -520,9 +547,26 @@ export class BriefcaseManager {
     db.notifyChangesetApplied();
   }
 
-  /** @internal */
-  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
-    if (!db.isOpen || db[_nativeDb].isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
+  /**
+   * @internal
+   * Pulls and applies changesets from the iModelHub to the specified IModelDb instance.
+   *
+   * This method downloads and applies all changesets required to bring the local briefcase up to the specified changeset index.
+   * It supports both forward and reverse application of changesets, depending on the `toIndex` argument.
+   * If there are pending local transactions and a reverse operation is requested, an error is thrown.
+   * The method manages restore points for safe merging, handles local transaction reversal, applies each changeset in order,
+   * and resumes or rebases local changes as appropriate for the type of database.
+   *
+   * @param db The IModelDb instance to which changesets will be applied. Must be open and writable.
+   * @param arg The arguments for pulling changesets, including access token, target changeset index, and optional progress callback.
+   * @throws IModelError If the briefcase is not open in read-write mode, if there are pending transactions when reversing, or if applying a changeset fails.
+   * @returns A promise that resolves when all required changesets have been applied.
+   */
+  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs & { /** @internal */ noUpdateLoop?: boolean }): Promise<void> {
+    const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
+    const nativeDb = db[_nativeDb];
+
+    if (!db.isOpen || nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
     let currentIndex = db.changeset.index;
@@ -530,9 +574,20 @@ export class BriefcaseManager {
       currentIndex = (await IModelHost[_hubAccess].queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
 
     const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
-
-    if (db[_nativeDb].hasPendingTxns() && reverse) {
+    const isPullMerge = briefcaseDb && !reverse;
+    if (nativeDb.hasPendingTxns() && reverse) {
       throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changesets when there are pending changes");
+    }
+
+    if (isPullMerge) {
+      if (briefcaseDb.txns.rebaser.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while rebasing");
+      }
+      if (briefcaseDb.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while in an indirect change scope");
+      }
+      briefcaseDb.txns.rebaser.notifyPullMergeBegin(briefcaseDb.changeset);
+      briefcaseDb.txns.rebaser.notifyDownloadChangesetsBegin();
     }
 
     // Download change sets
@@ -544,63 +599,203 @@ export class BriefcaseManager {
       progressCallback: arg.onProgress,
     });
 
-    if (changesets.length === 0)
+    if (isPullMerge) {
+      briefcaseDb.txns.rebaser.notifyDownloadChangesetsEnd();
+    }
+
+    if (changesets.length === 0) {
+      if (isPullMerge) {
+        briefcaseDb.txns.rebaser.notifyPullMergeEnd(briefcaseDb.changeset);
+      }
       return; // nothing to apply
+    }
 
     if (reverse)
       changesets.reverse();
 
+    if (isPullMerge && briefcaseDb.txns.hasPendingTxns && !briefcaseDb.txns.hasPendingSchemaChanges && !IModelHost.configuration?.disableRestorePointOnPullMerge) {
+      Logger.logInfo(loggerCategory, `Creating restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
+      await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
+    }
 
-    let appliedChangesets = -1;
-    if (db[_nativeDb].hasPendingTxns() && !reverse && !arg.noFastForward) {
-      // attempt to perform fast forward
-      for (const changeset of changesets) {
-        // do not waste time on schema changesets. They cannot be fastforwarded.
-        if (changeset.changesType === ChangesetType.Schema || changeset.changesType === ChangesetType.SchemaSync)
-          break;
+    const hasIncomingSchemaChange: boolean = changesets.some((changeset) => changeset.changesType === ChangesetType.Schema);
+    const hasLocalSchemaTxn: boolean = briefcaseDb?.checkIfSchemaTxnExists() ?? false;
+    const useSemanticRebase: boolean =
+      briefcaseDb !== undefined &&
+      IModelHost.useSemanticRebase &&
+      (hasIncomingSchemaChange || hasLocalSchemaTxn);
 
-        try {
-          const stopwatch = new StopWatch(`[${changeset.id}]`, true);
-          Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description} using fast forward method`);
-          await this.applySingleChangeset(db, changeset, true);
-          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
-          appliedChangesets++;
-          db.saveChanges();
-        } catch {
-          db.abandonChanges();
-          break;
+    if (useSemanticRebase) {
+      Logger.logInfo(loggerCategory, `Using semantic rebase (incoming schema change: ${hasIncomingSchemaChange}, local schema txn: ${hasLocalSchemaTxn})`);
+    }
+
+    if (!reverse) {
+      if (briefcaseDb) {
+        briefcaseDb.txns.rebaser.notifyReverseLocalChangesBegin();
+        const reversedTxns = nativeDb.pullMergeReverseLocalChanges(useSemanticRebase);
+        if (useSemanticRebase) {
+          nativeDb.clearECDbCache(); // Clear the ECDb cache after reversing local changes to ensure consistency during semantic rebase with schema changes.
         }
+        const reversedTxnProps = reversedTxns.map((txn) => briefcaseDb.txns.getTxnProps(txn)).filter((props): props is TxnProps => props !== undefined);
+        briefcaseDb.txns.rebaser.notifyReverseLocalChangesEnd(reversedTxnProps);
+        Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
+      } else {
+        nativeDb.pullMergeReverseLocalChanges();
       }
     }
 
-    if (appliedChangesets < changesets.length - 1) {
-      db[_nativeDb].pullMergeBegin();
-      for (const changeset of changesets.filter((_, index) => index > appliedChangesets)) {
-        const stopwatch = new StopWatch(`[${changeset.id}]`, true);
-        Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
-        try {
-          await this.applySingleChangeset(db, changeset, false);
-          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
-        } catch (err: any) {
-          if (err instanceof Error) {
-            Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
-          }
-          db.abandonChanges();
-          db[_nativeDb].pullMergeEnd();
-          throw err;
-        }
-      }
-      db[_nativeDb].pullMergeEnd();
-      if (!db.isReadonly) {
-        db.saveChanges("Merge.");
-      }
+    if (isPullMerge) {
+      briefcaseDb.txns.rebaser.notifyApplyIncomingChangesBegin(changesets);
     }
 
+    // apply incoming changes
+    for (const changeset of changesets) {
+      const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+      Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
+      try {
+        await this.applySingleChangeset(db, changeset, false, arg.noUpdateLoop);
+        Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      } catch (err: any) {
+        if (err instanceof Error) {
+          Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
+        }
+        db[_nativeDb].abandonChanges();
+        throw err;
+      }
+    }
+    if (isPullMerge) {
+      briefcaseDb.txns.rebaser.notifyApplyIncomingChangesEnd(changesets);
+    }
+    if (!reverse) {
+      if (briefcaseDb) {
+        if (useSemanticRebase)
+          await briefcaseDb.txns.rebaser.resumeSemantic();
+        else
+          await briefcaseDb.txns.rebaser.resume();
+      } else {
+        // Only Briefcase has change management. Following is
+        // for test related to standalone db with txn enabled.
+        nativeDb.pullMergeRebaseBegin();
+        let txnId = nativeDb.pullMergeRebaseNext();
+        while (txnId) {
+          nativeDb.pullMergeRebaseReinstateTxn();
+          nativeDb.pullMergeRebaseUpdateTxn();
+          txnId = nativeDb.pullMergeRebaseNext();
+        }
+        nativeDb.pullMergeRebaseEnd();
+        if (!nativeDb.isReadonly) {
+          nativeDb.saveChanges("Merge.");
+        }
+      }
+
+      if (briefcaseDb && this.containsRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME)) {
+        Logger.logInfo(loggerCategory, `Dropping restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
+        this.dropRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
+      }
+    }
     // notify listeners
     db.notifyChangesetApplied();
   }
+
+  /**
+   * @internal
+   * Creates a restore point for the specified briefcase database.
+   *
+   * @param db - The {@link BriefcaseDb} instance for which to create the restore point.
+   * @param name - The unique name for the restore point. Must be a non-empty string.
+   * @returns A promise that resolves to the created stash object representing the restore point.
+   */
+  public static async createRestorePoint(db: BriefcaseDb, name: string): Promise<StashProps> {
+    Logger.logTrace(loggerCategory, `Creating restore point ${name}`);
+    this.dropRestorePoint(db, name);
+
+    const stash = await StashManager.stash({ db, description: this.makeRestorePointKey(name) });
+    db[_nativeDb].saveLocalValue(this.makeRestorePointKey(name), stash.id);
+    db[_nativeDb].saveChanges("Create restore point");
+    Logger.logTrace(loggerCategory, `Created restore point ${name}`, () => stash);
+    return stash;
+  }
+
+  /**
+   * @internal
+   * Drops a previously created restore point from the specified briefcase database.
+   *
+   * @param db - The {@link BriefcaseDb} instance from which to drop the restore point.
+   * @param name - The name of the restore point to be dropped. Must be a non-empty string.
+   */
+  public static dropRestorePoint(db: BriefcaseDb, name: string): void {
+    Logger.logTrace(loggerCategory, `Dropping restore point ${name}`);
+
+    const restorePointId = db[_nativeDb].queryLocalValue(this.makeRestorePointKey(name));
+    if (restorePointId) {
+      StashManager.dropStash({ db, stash: restorePointId });
+      db[_nativeDb].deleteLocalValue(this.makeRestorePointKey(name));
+      db[_nativeDb].saveChanges("Drop restore point");
+      Logger.logTrace(loggerCategory, `Dropped restore point ${name}`);
+    }
+
+  }
+
+  /**
+   * @internal
+   * Checks if a restore point with the specified name exists in the given briefcase database.
+   *
+   * @param db - The {@link BriefcaseDb} instance to search within.
+   * @param name - The name of the restore point to check for existence.
+   * @returns `true` if the restore point exists and its stash is present; otherwise, `false`.
+   */
+  public static containsRestorePoint(db: BriefcaseDb, name: string): boolean {
+    Logger.logTrace(loggerCategory, `Checking if restore point ${name} exists`);
+    const key = this.makeRestorePointKey(name);
+    const restorePointId = db[_nativeDb].queryLocalValue(key);
+    if (!restorePointId) {
+      return false;
+    }
+
+    const stash = StashManager.tryGetStash({ db, stash: restorePointId });
+    if (!stash) {
+      Logger.logTrace(loggerCategory, `Restore point ${name} does not exist. Deleting ${key}`);
+      db[_nativeDb].deleteLocalValue(key);
+      return false;
+    }
+    return true;
+  }
+
+  private static makeRestorePointKey(name: string): string {
+    if (name.length === 0) {
+      throw new Error("Invalid restore point name");
+    }
+    return `restore_point/${name}`;
+  }
+
+  /**
+   * @internal
+   * Restores the state of a briefcase database to a previously saved restore point.
+   *
+   * @param db - The {@link BriefcaseDb} instance to restore.
+   * @param name - The name of the restore point to apply.
+   */
+  public static async restorePoint(db: BriefcaseDb, name: string): Promise<void> {
+    Logger.logTrace(loggerCategory, `Restoring to restore point ${name}`);
+    const restorePointId = db[_nativeDb].queryLocalValue(this.makeRestorePointKey(name));
+    if (!restorePointId) {
+      throw new Error(`Restore point not found: ${name}`);
+    }
+
+    await StashManager.restore({ db, stash: restorePointId });
+    Logger.logTrace(loggerCategory, `Restored to restore point ${name}`);
+    this.dropRestorePoint(db, name);
+  }
+
   /** create a changeset from the current changes, and push it to iModelHub */
   private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
+    if (db.txns.rebaser.isRebasing) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while rebasing");
+    }
+    if (db.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while in an indirect change scope");
+    }
+
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;
@@ -609,6 +804,10 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.NoContent, "error creating changeset");
 
     changesetProps.size = fileSize;
+    const id = IModelNative.platform.DgnDb.computeChangesetId(changesetProps);
+    if (id !== changesetProps.id) {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_InvalidChangeSetVersion, `Changeset id ${changesetProps.id} does not match computed id ${id}.`);
+    }
 
     let retryCount = arg.pushRetryCount ?? 3;
     while (true) {
@@ -654,7 +853,12 @@ export class BriefcaseManager {
         await BriefcaseManager.pullAndApplyChangesets(db, arg);
         if (!db.skipSyncSchemasOnPullAndPush)
           await SchemaSync.pull(db);
-        return await BriefcaseManager.pushChanges(db, arg);
+        // pullAndApply rebase changes and might remove redundant changes in local briefcase
+        // this mean hasPendingTxns was true before but now after pullAndApply it might be false
+        if (!db[_nativeDb].hasPendingTxns())
+          return;
+
+        await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {
         if (retryCount-- <= 0 || err.errorNumber !== IModelHubStatus.PullIsRequired)
           throw (err);
@@ -662,5 +866,236 @@ export class BriefcaseManager {
       }
     }
   }
+
+  // #region Semantic Rebase Interop Helper
+  private static readonly REBASING_FOLDER = ".rebasing";
+  private static readonly EC_FOLDER = "ec";
+  private static readonly SCHEMAS_FOLDER = "schemas";
+  private static readonly DATA_FOLDER = "data";
+  private static readonly DATA_FILE_NAME = "data.json";
+
+  /**
+   * Stores changed instances for semantic rebase locally in appropriate json file in a folder structure
+   * @param db The [BriefcaseDb]($backend) instance for storing the changed instances against a txn
+   * @param txnId The txn id for which we are storing the changed instances
+   * @param instancePatches The [ChangeInstance]($backend) IterableIterator instance patches to be stored
+   * @internal
+   */
+  public static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: IterableIterator<ChangeInstance>): void {
+    const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
+    const targetDir = path.join(basePath, txnId, this.DATA_FOLDER);
+    const filePath = path.join(targetDir, this.DATA_FILE_NAME);
+
+    if (IModelJsFs.existsSync(targetDir))
+      IModelJsFs.removeSync(targetDir);
+
+    IModelJsFs.recursiveMkDirSync(targetDir);
+
+    const BATCH_SIZE = 100;
+    let isFirst = true;
+    let batchParts: string[] = [];
+
+    const flushBatch = () => {
+      if (batchParts.length === 0) return;
+      IModelJsFs.appendFileSync(filePath, batchParts.join(""));
+      batchParts = [];
+    };
+
+    IModelJsFs.writeFileSync(filePath, "[");
+    for (const instancePatch of instancePatches) {
+      // we will not take the old stage of updated instances for now, because we still don't have conflict resolution on instance level while using semantic rebase.
+      // Once we have conflict resolution on instance level, we can consider taking old stage of updated instances as well.
+      if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue;
+      const { $meta, ...rest } = instancePatch;
+      const transformedInstance: InstancePatch = {
+        ...rest,
+        $meta: { op: $meta.op, stage: $meta.stage, isIndirectChange: $meta.isIndirectChange },
+      };
+      batchParts.push(`${isFirst ? "" : ","}\n${JSON.stringify(transformedInstance, Base64EncodedString.replacer)}`);
+      isFirst = false;
+      if (batchParts.length >= BATCH_SIZE)
+        flushBatch();
+    }
+    flushBatch();
+    IModelJsFs.appendFileSync(filePath, "\n]");
+  }
+
+  /**
+   * Gets the base path for semantic rebase local files
+   * @param db The {@link BriefcaseDb} instance for which to get the base path
+   * @returns base path for semantic rebase local files
+   * @internal
+   */
+  public static getBasePathForSemanticRebaseLocalFiles(db: BriefcaseDb): string {
+    return path.join(path.dirname(db.pathName), this.REBASING_FOLDER, db.briefcaseId.toString(), this.EC_FOLDER);
+  }
+
+  /**
+   * Stores schemas for semantic rebase locally in appropriate folder structure
+   * @param db The [BriefcaseDb]($backend) instance for storing the schemas against a txn
+   * @param txnId The txn id for which we are storing the schemas
+   * @param schemaFileNames The schema file paths or schema xml strings to be stored
+   * @internal
+   */
+  public static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void {
+    const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
+    const targetDir = path.join(basePath, txnId, this.SCHEMAS_FOLDER);
+
+    if (IModelJsFs.existsSync(targetDir))
+      IModelJsFs.removeSync(targetDir);
+
+    IModelJsFs.recursiveMkDirSync(targetDir);
+
+    schemaFileNames.forEach((schemaFileOrXml, index) => {
+      if (IModelJsFs.existsSync(schemaFileOrXml)) { // This means it is a file
+        const fileName = path.basename(schemaFileOrXml);
+        const filePath = path.join(targetDir, fileName);
+        IModelJsFs.copySync(schemaFileOrXml, filePath);
+      }
+      else {
+        const fileName = `${"Schema"}_${index}.ecschema.xml`;
+        const filePath = path.join(targetDir, fileName);
+
+        IModelJsFs.writeFileSync(filePath, schemaFileOrXml);
+      }
+    });
+  }
+
+  /**
+   * Gets schemas for semantic rebase for a txn
+   * @param db The [BriefcaseDb]($backend) instance for getting the locally stored schemas against a txn
+   * @param txnId The txn id for which we are getting the schemas
+   * @returns the schema file paths
+   * @internal
+   */
+  public static getSchemasForTxn(db: BriefcaseDb, txnId: string): string[] {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.SCHEMAS_FOLDER);
+    return IModelJsFs.readdirSync(folderPath).map((file) => path.join(folderPath, file));
+  }
+
+  /**
+   * Get the changed instances data for semantic rebase for a txn
+   * @param db - The [BriefcaseDb]($backend) instance for getting the locally stored changed instances against a txn
+   * @param txnId - The txn id for which we are getting the changed instances
+   * @returns Instance patches
+   * @internal
+   */
+  public static async *getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<InstancePatch> {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
+    const filePath = path.join(folderPath, BriefcaseManager.DATA_FILE_NAME);
+    for await (const line of IModelJsFs.readLines(filePath)) {
+      if (line === "[" || line === "]" || line === "") continue;
+      const trimmedLine = line.trim().endsWith(",") ? line.trim().slice(0, -1) : line.trim(); // remove trailing comma if exists
+      yield JSON.parse(trimmedLine, Base64EncodedString.reviver) as InstancePatch;
+    }
+  }
+
+  /**
+   * Checks if schema folder exists for semantic rebase for a txn
+   * @param db - The [BriefcaseDb]($backend) instance for which TO check the schema folder
+   * @param txnId - The txn id for which we are check the schema folder
+   * @returns true if exists, false otherwise
+   * @internal
+   */
+  public static semanticRebaseSchemaFolderExists(db: BriefcaseDb, txnId: string): boolean {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.SCHEMAS_FOLDER);
+    return IModelJsFs.existsSync(folderPath);
+  }
+
+  /**
+   * Checks if data folder exists for semantic rebase for a txn
+   * @param db The [BriefcaseDb]($backend) instance for which to check the data folder.
+   * @param txnId The txn id for which to check the data folder
+   * @returns true if exists, false otherwise
+   * @internal
+   */
+  public static semanticRebaseDataFolderExists(db: BriefcaseDb, txnId: string): boolean {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
+    return IModelJsFs.existsSync(folderPath);
+  }
+
+  /**
+   * Deletes the schema folder for semantic rebase for a txn
+   * @param db The [BriefcaseDb]($backend) instance for which to delete the schema folder.
+   * @param txnId The txn id for which to delete the schema folder
+   * @internal
+   */
+  public static deleteTxnSchemaFolder(db: BriefcaseDb, txnId: string): void {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const txnFolderPath = path.join(basePath, txnId);
+    const folderPath = path.join(txnFolderPath, BriefcaseManager.SCHEMAS_FOLDER);
+
+    if (!IModelJsFs.existsSync(folderPath)) return;
+
+    IModelJsFs.removeSync(folderPath);
+
+    if (IModelJsFs.readdirSync(txnFolderPath).length === 0) // Also delete the txn folder if empty
+      IModelJsFs.removeSync(txnFolderPath);
+  }
+
+  /**
+  * Deletes the data folder for semantic rebase for a txn
+  * @param db The [BriefcaseDb]($backend) instance for which to delete the data folder.
+  * @param txnId The txn id for which to delete the data folder
+  * @internal
+  */
+  public static deleteTxnDataFolder(db: BriefcaseDb, txnId: string): void {
+    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
+    const txnFolderPath = path.join(basePath, txnId);
+    const folderPath = path.join(txnFolderPath, BriefcaseManager.DATA_FOLDER);
+
+    if (!IModelJsFs.existsSync(folderPath)) return;
+
+    IModelJsFs.removeSync(folderPath);
+
+    if (IModelJsFs.readdirSync(txnFolderPath).length === 0) // Also delete the txn folder if empty
+      IModelJsFs.removeSync(txnFolderPath);
+  }
+
+  /**
+   * Deletes rebase folders for semantic rebase
+   * @param db The [BriefcaseDb]($backend) instance for which to delete the rebase folders.
+   * @param checkIfEmpty If true, only deletes the base folder if it is empty, default is false
+   * @internal
+   */
+  public static deleteRebaseFolders(db: BriefcaseDb, checkIfEmpty: boolean = false): void {
+    const briefcaseRebasingRoot = path.join(path.dirname(db.pathName), this.REBASING_FOLDER, db.briefcaseId.toString());
+    if (!IModelJsFs.existsSync(briefcaseRebasingRoot)) return;
+
+    if (checkIfEmpty) {
+      const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
+      if (IModelJsFs.existsSync(basePath) && IModelJsFs.readdirSync(basePath).length > 0) return;
+    }
+
+    IModelJsFs.removeSync(briefcaseRebasingRoot);
+
+    // remove .rebasing root if it's now empty
+    const rebasingRoot = path.join(path.dirname(db.pathName), this.REBASING_FOLDER);
+    if (IModelJsFs.existsSync(rebasingRoot) && IModelJsFs.readdirSync(rebasingRoot).length === 0)
+      IModelJsFs.removeSync(rebasingRoot);
+  }
+
+  /**
+   * Cleans up rebase folders for semantic rebase given briefcase file path and briefcase id
+   * @param briefcaseFilePath The briefcase file path
+   * @param briefcaseId The briefcase id
+   * @internal
+   */
+  private static cleanupRebaseFolders(briefcaseFilePath: LocalFileName, briefcaseId: BriefcaseId): void {
+    const briefcaseRebasingRoot = path.join(path.dirname(briefcaseFilePath), this.REBASING_FOLDER, briefcaseId.toString());
+    if (IModelJsFs.existsSync(briefcaseRebasingRoot))
+      IModelJsFs.removeSync(briefcaseRebasingRoot);
+
+    // remove .rebasing root if it's now empty
+    const rebasingRoot = path.join(path.dirname(briefcaseFilePath), this.REBASING_FOLDER);
+    if (IModelJsFs.existsSync(rebasingRoot) && IModelJsFs.readdirSync(rebasingRoot).length === 0)
+      IModelJsFs.removeSync(rebasingRoot);
+  }
+
+  // #endregion
 
 }

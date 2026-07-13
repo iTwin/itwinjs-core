@@ -34,7 +34,6 @@ export interface DownloadAndOpenArgs {
  * @internal
  */
 export class RpcBriefcaseUtility {
-
   private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
     const accessToken = activity.accessToken;
@@ -130,9 +129,8 @@ export class RpcBriefcaseUtility {
 
   public static async open(args: DownloadAndOpenArgs & { syncMode: SyncMode.FixedVersion }): Promise<IModelDb>;
   /**
-   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   * @deprecated in 4.4.0 - might be removed in next major version. Only `SyncMode.FixedVersion` should be used in RPC backends
    */
-  // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
   public static async open(args: DownloadAndOpenArgs & { syncMode: Exclude<SyncMode, "FixedVersion"> }): Promise<IModelDb>;
   /**
    * Download and open a checkpoint or briefcase, ensuring the operation completes within a default timeout. If the time to open exceeds the timeout period,
@@ -181,9 +179,8 @@ export class RpcBriefcaseUtility {
 
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode.FixedVersion, timeout?: number): Promise<IModelConnectionProps>;
   /**
-   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   * @deprecated in 4.4.0 - might be removed in next major version. Only `SyncMode.FixedVersion` should be used in RPC backends
    */
-  // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: Exclude<SyncMode, "FixedVersion">, timeout?: number): Promise<IModelConnectionProps>;
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
     if (tokenProps.iModelId)

@@ -6,6 +6,22 @@
  * @module Utils
  */
 
+/**
+ * A type that recursively makes all properties of object `T` required, including all properties of nested objects.
+ * @public
+ */
+export type DeepRequiredObject<T> = T extends object
+  ? { [K in keyof T]-?: DeepRequiredObject<T[K]> }
+  : T
+
+/**
+ * A type that recursively makes all properties of object `T` readonly, including all properties of nested objects.
+ * @public
+ */
+export type DeepReadonlyObject<T> = T extends object
+  ? { readonly [K in keyof T]: DeepReadonlyObject<T[K]> } :
+  T
+
 /** The inverse of TypeScript's Readonly<T> type, producing a type that has all the properties of `T` with any `readonly` modifiers removed.
  * @public
  */
@@ -148,3 +164,14 @@ export function omit<T extends object, K extends readonly (keyof T)[]>(t: T, key
 export type RequireAtLeastOne<T> = {
   [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
 }[keyof T];
+
+/** Extracts the union of all value types from the properties of `T`.
+ * @beta
+ */
+export type ValueOf<T> = T[keyof T];
+
+/** Extracts the union of all nested value types from a two-level object `T`.
+ * Intended for generated lookup objects whose first level groups literal values into sections.
+ * @beta
+ */
+export type NestedValueOf<T> = ValueOf<{ [K in keyof T]: ValueOf<T[K]> }>;

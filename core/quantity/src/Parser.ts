@@ -6,13 +6,16 @@
  * @module Quantity
  */
 
+import { Logger } from "@itwin/core-bentley";
 import { QuantityConstants } from "./Constants";
 import { QuantityError, QuantityStatus } from "./Exception";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import { QuantityLoggerCategory } from "./QuantityLoggerCategory";
 import { ParserSpec } from "./ParserSpec";
 import { applyConversion, Quantity } from "./Quantity";
+import { Phenomena } from "./generated/Units.generated";
 
 /** Possible parser errors
  * @beta
@@ -27,6 +30,7 @@ export enum ParseError {
   BearingPrefixOrSuffixMissing,
   MathematicOperationFoundButIsNotAllowed,
   BearingAngleOutOfRange,
+  InvalidMathResult,
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
@@ -52,10 +56,12 @@ export interface ParsedQuantity {
 enum Operator {
   addition = "+",
   subtraction = "-",
+  multiplication = "*", // unsupported but we recognize it during parsing
+  division = "/", // unsupported but we recognize it during parsing
 }
 
 function isOperator(char: number | string): boolean {
-  if(typeof char === "number"){
+  if (typeof char === "number") {
     // Convert the CharCode to string.
     char = String.fromCharCode(char);
   }
@@ -76,10 +82,10 @@ class ParseToken {
   public isOperator: boolean = false;
 
   constructor(value: string | number | Operator) {
-    if (typeof value === "string"){
+    if (typeof value === "string") {
       this.value = value.trim();
       this.isOperator = isOperator(this.value);
-    } else{
+    } else {
       this.value = value;
     }
   }
@@ -283,6 +289,15 @@ export class Parser {
                 processingNumber = false;
                 wipToken = "";
               }
+              else if (format.type === FormatType.Bearing && wipToken.length > 0) {
+                if (signToken.length > 0) {
+                  wipToken = signToken + wipToken;
+                  signToken = "";
+                }
+                tokens.push(new ParseToken(parseFloat(wipToken))); // Create token for the current number
+                processingNumber = false;
+                wipToken = "";
+              }
               continue;
             } else {
               // an "E" or "e" may signify scientific notation
@@ -307,13 +322,13 @@ export class Parser {
             }
           }
 
-          if (format.type === FormatType.Station && charCode === format.stationSeparator.charCodeAt(0)){
-            if(!isStationSeparatorAdded){
+          if (format.type === FormatType.Station && charCode === format.stationSeparator.charCodeAt(0)) {
+            if (!isStationSeparatorAdded) {
               isStationSeparatorAdded = true;
               continue;
             }
             isStationSeparatorAdded = false;
-          } else if (skipCodes.findIndex((ref) => ref === charCode) !== -1){
+          } else if (skipCodes.findIndex((ref) => ref === charCode) !== -1) {
             // ignore any codes in skipCodes
             continue;
           }
@@ -328,7 +343,7 @@ export class Parser {
           wipToken = (i < str.length) ? str[i] : "";
           processingNumber = false;
 
-          if(wipToken.length === 1 && isOperator(wipToken)){
+          if (wipToken.length === 1 && isOperator(wipToken)) {
             tokens.push(new ParseToken(wipToken)); // Push operator token.
             wipToken = "";
           }
@@ -345,13 +360,13 @@ export class Parser {
             }
           }
 
-          if(wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE){
+          if (wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE) {
             // Don't add space when the wip token is empty.
             continue;
           }
 
           if (isCharOperator) {
-            if(wipToken.length > 0){
+            if (wipToken.length > 0) {
               // There is a token is progress, process it now, before adding the new operator token.
               tokens.push(new ParseToken(wipToken));
               wipToken = "";
@@ -380,15 +395,14 @@ export class Parser {
         tokens.push(new ParseToken(wipToken));
       }
     }
-
     return tokens;
   }
 
-  private static isMathematicOperation(tokens: ParseToken[]){
-    if(tokens.length > 1){
+  private static isMathematicOperation(tokens: ParseToken[]) {
+    if (tokens.length > 1) {
       // The loop starts at one because the first token can be a operator without it being maths. Ex: "-5FT"
-      for(let i = 1; i < tokens.length; i++){
-        if(tokens[i].isOperator)
+      for (let i = 1; i < tokens.length; i++) {
+        if (tokens[i].isOperator)
           // Operator found, it's a math operation.
           return true;
       }
@@ -435,21 +449,24 @@ export class Parser {
     let outUnit = (format.units && format.units.length > 0 ? format.units[0][0] : undefined);
     const unitConversions: UnitConversionSpec[] = [];
     const uniqueUnitLabels = [...new Set(tokens.filter((token) => token.isString).map((token) => token.value as string))];
-    for(const label of uniqueUnitLabels){
+    for (const label of uniqueUnitLabels) {
       const unitProps = await this.lookupUnitByLabel(label, format, unitsProvider, altUnitLabelsProvider);
-      if(!outUnit){
+      if (!outUnit) {
         // No default unit, assume that the first unit found is the desired output unit.
         outUnit = unitProps;
       }
 
       let spec = unitConversions.find((specB) => specB.name === unitProps.name);
-      if(spec){
+      if (spec) {
         // Already in the list, just add the label.
         spec.parseLabels?.push(label.toLocaleLowerCase());
       } else {
         // Add new conversion to the list.
         const conversion = await unitsProvider.getConversion(unitProps, outUnit);
-        if(conversion){
+        if (conversion.error) {
+          Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unitProps.name}" to "${outUnit.name}" could not be resolved.`);
+        }
+        if (conversion) {
           spec = {
             conversion,
             label: unitProps.label,
@@ -462,7 +479,7 @@ export class Parser {
       }
     }
 
-    return {outUnit, specs: unitConversions};
+    return { outUnit, specs: unitConversions };
   }
 
   /**
@@ -470,9 +487,13 @@ export class Parser {
    */
   private static async createQuantityFromParseTokens(tokens: ParseToken[], format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     const unitConversionInfos = await this.getRequiredUnitsConversionsToParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
-    if(unitConversionInfos.outUnit){
-      const value = Parser.getQuantityValueFromParseTokens(tokens, format, unitConversionInfos.specs, await unitsProvider.getConversion(unitConversionInfos.outUnit, unitConversionInfos.outUnit));
-      if(value.ok){
+    if (unitConversionInfos.outUnit) {
+      const outUnitConversion = await unitsProvider.getConversion(unitConversionInfos.outUnit, unitConversionInfos.outUnit);
+      if (outUnitConversion.error) {
+        Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unitConversionInfos.outUnit.name}" to "${unitConversionInfos.outUnit.name}" could not be resolved.`);
+      }
+      const value = Parser.getQuantityValueFromParseTokens(tokens, format, unitConversionInfos.specs, outUnitConversion);
+      if (value.ok) {
         return new Quantity(unitConversionInfos.outUnit, value.value);
       }
     }
@@ -536,23 +557,25 @@ export class Parser {
   /**
    * Get what the unit conversion is for a unitless value.
    */
-  private static getDefaultUnitConversion(tokens: ParseToken[], unitsConversions: UnitConversionSpec[], defaultUnit?: UnitProps){
+  private static getDefaultUnitConversion(tokens: ParseToken[], unitsConversions: UnitConversionSpec[], defaultUnit?: UnitProps) {
     let unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, unitsConversions, defaultUnit) : undefined;
-    if(!unitConversion){
+    if (!unitConversion) {
       // No default unit conversion, take the first valid unit.
       const uniqueUnitLabels = [...new Set(tokens.filter((token) => token.isString).map((token) => token.value as string))];
-      for(const label of uniqueUnitLabels){
+      for (const label of uniqueUnitLabels) {
         unitConversion = Parser.tryFindUnitConversion(label, unitsConversions, defaultUnit);
-        if(unitConversion !== undefined)
+        if (unitConversion !== undefined)
           return unitConversion;
       }
+      // if there were unique unit labels but not matched to any units, throw an error
+      if (uniqueUnitLabels.length > 0) throw new QuantityError(QuantityStatus.UnitLabelSuppliedButNotMatched, `The unit label(s) ${uniqueUnitLabels.join(", ")} could not be matched to a known unit.`);
     }
     return unitConversion;
   }
 
   // Get the next token pair to parse into a quantity.
   private static getNextTokenPair(index: number, tokens: ParseToken[]): ParseToken[] | undefined {
-    if(index >= tokens.length)
+    if (index >= tokens.length)
       return;
 
     // 6 possible combination of token pair.
@@ -573,10 +596,10 @@ export class Parser {
 
     // Check if the token pair is valid. If not, try again by removing the last token util empty.
     // Ex: ['5', 'FT', '7'] invalid => ['5', 'FT'] valid returned
-    for(let i = currentCombination.length - 1; i >= 0; i--){
-      if(validCombinations.includes(JSON.stringify(currentCombination))){
+    for (let i = currentCombination.length - 1; i >= 0; i--) {
+      if (validCombinations.includes(JSON.stringify(currentCombination))) {
         break;
-      } else{
+      } else {
         currentCombination.pop();
         tokenPair.pop();
       }
@@ -588,11 +611,11 @@ export class Parser {
   /**
    * Accumulate the given list of tokens into a single quantity value. Formatting the tokens along the way.
    */
-  private static getQuantityValueFromParseTokens(tokens: ParseToken[], format: Format, unitsConversions: UnitConversionSpec[], defaultUnitConversion?: UnitConversionProps ): QuantityParseResult {
+  private static getQuantityValueFromParseTokens(tokens: ParseToken[], format: Format, unitsConversions: UnitConversionSpec[], defaultUnitConversion?: UnitConversionProps): QuantityParseResult {
     if (tokens.length === 0)
       return { ok: false, error: ParseError.UnableToGenerateParseTokens };
 
-    if(!format.allowMathematicOperations && Parser.isMathematicOperation(tokens))
+    if (!format.allowMathematicOperations && Parser.isMathematicOperation(tokens))
       return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
 
     if (
@@ -603,41 +626,66 @@ export class Parser {
     }
 
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
-    defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
+    try {
+      defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
+    } catch (e) {
+      // If we failed to get the default unit conversion, we need to return an error.
+      if (e instanceof QuantityError && e.errorNumber === QuantityStatus.UnitLabelSuppliedButNotMatched)
+        return { ok: false, error: ParseError.UnitLabelSuppliedButNotMatched };
+    }
+
+    if (format.type === FormatType.Bearing && format.units !== undefined && format.units.length > 0) {
+      const units = format.units;
+      const desiredNumberOfTokens = units.length;
+      if (tokens.length < desiredNumberOfTokens && tokens[0].isNumber && desiredNumberOfTokens <= 3) {
+        // handle the special XX.YYZZ format which is common for bearings. It uses no separators, so we need to split based on numeric indexes. We support up to 3 units
+        const value: number = tokens[0].value as number;
+        const firstToken = Math.floor(value);
+        tokens.pop();
+        tokens.push(new ParseToken(firstToken)); // Add the first token back to the list.
+        if (desiredNumberOfTokens >= 2) {
+          const remaining = (value - firstToken) * 100;
+          const secondToken = Math.floor(remaining);
+          tokens.push(new ParseToken(secondToken));
+          if (desiredNumberOfTokens === 3) {
+            const thirdToken = (remaining - secondToken) * 100;
+            tokens.push(new ParseToken(thirdToken));
+          }
+        }
+      }
+    }
 
     let tokenPair: ParseToken[] | undefined;
     let increment: number = 1;
     let mag = 0.0;
     // The sign is saved outside from the loop for cases like this. '-1m 50cm 10mm + 2m 30cm 40mm' => -1.51m + 2.34m
     let sign: 1 | -1 = 1;
-
     let compositeUnitIndex = 0;
-
 
     for (let i = 0; i < tokens.length; i = i + increment) {
       tokenPair = this.getNextTokenPair(i, tokens);
-      if(!tokenPair || tokenPair.length === 0){
+      if (!tokenPair || tokenPair.length === 0) {
         return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
       }
       increment = tokenPair.length;
 
       // Keep the sign so its applied to the next tokens.
-      if(tokenPair[0].isOperator){
+      if (tokenPair[0].isOperator) {
         sign = tokenPair[0].value === Operator.addition ? 1 : -1;
         tokenPair.shift();
         compositeUnitIndex = 0; // Reset the composite unit index, the following tokens begin from start.
       }
 
       // unit specification comes before value (like currency)
-      if(tokenPair.length === 2 && tokenPair[0].isString){
+      if (tokenPair.length === 2 && tokenPair[0].isString) {
         // Invert it so the currency sign comes second.
         tokenPair = [tokenPair[1], tokenPair[0]];
       }
 
-      if(tokenPair[0].isNumber){
+      if (tokenPair[0].isNumber) {
         let value = sign * (tokenPair[0].value as number);
         let conversion: UnitConversionProps | undefined;
-        if(tokenPair.length === 2 && tokenPair[1].isString){
+        if (tokenPair.length === 2 && tokenPair[1].isString) {
           conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
         }
         if (!conversion) {
@@ -657,7 +705,7 @@ export class Parser {
       } else {
         // only the unit label was specified so assume magnitude of 0
         const conversion = Parser.tryFindUnitConversion(tokenPair[0].value as string, unitsConversions, defaultUnit);
-        if (conversion === undefined){
+        if (conversion === undefined) {
           // Unknown unit label
           return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
         }
@@ -703,7 +751,7 @@ export class Parser {
    *  @param inString A string that contains text represent a quantity.
    *  @param format   Defines the likely format of inString. Primary unit serves as a default unit if no unit label found in string.
    *  @param unitsConversions dictionary of conversions used to convert from unit used in inString to output quantity
-   *  @deprecated in 4.10. Check [[Parser.parseQuantityString]] for replacements.
+   *  @deprecated in 4.10 - might be removed in next major version. Check [[Parser.parseQuantityString]] for replacements.
    */
   public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     // TODO: This method is not able to do bearing and azimuth formatting and is overlapping with parseQuantityString.
@@ -722,12 +770,26 @@ export class Parser {
       });
     }
 
-    if(format.type === FormatType.Bearing || format.type === FormatType.Azimuth || format.type === FormatType.Ratio) {
+    if (format.type === FormatType.Bearing || format.type === FormatType.Azimuth || format.type === FormatType.Ratio) {
       // throw error indicating to call parseQuantityString instead
       throw new QuantityError(QuantityStatus.UnsupportedUnit, `Bearing, Azimuth or Ratio format must be parsed using a ParserSpec. Call parseQuantityString instead.`);
     }
 
     return this.parseAndProcessTokens(inString, format, unitsConversions);
+  }
+
+  /** The value of special direction is always in degrees; resolve "degrees" relative to
+   * `spec.outUnit`'s phenomenon, since `Units.ARC_DEG` only exists in the `Units.ANGLE` family. */
+  private static processSpecialBearingDirection(mag: number, spec: ParserSpec): QuantityParseResult {
+    const degreeUnitName = spec.outUnit.phenomenon === Phenomena.HORIZONTAL_DIRECTION ? "Units.HORIZONTAL_DIR_ARC_DEG" : "Units.ARC_DEG";
+    const specialDirUnit = spec.unitConversions.find((unitConversion) => unitConversion.name === degreeUnitName);
+    if (!specialDirUnit)
+      return { ok: false, error: ParseError.UnknownUnit };
+    const preferredUnit = spec.outUnit;
+    const conversion = this.tryFindUnitConversion(specialDirUnit.label, spec.unitConversions, preferredUnit);
+    if (!conversion) return { ok: true, value: mag };
+    const revolution = this.getRevolution(spec);
+    return { ok: true, value: this.convertAzimuthToPersistenceConvention(applyConversion(mag, conversion), spec, revolution) };
   }
 
   private static parseBearingFormat(inString: string, spec: ParserSpec): QuantityParseResult {
@@ -776,7 +838,7 @@ export class Parser {
       const suffix = matchedSuffix?.toLowerCase() || "";
       const specialDirection = specialDirections[`${prefix}${suffix}`];
       if (specialDirection !== undefined)
-        return { ok: true, value: specialDirection };
+        return this.processSpecialBearingDirection(specialDirection, spec);
     }
 
     if (matchedPrefix === null || matchedSuffix === null) {
@@ -784,7 +846,7 @@ export class Parser {
     }
 
     const parsedResult = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
-    if(this.isParseError(parsedResult)) {
+    if (this.isParseError(parsedResult)) {
       return parsedResult;
     }
     const revolution = this.getRevolution(spec);
@@ -808,13 +870,14 @@ export class Parser {
       }
     }
     magnitude = this.normalizeAngle(magnitude, revolution);
+    magnitude = this.convertAzimuthToPersistenceConvention(magnitude, spec, revolution);
 
     return { ok: true, value: magnitude };
   }
 
   private static parseAzimuthFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     const parsedResult = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
-    if(this.isParseError(parsedResult)) {
+    if (this.isParseError(parsedResult)) {
       return parsedResult;
     }
 
@@ -829,15 +892,17 @@ export class Parser {
       }
       const azBaseQuantity: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
       const azBaseConverted = azBaseQuantity.convertTo(spec.outUnit, spec.azimuthBaseConversion);
-      if (azBaseConverted === undefined || !azBaseConverted.isValid) {
+      if (!azBaseConverted.isValid) {
         throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert azimuth base unit to ${spec.outUnit.name}.`);
       }
       azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
     }
     const inputIsClockwise = spec.format.azimuthClockwiseOrDefault;
 
-    if(inputIsClockwise && azimuthBase === 0) {
+    if (inputIsClockwise && azimuthBase === 0) {
       // parsed result already has the same base and orientation as our desired output
+      if (spec.outUnit.phenomenon === Phenomena.ANGLE)
+        return { ok: true, value: this.convertAzimuthToPersistenceConvention(magnitude, spec, revolution) };
       return parsedResult;
     }
 
@@ -847,29 +912,108 @@ export class Parser {
       magnitude = azimuthBase - magnitude;
 
     magnitude = this.normalizeAngle(magnitude, revolution);
+    magnitude = this.convertAzimuthToPersistenceConvention(magnitude, spec, revolution);
 
     return { ok: true, value: magnitude };
+  }
+
+  /**
+   * Parse a ratio part string (numerator or denominator) to extract the numeric value and optional unit label.
+   * This method processes tokens without applying unit conversions, allowing the ratio format
+   * handler to manage conversions at the ratio level.
+   *
+   *
+   * @note Fractions are already handled by parseQuantitySpecification, which converts them to
+   * single numeric tokens (e.g., "1/2" becomes 0.5).
+   *
+   * @param partStr The string to parse, which may contain a number, fraction, or mixed fraction with optional unit label.
+   * @param format The format specification used for token parsing.
+   * @returns An object containing the parsed numeric value and optional unit label. Returns NaN for value if no number is found.
+   */
+  private static parseRatioPart(partStr: string, format: Format): { value: number; unitLabel?: string } {
+    partStr = partStr.trim();
+
+    // Parse tokens - fractions are automatically converted to decimal values by parseQuantitySpecification
+    const tempFormat = format.clone({ type: FormatType.Decimal });
+    const tokens = Parser.parseQuantitySpecification(partStr, tempFormat);
+
+    let value = NaN;
+    let unitLabel: string | undefined;
+
+    // Pre-process: merge negative operators with following numbers
+    const processedTokens: ParseToken[] = [];
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (token.isOperator && i === 0 && token.value === "-" &&
+          i + 1 < tokens.length && tokens[i + 1].isNumber) {
+        // Merge negative sign with number
+        processedTokens.push(new ParseToken(-(tokens[i + 1].value as number)));
+        i++; // Skip the number token since we consumed it
+      } else {
+        processedTokens.push(token);
+      }
+    }
+    // Extract numeric value and unit label from processed tokens
+    for (const token of processedTokens) {
+      if (token.isNumber && isNaN(value)) {
+        value = token.value as number;
+      } else if (token.isString && !token.isOperator) {
+        // String token that's not an operator - treat as unit label
+        unitLabel = token.value as string;
+      }
+    }
+
+    return { value, unitLabel };
   }
 
   private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     if (!inString)
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
-    const parts = inString.split(":");
-    if (parts.length > 2)
-      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+    const separator = spec.format.ratioSeparator ?? ":";
+    const parts = inString.split(separator);
+    if (parts.length > 2) return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 
-    const numerator = parseFloat(parts[0]);
-    let denominator;
-    if (parts.length === 1) {
-      denominator = 1.0;
-    } else {
-      denominator = parseFloat(parts[1]);
+    // If the string doesn't contain the expected separator but contains other ratio-like separators,
+    // return an error since the wrong separator was used
+    if (parts.length === 1 && !inString.includes(separator)) {
+      // Check if the string contains other common ratio separators
+      const otherSeparators = [":", "=", "/"];
+      for (const otherSep of otherSeparators) {
+        if (otherSep !== separator && inString.includes(otherSep)) {
+          // The string looks like a ratio but uses the wrong separator
+          return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+        }
+      }
+      // Parse as a regular quantity value (numerator only, denominator = 1)
+      const result = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
+      return result;
     }
 
-    if (isNaN(numerator) || isNaN(denominator))
-      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+    // Parse numerator and denominator parts which may include unit labels
+    const numeratorPart = this.parseRatioPart(parts[0], spec.format);
+    const denominatorPart = parts.length === 1 ? { value: 1.0 } : this.parseRatioPart(parts[1], spec.format);
 
+    if (isNaN(numeratorPart.value) || isNaN(denominatorPart.value)) return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+
+    // Handle 2-unit composite case - simpler conversion using the pre-computed scale factor
+    if (spec.format.units && spec.format.units.length === 2 && spec.unitConversions.length >= 3) {
+      const ratioConvSpec = spec.unitConversions[0];
+      const scaleFactor = ratioConvSpec.conversion.factor;
+
+      if (denominatorPart.value === 0) {
+        return { ok: false, error: ParseError.InvalidMathResult };
+      }
+
+      // The ratio value is numerator/denominator in the display units (e.g., 12 for 12"=1')
+      // Divide by scale factor to get persistence unit value (e.g., 12/12 = 1.0)
+      const ratioValue = numeratorPart.value / denominatorPart.value;
+      const convertedValue = ratioValue / scaleFactor;
+
+      return { ok: true, value: convertedValue };
+    }
+
+    // Original flow for 1-unit composite - use Quantity.convertTo for proper unit conversion
     const defaultUnit = spec.format.units && spec.format.units.length > 0 ? spec.format.units[0][0] : undefined;
     const unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
 
@@ -877,31 +1021,30 @@ export class Parser {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing input unit or unit conversion for interpreting ${spec.format.name}.`);
     }
 
-    if (denominator === 0){
-      if (unitConversion.inversion && numerator === 1)
-        return { ok: true, value: 0.0 };
-      else
-        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+    if (denominatorPart.value === 0) {
+      if (unitConversion.inversion && numeratorPart.value === 1) return { ok: true, value: 0.0 };
+      else return { ok: false, error: ParseError.InvalidMathResult };
     }
 
     let quantity: Quantity;
     if (spec.format.units && spec.outUnit) {
-      quantity = new Quantity(spec.format.units[0][0], numerator / denominator);
+      quantity = new Quantity(spec.format.units[0][0], numeratorPart.value / denominatorPart.value);
     } else {
       throw new QuantityError(QuantityStatus.MissingRequiredProperty, "Missing presentation unit or persistence unit for ratio format.");
     }
 
-    let converted: Quantity | undefined;
+    let converted: Quantity;
     try {
       converted = quantity.convertTo(spec.outUnit, unitConversion);
-    } catch (err){
+    } catch (err) {
       // for input of "0:N" with reversed unit
-      if (err instanceof QuantityError && err.errorNumber === QuantityStatus.InvertingZero){
-        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+      if (err instanceof QuantityError && err.errorNumber === QuantityStatus.InvertingZero) {
+        return { ok: false, error: ParseError.InvalidMathResult };
       }
+      throw err;
     }
 
-    if (converted === undefined || !converted.isValid) {
+    if (!converted.isValid) {
       throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert from ${spec.format.units[0][0].name} to ${spec.outUnit.name} On format ${spec.format.name}.`);
     }
 
@@ -925,11 +1068,22 @@ export class Parser {
 
     const revolution: Quantity = new Quantity(spec.format.revolutionUnit, 1.0);
     const converted = revolution.convertTo(spec.outUnit, spec.revolutionConversion);
-    if (converted === undefined || !converted.isValid) {
+    if (!converted.isValid) {
       throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert revolution unit to ${spec.outUnit.name} On format ${spec.format.name}.`);
     }
 
     return converted.magnitude;
+  }
+
+  /** Converts an azimuth-convention magnitude back to a raw math angle when `spec.outUnit` is
+   * `ANGLE`-phenomenon (mirrors the transform in `Formatter.processBearingAndAzimuth`). No-op for
+   * `HORIZONTAL_DIRECTION`, which is already a true azimuth. */
+  private static convertAzimuthToPersistenceConvention(magnitude: number, spec: ParserSpec, revolution: number): number {
+    if (spec.outUnit.phenomenon !== Phenomena.ANGLE)
+      return magnitude;
+
+    const quarterRevolution = revolution / 4;
+    return this.normalizeAngle(quarterRevolution - magnitude, revolution);
   }
 
   private static parseAndProcessTokens(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
@@ -954,6 +1108,9 @@ export class Parser {
     const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.phenomenon);
     for (const unit of familyUnits) {
       const conversion = await unitsProvider.getConversion(unit, outUnit);
+      if (conversion.error) {
+        Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unit.name}" to "${outUnit.name}" could not be resolved.`);
+      }
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
       const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
       // add any alternate labels that may be defined for the Unit
@@ -996,6 +1153,9 @@ export class Parser {
       }
 
       const conversion = await unitsProvider.getConversion(unit, outUnit);
+      if (conversion.error) {
+        Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${unit.name}" to "${outUnit.name}" could not be resolved.`);
+      }
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
       const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
       // add any alternate labels that may be defined for the Unit

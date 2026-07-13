@@ -174,7 +174,7 @@ export abstract class RenderSystem implements Disposable {
     this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
-  /** @deprecated in 5.0 Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Will be made protected in a future release. Use [Symbol.dispose] instead. */
   public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** The maximum permitted width or height of a texture supported by this render system. */
@@ -248,7 +248,7 @@ export abstract class RenderSystem implements Disposable {
    */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
   /** @internal */
-  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
   /** @internal */
   public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     const params = createMeshParams(args, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
@@ -295,7 +295,7 @@ export abstract class RenderSystem implements Disposable {
    */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
   /** @internal */
-  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
   /** @internal */
   public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
@@ -450,7 +450,7 @@ export abstract class RenderSystem implements Disposable {
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
-  /** Create a RenderGraphic consisting of a list of Graphics, with optional transform and symbology overrides applied to the list */
+  /** Create a RenderGraphic consisting of a list of Graphics, with the specified transform and any symbology overrides applied to the list. */
   public createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {
     return this.createGraphicBranch(branch, transform, options);
   }
@@ -822,7 +822,7 @@ export namespace RenderSystem {
     /** Previously, this property dictated whether to attempt to use a WebGL 2 rendering context before falling back to WebGL 1.
      * WebGL 1 is no longer supported, so this property is now ignored.
      * @public
-     * @deprecated in 4.x. WebGL 1 is no longer supported.
+     * @deprecated in 4.0.0 - might be removed in next major version. WebGL 1 is no longer supported.
      */
     useWebGL2?: boolean;
 

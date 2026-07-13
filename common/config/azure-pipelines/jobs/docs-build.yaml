@@ -38,9 +38,6 @@ parameters:
   - name: shouldPublish
     type: boolean
     default: false
-  - name: ignoreAudit
-    type: boolean
-    default: false
   - name: isExternalBuild
     type: boolean
     default: false
@@ -58,25 +55,20 @@ jobs:
         path: itwinjs-core
         clean: true
       - task: UseNode@1
-        displayName: Use Node 20
+        displayName: Use Node 24.15.0
         inputs:
-          version: 22.x
+          version: 24.15.0
           checkLatest: false
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
         displayName: Setup git config
 
-      # Only install, audit, and build the docs if not using the core artifact
+      # Only install and build the docs if not using the core artifact
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
-
-      - script: node common/scripts/install-run-rush.js audit
-        displayName: rush audit
-        workingDirectory: ${{ parameters.workingDir }}
-        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false), eq('${{ parameters.ignoreAudit }}', false))
 
       - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
         displayName: rush build
@@ -90,6 +82,23 @@ jobs:
         displayName: rush docs
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
+
+      - bash: |
+          branchName="$(Build.SourceBranch)"
+          archiveTag=""
+
+          # Add conditions here for branches that should produce archives
+          # For example, 'refs/heads/release/5.10.x' should be archived as 'v5':
+          # if [[ $branchName == "refs/heads/release/5.10.x" ]]; then
+          #   archiveTag="v5"
+          # fi
+
+          if [[ -n "$archiveTag" ]]; then
+            echo "Adding output variable $archiveTag"
+            echo "##vso[task.setvariable variable=archiveTag;]$archiveTag"
+          fi
+        displayName: Set archive vars if necessary
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       # if using the core artifact, download the Core Generated Docs artifact it to the workingDir using downloadPipelineArtifact task
       - task: DownloadPipelineArtifact@2
@@ -119,7 +128,13 @@ jobs:
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
-      - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js"
+      # Update the bmsBuild step to include --siteRoot flag when archiveTag is defined.
+      - script: |
+          siteRootFlag=""
+          if [ -n "$(archiveTag)" ]; then
+            siteRootFlag="--siteRoot $(archiveTag)"
+          fi
+          ./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js $siteRootFlag
         displayName: Run bmsBuild
         workingDirectory: ${{ parameters.workingDir }}
 
@@ -137,6 +152,15 @@ jobs:
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
+
+      # Tag the build for version archival (e.g., "v4") if building a specific release branch
+      - bash: |
+          if [[ -n "$(archiveTag)" ]]; then
+            echo "Tagging build with $(archiveTag) for archival purposes."
+            echo "##vso[build.addbuildtag]$(archiveTag)"
+          fi
+        displayName: Tag build for version archival (e.g., v4)
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), ne(variables['archiveTag'], ''))
 
       # tag the build to trigger the release pipeline
       - bash: |

@@ -22,6 +22,7 @@ export class PlanarClipMaskState {
   private _tileTreeRefs?: TileTreeReference[];
   private _allLoaded = false;
   private _usingViewportOverrides = false;
+  private _overridesModelVisibility = false;
   private _maskRange: Range3d = Range3d.createNull();
 
   private constructor(settings: PlanarClipMaskSettings) {
@@ -37,6 +38,9 @@ export class PlanarClipMaskState {
   }
 
   public get usingViewportOverrides(): boolean { return this._usingViewportOverrides; };
+
+  /** @internal */
+  public get overridesModelVisibility(): boolean { return this._overridesModelVisibility; }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     if (this._tileTreeRefs)
@@ -77,7 +81,7 @@ export class PlanarClipMaskState {
 
   // Returns any potential FeatureSymbology overrides for drawing the planar clip mask.
   public getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined {
-    this._usingViewportOverrides = false;
+    this._usingViewportOverrides = this._overridesModelVisibility = false;
     // First obtain a list of models that will need to be turned off for drawing the planar clip mask (only used for batched tile trees).
     const overrideModels = context.viewport.view.isSpatialView() ? context.viewport.view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode) : undefined;
 
@@ -90,6 +94,7 @@ export class PlanarClipMaskState {
     const overrides = FeatureSymbology.Overrides.withSource(featureSymbologySource, viewport);
 
     if (overrideModels) {
+      this._overridesModelVisibility = true;
       // overrideModels is used for batched models.  For those, we need to create model overrides to turn off models that are
       // not wanted in the mask (using transparency) no matter what mask mode is being used.
       const appOff = FeatureAppearance.fromTransparency(1.0);
@@ -111,16 +116,16 @@ export class PlanarClipMaskState {
     // Add overrides to turn things on or off based on the subcategories or elements in the mask settings.
     switch (this.settings.mode) {
       case PlanarClipMaskMode.IncludeElements: {
-        overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds!, true);
+        overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds ?? [], true);
         return overrides;
       }
       case PlanarClipMaskMode.ExcludeElements: {
         overrides.ignoreSubCategory = true;
-        overrides.setNeverDrawnSet(this.settings.subCategoryOrElementIds!);
+        overrides.setNeverDrawnSet(this.settings.subCategoryOrElementIds ?? []);
         return overrides;
       }
       case PlanarClipMaskMode.IncludeSubCategories: {
-        for (const subCategoryId of this.settings.subCategoryOrElementIds!)
+        for (const subCategoryId of this.settings.subCategoryOrElementIds ?? [])
           overrides.setVisibleSubCategory(subCategoryId);
         return overrides;
       }

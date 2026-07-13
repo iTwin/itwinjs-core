@@ -20,9 +20,6 @@ import { _nativeDb } from "./internal/Symbols";
 
 // cspell:ignore savepoint julianday rowid
 
-/* eslint-disable @typescript-eslint/unified-signatures */
-
-
 /**
  * A "generic" SQLiteDb. This class may be used to access local files or databases in a cloud container.
  * @public
@@ -38,7 +35,7 @@ export class SQLiteDb {
   }
 
   /** alias for closeDb.
-   * @deprecated in 4.0, use [[closeDb]]
+   * @deprecated in 4.0 - might be removed in next major version. Use [[closeDb]]
    */
   public dispose(): void {
     this.closeDb();

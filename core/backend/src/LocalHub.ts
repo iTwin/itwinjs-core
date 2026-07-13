@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
   ChangesetRange, IModelError, LocalDirName, LocalFileName, LockState,
 } from "@itwin/core-common";
-import { LockConflict, LockMap, LockProps } from "./BackendHubAccess";
+import { BriefcaseIdArg, LockConflict, LockMap, LockProps } from "./BackendHubAccess";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
@@ -35,30 +35,31 @@ interface LocalHubProps {
   readonly noLocks?: true;
 }
 
-interface LocksEntry {
+interface LockLastReleaseChangesetIndices {
+  lastExclusiveReleaseChangesetIndex?: ChangesetIndex;
+  lastSharedReleaseChangesetIndex?: ChangesetIndex;
+}
+
+interface LocksEntry extends LockLastReleaseChangesetIndices {
   id: Id64String;
   level: LockState;
-  lastCsIndex?: ChangesetIndex;
   briefcaseId?: BriefcaseId;
 }
 
-interface LockStatusNone {
+interface LockStatusNone extends LockLastReleaseChangesetIndices {
   state: LockState.None;
-  lastCsIndex?: ChangesetIndex;
 }
 
 /** @internal exported for tests. */
-export interface LockStatusExclusive {
+export interface LockStatusExclusive extends LockLastReleaseChangesetIndices {
   state: LockState.Exclusive;
   briefcaseId: BriefcaseId;
-  lastCsIndex?: ChangesetIndex;
 }
 
 /** @internal exported for tests. */
-export interface LockStatusShared {
+export interface LockStatusShared extends LockLastReleaseChangesetIndices {
   state: LockState.Shared;
   sharedBy: Set<BriefcaseId>;
-  lastCsIndex?: ChangesetIndex;
 }
 
 interface BriefcaseIdAndChangeset {
@@ -97,11 +98,11 @@ export class LocalHub {
     const db = this._hubDb = new SQLiteDb();
     db.createDb(this.mockDbName);
     db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL,alias TEXT NOT NULL,assigned INTEGER DEFAULT 1)");
-    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,\
+    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,uncompressedSize BIGINT,\
                    FOREIGN KEY(briefcaseId) REFERENCES briefcases(id))");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,csIndex TEXT,FOREIGN KEY(csIndex) REFERENCES timeline(csIndex))");
-    db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastCSetIndex INTEGER,briefcaseId INTEGER)");
+    db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastExclusiveReleaseChangesetIndex INTEGER,lastSharedReleaseChangesetIndex INTEGER,briefcaseId INTEGER)");
     db.executeSQL("CREATE TABLE sharedLocks(lockId INTEGER NOT NULL,briefcaseId INTEGER NOT NULL,PRIMARY KEY(lockId,briefcaseId))");
     db.executeSQL("CREATE INDEX LockIdx ON locks(briefcaseId)");
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
@@ -228,7 +229,7 @@ export class LocalHub {
     this.getBriefcase(changeset.briefcaseId); // throws if invalid id
     const db = this.db;
     changeset.index = this._latestChangesetIndex + 1;
-    db.withSqliteStatement("INSERT INTO timeline(csIndex,csId,description,size,type,pushDate,user,briefcaseId) VALUES (?,?,?,?,?,?,?,?)", (stmt) => {
+    db.withSqliteStatement("INSERT INTO timeline(csIndex,csId,description,size,type,pushDate,user,briefcaseId,uncompressedSize) VALUES (?,?,?,?,?,?,?,?,?)", (stmt) => {
       stmt.bindInteger(1, changeset.index);
       stmt.bindString(2, changeset.id);
       stmt.bindString(3, changeset.description);
@@ -237,6 +238,7 @@ export class LocalHub {
       stmt.bindString(6, changeset.pushDate ?? new Date().toISOString());
       stmt.bindString(7, changeset.userCreated ?? "");
       stmt.bindInteger(8, changeset.briefcaseId);
+      stmt.bindInteger(9, changeset.uncompressedSize ?? 0);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert changeset into mock db");
@@ -296,9 +298,9 @@ export class LocalHub {
   /** Get the properties of a changeset by its index */
   public getChangesetByIndex(index: ChangesetIndex): ChangesetProps {
     if (index <= 0)
-      return { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0, size: 0 };
+      return { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0, size: 0, uncompressedSize: 0 };
 
-    return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId FROM timeline WHERE csIndex=?", (stmt) => {
+    return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId,uncompressedSize FROM timeline WHERE csIndex=?", (stmt) => {
       stmt.bindInteger(1, index);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
@@ -314,6 +316,7 @@ export class LocalHub {
         briefcaseId: stmt.getValueInteger(6),
         index,
         parentId: this.getParentId(index),
+        uncompressedSize: stmt.getValueInteger(7),
       };
     });
   }
@@ -427,6 +430,34 @@ export class LocalHub {
     });
   }
 
+  /**
+   * Find the checkpoint nearest to `changesetIndex` (searching both backward and forward).
+   * When the previous and next checkpoints are equidistant, the newer (next) checkpoint is preferred,
+   * which enables the tip-then-reverse download path in [[V2CheckpointManager]].
+   */
+  public queryNearestCheckpoint(changesetIndex: ChangesetIndex): ChangesetIndex {
+    const prev = this.queryPreviousCheckpoint(changesetIndex); // always ≥ 0; returns 0 when none found
+
+    const next: ChangesetIndex | undefined = this.db.withSqliteStatement(
+      "SELECT min(csIndex) FROM checkpoints WHERE csIndex >= ?",
+      (stmt) => {
+        stmt.bindInteger(1, changesetIndex);
+        stmt.step();
+        const val = stmt.getValue(0);
+        return val.isNull ? undefined : val.getInteger();
+      }
+    );
+
+    if (next === undefined) return prev; // no checkpoint at or after requested index
+    if (next === prev) return prev;      // exact match
+
+    // Prefer the newer (next) checkpoint when equidistant so that CheckpointManager
+    // will reverse from a tip checkpoint rather than apply from an old seed.
+    const distPrev = changesetIndex - prev;
+    const distNext = next - changesetIndex;
+    return distNext <= distPrev ? next : prev;
+  }
+
   /** "download" a checkpoint */
   public downloadCheckpoint(arg: { changeset: ChangesetIndexOrId, targetFile: LocalFileName }) {
     const index = this.getIndexFromChangeset(arg.changeset);
@@ -485,21 +516,23 @@ export class LocalHub {
   }
 
   public queryLockStatus(elementId: Id64String): LockStatus {
-    return this.db.withPreparedSqliteStatement("SELECT lastCSetIndex,level,briefcaseId FROM locks WHERE id=?", (stmt) => {
+    return this.db.withPreparedSqliteStatement("SELECT lastSharedReleaseChangesetIndex,lastExclusiveReleaseChangesetIndex,level,briefcaseId FROM locks WHERE id=?", (stmt) => {
       stmt.bindId(1, elementId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
         return { state: LockState.None };
-      const lastCsVal = stmt.getValue(0);
+      const lastSharedCsVal = stmt.getValue(0);
+      const lastExclusiveCsVal = stmt.getValue(1);
       const lock = {
-        lastCsIndex: lastCsVal.isNull ? undefined : lastCsVal.getInteger(),
-        state: stmt.getValueInteger(1),
+        lastSharedReleaseChangesetIndex: lastSharedCsVal.isNull ? undefined : lastSharedCsVal.getInteger(),
+        lastExclusiveReleaseChangesetIndex: lastExclusiveCsVal.isNull ? undefined : lastExclusiveCsVal.getInteger(),
+        state: stmt.getValueInteger(2),
       };
       switch (lock.state) {
         case LockState.None:
           return lock;
         case LockState.Exclusive:
-          return { ...lock, briefcaseId: stmt.getValueInteger(2) };
+          return { ...lock, briefcaseId: stmt.getValueInteger(3) };
         case LockState.Shared:
           return { ...lock, sharedBy: this.querySharedLockHolders(elementId) };
         default:
@@ -508,9 +541,42 @@ export class LocalHub {
     });
   }
 
+  private doesBriefcaseRequirePullBeforeLock(currStatus: LockStatus, props: LockProps, briefcase: BriefcaseIdAndChangeset): boolean {
+    if (props.state === LockState.None)
+      return false;
+
+    const briefcaseChangesetIndex = this.getIndexFromChangeset(briefcase.changeset);
+    const exclusiveIndexIsNewer = currStatus.lastExclusiveReleaseChangesetIndex !== undefined &&
+      currStatus.lastExclusiveReleaseChangesetIndex > briefcaseChangesetIndex;
+
+    if (props.state === LockState.Shared) {
+      // To acquire a shared lock, the briefcase must at least at the latest exclusive changeset index
+      return exclusiveIndexIsNewer;
+    } else {
+      assert(props.state === LockState.Exclusive);
+
+      const sharedIndexIsNewer = currStatus.lastSharedReleaseChangesetIndex !== undefined &&
+        currStatus.lastSharedReleaseChangesetIndex > briefcaseChangesetIndex;
+
+      // To acquire the exclusive lock the briefcase must be at least at the greater of the two last-indexes
+      return exclusiveIndexIsNewer || sharedIndexIsNewer;
+    }
+  }
+
+  private addSharedLockRecord(lockId: Id64String, briefcaseId: BriefcaseId) {
+    this.db.withPreparedSqliteStatement("INSERT INTO sharedLocks(lockId,briefcaseId) VALUES(?,?) ON CONFLICT(lockId,briefcaseId) DO NOTHING", (stmt) => {
+      stmt.bindId(1, lockId);
+      stmt.bindInteger(2, briefcaseId);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "cannot insert shared lock");
+    });
+  }
+
   private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: BriefcaseIdAndChangeset) {
-    if (props.state === LockState.Exclusive && currStatus.lastCsIndex && (currStatus.lastCsIndex > this.getIndexFromChangeset(briefcase.changeset)))
+    if (this.doesBriefcaseRequirePullBeforeLock(currStatus, props, briefcase)) {
       throw new IModelError(IModelHubStatus.PullIsRequired, "pull is required to obtain lock");
+    }
 
     const wantShared = props.state === LockState.Shared;
     if (wantShared && (currStatus.state === LockState.Exclusive))
@@ -526,14 +592,28 @@ export class LocalHub {
     });
 
     if (wantShared) {
-      this.db.withPreparedSqliteStatement("INSERT INTO sharedLocks(lockId,briefcaseId) VALUES(?,?)", (stmt) => {
-        stmt.bindId(1, props.id);
-        stmt.bindInteger(2, briefcase.briefcaseId);
-        const rc = stmt.step();
-        if (rc !== DbResult.BE_SQLITE_DONE)
-          throw new IModelError(rc, "cannot insert shared lock");
-      });
+      this.addSharedLockRecord(props.id, briefcase.briefcaseId);
     }
+  }
+
+  private downgradeExclusiveLockToShared(lockId: Id64String, briefcaseId: BriefcaseId) {
+    this.db.withPreparedSqliteStatement("UPDATE locks SET level=1,briefcaseId=NULL WHERE id=? AND briefcaseId=? AND level=2", (stmt) => {
+      stmt.bindId(1, lockId);
+      stmt.bindInteger(2, briefcaseId);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "can't downgrade lock");
+    });
+
+    // Verify that the above actually updated a row. If it didn't, something has gone wrong with the downgrade.
+    // This shouldn't happen.
+    this.db.withPreparedSqliteStatement("SELECT CHANGES()", (stmt) => {
+      stmt.step();
+      if (stmt.getValueInteger(0) !== 1)
+        throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase or lock is not exclusive");
+    });
+
+    this.addSharedLockRecord(lockId, briefcaseId);
   }
 
   private clearLock(id: Id64String) {
@@ -545,16 +625,29 @@ export class LocalHub {
     });
   }
 
-  private updateLockChangeset(id: Id64String, index: ChangesetIndex) {
+  private updateLockExclusiveChangeset(id: Id64String, index: ChangesetIndex) {
     if (index <= 0)
       return;
 
-    this.db.withPreparedSqliteStatement("UPDATE locks SET lastCSetIndex=? WHERE id=?", (stmt) => {
+    this.db.withPreparedSqliteStatement("UPDATE locks SET lastExclusiveReleaseChangesetIndex=? WHERE id=?", (stmt) => {
       stmt.bindInteger(1, index);
       stmt.bindId(2, id);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new IModelError(rc, "can't update lock changeSetId");
+        throw new IModelError(rc, "can't update lock exclusive changeSetId");
+    });
+  }
+
+  private updateLockSharedChangeset(id: Id64String, index: ChangesetIndex) {
+    if (index <= 0)
+      return;
+
+    this.db.withPreparedSqliteStatement("UPDATE locks SET lastSharedReleaseChangesetIndex=? WHERE id=?", (stmt) => {
+      stmt.bindInteger(1, index);
+      stmt.bindId(2, id);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "can't update lock shared changeSetId");
     });
   }
 
@@ -600,25 +693,65 @@ export class LocalHub {
     });
   }
 
-  private releaseLock(props: LockProps, arg: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
+  private abandonLock(props: LockProps, briefcase: BriefcaseIdArg) {
+    // When abandoning (but not when releasing), props.state indicates which
+    // state we're abandoning _to_. Specifically, an Exclusive lock can be
+    // abandoned to either Shared or None.
+
+    // It makes no sense to abandon a lock _to_ the Exclusive state.
+    if (props.state === LockState.Exclusive)
+      throw new IModelError(IModelHubStatus.InvalidArgumentError, "must specify Shared or None when abandoning a lock");
+
     const lockId = props.id;
-    const lockStatus = this.queryLockStatus(lockId);
-    switch (lockStatus.state) {
+    const previousLockStatus = this.queryLockStatus(lockId);
+    switch (previousLockStatus.state) {
       case LockState.None:
         throw new IModelError(IModelHubStatus.LockDoesNotExist, "lock not held");
 
       case LockState.Exclusive:
-        if (lockStatus.briefcaseId !== arg.briefcaseId)
+        if (previousLockStatus.briefcaseId !== briefcase.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
-        this.updateLockChangeset(lockId, arg.changesetIndex);
+        if (props.state === LockState.Shared) {
+          // Exclusive -> Shared
+          this.downgradeExclusiveLockToShared(lockId, briefcase.briefcaseId);
+        } else {
+          // Exclusive -> None
+          this.clearLock(lockId);
+        }
+        break;
+
+      case LockState.Shared:
+        if (!previousLockStatus.sharedBy.has(briefcase.briefcaseId))
+          throw new IModelError(IModelHubStatus.LockDoesNotExist, "shared lock not held by this briefcase");
+        this.removeSharedLock(lockId, briefcase.briefcaseId);
+        if (previousLockStatus.sharedBy.size === 1)
+          this.clearLock(lockId);
+    }
+  }
+
+  private releaseLock(props: LockProps, briefcase: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
+    // Unlike abandonLock above, release always releases the lock all the way back to the None state.
+    // So we ignore props.state. There's no such thing as a "downgrade" here.
+
+    const lockId = props.id;
+    const previousLockStatus = this.queryLockStatus(lockId);
+    switch (previousLockStatus.state) {
+      case LockState.None:
+        throw new IModelError(IModelHubStatus.LockDoesNotExist, "lock not held");
+
+      case LockState.Exclusive:
+        if (previousLockStatus.briefcaseId !== briefcase.briefcaseId)
+          throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
+        this.updateLockExclusiveChangeset(lockId, briefcase.changesetIndex);
         this.clearLock(lockId);
         break;
 
       case LockState.Shared:
-        if (!lockStatus.sharedBy.has(arg.briefcaseId))
+        if (!previousLockStatus.sharedBy.has(briefcase.briefcaseId))
           throw new IModelError(IModelHubStatus.LockDoesNotExist, "shared lock not held by this briefcase");
-        this.removeSharedLock(lockId, arg.briefcaseId);
-        if (lockStatus.sharedBy.size === 1)
+        this.updateLockSharedChangeset(lockId, briefcase.changesetIndex);
+        this.removeSharedLock(lockId, briefcase.briefcaseId);
+        if (previousLockStatus.sharedBy.size === 1)
           this.clearLock(lockId);
     }
   }
@@ -647,9 +780,21 @@ export class LocalHub {
     this.db.saveChanges();
   }
 
+  public abandonLocks(locks: LockMap, arg: BriefcaseIdArg) {
+    for (const props of locks)
+      this.abandonLock({ id: props[0], state: props[1] }, arg);
+    this.db.saveChanges();
+  }
+
   public releaseAllLocks(arg: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
     const locks = this.queryAllLocks(arg.briefcaseId);
     this.releaseLocks(locks, arg);
+  }
+
+  public abandonAllLocks(arg: BriefcaseIdArg) {
+    const locks = new Map<Id64String, LockState>();
+    this.queryAllLocks(arg.briefcaseId).forEach(lock => locks.set(lock.id, LockState.None));
+    this.abandonLocks(locks, arg);
   }
 
   private countTable(tableName: string): number {
@@ -677,13 +822,14 @@ export class LocalHub {
   // for debugging
   public queryLocks(): LocksEntry[] {
     const locks: LocksEntry[] = [];
-    this.db.withPreparedSqliteStatement("SELECT id,level,lastCSetIndex,briefcaseId FROM locks", (stmt) => {
+    this.db.withPreparedSqliteStatement("SELECT id,level,lastExclusiveReleaseChangesetIndex,lastSharedReleaseChangesetIndex,briefcaseId FROM locks", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step())
         locks.push({
           id: stmt.getValueId(0),
           level: stmt.getValueInteger(1),
-          lastCsIndex: stmt.getValue(2).isNull ? undefined : stmt.getValueInteger(2),
-          briefcaseId: stmt.getValue(3).isNull ? undefined : stmt.getValueInteger(3),
+          lastExclusiveReleaseChangesetIndex: stmt.getValue(2).isNull ? undefined : stmt.getValueInteger(2),
+          lastSharedReleaseChangesetIndex: stmt.getValue(3).isNull ? undefined : stmt.getValueInteger(3),
+          briefcaseId: stmt.getValue(4).isNull ? undefined : stmt.getValueInteger(4),
         });
     });
     return locks;

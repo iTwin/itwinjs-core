@@ -8,6 +8,7 @@ import { SchemaInfo } from "./Interfaces";
 import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
+import { ECClassHierarchy } from "./utils/ECClassHierarchy";
 
 /**
  * @internal
@@ -118,9 +119,10 @@ export class SchemaCache implements ISchemaLocater {
     // This promise is cached and will be awaited when the user requests the full schema.
     // If the promise competes successfully before the user requests the schema it will be removed from the cache
     // If it fails it will remain in the cache until the user awaits it and handles the error
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     schemaPromise.then(() => {
       this.removeSchemaPromise(schemaInfo.schemaKey);
+    }).catch(() => {
+      // Leave the promise in the cache so that when the user requests the schema they get the rejection
     });
   }
 
@@ -243,6 +245,7 @@ export class SchemaContext {
 
   private _knownSchemas: SchemaCache;
   private _fallbackLocaterDefined: boolean;
+  private _classHierarchy: ECClassHierarchy;
 
   constructor() {
     this._locaters = [];
@@ -250,9 +253,15 @@ export class SchemaContext {
     this._knownSchemas = new SchemaCache();
     this._locaters.push(this._knownSchemas);
     this._fallbackLocaterDefined = false;
+    this._classHierarchy = new ECClassHierarchy();
   }
 
   public get locaters(): ReadonlyArray<ISchemaLocater> { return this._locaters; }
+
+  /** @internal */
+  public get classHierarchy(): ECClassHierarchy {
+    return this._classHierarchy;
+  }
 
   /**
    * Adds a locater to the context.
@@ -303,7 +312,7 @@ export class SchemaContext {
   /**
    * Adds the given SchemaItem to the the SchemaContext by locating the schema, with the best match of SchemaMatchType.Exact, and
    * @param schemaItem The SchemaItem to add
-   * @deprecated in 4.0 use ecschema-editing package
+   * @deprecated in 4.0 - might be removed in next major version. Use ecschema-editing package
    */
   public async addSchemaItem(schemaItem: SchemaItem) {
     const schema = await this.getSchema(schemaItem.key.schemaKey, SchemaMatchType.Exact);

@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Range3d } from "@itwin/core-geometry";
-import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
+import { EmptyLocalization, FillFlags, GltfV2ChunkTypes, GltfVersions, LinePixels, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { GltfDataType, GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
-import { GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader";
+import { Gltf2Material, GltfDataType, GltfDocument, GltfId, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
+import { getMeshPrimitives, GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 import { BatchedTileIdMap } from "../../tile/internal";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
 const minimalJson = { asset: { version: "02.00" }, meshes: [] };
@@ -306,7 +308,7 @@ describe("GltfReader", () => {
       expect(reader).toBeDefined();
       expect(() => {
         for (const _ of reader.traverseScene()) { }
-      }).toThrowError("Cycle detected while traversing glTF nodes");
+      }).toThrow("Cycle detected while traversing glTF nodes");
     }
 
     expectCycle(0);
@@ -1392,6 +1394,675 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
         });
         expect(featureIndexToColorMap.size).toEqual(uniqueEntriesSize);
       });
+    });
+  });
+
+  describe("EXT_mesh_primitive_restart", () => {
+    function expectPrimitives(mesh: GltfMesh, expected: GltfMeshPrimitive[] | "fallback"): void {
+      const expectedPrimitives = "fallback" === expected ? mesh.primitives : expected;
+      const actualPrimitives = getMeshPrimitives(mesh);
+      expect(actualPrimitives).toEqual(expectedPrimitives);
+    }
+
+    it("combines primitives", () => {
+      expectPrimitives({
+        primitives: [{
+          attributes: {},
+          indices: 0,
+          mode: GltfMeshMode.LineStrip,
+        }, {
+          attributes: {},
+          indices: 1,
+          mode: GltfMeshMode.TriangleFan,
+        }, {
+          attributes: {},
+          indices: 2,
+          mode: GltfMeshMode.TriangleFan,
+        }, {
+          attributes: {},
+          indices: 3,
+          mode: GltfMeshMode.Triangles,
+        }, {
+          attributes: {},
+          indices: 4,
+          mode: GltfMeshMode.LineStrip,
+        }, {
+          attributes: {},
+          indices: 5,
+          mode: GltfMeshMode.LineStrip,
+        }],
+        extensions: {
+          EXT_mesh_primitive_restart: {
+            primitiveGroups: [{
+              primitives: [5, 0, 4],
+              indices: 111,
+            }, {
+                primitives: [1, 2],
+                indices: 222,
+            }],
+          },
+        },
+      }, [{
+        attributes: {},
+        indices: 222,
+        mode: GltfMeshMode.TriangleFan,
+      }, {
+        attributes: {},
+        indices: 3,
+        mode: GltfMeshMode.Triangles,
+      }, {
+        attributes: {},
+        indices: 111,
+        mode: GltfMeshMode.LineStrip,
+      }]);
+    });
+
+    describe("falls back to mesh.primitives", () => {
+      it("if no groups are defined", () => {
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 123,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [],
+            },
+          },
+        }, "fallback");
+
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 123,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: undefined as any,
+            },
+          },
+        }, "fallback");
+      });
+
+      it("if a group refers to a non-existent primitive", () => {
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1, 2],
+                indices: 999,
+              }],
+            },
+          },
+        }, "fallback");
+      });
+
+      it("if a given primitive appears more than once in the same group", () => {
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 2,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 2, 0],
+                indices: 111,
+              }],
+            },
+          },
+        }, "fallback");
+      });
+
+      it("if a given primitive appears in more than one group", () => {
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 2,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1],
+                indices: 111,
+              }, {
+                primitives: [1, 2],
+                indices: 222,
+              }],
+            },
+          },
+        }, "fallback");
+      });
+
+      it("if any primitive does not use indexed geometry", () => {
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: undefined,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1, 2],
+                indices: 111,
+              }],
+            },
+          },
+        }, "fallback");
+      });
+
+      it("if any primitive has a topology other than line loop, line strip, triangle strip, or triangle fan", () => {
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.Triangles,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.Triangles,
+          }, {
+            attributes: {},
+            indices: 2,
+            mode: GltfMeshMode.Triangles,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1, 2],
+                indices: 111,
+              }],
+            },
+          },
+        }, "fallback");
+      });
+
+      it("if primitives within a group have different topologies", () => {
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.TriangleFan,
+          }, {
+            attributes: {},
+            indices: 2,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1, 2],
+                indices: 111,
+              }],
+            },
+          },
+        }, "fallback");
+      });
+    });
+  });
+
+  describe("BENTLEY_materials_planar_fill", () => {
+    // Simple glTF with a triangle and a material using the planar fill extension
+    const planarFillGltf: GltfDocument = JSON.parse(`{
+      "scene": 0,
+      "scenes": [{ "nodes": [0] }],
+      "nodes": [{ "mesh": 0 }],
+      "meshes": [{
+        "primitives": [{
+          "attributes": { "POSITION": 0 },
+          "material": 0,
+          "mode": 4
+        }]
+      }],
+      "materials": [{
+        "pbrMetallicRoughness": { "metallicFactor": 0 },
+        "extensions": {
+          "BENTLEY_materials_planar_fill": {
+            "wireframeFill": 1,
+            "backgroundFill": true,
+            "behind": true
+          }
+        }
+      }],
+      "buffers": [{
+        "uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
+        "byteLength": 36
+      }],
+      "bufferViews": [{
+        "buffer": 0,
+        "byteOffset": 0,
+        "byteLength": 36,
+        "target": 34962
+      }],
+      "accessors": [{
+        "bufferView": 0,
+        "byteOffset": 0,
+        "componentType": 5126,
+        "count": 3,
+        "type": "VEC3",
+        "max": [1.0, 1.0, 0.0],
+        "min": [0.0, 0.0, 0.0]
+      }],
+      "asset": { "version": "2.0" }
+    }`);
+
+    it("calculates proper fill flags", async () => {
+      const reader = createReader(planarFillGltf)!;
+      expect(reader).toBeDefined();
+
+      await reader.read();
+
+      // The mesh should have the exact combination of fill flags:
+      // - Always (wireframeFill=1)
+      // - Background (backgroundFill=true)
+      // - Behind (behind=true)
+      expect(reader.meshes).toBeDefined();
+      const expectedFlags = FillFlags.Always | FillFlags.Background | FillFlags.Behind;
+      expect(reader.meshes!.primitive.displayParams.fillFlags).toBe(expectedFlags);
+    });
+  });
+
+  describe("BENTLEY_materials_line_style", () => {
+    const lineStyleGltf: GltfDocument = JSON.parse(`{
+      "scene": 0,
+      "scenes": [{ "nodes": [0] }],
+      "nodes": [{ "mesh": 0 }],
+      "meshes": [{
+        "primitives": [{
+          "attributes": { "POSITION": 0 },
+          "indices": 1,
+          "material": 0,
+          "mode": 1
+        }]
+      }],
+      "materials": [{
+        "pbrMetallicRoughness": { "metallicFactor": 0 },
+        "extensions": {
+          "BENTLEY_materials_line_style": {
+            "width": 3,
+            "pattern": 61694
+          }
+        }
+      }],
+      "buffers": [{
+        "byteLength": 28
+      }],
+      "bufferViews": [{
+        "buffer": 0,
+        "byteOffset": 0,
+        "byteLength": 24,
+        "target": 34962
+      }, {
+        "buffer": 0,
+        "byteOffset": 24,
+        "byteLength": 4,
+        "target": 34963
+      }],
+      "accessors": [{
+        "bufferView": 0,
+        "byteOffset": 0,
+        "componentType": 5126,
+        "count": 2,
+        "type": "VEC3",
+        "max": [1.0, 0.0, 0.0],
+        "min": [0.0, 0.0, 0.0]
+      }, {
+        "bufferView": 1,
+        "byteOffset": 0,
+        "componentType": 5123,
+        "count": 2,
+        "type": "SCALAR",
+        "max": [1],
+        "min": [0]
+      }],
+      "asset": { "version": "2.0" }
+    }`);
+
+    it("loads line width and pattern for line primitives", async () => {
+      const binaryData = new Uint8Array(28);
+      const floatView = new Float32Array(binaryData.buffer, 0, 6);
+      floatView.set([0, 0, 0, 1, 0, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 24, 2);
+      indexView.set([0, 1]);
+
+      const reader = createReader(makeGlb(lineStyleGltf, binaryData))!;
+      expect(reader).toBeDefined();
+
+      await reader.read();
+
+      expect(reader.meshes).toBeDefined();
+      expect(reader.meshes!.primitive.displayParams.width).toBe(3);
+      expect(reader.meshes!.primitive.displayParams.linePixels).toBe(0xf0fef0fe as LinePixels);
+    });
+  });
+
+  describe("EXT_textureInfo_constant_lod", () => {
+    const constantLodDoc: GltfDocument = JSON.parse(`
+{
+  "asset": { "version": "2.0" },
+  "extensionsUsed": ["EXT_textureInfo_constant_lod"],
+  "extensionsRequired": ["EXT_textureInfo_constant_lod"],
+  "scene": 0,
+  "scenes": [{ "nodes": [0] }],
+  "nodes": [{ "mesh": 0 }],
+  "meshes": [{
+    "primitives": [{
+      "attributes": { "POSITION": 0 },
+      "indices": 1,
+      "material": 0
+    }]
+  }],
+  "materials": [{
+    "pbrMetallicRoughness": {
+      "baseColorTexture": {
+        "index": 0,
+        "extensions": {
+          "EXT_textureInfo_constant_lod": {
+            "repetitions": 2.5,
+            "offset": [10.0, 20.0],
+            "minClampDistance": 100.0,
+            "maxClampDistance": 5000.0
+          }
+        }
+      }
+    }
+  }],
+  "textures": [{ "source": 0 }],
+  "images": [{ "uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" }],
+  "accessors": [
+    { "bufferView": 0, "componentType": 5126, "count": 3, "type": "VEC3", "min": [0, 0, 0], "max": [1, 1, 0] },
+    { "bufferView": 1, "componentType": 5123, "count": 3, "type": "SCALAR" }
+  ],
+  "bufferViews": [
+    { "buffer": 0, "byteOffset": 0, "byteLength": 36 },
+    { "buffer": 0, "byteOffset": 36, "byteLength": 6 }
+  ],
+  "buffers": [{ "byteLength": 42 }]
+}
+`);
+
+    it("reads constant LOD properties", async () => {
+      // Add simple triangle vertex data
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(constantLodDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      expect(doc.materials).toBeDefined();
+
+      const material = doc.materials![0] as Gltf2Material;
+      expect(material.pbrMetallicRoughness?.baseColorTexture).toBeDefined();
+
+      const ext = material.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod;
+      expect(ext).toBeDefined();
+      expect(ext?.repetitions).toBe(2.5);
+      expect(ext?.offset).toEqual([10.0, 20.0]);
+      expect(ext?.minClampDistance).toBe(100.0);
+      expect(ext?.maxClampDistance).toBe(5000.0);
+    });
+
+    it("reads extension even when properties are omitted", async () => {
+      const emptyExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
+      (emptyExtDoc.materials![0] as Gltf2Material).pbrMetallicRoughness!.baseColorTexture!.extensions!.EXT_textureInfo_constant_lod = {};
+
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(emptyExtDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      const material = doc.materials![0] as Gltf2Material;
+      const ext = material.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod;
+
+      expect(ext).toBeDefined();
+
+      // All properties should be undefined (defaults are applied by TextureMapping.Params constructor)
+      expect(ext?.repetitions).toBeUndefined();
+      expect(ext?.offset).toBeUndefined();
+      expect(ext?.minClampDistance).toBeUndefined();
+      expect(ext?.maxClampDistance).toBeUndefined();
+    });
+
+    it("reads extension from emissiveTexture when baseColorTexture is not present", async () => {
+      const emissiveExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
+      const material = emissiveExtDoc.materials![0] as Gltf2Material;
+      delete material.pbrMetallicRoughness!.baseColorTexture;
+
+      // Add emissiveTexture with extension
+      material.emissiveTexture = {
+        index: 0,
+        extensions: {
+          EXT_textureInfo_constant_lod: {
+            repetitions: 3.0,
+            offset: [5.0, 15.0],
+            minClampDistance: 50.0,
+            maxClampDistance: 2500.0,
+          },
+        },
+      };
+
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(emissiveExtDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      const mat = doc.materials![0] as Gltf2Material;
+      expect(mat.pbrMetallicRoughness?.baseColorTexture).toBeUndefined();
+
+      const ext = mat.emissiveTexture?.extensions?.EXT_textureInfo_constant_lod;
+      expect(ext).toBeDefined();
+      expect(ext?.repetitions).toBe(3.0);
+      expect(ext?.offset).toEqual([5.0, 15.0]);
+      expect(ext?.minClampDistance).toBe(50.0);
+      expect(ext?.maxClampDistance).toBe(2500.0);
+    });
+
+    it("does not use emissiveTexture extension when baseColorTexture exists without extension", async () => {
+      const mixedExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
+      const material = mixedExtDoc.materials![0] as Gltf2Material;
+
+      // Remove extension from baseColorTexture but keep baseColorTexture itself
+      delete material.pbrMetallicRoughness!.baseColorTexture!.extensions;
+
+      // Add emissiveTexture with extension - this should NOT be used since baseColorTexture exists
+      material.emissiveTexture = {
+        index: 0,
+        extensions: {
+          EXT_textureInfo_constant_lod: {},
+        },
+      };
+
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(mixedExtDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      const mat = doc.materials![0] as Gltf2Material;
+
+      // baseColorTexture exists but has no extension
+      expect(mat.pbrMetallicRoughness?.baseColorTexture).toBeDefined();
+      expect(mat.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod).toBeUndefined();
+
+      // emissiveTexture has extension but should not be used
+      expect(mat.emissiveTexture?.extensions?.EXT_textureInfo_constant_lod).toBeDefined();
+
+      const findTextureMappingSpy = vi.spyOn(reader as any, "findTextureMapping");
+      (reader as any).createDisplayParams(mat, false);
+
+      // constantLodParamProps (4th argument) should be undefined since we use baseColorTexture which has no extension
+      expect(findTextureMappingSpy).toHaveBeenCalled();
+      expect(findTextureMappingSpy).toHaveBeenCalledWith(expect.any(String), false, undefined, undefined, false);
+
+      vi.restoreAllMocks();
+    });
+
+    it("enables constant LOD for normalTexture when both baseColorTexture and normalTexture have extension", async () => {
+      const normalExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
+      const material = normalExtDoc.materials![0] as Gltf2Material;
+
+      material.normalTexture = {
+        index: 0,
+        extensions: {
+          EXT_textureInfo_constant_lod: {
+            repetitions: 4.0,
+          },
+        },
+      };
+
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(normalExtDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      const mat = doc.materials![0] as Gltf2Material;
+
+      const findTextureMappingSpy = vi.spyOn(reader as any, "findTextureMapping");
+      (reader as any).createDisplayParams(mat, false);
+
+      // normalMapUseConstantLod (5th argument) should be true when both textures have extension
+      expect(findTextureMappingSpy).toHaveBeenCalled();
+      expect(findTextureMappingSpy).toHaveBeenCalledWith(expect.any(String), false, expect.any(String), expect.anything(), true);
+
+      vi.restoreAllMocks();
+    });
+
+    it("does not enable constant LOD for normalTexture when only normalTexture has extension", async () => {
+      const normalOnlyExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
+      const material = normalOnlyExtDoc.materials![0] as Gltf2Material;
+
+      // Remove extension from baseColorTexture
+      delete material.pbrMetallicRoughness!.baseColorTexture!.extensions;
+
+      // Add normalTexture with extension - should NOT enable constant LOD since base texture doesn't have it
+      material.normalTexture = {
+        index: 0,
+        extensions: {
+          EXT_textureInfo_constant_lod: {
+            repetitions: 4.0,
+          },
+        },
+      };
+
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(normalOnlyExtDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      const mat = doc.materials![0] as Gltf2Material;
+
+      const findTextureMappingSpy = vi.spyOn(reader as any, "findTextureMapping");
+      (reader as any).createDisplayParams(mat, false);
+
+      // normalMapUseConstantLod (5th argument) should be false
+      expect(findTextureMappingSpy).toHaveBeenCalled();
+      expect(findTextureMappingSpy).toHaveBeenCalledWith(expect.any(String), false, expect.any(String), undefined, false);
+
+      vi.restoreAllMocks();
+    });
+
+    it("does not enable constant LOD when extension is not present", async () => {
+      const noExtDoc: GltfDocument = JSON.parse(JSON.stringify(constantLodDoc));
+      const material = noExtDoc.materials![0] as Gltf2Material;
+
+      // Remove extension from baseColorTexture and document-level declarations
+      delete material.pbrMetallicRoughness!.baseColorTexture!.extensions;
+      delete noExtDoc.extensionsUsed;
+      delete noExtDoc.extensionsRequired;
+
+      const binaryData = new Uint8Array(42);
+      const floatView = new Float32Array(binaryData.buffer, 0, 9);
+      floatView.set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const indexView = new Uint16Array(binaryData.buffer, 36, 3);
+      indexView.set([0, 1, 2]);
+
+      const reader = createReader(makeGlb(noExtDoc, binaryData))!;
+      expect(reader).toBeDefined();
+
+      const doc = (reader as any)._glTF as GltfDocument;
+      const mat = doc.materials![0] as Gltf2Material;
+
+      expect(mat.pbrMetallicRoughness?.baseColorTexture?.extensions?.EXT_textureInfo_constant_lod).toBeUndefined();
+      expect(mat.emissiveTexture?.extensions?.EXT_textureInfo_constant_lod).toBeUndefined();
+
+      const findTextureMappingSpy = vi.spyOn(reader as any, "findTextureMapping");
+      (reader as any).createDisplayParams(mat, false);
+
+      // constantLodParamProps (4th argument to findTextureMapping) should be undefined when extension is not present
+      expect(findTextureMappingSpy).toHaveBeenCalled();
+      expect(findTextureMappingSpy).toHaveBeenCalledWith(expect.any(String), false, undefined, undefined, false);
+
+      vi.restoreAllMocks();
     });
   });
 

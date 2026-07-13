@@ -16,6 +16,16 @@
       "shellCommand": "node common/scripts/copyright-linter.js --fix"
     },
     {
+      "name": "generate-artifacts",
+      "commandKind": "bulk",
+      "summary": "Runs package generators that produce checked-in artifacts",
+      "description": "Iterates through each package in the monorepo and runs the 'generate-artifacts' script for packages that produce checked-in generated artifacts.",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
       "name": "clean",
       "commandKind": "bulk",
       "summary": "Cleans build output within each package",
@@ -82,6 +92,16 @@
       "enableParallelism": true,
       "ignoreMissingScript": false,
       "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
+      "name": "lint-deprecation",
+      "commandKind": "bulk",
+      "summary": "Formats deprecation messages",
+      "description": "Iterates through each package in the monorepo and lints it with custom configuration",
+      "enableParallelism": true,
+      "ignoreDependencyOrder": true,
+      "ignoreMissingScript": true,
       "allowWarningsInSuccessfulBuild": true
     },
     {

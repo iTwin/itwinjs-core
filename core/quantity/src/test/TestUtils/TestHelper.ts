@@ -31,6 +31,14 @@ const unitData: UnitDefinition[] = [
   { name: "Units.ARC_MINUTE", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "'", altDisplayLabels: ["min"] },
   { name: "Units.ARC_SECOND", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 648000.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: '"', altDisplayLabels: ["sec"] },
   { name: "Units.GRAD", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 200, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "grad", altDisplayLabels: ["gd"] },
+  // Horizontal direction (true azimuth) mock units -- TestUnitsProvider is a standalone hand-built
+  // provider (unrelated to BasicUnitsProvider/BasicUnitConversions.generated.ts), so it needs its
+  // own entries here too; factors mirror those in BasicUnitConversions.generated.ts.
+  { name: "Units.HORIZONTAL_DIR_RAD", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", altDisplayLabels: ["radian"] },
+  { name: "Units.HORIZONTAL_DIR_REVOLUTION", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 1.0, denominator: 6.283185307179586, offset: 0.0 }, displayLabel: "r", altDisplayLabels: ["rev"] },
+  { name: "Units.HORIZONTAL_DIR_ARC_DEG", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 180.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "°", altDisplayLabels: ["deg", "^"] },
+  { name: "Units.HORIZONTAL_DIR_ARC_MINUTE", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "'", altDisplayLabels: ["min"] },
+  { name: "Units.HORIZONTAL_DIR_ARC_SECOND", phenomenon: "Units.HORIZONTAL_DIRECTION", system: "Units.METRIC", conversion: { numerator: 648000.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: '"', altDisplayLabels: ["sec"] },
   // Time ( base unit second )
   { name: "Units.S", phenomenon: "Units.TIME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "s", altDisplayLabels: ["sec"] },
   { name: "Units.MIN", phenomenon: "Units.TIME", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 60.0, offset: 0.0 }, displayLabel: "min", altDisplayLabels: [] },
@@ -74,6 +82,10 @@ const unitData: UnitDefinition[] = [
 
   { name: "Units.VERTICAL_PER_HORIZONTAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "ft/ft", altDisplayLabels: ["ft/ft"] },
   { name: "Units.HORIZONTAL_PER_VERTICAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, isInverted: true, displayLabel: "m/m", altDisplayLabels: ["m/m"] },
+  // Ratio units for scale factors and length ratios
+  { name: "Units.DECIMAL_LENGTH_RATIO", phenomenon: "Units.LENGTH_RATIO", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "decimal length ratio", altDisplayLabels: [] },
+  { name: "Units.M_PER_M_LENGTH_RATIO", phenomenon: "Units.LENGTH_RATIO", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m/m", altDisplayLabels: [] },
+  { name: "Units.IN_PER_FT_LENGTH_RATIO", phenomenon: "Units.LENGTH_RATIO", system: "Units.USCUSTOM", conversion: { numerator: 12.0, denominator: 1.0, offset: 0.0 }, displayLabel: "\"/'", altDisplayLabels: ["in:ft"] },
 ];
 
 export class ConversionData implements UnitConversionProps {
@@ -83,6 +95,7 @@ export class ConversionData implements UnitConversionProps {
   public inversion?: UnitConversionInvert = undefined;
 }
 
+// TODO: derive unitData from BasicUnitConversions.generated.ts instead of hand-maintaining it here.
 export class TestUnitsProvider implements UnitsProvider, AlternateUnitLabelsProvider {
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {

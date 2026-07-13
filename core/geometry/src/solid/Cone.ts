@@ -8,7 +8,6 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -78,6 +77,12 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse z-axis (origin and direction) to preserve outward normals
+      this._localToWorld.origin.addInPlace(this._localToWorld.matrix.columnZ());
+      this._localToWorld.matrix.scaleColumnsInPlace(1, 1, -1);
+      [this._radiusA, this._radiusB] = [this._radiusB, this._radiusA];
+    }
     return true;
   }
   /**
@@ -246,7 +251,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
    * Return the Arc3d section at vFraction
    * @param vFraction fractional position along the sweep direction
    */
-  public constantVSection(vFraction: number): CurveCollection | undefined {
+  public constantVSection(vFraction: number): Loop {
     const r = this.vFractionToRadius(vFraction);
     const transform = this._localToWorld;
     const center = transform.multiplyXYZ(0, 0, vFraction);
@@ -256,8 +261,8 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   }
   /** Extend `rangeToExtend` so it includes this `Cone` instance. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    const arc0 = this.constantVSection(0.0)!;
-    const arc1 = this.constantVSection(1.0)!;
+    const arc0 = this.constantVSection(0.0);
+    const arc1 = this.constantVSection(1.0);
     arc0.extendRange(rangeToExtend, transform);
     arc1.extendRange(rangeToExtend, transform);
   }
@@ -291,6 +296,29 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
       this._localToWorld.multiplyVectorXYZ(drdv * cosTheta, drdv * sinTheta, 1.0),
       result);
   }
+  /** Return true if the solid's local z-axis is not perpendicular to its local xy-plane. */
+  public override get isSkew(): boolean {
+    return !this._localToWorld.matrix.columnZ().isParallelTo(this._localToWorld.matrix.columnXCrossColumnY(), true, true);
+  }
+  /**
+   * Test if this cone is a cylinder.
+   * * A cone is cylindrical if both conditions hold:
+   *   1. cross sections are circles of equal radius
+   *   2. axis is perpendicular to cross sections
+   * * Radii within [[Geometry.smallMetricDistance]] are considered equal.
+   * @param allowSkew whether to test the first condition only. Default value is `false`: test both conditions.
+   * @return cross sectional radius > 0 if cylindrical cone; otherwise 0 for non-cylindrical or degenerate cone.
+   */
+  public cylinderRadius(allowSkew: boolean = false): number {
+    let radius = 0;
+    if (allowSkew || !this.isSkew) {
+      const magX = this._localToWorld.matrix.columnXMagnitude();
+      const magY = this._localToWorld.matrix.columnYMagnitude();
+      if (Geometry.isSameCoordinate(magX, magY) && Geometry.isSameCoordinate(this._radiusA, this._radiusB))
+        radius = Math.abs(magX * this._radiusA);
+    }
+    return radius;
+  }
   /**
    * @return true if this is a closed volume.
    */
@@ -301,13 +329,15 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
    * Directional distance query
    * * u direction is around longitude circle at maximum distance from axis.
    * * v direction is on a line of longitude between the latitude limits.
+   * @returns max parametric distances, packed as a `Vector2d`, or zero vector if the instance is invalid.
    */
   public maxIsoParametricDistance(): Vector2d {
     const vectorX = this._localToWorld.matrix.columnX();
     const vectorY = this._localToWorld.matrix.columnY();
+    const xyNormal = vectorX.unitCrossProduct(vectorY);
+    if (!xyNormal)
+      return Vector2d.createZero();
     const columnZ = this._localToWorld.matrix.columnZ();
-
-    const xyNormal = vectorX.unitCrossProduct(vectorY)!;
     const hZ = xyNormal.dotProduct(columnZ);
     const zSkewVector = columnZ.plusScaled(xyNormal, hZ);
     const zSkewDistance = zSkewVector.magnitudeXY();

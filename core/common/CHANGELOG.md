@@ -1,6 +1,431 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Fri, 06 Jun 2025 13:44:02 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2026 12:22:07 GMT and should not be manually modified.
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Deprecated the no-op `doNotUsePrimaryConnToPrepare` concurrent query config option. Worker connections now always prepare against a shared, dedicated schema-source connection (falling back to their own connection) to avoid a deadlock with the primary connection; the option is retained only for backward-compatible config serialization and no longer affects behavior.
+- Add EditTxn.changeElementParent and EditTxn.changeElementModel; add ElementError namespace.
+- Added an internal DbResponseStatus.NotOpen status for closed iModel query responses.
+- add "missing-container-itwinid" to ITwinSettingsError
+- Add includePrerelease to DbCloudContainerInfo.
+- Clarify that the legacy BingProvider background map path is retained for compatibility with existing persisted data.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+_Version update only_
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Fix misspelled @deprecated tag on QueryRowFormat.UseJsPropertyNames
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+_Version update only_
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+_Version update only_
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Updates
+
+- Added ITwinSettingsError for iTwin settings container API error handling.
+- added EditTxn apis
+- Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns.
+- Added ECSql-compatible navigation-property fields to `ViewDefinitionProps`, `SpatialViewDefinitionProps`, and `ViewDefinition2dProps` interfaces. The flat Id64String fields (`categorySelectorId`, `displayStyleId`, `modelSelectorId`, `baseModelId`) are deprecated in favor of the new navigation-property objects but remain as getter/setter pairs instead for backward compatibility.
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+_Version update only_
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:13 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
+
+## 5.8.2
+Thu, 16 Apr 2026 11:05:01 GMT
+
+_Version update only_
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Updates
+
+- Optimize `DisplayStyleSettings` performance, when modifying sub-category and model appearance overrides, reality model display settings and planar clip masks.
+- Support for binding range3d
+- QueryBinder should not fail on bind empty array
+- Minor bump on `IModelReadRpcInterface.interfaceVersion`.
+- Add common DbCloudContainerInfo interface for metadata display
+- Added ECSqlReaderBase api which will act as a base point for both the async and sync version of ECSqlReader
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+_Version update only_
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+_Version update only_
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Move some types from backend to common
+- Fix a bug in a 'if' statement with a color def TBGR numeric value.
+- Optimize `DisplayStyleSettings` performance, when modifying sub-category and model appearance overrides, reality model display settings and planar clip masks.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
+
+## 5.6.2
+Thu, 26 Feb 2026 22:14:46 GMT
+
+_Version update only_
+
+## 5.6.1
+Fri, 13 Feb 2026 17:11:47 GMT
+
+### Updates
+
+- Fix a bug in a 'if' statement with a color def TBGR numeric value.
+
+## 5.6.0
+Thu, 05 Feb 2026 16:12:37 GMT
+
+### Updates
+
+- Move some types from backend to common
+- updated documentation
+
+## 5.5.2
+Thu, 22 Jan 2026 16:16:54 GMT
+
+_Version update only_
+
+## 5.5.1
+Wed, 14 Jan 2026 17:52:53 GMT
+
+_Version update only_
+
+## 5.5.0
+Mon, 05 Jan 2026 17:05:53 GMT
+
+### Updates
+
+- introduce enableTransactions flag on standaloneDb creation props
+
+## 5.4.2
+Fri, 12 Dec 2025 14:40:14 GMT
+
+_Version update only_
+
+## 5.4.1
+Thu, 11 Dec 2025 21:29:31 GMT
+
+_Version update only_
+
+## 5.4.0
+Tue, 02 Dec 2025 21:22:25 GMT
+
+### Updates
+
+- Fixes and enhancements for text fields.
+- Fix MapImagerySettings failing to preserve solid black background base.
+- Add APIs for project and sheet information.
+- Added changeset_index as a part of ChangesetHealthStats.
+- Added new terminatorShape property in TextStyleSettings
+
+## 5.3.4
+Fri, 12 Dec 2025 20:11:41 GMT
+
+_Version update only_
+
+## 5.3.3
+Thu, 20 Nov 2025 22:30:37 GMT
+
+_Version update only_
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+### Updates
+
+- Fix MapImagerySettings failing to preserve solid black background base.
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Added new `VersionedJSON<T>` interface for wrapping JSON data that should be versioned.
+- Multiple changes were made to the `TextStyleSettings` class. `lineHeight` is replaced with `textHeight`. Frame style names were changed to be more descriptive. `fontName` is now `font` and has both the font's name and type. `justification` and `margins` were moved from the `TextBlock` into `TextStyleSettings`.
+- Fixes and enhancements for text fields.
+- Add support for text fields referring to properties of EC views.
+- Add APIs for project and sheet information.
+- Added new terminatorShape property in TextStyleSettings
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+_Version update only_
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Added new `VersionedJSON<T>` interface for wrapping JSON data that should be versioned.
+- Removing `styleId` property from `TextBlock`.
+- Multiple changes were made to the `TextStyleSettings` class. `lineHeight` is replaced with `textHeight`. Frame style names were changed to be more descriptive. `fontName` is now `font` and has both the font's name and type. `justification` and `margins` were moved from the `TextBlock` into `TextStyleSettings`.
+- Adding support for lists to TextBlock
+- fix bug where iModel crs extent latitude would always be 0 on desktop
+- Briefcase Manager now provides deviceName to acquired briefcases
+- Add support for formatting text fields.
+- Fix spurious assertions in FeatureAppearance.equals.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+### Updates
+
+- Fix spurious assertions in FeatureAppearance.equals.
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:08 GMT
+
+_Version update only_
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+### Updates
+
+- fix bug where iModel crs extent latitude would always be 0 on desktop
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Mark iModel edit API as @preview
+- remove unused parameters for concurrent query
+- TextAnnotation element props use new BIS property `textAnnotationData`. TextAnnotations now use `AnnotationTextStyle`. `TextBlockComponents` no longer propagate styling to children. Styling is implicitly inherited from parents. `Paragraph`s and `Run`s no longer have `styleId` property. Moving frames from `TextAnnotation`s to `TextStyleSettings`. Annotations account for drawing scale when computing transform. Removing `TextStyle` class.
+- Refactoring the TextAnnotationGeometry and adding support for frames
+- Slight typing change of TextAnnotationFrameShape
+- Added `TabRun`s to `TextBlock`
+- add function to convert Helmert obj to Transform obj
+- Thinning iModelPlatform API
+- Make CreateEmptyStandaloneIModelProps public
+- Add support for text fields.
+- Introducing Text Annotation Leaders
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+### Updates
+
+- Make CreateEmptyStandaloneIModelProps public
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add new `properties` property to `ImageMapLayerSettings` class.
+- Deprecated the property extendType of QueryPropertyMetaData and added new property extendedType to QueryPropertyMetaData
+- removed getThumbnail api
+- Mark iModel edit API as @preview
+- Update ECSql reader api to support no stat and error code.
+- Adding support for margins to `TextBlock`
+- Resolves CVE-2025-27152
+- Depreciate ECSqlStatement API
+- add new imodel drapeTarget to ModelMapLayerProps
+- Add drapeTarget to ModelMapLayerProps (Reality data now a possible target)
+- FontMap.getFont now uses case insensitive matching for font names.
+- Upgrade compile target to ES2023 and module to ES2022
+- Removed `WipRpcInterface`
+- Deprecate `SnapshotIModelRpcInterface`
+- add CatalogIModelTypes
+- Add CesiumIonAssetId enum
+- Deprecated `MassPropertiesPerCandidateRequestProps` and `MassPropertiesPerCandidateResponseProps`
+- Deprecated `GeoCoordStatus.Pending`
+- Thinning iModelPlatform API
+- Revert BackendTypes to Public
+- Remove 3.x Deprecated APIs
+- Add support for tiles compressed with meshoptimizer
+- Adding Errors for Channels
+- Refactoring ITwin Error
+- Adding metadata for bentley error in IpcInvokeReturn
+- Updated IpcInvokeReturn to include error metadata
+- Add DrawingProps with scaleFactor.
+- Add new font APIs.
+- Remove deprecated IModelEncryptionProps
+- Removes re-exports from @itwin/core-bentley
+- Deprecate metadata types replaced by ecschema-metadata
+- Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+### Updates
+
+- Bump `playwright` version to `~1.56.1`.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT

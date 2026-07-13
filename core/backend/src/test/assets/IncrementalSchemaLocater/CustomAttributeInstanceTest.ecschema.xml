@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="CustomAttributeInstanceTest" alias="cat" version="01.00.00" displayLabel="Attribute Test Schema" description="Schema for testing CustomAttributes" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+
+  <ECStructClass typeName="TestClass" modifier="None" displayLabel="TestLabel" description="TestDescription">
+    <ECCustomAttributes>
+      <TestStringCustomAttribute xmlns="CustomAttributeInstanceTest.01.00.00">
+        <TestString>TestString</TestString>
+      </TestStringCustomAttribute>
+      <TestNumberCustomAttribute xmlns="CustomAttributeInstanceTest.01.00.00">
+        <TestNumber>1234</TestNumber>
+      </TestNumberCustomAttribute>
+      <TestBooleanCustomAttribute xmlns="CustomAttributeInstanceTest.01.00.00">
+        <TestBoolean>true</TestBoolean>
+      </TestBooleanCustomAttribute>
+    </ECCustomAttributes>
+  </ECStructClass>
+
+  <ECCustomAttributeClass typeName="TestStringCustomAttribute" appliesTo="Any" modifier="None">
+    <ECProperty propertyName="TestString" typeName="string"/>
+  </ECCustomAttributeClass>
+  <ECCustomAttributeClass typeName="TestNumberCustomAttribute" appliesTo="Any" modifier="None">
+    <ECProperty propertyName="TestNumber" typeName="int"/>
+  </ECCustomAttributeClass>
+  <ECCustomAttributeClass typeName="TestBooleanCustomAttribute" appliesTo="Any" modifier="None">
+    <ECProperty propertyName="TestBoolean" typeName="boolean"/>
+  </ECCustomAttributeClass>
+
+</ECSchema>

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { BeEvent, CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, expectDefined, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -90,7 +90,7 @@ export class SpatialViewState extends ViewState3d {
   public static override createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
-    const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
+    const modelSelectorState = new ModelSelectorState(expectDefined(props.modelSelectorProps), iModel);
     return new this(props.viewDefinitionProps as SpatialViewDefinitionProps, iModel, cat, displayStyleState, modelSelectorState);
   }
 
@@ -171,7 +171,9 @@ export class SpatialViewState extends ViewState3d {
 
   public override toJSON(): SpatialViewDefinitionProps {
     const val = super.toJSON() as SpatialViewDefinitionProps;
-    val.modelSelectorId = this.modelSelector.id;
+    val.modelSelector = { id: this.modelSelector.id };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    val.modelSelectorId = this.modelSelector.id;  // for backward compatibility
     return val;
   }
 

@@ -5,13 +5,14 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
+import { withEditTxn } from "../../EditTxn";
 import {
   BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ECJsNames, ElementAspectProps, ElementProps, EntityReferenceSet, ModelProps,
   PropertyMetaData,
   RelatedElement, RelatedElementProps, RelationshipProps, SchemaState,
 } from "@itwin/core-common";
 import {
-  DefinitionElement, DefinitionModel, ElementRefersToElements, EntityReferences, IModelDb, IModelJsFs, Model, RepositoryLink,
+  DefinitionElement, DefinitionModel, ElementRefersToElements, Entity, EntityReferences, IModelDb, IModelJsFs, Model, RepositoryLink,
   Schema, SnapshotDb, SpatialViewDefinition, StandaloneDb, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -20,7 +21,7 @@ import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { OpenMode } from "@itwin/core-bentley";
-import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
+import { EntityClass, NavigationProperty, PrimitiveProperty, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -41,6 +42,7 @@ describe("Class Registry", () => {
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData = await el.getMetaData();
       assert.exists(metaData);
 
@@ -60,6 +62,7 @@ describe("Class Registry", () => {
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData = await el2.getMetaData();
       assert.exists(metaData);
 
@@ -316,6 +319,121 @@ describe("Class Registry - generated classes", () => {
     public static override get className() { return "Derived6"; }
   }
 
+  class NonGeneratedElement extends DefinitionElement {
+    public static override get className() { return "NonGeneratedElement"; }
+  }
+
+  it("Should provide correct schemas and full-names on generated classes", async () => {
+    await imodel.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="CustomA" alias="custA" version="1.0.0"
+          xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECSchemaReference name="Functional" version="1.00" alias="func"/>
+          <ECEntityClass typeName="NonGeneratedElement">
+            <BaseClass>bis:DefinitionElement</BaseClass>
+          </ECEntityClass>
+          <ECEntityClass typeName="GeneratedElement">
+            <BaseClass>NonGeneratedElement</BaseClass>
+          </ECEntityClass>
+          <ECEntityClass typeName="ElementC">
+            <BaseClass>GeneratedElement</BaseClass>
+          </ECEntityClass>
+        </ECSchema>
+      `,
+      `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="CustomB" alias="custB" version="1.0.0"
+          xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECSchemaReference name="Functional" version="1.00" alias="func"/>
+          <ECSchemaReference name="CustomA" version="01.00" alias="custA"/>
+          <ECEntityClass typeName="DummyElement">
+            <BaseClass>bis:DefinitionElement</BaseClass>
+          </ECEntityClass>
+          <ECEntityClass typeName="ErrorElement">
+            <BaseClass>custA:ElementC</BaseClass>
+          </ECEntityClass>
+        </ECSchema>
+      `,
+    ]);
+
+    class CustomASchema extends Schema {
+      public static override get schemaName(): string { return "CustomA"; }
+      public static get classes(): typeof Entity[] {
+        return [NonGeneratedElement];
+      }
+      public static registerSchema() {
+        if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+          Schemas.unregisterSchema(this.schemaName);
+          Schemas.registerSchema(this);
+          for (const ecClass of this.classes) {
+            ClassRegistry.register(ecClass, this);
+          }
+        }
+      }
+
+      public static unregisterSchema() {
+        Schemas.unregisterSchema(this.schemaName);
+      }
+    }
+
+    CustomASchema.registerSchema();
+
+    class DummyElement extends DefinitionElement {
+      public static override get className() { return "DummyElement"; }
+    }
+
+    class CustomBSchema extends Schema {
+      public static override get schemaName(): string { return "CustomB"; }
+      public static get classes() {
+        return [DummyElement];
+      }
+      public static registerSchema() {
+        if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+          Schemas.unregisterSchema(this.schemaName);
+          Schemas.registerSchema(this);
+          for (const ecClass of this.classes) {
+            ClassRegistry.register(ecClass, this);
+          }
+        }
+      }
+
+      public static unregisterSchema() {
+        Schemas.unregisterSchema(this.schemaName);
+      }
+    }
+
+    CustomBSchema.registerSchema();
+
+    const nonGeneratedElement = imodel.getJsClass("CustomA:NonGeneratedElement");
+    assert.equal(nonGeneratedElement.classFullName, "CustomA:NonGeneratedElement");
+    const generatedElement = imodel.getJsClass("CustomA:GeneratedElement");
+    assert.equal(generatedElement.classFullName, "CustomA:GeneratedElement");
+    const elementC = imodel.getJsClass("CustomA:ElementC");
+    assert.equal(elementC.classFullName, "CustomA:ElementC");
+    const dummyElement = imodel.getJsClass("CustomB:DummyElement");
+    assert.equal(dummyElement.classFullName, "CustomB:DummyElement");
+
+    //This is the class that had the wrong schema
+    const errorElement = imodel.getJsClass("CustomB:ErrorElement");
+    assert.equal(errorElement.classFullName, "CustomB:ErrorElement");
+    assert.isTrue(errorElement.schemaItemKey.matches(new SchemaItemKey("ErrorElement", new SchemaKey("CustomB", 1, 0, 0))));
+    assert.equal(errorElement.className, "ErrorElement");
+    assert.equal(errorElement.schema.schemaName, "CustomB");
+
+    // Create an instance of ErrorElement
+    const errorElementInstance = Entity.instantiate(errorElement, { classFullName: errorElement.classFullName }, imodel);
+    assert.exists(errorElementInstance);
+    assert.instanceOf(errorElementInstance, errorElement);
+    assert.instanceOf(errorElementInstance, Entity);
+    assert.equal(errorElementInstance.className, "ErrorElement");
+    assert.equal(errorElementInstance.schemaName, "CustomB");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const metadata = await errorElementInstance.getMetaData();
+    assert.exists(metadata);
+    assert.equal(metadata.fullName, "CustomB.ErrorElement");
+  });
+
   // if a single inherited class is not generated, the entire hierarchy is considered not-generated
   it("should only generate automatic collectReferenceIds implementations for generated classes", async () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
@@ -326,12 +444,12 @@ describe("Class Registry - generated classes", () => {
       }
     }
 
-    const testEntityId = imodel.elements.insertElement({
+    const testEntityId = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
     const elemWithNavProp = new GeneratedTestElementWithNavProp({
       classFullName: "TestGeneratedClasses:TestElementWithNavProp",
@@ -370,12 +488,12 @@ describe("Class Registry - generated classes", () => {
       }
     }
 
-    const testEntityId = imodel.elements.insertElement({
+    const testEntityId = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
     const elemWithNavProp = new GeneratedTestElementWithNavProp({
       classFullName: "TestGeneratedClasses:TestElementWithNavProp",
@@ -406,21 +524,21 @@ describe("Class Registry - generated classes", () => {
       EntityReferences.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
     ].filter((x) => x !== undefined));
 
-    const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => imodel.elements.insertElement({
+    const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: `model-value-${index}`,
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps));
+    } as TestEntityProps)));
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestAspectWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestAspectWithNavProp");
 
-    const aspectWithNavPropId = imodel.elements.insertAspect({
+    const aspectWithNavPropId = withEditTxn(imodel, (txn) => txn.insertAspect({
       classFullName: GeneratedTestAspectWithNavProp.classFullName,
       navProp: { id: modelTestEntityIds[0], relClassName: "TestGeneratedClasses:NonElemRel" },
       element: { id: modelTestEntityIds[1] },
-    } as TestAspectWithNavProp);
+    } as TestAspectWithNavProp));
 
     class GeneratedTestModelWithNavProp extends imodel.getJsClass<typeof Model>("TestGeneratedClasses:TestModelWithNavProp") {
       constructor(props: TestModelWithNavPropProps) {
@@ -438,7 +556,7 @@ describe("Class Registry - generated classes", () => {
       // relNavProp: { id: relWithNavPropId, relClassName: "TestGeneratedClasses:ModelToRelNavRel" },
     } as TestModelWithNavPropProps);
 
-    const modelWithNavPropId = modelWithNavProp.insert();
+    const modelWithNavPropId = withEditTxn(imodel, (txn) => modelWithNavProp.insert(txn));
 
     expect(
       [...modelWithNavProp.getReferenceIds()],
@@ -451,12 +569,12 @@ describe("Class Registry - generated classes", () => {
       // EntityReferences.fromEntityType(relWithNavPropId, ConcreteEntityTypes.Relationship),
     ].filter((x) => x !== undefined));
 
-    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => imodel.elements.insertElement({
+    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: `rel-value-${index}`,
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps));
+    } as TestEntityProps)));
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedLinkTableRelWithNavProp = imodel.getJsClass<typeof LinkTableRelWithNavProp>("TestGeneratedClasses:LinkTableRelWithNavProp");
@@ -479,7 +597,7 @@ describe("Class Registry - generated classes", () => {
       },
     }, imodel);
 
-    const _relWithNavPropId = relWithNavProp.insert();
+    const _relWithNavPropId = withEditTxn(imodel, (txn) => relWithNavProp.insert(txn));
 
     expect(
       [...relWithNavProp.getReferenceIds()],
@@ -517,19 +635,19 @@ describe("Class Registry - generated classes", () => {
       }
     }
 
-    const testEntity1Id = imodel.elements.insertElement({
+    const testEntity1Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value-1",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
-    const testEntity2Id = imodel.elements.insertElement({
+    const testEntity2Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value-2",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
     const elemWithNavProp = new ActualTestElementWithNavProp({
       classFullName: TestElementWithNavProp.classFullName,
@@ -623,7 +741,7 @@ describe("Class Registry - generated classes", () => {
     expect(ActualDerived5.isGeneratedClass).to.be.true;
     expect(ActualDerived6.isGeneratedClass).to.be.true;
 
-    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds" )); // should have automatic impl
+    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds")); // should have automatic impl
     assert.isTrue(ActualDerivedWithNavProp.prototype.hasOwnProperty("collectReferenceIds"));
     assert.isTrue(ActualDerived2.prototype.hasOwnProperty("collectReferenceIds")); // non-generated; manually implements so has method
     assert.isFalse(ActualDerived3.prototype.hasOwnProperty("collectReferenceIds")); // base is non-generated so it shouldn't get the automatic impl
@@ -631,21 +749,21 @@ describe("Class Registry - generated classes", () => {
     assert.isFalse(ActualDerived5.prototype.hasOwnProperty("collectReferenceIds")); // ancestor is non-generated so it shouldn't get the automatic impl
     assert.isFalse(ActualDerived6.prototype.hasOwnProperty("collectReferenceIds")); // ancestor is non-generated so it shouldn't get the automatic impl
 
-    const testEntity1Id = imodel.elements.insertElement({
+    const testEntity1Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:Derived6",
       prop: "sample-value-1",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
-    const testEntity2Id = imodel.elements.insertElement({
+    const testEntity2Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: "sample-value-2",
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
-    } as TestEntityProps);
+    } as TestEntityProps));
 
-    const derived6Id = imodel.elements.insertElement({
+    const derived6Id = withEditTxn(imodel, (txn) => txn.insertElement({
       classFullName: Derived6.classFullName,
       model: IModelDb.dictionaryId,
       code: Code.createEmpty(),
@@ -657,7 +775,7 @@ describe("Class Registry - generated classes", () => {
         id: testEntity2Id,
         relClassName: "TestGeneratedClasses:DerivedElemRel",
       },
-    } as DerivedWithNavPropProps);
+    } as DerivedWithNavPropProps));
 
     const derived6 = imodel.elements.getElement(derived6Id);
 

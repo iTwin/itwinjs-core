@@ -11,10 +11,10 @@ import { PresentationManager, PresentationManagerProps } from "@itwin/presentati
 import {
   ChildNodeSpecificationTypes,
   ContentSpecificationTypes,
+  DefaultContentDisplayTypes,
   DisplayValue,
   DisplayValuesArray,
   DisplayValuesMap,
-  ElementProperties,
   FormatsMap,
   KeySet,
   PresentationError,
@@ -23,7 +23,7 @@ import {
   RuleTypes,
 } from "@itwin/presentation-common";
 import { initialize, terminate, testLocalization } from "../IntegrationTests.js";
-import { getFieldByLabel } from "../Utils.js";
+import { collect, getFieldByLabel } from "../Utils.js";
 
 describe("PresentationManager", () => {
   let imodel: IModelDb;
@@ -147,7 +147,9 @@ describe("PresentationManager", () => {
           expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           using manager = new PresentationManager({ defaultFormats, ...config });
           const descriptor = await manager.getContentDescriptor({
             imodel,
@@ -170,22 +172,14 @@ describe("PresentationManager", () => {
   describe("getElementProperties", () => {
     it("returns properties for some elements of class 'PhysicalObject", async () => {
       using manager = new PresentationManager();
-      const properties: ElementProperties[] = [];
       const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
-      for await (const items of iterator()) {
-        properties.push(...items);
-      }
-      expect(properties).to.matchSnapshot();
+      expect((await collect(iterator())).flat()).to.matchSnapshot();
     });
 
     it("returns properties of specific elements by element ID", async () => {
       using manager = new PresentationManager();
-      const properties: ElementProperties[] = [];
       const { iterator } = await manager.getElementProperties({ imodel, elementIds: ["0x74", "0x1", "0x75"] });
-      for await (const items of iterator()) {
-        properties.push(...items);
-      }
-      expect(properties).to.matchSnapshot();
+      expect((await collect(iterator())).flat()).to.matchSnapshot();
     });
   });
 
@@ -193,6 +187,7 @@ describe("PresentationManager", () => {
     it("cancels 'getNodes' request", async () => {
       using manager = new PresentationManager();
       const cancelEvent = new BeEvent<() => void>();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const promise = manager.getNodes({
         imodel,
         rulesetOrId: {
@@ -202,12 +197,49 @@ describe("PresentationManager", () => {
               ruleType: RuleTypes.RootNodes,
               specifications: [
                 {
+                  // eslint-disable-next-line @typescript-eslint/no-deprecated
                   specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                   classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
                 },
               ],
             },
           ],
+        },
+        cancelEvent,
+      });
+      cancelEvent.raiseEvent();
+      await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
+    });
+
+    it("cancels 'getContentDescriptor' request", async () => {
+      using manager = new PresentationManager();
+      const cancelEvent = new BeEvent<() => void>();
+      const promise = manager.getContentDescriptor({
+        imodel,
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        keys: new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]),
+        rulesetOrId: {
+          id: "test",
+          rules: [{ ruleType: "Content", specifications: [{ specType: "SelectedNodeInstances" }] }],
+        },
+        cancelEvent,
+      });
+      cancelEvent.raiseEvent();
+      await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
+    });
+
+    it("cancels 'getContent' request", async () => {
+      using manager = new PresentationManager();
+      const cancelEvent = new BeEvent<() => void>();
+      const promise = manager.getContent({
+        imodel,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+        },
+        keys: new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]),
+        rulesetOrId: {
+          id: "test",
+          rules: [{ ruleType: "Content", specifications: [{ specType: "SelectedNodeInstances" }] }],
         },
         cancelEvent,
       });

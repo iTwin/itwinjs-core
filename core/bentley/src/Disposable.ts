@@ -23,7 +23,7 @@
  *
  * Implementations of IDisposable tend to be more "low-level" types. The disposal of such types is often handled on your behalf.
  * However, always consult the documentation for an IDisposable type to determine under what circumstances you are expected to explicitly dispose of it.
- * @deprecated in 5.0 Use builtin Disposable type instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use builtin Disposable type instead.
  * @public
  */
 export interface IDisposable {
@@ -35,7 +35,7 @@ export interface IDisposable {
 
 /**
  * A type guard that checks whether the given argument implements `IDisposable` interface
- * @deprecated in 5.0 Use isDisposable instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use isDisposable instead.
  * @public
  */
 export function isIDisposable(obj: unknown): obj is IDisposable {
@@ -70,10 +70,10 @@ export function isDisposable(obj: unknown): obj is Disposable {
  */
 export function dispose(disposable?: Disposable): undefined;
 /**
- * @deprecated in 5.0 Use builtin Disposable type instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use builtin Disposable type instead.
  * @public
  */
-export function dispose(disposable?: IDisposable): undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+export function dispose(disposable?: IDisposable): undefined;
 export function dispose(disposable?: Disposable | IDisposable): undefined {
   if (undefined !== disposable) {
     if (Symbol.dispose in disposable)
@@ -91,10 +91,10 @@ export function dispose(disposable?: Disposable | IDisposable): undefined {
  */
 export function disposeArray(list?: Disposable[]): undefined;
 /**
- * @deprecated in 5.0 Use builtin Disposable type instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use builtin Disposable type instead.
  * @public
  */
-export function disposeArray(list?: IDisposable[]): undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+export function disposeArray(list?: IDisposable[]): undefined;
 export function disposeArray(list?: Disposable[] | IDisposable[]): undefined {
   if (undefined === list)
     return undefined;
@@ -115,7 +115,7 @@ export function disposeArray(list?: Disposable[] | IDisposable[]): undefined {
  * of this function is equal to return value of func. If func throws, this function also throws (after
  * disposing the resource).
  * @public
- * @deprecated in 5.0 Use `using` declarations instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use `using` declarations instead.
  */
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult {
   if (!Array.isArray(resources))

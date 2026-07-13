@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint2d, QPoint3dList,
@@ -20,6 +20,59 @@ import { VertexIndices } from "./VertexIndices";
 import { createEdgeParams } from "./EdgeParams";
 import { MeshArgs } from "../../../render/MeshArgs";
 import { PolylineArgs } from "../../../render/PolylineArgs";
+
+const scratchU32 = new Uint32Array(1);
+const scratchF32 = new Float32Array(scratchU32.buffer);
+
+function floatToUint32(val: number): number {
+  scratchF32[0] = val;
+  return scratchU32[0];
+}
+
+function computePolylineCumulativeDistances(args: PolylineArgs): Float32Array {
+  if (args.cumulativeDistances !== undefined)
+    return args.cumulativeDistances;
+
+  const positions: Point3d[] = [];
+  if (args.points instanceof QPoint3dList) {
+    positions.length = args.points.length;
+    for (let i = 0; i < args.points.length; i++)
+      positions[i] = args.points.list[i].unquantize(args.points.params);
+  } else {
+    positions.length = args.points.length;
+    for (let i = 0; i < args.points.length; i++)
+      positions[i] = args.points[i];
+  }
+
+  const cumulativeDistances = new Float32Array(positions.length);
+  cumulativeDistances.fill(Number.NaN);
+
+  for (const line of args.polylines) {
+    if (line.length < 2)
+      continue;
+
+    let dist = 0.0;
+    for (let i = 0; i < line.length; i++) {
+      const idx = line[i];
+      if (i > 0) {
+        const p0 = positions[line[i - 1]];
+        const p1 = positions[idx];
+        dist += p0.distance(p1);
+      }
+
+      // Preserve the first assignment if a vertex is shared across lines.
+      if (Number.isNaN(cumulativeDistances[idx]))
+        cumulativeDistances[idx] = dist;
+    }
+  }
+
+  for (let i = 0; i < cumulativeDistances.length; i++) {
+    if (Number.isNaN(cumulativeDistances[i]))
+      cumulativeDistances[i] = 0.0;
+  }
+
+  return cumulativeDistances;
+}
 
 /** @internal */
 export function createMeshParams(args: MeshArgs, maxDimension: number, enableIndexedEdges: boolean): MeshParams {
@@ -72,7 +125,8 @@ export abstract class VertexTableBuilder {
 
   protected advance(nBytes: number) {
     this._curIndex += nBytes;
-    assert(this._curIndex <= this.data!.length);
+    assert(undefined !== this.data);
+    assert(this._curIndex <= this.data.length);
   }
 
   protected append8(val: number) {
@@ -80,7 +134,7 @@ export abstract class VertexTableBuilder {
     assert(val <= 0xff);
     assert(val === Math.floor(val));
 
-    this.data![this._curIndex] = val;
+    expectDefined(this.data)[this._curIndex] = val;
     this.advance(1);
   }
   protected append16(val: number) {
@@ -224,6 +278,27 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
     }
   }
 
+  export class PolylineBuilder extends SimpleBuilder<Quantized<PolylineArgs>> {
+    private readonly _cumDist: Float32Array;
+
+    public constructor(args: Quantized<PolylineArgs>) {
+      super(args);
+      this._cumDist = computePolylineCumulativeDistances(args);
+    }
+
+    public override get numRgbaPerVertex() { return 4; }
+
+    public override appendVertex(vertIndex: number): void {
+      super.appendVertex(vertIndex);
+      this.appendCumulativeDistance(vertIndex);
+    }
+
+    private appendCumulativeDistance(vertIndex: number): void {
+      const dist = vertIndex < this._cumDist.length ? this._cumDist[vertIndex] : 0.0;
+      this.append32(floatToUint32(dist));
+    }
+  }
+
   /** Supplies vertex data from a MeshArgs. */
   export class MeshBuilder extends SimpleBuilder<Quantized<MeshArgs>> {
     public readonly type: SurfaceType;
@@ -254,8 +329,12 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       }
 
       if (isLit)
+        // If isTextured is true, uvParams will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
       else
+        // If isTextured is true, uvParams will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
     }
   }
@@ -287,7 +366,7 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
     protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
 
     protected appendUVParams(vertIndex: number) {
-      this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
+      this._qpoint.init(expectDefined(this.args.textureMapping).uvParams[vertIndex], this._qparams);
       this.append16(this._qpoint.x);
       this.append16(this._qpoint.y);
     }
@@ -300,7 +379,7 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       assert(undefined !== args.normals);
     }
 
-    protected override appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
+    protected override appendNormal(vertIndex: number) { this.append16(expectDefined(this.args.normals)[vertIndex].value); }
   }
 
   /** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
@@ -314,7 +393,7 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
 
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
-      this.append16(this.args.normals![vertIndex].value);
+      this.append16(expectDefined(this.args.normals)[vertIndex].value);
       this.advance(2); // 2 unused bytes
     }
   }
@@ -426,6 +505,27 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
     }
   }
 
+  export class PolylineBuilder extends SimpleBuilder<Unquantized<PolylineArgs>> {
+    private readonly _cumDist: Float32Array;
+
+    public constructor(args: Unquantized<PolylineArgs>) {
+      super(args);
+      this._cumDist = computePolylineCumulativeDistances(args);
+    }
+
+    public override get numRgbaPerVertex() { return 6; }
+
+    public override appendVertex(vertIndex: number): void {
+      super.appendVertex(vertIndex);
+      this.appendCumulativeDistance(vertIndex);
+    }
+
+    private appendCumulativeDistance(vertIndex: number): void {
+      const dist = vertIndex < this._cumDist.length ? this._cumDist[vertIndex] : 0.0;
+      this.append32(floatToUint32(dist));
+    }
+  }
+
   export class MeshBuilder extends SimpleBuilder<Unquantized<MeshArgs>> {
     public readonly type: SurfaceType;
 
@@ -455,8 +555,12 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
       }
 
       if (isLit)
+        // If isTextured is true, uvParams will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
       else
+        // If isTextured is true, uvParams will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
     }
   }
@@ -478,7 +582,7 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
 
-      this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
+      this._qpoint.init(expectDefined(this.args.textureMapping).uvParams[vertIndex], this._qparams);
       this.append16(this._qpoint.x);
       this.append16(this._qpoint.y);
     }
@@ -500,7 +604,7 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
 
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
-      this.append16(this.args.normals![vertIndex].value);
+      this.append16(expectDefined(this.args.normals)[vertIndex].value);
       this.advance(2);
     }
   }
@@ -519,7 +623,7 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
 
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
-      this.append16(this.args.normals![vertIndex].value);
+      this.append16(expectDefined(this.args.normals)[vertIndex].value);
     }
   }
 }
@@ -532,8 +636,14 @@ function createMeshBuilder(args: MeshArgs): VertexTableBuilder & { type: Surface
 }
 
 function createPolylineBuilder(args: PolylineArgs): VertexTableBuilder {
-  if (args.points instanceof QPoint3dList)
-    return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>);
-  else
-    return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>);
+  const quantized = args.points instanceof QPoint3dList;
+  if (args.flags.isDisjoint) {
+    return quantized
+      ? new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>)
+      : new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>);
+  }
+
+  return quantized
+    ? new Quantized.PolylineBuilder(args as Quantized<PolylineArgs>)
+    : new Unquantized.PolylineBuilder(args as Unquantized<PolylineArgs>);
 }

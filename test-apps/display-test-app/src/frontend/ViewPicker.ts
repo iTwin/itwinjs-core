@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
-import { ColorDef, RenderMode } from "@itwin/core-common";
+import { ColorDef, QueryBinder, RenderMode } from "@itwin/core-common";
 import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 
 interface ViewSpec extends IModelConnection.ViewSpec {
@@ -94,6 +94,34 @@ export class ViewList extends SortedArray<ViewSpec> {
           break;
         }
       }
+    }
+
+    // This is not efficiently done, but should be fine.
+    const unnamedViews = this._array.filter((spec) => spec.name === "");
+    if (unnamedViews.length > 0) {
+      // If it's a 2d view and unnamed, it maps the baseModel name to the view's.
+      // Otherwise, it uses the element id as the name.
+      const unnamedViewsIds = unnamedViews.map((e) => e.id);
+      const query = `
+          SELECT
+            v.ECInstanceId AS ViewId,
+            d.ECInstanceId AS DocumentId,
+            COALESCE(v.CodeValue, v.UserLabel,  CONCAT('2dView: ', COALESCE(d.CodeValue, d.UserLabel, v.ECInstanceId))) AS ViewName
+          FROM bis.ViewDefinition2d v
+          JOIN bis.Document d ON v.baseModel.Id = d.ECInstanceId
+          WHERE InVirtualSet(:[unnamedViewsIds], v.ECInstanceId)
+      `;
+      const reader = iModel.createQueryReader(query, QueryBinder.from({ unnamedViewsIds }));
+      for await (const row of reader) {
+        const unnamedView = this._array.find((entry) => entry.id === row[0]);
+        if (unnamedView) {
+          // Remove the entry from unnamedViews
+          unnamedViews.splice(unnamedViews.indexOf(unnamedView), 1);
+          unnamedView.name = row[2];
+        }
+      }
+      // for any remaining, use the id
+      unnamedViews.forEach((entry) => entry.name = entry.id);
     }
 
     if (Id64.isInvalid(this._defaultViewId) && 0 < this._array.length) {

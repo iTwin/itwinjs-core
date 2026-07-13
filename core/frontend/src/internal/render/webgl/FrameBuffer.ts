@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { RenderBuffer, RenderBufferMultiSample } from "./RenderBuffer";
@@ -143,7 +143,7 @@ export class FrameBuffer implements WebGLDisposable {
   public [Symbol.dispose](): void {
     // NB: The FrameBuffer does not *own* the textures and depth buffer.
     if (!this.isDisposed) {
-      System.instance.context.deleteFramebuffer(this._fbo!);
+      System.instance.context.deleteFramebuffer(expectDefined(this._fbo));
       this._fbo = undefined;
       if (undefined !== this._fboMs) {
         System.instance.context.deleteFramebuffer(this._fboMs);
@@ -213,7 +213,7 @@ export class FrameBuffer implements WebGLDisposable {
       if (this._colorMsBuffers[i].isDirty) {
         gl2.bindFramebuffer(gl2.READ_FRAMEBUFFER, this._fboMs);
         gl2.readBuffer(this._colorAttachments[i]);
-        gl2.bindFramebuffer(gl2.DRAW_FRAMEBUFFER, this._fbo!);
+        gl2.bindFramebuffer(gl2.DRAW_FRAMEBUFFER, expectDefined(this._fbo));
         attachments.push(this._colorAttachments[i]);
         gl2.drawBuffers(attachments);
         attachments.pop();
@@ -229,7 +229,7 @@ export class FrameBuffer implements WebGLDisposable {
     if (blitDepth && undefined !== this.depthBuffer && undefined !== this.depthBufferMs && (this.depthBufferMs as RenderBufferMultiSample).isDirty) {
       const mask = GL.BufferBit.Depth; // (this.depthBuffer instanceof RenderBuffer ? GL.BufferBit.Depth : GL.BufferBit.Depth | GL.BufferBit.Stencil);
       gl2.bindFramebuffer(gl2.READ_FRAMEBUFFER, this._fboMs);
-      gl2.bindFramebuffer(gl2.DRAW_FRAMEBUFFER, this._fbo!);
+      gl2.bindFramebuffer(gl2.DRAW_FRAMEBUFFER, expectDefined(this._fbo));
       gl2.blitFramebuffer(0, 0, this.depthBuffer.width, this.depthBuffer.height,
         0, 0, this.depthBuffer.width, this.depthBuffer.height,
         mask, GL.MultiSampling.Filter.Nearest);

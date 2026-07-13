@@ -14,8 +14,8 @@ matchChildUrls:
 - [Common](./common/index.md)
 - [Metadata](./metadata/index.md)
 - [Geometry](./geometry/index.md)
-- [Quantity](./quantity/index.md)
 - [Presentation](../presentation/index.md)
+- [Quantity Formatting](../quantity-formatting/index.md)
 - [UI](../ui/index.md)
 
 ### [Base Infrastructure Schemas (BIS)](../bis/index.md)
@@ -27,6 +27,7 @@ matchChildUrls:
 ### Helpful links
 
 - [Tutorials](./tutorials/index.md)
+- [iModels for Developers](./iModelsForDevelopers.md)
 - [API support policies](./api-support-policies.md)
 - [ECSQL](./ECSQL.md)
 - [Display system](./display/index.md)
@@ -34,3 +35,4 @@ matchChildUrls:
 - [Wire format](./WireFormat.md)
 - [Guidelines and tips](./guidelines/index.md)
 - [Glossary](./Glossary.md)
+- [Cesium Geospatial Guide](https://github.com/CesiumGS/community/tree/main/GeospatialGuide)

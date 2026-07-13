@@ -7,6 +7,7 @@
  */
 
 import { LocalFileName } from "@itwin/core-common";
+import { GuidString } from "@itwin/core-bentley";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingsContainer } from "./Settings";
 import { BlobContainer } from "../BlobContainerService";
@@ -18,6 +19,7 @@ import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
 import { _implementationProhibited } from "../internal/Symbols";
 import { CloudSqlite } from "../CloudSqlite";
+import { IModelHost } from "../IModelHost";
 
 /** @beta */
 export namespace WorkspaceEditor {
@@ -32,9 +34,38 @@ export namespace WorkspaceEditor {
 
   /**
    * Create a new, empty, [[EditableWorkspaceDb]] file on the local filesystem for importing [[Workspace]] resources.
+   * @note Do not pass an untrusted or unintended path in `localFileName`.
+   * This helper creates or overwrites the file at that location; callers that need fail-if-exists behavior should check first.
    */
   export function createEmptyDb(args: { localFileName: LocalFileName, manifest: WorkspaceDbManifest }): void {
     WorkspaceSqliteDb.createNewDb(args.localFileName, args);
+  }
+
+  /** Arguments for [[WorkspaceEditor.queryContainers]] and [[WorkspaceEditor.findContainers]]. */
+  export interface QueryWorkspaceContainersArgs {
+    /** The iTwinId whose workspace containers should be queried. */
+    iTwinId: GuidString;
+    /** Optional iModelId to further scope the query to containers associated with a specific iModel. */
+    iModelId?: GuidString;
+    /** Optional label filter. */
+    label?: string;
+    /** The type of container to query. Defaults to `"workspace"`. */
+    containerType?: "workspace" | "settings";
+  }
+
+  /**
+   * Query the [[BlobContainer]] service for all workspace containers associated with a given iTwin.
+   * This is a convenience wrapper around `BlobContainer.service.queryContainersMetadata` that
+   * automatically filters by `containerType: "workspace"`.
+   * @param args - The query arguments including the iTwinId.
+   * @returns A promise that resolves to the matching container metadata entries.
+   * @note Requires [[IModelHost.authorizationClient]] to be configured.
+   */
+  export async function queryContainers(args: QueryWorkspaceContainersArgs): Promise<BlobContainer.MetadataResponse[]> {
+    if (undefined === BlobContainer.service)
+      throw new Error("BlobContainer.service is not available. Ensure IModelHost is initialized with a valid configuration.");
+    const userToken = await IModelHost.getAccessToken();
+    return BlobContainer.service.queryContainersMetadata(userToken, { ...args, containerType: args.containerType ?? "workspace" });
   }
 }
 
@@ -51,6 +82,8 @@ export interface CreateNewWorkspaceContainerArgs {
   manifest: WorkspaceDbManifest;
   /** Metadata stored by the BlobContainer service */
   metadata: Omit<BlobContainer.Metadata, "containerType">;
+  /** The type of container to create. Defaults to `"workspace"`. */
+  containerType?: "workspace" | "settings";
   /** The name of the default [[WorkspaceDb]] created inside the new container.
    * Default: "workspace-db";
    */
@@ -78,7 +111,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 
   /**
    * Create a new, empty [[WorkspaceDb]].
-   * @param args - The arguments for creating the new WorkspaceDb.
+   * @param args - The arguments for creating the new WorkspaceDb. If `args.version` is omitted for a cloud container, the new db is created as version `0.0.0`.
    * @returns A promise that resolves to an EditableWorkspaceDb.
    */
   createDb(args: { dbName?: WorkspaceDbName, version?: WorkspaceDbVersion, manifest: WorkspaceDbManifest }): Promise<EditableWorkspaceDb>;
@@ -90,6 +123,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 
   /**
    * Get an editable [[WorkspaceDb]] to add, delete, or update resources *within a newly created version* of a WorkspaceDb.
+   * Repeated calls that resolve to the same WorkspaceDb return the same cached instance until it is closed.
    * @param props - The properties of the WorkspaceDb.
    */
   getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb;
@@ -113,6 +147,17 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
    * Abandon any changes made to the container and release the write lock. Any newly created versions of WorkspaceDbs are discarded.
    */
   abandonChanges(): void;
+
+  /**
+   * Acquire the write lock, get or create an editable tip [[WorkspaceDb]], open it, run `operation`,
+   * then close the db and release the lock.
+   * If the current tip has already been published, a new prerelease version is created automatically.
+   * On error the lock is released and changes are abandoned.
+   * @param user - The name of the user acquiring the write lock.
+   * @param operation - A callback invoked with the opened [[EditableWorkspaceDb]].
+   * @param props - Properties identifying which db to operate on. Defaults to the container's default db.
+   */
+  withEditableDb(user: string, operation: (db: EditableWorkspaceDb) => void, props?: WorkspaceDbProps): Promise<void>;
 }
 
 /**
@@ -265,6 +310,16 @@ export interface WorkspaceEditor {
    * @note The current user must have administrator rights for the iTwin for the container.
    */
   createNewCloudContainer(args: CreateNewWorkspaceContainerArgs): Promise<EditableWorkspaceContainer>;
+
+  /**
+   * Find and open existing workspace containers by querying the [[BlobContainer]] service.
+   * This is a convenience method that queries for all workspace containers matching the given iTwinId
+   * (and optionally iModelId), requests write access tokens, and opens each matching container.
+   * @param args - The query arguments including iTwinId and optionally iModelId and label.
+   * @returns A promise that resolves to an array of opened [[EditableWorkspaceContainer]]s.
+   * @note Requires [[IModelHost.authorizationClient]] and [[BlobContainer.service]] to be configured.
+   */
+  findContainers(args: WorkspaceEditor.QueryWorkspaceContainersArgs): Promise<EditableWorkspaceContainer[]>;
 
   /**
    * Closes this editor. All [[workspace]] containers are dropped.

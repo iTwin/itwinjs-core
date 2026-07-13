@@ -46,7 +46,7 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     return url;
   }
 
-   /** @deprecated in 5.0 Use [addAttributions] instead. */
+   /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.mapboxLogoCard) {
       cards.dataset.mapboxLogoCard = "true";

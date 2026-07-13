@@ -107,7 +107,7 @@ It is not relevant for someone trying to bring in data for which a Connector alr
 [The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provide a two different [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin#LimPortal)
 
 The following are the various steps involved in that workflow.
-![iTwin workflow](https://communities.bentley.com/resized-image/__size/650x340/__key/communityserver-wikis-components-files/00-00-00-05-55/pastedimage1591602805184v1.png)
+![iTwin workflow](sync-workflow.png)
 
 More on synchronization using connectors could be found [here](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin)
 
@@ -489,12 +489,7 @@ As a Connector developer, once the data is transformed into an iModel, one needs
 
 #### ECSQL
 
-Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
-
-<figure>
-  <iframe style="height:40vh;width:60vw;" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT * FROM bis.Element">
-  </iframe>
-</figure>
+Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. ECSql can be run against local and remote iModels using the [Query API](./ECSQLCodeExamples.md). On the web the [iModelConsole](https://imodelconsole.bentley.com) can be used to interactively run ECSql against an iModel.
 
 Some sample queries that is helpful to debug Connector output
 
@@ -570,7 +565,7 @@ Typical workflow to create iModel geometry is
 
 1. Identify the suitable ECClass to persist your data. Typically this is a PhysicalElement
 2. Construct a [GeometryStreamBuilder]($core-common) to help with collecting all the geometric primitives that will be used to create the element.
-3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](/sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
+3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Simple%203d/) is a good starting point
 4. Provide geometry and other details to the element creation logic. Please see [GeometricElement3d](./backend/createelements#geometricelement3d)
 
 ### Authentication

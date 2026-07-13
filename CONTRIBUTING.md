@@ -9,18 +9,21 @@ The goal of this document is to provide a high-level overview of how you can get
   - [Repo Setup](#repo-setup)
   - [Source Code Edit Workflow](#source-code-edit-workflow)
     - [Other NPM Scripts](#other-npm-scripts)
+    - [Documentation Code Snippets](#documentation-code-snippets)
     - [Debugging](#debugging)
       - [Filtering Test Suites](#filtering-test-suites)
   - [Asking Questions](#asking-questions)
   - [Providing Feedback](#providing-feedback)
-  - [Reporting Issues](#reporting-issues)
+  - [Submitting an Issue](#submitting-an-issue)
     - [Look For an Existing Issue](#look-for-an-existing-issue)
-    - [Writing Good Bug Reports and Feature Requests](#writing-good-bug-reports-and-feature-requests)
+    - [Bug Reports](#bug-reports)
+    - [Feature Requests](#feature-requests)
     - [Follow Your Issue](#follow-your-issue)
   - [Contributing Guidelines](#contributing-guidelines)
     - [Branch Naming Policy](#branch-naming-policy)
     - [Contributor License Agreement (CLA)](#contributor-license-agreement-cla)
     - [Pull Requests](#pull-requests)
+      - [Backporting to Release Branches](#backporting-to-release-branches)
     - [Types of Contributions](#types-of-contributions)
   - [Frequently Asked Questions](#frequently-asked-questions)
     - [Rush commands take too long, is there a way to speed up my contribution workflow?](#rush-commands-take-too-long-is-there-a-way-to-speed-up-my-contribution-workflow)
@@ -78,6 +81,32 @@ Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/
 1. Build TypeDoc documentation for all packages: `rush docs`
 2. Build TypeDoc documentation for a single package: `cd core\backend` and then `rushx docs`
 
+### Documentation Code Snippets
+
+Documentation code snippets are extracted from actively tested code to ensure they stay up-to-date and working. To add documentation snippets to a package:
+
+1. **Create the test file**: Place testable documentation snippets in `src/test/example-code/` directory within the package
+2. **Mark extraction regions**: Wrap code to be extracted with comment markers:
+   ```typescript
+   // __PUBLISH_EXTRACT_START__ SnippetName
+   // Your code here that will be extracted
+   // __PUBLISH_EXTRACT_END__
+   ```
+3. **Add extraction script**: In `package.json`, add:
+   ```json
+   "extract": "betools extract --fileExt=ts --extractFrom=./src/test/example-code --recursive --out=../../generated-docs/extract"
+   ```
+4. **Update docs script**: Chain extraction with documentation generation:
+   ```json
+   "docs": "betools docs --json=../../generated-docs/{package}/file.json --tsIndexFile=./{package}.ts --onlyJson && npm run -s extract"
+   ```
+5. **Reference in documentation**: In markdown files, reference the snippets using:
+   <pre>```ts
+   [[include:SnippetName]]
+   ```</pre>
+
+This pattern separates documentation examples from unit tests, emphasizing code that a user should adopt, and keeps documentation synchronized with working code.
+
 ### Debugging
 
 Custom VSCode tasks are found in [launch.json](/.vscode/launch.json) to make debugging easier for contributors. Navigate to the `Run and Debug` panel in VSCode and you can select one of many custom tasks to run, which will attach a debugger to the process, and stop at a breakpoint you've set up.
@@ -105,6 +134,7 @@ Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the cus
   });
 
 ```
+
 </details>
 
 <details>
@@ -137,21 +167,28 @@ export default defineConfig({
   ...
 })
 ```
+
 </details>
 
 To distinguish whether a package is using vitest or mocha, look at the `package.json` `devDependencies`.
+
 ## Asking Questions
 
-Have a question?
-Rather than opening an issue, please ask away on [the Github discussions page](https://github.com/iTwin/itwinjs-core/discussions).
+Have a question? Rather than opening an issue, please use [GitHub Discussions](https://github.com/iTwin/itwinjs-core/discussions). This applies to all questions — how-tos, best practices, troubleshooting, architecture guidance, migration help, and anything else related to iTwin.js.
 
-The community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.
+A few tips for a useful discussion post:
+
+- Search existing discussions first — your question may already be answered.
+- Include relevant context: iTwin.js version, runtime environment, and code snippets.
+- Keep it focused — one topic per post makes answers easier to find later.
+
+The core team monitors discussions and your well-worded question will serve as a resource to others searching for help.
 
 ## Providing Feedback
 
 Your comments and feedback are welcome. For general comments or discussion please [click here](https://github.com/iTwin/itwinjs-core/labels/discussion) to contribute via GitHub issues using the `discussion` label.
 
-## Reporting Issues
+## Submitting an Issue
 
 Have you identified a reproducible problem in iTwin.js?
 Have a feature request?
@@ -170,29 +207,27 @@ Use a reaction in place of a "+1" comment:
 
 If you cannot find an existing issue that describes your bug or feature, create a new issue using the guidelines below.
 
-### Writing Good Bug Reports and Feature Requests
+### Bug Reports
 
-File a single issue per problem and feature request.
-Do not enumerate multiple bugs or feature requests in the same issue.
+When reporting a bug, include:
 
-Do not add your issue as a comment to an existing issue unless it's for the identical input.
-Many issues look similar, but have different causes.
+- **Clear title:** State the problem concisely (e.g., "Crash in v2.0 when passing null to `user.update()`").
+- **Context:** iTwin.js version, runtime environment (e.g., Node.js 24, Electron 42, core-backend 5.11.0), platform/browser/OS.
+- **Expected vs. actual behavior:** Contrast what should have happened with what actually happened.
+- **Minimal Reproducible Example (MRE):**
+    - A self-contained code snippet or link to a repo/CodeSandbox that isolates the bug.
+    - Repro steps in Display Test App (in a branch if needed) or standalone tests.
+- **Stack traces and logs:** Paste full error logs in markdown code blocks, not screenshots.
+- **Priority/urgency:** Describe if the bug is blocking, its severity, and earliest date a fix can be consumed
 
-The more information you can provide, the more likely someone will be successful reproducing the issue and finding a fix.
+### Feature Requests
 
-Please include the following with each issue:
+When suggesting a new feature, include:
 
-- A short description of the issue that becomes the title
-- Versions of relevant iTwin.js packages
-- Minimal steps to reproduce the issue or a code snippet that demonstrates the issue
-- What you expected to see, versus what you actually saw
-- Images that help explain the issue
-- Any relevant error messages, logs, or other details
-- Impact of the issue
-- Use the [`bug`](https://github.com/iTwin/itwinjs-core/labels/bug) or [`enhancement`](https://github.com/iTwin/itwinjs-core/labels/enhancement) label to identify the type of issue you are filing
-
-Don't feel bad if the developers can't reproduce the issue right away.
-They will simply ask for more information!
+- **Use case:** Explain the real-world problem and how this benefits the wider community, not just your project.
+- **Proposed solution:** Suggest how it should work (e.g., API design ideas, new configuration flags).
+- **Alternatives considered:** Explain why current workarounds or existing features don't solve your problem.
+- **Willingness to contribute:** State if you're willing to write the code or documentation yourself.
 
 ### Follow Your Issue
 
@@ -205,7 +240,7 @@ There are just a few guidelines you need to follow.
 
 ### Branch Naming Policy
 
-We recommend putting your github username, followed by a succinct branch name that reflects the changes you want to make. Eg. ` git checkout -b "<gh_username>/cleanup-docs"`
+We recommend putting your github username, followed by a succinct branch name that reflects the changes you want to make. Eg. `git checkout -b "<gh_username>/cleanup-docs"`
 
 Branch names should be all lowercase to avoid potential issues with non-case-sensitive systems and words should be separated by a dash. Eg: `my-itwin-changes`
 
@@ -219,6 +254,29 @@ You can read more about [Contributor License Agreements](https://en.wikipedia.or
 All submissions go through a review process.
 We use GitHub pull requests for this purpose.
 Consult [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more information on using pull requests.
+
+#### Backporting to Release Branches
+
+When bug fixes or critical changes need to be applied to release branches (e.g., `release/5.1.x`), follow these best practices for backporting:
+
+**Best Practices:**
+
+- **Master First Approach**: Changes should always go into `master` first, then be backported to release branches if required for future releases. Avoid backporting from release branches to `master` whenever possible to maintain clean commit history and reduce conflicts
+- **PR Naming Convention**: Always wrap the target branch name in square brackets in your PR title
+  - Example: `[release/5.1.x] Fix critical bug in geometry calculations`
+- **Use @Mergifyio**: For backporting PRs from `master` to release branches, we recommend using `@Mergifyio` to automate the process
+  - Comment `@Mergifyio backport release/X.X.x` on the original PR to create an automatic backport. Use the release branch you want to target
+  - Note: `@Mergifyio` automatically cherry-picks commits, but may encounter merge conflicts. If conflicts occur, you must resolve them manually and then remove the `conflicts` label from your PR to proceed
+- **Cherry-pick Carefully**: When manually backporting, ensure all dependencies and related changes are included
+- **Minimal Changes**: Keep backports focused and avoid unnecessary refactoring or feature additions
+
+**Example Workflow:**
+
+1. Identify the commits that need to be backported from `master`
+2. Create a new branch from the target release branch (e.g., `release/5.1.x`)
+3. Cherry-pick or manually apply the necessary changes
+4. Create a PR with the branch name in square brackets in the title
+5. Ensure all tests pass and the change is compatible with the release version
 
 ### Types of Contributions
 
@@ -243,16 +301,19 @@ If your source code change only impacts the subdirectory you are working on, you
 Eg. I add a new method within `core/frontend`, also adding a relevant unit test in that folder's `src/test`. I can navigate to the root of that subdirectory, and run `rushx build`, followed by `rushx test` or `rushx cover`.
 
 ### Do I have to rebuild all packages in the repo, even those I didn't work on?
+
 No. For incremental builds, the `rush build` command can be used to only build packages that have changes versus `rush rebuild` which always rebuilds all packages.
 
 > It is a good idea to `rush install` after each `git pull` as dependencies may have changed.
->
+
 ### A subdirectory can not find a node_modules file or directory
+
 If you get an error similar to the following:
 
-```
+```bash
 [Error: ENOENT: no such file or directory, stat '/.../itwinjs-core/test-apps/display-test-app/node_modules/@bentley/react-scripts']
 ```
+
 This means that the repo has stopped making use of an npm package that was used in the past:
 
 To fix this build error, you should completely remove the node_modules directory and reinstall your dependencies. `rush update --purge` is a one-line solution for the above.

@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import { FeatureIndexType } from "@itwin/core-common";
 import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive";
 import { RenderMemory } from "../../../render/RenderMemory";
@@ -65,7 +65,7 @@ export class PointCloudGeometry extends CachedGeometry implements RenderGeometry
       this._colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
       const attrColor = AttributeMap.findAttribute("a_color", TechniqueId.PointCloud, false);
       assert(undefined !== attrColor);
-      this.buffers.addBuffer(this._colorHandle!, [BufferParameters.create(attrColor.location, 3, GL.DataType.UnsignedByte, true, 0, 0, false)]);
+      this.buffers.addBuffer(expectDefined(this._colorHandle), [BufferParameters.create(attrColor.location, 3, GL.DataType.UnsignedByte, true, 0, 0, false)]);
     }
   }
 

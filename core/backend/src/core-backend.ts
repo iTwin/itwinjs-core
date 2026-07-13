@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./annotations/ElementDrivesTextAnnotation";
 export * from "./annotations/FrameGeometry";
+export * from "./annotations/LeaderGeometry";
 export * from "./annotations/TextAnnotationElement";
 export * from "./annotations/TextAnnotationGeometry";
 export * from "./annotations/TextBlockGeometry";
@@ -32,6 +34,8 @@ export * from "./domains/GenericSchema";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
+export * from "./ECSqlSyncReader";
+export * from "./EditTxn";
 export * from "./Element";
 export * from "./ElementAspect";
 export * from "./ElementGraphics";
@@ -74,11 +78,16 @@ export * from "./TxnManager";
 export * from "./ViewDefinition";
 export * from "./ViewStore";
 export * from "./workspace/Settings";
+export * from "./workspace/SettingsDb";
+export * from "./workspace/SettingsEditor";
 export * from "./workspace/SettingsSchemas";
 export * from "./workspace/Workspace";
 export * from "./workspace/WorkspaceEditor";
 export * from "./SqliteChangesetReader";
 export * from "./ChangesetECAdaptor";
+export * from "./ChangesetReader";
+export * from "./ChangesetReaderTypes";
+export * from "./PartialChangeUnifier";
 
 export * from "./internal/cross-package";
 
@@ -89,9 +98,9 @@ if ((globalThis as any)[globalSymbolCoreBackend]) {
 
   const error = new Error(
     "Multiple @itwin/core-backend imports detected! This may happen if:\n" +
-      "- You have multiple versions of the package installed\n" +
-      "- Your bundling configuration is incorrect\n" +
-      "- You're importing from both ESM and CommonJS versions"
+    "- You have multiple versions of the package installed\n" +
+    "- Your bundling configuration is incorrect\n" +
+    "- You're importing from both ESM and CommonJS versions"
   );
 
   /* eslint-disable no-console */

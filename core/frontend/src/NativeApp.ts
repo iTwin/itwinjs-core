@@ -118,9 +118,7 @@ export class NativeApp {
     NativeApp.hookBrowserConnectivityEvents();
 
     // initialize current online state.
-    if (window.navigator.onLine) {
-      await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
-    }
+    await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
   }
 
   /** @internal */
@@ -199,11 +197,12 @@ export class NativeApp {
    * @returns a Promise for the [[Storage]].
    */
   public static async openStorage(name: string): Promise<Storage> {
-    if (this._storages.has(name))
-      return this._storages.get(name)!;
+    let storage = this._storages.get(name);
+    if (!storage) {
+      storage = new Storage(await this.nativeAppIpc.storageMgrOpen(name));
+      this._storages.set(storage.id, storage);
+    }
 
-    const storage = new Storage(await this.nativeAppIpc.storageMgrOpen(name));
-    this._storages.set(storage.id, storage);
     return storage;
   }
 

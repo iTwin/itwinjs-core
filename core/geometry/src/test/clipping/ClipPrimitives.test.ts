@@ -22,7 +22,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Cone } from "../../solid/Cone";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { Triangulator } from "../../topology/Triangulation";
@@ -712,7 +712,7 @@ describe("ClipPrimitive", () => {
             ck.testTrue(cs.isPointOnOrInside(xyz, 0.001), xyz);
           }
           if (Checker.noisy.convexSetCorners) {
-            GeometryCoreTestIO.consoleLog(` Convex Set range ${prettyPrint(r.toJSON())}`);
+            GeometryCoreTestIO.consoleLog(`Convex Set range ${prettyPrint(r.toJSON())}`);
             for (const xyz of points) {
               GeometryCoreTestIO.consoleLog(`Corner ${prettyPrint(xyz)}`);
             }
@@ -818,7 +818,6 @@ describe("ClipPrimitive", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "ClipPrimitiveMasking");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
 function clipAndOutput(allGeometry: GeometryQuery[], clipper: ClipPrimitive,

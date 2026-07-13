@@ -21,7 +21,9 @@ The application contained within this directory provides a test environment for 
 
 The application may be run as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
-* To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
+* To get started, follow the instructions to setup the entire repository, located [here](../../README.md#developer-quick-start). This automatically builds all test apps.
+> [!TIP]
+> After `rush install`, you can build only display-test-app and the packages it depends on - skipping the rest of the monorepo - with `rush build -t display-test-app`.
 
 * Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, [see below](#environment-variables).
 
@@ -39,8 +41,9 @@ npm run start:servers
 
 ## Using display-test-app
 
-display-test-app provides no UI for selecting iModels from iModelHub - only a toolbar button to open an iModel from the local file system. However, if the iModel is a briefcase that was downloaded from iModelHub and is opened in read-write mode, it can push and pull changesets.
-The `IMJS_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup.
+display-test-app's toolbar provides a button to open an iModel from the local file system and a drop-down to download and open an iModel from iModelHub (requires signing in). If the iModel is a briefcase that was downloaded from iModelHub and is opened in read-write mode, it can push and pull changesets.
+
+The `IMJS_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup. If you don't have an iModel handy, a small sample is included in the repository at [test-models/JoesHouse.bim](./test-models/JoesHouse.bim). When working only with local files in the Electron app, also define `IMJS_NO_ELECTRON_AUTH` to avoid repeated authorization exceptions caused by a known bug (see [Environment Variables](#environment-variables)).
 
 display-test-app's UI consists of:
 
@@ -90,7 +93,7 @@ A more advanced debug experience will give you more quick turn around time for b
 1. Initialize the backend build using `npm run build:backend -- --watch` in one terminal
     * The `--watch` command allows the Typescript compiler watch all of the source files and any time they change will automatically re-run the compilation
     * One caveat is you will have to restart the debugger (#3) each time you make a change. Note this is different from the frontend experience that live reloads the browser with the updated code, the backend doesn't support that currently.
-1. Run `npm run start:webserver` in a separate terminal (`nmp run start:mobile` for Android and iOS)
+1. Run `npm run start:webserver` in a separate terminal (`npm run start:mobile` for Android and iOS)
     * Note: if the webserver and backend are run in the same terminal it will be hard to parse the output and attribute it to each one. This is why we recommend two different terminals instead of a single script to handle both.
 1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
 
@@ -166,6 +169,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * IMJS_USE_WEBGL2
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
+* IMJS_USE_CESIUM
+  * If defined, display-test-app will use a prototype CesiumJS-based renderer from the cesium-renderer package for rendering graphics on the screen.
 * IMJS_DISABLE_UNIFORM_ERRORS
   * If defined, do not throw an error for missing shader uniforms, and call Logger instead.
 * IMJS_MAX_TILES_TO_SKIP
@@ -196,6 +201,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, sets a Google Maps key within the `MapLayerOptions` as a "key" type.
 * IMJS_CESIUM_ION_KEY
   * If defined, the API key supplying access to Cesium ION assets.
+* IMJS_GOOGLE_3D_TILES_KEY
+  * If defined, the API key supplying access to Google Photorealistic 3D Tiles.
 * IMJS_IMODEL_ID
   * If defined, the GuidString of the iModel to fetch from the iModel Hub and open.
 * IMJS_URL_PREFIX
@@ -232,6 +239,61 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_GOOGLEMAPS_UI
   * Enable the Google Maps toolbar button
 
+## Adding a key-in
+
+A key-in is a convenient way to invoke iTwin.js APIs from display-test-app. A key-in can be used, for example, to reproduce a bug or demonstrate a feature gap using code that others can easily run. A key-in is implemented as a subclass of [Tool](https://www.itwinjs.org/reference/core-frontend/tools/tool/) from `@itwin/core-frontend`, registered at startup, and invoked by typing its key-in string into the key-in field (press the backtick key to focus it).
+
+To add one:
+
+1. Create a new file in [test-apps/display-test-app/src/frontend](./src/frontend) (alongside the existing tool files such as `FrameStatsTool.ts` - the directory is intentionally flat; note this is display-test-app's own frontend directory, not the `core/frontend` package) defining your tool. A skeletal example:
+
+    ```ts
+    import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
+
+    /** Executes via the key-in `dta my example` with 0 or 1 argument(s). */
+    export class MyExampleTool extends Tool {
+      public static override toolId = "MyExample"; // must match the key in SVTTools.json
+      public static override get minArgs() { return 0; }
+      public static override get maxArgs() { return 1; }
+
+      public override async run(arg?: string): Promise<boolean> {
+        // Call whatever iTwin.js APIs you want to test here.
+        // e.g., inspect the selected viewport:
+        const vp = IModelApp.viewManager.selectedView;
+        if (vp)
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `view is ${vp.view.id}, arg is ${arg}`));
+
+        return true;
+      }
+
+      /** Parses raw arguments typed after the key-in, then invokes run. */
+      public override async parseAndRun(...args: string[]): Promise<boolean> {
+        return this.run(args[0]);
+      }
+    }
+    ```
+
+    See [FrameStatsTool.ts](./src/frontend/FrameStatsTool.ts) for a complete real-world example, or browse the other tools in [src/frontend](./src/frontend) for more advanced patterns (interactive tools, decorators, etc.).
+
+2. Define the key-in string in [public/locales/en/SVTTools.json](./public/locales/en/SVTTools.json), under `tools`, keyed by your `toolId`:
+
+    ```json
+    "MyExample": {
+      "keyin": "dta my example"
+    }
+    ```
+
+3. Register the tool at startup by adding it to the list of tools registered in the `svtToolNamespace` in [src/frontend/App.ts](./src/frontend/App.ts):
+
+    ```ts
+    [
+      // ...existing tools...
+      MyExampleTool,
+    ].forEach((tool) => tool.register(svtToolNamespace));
+    ```
+
+4. Rebuild and run (`npm run build` then `npm run start` from this directory - see [Getting Started](#getting-started)), press backtick, and type `dta my example`.
+
 ## Key-ins
 
 display-test-app has access to all key-ins defined in the `@itwin/core-frontend` and `@itwin/frontend-devtools` packages. It also provides the following additional key-ins. The windowId of a viewport is an integer shown inside brackets in the viewport's title bar.
@@ -250,6 +312,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `s=0|1` - if true, apply a random scale to each instance.
   * `r=0|1` - if true, apply a random rotation to each instance.
   * `c=0|1` if true, apply a random color to each instance.
+  * `w=0|1` - if true, does not force smooth shade rendering mode for the glTF asset.
 * `dta text` *command* *args* - an extremely basic text editing system that allows you to build up a TextAnnotation to be displayed as a decoration graphic in the current viewport. Start it using `dta text init <categoryId>`. Then use commands like `dta text fraction "numerator" "denominator"`, `dta text height <height>`, `dta text color <color>`, etc to build up the annotation. Use `dta text clear` to delete the decoration and reset all state to defaults. See TextDecoration.ts for the full set of commands.
 * `dta version compare` - emulate version comparison.
 * `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
@@ -328,6 +391,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 display-test-app supplies minimal features for editing the contents of an iModel, strictly for testing purposes. To use it:
 
 * Set IMJS_READ_WRITE=1 in the environment.
+* Optionally set IMJS_ALLOWED_CHANNELS=channel1,channel1,... to permit display-test-app to write to the specified Channels.
 * Open a briefcase or an editable standalone iModel.
 * Use the key-ins below to make changes; typically:
   * `dta edit` to begin an editing scope;
@@ -342,7 +406,7 @@ display-test-app has access to all key-ins defined in the `@itwin/editor-fronten
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
-* `dta move element *elementId* *x* *y* *z*` - Move an element, given an element Id and an x y z offset (in world space, relative to its current). If Y and/or Z are not specified they will default to 0.
+* `dta move element e=*elementId* x=*x* y=*y* z=*z*` - Move an element, given an element Id and an x y z offset (in world space, relative to its current). If X, Y and/or Z are not specified they will default to 0. If element Id is not specified, all currently-selected elements will be moved. You must specify at least one argument.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
 * `dta create section drawing *drawingName*` - insert a spatial view matching the active viewport's current view and a section drawing referencing that view, then switch to a non-persistent drawing view to visualize the spatial view in a 2d context. Requires the camera to be turned off.
@@ -351,6 +415,6 @@ display-test-app has access to all key-ins defined in the `@itwin/editor-fronten
 
 The steps to run the display test app in an iOS app:
 
-1. Run `npm run build:ios`
+1. Run `npm run build:mobile`
 2. Open `test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-test-app.xcodeproj`
 3. Start the XCode Project to an iPad

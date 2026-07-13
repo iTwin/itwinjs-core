@@ -23,6 +23,10 @@
     "docSiteId": 6,
     "displayName": "UI"
   },
+  "quantity-formatting": {
+    "docSiteId": 7,
+    "displayName": "Quantity Formatting"
+  },
   "metadata": {
     "customIndex": "index.html",
     "logo": "assets/itwinjs-logo.svg",
@@ -34,7 +38,8 @@
       "bis",
       "reference",
       "changehistory",
-      "presentation"
+      "presentation",
+      "quantity-formatting"
     ],
     "headerTabs": {
       "Samples": "sample-showcase",
@@ -96,6 +101,8 @@
     "katexOptions": {
       "macros": {
         "\\matrixXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{xy}\\ #1_{xz} \\\\ #1_{yx}\\ #1_{yy}\\ #1_{yz} \\\\ #1_{zx}\\ #1_{zy}\\ #1_{zz}\\end{bmatrix}}",
+        "\\mxy": "{\\matrixXY{#1}}",
+        "\\mij": "{\\begin{bmatrix}#1_{00}\\ #1_{01}\\ #1_{02} \\\\ #1_{10}\\ #1_{11}\\ #1_{12} \\\\ #1_{20}\\ #1_{21}\\ #1_{22}\\end{bmatrix}}",
         "\\matrixTransposeSubXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{yx}\\ #1_{zx} \\\\ #1_{xy}\\ #1_{yy}\\ #1_{zy} \\\\ #1_{xz}\\ #1_{yz}\\ #1_{zz}\\end{bmatrix}}",
         "\\blockTransform": "{\\begin{bmatrix}#1 & #2 \\\\ 0 & 1\\end{bmatrix}}",
         "\\rowMajorMatrixXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{xy}\\ #1_{xz}\\ #1_{yx}\\ #1_{yy}\\ #1_{yz}\\ #1_{zx}\\ #1_{zy}\\ #1_{zz}\\end{bmatrix}}",

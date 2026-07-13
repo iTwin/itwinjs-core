@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import fs from "fs";
-import { IModelDb, StandaloneDb, Subject } from "@itwin/core-backend";
+import { IModelDb, StandaloneDb, Subject, withEditTxn } from "@itwin/core-backend";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModel, SubjectProps } from "@itwin/core-common";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
@@ -19,6 +19,7 @@ const RULESET_1: Ruleset = {
       ruleType: RuleTypes.RootNodes,
       specifications: [
         {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           specType: ChildNodeSpecificationTypes.CustomNode,
           type: "test 1",
           label: "label 1",
@@ -90,7 +91,7 @@ describe("RulesEmbedding", () => {
         relClassName: "bis.SubjectOwnsSubjects",
       },
     };
-    const parentSubjectId = imodel.elements.insertElement(subjectProps);
+    const parentSubjectId = withEditTxn(imodel, (txn) => txn.insertElement(subjectProps));
 
     // Insert a ruleset into custom subject
     const ruleset1 = { id: "1", rules: [] };
@@ -124,11 +125,11 @@ describe("RulesEmbedding", () => {
 
     const actualRuleset = rulesets.find((value: Ruleset, _index: number, _obj: Ruleset[]): boolean => value.id === ruleset.id);
     expect(actualRuleset).to.not.be.undefined;
-    expect(ruleset).to.deep.eq(actualRuleset as Ruleset);
+    expect(ruleset).to.deep.eq(actualRuleset);
 
     const actualOtherRuleset = rulesets.find((value: Ruleset, _index: number, _obj: Ruleset[]): boolean => value.id === otherRuleset.id);
     expect(actualOtherRuleset).to.not.be.undefined;
-    expect(otherRuleset).to.deep.eq(actualOtherRuleset as Ruleset);
+    expect(otherRuleset).to.deep.eq(actualOtherRuleset);
   });
 
   it("locates rulesets", async () => {
@@ -137,6 +138,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
@@ -147,13 +149,15 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", "some value");
-    imodel.elements.updateElement(rulesetElement.toJSON());
+    withEditTxn(imodel, (txn) => txn.updateElement(rulesetElement.toJSON()));
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });

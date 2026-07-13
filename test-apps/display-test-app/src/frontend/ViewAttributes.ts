@@ -7,11 +7,12 @@ import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
 } from "@itwin/frontend-devtools";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, CesiumTerrainAssetId, ColorDef, DisplayStyle3dSettingsProps,
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, BaseMapLayerSettings, CesiumTerrainAssetId, ColorDef, DisplayStyle3dSettingsProps,
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, getGoogle3dTilesUrl, Google3dTilesProvider, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
+import { AzureMapsBackgroundMapSettings } from "./AzureMapsPanel";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
 import { ThematicDisplayEditor } from "./ThematicDisplay";
@@ -485,6 +486,11 @@ export class ViewAttributes {
     this._updates.push((view) => thematic.update(view));
   }
 
+  private getDisplayingGoogle3dTiles() {
+    const google3dTilesModel = this._vp.view.displayStyle.settings.contextRealityModels.models.find((model) => { return model.name === "google3dTiles"; });
+    return google3dTilesModel !== undefined;
+  }
+
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }
   private addBackgroundMapOrTerrain(): void {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
@@ -498,29 +504,83 @@ export class ViewAttributes {
       backgroundSettingsDiv.style.display = display;
     };
 
+    let checkboxInterfaceGoogle3dTiles: CheckBox | undefined;
+    let checkboxInterfaceBGMap: CheckBox | undefined;
+
+    const toggleGoogle3dTiles = (enabled: boolean) => {
+      if (undefined === checkboxInterfaceGoogle3dTiles)
+        return;
+      const checkboxGoogle3dTiles = checkboxInterfaceGoogle3dTiles.checkbox;
+      const checkboxLabelGoogle3dTiles = checkboxInterfaceGoogle3dTiles.label;
+      if (!enabled) {
+        checkboxGoogle3dTiles.disabled = true;
+        checkboxLabelGoogle3dTiles.style.opacity = "0.5";
+      } else {
+        checkboxGoogle3dTiles.disabled = false;
+        checkboxLabelGoogle3dTiles.style.opacity = "1.0";
+      }
+      checkboxLabelGoogle3dTiles.style.fontWeight = checkboxGoogle3dTiles.checked ? "bold" : "500";
+    };
+
+    const toggleBGMapUI = (enabled: boolean) => {
+      if (undefined === checkboxInterfaceBGMap)
+        return;
+      const checkboxBGMap = checkboxInterfaceBGMap.checkbox;
+      const checkboxLabelBGMap = checkboxInterfaceBGMap.label;
+      if (!enabled) {
+        checkboxBGMap.disabled = true;
+        checkboxLabelBGMap.style.opacity = "0.5";
+      } else {
+        checkboxBGMap.disabled = false;
+        checkboxLabelBGMap.style.opacity = "1.0";
+      }
+      checkboxLabelBGMap.style.fontWeight = checkboxBGMap.checked ? "bold" : "500";
+    };
+
+    const enableGoogle3dTiles = (enabled: boolean) => {
+      toggleBGMapUI(!enabled);
+      if (undefined === checkboxInterfaceGoogle3dTiles)
+        return;
+      const checkboxGoogle3dTiles = checkboxInterfaceGoogle3dTiles.checkbox;
+      const checkboxLabelGoogle3dTiles = checkboxInterfaceGoogle3dTiles.label;
+      checkboxLabelGoogle3dTiles.style.fontWeight = checkboxGoogle3dTiles.checked ? "bold" : "500";
+      this.sync();
+    };
+    const checkboxInterfaceGoogle3dTiles0 = checkboxInterfaceGoogle3dTiles = this.addCheckbox("Google Photorealistic 3D Tiles", enableGoogle3dTiles, div);
+    if (this.getDisplayingGoogle3dTiles())
+      checkboxInterfaceGoogle3dTiles.checkbox.checked = true;
+    toggleGoogle3dTiles(this.getDisplayingGoogle3dTiles() || !this._vp.view.viewFlags.backgroundMap);
+
     const enableMap = (enabled: boolean) => {
       this._vp.viewFlags = this._vp.viewFlags.with("backgroundMap", enabled);
       backgroundSettingsDiv.style.display = enabled ? "block" : "none";
       showOrHideSettings(enabled);
+      toggleGoogle3dTiles(!enabled);
       this.sync();
     };
-    const checkboxInterface = this.addCheckbox("Background Map", enableMap, div);
+    const checkboxInterface = checkboxInterfaceBGMap = this.addCheckbox("Background Map", enableMap, div);
     const checkbox = checkboxInterface.checkbox;
     const checkboxLabel = checkboxInterface.label;
 
+    toggleBGMapUI(this._vp.view.viewFlags.backgroundMap || !this.getDisplayingGoogle3dTiles());
+
+    const imageryProvidersDiv = document.createElement("div");
+    backgroundSettingsDiv.appendChild(imageryProvidersDiv);
     const imageryProviders = createComboBox({
-      parent: backgroundSettingsDiv,
+      parent: imageryProvidersDiv,
       name: "Imagery: ",
       id: "viewAttr_MapProvider",
       entries: [
         { name: "Bing", value: "BingProvider" },
         { name: "MapBox", value: "MapBoxProvider" },
       ],
-      handler: (select) => this.updateBackgroundMapProvider({ name: select.value as BackgroundMapProviderName }),
+      handler: (select) => azureMapsSettings.changeBackgroundMapProvider({ name: select.value as BackgroundMapProviderName, type: Number.parseInt(types.value, 10) }),
     }).select;
 
+    const typesDiv = document.createElement("div");
+    backgroundSettingsDiv.appendChild(typesDiv);
     const types = createComboBox({
-      parent: backgroundSettingsDiv,
+      parent: typesDiv,
       name: "Type: ",
       id: "viewAttr_mapType",
       entries: [
@@ -528,8 +588,19 @@ export class ViewAttributes {
         { name: "Aerial", value: BackgroundMapType.Aerial },
         { name: "Hybrid", value: BackgroundMapType.Hybrid },
       ],
-      handler: (select) => this.updateBackgroundMapProvider({ type: Number.parseInt(select.value, 10) }),
+      handler: (select) => azureMapsSettings.changeBackgroundMapProvider({ name: imageryProviders.value as BackgroundMapProviderName, type: Number.parseInt(select.value, 10) }),
     }).select;
+
+    const azureMapsSettings = new AzureMapsBackgroundMapSettings({
+      parent: backgroundSettingsDiv,
+      viewport: this._vp,
+      imageryProvidersDiv,
+      imageryProviders,
+      typesDiv,
+      types,
+      sync: () => this.sync(),
+    });
+
     const globeModes = createComboBox({
       parent: backgroundSettingsDiv,
       name: "Globe: ",
@@ -558,15 +629,43 @@ export class ViewAttributes {
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
 
-    this._updates.push((view) => {
+    this._updates.push(async (view) => {
       const visible = isMapSupported(view);
       div.style.display = visible ? "block" : "none";
       if (!visible)
         return;
 
+      if (checkboxInterfaceGoogle3dTiles0.checkbox.checked) {
+        // Only create and initialize the provider once
+        const provider = new Google3dTilesProvider({ apiKey: import.meta.env.IMJS_GOOGLE_3D_TILES_KEY!, showCreditsOnScreen: true });
+        await provider.initialize();
+
+        if (!this.getDisplayingGoogle3dTiles()) {
+          const url = getGoogle3dTilesUrl();
+          IModelApp.realityDataSourceProviders.register("google3dTiles", provider);
+          view.displayStyle.attachRealityModel({
+            tilesetUrl: url,
+            name: "google3dTiles",
+            rdSourceKey: {
+              provider: "google3dTiles",
+              format: "ThreeDTile",
+              id: url,
+            },
+          });
+          this.sync();
+        }
+      } else {
+        if (this.getDisplayingGoogle3dTiles()) {
+          view.displayStyle.detachRealityModelByNameAndUrl("google3dTiles", getGoogle3dTilesUrl());
+          this.sync();
+        }
+      }
+
       checkbox.checked = view.viewFlags.backgroundMap;
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showOrHideSettings(checkbox.checked);
+
+      azureMapsSettings.update(view);
 
       const baseLayer = view.displayStyle.settings.mapImagery.backgroundBase;
       if (baseLayer instanceof BaseMapLayerSettings && baseLayer.provider) {
@@ -621,11 +720,6 @@ export class ViewAttributes {
 
   private updateBackgroundMap(props: BackgroundMapProps): void {
     this._vp.changeBackgroundMapProps(props);
-    this.sync();
-  }
-
-  private updateBackgroundMapProvider(props: BackgroundMapProviderProps): void {
-    this._vp.displayStyle.changeBackgroundMapProvider(props);
     this.sync();
   }
 

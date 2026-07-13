@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="FormatTest" alias="ft" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="Units" version="01.00.09" alias="u"/>
+  <Format typeName="TestFormat" displayLabel="myFormat" description="Some tests description"
+          type="decimal" precision="6" showSignOption="noSign" formatTraits="keepSingleZero|keepDecimalPoint"
+          decimalSeparator="-" thousandSeparator="!" uomSeparator="$" stationOffsetSize="10"
+          stationSeparator="," minWidth="3" scientificType="Normalized" roundFactor="0.1">
+    <Composite spacer="_" includeZero="false">
+      <Unit label="hour(s)">u:HR</Unit>
+      <Unit label="min">u:MIN</Unit>
+      <Unit label="sec">u:S</Unit>
+    </Composite>
+  </Format>
+</ECSchema>

@@ -59,7 +59,7 @@ export class Enumerations extends SchemaItems {
       const newEnum = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createEnumeration.bind(schema), enumProps);
       return newEnum.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, enumProps.name!, schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, enumProps.name ?? "Unknown", schemaKey), e);
     }
   }
 
@@ -74,7 +74,7 @@ export class Enumerations extends SchemaItems {
         throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumeratorId(enumerator, enumeration));
 
       (enumeration as MutableEnumeration).addEnumerator(enumerator);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddEnumerator, new SchemaItemId(this.schemaItemType, enumerationKey), e);
     }
   }
@@ -88,7 +88,7 @@ export class Enumerations extends SchemaItems {
         throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumeratorId(enumeratorName, enumeration));
 
       (enumerator as MutableEnumerator).label = label;
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabel, new SchemaItemId(this.schemaItemType, enumerationKey), e);
     }
   }
@@ -102,7 +102,7 @@ export class Enumerations extends SchemaItems {
         throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumeratorId(enumeratorName, enumeration));
 
       (enumerator as MutableEnumerator).description = description;
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabel, new SchemaItemId(this.schemaItemType, enumerationKey), e);
     }
   }

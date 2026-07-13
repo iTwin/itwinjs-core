@@ -19,17 +19,17 @@ import {
   ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
 } from "../../tile/internal";
 
-/** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
+/** The root tile for the branch of an [[IModelTileTree]] containing dynamically-generated graphics for individual elements:
+ * either elements modified during the current [[GraphicalEditingScope]], or elements animated by a schedule script.
  * Not intended for direct consumption - exported for use by [[IModelTileTree]].
- * [[GraphicalEditingScope]].
  */
 export abstract class DynamicIModelTile extends Tile {
   protected constructor(params: TileParams, tree: TileTree) {
     super(params, tree);
   }
 
-  public static create(root: RootIModelTile, elements: Iterable<ElementGeometryChange>): DynamicIModelTile {
-    return new RootTile(root, elements);
+  public static create(root: RootIModelTile, elements: Iterable<ElementGeometryChange>, absolutePositionThreshold: number): DynamicIModelTile {
+    return new RootTile(root, elements, absolutePositionThreshold);
   }
 
   /** Updates the tiles when elements are modified during the editing scope. */
@@ -40,6 +40,9 @@ export abstract class DynamicIModelTile extends Tile {
 
   /** Exposed strictly for tests. */
   public abstract get hiddenElements(): Id64Array;
+
+  /** Strictly for tests. */
+  public abstract get dynamicElements(): Id64Array;
 
   /** Select tiles for display, requesting content for tiles as necessary. */
   public abstract selectTiles(selected: Tile[], args: TileDrawArgs): void;
@@ -63,6 +66,10 @@ class ElementTiles extends SortedArray<ElementTile> {
 class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   private readonly _hiddenElements: Id64.Uint32Set;
   public readonly transformToTree: Transform;
+  /** The maximum world-space coordinate magnitude, in meters, at which element graphics use absolute float32 positions.
+   * At or beyond it, per-element `rtcCenter` centering is used to preserve precision. Threaded down to each [[GraphicsTile]].
+   */
+  public readonly absolutePositionThreshold: number;
   private readonly _elements: ElementTiles;
 
   private get _imodelRoot() { return this.parent as RootIModelTile; }
@@ -73,7 +80,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     return this._elements.array;
   }
 
-  public constructor(parent: RootIModelTile, elements: Iterable<ElementGeometryChange>) {
+  public constructor(parent: RootIModelTile, elements: Iterable<ElementGeometryChange>, absolutePositionThreshold: number) {
     const params: TileParams = {
       parent,
       isLeaf: false,
@@ -85,6 +92,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     super(params, parent.tree);
 
     this._hiddenElements = new Id64.Uint32Set();
+    this.absolutePositionThreshold = absolutePositionThreshold;
 
     const inverseTransform = parent.tree.iModelTransform.inverse();
     assert(undefined !== inverseTransform);
@@ -100,6 +108,10 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
 
   public get hiddenElements(): Id64Array {
     return this._hiddenElements.toId64Array();
+  }
+
+  public get dynamicElements(): Id64Array {
+    return this._elements.array.map((tile) => tile.contentId);
   }
 
   public get appearanceProvider(): FeatureAppearanceProvider {
@@ -178,6 +190,8 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
  * Its contentId is the element's Id.
  */
 class ElementTile extends Tile {
+  public readonly absolutePositionThreshold: number;
+
   public constructor(parent: RootTile, elementId: Id64String, range: Range3d) {
     super({
       parent,
@@ -186,6 +200,8 @@ class ElementTile extends Tile {
       range,
       maximumSize: parent.maximumSize,
     }, parent.tree);
+
+    this.absolutePositionThreshold = parent.absolutePositionThreshold;
 
     this.loadChildren();
     this.setIsReady();
@@ -314,6 +330,7 @@ const requestIdSequence = makeIdSequence();
 class GraphicsTile extends Tile {
   public readonly toleranceLog10: number;
   public readonly tolerance: number;
+  public readonly absolutePositionThreshold: number;
 
   public constructor(parent: ElementTile, toleranceLog10: number) {
     assert(Math.round(toleranceLog10) === toleranceLog10);
@@ -327,6 +344,7 @@ class GraphicsTile extends Tile {
 
     this.toleranceLog10 = toleranceLog10;
     this.tolerance = 10 ** toleranceLog10;
+    this.absolutePositionThreshold = parent.absolutePositionThreshold;
   }
 
   public override computeLoadPriority(): number {
@@ -354,6 +372,18 @@ class GraphicsTile extends Tile {
     assert(this.tree instanceof IModelTileTree);
     const idProvider = this.tree.contentIdProvider;
 
+    // Use absolute positions (better performance) only when the element's world-space coordinates are
+    // small enough that float32 precision is adequate. For projects far from the coordinate system origin,
+    // large coordinates cause visible precision artifacts (jagged curves). At or beyond the threshold, fall back
+    // to per-element rtcCenter centering. The threshold is supplied by whatever created this dynamic branch
+    // (see DynamicIModelTile.create) - e.g. the active GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold.
+    // NOTE: Using range.center is correct for rigid iModelTransforms (the typical case). For non-rigid transforms,
+    // checking all 8 range.corners() would be more precise (e.g. for an element whose box straddles the origin).
+    const worldCenter = this.tree.iModelTransform.multiplyPoint3d(this.range.center);
+    const maxCoord = Math.max(Math.abs(worldCenter.x), Math.abs(worldCenter.y), Math.abs(worldCenter.z));
+    // A null range has no geometry or unknown extent, so rtcCenter (the safer, precision-preserving default) is used.
+    const useAbsolutePositions = !this.range.isNull && maxCoord < this.absolutePositionThreshold;
+
     const props: ElementGraphicsRequestProps = {
       id: requestId.value.toString(16),
       elementId: this.parent.contentId,
@@ -366,6 +396,7 @@ class GraphicsTile extends Tile {
       smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
       clipToProjectExtents: this.tree.is3d,
       sectionCut: this.tree.stringifiedSectionClip,
+      useAbsolutePositions,
     };
 
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, expectDefined, Id64String } from "@itwin/core-bentley";
 import {
   BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
 } from "@itwin/core-common";
@@ -23,7 +23,7 @@ import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
-  BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
+  createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
   ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapLayerTreeSetting, MapTile,
   MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
@@ -306,10 +306,10 @@ export class MapTileTree extends RealityTileTree {
   public getCornerRays(rectangle: MapCartoRectangle): Ray3d[] | undefined {
     const rays = new Array<Ray3d>();
     if (this.globeMode === GlobeMode.Ellipsoid) {
-      rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))!);
-      rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))!);
-      rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))!);
-      rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))!);
+      rays.push(expectDefined(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))));
+      rays.push(expectDefined(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))));
+      rays.push(expectDefined(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))));
+      rays.push(expectDefined(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))));
     } else {
       const mercatorFractionRange = rectangle.getTileFractionRange(this._mercatorTilingScheme);
       rays.push(Ray3d.createCapture(this._mercatorFractionToDb.multiplyXYZ(mercatorFractionRange.low.x, mercatorFractionRange.high.y), scratchZNormal));
@@ -322,7 +322,7 @@ export class MapTileTree extends RealityTileTree {
 
   /** @internal */
   public pointAboveEllipsoid(point: Point3d): boolean {
-    return this.earthEllipsoid.worldToLocal(point, scratchPoint)!.magnitude() > 1;
+    return expectDefined(this.earthEllipsoid.worldToLocal(point, scratchPoint)).magnitude() > 1;
   }
 
   private getMercatorFractionChildGridPoints(tile: MapTile, columnCount: number, rowCount: number): Point3d[] {
@@ -367,7 +367,7 @@ export class MapTileTree extends RealityTileTree {
         z: this.bimElevationBias,
       });
 
-    const iModelCoordinates = this._gcsConverter!.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
+    const iModelCoordinates = expectDefined(this._gcsConverter).getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
 
     if (iModelCoordinates.missing)
       return undefined;
@@ -400,7 +400,7 @@ export class MapTileTree extends RealityTileTree {
       }
     }
 
-    await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps);
+    await expectDefined(this._gcsConverter).getIModelCoordinatesFromGeoCoordinates(requestProps);
   }
 
   private static _scratchCarto = Cartographic.createZero();
@@ -416,6 +416,7 @@ export class MapTileTree extends RealityTileTree {
         this._mercatorFractionToDb.multiplyPoint3d(gridPoint, scratchCorner);
         if (this.globeMode !== GlobeMode.Ellipsoid || this.cartesianRange.containsPoint(scratchCorner)) {
           if (reprojected !== undefined && reprojected[i] !== undefined)
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             reprojected[i]!.clone(gridPoint);
           else
             scratchCorner.clone(gridPoint);
@@ -668,17 +669,24 @@ class MapTreeSupplier implements TileTreeSupplier {
     return cmp;
   }
 
-  private async computeHeightBias(heightOrigin: number, heightOriginMode: TerrainHeightOriginMode, exaggeration: number, iModel: IModelConnection, elevationProvider: BingElevationProvider): Promise<number> {
+  private async computeHeightBias(heightOrigin: number, heightOriginMode: TerrainHeightOriginMode, exaggeration: number, iModel: IModelConnection): Promise<number> {
     const projectCenter = iModel.projectExtents.center;
     switch (heightOriginMode) {
-      case TerrainHeightOriginMode.Ground:
-        return heightOrigin + exaggeration * (await elevationProvider.getHeightValue(projectCenter, iModel, true));
-
+      case TerrainHeightOriginMode.Ground: {
+        // Non-geolocated iModels skip elevation lookup — matches previous BingElevationProvider fallback behavior.
+        if (!iModel.isGeoLocated) return heightOrigin;
+        const carto = iModel.spatialToCartographicFromEcef(projectCenter);
+        return heightOrigin + exaggeration * (await IModelApp.elevationProvider.getHeight(carto));
+      }
       case TerrainHeightOriginMode.Geodetic:
         return heightOrigin;
 
-      case TerrainHeightOriginMode.Geoid:
-        return heightOrigin + await elevationProvider.getGeodeticToSeaLevelOffset(projectCenter, iModel);
+      case TerrainHeightOriginMode.Geoid: {
+        // Non-geolocated iModels skip geoid lookup — matches previous BingElevationProvider fallback behavior.
+        if (!iModel.isGeoLocated) return heightOrigin;
+        const carto = iModel.spatialToCartographicFromEcef(projectCenter);
+        return heightOrigin + await IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto);
+      }
     }
   }
 
@@ -693,14 +701,15 @@ class MapTreeSupplier implements TileTreeSupplier {
       wantNormals: id.wantNormals,
       dataSource: id.terrainDataSource,
       produceGeometry: id.produceGeometry,
+      iTwinId: iModel.iTwinId,
     };
 
     if (id.applyTerrain) {
       await ApproximateTerrainHeights.instance.initialize();
-      const elevationProvider = new BingElevationProvider();
 
-      bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel, elevationProvider);
-      geodeticOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
+      bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel);
+      const carto = iModel.isGeoLocated ? iModel.spatialToCartographicFromEcef(iModel.projectExtents.center) : undefined;
+      geodeticOffset = carto ? await IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto) : 0;
       const provider = IModelApp.terrainProviderRegistry.find(id.terrainProviderName);
       if (provider)
         terrainProvider = await provider.createTerrainMeshProvider(terrainOpts);
@@ -1079,7 +1088,7 @@ export class MapTileTreeReference extends TileTreeReference {
     return info;
   }
 
-  /** @deprecated in 5.0 Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (tree) {

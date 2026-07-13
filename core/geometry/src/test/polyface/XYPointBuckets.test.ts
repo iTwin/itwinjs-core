@@ -9,7 +9,7 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d } from "../../geometry3d/Range";
 import { XYIndexGrid, XYPointBuckets } from "../../polyface/multiclip/XYPointBuckets";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
