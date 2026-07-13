@@ -2,6 +2,45 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.11.2",
+      "tag": "@itwin/core-common_v5.11.2",
+      "date": "Fri, 10 Jul 2026 12:20:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.11.1",
+      "tag": "@itwin/core-common_v5.11.1",
+      "date": "Wed, 08 Jul 2026 19:03:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.11.0",
+      "tag": "@itwin/core-common_v5.11.0",
+      "date": "Fri, 03 Jul 2026 13:05:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecated the no-op `doNotUsePrimaryConnToPrepare` concurrent query config option. Worker connections now always prepare against a shared, dedicated schema-source connection (falling back to their own connection) to avoid a deadlock with the primary connection; the option is retained only for backward-compatible config serialization and no longer affects behavior."
+          },
+          {
+            "comment": "Add EditTxn.changeElementParent and EditTxn.changeElementModel; add ElementError namespace."
+          },
+          {
+            "comment": "Added an internal DbResponseStatus.NotOpen status for closed iModel query responses."
+          },
+          {
+            "comment": "add \"missing-container-itwinid\" to ITwinSettingsError"
+          },
+          {
+            "comment": "Add includePrerelease to DbCloudContainerInfo."
+          },
+          {
+            "comment": "Clarify that the legacy BingProvider background map path is retained for compatibility with existing persisted data."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.10.3",
       "tag": "@itwin/core-common_v5.10.3",
       "date": "Tue, 16 Jun 2026 12:58:32 GMT",

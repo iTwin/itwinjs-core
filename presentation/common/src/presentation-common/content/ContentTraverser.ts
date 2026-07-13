@@ -480,13 +480,19 @@ function traverseContentItemFieldValue(
   if (rawValue !== undefined) {
     if (valueType.valueFormat === PropertyValueFormat.Array) {
       assert(PresentationValue.isArray(rawValue));
-      assert(DisplayValue.isArray(displayValue));
-      return traverseContentItemArrayFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
+      // When content is retrieved with formatting omitted, display values are not provided. Synthesize an array
+      // of matching length so array items can still be traversed.
+      const arrayDisplayValues = displayValue === undefined ? rawValue.map(() => undefined) : displayValue;
+      assert(DisplayValue.isArray(arrayDisplayValues));
+      return traverseContentItemArrayFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, arrayDisplayValues);
     }
     if (valueType.valueFormat === PropertyValueFormat.Struct) {
       assert(PresentationValue.isMap(rawValue));
-      assert(DisplayValue.isMap(displayValue));
-      return traverseContentItemStructFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
+      // When content is retrieved with formatting omitted, display values are not provided. Use an empty map so
+      // struct members can still be traversed.
+      const structDisplayValues = displayValue === undefined ? {} : displayValue;
+      assert(DisplayValue.isMap(structDisplayValues));
+      return traverseContentItemStructFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, structDisplayValues);
     }
   }
   traverseContentItemPrimitiveFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);

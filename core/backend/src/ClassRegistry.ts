@@ -336,7 +336,7 @@ export class ClassRegistry {
  * A cache that records the mapping between class names and class metadata.
  * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
  * @internal
- * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` from the `iModel` instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` from the `iModel` instead.
  *
  * @example
  * @
