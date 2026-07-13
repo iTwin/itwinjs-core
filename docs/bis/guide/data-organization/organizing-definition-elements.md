@@ -30,9 +30,9 @@ Each `Subject` can have 0 or 1 child `DefinitionPartition` element which is sub-
 
 The `DefinitionPartion` of the Root `Subject` always has a `CodeValue` of "BisCore.DictionaryModel". Its sub-model is called the "DictionaryModel". The [DictionaryModel](../references/glossary.md#DictionaryModel) is a singleton container of `DefinitionElement` instances. It *directly* holds User-rank definitions and holds Core, Discipline, and Application-standardized definitions organized under `DefinitionContainer`s.
 
-* For Discipline-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of _"{domain alias}:DomainDefinitions"_ (where {domain alias} is the schema alias for the domain that is doing the standardization - which *might be different* than the schema that defines the particular `DefinitionElement` subclass) - and a `CodeScope` that is the ElementId of the `DefinitionModel` that contains it. Domain-standardized definitions should go in the sub-model of that `DefinitionContainer`.
-* For standardized Application-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of _"{application name}:ApplicationDefinitions"_ and a `CodeScope` that is the Id of the `DefinitionModel` that contains it. Application-standardized definitions should go in the sub-model of that `DefinitionContainer.
-* For Core-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of _"bis:CoreDefinitions"_ and a `CodeScope` that is the Id of the `DefinitionModel` that contains it. BIS-standardized definitions should go in the sub-model of that `DefinitionContainer`.
+* For Core-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of _"bis:Definitions"_ and a `CodeScope` that is the Id of the `DefinitionModel` that contains it. BIS-standardized definitions should go in the sub-model of that `DefinitionContainer`.
+* For Discipline-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of _"{domain alias}:Definitions"_ (where {domain alias} is the schema alias for the domain that is doing the standardization - which *might be different* than the schema that defines the particular `DefinitionElement` subclass) - and a `CodeScope` that is the ElementId of the `DefinitionModel` that contains it. Domain-standardized definitions should go in the sub-model of that `DefinitionContainer`.
+* For standardized Application-rank definitions, there should be a `DefinitionContainer` with a `CodeValue` of _"{organization name}:{application name}:Definitions"_ and a `CodeScope` that is the Id of the `DefinitionModel` that contains it. Application-standardized definitions should go in the sub-model of that `DefinitionContainer`.
 
 All global-scoped Core-rank, Discipline-rank and  Application-rank definitions should be organized under the DictionaryModel.
 
@@ -44,7 +44,7 @@ Only User-rank definitions should be placed in Subject-specific `DictionaryModel
 
 ### Example organization of definitions
 
-The following instance-diagram depicts the organization of definition elements of various ranks and scopes. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
+The following instance-diagram depicts examples of the organization of definition elements of various ranks and scopes. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 &nbsp;
 ![Repository-Global DefinitionElements](../media/repository-global-definitions.png)
