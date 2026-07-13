@@ -5551,6 +5551,8 @@ export enum RegionBinaryOpType {
 // @public
 export interface RegionBooleanXYOptions {
     mergeTolerance?: number;
+    operationGroupA?: RegionBinaryOpType;
+    operationGroupB?: RegionBinaryOpType;
     simplifyUnion?: boolean;
 }
 
