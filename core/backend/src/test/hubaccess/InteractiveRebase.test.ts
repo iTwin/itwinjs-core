@@ -12,7 +12,7 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
 import { Code, GeometricElement2dProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { ChannelControl, DrawingCategory } from "../../core-backend";
-import { LineSegment3d, Point3d } from "@itwin/core-geometry";
+import { LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
 
 chai.use(chaiAsPromised);
 
@@ -39,12 +39,14 @@ describe("InteractiveRebase", () => {
           <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
           <ECEntityClass typeName="SomeGraphicalElement">
               <BaseClass>bis:GraphicalElement2d</BaseClass>
-              <ECProperty propertyName="foo" typeName="string" />
+              <ECProperty propertyName="Foo" typeName="string" />
+              <ECProperty propertyName="SomePoint" typeName="point2d" />
           </ECEntityClass>
       </ECSchema>`;
 
     interface SomeGraphicalElementProps extends GeometricElement2dProps {
       foo: string;
+      somePoint: Point2d;
     }
 
     const id = await withEditTxn(briefcase1, async (txn) => {
@@ -63,6 +65,7 @@ describe("InteractiveRebase", () => {
         category: drawingCategoryId,
         code: Code.createEmpty(),
         foo: "Original",
+        somePoint: new Point2d(1.23, 4.56),
       } as SomeGraphicalElementProps);
     });
 
@@ -76,6 +79,7 @@ describe("InteractiveRebase", () => {
       txn.updateElement<SomeGraphicalElementProps>({
         id,
         foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
       });
     });
 
@@ -83,7 +87,8 @@ describe("InteractiveRebase", () => {
       txn.updateElement<SomeGraphicalElementProps>({
         id,
         foo: "User2",
-        userLabel: "Wat"
+        userLabel: "Wat",
+        somePoint: new Point2d(3.0, 4.0),
       });
     });
 
@@ -95,6 +100,23 @@ describe("InteractiveRebase", () => {
 
     const moreGroups = interactive.nextGroup();
     chai.expect(moreGroups).to.be.false;
-    chai.expect(interactive.conflicts?.elementUpdateConflicts.length).to.equal(1);
+    chai.expect(interactive.conflicts?.updateConflicts.length).to.equal(1);
+    const updateConflict = interactive.conflicts!.updateConflicts[0];
+    chai.expect(updateConflict.id).to.equal(id);
+    //chai.expect(updateConflict.propertyConflicts.length).to.equal(2);
+
+    const somePointConflict = updateConflict.propertyConflicts.find((conflict) => conflict.propertyName === "SomePoint");
+    chai.expect(somePointConflict).to.not.be.undefined;
+    if (!somePointConflict) return;
+    chai.expect(somePointConflict.originalValue).to.deep.equal({ X: 1.23, Y: 4.56 });
+    chai.expect(somePointConflict.ourNewValue).to.deep.equal({ X: 3.0, Y: 4.0 });
+    chai.expect(somePointConflict.theirNewValue).to.deep.equal({ X: 1.0, Y: 2.0 });
+
+    const fooConflict = updateConflict.propertyConflicts.find((conflict) => conflict.propertyName === "Foo");
+    chai.expect(fooConflict).to.not.be.undefined;
+    if (!fooConflict) return;
+    chai.expect(fooConflict.originalValue).to.equal("Original");
+    chai.expect(fooConflict.ourNewValue).to.equal("User2");
+    chai.expect(fooConflict.theirNewValue).to.equal("User1");
   });
 });

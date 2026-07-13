@@ -18,6 +18,7 @@ export interface ConflictEcChange {
   original: ConflictEcRow;
   theirs: ConflictEcRow;
   ours: ConflictEcRow;
+  conflicts: string[];
 }
 
 export interface DbChangesetConflictArgs {
@@ -144,6 +145,9 @@ export class RebaseChangesetConflictArgs {
   };
   public get txn() {
     return this._dbConflictArg.txn;
+  }
+  public get ecConflict(): ConflictEcChange {
+    return this._dbConflictArg.getEcChange();
   }
 }
 

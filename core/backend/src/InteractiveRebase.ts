@@ -45,16 +45,17 @@ export interface PropertyUpdateConflict {
   get propertyName(): string;
   get originalValue(): any;
   get theirNewValue(): any;
-  get myNewValue(): any;
+  get ourNewValue(): any;
 }
 
-export interface ElementUpdateConflict {
-  elementId: Id64String;
+export interface InstanceUpdateConflict {
+  id: Id64String;
+  classId: Id64String;
   propertyConflicts: PropertyUpdateConflict[];
 }
 
 export interface RebaseConflicts {
-  elementUpdateConflicts: ElementUpdateConflict[];
+  updateConflicts: InstanceUpdateConflict[];
   // TODO
 }
 
@@ -273,28 +274,32 @@ export class InteractiveRebase {
   private handleRebaseConflict(conflict: RebaseChangesetConflictArgs): DbConflictResolution | undefined {
     if (this._conflicts === undefined) {
       this._conflicts = {
-        elementUpdateConflicts: [],
+        updateConflicts: [],
       };
     }
 
     if (conflict.cause === "Data" && conflict.opcode === "Updated") {
-      const changedColumns = conflict.getColumnNames().filter((_columnName, columnIndex) => {
-        return conflict.getValueType(columnIndex, "Old") !== undefined;
-      });
+      const ecConflict = conflict.ecConflict;
+      const instanceId = ecConflict.original.ECInstanceId;
 
-      const elementIdIndex = conflict.getColumnNames().indexOf("ElementId");
-      // TODO: this return makes no sense
-      if (elementIdIndex < 0) {
-        return DbConflictResolution.Replace;
+      let instanceConflict = this._conflicts.updateConflicts.find(conflict => conflict.id === instanceId);
+      if (instanceConflict === undefined) {
+        instanceConflict = {
+          id: instanceId,
+          classId: ecConflict.original.ECClassId,
+          propertyConflicts: [],
+        };
+        this._conflicts.updateConflicts.push(instanceConflict);
       }
 
-      const elementId = conflict.getValueId(elementIdIndex, "Old");
-      assert(elementId !== undefined && elementId != null);
-
-      this._conflicts.elementUpdateConflicts.push({
-        elementId: elementId,
-        propertyConflicts: [],
-      });
+      instanceConflict.propertyConflicts.push(...ecConflict.conflicts.map(conflict => {
+        return {
+          propertyName: conflict,
+          originalValue: ecConflict.original[conflict],
+          theirNewValue: ecConflict.theirs[conflict],
+          ourNewValue: ecConflict.ours[conflict],
+        };
+      }));
 
       return DbConflictResolution.Replace;
     }
