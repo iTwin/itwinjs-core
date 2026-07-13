@@ -51,7 +51,7 @@ import {
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
 import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
-import { InvokeFrontendIpcTool, registerDtaFrontendIpcHandler } from "./FrontendIpcInvokeDemo";
+import { InvokeFrontendIpcTool, registerDtaFrontendIpcHandler } from "./InvokeFrontendIpcTool";
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";

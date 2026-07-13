@@ -145,8 +145,6 @@ export class IpcHost {
    */
   private static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = await this.invoke(channelName, methodName, ...args) as IpcInvokeReturn;
-    // The frontend handler threw: rethrow it on the backend following the ITwinError paradigm (see rebuildIpcError).
-    // Callers identify it via ITwinError.isError / BentleyError.isError rather than instanceof.
     return unwrapIpcInvokeReturn(retVal);
   }
 

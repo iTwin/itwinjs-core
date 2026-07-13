@@ -39,9 +39,7 @@ function loadEnv(envFile: string) {
   dotenvExpand(envResult);
 }
 
-// Demonstrates the new backend-to-frontend Ipc invoke support: a type-safe proxy for calling methods implemented
-// by the frontend's DtaFrontendIpcHandler (see FrontendIpcInvokeDemo.ts), the reverse of the usual
-// frontend-calls-backend Ipc pattern (compare to `dtaIpc` in frontend/App.ts).
+// Proxy for the backend-to-frontend Ipc invoke demo; see InvokeFrontendIpcTool.ts for the full explanation.
 export const dtaFrontendIpc = IpcHost.makeIpcProxy<DtaFrontendIpcInterface>(dtaFrontendChannel);
 
 class DisplayTestAppRpc extends DtaRpcInterface {
@@ -189,10 +187,8 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
+  // See [[DtaRpcInterface.invokeFrontendIpc]] for what this demonstrates.
   public override async invokeFrontendIpc(): Promise<DtaFrontendInfoResult> {
-    // This RPC method only exists to trigger the demo (see InvokeFrontendIpcTool in FrontendIpcInvokeDemo.ts).
-    // The line below is the actual new backend-to-frontend Ipc invoke: `dtaFrontendIpc` is an `IpcHost.makeIpcProxy`
-    // proxy that calls back into the frontend's `DtaFrontendIpcHandler` and awaits its return value.
     const info = await dtaFrontendIpc.getFrontendInfo();
     Logger.logInfo("dta", `IpcHost.invoke round trip returned: ${JSON.stringify(info)}`);
     return info;
