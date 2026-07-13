@@ -130,25 +130,49 @@ export interface MapLayerFormatEntry {
  */
 export class MapLayerFormatRegistry {
   private _configOptions: MapLayerOptions;
-  private _allowedSsoOrigins: string[] = [];
+  private _trustedCredentialsOrigins: string[] = [];
+
+  /** Opt-in enforcement of origin restrictions on map-layer credentials.
+   * When enabled, map layer providers:
+   * - attach the basic-auth credentials stored in the layer settings only to requests targeting the origin
+   *   of the layer's settings URL or an origin listed in [[trustedCredentialsOrigins]];
+   * - retry a request with browser credentials included (i.e. SSO / Windows Authentication) after an NTLM
+   *   or Negotiate http 401 challenge only for origins explicitly listed in [[trustedCredentialsOrigins]]
+   *   (the settings-URL origin is NOT implicitly trusted for SSO, since map-layer URLs may originate from
+   *   untrusted user input while SSO shares the user's ambient identity).
+   * Default is false, preserving the legacy behavior of sending credentials to any request URL.
+   * @beta
+   */
+  public restrictCredentialsToTrustedOrigins = false;
+
   constructor(opts?: MapLayerOptions) {
     this._configOptions = opts ?? {};
     internalMapLayerImageryFormats.forEach((format) => this.register(format));
   }
 
-  /** Origins (e.g. "https://tiles.example.com") for which map layer providers are allowed to retry a request
-   * with browser credentials included (i.e. SSO / Windows Authentication) when the server responds to a request
-   * with an NTLM or Negotiate http 401 challenge.
-   * The origin of each map layer's settings URL is always implicitly trusted; this list is only needed when
-   * tile requests target additional origins.
+  /** Origins (e.g. "https://tiles.example.com") to which map layer providers may send credentials —
+   * both the basic-auth credentials stored in the layer settings and browser credentials for
+   * SSO (i.e. Windows Authentication) retries after an NTLM or Negotiate http 401 challenge.
+   * Only enforced when [[restrictCredentialsToTrustedOrigins]] is enabled.
+   * For basic-auth, the origin of each map layer's settings URL is always implicitly trusted; for SSO,
+   * origins must be explicitly listed here.
+   * Entries are normalized to their origin (scheme + host + port); invalid entries are ignored and logged.
    * @beta
    */
-  public get allowedSsoOrigins(): string[] {
-    return this._allowedSsoOrigins;
+  public get trustedCredentialsOrigins(): ReadonlyArray<string> {
+    return this._trustedCredentialsOrigins;
   }
 
-  public set allowedSsoOrigins(origins: string[]) {
-    this._allowedSsoOrigins = origins;
+  public set trustedCredentialsOrigins(origins: ReadonlyArray<string>) {
+    const normalized: string[] = [];
+    for (const entry of origins) {
+      try {
+        normalized.push(new URL(entry).origin);
+      } catch {
+        Logger.logWarning(loggerCategory, `trustedCredentialsOrigins: ignoring invalid origin '${entry}'`);
+      }
+    }
+    this._trustedCredentialsOrigins = normalized;
   }
   private _formats = new Map<string, MapLayerFormatEntry>();
 

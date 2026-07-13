@@ -301,30 +301,52 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
-  /** Returns true if a request to the given URL is allowed to be retried with browser credentials included
-   * (i.e. SSO / Windows Authentication) after an NTLM or Negotiate http 401 challenge.
-   * The origin of this layer's settings URL is implicitly trusted; other origins must be listed in
-   * [[MapLayerFormatRegistry.allowedSsoOrigins]].
+  /** Returns the origin of the given URL, or undefined if it cannot be parsed.
    * @internal
    */
-  protected isSsoAllowed(url: string): boolean {
+  private static tryGetOrigin(url: string): string | undefined {
+    try {
+      return new URL(url).origin;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /** Returns true if the basic-auth credentials from the layer settings may be attached to a request to the given URL.
+   * Always true unless [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (opt-in).
+   * When enabled, the origin of this layer's settings URL is implicitly trusted (the credentials belong to that
+   * server); other origins must be listed in [[MapLayerFormatRegistry.trustedCredentialsOrigins]].
+   * @internal
+   */
+  protected isCredentialsSharingAllowed(url: string): boolean {
+    if (!IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins)
+      return true;
+
     if (this.matchesSettingsUrlOrigin(url))
       return true;
 
-    let origin: string;
-    try {
-      origin = new URL(url).origin;
-    } catch {
-      return false;
-    }
+    const origin = MapLayerImageryProvider.tryGetOrigin(url);
 
-    return IModelApp.mapLayerFormatRegistry.allowedSsoOrigins.some((allowed) => {
-      try {
-        return new URL(allowed).origin === origin;
-      } catch {
-        return false;
-      }
-    });
+    // Entries are normalized to their origin by the [[MapLayerFormatRegistry.trustedCredentialsOrigins]] setter.
+    return origin !== undefined && IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins.includes(origin);
+  }
+
+  /** Returns true if a request to the given URL may be retried with browser credentials included
+   * (i.e. SSO / Windows Authentication) after an NTLM or Negotiate http 401 challenge.
+   * Always true unless [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (opt-in).
+   * When enabled, the origin must be explicitly listed in [[MapLayerFormatRegistry.trustedCredentialsOrigins]];
+   * unlike basic-auth, the settings-URL origin is NOT implicitly trusted because SSO shares the user's
+   * ambient identity, and map-layer URLs may originate from untrusted user input.
+   * @internal
+   */
+  protected isSsoAllowed(url: string): boolean {
+    if (!IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins)
+      return true;
+
+    const origin = MapLayerImageryProvider.tryGetOrigin(url);
+
+    // Entries are normalized to their origin by the [[MapLayerFormatRegistry.trustedCredentialsOrigins]] setter.
+    return origin !== undefined && IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins.includes(origin);
   }
 
   /** @internal */
@@ -360,9 +382,10 @@ export abstract class MapLayerImageryProvider {
     if (authorization) {
       headers = new Headers();
       headers.set("Authorization", authorization);
-    } else if (this._settings.userName && this._settings.password && this.matchesSettingsUrlOrigin(url)) {
-      // Authorization is inferred from the map-layer settings only when the request URL shares
-      // the same origin as the settings URL, to avoid leaking the credentials to third-party hosts.
+    } else if (this._settings.userName && this._settings.password && this.isCredentialsSharingAllowed(url)) {
+      // When origin restrictions are enabled, authorization is inferred from the map-layer settings only
+      // when the request URL shares the same origin as the settings URL, to avoid leaking the credentials
+      // to third-party hosts.
       hasCreds = true;
       headers = new Headers();
       this.setRequestAuthorization(headers);
@@ -432,14 +455,20 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
-    const headers = new Headers();
-    this.setRequestAuthorization(headers);
+    // When origin restrictions are enabled, authorization is inferred from the map-layer settings only
+    // when the request URL shares the same origin as the settings URL, to avoid leaking the credentials
+    // to third-party hosts.
+    let headers: Headers | undefined;
+    if (this.isCredentialsSharingAllowed(url)) {
+      headers = new Headers();
+      this.setRequestAuthorization(headers);
+    }
 
     try {
       const response = await fetch(url, {
         method: "GET",
         headers,
-        credentials: this._includeUserCredentials ? "include" : undefined,
+        credentials: this._includeUserCredentials && this.isSsoAllowed(url) ? "include" : undefined,
       });
       const text = await response.text();
       if (undefined !== text) {
