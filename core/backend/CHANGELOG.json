@@ -2,6 +2,60 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.11.2",
+      "tag": "@itwin/core-backend_v5.11.2",
+      "date": "Fri, 10 Jul 2026 12:20:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.11.1",
+      "tag": "@itwin/core-backend_v5.11.1",
+      "date": "Wed, 08 Jul 2026 19:03:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add preserveExtends option to getResolvedSettingDef"
+          },
+          {
+            "comment": "Use a documented GetResolvedSettingDefOptions interface for getResolvedSettingDef options"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.11.0",
+      "tag": "@itwin/core-backend_v5.11.0",
+      "date": "Fri, 03 Jul 2026 13:05:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed silent loss of CodeValue swaps when applying a changeset containing a single-transaction swap through a null intermediate; the unique-index conflict handler no longer skips the intermediate step during changeset application"
+          },
+          {
+            "comment": "Added regression coverage that the deprecated `doNotUsePrimaryConnToPrepare` concurrent query config option is a no-op that still round-trips for backward-compatible serialization."
+          },
+          {
+            "comment": "Add EditTxn.changeElementParent and EditTxn.changeElementModel; add ElementError namespace."
+          },
+          {
+            "comment": "Add performance test for concurrent query"
+          },
+          {
+            "comment": "Use `CompressedId64Set.isValid` in `DisplayStyle.deserialize` instead of an inline heuristic."
+          },
+          {
+            "comment": "IModelHost.getITwinWorkspace() automatically gets settings for parent iTwins and treats those as a lower priority"
+          },
+          {
+            "comment": "Fix offline workspace open in Electron: CloudSqlite.requestToken returns an empty token if we are offline; NativeHost.overrideInternetConnectivity now calls setOnlineStatus for Electron backends (not just Mobile) so checkForChanges is correctly skipped when offline."
+          },
+          {
+            "comment": "Document that an empty workspace baseUri uses a local WorkspaceDb."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.10.3",
       "tag": "@itwin/core-backend_v5.10.3",
       "date": "Tue, 16 Jun 2026 12:58:32 GMT",

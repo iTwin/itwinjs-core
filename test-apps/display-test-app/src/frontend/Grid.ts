@@ -13,7 +13,7 @@ export class ChangeGridSettingsTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 4; }
 
-  public override async run(spacing?: number, ratio?: number, gridsPerRef?: number, orientation?: GridOrientationType): Promise<boolean> {
+  public override async run(spacing?: number, ratio?: number, gridsPerRef?: number, orientation?: GridOrientationType, lock?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return false;
@@ -30,6 +30,9 @@ export class ChangeGridSettingsTool extends Tool {
     if (undefined !== orientation)
       vp.view.details.gridOrientation = orientation;
 
+    if (undefined !== lock)
+      IModelApp.toolAdmin.gridLock = lock;
+
     vp.invalidateScene(); // Needed to clear cached grid decoration...
     return true;
   }
@@ -45,6 +48,7 @@ export class ChangeGridSettingsTool extends Tool {
     let ratio;
     let gridsPerRef;
     let orientation;
+    let lock;
     const args = parseArgs(inputArgs);
 
     const spacingArg = args.getFloat("s");
@@ -80,7 +84,11 @@ export class ChangeGridSettingsTool extends Tool {
       }
     }
 
-    await this.run(spacing, ratio, gridsPerRef, orientation);
+    const lockArc = args.getBoolean("l");
+    if (undefined !== lockArc)
+      lock = lockArc;
+
+    await this.run(spacing, ratio, gridsPerRef, orientation, lock);
     return true;
   }
 }

@@ -1,6 +1,27 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2026 12:22:07 GMT and should not be manually modified.
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- fixed clipper with hole issue with z range
+- CurveFactory.fromFilletedLineString: relaxed validation trisects large arcs
+- added performance tests for mesh clip
+- Improve default behavior of CurveFactory.createFilletsInLineString by adding tol to options
+- Fixed arc-line tangency intersection issue
 
 ## 5.10.3
 Tue, 16 Jun 2026 12:58:32 GMT
