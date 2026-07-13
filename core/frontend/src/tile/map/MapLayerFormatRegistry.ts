@@ -130,9 +130,25 @@ export interface MapLayerFormatEntry {
  */
 export class MapLayerFormatRegistry {
   private _configOptions: MapLayerOptions;
+  private _allowedSsoOrigins: string[] = [];
   constructor(opts?: MapLayerOptions) {
     this._configOptions = opts ?? {};
     internalMapLayerImageryFormats.forEach((format) => this.register(format));
+  }
+
+  /** Origins (e.g. "https://tiles.example.com") for which map layer providers are allowed to retry a request
+   * with browser credentials included (i.e. SSO / Windows Authentication) when the server responds to a request
+   * with an NTLM or Negotiate http 401 challenge.
+   * The origin of each map layer's settings URL is always implicitly trusted; this list is only needed when
+   * tile requests target additional origins.
+   * @beta
+   */
+  public get allowedSsoOrigins(): string[] {
+    return this._allowedSsoOrigins;
+  }
+
+  public set allowedSsoOrigins(origins: string[]) {
+    this._allowedSsoOrigins = origins;
   }
   private _formats = new Map<string, MapLayerFormatEntry>();
 

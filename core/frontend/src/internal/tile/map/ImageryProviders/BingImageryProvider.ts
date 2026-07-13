@@ -10,7 +10,7 @@ import { assert, BentleyError, expectDefined, IModelStatus } from "@itwin/core-b
 import { Range2d } from "@itwin/core-geometry";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { request } from "../../../../request/Request";
-import { IModelApp } from "../../../../IModelApp";
+import { IModelApp, logoCardNoticeClassName } from "../../../../IModelApp";
 import { ScreenViewport } from "../../../../Viewport";
 import {
   MapLayerImageryProvider, MapTile, MapTilingScheme, QuadId,
@@ -154,14 +154,16 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     for (const match of matchingAttributions)
       copyrights.push(match.copyrightMessage);
 
-    let copyrightMsg = "";
+    // Attribution strings are server-provided; append them as text nodes so they are never parsed as HTML.
+    const notice = document.createElement("p");
+    notice.className = logoCardNoticeClassName;
     for (let i = 0; i < copyrights.length; ++i) {
       if (i > 0)
-        copyrightMsg += "<br>";
-      copyrightMsg += copyrights[i];
+        notice.appendChild(document.createElement("br"));
+      notice.appendChild(document.createTextNode(copyrights[i]));
     }
 
-    cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice: copyrightMsg }));
+    cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice }));
   }
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {

@@ -126,7 +126,8 @@ export class GoogleMapsDecorator implements Decorator {
 
     // Create and add element, offset to leave space for i.js and Google logos
     const elem = document.createElement("div");
-    elem.innerHTML = copyrightText;
+    // Copyright text is server-provided; assign it as text so it is never parsed as HTML.
+    elem.textContent = copyrightText;
     elem.style.color = "white";
     elem.style.fontSize = "11px";
     elem.style.textWrap = "wrap";

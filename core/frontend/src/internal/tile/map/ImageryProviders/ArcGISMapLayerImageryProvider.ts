@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { Cartographic, ImageMapLayerSettings, ImageSource, ServerError } from "@itwin/core-common";
-import { IModelApp } from "../../../../IModelApp";
+import { IModelApp, logoCardNoticeClassName } from "../../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
   FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
@@ -322,7 +322,11 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.arcGisLogoCard) {
       cards.dataset.arcGisLogoCard = "true";
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText }));
+      // Copyright text is server-provided; pass it as an element built from text so it is never parsed as HTML.
+      const notice = document.createElement("p");
+      notice.className = logoCardNoticeClassName;
+      notice.textContent = this._copyrightText;
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", notice }));
     }
   }
 

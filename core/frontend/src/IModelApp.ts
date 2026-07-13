@@ -163,6 +163,12 @@ export interface IModelAppOptions {
   incrementalSchemaLoading?: "enabled" | "disabled";
 }
 
+/** CSS class name applied to the notice element of a logo card created by [[IModelApp.makeLogoCard]].
+ * Use it when supplying the notice as an `HTMLElement` to keep the standard logo card styling.
+ * @beta
+ */
+export const logoCardNoticeClassName = "logo-cards";
+
 /** Options for [[IModelApp.makeModalDiv]]
  *  @public
  */
@@ -791,7 +797,7 @@ export class IModelApp {
     }
     if (undefined !== opts.notice) {
       if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: logoCardNoticeClassName });
       else
         noticeCell.appendChild(opts.notice);
     }

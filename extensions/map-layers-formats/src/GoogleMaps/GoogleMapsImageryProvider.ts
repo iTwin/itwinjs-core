@@ -8,7 +8,7 @@
 
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
-import { DecorateContext, GoogleMapsDecorator, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, QuadIdProps, ScreenViewport, Tile } from "@itwin/core-frontend";
+import { DecorateContext, GoogleMapsDecorator, IModelApp, logoCardNoticeClassName, MapCartoRectangle, MapLayerImageryProvider, MapTile, QuadIdProps, ScreenViewport, Tile } from "@itwin/core-frontend";
 import { GoogleMapsCreateSessionOptions, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
 import { NativeGoogleMapsSessionManager } from "../internal/NativeGoogleMapsSession.js";
 import { GoogleMapsUtils } from "../internal/GoogleMapsUtils.js";
@@ -235,7 +235,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
-    let copyrightMsg = "";
+    const lines: string[] = [];
     const tiles = this.getSelectedTiles(vp);
     if (tiles) {
       try {
@@ -243,9 +243,8 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
         for (const attr of attrList) {
           attr.split(",").forEach((line) => {
             // Attempt to reduce duplicates, since if there are multiple zoom levels sometimes the same info is returned
-            if (!copyrightMsg.includes(line)) {
-              copyrightMsg += `${copyrightMsg.length === 0 ? "": "<br>"}${line}`;
-            }
+            if (!lines.some((existing) => existing.includes(line)))
+              lines.push(line);
           });
         }
       }
@@ -254,6 +253,15 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
     }
 
+    // Attribution strings are server-provided; append them as text nodes so they are never parsed as HTML.
+    const notice = document.createElement("p");
+    notice.className = logoCardNoticeClassName;
+    lines.forEach((line, index) => {
+      if (index > 0)
+        notice.appendChild(document.createElement("br"));
+      notice.appendChild(document.createTextNode(line));
+    });
+
     const iconSrc = document.createElement("img");
     iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray.svg`;
     iconSrc.style.padding = "10px 10px 5px 10px";
@@ -261,7 +269,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     cards.appendChild(IModelApp.makeLogoCard({
       iconSrc,
       heading: "Google Maps",
-      notice: copyrightMsg
+      notice
     }));
   }
 }

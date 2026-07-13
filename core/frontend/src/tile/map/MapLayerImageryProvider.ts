@@ -289,6 +289,44 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
+  /** Returns true if the given URL has the same origin as this layer's settings URL.
+   * Used to avoid leaking credentials to third-party hosts.
+   * @internal
+   */
+  protected matchesSettingsUrlOrigin(url: string): boolean {
+    try {
+      return new URL(url).origin === new URL(this._settings.url).origin;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Returns true if a request to the given URL is allowed to be retried with browser credentials included
+   * (i.e. SSO / Windows Authentication) after an NTLM or Negotiate http 401 challenge.
+   * The origin of this layer's settings URL is implicitly trusted; other origins must be listed in
+   * [[MapLayerFormatRegistry.allowedSsoOrigins]].
+   * @internal
+   */
+  protected isSsoAllowed(url: string): boolean {
+    if (this.matchesSettingsUrlOrigin(url))
+      return true;
+
+    let origin: string;
+    try {
+      origin = new URL(url).origin;
+    } catch {
+      return false;
+    }
+
+    return IModelApp.mapLayerFormatRegistry.allowedSsoOrigins.some((allowed) => {
+      try {
+        return new URL(allowed).origin === origin;
+      } catch {
+        return false;
+      }
+    });
+  }
+
   /** @internal */
   public async makeTileRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
 
@@ -322,7 +360,9 @@ export abstract class MapLayerImageryProvider {
     if (authorization) {
       headers = new Headers();
       headers.set("Authorization", authorization);
-    } else if (this._settings.userName && this._settings.password) {
+    } else if (this._settings.userName && this._settings.password && this.matchesSettingsUrlOrigin(url)) {
+      // Authorization is inferred from the map-layer settings only when the request URL shares
+      // the same origin as the settings URL, to avoid leaking the credentials to third-party hosts.
       hasCreds = true;
       headers = new Headers();
       this.setRequestAuthorization(headers);
@@ -342,6 +382,7 @@ export abstract class MapLayerImageryProvider {
           && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
           && !this._includeUserCredentials
           && !hasCreds
+          && this.isSsoAllowed(url)
     ) {
       // Removed the previous headers and make sure "include" credentials is set
       opts.headers = undefined;
