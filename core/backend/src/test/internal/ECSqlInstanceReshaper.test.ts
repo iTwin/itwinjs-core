@@ -58,6 +58,9 @@ describe("ECSqlInstanceReshaper", () => {
           </Target>
           <ECProperty propertyName="Label" typeName="string"/>
         </ECRelationshipClass>
+        <ECEnumeration typeName="ReshaperNotAClass" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="Value0" value="0"/>
+        </ECEnumeration>
       </ECSchema>`;
 
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "ECSqlInstanceReshaper.bim");
@@ -113,6 +116,10 @@ describe("ECSqlInstanceReshaper", () => {
     assert.equal(ecClass.schema.name, schemaName);
 
     assert.throws(() => getRuntimeClass(iModel, `${schemaName}:DoesNotExist`), /Class not found/);
+  });
+
+  it("getRuntimeClass throws when the resolved schema item exists but isn't a class", () => {
+    assert.throws(() => getRuntimeClass(iModel, `${schemaName}:ReshaperNotAClass`), /Class not found/);
   });
 
   it("reshapeInstanceRow reshapes an ElementAspect row: system properties, points, struct, primitive array, point array, and struct array", () => {
@@ -304,5 +311,36 @@ describe("ECSqlInstanceReshaper", () => {
     const reshaped = reshapeInstanceRow(row, ecClass, iModel);
     assert.deepEqual(reshaped.arrayI, [10, 30]);
     assert.deepEqual(reshaped.arraySt, [{ label: "a" }, {}, { label: "c" }]);
+  });
+
+  it("reshapeInstanceRow omits a null struct member from a real queried row, matching the native row adaptor", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    let probeAspectId: string;
+    withEditTxn(iModel, (txn) => {
+      probeAspectId = txn.insertAspect({
+        classFullName: `${schemaName}:ReshaperAspect`,
+        element: { id: element1Id },
+        st: { label: null, p3d: { x: 1, y: 2, z: 3 } },
+      } as any);
+    });
+    const row = iModel.withQueryReader(`SELECT * FROM ${schemaAlias}.ReshaperAspect WHERE ECInstanceId=:id`, (reader) => {
+      assert.isTrue(reader.step());
+      return reader.current.toRow();
+    }, new QueryBinder().bindId("id", probeAspectId!), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+
+    const reshaped = reshapeInstanceRow(row, ecClass, iModel);
+    assert.isFalse("label" in reshaped.st);
+    assert.deepEqual(reshaped.st.p3d, { x: 1, y: 2, z: 3 });
+  });
+
+  it("reshapeInstanceRow passes through an aliased/computed column with only its key lowercased", () => {
+    const ecClass = getRuntimeClass(iModel, `${schemaName}:ReshaperAspect`);
+    const row = iModel.withQueryReader(`SELECT *, 1+1 AS Foo FROM ${schemaAlias}.ReshaperAspect WHERE ECInstanceId=:aspectId`, (reader) => {
+      assert.isTrue(reader.step());
+      return reader.current.toRow();
+    }, new QueryBinder().bindId("aspectId", aspectId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+
+    const reshaped = reshapeInstanceRow(row, ecClass, iModel);
+    assert.equal(reshaped.foo, 2);
   });
 });

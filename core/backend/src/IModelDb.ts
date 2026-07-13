@@ -31,8 +31,8 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
 import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
-import { getRuntimeClass, reshapeInstanceRow } from "./internal/ECSqlInstanceReshaper";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
+import { getRuntimeClass, reshapeInstanceRow } from "./internal/ECSqlInstanceReshaper";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
@@ -3080,10 +3080,10 @@ export namespace IModelDb {
       const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
       const aspect: ElementAspectProps | undefined = this._iModel.withQueryReader(sql, (reader): ElementAspectProps | undefined => {
         if (reader.step()) {
-          const aspectProps = reshapeInstanceRow(reader.current.toRow(), ecClass, this._iModel) as ElementAspectProps;
-          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
-          (aspectProps as any).className = undefined; // clear property from SELECT * that we don't want in the final instance
-          return aspectProps;
+          const aspectProps = reshapeInstanceRow(reader.current.toRow(), ecClass, this._iModel) as Omit<ElementAspectProps, "classFullName"> & { className?: string, classFullName?: string };
+          aspectProps.classFullName = (aspectProps.className as string).replace(".", ":"); // add in property required by EntityProps
+          aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
+          return aspectProps as ElementAspectProps;
         }
         return undefined;
       }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });

@@ -608,7 +608,9 @@ export class Relationships {
       }, new QueryBinder().bindId(1, criteria.sourceId).bindId(2, criteria.targetId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     }
     if (undefined !== props) {
-      props.classFullName = (props as any).className.replace(".", ":");
+      // convert `className` (from `SELECT *`'s ECClassId) into `classFullName`, as required by `EntityProps`
+      const reshapedProps = props as T & { className?: string };
+      reshapedProps.classFullName = (reshapedProps.className as string).replace(".", ":");
     }
     return props;
   }

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyClass, PrimitiveType, Property, StructClass } from "@itwin/ecschema-metadata";
+import { AnyClass, ECClass, PrimitiveType, Property, StructClass } from "@itwin/ecschema-metadata";
 import { IModelDb } from "../IModelDb";
 
 // This module reimplements the value-shaping behavior of the deprecated `QueryRowFormat.UseJsPropertyNames`
@@ -151,8 +151,8 @@ export function reshapeInstanceRow(row: { [propName: string]: any }, ecClass: An
  */
 export function getRuntimeClass(iModel: IModelDb, fullClassName: string): AnyClass {
   const schemaItem = iModel.schemaContext.getSchemaItemSync(fullClassName);
-  if (undefined === schemaItem) {
+  if (undefined === schemaItem || !ECClass.isECClass(schemaItem)) {
     throw new Error(`Class not found: ${fullClassName}`);
   }
-  return schemaItem as AnyClass;
+  return schemaItem;
 }
