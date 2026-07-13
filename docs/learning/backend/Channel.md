@@ -35,7 +35,7 @@ Every channel has a `channelKey` that is used for controlling write access to it
 
 In order to minimize collisions, `channelKeys` shall follow the convention:
 
-[organization-name]:[application-name]:[extension-name-if-any]
+_{organization-name}:{application-name}:{extension-name-if-any}_
 
 For example, "bentley:opensiteplus" or "bentley:localsync:mstn"
 
