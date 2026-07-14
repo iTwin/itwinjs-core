@@ -26,6 +26,7 @@ import { TiledGraphicsProvider } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
+import { XYZProps } from '@itwin/core-geometry';
 
 // @public
 export function createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise<TiledGraphicsProvider>;
@@ -121,57 +122,13 @@ export class SectionDrawingLocationState {
 }
 
 // @internal
-export interface SectionDrawingLocationStateData {
+export interface SectionDrawingLocationStateData extends SectionDrawingLocationCommonData {
     // (undocumented)
-    bboxHighX?: number;
+    bboxHigh?: XYZProps;
     // (undocumented)
-    bboxHighY?: number;
+    bboxLow?: XYZProps;
     // (undocumented)
-    bboxHighZ?: number;
-    // (undocumented)
-    bboxLowX?: number;
-    // (undocumented)
-    bboxLowY?: number;
-    // (undocumented)
-    bboxLowZ?: number;
-    // (undocumented)
-    categoryId: Id64String;
-    // (undocumented)
-    clipJSON?: string;
-    // (undocumented)
-    drawingToSpatialTransform: string;
-    // (undocumented)
-    originX?: number;
-    // (undocumented)
-    originY?: number;
-    // (undocumented)
-    originZ?: number;
-    // (undocumented)
-    pitch?: number;
-    // (undocumented)
-    roll?: number;
-    // (undocumented)
-    sectionLocationId: Id64String;
-    // (undocumented)
-    sectionLocationModelId: Id64String;
-    // (undocumented)
-    sectionType: SectionType;
-    // (undocumented)
-    sectionViewId: Id64String;
-    // (undocumented)
-    sheetClip?: string;
-    // (undocumented)
-    sheetToSpatialTransform?: string;
-    // (undocumented)
-    sheetViewId?: Id64String;
-    // (undocumented)
-    spatialViewId: Id64String;
-    // (undocumented)
-    userLabel: string;
-    // (undocumented)
-    viewAttachmentId?: Id64String;
-    // (undocumented)
-    yaw?: number;
+    origin?: XYZProps;
 }
 
 // @public
