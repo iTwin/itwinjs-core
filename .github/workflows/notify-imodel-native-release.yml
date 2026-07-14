@@ -18,8 +18,7 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
+    permissions: {}
 
     # Only run for minor/major releases (tag matches release/X.Y.0 pattern)
     if: >-
@@ -39,6 +38,12 @@ jobs:
           # Parse major.minor
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
+
+          # Validate parsed values are numeric
+          if ! [[ "$MAJOR" =~ ^[0-9]+$ && "$MINOR" =~ ^[0-9]+$ ]]; then
+            echo "::error::Could not parse numeric major.minor from tag: $TAG (got $MAJOR.$MINOR)"
+            exit 1
+          fi
 
           # Compute next dev version: increment minor by 1
           NEXT_MINOR=$((MINOR + 1))
