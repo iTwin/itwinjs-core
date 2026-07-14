@@ -1036,7 +1036,7 @@ describe("RegionBoolean", () => {
       }
     }
 
-    // Optional behavior: post-process Boolean Union to return only negative area loop(s)
+    // Optional behavior: post-process Boolean Union to remove the extraneous interior edges
     const simplifiedUnion = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.Union, { simplifyUnion: true });
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, simplifiedUnion, 0, 0, 200);
     if (ck.testType(simplifiedUnion, Loop, "user expectation is for Boolean union to result in a single Loop") && outerLoop) {
@@ -1045,9 +1045,9 @@ describe("RegionBoolean", () => {
       ck.testTrue(r0.isAlmostEqual(r1), "single Loop has expected range");
       const a0 = RegionOps.computeXYArea(outerLoop);
       const a1 = RegionOps.computeXYArea(simplifiedUnion);
-      if (ck.testDefined(a0, "outer loop has area"))
+      if (ck.testDefined(a0, "outer loop has area") && ck.testTrue(a0 < 0.0, "outer loop has negative area"))
         if (ck.testDefined(a1, "simplified union has area"))
-          ck.testCoordinate(a0, a1, "outer loop and simplified union have same area");
+          ck.testCoordinate(-a0, a1, "outer loop and simplified union have same absolute area");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "UnionAnomaly");
     expect(ck.getNumErrors()).toBe(0);

@@ -984,28 +984,27 @@ export class RegionOps {
     return { isHealable: true, nullFacePairs };
   }
 
-  /** Heal a split edge and its underlying curve details. */
-  private static healSplitEdgeAndCurve(he: HalfEdge): void {
-    const vs = he.vertexSuccessor;
-    const survivor = HalfEdge.healEdge(he, false);
-    if (!survivor)
+  /** Heal a split edge by removing the redundant vertex loop and extending the surviving curve details. */
+  private static healSplitEdgeAndCurve(v: HalfEdge): void {
+    const vs = v.vertexSuccessor;
+    const fPred = HalfEdge.healEdge(v, false);
+    if (!fPred)
       return;
-    // lambda to heal the curve details of one of the healed edge's nodes
-    const extendDetailInterval = (edge?: HalfEdge, newFraction?: number, newPoint?: Point3d): void => {
-      if (edge && edge.edgeTag instanceof CurveLocationDetail && edge.sortData && newFraction !== undefined && newPoint) {
-        if (edge.sortData > 0)
-          edge.edgeTag.captureFraction1Point1(newFraction, newPoint);
-        else
-          edge.edgeTag.captureFractionPoint(newFraction, newPoint);
-      }
+    // lambda to extend the surviving node's curve interval. Inputs are on the same side of the healed edge.
+    const extendDetailInterval = (doomed: HalfEdge, survivor: HalfEdge): void => {
+      const doomedData = RegionOps.getEdgeGeometry(doomed, survivor);
+      assert(doomedData.sameCurves || doomedData.reversedCurves, "expect related curves");
+      let newEndFraction = doomedData.senseEdge0 ? doomed.edgeTag.fraction1 : doomed.edgeTag.fraction;
+      if (doomedData.reversedCurves)
+        newEndFraction = 1.0 - newEndFraction;
+      const newEndPoint = doomedData.senseEdge0 ? doomed.edgeTag.point1 : doomed.edgeTag.point;
+      if (doomedData.senseEdge1)
+        survivor.edgeTag.captureFraction1Point1(newEndFraction, newEndPoint);
+      else
+        survivor.edgeTag.captureFractionPoint(newEndFraction, newEndPoint);
     };
-    assert(he.sortData !== undefined && vs.sortData !== undefined);
-    const endFractionA = (he.sortData > 0) ? he.edgeTag.fraction1 : he.edgeTag.fraction;
-    const endPointA = (he.sortData > 0) ? he.edgeTag.point1 : he.edgeTag.point;
-    extendDetailInterval(survivor, endFractionA, endPointA);
-    const endFractionB = (vs.sortData > 0) ? vs.edgeTag.fraction1 : vs.edgeTag.fraction;
-    const endPointB = (vs.sortData > 0) ? vs.edgeTag.point1 : vs.edgeTag.point;
-    extendDetailInterval(survivor.edgeMate, endFractionB, endPointB);
+    extendDetailInterval(v, fPred);
+    extendDetailInterval(vs, fPred.edgeMate);
   }
 
   /**
