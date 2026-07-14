@@ -179,6 +179,16 @@ export interface SnapshotOpenOptions extends OpenDbKey {
    * @internal
    */
   readonly tempFileBase?: string;
+  /** If true, the iModel at the supplied path is copied into a private, writable in-memory database and that
+   * copy is opened instead of the file on disk. Changes made to the in-memory copy are *not* written back to
+   * the source file; to persist them, write the in-memory contents out to a new file (e.g. via a vacuum-into
+   * operation). This is useful for scenarios that need a scratch, throw-away copy of an iModel without
+   * modifying the original file or writing a temporary copy to disk.
+   * @note The connection must be opened read/write for the copy to be writable. In-memory iModels exist only
+   * for the lifetime of the connection and are discarded when it is closed.
+   * @beta
+   */
+  readonly openAsInMemoryCopy?: boolean;
 }
 
 /** Options to open a [StandaloneDb]($backend) via [StandaloneDb.openFile]($backend) from the backend,

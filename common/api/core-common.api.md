@@ -9866,6 +9866,8 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 
 // @public
 export interface SnapshotOpenOptions extends OpenDbKey {
+    // @beta
+    readonly openAsInMemoryCopy?: boolean;
     // @internal
     readonly tempFileBase?: string;
 }

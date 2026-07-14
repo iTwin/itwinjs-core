@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add openAsInMemoryCopy option to SnapshotOpenOptions and support creating in-memory iModels via an empty or ':memory:' file name.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "khanaffan@users.noreply.github.com"
+}

@@ -4364,7 +4364,10 @@ export class SnapshotDb extends IModelDb {
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * @note: A *snapshot* cannot be modified after [[close]] is called.
-   * @param filePath The file that will contain the new iModel *snapshot*
+   * @param filePath The file that will contain the new iModel *snapshot*. If an empty string or `":memory:"`
+   * is supplied, an in-memory iModel is created instead of a file on disk. In-memory iModels exist only for the
+   * lifetime of the connection and are discarded when [[close]] is called; to persist one, write it out to a new
+   * file (e.g. via a vacuum-into operation).
    * @param options The parameters that define the new iModel *snapshot*
    * @returns A writeable SnapshotDb
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
@@ -4558,7 +4561,10 @@ export class StandaloneDb extends BriefcaseDb {
   }
 
   /** Create an *empty* standalone iModel.
-   * @param filePath The file path for the iModel
+   * @param filePath The file path for the iModel. If an empty string or `":memory:"` is supplied, an in-memory
+   * iModel is created instead of a file on disk. In-memory iModels exist only for the lifetime of the connection
+   * and are discarded when [[close]] is called; to persist one, write it out to a new file (e.g. via a
+   * vacuum-into operation).
    * @param args The parameters that define the new iModel
    */
   public static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
@@ -4615,6 +4621,9 @@ export class StandaloneDb extends BriefcaseDb {
   /** Open a standalone iModel file.
    * @param filePath The path of the standalone iModel file.
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
+   * @param options Optional parameters controlling how the file is opened. Pass `openAsInMemoryCopy: true`
+   * to open a private, writable in-memory copy of the file instead of the file on disk; changes made to the
+   * copy are not written back to `filePath`.
    * @throws [[IModelError]] if the file is not a standalone iModel.
    * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
    */

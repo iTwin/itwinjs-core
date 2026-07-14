@@ -9,6 +9,7 @@ publish: false
   - [Electron 43 support](#electron-43-support)
   - [@itwin/core-backend](#itwincore-backend)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
+    - [In-memory iModels](#in-memory-imodels)
 
 ## Quantity formatting
 
@@ -60,3 +61,19 @@ while (reader.step()) { /* ... */ }
 | InMemoryCache | 10,000 | 2.213 | 1.402 | 36.6% |
 | SqliteBackedCache | 1,000 | 0.399 | 0.207 | 48.1% |
 | SqliteBackedCache | 10,000 | 3.342 | 1.981 | 40.7% |
+
+### In-memory iModels
+
+iModels can now be created and opened entirely in memory, backed by a shared-cache SQLite database rather than a file on disk. This is useful for scratch, throw-away workflows that don't need to persist to disk. In-memory iModels exist only for the lifetime of the connection and are discarded when the iModel is closed.
+
+- Pass an empty string or `":memory:"` as the file name to [SnapshotDb.createEmpty]($backend) or [StandaloneDb.createEmpty]($backend) to create an in-memory iModel. [Concurrent query]($docs/learning/backend/ExecutingECSQL.md) and EC Presentation work against these iModels.
+- Pass `openAsInMemoryCopy: true` in the options to [StandaloneDb.openFile]($backend) (via the new [SnapshotOpenOptions.openAsInMemoryCopy]($common) property) to open a private, writable in-memory copy of an on-disk iModel. Changes made to the copy are *not* written back to the source file.
+
+```ts
+// Create an in-memory iModel.
+const memDb = StandaloneDb.createEmpty("", { rootSubject: { name: "scratch" }, enableTransactions: true });
+
+// Open a writable, throw-away in-memory copy of an existing file without modifying it.
+const copyDb = StandaloneDb.openFile("existing.bim", OpenMode.ReadWrite, { openAsInMemoryCopy: true });
+```
+
