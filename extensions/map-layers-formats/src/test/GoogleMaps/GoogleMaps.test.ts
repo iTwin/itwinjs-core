@@ -175,6 +175,35 @@ describe("GoogleMapsProvider", () => {
     expect(table.innerHTML).to.includes(`<p class="logo-cards">fake copyright</p>`);
   });
 
+  it("should dedupe overlapping attribution lines", async () => {
+    fakeJsonFetch(sandbox, defaultPngSession);
+    const settings = GoogleMaps.createBaseLayerSettings(createSessionOptions2);
+
+    sandbox.stub(GoogleMapsImageryProvider.prototype as any, "getSelectedTiles").callsFake(function _(_vp: unknown) {
+      const set = new Set<MapTile>();
+      set.add(new FakeMapTile("17_37981_49592"));
+      return set;
+    });
+
+    // Two viewport-info responses sharing a common provider; the shared line must appear only once,
+    // even when it is a substring of an already-recorded line (e.g. differing only by leading whitespace).
+    sandbox.stub(GoogleMapsImageryProvider.prototype as any, "fetchAttributions").callsFake(async function _() {
+      return ["Google, Airbus Imagery", "Airbus Imagery, Maxar"];
+    });
+
+    sinon.stub(IModelApp, 'publicPath').get(() => 'public/');
+
+    const provider = createProvider(settings);
+
+    await provider.initialize();
+    const table = document.createElement('table');
+    await provider.addAttributions(table, {} as ScreenViewport);
+
+    // "Airbus Imagery" (from the second response) is a substring of the already-recorded " Airbus Imagery"
+    // and must be skipped; the remaining lines keep their original order and <br> separators.
+    expect(table.innerHTML).to.includes(`<p class="logo-cards">Google<br> Airbus Imagery<br> Maxar</p>`);
+  });
+
   it("logo should be activated with the 'dark outline' logo", async () => {
     fakeJsonFetch(sandbox, defaultPngSession);
     const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {

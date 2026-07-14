@@ -174,6 +174,30 @@ export class MapLayerFormatRegistry {
     }
     this._trustedCredentialsOrigins = normalized;
   }
+
+  /** Returns true if a request to the given URL may be retried with browser credentials included
+   * (i.e. SSO / Windows Authentication) after an NTLM or Negotiate http 401 challenge.
+   * Always true unless [[restrictCredentialsToTrustedOrigins]] is enabled (opt-in).
+   * When enabled, the URL's origin must be explicitly listed in [[trustedCredentialsOrigins]];
+   * unlike basic-auth, the settings-URL origin is NOT implicitly trusted because SSO shares the user's
+   * ambient identity, and map-layer URLs may originate from untrusted user input.
+   * @internal
+   */
+  public isSsoAllowed(url: string): boolean {
+    if (!this.restrictCredentialsToTrustedOrigins)
+      return true;
+
+    let origin: string;
+    try {
+      origin = new URL(url).origin;
+    } catch {
+      return false;
+    }
+
+    // Entries are normalized to their origin by the [[trustedCredentialsOrigins]] setter.
+    return this._trustedCredentialsOrigins.includes(origin);
+  }
+
   private _formats = new Map<string, MapLayerFormatEntry>();
 
   public isRegistered(formatId: string) { return this._formats.get(formatId) !== undefined; }

@@ -6,7 +6,7 @@
  * @module MapLayers
  */
 
-import { assert, BeEvent } from "@itwin/core-bentley";
+import { assert, BeEvent, Logger } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
@@ -21,6 +21,12 @@ import { DecorateContext } from "../../ViewContext";
 const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
 const doDebugToolTips = false;
+const loggerCategory = "MapLayerImageryProvider";
+
+/** Escapes HTML metacharacters so the text renders literally when assigned to `innerHTML`. */
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
 
 /** The status of the map layer imagery provider that lets you know if authentication is needed to request tiles.
  * @public
@@ -28,6 +34,12 @@ const doDebugToolTips = false;
 export enum MapLayerImageryProviderStatus {
   Valid,
   RequireAuth,
+  /** A request received an authentication challenge, but credentials were withheld because the request origin
+   * is not trusted (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]).
+   * The blocked origins are available via [[MapLayerImageryProvider.blockedOrigins]].
+   * @beta
+   */
+  UntrustedOrigin,
 }
 
 /** @internal */
@@ -57,7 +69,48 @@ export abstract class MapLayerImageryProvider {
   private _status = MapLayerImageryProviderStatus.Valid;
 
   /** @internal */
-  protected _includeUserCredentials = false;
+  private readonly _blockedOrigins = new Set<string>();
+
+  /** Origins of requests for which credentials were withheld because they are not trusted
+   * (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]).
+   * Populated when [[status]] transitions to [[MapLayerImageryProviderStatus.UntrustedOrigin]];
+   * [[onStatusChanged]] is raised again each time a new origin is added. Cleared by [[resetStatus]].
+   * @beta
+   */
+  public get blockedOrigins(): ReadonlyArray<string> { return [...this._blockedOrigins]; }
+
+  /** Origins for which a previous SSO handshake (i.e. Windows Authentication) succeeded.
+   * Browser credentials are only included for subsequent requests targeting these origins,
+   * so that a successful handshake with one host does not leak credentials to other hosts
+   * this provider may contact.
+   * @internal
+   */
+  private readonly _ssoSucceededOrigins = new Set<string>();
+
+  /** Origins for which a "credentials sent to untrusted origin" warning was already logged;
+   * used to log the telemetry warning only once per origin.
+   * @internal
+   */
+  private readonly _untrustedUseLogged = new Set<string>();
+
+  /** Returns true if browser credentials should be included for the given URL because a previous
+   * SSO handshake succeeded for its origin.
+   * @internal
+   */
+  protected includeUserCredentials(url: string): boolean {
+    const origin = MapLayerImageryProvider.tryGetOrigin(url);
+    return origin !== undefined && this._ssoSucceededOrigins.has(origin);
+  }
+
+  /** Records that an SSO handshake succeeded for the given URL's origin, so subsequent requests
+   * to that origin include browser credentials without going through another 401 challenge.
+   * @internal
+   */
+  protected recordSsoSucceeded(url: string): void {
+    const origin = MapLayerImageryProvider.tryGetOrigin(url);
+    if (origin !== undefined)
+      this._ssoSucceededOrigins.add(origin);
+  }
 
   /** @internal */
   protected readonly onFirstRequestCompleted = new BeEvent<() => void>();
@@ -78,7 +131,17 @@ export abstract class MapLayerImageryProvider {
    */
   public get supportsMapFeatureInfo(): boolean { return false; }
 
-  public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid); }
+  /** Reset the provider's status to [[MapLayerImageryProviderStatus.Valid]] and clear the list of
+   * [[blockedOrigins]] accumulated while in the [[MapLayerImageryProviderStatus.UntrustedOrigin]] state.
+   * Raises [[onStatusChanged]] if the status actually changes.
+   * Typically called after the user has provided credentials or the application has updated
+   * [[MapLayerFormatRegistry.trustedCredentialsOrigins]], so that subsequent requests are re-attempted.
+   * @beta
+   */
+  public resetStatus() {
+    this._blockedOrigins.clear();
+    this.setStatus(MapLayerImageryProviderStatus.Valid);
+  }
 
   /** @internal */
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
@@ -294,11 +357,8 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected matchesSettingsUrlOrigin(url: string): boolean {
-    try {
-      return new URL(url).origin === new URL(this._settings.url).origin;
-    } catch {
-      return false;
-    }
+    const origin = MapLayerImageryProvider.tryGetOrigin(url);
+    return origin !== undefined && origin === MapLayerImageryProvider.tryGetOrigin(this._settings.url);
   }
 
   /** Returns the origin of the given URL, or undefined if it cannot be parsed.
@@ -333,20 +393,11 @@ export abstract class MapLayerImageryProvider {
 
   /** Returns true if a request to the given URL may be retried with browser credentials included
    * (i.e. SSO / Windows Authentication) after an NTLM or Negotiate http 401 challenge.
-   * Always true unless [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (opt-in).
-   * When enabled, the origin must be explicitly listed in [[MapLayerFormatRegistry.trustedCredentialsOrigins]];
-   * unlike basic-auth, the settings-URL origin is NOT implicitly trusted because SSO shares the user's
-   * ambient identity, and map-layer URLs may originate from untrusted user input.
+   * See [[MapLayerFormatRegistry.isSsoAllowed]].
    * @internal
    */
   protected isSsoAllowed(url: string): boolean {
-    if (!IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins)
-      return true;
-
-    const origin = MapLayerImageryProvider.tryGetOrigin(url);
-
-    // Entries are normalized to their origin by the [[MapLayerFormatRegistry.trustedCredentialsOrigins]] setter.
-    return origin !== undefined && IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins.includes(origin);
+    return IModelApp.mapLayerFormatRegistry.isSsoAllowed(url);
   }
 
   /** @internal */
@@ -372,6 +423,41 @@ export abstract class MapLayerImageryProvider {
     return response;
   }
 
+  /** Records the given URL's origin and transitions the status to [[MapLayerImageryProviderStatus.UntrustedOrigin]].
+   * Called when a request received an authentication challenge that could not be answered because the origin
+   * is not trusted (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]).
+   * Raises [[onStatusChanged]] on the status transition, and again whenever a new origin is added.
+   * @internal
+   */
+  protected reportBlockedOrigin(url: string): void {
+    const origin = MapLayerImageryProvider.tryGetOrigin(url) ?? url;
+    const isNewOrigin = !this._blockedOrigins.has(origin);
+    this._blockedOrigins.add(origin);
+
+    if (this._status !== MapLayerImageryProviderStatus.UntrustedOrigin)
+      this.setStatus(MapLayerImageryProviderStatus.UntrustedOrigin);
+    else if (isNewOrigin)
+      this.onStatusChanged.raiseEvent(this);   // status unchanged, but a new origin was blocked
+  }
+
+  /** Logs a warning (once per origin) when credentials are sent to an origin that would be blocked
+   * if [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] were enabled.
+   * Helps applications discover the origins they need to whitelist before opting in to the restriction.
+   * @internal
+   */
+  protected logUntrustedOriginUse(url: string): void {
+    if (IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins)
+      return;   // restriction active; nothing to preview
+
+    const origin = MapLayerImageryProvider.tryGetOrigin(url) ?? url;
+    if (this._untrustedUseLogged.has(origin) || IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins.includes(origin))
+      return;
+
+    this._untrustedUseLogged.add(origin);
+    Logger.logWarning(loggerCategory, `Credentials sent to origin '${origin}' which is not in MapLayerFormatRegistry.trustedCredentialsOrigins; `
+      + "this request would be blocked if restrictCredentialsToTrustedOrigins were enabled.");
+  }
+
   /** @internal */
   public async makeRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
 
@@ -379,21 +465,29 @@ export abstract class MapLayerImageryProvider {
 
     let headers: Headers | undefined;
     let hasCreds = false;
+    let credsWithheld = false;
     if (authorization) {
       headers = new Headers();
       headers.set("Authorization", authorization);
-    } else if (this._settings.userName && this._settings.password && this.isCredentialsSharingAllowed(url)) {
+    } else if (this._settings.userName && this._settings.password) {
       // When origin restrictions are enabled, authorization is inferred from the map-layer settings only
       // when the request URL shares the same origin as the settings URL, to avoid leaking the credentials
       // to third-party hosts.
-      hasCreds = true;
-      headers = new Headers();
-      this.setRequestAuthorization(headers);
+      if (this.isCredentialsSharingAllowed(url)) {
+        hasCreds = true;
+        headers = new Headers();
+        this.setRequestAuthorization(headers);
+        if (!this.matchesSettingsUrlOrigin(url))
+          this.logUntrustedOriginUse(url);
+      } else {
+        credsWithheld = true;
+      }
     }
+    const includeCredentials = this.includeUserCredentials(url);
     const opts: RequestInit = {
       method: "GET",
       headers,
-      credentials: this._includeUserCredentials ? "include" : undefined,
+      credentials: includeCredentials ? "include" : undefined,
     };
 
     if (timeoutMs !== undefined)
@@ -403,19 +497,29 @@ export abstract class MapLayerImageryProvider {
 
     if (response.status === 401
           && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
-          && !this._includeUserCredentials
+          && !includeCredentials
           && !hasCreds
-          && this.isSsoAllowed(url)
     ) {
-      // Removed the previous headers and make sure "include" credentials is set
-      opts.headers = undefined;
-      opts.credentials = "include";
+      if (this.isSsoAllowed(url)) {
+        // Removed the previous headers and make sure "include" credentials is set
+        opts.headers = undefined;
+        opts.credentials = "include";
+        this.logUntrustedOriginUse(url);
 
-      // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-      response = await fetch(url,  opts);
-      if (response.status === 200) {
-        this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
+        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
+        response = await fetch(url,  opts);
+        if (response.status === 200) {
+          this.recordSsoSucceeded(url);    // avoid going through 401 challenges over and over for this origin
+        }
+      } else {
+        // The SSO retry was suppressed because the origin is not trusted; report it so the application
+        // can surface the blocked origin to the user.
+        this.reportBlockedOrigin(url);
       }
+    } else if (response.status === 401 && credsWithheld) {
+      // The server rejected the request and the stored basic-auth credentials were withheld because the
+      // origin is not trusted; report it so the application can surface the blocked origin to the user.
+      this.reportBlockedOrigin(url);
     }
 
     return response;
@@ -458,8 +562,9 @@ export abstract class MapLayerImageryProvider {
     // When origin restrictions are enabled, authorization is inferred from the map-layer settings only
     // when the request URL shares the same origin as the settings URL, to avoid leaking the credentials
     // to third-party hosts.
+    const trustedOrigin = this.isCredentialsSharingAllowed(url);
     let headers: Headers | undefined;
-    if (this.isCredentialsSharingAllowed(url)) {
+    if (trustedOrigin) {
       headers = new Headers();
       this.setRequestAuthorization(headers);
     }
@@ -468,10 +573,16 @@ export abstract class MapLayerImageryProvider {
       const response = await fetch(url, {
         method: "GET",
         headers,
-        credentials: this._includeUserCredentials && this.isSsoAllowed(url) ? "include" : undefined,
+        credentials: this.includeUserCredentials(url) && this.isSsoAllowed(url) ? "include" : undefined,
       });
-      const text = await response.text();
-      if (undefined !== text) {
+      let text = await response.text();
+      if (text) {
+        // Tooltip content (e.g. WMS GetFeatureInfo responses) is rendered as HTML downstream and may
+        // deliberately contain markup; only origins trusted for credentials (the settings-URL origin or
+        // an entry of [[MapLayerFormatRegistry.trustedCredentialsOrigins]]) are also trusted to supply
+        // markup. Text from other origins is escaped so it renders literally.
+        if (!trustedOrigin)
+          text = escapeHtml(text);
         strings.push(text);
       }
     } catch {

@@ -179,6 +179,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, and the WEBGL_debug_shaders extension is supported, collect debug info during shader compilation. See the `dta output shaders` key-in.
 * IMJS_WINDOW_SIZE
   * If defined, a comma-separated startup size for the electron application window as `width,height`.
+* IMJS_AUTH_SERVER_ALLOWLIST
+  * Electron only. If defined, a comma-separated list of servers for which Chromium is allowed to perform integrated authentication (Kerberos/NTLM SSO), e.g. `*.example.com`. Without this, Chromium silently ignores `Negotiate`/`NTLM` challenges from servers outside the intranet zone and map layer SSO fails with HTTP 401.
 * IMJS_ALWAYS_LOAD_EDGES
   * If defined, when requesting tile content, edges will always be requested regardless of view settings.
 * IMJS_SUBDIVIDE_INCOMPLETE

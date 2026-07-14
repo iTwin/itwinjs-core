@@ -113,13 +113,20 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
     let response: Response|undefined;
     try {
-      response = await fetch(urlObj, {...options, credentials: this._includeUserCredentials ?  "include" : undefined});
+      response = await fetch(urlObj, {...options, credentials: this.includeUserCredentials(urlObj.toString()) ?  "include" : undefined});
 
       if (response.status === 401 && !this._lastAccessToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-      // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(urlObj, {...options, credentials: "include" });
-        if (response.status === 200) {
-          this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
+        if (this.isSsoAllowed(urlObj.toString())) {
+          // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
+          this.logUntrustedOriginUse(urlObj.toString());
+          response = await fetch(urlObj, {...options, credentials: "include" });
+          if (response.status === 200) {
+            this.recordSsoSucceeded(urlObj.toString());    // avoid going through 401 challenges over and over for this origin
+          }
+        } else {
+          // The SSO retry was suppressed because the origin is not trusted; report it so the application
+          // can surface the blocked origin to the user.
+          this.reportBlockedOrigin(urlObj.toString());
         }
       }
 

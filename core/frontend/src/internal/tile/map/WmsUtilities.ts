@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { IModelApp } from "../../../IModelApp";
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
 import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
 
@@ -30,7 +31,8 @@ export class WmsUtilities {
     }
 
     let response = await fetch(url, { method: "GET", headers });
-    if (!credentials && response.status === 401 && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
+    if (!credentials && response.status === 401 && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
+      && IModelApp.mapLayerFormatRegistry.isSsoAllowed(url)) {
     // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication)
       response = await fetch(url, { method: "GET", credentials: "include" });
     }

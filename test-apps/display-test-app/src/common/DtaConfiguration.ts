@@ -60,6 +60,7 @@ export interface DtaStringConfiguration {
   oidcScope?: string; // default is undefined, used for auth setup
   oidcRedirectUri?: string; // default is undefined, used for auth setup
   frontendTilesUrlTemplate?: string; // if set, specifies url for @itwin/frontend-tiles to obtain tile trees for spatial views.  See README.md
+  authServerAllowlist?: string; // default is undefined; comma-separated list of servers for which Chromium may perform integrated authentication (Kerberos/NTLM SSO), e.g. "*.example.com". Electron only.
 }
 
 export interface DtaNumberConfiguration {
@@ -104,6 +105,7 @@ export const getConfig = (): DtaConfiguration => {
   configuration.viewName = process.env.IMJS_STANDALONE_VIEWNAME; // optional
   configuration.startupMacro = process.env.IMJS_STARTUP_MACRO;
   configuration.frontendTilesUrlTemplate = process.env.IMJS_FRONTEND_TILES_URL_TEMPLATE;
+  configuration.authServerAllowlist = process.env.IMJS_AUTH_SERVER_ALLOWLIST;
 
   if (undefined !== process.env.IMJS_DISABLE_DIAGNOSTICS)
     configuration.enableDiagnostics = false;

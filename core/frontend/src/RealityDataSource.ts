@@ -14,7 +14,7 @@ import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlIm
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
 import { RealityDataSourceGoogle3dTilesImpl } from "./internal/RealityDataSourceGoogle3dTilesImpl";
-import { IModelApp, logoCardNoticeClassName } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 import { getCopyrights, GoogleMapsDecorator } from "./internal/GoogleMapsDecorator";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
@@ -360,18 +360,13 @@ export class Google3dTilesProvider implements RealityDataSourceProvider {
       // See https://developers.google.com/maps/documentation/tile/create-renderer#display-attributions
       const sortedCopyrights = [...copyrightMap.entries()].sort((a, b) => b[1] - a[1]);
 
-      // Copyright entries are server-provided; build the notice from DOM text nodes so they are never parsed as HTML.
-      const notice = document.createElement("p");
-      notice.className = logoCardNoticeClassName;
-      notice.appendChild(document.createTextNode("Data provided by:"));
-      notice.appendChild(document.createElement("br"));
+      // Copyright entries are server-provided; noticeLines renders strings as text, never parsed as HTML.
       const list = document.createElement("ul");
       for (const [key] of sortedCopyrights) {
         const item = document.createElement("li");
         item.textContent = key;
         list.appendChild(item);
       }
-      notice.appendChild(list);
 
       const iconSrc = document.createElement("img");
       iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray.svg`;
@@ -381,7 +376,7 @@ export class Google3dTilesProvider implements RealityDataSourceProvider {
         iconSrc,
         iconWidth: 98,
         heading: "Google Photorealistic 3D Tiles",
-        notice
+        noticeLines: ["Data provided by:", list],
       }));
     }
   }
