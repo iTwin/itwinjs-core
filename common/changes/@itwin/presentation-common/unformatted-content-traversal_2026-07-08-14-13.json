@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Content traversal (`createContentTraverser`, `traverseContent`, `traverseContentItem`) now supports content retrieved with `omitFormattedValues: true`, correctly traversing array and struct properties even when display values are not present.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

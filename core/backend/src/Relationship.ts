@@ -7,8 +7,7 @@
  */
 
 import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
-import { ECSqlStatement } from "./ECSqlStatement";
+import { EntityReferenceSet, IModelError, QueryBinder, QueryRowFormat, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
@@ -594,18 +593,15 @@ export class Relationships {
   public tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
     let props: T | undefined;
     if (typeof criteria === "string") {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
-        stmt.bindId(1, criteria);
-        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
-      });
+      props = this._iModel.withQueryReader(`SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`, (reader): T | undefined => {
+        return reader.step() ? { ...reader.current.toRow() } as T : undefined;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+      }, new QueryBinder().bindId(1, criteria), { rowFormat: QueryRowFormat.UseJsPropertyNames });
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, (stmt: ECSqlStatement) => {
-        stmt.bindId(1, criteria.sourceId);
-        stmt.bindId(2, criteria.targetId);
-        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
-      });
+      props = this._iModel.withQueryReader(`SELECT * FROM ${relClassFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, (reader): T | undefined => {
+        return reader.step() ? { ...reader.current.toRow() } as T : undefined;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+      }, new QueryBinder().bindId(1, criteria.sourceId).bindId(2, criteria.targetId), { rowFormat: QueryRowFormat.UseJsPropertyNames });
     }
     if (undefined !== props) {
       props.classFullName = (props as any).className.replace(".", ":");

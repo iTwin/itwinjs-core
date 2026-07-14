@@ -15,6 +15,7 @@ import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitCon
 import { QuantityLoggerCategory } from "./QuantityLoggerCategory";
 import { ParserSpec } from "./ParserSpec";
 import { applyConversion, Quantity } from "./Quantity";
+import { Phenomena } from "./generated/Units.generated";
 
 /** Possible parser errors
  * @beta
@@ -777,15 +778,18 @@ export class Parser {
     return this.parseAndProcessTokens(inString, format, unitsConversions);
   }
 
-  /** The value of special direction is always in degrees, try to find the unit conversion for that. */
+  /** The value of special direction is always in degrees; resolve "degrees" relative to
+   * `spec.outUnit`'s phenomenon, since `Units.ARC_DEG` only exists in the `Units.ANGLE` family. */
   private static processSpecialBearingDirection(mag: number, spec: ParserSpec): QuantityParseResult {
-    const specialDirUnit = spec.unitConversions.find((unitConversion) => unitConversion.name === "Units.ARC_DEG");
+    const degreeUnitName = spec.outUnit.phenomenon === Phenomena.HORIZONTAL_DIRECTION ? "Units.HORIZONTAL_DIR_ARC_DEG" : "Units.ARC_DEG";
+    const specialDirUnit = spec.unitConversions.find((unitConversion) => unitConversion.name === degreeUnitName);
     if (!specialDirUnit)
       return { ok: false, error: ParseError.UnknownUnit };
     const preferredUnit = spec.outUnit;
     const conversion = this.tryFindUnitConversion(specialDirUnit.label, spec.unitConversions, preferredUnit);
     if (!conversion) return { ok: true, value: mag };
-    return { ok: true, value: applyConversion(mag, conversion) };
+    const revolution = this.getRevolution(spec);
+    return { ok: true, value: this.convertAzimuthToPersistenceConvention(applyConversion(mag, conversion), spec, revolution) };
   }
 
   private static parseBearingFormat(inString: string, spec: ParserSpec): QuantityParseResult {
@@ -866,6 +870,7 @@ export class Parser {
       }
     }
     magnitude = this.normalizeAngle(magnitude, revolution);
+    magnitude = this.convertAzimuthToPersistenceConvention(magnitude, spec, revolution);
 
     return { ok: true, value: magnitude };
   }
@@ -896,6 +901,8 @@ export class Parser {
 
     if (inputIsClockwise && azimuthBase === 0) {
       // parsed result already has the same base and orientation as our desired output
+      if (spec.outUnit.phenomenon === Phenomena.ANGLE)
+        return { ok: true, value: this.convertAzimuthToPersistenceConvention(magnitude, spec, revolution) };
       return parsedResult;
     }
 
@@ -905,6 +912,7 @@ export class Parser {
       magnitude = azimuthBase - magnitude;
 
     magnitude = this.normalizeAngle(magnitude, revolution);
+    magnitude = this.convertAzimuthToPersistenceConvention(magnitude, spec, revolution);
 
     return { ok: true, value: magnitude };
   }
@@ -1065,6 +1073,17 @@ export class Parser {
     }
 
     return converted.magnitude;
+  }
+
+  /** Converts an azimuth-convention magnitude back to a raw math angle when `spec.outUnit` is
+   * `ANGLE`-phenomenon (mirrors the transform in `Formatter.processBearingAndAzimuth`). No-op for
+   * `HORIZONTAL_DIRECTION`, which is already a true azimuth. */
+  private static convertAzimuthToPersistenceConvention(magnitude: number, spec: ParserSpec, revolution: number): number {
+    if (spec.outUnit.phenomenon !== Phenomena.ANGLE)
+      return magnitude;
+
+    const quarterRevolution = revolution / 4;
+    return this.normalizeAngle(quarterRevolution - magnitude, revolution);
   }
 
   private static parseAndProcessTokens(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
