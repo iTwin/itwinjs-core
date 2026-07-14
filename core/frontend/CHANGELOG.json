@@ -2,6 +2,66 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.11.2",
+      "tag": "@itwin/core-frontend_v5.11.2",
+      "date": "Fri, 10 Jul 2026 12:20:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.11.1",
+      "tag": "@itwin/core-frontend_v5.11.1",
+      "date": "Wed, 08 Jul 2026 19:03:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.11.0",
+      "tag": "@itwin/core-frontend_v5.11.0",
+      "date": "Fri, 03 Jul 2026 13:05:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add CesiumAccessClient interface to allow applications to plug in custom Cesium Ion authentication, with CesiumIonClient as the built-in fallback."
+          },
+          {
+            "comment": "Stop clearing SubCategoriesCache on subcategory insert; reload instead"
+          },
+          {
+            "comment": "QuantityTypeFormatsProvider.getFormat now honors the requested UnitSystemKey instead of always using the active system, and QuantityFormatter.getSpecsByName accepts an optional options argument to query a non-active unit system."
+          },
+          {
+            "comment": "ECSqlReader now returns no rows instead of throwing when an IModelConnection is closed before query iteration."
+          },
+          {
+            "comment": "Deprecate legacy quantity description classes and add createQuantityDescription as the migration path for tool settings and other appui-based property flows, with guidance for the SurveyLengthDescription exception."
+          },
+          {
+            "comment": "Move focus Home after installing LookAndMoveTool so keyboard navigation works through the existing focus handling."
+          },
+          {
+            "comment": "NativeApp.startup now always reports the initial connectivity to the backend. Previously, if if `window.navigator.onLine` was false at startup, setConnectivity was never called, leaving the backend incorrectly assuming it was online."
+          },
+          {
+            "comment": "Added `GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold` to configure the world-space coordinate magnitude (default 10km) beyond which graphics for elements modified during the scope use `rtcCenter` centering instead of absolute float32 positions, preventing precision artifacts like jagged curves for projects far from the coordinate system origin."
+          },
+          {
+            "comment": "Fixed non-planar globe map tiles disappearing in narrow top-down views by using tile surface corners & max projected tile size to determine LOD."
+          },
+          {
+            "comment": "Reality model tiles whose content is plain-text JSON glTF (a `.gltf` file) are now rendered, with their externally-referenced textures (e.g. `.webp` images) resolved against the tile's content URL. Previously such tiles were silently discarded, or rendered untextured/white."
+          },
+          {
+            "comment": "Remove dormant internal Azure Maps imagery provider code from core frontend."
+          },
+          {
+            "comment": "Deprecate Bing Maps imagery format and provider. `MapLayerOptions.BingMaps` is retained (non-deprecated) for elevation and location services."
+          },
+          {
+            "comment": "Deprecate BingElevationProvider and BingLocationProvider; add ElevationProvider, GeoidProvider, and LocationProvider interfaces"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.10.3",
       "tag": "@itwin/core-frontend_v5.10.3",
       "date": "Tue, 16 Jun 2026 12:58:32 GMT",

@@ -1,6 +1,24 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2026 12:22:07 GMT and should not be manually modified.
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- extract-api.js now checks the standard CI env var (in addition to TF_BUILD) so api-extractor runs in strict CI mode on GitHub Actions and other standard CI platforms without requiring a separate git-diff assertion step
+- Made mocha an optional peer dependency so it is no longer a direct dependency of @itwin/build-tools, removing its vulnerable transitive dependencies from the package's direct dependency closure for consumers that do not use the mocha reporter.
 
 ## 5.10.3
 Tue, 16 Jun 2026 12:58:32 GMT

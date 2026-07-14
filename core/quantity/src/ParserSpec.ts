@@ -103,6 +103,9 @@ export class ParserSpec {
    *  @param format     The format specification.
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
    *  @param outUnit The unit a value will be formatted to. This unit is often referred to as persistence unit.
+   *  @note For Bearing/Azimuth formats, `outUnit`'s phenomenon must match `format.azimuthBaseUnit`/`format.revolutionUnit`.
+   *  @see BaseFormat.azimuthBaseUnit
+   *  @see BaseFormat.revolutionUnit
    */
   public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<ParserSpec> {
     let conversions: UnitConversionSpec[];
