@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/hypermodeling-frontend",
-      "comment": "",
+      "comment": "Stop using deprecated QueryRowFormat.UseJsPropertyNames in SectionDrawingLocationState ECSQL queries.",
       "type": "none"
     }
   ],

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-rpcinterface-impl",
-      "comment": "",
+      "comment": "Stop using deprecated QueryRowFormat.UseJsPropertyNames in ECSchemaRpcImpl ECSQL queries.",
       "type": "none"
     }
   ],

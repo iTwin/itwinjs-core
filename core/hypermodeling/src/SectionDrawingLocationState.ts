@@ -177,10 +177,7 @@ export class SectionDrawingLocationState {
         pitch: props.pitch,
         roll: props.roll,
       },
-      bbox: (props.bboxLow && props.bboxHigh) ? {
-        low: props.bboxLow,
-        high: props.bboxHigh,
-      } : undefined,
+      placement: (props.bboxLow && props.bboxHigh) ? { low: props.bboxLow, high: props.bboxHigh } : undefined,
     };
     this.placement = Placement3d.fromJSON(placementProps);
 

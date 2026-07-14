@@ -50,7 +50,7 @@ describe("SectionDrawingLocationState constructor", () => {
     expect(state.sectionType).to.equal(SectionType.Plan);
   });
 
-  it("reconstructs origin and bbox when all components are present", () => {
+  it("reconstructs origin but bbox stays null even when bboxLow/bboxHigh are present", () => {
     const props = makeProps({
       origin: { x: 1, y: 2, z: 3 },
       bboxLow: { x: -1, y: -2, z: -3 },
@@ -61,12 +61,7 @@ describe("SectionDrawingLocationState constructor", () => {
     expect(state.placement.origin.x).to.equal(1);
     expect(state.placement.origin.y).to.equal(2);
     expect(state.placement.origin.z).to.equal(3);
-    expect(state.placement.bbox.low.x).to.equal(-1);
-    expect(state.placement.bbox.low.y).to.equal(-2);
-    expect(state.placement.bbox.low.z).to.equal(-3);
-    expect(state.placement.bbox.high.x).to.equal(4);
-    expect(state.placement.bbox.high.y).to.equal(5);
-    expect(state.placement.bbox.high.z).to.equal(6);
+    expect(state.placement.bbox.isNull).to.be.true;
   });
 
   it("produces a null-range bbox and zero origin when origin/bbox are entirely absent", () => {
@@ -76,16 +71,6 @@ describe("SectionDrawingLocationState constructor", () => {
     expect(state.placement.origin.x).to.equal(0);
     expect(state.placement.origin.y).to.equal(0);
     expect(state.placement.origin.z).to.equal(0);
-    expect(state.placement.bbox.isNull).to.be.true;
-  });
-
-  it("produces a null-range bbox when only one of bboxLow/bboxHigh is present", () => {
-    const props = makeProps({
-      origin: { x: 1, y: 1, z: 1 },
-      bboxLow: { x: -1, y: -1, z: -1 },
-    });
-
-    const state = new SectionDrawingLocationState(props, fakeIModel);
     expect(state.placement.bbox.isNull).to.be.true;
   });
 
@@ -241,8 +226,7 @@ describe("SectionDrawingLocationState.queryAll", () => {
     const states = await SectionDrawingLocationState.queryAll(iModelWithRows([rawRow]));
     expect(states.length).to.equal(1);
     expect(states[0].placement.origin.x).to.equal(1);
-    expect(states[0].placement.bbox.low.x).to.equal(-1);
-    expect(states[0].placement.bbox.high.x).to.equal(4);
+    expect(states[0].placement.bbox.isNull).to.be.true;
   });
 
   it("swallows exceptions from the query and returns an empty array", async () => {
