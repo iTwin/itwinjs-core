@@ -13,11 +13,6 @@ name: Notify imodel-native of release
 on:
   release:
     types: [published]
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: "Release tag to process (e.g. release/5.11.0)"
-        required: true
 
 jobs:
   dispatch:
@@ -28,15 +23,15 @@ jobs:
 
     # Only run for minor/major releases (tag matches release/X.Y.0 pattern)
     if: >-
-      startsWith(github.event.inputs.tag_name || github.event.release.tag_name, 'release/')
-      && endsWith(github.event.inputs.tag_name || github.event.release.tag_name, '.0')
-      && (github.event.release.prerelease == false || github.event_name == 'workflow_dispatch')
+      startsWith(github.event.release.tag_name, 'release/')
+      && endsWith(github.event.release.tag_name, '.0')
+      && github.event.release.prerelease == false
 
     steps:
       - name: Extract version info
         id: version
         env:
-          TAG: ${{ github.event.inputs.tag_name || github.event.release.tag_name }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
           # Tag format is "release/X.Y.Z" — strip the "release/" prefix
           VERSION="${TAG#release/}"
@@ -56,8 +51,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
           NEXT_DEV_VERSION: ${{ steps.version.outputs.next_dev_version }}
-          TAG: ${{ github.event.inputs.tag_name || github.event.release.tag_name }}
-          RELEASE_URL: ${{ github.event.release.html_url || '' }}
+          TAG: ${{ github.event.release.tag_name }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
         run: |
           gh api repos/iTwin/imodel-native/dispatches \
             --method POST \
