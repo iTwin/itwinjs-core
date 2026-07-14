@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/frontend-devtools",
-      "comment": "Stop using deprecated QueryRowFormat.UseJsPropertyNames in SourceAspectIdTools ECSQL queries.",
+      "comment": "Stopped using deprecated QueryRowFormat.UseJsPropertyNames in SourceAspectIdTools ECSQL queries.",
       "type": "none"
     }
   ],

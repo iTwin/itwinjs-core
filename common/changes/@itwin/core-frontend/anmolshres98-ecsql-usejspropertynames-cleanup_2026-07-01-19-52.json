@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Stop using deprecated QueryRowFormat.UseJsPropertyNames in DrawingViewState, IModelConnection, and ViewCreator2d ECSQL queries.",
+      "comment": "Stopped using deprecated QueryRowFormat.UseJsPropertyNames in DrawingViewState, IModelConnection, and ViewCreator2d ECSQL queries.",
       "type": "none"
     }
   ],
