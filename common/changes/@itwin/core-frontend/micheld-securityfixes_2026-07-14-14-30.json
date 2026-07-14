@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Map-layer security hardening: opt-in origin restriction for map-layer credentials via MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins and trustedCredentialsOrigins (basic-auth is scoped to the layer's settings-URL origin or whitelisted origins; SSO/Windows-Authentication retries require an explicitly whitelisted origin); new MapLayerImageryProviderStatus.UntrustedOrigin and MapLayerImageryProvider.blockedOrigins report requests blocked by the restriction; server-provided attribution and tooltip text is no longer rendered as HTML; IModelApp.makeLogoCard gains a noticeLines option that renders strings as plain text.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
