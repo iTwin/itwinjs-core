@@ -10,6 +10,11 @@ import { BackendTestCallbacks } from "../common/SideChannels";
 import { currentEnvironment } from "./_Setup.test";
 import type { IpcInvokeReturn } from "@itwin/core-common";
 
+interface MyITwinError extends ITwinError {
+  foo: number;
+  nested: { bar: string };
+}
+
 if (ProcessDetector.isElectronAppFrontend) {
   describe("IpcApp/IpcHost (Electron)", () => {
     before(() => {
@@ -30,11 +35,6 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     describe("forwards frontend-thrown error details to backend", () => {
-      interface MyITwinError extends ITwinError {
-        foo: number;
-        nested: { bar: string };
-      }
-
       class TestErrorIpcHandler extends IpcHandler {
         public get channelName() { return "ipc-app-error-forwarding-test"; }
 
@@ -111,8 +111,6 @@ if (ProcessDetector.isElectronAppFrontend) {
         assert.deepEqual(bentley.loggingMetadata, { foo: 42, nested: { bar: "bar" } });
       });
 
-      // Drives the call through IpcHost.makeIpcProxy so the backend rebuilds the thrown error,
-      // and returns the backend's view of the reconstructed error.
       const invokeViaProxyAndGetErrorInfo = async (methodName: string) => {
         const responseChannel = `test-proxy-error-channel-${methodName}`;
         const response = new Promise<any>((resolve) => {
@@ -184,11 +182,19 @@ if (ProcessDetector.isElectronAppFrontend) {
       }
     });
 
-    describe("forwards frontend-thrown error details to backend via makeIpcProxy (websocket)", () => {
+    describe("forwards frontend-thrown error details to backend (websocket)", () => {
       class WsErrorIpcHandler extends IpcHandler {
         public get channelName() { return "ipc-app-ws-error-forwarding-test"; }
 
+        // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
+        public async throwDumbString() { throw "failed"; }
+        // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
+        public async throwDumbObj() { throw { error: "failed" }; }
         public async throwBasicError() { throw new Error("basic"); }
+        public async throwITwinBasic() { throw ITwinError.create({ iTwinErrorId: { scope: "s", key: "k" }, message: "m" }); }
+        public async throwITwinCustom() {
+          throw ITwinError.create<MyITwinError>({ iTwinErrorId: { scope: "s", key: "k" }, message: "m", foo: 42, nested: { bar: "bar" } });
+        }
         public async throwBentleyError() {
           throw new BentleyError(IModelStatus.NotFound, "m", () => ({ foo: 42, nested: { bar: "bar" } }));
         }
@@ -204,6 +210,66 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       after(() => {
         remove?.();
+      });
+
+      const invokeAndGetError = async (methodName: string) => {
+        const callbackResult = await executeBackendCallback(BackendTestCallbacks.invokeIpcApp, "ipc-app-ws-error-forwarding-test", methodName);
+        assert.exists(callbackResult.error, "expected the invoke to resolve with a serialized error envelope");
+        return callbackResult.error;
+      };
+
+      it("forwards thrown string (websocket)", async () => {
+        if (!isWebsocketEnvironment())
+          return;
+
+        assert.equal(await invokeAndGetError("throwDumbString"), "failed");
+      });
+
+      it("forwards thrown object (websocket)", async () => {
+        if (!isWebsocketEnvironment())
+          return;
+
+        const dumbObj = await invokeAndGetError("throwDumbObj");
+        assert.equal(dumbObj.error, "failed");
+      });
+
+      it("forwards Error message and stack (websocket)", async () => {
+        if (!isWebsocketEnvironment())
+          return;
+
+        const basic = await invokeAndGetError("throwBasicError");
+        assert.equal(basic.message, "basic");
+        assert.isString(basic.stack);
+      });
+
+      it("forwards ITwinError identity (websocket)", async () => {
+        if (!isWebsocketEnvironment())
+          return;
+
+        const itwinBasic = await invokeAndGetError("throwITwinBasic");
+        assert.equal(itwinBasic.message, "m");
+        assert.isTrue(ITwinError.isError(itwinBasic, "s", "k"));
+      });
+
+      it("forwards custom ITwinError fields (websocket)", async () => {
+        if (!isWebsocketEnvironment())
+          return;
+
+        const itwinCustom = await invokeAndGetError("throwITwinCustom") as MyITwinError;
+        assert.equal(itwinCustom.message, "m");
+        assert.isTrue(ITwinError.isError<MyITwinError>(itwinCustom, "s", "k"));
+        assert.equal(itwinCustom.foo, 42);
+        assert.deepEqual(itwinCustom.nested, { bar: "bar" });
+      });
+
+      it("forwards BentleyError metadata (websocket)", async () => {
+        if (!isWebsocketEnvironment())
+          return;
+
+        const bentley = await invokeAndGetError("throwBentleyError");
+        assert.equal(bentley.message, "m");
+        assert.isTrue(BentleyError.isError(bentley, IModelStatus.NotFound));
+        assert.deepEqual(bentley.loggingMetadata, { foo: 42, nested: { bar: "bar" } });
       });
 
       const invokeViaProxyAndGetErrorInfo = async (methodName: string) => {

@@ -19,6 +19,8 @@ interface MockIpcInterface {
   throwErrorWithMixedArray: () => never;
   throwErrorWithNestedArrayProperty: () => never;
   throwBentleyErrorWithMapMetaData: () => never;
+  throwBentleyErrorWithSetMetaData: () => never;
+  throwErrorWithSelfReferencingArray: () => never;
 }
 
 class OuterError extends Error {
@@ -106,6 +108,18 @@ class MockIpcHandler extends IpcHandler implements MockIpcInterface {
 
   public throwBentleyErrorWithMapMetaData(): never {
     throw new BentleyError(IModelStatus.BadArg, "bentley-map-meta", new Map([["detail", "map-value"]]));
+  }
+
+  public throwBentleyErrorWithSetMetaData(): never {
+    throw new BentleyError(IModelStatus.BadArg, "bentley-set-meta", new Set(["tag1", "tag2"]));
+  }
+
+  public throwErrorWithSelfReferencingArray(): never {
+    const err = new Error("self-referencing-array") as any;
+    const arr: any[] = [];
+    arr.push(arr); // array that contains itself
+    err.items = arr;
+    throw err;
   }
 
   #privateFunction(): void { }
@@ -286,12 +300,25 @@ describe("IpcHost", () => {
       expect(error.matrix).to.deep.equal([[1, 2], [3, 4]]);
     });
 
-    it("should preserve loggingMetadata even when it is not a plain-object literal", async () => {
+    it("should not infinitely recurse on a self-referencing array", async () => {
+      const ipcReturn = await handler(undefined, "throwErrorWithSelfReferencingArray");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("self-referencing-array");
+      expect(error.items[0]).to.be.undefined; // cycle detected: dropped rather than recursing forever
+    });
+
+    it("should normalize Map-valued loggingMetadata to a JSON-safe plain object (survives every transport)", async () => {
       const ipcReturn = await handler(undefined, "throwBentleyErrorWithMapMetaData");
       const error = ipcReturn.error as any;
       expect(error.message).to.equal("bentley-map-meta");
-      expect(error.loggingMetadata).to.be.instanceOf(Map);
-      expect(error.loggingMetadata.get("detail")).to.equal("map-value");
+      expect(error.loggingMetadata).to.deep.equal({ detail: "map-value" });
+    });
+
+    it("should normalize Set-valued loggingMetadata to a JSON-safe array (survives every transport)", async () => {
+      const ipcReturn = await handler(undefined, "throwBentleyErrorWithSetMetaData");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("bentley-set-meta");
+      expect(error.loggingMetadata).to.deep.equal(["tag1", "tag2"]);
     });
   });
 

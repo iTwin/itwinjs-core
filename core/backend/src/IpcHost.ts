@@ -103,7 +103,6 @@ export class IpcHost {
     // Electron has no main->renderer `invoke` (see https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-3-main-to-renderer),
     // so we synthesize request/response from the universally-available `send`/`addListener` primitives: push the request via
     // `send` together with a unique per-request response channel, and resolve when the frontend handler replies on that channel.
-    // This works across all transports (Electron, mobile, web sockets) without changing any `@public` IpcSocket interface.
     const requestId = ++this._nextInvokeId % Number.MAX_SAFE_INTEGER;
     const responseChannel = iTwinChannel(`${channel}-invoke_response-${requestId}`);
 
