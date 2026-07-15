@@ -117,39 +117,50 @@ describe("SQLiteDb", () => {
       target.closeDb();
     });
 
-    it("should fail if applying a changeset produces a conflict", () => {
+    it("should fail if applying a changeset produces a conflict, without applying any of its changes", () => {
       const baseFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-base.db");
       const sourceFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-conflict-source.db");
       const targetFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-conflict-target.db");
       const changesetFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-2.changeset");
 
-      // create a common base db with one row, then clone it so source and target start out identical
+      // create a common base db with two rows, then clone it so source and target start out identical
       const base = new SQLiteDb();
       base.createDb(baseFileName, undefined, { rawSQLite: true });
       base.executeSQL("CREATE TABLE test1(id INTEGER PRIMARY KEY,val TEXT)");
-      base.executeSQL(`INSERT INTO test1(id,val) VALUES (1,'base')`);
+      base.executeSQL(`INSERT INTO test1(id,val) VALUES (1,'base1')`);
+      base.executeSQL(`INSERT INTO test1(id,val) VALUES (2,'base2')`);
       base.saveChanges();
       base.closeDb();
 
       IModelJsFs.copySync(baseFileName, sourceFileName);
       IModelJsFs.copySync(baseFileName, targetFileName);
 
-      // diverge source: update the row and capture that as a changeset
+      // diverge source: update both rows and capture that as a single changeset. Only the second row will
+      // conflict with target's divergence below - the first row's change would apply cleanly on its own.
       const source = new SQLiteDb();
       source.openDb(sourceFileName, { openMode: OpenMode.ReadWrite, rawSQLite: true });
       source.startChangeTracking();
-      source.executeSQL(`UPDATE test1 SET val='fromSource' WHERE id=1`);
+      source.executeSQL(`UPDATE test1 SET val='fromSource1' WHERE id=1`);
+      source.executeSQL(`UPDATE test1 SET val='fromSource2' WHERE id=2`);
       source.saveChanges();
       source.createChangeset(changesetFileName);
       source.closeDb();
 
-      // diverge target independently, so applying source's changeset conflicts with target's row
+      // diverge target independently - only on the second row - so applying source's changeset conflicts partway through
       const target = new SQLiteDb();
       target.openDb(targetFileName, { openMode: OpenMode.ReadWrite, rawSQLite: true });
-      target.executeSQL(`UPDATE test1 SET val='fromTarget' WHERE id=1`);
+      target.executeSQL(`UPDATE test1 SET val='fromTarget2' WHERE id=2`);
       target.saveChanges();
 
+      // confirm the pre-apply baseline: id=1 was never touched by target, id=2 diverged from source
+      expect(readRows(target, "test1")).deep.equal([{ id: 1, val: "base1" }, { id: 2, val: "fromTarget2" }]);
+
       expect(() => target.applyChangeset(changesetFileName)).throws();
+
+      // the apply must be all-or-nothing: even though the first row's change didn't conflict, it must not have
+      // been applied, since the changeset as a whole failed
+      expect(readRows(target, "test1")).deep.equal([{ id: 1, val: "base1" }, { id: 2, val: "fromTarget2" }]);
+
       target.closeDb();
     });
   });
