@@ -5,8 +5,8 @@
       "name": "audit",
       "commandKind": "global",
       "summary": "Runs pnpm audit for the entire monorepo",
-      "description": "Scans the entire monorepo for security vulnerabilities via npm audit",
-      "shellCommand": "npx -y pnpm@11 audit --audit-level high --dir common/temp"
+      "description": "Scans the entire monorepo for security vulnerabilities via pnpm audit",
+      "shellCommand": "npx -y pnpm@11.13.0 audit --audit-level high --dir common/temp"
     },
     {
       "name": "fix-copyrights",
