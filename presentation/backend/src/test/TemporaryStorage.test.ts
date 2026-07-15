@@ -98,6 +98,68 @@ describe("TemporaryStorage", () => {
     });
   });
 
+  describe("`maxValues` eviction", () => {
+    it("doesn't evict when `maxValues` is not specified", () => {
+      using storage = new TemporaryStorage<string>({});
+      ["a", "b", "c"].forEach((v) => storage.addValue(v, v));
+      expect(storage.values).to.deep.eq(["a", "b", "c"]);
+    });
+
+    it("doesn't evict when `maxValues` is less than 1", () => {
+      using storage = new TemporaryStorage<string>({ maxValues: 0 });
+      ["a", "b", "c"].forEach((v) => storage.addValue(v, v));
+      expect(storage.values).to.deep.eq(["a", "b", "c"]);
+    });
+
+    it("evicts least-recently-used value when exceeding `maxValues`", () => {
+      const cleanupHandler = sinon.spy();
+      using storage = new TemporaryStorage<string>({ maxValues: 2, cleanupHandler });
+
+      storage.addValue("a", "A");
+      clock.tick(1);
+      storage.addValue("b", "B");
+      clock.tick(1);
+      // adding a third value should evict the least-recently-used ("a")
+      storage.addValue("c", "C");
+
+      expect(storage.values).to.deep.eq(["B", "C"]);
+      expect(cleanupHandler).to.be.calledOnceWithExactly("a", "A", "eviction");
+    });
+
+    it("doesn't evict a value that was recently used", () => {
+      using storage = new TemporaryStorage<string>({ maxValues: 2 });
+
+      storage.addValue("a", "A");
+      clock.tick(1);
+      storage.addValue("b", "B");
+      clock.tick(1);
+      // touch "a" so it's no longer the least-recently-used
+      storage.getValue("a");
+      clock.tick(1);
+      storage.addValue("c", "C");
+
+      expect(storage.values).to.deep.eq(["A", "C"]);
+    });
+
+    it("evicts through `FactoryBasedTemporaryStorage.getValue`", () => {
+      const cleanupHandler = sinon.spy();
+      using storage = new FactoryBasedTemporaryStorage<string>({
+        factory: (id) => id.toUpperCase(),
+        maxValues: 2,
+        cleanupHandler,
+      });
+
+      storage.getValue("a");
+      clock.tick(1);
+      storage.getValue("b");
+      clock.tick(1);
+      storage.getValue("c");
+
+      expect(storage.values).to.deep.eq(["B", "C"]);
+      expect(cleanupHandler).to.be.calledOnceWithExactly("a", "A", "eviction");
+    });
+  });
+
   describe("getValue", () => {
     it("returns undefined if value does not exist", () => {
       const storage = new TemporaryStorage<string>({});

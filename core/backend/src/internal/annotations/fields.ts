@@ -9,6 +9,7 @@ import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
@@ -58,17 +59,22 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
 
   const isAspect = ecClass.isSync("ElementAspect", "BisCore");
   const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=:elementId`;
+  // `propertyName` may itself be a struct/array/point/navigation property, so its value can't be
+  // decomposed into scalar sub-columns ahead of time. Query using the non-deprecated
+  // UseECSqlPropertyNames format and reshape the value into the legacy UseJsPropertyNames shape using
+  // ECSchema metadata (see ECSqlInstanceReshaper for why a naive, non-schema-aware rename isn't safe here).
   let curValue: FieldValueType | undefined = iModel.withQueryReader(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} ${where}`, (reader): FieldValueType | undefined => {
     if (!reader.step()) {
       return undefined;
     }
 
-    const rootValue = reader.current[0];
-    if (undefined === rootValue) {
+    const rawRootValue = reader.current[0];
+    if (undefined === rawRootValue) {
       return undefined;
     }
 
     ecProp = expectDefined(ecProp);
+    const rootValue = reshapePropertyValue(rawRootValue, ecProp, iModel);
     if (ecProp.isArray()) {
       return ecProp.isStruct() ? { structArray: rootValue } : { primitiveArray: rootValue };
     }
@@ -85,8 +91,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
 
     return undefined;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  }, new QueryBinder().bindId("elementId", host.elementId), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+  }, new QueryBinder().bindId("elementId", host.elementId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
 
   if (undefined === curValue) {
     return undefined;
