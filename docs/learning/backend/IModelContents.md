@@ -43,23 +43,23 @@ This section discusses data types that warrant special consideration before deci
 
 ### Components from Catalogs
 
-An infrastructure model contains many components.
-Some of those components are standard and come from catalogs.
-Once the component is *placed*, its type definition (that correspond to its catalog entry) clearly belongs in the iModel.
-The general guidance is to also persist type definitions for those component that are likely to be placed in the iModel over the course of the project.
+An infrastructure model may use standard components from a catalog.
+Once a component is placed, its type definition belongs in the iModel.
+In general, also persist the type definitions for components that are likely to be placed during the project.
 
 This has the following benefits:
 
-- Changes to definitions are change tracked along with the infrastructure model
-- Relationships can be formed to these definitions
-- Less ambiguity regarding the component's type
-- Supports offline workflows
-- Component handling is more consistent regardless of whether it originated from a catalog or not.
+- Changes to definitions are tracked with the infrastructure model.
+- Other elements can form relationships to the definitions.
+- The component's type remains unambiguous.
+- The definitions remain available offline.
+- Applications can handle components consistently, whether or not they came from a catalog.
 
-The special consideration arises for large catalogs where only a small portion of its contents may be relevant to the iModel.
-In those cases, only a subset of the catalog's type definitions should be imported.
+For a large catalog, import only the definitions that are relevant to the iModel.
 
-> Note: These component type definitions should have a provenance link to the original catalog to enable checking for catalog updates.
+> Note: Applications should give these component type definitions a provenance link to the original catalog if they need to check for catalog updates.
+
+> See [Catalogs](./Catalogs.md) for how applications can organize reusable definitions in a catalog iModel. `CatalogDb` does not copy or synchronize definitions. The application must create and maintain provenance links, for example with [ExternalSourceAspect](../../bis/domains/Provenance-in-BIS.md#externalsourceaspect).
 
 ### Standard Definitions
 
