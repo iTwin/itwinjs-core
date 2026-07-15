@@ -5,7 +5,7 @@
 
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ArcGISMapLayerImageryProvider, BingMapsImageryLayerProvider, RealityModelTileTree, RealityTreeReference } from "../../../tile/internal";
+import { ArcGISMapLayerImageryProvider, BingMapsImageryLayerProvider, MapLayerTileTreeReference, OrbitGtTreeReference, RealityModelTileTree, RealityTreeReference } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
 import { HitDetail } from "../../../HitDetail";
@@ -92,5 +92,36 @@ describe("Map layer attribution XSS hardening", () => {
     expect(tooltip.textContent).toContain("<script>");
     // Line separators are created from code and must still be real elements.
     expect(tooltip.querySelectorAll("br").length).toBeGreaterThan(0);
+  });
+
+  it("OrbitGT point cloud tooltip renders the user-supplied model name as plain text", async () => {
+    const iModel = {};
+    const ref = Object.create(OrbitGtTreeReference.prototype);
+    ref._name = xssPayload;
+    Object.defineProperty(ref, "treeOwner", { value: { tileTree: { iModel } } });
+
+    const hit = { iModel } as unknown as HitDetail;
+    const tooltip = await ref.getToolTip(hit) as HTMLElement;
+
+    expect(tooltip.querySelector("img[src='x']")).toBeNull();
+    expect(tooltip.querySelector("img[onerror]")).toBeNull();
+    expect(tooltip.querySelector("script")).toBeNull();
+    expect(tooltip.textContent).toContain(`<img src="x" onerror="(window.__xss = true)">`);
+    expect(tooltip.querySelectorAll("br")).toHaveLength(1);
+  });
+
+  it("map layer tooltip renders the user-supplied layer name as plain text", async () => {
+    const iModel = {};
+    const ref = Object.create(MapLayerTileTreeReference.prototype);
+    ref._layerSettings = { name: xssPayload };
+    Object.defineProperty(ref, "treeOwner", { value: { tileTree: { iModel, modelId: "0x1" } } });
+
+    const hit = { iModel, sourceId: "0x1" } as unknown as HitDetail;
+    const tooltip = await ref.getToolTip(hit) as HTMLElement;
+
+    expect(tooltip.querySelector("img[src='x']")).toBeNull();
+    expect(tooltip.querySelector("img[onerror]")).toBeNull();
+    expect(tooltip.querySelector("script")).toBeNull();
+    expect(tooltip.textContent).toContain(`Map Layer: ${xssPayload}`);
   });
 });
