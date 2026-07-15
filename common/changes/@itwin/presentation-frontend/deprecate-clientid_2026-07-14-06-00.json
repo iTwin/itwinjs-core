@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Deprecated `PresentationManagerProps.clientId`. It is no longer used and has no effect: the backend now keys `PresentationManager` instances by the authenticated user (web deployments) or uses a single shared manager (IPC apps) instead of by a caller-supplied `clientId`. The value is still sent to the backend for backwards compatibility with older backends.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}
