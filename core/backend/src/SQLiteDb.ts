@@ -184,6 +184,48 @@ export class SQLiteDb {
   }
 
   /**
+   * Apply a changeset file - in the same on-disk format used for iModel changesets - to this SQLiteDb.
+   * Unlike `BriefcaseDb.pullChanges`, this does *not* validate the changeset header (e.g. parentId/changesetId)
+   * against the current state of the database - it simply applies the changes it contains. If applying the
+   * changeset encounters any conflict, the entire operation fails and throws (conflicts are never resolved
+   * automatically).
+   * @param changesetFile the local file name of the changeset to apply.
+   * @internal
+   */
+  public applyChangeset(changesetFile: LocalFileName): void {
+    this[_nativeDb].applyChangeset(changesetFile);
+  }
+
+  /**
+   * Begin capturing DDL and data changes made to this SQLiteDb, so they may later be saved via [[createChangeset]].
+   * Intended only to produce changeset files for testing [[applyChangeset]] - not for any other purpose.
+   * @internal
+   */
+  public startChangeTracking(): void {
+    this[_nativeDb].startChangeTracking();
+  }
+
+  /**
+   * Execute a DDL statement (e.g. `CREATE TABLE`) so that, if change tracking is active (see [[startChangeTracking]]),
+   * the DDL is captured for inclusion in the changeset produced by [[createChangeset]]. DDL executed via [[executeSQL]]
+   * is *not* captured for change tracking purposes.
+   * @internal
+   */
+  public executeDdl(ddl: string): void {
+    this[_nativeDb].executeDdl(ddl);
+  }
+
+  /**
+   * Write out the changes captured since [[startChangeTracking]] was called to a changeset file, in the same
+   * on-disk format used for iModel changesets.
+   * @param changesetFile the local file name to write the changeset to.
+   * @internal
+   */
+  public createChangeset(changesetFile: LocalFileName): void {
+    this[_nativeDb].createChangeset(changesetFile);
+  }
+
+  /**
    * Use a prepared SQL statement, potentially from the statement cache. If the requested statement doesn't exist
    * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
    * in the statement cache so it can be reused in the future. Use this method for SQL statements that will be
