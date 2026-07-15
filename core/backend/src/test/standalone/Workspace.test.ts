@@ -174,6 +174,24 @@ describe("WorkspaceFile", () => {
     compareFiles(inFile2, outFile);
   });
 
+  it("rejects unsafe file resource extensions", async () => {
+    const wsFile = await makeEditableDb({ containerId: "unsafe-file-ext", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "unsafe file extension test" });
+    const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
+    const fileRscName = "unsafe-extension";
+
+    try {
+      for (const fileExt of ["../outside", "..\\outside", "safe\0unsafe"])
+        expect(() => wsFile.addFile(fileRscName, inFile, fileExt), fileExt).to.throw("file extension may not contain path separators or NUL characters");
+
+      expect(wsFile.sqliteDb[_nativeDb].queryEmbeddedFile(fileRscName)).to.be.undefined;
+
+      wsFile.addFile(fileRscName, inFile, ".archive.tar.gz");
+      expect(wsFile.sqliteDb[_nativeDb].queryEmbeddedFile(fileRscName)?.fileExt).equals("archive.tar.gz");
+    } finally {
+      wsFile.close();
+    }
+  });
+
   it("stamps lastEditedAt and lastEditedBy when closing an editable WorkspaceDb during a write-lock session", async () => {
     const clock = sinon.useFakeTimers(Date.parse("2026-05-12T16:05:00.000Z"));
     const wsFile = await makeEditableDb({ containerId: "last-edited-at-test", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "last edited at test" });

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Prevent unsafe WorkspaceDb file extensions from escaping the local cache directory.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
