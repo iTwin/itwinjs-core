@@ -10,9 +10,10 @@ There are 3 `WorkspaceResourceType`s that may be accessed by `@itwin-backend` ap
 
  1. `string` accessed via the `getString` method
  2. `blob`  binary data accessed via the `getBlob` method
- 3. `file`  extracted to a local file via the `getFile` method
+ 3. `file`  extracted to a local file via the deprecated `getFile` method (retained for existing resources)
 
 Several `WorkspaceEditor` commands require a `--type` argument to specify which `WorkspaceResourceType` to use.
+Use `string` or `blob` for new resources so applications can access their contents directly from the `WorkspaceDb`. The `file` type remains available for existing workflows that require a local file path.
 
 ## The WorkspaceContainer Directory
 
@@ -137,13 +138,15 @@ Add one or more local files as resources into a `WorkspaceDb`.
 `--type` specifies the type of resource(s) to add. Required
 
 > Note: `--rscName`  is only applicable when adding a single file.
+>
+> The `file` resource type is deprecated. Use `blob` for binary file contents or `string` for text.
 
 Examples:
 
 ```sh
-> WorkspaceEditor add proj --rscName=equipment-data --type=file r:\data\equip.dat
+> WorkspaceEditor add proj --rscName=equipment-data --type=blob r:\data\equip.dat
 WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
- added "r:/data/equip.dat" as file resource [equipment-data]
+ added "r:/data/equip.dat" as blob resource [equipment-data]
 
 > WorkspaceEditor add proj --type=string --root=r:\json *
 WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
@@ -479,7 +482,7 @@ Assume a file called `importAll.txt` contains:
 # Create a new local WorkspaceDb file and import resources into it
 
 createDb proj # create a new blank WorkspaceDb
-add proj --rscName=equipment-data --type=file r:\data\equip.dat # add file
+add proj --rscName=equipment-data --type=blob r:\data\equip.dat # add binary data
 add proj --type=string --root=r:\json * # add strings
 add proj --type=blob --root=r:\dict **\*.dict # add blob
 listDb proj # so we can tell it worked
@@ -491,7 +494,7 @@ run `importAll.txt` as an @ script using `local.json` as config:
 > WorkspaceEditor @importAll.txt --config=r:\local.json
 created WorkspaceDb r:\workspaces\proj112\proj.itwin-workspace
 WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
- added "r:/data/equip.dat" as file resource [equipment-data]
+ added "r:/data/equip.dat" as blob resource [equipment-data]
 WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
  added "r:\json\contracts.json" as string resource [contracts.json]
  added "r:\json\firecode.json" as string resource [firecode.json]

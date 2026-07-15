@@ -38,7 +38,8 @@ function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
 }
 
 function isSafeFileExtension(fileExt: string): boolean {
-  return !fileExt.includes("/") && !fileExt.includes("\\") && !fileExt.includes("\0");
+  const invalidChars = "<>:\"/\\|?*";
+  return !Array.from(fileExt).some((char) => invalidChars.includes(char) || char.charCodeAt(0) < 0x20);
 }
 
 /** file extension for local WorkspaceDbs */
@@ -781,7 +782,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
     if (!isSafeFileExtension(fileExt))
-      WorkspaceError.throwError("invalid-name", { message: "file extension may not contain path separators or NUL characters" });
+      WorkspaceError.throwError("invalid-name", { message: "file extension contains characters that are invalid in file names" });
     this.sqliteDb[_nativeDb].embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
   }
   public updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void {

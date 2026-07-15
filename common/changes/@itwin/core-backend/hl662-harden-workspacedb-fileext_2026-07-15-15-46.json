@@ -2,7 +2,12 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Prevent unsafe WorkspaceDb file extensions from escaping the local cache directory.",
+      "comment": "Prevent unsafe WorkspaceDb file extensions from escaping the local cache directory and deprecate file resource APIs in favor of blobs or strings.",
+      "type": "none"
+    },
+    {
+      "packageName": "@itwin/workspace-editor",
+      "comment": "Warn when deprecated file resource commands are used and recommend blobs or strings for new resources.",
       "type": "none"
     }
   ],
