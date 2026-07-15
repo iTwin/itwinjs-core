@@ -279,6 +279,38 @@ describe("MapLayerImageryProvider authorization", () => {
     expect(crossOriginOpts.credentials).toBeUndefined();
   });
 
+  it("stops including SSO credentials when enforcement is enabled after a legacy handshake", async () => {
+    // Handshake succeeds while enforcement is off — latch is recorded for the origin.
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
+    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValue(okResponse());
+
+    const provider = createProvider();
+    await provider.makeRequest(crossOriginUrl);
+    expect((fetchMock.mock.calls[1][1] as RequestInit).credentials).toEqual("include");
+
+    // Enabling enforcement (origin not whitelisted) must invalidate the latch: the current
+    // policy is re-checked on every request, not only at handshake time.
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    await provider.makeRequest(crossOriginUrl);
+    const opts = fetchMock.mock.calls[2][1] as RequestInit;
+    expect(opts.credentials).toBeUndefined();
+  });
+
+  it("stops including SSO credentials when the origin is removed from the whitelist after a handshake", async () => {
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://other.example.org"];
+    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValue(okResponse());
+
+    const provider = createProvider();
+    await provider.makeRequest(crossOriginUrl);   // validated handshake latches the origin
+    expect((fetchMock.mock.calls[1][1] as RequestInit).credentials).toEqual("include");
+
+    // Revoking trust must take effect immediately despite the recorded handshake.
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = [];
+    await provider.makeRequest(crossOriginUrl);
+    const opts = fetchMock.mock.calls[2][1] as RequestInit;
+    expect(opts.credentials).toBeUndefined();
+  });
+
   it("normalizes whitelist entries to their origin and ignores invalid ones", () => {
     IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = [
       "https://tiles.example.com/some/path?query=1",

@@ -94,12 +94,15 @@ export abstract class MapLayerImageryProvider {
   private readonly _untrustedUseLogged = new Set<string>();
 
   /** Returns true if browser credentials should be included for the given URL because a previous
-   * SSO handshake succeeded for its origin.
+   * SSO handshake succeeded for its origin AND the origin is still allowed by the current policy
+   * (see [[MapLayerFormatRegistry.isSsoAllowed]]). Re-checking the policy ensures a handshake recorded
+   * while enforcement was disabled — or before an origin was removed from
+   * [[MapLayerFormatRegistry.trustedCredentialsOrigins]] — does not keep latching credentials on.
    * @internal
    */
   protected includeUserCredentials(url: string): boolean {
     const origin = MapLayerImageryProvider.tryGetOrigin(url);
-    return origin !== undefined && this._ssoSucceededOrigins.has(origin);
+    return origin !== undefined && this._ssoSucceededOrigins.has(origin) && this.isSsoAllowed(url);
   }
 
   /** Records that an SSO handshake succeeded for the given URL's origin, so subsequent requests
@@ -573,7 +576,8 @@ export abstract class MapLayerImageryProvider {
       const response = await fetch(url, {
         method: "GET",
         headers,
-        credentials: this.includeUserCredentials(url) && this.isSsoAllowed(url) ? "include" : undefined,
+        // includeUserCredentials re-checks the current trust policy, not just the handshake latch.
+        credentials: this.includeUserCredentials(url) ? "include" : undefined,
       });
       let text = await response.text();
       if (text) {
