@@ -101,13 +101,21 @@ export interface FormatProps {
   /** The base value for azimuth, specified from east counter-clockwise. */
   readonly azimuthBase?: number;
 
-  /** The name of the unit for the azimuth base value. Required if azimuthBase is set. */
+  /** The name of the unit for the azimuth base value. Required if azimuthBase is set.
+   * @note Must share the same phenomenon as the persistence unit the Format/FormatterSpec/ParserSpec is used with (e.g. a `Units.HORIZONTAL_DIRECTION`
+   * unit for a `Units.HORIZONTAL_DIRECTION` persistence unit, or a `Units.ANGLE` unit for a `Units.ANGLE` persistence unit) - the units provider
+   * cannot convert between different phenomena, so a mismatch will fail to resolve.
+   */
   readonly azimuthBaseUnit?: string;
 
   /** If set to true, azimuth values are returned counter-clockwise from the base. */
   readonly azimuthCounterClockwise?: boolean;
 
-  /** The name of the unit that represents a revolution/perigon. Required for bearing or azimuth types. */
+  /** The name of the unit that represents a revolution/perigon. Required for bearing or azimuth types.
+   * @note Must share the same phenomenon as the persistence unit the Format/FormatterSpec/ParserSpec is used with (e.g. `Units.HORIZONTAL_DIR_REVOLUTION`
+   * for a `Units.HORIZONTAL_DIRECTION` persistence unit, or `Units.REVOLUTION` for a `Units.ANGLE` persistence unit) - the units provider cannot
+   * convert between different phenomena, so a mismatch will fail to resolve.
+   */
   readonly revolutionUnit?: string;
 
   /** Enables calculating mathematic operations during parsing; only addition and subtraction are supported. */

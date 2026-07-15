@@ -33,7 +33,7 @@ import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
 import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { DisableNativeAssertions } from "../TestUtils";
+import { DisableNativeAssertions, TestUtils } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
 import { _cache, _hubAccess, _instanceKeyCache } from "../../internal/Symbols";
@@ -77,6 +77,12 @@ describe("iModel", () => {
   before(async () => {
     originalEnv = { ...process.env };
 
+    // Several tests in this suite (ECEF location, geolocation, and coordinate reprojection) rely on
+    // GCS data loaded from cloud workspaces, so restart the backend with GCS workspaces enabled
+    // (the test harness disables them by default to avoid network calls).
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend({ loadGcsWorkspaces: true });
+
     IModelTestUtils.registerTestBimSchema();
     imodel1 = await generateTestSnapshot("test.bim", "test.bim");
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
@@ -85,13 +91,17 @@ describe("iModel", () => {
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
   });
 
-  after(() => {
+  after(async () => {
     process.env = originalEnv;
     imodel1.close();
     imodel2.close();
     imodel3.close();
     imodel4.close();
     imodel5.close();
+
+    // Restore the default test backend so subsequent test suites aren't left with GCS enabled.
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
   });
 
   afterEach(() => {
@@ -2521,6 +2531,10 @@ describe("iModel", () => {
     const element2 = db.elements.getElementProps(id2);
     expect(element2).to.not.equal(element1);
 
+    // Exercise the ECSqlStatement cache directly - nothing in the normal insert/read path above uses it anymore.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    db.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { });
+
     // Make sure that the statement caches are not cleared
     expect((db as any)._sqliteStatementCache.size).to.be.greaterThan(0);
     expect((db as any)._statementCache.size).to.be.greaterThan(0);
@@ -2545,6 +2559,9 @@ describe("iModel", () => {
     const id = txn.insertElement(props);
     db.elements.getElementProps(id);
     db.models.getModelProps(IModel.dictionaryId);
+    // Exercise the ECSqlStatement cache directly - nothing in the normal insert/read path above uses it anymore.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    db.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { });
 
     expect(db.elements[_cache].size).to.be.greaterThan(0);
     expect(db.models[_cache].size).to.be.greaterThan(0);
@@ -3500,7 +3517,7 @@ describe("iModel", () => {
     testImodel.close();
     assert.isFalse(testImodel.isOpen);
 
-    const closedDbError = "Cannot query a closed Db";
+    const closedDbError = "db not open";
     expect(() => testImodel.withPreparedSqliteStatement("SELECT 1", () => { })).to.throw(closedDbError);
     expect(() => testImodel.withPreparedSqliteStatement("SELECT 1", () => { })).to.throw(closedDbError);
     expect(() => testImodel.prepareSqliteStatement("SELECT 1")).to.throw(closedDbError);
@@ -3509,8 +3526,8 @@ describe("iModel", () => {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testImodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { })).to.throw(closedDbError);
     expect(() => testImodel.elements.queryChildren(IModel.rootSubjectId)).to.throw(closedDbError);
-    expect(() => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass")).to.throw("db is not open");
-    expect(() => testImodel.createQueryReader("SELECT 1")).to.throw("db not open");
+    expect(() => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass")).to.throw(closedDbError);
+    expect(() => testImodel.createQueryReader("SELECT 1")).to.throw(closedDbError);
   });
 
   describe("Delete relationship instances", () => {

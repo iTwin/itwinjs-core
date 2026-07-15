@@ -8,6 +8,8 @@ The root of any domain is an *ECSchema* itself.
 
 - **[ECSchema XML](./ec-schema-xml.md)** is the XML representation used to persist and interchange ECSchema metadata.
 
+- **[ECSchema JSON](./ec-schema-json.md)** is the JSON representation of the same metadata, including the standalone SchemaItem JSON form.
+
 ECSchemas cannot contain other ECSchemas but they can reference ECSchemas:
 
 - **ECSchemaReference** is a member of an ECSchema that expresses a reference another ECSchema. ECSchemaReferences are necessary when an ECSchema contains items that depend on the referenced ECSchema in some way (e.g., its ECClasses subclass from ECClasses in the referenced ECSchema.)

@@ -2,6 +2,36 @@
   "name": "@itwin/core-bentley",
   "entries": [
     {
+      "version": "5.11.2",
+      "tag": "@itwin/core-bentley_v5.11.2",
+      "date": "Fri, 10 Jul 2026 12:20:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.11.1",
+      "tag": "@itwin/core-bentley_v5.11.1",
+      "date": "Wed, 08 Jul 2026 19:03:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.11.0",
+      "tag": "@itwin/core-bentley_v5.11.0",
+      "date": "Fri, 03 Jul 2026 13:05:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added `CompressedId64Set.isValid` type guard to test whether a value is a valid `CompressedId64Set`."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.10.3",
+      "tag": "@itwin/core-bentley_v5.10.3",
+      "date": "Tue, 16 Jun 2026 12:58:32 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.10.2",
       "tag": "@itwin/core-bentley_v5.10.2",
       "date": "Thu, 11 Jun 2026 21:09:38 GMT",

@@ -1,6 +1,26 @@
 # Change Log - @itwin/analytical-backend
 
-This log was last generated on Thu, 11 Jun 2026 21:11:10 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2026 12:22:07 GMT and should not be manually modified.
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+_Version update only_
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+_Version update only_
 
 ## 5.10.2
 Thu, 11 Jun 2026 21:09:38 GMT

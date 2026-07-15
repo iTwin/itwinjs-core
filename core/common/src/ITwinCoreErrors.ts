@@ -161,6 +161,7 @@ export namespace ITwinSettingsError {
   export const scope = "itwin-settings";
   export type Key =
     "failed-to-obtain-container-token" |
+    "missing-container-itwinid" |
     "multiple-itwin-settings-containers" |
     "no-cloud-container" |
     "blob-service-unavailable" |
@@ -274,6 +275,31 @@ export namespace ServerBasedLocksError {
     ITwinError.throwError<ITwinError>({ iTwinErrorId: { scope, key }, message });
   }
   /** Determine whether an error object is a ServerBasedLocksError */
+  export function isError(error: unknown, key?: Key): error is ITwinError {
+    return ITwinError.isError<ITwinError>(error, scope, key);
+  }
+}
+
+/** Errors originating from element operations such as [EditTxn.changeElementParent]($backend) and
+ * [EditTxn.changeElementModel]($backend).
+ * @beta
+ */
+export namespace ElementError {
+  /** the ITwinError scope for `ElementError`s. */
+  export const scope = "itwin-Element";
+
+  /** Keys that identify `ElementError`s */
+  export type Key =
+    /** The element's model type does not match the expected model type for the operation */
+    "model-type-mismatch" |
+    /** Invalid arguments were provided to an element operation */
+    "invalid-arguments";
+
+  /** Instantiate and throw an ElementError */
+  export function throwError(key: Key, message: string): never {
+    ITwinError.throwError<ITwinError>({ iTwinErrorId: { scope, key }, message });
+  }
+  /** Determine whether an error object is an ElementError */
   export function isError(error: unknown, key?: Key): error is ITwinError {
     return ITwinError.isError<ITwinError>(error, scope, key);
   }

@@ -16,6 +16,16 @@
       "shellCommand": "node common/scripts/copyright-linter.js --fix"
     },
     {
+      "name": "generate-artifacts",
+      "commandKind": "bulk",
+      "summary": "Runs package generators that produce checked-in artifacts",
+      "description": "Iterates through each package in the monorepo and runs the 'generate-artifacts' script for packages that produce checked-in generated artifacts.",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
       "name": "clean",
       "commandKind": "bulk",
       "summary": "Cleans build output within each package",

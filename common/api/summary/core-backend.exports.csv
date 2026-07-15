@@ -45,6 +45,8 @@ beta;interface;ChangeCache
 beta;interface;ChangedECInstance
 deprecated;interface;ChangedECInstance
 internal;class;ChangedElementsDb
+beta;interface;ChangeElementModelProps
+beta;interface;ChangeElementParentProps
 beta;interface;ChangeFormatArgs
 beta;interface;ChangeInstance
 beta;interface;ChangeInstanceKey
@@ -323,6 +325,7 @@ preview;class;GeometryPart
 beta;function;getAvailableCoordinateReferenceSystems
 beta;interface;GetAvailableCoordinateReferenceSystemsArgs
 beta;function;getAvailableCRSUnits
+beta;interface;GetResolvedSettingDefOptions
 beta;interface;GetWorkspaceContainerArgs
 beta;interface;GetWorkspaceResourceArgs
 public;class;Graphic3d

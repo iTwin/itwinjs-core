@@ -1,6 +1,33 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 11 Jun 2026 21:11:10 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2026 12:22:07 GMT and should not be manually modified.
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Deprecated the no-op `doNotUsePrimaryConnToPrepare` concurrent query config option. Worker connections now always prepare against a shared, dedicated schema-source connection (falling back to their own connection) to avoid a deadlock with the primary connection; the option is retained only for backward-compatible config serialization and no longer affects behavior.
+- Add EditTxn.changeElementParent and EditTxn.changeElementModel; add ElementError namespace.
+- Added an internal DbResponseStatus.NotOpen status for closed iModel query responses.
+- add "missing-container-itwinid" to ITwinSettingsError
+- Add includePrerelease to DbCloudContainerInfo.
+- Clarify that the legacy BingProvider background map path is retained for compatibility with existing persisted data.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+_Version update only_
 
 ## 5.10.2
 Thu, 11 Jun 2026 21:09:38 GMT

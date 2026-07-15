@@ -2200,6 +2200,7 @@ export interface DbCloudContainerInfo {
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
+    // @deprecated (undocumented)
     doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
@@ -3009,6 +3010,18 @@ export type ElementAlignedBox3d = Range3d;
 export interface ElementAspectProps extends EntityProps {
     // (undocumented)
     element: RelatedElementProps;
+}
+
+// @beta
+export namespace ElementError {
+    const scope = "itwin-Element";
+    export function isError(error: unknown, key?: Key): error is ITwinError;
+    export type Key =
+    /** The element's model type does not match the expected model type for the operation */
+    "model-type-mismatch" |
+    /** Invalid arguments were provided to an element operation */
+    "invalid-arguments";
+    export function throwError(key: Key, message: string): never;
 }
 
 // @beta
@@ -5793,7 +5806,7 @@ export namespace ITwinSettingsError {
     scope = "itwin-settings";
     export function isError(error: unknown, key?: Key): error is ITwinSettingsError;
     // (undocumented)
-    export type Key = "failed-to-obtain-container-token" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
+    export type Key = "failed-to-obtain-container-token" | "missing-container-itwinid" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
     export function throwError<T extends ITwinSettingsError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 

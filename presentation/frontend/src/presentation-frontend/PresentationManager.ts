@@ -152,7 +152,7 @@ export interface PresentationManagerProps {
    * overriden for each request through request parameters. If not set, `IModelApp.quantityFormatter.activeUnitSystem`
    * is used by default.
    *
-   * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [IModelApp.quantityFormatter]($core-frontend) to set the active unit system.
+   * @deprecated in 4.0 - might be removed in next major version. Use [IModelApp.quantityFormatter]($core-frontend) to set the active unit system.
    */
   activeUnitSystem?: UnitSystemKey;
 
@@ -235,7 +235,7 @@ export class PresentationManager implements Disposable {
   /**
    * Get / set active unit system used to format property values with units.
    *
-   * @deprecated in 4.0 - will not be removed until after 2026-06-13. `IModelApp.quantityFormatter` should be used to get/set the active unit system. At the moment
+   * @deprecated in 4.0 - might be removed in next major version. `IModelApp.quantityFormatter` should be used to get/set the active unit system. At the moment
    * [[PresentationManager]] allows overriding it, but returns `IModelApp.quantityFormatter.activeUnitSystem` if override
    * is not set.
    */
@@ -285,7 +285,7 @@ export class PresentationManager implements Disposable {
     }
   }
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
@@ -441,7 +441,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves nodes.
-   * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[getNodesIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getNodesIterator]] instead.
    */
   public async getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node[]> {
     const result = await this.getNodesIterator(requestOptions);
@@ -462,7 +462,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves total nodes count and a single page of nodes.
-   * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[getNodesIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getNodesIterator]] instead.
    */
   public async getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{ count: number; nodes: Node[] }> {
     const result = await this.getNodesIterator(requestOptions);
@@ -653,7 +653,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves content which consists of a content descriptor and a page of records.
-   * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[getContentIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getContentIterator]] instead.
    */
   public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -662,7 +662,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves content set size and content which consists of a content descriptor and a page of records.
-   * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[getContentIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getContentIterator]] instead.
    */
   public async getContentAndSize(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
@@ -708,7 +708,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves distinct values of specific field from the content.
-   * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[getDistinctValuesIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getDistinctValuesIterator]] instead.
    */
   public async getPagedDistinctValues(
     requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
@@ -816,7 +816,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves display label definition of specific items.
-   * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[getDisplayLabelDefinitionsIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getDisplayLabelDefinitionsIterator]] instead.
    */
   public async getDisplayLabelDefinitions(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
