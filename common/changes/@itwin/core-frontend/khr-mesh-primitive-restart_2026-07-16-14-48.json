@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Clarify/document/prove support the KHR_mesh_primitive_restart glTF extension for line strip primitives.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
