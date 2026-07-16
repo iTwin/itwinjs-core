@@ -6111,6 +6111,8 @@ export class MapLayerFormatRegistry {
     isRegistered(formatId: string): boolean;
     // @internal
     isSsoAllowed(url: string): boolean;
+    // @internal
+    logUntrustedOriginUse(url: string): void;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // @beta
@@ -6379,6 +6381,8 @@ export enum MapLayerSourceStatus {
     InvalidTileTree = 3,
     InvalidUrl = 4,
     RequireAuth = 5,
+    // @beta
+    UntrustedOrigin = 8,
     Valid = 0
 }
 

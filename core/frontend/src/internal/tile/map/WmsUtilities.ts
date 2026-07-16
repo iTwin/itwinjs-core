@@ -6,6 +6,7 @@
 import { IModelApp } from "../../../IModelApp";
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
 import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
+import { MapLayerUntrustedOriginError } from "../../../tile/internal";
 
 /** @packageDocumentation
  * @module Tiles
@@ -31,9 +32,18 @@ export class WmsUtilities {
     }
 
     let response = await fetch(url, { method: "GET", headers });
-    if (!credentials && response.status === 401 && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
-      && IModelApp.mapLayerFormatRegistry.isSsoAllowed(url)) {
-    // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication)
+    if (!credentials && response.status === 401 && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
+      if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(url)) {
+        // The SSO retry is suppressed because the origin is not trusted; throw a distinct error so callers
+        // can report the blocked origin instead of treating this as a missing-credentials 401.
+        throw new MapLayerUntrustedOriginError(url);
+      }
+
+      // No-op when the restriction is enabled (the origin is whitelisted if we got here); otherwise logs
+      // a once-per-origin warning that this SSO retry would be blocked if the restriction were enabled.
+      IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url);
+
+      // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication)
       response = await fetch(url, { method: "GET", credentials: "include" });
     }
 

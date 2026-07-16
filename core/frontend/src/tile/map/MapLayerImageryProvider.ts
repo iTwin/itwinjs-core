@@ -6,7 +6,7 @@
  * @module MapLayers
  */
 
-import { assert, BeEvent, Logger } from "@itwin/core-bentley";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
@@ -21,7 +21,6 @@ import { DecorateContext } from "../../ViewContext";
 const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
 const doDebugToolTips = false;
-const loggerCategory = "MapLayerImageryProvider";
 
 /** Escapes HTML metacharacters so the text renders literally when assigned to `innerHTML`. */
 function escapeHtml(text: string): string {
@@ -86,12 +85,6 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   private readonly _ssoSucceededOrigins = new Set<string>();
-
-  /** Origins for which a "credentials sent to untrusted origin" warning was already logged;
-   * used to log the telemetry warning only once per origin.
-   * @internal
-   */
-  private readonly _untrustedUseLogged = new Set<string>();
 
   /** Returns true if browser credentials should be included for the given URL because a previous
    * SSO handshake succeeded for its origin AND the origin is still allowed by the current policy
@@ -443,22 +436,14 @@ export abstract class MapLayerImageryProvider {
       this.onStatusChanged.raiseEvent(this);   // status unchanged, but a new origin was blocked
   }
 
-  /** Logs a warning (once per origin) when credentials are sent to an origin that would be blocked
+  /** Logs a warning (once per origin, app-wide) when credentials are sent to an origin that would be blocked
    * if [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] were enabled.
    * Helps applications discover the origins they need to whitelist before opting in to the restriction.
+   * See [[MapLayerFormatRegistry.logUntrustedOriginUse]].
    * @internal
    */
   protected logUntrustedOriginUse(url: string): void {
-    if (IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins)
-      return;   // restriction active; nothing to preview
-
-    const origin = MapLayerImageryProvider.tryGetOrigin(url) ?? url;
-    if (this._untrustedUseLogged.has(origin) || IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins.includes(origin))
-      return;
-
-    this._untrustedUseLogged.add(origin);
-    Logger.logWarning(loggerCategory, `Credentials sent to origin '${origin}' which is not in MapLayerFormatRegistry.trustedCredentialsOrigins; `
-      + "this request would be blocked if restrictCredentialsToTrustedOrigins were enabled.");
+    IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url);
   }
 
   /** @internal */

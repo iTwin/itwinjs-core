@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
+import { Logger } from "@itwin/core-bentley";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../../tile/internal";
+import { MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSource, MapLayerSourceStatus, MapLayerUntrustedOriginError } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { WmsUtilities } from "../../../internal/tile/map/WmsUtilities";
 import { ArcGisUtilities } from "../../../internal/tile/map/ArcGisUtilities";
+import { WmsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmsMapLayerImageryProvider";
+import { ArcGISMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/ArcGISMapLayerImageryProvider";
 
 class TestImageryProvider extends MapLayerImageryProvider {
   public async constructUrl(row: number, column: number, zoomLevel: number) {
@@ -340,7 +343,7 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
   });
 
   it("does not retry with SSO credentials for a non-whitelisted origin", async () => {
-    await expect(WmsUtilities.fetchXml(wmsUrl)).rejects.toMatchObject({ status: 401 });
+    await expect(WmsUtilities.fetchXml(wmsUrl)).rejects.toBeInstanceOf(MapLayerUntrustedOriginError);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -363,6 +366,53 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
     await WmsUtilities.fetchXml(wmsUrl);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("logs the discovery warning once per origin when restriction is disabled (legacy default)", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
+    const logWarning = vi.spyOn(Logger, "logWarning");
+    fetchMock.mockImplementation(async (_input: RequestInfo | URL, opts?: RequestInit) =>
+      opts?.credentials === "include" ? new Response("<xml/>", { status: 200 }) : ntlmChallengeResponse());
+
+    const discoveryUrl = "https://discovery.example.net/wms?request=GetCapabilities&service=WMS";
+    await WmsUtilities.fetchXml(discoveryUrl);
+    await WmsUtilities.fetchXml(discoveryUrl);
+
+    const warnings = logWarning.mock.calls.filter((call) => String(call[1]).includes("https://discovery.example.net"));
+    expect(warnings).toHaveLength(1);
+  });
+});
+
+describe("WMS/WMTS source validation and provider initialization origin restriction", () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    fetchMock = vi.fn(async () => ntlmChallengeResponse());
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(async () => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("validateSource reports UntrustedOrigin when the SSO retry is suppressed", async () => {
+    const validation = await IModelApp.mapLayerFormatRegistry.validateSource("WMS", "https://validate-wms.example.net/wms");
+    expect(validation.status).toEqual(MapLayerSourceStatus.UntrustedOrigin);
+  });
+
+  it("WMS provider initialization reports UntrustedOrigin with the blocked origin", async () => {
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "Test", url: "https://init-wms.example.net/wms" });
+    const provider = new WmsMapLayerImageryProvider(settings);
+
+    await provider.initialize();   // must not throw; the tile tree stays alive to report status
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["https://init-wms.example.net"]);
   });
 });
 
@@ -389,7 +439,7 @@ describe("ArcGisUtilities.getServiceJson SSO origin restriction", () => {
   });
 
   it("does not retry with SSO credentials for a non-whitelisted origin", async () => {
-    await ArcGisUtilities.getServiceJson({ url: serviceUrl, formatId: "ArcGIS", ignoreCache: true });
+    await expect(ArcGisUtilities.getServiceJson({ url: serviceUrl, formatId: "ArcGIS", ignoreCache: true })).rejects.toBeInstanceOf(MapLayerUntrustedOriginError);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -412,5 +462,25 @@ describe("ArcGisUtilities.getServiceJson SSO origin restriction", () => {
     await ArcGisUtilities.getServiceJson({ url: serviceUrl, formatId: "ArcGIS", ignoreCache: true });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("validateSource reports UntrustedOrigin when the SSO retry is suppressed", async () => {
+    const source = MapLayerSource.fromJSON({ name: "", formatId: "ArcGIS", url: "https://validate-arcgis.example.net/arcgis/rest/services/test/MapServer" });
+    if (!source)
+      expect.fail("Could not create source");
+
+    const validation = await ArcGisUtilities.validateSource({ source, ignoreCache: true, capabilitiesFilter: [] });
+    expect(validation.status).toEqual(MapLayerSourceStatus.UntrustedOrigin);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("provider initialization reports UntrustedOrigin with the blocked origin", async () => {
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "Test", url: "https://init-arcgis.example.net/arcgis/rest/services/test/MapServer" });
+    const provider = new ArcGISMapLayerImageryProvider(settings);
+
+    await provider.initialize();   // must not throw; the tile tree stays alive to report status
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["https://init-arcgis.example.net"]);
   });
 });

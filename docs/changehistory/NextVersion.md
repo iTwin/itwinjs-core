@@ -106,6 +106,10 @@ provider.onStatusChanged.addListener((p) => {
 
 [MapLayerImageryProvider.resetStatus]($frontend) clears the accumulated blocked origins, e.g. after the application has updated `trustedCredentialsOrigins`.
 
+The same distinction is made during provider initialization and source validation: when fetching the capabilities or service metadata of a WMS, WMTS, or ArcGIS layer is blocked by the origin restriction, the provider's status transitions to `UntrustedOrigin` (with the blocked origin recorded in `blockedOrigins`) instead of `RequireAuth`, and [MapLayerFormatRegistry.validateSource]($frontend) returns the new [MapLayerSourceStatus]($frontend) member `UntrustedOrigin` (`@beta`) instead of `RequireAuth` — so applications can direct the user to whitelist the origin rather than prompt for credentials.
+
+While the restriction is disabled (the default), each request that sends credentials to an origin not listed in `trustedCredentialsOrigins` logs a warning, once per origin, so applications can discover the origins they need to whitelist before opting in. This includes the capability / service-metadata requests issued during provider initialization and source validation.
+
 #### Attribution text is no longer rendered as HTML
 
 Attribution and copyright strings received from map servers (ArcGIS service metadata, Bing attribution service, Google Maps viewport info, Google Photorealistic 3D Tiles copyrights) were previously rendered using `innerHTML`, allowing a malicious or compromised server to inject markup or script into the viewport's logo cards and on-screen credits. These strings are now inserted as plain text; visual output is unchanged for legitimate attribution text. The same fix applies to reality-model tooltips, which are built from batch-table properties supplied by the tileset content.

@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -62,7 +62,11 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     try {
       metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
 
-    } catch {
+    } catch (err) {
+      // The SSO retry was suppressed because the origin is not trusted; report the blocked origin
+      // (rather than asking for credentials) so the application can prompt for whitelisting.
+      if (err instanceof MapLayerUntrustedOriginError)
+        this.reportBlockedOrigin(err.url);
     }
     if (metadata && metadata.accessTokenRequired) {
       const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);

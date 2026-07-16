@@ -83,6 +83,25 @@ export interface ValidateSourceArgs {
  */
 export type MapLayerFormatType = typeof MapLayerFormat;
 
+/** Error thrown when an NTLM or Negotiate http 401 challenge could not be answered because the request
+ * URL's origin is not listed in [[MapLayerFormatRegistry.trustedCredentialsOrigins]]
+ * (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]).
+ * Thrown by the static map-layer utilities (e.g. capabilities / service-metadata fetches) that have no
+ * provider instance on which to report the blocked origin; callers convert it to
+ * [[MapLayerImageryProviderStatus.UntrustedOrigin]] (provider initialization) or
+ * [[MapLayerSourceStatus.UntrustedOrigin]] (source validation).
+ * @internal
+ */
+export class MapLayerUntrustedOriginError extends Error {
+  /** The URL of the request whose authentication challenge was left unanswered. */
+  public readonly url: string;
+
+  constructor(url: string) {
+    super(`Authentication blocked: origin of '${url}' is not listed in MapLayerFormatRegistry.trustedCredentialsOrigins`);
+    this.url = url;
+  }
+}
+
 /** @public */
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;
@@ -196,6 +215,35 @@ export class MapLayerFormatRegistry {
 
     // Entries are normalized to their origin by the [[trustedCredentialsOrigins]] setter.
     return this._trustedCredentialsOrigins.includes(origin);
+  }
+
+  /** Origins for which a "credentials sent to untrusted origin" warning was already logged;
+   * used to log the discovery warning only once per origin.
+   */
+  private readonly _untrustedUseLogged = new Set<string>();
+
+  /** Logs a warning (once per origin) when credentials are sent to an origin that would be blocked
+   * if [[restrictCredentialsToTrustedOrigins]] were enabled.
+   * Helps applications discover the origins they need to whitelist before opting in to the restriction.
+   * @internal
+   */
+  public logUntrustedOriginUse(url: string): void {
+    if (this.restrictCredentialsToTrustedOrigins)
+      return;   // restriction active; nothing to preview
+
+    let origin: string;
+    try {
+      origin = new URL(url).origin;
+    } catch {
+      origin = url;
+    }
+
+    if (this._untrustedUseLogged.has(origin) || this._trustedCredentialsOrigins.includes(origin))
+      return;
+
+    this._untrustedUseLogged.add(origin);
+    Logger.logWarning(loggerCategory, `Credentials sent to origin '${origin}' which is not in MapLayerFormatRegistry.trustedCredentialsOrigins; `
+      + "this request would be blocked if restrictCredentialsToTrustedOrigins were enabled.");
   }
 
   private _formats = new Map<string, MapLayerFormatEntry>();
