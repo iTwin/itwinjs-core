@@ -41,22 +41,69 @@ export namespace InteractiveRebaseError {
   }
 }
 
-export interface PropertyUpdateConflict {
-  get propertyName(): string;
-  get originalValue(): any;
-  get theirNewValue(): any;
-  get ourNewValue(): any;
-}
-
-export interface InstanceUpdateConflict {
+export interface RebaseConflict {
+  kind: string;
   id: Id64String;
   classId: Id64String;
-  propertyConflicts: PropertyUpdateConflict[];
 }
 
-export interface RebaseConflicts {
-  updateConflicts: InstanceUpdateConflict[];
-  // TODO
+/**
+ * The properties involved in a rebase conflict.
+ */
+export interface RebaseConflictProperties {
+  [propertyName: string]: any;
+}
+
+/**
+ * Both the incoming (their) and the local (our) changes modified the same properties
+ * on the same instance.
+ */
+export interface UpdateRebaseConflict extends RebaseConflict {
+  kind: "Update";
+  original: RebaseConflictProperties;
+  theirs: RebaseConflictProperties;
+  ours: RebaseConflictProperties;
+}
+
+/**
+ * The incoming (their) changes modified properties on an instance that was deleted by the
+ * local (our) changes.
+ */
+export interface TheirUpdateOurDeleteRebaseConflict extends RebaseConflict {
+  kind: "TheirUpdateOurDelete";
+  original: RebaseConflictProperties;
+  theirs: RebaseConflictProperties;
+}
+
+/**
+ * The incoming (their) changes deleted an instance that was modified by the
+ * local (our) changes.
+ */
+export interface TheirDeleteOurUpdateRebaseConflict extends RebaseConflict {
+  kind: "TheirDeleteOurUpdate";
+  original: RebaseConflictProperties;
+  ours: RebaseConflictProperties;
+}
+
+/**
+ * Both the incoming (their) changes and the local (our) changes inserted an instance
+ * with the same primary key (ECInstanceId).
+ */
+export interface InsertRebaseConflict extends RebaseConflict {
+  kind: "Insert";
+  theirs: RebaseConflictProperties;
+  ours: RebaseConflictProperties;
+}
+
+export interface ForeignKeyConstraintRebaseConflict extends RebaseConflict {
+  kind: "ForeignKeyConstraint";
+  numberOfConflictingRows: number;
+}
+
+export interface UniqueConstraintRebaseConflict extends RebaseConflict {
+  kind: "UniqueConstraint";
+  original: RebaseConflictProperties;
+  ours: RebaseConflictProperties;
 }
 
 export interface TxnRebaseGroup {
@@ -71,7 +118,7 @@ export class InteractiveRebase {
   private _txns: TxnProps[];
   private _groups: TxnRebaseGroup[];
   private _currentGroupIndex: number = -1;
-  private _conflicts: RebaseConflicts | undefined;
+  private _conflicts: RebaseConflict[] = [];
 
   constructor(db: BriefcaseDb, txns: TxnProps[]) {
     this._db = db;
@@ -142,7 +189,7 @@ export class InteractiveRebase {
   /**
    * Gets the conflicts that have been detected in the current group of Txns being rebased.
    */
-  public get conflicts(): Readonly<RebaseConflicts> | undefined {
+  public get conflicts(): ReadonlyArray<RebaseConflict> {
     return this._conflicts;
   }
 
@@ -222,7 +269,7 @@ export class InteractiveRebase {
     const txnId = nativeDb.pullMergeRebaseNext();
     assert(txnId === group.txns[0].id, "Unexpected txn id");
 
-    this._conflicts = undefined;
+    this._conflicts = [];
 
     nativeDb.pullMergeRebaseReinstateTxn();
 
@@ -272,36 +319,80 @@ export class InteractiveRebase {
   }
 
   private handleRebaseConflict(conflict: RebaseChangesetConflictArgs): DbConflictResolution | undefined {
-    if (this._conflicts === undefined) {
-      this._conflicts = {
-        updateConflicts: [],
-      };
-    }
-
-    if (conflict.cause === "Data" && conflict.opcode === "Updated") {
-      const ecConflict = conflict.ecConflict;
-      const instanceId = ecConflict.original.ECInstanceId;
-
-      let instanceConflict = this._conflicts.updateConflicts.find(conflict => conflict.id === instanceId);
-      if (instanceConflict === undefined) {
-        instanceConflict = {
-          id: instanceId,
-          classId: ecConflict.original.ECClassId,
-          propertyConflicts: [],
-        };
-        this._conflicts.updateConflicts.push(instanceConflict);
+    // TODO: Add support for ForeignKeyConstraint conflicts. What will the opcode be? Probably undefined.
+    if (conflict.opcode === "Deleted") {
+      if (conflict.cause === "NotFound") {
+        // Our txn is trying to delete a row that has already been deleted by the new upstream changesets.
+        // We can safely ignore this.
+        return DbConflictResolution.Skip;
+      } else if (conflict.cause === "Data") {
+        // Our txn is trying to delete a row that has been modified by the new upstream changesets.
+        // Proceed with the delete but report the conflicting update.
+        // --> TheirUpdateOurDeleteRebaseConflict
+        return DbConflictResolution.Replace;
       }
+      assert(false, `Conflicts during a Deleted change should only have NotFound or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
+    } else if (conflict.opcode === "Inserted") {
+      if (conflict.cause === "Constraint") {
+        // Because this change was valid when it was created, and the schema has not changed,
+        // this can _only_ be a UNIQUE constraint violation.
+        // We must SKIP, because REPLACE is not allowed. But report the new column values for conflict resolution.
+        // --> UniqueConstraintRebaseConflict
+        return DbConflictResolution.Skip;
+      } else if (conflict.cause === "Conflict") {
+        // The primary key already exists, which means local and upstream both inserted this instance.
+        // Leave the existing intact, but report the new column values for conflict resolution.
+        // --> InsertRebaseConflict
+        return DbConflictResolution.Skip;
+      }
+      assert(false, `Conflicts during an Inserted change should only have Constraint or Conflict as the conflict cause. Unexpected cause: ${conflict.cause}`);
+    } else if (conflict.opcode === "Updated") {
+      if (conflict.cause === "NotFound") {
+        // Our txn is trying to update a row that has been deleted by the new upstream changesets.
+        // Let the delete stand, but report the conflict
+        // --> TheirDeleteOurUpdateRebaseConflict
+        return DbConflictResolution.Skip;
+      } else if (conflict.cause === "Constraint") {
+        // Because this change was valid when it was created, and the schema has not changed,
+        // this can _only_ be a UNIQUE constraint violation.
+        // We must SKIP - REPLACE is not allowed. But report the new column values for conflict resolution.
+        // --> UniqueConstraintRebaseConflict
+        return DbConflictResolution.Skip;
+      } else if (conflict.cause === "Data") {
+        // Our txn is changing the values in an existing row, and the new upstream changesets
+        // have also changed one or more values in that row.
+        // --> UpdateRebaseConflict
+        const ecConflict = conflict.ecConflict;
+        const instanceId = ecConflict.original.ECInstanceId;
 
-      instanceConflict.propertyConflicts.push(...ecConflict.conflicts.map(conflict => {
-        return {
-          propertyName: conflict,
-          originalValue: ecConflict.original[conflict],
-          theirNewValue: ecConflict.theirs[conflict],
-          ourNewValue: ecConflict.ours[conflict],
-        };
-      }));
+        let instanceConflict = this._conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Update") as UpdateRebaseConflict | undefined;
+        if (instanceConflict === undefined) {
+          instanceConflict = {
+            kind: "Update",
+            id: instanceId,
+            classId: ecConflict.original.ECClassId,
+            original: [],
+            theirs: [],
+            ours: [],
+          };
+          this._conflicts.push(instanceConflict);
+        }
 
-      return DbConflictResolution.Replace;
+        for (const conflict of ecConflict.conflicts) {
+          instanceConflict.original[conflict] = ecConflict.original[conflict];
+          instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
+          instanceConflict.ours[conflict] = ecConflict.ours[conflict];
+        }
+
+        // Always accept "our" changes at this stage. That minimizes the chances of further
+        // conflicts in subsequent txns.
+        return DbConflictResolution.Replace;
+      }
+      assert(false, `Conflicts during an Updated change should only have NotFound, Constraint, or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
+    } else if (conflict.opcode === undefined) {
+      if (conflict.cause === "ForeignKey") {
+      }
+      assert(false, `Conflicts without an opcode should only have ForeignKey as the conflict cause. Unexpected cause: ${conflict.cause}`);
     }
 
     return undefined;

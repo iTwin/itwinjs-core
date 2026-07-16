@@ -13,6 +13,7 @@ import { withEditTxn } from "../TestEditTxn";
 import { Code, GeometricElement2dProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { ChannelControl, DrawingCategory } from "../../core-backend";
 import { LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
+import { UpdateRebaseConflict } from "../../InteractiveRebase";
 
 chai.use(chaiAsPromised);
 
@@ -100,23 +101,18 @@ describe("InteractiveRebase", () => {
 
     const moreGroups = interactive.nextGroup();
     chai.expect(moreGroups).to.be.false;
-    chai.expect(interactive.conflicts?.updateConflicts.length).to.equal(1);
-    const updateConflict = interactive.conflicts!.updateConflicts[0];
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const updateConflict = interactive.conflicts[0] as UpdateRebaseConflict;
     chai.expect(updateConflict.id).to.equal(id);
     //chai.expect(updateConflict.propertyConflicts.length).to.equal(2);
+    chai.expect(updateConflict.kind).to.equal("Update");
 
-    const somePointConflict = updateConflict.propertyConflicts.find((conflict) => conflict.propertyName === "SomePoint");
-    chai.expect(somePointConflict).to.not.be.undefined;
-    if (!somePointConflict) return;
-    chai.expect(somePointConflict.originalValue).to.deep.equal({ X: 1.23, Y: 4.56 });
-    chai.expect(somePointConflict.ourNewValue).to.deep.equal({ X: 3.0, Y: 4.0 });
-    chai.expect(somePointConflict.theirNewValue).to.deep.equal({ X: 1.0, Y: 2.0 });
+    chai.expect(updateConflict.original["SomePoint"]).to.deep.equal({ X: 1.23, Y: 4.56 });
+    chai.expect(updateConflict.ours["SomePoint"]).to.deep.equal({ X: 3.0, Y: 4.0 });
+    chai.expect(updateConflict.theirs["SomePoint"]).to.deep.equal({ X: 1.0, Y: 2.0 });
 
-    const fooConflict = updateConflict.propertyConflicts.find((conflict) => conflict.propertyName === "Foo");
-    chai.expect(fooConflict).to.not.be.undefined;
-    if (!fooConflict) return;
-    chai.expect(fooConflict.originalValue).to.equal("Original");
-    chai.expect(fooConflict.ourNewValue).to.equal("User2");
-    chai.expect(fooConflict.theirNewValue).to.equal("User1");
+    chai.expect(updateConflict.original["Foo"]).to.equal("Original");
+    chai.expect(updateConflict.ours["Foo"]).to.equal("User2");
+    chai.expect(updateConflict.theirs["Foo"]).to.equal("User1");
   });
 });
