@@ -7,7 +7,7 @@ Two recurring run-time needs in non-trivial iTwin.js applications are **configur
 
 These two systems are deliberately separate. If everything were stored in workspace containers, there would be no way to know which container to open first. Settings containers solve this bootstrapping problem — they are loaded first and tell the application which workspace containers to open.
 
-[Catalogs](./Catalogs.md) store reusable iModel definitions, commonly [DefinitionElement](../../bis/guide/references/glossary.md#definitionelement)s, that applications copy into project iModels. Applications may use catalogs alongside Settings and Workspace resources, but must define how users discover and administer them.
+[Catalogs](./Catalogs.md) store reusable iModel definitions, commonly [DefinitionElement](../../bis/guide/references/glossary.md#definitionelement)s, that applications copy into other iModels. Applications may use catalogs alongside Settings and Workspace resources, but must define how users discover and administer them.
 
 At runtime, settings and resources are accessed through one of three workspace scopes:
 
@@ -38,4 +38,4 @@ In practice:
 2. **[Settings](./Settings.md)** — how to define settings schemas, load dictionaries, read values, and create/manage settings containers in the cloud.
 3. **[Workspace resources](./Workspace.md)** — how to create, version, and access binary resources stored in [WorkspaceDb]($backend) containers.
 4. **[Tutorial: Configuring an iTwin Application](./WorkspaceTutorial.md)** — a hands-on walkthrough that builds a complete application configuration end-to-end.
-5. **[Catalogs](./Catalogs.md)** — how applications organize reusable definitions in a `CatalogDb`, copy them into project iModels, and record provenance to identify where each copied definition came from.
+5. **[Catalogs](./Catalogs.md)** — how applications organize reusable definitions in a `CatalogDb`, copy them into other iModels, and record provenance to identify where each copied definition came from.

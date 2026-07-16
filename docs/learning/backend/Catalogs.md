@@ -1,19 +1,19 @@
 # Catalogs
 
-A **catalog** is an iModel that stores reusable definitions, such as standard component types, templates, and styles. Applications copy the definitions they need into project iModels. On the backend, [CatalogDb]($backend) opens a catalog iModel. [CatalogIModel]($common) contains the types shared by the backend and frontend catalog APIs.
+A **catalog** is an iModel that stores reusable definitions, such as standard component types, templates, and styles. Applications copy the definitions they need into another iModel. On the backend, [CatalogDb]($backend) opens a catalog iModel. The [CatalogIModel]($common) TypeScript namespace defines interfaces and types shared by the backend and frontend catalog APIs.
 
-> **New to this topic?** Start with [iModel contents](./IModelContents.md#components-from-catalogs) for guidance on why catalog definitions are copied into a project iModel.
+> **New to this topic?** Start with [iModel contents](./IModelContents.md#components-from-catalogs) for guidance on why catalog definitions are copied into another iModel.
 
 ## When to use a catalog
 
-Use a catalog when multiple projects need the same definitions, but each project iModel must retain the definitions it uses. Copying a definition into the project iModel:
+Use a catalog when multiple iModels need the same definitions, but each iModel must retain the definitions it uses. Copying a definition into another iModel:
 
 - makes the definition available offline,
-- tracks changes to the definition with the project,
-- allows project elements to reference the definition, and
+- tracks changes to the definition with that iModel,
+- allows other elements in the iModel to reference the definition, and
 - preserves the meaning of a placed component if the catalog later changes.
 
-For large catalogs, import only definitions that the project uses or is likely to use. See [Components from Catalogs](./IModelContents.md#components-from-catalogs) for related guidance on what belongs in an iModel.
+Import only definitions that are used or that the user intends to use. See [Components from Catalogs](./IModelContents.md#components-from-catalogs) for related guidance on what belongs in an iModel.
 
 ## Organizing catalog contents
 
@@ -24,13 +24,13 @@ A catalog iModel can contain Models and Elements defined by BIS and domain schem
 ```mermaid
 graph LR
     C("Catalog iModel<br/>DefinitionModel → DefinitionElements")
-    P("Project iModel<br/>independent copied definitions")
+    P("Destination iModel<br/>independent copied definitions")
 
-    subgraph Core["iTwin.js core APIs"]
+    subgraph Core["iTwin.js APIs"]
         direction TB
         R("CatalogDb / CatalogConnection<br/>open and read catalog contents")
         E("ExternalSourceAspect<br/>available provenance primitive")
-        W("IModelDb APIs<br/>insert definitions into the project")
+        W("IModelDb APIs<br/>insert definitions into another iModel")
         R ~~~ E
         E ~~~ W
     end
@@ -62,9 +62,9 @@ graph LR
     style App fill:#fafafa,stroke:#b8b8b8,stroke-width:1px
 ```
 
-Core APIs open the catalog and project iModels, read and write their contents, and provide a primitive for recording [provenance](#provenance-and-identity), which identifies the source of a copied definition. The application must select entries, resolve dependencies, copy definitions, record provenance, and handle updates. The dashed arrow shows that iTwin.js does not detect catalog changes automatically.
+The blue boxes are APIs supplied by iTwin.js. The gray boxes are workflow steps that the application must implement, including selecting entries, resolving dependencies, copying definitions, recording [provenance](#provenance-and-identity), and handling updates. The dashed arrow shows that iTwin.js does not detect catalog changes automatically.
 
-Applications use [IModelDb]($backend) APIs to access a catalog's Models and Elements. See [ECSQL](../ECSQL.md) to query catalog contents, [Access Elements](./AccessElements.md) to read individual Elements, and [Create Elements](./CreateElements.md) for inserting copied definitions into a project iModel. Close the `CatalogDb` when finished with it.
+Applications use [IModelDb]($backend) APIs to access a catalog's Models and Elements. See [ECSQL](../ECSQL.md) to query catalog contents, [Access Elements](./AccessElements.md) to read individual Elements, and [Create Elements](./CreateElements.md) for inserting copied definitions into another iModel. Close the `CatalogDb` when finished with it.
 
 ## A catalog is a StandaloneDb iModel
 
@@ -75,13 +75,13 @@ On the backend, [CatalogDb]($backend) extends [StandaloneDb]($backend). A catalo
 - It has no timeline and cannot apply or generate changesets.
 - It does not use an iModelHub checkout.
 
-By contrast, a project iModel uses a [BriefcaseDb]($backend), belongs to an iTwin, and records changes on an iModelHub timeline.
+By contrast, an iModel managed by iModelHub uses a [BriefcaseDb]($backend), belongs to an iTwin, and records changes on an iModelHub timeline.
 
-## Copying definitions into a project iModel
+## Copying definitions into another iModel
 
-`CatalogDb` does not copy definitions into a project iModel. Applications use the standard element-reading and element-creation APIs to implement that operation.
+`CatalogDb` does not copy definitions into another iModel. Applications use the standard element-reading and element-creation APIs to implement that operation.
 
-The project owns each copied definition independently of the catalog. The application must decide:
+The destination iModel owns each copied definition independently of the catalog. The application must decide:
 
 - which definitions to copy,
 - what related data must be copied with them,
@@ -92,11 +92,7 @@ The project owns each copied definition independently of the catalog. The applic
 
 [ExternalSourceAspect](../../bis/domains/Provenance-in-BIS.md#externalsourceaspect) records that an Element originated from an external source. Applications can use it to record the origin of a catalog definition, but `CatalogDb` does not create or manage that relationship.
 
-[FederationGuid](../../bis/guide/fundamentals/federationGuids.md) is not a substitute for provenance. It identifies the real-world entity represented by an Element, not the source from which a definition was copied. Two components placed from the same catalog definition represent different real-world entities and should not share a `FederationGuid`.
-
-## Frontend access
-
-[CatalogConnection]($frontend) opens a catalog iModel from a [NativeApp]($frontend), such as an Electron or mobile application. Its operations use IPC, so it is not available to a purely RPC-based web frontend.
+[FederationGuid](../../bis/guide/fundamentals/federationGuids.md) provides stable identity for a definition across iModels. Preserve a catalog definition's `FederationGuid` when copying that definition into another iModel. Assign a different `FederationGuid` when a changed definition becomes a new definition version. A `FederationGuid` identifies the definition version, but not the catalog and catalog version from which it was copied, so applications must record that provenance separately.
 
 ## What remains application-specific
 
@@ -104,13 +100,14 @@ Applications and domain schemas define the parts of the catalog workflow that iT
 
 - deciding which classes and Models comprise a catalog,
 - administering and discovering available catalogs,
-- copying definitions into project iModels,
+- copying definitions into other iModels,
 - recording provenance,
 - detecting and presenting updates, and
 - integrating domain-specific definitions.
 
 ## Further reading
 
-- **[iModel contents](./IModelContents.md#components-from-catalogs):** guidance on which catalog definitions belong in a project iModel.
+- **[iModel contents](./IModelContents.md#components-from-catalogs):** guidance on which catalog definitions belong in an iModel.
+- **[CatalogDb]($backend) and [CatalogConnection]($frontend):** API references for backend and frontend access to a catalog iModel.
 - **[Organizing Definition Elements](../../bis/guide/data-organization/organizing-definition-elements.md):** the BIS organization for reusable definitions.
 - **[Provenance in BIS](../../bis/domains/Provenance-in-BIS.md):** mechanisms for relating copied data to an external source.
