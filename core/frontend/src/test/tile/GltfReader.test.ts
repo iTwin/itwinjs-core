@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Range3d } from "@itwin/core-geometry";
-import { EmptyLocalization, FillFlags, GltfV2ChunkTypes, GltfVersions, LinePixels, RenderTexture, TileFormat } from "@itwin/core-common";
+import { EmptyLocalization, FillFlags, GltfV2ChunkTypes, GltfVersions, LinePixels, RenderTexture, TileFormat, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Gltf2Material, GltfDataType, GltfDocument, GltfId, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
@@ -1646,7 +1646,7 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
   describe("KHR_mesh_primitive_restart", () => {
     // The extension has no JSON payload - restart values appear inline in the primitive's own indices accessor.
     // The restart value is the maximum value for the accessor's componentType.
-    function makeLineStripGlb(componentType: GltfDataType.UnsignedByte | GltfDataType.UnsignedShort | GltfDataType.UInt32, indices: number[]): Uint8Array {
+    function makeLineStripGlb(componentType: GltfDataType.UnsignedByte | GltfDataType.UnsignedShort | GltfDataType.UInt32, indices: number[], mode = GltfMeshMode.LineStrip): Uint8Array {
       const numVerts = 5;
       const posBytes = numVerts * 3 * 4;
       const indexSize = GltfDataType.UnsignedByte === componentType ? 1 : (GltfDataType.UnsignedShort === componentType ? 2 : 4);
@@ -1671,7 +1671,7 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
           primitives: [{
             attributes: { POSITION: 0 },
             indices: 1,
-            mode: GltfMeshMode.LineStrip,
+            mode,
           }],
         }],
         buffers: [{ byteLength: binary.length }],
@@ -1750,6 +1750,22 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
         0xffff,
         [[0, 1], [1, 2], [2, 3], [3, 4]],
       );
+    });
+
+    it("gracefully ignores primitives with unsupported topologies", async () => {
+      // readMeshPrimitive does not support these modes at all, so restart values in their indices must never be
+      // misinterpreted as vertex indices - the primitive produces no geometry and the reader reports the tile as invalid.
+      // If support for these topologies is ever added, this test exists to force restart-awareness in the new code paths.
+      const indices = [0, 1, 2, 0xffff, 2, 3, 4];
+      for (const mode of [GltfMeshMode.LineLoop, GltfMeshMode.TriangleStrip, GltfMeshMode.TriangleFan]) {
+        const reader = createReader(makeLineStripGlb(GltfDataType.UnsignedShort, indices, mode))!;
+        expect(reader).toBeDefined();
+
+        const result = await reader.read();
+        expect(result.readStatus).toEqual(TileReadStatus.InvalidTileData);
+        expect(result.graphic).toBeUndefined();
+        expect(reader.meshes).toBeUndefined();
+      }
     });
   });
 
