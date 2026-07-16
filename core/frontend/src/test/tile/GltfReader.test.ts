@@ -1643,6 +1643,116 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
     });
   });
 
+  describe("KHR_mesh_primitive_restart", () => {
+    // The extension has no JSON payload - restart values appear inline in the primitive's own indices accessor.
+    // The restart value is the maximum value for the accessor's componentType.
+    function makeLineStripGlb(componentType: GltfDataType.UnsignedByte | GltfDataType.UnsignedShort | GltfDataType.UInt32, indices: number[]): Uint8Array {
+      const numVerts = 5;
+      const posBytes = numVerts * 3 * 4;
+      const indexSize = GltfDataType.UnsignedByte === componentType ? 1 : (GltfDataType.UnsignedShort === componentType ? 2 : 4);
+      const indexBytes = indices.length * indexSize;
+      const totalBytes = posBytes + indexBytes;
+      const binary = new Uint8Array(totalBytes + ((4 - (totalBytes % 4)) % 4));
+
+      const positions = new Float32Array(binary.buffer, 0, numVerts * 3);
+      positions.set([0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0]);
+
+      const IndexArray = GltfDataType.UnsignedByte === componentType ? Uint8Array : (GltfDataType.UnsignedShort === componentType ? Uint16Array : Uint32Array);
+      new IndexArray(binary.buffer, posBytes, indices.length).set(indices);
+
+      const json = {
+        asset: { version: "2.0" },
+        extensionsUsed: ["KHR_mesh_primitive_restart"],
+        extensionsRequired: ["KHR_mesh_primitive_restart"],
+        scene: 0,
+        scenes: [{ nodes: [0] }],
+        nodes: [{ mesh: 0 }],
+        meshes: [{
+          primitives: [{
+            attributes: { POSITION: 0 },
+            indices: 1,
+            mode: GltfMeshMode.LineStrip,
+          }],
+        }],
+        buffers: [{ byteLength: binary.length }],
+        bufferViews: [{
+          buffer: 0,
+          byteOffset: 0,
+          byteLength: posBytes,
+          target: 34962,
+        }, {
+          buffer: 0,
+          byteOffset: posBytes,
+          byteLength: indexBytes,
+          target: 34963,
+        }],
+        accessors: [{
+          bufferView: 0,
+          byteOffset: 0,
+          componentType: GltfDataType.Float,
+          count: numVerts,
+          type: "VEC3",
+          max: [4, 0, 0],
+          min: [0, 0, 0],
+        }, {
+          bufferView: 1,
+          byteOffset: 0,
+          componentType,
+          count: indices.length,
+          type: "SCALAR",
+        }],
+      };
+
+      return makeGlb(json, binary);
+    }
+
+    async function expectPolylines(glb: Uint8Array, restart: number, expected: number[][]): Promise<void> {
+      const reader = createReader(glb)!;
+      expect(reader).toBeDefined();
+
+      await reader.read();
+
+      expect(reader.meshes).toBeDefined();
+      const polylines = reader.meshes!.primitive.polylines;
+      expect(polylines).toBeDefined();
+
+      // Prove the restart sentinel never survives into the polylines that produce the render geometry.
+      for (const polyline of polylines!)
+        for (const index of polyline.indices)
+          expect(index).not.toEqual(restart);
+
+      expect(polylines!.map((p) => Array.from(p.indices))).toEqual(expected);
+    }
+
+    it("splits a line strip at restart values for each component type", async () => {
+      const indices = [0, 1, 2];
+      const expected = [[0, 1, 2], [3, 4]];
+      await expectPolylines(makeLineStripGlb(GltfDataType.UnsignedByte, [...indices, 0xff, 3, 4]), 0xff, expected);
+      await expectPolylines(makeLineStripGlb(GltfDataType.UnsignedShort, [...indices, 0xffff, 3, 4]), 0xffff, expected);
+      await expectPolylines(makeLineStripGlb(GltfDataType.UInt32, [...indices, 0xffffffff, 3, 4]), 0xffffffff, expected);
+    });
+
+    it("produces a single polyline when no restart values are present", async () => {
+      await expectPolylines(makeLineStripGlb(GltfDataType.UnsignedShort, [0, 1, 2, 3, 4]), 0xffff, [[0, 1, 2, 3, 4]]);
+    });
+
+    it("tolerates leading, consecutive, and trailing restart values", async () => {
+      await expectPolylines(
+        makeLineStripGlb(GltfDataType.UnsignedShort, [0xffff, 0, 1, 0xffff, 0xffff, 2, 3, 0xffff]),
+        0xffff,
+        [[0, 1], [2, 3]],
+      );
+    });
+
+    it("splits multiple strips batched into one primitive", async () => {
+      await expectPolylines(
+        makeLineStripGlb(GltfDataType.UnsignedShort, [0, 1, 0xffff, 1, 2, 0xffff, 2, 3, 0xffff, 3, 4]),
+        0xffff,
+        [[0, 1], [1, 2], [2, 3], [3, 4]],
+      );
+    });
+  });
+
   describe("BENTLEY_materials_planar_fill", () => {
     // Simple glTF with a triangle and a material using the planar fill extension
     const planarFillGltf: GltfDocument = JSON.parse(`{
