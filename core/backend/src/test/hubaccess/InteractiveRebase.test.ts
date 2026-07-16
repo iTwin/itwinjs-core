@@ -12,7 +12,7 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
 import { Code, GeometricElement2dProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { ChannelControl, DrawingCategory } from "../../core-backend";
-import { LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
+import { LineSegment3d, Point2d, Point3d, XYProps } from "@itwin/core-geometry";
 import { UpdateRebaseConflict } from "../../InteractiveRebase";
 
 chai.use(chaiAsPromised);
@@ -47,7 +47,7 @@ describe("InteractiveRebase", () => {
 
     interface SomeGraphicalElementProps extends GeometricElement2dProps {
       foo: string;
-      somePoint: Point2d;
+      somePoint: XYProps;
     }
 
     const id = await withEditTxn(briefcase1, async (txn) => {
@@ -114,5 +114,26 @@ describe("InteractiveRebase", () => {
     chai.expect(updateConflict.original["Foo"]).to.equal("Original");
     chai.expect(updateConflict.ours["Foo"]).to.equal("User2");
     chai.expect(updateConflict.theirs["Foo"]).to.equal("User1");
+
+    // Initially, "our" values are selected.
+    const valuesInitial = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesInitial.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesInitial.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
+    chai.expect(valuesInitial.userLabel).to.equal("Wat");
+
+    // We can explicitly accept "theirs" instead.
+    updateConflict.acceptTheirs(interactive);
+    const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirs.foo).to.equal("User1");
+    chai.expect(Point2d.fromJSON(valuesTheirs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+    // UserLabel does not conflict, so our value is maintained.
+    chai.expect(valuesTheirs.userLabel).to.equal("Wat");
+
+    // And then switch back to "ours" again.
+    updateConflict.acceptOurs(interactive);
+    const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesOurs.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
+    chai.expect(valuesOurs.userLabel).to.equal("Wat");
   });
 });

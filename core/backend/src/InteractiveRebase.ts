@@ -63,6 +63,38 @@ export interface UpdateRebaseConflict extends RebaseConflict {
   original: RebaseConflictProperties;
   theirs: RebaseConflictProperties;
   ours: RebaseConflictProperties;
+
+  acceptOurs(rebase: InteractiveRebase): void;
+  acceptTheirs(rebase: InteractiveRebase): void;
+}
+
+class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
+  public readonly kind: "Update" = "Update";
+
+  public readonly id: Id64String;
+  public readonly classId: Id64String;
+  public readonly original: RebaseConflictProperties = {};
+  public readonly theirs: RebaseConflictProperties = {};
+  public readonly ours: RebaseConflictProperties = {};
+
+  constructor(id: Id64String, classId: Id64String) {
+    this.id = id;
+    this.classId = classId;
+  }
+
+  public acceptOurs(rebase: InteractiveRebase): void {
+    rebase.editTxn.updateElement({
+      id: this.id,
+      ...this.ours,
+    });
+  }
+
+  public acceptTheirs(rebase: InteractiveRebase): void {
+    rebase.editTxn.updateElement({
+      id: this.id,
+      ...this.theirs,
+    });
+  }
 }
 
 /**
@@ -148,6 +180,7 @@ export class InteractiveRebase {
         InteractiveRebaseError.throwError("rebase-complete", "The rebase process is already complete");
       }
       this._editTxn = new EditTxn(this._db, "Interactive Rebase");
+      this._editTxn.start();
     }
     return this._editTxn;
   }
@@ -257,6 +290,9 @@ export class InteractiveRebase {
       this._editTxn = undefined;
     }
 
+    this._editTxn = new EditTxn(this._db, "Interactive Rebase");
+    this._editTxn.start();
+
     // TODO: revert already committed changes, too.
 
     ++this._currentGroupIndex;
@@ -319,7 +355,6 @@ export class InteractiveRebase {
   }
 
   private handleRebaseConflict(conflict: RebaseChangesetConflictArgs): DbConflictResolution | undefined {
-    // TODO: Add support for ForeignKeyConstraint conflicts. What will the opcode be? Probably undefined.
     if (conflict.opcode === "Deleted") {
       if (conflict.cause === "NotFound") {
         // Our txn is trying to delete a row that has already been deleted by the new upstream changesets.
@@ -367,14 +402,7 @@ export class InteractiveRebase {
 
         let instanceConflict = this._conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Update") as UpdateRebaseConflict | undefined;
         if (instanceConflict === undefined) {
-          instanceConflict = {
-            kind: "Update",
-            id: instanceId,
-            classId: ecConflict.original.ECClassId,
-            original: [],
-            theirs: [],
-            ours: [],
-          };
+          instanceConflict = new UpdateRebaseConflictImpl(instanceId, ecConflict.original.ECClassId);
           this._conflicts.push(instanceConflict);
         }
 
