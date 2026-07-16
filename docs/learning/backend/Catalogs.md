@@ -23,33 +23,40 @@ A catalog iModel can contain Models and Elements defined by BIS and domain schem
 
 ```mermaid
 graph LR
-    C["Catalog iModel<br/>DefinitionModel → DefinitionElements"]
-    P["Project iModel<br/>independent copied definitions"]
+    C("Catalog iModel<br/>DefinitionModel → DefinitionElements")
+    P("Project iModel<br/>independent copied definitions")
 
     subgraph Core["iTwin.js core APIs"]
-        R["CatalogDb / CatalogConnection<br/>open and read catalog contents"]
-        W["IModelDb APIs<br/>insert definitions into the project"]
-        E["ExternalSourceAspect<br/>available provenance primitive"]
+        direction TB
+        R("CatalogDb / CatalogConnection<br/>open and read catalog contents")
+        E("ExternalSourceAspect<br/>available provenance primitive")
+        W("IModelDb APIs<br/>insert definitions into the project")
+        R ~~~ E
+        E ~~~ W
     end
 
     subgraph App["Application responsibilities"]
-        S["Select catalog entries"]
-        D["Resolve dependent definitions<br/>and relationships"]
-        X["Copy definitions"]
-        O["Choose and record provenance"]
-        U["Detect catalog changes<br/>and offer updates"]
+        S("Select catalog entries")
+        D("Resolve dependent definitions<br/>and relationships")
+        X("Copy definitions")
+        O("Choose and record provenance")
+        U("Detect catalog changes<br/>and offer updates")
+        S --> D --> X --> O
     end
 
-    C --> R
-    R --> S
-    S --> D
-    D --> X
-    X --> W
-    W --> P
-    X --> O
-    O --> E
-    E --> P
+    C --> R --> S
+    X --> W --> P
+    O --> E --> P
     P -.-> U
+
+    classDef data fill:#eef1f4,stroke:#6b7280,color:#1f2937
+    classDef core fill:#e7f1ff,stroke:#477db3,color:#1f2937
+    classDef app fill:#f4f4f4,stroke:#8a8a8a,color:#1f2937
+    class C,P data
+    class R,E,W core
+    class S,D,X,O,U app
+    style Core fill:#f7fbff,stroke:#8fb3d9,stroke-width:1px
+    style App fill:#fafafa,stroke:#b8b8b8,stroke-width:1px
 ```
 
 Core APIs open the catalog and project iModels, read and write their contents, and provide a primitive for recording [provenance](#provenance-and-identity), which identifies the source of a copied definition. The application must select entries, resolve dependencies, copy definitions, record provenance, and handle updates. The dashed arrow shows that iTwin.js does not detect catalog changes automatically.
