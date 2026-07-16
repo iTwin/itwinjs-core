@@ -34,6 +34,8 @@
     "perftest:changesetReaderPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ChangesetReaderAPI \"./lib/cjs/perftest/ChangesetReader.test.js\"",
     "perftest:deleteRelationshipInstances": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/DeleteRelationshipInstances.test.js\"",
     "perftest:incrementalLoading": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/IncrementalLoading.test.js\"",
+    "perftest:schemaSync": "run-p -r azurite:setup perftest:schemaSyncCore",
+    "perftest:schemaSyncCore": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/SchemaSyncPerf.test.js\"",
     "perftest:specific": "npm run -s perftest:pre && mocha --timeout=999999999"
   },
   "dependencies": {
