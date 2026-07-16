@@ -42,8 +42,8 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/ecschema2ts/                           @naveedkhan8067
 /common/**/core-electron.*                        @wgoehrig @GytisCepk @ben-polinsky
 /common/**/core-electron/                         @wgoehrig @GytisCepk @ben-polinsky
-/common/**/express-server.*                       @paulius-valiunas @wgoehrig
-/common/**/express-server/                        @paulius-valiunas @wgoehrig
+/common/**/express-server.*                       @wgoehrig
+/common/**/express-server/                        @wgoehrig
 /common/**/frontend-devtools.*                    @iTwin/itwinjs-core-display
 /common/**/frontend-devtools/                     @iTwin/itwinjs-core-display
 /common/**/frontend-tiles.*                       @iTwin/itwinjs-core-display @danieliborra
@@ -80,7 +80,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/physical-material-backend/             @bbastings @diegoalexdiaz
 /common/**/presentation-*.*                       @iTwin/itwinjs-core-presentation
 /common/**/presentation-*/                        @iTwin/itwinjs-core-presentation
-/common/**/rpcinterface-full-stack-tests/         @aruniverse @paulius-valiunas @wgoehrig
+/common/**/rpcinterface-full-stack-tests/         @aruniverse @wgoehrig
 /common/**/appui-*.*                              @iTwin/itwinjs-core-ui @ben-polinsky
 /common/**/appui-*/                               @iTwin/itwinjs-core-ui @ben-polinsky
 /common/**/webgl-compatibility.*                  @iTwin/itwinjs-core-display
@@ -95,7 +95,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /core/ecschema-*                                  @rschili @RohitPtnkr1996
 /core/ecsql                                       @iTwin/itwinjs-core-admins @khanaffan
 /core/electron                                    @wgoehrig @GytisCepk @ben-polinsky
-/core/express-server                              @paulius-valiunas @wgoehrig
+/core/express-server                              @wgoehrig
 /core/extension                                   @wgoehrig @aruniverse @ben-polinsky
 /core/frontend                                    @bbastings @iTwin/itwinjs-core-display @aruniverse @ben-polinsky
 /core/frontend/src/extension                      @wgoehrig @aruniverse @ben-polinsky
@@ -133,8 +133,8 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /full-stack-tests/core                            @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface          @wgoehrig
 /full-stack-tests/presentation                    @iTwin/itwinjs-core-presentation
-/full-stack-tests/rpc                             @wgoehrig @swbsi @paulius-valiunas
-/full-stack-tests/rpc-interface                   @aruniverse @paulius-valiunas @wgoehrig
+/full-stack-tests/rpc                             @wgoehrig @swbsi
+/full-stack-tests/rpc-interface                   @aruniverse @wgoehrig
 
 /presentation                                     @iTwin/itwinjs-core-presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
