@@ -187,8 +187,12 @@ export class SQLiteDb {
    * Apply a changeset file - in the same on-disk format used for iModel changesets - to this SQLiteDb.
    * Unlike `BriefcaseDb.pullChanges`, this does *not* validate the changeset header (e.g. parentId/changesetId)
    * against the current state of the database - it simply applies the changes it contains. If applying the
-   * changeset encounters any conflict, the entire operation fails and throws (conflicts are never resolved
+   * changeset encounters any conflict, or otherwise fails, this method throws (conflicts are never resolved
    * automatically).
+   * @note this method only throws on failure - it does *not* commit or abandon any changes itself. If it
+   * throws, some (but not necessarily all) of the changeset's changes may have already been applied to the
+   * current transaction. It is the caller's responsibility to call [[saveChanges]] or [[abandonChanges]]
+   * as appropriate after catching an error from this method.
    * @param changesetFile the local file name of the changeset to apply.
    * @internal
    */

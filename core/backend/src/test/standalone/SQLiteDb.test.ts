@@ -117,7 +117,7 @@ describe("SQLiteDb", () => {
       target.closeDb();
     });
 
-    it("should fail if applying a changeset produces a conflict, without applying any of its changes", () => {
+    it("should fail if applying a changeset produces a conflict, leaving it to the caller to abandon the partially-applied changes", () => {
       const baseFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-base.db");
       const sourceFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-conflict-source.db");
       const targetFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-conflict-target.db");
@@ -155,10 +155,14 @@ describe("SQLiteDb", () => {
       // confirm the pre-apply baseline: id=1 was never touched by target, id=2 diverged from source
       expect(readRows(target, "test1")).deep.equal([{ id: 1, val: "base1" }, { id: 2, val: "fromTarget2" }]);
 
+      // applyChangeset only throws on failure - it does not commit or abandon changes itself. Since the first
+      // row's change didn't conflict, it may already have been applied to the current transaction by the time
+      // the second row's conflict causes the throw.
       expect(() => target.applyChangeset(changesetFileName)).throws();
+      expect(readRows(target, "test1")).deep.equal([{ id: 1, val: "fromSource1" }, { id: 2, val: "fromTarget2" }]);
 
-      // the apply must be all-or-nothing: even though the first row's change didn't conflict, it must not have
-      // been applied, since the changeset as a whole failed
+      // it is the caller's responsibility to abandon (or save) the partially-applied changes after catching the error
+      target.abandonChanges();
       expect(readRows(target, "test1")).deep.equal([{ id: 1, val: "base1" }, { id: 2, val: "fromTarget2" }]);
 
       target.closeDb();
