@@ -44,9 +44,12 @@ graph LR
         S --> D --> X --> O
     end
 
-    C --> R --> S
-    X --> W --> P
-    O --> E --> P
+    C --> R
+    R --> S
+    X --> W
+    W --> P
+    O --> E
+    E --> P
     P -.-> U
 
     classDef data fill:#eef1f4,stroke:#6b7280,color:#1f2937
