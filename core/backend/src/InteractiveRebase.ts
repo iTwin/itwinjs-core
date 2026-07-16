@@ -64,8 +64,8 @@ export interface UpdateRebaseConflict extends RebaseConflict {
   theirs: RebaseConflictProperties;
   ours: RebaseConflictProperties;
 
-  acceptOurs(rebase: InteractiveRebase): void;
-  acceptTheirs(rebase: InteractiveRebase): void;
+  acceptOurs(rebase: InteractiveRebase, properties?: string[]): void;
+  acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void;
 }
 
 class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
@@ -82,18 +82,30 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
     this.classId = classId;
   }
 
-  public acceptOurs(rebase: InteractiveRebase): void {
-    rebase.editTxn.updateElement({
-      id: this.id,
-      ...this.ours,
-    });
+  public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
+    const updateProps: RebaseConflictProperties = { id: this.id };
+    if (!properties || properties.length === 0) {
+      Object.assign(updateProps, this.ours);
+    } else {
+      for (const prop of properties) {
+        updateProps[prop] = this.ours[prop];
+      }
+    }
+
+    rebase.editTxn.updateElement(updateProps);
   }
 
-  public acceptTheirs(rebase: InteractiveRebase): void {
-    rebase.editTxn.updateElement({
-      id: this.id,
-      ...this.theirs,
-    });
+  public acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void {
+    const updateProps: RebaseConflictProperties = { id: this.id };
+    if (!properties || properties.length === 0) {
+      Object.assign(updateProps, this.theirs);
+    } else {
+      for (const prop of properties) {
+        updateProps[prop] = this.theirs[prop];
+      }
+    }
+
+    rebase.editTxn.updateElement(updateProps);
   }
 }
 

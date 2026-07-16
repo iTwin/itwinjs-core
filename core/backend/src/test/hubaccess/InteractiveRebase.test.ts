@@ -135,5 +135,21 @@ describe("InteractiveRebase", () => {
     chai.expect(valuesOurs.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
     chai.expect(valuesOurs.userLabel).to.equal("Wat");
+
+    // We can accept a subset of properties
+    updateConflict.acceptTheirs(interactive, ["SomePoint"]);
+    const valuesTheirsSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirsSubset1.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesTheirsSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+
+    updateConflict.acceptTheirs(interactive, ["Foo"]);
+    const valuesTheirsSubset2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirsSubset2.foo).to.equal("User1");
+    chai.expect(Point2d.fromJSON(valuesTheirsSubset2.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+
+    updateConflict.acceptOurs(interactive, ["Foo"]);
+    const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesOursSubset1.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
   });
 });
