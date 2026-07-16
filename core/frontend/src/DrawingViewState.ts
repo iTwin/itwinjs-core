@@ -386,15 +386,14 @@ export class DrawingViewState extends ViewState2d {
     let displaySpatialView = false;
     try {
       const ecsql = `
-        SELECT spatialView,
+        SELECT spatialView.Id as spatialViewId,
           json_extract(jsonProperties, '$.drawingToSpatialTransform') as drawingToSpatialTransform,
           CAST(json_extract(jsonProperties, '$.displaySpatialView') as BOOLEAN) as displaySpatialView
         FROM bis.SectionDrawing
         WHERE ECInstanceId=${this.baseModelId}`;
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-        spatialView = Id64.fromJSON(row.spatialView?.id);
+      for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+        spatialView = Id64.fromJSON(row.spatialViewId);
         displaySpatialView = !!row.displaySpatialView;
         try {
           drawingToSpatialTransform = JSON.parse(row.drawingToSpatialTransform);
