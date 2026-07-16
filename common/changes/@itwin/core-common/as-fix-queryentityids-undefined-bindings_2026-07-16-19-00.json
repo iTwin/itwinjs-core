@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added an internal QueryBinder helper to support restoring legacy binding-skip semantics in downstream packages.",
+      "type": "none",
+      "packageName": "@itwin/core-common"
+    }
+  ],
+  "packageName": "@itwin/core-common",
+  "email": "anmolshres98@users.noreply.github.com"
+}

@@ -664,26 +664,50 @@ export class QueryBinder {
   }
 
   /**
+   * Shared implementation for [[QueryBinder.from]] and [[QueryBinder.fromSkippingNullish]].
+   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of reach value.
+   * @param skipNullish if true, entries whose value is `undefined` or `null` are skipped instead of bound as NULL.
+   */
+  private static fromImpl(args: any[] | object | undefined, skipNullish: boolean): QueryBinder {
+    const params = new QueryBinder();
+    if (typeof args === "undefined")
+      return params;
+
+    const shouldBind = (val: any) => !skipNullish || (val !== undefined && val !== null);
+    if (Array.isArray(args)) {
+      let i = 1;
+      for (const val of args) {
+        const index = i++;
+        if (shouldBind(val))
+          this.bind(params, index, val);
+      }
+    } else {
+      for (const prop of Object.getOwnPropertyNames(args)) {
+        const val = (args as any)[prop];
+        if (shouldBind(val))
+          this.bind(params, prop, val);
+      }
+    }
+    return params;
+  }
+
+  /**
    * Allow bulk bind either parameters by index as value array or by parameter names as object.
    * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of reach value.
    * @returns @type QueryBinder to allow fluent interface.
    */
   public static from(args: any[] | object | undefined): QueryBinder {
-    const params = new QueryBinder();
-    if (typeof args === "undefined")
-      return params;
+    return this.fromImpl(args, false);
+  }
 
-    if (Array.isArray(args)) {
-      let i = 1;
-      for (const val of args) {
-        this.bind(params, i++, val);
-      }
-    } else {
-      for (const prop of Object.getOwnPropertyNames(args)) {
-        this.bind(params, prop, (args as any)[prop]);
-      }
-    }
-    return params;
+  /**
+   * Same as [[QueryBinder.from]], except entries whose value is `undefined` or `null` are skipped instead of bound as NULL,
+   * matching the legacy `ECSqlStatement.bindValues` semantics. For positional arrays, skipped positions are left unbound
+   * and later positions keep their 1-based index.
+   * @internal
+   */
+  public static fromSkippingNullish(args: any[] | object | undefined): QueryBinder {
+    return this.fromImpl(args, true);
   }
 
   public serialize(): object {
