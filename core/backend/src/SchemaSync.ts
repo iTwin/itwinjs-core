@@ -12,17 +12,21 @@ import { CloudSqlite } from "./CloudSqlite";
 import { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, Code, CodeProps, DefinitionError, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
+import { BriefcaseIdValue, Code, CodeProps, DefinitionError, FilePropertyProps, IModelError, LocalFileName, SchemaImportReservationError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
 import { _implicitTxn, _nativeDb } from "./internal/Symbols";
+import { SchemaImportIdentity } from "./SharedSchemaReservations";
 
 /** @internal */
 export namespace SchemaSync {
   const lockParams: CloudSqlite.ObtainLockParams = { retryDelayMs: 1000, nRetries: 30 };
   const definitionElementsTableName = "definition_elements";
+  const schemaReservationsTableName = "schema_reservations";
+  const schemaReservationRangesTableName = "schema_reservation_ranges";
   const maxLocalIdExclusive = 0x10000000000; // 2^40
   const idSequenceProp: FilePropertyProps = { namespace: "schemasync", name: "nextDefinitionLocalId" };
+  const lastReservedIdNamespace = "schemasync";
 
   /** Identifies a DefinitionElement to be reserved in a `SchemaSyncDb`. @internal */
   export interface ProposedDefinition {
@@ -41,30 +45,55 @@ export namespace SchemaSync {
     readonly elementId: Id64String;
   }
 
+  /** A reserved id range for one `ec_*` table. @internal */
+  export interface SchemaIdRange {
+    readonly startId: number;
+    readonly count: number;
+  }
+
+  /** A persisted schema-import reservation. @internal */
+  export interface SchemaReservation {
+    readonly baseFingerprint: string;
+    /** Reserved id ranges, keyed by `ec_*` table name (e.g. `"ec_Class"`). */
+    readonly ranges: Map<string, SchemaIdRange>;
+  }
+
   export interface ReadMethods {
     /**
      * Look up an existing DefinitionElement reservation by federationGuid or Code.
      * When a `Code` is supplied, returns `undefined` for empty `codeValue`s (they are not unique).
      */
     findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined;
+    /** Look up a schema-import reservation by identity. Returns `undefined` if not found. */
+    findSchemaReservation(identity: SchemaImportIdentity): SchemaReservation | undefined;
   }
 
   export interface WriteMethods {
     /** Reserve the specified DefinitionElements in the `SchemaSyncDb`.  Throws if any of the requested reservations conflict with existing reservations. */
     reserveDefinitionElements(identities: ProposedDefinition[]): Promise<void>;
+    /**
+     * Reserve id ranges for importing a specific schema version.
+     * Idempotent: if a matching reservation already exists, returns the stored ranges.
+     * @throws [[SchemaImportReservationError]] on conflict (same identity, different counts) or counter exhaustion.
+     */
+    reserveSchemaImport(identity: SchemaImportIdentity, perTableCounts: Record<string, number>, baseFingerprint: string): Promise<void>;
   }
 
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
   export class SchemaSyncDb extends VersionedSqliteDb implements ReadMethods, WriteMethods {
     private _supportsDefinitions?: boolean;
-    public override readonly myVersion = "4.1.0";
+    private _supportsSchemaReservations?: boolean;
+    public override readonly myVersion = "4.2.0";
     protected override createDDL() {
       this.ensureDefinitionElementsTable();
+      this.ensureSchemaReservationTables();
     }
 
     public override openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer) {
       super.openDb(dbName, openMode, container);
-      this._supportsDefinitions = semver.lte(this.myVersion, semver.minVersion(this.getRequiredVersions().readVersion) ?? "0.0.0");
+      const minRequiredVersion = semver.minVersion(this.getRequiredVersions().readVersion) ?? "0.0.0";
+      this._supportsDefinitions = semver.lte(this.myVersion, minRequiredVersion);
+      this._supportsSchemaReservations = semver.lte(this.myVersion, minRequiredVersion);
     }
 
     private ensureDefinitionElementsTable(): void {
@@ -215,6 +244,146 @@ export namespace SchemaSync {
     private setNextDefinitionLocalId(next: number): void {
       this[_nativeDb].saveFileProperty(idSequenceProp, String(next));
     }
+
+    // ---- Schema-import reservation methods ----
+
+    private ensureSchemaReservationTables(): void {
+      if (this._supportsSchemaReservations)
+        return;
+
+      this.executeSQL(`
+        CREATE TABLE IF NOT EXISTS ${schemaReservationsTableName} (
+          schemaName    TEXT    NOT NULL COLLATE NOCASE,
+          versionMajor  INTEGER NOT NULL,
+          versionMinor  INTEGER NOT NULL,
+          versionPatch  INTEGER NOT NULL,
+          baseFingerprint TEXT NOT NULL,
+          PRIMARY KEY (schemaName, versionMajor, versionMinor, versionPatch)
+        )`);
+
+      this.executeSQL(`
+        CREATE TABLE IF NOT EXISTS ${schemaReservationRangesTableName} (
+          schemaName    TEXT    NOT NULL COLLATE NOCASE,
+          versionMajor  INTEGER NOT NULL,
+          versionMinor  INTEGER NOT NULL,
+          versionPatch  INTEGER NOT NULL,
+          tableName     TEXT    NOT NULL,
+          startId       INTEGER NOT NULL,
+          count         INTEGER NOT NULL,
+          PRIMARY KEY (schemaName, versionMajor, versionMinor, versionPatch, tableName),
+          FOREIGN KEY (schemaName, versionMajor, versionMinor, versionPatch)
+            REFERENCES ${schemaReservationsTableName}(schemaName, versionMajor, versionMinor, versionPatch)
+        )`);
+
+      const minVersion = `^${this.myVersion}`;
+      this.setRequiredVersions({ readVersion: minVersion, writeVersion: minVersion });
+      this._supportsSchemaReservations = true;
+    }
+
+    public findSchemaReservation(identity: SchemaImportIdentity): SchemaReservation | undefined {
+      if (!this._supportsSchemaReservations)
+        return undefined;
+
+      const header = this.withPreparedSqliteStatement(
+        `SELECT baseFingerprint FROM ${schemaReservationsTableName} WHERE schemaName=? AND versionMajor=? AND versionMinor=? AND versionPatch=?`,
+        (stmt) => {
+          stmt.bindString(1, identity.schemaName);
+          stmt.bindInteger(2, identity.versionMajor);
+          stmt.bindInteger(3, identity.versionMinor);
+          stmt.bindInteger(4, identity.versionPatch);
+          if (!stmt.nextRow())
+            return undefined;
+          return { baseFingerprint: stmt.getValueString(0) };
+        },
+      );
+
+      if (!header)
+        return undefined;
+
+      const ranges = new Map<string, SchemaIdRange>();
+      this.withPreparedSqliteStatement(
+        `SELECT tableName, startId, count FROM ${schemaReservationRangesTableName} WHERE schemaName=? AND versionMajor=? AND versionMinor=? AND versionPatch=?`,
+        (stmt) => {
+          stmt.bindString(1, identity.schemaName);
+          stmt.bindInteger(2, identity.versionMajor);
+          stmt.bindInteger(3, identity.versionMinor);
+          stmt.bindInteger(4, identity.versionPatch);
+          while (stmt.nextRow())
+            ranges.set(stmt.getValueString(0), { startId: stmt.getValueDouble(1), count: stmt.getValueDouble(2) });
+        },
+      );
+
+      return { baseFingerprint: header.baseFingerprint, ranges };
+    }
+
+    public async reserveSchemaImport(identity: SchemaImportIdentity, perTableCounts: Record<string, number>, baseFingerprint: string): Promise<void> {
+      this.ensureSchemaReservationTables();
+
+      const existing = this.findSchemaReservation(identity);
+      if (existing) {
+        // Idempotency: same counts → return stored ranges unchanged.
+        const existingCounts: Record<string, number> = {};
+        for (const [tbl, range] of existing.ranges)
+          existingCounts[tbl] = range.count;
+
+        const allMatch = Object.keys(perTableCounts).every((tbl) => (existingCounts[tbl] ?? 0) === perTableCounts[tbl])
+          && Object.keys(existingCounts).every((tbl) => (perTableCounts[tbl] ?? 0) === existingCounts[tbl]);
+
+        if (allMatch)
+          return; // idempotent: already reserved with the same ranges
+
+        SchemaImportReservationError.throwError("reservation-conflict", {
+          message: `SchemaSync schema-import reservation conflict for '${identity.schemaName}' v${identity.versionMajor}.${identity.versionMinor}.${identity.versionPatch}: existing reservation has different per-table id counts`,
+        });
+      }
+
+      // Insert header row
+      this.withPreparedSqliteStatement(
+        `INSERT INTO ${schemaReservationsTableName} (schemaName, versionMajor, versionMinor, versionPatch, baseFingerprint) VALUES (?, ?, ?, ?, ?)`,
+        (stmt) => {
+          stmt.bindString(1, identity.schemaName);
+          stmt.bindInteger(2, identity.versionMajor);
+          stmt.bindInteger(3, identity.versionMinor);
+          stmt.bindInteger(4, identity.versionPatch);
+          stmt.bindString(5, baseFingerprint);
+          stmt.stepForWrite();
+        },
+      );
+
+      // Allocate and insert per-table ranges
+      for (const [tableName, count] of Object.entries(perTableCounts)) {
+        if (count <= 0)
+          continue;
+
+        const lastId = this.getLastReservedId(tableName);
+        const startId = lastId + 1;
+        this.withPreparedSqliteStatement(
+          `INSERT INTO ${schemaReservationRangesTableName} (schemaName, versionMajor, versionMinor, versionPatch, tableName, startId, count) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          (stmt) => {
+            stmt.bindString(1, identity.schemaName);
+            stmt.bindInteger(2, identity.versionMajor);
+            stmt.bindInteger(3, identity.versionMinor);
+            stmt.bindInteger(4, identity.versionPatch);
+            stmt.bindString(5, tableName);
+            stmt.bindDouble(6, startId);
+            stmt.bindDouble(7, count);
+            stmt.stepForWrite();
+          },
+        );
+        this.setLastReservedId(tableName, lastId + count);
+      }
+    }
+
+    private getLastReservedId(tableName: string): number {
+      const prop: FilePropertyProps = { namespace: lastReservedIdNamespace, name: `lastReservedId.${tableName}` };
+      const stored = this[_nativeDb].queryFileProperty(prop, true) as string | undefined;
+      return stored ? Number(stored) : 0;
+    }
+
+    private setLastReservedId(tableName: string, id: number): void {
+      const prop: FilePropertyProps = { namespace: lastReservedIdNamespace, name: `lastReservedId.${tableName}` };
+      this[_nativeDb].saveFileProperty(prop, String(id));
+    }
   }
 
   const syncProperty = { namespace: "itwinjs", name: "SchemaSync" };
@@ -333,6 +502,7 @@ export namespace SchemaSync {
     }
 
     await iModel.initializeSharedDefinitionReservations();
+    await iModel.initializeSharedSchemaReservations();
   };
 
   /** Provides access to a cloud-based `SchemaSyncDb` to hold ECSchemas.  */

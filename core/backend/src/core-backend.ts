@@ -60,6 +60,7 @@ export * from "./LocalhostIpcHost";
 export * from "./LocalHub";
 export * from "./LockControl";
 export * from "./SharedDefinitionReservations";
+export * from "./SharedSchemaReservations";
 export * from "./Material";
 export * from "./Model";
 export * from "./NativeAppStorage";

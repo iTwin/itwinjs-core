@@ -66,11 +66,21 @@ describe("SchemaSync definition-element reservation", () => {
       container: { hasLocalChanges: false } as CloudSqlite.CloudContainer, // these tests use local-only SchemaSyncDb, no need to mock a real CloudContainer
       reader: {
         findReservedDefinition: (key) => schemaDb.findReservedDefinition(key),
+        findSchemaReservation: (identity) => schemaDb.findSchemaReservation(identity),
       },
       writeLocker: {
         reserveDefinitionElements: async (ids) => {
           try {
             await schemaDb.reserveDefinitionElements(ids);
+            schemaDb.saveChanges();
+          } catch (err) {
+            schemaDb.abandonChanges();
+            throw err;
+          }
+        },
+        reserveSchemaImport: async (identity, perTableCounts, baseFingerprint) => {
+          try {
+            await schemaDb.reserveSchemaImport(identity, perTableCounts, baseFingerprint);
             schemaDb.saveChanges();
           } catch (err) {
             schemaDb.abandonChanges();

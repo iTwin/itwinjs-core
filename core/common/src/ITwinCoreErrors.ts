@@ -344,3 +344,40 @@ export namespace DefinitionError {
     return ITwinError.isError<DefinitionError>(error, scope, key);
   }
 }
+
+/** An error originating from the shared schema import reservation APIs (see [SharedSchemaReservations]($backend)),
+ * used to coordinate simultaneous schema imports across briefcases without id collisions.
+ * @beta
+ */
+export interface SchemaImportReservationError extends ITwinError { }
+
+/** @beta */
+export namespace SchemaImportReservationError {
+  /** The ITwinError scope for `SchemaImportReservationError`s. */
+  export const scope = "itwin-SchemaImportReservation";
+
+  /** Keys that identify `SchemaImportReservationError`s. */
+  export type Key =
+    /** The provided [[SchemaImportIdentity]] is invalid (e.g. empty schemaName or negative version component). */
+    "invalid-identity" |
+    /** The requested reservation conflicts with an existing one (different per-table id counts for the same schema version). */
+    "reservation-conflict" |
+    /** No reservation exists for the schema being imported; call [[SharedSchemaReservations.reserveSchemaImport]] first. */
+    "reservation-not-found" |
+    /** Schema import is not allowed because the SchemaSync container has un-pushed local changes. */
+    "container-has-local-changes" |
+    /** The pool of reserved ids has been exhausted (should never occur in practice). */
+    "id-sequence-exhausted" |
+    /** The reservation was created against a different base schema state than the current iModel. */
+    "base-state-mismatch";
+
+  /** Instantiate and throw a SchemaImportReservationError. */
+  export function throwError(key: Key, e: Omit<SchemaImportReservationError, "name" | "iTwinErrorId">): never {
+    ITwinError.throwError<SchemaImportReservationError>({ ...e, iTwinErrorId: { scope, key } });
+  }
+
+  /** Determine whether an error object is a SchemaImportReservationError. */
+  export function isError(error: unknown, key?: Key): error is SchemaImportReservationError {
+    return ITwinError.isError<SchemaImportReservationError>(error, scope, key);
+  }
+}
