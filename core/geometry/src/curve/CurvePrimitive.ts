@@ -693,10 +693,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
   /** Reverse the curve's data so that its fractional stroking moves in the opposite direction. */
   public abstract reverseInPlace(): void;
-  /**
-   * Reverse the curve's data so that its fractional stroking moves in the opposite direction.
-   * @returns the instance, reversed
-  */
+  /** Call [[reverseInPlace]] and return the instance. */
   public reverse(): this {
     this.reverseInPlace();
     return this;

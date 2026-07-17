@@ -194,10 +194,7 @@ export abstract class CurveCollection extends GeometryQuery {
     for (const curve of this.children)
       curve.reverseInPlace();
   }
-  /**
-   * Reverse the collection's data so that each child curve's fractional stroking moves in the opposite direction.
-   * @returns the instance, reversed
-  */
+  /** Call [[reverseInPlace]] and return the instance. */
   public reverse(): this {
     this.reverseInPlace();
     return this;
