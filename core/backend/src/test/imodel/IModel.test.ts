@@ -1408,6 +1408,7 @@ describe("iModel", () => {
     assert.deepEqual(withUnusedNull, baseline);
 
     const someId = imodel2.queryEntityIds({ from: "bis.element", where: "CodeValue IS NOT NULL", limit: 1 }).values().next().value as string;
+    assert.isDefined(someId);
     const codeValue = imodel2.elements.getElement(someId).code.value;
     const mixed = imodel2.queryEntityIds({ from: "bis.element", where: "CodeValue=:cv", bindings: { cv: codeValue, parent: undefined } });
     assert.isTrue(mixed.has(someId));

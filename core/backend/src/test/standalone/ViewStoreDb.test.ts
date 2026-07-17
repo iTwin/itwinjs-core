@@ -12,6 +12,7 @@ import { ThumbnailFormatProps } from "@itwin/core-common";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelJsFs } from "../../IModelJsFs";
 
 describe("ViewStore", function (this: Suite) {
   this.timeout(0);
@@ -335,6 +336,8 @@ describe("ViewStore", function (this: Suite) {
 
   it("selector queries should skip undefined and null bindings", async () => {
     const dbName = join(KnownTestLocations.outputDir, "viewStoreBindings.db");
+    if (IModelJsFs.existsSync(dbName))
+      IModelJsFs.removeSync(dbName);
     const snapshot = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
     const vs = new ViewStore.ViewDb({ guidMap: {} as any });
     try {
