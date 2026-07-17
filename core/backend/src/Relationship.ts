@@ -7,12 +7,12 @@
  */
 
 import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
-import { ECSqlStatement } from "./ECSqlStatement";
+import { EntityReferenceSet, IModelError, QueryBinder, QueryRowFormat, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { EditTxn } from "./EditTxn";
 import { IModelDb } from "./IModelDb";
 import { _implicitTxn, _nativeDb } from "./internal/Symbols";
+import { getRuntimeClass, reshapeInstanceRow } from "./internal/ECSqlInstanceReshaper";
 import { RelationshipClass } from "@itwin/ecschema-metadata";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
@@ -592,23 +592,25 @@ export class Relationships {
    * @see getInstanceProps
    */
   public tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
+    // `SELECT *` targets a caller-supplied relationship class, so its shape can't be decomposed ahead of
+    // time. Query using the non-deprecated UseECSqlPropertyNames format and reshape the row into the
+    // legacy UseJsPropertyNames shape using ECSchema metadata (see ECSqlInstanceReshaper for why a naive,
+    // non-schema-aware rename isn't safe here).
+    const ecClass = getRuntimeClass(this._iModel, relClassFullName);
     let props: T | undefined;
     if (typeof criteria === "string") {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
-        stmt.bindId(1, criteria);
-        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
-      });
+      props = this._iModel.withQueryReader(`SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`, (reader): T | undefined => {
+        return reader.step() ? reshapeInstanceRow(reader.current.toRow(), ecClass, this._iModel) as T : undefined;
+      }, new QueryBinder().bindId(1, criteria), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, (stmt: ECSqlStatement) => {
-        stmt.bindId(1, criteria.sourceId);
-        stmt.bindId(2, criteria.targetId);
-        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
-      });
+      props = this._iModel.withQueryReader(`SELECT * FROM ${relClassFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, (reader): T | undefined => {
+        return reader.step() ? reshapeInstanceRow(reader.current.toRow(), ecClass, this._iModel) as T : undefined;
+      }, new QueryBinder().bindId(1, criteria.sourceId).bindId(2, criteria.targetId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     }
     if (undefined !== props) {
-      props.classFullName = (props as any).className.replace(".", ":");
+      // convert `className` (from `SELECT *`'s ECClassId) into `classFullName`, as required by `EntityProps`
+      const reshapedProps = props as T & { className?: string };
+      reshapedProps.classFullName = (reshapedProps.className as string).replace(".", ":");
     }
     return props;
   }

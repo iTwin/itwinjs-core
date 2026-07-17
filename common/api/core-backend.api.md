@@ -1042,10 +1042,10 @@ export class ChangesetReader implements Disposable, ChangeSource {
     clearTableNameFilters(): void;
     close(): void;
     readonly db: AnyDb;
-    deleted?: ChangeInstance;
+    get deleted(): ChangeInstance | undefined;
     disableStrictMode(): void;
     enableStrictMode(): void;
-    inserted?: ChangeInstance;
+    get inserted(): ChangeInstance | undefined;
     get isECTable(): boolean;
     get isIndirectChange(): boolean;
     get op(): SqliteChangeOp;
@@ -1070,6 +1070,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
         txnId: Id64String;
         spillThresholdInBytes?: number;
     }): ChangesetReader;
+    setBatchSize(batchSize: number): void;
     setClassNameFilters(classNames: Set<string>): void;
     setOpCodeFilters(ops: Set<SqliteChangeOp>): void;
     setTableNameFilters(tableNames: Set<string>): void;
@@ -6975,11 +6976,15 @@ export class SQLiteDb {
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.SQLiteDb;
     abandonChanges(): void;
+    // @internal
+    applyChangeset(changesetFile: LocalFileName): void;
     closeDb(saveChanges?: boolean): void;
     // @beta
     get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @internal (undocumented)
     static createBlobIO(): SQLiteDb.BlobIO;
+    // @internal
+    createChangeset(changesetFile: LocalFileName): void;
     createDb(dbName: string): void;
     // @beta (undocumented)
     createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
@@ -6991,6 +6996,8 @@ export class SQLiteDb {
     }): void;
     // @deprecated
     dispose(): void;
+    // @internal
+    executeDdl(ddl: string): void;
     executeSQL(sql: string): DbResult;
     getLastInsertRowId(): number;
     get isOpen(): boolean;
@@ -7002,6 +7009,8 @@ export class SQLiteDb {
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     readLastModTime(tableName: string, rowId: number): Date;
     saveChanges(): void;
+    // @internal
+    startChangeTracking(): void;
     vacuum(args?: SQLiteDb.VacuumDbArgs): void;
     // @internal
     withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => Promise<T>): Promise<T>;
