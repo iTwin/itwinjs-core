@@ -1400,9 +1400,7 @@ describe("iModel", () => {
     assert.isAtLeast(baseline.size, 1);
 
     const parent: string | undefined = undefined;
-    let where = "codevalue is null";
-    if (parent !== undefined)
-      where += " AND Parent.Id=:parent";
+    const where = "codevalue is null";
     const withUnusedUndefined = imodel2.queryEntityIds({ from: "generic.PhysicalObject", where, bindings: { parent } });
     assert.deepEqual(withUnusedUndefined, baseline);
 

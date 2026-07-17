@@ -665,7 +665,7 @@ export class QueryBinder {
 
   /**
    * Shared implementation for [[QueryBinder.from]] and [[QueryBinder.fromSkippingNullish]].
-   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of reach value.
+   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of each value.
    * @param skipNullish if true, entries whose value is `undefined` or `null` are skipped instead of bound as NULL.
    */
   private static fromImpl(args: any[] | object | undefined, skipNullish: boolean): QueryBinder {
@@ -693,7 +693,7 @@ export class QueryBinder {
 
   /**
    * Allow bulk bind either parameters by index as value array or by parameter names as object.
-   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of reach value.
+   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of each value.
    * @returns @type QueryBinder to allow fluent interface.
    */
   public static from(args: any[] | object | undefined): QueryBinder {

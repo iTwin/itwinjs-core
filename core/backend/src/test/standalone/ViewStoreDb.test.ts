@@ -334,13 +334,14 @@ describe("ViewStore", function (this: Suite) {
   });
 
   it("selector queries should skip undefined and null bindings", async () => {
-    const snapshot = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
     const dbName = join(KnownTestLocations.outputDir, "viewStoreBindings.db");
-    ViewStore.ViewDb.createNewDb(dbName);
+    const snapshot = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
     const vs = new ViewStore.ViewDb({ guidMap: {} as any });
-    vs.openDb(dbName, OpenMode.ReadWrite);
-    vs.iModel = snapshot;
     try {
+      ViewStore.ViewDb.createNewDb(dbName);
+      vs.openDb(dbName, OpenMode.ReadWrite);
+      vs.iModel = snapshot;
+
       const selectorId = await vs.addCategorySelector({ selector: { query: { from: "BisCore:SpatialCategory" } } });
 
       const baseline = vs.getCategorySelectorSync({ id: selectorId });
@@ -354,8 +355,10 @@ describe("ViewStore", function (this: Suite) {
       const withUnusedNull = vs.getCategorySelectorSync({ id: selectorId, bindings: { parent: null } });
       expect(withUnusedNull.categories).deep.equal(baseline.categories);
     } finally {
-      vs.closeDb();
-      snapshot.close();
+      if (vs.isOpen)
+        vs.closeDb();
+      if (snapshot.isOpen)
+        snapshot.close();
     }
   });
 });
