@@ -89,6 +89,19 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.UntrustedOrigin);
   });
 
+  it("reports UntrustedOrigin when the credential-less cross-origin collections fetch is rejected with 403", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    stubFetch(
+      { [sourceUrl]: makeLandingPage(crossOriginCollectionsUrl) },
+      { [crossOriginCollectionsUrl]: 403 },
+    );
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(getAuthorization(fetchCalls[1].init)).to.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.UntrustedOrigin);
+  });
+
   it("attaches basic-auth credentials to a whitelisted cross-origin collections link", async () => {
     registry.restrictCredentialsToTrustedOrigins = true;
     registry.trustedCredentialsOrigins = ["https://third-party.example.org"];

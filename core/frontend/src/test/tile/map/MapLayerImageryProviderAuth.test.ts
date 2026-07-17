@@ -214,6 +214,17 @@ describe("MapLayerImageryProvider authorization", () => {
     expect(provider.blockedOrigins).toEqual(["https://other.example.org"]);
   });
 
+  it("reports UntrustedOrigin status when withheld basic-auth credentials lead to a 403", async () => {
+    // Some servers reject unauthenticated requests with 403 (Forbidden) instead of a 401 challenge.
+    fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
+
+    const provider = createProvider({ userName: "user", password: "pwd" });
+    await provider.makeRequest(crossOriginUrl);
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["https://other.example.org"]);
+  });
+
   it("does not report UntrustedOrigin when a gate-blocked request succeeds anonymously", async () => {
     const provider = createProvider({ userName: "user", password: "pwd" });
     await provider.makeRequest(crossOriginUrl);
@@ -457,7 +468,8 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
     const expectedOrigin = "https://discovery.example.net";
     const warnings = logWarning.mock.calls.filter((call) => {
       const message = String(call[1]);
-      const urlCandidates = message.match(/https?:\/\/[^\s)]+/g) ?? [];
+      // Exclude quotes: the warning wraps the origin as '...', which would break URL parsing.
+      const urlCandidates = message.match(/https?:\/\/[^\s)'"]+/g) ?? [];
       return urlCandidates.some((candidate) => {
         try {
           return new URL(candidate).origin === expectedOrigin;

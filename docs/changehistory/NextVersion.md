@@ -99,7 +99,7 @@ For subsequent requests to an origin whose handshake succeeded (which include br
 
 #### Blocked-origin notification
 
-When the origin restriction blocks authentication — that is, a request receives an authentication challenge (http 401) that cannot be answered because credentials were withheld for an untrusted origin — the provider's status transitions to the new [MapLayerImageryProviderStatus]($frontend) member `UntrustedOrigin` (`@beta`) and [MapLayerImageryProvider.onStatusChanged]($frontend) is raised. The blocked origins are accumulated in the new `MapLayerImageryProvider.blockedOrigins` (`@beta`) property; the event is raised again each time a new origin is blocked. Note that a request whose credentials were withheld but that succeeds anonymously does not change the status.
+When the origin restriction blocks authentication — that is, a request receives an authentication challenge (http 401) that cannot be answered because credentials were withheld for an untrusted origin, or a request whose basic-auth credentials were withheld is rejected with http 401 or 403 — the provider's status transitions to the new [MapLayerImageryProviderStatus]($frontend) member `UntrustedOrigin` (`@beta`) and [MapLayerImageryProvider.onStatusChanged]($frontend) is raised. The blocked origins are accumulated in the new `MapLayerImageryProvider.blockedOrigins` (`@beta`) property; the event is raised again each time a new origin is blocked. Note that a request whose credentials were withheld but that succeeds anonymously does not change the status.
 
 Applications can use this to surface the problem to the user, or to prompt for whitelisting:
 
