@@ -6107,12 +6107,14 @@ export class MapLayerFormatRegistry {
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
     // @beta (undocumented)
     getAccessClient(formatId: string): MapLayerAccessClient | undefined;
+    // @internal
+    isCredentialsSharingAllowed(url: string, settingsUrl: string): boolean;
     // (undocumented)
     isRegistered(formatId: string): boolean;
     // @internal
     isSsoAllowed(url: string): boolean;
     // @internal
-    logUntrustedOriginUse(url: string): void;
+    logUntrustedOriginUse(url: string, settingsUrl?: string): void;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // @beta

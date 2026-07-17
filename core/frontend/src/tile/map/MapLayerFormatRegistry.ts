@@ -212,6 +212,28 @@ export class MapLayerFormatRegistry {
     return origin !== undefined && this._trustedCredentialsOrigins.includes(origin);
   }
 
+  /** Returns true if the basic-auth credentials belonging to a map-layer source or settings URL may be
+   * attached to a request to the given URL. Always true unless [[restrictCredentialsToTrustedOrigins]]
+   * is enabled (opt-in). When enabled, the origin of `settingsUrl` is implicitly trusted (the credentials
+   * belong to that server); other origins — including endpoints advertised by server-controlled documents
+   * such as an OGC API landing page — must be listed in [[trustedCredentialsOrigins]].
+   * @internal
+   */
+  public isCredentialsSharingAllowed(url: string, settingsUrl: string): boolean {
+    if (!this.restrictCredentialsToTrustedOrigins)
+      return true;
+
+    const origin = tryGetOrigin(url);
+    if (origin === undefined)
+      return false;
+
+    if (origin === tryGetOrigin(settingsUrl))
+      return true;
+
+    // Entries are normalized to their origin by the [[trustedCredentialsOrigins]] setter.
+    return this._trustedCredentialsOrigins.includes(origin);
+  }
+
   /** Origins for which a "credentials sent to untrusted origin" warning was already logged;
    * used to log the discovery warning only once per origin.
    */
@@ -220,13 +242,18 @@ export class MapLayerFormatRegistry {
   /** Logs a warning (once per origin) when credentials are sent to an origin that would be blocked
    * if [[restrictCredentialsToTrustedOrigins]] were enabled.
    * Helps applications discover the origins they need to whitelist before opting in to the restriction.
+   * If `settingsUrl` is supplied, requests sharing its origin are not logged, since that origin is
+   * implicitly trusted for basic-auth.
    * @internal
    */
-  public logUntrustedOriginUse(url: string): void {
+  public logUntrustedOriginUse(url: string, settingsUrl?: string): void {
     if (this.restrictCredentialsToTrustedOrigins)
       return;   // restriction active; nothing to preview
 
     const origin = tryGetOrigin(url) ?? url;
+
+    if (settingsUrl !== undefined && origin === tryGetOrigin(settingsUrl))
+      return;   // implicitly trusted for basic-auth
 
     if (this._untrustedUseLogged.has(origin) || this._trustedCredentialsOrigins.includes(origin))
       return;

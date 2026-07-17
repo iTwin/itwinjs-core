@@ -376,19 +376,11 @@ export abstract class MapLayerImageryProvider {
    * Always true unless [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (opt-in).
    * When enabled, the origin of this layer's settings URL is implicitly trusted (the credentials belong to that
    * server); other origins must be listed in [[MapLayerFormatRegistry.trustedCredentialsOrigins]].
+   * See [[MapLayerFormatRegistry.isCredentialsSharingAllowed]].
    * @internal
    */
   protected isCredentialsSharingAllowed(url: string): boolean {
-    if (!IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins)
-      return true;
-
-    if (this.matchesSettingsUrlOrigin(url))
-      return true;
-
-    const origin = tryGetOrigin(url);
-
-    // Entries are normalized to their origin by the [[MapLayerFormatRegistry.trustedCredentialsOrigins]] setter.
-    return origin !== undefined && IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins.includes(origin);
+    return IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(url, this._settings.url);
   }
 
   /** Returns true if a request to the given URL may be retried with browser credentials included
