@@ -55,7 +55,7 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   throw new Error(`Failed to throw error with message: "${msg}"`);
 }
 
-describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://github.com/iTwin/itwinjs-core/issues/7730
+describe.only("Merge conflict & locking", () => { // ###TODO FLAKY https://github.com/iTwin/itwinjs-core/issues/7730
   let iTwinId: GuidString;
 
   before(() => {
