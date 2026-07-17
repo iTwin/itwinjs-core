@@ -7,7 +7,7 @@ publish: false
   - [Quantity formatting](#quantity-formatting)
     - [Bearing and Azimuth formatting now respects the persistence unit's phenomenon](#bearing-and-azimuth-formatting-now-respects-the-persistence-units-phenomenon)
   - [Electron 43 support](#electron-43-support)
-  - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
+  - [Backend-to-frontend IPC invoke (Electron)](#backend-to-frontend-ipc-invoke-electron)
   - [@itwin/core-backend](#itwincore-backend)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
 
@@ -32,9 +32,9 @@ If your KindOfQuantity persists true azimuth values directly, switch its persist
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 43](https://www.electronjs.org/blog/electron-43-0).
 
-## Backend-to-frontend IPC invoke
+## Backend-to-frontend IPC invoke (Electron)
 
-For apps with a dedicated backend, the backend can now invoke methods on the frontend and receive a return value, mirroring the existing frontend-to-backend pattern. Previously [IpcHost]($backend) could only `send` one-way messages to the frontend; the reverse request/response direction had no equivalent of [IpcSocketFrontend.invoke]($common).
+For apps with a dedicated backend (e.g. Electron and mobile), the backend can now invoke methods on the frontend and receive a return value, mirroring the existing frontend-to-backend pattern. Previously [IpcHost]($backend) could only `send` one-way messages to the frontend; the reverse request/response direction had no equivalent of [IpcSocketFrontend.invoke]($common).
 
 The new `@beta` APIs are:
 
