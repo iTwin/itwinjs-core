@@ -39,7 +39,9 @@ function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
 
 function isSafeFileExtension(fileExt: string): boolean {
   const invalidChars = "<>:\"/\\|?*";
-  return !Array.from(fileExt).some((char) => invalidChars.includes(char) || char.charCodeAt(0) < 0x20);
+  return !fileExt.endsWith(" ")
+    && !fileExt.endsWith(".")
+    && !Array.from(fileExt).some((char) => invalidChars.includes(char) || char.charCodeAt(0) < 0x20);
 }
 
 /** file extension for local WorkspaceDbs */

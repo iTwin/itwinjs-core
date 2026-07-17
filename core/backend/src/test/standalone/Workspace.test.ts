@@ -188,7 +188,7 @@ describe("WorkspaceFile", () => {
     const fileRscName = "unsafe-extension";
 
     try {
-      const invalidFileExts = [..."<>:\"/\\|?*", ...Array.from({ length: 0x20 }, (_, code) => `safe${String.fromCharCode(code)}unsafe`)];
+      const invalidFileExts = [..."<>:\"/\\|?*", ...Array.from({ length: 0x20 }, (_, code) => `safe${String.fromCharCode(code)}unsafe`), "json ", "json."];
       for (const fileExt of invalidFileExts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         expect(() => wsFile.addFile(fileRscName, inFile, fileExt), JSON.stringify(fileExt)).to.throw("file extension contains characters that are invalid in file names");
@@ -206,22 +206,24 @@ describe("WorkspaceFile", () => {
   it("ignores unsafe stored extensions in generated file paths", async () => {
     const wsFile = await makeEditableDb({ containerId: "unsafe-stored-file-ext", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "unsafe stored file extension test" });
     const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    const fileRscName = "unsafe-stored-extension";
     const escapedFileName = resolve(wsFile.container.filesDir, "..", "outside");
 
     try {
-      wsFile.sqliteDb[_nativeDb].embedFile({
-        name: fileRscName,
-        localFileName: inFile,
-        date: fs.statSync(inFile).mtimeMs,
-        fileExt: "../../../outside",
-      });
+      for (const [index, fileExt] of ["../../../outside", "json ", "json."].entries()) {
+        const fileRscName = `unsafe-stored-extension-${index}`;
+        wsFile.sqliteDb[_nativeDb].embedFile({
+          name: fileRscName,
+          localFileName: inFile,
+          date: fs.statSync(inFile).mtimeMs,
+          fileExt,
+        });
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const extractedFileName = wsFile.getFile(fileRscName)!;
-      expect(dirname(extractedFileName)).equals(wsFile.container.filesDir);
-      expect(extname(extractedFileName)).equals("");
-      compareFiles(inFile, extractedFileName);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const extractedFileName = wsFile.getFile(fileRscName)!;
+        expect(dirname(extractedFileName), fileExt).equals(wsFile.container.filesDir);
+        expect(extname(extractedFileName), fileExt).equals("");
+        compareFiles(inFile, extractedFileName);
+      }
     } finally {
       fs.removeSync(escapedFileName);
       wsFile.close();

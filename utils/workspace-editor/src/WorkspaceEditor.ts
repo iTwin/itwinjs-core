@@ -592,7 +592,7 @@ const type: Yargs.Options = {
   demandOption: true,
   coerce: (value: RscType) => {
     if (value === "file")
-      console.warn("Warning: --type=file is deprecated and retained only for existing file resources. Use --type=blob or --type=string for new resources.");
+      console.warn("Warning: --type=file is deprecated but supported for compatibility. Use --type=blob or --type=string for new resources.");
     return value;
   },
 };

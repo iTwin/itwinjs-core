@@ -218,6 +218,7 @@ WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
   name=specs.json, size=8K
   name=vendor.json, size=46K
  blobs:
+  name=equipment-data, size=134K
   name=Sparks/KDE05814.dict, size=224K
   name=Sparks/KDE05815.dict, size=307K
   name=Sparks/KDE05816.dict, size=32K
@@ -536,8 +537,6 @@ WorkspaceDb [r:\workspaces\proj112\proj.itwin-workspace]
   name=UniSpace/KRT05814.dict, size=13K
   name=UniSpace/KRT05820.dict, size=7K
   name=UniSpace/KRT06519.dict, size=687
- files:
-  name=equipment-data, size=134K, ext="dat", date=Tue Jul 08 2014 13:55:19 GMT-0400 (Eastern Daylight Time)
 ```
 
 Then, a separate file called `createCloud.txt` contains:
