@@ -627,6 +627,32 @@ describe("ArcGisUtilities.getServiceJson SSO origin restriction", () => {
     expect(provider.blockedOrigins).toEqual(["https://redirect.example.net"]);
   });
 
+  it("ArcGIS provider fetch does not retry with SSO credentials for a non-whitelisted origin", async () => {
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "Test", url: serviceUrl });
+    const provider = new ArcGISMapLayerImageryProvider(settings);
+    const response = await (provider as any).fetch(new URL(`${serviceUrl}/tile/0/0/0`), { method: "GET" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);   // no credentialed retry
+    expect(response.status).toEqual(401);
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["https://maps.example.com"]);
+  });
+
+  it("ArcGIS provider fetch retries with SSO credentials for a whitelisted origin", async () => {
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://maps.example.com"];
+    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValue(okResponse());
+
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "Test", url: serviceUrl });
+    const provider = new ArcGISMapLayerImageryProvider(settings);
+    const response = await (provider as any).fetch(new URL(`${serviceUrl}/tile/0/0/0`), { method: "GET" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const retryOpts = fetchMock.mock.calls[1][1] as RequestInit;
+    expect(retryOpts.credentials).toEqual("include");
+    expect(response.status).toEqual(200);
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
+  });
+
   it("ArcGIS provider fetch retries the challenged post-redirect URL directly, refusing further redirects", async () => {
     const finalUrl = "https://redirect.example.net/arcgis/rest/services/test/MapServer/tile/0/0/0";
     IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://redirect.example.net"];
