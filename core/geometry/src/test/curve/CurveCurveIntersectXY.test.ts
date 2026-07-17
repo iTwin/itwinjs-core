@@ -8,6 +8,7 @@ import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { AnyCurve } from "../../curve/CurveTypes";
@@ -32,11 +33,9 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { Map4d } from "../../geometry4d/Map4d";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { FrameBuilder } from "../../geometry3d/FrameBuilder";
-import { CurveFactory } from "../../curve/CurveFactory";
+import { Sample } from "../GeometrySamples";
 
 /**
  * This function creates some sample Map4ds. The transform0 of the Map4d is passed as "worldToLocal" transform to
@@ -337,10 +336,10 @@ describe("CurveCurveIntersectXY", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc, linestring], dx, dy);
         const intersectionsAB = CurveCurve.intersectionProjectedXYPairs(worldToLocal, linestring, true, arc, true);
         testIntersectionsXY(ck, worldToLocal, intersectionsAB, numExpected, numExpected);
-        GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.05, dx, dy);
+        GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.3, dx, dy);
         const intersectionsBA = CurveCurve.intersectionProjectedXYPairs(worldToLocal, arc, true, linestring, true);
         testIntersectionsXY(ck, worldToLocal, intersectionsBA, numExpected, numExpected);
-        GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsBA, 0.05, dx, dy);
+        GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsBA, 0.3, dx, dy);
         dx += 20;
       }
       dy += 20;
@@ -2912,8 +2911,8 @@ describe("CurveCurveIntersectXY", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("FilletLineIntersection2", () => {
-    const ck = new Checker(true, true);
+  it("FilletLineIntersection2", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const points = [
@@ -2923,73 +2922,40 @@ describe("CurveCurveIntersectXY", () => {
     ];
     const radius = 0.9144000000000001;
 
+    // symmetric fillet (axes aligned to linestring bisector)
     const path = CurveFactory.createFilletsInLineString(points, radius)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path.getChild(1));
-    const fillet1 = path.getChild(1) as Arc3d;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, fillet1);
-    // const fillet1 = Arc3d.create(
-    //   Point3d.create(295520.69645572786, 143508.2494620432, 0),
-    //   Vector3d.create(-0.6465784407169791, 0.6465784407169792, 0),
-    //   Vector3d.create(0.6465784407169791, 0.6465784407169791, 0),
-    //   AngleSweep.createStartEndRadians(-0.7853981633974484, 0.7853981633974484) // -45.000000000111633369, 45.000000000111633369
-    // );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
+    const fillet0 = path.getChild(1) as Arc3d;
 
-    const lineSegment0 = LineString3d.create(
-      Point3d.create(295519.78205572785, 143501.74170085153, 0),
-      Point3d.create(295519.78205572785, 143509.1638620432, 0)
-    );
-    const lineSegment1 = LineString3d.create(
-      Point3d.create(295519.78205572785, 143509.1638620432, 0),
-      Point3d.create(295524.9566610657, 143509.1638620432, 0)
-    );
-    const fillet2 = Arc3d.create(
-      Point3d.create(295520.69645572786, 143508.2494620432, 0),
-      Vector3d.create(0.9144000000000001, 0, 0),
-      Vector3d.create(0, 0.9144000000000001, 0),
-      AngleSweep.createStartEndDegrees(180, 90)
-    );
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineSegment0);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineSegment1);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, fillet2);
+    // standard fillet (axes aligned to global axes)
+    const lineSegment0 = LineString3d.create(points[0], points[1]);
+    const lineSegment1 = LineString3d.create(points[1], points[2]);
+    const fillet1 = Arc3d.create(fillet0.center, Vector3d.create(radius, 0, 0), Vector3d.create(0, radius, 0), AngleSweep.createStartEndDegrees(180, 90));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [lineSegment0, lineSegment1, fillet1], 10);
 
-    const getWorldToLocal = (lineSegment: LineString3d): Matrix4d | undefined => {
-      const localToWorld = FrameBuilder.createRightHandedFrame(Vector3d.create(0, 0, 1), lineSegment);
-      if (undefined === localToWorld)
-        return undefined;
-      const worldToLocal = localToWorld.inverse();
-      if (undefined === worldToLocal)
-        return undefined;
-      return Matrix4d.createTransform(worldToLocal);
-    };
+    // fillets are the same
+    ck.testNearNumber(fillet0.startPoint().distanceXY(fillet1.startPoint()), 0, Geometry.smallFloatingPoint, "fillet start points match");
+    ck.testNearNumber(fillet0.endPoint().distanceXY(fillet1.endPoint()), 0, Geometry.smallFloatingPoint, "fillet end points match");
+    ck.testNearNumber(fillet0.fractionToPoint(0.5).distanceXY(fillet1.fractionToPoint(0.5)), 0, Geometry.smallFloatingPoint, "fillet midpoints match");
 
-    const testFilletLineIntersection = (
-      lineSegment: LineString3d, fillet: Arc3d, expectedNumIntersections: number, expectedPoint?: Point3d, tol?: number
-    ) => {
-      const worldToLocal = getWorldToLocal(lineSegment);
-      if (!worldToLocal) {
-        return;
-      }
-      const intersections = CurveCurve.intersectionProjectedXYPairs(worldToLocal, lineSegment, true, fillet, true, tol);
-      if (ck.testExactNumber(expectedNumIntersections, intersections.length, "computed expected number of intersections between the fillet and line")) {
-        if (expectedNumIntersections > 0) {
-          const intersection = intersections[0].detailA.point;
-          if (ck.testPoint3d(intersection, intersections[0].detailB.point, "report same intersection point on both fillet and line")) {
-            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection, 0.1);
-            if (expectedPoint)
-              ck.testPoint3d(expectedPoint, intersection, "expected intersection point");
-          }
-        }
+    const testFilletLineIntersection = (segment: LineString3d, fillet: Arc3d, expectedArcFraction: 0 | 1, descr: string ,tol?: number) => {
+      const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, segment, true, fillet, true, tol);
+      if (ck.testExactNumber(1, intersections.length, `one intersection: ${descr}`)) {
+        ck.testFraction(expectedArcFraction, intersections[0].detailB.fraction, `expected intersection: ${descr}`);
       }
     };
-    testFilletLineIntersection(lineSegment0, fillet1, 0); // no intersection with default tolerance
-    testFilletLineIntersection(lineSegment1, fillet1, 0); // no intersection with default tolerance
-    testFilletLineIntersection(lineSegment0, fillet1, 1, Point3d.create(295519.78205572785, 143508.2494620432, 0), 1e-5);
-    testFilletLineIntersection(lineSegment1, fillet1, 1, Point3d.create(295520.69645572786, 143509.1638620432, 0), 1e-5);
 
-    testFilletLineIntersection(lineSegment0, fillet2, 0); // no intersection with default tolerance
-    testFilletLineIntersection(lineSegment1, fillet2, 0); // no intersection with default tolerance
-    testFilletLineIntersection(lineSegment0, fillet2, 1, Point3d.create(295519.78205572785, 143508.2494620432, 0), 1e-5);
-    testFilletLineIntersection(lineSegment1, fillet2, 1, Point3d.create(295520.69645572786, 143509.1638620432, 0), 1e-5);
+    // verify default tol finds the intersection
+    testFilletLineIntersection(lineSegment0, fillet0, 0, "symmetric fillet intersect at start");
+    testFilletLineIntersection(lineSegment1, fillet0, 1, "symmetric fillet intersect at end");
+    testFilletLineIntersection(lineSegment0, fillet1, 0, "standard fillet intersect at start");
+    testFilletLineIntersection(lineSegment1, fillet1, 1, "standard fillet intersect at end");
+
+    // verify loosened tol finds the intersection
+    testFilletLineIntersection(lineSegment0, fillet0, 0, "symmetric fillet intersect at start", 1e-5);
+    testFilletLineIntersection(lineSegment1, fillet0, 1, "symmetric fillet intersect at end", 1e-5);
+    testFilletLineIntersection(lineSegment0, fillet1, 0, "standard fillet intersect at start", 1e-5);
+    testFilletLineIntersection(lineSegment1, fillet1, 1, "standard fillet intersect at end", 1e-5);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "FilletLineIntersection2");
     expect(ck.getNumErrors()).toBe(0);
