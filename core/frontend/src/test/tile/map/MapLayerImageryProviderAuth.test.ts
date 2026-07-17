@@ -46,6 +46,14 @@ function ntlmChallengeResponse(): Response {
   return new Response(null, { status: 401, headers: { "WWW-Authenticate": "NTLM" } });
 }
 
+/** Simulates a response obtained after fetch transparently followed a redirect: `response.url`
+ * reports the final URL, which may differ in origin from the URL that was requested.
+ */
+function redirectedTo(response: Response, finalUrl: string): Response {
+  Object.defineProperty(response, "url", { value: finalUrl });
+  return response;
+}
+
 describe("MapLayerImageryProvider authorization", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -322,6 +330,74 @@ describe("MapLayerImageryProvider authorization", () => {
 
     expect(IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins).toEqual(["https://tiles.example.com"]);
   });
+
+  it("gates the SSO retry on the origin that issued the challenge after a redirect", async () => {
+    // The requested origin is whitelisted, but the challenge comes from a redirect destination that is not.
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://maps.example.com"];
+    fetchMock.mockResolvedValue(redirectedTo(ntlmChallengeResponse(), "https://redirect.example.net/wms/tile/0/0/0"));
+
+    const provider = createProvider();
+    const response = await provider.makeRequest(sameOriginUrl);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);   // no credentialed retry
+    expect(response.status).toEqual(401);
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["https://redirect.example.net"]);
+  });
+
+  it("retries the challenged post-redirect URL directly, refusing further redirects", async () => {
+    // Only the redirect destination is whitelisted; the retry must target it, not the requested URL.
+    const finalUrl = "https://redirect.example.net/wms/tile/0/0/0";
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://redirect.example.net"];
+    fetchMock.mockResolvedValueOnce(redirectedTo(ntlmChallengeResponse(), finalUrl)).mockResolvedValue(okResponse());
+
+    const provider = createProvider();
+    const response = await provider.makeRequest(sameOriginUrl);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][0]).toEqual(finalUrl);
+    const retryOpts = fetchMock.mock.calls[1][1] as RequestInit;
+    expect(retryOpts.credentials).toEqual("include");
+    expect(retryOpts.redirect).toEqual("error");
+    expect(response.status).toEqual(200);
+
+    // The latch records the challenged origin, not the requested one.
+    await provider.makeRequest(finalUrl);
+    expect((fetchMock.mock.calls[2][1] as RequestInit).credentials).toEqual("include");
+    await provider.makeRequest(sameOriginUrl);
+    expect((fetchMock.mock.calls[3][1] as RequestInit).credentials).toBeUndefined();
+  });
+
+  it("reports a credentialed request that was transparently redirected to an untrusted origin", async () => {
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://other.example.org"];
+    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValue(okResponse());
+
+    const provider = createProvider();
+    await provider.makeRequest(crossOriginUrl);   // validated handshake latches the origin
+
+    // A later latched (credential-bearing) request is transparently redirected cross-origin: the
+    // destination must be detected and reported, and must never become latched itself.
+    fetchMock.mockResolvedValue(redirectedTo(okResponse(), "https://evil.example.net/steal"));
+    await provider.makeRequest(crossOriginUrl);
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["https://evil.example.net"]);
+  });
+
+  it("logs the discovery warning when a credentialed request is redirected cross-origin (legacy default)", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
+    const logWarning = vi.spyOn(Logger, "logWarning");
+    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValue(okResponse());
+
+    const provider = createProvider();
+    await provider.makeRequest(crossOriginUrl);   // legacy handshake latches the origin
+
+    fetchMock.mockResolvedValue(redirectedTo(okResponse(), "https://evil.example.net/steal"));
+    await provider.makeRequest(crossOriginUrl);
+
+    const warnings = logWarning.mock.calls.filter((call) => String(call[1]).includes("https://evil.example.net"));
+    expect(warnings).toHaveLength(1);
+  });
 });
 
 describe("WmsUtilities.fetchXml SSO origin restriction", () => {
@@ -380,6 +456,32 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
 
     const warnings = logWarning.mock.calls.filter((call) => String(call[1]).includes("https://discovery.example.net"));
     expect(warnings).toHaveLength(1);
+  });
+
+  it("gates the SSO retry on the origin that issued the challenge after a redirect", async () => {
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://maps.example.com"];
+    const finalUrl = "https://redirect.example.net/wms?request=GetCapabilities&service=WMS";
+    fetchMock.mockResolvedValue(redirectedTo(ntlmChallengeResponse(), finalUrl));
+
+    const err = await WmsUtilities.fetchXml(wmsUrl).catch((e) => e);
+    expect(err).toBeInstanceOf(MapLayerUntrustedOriginError);
+    expect((err as MapLayerUntrustedOriginError).url).toEqual(finalUrl);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries the challenged post-redirect URL directly, refusing further redirects", async () => {
+    const finalUrl = "https://redirect.example.net/wms?request=GetCapabilities&service=WMS";
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://redirect.example.net"];
+    fetchMock.mockResolvedValueOnce(redirectedTo(ntlmChallengeResponse(), finalUrl)).mockResolvedValueOnce(new Response("<xml/>", { status: 200 }));
+
+    const xml = await WmsUtilities.fetchXml(wmsUrl);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][0]).toEqual(finalUrl);
+    const retryOpts = fetchMock.mock.calls[1][1] as RequestInit;
+    expect(retryOpts.credentials).toEqual("include");
+    expect(retryOpts.redirect).toEqual("error");
+    expect(xml).toEqual("<xml/>");
   });
 });
 
@@ -482,5 +584,63 @@ describe("ArcGisUtilities.getServiceJson SSO origin restriction", () => {
 
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
     expect(provider.blockedOrigins).toEqual(["https://init-arcgis.example.net"]);
+  });
+
+  it("gates the SSO retry on the origin that issued the challenge after a redirect", async () => {
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://maps.example.com"];
+    const finalUrl = "https://redirect.example.net/arcgis/rest/services/test/MapServer?f=json";
+    fetchMock.mockResolvedValue(redirectedTo(ntlmChallengeResponse(), finalUrl));
+
+    const err = await ArcGisUtilities.getServiceJson({ url: serviceUrl, formatId: "ArcGIS", ignoreCache: true }).catch((e) => e);
+    expect(err).toBeInstanceOf(MapLayerUntrustedOriginError);
+    expect((err as MapLayerUntrustedOriginError).url).toEqual(finalUrl);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries the challenged post-redirect URL directly, refusing further redirects", async () => {
+    const finalUrl = "https://redirect.example.net/arcgis/rest/services/test/MapServer?f=json";
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://redirect.example.net"];
+    fetchMock.mockResolvedValueOnce(redirectedTo(ntlmChallengeResponse(), finalUrl)).mockResolvedValueOnce(jsonResponse());
+
+    const json = await ArcGisUtilities.getServiceJson({ url: serviceUrl, formatId: "ArcGIS", ignoreCache: true });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][0]).toEqual(finalUrl);
+    const retryOpts = fetchMock.mock.calls[1][1] as RequestInit;
+    expect(retryOpts.credentials).toEqual("include");
+    expect(retryOpts.redirect).toEqual("error");
+    expect(json?.content.currentVersion).toEqual(11);
+  });
+
+  it("ArcGIS provider fetch gates the SSO retry on the post-redirect origin", async () => {
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://maps.example.com"];
+    const finalUrl = "https://redirect.example.net/arcgis/rest/services/test/MapServer/tile/0/0/0";
+    fetchMock.mockResolvedValue(redirectedTo(ntlmChallengeResponse(), finalUrl));
+
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "Test", url: serviceUrl });
+    const provider = new ArcGISMapLayerImageryProvider(settings);
+    const response = await (provider as any).fetch(new URL(`${serviceUrl}/tile/0/0/0`), { method: "GET" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);   // no credentialed retry
+    expect(response.status).toEqual(401);
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["https://redirect.example.net"]);
+  });
+
+  it("ArcGIS provider fetch retries the challenged post-redirect URL directly, refusing further redirects", async () => {
+    const finalUrl = "https://redirect.example.net/arcgis/rest/services/test/MapServer/tile/0/0/0";
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://redirect.example.net"];
+    fetchMock.mockResolvedValueOnce(redirectedTo(ntlmChallengeResponse(), finalUrl)).mockResolvedValue(okResponse());
+
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "Test", url: serviceUrl });
+    const provider = new ArcGISMapLayerImageryProvider(settings);
+    const response = await (provider as any).fetch(new URL(`${serviceUrl}/tile/0/0/0`), { method: "GET" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][0]).toEqual(finalUrl);
+    const retryOpts = fetchMock.mock.calls[1][1] as RequestInit;
+    expect(retryOpts.credentials).toEqual("include");
+    expect(retryOpts.redirect).toEqual("error");
+    expect(response.status).toEqual(200);
   });
 });

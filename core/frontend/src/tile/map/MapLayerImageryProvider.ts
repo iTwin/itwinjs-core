@@ -442,6 +442,37 @@ export abstract class MapLayerImageryProvider {
     IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url);
   }
 
+  /** Detects that a request carrying browser credentials (see [[includeUserCredentials]]) was transparently
+   * redirected to a different origin, and reports or logs that origin.
+   *
+   * `fetch` follows redirects automatically and a browser offers no way to conditionally follow them
+   * (`redirect: "manual"` yields an opaque response whose destination cannot be inspected), so a redirect
+   * issued by an already-trusted origin can carry the user's cookies to the destination before this code
+   * can intervene. Refusing redirects outright (`redirect: "error"`) on every credentialed request would
+   * break legitimate same-origin redirects, which are common for tile URLs. This check is therefore
+   * **detection, not prevention**:
+   * - the exposure is bounded to the individual redirected request (and integrated authentication
+   *   additionally requires the destination to pass the browser's own integrated-auth policy);
+   * - the destination origin is never latched as SSO-succeeded, so credentials do not keep flowing to it
+   *   ([[includeUserCredentials]] validates the origin of each request URL);
+   * - when [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled, an untrusted
+   *   destination is reported via [[MapLayerImageryProviderStatus.UntrustedOrigin]] and [[blockedOrigins]];
+   *   otherwise it is surfaced by the once-per-origin discovery warning.
+   * Note the initial credential-bearing *retry* after a 401 challenge is stricter: it uses
+   * `redirect: "error"`, because a redirect is never a legitimate part of an NTLM/Negotiate handshake.
+   * @internal
+   */
+  protected checkCredentialedRedirect(requestedUrl: string, response: Response): void {
+    const finalOrigin = tryGetOrigin(response.url);
+    if (!response.url || finalOrigin === undefined || finalOrigin === tryGetOrigin(requestedUrl))
+      return;
+
+    if (!this.isSsoAllowed(response.url))
+      this.reportBlockedOrigin(response.url);
+    else
+      this.logUntrustedOriginUse(response.url);   // no-op when the restriction is enabled
+  }
+
   /** @internal */
   public async makeRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
 
@@ -479,26 +510,40 @@ export abstract class MapLayerImageryProvider {
 
     response = await fetch(url, opts);
 
+    // If the request carried browser credentials (latched SSO origin), detect a transparent redirect
+    // to a different origin — see [[checkCredentialedRedirect]] for why this is detection, not prevention.
+    if (includeCredentials)
+      this.checkCredentialedRedirect(url, response);
+
+    // fetch follows redirects transparently, so the response — including any authentication challenge —
+    // may originate from a different origin than the one requested. All trust decisions below target the
+    // final (post-redirect) URL reported by the response, not the URL we asked for.
+    const challengedUrl = response.url || url;
+
     if (response.status === 401
           && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
           && !includeCredentials
           && !hasCreds
     ) {
-      if (this.isSsoAllowed(url)) {
+      if (this.isSsoAllowed(challengedUrl)) {
         // Removed the previous headers and make sure "include" credentials is set
         opts.headers = undefined;
         opts.credentials = "include";
-        this.logUntrustedOriginUse(url);
+        // The retry targets the challenged (post-redirect) URL directly and refuses to follow any further
+        // redirect, so browser credentials can never be carried to an origin that was not validated above.
+        // A Negotiate/NTLM handshake is a same-URL 401 round-trip, never a redirect flow, so "error" is safe here.
+        opts.redirect = "error";
+        this.logUntrustedOriginUse(challengedUrl);
 
         // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(url,  opts);
+        response = await fetch(challengedUrl, opts);
         if (response.status === 200) {
-          this.recordSsoSucceeded(url);    // avoid going through 401 challenges over and over for this origin
+          this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
         }
       } else {
-        // The SSO retry was suppressed because the origin is not trusted; report it so the application
-        // can surface the blocked origin to the user.
-        this.reportBlockedOrigin(url);
+        // The SSO retry was suppressed because the challenged origin is not trusted; report it so the
+        // application can surface the blocked origin to the user.
+        this.reportBlockedOrigin(challengedUrl);
       }
     } else if (response.status === 401 && credsWithheld) {
       // The server rejected the request and the stored basic-auth credentials were withheld because the
@@ -554,12 +599,17 @@ export abstract class MapLayerImageryProvider {
     }
 
     try {
+      // includeUserCredentials re-checks the current trust policy, not just the handshake latch.
+      const includeCredentials = this.includeUserCredentials(url);
       const response = await fetch(url, {
         method: "GET",
         headers,
-        // includeUserCredentials re-checks the current trust policy, not just the handshake latch.
-        credentials: this.includeUserCredentials(url) ? "include" : undefined,
+        credentials: includeCredentials ? "include" : undefined,
       });
+      // Detect a credential-bearing request transparently redirected to a different origin
+      // (see [[checkCredentialedRedirect]]).
+      if (includeCredentials)
+        this.checkCredentialedRedirect(url, response);
       let text = await response.text();
       if (text) {
         // Tooltip content (e.g. WMS GetFeatureInfo responses) is rendered as HTML downstream and may

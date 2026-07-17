@@ -33,18 +33,23 @@ export class WmsUtilities {
 
     let response = await fetch(url, { method: "GET", headers });
     if (!credentials && response.status === 401 && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-      if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(url)) {
+      // fetch follows redirects transparently, so the challenge may originate from a different origin than
+      // the one requested; the trust decision must target the final (post-redirect) URL.
+      const challengedUrl = response.url || url;
+      if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(challengedUrl)) {
         // The SSO retry is suppressed because the origin is not trusted; throw a distinct error so callers
         // can report the blocked origin instead of treating this as a missing-credentials 401.
-        throw new MapLayerUntrustedOriginError(url);
+        throw new MapLayerUntrustedOriginError(challengedUrl);
       }
 
       // No-op when the restriction is enabled (the origin is whitelisted if we got here); otherwise logs
       // a once-per-origin warning that this SSO retry would be blocked if the restriction were enabled.
-      IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url);
+      IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(challengedUrl);
 
-      // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication)
-      response = await fetch(url, { method: "GET", credentials: "include" });
+      // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication). The retry targets the
+      // challenged URL directly and refuses to follow any further redirect, so browser credentials can
+      // never be carried to an origin that was not validated above.
+      response = await fetch(challengedUrl, { method: "GET", credentials: "include", redirect: "error" });
     }
 
     if (response.status !== 200)

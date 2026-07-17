@@ -308,18 +308,23 @@ export class ArcGisUtilities {
       }
       let response = await fetch(tmpUrl, { method: "GET" });
       if (response.status === 401 && !requireToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-        if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(tmpUrl.toString())) {
+        // fetch follows redirects transparently, so the challenge may originate from a different origin
+        // than the one requested; the trust decision must target the final (post-redirect) URL.
+        const challengedUrl = response.url || tmpUrl.toString();
+        if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(challengedUrl)) {
           // The SSO retry is suppressed because the origin is not trusted; throw a distinct error so callers
           // can report the blocked origin instead of treating this as an invalid or auth-requiring source.
-          throw new MapLayerUntrustedOriginError(tmpUrl.toString());
+          throw new MapLayerUntrustedOriginError(challengedUrl);
         }
 
         // No-op when the restriction is enabled (the origin is whitelisted if we got here); otherwise logs
         // a once-per-origin warning that this SSO retry would be blocked if the restriction were enabled.
-        IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(tmpUrl.toString());
+        IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(challengedUrl);
 
-        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(tmpUrl, {method: "GET", credentials: "include" });
+        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
+        // The retry targets the challenged URL directly and refuses to follow any further redirect, so
+        // browser credentials can never be carried to an origin that was not validated above.
+        response = await fetch(challengedUrl, {method: "GET", credentials: "include", redirect: "error" });
       }
 
       // Append security token when corresponding error code is returned by ArcGIS service

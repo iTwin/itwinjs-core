@@ -117,20 +117,32 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
     let response: Response|undefined;
     try {
-      response = await fetch(urlObj, {...options, credentials: this.includeUserCredentials(urlObj.toString()) ?  "include" : undefined});
+      const requestUrl = urlObj.toString();
+      const includeCredentials = this.includeUserCredentials(requestUrl);
+      response = await fetch(urlObj, {...options, credentials: includeCredentials ?  "include" : undefined});
+
+      // If the request carried browser credentials (latched SSO origin), detect a transparent redirect
+      // to a different origin — see [[MapLayerImageryProvider.checkCredentialedRedirect]].
+      if (includeCredentials)
+        this.checkCredentialedRedirect(requestUrl, response);
 
       if (response.status === 401 && !this._lastAccessToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-        if (this.isSsoAllowed(urlObj.toString())) {
-          // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-          this.logUntrustedOriginUse(urlObj.toString());
-          response = await fetch(urlObj, {...options, credentials: "include" });
+        // fetch follows redirects transparently, so the challenge may originate from a different origin
+        // than the one requested; the trust decision must target the final (post-redirect) URL.
+        const challengedUrl = response.url || requestUrl;
+        if (this.isSsoAllowed(challengedUrl)) {
+          // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
+          // The retry targets the challenged URL directly and refuses to follow any further redirect, so
+          // browser credentials can never be carried to an origin that was not validated above.
+          this.logUntrustedOriginUse(challengedUrl);
+          response = await fetch(challengedUrl, {...options, credentials: "include", redirect: "error" });
           if (response.status === 200) {
-            this.recordSsoSucceeded(urlObj.toString());    // avoid going through 401 challenges over and over for this origin
+            this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
           }
         } else {
-          // The SSO retry was suppressed because the origin is not trusted; report it so the application
-          // can surface the blocked origin to the user.
-          this.reportBlockedOrigin(urlObj.toString());
+          // The SSO retry was suppressed because the challenged origin is not trusted; report it so the
+          // application can surface the blocked origin to the user.
+          this.reportBlockedOrigin(challengedUrl);
         }
       }
 

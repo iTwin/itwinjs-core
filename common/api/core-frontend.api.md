@@ -6146,6 +6146,8 @@ export abstract class MapLayerImageryProvider {
     get blockedOrigins(): ReadonlyArray<string>;
     get cartoRange(): MapCartoRectangle | undefined;
     set cartoRange(range: MapCartoRectangle | undefined);
+    // @internal
+    protected checkCredentialedRedirect(requestedUrl: string, response: Response): void;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // @internal (undocumented)
