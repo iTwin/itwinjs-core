@@ -204,6 +204,37 @@ describe("GoogleMapsProvider", () => {
     expect(table.innerHTML).to.includes(`<p class="logo-cards">Google<br> Airbus Imagery<br> Maxar</p>`);
   });
 
+  it("should render adversarial attribution text as plain text", async () => {
+    fakeJsonFetch(sandbox, defaultPngSession);
+    const settings = GoogleMaps.createBaseLayerSettings(createSessionOptions2);
+
+    sandbox.stub(GoogleMapsImageryProvider.prototype as any, "getSelectedTiles").callsFake(function _(_vp: unknown) {
+      const set = new Set<MapTile>();
+      set.add(new FakeMapTile("17_37981_49592"));
+      return set;
+    });
+
+    // Attribution strings are server-provided; they must never be parsed as HTML.
+    // (No commas in the payload: addAttributions splits attribution strings on ",".)
+    const xssPayload = `<img src="x" onerror="(window.__xss = true)"><script>window.__xss2 = true;</script>`;
+    sandbox.stub(GoogleMapsImageryProvider.prototype as any, "fetchAttributions").callsFake(async function _() {
+      return [xssPayload];
+    });
+
+    sinon.stub(IModelApp, 'publicPath').get(() => 'public/');
+
+    const provider = createProvider(settings);
+
+    await provider.initialize();
+    const table = document.createElement('table');
+    await provider.addAttributions(table, {} as ScreenViewport);
+
+    expect(table.querySelector("img[onerror]")).to.be.null;
+    expect(table.querySelector("script")).to.be.null;
+    // The payload renders literally in the notice paragraph.
+    expect(table.textContent).to.includes(xssPayload);
+  });
+
   it("logo should be activated with the 'dark outline' logo", async () => {
     fakeJsonFetch(sandbox, defaultPngSession);
     const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {

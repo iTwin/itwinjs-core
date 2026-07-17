@@ -31,6 +31,17 @@ export function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
+/** Returns the origin (scheme + host + port) of the given URL, or undefined if it cannot be parsed.
+ * @internal
+ */
+export function tryGetOrigin(url: string): string | undefined {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The status of the map layer imagery provider that lets you know if authentication is needed to request tiles.
  * @public
  */
@@ -98,7 +109,7 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected includeUserCredentials(url: string): boolean {
-    const origin = MapLayerImageryProvider.tryGetOrigin(url);
+    const origin = tryGetOrigin(url);
     return origin !== undefined && this._ssoSucceededOrigins.has(origin) && this.isSsoAllowed(url);
   }
 
@@ -107,7 +118,7 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected recordSsoSucceeded(url: string): void {
-    const origin = MapLayerImageryProvider.tryGetOrigin(url);
+    const origin = tryGetOrigin(url);
     if (origin !== undefined)
       this._ssoSucceededOrigins.add(origin);
   }
@@ -357,19 +368,8 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected matchesSettingsUrlOrigin(url: string): boolean {
-    const origin = MapLayerImageryProvider.tryGetOrigin(url);
-    return origin !== undefined && origin === MapLayerImageryProvider.tryGetOrigin(this._settings.url);
-  }
-
-  /** Returns the origin of the given URL, or undefined if it cannot be parsed.
-   * @internal
-   */
-  private static tryGetOrigin(url: string): string | undefined {
-    try {
-      return new URL(url).origin;
-    } catch {
-      return undefined;
-    }
+    const origin = tryGetOrigin(url);
+    return origin !== undefined && origin === tryGetOrigin(this._settings.url);
   }
 
   /** Returns true if the basic-auth credentials from the layer settings may be attached to a request to the given URL.
@@ -385,7 +385,7 @@ export abstract class MapLayerImageryProvider {
     if (this.matchesSettingsUrlOrigin(url))
       return true;
 
-    const origin = MapLayerImageryProvider.tryGetOrigin(url);
+    const origin = tryGetOrigin(url);
 
     // Entries are normalized to their origin by the [[MapLayerFormatRegistry.trustedCredentialsOrigins]] setter.
     return origin !== undefined && IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins.includes(origin);
@@ -430,7 +430,7 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected reportBlockedOrigin(url: string): void {
-    const origin = MapLayerImageryProvider.tryGetOrigin(url) ?? url;
+    const origin = tryGetOrigin(url) ?? url;
     const isNewOrigin = !this._blockedOrigins.has(origin);
     this._blockedOrigins.add(origin);
 

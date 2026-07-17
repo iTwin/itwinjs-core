@@ -10,7 +10,7 @@ import { assert, expectDefined, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference, tryGetOrigin } from "../internal";
 const loggerCategory = "ArcGISFeatureProvider";
 
 /**
@@ -185,11 +185,11 @@ export class MapLayerFormatRegistry {
   public set trustedCredentialsOrigins(origins: ReadonlyArray<string>) {
     const normalized: string[] = [];
     for (const entry of origins) {
-      try {
-        normalized.push(new URL(entry).origin);
-      } catch {
+      const origin = tryGetOrigin(entry);
+      if (origin !== undefined)
+        normalized.push(origin);
+      else
         Logger.logWarning(loggerCategory, `trustedCredentialsOrigins: ignoring invalid origin '${entry}'`);
-      }
     }
     this._trustedCredentialsOrigins = normalized;
   }
@@ -206,15 +206,10 @@ export class MapLayerFormatRegistry {
     if (!this.restrictCredentialsToTrustedOrigins)
       return true;
 
-    let origin: string;
-    try {
-      origin = new URL(url).origin;
-    } catch {
-      return false;
-    }
+    const origin = tryGetOrigin(url);
 
     // Entries are normalized to their origin by the [[trustedCredentialsOrigins]] setter.
-    return this._trustedCredentialsOrigins.includes(origin);
+    return origin !== undefined && this._trustedCredentialsOrigins.includes(origin);
   }
 
   /** Origins for which a "credentials sent to untrusted origin" warning was already logged;
@@ -231,12 +226,7 @@ export class MapLayerFormatRegistry {
     if (this.restrictCredentialsToTrustedOrigins)
       return;   // restriction active; nothing to preview
 
-    let origin: string;
-    try {
-      origin = new URL(url).origin;
-    } catch {
-      origin = url;
-    }
+    const origin = tryGetOrigin(url) ?? url;
 
     if (this._untrustedUseLogged.has(origin) || this._trustedCredentialsOrigins.includes(origin))
       return;

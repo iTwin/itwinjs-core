@@ -34,6 +34,7 @@ describe("Google3dTilesProvider", () => {
   let getSpriteStub: sinon.SinonStub;
   let addCanvasDecorationStub: sinon.SinonStub;
   let addHTMLDecorationStub: sinon.SinonStub;
+  let getTilesForUserStub: sinon.SinonStub;
   let context: DecorateContext;
 
   beforeAll(async () => {
@@ -47,7 +48,7 @@ describe("Google3dTilesProvider", () => {
       return Promise.resolve(true);
     });
     sinon.stub(LogoDecoration.prototype, "isLoaded").get(() => true);
-    sandbox.stub(TileAdmin.prototype as any, "getTilesForUser").callsFake(function _(_vp: unknown) {
+    getTilesForUserStub = sandbox.stub(TileAdmin.prototype as any, "getTilesForUser").callsFake(function _(_vp: unknown) {
       const set = {
         selected: new Set<RealityTile>()
       };
@@ -91,6 +92,28 @@ describe("Google3dTilesProvider", () => {
     expect(table.innerHTML).to.includes(`<img src="public/images/GoogleMaps_Logo_Gray.svg" style="padding: 10px 10px 5px;">`);
     expect(table.innerHTML).to.includes(`<h2 class="logo-card-header">Google Photorealistic 3D Tiles</h2>`);
     expect(table.innerHTML).to.includes(`Data provided by:<br><ul><li>Google</li><li>Bentley Systems, Inc.</li></ul>`);
+  });
+
+  it("should render adversarial copyright text as plain text", async () => {
+    // Copyrights originate from server-provided tile metadata; they must never be parsed as HTML.
+    // (No ";" in the payload: getCopyrights splits copyright strings on ";".)
+    const xssPayload = `<img src="x" onerror="(window.__xss = true)"><script>window.__xss2 = true</script>`;
+    getTilesForUserStub.callsFake(function _(_vp: unknown) {
+      const set = { selected: new Set<RealityTile>() };
+      set.selected.add(new FakeRealityTile("testId1", xssPayload));
+      return set;
+    });
+
+    const provider = new Google3dTilesProvider({ apiKey: "testApiKey" });
+    expect(await provider.initialize()).to.be.true;
+
+    const table = document.createElement("table");
+    await provider.addAttributions(table, {} as ScreenViewport);
+
+    expect(table.querySelector("img[onerror]")).to.be.null;
+    expect(table.querySelector("script")).to.be.null;
+    // The payload renders literally as the copyright list entry.
+    expect(table.textContent).to.include(xssPayload);
   });
 
   it("should decorate Google logo and attributions on screen", async () => {
