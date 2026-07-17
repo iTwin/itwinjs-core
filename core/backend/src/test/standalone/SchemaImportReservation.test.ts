@@ -3,13 +3,11 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { OpenMode } from "@itwin/core-bentley";
 import { SchemaImportReservationError } from "@itwin/core-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { CloudSqlite, IModelJsFs, SchemaSync, StandaloneDb } from "../../core-backend";
-import { _nativeDb, _onSchemaImport } from "../../internal/Symbols";
-import { SchemaImportIdentity } from "../../SharedSchemaReservations";
+import { _nativeDb } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 /** Assert that `promise` rejects with a `SchemaImportReservationError` carrying the given key. */
@@ -23,9 +21,6 @@ async function expectSchemaImportReservationError(promise: Promise<unknown>, key
   expect.fail(`expected promise to reject with SchemaImportReservationError '${key}'`);
 }
 
-const idA: SchemaImportIdentity = { schemaName: "TestSchema", versionMajor: 1, versionMinor: 0, versionPatch: 0 };
-const idB: SchemaImportIdentity = { schemaName: "OtherSchema", versionMajor: 2, versionMinor: 3, versionPatch: 4 };
-
 describe("Schema import reservation", () => {
   let iModel: StandaloneDb;
   let iModelFileName: string;
@@ -38,7 +33,7 @@ describe("Schema import reservation", () => {
     iModel = StandaloneDb.createEmpty(iModelFileName, { rootSubject: { name: "SchemaImportReservation" } });
     SchemaSync.SchemaSyncDb.createNewDb(schemaDbFileName);
     schemaDb = new SchemaSync.SchemaSyncDb();
-    schemaDb.openDb(schemaDbFileName, OpenMode.ReadWrite);
+    schemaDb.openDb(schemaDbFileName, { openMode: "ReadWrite" });
   });
 
   afterEach(() => {
@@ -51,7 +46,7 @@ describe("Schema import reservation", () => {
     IModelJsFs.removeSync(schemaDbFileName);
   });
 
-  /** Set up a minimal CloudAccess stub that delegates reads/writes to the already-open schemaDb. */
+  /** Set up a minimal CloudAccess stub that delegates withLockedDb to the already-open schemaDb. */
   function stubCloudAccess() {
     const access = {
       synchronizeWithCloud() { },
@@ -60,21 +55,11 @@ describe("Schema import reservation", () => {
       container: { hasLocalChanges: false } as CloudSqlite.CloudContainer,
       reader: {
         findReservedDefinition: (key: any) => schemaDb.findReservedDefinition(key),
-        findSchemaReservation: (identity: SchemaImportIdentity) => schemaDb.findSchemaReservation(identity),
       },
       writeLocker: {
         reserveDefinitionElements: async (ids: any) => {
           try {
             await schemaDb.reserveDefinitionElements(ids);
-            schemaDb.saveChanges();
-          } catch (err) {
-            schemaDb.abandonChanges();
-            throw err;
-          }
-        },
-        reserveSchemaImport: async (identity: SchemaImportIdentity, perTableCounts: Record<string, number>, baseFingerprint: string) => {
-          try {
-            await schemaDb.reserveSchemaImport(identity, perTableCounts, baseFingerprint);
             schemaDb.saveChanges();
           } catch (err) {
             schemaDb.abandonChanges();
@@ -108,193 +93,129 @@ describe("Schema import reservation", () => {
     return access;
   }
 
-  // ---- SchemaSyncDb-level tests ----
-
-  describe("SchemaSyncDb.reserveSchemaImport", () => {
-    it("persists a reservation header and range rows", async () => {
-      await schemaDb.reserveSchemaImport(idA, { ec_Class: 3, ec_Property: 5 }, "fp1");
-      schemaDb.saveChanges();
-
-      const reservation = schemaDb.findSchemaReservation(idA);
-      expect(reservation).to.not.be.undefined;
-      expect(reservation!.baseFingerprint).to.equal("fp1");
-      expect(reservation!.ranges.size).to.equal(2);
-      expect(reservation!.ranges.get("ec_Class")).to.deep.equal({ startId: 1, count: 3 });
-      expect(reservation!.ranges.get("ec_Property")).to.deep.equal({ startId: 1, count: 5 });
-    });
-
-    it("advances the shared per-table counter for each reservation", async () => {
-      await schemaDb.reserveSchemaImport(idA, { ec_Class: 3 }, "fp1");
-      schemaDb.saveChanges();
-      await schemaDb.reserveSchemaImport(idB, { ec_Class: 2 }, "fp2");
-      schemaDb.saveChanges();
-
-      const resA = schemaDb.findSchemaReservation(idA)!;
-      const resB = schemaDb.findSchemaReservation(idB)!;
-
-      // B's startId should be A's startId + A's count
-      expect(resA.ranges.get("ec_Class")).to.deep.equal({ startId: 1, count: 3 });
-      expect(resB.ranges.get("ec_Class")).to.deep.equal({ startId: 4, count: 2 });
-    });
-
-    it("is idempotent when the same identity and counts are reserved twice", async () => {
-      await schemaDb.reserveSchemaImport(idA, { ec_Class: 3 }, "fp1");
-      schemaDb.saveChanges();
-
-      // Second call with the same identity and same counts — must be a no-op.
-      await schemaDb.reserveSchemaImport(idA, { ec_Class: 3 }, "fp1");
-      schemaDb.saveChanges();
-
-      const reservation = schemaDb.findSchemaReservation(idA)!;
-      expect(reservation.ranges.size).to.equal(1);
-      expect(reservation.ranges.get("ec_Class")).to.deep.equal({ startId: 1, count: 3 });
-    });
-
-    it("throws reservation-conflict when the same identity is reserved with different counts", async () => {
-      await schemaDb.reserveSchemaImport(idA, { ec_Class: 3 }, "fp1");
-      schemaDb.saveChanges();
-
-      await expectSchemaImportReservationError(
-        schemaDb.reserveSchemaImport(idA, { ec_Class: 5 }, "fp1"),
-        "reservation-conflict",
-      );
-    });
-
-    it("skips tables with a count of zero", async () => {
-      await schemaDb.reserveSchemaImport(idA, { ec_Class: 2, ec_Property: 0 }, "fp");
-      schemaDb.saveChanges();
-
-      const reservation = schemaDb.findSchemaReservation(idA)!;
-      expect(reservation.ranges.has("ec_Property")).to.be.false;
-      expect(reservation.ranges.get("ec_Class")).to.deep.equal({ startId: 1, count: 2 });
-    });
-
-    it("returns undefined from findSchemaReservation for unknown identities", () => {
-      expect(schemaDb.findSchemaReservation(idA)).to.be.undefined;
-    });
-
-    it("stores and retrieves independent reservations for different schemas", async () => {
-      await schemaDb.reserveSchemaImport(idA, { ec_Class: 1 }, "fpA");
-      schemaDb.saveChanges();
-      await schemaDb.reserveSchemaImport(idB, { ec_Class: 2 }, "fpB");
-      schemaDb.saveChanges();
-
-      expect(schemaDb.findSchemaReservation(idA)!.baseFingerprint).to.equal("fpA");
-      expect(schemaDb.findSchemaReservation(idB)!.baseFingerprint).to.equal("fpB");
-    });
-  });
-
   // ---- SharedSchemaReservations control tests ----
 
   describe("SharedSchemaReservations control", () => {
-    it("uses NoSchemaReservations when SchemaSync is disabled", async () => {
+    it("uses NoSchemaReservations (no-op) when SchemaSync is disabled", async () => {
       await iModel.initializeSharedSchemaReservations();
       expect(iModel.schemaReservations.isServerBased).to.be.false;
-      expect(iModel.schemaReservations.needsSchemaReservation(idA)).to.be.false;
-      await expect(iModel.schemaReservations.reserveSchemaImport(idA)).to.be.fulfilled;
+      // No-op: resolves without error regardless of input
+      await expect(iModel.schemaReservations.reserveSchemaImport(["any/path.xml"])).to.be.fulfilled;
     });
 
     it("uses server-based reservations when SchemaSync is enabled", async () => {
       await setupSchemaSyncSchemaReservations();
       expect(iModel.schemaReservations.isServerBased).to.be.true;
     });
+  });
 
-    it("validates identity on needsSchemaReservation — throws invalid-identity for empty schemaName", async () => {
+  // ---- Argument validation ----
+
+  describe("argument validation", () => {
+    it("throws invalid-argument for an empty array", async () => {
       await setupSchemaSyncSchemaReservations();
-      expect(() => iModel.schemaReservations.needsSchemaReservation({ schemaName: "", versionMajor: 1, versionMinor: 0, versionPatch: 0 }))
-        .to.throw().that.satisfies((err: unknown) => SchemaImportReservationError.isError(err, "invalid-identity"));
+      await expectSchemaImportReservationError(
+        iModel.schemaReservations.reserveSchemaImport([]),
+        "invalid-argument",
+      );
     });
 
-    it("validates identity on needsSchemaReservation — throws invalid-identity for negative version", async () => {
+    it("throws invalid-argument when array contains a non-string element", async () => {
       await setupSchemaSyncSchemaReservations();
-      expect(() => iModel.schemaReservations.needsSchemaReservation({ schemaName: "Foo", versionMajor: -1, versionMinor: 0, versionPatch: 0 }))
-        .to.throw().that.satisfies((err: unknown) => SchemaImportReservationError.isError(err, "invalid-identity"));
+      await expectSchemaImportReservationError(
+        iModel.schemaReservations.reserveSchemaImport([42 as unknown as string]),
+        "invalid-argument",
+      );
     });
 
-    it("needsSchemaReservation returns true before reservation, false after", async () => {
+    it("throws invalid-argument when array contains null", async () => {
       await setupSchemaSyncSchemaReservations();
-
-      expect(iModel.schemaReservations.needsSchemaReservation(idA)).to.be.true;
-
-      await iModel.schemaReservations.reserveSchemaImport(idA);
-
-      expect(iModel.schemaReservations.needsSchemaReservation(idA)).to.be.false;
-    });
-
-    it("is idempotent: reserving the same schema twice succeeds without error", async () => {
-      await setupSchemaSyncSchemaReservations();
-
-      await expect(iModel.schemaReservations.reserveSchemaImport(idA)).to.be.fulfilled;
-      await expect(iModel.schemaReservations.reserveSchemaImport(idA)).to.be.fulfilled;
+      await expectSchemaImportReservationError(
+        iModel.schemaReservations.reserveSchemaImport([null as unknown as string]),
+        "invalid-argument",
+      );
     });
   });
 
-  // ---- _onSchemaImport hook tests ----
+  // ---- Native call delegation ----
 
-  describe("_onSchemaImport hook", () => {
-    it("is a no-op when SchemaSync is disabled", async () => {
+  describe("native delegation", () => {
+    it("calls nativeDb.reserveSchemaImport with the correct arguments under the write-lock", async () => {
+      const access = await setupSchemaSyncSchemaReservations();
+      const reserveStub = sinon.stub(iModel[_nativeDb] as any, "reserveSchemaImport");
+      const withLockedDbSpy = sinon.spy(access, "withLockedDb");
+
+      const schemaFiles = ["schema/BisCore.01.00.00.xml"];
+      await iModel.schemaReservations.reserveSchemaImport(schemaFiles);
+
+      // The write-lock must have been acquired
+      expect(withLockedDbSpy.calledOnce).to.be.true;
+      // Native must have been called inside the lock with the right arguments
+      expect(reserveStub.calledOnce).to.be.true;
+      const [calledFiles, calledUri, calledSourceType] = reserveStub.firstCall.args;
+      expect(calledFiles).to.deep.equal(schemaFiles);
+      expect(calledUri).to.equal(access.getUri());
+      expect(calledSourceType).to.be.undefined; // default sourceType
+    });
+
+    it("passes sourceType='xml' through to nativeDb.reserveSchemaImport", async () => {
+      await setupSchemaSyncSchemaReservations();
+      const reserveStub = sinon.stub(iModel[_nativeDb] as any, "reserveSchemaImport");
+
+      const xmlStrings = ["<ECSchema schemaName='Foo' version='1.0.0' xmlns='ECv3' />"];
+      await iModel.schemaReservations.reserveSchemaImport(xmlStrings, "xml");
+
+      const [, , calledSourceType] = reserveStub.firstCall.args;
+      expect(calledSourceType).to.equal("xml");
+    });
+
+    it("passes sourceType='file' through to nativeDb.reserveSchemaImport", async () => {
+      await setupSchemaSyncSchemaReservations();
+      const reserveStub = sinon.stub(iModel[_nativeDb] as any, "reserveSchemaImport");
+
+      await iModel.schemaReservations.reserveSchemaImport(["schema/Foo.xml"], "file");
+
+      const [, , calledSourceType] = reserveStub.firstCall.args;
+      expect(calledSourceType).to.equal("file");
+    });
+
+    it("is idempotent: calling reserveSchemaImport twice succeeds when native does not throw", async () => {
+      await setupSchemaSyncSchemaReservations();
+      sinon.stub(iModel[_nativeDb] as any, "reserveSchemaImport"); // no-op stub
+
+      const schemaFiles = ["schema/BisCore.01.00.00.xml"];
+      await expect(iModel.schemaReservations.reserveSchemaImport(schemaFiles)).to.be.fulfilled;
+      await expect(iModel.schemaReservations.reserveSchemaImport(schemaFiles)).to.be.fulfilled;
+    });
+
+    it("propagates errors thrown by native", async () => {
+      await setupSchemaSyncSchemaReservations();
+      sinon.stub(iModel[_nativeDb] as any, "reserveSchemaImport").throws(new Error("native-error"));
+
+      await expect(iModel.schemaReservations.reserveSchemaImport(["schema/Foo.xml"])).to.be.rejectedWith("native-error");
+    });
+
+    it("TS never receives a key→id map — native owns the blob writes", async () => {
+      await setupSchemaSyncSchemaReservations();
+      // Verify that reserveSchemaImport returns void (undefined), not a map
+      let returnValue: unknown = "sentinel";
+      sinon.stub(iModel[_nativeDb] as any, "reserveSchemaImport").returns(undefined);
+      returnValue = await iModel.schemaReservations.reserveSchemaImport(["schema/Foo.xml"]);
+      expect(returnValue).to.be.undefined;
+    });
+  });
+
+  // ---- Carve-out: SchemaSync disabled ----
+
+  describe("carve-out: SchemaSync disabled", () => {
+    it("no-op reserveSchemaImport does not call nativeDb.reserveSchemaImport when SchemaSync is disabled", async () => {
+      // Do NOT enableSchemaSync() — SchemaSync is disabled
       await iModel.initializeSharedSchemaReservations();
-      const nativeOptions: Record<string, unknown> = {};
-      expect(() => iModel.schemaReservations[_onSchemaImport]({ identity: idA, nativeOptions })).to.not.throw();
-      expect(nativeOptions.forceReservedIds).to.be.undefined;
-    });
+      const nativeSpy = sinon.spy(iModel[_nativeDb] as any, "reserveSchemaImport");
 
-    it("is a no-op when the schema lock is held", async () => {
-      const access = await setupSchemaSyncSchemaReservations();
-      await iModel.schemaReservations.reserveSchemaImport(idA);
+      await iModel.schemaReservations.reserveSchemaImport(["schema/Foo.xml"]);
 
-      sinon.stub(iModel, "holdsSchemaLock").get(() => true);
-      const nativeOptions: Record<string, unknown> = {};
-      expect(() => iModel.schemaReservations[_onSchemaImport]({ identity: idA, nativeOptions })).to.not.throw();
-      expect(nativeOptions.forceReservedIds).to.be.undefined;
-
-      // avoid unused-variable warning
-      void access;
-    });
-
-    it("throws container-has-local-changes when the container has local changes", async () => {
-      const access = await setupSchemaSyncSchemaReservations();
-      await iModel.schemaReservations.reserveSchemaImport(idA);
-
-      (access.container as any).hasLocalChanges = true;
-      expect(() => iModel.schemaReservations[_onSchemaImport]({ identity: idA, nativeOptions: {} }))
-        .to.throw().that.satisfies((err: unknown) => SchemaImportReservationError.isError(err, "container-has-local-changes"));
-    });
-
-    it("throws reservation-not-found when no reservation exists", async () => {
-      await setupSchemaSyncSchemaReservations();
-      expect(() => iModel.schemaReservations[_onSchemaImport]({ identity: idA, nativeOptions: {} }))
-        .to.throw().that.satisfies((err: unknown) => SchemaImportReservationError.isError(err, "reservation-not-found"));
-    });
-
-    it("populates nativeOptions with reserved ranges when reservation is found", async () => {
-      await setupSchemaSyncSchemaReservations();
-
-      // Directly inject a reservation into schemaDb to simulate a previously reserved schema.
-      await schemaDb.reserveSchemaImport(idA, { ec_Class: 2, ec_Property: 3 }, "fp1");
-      schemaDb.saveChanges();
-
-      const nativeOptions: Record<string, unknown> = {};
-      expect(() => iModel.schemaReservations[_onSchemaImport]({ identity: idA, nativeOptions })).to.not.throw();
-
-      expect(nativeOptions.forceReservedIds).to.be.true;
-      const res = nativeOptions.schemaImportReservation as any;
-      expect(res).to.not.be.undefined;
-      expect(res.reservedRanges.ec_Class).to.deep.equal({ startId: 1, count: 2 });
-      expect(res.reservedRanges.ec_Property).to.deep.equal({ startId: 1, count: 3 });
-    });
-
-    it("throws base-state-mismatch when fingerprints differ", async () => {
-      await setupSchemaSyncSchemaReservations();
-
-      await schemaDb.reserveSchemaImport(idA, { ec_Class: 1 }, "fingerprint-at-reserve-time");
-      schemaDb.saveChanges();
-
-      // Make native return a different fingerprint (simulating intervening schema changes).
-      sinon.stub(iModel[_nativeDb] as any, "getSchemaImportBaseFingerprint").returns("different-fingerprint");
-
-      expect(() => iModel.schemaReservations[_onSchemaImport]({ identity: idA, nativeOptions: {} }))
-        .to.throw().that.satisfies((err: unknown) => SchemaImportReservationError.isError(err, "base-state-mismatch"));
+      expect(nativeSpy.notCalled).to.be.true;
     });
   });
 });

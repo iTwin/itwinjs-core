@@ -7,14 +7,12 @@
  */
 
 import { SharedSchemaReservations } from "../SharedSchemaReservations";
-import { _close, _onSchemaImport } from "./Symbols";
+import { _close } from "./Symbols";
 
 /** A null-implementation of [[SharedSchemaReservations]] for iModels that don't use SchemaSync-backed reservations. */
 class NoSchemaReservations implements SharedSchemaReservations {
   public get isServerBased() { return false; }
   public [_close](): void { }
-  public [_onSchemaImport](): void { }
-  public needsSchemaReservation(): boolean { return false; }
   public async reserveSchemaImport(): Promise<void> { }
 }
 

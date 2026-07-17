@@ -8,9 +8,9 @@
 
 import { SchemaImportReservationError } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { OnSchemaImportArg, SchemaImportIdentity, SharedSchemaReservations } from "../SharedSchemaReservations";
+import { SharedSchemaReservations } from "../SharedSchemaReservations";
 import { SchemaSync } from "../SchemaSync";
-import { _close, _nativeDb, _onSchemaImport } from "./Symbols";
+import { _close, _nativeDb } from "./Symbols";
 
 class SchemaSyncSchemaReservations implements SharedSchemaReservations {
   public get isServerBased() { return true; }
@@ -36,65 +36,20 @@ class SchemaSyncSchemaReservations implements SharedSchemaReservations {
     }
   }
 
-  private validateIdentity(identity: SchemaImportIdentity): void {
-    if (!identity.schemaName || typeof identity.schemaName !== "string")
-      SchemaImportReservationError.throwError("invalid-identity", { message: "schemaName must be a non-empty string" });
-    if (!Number.isInteger(identity.versionMajor) || identity.versionMajor < 0)
-      SchemaImportReservationError.throwError("invalid-identity", { message: "versionMajor must be a non-negative integer" });
-    if (!Number.isInteger(identity.versionMinor) || identity.versionMinor < 0)
-      SchemaImportReservationError.throwError("invalid-identity", { message: "versionMinor must be a non-negative integer" });
-    if (!Number.isInteger(identity.versionPatch) || identity.versionPatch < 0)
-      SchemaImportReservationError.throwError("invalid-identity", { message: "versionPatch must be a non-negative integer" });
-  }
+  public async reserveSchemaImport(schemaFileNames: string[], sourceType?: "file" | "xml"): Promise<void> {
+    if (!Array.isArray(schemaFileNames) || schemaFileNames.length === 0 || schemaFileNames.some((f) => typeof f !== "string"))
+      SchemaImportReservationError.throwError("invalid-argument", { message: "schemaFileNames must be a non-empty array of strings" });
 
-  public needsSchemaReservation(identity: SchemaImportIdentity): boolean {
-    if (!SchemaSync.isEnabled(this._iModel))
-      return false;
-    this.validateIdentity(identity);
-    return !this._schemaSync.reader.findSchemaReservation(identity);
-  }
-
-  public async reserveSchemaImport(identity: SchemaImportIdentity): Promise<void> {
-    this.validateIdentity(identity);
-
-    // Compute per-table counts via native dry-run (returns undefined until native side is implemented)
-    const nativeDb = this._iModel[_nativeDb] as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    const perTableCounts: Record<string, number> = nativeDb.computeSchemaImportReservation?.(identity) ?? {};
-    const baseFingerprint: string = nativeDb.getSchemaImportBaseFingerprint?.() ?? "";
-
-    await this._schemaSync.writeLocker.reserveSchemaImport(identity, perTableCounts, baseFingerprint);
-  }
-
-  public [_onSchemaImport](arg: OnSchemaImportArg): void {
-    if (!SchemaSync.isEnabled(this._iModel) || this._iModel.holdsSchemaLock)
-      return;
-
-    if (this._schemaSync.container.hasLocalChanges)
-      SchemaImportReservationError.throwError("container-has-local-changes", {
-        message: "Schema import is not allowed when there are local changes in the SchemaSync container",
-      });
-
-    const reservation = this._schemaSync.reader.findSchemaReservation(arg.identity);
-    if (!reservation)
-      SchemaImportReservationError.throwError("reservation-not-found", {
-        message: `No SchemaSync reservation found for schema '${arg.identity.schemaName}' v${arg.identity.versionMajor}.${arg.identity.versionMinor}.${arg.identity.versionPatch} — call reserveSchemaImport before importing`,
-      });
-
-    // Base-state check: compare the stored fingerprint with the current db state
-    const nativeDb = this._iModel[_nativeDb] as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    const currentFingerprint: string = nativeDb.getSchemaImportBaseFingerprint?.() ?? "";
-    if (reservation.baseFingerprint && currentFingerprint && reservation.baseFingerprint !== currentFingerprint)
-      SchemaImportReservationError.throwError("base-state-mismatch", {
-        message: `Schema import reservation for '${arg.identity.schemaName}' was created against a different base state; re-reserve after pulling the latest changes`,
-      });
-
-    // Populate native options with reserved id ranges
-    const reservedRanges: Record<string, { startId: number; count: number }> = {};
-    for (const [tableName, range] of reservation.ranges)
-      reservedRanges[tableName] = { startId: range.startId, count: range.count };
-
-    arg.nativeOptions.schemaImportReservation = { reservedRanges };
-    arg.nativeOptions.forceReservedIds = true;
+    // Acquire the container write-lock so that reservation writes are serialized — two briefcases
+    // can never update the reservation store concurrently (plan §7.5).
+    await this._schemaSync.withLockedDb({ operationName: "reserveSchemaImport" }, async () => {
+      const syncDbUri = this._schemaSync.getUri();
+      // Native parses the schemas, derives per-row content keys, allocates ids for any new keys
+      // (reusing stored ids for keys already present), and writes the updated key→id blobs and
+      // column maps directly into the sync-db reservation rows (plan §7.1 / §7.2).
+      // TS never receives a key→id map; the blobs are owned by native entirely.
+      (this._iModel[_nativeDb] as any).reserveSchemaImport(schemaFileNames, syncDbUri, sourceType); // eslint-disable-line @typescript-eslint/no-explicit-any
+    });
   }
 }
 

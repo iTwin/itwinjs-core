@@ -73,7 +73,7 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
 import { createSchemaSyncSchemaReservations } from "./internal/SchemaSyncSchemaReservations";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _onSchemaImport, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -82,7 +82,7 @@ import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 import { SharedDefinitionReservations } from "./SharedDefinitionReservations";
-import { SchemaImportIdentity, SharedSchemaReservations } from "./SharedSchemaReservations";
+import { SharedSchemaReservations } from "./SharedSchemaReservations";
 
 // spell:ignore fontid fontmap
 
@@ -273,16 +273,6 @@ export interface SchemaImportOptions<T = any> {
    * @beta
    */
   data?: T;
-
-  /**
-   * The identity of the schema being imported, used to look up an existing
-   * [[SharedSchemaReservations]] reservation and supply reserved id ranges to native.
-   * Required when importing a schema that was previously reserved via
-   * [[IModelDb.schemaReservations]].[[SharedSchemaReservations.reserveSchemaImport]].
-   * @see [[SharedSchemaReservations]]
-   * @beta
-   */
-  schemaReservationIdentity?: SchemaImportIdentity;
 }
 
 /** @internal */
@@ -1534,8 +1524,6 @@ export abstract class IModelDb extends IModel {
           ecSchemaXmlContext: maybeCustomNativeContext,
           schemaSyncDbUri,
         };
-        if (options?.schemaReservationIdentity)
-          this._schemaReservations?.[_onSchemaImport]({ identity: options.schemaReservationIdentity, nativeOptions: nativeOpts });
 
         try {
           nativeImportOp(schemas, nativeOpts);

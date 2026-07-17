@@ -358,16 +358,12 @@ export namespace SchemaImportReservationError {
 
   /** Keys that identify `SchemaImportReservationError`s. */
   export type Key =
-    /** The provided [[SchemaImportIdentity]] is invalid (e.g. empty schemaName or negative version component). */
-    "invalid-identity" |
-    /** The requested reservation conflicts with an existing one (different per-table id counts for the same schema version). */
-    "reservation-conflict" |
-    /** No reservation exists for the schema being imported; call [[SharedSchemaReservations.reserveSchemaImport]] first. */
+    /** The `schemaFileNames` argument is invalid (e.g. empty array or non-string elements). */
+    "invalid-argument" |
+    /** A `key→id` mapping required during schema import was absent from the sync-db reservation store; re-reserve online. */
+    "unreserved-key" |
+    /** No reservation store entry was found for the schema being imported. */
     "reservation-not-found" |
-    /** Schema import is not allowed because the SchemaSync container has un-pushed local changes. */
-    "container-has-local-changes" |
-    /** The pool of reserved ids has been exhausted (should never occur in practice). */
-    "id-sequence-exhausted" |
     /** The reservation was created against a different base schema state than the current iModel. */
     "base-state-mismatch";
 
