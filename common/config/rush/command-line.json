@@ -4,9 +4,9 @@
     {
       "name": "audit",
       "commandKind": "global",
-      "summary": "Runs npm audit for the entire monorepo",
-      "description": "Scans the entire monorepo for security vulnerabilities via npm audit",
-      "shellCommand": "node common/scripts/install-run-rush-pnpm.js audit --audit-level high"
+      "summary": "Runs pnpm audit for the entire monorepo",
+      "description": "Scans the entire monorepo for security vulnerabilities via pnpm audit",
+      "shellCommand": "npx -y pnpm@11.13.0 audit --audit-level high --dir common/temp"
     },
     {
       "name": "fix-copyrights",
