@@ -395,7 +395,18 @@ describe("MapLayerImageryProvider authorization", () => {
     expect(provider.blockedOrigins).toEqual(["https://evil.example.net"]);
   });
 
-  it("logs the discovery warning when a credentialed request is redirected cross-origin (legacy default)", async () => {
+    const warnings = logWarning.mock.calls.filter((call) => {
+      const message = String(call[1]);
+      const urlMatch = message.match(/https?:\/\/[^\s)]+/);
+      if (!urlMatch)
+        return false;
+
+      try {
+        return new URL(urlMatch[0]).origin === "https://evil.example.net";
+      } catch {
+        return false;
+      }
+    });
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
     const logWarning = vi.spyOn(Logger, "logWarning");
     fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValue(okResponse());
