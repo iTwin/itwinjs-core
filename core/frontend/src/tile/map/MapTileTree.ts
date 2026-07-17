@@ -23,7 +23,7 @@ import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
-  createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
+  createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, escapeHtml, GeometryTileTreeReference,
   ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapLayerTreeSetting, MapTile,
   MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
@@ -1041,7 +1041,7 @@ export class MapTileTreeReference extends TileTreeReference {
       // The layer name originates from user-supplied settings (e.g. a display style); escape it so it
       // renders literally when the joined strings are assigned to innerHTML below. (innerHTML is
       // retained because imageryLoader.getToolTip may deliberately supply markup from trusted origins.)
-      const layerName = imageryTreeRef.layerSettings.name.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+      const layerName = escapeHtml(imageryTreeRef.layerSettings.name);
       strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${layerName}`);
       carto = cartoGraphic;
       await imageryTree.imageryLoader.getToolTip(strings, quadId, cartoGraphic, imageryTree);

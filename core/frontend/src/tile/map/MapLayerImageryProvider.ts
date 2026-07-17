@@ -22,8 +22,12 @@ const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
 const doDebugToolTips = false;
 
-/** Escapes HTML metacharacters so the text renders literally when assigned to `innerHTML`. */
-function escapeHtml(text: string): string {
+/** Escapes HTML metacharacters so the text renders literally when assigned to `innerHTML`.
+ * Use for any server- or user-supplied string that ends up in the map tooltip, which is rendered
+ * as HTML by [[MapLayerTileTreeReference.getToolTip]].
+ * @internal
+ */
+export function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 

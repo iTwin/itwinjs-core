@@ -63,6 +63,27 @@ describe("Map layer attribution XSS hardening", () => {
     expect(cards.querySelectorAll("br")).toHaveLength(1);
   });
 
+  it("ArcGIS identify tooltip escapes server-provided field names and values", async () => {
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestArcGIS", url: "https://arcgis.example.com/rest/services/x/MapServer" });
+    const provider = new ArcGISMapLayerImageryProvider(settings);
+    (provider as any)._querySupported = true;
+    // Malicious identify response: both the display field name and its value are server-controlled.
+    vi.spyOn(provider as any, "getIdentifyData").mockResolvedValue({
+      results: [{ displayFieldName: xssPayload, attributes: { [xssPayload]: xssPayload } }],
+    });
+
+    const strings: string[] = [];
+    await provider.getToolTip(strings, {} as any, {} as any, {} as any);
+
+    expect(strings).toHaveLength(1);
+    // Emulate MapLayerTileTreeReference.getToolTip, which joins the strings into innerHTML.
+    const div = document.createElement("div");
+    div.innerHTML = strings.join("<br>");
+    expect(div.querySelector("img")).toBeNull();
+    expect(div.querySelector("script")).toBeNull();
+    expect(div.textContent).toContain(`<img src="x" onerror="(window.__xss = true)">`);
+  });
+
   it("reality model tooltip renders tileset-provided name and batch-table properties as plain text", () => {
     // _getToolTip requires a loaded tile tree; bypass the constructors and supply the minimal
     // shape it consumes so we can exercise the DOM-building logic with adversarial content.

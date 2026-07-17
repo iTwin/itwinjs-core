@@ -9,7 +9,7 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, ServerError } from "@
 import { IModelApp } from "../../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
-  FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
+  escapeHtml, FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
   MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../../../tile/internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
@@ -376,7 +376,9 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     if (json && Array.isArray(json.results)) {
       for (const result of json.results) {
         if (result.attributes !== undefined && result.attributes[result.displayFieldName] !== undefined) {
-          const thisString = `${result.displayFieldName}: ${result.attributes[result.displayFieldName]}`;
+          // Field names and values are server-controlled data, never intentional markup; escape them so they
+          // render literally when the tooltip strings are later assigned to innerHTML.
+          const thisString = `${escapeHtml(String(result.displayFieldName))}: ${escapeHtml(String(result.attributes[result.displayFieldName]))}`;
           if (!stringSet.has(thisString)) {
             strings.push(thisString);
             stringSet.add(thisString);
