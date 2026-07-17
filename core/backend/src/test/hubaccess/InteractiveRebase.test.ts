@@ -75,7 +75,8 @@ describe("InteractiveRebase", () => {
     const briefcase2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId: HubMock.iTwinId, iModelId: iModelId });
     briefcase2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    // Create a conflict on userLabel between the two briefcases.
+    // Create a conflict on foo and somePoint between the two briefcases.
+    // Also add a non-conflicting userLabel.
     await withEditTxn(briefcase1, async (txn) => {
       txn.updateElement<SomeGraphicalElementProps>({
         id,
@@ -95,16 +96,17 @@ describe("InteractiveRebase", () => {
 
     await briefcase1.pushChanges({ description: "User1" });
 
+    // Pull changes into briefcase2, which will create a conflict on the element.
     const interactive = await briefcase2.pullChangesInteractive();
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
     const moreGroups = interactive.nextGroup();
     chai.expect(moreGroups).to.be.false;
+
     chai.expect(interactive.conflicts.length).to.equal(1);
     const updateConflict = interactive.conflicts[0] as UpdateRebaseConflict;
     chai.expect(updateConflict.id).to.equal(id);
-    //chai.expect(updateConflict.propertyConflicts.length).to.equal(2);
     chai.expect(updateConflict.kind).to.equal("Update");
 
     chai.expect(updateConflict.original["SomePoint"]).to.deep.equal({ X: 1.23, Y: 4.56 });
