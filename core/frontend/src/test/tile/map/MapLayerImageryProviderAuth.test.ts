@@ -454,7 +454,18 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
     await WmsUtilities.fetchXml(discoveryUrl);
     await WmsUtilities.fetchXml(discoveryUrl);
 
-    const warnings = logWarning.mock.calls.filter((call) => String(call[1]).includes("https://discovery.example.net"));
+    const expectedOrigin = "https://discovery.example.net";
+    const warnings = logWarning.mock.calls.filter((call) => {
+      const message = String(call[1]);
+      const urlCandidates = message.match(/https?:\/\/[^\s)]+/g) ?? [];
+      return urlCandidates.some((candidate) => {
+        try {
+          return new URL(candidate).origin === expectedOrigin;
+        } catch {
+          return false;
+        }
+      });
+    });
     expect(warnings).toHaveLength(1);
   });
 
