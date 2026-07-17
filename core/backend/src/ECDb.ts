@@ -453,7 +453,7 @@ export class ECDb implements Disposable {
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
     }
     const executor = {
       execute: async (request: DbQueryRequest) => {
@@ -479,7 +479,7 @@ export class ECDb implements Disposable {
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
     if (!this[_nativeDb].isOpen())
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
     const executor = new ECSqlRowExecutor(this);
     const reader = new ECSqlSyncReader(executor, ecsql, params, config);

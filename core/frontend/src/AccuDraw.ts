@@ -1158,10 +1158,7 @@ export class AccuDraw {
       if (point.y < 0.0)
         adjustment = -adjustment;
       angle += adjustment; // This is the angle measured from design x...
-      angle = (Math.PI / 2) - angle; // Account for bearing direction convention...
-
-      if (angle < 0)
-        angle = (Math.PI * 2) + angle; // Negative bearings aren't valid?
+      // core-quantity now applies the north-measured conversion itself (#9465); don't do it here too.
     }
 
     const formatterSpec = this.getAngleFormatter();
@@ -1208,10 +1205,8 @@ export class AccuDraw {
       case ItemField.ANGLE_Item:
         parseResult = this.stringToAngle(input);
         if (Parser.isParsedQuantity(parseResult)) {
-          if (this.isBearingMode && this.flags.bearingFixToPlane2D)
-            this._angle = (Math.PI / 2) - parseResult.value;
-          else
-            this._angle = parseResult.value;
+          // core-quantity's Parser applies the north-measured conversion itself now (#9465).
+          this._angle = parseResult.value;
           break;
         }
         return BentleyStatus.ERROR;

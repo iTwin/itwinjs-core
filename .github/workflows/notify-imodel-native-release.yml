@@ -1,0 +1,70 @@
+# This workflow triggers when a new minor/major release is published in itwinjs-core.
+# It dispatches a repository_dispatch event to iTwin/imodel-native, which owns a
+# separate workflow to bump its iTwin.js devDependencies to the next dev version.
+#
+# Release tags in this repo use the format: release/X.Y.Z (e.g., release/5.11.0)
+#
+# Example: If release/5.11.0 is published:
+#   - Next dev version = 5.12.0-dev
+#   - Dispatches "itwinjs-core-released" event to imodel-native with that version
+
+name: Notify imodel-native of release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+
+    permissions: {}
+
+    # Only run for minor/major releases (tag matches release/X.Y.0 pattern)
+    if: >-
+      startsWith(github.event.release.tag_name, 'release/')
+      && endsWith(github.event.release.tag_name, '.0')
+      && github.event.release.prerelease == false
+
+    steps:
+      - name: Extract version info
+        id: version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          # Tag format is "release/X.Y.Z" — strip the "release/" prefix
+          VERSION="${TAG#release/}"
+
+          # Parse major.minor
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+
+          # Validate parsed values are numeric
+          if ! [[ "$MAJOR" =~ ^[0-9]+$ && "$MINOR" =~ ^[0-9]+$ ]]; then
+            echo "::error::Could not parse numeric major.minor from tag: $TAG (got $MAJOR.$MINOR)"
+            exit 1
+          fi
+
+          # Compute next dev version: increment minor by 1
+          NEXT_MINOR=$((MINOR + 1))
+          NEXT_DEV_VERSION="${MAJOR}.${NEXT_MINOR}.0-dev"
+
+          echo "next_dev_version=$NEXT_DEV_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Released version: $VERSION → Next dev version: $NEXT_DEV_VERSION"
+
+      - name: Dispatch to imodel-native
+        env:
+          GH_TOKEN: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
+          NEXT_DEV_VERSION: ${{ steps.version.outputs.next_dev_version }}
+          TAG: ${{ github.event.release.tag_name }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+        run: |
+          gh api repos/iTwin/imodel-native/dispatches \
+            --method POST \
+            -f event_type=itwinjs-core-released \
+            -f "client_payload[next_dev_version]=${NEXT_DEV_VERSION}" \
+            -f "client_payload[tag]=${TAG}" \
+            -f "client_payload[release_url]=${RELEASE_URL}"
+
+          echo "Dispatched itwinjs-core-released event to iTwin/imodel-native"
+          echo "  next_dev_version: ${NEXT_DEV_VERSION}"

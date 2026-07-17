@@ -4,9 +4,28 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [Quantity formatting](#quantity-formatting)
+    - [Bearing and Azimuth formatting now respects the persistence unit's phenomenon](#bearing-and-azimuth-formatting-now-respects-the-persistence-units-phenomenon)
   - [Electron 43 support](#electron-43-support)
   - [@itwin/core-backend](#itwincore-backend)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
+
+## Quantity formatting
+
+### Bearing and Azimuth formatting now respects the persistence unit's phenomenon
+
+Previously, [Bearing and Azimuth format types]($docs/quantity-formatting/definitions/Formats.md#bearing-and-azimuth-format) assumed the persisted magnitude was always a true azimuth (measured clockwise from north), regardless of the quantity's `persistenceUnit`. This was incorrect for properties whose `persistenceUnit.phenomenon` is `Units.ANGLE` (a raw mathematical angle, measured counter-clockwise from east) - see [#9465](https://github.com/iTwin/itwinjs-core/issues/9465).
+
+[Formatter.formatQuantity]($quantity) and [Parser.parseQuantityString]($quantity) now branch on `persistenceUnit.phenomenon`:
+
+- `Units.HORIZONTAL_DIRECTION` (a phenomenon; e.g. its `Units.HORIZONTAL_DIR_RAD` unit): unchanged - a `HORIZONTAL_DIRECTION` value is already a true azimuth, so it's formatted/parsed as-is.
+- `Units.ANGLE` (a phenomenon; e.g. its `Units.RAD` unit): the `90° − θ` conversion is now applied automatically before formatting an `ANGLE` value, and inverse-applied after parsing one.
+
+For code that persists Bearing/Azimuth values as `ANGLE`-phenomenon units and previously worked around the bug by manually applying its own `90° − θ` correction: **that manual correction must now be removed**, or values will be double-converted. For example, `AccuDraw`'s manual correction for its `QuantityType.Angle` bearing display (persisted as `Units.RAD`) has been removed as part of this change.
+
+If your KindOfQuantity persists true azimuth values directly, switch its persistence unit to a `Units.HORIZONTAL_DIRECTION` unit (e.g. `Units.HORIZONTAL_DIR_RAD`) to opt out of the conversion entirely.
+
+**Note:** if you switch your persistence unit's phenomenon, remember to also update `revolutionUnit` (and `azimuthBaseUnit`, if set) to a unit from the same phenomenon - e.g. `Units.HORIZONTAL_DIR_REVOLUTION` instead of `Units.REVOLUTION` for a `Units.HORIZONTAL_DIRECTION` persistence unit. These units cannot be converted across phenomena, so a mismatch will fail to resolve. See [Bearing and Azimuth Format]($docs/quantity-formatting/definitions/Formats.md#bearing-and-azimuth-format) for details.
 
 ## Electron 43 support
 

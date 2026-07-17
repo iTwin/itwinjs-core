@@ -170,6 +170,9 @@ export class FormatterSpec {
    *  @param name     The name of a format specification.
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
    *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
+   *  @note For Bearing/Azimuth formats, `inputUnit`'s phenomenon must match `format.azimuthBaseUnit`/`format.revolutionUnit`.
+   *  @see BaseFormat.azimuthBaseUnit
+   *  @see BaseFormat.revolutionUnit
    */
   public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
     const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format, unitsProvider, inputUnit);
