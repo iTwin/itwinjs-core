@@ -6,8 +6,9 @@ publish: false
 - [NextVersion](#nextversion)
   - [Quantity formatting](#quantity-formatting)
     - [Bearing and Azimuth formatting now respects the persistence unit's phenomenon](#bearing-and-azimuth-formatting-now-respects-the-persistence-units-phenomenon)
-  - [Electron 43 support](#electron-43-support)
-  - [Backend-to-frontend IPC invoke (Electron)](#backend-to-frontend-ipc-invoke-electron)
+  - [Electron](#electron)
+    - [Electron 43 support](#electron-43-support)
+    - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
   - [@itwin/core-backend](#itwincore-backend)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
 
@@ -28,13 +29,15 @@ If your KindOfQuantity persists true azimuth values directly, switch its persist
 
 **Note:** if you switch your persistence unit's phenomenon, remember to also update `revolutionUnit` (and `azimuthBaseUnit`, if set) to a unit from the same phenomenon - e.g. `Units.HORIZONTAL_DIR_REVOLUTION` instead of `Units.REVOLUTION` for a `Units.HORIZONTAL_DIRECTION` persistence unit. These units cannot be converted across phenomena, so a mismatch will fail to resolve. See [Bearing and Azimuth Format]($docs/quantity-formatting/definitions/Formats.md#bearing-and-azimuth-format) for details.
 
-## Electron 43 support
+## Electron
+
+### Electron 43 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 43](https://www.electronjs.org/blog/electron-43-0).
 
-## Backend-to-frontend IPC invoke (Electron)
+### Backend-to-frontend IPC invoke
 
-For apps with a dedicated backend (e.g. Electron and mobile), the backend can now invoke methods on the frontend and receive a return value, mirroring the existing frontend-to-backend pattern. Previously [IpcHost]($backend) could only `send` one-way messages to the frontend; the reverse request/response direction had no equivalent of [IpcSocketFrontend.invoke]($common).
+For apps with a dedicated backend, the backend can now invoke methods on the frontend and receive a return value, mirroring the existing frontend-to-backend pattern. Previously [IpcHost]($backend) could only `send` one-way messages to the frontend; the reverse request/response direction had no equivalent of [IpcSocketFrontend.invoke]($common).
 
 The new `@beta` APIs are:
 
