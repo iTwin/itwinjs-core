@@ -12,6 +12,7 @@ interface MockIpcInterface {
   throwBentleyErrorWithFunctionMetaData: () => never;
   throwBentleyErrorWithObjectMetaData: () => never;
   throwNestedBentleyErrorWithFunctionMetaData: () => never;
+  throwBentleyErrorWithNestedBentleyErrorMetaData: () => never;
   throwErrorWithFunctionProperty: () => never;
   throwErrorWithSymbolProperty: () => never;
   throwErrorWithDateProperty: () => never;
@@ -19,6 +20,7 @@ interface MockIpcInterface {
   throwErrorWithMixedArray: () => never;
   throwErrorWithNestedArrayProperty: () => never;
   throwBentleyErrorWithMapMetaData: () => never;
+  throwBentleyErrorWithCollidingMapMetaData: () => never;
   throwBentleyErrorWithSetMetaData: () => never;
   throwErrorWithSelfReferencingArray: () => never;
 }
@@ -70,6 +72,11 @@ class MockIpcHandler extends IpcHandler implements MockIpcInterface {
     throw outer;
   }
 
+  public throwBentleyErrorWithNestedBentleyErrorMetaData(): never {
+    const inner = new BentleyError(IModelStatus.BadArg, "inner-bentley-in-metadata", { detail: "inner-value" });
+    throw new BentleyError(IModelStatus.BadArg, "bentley-nested-bentley-meta", { nested: inner });
+  }
+
   public throwErrorWithFunctionProperty(): never {
     const err = new Error("fn-prop") as any;
     err.retry = () => {};
@@ -108,6 +115,11 @@ class MockIpcHandler extends IpcHandler implements MockIpcInterface {
 
   public throwBentleyErrorWithMapMetaData(): never {
     throw new BentleyError(IModelStatus.BadArg, "bentley-map-meta", new Map([["detail", "map-value"]]));
+  }
+
+  public throwBentleyErrorWithCollidingMapMetaData(): never {
+    // Numeric key `1` and string key `"1"` stringify to the same "1", so they'd collide without disambiguation.
+    throw new BentleyError(IModelStatus.BadArg, "bentley-colliding-map-meta", new Map<number | string, string>([[1, "num-one"], ["1", "str-one"]]));
   }
 
   public throwBentleyErrorWithSetMetaData(): never {
@@ -312,6 +324,23 @@ describe("IpcHost", () => {
       const error = ipcReturn.error as any;
       expect(error.message).to.equal("bentley-map-meta");
       expect(error.loggingMetadata).to.deep.equal({ detail: "map-value" });
+    });
+
+    it("should disambiguate Map-valued loggingMetadata keys that stringify to the same value", async () => {
+      const ipcReturn = await handler(undefined, "throwBentleyErrorWithCollidingMapMetaData");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("bentley-colliding-map-meta");
+      expect(error.loggingMetadata).to.deep.equal({ "1": "num-one", "1#1": "str-one" });
+    });
+
+    it("should preserve iTwinErrorId/loggingMetadata of a BentleyError nested inside loggingMetadata", async () => {
+      const ipcReturn = await handler(undefined, "throwBentleyErrorWithNestedBentleyErrorMetaData");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("bentley-nested-bentley-meta");
+      const nested = error.loggingMetadata.nested;
+      expect(nested.message).to.equal("inner-bentley-in-metadata");
+      expect(nested.iTwinErrorId).to.deep.equal({ scope: BentleyError.iTwinErrorScope, key: nested.iTwinErrorId.key });
+      expect(nested.loggingMetadata).to.deep.equal({ detail: "inner-value" });
     });
 
     it("should normalize Set-valued loggingMetadata to a JSON-safe array (survives every transport)", async () => {

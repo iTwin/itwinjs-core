@@ -7,8 +7,8 @@ publish: false
   - [Quantity formatting](#quantity-formatting)
     - [Bearing and Azimuth formatting now respects the persistence unit's phenomenon](#bearing-and-azimuth-formatting-now-respects-the-persistence-units-phenomenon)
   - [Electron 43 support](#electron-43-support)
+  - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
   - [@itwin/core-backend](#itwincore-backend)
-    - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
 
 ## Quantity formatting
@@ -32,9 +32,7 @@ If your KindOfQuantity persists true azimuth values directly, switch its persist
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 43](https://www.electronjs.org/blog/electron-43-0).
 
-## @itwin/core-backend
-
-### Backend-to-frontend IPC invoke
+## Backend-to-frontend IPC invoke
 
 For apps with a dedicated backend, the backend can now invoke methods on the frontend and receive a return value, mirroring the existing frontend-to-backend pattern. Previously [IpcHost]($backend) could only `send` one-way messages to the frontend; the reverse request/response direction had no equivalent of [IpcSocketFrontend.invoke]($common).
 
@@ -70,6 +68,8 @@ Because Electron provides no native main-to-renderer `invoke` (only one-way `web
 Pending invocations are rejected if [IpcHost.shutdown]($backend) is called before a response arrives, so promises never leak past shutdown.
 
 When a frontend handler throws, the error is surfaced to the backend caller following the [ITwinError]($bentley) paradigm: it is rebuilt as an `Error` preserving the message, `iTwinErrorId`, error number, logging metadata, and any custom properties, so the caller can identify it with [ITwinError.isError]($bentley) (or [BentleyError.isError]($bentley) for legacy error numbers) rather than relying on a class identity that cannot survive marshalling across the Ipc boundary. A non-`BentleyError` (e.g. a plain `Error`) is re-thrown with its message and any own-enumerable properties preserved. (The existing frontend-to-backend direction continues to rethrow a backend `BentleyError` as the pre-existing [BackendError]($common) for backwards compatibility.)
+
+## @itwin/core-backend
 
 ### ChangesetReader.setBatchSize
 

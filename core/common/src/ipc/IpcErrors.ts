@@ -35,6 +35,15 @@ export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvok
       for (const sym of Object.getOwnPropertySymbols(serialized))
         delete serialized[sym]; // symbol-keyed properties cannot be structured-cloned
 
+      // `iTwinErrorId`/`loggingMetadata` are prototype getters, so `Object.keys`/spread never pick them up; resolve
+      // them explicitly. Shared by the top-level and metadata-nested paths below so they can't drift apart again.
+      const applyBentleyErrorIdentity = (be: BentleyError, out: any, sanitize: (v: unknown) => unknown): void => {
+        out.iTwinErrorId = be.iTwinErrorId;
+        if (be.hasMetaData)
+          out.loggingMetadata = sanitize(be.loggingMetadata);
+        delete out._metaData;
+      };
+
       if (e instanceof Error) {
         serialized.message = e.message; // NB: .message and .stack are non-enumerable on Error instances
         if (includeStack)
@@ -45,12 +54,8 @@ export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvok
           serialized.cause = (e as { cause?: unknown }).cause;
       }
 
-      if (e instanceof BentleyError) {
-        serialized.iTwinErrorId = e.iTwinErrorId;
-        if (e.hasMetaData)
-          serialized.loggingMetadata = e.loggingMetadata;
-        delete serialized._metaData;
-      }
+      if (e instanceof BentleyError)
+        applyBentleyErrorIdentity(e, serialized, (v) => v); // loggingMetadata is sanitized once, below
 
       // Only recurse into Error instances and plain objects — not class instances like Date or Buffer.
       const shouldRecurse = (val: any) => val instanceof Error || (JsonUtils.isObject(val) && Object.getPrototypeOf(val) === Object.prototype);
@@ -89,8 +94,18 @@ export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvok
 
         visited.add(val);
         try {
-          if (val instanceof Map)
-            return Object.fromEntries([...val].map(([k, v]) => [String(k), sanitizeMetadataValue(v)]));
+          if (val instanceof Map) {
+            // String(k) can collide (e.g. two object keys); suffix with "#n" so entries aren't silently dropped.
+            const out: any = {};
+            const keyCounts = new Map<string, number>();
+            for (const [k, v] of val) {
+              const baseKey = String(k);
+              const count = keyCounts.get(baseKey) ?? 0;
+              keyCounts.set(baseKey, count + 1);
+              out[count === 0 ? baseKey : `${baseKey}#${count}`] = sanitizeMetadataValue(v);
+            }
+            return out;
+          }
           if (val instanceof Set)
             return [...val].map(sanitizeMetadataValue);
           if (Array.isArray(val))
@@ -101,6 +116,8 @@ export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvok
               out[key] = sanitizeMetadataValue((val as any)[key]);
             if (val instanceof Error)
               out.message = val.message;
+            if (val instanceof BentleyError)
+              applyBentleyErrorIdentity(val, out, sanitizeMetadataValue);
             return out;
           }
           return undefined; // other class instances: not cloneable across every transport
