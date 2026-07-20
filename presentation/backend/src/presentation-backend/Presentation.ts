@@ -38,6 +38,16 @@ export interface PresentationProps extends Omit<PresentationManagerProps, "enabl
    * before it's disposed.
    */
   unusedClientLifetime?: number;
+
+  /**
+   * The maximum number of client [[PresentationManager]] instances to keep in memory
+   * at once. When creating a manager for a new client would exceed this limit, the
+   * least-recently-used manager is disposed first. This bounds memory and native
+   * resource usage regardless of how many distinct clients make requests.
+   *
+   * Defaults to `100`. A value less than `1` disables the limit.
+   */
+  maxClientManagers?: number;
 }
 
 interface PresentationInternalProps {
@@ -52,7 +62,7 @@ interface PresentationInternalProps {
  * instances, one for each frontend.
  *
  * @public
- * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[PresentationProps]] instead.
+ * @deprecated in 4.8 - might be removed in next major version. Use [[PresentationProps]] instead.
  */
 export type MultiManagerPresentationProps = PresentationProps;
 
@@ -60,7 +70,7 @@ export type MultiManagerPresentationProps = PresentationProps;
  * Base props for initializing the [[Presentation]] library.
  *
  * @public
- * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[PresentationProps]] instead.
+ * @deprecated in 4.8 - might be removed in next major version. Use [[PresentationProps]] instead.
  */
 export type PresentationPropsBase = PresentationProps;
 
@@ -69,7 +79,7 @@ export type PresentationPropsBase = PresentationProps;
  * [[PresentationManager]] instance for handling all requests.
  *
  * @public
- * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[PresentationProps]] instead.
+ * @deprecated in 4.8 - might be removed in next major version. Use [[PresentationProps]] instead.
  */
 export type SingleManagerPresentationProps = Omit<PresentationProps, "unusedClientLifetime">;
 
@@ -133,6 +143,8 @@ export class Presentation {
       cleanupInterval: 60 * 1000,
       // by default, manager is disposed after 1 hour of being unused
       unusedValueLifetime: this._initProps.unusedClientLifetime ?? 60 * 60 * 1000,
+      // by default, keep at most 100 client managers in memory at once
+      maxValues: this._initProps.maxClientManagers ?? 100,
       // add some logging
       /* c8 ignore next 5 */
       onDisposedSingle: (id: string) =>

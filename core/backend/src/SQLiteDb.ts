@@ -35,7 +35,7 @@ export class SQLiteDb {
   }
 
   /** alias for closeDb.
-   * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[closeDb]]
+   * @deprecated in 4.0 - might be removed in next major version. Use [[closeDb]]
    */
   public dispose(): void {
     this.closeDb();
@@ -181,6 +181,52 @@ export class SQLiteDb {
   /** Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the default transaction. */
   public abandonChanges(): void {
     this[_nativeDb].abandonChanges();
+  }
+
+  /**
+   * Apply a changeset file - in the same on-disk format used for iModel changesets - to this SQLiteDb.
+   * Unlike `BriefcaseDb.pullChanges`, this does *not* validate the changeset header (e.g. parentId/changesetId)
+   * against the current state of the database - it simply applies the changes it contains. If applying the
+   * changeset encounters any conflict, or otherwise fails, this method throws (conflicts are never resolved
+   * automatically).
+   * @note this method only throws on failure - it does *not* commit or abandon any changes itself. If it
+   * throws, some (but not necessarily all) of the changeset's changes may have already been applied to the
+   * current transaction. It is the caller's responsibility to call [[saveChanges]] or [[abandonChanges]]
+   * as appropriate after catching an error from this method.
+   * @param changesetFile the local file name of the changeset to apply.
+   * @internal
+   */
+  public applyChangeset(changesetFile: LocalFileName): void {
+    this[_nativeDb].applyChangeset(changesetFile);
+  }
+
+  /**
+   * Begin capturing DDL and data changes made to this SQLiteDb, so they may later be saved via [[createChangeset]].
+   * Intended only to produce changeset files for testing [[applyChangeset]] - not for any other purpose.
+   * @internal
+   */
+  public startChangeTracking(): void {
+    this[_nativeDb].startChangeTracking();
+  }
+
+  /**
+   * Execute a DDL statement (e.g. `CREATE TABLE`) so that, if change tracking is active (see [[startChangeTracking]]),
+   * the DDL is captured for inclusion in the changeset produced by [[createChangeset]]. DDL executed via [[executeSQL]]
+   * is *not* captured for change tracking purposes.
+   * @internal
+   */
+  public executeDdl(ddl: string): void {
+    this[_nativeDb].executeDdl(ddl);
+  }
+
+  /**
+   * Write out the changes captured since [[startChangeTracking]] was called to a changeset file, in the same
+   * on-disk format used for iModel changesets.
+   * @param changesetFile the local file name to write the changeset to.
+   * @internal
+   */
+  public createChangeset(changesetFile: LocalFileName): void {
+    this[_nativeDb].createChangeset(changesetFile);
   }
 
   /**

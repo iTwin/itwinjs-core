@@ -155,7 +155,7 @@ export abstract class IModelConnection extends IModel {
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled.
-   * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
+   * @deprecated in 5.0.0 - might be removed in next major version. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
@@ -167,7 +167,7 @@ export abstract class IModelConnection extends IModel {
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
-   * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
+   * @deprecated in 5.0.0 - might be removed in next major version. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
   public async loadFontMap(): Promise<FontMap> { // eslint-disable-line @typescript-eslint/no-deprecated
     if (undefined === this.fontMap) { // eslint-disable-line @typescript-eslint/no-deprecated
@@ -315,7 +315,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal
-   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use AccuSnap.doSnapRequest.
+   * @deprecated in 4.8 - might be removed in next major version. Use AccuSnap.doSnapRequest.
    */
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
     return this[_requestSnap](props);
@@ -362,7 +362,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** Request mass properties for multiple elements from the backend.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use [[IModelConnection.getMassProperties]].
+   * @deprecated in 4.11 - might be removed in next major version. Use [[IModelConnection.getMassProperties]].
    */
   public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {  // eslint-disable-line @typescript-eslint/no-deprecated
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
@@ -854,7 +854,7 @@ export class SnapshotConnection extends IModelConnection {
 
   /** Open an IModelConnection to a remote read-only snapshot iModel from a key that will be resolved by the backend.
    * @note This method is intended for web applications.
-   * @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [[CheckpointConnection.openRemote]].
+   * @deprecated in 4.10 - might be removed in next major version. Use [[CheckpointConnection.openRemote]].
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
@@ -1302,12 +1302,12 @@ export namespace IModelConnection {
 
       const select3d = `
         SELECT
-          ECInstanceId,
+          ECInstanceId as id,
           Origin.x as x, Origin.y as y, Origin.z as z,
           BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
           BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
-          Yaw, Pitch, Roll,
-          NULL as Rotation
+          Yaw as yaw, Pitch as pitch, Roll as roll,
+          NULL as rotation
         FROM bis.GeometricElement3d
         WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
 
@@ -1315,12 +1315,12 @@ export namespace IModelConnection {
       // must match those in select3d.
       const select2d = `
         SELECT
-          ECInstanceId,
+          ECInstanceId as id,
           Origin.x as x, Origin.y as y, NULL as z,
           BBoxLow.x as lx, BBoxLow.y as ly, NULL as lz,
           BBoxHigh.x as hx, BBoxHigh.y as hy, NULL as hz,
           NULL as yaw, NULL as pitch, NULL as roll,
-          Rotation
+          Rotation as rotation
         FROM bis.GeometricElement2d
         WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
 
@@ -1345,8 +1345,7 @@ export namespace IModelConnection {
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];
         const bbox = {
@@ -1536,7 +1535,7 @@ export namespace IModelConnection {
      * There is no guarantee that this view will be suitable for the purposes of any other applications.
      * Most applications should ignore the default view and instead create a [[ViewState]] that fits their own requirements using APIs like [[ViewCreator3d]].
      * @returns the Id of the default view as defined in the iModel's property table, or an invalid ID if no default view is defined.
-     * @deprecated in 4.2 - will not be removed until after 2026-06-13. Create a ViewState to your own specifications.
+     * @deprecated in 4.2 - might be removed in next major version. Create a ViewState to your own specifications.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;
