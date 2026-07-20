@@ -11,7 +11,7 @@ import {
   Arc3d, AxisOrder, CurveCurve, CurveCurveApproachType, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PointString3d, Ray3d, Transform, Vector2d, Vector3d,
 } from "@itwin/core-geometry";
-import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@itwin/core-common";
+import { ColorByName, ColorDef, GeometryStreamProps, GridOrientationType, LinePixels } from "@itwin/core-common";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
@@ -1581,15 +1581,22 @@ export class AccuDraw {
 
   /** @internal */
   public static updateAuxCoordinateSystem(acs: AuxCoordSystemState, vp: Viewport, allViews: boolean = true): void {
+    const setACS = (viewport: Viewport) => {
+      viewport.view.setAuxiliaryCoordinateSystem(acs);
+
+      if (viewport.isGridOn && GridOrientationType.AuxCoord === viewport.view.details.gridOrientation)
+        viewport.invalidateScene(); // Update ACS aligned grid...
+    };
+
     // When modeling with multiple spatial views open, you'd typically want the same ACS in all views...
     if (allViews && vp.view.isSpatialView()) {
       for (const otherVp of IModelApp.viewManager) {
         if (otherVp !== vp && otherVp.view.isSpatialView())
-          otherVp.view.setAuxiliaryCoordinateSystem(acs);
+          setACS(otherVp);
       }
     }
 
-    vp.view.setAuxiliaryCoordinateSystem(acs);
+    setACS(vp);
 
     // NOTE: Change AccuDraw's base rotation to ACS.
     IModelApp.accuDraw.setContext(AccuDrawFlags.OrientACS);
