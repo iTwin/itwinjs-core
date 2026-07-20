@@ -57,7 +57,7 @@ while (reader.step()) { /* ... */ }
 
 #### RegionBooleanXYOptions.simplifyUnion
 
-The default behavior of `RegionOps.regionBooleanXY` results in `UnionRegion`s with algorithmically inserted bridge edges removed, but with other interior edges remaining. The previous `true` behavior for this option returned the outer loop only, thus removing interior edges at the cost of losing all holes. Now passing `simplifyUnion: true` not only removes interior edges, but also preserves holes and returns the simplest region type.
+The default behavior of `RegionOps.regionBooleanXY` results in `UnionRegion`s with algorithmically inserted bridge edges removed, but with other interior edges remaining. The previous `true` behavior for this option applied only to `RegionBinaryOpType.Union` operations, and simplified the output by returning only the outer loop, but at the cost of losing all implied holes, which was less than desirable. Now passing `simplifyUnion: true` not only removes interior edges, but also preserves holes, and returns the simplest region type for _all_ operations, not just unions.
 
 For example, consider the union of four trapezoids to form a "picture frame". The following call produces a (rather naive!) `UnionRegion` in which the four input `Loop`s survive as children, and the hole is only implied---it cannot be queried:
 ```ts
