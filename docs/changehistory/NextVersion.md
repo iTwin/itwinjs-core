@@ -79,6 +79,6 @@ So for example, to subtract the intersection of a 4-loop (green) Venn diagram's 
 ```ts
 const result = RegionOps.regionBooleanXY([v0, v1, v2, v3], outer, RegionBinaryOpType.Parity, { simplifyUnion: true, operationGroupA: RegionBinaryOpType.Intersection });
 ```
-![Venn Input Loops](./assets/venn-loops.jpg "Green Venn loops, red outer loop")![Venn Output Region](./assets/venn-boolean-in-one-go.jpg "Venn intersection subtracted from outer loop")
+![Venn Input Loops](./assets/venn-loops.jpg "Green Venn loops, red outer loop")![Venn Output Region](./assets/venn-boolean-in-one-go.jpg "Outer loop minus Venn intersection")
 
-Note: The equivalent region can be obtained with `RegionBinaryOpType.BMinusA` instead of `RegionBinaryOpType.Parity`. To perform only the 4-way intersection, pass `undefined` for the second input group.
+Note: The same region can also be obtained with `RegionBinaryOpType.BMinusA` instead of `RegionBinaryOpType.Parity`. To perform only the 4-way intersection, pass `undefined` for the second input group.
