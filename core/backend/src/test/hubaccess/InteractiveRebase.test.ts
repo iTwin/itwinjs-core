@@ -11,26 +11,32 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
 import { Code, GeometricElement2dProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { ChannelControl, DrawingCategory } from "../../core-backend";
+import { BriefcaseDb, ChannelControl, DrawingCategory } from "../../core-backend";
 import { LineSegment3d, Point2d, Point3d, XYProps } from "@itwin/core-geometry";
 import { UpdateRebaseConflict } from "../../InteractiveRebase";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 
 chai.use(chaiAsPromised);
 
 describe("InteractiveRebase", () => {
+  let iModelId: GuidString;
+  let briefcase1: BriefcaseDb;
+  let briefcase2: BriefcaseDb;
+  let id: Id64String;
+  let initialChangesetIndex: number;
+
+  interface SomeGraphicalElementProps extends GeometricElement2dProps {
+    foo: string;
+    somePoint: XYProps;
+  }
+
   before(async () => {
     HubMock.startup("InteractiveRebase", KnownTestLocations.outputDir);
-  });
 
-  after(async () => {
-    HubMock.shutdown();
-  });
-
-  it("can resolve simple conflict", async () => {
     const accessToken1 = "user1";
     const accessToken2 = "user2";
-    const iModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId: HubMock.iTwinId, iModelName: "Test", description: "TestSubject", noLocks: true });
-    const briefcase1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId: HubMock.iTwinId, iModelId: iModelId });
+    iModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId: HubMock.iTwinId, iModelName: "Test", description: "TestSubject", noLocks: true });
+    briefcase1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId: HubMock.iTwinId, iModelId: iModelId });
 
     briefcase1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
@@ -45,12 +51,7 @@ describe("InteractiveRebase", () => {
           </ECEntityClass>
       </ECSchema>`;
 
-    interface SomeGraphicalElementProps extends GeometricElement2dProps {
-      foo: string;
-      somePoint: XYProps;
-    }
-
-    const id = await withEditTxn(briefcase1, async (txn) => {
+    id = await withEditTxn(briefcase1, async (txn) => {
       await txn.iModel.importSchemaStrings([schema]);
 
       const codeProps = Code.createEmpty();
@@ -72,9 +73,32 @@ describe("InteractiveRebase", () => {
 
     await briefcase1.pushChanges({ description: "Initial" });
 
-    const briefcase2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId: HubMock.iTwinId, iModelId: iModelId });
+    briefcase2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken2, iTwinId: HubMock.iTwinId, iModelId: iModelId });
     briefcase2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
+    initialChangesetIndex = briefcase1.changeset.index!;
+  });
+
+  beforeEach(async () => {
+    if (briefcase1.txns.rebaser.isRebasing)
+      await briefcase1.txns.rebaser.abort();
+    await briefcase1.discardChanges();
+    if (briefcase2.txns.rebaser.isRebasing)
+      await briefcase2.txns.rebaser.abort();
+    await briefcase2.discardChanges();
+
+    await briefcase1.pullChanges({ toIndex: initialChangesetIndex });
+    await briefcase2.pullChanges({ toIndex: initialChangesetIndex });
+
+    const hub = HubMock.findLocalHub(iModelId);
+    hub.truncateToChangeset(initialChangesetIndex);
+  });
+
+  after(async () => {
+    HubMock.shutdown();
+  });
+
+  it("can resolve an UPDATE conflict", async () => {
     // Create a conflict on foo and somePoint between the two briefcases.
     // Also add a non-conflicting userLabel.
     await withEditTxn(briefcase1, async (txn) => {
@@ -97,7 +121,7 @@ describe("InteractiveRebase", () => {
     await briefcase1.pushChanges({ description: "User1" });
 
     // Pull changes into briefcase2, which will create a conflict on the element.
-    const interactive = await briefcase2.pullChangesInteractive();
+    using interactive = await briefcase2.pullChangesInteractive();
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
 
@@ -153,5 +177,54 @@ describe("InteractiveRebase", () => {
     const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesOursSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+  });
+
+  it("does not consider both deleting to be a conflict", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(0);
+  });
+
+  it("can resolve a conflict where we delete something the upstream modified", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({
+        id,
+        foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
+      });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const deleteConflict = interactive.conflicts[0];
+    chai.expect(deleteConflict.kind).to.equal("TheirUpdateOurDelete");
   });
 });

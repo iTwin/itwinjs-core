@@ -249,6 +249,46 @@ export class LocalHub {
     return changeset.index;
   }
 
+  /**
+   * Remove all changesets with index greater than `toIndex` from the timeline, along with their
+   * associated checkpoint files and named versions. Resets `latestChangesetIndex` to `toIndex`.
+   * This lets tests "rewind" the hub to an earlier state without re-creating the iModel from scratch.
+   */
+  public truncateToChangeset(toIndex: ChangesetIndex): void {
+    if (toIndex >= this._latestChangesetIndex)
+      return;
+
+    const db = this.db;
+
+    // Delete named versions that reference a truncated changeset (must happen before timeline delete due to FK)
+    db.withSqliteStatement("DELETE FROM versions WHERE csIndex > ?", (stmt) => {
+      stmt.bindInteger(1, toIndex);
+      stmt.step();
+    });
+
+    // Delete checkpoints beyond toIndex (records and files)
+    const checkpointsToRemove = this.getCheckpoints({ first: toIndex + 1, end: this._latestChangesetIndex });
+    for (const csIndex of checkpointsToRemove)
+      IModelJsFs.removeSync(join(this.checkpointDir, this.checkpointNameFromIndex(csIndex)));
+    db.withSqliteStatement("DELETE FROM checkpoints WHERE csIndex > ?", (stmt) => {
+      stmt.bindInteger(1, toIndex);
+      stmt.step();
+    });
+
+    // Delete changeset files
+    for (let i = toIndex + 1; i <= this._latestChangesetIndex; i++)
+      IModelJsFs.removeSync(this.getChangesetFileName(i));
+
+    // Delete timeline records
+    db.withSqliteStatement("DELETE FROM timeline WHERE csIndex > ?", (stmt) => {
+      stmt.bindInteger(1, toIndex);
+      stmt.step();
+    });
+
+    db.saveChanges();
+    this._latestChangesetIndex = toIndex;
+  }
+
   public getIndexFromChangeset(changeset: ChangesetIndexOrId): ChangesetIndex {
     return changeset.index ?? this.getChangesetIndex(changeset.id);
   }

@@ -178,6 +178,9 @@ export class InteractiveRebase {
   }
 
   public [Symbol.dispose](): void {
+    if (this._editTxn) {
+      this._editTxn.end("abandon");
+    }
     this._db.txns.rebaser.removeConflictHandler(INTERACTIVE_REBASE_CONFLICT_HANDLER_ID);
   }
 
@@ -376,6 +379,20 @@ export class InteractiveRebase {
         // Our txn is trying to delete a row that has been modified by the new upstream changesets.
         // Proceed with the delete but report the conflicting update.
         // --> TheirUpdateOurDeleteRebaseConflict
+        const ecConflict = conflict.ecConflict;
+        const instanceId = ecConflict.original.ECInstanceId;
+
+        let instanceConflict = this._conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
+        if (instanceConflict === undefined) {
+          instanceConflict = { kind: "TheirUpdateOurDelete", id: instanceId, classId: ecConflict.original.ECClassId, original: {}, theirs: {} };
+          this._conflicts.push(instanceConflict);
+        }
+
+        for (const conflict of ecConflict.conflicts) {
+          instanceConflict.original[conflict] = ecConflict.original[conflict];
+          instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
+        }
+
         return DbConflictResolution.Replace;
       }
       assert(false, `Conflicts during a Deleted change should only have NotFound or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
