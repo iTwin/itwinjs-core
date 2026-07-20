@@ -1066,6 +1066,9 @@ describe("RegionBoolean", () => {
       LineSegment3d.createXYZXYZ(962428.194486032, 522361.7290240464, 288.41607666015625, 962286.0413822964, 522553.3408553152, 288.41607666015625),
       LineSegment3d.createXYZXYZ(962286.0413822964, 522553.3408553152, 288.41607666015625, 962210.7403532623, 522493.1466452621, 288.41607666015625),
     );
+    const loopA1 = Loop.create( // simpler
+      LineString3d.create([[962286.04138229636, 522553.34085531521, 288.41607666015625], [962225.91393952933, 522505.27612145542, 288.41607666015625], [962280.50988605386, 522417.39707423496, 288.41607666015625], [962353.33168688475, 522462.63851994643, 288.41607666015625], [962286.04138229636, 522553.34085531521, 288.41607666015625]]),
+    );
     const loopB = Loop.create(
       Arc3d.create(Point3d.create(962209.2863097156, 522307.1724522184), Vector3d.create(1.0648688446043966, 1.0453815096604349), Vector3d.create(1.0453815096604349, -1.0648688446043968), AngleSweep.fromJSON([-43.59306744616376, 43.59306744616376])),
       LineString3d.create([[962210.7783705335, 522307.1953142588], [962210.854177735, 522302.24785754294]]),
@@ -1095,13 +1098,29 @@ describe("RegionBoolean", () => {
       LineString3d.create([[962205.2692519757, 522331.2932322129], [962204.5098300062, 522308.82699893997]]),
       LineString3d.create([[962204.5098300062, 522308.82699893997], [962209.336722701, 522308.6638363701]]),
     );
+    const loopB1 = Loop.create( // simpler
+      LineString3d.create([[962365.46511930856, 522476.12889281311], [962266.53886326146, 522474.61309932853], [962266.62291853281, 522469.12734325742], [962266.52639729867, 522469.12586431479]]),
+      Arc3d.create(Point3d.create(962266.44234202732, 522474.61162038596), Vector3d.create(-3.8195792653137666, -3.9384513703010180), Vector3d.create(-3.9384513703010180, 3.8195792653137666), AngleSweep.createStartEndDegrees(-44.999999999926672, 44.999999999926672)),
+      LineString3d.create([[962260.95658595627, 522474.52756511443], [962260.95354975073, 522474.72571904660], [962266.43930582190, 522474.80977431813], [962265.59875310690, 522529.66733502917], [962260.22257966117, 522529.58495883289]]),
+      Arc3d.create(Point3d.create(962260.20909983735, 522530.46470170130), Vector3d.create(-0.61080102810750558, -0.63328613140732093), Vector3d.create(-0.63328613140732126, 0.61080102810750592), AngleSweep.createStartEndDegrees(-44.842416658493107, 44.842416658493107)),
+      LineString3d.create([[962259.32944442658, 522530.44638290734], [962259.22939498967, 522535.25068547623], [962219.37022340414, 522534.42061958771], [962219.37022340414, 522405.93994452152], [962365.46511930856, 522405.93994452152], [962365.46511930856, 522476.12889281311]]),
+    );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loopA, loopB]);
-    const difference = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.AMinusB);
+    let difference = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.AMinusB);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, difference);
     if (ck.testDefined(difference, "Boolean difference succeeded")) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, difference);
       ck.testType(difference, UnionRegion, "difference is a UnionRegion");
-      ck.testExactNumber(3, difference.children.length, "difference has 3 children");
-      ck.testDefined(CurveOps.isPlanar(difference), "difference is planar");
+      ck.testExactNumber(3, difference.children.length, "difference UnionRegion has 3 children");
+      ck.testDefined(CurveOps.isPlanar(difference), "difference UnionRegion is planar");
+    }
+    const dx = 200;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loopA1, loopB1], dx);
+    difference = RegionOps.regionBooleanXY(loopA1, loopB1, RegionBinaryOpType.AMinusB);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, difference, dx);
+    if (ck.testDefined(difference, "Boolean difference succeeded")) {
+      ck.testType(difference, Loop, "difference is a Loop");
+      ck.testExactNumber(4, difference.children.length, "difference Loop has 4 children");
+      ck.testDefined(CurveOps.isPlanar(difference), "difference Loop is planar");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SubtractionAnomaly");
     expect(ck.getNumErrors()).toBe(0);

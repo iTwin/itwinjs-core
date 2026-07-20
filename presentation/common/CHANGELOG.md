@@ -1,6 +1,18 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 08 Jul 2026 19:05:13 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Jul 2026 19:42:09 GMT and should not be manually modified.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+### Updates
+
+- Content traversal (`createContentTraverser`, `traverseContent`, `traverseContentItem`) now supports content retrieved with `omitFormattedValues: true`, correctly traversing array and struct properties even when display values are not present.
 
 ## 5.11.1
 Wed, 08 Jul 2026 19:03:46 GMT

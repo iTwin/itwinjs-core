@@ -54,6 +54,7 @@ import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
 import type { ObjectReference } from '@itwin/object-storage-core/lib/common';
 import { OpenMode } from '@itwin/core-bentley';
 import { OrderedId64Iterable } from '@itwin/core-bentley';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
@@ -2086,6 +2087,12 @@ export interface CreateIModelProps extends IModelProps {
     // @alpha
     readonly thumbnail?: ThumbnailProps;
 }
+
+// @internal
+export function createIpcDispatcher(impl: object, channelName: string, includeStack: boolean | (() => boolean)): (funcName: string, ...args: any[]) => Promise<IpcInvokeReturn>;
+
+// @internal
+export function createIpcProxy<K>(call: (methodName: string, ...args: any[]) => Promise<any>): PickAsyncMethods<K>;
 
 // @public
 export interface CreateSnapshotIModelProps {
@@ -8048,6 +8055,9 @@ export class RealityModelDisplaySettings {
     toJSON(): RealityModelDisplayProps | undefined;
 }
 
+// @internal
+export function rebuildIpcError(err: any, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): Error;
+
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
 
@@ -9560,6 +9570,9 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     // (undocumented)
     protocolVersion?: number;
 }
+
+// @internal
+export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvokeReturn;
 
 // @beta
 export namespace ServerBasedLocksError {
@@ -11425,6 +11438,9 @@ export enum TypeOfChange {
 
 // @public
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
+
+// @internal
+export function unwrapIpcInvokeReturn<T = unknown>(retVal: IpcInvokeReturn, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): T;
 
 // @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
