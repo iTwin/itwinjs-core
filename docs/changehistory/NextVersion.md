@@ -48,26 +48,26 @@ while (reader.step()) { /* ... */ }
 
 ### Region Boolean improvements
 
-[RegionBooleanXYOptions]($core-geometry) has three new options to control input and output of [RegionOps.regionBooleanXY]($core-geometry):
+[RegionOps.regionBooleanXY]($core-geometry) has improved simplification and new options in the [RegionBooleanXYOptions]($core-geometry) options bundle:
 | Option name | Type | Default Value | Description |
 |---|---|---|---|
-| `simplifyUnion` | boolean | `false` | Whether to post-process the result to remove extraneous interior edges |
-| `operationGroupA` | [RegionBinaryOpType]($core-geometry) | `RegionBinaryOpType.Union` | Operation to apply to the regions of the first input argument |
-| `operationGroupB` | [RegionBinaryOpType]($core-geometry) | `RegionBinaryOpType.Union` | Operation to apply to the regions of the second input argument |
+| `simplifyUnion` | boolean | `false` | When `true`, holes are now preserved. |
+| `operationGroupA` | [RegionBinaryOpType]($core-geometry) | `RegionBinaryOpType.Union` | Operation to apply to the regions of the first input argument. |
+| `operationGroupB` | [RegionBinaryOpType]($core-geometry) | `RegionBinaryOpType.Union` | Operation to apply to the regions of the second input argument. |
 
 #### RegionBooleanXYOptions.simplifyUnion
 
-The previous/default behavior of `RegionOps.regionBooleanXY` results in `UnionRegion`s with algorithmically inserted bridge edges removed, but with other interior edges remaining. Passing `simplifyUnion: true` not only removes interior edges but also returns the simplest region type.
+The default behavior of `RegionOps.regionBooleanXY` results in `UnionRegion`s with algorithmically inserted bridge edges removed, but with other interior edges remaining. The previous `true` behavior for this option returned the outer loop only, thus removing interior edges at the cost of losing all holes. Now passing `simplifyUnion: true` not only removes interior edges, but also preserves holes and returns the simplest region type.
 
-For example, consider the union of four trapezoids to form a "picture frame". The following call produces a (rather naive!) `UnionRegion` in which the four input `Loop`s survive as children, and the hole is only implied:
+For example, consider the union of four trapezoids to form a "picture frame". The following call produces a (rather naive!) `UnionRegion` in which the four input `Loop`s survive as children, and the hole is only implied---it cannot be queried:
 ```ts
-const result = RegionOps.regionBooleanXY([t0, t1, t2, t3], undefined, RegionBinaryOpType.Union);
+const result = RegionOps.regionBooleanXY([trap0, trap1, trap2, trap3], undefined, RegionBinaryOpType.Union);
 ```
 ![Default Union](./assets/picture-frame-default.jpg "Default Boolean union results in a UnionRegion")
 
-When we utilize the new option, the result is a `ParityRegion`. This simpler output not only lacks extraneous interior edges, but also explicitly captures the outer and hole `Loop`s as children:
+When we pass `simplifyUnion: true`, the result is now a `ParityRegion`. This simpler output not only lacks extraneous interior edges, but also explicitly captures the outer and hole `Loop`s as children:
 ```ts
-const result = RegionOps.regionBooleanXY([t0, t1, t2, t3], undefined, RegionBinaryOpType.Union, { simplifyUnion: true });
+const result = RegionOps.regionBooleanXY([trap0, trap1, trap2, trap3], undefined, RegionBinaryOpType.Union, { simplifyUnion: true });
 ```
 ![Simplified Union](./assets/picture-frame-simplified.jpg "Simplified Boolean union results in a ParityRegion")
 
@@ -75,10 +75,14 @@ const result = RegionOps.regionBooleanXY([t0, t1, t2, t3], undefined, RegionBina
 
 The previous/default behavior of `RegionOps.regionBooleanXY` assumes an implicit union of the regions in each input group. With these new options, you can now specify intersection and parity operations to be performed on the regions in each group, before the main Boolean operation is performed on the groups.
 
-So for example, to subtract the intersection of a 4-loop (green) Venn diagram's inner region from an outer (red) loop, you would previously have to call this method 4 times to perform 3 pairwise Boolean intersections among the Venn loops, followed by a Boolean difference. This code computes the result all in one go:
-```ts
-const result = RegionOps.regionBooleanXY([v0, v1, v2, v3], outer, RegionBinaryOpType.Parity, { simplifyUnion: true, operationGroupA: RegionBinaryOpType.Intersection });
-```
-![Venn Input Loops](./assets/venn-loops.jpg "Green Venn loops, red outer loop")![Venn Output Region](./assets/venn-boolean-in-one-go.jpg "Outer loop minus Venn intersection")
+So for example, consider subtracting the intersection of a 4-loop (green) Venn diagram's inner region from an outer (red) loop:
 
-Note: The same region can also be obtained with `RegionBinaryOpType.BMinusA` instead of `RegionBinaryOpType.Parity`. To perform only the 4-way intersection, pass `undefined` for the second input group.
+![Venn Input Loops](./assets/venn-loops.jpg "Green Venn loops, red outer loop")
+
+Before the new options, you would have to call this method 4 times: 3 pairwise Boolean intersections among the Venn loops, and a Boolean difference. Now you can compute the `ParityRegion` result all in one go:
+```ts
+const result = RegionOps.regionBooleanXY([venn0, venn1, venn2, venn3], outer, RegionBinaryOpType.Parity, { simplifyUnion: true, operationGroupA: RegionBinaryOpType.Intersection });
+```
+![Venn Output Region](./assets/venn-boolean-in-one-go.jpg "Outer loop minus Venn intersection")
+
+Note: The same result can also be obtained with `RegionBinaryOpType.BMinusA` instead of `RegionBinaryOpType.Parity`. To perform only the 4-way intersection, pass `undefined` for the second input group.
