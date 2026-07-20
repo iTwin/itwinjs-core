@@ -32,6 +32,7 @@ import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs }
 import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
+import { getRuntimeClass, reshapeInstanceRow } from "./internal/ECSqlInstanceReshaper";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
@@ -960,7 +961,7 @@ export abstract class IModelDb extends IModel {
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this[_nativeDb].isOpen())
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
     const executor = {
       execute: async (request: DbQueryRequest) => {
@@ -987,7 +988,7 @@ export abstract class IModelDb extends IModel {
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
     if (!this[_nativeDb].isOpen())
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
     const executor = new ECSqlRowExecutor(this);
     const reader = new ECSqlSyncReader(executor, ecsql, params, config);
@@ -1090,8 +1091,7 @@ export abstract class IModelDb extends IModel {
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
@@ -1112,8 +1112,7 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
@@ -1184,7 +1183,7 @@ export abstract class IModelDb extends IModel {
       if (this._schemasPromise) {
         const old = this._schemasPromise;
         this._schemasPromise = undefined;
-        old.then((view) => view.markOutdated()).catch(() => {});
+        old.then((view) => view.markOutdated()).catch(() => { });
       }
       this[_nativeDb].clearECDbCache();
     }
@@ -3071,16 +3070,21 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
-      const sql = `SELECT *, ec_classname(ECClassId, 's:c') classFullName FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
+      // `SELECT *` targets a caller/runtime-determined ElementAspect subclass, so its shape can't be decomposed
+      // ahead of time. Query using the non-deprecated UseECSqlPropertyNames format and reshape the row into the
+      // legacy UseJsPropertyNames shape using ECSchema metadata (see ECSqlInstanceReshaper for why a naive,
+      // non-schema-aware rename isn't safe here).
+      const ecClass = getRuntimeClass(this._iModel, aspectClassName);
+      const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
       const aspect: ElementAspectProps | undefined = this._iModel.withQueryReader(sql, (reader): ElementAspectProps | undefined => {
         if (reader.step()) {
-          const aspectProps: ElementAspectProps = { ...reader.current.toRow() }; // start with everything that SELECT * returned; classFullName is supplied by the ec_classname alias
-          (aspectProps as any).className = undefined; // clear the raw ECClassId-derived property from SELECT * that we don't want in the final instance
-          return aspectProps;
+          const aspectProps = reshapeInstanceRow(reader.current.toRow(), ecClass, this._iModel) as Omit<ElementAspectProps, "classFullName"> & { className?: string, classFullName?: string };
+          aspectProps.classFullName = (aspectProps.className as string).replace(".", ":"); // add in property required by EntityProps
+          aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
+          return aspectProps as ElementAspectProps;
         }
         return undefined;
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
       if (undefined === aspect) {
         throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}, ${aspectClassName}`);
       }

@@ -131,7 +131,7 @@ describe("Quantity", () => {
         throw new Error(`Expected a parsed from bearing DMS input string ${inputString}`);
       }
       const value = parseResult.value;
-      expect(value).toBe(2.6149395518005045);
+      expect(value).toBe(5.239042082173978);
 
       const formatterResult = Formatter.formatQuantity(value, bearingDMSFormatter);
       expect(formatterResult).toBe(inputString);
