@@ -17,6 +17,17 @@ export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYA
 export interface FieldValue {
   value: FieldPrimitiveValue;
   type: FieldPropertyType;
+  /** Full name (e.g. `"AecUnits.LENGTH"`) of the [KindOfQuantity]($ecschema-metadata)
+   * associated with the resolved property, if any. Used by the runtime to look up a
+   * default [Format]($core-quantity) when [[FieldFormatOptions.quantity]] does not
+   * provide one.
+   */
+  kindOfQuantityFullName?: string;
+  /** Full name (e.g. `"Units.M"`) of the persistence unit of the resolved property,
+   * if resolvable from its [KindOfQuantity]($ecschema-metadata). Used as the source
+   * unit when constructing a [FormatterSpec]($core-quantity).
+   */
+  persistenceUnitFullName?: string;
 }
 
 type FieldFormatter = (value: FieldPrimitiveValue, options: FieldFormatOptions | undefined) => string | undefined;
