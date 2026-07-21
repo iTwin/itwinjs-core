@@ -33,7 +33,7 @@ import {
   TextRun,
   TextStyleSettingsProps,
 } from "@itwin/core-common";
-import { DecorateContext, Decorator, EmphasizeElements, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
+import { DecorateContext, Decorator, EmphasizeElements, GraphicType, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -331,7 +331,79 @@ export class TextDecorationTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return undefined; }
 
+  private static readonly _helpEntries: ReadonlyArray<readonly [string, string]> = [
+    ["help", "Print this help message."],
+    ["clear", "Reset the editor and remove the decoration."],
+    ["init [category]", "Initialize the editor. Uses the first category in the view if omitted."],
+    ["center", "Set the annotation origin to the view center."],
+    ["rotation <deg>", "Set annotation rotation in degrees."],
+    ["offset <x> <y>", "Set annotation offset."],
+    ["anchor <left|center|right|top|middle|bottom>", "Set the horizontal or vertical anchor."],
+    ["font <name>", "Set the font for subsequent runs."],
+    ["text <content>", "Append a text run."],
+    ["fraction <numerator> <denominator>", "Append a stacked fraction run."],
+    ["field e=<elementId> p=<schema:class:property> [f=<formatOptionsJson>]", "Append a field run."],
+    ["break", "Append a line break."],
+    ["tab [spaces]", "Append a tab run with an optional tab interval."],
+    ["paragraph", "Append a new paragraph."],
+    ["list <enumerator> <terminator> <case> [index]", "Append a list to the paragraph at [index]. Use \"none\" to omit a value."],
+    ["list-item [index]", "Append an item to the list at [index]."],
+    ["color <colorString>", "Set run color (e.g. red, #ff0000)."],
+    ["docheight <n>", "Set document text height."],
+    ["textheight <n>", "Set text height for subsequent runs."],
+    ["widthfactor <n>", "Set document width factor."],
+    ["width <n>", "Set the document width (for word wrap)."],
+    ["justify <left|center|right>", "Set document justification."],
+    ["indent <n>", "Set indentation of the current paragraph."],
+    ["spacing <n>", "Set document line spacing factor."],
+    ["bold", "Toggle bold for subsequent runs."],
+    ["italic", "Toggle italic for subsequent runs."],
+    ["underline", "Toggle underline for subsequent runs."],
+    ["fractionscale <n>", "Set stacked-fraction scale."],
+    ["fractiontype <horizontal|diagonal>", "Set stacked-fraction type."],
+    ["subscriptscale <n>", "Set subscript scale."],
+    ["superscriptscale <n>", "Set superscript scale."],
+    ["shift <none|superscript|subscript>", "Set baseline shift for subsequent runs."],
+    ["margin <left|right|top|bottom|all|horizontal|vertical> <n>", "Set document margins."],
+    ["frame <shape|fillColor|borderColor|borderWeight> <value>", "Configure the frame style."],
+    ["leader new", "Append a new leader."],
+    ["leader start <angleDeg>", "Set the start point of the latest leader."],
+    ["leader keypoint <curveIndex> <fraction>", "Attach the latest leader to a curve key point."],
+    ["leader nearest", "Attach the latest leader to the nearest point."],
+    ["leader textpoint <position>", "Attach the latest leader to a text point."],
+    ["leader terminatorShape <shape>", "Set the leader terminator shape."],
+    ["debug", "Toggle drawing of the anchor point and range."],
+    ["log", "Log the current annotation to the console."],
+    ["json [propsJson]", "Set the text block from JSON, or log the current text block if omitted."],
+    ["insertstyle <name>", "Insert a new text style using the current run/document style."],
+    ["updatestyle <name>", "Update an existing text style using the current run/document style."],
+    ["deletestyle <name>", "Delete a text style by name."],
+    ["applystyle <styleId>", "Apply the given default text style id and clear overrides."],
+    ["load <annotationId>", "Load an existing text annotation element into the editor."],
+    ["insert", "Insert the current annotation into the iModel (2d views only)."],
+    ["update <annotationId>", "Update the given annotation element with the current state."],
+    ["delete <annotationId>", "Delete the given annotation element."],
+    ["scale <factor>", "Set the annotation scale factor for the current model."],
+  ];
+
+  private static printHelp(): void {
+    const width = TextDecorationTool._helpEntries.reduce((max, [usage]) => Math.max(max, usage.length), 0);
+    const lines = TextDecorationTool._helpEntries.map(([usage, desc]) => `  ${usage.padEnd(width)}  ${desc}`);
+    const message = `dta text <command> [args]\n\nCommands:\n${lines.join("\n")}`;
+    // eslint-disable-next-line no-console
+    console.log(message);
+    // Throw an error to display the message in viewer.
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "See console for details"));
+  }
+
   public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
+    const cmd = inArgs[0].toLowerCase();
+
+    if (cmd === "help") {
+      TextDecorationTool.printHelp();
+      return true;
+    }
+
     const vp = IModelApp.viewManager.selectedView;
     if (!vp) {
       return false;
@@ -341,7 +413,6 @@ export class TextDecorationTool extends Tool {
       editor.modelId = vp.view.baseModelId;
     }
 
-    const cmd = inArgs[0].toLowerCase();
     const arg = inArgs[1];
 
     switch (cmd) {
