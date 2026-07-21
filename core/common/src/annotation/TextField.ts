@@ -20,7 +20,11 @@ import { FormatProps } from "@itwin/core-quantity";
  *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
  *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
  *  - "string": a value convertible to a string.
- * @note Currently, only formatting of "string" and "datetime" types is implemented. Other types are converted to and formatted as "string".
+ * @note "quantity" and "coordinate" fields are only formatted through the iTwin.js quantity pipeline
+ * when the async formatting path is used (e.g. [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend)).
+ * The synchronous formatting path falls back to a plain string representation for these types.
+ * Formatting for "boolean", "int-enum", and "string-enum" is not yet implemented; those values are
+ * converted to and formatted as "string".
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";

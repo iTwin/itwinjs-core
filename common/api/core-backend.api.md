@@ -2948,6 +2948,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
     static evaluateFields(args: EvaluateFieldsArgs): number;
+    static evaluateFieldsAsync(args: EvaluateFieldsArgs): Promise<number>;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;

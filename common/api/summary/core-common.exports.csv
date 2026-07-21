@@ -325,12 +325,14 @@ public;class;FeatureTable
 internal;class;FeatureTableHeader
 beta;type;FieldCase
 beta;interface;FieldFormatOptions
+internal;interface;FieldFormatterContext
 internal;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath
 beta;type;FieldPropertyType
 beta;class;FieldRun
 beta;interface;FieldRunProps
+beta;type;FieldUnitSystem
 internal;interface;FieldValue
 public;interface;FilePropertyProps
 public;enum;FillDisplay
@@ -347,6 +349,7 @@ deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;function;formatFieldValue
+internal;function;formatFieldValueAsync
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps
@@ -720,6 +723,7 @@ public;interface;QPoint3dBuffer
 public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
+beta;interface;QuantityFieldFormatOptions
 public;namespace;Quantization
 public;class;QueryBinder
 public;interface;QueryLimit

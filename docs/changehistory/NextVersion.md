@@ -6,6 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [Quantity formatting](#quantity-formatting)
     - [Bearing and Azimuth formatting now respects the persistence unit's phenomenon](#bearing-and-azimuth-formatting-now-respects-the-persistence-units-phenomenon)
+    - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
   - [Electron](#electron)
     - [Electron 43 support](#electron-43-support)
     - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
@@ -28,6 +29,38 @@ For code that persists Bearing/Azimuth values as `ANGLE`-phenomenon units and pr
 If your KindOfQuantity persists true azimuth values directly, switch its persistence unit to a `Units.HORIZONTAL_DIRECTION` unit (e.g. `Units.HORIZONTAL_DIR_RAD`) to opt out of the conversion entirely.
 
 **Note:** if you switch your persistence unit's phenomenon, remember to also update `revolutionUnit` (and `azimuthBaseUnit`, if set) to a unit from the same phenomenon - e.g. `Units.HORIZONTAL_DIR_REVOLUTION` instead of `Units.REVOLUTION` for a `Units.HORIZONTAL_DIRECTION` persistence unit. These units cannot be converted across phenomena, so a mismatch will fail to resolve. See [Bearing and Azimuth Format]($docs/quantity-formatting/definitions/Formats.md#bearing-and-azimuth-format) for details.
+
+### Quantity formatting for text annotation fields
+
+[FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value can now be rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation. Field-level formatting is configured via a new [QuantityFieldFormatOptions]($common) block on [FieldFormatOptions]($common):
+
+```typescript
+const fieldRun = FieldRun.create({
+  propertyHost: { elementId, schemaName: "MyDomain", className: "Widget" },
+  propertyPath: { propertyName: "length" },
+  formatOptions: {
+    quantity: {
+      // Prefer imperial presentation units when resolving from the property's KindOfQuantity.
+      unitSystem: "imperial",
+    },
+  },
+});
+```
+
+A format is resolved in this priority order:
+
+1. `formatOptions.quantity.format` — an inline [FormatProps]($core-quantity) override.
+2. `formatOptions.quantity.formatSetKey` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
+3. The property's own [KindOfQuantity]($ecschema-metadata), filtered by `unitSystem` (defaults to `"metric"`).
+4. For `"coordinate"` only, a built-in meters fallback.
+
+Because [FormatterSpec]($core-quantity) creation is asynchronous, quantity formatting is only applied when a field is evaluated through the new async entry point [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend):
+
+```typescript
+const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel, block });
+```
+
+The existing synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks continue to render `"quantity"` and `"coordinate"` fields as their raw string representation for backward compatibility. Applications that want formatted quantity output for text annotations should migrate their evaluation calls to the async variant.
 
 ## Electron
 
