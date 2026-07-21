@@ -211,9 +211,10 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
   }
 
+  const isJsonPath = isJsonLeafPrimitive(curValue.primitive) && ecProp.isPrimitive() && ecProp.primitiveType === PrimitiveType.String && accessors && accessors.length > 0;
   const propertyType = curValue.primitive !== undefined && !ecProp.isPrimitive()
     ? undefined
-    : (isJsonLeafPrimitive(curValue.primitive) && ecProp.isPrimitive() && ecProp.primitiveType === PrimitiveType.String && accessors && accessors.length > 0
+    : (isJsonPath
       ? inferJsonPrimitiveType(curValue.primitive)
       : determineFieldPropertyType(ecProp));
   if (!propertyType) {
@@ -225,7 +226,19 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     return undefined;
   }
 
-  return { value: curValue.primitive, type: propertyType };
+  // Capture KindOfQuantity + persistence unit for the schema-defined property so that
+  // quantity/coordinate fields can be formatted via the standard iTwin.js quantity pipeline.
+  // JSON-in-string values have no reliable KoQ association, so skip them.
+  let kindOfQuantityFullName: string | undefined;
+  let persistenceUnitFullName: string | undefined;
+  if (!isJsonPath && (propertyType === "quantity" || propertyType === "coordinate")) {
+    kindOfQuantityFullName = ecProp.kindOfQuantity?.fullName;
+    if (kindOfQuantityFullName) {
+      persistenceUnitFullName = ecProp.getKindOfQuantitySync()?.persistenceUnit?.fullName;
+    }
+  }
+
+  return { value: curValue.primitive, type: propertyType, kindOfQuantityFullName, persistenceUnitFullName };
 }
 
 function isJsonLeafPrimitive(value: FieldPrimitiveValue | undefined): boolean {
@@ -291,15 +304,17 @@ function determineFieldPropertyType(prop: Property): FieldPropertyType | undefin
       case PrimitiveType.DateTime:
         return "datetime";
       case PrimitiveType.Double:
-      case PrimitiveType.Long:
         return "quantity";
+      case PrimitiveType.Long:
+        // Long properties represent quantities only when they carry a KindOfQuantity
+        // (many Longs are identifiers, not measures). Without one, format as a string.
+        return prop.kindOfQuantity ? "quantity" : "string";
       case PrimitiveType.Point2d:
       case PrimitiveType.Point3d:
         return "coordinate";
       case PrimitiveType.Binary:
         return prop.extendedTypeName === "BeGuid" ? "string" : undefined;
       case PrimitiveType.Integer:
-      case PrimitiveType.Long:
         return "string";
       default:
         return undefined;
