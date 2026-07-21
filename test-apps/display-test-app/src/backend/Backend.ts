@@ -198,7 +198,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     const iModel = IModelDb.findByKey(iModelToken.key);
 
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
-    ElementDrivesTextAnnotation.evaluateFields({ block: textBlock, iModel });
+    await ElementDrivesTextAnnotation.evaluateFieldsAsync({ block: textBlock, iModel });
 
     let scaleFactor = 1;
     if (modelId) {
