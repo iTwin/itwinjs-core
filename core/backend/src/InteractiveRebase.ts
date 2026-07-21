@@ -68,47 +68,6 @@ export interface UpdateRebaseConflict extends RebaseConflict {
   acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void;
 }
 
-class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
-  public readonly kind: "Update" = "Update";
-
-  public readonly id: Id64String;
-  public readonly classId: Id64String;
-  public readonly original: RebaseConflictProperties = {};
-  public readonly theirs: RebaseConflictProperties = {};
-  public readonly ours: RebaseConflictProperties = {};
-
-  constructor(id: Id64String, classId: Id64String) {
-    this.id = id;
-    this.classId = classId;
-  }
-
-  public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
-    const updateProps: RebaseConflictProperties = { id: this.id };
-    if (!properties || properties.length === 0) {
-      Object.assign(updateProps, this.ours);
-    } else {
-      for (const prop of properties) {
-        updateProps[prop] = this.ours[prop];
-      }
-    }
-
-    rebase.editTxn.updateElement(updateProps);
-  }
-
-  public acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void {
-    const updateProps: RebaseConflictProperties = { id: this.id };
-    if (!properties || properties.length === 0) {
-      Object.assign(updateProps, this.theirs);
-    } else {
-      for (const prop of properties) {
-        updateProps[prop] = this.theirs[prop];
-      }
-    }
-
-    rebase.editTxn.updateElement(updateProps);
-  }
-}
-
 /**
  * The incoming (their) changes modified properties on an instance that was deleted by the
  * local (our) changes.
@@ -378,28 +337,7 @@ export class InteractiveRebase {
       } else if (conflict.cause === "Data") {
         // Our txn is trying to delete a row that has been modified by the new upstream changesets.
         // Proceed with the delete but report the conflicting update.
-        // --> TheirUpdateOurDeleteRebaseConflict
-        const ecConflict = conflict.ecConflict;
-        const instanceId = ecConflict.original.ECInstanceId;
-
-        let instanceConflict = this._conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
-        if (instanceConflict === undefined) {
-          instanceConflict = {
-            kind: "TheirUpdateOurDelete",
-            id: instanceId,
-            classId: ecConflict.original.ECClassId,
-            original: {},
-            theirs: {}
-          };
-          this._conflicts.push(instanceConflict);
-        }
-
-        for (const conflict of ecConflict.conflicts) {
-          instanceConflict.original[conflict] = ecConflict.original[conflict];
-          instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
-        }
-
-        return DbConflictResolution.Replace;
+        return TheirUpdateOurDeleteRebaseConflictImpl.handle(this._conflicts, conflict);
       }
       assert(false, `Conflicts during a Deleted change should only have NotFound or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
     } else if (conflict.opcode === "Inserted") {
@@ -419,29 +357,8 @@ export class InteractiveRebase {
     } else if (conflict.opcode === "Updated") {
       if (conflict.cause === "NotFound") {
         // Our txn is trying to update a row that has been deleted by the new upstream changesets.
-        // Let the delete stand, but report the conflict
-        // --> TheirDeleteOurUpdateRebaseConflict
-        const ecConflict = conflict.ecConflict;
-        const instanceId = ecConflict.original.ECInstanceId;
-
-        let instanceConflict = this._conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirDeleteOurUpdate") as TheirDeleteOurUpdateRebaseConflict | undefined;
-        if (instanceConflict === undefined) {
-          instanceConflict = {
-            kind: "TheirDeleteOurUpdate",
-            id: instanceId,
-            classId: ecConflict.original.ECClassId,
-            original: {},
-            ours: {}
-          };
-          this._conflicts.push(instanceConflict);
-        }
-
-        for (const conflict of ecConflict.conflicts) {
-          instanceConflict.original[conflict] = ecConflict.original[conflict];
-          instanceConflict.ours[conflict] = ecConflict.ours[conflict];
-        }
-
-        return DbConflictResolution.Skip;
+        // Let the delete stand, but report the conflict.
+        return TheirDeleteOurUpdateRebaseConflictImpl.handle(this._conflicts, conflict);
       } else if (conflict.cause === "Constraint") {
         // Because this change was valid when it was created, and the schema has not changed,
         // this can _only_ be a UNIQUE constraint violation.
@@ -451,29 +368,12 @@ export class InteractiveRebase {
       } else if (conflict.cause === "Data") {
         // Our txn is changing the values in an existing row, and the new upstream changesets
         // have also changed one or more values in that row.
-        // --> UpdateRebaseConflict
-        const ecConflict = conflict.ecConflict;
-        const instanceId = ecConflict.original.ECInstanceId;
-
-        let instanceConflict = this._conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Update") as UpdateRebaseConflict | undefined;
-        if (instanceConflict === undefined) {
-          instanceConflict = new UpdateRebaseConflictImpl(instanceId, ecConflict.original.ECClassId);
-          this._conflicts.push(instanceConflict);
-        }
-
-        for (const conflict of ecConflict.conflicts) {
-          instanceConflict.original[conflict] = ecConflict.original[conflict];
-          instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
-          instanceConflict.ours[conflict] = ecConflict.ours[conflict];
-        }
-
-        // Always accept "our" changes at this stage. That minimizes the chances of further
-        // conflicts in subsequent txns.
-        return DbConflictResolution.Replace;
+        return UpdateRebaseConflictImpl.handle(this._conflicts, conflict);
       }
       assert(false, `Conflicts during an Updated change should only have NotFound, Constraint, or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
     } else if (conflict.opcode === undefined) {
       if (conflict.cause === "ForeignKey") {
+        return DbConflictResolution.Skip;
       }
       assert(false, `Conflicts without an opcode should only have ForeignKey as the conflict cause. Unexpected cause: ${conflict.cause}`);
     }
@@ -490,4 +390,136 @@ export class InteractiveRebase {
   // Finalize current txn/group, move to the next
   // Abort current txn/group (reverting all conflict resolutions and edits), move back to the previous
 
+}
+
+class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
+  public readonly kind: "Update" = "Update";
+
+  public readonly id: Id64String;
+  public readonly classId: Id64String;
+  public readonly original: RebaseConflictProperties = {};
+  public readonly theirs: RebaseConflictProperties = {};
+  public readonly ours: RebaseConflictProperties = {};
+
+  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+    const ecConflict = conflict.ecConflict;
+    const instanceId = ecConflict.original.ECInstanceId;
+
+    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Update") as UpdateRebaseConflict | undefined;
+    if (instanceConflict === undefined) {
+      instanceConflict = new UpdateRebaseConflictImpl(instanceId, ecConflict.original.ECClassId);
+      conflicts.push(instanceConflict);
+    }
+
+    for (const conflict of ecConflict.conflicts) {
+      instanceConflict.original[conflict] = ecConflict.original[conflict];
+      instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
+      instanceConflict.ours[conflict] = ecConflict.ours[conflict];
+    }
+
+    // Always accept "our" changes at this stage. That minimizes the chances of further
+    // conflicts in subsequent txns.
+    return DbConflictResolution.Replace;
+  }
+
+  public constructor(id: Id64String, classId: Id64String) {
+    this.id = id;
+    this.classId = classId;
+  }
+
+  public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
+    const updateProps: RebaseConflictProperties = { id: this.id };
+    if (!properties || properties.length === 0) {
+      Object.assign(updateProps, this.ours);
+    } else {
+      for (const prop of properties) {
+        updateProps[prop] = this.ours[prop];
+      }
+    }
+
+    rebase.editTxn.updateElement(updateProps);
+  }
+
+  public acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void {
+    const updateProps: RebaseConflictProperties = { id: this.id };
+    if (!properties || properties.length === 0) {
+      Object.assign(updateProps, this.theirs);
+    } else {
+      for (const prop of properties) {
+        updateProps[prop] = this.theirs[prop];
+      }
+    }
+
+    rebase.editTxn.updateElement(updateProps);
+  }
+}
+
+class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateRebaseConflict {
+  public readonly kind: "TheirDeleteOurUpdate" = "TheirDeleteOurUpdate";
+
+  public readonly id: Id64String;
+  public readonly classId: Id64String;
+  public readonly original: RebaseConflictProperties = {};
+  public readonly ours: RebaseConflictProperties = {};
+
+  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+    const ecConflict = conflict.ecConflict;
+    const instanceId = ecConflict.original.ECInstanceId;
+
+    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirDeleteOurUpdate") as TheirDeleteOurUpdateRebaseConflict | undefined;
+    if (instanceConflict === undefined) {
+      instanceConflict = new TheirDeleteOurUpdateRebaseConflictImpl(instanceId, ecConflict.original.ECClassId);
+      conflicts.push(instanceConflict);
+    }
+
+    for (const conflict of ecConflict.conflicts) {
+      instanceConflict.original[conflict] = ecConflict.original[conflict];
+      instanceConflict.ours[conflict] = ecConflict.ours[conflict];
+    }
+
+    return DbConflictResolution.Skip;
+  }
+
+  public constructor(id: Id64String, classId: Id64String) {
+    this.id = id;
+    this.classId = classId;
+  }
+}
+
+class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteRebaseConflict {
+  public readonly kind: "TheirUpdateOurDelete" = "TheirUpdateOurDelete";
+
+  public readonly id: Id64String;
+  public readonly classId: Id64String;
+  public readonly original: RebaseConflictProperties = {};
+  public readonly theirs: RebaseConflictProperties = {};
+
+  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+    const ecConflict = conflict.ecConflict;
+    const instanceId = ecConflict.original.ECInstanceId;
+
+    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
+    if (instanceConflict === undefined) {
+      instanceConflict = {
+        kind: "TheirUpdateOurDelete",
+        id: instanceId,
+        classId: ecConflict.original.ECClassId,
+        original: {},
+        theirs: {}
+      };
+      conflicts.push(instanceConflict);
+    }
+
+    for (const conflict of ecConflict.conflicts) {
+      instanceConflict.original[conflict] = ecConflict.original[conflict];
+      instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
+    }
+
+    return DbConflictResolution.Replace;
+  }
+
+  public constructor(id: Id64String, classId: Id64String) {
+    this.id = id;
+    this.classId = classId;
+  }
 }
