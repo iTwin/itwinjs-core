@@ -18,21 +18,43 @@ type FieldValueType = {
   struct?: never;
   primitiveArray?: never;
   structArray?: never;
+  deserializedJson?: never;
+  deserializedArray?: never;
 } | {
   primitive?: never;
   struct: FieldStructValue;
   primitiveArray?: never;
   structArray?: never;
+  deserializedJson?: never;
+  deserializedArray?: never;
 } | {
   primitive?: never;
   struct?: never;
   primitiveArray: FieldPrimitiveValue[];
   structArray?: never;
+  deserializedJson?: never;
+  deserializedArray?: never;
 } | {
   primitive?: never;
   struct?: never;
   primitiveArray?: never;
   structArray: FieldStructValue[];
+  deserializedJson?: never;
+  deserializedArray?: never;
+} | {
+  primitive?: never;
+  struct?: never;
+  primitiveArray?: never;
+  structArray?: never;
+  deserializedJson: FieldStructValue;
+  deserializedArray?: never;
+} | {
+  primitive?: never;
+  struct?: never;
+  primitiveArray?: never;
+  structArray?: never;
+  deserializedJson?: never;
+  deserializedArray: FieldStructValue[];
 }
 
 export interface UpdateFieldsContext {
@@ -79,8 +101,23 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
 
     if (ecProp.isPrimitive()) {
+      if (ecProp.primitiveType === PrimitiveType.DateTime) {
+        return { primitive: new Date(rootValue) };
+      }
+
+      // If the property is a string that holds serialized JSON and the field
+      // wants to index into it, parse and treat it as a deserialized object/array.
+      // Only deserialize when accessors are present; otherwise, keep the raw string
+      // so the field can display the value directly.
+      if (ecProp.primitiveType === PrimitiveType.String && typeof rootValue === "string" && accessors && accessors.length > 0) {
+        const deserialized = tryDeserializeJson(rootValue);
+        if (deserialized) {
+          return deserialized;
+        }
+      }
+
       return {
-        primitive: ecProp.primitiveType === PrimitiveType.DateTime ? new Date(rootValue) : rootValue,
+        primitive: rootValue,
       };
     }
 
@@ -100,6 +137,18 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
       }
 
       if (typeof accessor === "number") {
+        // Deserialized JSON array: index without consulting the EC schema.
+        if (curValue.deserializedArray) {
+          const arr = curValue.deserializedArray;
+          const idx = accessor < 0 ? arr.length + accessor : accessor;
+          const value: any = arr[idx];
+          if (undefined === value) {
+            return undefined;
+          }
+          curValue = classifyDeserializedValue(value);
+          continue;
+        }
+
         const array: FieldPrimitiveValue[] | FieldStructValue[] | undefined = curValue.primitiveArray ?? curValue.structArray;
         if (!array) {
           return undefined;
@@ -119,6 +168,16 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
           curValue = { struct: curValue.structArray[index] };
         }
       } else {
+        // Deserialized JSON object: index without consulting the EC schema.
+        if (curValue.deserializedJson) {
+          const value: any = curValue.deserializedJson[accessor];
+          if (undefined === value) {
+            return undefined;
+          }
+          curValue = classifyDeserializedValue(value);
+          continue;
+        }
+
         if (undefined === curValue.struct) {
           return undefined;
         }
@@ -147,7 +206,11 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
   }
 
-  const propertyType = determineFieldPropertyType(ecProp);
+  const propertyType = curValue.primitive !== undefined && !ecProp.isPrimitive()
+    ? undefined
+    : (isJsonLeafPrimitive(curValue.primitive) && ecProp.isPrimitive() && ecProp.primitiveType === PrimitiveType.String && accessors && accessors.length > 0
+      ? inferJsonPrimitiveType(curValue.primitive)
+      : determineFieldPropertyType(ecProp));
   if (!propertyType) {
     return undefined;
   }
@@ -158,6 +221,48 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   return { value: curValue.primitive, type: propertyType };
+}
+
+function isJsonLeafPrimitive(value: FieldPrimitiveValue | undefined): boolean {
+  const t = typeof value;
+  return t === "string" || t === "number" || t === "boolean";
+}
+
+function inferJsonPrimitiveType(value: FieldPrimitiveValue | undefined): FieldPropertyType | undefined {
+  switch (typeof value) {
+    case "boolean": return "boolean";
+    case "number": return "quantity";
+    case "string": return "string";
+    default: return undefined;
+  }
+}
+
+function tryDeserializeJson(raw: string): FieldValueType | undefined {
+  const trimmed = raw.trimStart();
+  const firstChar = trimmed.charAt(0);
+  if (firstChar !== "{" && firstChar !== "[") {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (parsed !== null && typeof parsed === "object") {
+      return classifyDeserializedValue(parsed);
+    }
+  } catch {
+    // Not valid JSON; fall through and treat as a normal string.
+  }
+  return undefined;
+}
+
+function classifyDeserializedValue(value: any): FieldValueType {
+  if (Array.isArray(value)) {
+    return { deserializedArray: value };
+  }
+  if (value !== null && typeof value === "object") {
+    return { deserializedJson: value };
+  }
+  return { primitive: value };
 }
 
 function determineFieldPropertyType(prop: Property): FieldPropertyType | undefined {
