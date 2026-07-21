@@ -2474,7 +2474,8 @@ describe("CurveCurveIntersectXY", () => {
         }
       }
     }
-    // test both paths
+    // test both paths. The large xyTolerance shrinks the solution cluster count to increase the probability that
+    // it remains invariant across different compilers. This count is apparently sensitive to compiler differences!
     const intersectionsAB = CurveCurve.intersectionXYPairs(curve0, extend0, curve1, extend1, pointTol);
     testSpiralIntersection(intersectionsAB, false);
     const intersectionsBA = CurveCurve.intersectionXYPairs(curve1, extend1, curve0, extend0, pointTol);
@@ -2712,11 +2713,11 @@ describe("CurveCurveIntersectXY", () => {
         ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50)
       );
       let tol: number | undefined;
-      // Note 1: This spiral has the smallest curvature (0.007) at tangency of the spirals in the tangency tests.
-      // The Newton solver really has two tolerances, a fraction tol (for convergence) and a point tol (for solution
-      // de-duping). These tolerances are uncoupled, so you can end up with situations like this one, where the spiral
-      // is so flat that Newton fractions converge faster than their corresponding points. Here we loosen the point
-      // tolerance to cull more duplicate solutions. See also Note 2 below.
+      // Note 1: The AustralianRailCorp spiral has the smallest curvature (0.007) at tangency of the spirals in the
+      // tangency tests. The Newton solver really has two tolerances, a fraction tol (for convergence) and a point tol
+      // (for solution de-duping). These tolerances are uncoupled, so you can end up with situations like this one,
+      // where the spiral is so flat that Newton fractions converge faster than their corresponding points. Here we
+      // loosen the point tolerance to cull more duplicate solutions. See also Note 2 below.
       // biquadratic is in the same boat when the Newton iteration budget is small (see maxIterations in
       // refineSpiralResultsByNewton): Newton stops before the two seeds' points collapse below the default tolerance.
       if (spiral.spiralType === "AustralianRailCorp" || spiral.spiralType === "biquadratic")
