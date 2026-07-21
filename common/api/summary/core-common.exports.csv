@@ -179,6 +179,8 @@ public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
 public;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
+internal;function;createIpcDispatcher
+internal;function;createIpcProxy
 public;interface;CreateSnapshotIModelProps
 public;interface;CreateStandaloneIModelProps
 internal;const;CURRENT_INVOCATION
@@ -746,6 +748,7 @@ beta;namespace;RealityDataSourceKey
 beta;interface;RealityDataSourceProps
 beta;interface;RealityModelDisplayProps
 beta;class;RealityModelDisplaySettings
+internal;function;rebuildIpcError
 internal;const;REGISTRY
 beta;interface;ReinstateTxnArgs
 public;class;RelatedElement
@@ -868,6 +871,7 @@ preview;enum;SectionType
 public;interface;SerializedRpcActivity
 internal;interface;SerializedRpcOperation
 internal;interface;SerializedRpcRequest
+internal;function;serializeIpcError
 beta;namespace;ServerBasedLocksError
 public;class;ServerError
 public;class;ServerTimeoutError
@@ -1036,6 +1040,7 @@ preview;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
+internal;function;unwrapIpcInvokeReturn
 public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
