@@ -147,12 +147,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     extend1: boolean,
     pointA: Point3d,
     pointB: Point3d,
-    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     if (!extend0 && fraction < 0) {
-      return Geometry.isDistanceWithinTol(fraction * pointA.distanceXY(pointB), tolerance);
-    } else if (!extend1 && fraction > 1.0)
-      return Geometry.isDistanceWithinTol((fraction - 1.0) * pointA.distanceXY(pointB), tolerance);
+      return Geometry.isDistanceWithinTol(fraction * fraction * pointA.distanceSquaredXY(pointB), this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance);
+    } else if (!extend1 && fraction > 1.0) {
+      const f = fraction - 1;
+      return Geometry.isDistanceWithinTol(f * f * pointA.distanceSquaredXY(pointB), this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance);
+    }
     return true;
   }
   /**
@@ -166,7 +167,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     return result;
   }
   /**
-   * Record the pre-computed intersection between two curves. Filter by extension rules. Record with fraction mapping.
+   * Record the pre-computed intersection between two curves. Record with fraction mapping.
    * @param localFractionA intersection fraction local to the subcurve of cpA between fractionA0 and fractionA1
    * @param cpA the first curve
    * @param fractionA0 start of the subcurve of cpA
@@ -278,8 +279,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   ): void {
     const aDir = { x: pointA1.x - pointA0.x, y: pointA1.y - pointA0.y };
     const bDir = { x: pointB1.x - pointB0.x, y: pointB1.y - pointB0.y };
-    const tol = this._coincidentGeometryContext.tolerance;
-    const fractions = SmallSystem.lineSegmentXYUVIntersectionUnbounded(pointA0, aDir, pointB0, bDir, tol);
+    const fractions = SmallSystem.lineSegmentXYUVIntersectionUnbounded(pointA0, aDir, pointB0, bDir, this._coincidentGeometryContext.tolerance);
     if (!fractions)
       return;
     if (fractions.f1) { // the lines are coincident
@@ -291,8 +291,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(overlap, pointA0, pointA1, pointB0, pointB1, extendA0, extendA1, extendB0, extendB1))
         this.recordPointWithLocalFractions(overlap.detailA.fraction, cpA, fractionA0, fractionA1, overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
     } else { // the lines have a transverse intersection
-      if (this.acceptFractionOnLine(extendA0, fractions.f0.x, extendA1, pointA0, pointA1, tol)) {
-        if (this.acceptFractionOnLine(extendB0, fractions.f0.y, extendB1, pointB0, pointB1, tol))
+      if (this.acceptFractionOnLine(extendA0, fractions.f0.x, extendA1, pointA0, pointA1)) {
+        if (this.acceptFractionOnLine(extendB0, fractions.f0.y, extendB1, pointB0, pointB1))
           this.recordPointWithLocalFractions(fractions.f0.x, cpA, fractionA0, fractionA1, fractions.f0.y, cpB, fractionB0, fractionB1, reversed);
       }
     }
@@ -415,10 +415,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     // solve for theta; evaluate points; project back to line
     if (this._worldToLocalPerspective) {
       const data = arc.toTransformedPoint4d(this._worldToLocalPerspective);
-      const radians0 = data.sweep.fractionToRadians(0);
-      const pointB0H = data.center.plus2Scaled(data.vector0, Math.cos(radians0), data.vector90, Math.sin(radians0));
-      const radians1 = data.sweep.fractionToRadians(1);
-      const pointB1H = data.center.plus2Scaled(data.vector0, Math.cos(radians1), data.vector90, Math.sin(radians1));
       const pointA0H = this._worldToLocalPerspective.multiplyPoint3d(pointA0, 1);
       const pointA1H = this._worldToLocalPerspective.multiplyPoint3d(pointA1, 1);
       const alpha = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.center);
@@ -427,34 +423,48 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians, tol2);
       const closeApproach = (0 === numRoots);
       if (closeApproach)
-        numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
-      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): { fLine: number, fArc: number } | undefined => {
-        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(iRoot), data.vector90, sines.atUncheckedIndex(iRoot));
-        let fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(iRoot), extendB0);
-        let fLine = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
-        if (fLine === undefined)
-          return undefined;
-        if (!checkOnlyEndPointDistance && this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1))
-          return { fLine, fArc };
-        // check for an endpoint intersection that is beyond parametric tolerance but within point tolerance
-        fLine = fLine < 0.5 ? 0 : 1;
-        fArc = data.sweep.fractionToSignedPeriodicFraction(fArc) < 0.5 ? 0 : 1;
-        const pointAH = fLine ? pointA1H : pointA0H;
-        const pointBH = fArc ? pointB1H : pointB0H;
-        const dist2 = pointAH.realDistanceSquaredXY(pointBH);
-        return (dist2 !== undefined && Geometry.isDistanceWithinTol(dist2, tol2)) ? { fLine, fArc } : undefined;
-      };
+        numRoots = 1; // arc closest approach is the first entry
+      let numAccepted = 0;
       for (let i = 0; i < numRoots; i++) {
-        const result = acceptSolution(i, closeApproach);
-        if (result)
-          this.recordPointWithLocalFractions(result.fLine, cpA, fractionA0, fractionA1, result.fArc, arc, 0, 1, reversed);
+        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
+        const fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0);
+        const fLine = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
+        if (fLine === undefined)
+          continue;
+        if (closeApproach) {
+          const linePoint = pointA0H.interpolate(fLine, pointA1H);
+          const dist2 = arcPoint.realDistanceSquaredXY(linePoint);
+          if (dist2 === undefined || !Geometry.isDistanceWithinTol(dist2, tol2))
+            continue;
+        }
+        if (this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1)) {
+          this.recordPointWithLocalFractions(fLine, cpA, fractionA0, fractionA1, fArc, arc, 0, 1, reversed);
+          numAccepted++;
+        }
+      }
+      if (numAccepted === 0 && !arc.sweep.isFullCircle) {
+        // check for endpoint intersection beyond parametric tolerance but within point tolerance
+        const pointB0H = this._worldToLocalPerspective.multiplyPoint3d(arc.startPoint(), 1);
+        const pointB1H = this._worldToLocalPerspective.multiplyPoint3d(arc.endPoint(), 1);
+        const dist2: { d2: number, fA: number, fB: number }[] = [];
+        let d2 = pointA0H.realDistanceSquaredXY(pointB0H);
+        if (d2 !== undefined)
+          dist2.push({ d2, fA: 0, fB: 0 });
+        d2 = pointA0H.realDistanceSquaredXY(pointB1H);
+        if (d2 !== undefined)
+          dist2.push({ d2, fA: 0, fB: 1 });
+        d2 = pointA1H.realDistanceSquaredXY(pointB0H);
+        if (d2 !== undefined)
+          dist2.push({ d2, fA: 1, fB: 0 });
+        d2 = pointA1H.realDistanceSquaredXY(pointB1H);
+        if (d2 !== undefined)
+          dist2.push({ d2, fA: 1, fB: 1 });
+        dist2.sort((a, b) => a.d2 - b.d2);
+        if (Geometry.isDistanceWithinTol(dist2[0].d2, tol2))
+          this.recordPointWithLocalFractions(dist2[0].fA, cpA, fractionA0, fractionA1, dist2[0].fB, arc, 0, 1, reversed);
       }
     } else {
       const data = arc.toTransformedVectors(this._worldToLocalAffine);
-      const radians0 = data.sweep.fractionToRadians(0);
-      const pointB0Local = data.center.plus2Scaled(data.vector0, Math.cos(radians0), data.vector90, Math.sin(radians0));
-      const radians1 = data.sweep.fractionToRadians(1);
-      const pointB1Local = data.center.plus2Scaled(data.vector0, Math.cos(radians1), data.vector90, Math.sin(radians1));
       let pointA0Local = pointA0;
       let pointA1Local = pointA1;
       if (this._worldToLocalAffine) {
@@ -467,27 +477,40 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians, tol2);
       const closeApproach = (0 === numRoots);
       if (closeApproach)
-        numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
-      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): { fLine: number, fArc: number } | undefined => {
-        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(iRoot), data.vector90, sines.atUncheckedIndex(iRoot));
-        let fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(iRoot), extendB0);
-        let fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
-        if (fLine === undefined)
-          return undefined;
-        if (!checkOnlyEndPointDistance && this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1))
-          return { fLine, fArc };
-        // check for an endpoint intersection that is beyond parametric tolerance but within point tolerance
-        fLine = fLine < 0.5 ? 0 : 1;
-        fArc = data.sweep.fractionToSignedPeriodicFraction(fArc) < 0.5 ? 0 : 1;
-        const pointALocal = fLine ? pointA1Local : pointA0Local;
-        const pointBLocal = fArc ? pointB1Local : pointB0Local;
-        const dist2 = pointALocal.distanceSquaredXY(pointBLocal);
-        return Geometry.isDistanceWithinTol(dist2, tol2) ? { fLine, fArc } : undefined;
-      };
+        numRoots = 1; // arc closest approach is the first entry
+      let numAccepted = 0;
       for (let i = 0; i < numRoots; i++) {
-        const result = acceptSolution(i, closeApproach);
-        if (result)
-          this.recordPointWithLocalFractions(result.fLine, cpA, fractionA0, fractionA1, result.fArc, arc, 0, 1, reversed);
+        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
+        const fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0);
+        const fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
+        if (fLine === undefined)
+          continue;
+        if (closeApproach) {
+          const linePoint = pointA0Local.interpolate(fLine, pointA1Local);
+          if (!Geometry.isDistanceWithinTol(arcPoint.distanceSquaredXY(linePoint), tol2))
+            continue;
+        }
+        if (this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1)) {
+          this.recordPointWithLocalFractions(fLine, cpA, fractionA0, fractionA1, fArc, arc, 0, 1, reversed);
+          numAccepted++;
+        }
+      }
+      if (numAccepted === 0 && !arc.sweep.isFullCircle) {
+        // check for endpoint intersection beyond parametric tolerance but within point tolerance
+        const pointB0Local = arc.startPoint();
+        const pointB1Local = arc.endPoint();
+        if (this._worldToLocalAffine) {
+          this._worldToLocalAffine.multiplyXYAndZInPlace(pointB0Local);
+          this._worldToLocalAffine.multiplyXYAndZInPlace(pointB1Local);
+        }
+        const dist2: { d2: number, fA: number, fB: number }[] = [];
+        dist2.push({ d2: pointA0Local.distanceSquaredXY(pointB0Local), fA: 0, fB: 0 });
+        dist2.push({ d2: pointA0Local.distanceSquaredXY(pointB1Local), fA: 0, fB: 1 });
+        dist2.push({ d2: pointA1Local.distanceSquaredXY(pointB0Local), fA: 1, fB: 0 });
+        dist2.push({ d2: pointA1Local.distanceSquaredXY(pointB1Local), fA: 1, fB: 1 });
+        dist2.sort((a, b) => a.d2 - b.d2);
+        if (Geometry.isDistanceWithinTol(dist2[0].d2, tol2))
+          this.recordPointWithLocalFractions(dist2[0].fA, cpA, fractionA0, fractionA1, dist2[0].fB, arc, 0, 1, reversed);
       }
     }
   }

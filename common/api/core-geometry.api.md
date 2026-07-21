@@ -11,6 +11,7 @@ export class AkimaCurve3d extends ProxyCurve {
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): AkimaCurve3d;
     cloneProps(): AkimaCurve3dProps;
+    cloneTransformed(transform: Transform): AkimaCurve3d | undefined;
     copyFitPointsFloat64Array(): Float64Array;
     static create(options: AkimaCurve3dOptions | AkimaCurve3dProps): AkimaCurve3d | undefined;
     static createCapture(options: AkimaCurve3dOptions): AkimaCurve3d | undefined;
@@ -20,6 +21,7 @@ export class AkimaCurve3d extends ProxyCurve {
     // (undocumented)
     isAlmostEqual(other: GeometryQuery): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
+    get proxyCurve(): BSplineCurve3d;
     reverseInPlace(): void;
     toJSON(): any;
     tryTransformInPlace(transform: Transform): boolean;
@@ -3240,6 +3242,7 @@ export class InterpolationCurve3d extends ProxyCurve {
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): InterpolationCurve3d;
     cloneProps(): InterpolationCurve3dProps;
+    cloneTransformed(transform: Transform): InterpolationCurve3d | undefined;
     copyFitPointsFloat64Array(): Float64Array;
     static create(options: InterpolationCurve3dOptions | InterpolationCurve3dProps): InterpolationCurve3d | undefined;
     static createCapture(options: InterpolationCurve3dOptions): InterpolationCurve3d | undefined;
@@ -3250,6 +3253,7 @@ export class InterpolationCurve3d extends ProxyCurve {
     isAlmostEqual(other: GeometryQuery): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     get options(): InterpolationCurve3dOptions;
+    get proxyCurve(): BSplineCurve3d;
     reverseInPlace(): void;
     toJSON(): any;
     tryTransformInPlace(transform: Transform): boolean;
