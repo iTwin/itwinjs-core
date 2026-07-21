@@ -543,6 +543,66 @@ describe("Field evaluation", () => {
     });
   });
 
+  describe("updateFieldsAsync (quantity formatting)", () => {
+    it("formats a coordinate FieldRun using the default meters format when no KoQ or override is provided", async () => {
+      const textBlock = TextBlock.create();
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "point" },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(fieldRun);
+
+      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: textBlock });
+
+      expect(updatedCount).to.equal(1);
+      expect(fieldRun.cachedContent).to.equal("(1 m, 2 m, 3 m)");
+    });
+
+    it("formats a quantity FieldRun using an inline FormatProps override", async () => {
+      const textBlock = TextBlock.create();
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        // outerStruct.innerStruct.doubles[0] === 1 (a "quantity" typed double property without a KoQ)
+        propertyPath: { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] },
+        formatOptions: {
+          quantity: {
+            format: {
+              composite: { includeZero: true, units: [{ label: "m", name: "Units.M" }] },
+              formatTraits: ["keepSingleZero", "showUnitLabel"],
+              precision: 4,
+              type: "Decimal",
+              uomSeparator: " ",
+            },
+          },
+        },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(fieldRun);
+
+      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: textBlock });
+
+      expect(updatedCount).to.equal(1);
+      expect(fieldRun.cachedContent).to.equal("1 m");
+    });
+
+    it("preserves non-quantity field formatting when using the async pipeline", async () => {
+      const textBlock = TextBlock.create();
+      const stringField = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "strings", accessors: [0] },
+        formatOptions: { prefix: "[", suffix: "]" },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(stringField);
+
+      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: textBlock });
+
+      expect(updatedCount).to.equal(1);
+      expect(stringField.cachedContent).to.equal("[a]");
+    });
+  });
+
   function createAnnotationElement(textBlock: TextBlock | undefined): TextAnnotation3d {
     const elem = TextAnnotation3d.fromJSON({
       model,
