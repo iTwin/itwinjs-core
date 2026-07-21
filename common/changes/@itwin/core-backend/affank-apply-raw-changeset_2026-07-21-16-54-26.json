@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Use raw sqlite changeset format for internal SQLiteDb changeset APIs.",
+      "comment": "",
       "type": "none",
       "packageName": "@itwin/core-backend"
     }
