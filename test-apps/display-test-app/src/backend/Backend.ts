@@ -9,12 +9,13 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { appendTextAnnotationGeometry, BriefcaseDb, Drawing, ElementDrivesTextAnnotation, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, RenderPriority, SnapshotDb, TextStyleResolver } from "@itwin/core-backend";
+import { appendTextAnnotationGeometry, BriefcaseDb, Drawing, ElementDrivesTextAnnotation, IModelDb, IModelHost, IModelHostOptions, IpcHost, layoutTextBlock, LocalhostIpcHost, RenderPriority, SnapshotDb, TextStyleResolver } from "@itwin/core-backend";
 import {
   DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
+import { dtaFrontendChannel, DtaFrontendInfoResult, DtaFrontendIpcInterface } from "../common/DtaFrontendIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
@@ -37,6 +38,9 @@ function loadEnv(envFile: string) {
 
   dotenvExpand(envResult);
 }
+
+// Proxy for the backend-to-frontend Ipc invoke demo; see InvokeFrontendIpcTool.ts for the full explanation.
+export const dtaFrontendIpc = IpcHost.makeIpcProxy<DtaFrontendIpcInterface>(dtaFrontendChannel);
 
 class DisplayTestAppRpc extends DtaRpcInterface {
 
@@ -181,6 +185,13 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
   public override async getAccessToken(): Promise<string> {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
+  }
+
+  // See [[DtaRpcInterface.invokeFrontendIpc]] for what this demonstrates.
+  public override async invokeFrontendIpc(): Promise<DtaFrontendInfoResult> {
+    const info = await dtaFrontendIpc.getFrontendInfo();
+    Logger.logInfo("dta", `IpcHost.invoke round trip returned: ${JSON.stringify(info)}`);
+    return info;
   }
 
   public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, defaultTextStyleId: Id64String, categoryId: Id64String, modelId: Id64String, placementProps: Placement2dProps, wantDebugGeometry?: boolean, renderPriority?: RenderPriority): Promise<Uint8Array | undefined> {
