@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use raw sqlite changeset format for internal SQLiteDb changeset APIs.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "khanaffan@users.noreply.github.com"
+}
