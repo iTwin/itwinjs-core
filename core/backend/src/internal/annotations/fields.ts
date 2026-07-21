@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormatterContext, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldUnitSystem, FieldValue, formatFieldValue, formatFieldValueAsync, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { createUnitsProvider, FormatterSpec } from "@itwin/core-quantity";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -331,6 +332,21 @@ export function createUpdateContext(hostElementId: string | undefined, iModel: I
   };
 }
 
+/** Build a [[FieldFormatterContext]] backed by an iModel's schema context. Used by the async
+ * `updateField*` variants to format "quantity" and "coordinate" [FieldRun]($common)s through the
+ * standard iTwin.js quantity formatting pipeline.
+ * @internal
+ */
+export function createFieldFormatterContext(iModel: IModelDb, unitSystem: FieldUnitSystem = "metric"): FieldFormatterContext {
+  const unitsProvider = createUnitsProvider({ primary: new SchemaUnitProvider(iModel.schemaContext) });
+  const formatsProvider = new SchemaFormatsProvider(iModel.schemaContext, unitSystem);
+  return {
+    unitsProvider,
+    formatsProvider,
+    specCache: new Map<string, FormatterSpec>(),
+  };
+}
+
 // Recompute the display value of a single field, return false if it couldn't be evaluated.
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
   if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
@@ -356,12 +372,50 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   return true;
 }
 
+// Async counterpart to updateField. Uses formatFieldValueAsync so "quantity" and "coordinate" field
+// types are rendered through the real quantity formatting pipeline.
+export async function updateFieldAsync(field: FieldRun, context: UpdateFieldsContext, formatter: FieldFormatterContext): Promise<boolean> {
+  if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
+    return false;
+  }
+
+  let newContent: string | undefined;
+  try {
+    const propValue = context.getProperty(field);
+    if (undefined !== propValue) {
+      newContent = await formatFieldValueAsync(propValue, field.formatOptions, formatter);
+    }
+  } catch (err) {
+    Logger.logError(BackendLoggerCategory.IModelDb, err);
+  }
+
+  newContent = newContent ?? FieldRun.invalidContentIndicator;
+  if (newContent === field.cachedContent) {
+    return false;
+  }
+
+  field.setCachedContent(newContent);
+  return true;
+}
+
 // Re-evaluates the display strings for all fields that target the element specified by `context` and returns the number
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
   let numUpdated = 0;
   for (const { child } of traverseTextBlockComponent(textBlock)) {
     if (child.type === "field" && updateField(child, context)) {
+      ++numUpdated;
+    }
+  }
+
+  return numUpdated;
+}
+
+// Async counterpart to updateFields.
+export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFieldsContext, formatter: FieldFormatterContext): Promise<number> {
+  let numUpdated = 0;
+  for (const { child } of traverseTextBlockComponent(textBlock)) {
+    if (child.type === "field" && await updateFieldAsync(child, context, formatter)) {
       ++numUpdated;
     }
   }
@@ -392,11 +446,43 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
   }
 }
 
+async function doUpdateFieldsAsync(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): Promise<void> {
+  const iModel = txn.iModel;
+  try {
+    const target = iModel.elements.getElement(annotationId);
+    if (isITextAnnotation(target)) {
+      const context = createUpdateContext(sourceId, iModel, deleted);
+      const formatter = createFieldFormatterContext(iModel);
+      const updatedBlocks = [];
+      for (const block of target.getTextBlocks()) {
+        if (await updateFieldsAsync(block.textBlock, context, formatter)) {
+          updatedBlocks.push(block);
+        }
+      }
+
+      if (updatedBlocks.length > 0) {
+        target.updateTextBlocks(updatedBlocks);
+        target.update(txn);
+      }
+    }
+  } catch (err) {
+    Logger.logError(BackendLoggerCategory.IModelDb, err);
+  }
+}
+
 // Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
 export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean): void {
   doUpdateFields(txn, props.targetId, props.sourceId, deleted);
 }
 
+export async function updateElementFieldsAsync(props: RelationshipProps, txn: EditTxn, deleted: boolean): Promise<void> {
+  return doUpdateFieldsAsync(txn, props.targetId, props.sourceId, deleted);
+}
+
 export function updateAllFields(annotationElementId: Id64String, txn: EditTxn): void {
   doUpdateFields(txn, annotationElementId, undefined, false);
+}
+
+export async function updateAllFieldsAsync(annotationElementId: Id64String, txn: EditTxn): Promise<void> {
+  return doUpdateFieldsAsync(txn, annotationElementId, undefined, false);
 }
