@@ -5,7 +5,7 @@
 import path from "path";
 import { IModelJsFs } from "@itwin/core-backend";
 import { BeDuration, StopWatch } from "@itwin/core-bentley";
-import { Field } from "@itwin/presentation-common";
+import { Content, Field, Item, NestedContentValue, Value } from "@itwin/presentation-common";
 
 /**
  * Simplified type for `sinon.SinonSpy`.
@@ -73,6 +73,37 @@ export function getFieldsByLabel(rootFields: Field[], label: string): Field[] {
   handleFields(rootFields);
   return foundFields;
 }
+
+export function getContentValues({ content, field }: {
+  content: Content;
+  field: Field;
+}): Value[] {
+  const fieldsPath: Field[] = [];
+  let currentField: Field | undefined = field;
+  while (currentField) {
+    fieldsPath.push(currentField);
+    currentField = currentField.parent;
+  }
+  fieldsPath.reverse();
+
+  const collectValues = (containers: Array<Item | NestedContentValue>, depth: number): Value[] => {
+    const pathField = fieldsPath[depth];
+    const isLeaf = depth === fieldsPath.length - 1;
+    const values: Value[] = [];
+    for (const container of containers) {
+      const value = container.values[pathField.name];
+      if (isLeaf) {
+        values.push(value);
+      } else if (Value.isNestedContent(value)) {
+        values.push(...collectValues(value, depth + 1));
+      }
+    }
+    return values;
+  };
+
+  return collectValues(content.contentSet, 0);
+}
+
 /** Get path to a directory that is safe to use for read-write scenarios when running the tests */
 export function getOutputRoot() {
   return path.join("out", process.pid.toString());

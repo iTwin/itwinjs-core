@@ -251,13 +251,11 @@ export function insertPhysicalElement<TAdditionalProps extends object>(
 /** Insert an aspect into created imodel, return its key */
 function insertElementAspectTxn<TAdditionalProps extends object>(
   txn: EditTxn,
-  props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
+  props: { db: IModelDb; elementId: Id64String; classFullName: string } & Partial<Omit<ElementAspectProps, "element" | "classFullName">> & TAdditionalProps,
 ) {
   const { classFullName, elementId, ...aspectProps } = props;
-  const defaultClassName = "BisCore:ElementMultiAspect";
-  const className = classFullName ?? defaultClassName;
   const id = txn.insertAspect({
-    classFullName: className,
+    classFullName,
     element: {
       id: elementId,
     },
@@ -266,11 +264,11 @@ function insertElementAspectTxn<TAdditionalProps extends object>(
     },
     ...aspectProps,
   });
-  return { className, id };
+  return { className: classFullName, id };
 }
 
 export function insertElementAspect<TAdditionalProps extends object>(
-  props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
+  props: { db: IModelDb; elementId: Id64String; classFullName: string } & Partial<Omit<ElementAspectProps, "element" | "classFullName">> & TAdditionalProps,
 ) {
   return withEditTxn(props.db, (txn) => insertElementAspectTxn(txn, props));
 }
