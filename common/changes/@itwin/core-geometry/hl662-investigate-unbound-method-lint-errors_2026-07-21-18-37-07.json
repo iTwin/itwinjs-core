@@ -2,10 +2,10 @@
   "changes": [
     {
       "comment": "",
-      "type": "patch",
-      "packageName": "@itwin/core-backend"
+      "type": "none",
+      "packageName": "@itwin/core-geometry"
     }
   ],
-  "packageName": "@itwin/core-backend",
+  "packageName": "@itwin/core-geometry",
   "email": "50554904+hl662@users.noreply.github.com"
 }
