@@ -10,7 +10,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { SQLiteDb } from "../../SQLiteDb";
 import "../TestUtils"; // registers the global mocha before/after hooks that start/stop the backend
 
-describe.only("SQLiteDb", () => {
+describe("SQLiteDb", () => {
 
   it("should create new SQLiteDb", async () => {
     const fileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "db1.db");
