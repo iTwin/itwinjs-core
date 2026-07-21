@@ -41,12 +41,12 @@ class SchemaSyncSchemaReservations implements SharedSchemaReservations {
       SchemaImportReservationError.throwError("invalid-argument", { message: "schemaFileNames must be a non-empty array of strings" });
 
     // Acquire the container write-lock so that reservation writes are serialized — two briefcases
-    // can never update the reservation store concurrently (plan §7.5).
+    // can never update the reservation store concurrently.
     await this._schemaSync.withLockedDb({ operationName: "reserveSchemaImport" }, async () => {
       const syncDbUri = this._schemaSync.getUri();
       // Native parses the schemas, derives per-row content keys, allocates ids for any new keys
       // (reusing stored ids for keys already present), and writes the updated key→id blobs and
-      // column maps directly into the sync-db reservation rows (plan §7.1 / §7.2).
+      // column maps directly into the sync-db reservation rows.
       // TS never receives a key→id map; the blobs are owned by native entirely.
       (this._iModel[_nativeDb] as any).reserveSchemaImport(schemaFileNames, syncDbUri, sourceType); // eslint-disable-line @typescript-eslint/no-explicit-any
     });
