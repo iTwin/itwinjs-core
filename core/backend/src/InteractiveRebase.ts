@@ -384,7 +384,13 @@ export class InteractiveRebase {
 
         let instanceConflict = this._conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
         if (instanceConflict === undefined) {
-          instanceConflict = { kind: "TheirUpdateOurDelete", id: instanceId, classId: ecConflict.original.ECClassId, original: {}, theirs: {} };
+          instanceConflict = {
+            kind: "TheirUpdateOurDelete",
+            id: instanceId,
+            classId: ecConflict.original.ECClassId,
+            original: {},
+            theirs: {}
+          };
           this._conflicts.push(instanceConflict);
         }
 
@@ -415,6 +421,26 @@ export class InteractiveRebase {
         // Our txn is trying to update a row that has been deleted by the new upstream changesets.
         // Let the delete stand, but report the conflict
         // --> TheirDeleteOurUpdateRebaseConflict
+        const ecConflict = conflict.ecConflict;
+        const instanceId = ecConflict.original.ECInstanceId;
+
+        let instanceConflict = this._conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirDeleteOurUpdate") as TheirDeleteOurUpdateRebaseConflict | undefined;
+        if (instanceConflict === undefined) {
+          instanceConflict = {
+            kind: "TheirDeleteOurUpdate",
+            id: instanceId,
+            classId: ecConflict.original.ECClassId,
+            original: {},
+            ours: {}
+          };
+          this._conflicts.push(instanceConflict);
+        }
+
+        for (const conflict of ecConflict.conflicts) {
+          instanceConflict.original[conflict] = ecConflict.original[conflict];
+          instanceConflict.ours[conflict] = ecConflict.ours[conflict];
+        }
+
         return DbConflictResolution.Skip;
       } else if (conflict.cause === "Constraint") {
         // Because this change was valid when it was created, and the schema has not changed,

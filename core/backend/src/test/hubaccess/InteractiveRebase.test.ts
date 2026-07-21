@@ -13,7 +13,7 @@ import { withEditTxn } from "../TestEditTxn";
 import { Code, GeometricElement2dProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory } from "../../core-backend";
 import { LineSegment3d, Point2d, Point3d, XYProps } from "@itwin/core-geometry";
-import { UpdateRebaseConflict } from "../../InteractiveRebase";
+import { TheirDeleteOurUpdateRebaseConflict, TheirUpdateOurDeleteRebaseConflict, UpdateRebaseConflict } from "../../InteractiveRebase";
 import { GuidString, Id64String } from "@itwin/core-bentley";
 
 chai.use(chaiAsPromised);
@@ -98,7 +98,7 @@ describe("InteractiveRebase", () => {
     HubMock.shutdown();
   });
 
-  it("can resolve an UPDATE conflict", async () => {
+  it("can present an UPDATE conflict", async () => {
     // Create a conflict on foo and somePoint between the two briefcases.
     // Also add a non-conflicting userLabel.
     await withEditTxn(briefcase1, async (txn) => {
@@ -200,7 +200,7 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive.conflicts.length).to.equal(0);
   });
 
-  it("can resolve a conflict where we delete something the upstream modified", async () => {
+  it("can present a conflict where we delete something the upstream modified", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.updateElement<SomeGraphicalElementProps>({
         id,
@@ -224,7 +224,43 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
-    const deleteConflict = interactive.conflicts[0];
+    const deleteConflict = interactive.conflicts[0] as TheirUpdateOurDeleteRebaseConflict;
     chai.expect(deleteConflict.kind).to.equal("TheirUpdateOurDelete");
+    chai.expect(deleteConflict.original["Foo"]).to.equal("Original");
+    chai.expect(deleteConflict.original["SomePoint"]).to.deep.equal({ X: 1.23, Y: 4.56 });
+    chai.expect(deleteConflict.theirs["Foo"]).to.equal("User1");
+    chai.expect(deleteConflict.theirs["SomePoint"]).to.deep.equal({ X: 1.0, Y: 2.0 });
+  });
+
+  it("can present a conflict where we modify something the upstream deleted", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({
+        id,
+        foo: "User2",
+        somePoint: new Point2d(3.0, 4.0),
+      });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0] as TheirDeleteOurUpdateRebaseConflict;
+    chai.expect(conflict.kind).to.equal("TheirDeleteOurUpdate");
+    chai.expect(conflict.original["Foo"]).to.equal("Original");
+    chai.expect(conflict.original["SomePoint"]).to.deep.equal({ X: 1.23, Y: 4.56 });
+    chai.expect(conflict.ours["Foo"]).to.equal("User2");
+    chai.expect(conflict.ours["SomePoint"]).to.deep.equal({ X: 3.0, Y: 4.0 });
   });
 });
