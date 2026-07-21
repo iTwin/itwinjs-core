@@ -12,7 +12,7 @@ import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
-import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
+import { createFieldFormatterContext, createUpdateContext, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
@@ -191,6 +191,19 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
     return updateFields(args.block, createUpdateContext(undefined, args.iModel, false))
+  }
+
+  /** Async counterpart to [[evaluateFields]] that formats "quantity" and "coordinate" [FieldRun]($common)s
+   * through the standard iTwin.js quantity formatting pipeline using a schema-backed
+   * [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity). Non-quantity field types
+   * are formatted identically to [[evaluateFields]].
+   * @returns the number of fields whose display strings were modified.
+   * @beta
+   */
+  public static async evaluateFieldsAsync(args: EvaluateFieldsArgs): Promise<number> {
+    const context = createUpdateContext(undefined, args.iModel, false);
+    const formatter = createFieldFormatterContext(args.iModel);
+    return updateFieldsAsync(args.block, context, formatter);
   }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element
