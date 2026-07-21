@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add quantity formatting support for FieldRuns in text annotations, including inline FormatProps overrides, FormatSet key overrides, and unit system preferences. See ElementDrivesTextAnnotation.evaluateFieldsAsync.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "claudiaareneee@users.noreply.github.com"
+}
