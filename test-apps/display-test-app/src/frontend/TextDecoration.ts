@@ -90,7 +90,7 @@ class TextEditor implements Decorator {
     return {
       origin: this.origin,
       angle: 0,
-    }
+    };
   }
 
   private pathToLastChild(): (Run | Paragraph | List)[] {
@@ -192,7 +192,7 @@ class TextEditor implements Decorator {
 
   public appendTab(spaces?: number): void {
     this.appendRunToLastChild(TabRun.create({
-      styleOverrides: { ... this.runStyle, tabInterval: spaces },
+      styleOverrides: { ...this.runStyle, tabInterval: spaces },
     }));
   }
 
@@ -231,7 +231,7 @@ class TextEditor implements Decorator {
     };
 
     this.runStyle.indentation = indentation;
-  };
+  }
 
   public setDocumentWidth(width: number): void {
     this.textBlock.width = width;
@@ -251,7 +251,7 @@ class TextEditor implements Decorator {
   }
 
   public setLeaderProps() {
-    this.leaders?.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachment: { mode: "Nearest" } });
+    this.leaders.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachment: { mode: "Nearest" } });
   }
 
   public setLeaderStartPoint(leader: TextAnnotationLeader, angle: number) {
@@ -310,7 +310,7 @@ class TextEditor implements Decorator {
       this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
     } catch (err) {
       console.error("Error generating text annotation graphics:", err, "\nAnnotation props:", this.annotationProps, "\nPlacement props:", this.placementProps, "\nCategory ID:", this.categoryId, "\nModel ID:", this.modelId);
-      throw (err);
+      throw err;
     }
 
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
@@ -348,7 +348,7 @@ export class TextDecorationTool extends Tool {
       case "clear":
         editor.clear();
         return true;
-      case "init":
+      case "init": {
         // Use the first category if the user doesn't specify one. This is just a convenience.
         const category = arg ?? vp.view.categorySelector.categories.values().next().value;
         if (undefined === category || category === "") {
@@ -357,6 +357,7 @@ export class TextDecorationTool extends Tool {
 
         editor.init(vp.iModel, category);
         break;
+      }
       case "center":
         editor.origin = vp.view.getCenter();
         break;
@@ -403,10 +404,11 @@ export class TextDecorationTool extends Tool {
       case "break":
         editor.appendBreak();
         break;
-      case "tab":
+      case "tab": {
         const spaces = inArgs[1] ? parseFloat(inArgs[1]) : undefined;
         editor.appendTab(spaces);
         break;
+      }
       case "paragraph":
         editor.appendParagraph();
         break;
@@ -720,38 +722,42 @@ export class TextDecorationTool extends Tool {
         editor.appendListItem(index);
         break;
       }
-      case "leader":
+      case "leader": {
         const command = inArgs[1];
-        const value = inArgs[2];
         if (command === "new") {
           editor.setLeaderProps();
-        } else {
-          if (editor.leaders && editor.leaders.length > 0) {
-            const latestLeaderIndex = editor.leaders.length - 1;
-            if (command === "start") editor.setLeaderStartPoint(editor.leaders[latestLeaderIndex], Number(value));
-            else if (command === "keypoint") {
-              const curveIndex = inArgs[2];
-              const fraction = inArgs[3]
-              editor.setLeaderKeyPoint(editor.leaders[latestLeaderIndex], Number(curveIndex), Number(fraction));
-            }
-            else if (command === "nearest") editor.setLeaderNearest(editor.leaders[latestLeaderIndex]);
-            else if (command === "textpoint") {
-              const position = inArgs[2] as LeaderTextPointOptions;
-              editor.setLeaderTextPoint(editor.leaders[latestLeaderIndex], position);
+          break;
+        }
 
-            } else if (command === "terminatorShape") {
-              const shape = inArgs[2] as TerminatorShape;
-              const leaderStyle: TextLeaderStyleProps = editor.documentStyle.leader ?? {};
-              leaderStyle.terminatorShape = shape;
-              editor.documentStyle.leader = leaderStyle;
-            }
-            else throw new Error("Expected start, keypoint, nearest, textpoint");
-          } else {
-            throw new Error("No leaders created. Use dta text leader new.");
+        if (editor.leaders.length === 0) {
+          throw new Error("No leaders created. Use dta text leader new.");
+        }
+
+        const latestLeader = editor.leaders[editor.leaders.length - 1];
+        switch (command) {
+          case "start":
+            editor.setLeaderStartPoint(latestLeader, Number(inArgs[2]));
+            break;
+          case "keypoint":
+            editor.setLeaderKeyPoint(latestLeader, Number(inArgs[2]), Number(inArgs[3]));
+            break;
+          case "nearest":
+            editor.setLeaderNearest(latestLeader);
+            break;
+          case "textpoint":
+            editor.setLeaderTextPoint(latestLeader, inArgs[2] as LeaderTextPointOptions);
+            break;
+          case "terminatorShape": {
+            const leaderStyle: TextLeaderStyleProps = editor.documentStyle.leader ?? {};
+            leaderStyle.terminatorShape = inArgs[2] as TerminatorShape;
+            editor.documentStyle.leader = leaderStyle;
+            break;
           }
-
+          default:
+            throw new Error("Expected start, keypoint, nearest, textpoint");
         }
         break;
+      }
 
       case "json": {
         const props = inArgs[1] && (JSON.parse(inArgs[1].replaceAll("'", "\"")) as TextBlockProps);
