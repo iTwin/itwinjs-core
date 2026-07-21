@@ -83,7 +83,7 @@ export class TileRequestChannelStatistics {
   /** @internal */
   public addTo(stats: TileRequestChannelStatistics): void {
     for (const propName in this) { // eslint-disable-line guard-for-in
-      const key = propName as keyof TileRequestChannelStatistics;
+      const key = propName as keyof Omit<TileRequestChannelStatistics, "addTo" | "recordCompletion">;
       const val = this[key];
       if (typeof val === "number") {
         assert(typeof stats[key] === "number");
