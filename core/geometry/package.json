@@ -42,11 +42,19 @@
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/flatbuffers": "~1.10.0",
     "@types/node": "~20.17.0",
+<<<<<<< HEAD
     "@vitest/coverage-v8": "3.0.6",
     "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
     "vitest": "3.0.6"
+=======
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
+    "typescript": "~5.6.2",
+    "vitest": "^4.1.10"
+>>>>>>> ba11ddf177 (Security: fix critical CVE GHSA-p63j-vcc4-9vmv in @vitest/browser (#9532))
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
