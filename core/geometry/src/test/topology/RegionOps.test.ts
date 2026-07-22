@@ -2755,4 +2755,47 @@ describe("RegionOps.constructCurveXYOffset", () => {
   });
 });
 
+describe("RegionOps.tolerance", () => {
+  it("constructAllXYRegionLoops", () => { // verifies new tighter RegionOps area tolerance
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
 
+    const ls0 = LineString3d.create([[207039.29367799047, 503422.8479069836], [207062.3835876877, 503422.8479069836]]);
+    const ls1 = LineString3d.create([[207062.3835876877, 503422.8479069836], [207062.3835876877,503413.95902289683]]);
+    const arc = Arc3d.create(Point3d.create(207057.3835876877, 503417.8479069836), Vector3d.create(3.5355339059327373, 3.5355339059327373), Vector3d.create(3.5355339059327373, -3.5355339059327373), AngleSweep.createStartEndDegrees(-45, 45));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [ls0, ls1, arc]);
+
+    const tol = 1.0068472040005956; // really large! Area to find is only 5.4 m^2.
+    const result = RegionOps.constructAllXYRegionLoops([ls0, ls1, arc], tol);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...result.map((component) => component.positiveAreaLoops).flat()], 0, 0, 10);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...result.map((component) => component.negativeAreaLoops).flat()], 0, 0, -10);
+    ck.testExactNumber(1, result.length, "RegionOps.constructAllXYRegionLoops found one component");
+    if (result.length > 0) {
+      ck.testExactNumber(1, result[0].positiveAreaLoops.length, "RegionOps.constructAllXYRegionLoops found one positive area loop");
+      ck.testExactNumber(1, result[0].negativeAreaLoops.length, "RegionOps.constructAllXYRegionLoops found one negative area loop");
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.tolerance", "constructAllXYRegionLoops");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("collectChains", () => { // verifies simpler gapTolerance logic
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const ls0 = LineString3d.create([[207062.3835876877, 503426.3516881777], [207039.0272559555, 503426.3516881777]]);
+    const ls1 = LineString3d.create([[207039.29367799047, 503435.2405722644], [207057.38360602525, 503435.2405722644]]);
+    const arc = Arc3d.create(Point3d.create(207057.3835876877, 503430.2405722644), Vector3d.create(3.5355339059327373, 3.5355339059327373), Vector3d.create(3.5355339059327373, -3.5355339059327373), AngleSweep.createStartEndDegrees(-45, 45));
+    const ls2 = LineString3d.create([[207062.3835876877, 503430.2405821084], [207062.3835876877, 503426.3516881777]]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [ls0, ls1, arc, ls2]);
+
+    const gapTolerance = 0.5034352405722644;
+    const result = RegionOps.collectChains([ls0, ls1, arc, ls2], gapTolerance);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, 0, 0, 10);
+    if (ck.testType(result, Path, "RegionOps.collectChains joined all curves into a Path"))
+      ck.testExactNumber(4, result.children.length, "RegionOps.collectChains returned a Path with 4 children");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.tolerance", "collectChains");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
