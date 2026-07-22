@@ -311,6 +311,8 @@ describe("InteractiveRebase", () => {
 
     const conflict = interactive.conflicts[0] as UniqueConstraintRebaseConflict;
     chai.expect(conflict.kind).to.equal("UniqueConstraint");
-    //chai.expect(conflict.theirs.federationGuid).to.equal(guid);
+    chai.expect(conflict.original).to.be.undefined;
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(2); // should be 1, but there's a duplicate federationGuid unique constraint.
+    chai.expect(conflict.ours.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
   });
 });
