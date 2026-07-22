@@ -14,11 +14,17 @@ import { IModelDb } from "../IModelDb";
 export interface ConflictEcRow {
   [key: string]: any;
 }
+export interface UniqueConstraintViolation {
+  uniqueConstraintProperties: string[];
+  conflictingRow: ConflictEcRow;
+}
+
 export interface ConflictEcChange {
   original: ConflictEcRow;
   theirs: ConflictEcRow;
   ours: ConflictEcRow;
-  conflicts: string[];
+  dataConflictProperties: string[];
+  uniqueConstraintViolations: UniqueConstraintViolation[];
 }
 
 export interface DbChangesetConflictArgs {

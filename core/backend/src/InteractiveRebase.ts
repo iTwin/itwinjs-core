@@ -437,7 +437,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
       conflicts.push(instanceConflict);
     }
 
-    for (const conflict of ecConflict.conflicts) {
+    for (const conflict of ecConflict.dataConflictProperties) {
       instanceConflict.original[conflict] = ecConflict.original[conflict];
       instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
       instanceConflict.ours[conflict] = ecConflict.ours[conflict];
@@ -498,7 +498,7 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
       conflicts.push(instanceConflict);
     }
 
-    for (const conflict of ecConflict.conflicts) {
+    for (const conflict of ecConflict.dataConflictProperties) {
       instanceConflict.original[conflict] = ecConflict.original[conflict];
       instanceConflict.ours[conflict] = ecConflict.ours[conflict];
     }
@@ -547,7 +547,7 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
       }
     }
 
-    // TODO: populate uniqueConstraintViolations with the actual UNIQUE constraint violations.
+    instanceConflict.uniqueConstraintViolations = ecConflict.uniqueConstraintViolations;
 
     return DbConflictResolution.Skip;
   }
@@ -582,7 +582,7 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
       conflicts.push(instanceConflict);
     }
 
-    for (const conflict of ecConflict.conflicts) {
+    for (const conflict of ecConflict.dataConflictProperties) {
       instanceConflict.original[conflict] = ecConflict.original[conflict];
       instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
     }
