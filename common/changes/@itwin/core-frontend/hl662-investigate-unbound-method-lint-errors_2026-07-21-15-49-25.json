@@ -2,7 +2,7 @@
   "changes": [
     {
       "comment": "",
-      "type": "patch",
+      "type": "none",
       "packageName": "@itwin/core-frontend"
     }
   ],
