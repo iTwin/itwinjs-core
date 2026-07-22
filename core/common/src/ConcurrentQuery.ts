@@ -480,9 +480,7 @@ export class QueryBinder {
    * @param indexOrName Specify parameter index or its name used in ECSQL statement.
    * @param val @type OrderedId64Iterable value to bind to ECSQL statement.
    * @returns @type QueryBinder to allow fluent interface.
-   * @note Entries that are not valid [Id64String]($bentley)s - including `undefined` and `null` - are
-   * ignored, matching the behavior of [ECSqlStatement.bindIdSet]($backend). A warning is logged when
-   * any entry is skipped.
+   * @note Entries that are not valid [Id64String]($bentley)s are skipped with a logged warning.
    */
   public bindIdSet(indexOrName: string | number, val: OrderedId64Iterable) {
     this.verify(indexOrName);
