@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Fixed QueryBinder.bindIdSet throwing on entries that are not valid Id64Strings; such entries are now skipped with a warning, matching ECSqlStatement.bindIdSet.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

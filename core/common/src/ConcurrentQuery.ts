@@ -5,9 +5,11 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
+
+const loggerCategory = "core-common.QueryBinder";
 
 /**
  * Specifies the format of the rows returned by the `query` and `restartQuery` methods of
@@ -478,15 +480,29 @@ export class QueryBinder {
    * @param indexOrName Specify parameter index or its name used in ECSQL statement.
    * @param val @type OrderedId64Iterable value to bind to ECSQL statement.
    * @returns @type QueryBinder to allow fluent interface.
+   * @note Entries that are not valid [Id64String]($bentley)s - including `undefined` and `null` - are
+   * ignored, matching the behavior of [ECSqlStatement.bindIdSet]($backend). A warning is logged when
+   * any entry is skipped.
    */
   public bindIdSet(indexOrName: string | number, val: OrderedId64Iterable) {
     this.verify(indexOrName);
     const name = String(indexOrName);
-    OrderedId64Iterable.uniqueIterator(val);
+    const ids: Id64String[] = [];
+    let skipped = 0;
+    for (const id of val) {
+      if (typeof id === "string" && Id64.isValidId64(id))
+        ids.push(id);
+      else
+        skipped++;
+    }
+
+    if (skipped > 0)
+      Logger.logWarning(loggerCategory, `QueryBinder.bindIdSet: skipped ${skipped} entries that are not valid Id64Strings`);
+
     Object.defineProperty(this._args, name, {
       enumerable: true, value: {
         type: QueryParamType.IdSet,
-        value: CompressedId64Set.sortAndCompress(OrderedId64Iterable.uniqueIterator(val)),
+        value: CompressedId64Set.sortAndCompress(ids),
       },
     });
     return this;

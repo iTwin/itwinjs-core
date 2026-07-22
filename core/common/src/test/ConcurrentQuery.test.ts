@@ -111,6 +111,28 @@ describe("QueryBinder", () => {
     );
   });
 
+  it("bindIdSet skips entries that are not valid Id64Strings", () => {
+    const queryBinder = new QueryBinder();
+    queryBinder.bindIdSet("idSetValue", ["0x22bd8", undefined, null, "0", "50", "0x22bd9"] as unknown as Id64String[]);
+    assert.deepEqual(queryBinder.serialize(), {
+      idSetValue: {
+        type: QueryParamType.IdSet,
+        value: "+22BD8+1",
+      },
+    });
+  });
+
+  it("bindIdSet sorts and deduplicates ids", () => {
+    const queryBinder = new QueryBinder();
+    queryBinder.bindIdSet("idSetValue", ["0x22bd9", "0x22bd8", "0x22bd8"]);
+    assert.deepEqual(queryBinder.serialize(), {
+      idSetValue: {
+        type: QueryParamType.IdSet,
+        value: "+22BD8+1",
+      },
+    });
+  });
+
   it("allows bulk binding", () => {
     assert.deepEqual(QueryBinder.from(undefined), new QueryBinder());
 
