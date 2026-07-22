@@ -98,7 +98,7 @@ describe("SQLiteDb", () => {
       source.saveChanges();
       source.createChangeset(changesetFileName);
 
-      // apply the changeset (from scratch - no header validation should be required) to a db with the same schema
+      // apply the changeset (raw sqlite changesets have no header to validate) to a db with the same schema
       const target = new SQLiteDb();
       target.createDb(targetFileName, undefined, { rawSQLite: true });
       target.executeSQL("CREATE TABLE test1(id INTEGER PRIMARY KEY,val TEXT)");
