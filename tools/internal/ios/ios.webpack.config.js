@@ -5,6 +5,7 @@
 
 const path = require("path");
 const { globSync } = require("glob");
+const webpack = require("webpack");
 
 // const ignoredTests = [
 //   "**/node_modules/ECSqlTestRunner.test.ts",
@@ -29,6 +30,12 @@ module.exports = {
     outputModule: true,
   },
   externalsType: "node-commonjs",
+  plugins: [
+    new webpack.BannerPlugin({
+      banner: 'import { createRequire as createRequireForBundledCommonJs } from "node:module";\nimport { dirname as dirnameForBundledCommonJs } from "node:path";\nimport { fileURLToPath as fileURLToPathForBundledCommonJs } from "node:url";\nconst createRequire = createRequireForBundledCommonJs;\nconst require = createRequire(import.meta.url);\nconst __filename = fileURLToPathForBundledCommonJs(import.meta.url);\nconst __dirname = dirnameForBundledCommonJs(__filename);',
+      raw: true,
+    }),
+  ],
   devtool: "source-map",
   resolve: {
     mainFields: ["main"],
