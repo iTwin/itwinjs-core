@@ -151,9 +151,10 @@ export class RegionOps {
     return undefined;
   }
   /**
-   * Return an area tolerance for a given xy-range and optional distance tolerance.
+   * Return an area tolerance for a given xy-range and distance tolerance.
    * @param range range of planar region to tolerance.
-   * @param distanceTolerance optional absolute distance tolerance.
+   * @param distanceTolerance optional absolute distance tolerance. Default is [[Geometry.smallMetricDistance]].
+   * @see [[computeMinimumArea]] for an area tolerance unscaled by geometry size, which is more widely applicable for degeneracy testing.
    */
   public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number = Geometry.smallMetricDistance): number {
     // ensure the result is nonzero: we never want to report a zero-area loop as a signed-area loop
@@ -164,6 +165,17 @@ export class RegionOps {
     const halfDistTol = 0.5 * Math.abs(distanceTolerance);
     return halfDistTol * (range.xLength() + range.yLength() + halfDistTol);
   }
+  /**
+   * Return an area tolerance for a given distance tolerance.
+   * * The result can be used to determine whether a region's area is small enough to be considered degenerate.
+   * @param distanceTolerance optional minimum absolute distance between unique points. Default is [[Geometry.smallMetricDistance]].
+   */
+  public static computeMinimumArea(distanceTolerance: number = Geometry.smallMetricDistance): number {
+    const areaTol = Math.PI * distanceTolerance * distanceTolerance;
+    const minAreaTol = Geometry.smallFloatingPoint * 10; // observed area 2e-15 computed for a degenerate loop
+    return areaTol < minAreaTol ? minAreaTol : areaTol;
+  }
+
   /**
    * Return a (signed) xy area for a region.
    * * The input region should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
@@ -479,8 +491,7 @@ export class RegionOps {
     const outMask = simplifyUnion ? context.graph.grabMask(false) : HalfEdgeMask.NULL_MASK;
     const outSeeds: HalfEdge[] | undefined = simplifyUnion ? [] : undefined;
     context.graph.clearMask(visitMask | outMask);
-    const range = context.groupA.range().union(context.groupB.range());
-    const areaTol = this.computeXYAreaTolerance(range, mergeTolerance);
+    const areaTol = this.computeMinimumArea(mergeTolerance);
     const z = RegionOps.getZCoordinate(operation === RegionBinaryOpType.BMinusA ? loopsB : loopsA);
     const options: PlanarSubdivision.CreateRegionInFaceOptions = { compress: true, closureTol: mergeTolerance, bridgeMask, visitMask, z };
     let numFacesIn = 0;
@@ -885,7 +896,7 @@ export class RegionOps {
     let senseEdge0 = false;
     let senseEdge1 = false;
     if (edge0.edgeTag instanceof CurveLocationDetail && edge0.edgeTag.curve !== undefined && edge0.edgeTag.isInterval() && edge0.sortData &&
-        edge1.edgeTag instanceof CurveLocationDetail && edge1.edgeTag.curve !== undefined && edge1.edgeTag.isInterval() && edge1.sortData
+      edge1.edgeTag instanceof CurveLocationDetail && edge1.edgeTag.curve !== undefined && edge1.edgeTag.isInterval() && edge1.sortData
     ) {
       sameCurves = edge0.edgeTag.curve === edge1.edgeTag.curve || edge0.edgeTag.curve.isAlmostEqual(edge1.edgeTag.curve);
       reversedCurves = !sameCurves && edge0.edgeTag.curve.isAlmostEqual(edge1.edgeTag.curve.clone().reverse());
@@ -1146,9 +1157,7 @@ export class RegionOps {
   ): SignedLoops[] {
     let primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
     primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
-    const range = this.curveArrayRange(primitives);
-    const areaTol = this.computeXYAreaTolerance(range, tolerance);
-    let hasOpenCurve: boolean = false;
+    let hasOpenCurve = false;
     if (addBridges) { // generate a temp graph from ONLY the closed inputs to extract its bridge edges
       const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
       const openCurves: AnyCurve[] = [];
@@ -1172,6 +1181,7 @@ export class RegionOps {
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance);
     if (addBridges && hasOpenCurve)
       RegionOps.removeExtraneousBridgeEdges(graph);
+    const areaTol = this.computeMinimumArea(tolerance);
     return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, areaTol);
   }
   /**
