@@ -103,10 +103,36 @@ export interface ForeignKeyConstraintRebaseConflict extends RebaseConflict {
   numberOfConflictingRows: number;
 }
 
+export interface UniqueConstraintViolation {
+  /**
+   * The properties that are part of the UNIQUE constraint that is violated.
+   */
+  uniqueConstraintProperties: string[];
+
+  /**
+   * The instance that is causing the UNIQUE constraint violation. This is the instance that was
+   * inserted or updated by the incoming (their) changes, which conflicts with the local (our) changes.
+   */
+  conflictingRow: RebaseConflictProperties;
+}
+
 export interface UniqueConstraintRebaseConflict extends RebaseConflict {
   kind: "UniqueConstraint";
-  original: RebaseConflictProperties;
+
+  /**
+   * The original row that our change modified. If our change is an insertion, this will be undefined.
+   */
+  original?: RebaseConflictProperties;
+
+  /**
+   * Our change's properties.
+   */
   ours: RebaseConflictProperties;
+
+  /**
+   * The UNIQUE constraints that are violated after our change.
+   */
+  uniqueConstraintViolations: UniqueConstraintViolation[];
 }
 
 export interface TxnRebaseGroup {
@@ -491,12 +517,14 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
 
   public readonly id: Id64String;
   public readonly classId: Id64String;
-  public readonly original: RebaseConflictProperties = {};
+  public readonly original: RebaseConflictProperties | undefined = undefined;
+  public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
+  public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
 
   public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
-    // For Inserted+Constraint: ours has the row we tried to insert; original has the conflicting existing row.
+
     const instanceId = ecConflict.ours.ECInstanceId ?? ecConflict.original.ECInstanceId;
     const classId = ecConflict.ours.ECClassId ?? ecConflict.original.ECClassId;
 
@@ -506,10 +534,20 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
       conflicts.push(instanceConflict);
     }
 
-    for (const prop of ecConflict.conflicts) {
-      instanceConflict.original[prop] = ecConflict.original[prop];
+    for (const prop of Object.keys(ecConflict.ours)) {
       instanceConflict.ours[prop] = ecConflict.ours[prop];
     }
+
+    if (ecConflict.original) {
+      if (instanceConflict.original === undefined) {
+        instanceConflict.original = {};
+      }
+      for (const prop of Object.keys(ecConflict.original)) {
+        instanceConflict.original[prop] = ecConflict.original[prop];
+      }
+    }
+
+    // TODO: populate uniqueConstraintViolations with the actual UNIQUE constraint violations.
 
     return DbConflictResolution.Skip;
   }
