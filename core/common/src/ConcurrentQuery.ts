@@ -486,7 +486,9 @@ export class QueryBinder {
     const name = String(indexOrName);
     const ids: Id64String[] = [];
     let skipped = 0;
-    for (const id of val) {
+    // `string` is an Iterable<string>. In that case assume caller passed a single Id64String, matching CompressedId64Set.sortAndCompress.
+    const iterable = typeof val === "string" ? [val] : val;
+    for (const id of iterable) {
       if (typeof id === "string" && Id64.isValidId64(id))
         ids.push(id);
       else

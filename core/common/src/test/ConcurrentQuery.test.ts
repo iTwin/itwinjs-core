@@ -133,6 +133,17 @@ describe("QueryBinder", () => {
     });
   });
 
+  it("bindIdSet treats a single Id64String as a single id, not a string of characters", () => {
+    const queryBinder = new QueryBinder();
+    queryBinder.bindIdSet("idSetValue", "0x22bd8");
+    assert.deepEqual(queryBinder.serialize(), {
+      idSetValue: {
+        type: QueryParamType.IdSet,
+        value: "+22BD8",
+      },
+    });
+  });
+
   it("allows bulk binding", () => {
     assert.deepEqual(QueryBinder.from(undefined), new QueryBinder());
 
