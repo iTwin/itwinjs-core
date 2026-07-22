@@ -291,12 +291,10 @@ class ElectronDialogHandler extends IpcHandler {
   public get channelName() { return electronIpcStrings.dialogChannel; }
   public async callDialog(method: AsyncMethodsOf<Electron.Dialog>, ...args: any) {
     const dialog = ElectronHost.electron.dialog;
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- Invoked below with dialog as its receiver.
-    const dialogMethod = dialog[method] as (...args: any[]) => any;
-    if (typeof dialogMethod !== "function")
+    if (typeof dialog[method] !== "function")
       throw new IModelError(IModelStatus.FunctionNotFound, `illegal electron dialog method`);
 
-    return dialogMethod.call(dialog, ...args);
+    return (dialog[method] as (...args: any[]) => any).call(dialog, ...args);
   }
 }
 
