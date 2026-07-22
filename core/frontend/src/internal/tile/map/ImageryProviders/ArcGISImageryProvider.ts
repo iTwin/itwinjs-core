@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -62,7 +62,11 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     try {
       metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
 
-    } catch {
+    } catch (err) {
+      // The SSO retry was suppressed because the origin is not trusted; report the blocked origin
+      // (rather than asking for credentials) so the application can prompt for whitelisting.
+      if (err instanceof MapLayerUntrustedOriginError)
+        this.reportBlockedOrigin(err.url);
     }
     if (metadata && metadata.accessTokenRequired) {
       const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);
@@ -113,13 +117,32 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
     let response: Response|undefined;
     try {
-      response = await fetch(urlObj, {...options, credentials: this._includeUserCredentials ?  "include" : undefined});
+      const requestUrl = urlObj.toString();
+      const includeCredentials = this.includeUserCredentials(requestUrl);
+      response = await fetch(urlObj, {...options, credentials: includeCredentials ?  "include" : undefined});
+
+      // If the request carried browser credentials (latched SSO origin), detect a transparent redirect
+      // to a different origin — see [[MapLayerImageryProvider.checkCredentialedRedirect]].
+      if (includeCredentials)
+        this.checkCredentialedRedirect(requestUrl, response);
 
       if (response.status === 401 && !this._lastAccessToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-      // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(urlObj, {...options, credentials: "include" });
-        if (response.status === 200) {
-          this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
+        // fetch follows redirects transparently, so the challenge may originate from a different origin
+        // than the one requested; the trust decision must target the final (post-redirect) URL.
+        const challengedUrl = response.url || requestUrl;
+        if (this.isSsoAllowed(challengedUrl)) {
+          // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
+          // The retry targets the challenged URL directly and refuses to follow any further redirect, so
+          // browser credentials can never be carried to an origin that was not validated above.
+          this.logUntrustedOriginUse(challengedUrl);
+          response = await fetch(challengedUrl, {...options, credentials: "include", redirect: "error" });
+          if (response.status === 200) {
+            this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
+          }
+        } else {
+          // The SSO retry was suppressed because the challenged origin is not trusted; report it so the
+          // application can surface the blocked origin to the user.
+          this.reportBlockedOrigin(challengedUrl);
         }
       }
 

@@ -360,9 +360,13 @@ export class Google3dTilesProvider implements RealityDataSourceProvider {
       // See https://developers.google.com/maps/documentation/tile/create-renderer#display-attributions
       const sortedCopyrights = [...copyrightMap.entries()].sort((a, b) => b[1] - a[1]);
 
-      let copyrightMsg = "Data provided by:<br><ul>";
-      copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
-      copyrightMsg += "</ul>";
+      // Copyright entries are server-provided; noticeLines renders strings as text, never parsed as HTML.
+      const list = document.createElement("ul");
+      for (const [key] of sortedCopyrights) {
+        const item = document.createElement("li");
+        item.textContent = key;
+        list.appendChild(item);
+      }
 
       const iconSrc = document.createElement("img");
       iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray.svg`;
@@ -372,7 +376,7 @@ export class Google3dTilesProvider implements RealityDataSourceProvider {
         iconSrc,
         iconWidth: 98,
         heading: "Google Photorealistic 3D Tiles",
-        notice: copyrightMsg
+        noticeLines: ["Data provided by:", list],
       }));
     }
   }

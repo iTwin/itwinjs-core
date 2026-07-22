@@ -37,6 +37,12 @@ export enum MapLayerSourceStatus {
   /** Format is not compatible with the URL provided.
    */
   IncompatibleFormat,
+  /** Authentication could not be attempted because the source's origin is not trusted
+   * (see [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend)). Add the origin to
+   * [MapLayerFormatRegistry.trustedCredentialsOrigins]($frontend) rather than prompting for credentials.
+   * @beta
+   */
+  UntrustedOrigin,
 }
 
 /** JSON representation of a map layer source.

@@ -349,6 +349,26 @@ export class DisplayTestApp {
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
+    // Optionally restrict map-layer credentials (including SSO / Windows Authentication) to the exact
+    // origins listed in IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS. See README.md.
+    if (configuration.mapLayerTrustedCredentialsOrigins) {
+      const trustedOrigins: string[] = [];
+      for (const entry of configuration.mapLayerTrustedCredentialsOrigins.split(",")) {
+        const value = entry.trim();
+        if (!value)
+          continue;
+        try {
+          trustedOrigins.push(new URL(value).origin);
+        } catch {
+          // eslint-disable-next-line no-console
+          console.warn(`Ignoring invalid origin in IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS: "${value}"`);
+        }
+      }
+
+      IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = trustedOrigins;
+      IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    }
+
     IModelConnection.onOpen.addListener((imodel: IModelConnection) => {
       if (imodel.isBlankConnection()) return;
 

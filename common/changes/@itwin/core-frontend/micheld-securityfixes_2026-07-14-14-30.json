@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Map-layer security hardening: opt-in origin restriction for map-layer credentials via MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins and trustedCredentialsOrigins (basic-auth is scoped to the layer's settings-URL origin or whitelisted origins; SSO/Windows-Authentication retries require an explicitly whitelisted origin); origin-trust decisions target the final post-redirect URL of a response, SSO retries refuse redirects, and a credential-bearing request transparently redirected to an untrusted origin is detected and reported; new MapLayerImageryProviderStatus.UntrustedOrigin, MapLayerImageryProvider.blockedOrigins and MapLayerSourceStatus.UntrustedOrigin report requests blocked by the restriction, including during provider initialization and source validation; server-provided attribution text, ArcGIS identify tooltip fields, and user-supplied reality-model/map-layer names are no longer rendered as HTML (WMS GetFeatureInfo responses remain intentional HTML, honored only from trusted origins when the restriction is enabled); IModelApp.makeLogoCard gains a noticeLines option that renders strings as plain text.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

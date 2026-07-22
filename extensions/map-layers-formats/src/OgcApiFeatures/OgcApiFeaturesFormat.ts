@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { appendQueryParams, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
+import { appendQueryParams, ImageryMapLayerFormat, IModelApp, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
@@ -79,7 +79,20 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         const collectionsLink = json.links.find((link: any)=> link.rel.includes("data") && link.type === "application/json");
         let collectionsUrl = appendQueryParams(collectionsLink.href, source.savedQueryParams);
         collectionsUrl = appendQueryParams(collectionsUrl, source.unsavedQueryParams);
-        response = await fetch(collectionsUrl, opts);
+
+        // The collections link is advertised by the server-controlled landing document; apply the
+        // origin-trust decision independently to it so the source's basic-auth credentials cannot be
+        // exfiltrated to an unrelated origin (see MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins).
+        const allowCreds = IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(collectionsUrl, source.url);
+        if (headers && allowCreds)
+          IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(collectionsUrl, source.url);
+
+        response = await fetch(collectionsUrl, allowCreds ? opts : { method: "GET" });
+        // Some servers reject unauthenticated requests with 403 (Forbidden) instead of a 401 challenge;
+        // since credentials were withheld, either status most likely results from the withholding.
+        if (!allowCreds && (response.status === 401 || response.status === 403))
+          return { status: MapLayerSourceStatus.UntrustedOrigin };
+
         json = await response.json();
         if (Array.isArray(json.collections)) {
           subLayers = createCollectionsList(json);

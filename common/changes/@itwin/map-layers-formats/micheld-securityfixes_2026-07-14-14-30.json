@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-formats",
+      "comment": "Google Maps attribution text is rendered as plain text instead of HTML, preventing markup injection from server-provided copyright strings. OGC API Features source validation now applies the opt-in origin restriction (MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins) to the collections link advertised by the landing document, so basic-auth credentials are no longer sent to unrelated origins; a blocked request that is then challenged reports MapLayerSourceStatus.UntrustedOrigin.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-formats"
+}

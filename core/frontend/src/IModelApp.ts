@@ -163,6 +163,9 @@ export interface IModelAppOptions {
   incrementalSchemaLoading?: "enabled" | "disabled";
 }
 
+/** CSS class name applied to the notice element of a logo card created by [[IModelApp.makeLogoCard]]. */
+const logoCardNoticeClassName = "logo-cards";
+
 /** Options for [[IModelApp.makeModalDiv]]
  *  @public
  */
@@ -768,8 +771,16 @@ export class IModelApp {
       iconSrc?: string | HTMLImageElement;
       /** The width of the icon, if `iconSrc` is a string. Default is 64. */
       iconWidth?: number;
-      /** A *notice* string to be shown on the logo card. May include HTML.  */
+      /** A *notice* string to be shown on the logo card. May include HTML.
+       * @note Never pass untrusted (e.g., server-provided) text here — string notices are parsed as HTML. Use [[noticeLines]] instead.
+       */
       notice?: string | HTMLElement;
+      /** Lines composing the *notice* shown on the logo card, separated by line breaks and styled like [[notice]].
+       * Strings are rendered as plain text — never parsed as HTML — making this the safe choice for untrusted
+       * (e.g., server-provided) content such as copyright attributions; supply an `HTMLElement` for a line requiring markup.
+       * Ignored if [[notice]] is defined.
+       */
+      noticeLines?: Array<string | HTMLElement>;
     }): HTMLTableRowElement {
     const card = IModelApp.makeHTMLElement("tr");
     const iconCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-logo" });
@@ -791,9 +802,17 @@ export class IModelApp {
     }
     if (undefined !== opts.notice) {
       if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: logoCardNoticeClassName });
       else
         noticeCell.appendChild(opts.notice);
+    } else if (undefined !== opts.noticeLines) {
+      const notice = IModelApp.makeHTMLElement("p", { parent: noticeCell, className: logoCardNoticeClassName });
+      opts.noticeLines.forEach((line, index) => {
+        if (index > 0)
+          notice.appendChild(IModelApp.makeHTMLElement("br"));
+        // Strings are appended as text nodes so they are never parsed as HTML.
+        notice.append(line);
+      });
     }
     return card;
   }

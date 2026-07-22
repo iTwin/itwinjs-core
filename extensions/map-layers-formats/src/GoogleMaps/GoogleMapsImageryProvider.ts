@@ -235,7 +235,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
-    let copyrightMsg = "";
+    const lines: string[] = [];
     const tiles = this.getSelectedTiles(vp);
     if (tiles) {
       try {
@@ -243,9 +243,8 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
         for (const attr of attrList) {
           attr.split(",").forEach((line) => {
             // Attempt to reduce duplicates, since if there are multiple zoom levels sometimes the same info is returned
-            if (!copyrightMsg.includes(line)) {
-              copyrightMsg += `${copyrightMsg.length === 0 ? "": "<br>"}${line}`;
-            }
+            if (!lines.some((existing) => existing.includes(line)))
+              lines.push(line);
           });
         }
       }
@@ -254,6 +253,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
     }
 
+    // Attribution strings are server-provided; noticeLines renders them as text, never parsed as HTML.
     const iconSrc = document.createElement("img");
     iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray.svg`;
     iconSrc.style.padding = "10px 10px 5px 10px";
@@ -261,7 +261,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     cards.appendChild(IModelApp.makeLogoCard({
       iconSrc,
       heading: "Google Maps",
-      notice: copyrightMsg
+      noticeLines: lines
     }));
   }
 }

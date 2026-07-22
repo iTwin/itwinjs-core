@@ -11,6 +11,11 @@ publish: false
     - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
   - [@itwin/core-backend](#itwincore-backend)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
+  - [@itwin/core-frontend](#itwincore-frontend)
+    - [Map-layer security hardening](#map-layer-security-hardening)
+      - [Origin-restricted credentials (opt-in)](#origin-restricted-credentials-opt-in)
+      - [Blocked-origin notification](#blocked-origin-notification)
+      - [Attribution text is no longer rendered as HTML](#attribution-text-is-no-longer-rendered-as-html)
 
 ## Quantity formatting
 
@@ -101,3 +106,62 @@ while (reader.step()) { /* ... */ }
 | InMemoryCache | 10,000 | 2.213 | 1.402 | 36.6% |
 | SqliteBackedCache | 1,000 | 0.399 | 0.207 | 48.1% |
 | SqliteBackedCache | 10,000 | 3.342 | 1.981 | 40.7% |
+
+## @itwin/core-frontend
+
+### Map-layer security hardening
+
+#### Origin-restricted credentials (opt-in)
+
+Previously, map-layer imagery providers sent credentials with any request they issued: the basic-auth credentials stored in [ImageMapLayerSettings]($common) were attached to every request URL, and an NTLM or Negotiate http 401 challenge from any server triggered a retry with browser credentials included (i.e. SSO / Windows Authentication). Because map-layer URLs may come from user input or from URLs advertised in server capability documents, this could leak credentials to third-party hosts.
+
+Applications can now opt in to origin restrictions via two new `@beta` properties on [MapLayerFormatRegistry]($frontend):
+
+```ts
+IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://tiles.corp.example.com"];
+```
+
+When `restrictCredentialsToTrustedOrigins` is enabled:
+
+- The basic-auth credentials stored in the layer settings are only attached to requests targeting the origin of the layer's settings URL, or an origin listed in `trustedCredentialsOrigins`.
+- SSO retries after an NTLM/Negotiate challenge are only performed for origins explicitly listed in `trustedCredentialsOrigins`. Unlike basic-auth, the settings-URL origin is *not* implicitly trusted for SSO, because SSO shares the user's ambient identity while map-layer URLs may originate from untrusted input.
+- Server-provided tooltip content (e.g. WMS `GetFeatureInfo` responses), which may deliberately contain HTML, is rendered as markup only when it comes from the settings-URL origin or an origin listed in `trustedCredentialsOrigins`; text from other origins is escaped and renders literally.
+
+Entries in `trustedCredentialsOrigins` are normalized to their origin (scheme + host + port); invalid entries are ignored and logged.
+
+The default is `false`, preserving the existing behavior. Applications — especially those relying on Kerberos / Windows Authentication for map servers — are encouraged to enable the restriction and whitelist their trusted map-server origins.
+
+#### Redirect handling
+
+Because `fetch` follows redirects transparently, an authentication challenge may originate from a different origin than the one requested. All origin-trust decisions therefore target the *final* (post-redirect) URL of the response, and the credential-bearing SSO retry is issued directly to that challenged URL with `redirect: "error"` — a redirect is never a legitimate part of an NTLM/Negotiate handshake, so the retry fails rather than carrying browser credentials to an origin that was not validated. The origin recorded by a successful handshake is likewise the challenged origin, not the requested one.
+
+For subsequent requests to an origin whose handshake succeeded (which include browser credentials up front), redirects are still followed — refusing them outright would break legitimate same-origin redirects, which are common for tile URLs, and a browser offers no way to inspect a redirect before following it. If such a request is transparently redirected to a different origin, the destination is *detected after the fact*: it is reported via `UntrustedOrigin` / `blockedOrigins` when the restriction is enabled (or by the once-per-origin discovery warning otherwise), and it is never treated as a validated origin itself. The exposure is bounded to the individual redirected request — cookies for the destination may accompany it, but integrated authentication additionally requires the destination to pass the browser's own integrated-auth policy. Applications requiring stricter guarantees should ensure their trusted map servers do not issue cross-origin redirects.
+
+#### Blocked-origin notification
+
+When the origin restriction blocks authentication — that is, a request receives an authentication challenge (http 401) that cannot be answered because credentials were withheld for an untrusted origin, or a request whose basic-auth credentials were withheld is rejected with http 401 or 403 — the provider's status transitions to the new [MapLayerImageryProviderStatus]($frontend) member `UntrustedOrigin` (`@beta`) and [MapLayerImageryProvider.onStatusChanged]($frontend) is raised. The blocked origins are accumulated in the new `MapLayerImageryProvider.blockedOrigins` (`@beta`) property; the event is raised again each time a new origin is blocked. Note that a request whose credentials were withheld but that succeeds anonymously does not change the status.
+
+Applications can use this to surface the problem to the user, or to prompt for whitelisting:
+
+```ts
+provider.onStatusChanged.addListener((p) => {
+  if (p.status === MapLayerImageryProviderStatus.UntrustedOrigin)
+    console.warn(`Credentials withheld for untrusted origin(s): ${p.blockedOrigins.join(", ")}`);
+});
+```
+
+[MapLayerImageryProvider.resetStatus]($frontend) clears the accumulated blocked origins, e.g. after the application has updated `trustedCredentialsOrigins`.
+
+The same distinction is made during provider initialization and source validation: when fetching the capabilities or service metadata of a WMS, WMTS, or ArcGIS layer is blocked by the origin restriction, the provider's status transitions to `UntrustedOrigin` (with the blocked origin recorded in `blockedOrigins`) instead of `RequireAuth`, and [MapLayerFormatRegistry.validateSource]($frontend) returns the new [MapLayerSourceStatus]($frontend) member `UntrustedOrigin` (`@beta`) instead of `RequireAuth` — so applications can direct the user to whitelist the origin rather than prompt for credentials.
+
+While the restriction is disabled (the default), each request that sends credentials to an origin not listed in `trustedCredentialsOrigins` logs a warning, once per origin, so applications can discover the origins they need to whitelist before opting in. This includes the capability / service-metadata requests issued during provider initialization and source validation.
+
+#### Attribution and tooltip data are no longer rendered as HTML
+
+Attribution and copyright strings received from map servers (ArcGIS service metadata, Bing attribution service, Google Maps viewport info, Google Photorealistic 3D Tiles copyrights) were previously rendered using `innerHTML`, allowing a malicious or compromised server to inject markup or script into the viewport's logo cards and on-screen credits. These strings are now inserted as plain text; visual output is unchanged for legitimate attribution text. The same fix applies to reality-model tooltips (built from batch-table properties supplied by the tileset content), to user-supplied layer and model names shown in tooltips, and to ArcGIS identify results (field names and values shown in map tooltips), which are now HTML-escaped.
+
+One tooltip source intentionally remains HTML: WMS `GetFeatureInfo` responses, which servers may deliberately format as markup. When [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) is enabled, such markup is only honored from the layer's settings-URL origin or an origin listed in `trustedCredentialsOrigins` (other origins are escaped); at the legacy default, it is honored from any origin. Note that origin trust is a credential-scoping mechanism, not HTML sanitization — a compromised trusted server can still inject markup, so applications requiring stricter guarantees should sanitize tooltip HTML themselves.
+
+The behavior of [IModelApp.makeLogoCard]($frontend) itself is unchanged: string `notice` values may still contain HTML. For untrusted text, use the new `noticeLines` option instead — its string entries are always rendered as plain text (never parsed as HTML) with standard logo-card styling, and an `HTMLElement` entry can be supplied for a line requiring markup.
+

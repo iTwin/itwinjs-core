@@ -998,8 +998,14 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
         if (-1 === key.indexOf("#"))     // Avoid internal cesium
           strings.push(`${key}: ${JSON.stringify(batch[key])}`);
 
+    // Batch-table properties (and the model name/id) originate from the tileset content; append them as
+    // text nodes so they are never parsed as HTML.
     const div = document.createElement("div");
-    div.innerHTML = strings.join("<br>");
+    strings.forEach((str, index) => {
+      if (index > 0)
+        div.appendChild(document.createElement("br"));
+      div.appendChild(document.createTextNode(str));
+    });
     return div;
   }
 
