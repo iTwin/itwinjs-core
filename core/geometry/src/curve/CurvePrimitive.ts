@@ -693,6 +693,11 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
   /** Reverse the curve's data so that its fractional stroking moves in the opposite direction. */
   public abstract reverseInPlace(): void;
+  /** Call [[reverseInPlace]] and return the instance. */
+  public reverse(): this {
+    this.reverseInPlace();
+    return this;
+  }
   /**
    * Compute intersections of the curve with a plane.
    * * The intersections are appended to the result array.

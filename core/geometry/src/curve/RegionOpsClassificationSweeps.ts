@@ -140,14 +140,12 @@ export class RegionOpsFaceToFaceSearch {
    * Run a DFS with face-to-face step announcements.
    * * false return from any function terminates search immediately.
    * * all reachable nodes assumed to have both visit masks clear.
-   * @param graph containing graph.
-   * @param seed first node to visit.
+   * @param seed first node to visit. Assumed to be in the exterior face.
    * @param faceHasBeenVisited mask marking faces that have been seen.
    * @param nodeHasBeenVisited mask marking node-to-node step around face.
    * @param callbacks callbacks.
    */
   public static faceToFaceSearchFromOuterLoop(
-    _graph: HalfEdgeGraph,
     seed: HalfEdge,
     faceHasBeenVisited: HalfEdgeMask,
     nodeHasBeenVisited: HalfEdgeMask,
@@ -250,7 +248,7 @@ export class RegionOpsFaceToFaceSearch {
       const allMasksToClear = exteriorMask | faceVisitedMask | nodeVisitedMask;
       graph.clearMask(allMasksToClear);
       const callbacks = new RegionOpsBinaryBooleanSweepCallbacks(faceSelectFunction, exteriorMask);
-      this.faceToFaceSearchFromOuterLoop(graph, exteriorHalfEdge, faceVisitedMask, nodeVisitedMask, callbacks);
+      this.faceToFaceSearchFromOuterLoop(exteriorHalfEdge, faceVisitedMask, nodeVisitedMask, callbacks);
       if (graphCheckPoint)
         graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
       graph.dropMask(faceVisitedMask);
@@ -579,7 +577,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
       this.graph.clearMask(allMasksToClear);
       RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(
-        this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this,
+        exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this,
       );
     }
     this.graph.dropMask(faceHasBeenVisitedMask);
