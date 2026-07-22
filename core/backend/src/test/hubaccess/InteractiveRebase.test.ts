@@ -13,8 +13,8 @@ import { withEditTxn } from "../TestEditTxn";
 import { Code, GeometricElement2dProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory } from "../../core-backend";
 import { LineSegment3d, Point2d, Point3d, XYProps } from "@itwin/core-geometry";
-import { TheirDeleteOurUpdateRebaseConflict, TheirUpdateOurDeleteRebaseConflict, UpdateRebaseConflict } from "../../InteractiveRebase";
-import { GuidString, Id64String } from "@itwin/core-bentley";
+import { TheirDeleteOurUpdateRebaseConflict, TheirUpdateOurDeleteRebaseConflict, UniqueConstraintRebaseConflict, UpdateRebaseConflict } from "../../InteractiveRebase";
+import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
 chai.use(chaiAsPromised);
 
@@ -24,6 +24,8 @@ describe("InteractiveRebase", () => {
   let briefcase2: BriefcaseDb;
   let id: Id64String;
   let initialChangesetIndex: number;
+  let drawingModelId: Id64String;
+  let drawingCategoryId: Id64String;
 
   interface SomeGraphicalElementProps extends GeometricElement2dProps {
     foo: string;
@@ -56,9 +58,11 @@ describe("InteractiveRebase", () => {
 
       const codeProps = Code.createEmpty();
       codeProps.value = "DrawingModel";
-      const drawingModelId = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true)[1];
-      let drawingCategoryId = DrawingCategory.queryCategoryIdByName(briefcase1, IModel.dictionaryId, "MyDrawingCategory");
-      if (undefined === drawingCategoryId)
+      drawingModelId = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true)[1];
+      const maybeDrawingCategoryId = DrawingCategory.queryCategoryIdByName(briefcase1, IModel.dictionaryId, "MyDrawingCategory");
+      if (undefined !== maybeDrawingCategoryId)
+        drawingCategoryId = maybeDrawingCategoryId;
+      else
         drawingCategoryId = DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
 
       return txn.insertElement({
@@ -262,5 +266,51 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.original["SomePoint"]).to.deep.equal({ X: 1.23, Y: 4.56 });
     chai.expect(conflict.ours["Foo"]).to.equal("User2");
     chai.expect(conflict.ours["SomePoint"]).to.deep.equal({ X: 3.0, Y: 4.0 });
+  });
+
+  it("can present a conflict where a locally-inserted row triggers a unique constraint violation", async () => {
+    const guid = Guid.createValue();
+    const newId = await withEditTxn(briefcase1, async (txn) => {
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
+        federationGuid: guid,
+      } as SomeGraphicalElementProps);
+    });
+
+    const test = briefcase1.elements.getElementProps<SomeGraphicalElementProps>(newId);
+    chai.expect(test.federationGuid).to.equal(guid);
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "User2",
+        somePoint: new Point2d(3.0, 4.0),
+        // Same federationGuid as the element inserted in briefcase1, which will trigger a unique constraint violation.
+        federationGuid: guid,
+      } as SomeGraphicalElementProps);
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0] as UniqueConstraintRebaseConflict;
+    chai.expect(conflict.kind).to.equal("UniqueConstraint");
+    //chai.expect(conflict.theirs.federationGuid).to.equal(guid);
   });
 });

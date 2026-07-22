@@ -345,12 +345,12 @@ export class InteractiveRebase {
         // Because this change was valid when it was created, and the schema has not changed,
         // this can _only_ be a UNIQUE constraint violation.
         // We must SKIP, because REPLACE is not allowed. But report the new column values for conflict resolution.
-        // --> UniqueConstraintRebaseConflict
-        return DbConflictResolution.Skip;
+        return UniqueConstraintRebaseConflictImpl.handle(this._conflicts, conflict);
       } else if (conflict.cause === "Conflict") {
         // The primary key already exists, which means local and upstream both inserted this instance.
         // Leave the existing intact, but report the new column values for conflict resolution.
         // --> InsertRebaseConflict
+        // TODO
         return DbConflictResolution.Skip;
       }
       assert(false, `Conflicts during an Inserted change should only have Constraint or Conflict as the conflict cause. Unexpected cause: ${conflict.cause}`);
@@ -363,8 +363,7 @@ export class InteractiveRebase {
         // Because this change was valid when it was created, and the schema has not changed,
         // this can _only_ be a UNIQUE constraint violation.
         // We must SKIP - REPLACE is not allowed. But report the new column values for conflict resolution.
-        // --> UniqueConstraintRebaseConflict
-        return DbConflictResolution.Skip;
+        return UniqueConstraintRebaseConflictImpl.handle(this._conflicts, conflict);
       } else if (conflict.cause === "Data") {
         // Our txn is changing the values in an existing row, and the new upstream changesets
         // have also changed one or more values in that row.
@@ -373,6 +372,7 @@ export class InteractiveRebase {
       assert(false, `Conflicts during an Updated change should only have NotFound, Constraint, or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
     } else if (conflict.opcode === undefined) {
       if (conflict.cause === "ForeignKey") {
+        // TODO
         return DbConflictResolution.Skip;
       }
       assert(false, `Conflicts without an opcode should only have ForeignKey as the conflict cause. Unexpected cause: ${conflict.cause}`);
@@ -475,6 +475,40 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
     for (const conflict of ecConflict.conflicts) {
       instanceConflict.original[conflict] = ecConflict.original[conflict];
       instanceConflict.ours[conflict] = ecConflict.ours[conflict];
+    }
+
+    return DbConflictResolution.Skip;
+  }
+
+  public constructor(id: Id64String, classId: Id64String) {
+    this.id = id;
+    this.classId = classId;
+  }
+}
+
+class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConflict {
+  public readonly kind: "UniqueConstraint" = "UniqueConstraint";
+
+  public readonly id: Id64String;
+  public readonly classId: Id64String;
+  public readonly original: RebaseConflictProperties = {};
+  public readonly ours: RebaseConflictProperties = {};
+
+  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+    const ecConflict = conflict.ecConflict;
+    // For Inserted+Constraint: ours has the row we tried to insert; original has the conflicting existing row.
+    const instanceId = ecConflict.ours.ECInstanceId ?? ecConflict.original.ECInstanceId;
+    const classId = ecConflict.ours.ECClassId ?? ecConflict.original.ECClassId;
+
+    let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "UniqueConstraint") as UniqueConstraintRebaseConflict | undefined;
+    if (instanceConflict === undefined) {
+      instanceConflict = new UniqueConstraintRebaseConflictImpl(instanceId, classId);
+      conflicts.push(instanceConflict);
+    }
+
+    for (const prop of ecConflict.conflicts) {
+      instanceConflict.original[prop] = ecConflict.original[prop];
+      instanceConflict.ours[prop] = ecConflict.ours[prop];
     }
 
     return DbConflictResolution.Skip;
