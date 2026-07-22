@@ -5,11 +5,9 @@
 
 import { expect } from "chai";
 import { BeDuration, DbResult, OpenMode } from "@itwin/core-bentley";
-import type { IModelDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SQLiteDb } from "../../SQLiteDb";
-import { SqliteChangesetReader } from "../../SqliteChangesetReader";
 import "../TestUtils"; // registers the global mocha before/after hooks that start/stop the backend
 
 describe("SQLiteDb", () => {
@@ -83,31 +81,28 @@ describe("SQLiteDb", () => {
       return rows;
     };
 
-    it("should apply a changeset containing DDL and data changes", () => {
+    it("should apply a changeset containing data changes", () => {
       const sourceFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-source.db");
       const targetFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-target.db");
       const changesetFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-1.changeset");
 
-      // create the source db, and capture a changeset that creates a table and inserts some rows
+      // create the source db (with the table already present - raw sqlite changesets cannot capture DDL),
+      // then capture a changeset that inserts some rows
       const source = new SQLiteDb();
       source.createDb(sourceFileName, undefined, { rawSQLite: true });
+      source.executeSQL("CREATE TABLE test1(id INTEGER PRIMARY KEY,val TEXT)");
+      source.saveChanges();
       source.startChangeTracking();
-      source.executeDdl("CREATE TABLE test1(id INTEGER PRIMARY KEY,val TEXT)");
       source.executeSQL(`INSERT INTO test1(id,val) VALUES (1,'val1')`);
       source.executeSQL(`INSERT INTO test1(id,val) VALUES (2,'val2')`);
       source.saveChanges();
       source.createChangeset(changesetFileName);
 
-      // verify the changeset's ddl/data via the existing SqliteChangesetReader
-      using reader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db: source as unknown as IModelDb, disableSchemaCheck: true });
-      let dataChangeCount = 0;
-      while (reader.step())
-        ++dataChangeCount;
-      expect(dataChangeCount).equal(2);
-
-      // apply the changeset (from scratch - no header validation should be required) to a brand new, empty db
+      // apply the changeset (raw sqlite changesets have no header to validate) to a db with the same schema
       const target = new SQLiteDb();
       target.createDb(targetFileName, undefined, { rawSQLite: true });
+      target.executeSQL("CREATE TABLE test1(id INTEGER PRIMARY KEY,val TEXT)");
+      target.saveChanges();
       target.applyChangeset(changesetFileName);
       target.saveChanges();
 
@@ -115,6 +110,22 @@ describe("SQLiteDb", () => {
 
       source.closeDb();
       target.closeDb();
+    });
+
+    it("should throw when creating a changeset containing DDL/schema changes", () => {
+      const sourceFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-ddl-source.db");
+      const changesetFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "applyChangeset-ddl.changeset");
+
+      const source = new SQLiteDb();
+      source.createDb(sourceFileName, undefined, { rawSQLite: true });
+      source.startChangeTracking();
+      source.executeDdl("CREATE TABLE test1(id INTEGER PRIMARY KEY,val TEXT)");
+      source.saveChanges();
+
+      // raw sqlite changesets cannot represent DDL/schema changes
+      expect(() => source.createChangeset(changesetFileName)).throws();
+
+      source.closeDb();
     });
 
     it("should fail if applying a changeset produces a conflict, leaving it to the caller to abandon the partially-applied changes", () => {

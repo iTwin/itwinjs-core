@@ -1159,7 +1159,7 @@ export abstract class IModelDb extends IModel {
           }
         }
       }
-    }, QueryBinder.from(params.bindings));
+    }, QueryBinder.fromSkippingNullish(params.bindings));
     return ids;
   }
 

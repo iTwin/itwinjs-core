@@ -10,6 +10,9 @@ import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentle
 import { ViewStore } from "../../ViewStore";
 import { ThumbnailFormatProps } from "@itwin/core-common";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { SnapshotDb } from "../../IModelDb";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelJsFs } from "../../IModelJsFs";
 
 describe("ViewStore", function (this: Suite) {
   this.timeout(0);
@@ -329,5 +332,36 @@ describe("ViewStore", function (this: Suite) {
     expect(ViewStore.toRowId(ViewStore.fromRowId(largeNumber))).equals(largeNumber);
 
     vs1.vacuum();
+  });
+
+  it("selector queries should skip undefined and null bindings", async () => {
+    const dbName = join(KnownTestLocations.outputDir, "viewStoreBindings.db");
+    if (IModelJsFs.existsSync(dbName))
+      IModelJsFs.removeSync(dbName);
+    const snapshot = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
+    const vs = new ViewStore.ViewDb({ guidMap: {} as any });
+    try {
+      ViewStore.ViewDb.createNewDb(dbName);
+      vs.openDb(dbName, OpenMode.ReadWrite);
+      vs.iModel = snapshot;
+
+      const selectorId = await vs.addCategorySelector({ selector: { query: { from: "BisCore:SpatialCategory" } } });
+
+      const baseline = vs.getCategorySelectorSync({ id: selectorId });
+      expect(baseline.categories.length).greaterThan(0);
+
+      // Undefined/null bindings not referenced by the query must be skipped (legacy ECSqlStatement.bindValues
+      // semantics, per ViewStoreRpc.QueryBindings), not bound as NULL.
+      const withUnusedUndefined = vs.getCategorySelectorSync({ id: selectorId, bindings: { parent: undefined } });
+      expect(withUnusedUndefined.categories).deep.equal(baseline.categories);
+
+      const withUnusedNull = vs.getCategorySelectorSync({ id: selectorId, bindings: { parent: null } });
+      expect(withUnusedNull.categories).deep.equal(baseline.categories);
+    } finally {
+      if (vs.isOpen)
+        vs.closeDb();
+      if (snapshot.isOpen)
+        snapshot.close();
+    }
   });
 });
