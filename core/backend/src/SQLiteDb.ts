@@ -186,8 +186,8 @@ export class SQLiteDb {
   /**
    * Apply a raw sqlite changeset file - the plain, uncompressed byte stream produced by the sqlite session
    * extension - to this SQLiteDb. This is *not* the same on-disk format used for iModel changesets.
-   * Unlike `BriefcaseDb.pullChanges`, this does *not* validate any changeset header (e.g. parentId/changesetId)
-   * against the current state of the database - it simply applies the changes it contains. It also does *not*
+   * Unlike `BriefcaseDb.pullChanges`, this does *not* perform any iModel-style changeset relationship validation (e.g. parentId/changesetId)
+   * against the current state of the database (raw sqlite changesets have no header) - it simply applies the changes it contains. It also does *not*
    * support DDL/schema changes - raw sqlite changesets cannot represent them. If applying the changeset
    * encounters any conflict, or otherwise fails, this method throws (conflicts are never resolved
    * automatically).
