@@ -8,8 +8,7 @@
 import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
-
-const loggerCategory = "core-common.QueryBinder";
+import { CommonLoggerCategory } from "./CommonLoggerCategory";
 
 /**
  * Specifies the format of the rows returned by the `query` and `restartQuery` methods of
@@ -495,12 +494,13 @@ export class QueryBinder {
     }
 
     if (skipped > 0)
-      Logger.logWarning(loggerCategory, `QueryBinder.bindIdSet: skipped ${skipped} entries that are not valid Id64Strings`);
+      Logger.logWarning(CommonLoggerCategory.QueryBinder, `QueryBinder.bindIdSet: skipped ${skipped} entries that are not valid Id64Strings`);
 
+    OrderedId64Iterable.sortArray(ids);
     Object.defineProperty(this._args, name, {
       enumerable: true, value: {
         type: QueryParamType.IdSet,
-        value: CompressedId64Set.sortAndCompress(ids),
+        value: CompressedId64Set.compressArray(ids),
       },
     });
     return this;
