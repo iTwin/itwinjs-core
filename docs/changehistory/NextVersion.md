@@ -11,6 +11,8 @@ publish: false
     - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
   - [@itwin/core-backend](#itwincore-backend)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
+  - [@itwin/core-geometry](#itwincore-geometry)
+    - [Region Boolean enhancements](#region-boolean-enhancements)
 
 ## Quantity formatting
 
@@ -101,3 +103,46 @@ while (reader.step()) { /* ... */ }
 | InMemoryCache | 10,000 | 2.213 | 1.402 | 36.6% |
 | SqliteBackedCache | 1,000 | 0.399 | 0.207 | 48.1% |
 | SqliteBackedCache | 10,000 | 3.342 | 1.981 | 40.7% |
+
+## @itwin/core-geometry
+
+### Region Boolean enhancements
+
+[RegionOps.regionBooleanXY]($core-geometry) has improved simplification and new options in the [RegionBooleanXYOptions]($core-geometry) options bundle:
+| Option name | Type | Default Value | Description |
+|---|---|---|---|
+| `simplifyUnion` | boolean | `false` | When `true`, holes are now preserved. |
+| `operationGroupA` | [RegionBinaryOpType]($core-geometry) | `RegionBinaryOpType.Union` | Operation to apply to the regions of the first input argument. |
+| `operationGroupB` | [RegionBinaryOpType]($core-geometry) | `RegionBinaryOpType.Union` | Operation to apply to the regions of the second input argument. |
+
+#### RegionBooleanXYOptions.simplifyUnion
+
+The default behavior of `RegionOps.regionBooleanXY` results in `UnionRegion`s with algorithmically inserted bridge edges removed, but with other interior edges remaining. The previous `true` behavior for this option applied only to `RegionBinaryOpType.Union` operations, and simplified the output by returning only the outer loop, but at the cost of losing all implied holes, which was less than desirable. Now passing `simplifyUnion: true` not only removes interior edges, but also preserves holes, and returns the simplest region type for _all_ operations, not just unions.
+
+For example, consider the union of four trapezoids to form a "picture frame". The following call produces a (rather naive!) `UnionRegion` in which the four input `Loop`s survive as children, and the hole is only implied---it cannot be queried:
+```ts
+const result = RegionOps.regionBooleanXY([trap0, trap1, trap2, trap3], undefined, RegionBinaryOpType.Union);
+```
+![Default Union](./assets/picture-frame-default.jpg "Default Boolean union results in a UnionRegion")
+
+When we pass `simplifyUnion: true`, the result is now a `ParityRegion`. This simpler output not only lacks extraneous interior edges, but also explicitly captures the outer and hole `Loop`s as children:
+```ts
+const result = RegionOps.regionBooleanXY([trap0, trap1, trap2, trap3], undefined, RegionBinaryOpType.Union, { simplifyUnion: true });
+```
+![Simplified Union](./assets/picture-frame-simplified.jpg "Simplified Boolean union results in a ParityRegion")
+
+#### RegionBooleanXYOptions.operationGroupA/B
+
+The previous/default behavior of `RegionOps.regionBooleanXY` assumes an implicit union of the regions in each input group. With these new options, you can now specify intersection and parity operations to be performed on the regions in each group, before the main Boolean operation is performed on the groups.
+
+So for example, consider subtracting the intersection of a 4-loop (green) Venn diagram's inner region from an outer (red) loop:
+
+![Venn Input Loops](./assets/venn-loops.jpg "Green Venn loops, red outer loop")
+
+Before the new options, you would have to call this method 4 times: 3 pairwise Boolean intersections among the Venn loops, and a Boolean difference. Now you can compute the `ParityRegion` result all in one go:
+```ts
+const result = RegionOps.regionBooleanXY([venn0, venn1, venn2, venn3], outer, RegionBinaryOpType.Parity, { simplifyUnion: true, operationGroupA: RegionBinaryOpType.Intersection });
+```
+![Venn Output Region](./assets/venn-boolean-in-one-go.jpg "Outer loop minus Venn intersection")
+
+Note: The same result can also be obtained with `RegionBinaryOpType.BMinusA` instead of `RegionBinaryOpType.Parity`. To perform only the 4-way intersection, pass `undefined` for the second input group.
