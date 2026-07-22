@@ -22,8 +22,13 @@ module.exports = {
     filename: "main.js",
     devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
     globalObject: "this",
+    module: true,
   },
   target: "node",
+  experiments: {
+    outputModule: true,
+  },
+  externalsType: "node-commonjs",
   devtool: "source-map",
   resolve: {
     mainFields: ["main"],

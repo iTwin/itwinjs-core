@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "patch",
+      "packageName": "@itwin/ecschema-locaters"
+    }
+  ],
+  "packageName": "@itwin/ecschema-locaters",
+  "email": "50554904+hl662@users.noreply.github.com"
+}
