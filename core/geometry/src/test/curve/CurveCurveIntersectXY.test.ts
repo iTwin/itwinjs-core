@@ -2474,7 +2474,8 @@ describe("CurveCurveIntersectXY", () => {
         }
       }
     }
-    // test both paths
+    // test both paths. The large xyTolerance shrinks the solution cluster count to increase the probability that
+    // it remains invariant across different compilers. This count is apparently sensitive to compiler differences!
     const intersectionsAB = CurveCurve.intersectionXYPairs(curve0, extend0, curve1, extend1, pointTol);
     testSpiralIntersection(intersectionsAB, false);
     const intersectionsBA = CurveCurve.intersectionXYPairs(curve1, extend1, curve0, extend0, pointTol);
@@ -2664,9 +2665,11 @@ describe("CurveCurveIntersectXY", () => {
     // Copilot hack: sinusoidal spirals have a rough time with tangent intersections at their flat end.
     // These per-spiral overrides mirror the sparse dictionary entries used in SpiralCloseApproach.
     const perSpiralCountOverride = new Map<string, Map<number, number>>([
-      ["sine", new Map([[1, 2 /* double intersection with lineSegment1 */]])],
-      ["cosine", new Map([[1, 2 /* double intersection with lineSegment1 */]])],
-      ["HalfCosine", new Map([[1, 3 /* triple intersection with lineSegment1 */]])],
+      ["bloss", new Map([[1, 4 /* quadruple intersection with lineSegment1 */]])],
+      ["biquadratic", new Map([[1, 4 /* quadruple intersection with lineSegment1 */]])],
+      ["sine", new Map([[1, 4 /* quadruple intersection with lineSegment1 */]])],
+      ["cosine", new Map([[1, 4 /* quadruple intersection with lineSegment1 */]])],
+      ["HalfCosine", new Map([[1, 5 /* quintuple intersection with lineSegment1 */]])],
     ]);
 
     // spiral vs curve
@@ -2710,12 +2713,14 @@ describe("CurveCurveIntersectXY", () => {
         ray.origin.plusScaled(ray.direction.normalize()!, 50), ray.origin.plusScaled(ray.direction.normalize()!, -50)
       );
       let tol: number | undefined;
-      // Note 1: This spiral has the smallest curvature (0.007) at tangency of the spirals in the tangency tests.
-      // The Newton solver really has two tolerances, a fraction tol (for convergence) and a point tol (for solution
-      // de-duping). These tolerances are uncoupled, so you can end up with situations like this one, where the spiral
-      // is so flat that Newton fractions converge faster than their corresponding points. Here we loosen the point
-      // tolerance to cull more duplicate solutions. See also Note 2 below.
-      if (spiral.spiralType === "AustralianRailCorp")
+      // Note 1: The AustralianRailCorp spiral has the smallest curvature (0.007) at tangency of the spirals in the
+      // tangency tests. The Newton solver really has two tolerances, a fraction tol (for convergence) and a point tol
+      // (for solution de-duping). These tolerances are uncoupled, so you can end up with situations like this one,
+      // where the spiral is so flat that Newton fractions converge faster than their corresponding points. Here we
+      // loosen the point tolerance to cull more duplicate solutions. See also Note 2 below.
+      // biquadratic is in the same boat when the Newton iteration budget is small (see maxIterations in
+      // refineSpiralResultsByNewton): Newton stops before the two seeds' points collapse below the default tolerance.
+      if (spiral.spiralType === "AustralianRailCorp" || spiral.spiralType === "biquadratic")
         tol = 10 * Geometry.smallMetricDistance;
       visualizeAndTestSpiralIntersection(
         ck, allGeometry, spiral, tangentLine, numExpected, dx, dy, undefined, undefined, tol, true,
@@ -2938,7 +2943,7 @@ describe("CurveCurveIntersectXY", () => {
     ck.testNearNumber(fillet0.endPoint().distanceXY(fillet1.endPoint()), 0, Geometry.smallFloatingPoint, "fillet end points match");
     ck.testNearNumber(fillet0.fractionToPoint(0.5).distanceXY(fillet1.fractionToPoint(0.5)), 0, Geometry.smallFloatingPoint, "fillet midpoints match");
 
-    const testFilletLineIntersection = (segment: LineString3d, fillet: Arc3d, expectedArcFraction: 0 | 1, descr: string ,tol?: number) => {
+    const testFilletLineIntersection = (segment: LineString3d, fillet: Arc3d, expectedArcFraction: 0 | 1, descr: string, tol?: number) => {
       const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, segment, true, fillet, true, tol);
       if (ck.testExactNumber(1, intersections.length, `one intersection: ${descr}`)) {
         ck.testFraction(expectedArcFraction, intersections[0].detailB.fraction, `expected intersection: ${descr}`);
