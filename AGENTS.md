@@ -9,7 +9,7 @@ Read only the references relevant to the task:
 | Setup, Rush commands, contribution and PR workflow | `CONTRIBUTING.md` |
 | Package scripts, test runner, local conventions | Affected package's `package.json`, tests, and configuration |
 | Project graph and publish status | `rush.json` |
-| Public API contract | The package's `common/api/*.api.md` report |
+| Public API contract | `common/api/<package>.api.md` API report |
 | Lockstep version policy | `common/config/rush/version-policies.json` |
 | CI behavior | `.github/workflows/` and `common/config/azure-pipelines/` |
 
