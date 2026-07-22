@@ -109,10 +109,14 @@ export interface RegionBooleanXYOptions {
   /** Absolute distance tolerance for merging loops. Default is [[Geometry.smallMetricDistance]]. */
   mergeTolerance?: number;
   /**
-   * Whether to post-process a Boolean Union result to return only the outer [[Loop]]s.
-   * Default value is `false`, to return the raw [[UnionRegion]] of disjoint constituent [[Loop]]s.
+   * Whether to post-process the Boolean result to remove extraneous interior edges and return a simpler region.
+   * * Default value is `false`, to return the raw Boolean result, which may be, e.g., a [[UnionRegion]] of adjacent [[Loop]]s.
    */
   simplifyUnion?: boolean;
+  /** Operation to apply to the regions of the first argument. Default/unsupported is union. Subtraction operations are not supported. */
+  operationGroupA?: RegionBinaryOpType;
+  /** Operation to apply to the regions of the second argument. Default/unsupported is union. Subtraction operations are not supported. */
+  operationGroupB?: RegionBinaryOpType;
 }
 
 /**
@@ -430,13 +434,24 @@ export class RegionOps {
     const localToWorld = FrameBuilder.createRightHandedFrame(undefined, xyRegion);
     return localToWorld ? localToWorld.origin.z : 0;
   }
+  /** Convert overlapping enums, from public to internal. */
+  private static convertToRegionGroupOpType(op?: RegionBinaryOpType): RegionGroupOpType {
+    if (RegionBinaryOpType.Parity === op)
+      return RegionGroupOpType.Parity;
+    if (RegionBinaryOpType.Intersection === op)
+      return RegionGroupOpType.Intersection;
+    return RegionGroupOpType.Union;
+  }
+
   /**
    * Return areas defined by a boolean operation.
    * @note For best results, input regions should have correctly oriented loops. See [[sortOuterAndHoleLoopsXY]].
    * @note A common use case of this method is to split (a region with) overlapping loops into a `UnionRegion` with
    * adjacent `Loop`s: `regionOut = RegionOps.regionBooleanXY(regionIn, undefined, RegionBinaryOpType.Union)`.
-   * @note The Union operation does not currently attempt to return a region with minimal loops. This may change with
-   * future development.
+   * Such a union can be further simplified by passing the option `RegionBooleanXYOptions.simplifyUnion = true`.
+   * @note By default, this method does not discover holes implicitly formed by input loops. For example, the union of
+   * the four trapezoids that comprise a picture frame is not returned as a [[ParityRegion]] unless the option
+   * `simplifyUnion = true`.
    * @param loopsA first set of loops (treated as a union)
    * @param loopsB second set of loops (treated as a union)
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
@@ -449,25 +464,26 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     mergeToleranceOrOptions: number | RegionBooleanXYOptions = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
-    let mergeTolerance: number;
-    let simplifyUnion: boolean;
-    if (typeof mergeToleranceOrOptions === "number") {
-      mergeTolerance = mergeToleranceOrOptions;
-      simplifyUnion = false;
-    } else {
-      mergeTolerance = mergeToleranceOrOptions.mergeTolerance ?? Geometry.smallMetricDistance;
-      simplifyUnion = mergeToleranceOrOptions.simplifyUnion ?? false;
-    }
-    let result = UnionRegion.create();
-    const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
+    const optionIsNumber = typeof mergeToleranceOrOptions === "number";
+    const mergeTolerance = optionIsNumber ? mergeToleranceOrOptions : mergeToleranceOrOptions.mergeTolerance ?? Geometry.smallMetricDistance;
+    const simplifyUnion = optionIsNumber ? false : mergeToleranceOrOptions.simplifyUnion ?? false;
+    const operationGroupA = optionIsNumber ? RegionGroupOpType.Union : RegionOps.convertToRegionGroupOpType(mergeToleranceOrOptions.operationGroupA);
+    const operationGroupB = optionIsNumber ? RegionGroupOpType.Union : RegionOps.convertToRegionGroupOpType(mergeToleranceOrOptions.operationGroupB);
+    let result: AnyRegion | undefined;
+    const context = RegionBooleanContext.create(operationGroupA, operationGroupB);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph(mergeTolerance);
     const bridgeMask = HalfEdgeMask.BRIDGE_EDGE;
     const visitMask = context.graph.grabMask(false);
+    // use our own outMask: we cannot use EXTERIOR as sweep clears it before processing each component
+    const outMask = simplifyUnion ? context.graph.grabMask(false) : HalfEdgeMask.NULL_MASK;
+    const outSeeds: HalfEdge[] | undefined = simplifyUnion ? [] : undefined;
+    context.graph.clearMask(visitMask | outMask);
     const range = context.groupA.range().union(context.groupB.range());
     const areaTol = this.computeXYAreaTolerance(range, mergeTolerance);
     const z = RegionOps.getZCoordinate(operation === RegionBinaryOpType.BMinusA ? loopsB : loopsA);
     const options: PlanarSubdivision.CreateRegionInFaceOptions = { compress: true, closureTol: mergeTolerance, bridgeMask, visitMask, z };
+    let numFacesIn = 0;
     context.runClassificationSweep(
       operation,
       (_graph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
@@ -476,23 +492,43 @@ export class RegionOps {
           return;
         if (Math.abs(area) < areaTol)
           return;
-        if (faceType === 1) {
+        if (simplifyUnion) { // process the outer/negative faces later
+          if (faceType === 1) {
+            numFacesIn++;
+          } else {
+            face.setMaskAroundFace(outMask);
+            outSeeds?.push(face);
+          }
+        } else if (faceType === 1) { // collect the inner faces now
           const loopOrParityRegion = PlanarSubdivision.createLoopOrParityRegionInFace(face, options);
-          if (loopOrParityRegion)
-            result.tryAddChild(loopOrParityRegion);
+          if (loopOrParityRegion) {
+            if (!result)
+              result = UnionRegion.create();
+            if (result.tryAddChild(loopOrParityRegion))
+              numFacesIn++;
+          }
         }
       },
     );
-    context.graph.dropMask(visitMask);
-    if (simplifyUnion && operation === RegionBinaryOpType.Union) {
-      const signedLoops = RegionOps.constructAllXYRegionLoops(result);
-      if (signedLoops) {
-        const outerLoops = signedLoops.map((component) => component.negativeAreaLoops).flat();
-        if (outerLoops.length > 0)
-          result = UnionRegion.create(...outerLoops);
+    // the outer faces are marked; now we collect their boundary super face loops and sort them
+    if (simplifyUnion && numFacesIn > 0 && outSeeds && outSeeds.length > 0) {
+      context.graph.clearMask(visitMask);
+      const outLoops: Loop[] = [];
+      for (const outSeed of outSeeds) {
+        const superFace: HalfEdge[] = [];
+        const skipEdge = (he: HalfEdge) => he.isMaskSet(visitMask) || !he.isMaskSet(outMask) || he.edgeMate.isMaskSet(outMask);
+        const announceEdge = (he: HalfEdge) => superFace.push(he);
+        if (outSeed.announceEdgesInSuperFace(skipEdge, announceEdge)) {
+          superFace.forEach((he: HalfEdge) => he.setMask(visitMask));
+          const outLoop = PlanarSubdivision.createLoopInFace(superFace, options);
+          if (outLoop)
+            outLoops.push(outLoop);
+        }
       }
+      result = this.sortOuterAndHoleLoopsXY(outLoops);
     }
-    return this.simplifyRegion(result);
+    context.graph.dropMask(visitMask | outMask);
+    return result ? this.simplifyRegion(result) : undefined;
   }
   /**
    * Return a polyface whose facets are a boolean operation between the input regions.
@@ -837,90 +873,221 @@ export class RegionOps {
   }
 
   /**
-   * Simplify the graph by removing bridge edges that do not serve to connect inner and outer loops.
-   * * If edgeTags are `CurveLocationDetail`s, e.g., as set by `PlanarSubdivision.assembleHalfEdgeGraph`, attempt to heal edges split by removed bridge edges.
-   * @param graph half edges to process.
-   * @param isBridgeEdge optional function to identify a bridge edge. Default looks for `HalfEdgeMask.BRIDGE_EDGE`.
-   * @param faceToArea optional function to compute face area. Default is `HalfEdgeGraphSearch.signedFaceArea`.
-   * @returns the number of extraneous bridge edges removed from the graph.
-   * @internal
+   * Compare two edges' geometry from CurveLocationDetail edge tags.
+   * @returns an object with following properties:
+   * * sameCurves: whether the edges' curve definitions are equivalent.
+   * * reversedCurves: whether the edges' curve definitions are equivalent after reversing one of them.
+   * * senseEdge0/1: whether the topological edge is oriented in the same direction as the curve geometry, or the opposite direction.
    */
-  public static removeExtraneousBridgeEdges(
-    graph: HalfEdgeGraph,
-    isBridgeEdge?: HalfEdgeToBooleanFunction,
-    faceToArea?: HalfEdgeToNumberFunction,
-  ): number {
+  private static getEdgeGeometry(edge0: HalfEdge, edge1: HalfEdge): { sameCurves: boolean, reversedCurves: boolean, senseEdge0: boolean, senseEdge1: boolean } {
+    let sameCurves = false;
+    let reversedCurves = false;
+    let senseEdge0 = false;
+    let senseEdge1 = false;
+    if (edge0.edgeTag instanceof CurveLocationDetail && edge0.edgeTag.curve !== undefined && edge0.edgeTag.isInterval() && edge0.sortData &&
+        edge1.edgeTag instanceof CurveLocationDetail && edge1.edgeTag.curve !== undefined && edge1.edgeTag.isInterval() && edge1.sortData
+    ) {
+      sameCurves = edge0.edgeTag.curve === edge1.edgeTag.curve || edge0.edgeTag.curve.isAlmostEqual(edge1.edgeTag.curve);
+      reversedCurves = !sameCurves && edge0.edgeTag.curve.isAlmostEqual(edge1.edgeTag.curve.clone().reverse());
+      senseEdge0 = edge0.sortData > 0;
+      senseEdge1 = edge1.sortData > 0;
+    }
+    return { sameCurves, reversedCurves, senseEdge0, senseEdge1 };
+  }
+
+  /**
+   * Compare two edges' orientations. They do not have to be adjacent.
+   * * Requires CurveLocationDetail edge tags.
+   * @returns an object with following properties:
+   * * diametric: whether edges have same/reversed curves and are oriented diametrically opposite each other.
+   * * reversedCurves: whether the underlying curve definitions are reversed.
+   * * senseEdge0/1: whether the topological edge is oriented in the same direction as the curve geometry, or the opposite direction.
+   */
+  private static areEdgesDiametric(edge0: HalfEdge, edge1: HalfEdge): { diametric: boolean, reversedCurves: boolean, senseEdge0: boolean, senseEdge1: boolean } {
+    let diametric = false;
+    let reversedCurves = false;
+    let senseEdge0 = false;
+    let senseEdge1 = false;
+    if (edge0 !== edge1) {
+      const data = RegionOps.getEdgeGeometry(edge0, edge1);
+      reversedCurves = data.reversedCurves;
+      senseEdge0 = data.senseEdge0;
+      senseEdge1 = data.senseEdge1;
+      diametric = (data.sameCurves && (senseEdge0 !== senseEdge1)) || (reversedCurves && (senseEdge0 === senseEdge1));
+    }
+    return { diametric, reversedCurves, senseEdge0, senseEdge1 };
+  }
+
+  /**
+   * Determine if the edges at a vertex were created by splitting an edge or null face.
+   * * Requires CurveLocationDetail edge tags.
+   * @param he an edge created by the split operation.
+   * @param vs another edge at the same vertex. If undefined, use `vs = he.vertexSuccessor` and check for a
+   * degree-2 vertex (e.g., split edge); otherwise, ignore the degree check (e.g., inputs are a null face pair).
+   */
+  private static isHealableEdgeOrNullFace(he: HalfEdge, vs?: HalfEdge): boolean {
+    if (vs) {
+      if (!he.findAroundVertex(vs))
+        return false;
+    } else {
+      vs = he.vertexSuccessor;
+      if (vs.vertexSuccessor !== he)
+        return false; // not a split edge
+    }
+    const directionData = RegionOps.areEdgesDiametric(he, vs);
+    if (!directionData.diametric)
+      return false;
+    const heVertexFraction = directionData.senseEdge0 ? he.edgeTag.fraction : he.edgeTag.fraction1;
+    let vsVertexFraction = directionData.senseEdge1 ? vs.edgeTag.fraction : vs.edgeTag.fraction1;
+    if (directionData.reversedCurves)
+      vsVertexFraction = 1.0 - vsVertexFraction;
+    return Geometry.isSmallRelative(heVertexFraction - vsVertexFraction); // unrelated vertex fractions are not healable
+  }
+
+  /**
+   * Determine if the vertex loop resulted from splitting a null face into two null faces (and thus can be healed).
+   * * Requires CurveLocationDetail edge tags.
+   * * If there are multiple null faces at the vertex (a null face bundle), they must be adjacent and positioned in
+   * diametrically opposite pairs, each of which resulted from splitting a null face. This implies there are exactly
+   * two non-null faces opposite each other in the vertex loop.
+   * @returns an object with properties:
+   * * isHealable: whether the input is a healable vertex loop in a null face bundle
+   * * nullFacePairs: if `isHealable` is true, an array of the matching null face pairs around the vertex.
+   */
+  private static isHealableNullFaceBundle(vertex: HalfEdge): { isHealable: boolean, nullFacePairs?: [HalfEdge, HalfEdge][] } {
+    const nonNullFaceIndex: number[] = [];
+    const vertexLoop: HalfEdge[] = [];
+    // lambda: null face detector, with curve check to rule out banana faces
+    const isNullFace = (face: HalfEdge): boolean => {
+      const fSucc = face.faceSuccessor;
+      return (fSucc.faceSuccessor === face) && RegionOps.areEdgesDiametric(face, fSucc).diametric;
+    };
+    vertex.announceEdgesAroundVertex((e: HalfEdge) => {
+      if (!isNullFace(e))
+        nonNullFaceIndex.push(vertexLoop.length);
+      vertexLoop.push(e);
+    });
+    const degree = vertexLoop.length;
+    if (degree < 4 || nonNullFaceIndex.length !== 2 || Geometry.modulo(degree, 2) > 0)
+      return { isHealable: false };
+    const iNonNull0 = nonNullFaceIndex[0];
+    if (nonNullFaceIndex[1] - iNonNull0 !== degree / 2)
+      return { isHealable: false };
+    const nullFacePairs: [HalfEdge, HalfEdge][] = [];
+    for (let i = 1; i < degree / 2; i++) {
+      const iNullFace = Geometry.modulo(iNonNull0 + i, degree);
+      const iMatchingNullFace = Geometry.modulo(2 * iNonNull0 - iNullFace, degree);
+      if (!RegionOps.isHealableEdgeOrNullFace(vertexLoop[iNullFace], vertexLoop[iMatchingNullFace]))
+        return { isHealable: false };
+      nullFacePairs.push([vertexLoop[iNullFace], vertexLoop[iMatchingNullFace]]);
+    }
+    return { isHealable: true, nullFacePairs };
+  }
+
+  /** Heal a split edge by removing the redundant vertex loop and extending the surviving curve details. */
+  private static healSplitEdgeAndCurve(v: HalfEdge): void {
+    const vs = v.vertexSuccessor;
+    const fPred = HalfEdge.healEdge(v, false);
+    if (!fPred)
+      return;
+    // lambda to extend the surviving node's curve interval. Inputs are on the same side of the healed edge.
+    const extendDetailInterval = (doomed: HalfEdge, survivor: HalfEdge): void => {
+      const doomedData = RegionOps.getEdgeGeometry(doomed, survivor);
+      assert(doomedData.sameCurves || doomedData.reversedCurves, "expect related curves");
+      let newEndFraction = doomedData.senseEdge0 ? doomed.edgeTag.fraction1 : doomed.edgeTag.fraction;
+      if (doomedData.reversedCurves)
+        newEndFraction = 1.0 - newEndFraction;
+      const newEndPoint = doomedData.senseEdge0 ? doomed.edgeTag.point1 : doomed.edgeTag.point;
+      if (doomedData.senseEdge1)
+        survivor.edgeTag.captureFraction1Point1(newEndFraction, newEndPoint);
+      else
+        survivor.edgeTag.captureFractionPoint(newEndFraction, newEndPoint);
+    };
+    extendDetailInterval(v, fPred);
+    extendDetailInterval(vs, fPred.edgeMate);
+  }
+
+  /**
+   * Disconnect extraneous bridge edges, which remain in the graph as isolated edges.
+   * @param graph half edges to process.
+   * @param isBridgeEdge optional callback to identify a bridge edge.
+   * @param faceToArea optional callback to compute face area.
+   * @returns array of surviving vertices formerly adjacent to the isolated bridge edges (e.g., for the caller to heal).
+   */
+  private static isolateExtraneousBridgeEdges(graph: HalfEdgeGraph, isBridgeEdge: HalfEdgeToBooleanFunction, faceToArea: HalfEdgeToNumberFunction): HalfEdge[] {
     const toHeal: HalfEdge[] = [];
     const interiorBridges: HalfEdge[] = [];
-    if (!faceToArea)
-      faceToArea = (node: HalfEdge) => HalfEdgeGraphSearch.signedFaceArea(node);
-    if (!isBridgeEdge)
-      isBridgeEdge = (node: HalfEdge): boolean => node.isMaskSet(HalfEdgeMask.BRIDGE_EDGE);
+    const isolateBridgeEdge = (edge: HalfEdge): void => {
+      if (!edge.isDangling)
+        toHeal.push(edge.vertexSuccessor);
+      if (!edge.edgeMate.isDangling)
+        toHeal.push(edge.edgeMate.vertexSuccessor);
+      edge.isolateEdge();
+    };
     // isolate dangling bridges, bridges separating different faces, and "exterior" bridges in the negative area face
     graph.announceEdges((_g: HalfEdgeGraph, node: HalfEdge): boolean => {
       if (isBridgeEdge(node)) {
-        if (node.isDangling || node.edgeMate.isDangling || !node.findAroundFace(node.edgeMate) || faceToArea(node) < 0.0) {
-          toHeal.push(node.vertexSuccessor);
-          toHeal.push(node.edgeMate.vertexSuccessor);
-          node.isolateEdge();
-        } else {
+        if (node.isDangling || node.edgeMate.isDangling || !node.findAroundFace(node.edgeMate) || faceToArea(node) < 0.0)
+          isolateBridgeEdge(node);
+        else
           interiorBridges.push(node);
-        }
       }
       return true;
     });
-    // Relies only on face loop orientation. Doesn't use static HalfEdgeMasks!
-    const isBoundaryEdge = (node: HalfEdge): boolean => {
+    // lambda: check if a non-isolated interior bridge edge is extraneous, relying solely on face loop orientation (not HalfEdgeMasks!)
+    const isBridgeEdgeExtraneous = (node: HalfEdge): boolean => {
+      if (node.isIsolatedEdge)
+        return false; // already extraneous
       if (faceToArea(node) < 0.0)
         return true; // exterior face
       if (node.findAroundFace(node.edgeMate))
         return false; // interior washer face
       return faceToArea(node.edgeMate) < 0.0; // adjacent to exterior face
     };
-    // All bridges in the negative area face were isolated, but this may have promoted other bridges to the
-    // negative area face. Keep isolating these bridge edges until none remain.
+    // All bridges in the negative area face were isolated, but this may have caused surviving bridges to become extraneous
+    // (e.g., by swelling the negative area face around them). Keep isolating these bridge edges until none remain.
     let numIsolatedThisPass: number;
     do {
       numIsolatedThisPass = 0;
       for (const node of interiorBridges) {
-        if (!node.isIsolatedEdge && isBoundaryEdge(node)) {
-          toHeal.push(node.vertexSuccessor);
-          toHeal.push(node.edgeMate.vertexSuccessor);
-          node.isolateEdge();
+        if (isBridgeEdgeExtraneous(node)) {
+          isolateBridgeEdge(node);
           numIsolatedThisPass++;
         }
       }
     } while (numIsolatedThisPass > 0);
-    // lambda to extend the detail interval on a side of a healed edge
-    const mergeDetails = (he: HalfEdge | undefined, newFraction?: number, newPoint?: Point3d): void => {
-      if (he && he.edgeTag instanceof CurveLocationDetail && he.sortData !== undefined && newFraction !== undefined && newPoint) {
-        if (he.sortData > 0)
-          he.edgeTag.captureFraction1Point1(newFraction, newPoint);
-        else
-          he.edgeTag.captureFractionPoint(newFraction, newPoint);
+    return toHeal.filter((edge: HalfEdge) => !edge.isIsolatedEdge);
+  }
+  /**
+   * Simplify the graph by removing bridge edges that do not serve to connect inner and outer loops.
+   * * If edgeTags are `CurveLocationDetail`s, e.g., as set by `PlanarSubdivision.assembleHalfEdgeGraph`, attempt to heal edges split by removed bridge edges.
+   * @param graph half edges to process.
+   * @param isBridgeEdge optional callback to identify a bridge edge. Default looks for `HalfEdgeMask.BRIDGE_EDGE`.
+   * @param faceToArea optional callback to compute face area. Default is `HalfEdgeGraphSearch.signedFaceArea`.
+   * @returns the number of extraneous bridge edges removed from the graph.
+   * @internal
+   */
+  public static removeExtraneousBridgeEdges(graph: HalfEdgeGraph, isBridgeEdge?: HalfEdgeToBooleanFunction, faceToArea?: HalfEdgeToNumberFunction): number {
+    if (!faceToArea)
+      faceToArea = (node: HalfEdge) => HalfEdgeGraphSearch.signedFaceArea(node);
+    if (!isBridgeEdge)
+      isBridgeEdge = (node: HalfEdge): boolean => node.isMaskSet(HalfEdgeMask.BRIDGE_EDGE);
+    const toHeal = RegionOps.isolateExtraneousBridgeEdges(graph, isBridgeEdge, faceToArea);
+    // clean up the isolated bridge edges' original vertex loops, if possible
+    for (const vertex of toHeal) {
+      if (vertex.isDangling || vertex.isIsolatedEdge)
+        continue;
+      if (RegionOps.isHealableEdgeOrNullFace(vertex)) {
+        RegionOps.healSplitEdgeAndCurve(vertex);
+        continue;
       }
-    };
-    // At this point all removable bridges are isolated. Clean up their original vertex loops, if possible.
-    for (const doomedA of toHeal) {
-      const doomedB = doomedA.vertexSuccessor;
-      if ( // are the geometries mergeable?
-        doomedA !== doomedB &&
-        doomedA.edgeTag instanceof CurveLocationDetail && doomedA.sortData !== undefined &&
-        doomedB.edgeTag instanceof CurveLocationDetail && doomedB.sortData !== undefined &&
-        doomedA.edgeTag.curve === doomedB.edgeTag.curve &&
-        doomedA.edgeTag.isInterval() && doomedB.edgeTag.isInterval() &&
-        doomedA.sortData * doomedB.sortData < 0 &&
-        ((doomedA.sortData > 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction - doomedB.edgeTag.fraction1)) ||
-          (doomedA.sortData < 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction1 - doomedB.edgeTag.fraction)))
-      ) {
-        const survivorA = HalfEdge.healEdge(doomedA, false);
-        if (survivorA) {
-          const endFractionA = (doomedA.sortData > 0) ? doomedA.edgeTag.fraction1 : doomedA.edgeTag.fraction;
-          const endPointA = (doomedA.sortData > 0) ? doomedA.edgeTag.point1 : doomedA.edgeTag.point;
-          mergeDetails(survivorA, endFractionA, endPointA);
-          const endFractionB = (doomedB.sortData > 0) ? doomedB.edgeTag.fraction1 : doomedB.edgeTag.fraction;
-          const endPointB = (doomedB.sortData > 0) ? doomedB.edgeTag.point1 : doomedB.edgeTag.point;
-          mergeDetails(survivorA.edgeMate, endFractionB, endPointB);
+      const bundleData = RegionOps.isHealableNullFaceBundle(vertex);
+      if (bundleData.isHealable && bundleData.nullFacePairs) {
+        for (const [f0, f1] of bundleData.nullFacePairs)
+          HalfEdge.pinch(f0, f1); // merge the null face pair into a single null face (with 2 split edges)
+        for (const [e0, e1] of bundleData.nullFacePairs) {
+          RegionOps.healSplitEdgeAndCurve(e0);
+          RegionOps.healSplitEdgeAndCurve(e1);
         }
       }
     }
