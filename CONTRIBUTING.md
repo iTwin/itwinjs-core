@@ -98,7 +98,7 @@ Documentation code snippets are extracted from actively tested code to ensure th
    ```
 4. **Update docs script**: Chain extraction with documentation generation:
    ```json
-   "docs": "betools docs --json=../../generated-docs/{package}/file.json --tsIndexFile=./{package}.ts --onlyJson && npm run -s extract"
+   "docs": "betools docs --json=../../generated-docs/{package}/file.json --tsIndexFile=./{package}.ts --onlyJson && rushx extract"
    ```
 5. **Reference in documentation**: In markdown files, reference the snippets using:
    <pre>```ts
