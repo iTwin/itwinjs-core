@@ -195,6 +195,44 @@ describe("QueryBinder", () => {
     assert.throw(() => QueryBinder.from([["a"]]), "unsupported type");
   });
 
+  it("fromSkippingNullish skips undefined and null values", () => {
+    assert.deepEqual(
+      QueryBinder.fromSkippingNullish({ model: "used", parent: undefined, other: null }).serialize(),
+      {
+        model: {
+          type: QueryParamType.String,
+          value: "used",
+        },
+      },
+    );
+
+    // positional-array form: undefined/null positions are left unbound, later positions keep their index
+    assert.deepEqual(
+      QueryBinder.fromSkippingNullish([1, undefined, "third", null]).serialize(),
+      {
+        1: {
+          type: QueryParamType.Double,
+          value: 1,
+        },
+        3: {
+          type: QueryParamType.String,
+          value: "third",
+        },
+      },
+    );
+
+    // QueryBinder.from behavior is unchanged: undefined/null bind NULL
+    assert.deepEqual(
+      QueryBinder.from({ parent: undefined }).serialize(),
+      {
+        parent: {
+          type: QueryParamType.Null,
+          value: null,
+        },
+      },
+    );
+  });
+
   it("Should not fail on empty array", () => {
     const idSet: Id64String[] = [];
     const binder = QueryBinder.from([idSet]);
