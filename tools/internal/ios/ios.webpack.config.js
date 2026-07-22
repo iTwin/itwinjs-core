@@ -5,6 +5,7 @@
 
 const path = require("path");
 const { globSync } = require("glob");
+const { isBuiltin } = require("module");
 const webpack = require("webpack");
 
 // const ignoredTests = [
@@ -29,7 +30,11 @@ module.exports = {
   experiments: {
     outputModule: true,
   },
+  externalsPresets: { node: false },
   externalsType: "node-commonjs",
+  externals: [
+    ({ request }, callback) => isBuiltin(request) ? callback(null, request) : callback(),
+  ],
   plugins: [
     new webpack.BannerPlugin({
       banner: 'import { createRequire as createRequireForBundledCommonJs } from "node:module";\nimport { dirname as dirnameForBundledCommonJs } from "node:path";\nimport { fileURLToPath as fileURLToPathForBundledCommonJs } from "node:url";\nconst createRequire = createRequireForBundledCommonJs;\nconst require = createRequire(import.meta.url);\nconst __filename = fileURLToPathForBundledCommonJs(import.meta.url);\nconst __dirname = dirnameForBundledCommonJs(__filename);',
