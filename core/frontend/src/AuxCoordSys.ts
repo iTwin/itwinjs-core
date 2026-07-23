@@ -9,7 +9,7 @@
 import { JsonUtils } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Code, ColorDef, IModel, LinePixels, Npc,
+  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, Code, ColorDef, IModel, LinePixels, Npc,
 } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
@@ -79,13 +79,19 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 
   /** Create a new AuxCoordSystemState.
-   * @param acsName the name for the new AuxCoordSystem
-   * @param iModel the iModel for which the ACS applies.
-   * @note call this method with the appropriate subclass (e.g. AuxCoordSystemSpatialState, AuxCoordSystem2dState, etc), not on AuxCoordSystemState directly
+   * @param _acsName unused, this method creates an empty code as it lacks sufficient information to do otherwise.
+   * @param iModel the iModel for which the ACS applies
+   * @note Inserting a new named ACS element requires creating a CodeProps for the type of view and the view's definition model.
+   * This method doesn't have the information to do this so it creates and empty code.
+   * @example
+   * ```typescript
+   * const codeSpecName = vp.view.isSpatialView() ? BisCodeSpec.auxCoordSystemSpatial : (vp.view.is3d() ? BisCodeSpec.auxCoordSystem3d : BisCodeSpec.auxCoordSystem2d);
+   * const codeSpec = await vp.iModel.codeSpecs.getByName(codeSpecName);
+   * const code = new Code({ spec: codeSpec.id, scope: vp.view.model, value: acsName });
+   * ```
    */
-  public static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState {
-    const myCode = new Code({ spec: BisCodeSpec.auxCoordSystemSpatial, scope: IModel.dictionaryId.toString(), value: acsName });
-    return new AuxCoordSystemSpatialState({ model: IModel.dictionaryId, code: myCode, classFullName: this.classFullName }, iModel);
+  public static createNew(_acsName: string, iModel: IModelConnection): AuxCoordSystemState {
+    return new AuxCoordSystemSpatialState({ model: IModel.dictionaryId, code: Code.createEmpty(), classFullName: this.classFullName }, iModel);
   }
 
   public constructor(props: AuxCoordSystemProps, iModel: IModelConnection) {

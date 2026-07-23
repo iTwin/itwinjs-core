@@ -6,11 +6,11 @@
  * @module Tools
  */
 
-import { BentleyStatus } from "@itwin/core-bentley";
+import { AuxCoordSystemProps, BisCodeSpec, Code } from "@itwin/core-common";
 import { AxisOrder, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { AccuDraw, AccuDrawFlags, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
-import { ACSDisplayOptions, AuxCoordSystemState } from "../AuxCoordSys";
+import { ACSDisplayOptions, ACSType, AuxCoordSystemState } from "../AuxCoordSys";
 import { SnapDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
@@ -871,55 +871,88 @@ export class AccuDrawShortcuts {
     return IModelApp.tools.run("AccuDraw.DefineACSByPoints");
   }
 
-  public static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus {
+  private static async getACSCode(vp: Viewport, acsName: string): Promise<Code | undefined> {
+    try {
+      const codeSpecName = vp.view.isSpatialView() ? BisCodeSpec.auxCoordSystemSpatial : (vp.view.is3d() ? BisCodeSpec.auxCoordSystem3d : BisCodeSpec.auxCoordSystem2d);
+      const codeSpec = await vp.iModel.codeSpecs.getByName(codeSpecName);
+      return new Code({ spec: codeSpec.id, scope: vp.view.model, value: acsName });
+    } catch {
+      return undefined;
+    }
+  }
+
+  private static async getNamedACS(vp: Viewport, acsName: string): Promise<AuxCoordSystemState | undefined> {
+    try {
+      const acsCode = await this.getACSCode(vp, acsName);
+      if (!acsCode)
+        return undefined;
+
+      const acsProps = await vp.iModel.elements.loadProps(acsCode);
+      if (!acsProps)
+        return undefined;
+
+      const namedAcs = AuxCoordSystemState.fromProps(acsProps, vp.iModel);
+      return namedAcs.isValidForView(vp.view) ? namedAcs : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private static async createNewACS(vp: Viewport, acsName: string): Promise<AuxCoordSystemState | undefined> {
+    // Want a CodeProps to support insert so ViewState.createAuxCoordSystem(acsName) is not called.
+    try {
+      const acsCode = await this.getACSCode(vp, acsName);
+      if (!acsCode)
+        return undefined;
+
+      // Determine the class name based on view type
+      let classFullName: string;
+      if (vp.view.isSpatialView())
+        classFullName = "BisCore:AuxCoordSystemSpatial";
+      else if (vp.view.is3d())
+        classFullName = "BisCore:AuxCoordSystem3d";
+      else
+        classFullName = "BisCore:AuxCoordSystem2d";
+
+      const acsProps: AuxCoordSystemProps = { model: acsCode.scope, code: acsCode, classFullName, type: ACSType.None };
+      const acs = AuxCoordSystemState.fromProps(acsProps, vp.iModel);
+      return acs;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * Set the AuxiliaryCoordinateSystem for the current AccuDraw viewport by name.
+   * Optionally updates the AccuDraw origin and rotation to match the ACS.
+   * @note When no name is specified, AccuDraw is updated using the view's current ACS.
+   * @returns AuxCoordSystemState or undefined if name does not exist or is invalid for the view.
+   */
+  public static async getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): Promise<AuxCoordSystemState | undefined> {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
-      return BentleyStatus.ERROR;
+      return undefined;
 
     const vp = accudraw.currentView;
     if (!vp)
-      return BentleyStatus.ERROR;
+      return undefined;
 
-    let currRotation = 0, currBaseRotation = 0;
-    const axes = new ThreeAxes();
-
-    if (!useRotation) {
-      // Save current rotation, event listener on ACS change will orient AccuDraw to ACS...
-      currRotation = accudraw.rotationMode;
-      currBaseRotation = accudraw.flags.baseRotation;
-      axes.setFrom(accudraw.axes);
-    }
+    let currentACS = vp.view.auxiliaryCoordinateSystem;
 
     if (acsName && "" !== acsName) {
-      //   // See if this ACS already exists...
-      //   DgnCode acsCode = AuxCoordSystem:: CreateCode(vp -> GetViewControllerR().GetViewDefinition(), acsName);
-      //   DgnElementId acsId = vp -> GetViewController().GetDgnDb().Elements().QueryElementIdByCode(acsCode);
+      const namedAcs = await this.getNamedACS(vp, acsName);
+      if (!namedAcs)
+        return undefined;
 
-      //   if (!acsId.IsValid())
-      //     return ERROR;
+      if (!useOrigin)
+        namedAcs.setOrigin(currentACS.getOrigin());
 
-      //   AuxCoordSystemCPtr auxElm = vp -> GetViewController().GetDgnDb().Elements().Get<AuxCoordSystem>(acsId);
+      if (!useRotation)
+        namedAcs.setRotation(currentACS.getRotation());
 
-      //   if (!auxElm.IsValid())
-      //     return ERROR;
-
-      //   AuxCoordSystemPtr acsPtr = auxElm -> MakeCopy<AuxCoordSystem>();
-
-      //   if (!acsPtr.IsValid())
-      //     return ERROR;
-
-      //   AuxCoordSystemCR oldACS = vp -> GetViewController().GetAuxCoordinateSystem();
-
-      //   if (!useOrigin)
-      //     acsPtr -> SetOrigin(oldACS.GetOrigin());
-
-      //   if (!useRotation)
-      //     acsPtr -> SetRotation(oldACS.GetRotation());
-
-      //   AccuDraw:: UpdateAuxCoordinateSystem(* acsPtr, * vp);
+      AccuDraw.updateAuxCoordinateSystem(namedAcs, vp); // Sets AccuDrawFlags.OrientACS hint to orient AccuDraw to ACS...
+      currentACS = namedAcs;
     }
-
-    const currentACS = vp.view.auxiliaryCoordinateSystem;
 
     if (useOrigin) {
       accudraw.origin.setFrom(currentACS.getOrigin());
@@ -933,57 +966,55 @@ export class AccuDrawShortcuts {
     } else {
       this.itemFieldUnlockAll();
 
-      accudraw.setRotationMode(currRotation);
-      accudraw.flags.baseRotation = currBaseRotation;
-      accudraw.axes.setFrom(axes);
-
       if (RotationMode.ACS === accudraw.flags.baseRotation) {
         const acs = currentACS.clone();
 
-        const rMatrix = accudraw.getRotation();
-        acs.setRotation(rMatrix);
-
+        acs.setRotation(accudraw.getRotation());
         AccuDraw.updateAuxCoordinateSystem(acs, vp);
       }
 
       accudraw.published.flags &= ~AccuDrawFlags.OrientACS;
     }
 
-    return BentleyStatus.SUCCESS;
+    return currentACS;
   }
 
-  public static writeACS(_acsName: string): BentleyStatus {
+  /**
+   * Create a new AuxiliaryCoordinateSystem for the current AccuDraw viewport using the compass origin, orientation, and mode.
+   * @note When no name is specified, the view's current ACS is updated from AccuDraw. Caller can choose to create
+   * an EditCommand to insert/update as a named ACS element using the returned AuxCoordSystemState.
+   * @returns AuxCoordSystemState or undefined if ACS could not be created.
+   */
+  public static async writeACS(acsName: string | undefined): Promise<AuxCoordSystemState | undefined> {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
-      return BentleyStatus.ERROR;
+      return undefined;
 
     const vp = accudraw.currentView;
     if (!vp)
-      return BentleyStatus.ERROR;
+      return undefined;
 
-    // const origin = accudraw.origin;
-    // const rMatrix = accudraw.getRotation();
-    // AuxCoordSystemPtr acsPtr = AuxCoordSystem:: CreateFrom(vp -> GetViewController().GetAuxCoordinateSystem());
-    // acsPtr -> SetOrigin(origin);
-    // acsPtr -> SetRotation(rMatrix);
-    // acsPtr -> SetType(CompassMode.Polar == accudraw.getCompassMode() ? ACSType :: Cylindrical : ACSType:: Rectangular);
-    // acsPtr -> SetCode(AuxCoordSystem:: CreateCode(vp -> GetViewControllerR().GetViewDefinition(), nullptr != acsName ? acsName : ""));
-    // acsPtr -> SetDescription("");
+    let acs;
+    if (acsName && "" !== acsName) {
+      const namedAcs = await this.getNamedACS(vp, acsName);
+      acs = namedAcs ?? await this.createNewACS(vp, acsName);
+    } else {
+      acs = vp.view.auxiliaryCoordinateSystem.clone();
+      acs.description = "";
+    }
 
-    // if (acsName && '\0' != acsName[0]) {
-    //   DgnDbStatus status;
-    //   acsPtr -> Insert(& status);
+    if (undefined === acs)
+      return undefined;
 
-    //   if (DgnDbStatus:: Success != status)
-    //   return BentleyStatus.ERROR;
-    // }
+    acs.setOrigin(accudraw.origin);
+    acs.setRotation(accudraw.getRotation());
+    acs.type = CompassMode.Polar === accudraw.compassMode ? ACSType.Cylindrical : ACSType.Rectangular;
 
-    // AccuDraw:: UpdateAuxCoordinateSystem(* acsPtr, * vp);
+    AccuDraw.updateAuxCoordinateSystem(acs, vp);
+    accudraw.flags.baseRotation = RotationMode.ACS;
+    accudraw.setRotationMode(RotationMode.ACS);
 
-    // accudraw.flags.baseRotation = RotationMode.ACS;
-    // accudraw.SetRotationMode(RotationMode.ACS);
-
-    return BentleyStatus.SUCCESS;
+    return acs;
   }
 
   public static itemFieldUnlockAll(): void {
