@@ -925,10 +925,11 @@ export class AccuDrawShortcuts {
     if (!vp)
       return undefined;
 
+    const view = vp.view;
     const requestGeneration = ++this._acsRequestGeneration;
-    const isRequestCurrent = () => accudraw.isEnabled && accudraw.currentView === vp && requestGeneration === this._acsRequestGeneration;
+    const isRequestCurrent = () => accudraw.isEnabled && accudraw.currentView === vp && vp.view === view && requestGeneration === this._acsRequestGeneration;
 
-    let currentACS = vp.view.auxiliaryCoordinateSystem;
+    let currentACS = view.auxiliaryCoordinateSystem;
 
     if (acsName && "" !== acsName) {
       const namedAcsResult = await this.getNamedACS(vp, acsName);
@@ -995,8 +996,9 @@ export class AccuDrawShortcuts {
     if (!vp)
       return undefined;
 
+    const view = vp.view;
     const requestGeneration = ++this._acsRequestGeneration;
-    const isRequestCurrent = () => accudraw.isEnabled && accudraw.currentView === vp && requestGeneration === this._acsRequestGeneration;
+    const isRequestCurrent = () => accudraw.isEnabled && accudraw.currentView === vp && vp.view === view && requestGeneration === this._acsRequestGeneration;
 
     let acs: AuxCoordSystemState | undefined;
     if (acsName && "" !== acsName) {
@@ -1013,7 +1015,7 @@ export class AccuDrawShortcuts {
         return undefined;
       }
     } else {
-      acs = vp.view.auxiliaryCoordinateSystem.clone();
+      acs = view.auxiliaryCoordinateSystem.clone();
       acs.description = "";
     }
 
