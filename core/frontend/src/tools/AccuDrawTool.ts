@@ -887,7 +887,7 @@ export class AccuDrawShortcuts {
       if (!acsCode)
         return undefined;
 
-      const acsProps = await vp.iModel.elements.loadProps(acsCode);
+      const acsProps = await vp.iModel.elements.loadProps(acsCode.toJSON());
       if (!acsProps)
         return undefined;
 
