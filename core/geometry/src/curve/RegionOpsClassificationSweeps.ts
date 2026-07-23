@@ -490,12 +490,12 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const rangeA = this.groupA.range();
     const rangeB = this.groupB.range();
     const rangeAB = rangeA.union(rangeB);
-    const areaTol = RegionOps.computeXYAreaTolerance(rangeAB);
     let margin = 0.1;
     this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(rangeAB.corners(), RegionBooleanContext._bridgeDirection, this._workSegment);
     if (this._workSegment)
       margin *= this._workSegment.point0Ref.distanceXY(this._workSegment.point1Ref);  // how much further to extend each bridge ray
     const maxPoints: Point3d[] = [];
+    const areaTol = RegionOps.computeMinimumArea(); // TODO: default tolerance used!
     const findExtremePointsInLoop = (region: Loop) => {
       const area = RegionOps.computeXYArea(region);
       if (area === undefined || Math.abs(area) < areaTol)
