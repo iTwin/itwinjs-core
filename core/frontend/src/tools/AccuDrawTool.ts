@@ -915,6 +915,7 @@ export class AccuDrawShortcuts {
    * Optionally updates the AccuDraw origin and rotation to match the ACS.
    * @note When no name is specified, AccuDraw is updated using the view's current ACS.
    * @returns AuxCoordSystemState or undefined if name does not exist or is invalid for the view.
+   * @throws Error if resolving the ACS CodeSpec or loading ACS element properties fails.
    */
   public static async getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): Promise<AuxCoordSystemState | undefined> {
     const accudraw = IModelApp.accuDraw;
@@ -986,6 +987,7 @@ export class AccuDrawShortcuts {
    * @note When no name is specified, the view's current ACS is updated from AccuDraw. Caller can choose to create
    * an EditCommand to insert/update as a named ACS element using the returned AuxCoordSystemState.
    * @returns AuxCoordSystemState or undefined if ACS could not be created.
+   * @throws Error if resolving the ACS CodeSpec or loading ACS element properties fails.
    */
   public static async writeACS(acsName: string | undefined): Promise<AuxCoordSystemState | undefined> {
     const accudraw = IModelApp.accuDraw;
