@@ -14,6 +14,7 @@ import { ACSDisplayOptions, ACSType, AuxCoordSystemState } from "../AuxCoordSys"
 import { SnapDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
+import { ViewState } from "../ViewState";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { BeButtonEvent, CoreTools, Tool } from "./Tool";
 import { AccuDrawShortcutImplementation, AccuDrawShortcutTool } from "./AccuDrawShortcutTool";
@@ -874,39 +875,39 @@ export class AccuDrawShortcuts {
     return IModelApp.tools.run("AccuDraw.DefineACSByPoints");
   }
 
-  private static async getACSCode(vp: Viewport, acsName: string): Promise<Code> {
-    const codeSpecName = vp.view.isSpatialView() ? BisCodeSpec.auxCoordSystemSpatial : (vp.view.is3d() ? BisCodeSpec.auxCoordSystem3d : BisCodeSpec.auxCoordSystem2d);
-    const codeSpec = await vp.iModel.codeSpecs.getByName(codeSpecName);
-    return new Code({ spec: codeSpec.id, scope: vp.view.model, value: acsName });
+  private static async getACSCode(view: ViewState, acsName: string): Promise<Code> {
+    const codeSpecName = view.isSpatialView() ? BisCodeSpec.auxCoordSystemSpatial : (view.is3d() ? BisCodeSpec.auxCoordSystem3d : BisCodeSpec.auxCoordSystem2d);
+    const codeSpec = await view.iModel.codeSpecs.getByName(codeSpecName);
+    return new Code({ spec: codeSpec.id, scope: view.model, value: acsName });
   }
 
-  private static async getNamedACS(vp: Viewport, acsName: string): Promise<{ validForView: boolean, acs?: AuxCoordSystemState }> {
-    const acsCode = await this.getACSCode(vp, acsName);
-    const acsProps = await vp.iModel.elements.loadProps(acsCode.toJSON());
+  private static async getNamedACS(view: ViewState, acsName: string): Promise<{ validForView: boolean, acs?: AuxCoordSystemState }> {
+    const acsCode = await this.getACSCode(view, acsName);
+    const acsProps = await view.iModel.elements.loadProps(acsCode.toJSON());
     if (!acsProps)
       return { validForView: false };
 
-    const namedAcs = AuxCoordSystemState.fromProps(acsProps, vp.iModel);
-    const validForView = namedAcs.isValidForView(vp.view);
+    const namedAcs = AuxCoordSystemState.fromProps(acsProps, view.iModel);
+    const validForView = namedAcs.isValidForView(view);
 
     return { validForView, acs: namedAcs };
   }
 
-  private static async createNewACS(vp: Viewport, acsName: string): Promise<AuxCoordSystemState> {
+  private static async createNewACS(view: ViewState, acsName: string): Promise<AuxCoordSystemState> {
     // Want a CodeProps to support insert so ViewState.createAuxCoordSystem(acsName) is not called.
-    const acsCode = await this.getACSCode(vp, acsName);
+    const acsCode = await this.getACSCode(view, acsName);
 
     // Determine the class name based on view type
     let classFullName: string;
-    if (vp.view.isSpatialView())
+    if (view.isSpatialView())
       classFullName = "BisCore:AuxCoordSystemSpatial";
-    else if (vp.view.is3d())
+    else if (view.is3d())
       classFullName = "BisCore:AuxCoordSystem3d";
     else
       classFullName = "BisCore:AuxCoordSystem2d";
 
     const acsProps: AuxCoordSystemProps = { model: acsCode.scope, code: acsCode.toJSON(), classFullName, type: ACSType.None };
-    const acs = AuxCoordSystemState.fromProps(acsProps, vp.iModel);
+    const acs = AuxCoordSystemState.fromProps(acsProps, view.iModel);
     return acs;
   }
 
@@ -933,7 +934,7 @@ export class AccuDrawShortcuts {
     let currentACS = view.auxiliaryCoordinateSystem;
 
     if (acsName && "" !== acsName) {
-      const namedAcsResult = await this.getNamedACS(vp, acsName);
+      const namedAcsResult = await this.getNamedACS(view, acsName);
       if (!isRequestCurrent())
         return undefined;
 
@@ -1004,13 +1005,13 @@ export class AccuDrawShortcuts {
 
     let acs: AuxCoordSystemState | undefined;
     if (acsName && "" !== acsName) {
-      const namedAcsResult = await this.getNamedACS(vp, acsName);
+      const namedAcsResult = await this.getNamedACS(view, acsName);
       if (!isRequestCurrent())
         return undefined;
 
       acs = namedAcsResult.acs;
       if (!acs) {
-        acs = await this.createNewACS(vp, acsName);
+        acs = await this.createNewACS(view, acsName);
         if (!isRequestCurrent())
           return undefined;
       } else if (!namedAcsResult.validForView) {
