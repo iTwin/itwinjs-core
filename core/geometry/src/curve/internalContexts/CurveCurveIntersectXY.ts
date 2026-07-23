@@ -1056,7 +1056,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       return;
     // ASSUME: seeds in results tail are ordered by most accurate first, as only the first convergence within tolerance is recorded.
     const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(curveA, spiralB);
-    const maxIterations = 100; // observed 73 iterations to convergence in tangent case
+    const maxIterations = 50;
     const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
     const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
     const compare = CurveLocationDetailPair.comparePairsByFractions(fractionTol, this._coincidentGeometryContext.tolerance, true);

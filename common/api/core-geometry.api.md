@@ -11,6 +11,7 @@ export class AkimaCurve3d extends ProxyCurve {
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): AkimaCurve3d;
     cloneProps(): AkimaCurve3dProps;
+    cloneTransformed(transform: Transform): AkimaCurve3d | undefined;
     copyFitPointsFloat64Array(): Float64Array;
     static create(options: AkimaCurve3dOptions | AkimaCurve3dProps): AkimaCurve3d | undefined;
     static createCapture(options: AkimaCurve3dOptions): AkimaCurve3d | undefined;
@@ -20,6 +21,7 @@ export class AkimaCurve3d extends ProxyCurve {
     // (undocumented)
     isAlmostEqual(other: GeometryQuery): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
+    get proxyCurve(): BSplineCurve3d;
     reverseInPlace(): void;
     toJSON(): any;
     tryTransformInPlace(transform: Transform): boolean;
@@ -1694,6 +1696,7 @@ export abstract class CurveCollection extends GeometryQuery {
     isPath(): this is Path;
     maxGap(): number;
     projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
+    reverse(): this;
     reverseInPlace(): void;
     sumLengths(): number;
     abstract tryAddChild(child: AnyCurve | undefined): boolean;
@@ -1920,6 +1923,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     rangeBetweenFractionsByClone(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     rangeBetweenFractionsByCount(fraction0: number, fraction1: number, count: number, transform?: Transform, extrapolationFactor?: number): Range3d;
+    reverse(): this;
     abstract reverseInPlace(): void;
     // @internal
     static snapAndRestrictDetails(details: CurveLocationDetail[], allowExtend?: boolean, applySnappedCoordinates?: boolean, startEndFractionTolerance?: number, startEndXYZTolerance?: number): void;
@@ -3240,6 +3244,7 @@ export class InterpolationCurve3d extends ProxyCurve {
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): InterpolationCurve3d;
     cloneProps(): InterpolationCurve3dProps;
+    cloneTransformed(transform: Transform): InterpolationCurve3d | undefined;
     copyFitPointsFloat64Array(): Float64Array;
     static create(options: InterpolationCurve3dOptions | InterpolationCurve3dProps): InterpolationCurve3d | undefined;
     static createCapture(options: InterpolationCurve3dOptions): InterpolationCurve3d | undefined;
@@ -3250,6 +3255,7 @@ export class InterpolationCurve3d extends ProxyCurve {
     isAlmostEqual(other: GeometryQuery): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     get options(): InterpolationCurve3dOptions;
+    get proxyCurve(): BSplineCurve3d;
     reverseInPlace(): void;
     toJSON(): any;
     tryTransformInPlace(transform: Transform): boolean;
@@ -5549,6 +5555,8 @@ export enum RegionBinaryOpType {
 // @public
 export interface RegionBooleanXYOptions {
     mergeTolerance?: number;
+    operationGroupA?: RegionBinaryOpType;
+    operationGroupB?: RegionBinaryOpType;
     simplifyUnion?: boolean;
 }
 

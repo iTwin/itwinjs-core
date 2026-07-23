@@ -181,6 +181,7 @@ describe("Concurrent XML schema deserialization", () => {
     const xmlStringLocater = new SchemaXmlStringLocater();
     schemaContext.addLocater(xmlStringLocater);
 
+    xmlStringLocater.addSchemaString(loadSchemaString("BisCustomAttributes"));
     xmlStringLocater.addSchemaString(loadSchemaString("CoreCustomAttributes"));
     xmlStringLocater.addSchemaString(loadSchemaString("ECDbMap"));
     xmlStringLocater.addSchemaString(loadSchemaString("ECDbSchemaPolicies"));
@@ -203,6 +204,7 @@ describe("Concurrent XML schema deserialization", () => {
     const xmlStringLocater = new SchemaXmlStringLocater();
     schemaContext.addLocater(xmlStringLocater);
 
+    xmlStringLocater.addSchemaString(loadSchemaString("BisCustomAttributes"));
     xmlStringLocater.addSchemaString(loadSchemaString("CoreCustomAttributes"));
     xmlStringLocater.addSchemaString(loadSchemaString("ECDbMap"));
     xmlStringLocater.addSchemaString(loadSchemaString("ECDbSchemaPolicies"));
