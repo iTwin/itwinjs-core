@@ -1182,7 +1182,7 @@ export class RegionOps {
     if (addBridges && hasOpenCurve)
       RegionOps.removeExtraneousBridgeEdges(graph);
     const areaTol = this.computeMinimumArea(tolerance);
-    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, areaTol);
+    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, tolerance, areaTol);
   }
   /**
    * Collect all `CurvePrimitives` in loosely typed input.
