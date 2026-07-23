@@ -76,7 +76,7 @@ export interface GetSchemaViewArgs {
   readonly forceReload?: boolean;
 }
 
-/** Owns the lifetime of one iModel's {@link SchemaView}: lazy loading, incremental (filtered)
+/** Owns the lifetime of one iModel's {@link (SchemaView:class)}: lazy loading, incremental (filtered)
  * hydration, serialization of concurrent requests, and invalidation. Hosts (`IModelDb`,
  * `IModelConnection`) hold one instance and delegate to it; all data access goes through the
  * host-implemented {@link SchemaViewDataProvider}.
@@ -178,7 +178,7 @@ export class SchemaViewManager {
     await this._viewPromise;
   }
 
-  /** Serialized body of {@link getSchemaView}. Waits for the prior load, optionally discards
+  /** Serialized body of {@link SchemaViewManager.getSchemaView}. Waits for the prior load, optionally discards
    * everything (`forceReload`), then ensures the requested schemas (or all schemas, when no filter
    * is given) are present in the single accumulating view. On failure it resets and rejects, so the
    * next call retries from scratch.
@@ -222,7 +222,7 @@ export class SchemaViewManager {
     this._loadedSchemaNames.clear();
   }
 
-  /** The body of {@link getSchemaView}, run serialized behind the accumulating view promise.
+  /** The body of {@link SchemaViewManager.getSchemaView}, run serialized behind the accumulating view promise.
    * Ensures the requested schemas (or all schemas, when no filter is given) are present in
    * `currentView` (or a freshly created view when nothing is loaded yet) and returns it.
    *

@@ -44,7 +44,7 @@ export interface SchemaManifestReferenceRow {
   readonly targetECInstanceId: number;
 }
 
-/** The reference graph of every schema in one iModel. It is the cheap stand-in a {@link SchemaView}
+/** The reference graph of every schema in one iModel. It is the cheap stand-in a {@link (SchemaView:class)}
  * husk loads up front so it can answer "which schemas exist" and "what is the dependency-ordered set
  * I must load to satisfy a request" without hydrating any schema data.
  *
@@ -53,10 +53,10 @@ export interface SchemaManifestReferenceRow {
  * a few hundred edges, so closure and topological walks are trivial; a heavier object graph would
  * buy nothing.
  *
- * A `SchemaViewDataProvider` builds the manifest from ECDbMeta rows via {@link fromRows}; this class
+ * A `SchemaViewDataProvider` builds the manifest from ECDbMeta rows via {@link SchemaManifest.fromRows}; this class
  * keeps the entries free of any iModel or platform dependency and just indexes them by name and
  * answers closure queries. It knows nothing about which schemas are already loaded; the
- * `SchemaViewManager` tracks that and filters the result of {@link getSchemaClosure} itself.
+ * `SchemaViewManager` tracks that and filters the result of {@link SchemaManifest.getSchemaClosure} itself.
  * @beta
  */
 export class SchemaManifest {
@@ -132,13 +132,13 @@ export class SchemaManifest {
   /** The transitive reference closure of the requested schemas: every requested schema the iModel
    * contains, plus every schema reachable from it through references, as a flat, duplicate-free list
    * of names. This is the full set that must be present to use the requested schemas. The order is
-   * unspecified - a caller that needs a load order runs {@link sortInDependencyOrder} on the result.
+   * unspecified - a caller that needs a load order runs {@link SchemaManifest.sortInDependencyOrder} on the result.
    *
    * The manifest does not know which schemas are already loaded; the result is the full closure and
    * a caller that tracks loaded schemas filters them out itself.
    *
    * Requested names the iModel does not contain are ignored; a caller that needs to surface them can
-   * check {@link findByName} first.
+   * check {@link SchemaManifest.findByName} first.
    */
   public getSchemaClosure(requestedNames: Iterable<string>): string[] {
     const result: string[] = [];
