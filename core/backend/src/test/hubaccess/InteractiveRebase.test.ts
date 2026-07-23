@@ -312,7 +312,67 @@ describe("InteractiveRebase", () => {
     const conflict = interactive.conflicts[0] as UniqueConstraintRebaseConflict;
     chai.expect(conflict.kind).to.equal("UniqueConstraint");
     chai.expect(conflict.original).to.be.undefined;
-    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(2); // should be 1, but there's a duplicate federationGuid unique constraint.
-    chai.expect(conflict.ours.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.ours.FederationGuid).not.to.be.undefined;
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("FederationGuid");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
+    chai.expect(conflict.ours.FederationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.FederationGuid);
+  });
+
+  it("can present a conflict where a locally-updated row triggers a unique constraint violation", async () => {
+    const code = new Code({
+      spec: IModel.dictionaryId,
+      scope: IModel.dictionaryId,
+      value: "SomeValue"
+    });
+    const newId = await withEditTxn(briefcase1, async (txn) => {
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: code,
+        foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
+      } as SomeGraphicalElementProps);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement({
+        id: id,
+        // Same code as the element inserted in briefcase1, which will trigger a unique constraint violation.
+        code: code,
+      });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0] as UniqueConstraintRebaseConflict;
+    chai.expect(conflict.kind).to.equal("UniqueConstraint");
+    chai.expect(conflict.original).not.to.be.undefined;
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.original?.CodeScope).not.to.be.undefined;
+    chai.expect(conflict.original?.CodeSpec).not.to.be.undefined;
+    chai.expect(conflict.ours.CodeScope).not.to.be.undefined;
+    chai.expect(conflict.ours.CodeSpec).not.to.be.undefined;
+    chai.expect(conflict.ours.CodeValue).not.to.be.undefined;
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("CodeScope");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("CodeSpec");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("CodeValue");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
+    chai.expect(conflict.original?.CodeScope).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeScope);
+    chai.expect(conflict.original?.CodeSpec).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeSpec);
+    chai.expect(conflict.original?.CodeValue).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeValue);
+    chai.expect(conflict.ours.CodeScope).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeScope);
+    chai.expect(conflict.ours.CodeSpec).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeSpec);
+    chai.expect(conflict.ours.CodeValue).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeValue);
   });
 });
