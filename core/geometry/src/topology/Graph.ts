@@ -1065,9 +1065,12 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /**
    * Announce edges in the super face loop, starting with the instance.
-   * * A super face admits a `faceSuccessor` traversal, where the next edge at the far vertex is the first one lacking `skipMask` in a `vertexPredecessor` traversal.
+   * * A super face admits a `faceSuccessor` traversal where the next edge at the far vertex is the first edge not skipped
+   * in a `vertexPredecessor` traversal of the far vertex loop.
    * @param skipEdge mask preset on edges to skip, or a function that is called to decide whether to skip an edge.
-   * @param announceEdge function that is called at each edge that is not skipped.
+   * @param announceEdge function that is called at each edge that is not skipped. Generally, it is best not to set a
+   * visited mask in this callback if `skipEdge` checks this mask; instead, the caller should capture the announced edges
+   * and set the visited mask on them after this method returns.
    * @param announceSkipped optional function that is called at each edge that is skipped.
    * @return whether a super face was found, or `false` if the traversal fails to return to the instance vertex.
    */

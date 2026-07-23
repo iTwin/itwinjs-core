@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-bentley",
-  "version": "5.12.0-dev.13",
+  "version": "5.12.0-dev.14",
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/core-bentley.js",
   "module": "lib/esm/core-bentley.js",
@@ -39,11 +39,11 @@
     "@itwin/eslint-plugin": "^6.0.0",
     "@opentelemetry/api": "1.0.4",
     "@types/node": "~20.17.0",
-    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.10"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
