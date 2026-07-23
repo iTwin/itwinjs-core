@@ -125,7 +125,7 @@ export namespace CloudSqlite {
           await container.refreshPromise;
           container.refreshPromise = undefined;
           tokenRefreshFn(); // schedule next refresh
-        }, refreshSeconds * 1000).unref(); // unref so it doesn't keep the process alive
+        }, refreshSeconds * 1000);
       };
       addHiddenProperty(container, "onConnected", tokenRefreshFn); // schedule the first refresh when the container is connected
       addHiddenProperty(container, "onDisconnect", () => { // clear the refresh timer when the container is disconnected

@@ -700,6 +700,7 @@ export abstract class IModelDb extends IModel {
 
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
+    this.views[_close]();
     this.locks[_close]();
     this._locks = undefined;
     this._codeService?.close();
@@ -3249,7 +3250,10 @@ export namespace IModelDb {
     private _viewStore?: ViewStore.CloudAccess;
     public get hasViewStore(): boolean { return undefined !== this._viewStore; }
 
-    /** @beta */
+    /** The [[ViewStore.CloudAccess]] for this iModel.
+     * @note The iModel owns its ViewStore (whether assigned via this setter or created by [[accessViewStore]]): it is closed when the iModel is closed.
+     * @beta
+     */
     public get viewStore(): ViewStore.CloudAccess {
       if (undefined === this._viewStore)
         throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
@@ -3257,6 +3261,13 @@ export namespace IModelDb {
     }
     public set viewStore(viewStore: ViewStore.CloudAccess) {
       this._viewStore = viewStore;
+    }
+    /** Close the ViewStore for this iModel, if one is open. Called when the iModel is closed.
+     * @internal
+     */
+    public [_close]() {
+      this._viewStore?.close();
+      this._viewStore = undefined;
     }
     /** @beta */
     public async accessViewStore(args: { props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
