@@ -232,12 +232,18 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   // JSON-in-string values have no reliable KoQ association, so skip them.
   let kindOfQuantityFullName: string | undefined;
   let persistenceUnitFullName: string | undefined;
-  if (!isJsonPath && (propertyType === "quantity" || propertyType === "coordinate")) {
-    kindOfQuantityFullName = ecProp.kindOfQuantity?.fullName;
-    if (kindOfQuantityFullName) {
-      persistenceUnitFullName = ecProp.getKindOfQuantitySync()?.persistenceUnit?.fullName;
+  if (propertyType === "quantity" || propertyType === "coordinate") {
+    if (field.formatOptions?.quantity?.persistenceUnit) {
+      persistenceUnitFullName = field.formatOptions.quantity.persistenceUnit;
+    } else if (!isJsonPath) {
+      kindOfQuantityFullName = ecProp.kindOfQuantity?.fullName;
+      if (kindOfQuantityFullName) {
+        persistenceUnitFullName = ecProp.getKindOfQuantitySync()?.persistenceUnit?.fullName;
+      }
     }
   }
+
+
 
   return { value: curValue.primitive, type: propertyType, kindOfQuantityFullName, persistenceUnitFullName };
 }
