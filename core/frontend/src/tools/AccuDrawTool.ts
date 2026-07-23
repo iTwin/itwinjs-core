@@ -914,7 +914,7 @@ export class AccuDrawShortcuts {
       else
         classFullName = "BisCore:AuxCoordSystem2d";
 
-      const acsProps: AuxCoordSystemProps = { model: acsCode.scope, code: acsCode, classFullName, type: ACSType.None };
+      const acsProps: AuxCoordSystemProps = { model: acsCode.scope, code: acsCode.toJSON(), classFullName, type: ACSType.None };
       const acs = AuxCoordSystemState.fromProps(acsProps, vp.iModel);
       return acs;
     } catch {
