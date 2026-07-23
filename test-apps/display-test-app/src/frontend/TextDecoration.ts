@@ -436,6 +436,7 @@ export class TextDecorationTool extends Tool {
       "field",
       "e=0x20000001f27",
       "p=CivilSpatial:ParkingRow:Origin",
+      "pu=Units.M",
     );
     await comment(
       "Default coordinate field (property KoQ + active unit system)",
@@ -449,6 +450,7 @@ export class TextDecorationTool extends Tool {
       "field",
       "e=0x20000001f27",
       "p=CivilSpatial:ParkingRow:Origin",
+      "pu=Units.M",
     );
     await comment(
       "No options — falls back to coordinate default (meters, 4 decimals)",
@@ -463,6 +465,7 @@ export class TextDecorationTool extends Tool {
       "e=0x20000001f27",
       "p=CivilSpatial:ParkingRow:Origin",
       "us=imperial",
+      "pu=Units.M",
     );
     await comment("us=imperial — should render in feet (m -> ft conversion)");
 
@@ -477,6 +480,7 @@ export class TextDecorationTool extends Tool {
       "us=metric",
       "pre=L=",
       "suf= (m)",
+      "pu=Units.M",
     );
     await comment("us=metric + prefix/suffix wrappers");
 
@@ -489,6 +493,7 @@ export class TextDecorationTool extends Tool {
       "e=0x20000001f27",
       "p=CivilSpatial:ParkingRow:Origin",
       "koq=AecUnits.LENGTH_SHORT",
+      "pu=Units.M",
     );
     await comment("koq= overrides the property's own KoQ via FormatsProvider");
 
@@ -500,7 +505,8 @@ export class TextDecorationTool extends Tool {
       "field",
       "e=0x20000001f27",
       "p=CivilSpatial:ParkingRow:Origin",
-      `fp={"type":"Decimal","precision":3,"composite":{"units":[{"name":"Units.M","label":"m"}]}}`,
+      "pu=Units.M",
+      `fp={"precision":3,"composite":{"units":[{"name":"Units.M","label":"m"}]}}`,
     );
     await comment("fp= inline FormatProps — meters, 3 decimals");
 
@@ -512,7 +518,8 @@ export class TextDecorationTool extends Tool {
       "field",
       "e=0x20000001f27",
       "p=CivilSpatial:ParkingRow:Origin",
-      `fp={"type":"Decimal","precision":3,"composite":{"units":[{"name":"Units.MM","label":"mm"}]}}`,
+      "pu=Units.M",
+      `fp={"precision":3,"composite":{"units":[{"name":"Units.MM","label":"mm"}]}}`,
     );
     await comment("Verifies m -> mm conversion (multiply by 1000)");
 
@@ -524,6 +531,7 @@ export class TextDecorationTool extends Tool {
       "field",
       "e=0x20000001f27",
       "p=CivilSpatial:ParkingRow:Origin",
+      "pu=Units.M",
       `fp={"type":"Fractional","precision":8,"composite":{"units":[{"name":"Units.FT","label":"'"},{"name":"Units.IN","label":"\\""}]}}`,
     );
     await comment("Verifies m -> composite ft/in conversion (fractional)");
@@ -538,6 +546,7 @@ export class TextDecorationTool extends Tool {
       "p=CivilSpatial:ParkingRow:Origin",
       "us=imperial",
       "case=upper",
+      "pu=Units.M",
     );
     await comment("case=upper — post-format text transform");
 
@@ -549,7 +558,8 @@ export class TextDecorationTool extends Tool {
       "field",
       "e=0x20000001f27",
       "p=CivilSpatial:ParkingRow:Origin",
-      `fp={"type":"Decimal","precision":2,"composite":{"units":[{"name":"Units.FT","label":"ft"}]}}`,
+      "pu=Units.M",
+      `fp={"precision":2,"composite":{"units":[{"name":"Units.FT","label":"ft"}]}}`,
     );
     await comment(
       "Coordinate field with inline fp — verifies coord unit conversion",
@@ -563,6 +573,7 @@ export class TextDecorationTool extends Tool {
       "field",
       "e=0x20000001f27",
       "p=CivilSpatial:ParkingRow:Origin",
+      "pu=Units.M",
       `f={"case":"upper","quantity":{"unitSystem":"imperial"}}`,
     );
     await comment("f= full FieldFormatOptions JSON (legacy path)");
@@ -672,11 +683,13 @@ export class TextDecorationTool extends Tool {
         const unitSystem = fieldArgs.get("us");
         const formatSetKey = fieldArgs.get("koq");
         const inlineFormat = fieldArgs.get("fp");
-        if (unitSystem !== undefined || formatSetKey !== undefined || inlineFormat !== undefined) {
+        const persistenceUnit = fieldArgs.get("pu");
+        if (unitSystem !== undefined || formatSetKey !== undefined || inlineFormat !== undefined || persistenceUnit !== undefined) {
           formatOptions.quantity = { ...(formatOptions.quantity ?? {}) };
           if (unitSystem !== undefined) formatOptions.quantity.unitSystem = unitSystem as FieldUnitSystem;
           if (formatSetKey !== undefined) formatOptions.quantity.formatSetKey = formatSetKey;
           if (inlineFormat !== undefined) formatOptions.quantity.format = JSON.parse(inlineFormat);
+          if (persistenceUnit !== undefined) formatOptions.quantity.persistenceUnit = persistenceUnit;
         }
 
         editor.appendField({
