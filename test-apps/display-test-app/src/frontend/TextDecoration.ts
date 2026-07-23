@@ -193,9 +193,11 @@ class TextEditor implements Decorator {
   }
 
   public appendTab(spaces?: number): void {
-    this.appendRunToLastChild(TabRun.create({
-      styleOverrides: { ...this.runStyle, tabInterval: spaces },
-    }));
+    this.appendRunToLastChild(
+      TabRun.create({
+        styleOverrides: { tabInterval: spaces },
+      }),
+    );
   }
 
   public appendBreak(): void {
@@ -405,8 +407,194 @@ export class TextDecorationTool extends Tool {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "See console for details"));
   }
 
+   // TODO: Remove before merging, just for convenience while testing.
+  private async testText() {
+    const tabSize = "0.025";
+
+    // Setup
+    await this.parseAndRun("init", "0x20000000398");
+    await this.parseAndRun("applystyle", "0x50000000001");
+    await this.parseAndRun("font", "Arimo");
+    await this.parseAndRun("center");
+
+    // Appends: tab, then an italic gray comment run, then resets italic + color to black.
+    const comment = async (note: string) => {
+      // xl tab sizes for the comment runs, so they line up
+      await this.parseAndRun("tab", "0.075");
+      await this.parseAndRun("italic");
+      await this.parseAndRun("color", "#888888");
+      await this.parseAndRun("text", `// ${note}`);
+      await this.parseAndRun("italic");
+      await this.parseAndRun("color", "black");
+    };
+
+    // Content
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "Origin:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+    );
+    await comment(
+      "Default coordinate field (property KoQ + active unit system)",
+    );
+
+    // Default formatting (uses the property's KoQ + active unit system).
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "Default:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+    );
+    await comment(
+      "No options — falls back to coordinate default (meters, 4 decimals)",
+    );
+
+    // Force imperial via unit system.
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "Imperial:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+      "us=imperial",
+    );
+    await comment("us=imperial — should render in feet (m -> ft conversion)");
+
+    // Force metric via unit system, with prefix/suffix.
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "Metric:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+      "us=metric",
+      "pre=L=",
+      "suf= (m)",
+    );
+    await comment("us=metric + prefix/suffix wrappers");
+
+    // Override the property's KoQ with a different KoQ full name.
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "KoQ override:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+      "koq=AecUnits.LENGTH_SHORT",
+    );
+    await comment("koq= overrides the property's own KoQ via FormatsProvider");
+
+    // Inline FormatProps override — meters, 3 decimals.
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "Inline m:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+      `fp={"type":"Decimal","precision":3,"composite":{"units":[{"name":"Units.M","label":"m"}]}}`,
+    );
+    await comment("fp= inline FormatProps — meters, 3 decimals");
+
+    // Inline FormatProps override — millimeters (verifies m -> mm conversion).
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "Inline mm:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+      `fp={"type":"Decimal","precision":3,"composite":{"units":[{"name":"Units.MM","label":"mm"}]}}`,
+    );
+    await comment("Verifies m -> mm conversion (multiply by 1000)");
+
+    // Inline FormatProps override — composite feet-inches (verifies m -> ft/in conversion).
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "Inline ft-in:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+      `fp={"type":"Fractional","precision":8,"composite":{"units":[{"name":"Units.FT","label":"'"},{"name":"Units.IN","label":"\\""}]}}`,
+    );
+    await comment("Verifies m -> composite ft/in conversion (fractional)");
+
+    // Case transform on the formatted value.
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "Upper:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+      "us=imperial",
+      "case=upper",
+    );
+    await comment("case=upper — post-format text transform");
+
+    // Coordinate field with inline format override (verifies coordinate unit conversion).
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "Origin (ft):");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+      `fp={"type":"Decimal","precision":2,"composite":{"units":[{"name":"Units.FT","label":"ft"}]}}`,
+    );
+    await comment(
+      "Coordinate field with inline fp — verifies coord unit conversion",
+    );
+
+    // Full FieldFormatOptions JSON blob (legacy path).
+    await this.parseAndRun("break");
+    await this.parseAndRun("text", "JSON blob:");
+    await this.parseAndRun("tab", tabSize);
+    await this.parseAndRun(
+      "field",
+      "e=0x20000001f27",
+      "p=CivilSpatial:ParkingRow:Origin",
+      `f={"case":"upper","quantity":{"unitSystem":"imperial"}}`,
+    );
+    await comment("f= full FieldFormatOptions JSON (legacy path)");
+
+    await this.parseAndRun("break");
+
+    await this.parseAndRun("json");
+  }
+
+  // TODO: Remove before merging, just for convenience while testing.
+  private async testTextFromJson(json: string) {
+    await this.parseAndRun("init", "0x20000000398");
+    await this.parseAndRun("applystyle", "0x50000000001");
+    await this.parseAndRun("font", "Arimo");
+    await this.parseAndRun("center");
+    await this.parseAndRun("json", json);
+  }
+
   public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
     const cmd = inArgs[0].toLowerCase();
+
+    // TODO: Remove before merging, just for convenience while testing.
+    if (cmd === "test") {
+      await this.testText();
+      return true;
+    }
+
+    // TODO: Remove before merging, just for convenience while testing.
+    if (cmd === "testjson") {
+      await this.testTextFromJson(inArgs[1]);
+      return true;
+    }
 
     if (cmd === "help") {
       TextDecorationTool.printHelp();
@@ -578,7 +766,7 @@ export class TextDecorationTool extends Tool {
         }
         editor.runStyle.subScriptScale = subScale;
         break;
-      };
+      }
       case "superscriptscale": {
         const superScale = Number.parseFloat(arg);
         if (isNaN(superScale)) {
