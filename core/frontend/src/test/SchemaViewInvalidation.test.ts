@@ -33,7 +33,8 @@ async function openMockedConnection(): Promise<BriefcaseConnection> {
  */
 function makeSchemaTokenReader(token: string) {
   // Property key must match the column name returned by PRAGMA checksum(schema_token).
-  return { next: vi.fn().mockResolvedValue({ done: false, value: { sha3_256: token } }) } as any;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  return { next: vi.fn().mockResolvedValue({ done: false, value: { "sha3_256": token } }) } as any;
 }
 
 describe("SchemaView frontend cache invalidation", () => {
