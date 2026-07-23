@@ -25,6 +25,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { EditTxn } from "./EditTxn";
+import { V2CheckpointManager } from "./CheckpointManager";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
@@ -716,6 +717,8 @@ export class IModelHost {
     this._appWorkspace = undefined;
     this._settingsSchemas = undefined;
 
+    // safe to disconnect checkpoint containers here: open iModels were already closed by IModelDb's onBeforeShutdown listener above
+    V2CheckpointManager.cleanup();
     CloudSqlite.CloudCaches.destroy();
     process.removeListener("beforeExit", IModelHost.shutdown);
   }

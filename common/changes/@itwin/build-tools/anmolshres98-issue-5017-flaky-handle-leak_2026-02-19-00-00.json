@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Reduced mocha-reporter handle-leak detection timeout from 30 to 10 seconds",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}

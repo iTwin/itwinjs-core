@@ -11,6 +11,7 @@ publish: false
     - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
   - [@itwin/core-backend](#itwincore-backend)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
+    - [Cloud container lifecycle changes](#cloud-container-lifecycle-changes)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Region Boolean enhancements](#region-boolean-enhancements)
 
@@ -103,6 +104,12 @@ while (reader.step()) { /* ... */ }
 | InMemoryCache | 10,000 | 2.213 | 1.402 | 36.6% |
 | SqliteBackedCache | 1,000 | 0.399 | 0.207 | 48.1% |
 | SqliteBackedCache | 10,000 | 3.342 | 1.981 | 40.7% |
+
+### Cloud container lifecycle changes
+
+Two cloud container leaks were fixed ([#5017](https://github.com/iTwin/itwinjs-core/issues/5017)): [IModelDb.close]($backend) now closes the iModel's ViewStore, and [IModelHost.shutdown]($backend) now disconnects all V2 checkpoint containers.
+
+Additionally, a connected [CloudSqlite.CloudContainer]($backend) now keeps the process alive until it is disconnected. Previously such a process would exit anyway, silently leaking the connection. If your application hangs at exit after this change, it is leaking a connected container (e.g. a checkpoint, workspace, or ViewStore) - call [IModelHost.shutdown]($backend) before exiting.
 
 ## @itwin/core-geometry
 
