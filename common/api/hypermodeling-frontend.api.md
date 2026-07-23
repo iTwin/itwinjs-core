@@ -122,45 +122,13 @@ export class SectionDrawingLocationState {
 }
 
 // @internal
-export interface SectionDrawingLocationStateData {
+export interface SectionDrawingLocationStateData extends SectionDrawingLocationCommonData {
     // (undocumented)
     bboxHigh?: XYZProps;
     // (undocumented)
     bboxLow?: XYZProps;
     // (undocumented)
-    categoryId: Id64String;
-    // (undocumented)
-    clipJSON?: string;
-    // (undocumented)
-    drawingToSpatialTransform: string;
-    // (undocumented)
     origin?: XYZProps;
-    // (undocumented)
-    pitch?: number;
-    // (undocumented)
-    roll?: number;
-    // (undocumented)
-    sectionLocationId: Id64String;
-    // (undocumented)
-    sectionLocationModelId: Id64String;
-    // (undocumented)
-    sectionType: SectionType;
-    // (undocumented)
-    sectionViewId: Id64String;
-    // (undocumented)
-    sheetClip?: string;
-    // (undocumented)
-    sheetToSpatialTransform?: string;
-    // (undocumented)
-    sheetViewId?: Id64String;
-    // (undocumented)
-    spatialViewId: Id64String;
-    // (undocumented)
-    userLabel: string;
-    // (undocumented)
-    viewAttachmentId?: Id64String;
-    // (undocumented)
-    yaw?: number;
 }
 
 // @public

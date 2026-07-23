@@ -17,12 +17,18 @@ const selectSectionDrawingLocationStatesECSql = `
     bis.SectionDrawingLocation.Model.Id as sectionLocationModelId,
     bis.SectionDrawingLocation.SectionView.Id as sectionViewId,
     bis.SectionDrawingLocation.Category.Id as categoryId,
-    bis.SectionDrawingLocation.Origin as origin,
+    bis.SectionDrawingLocation.Origin.x as originX,
+    bis.SectionDrawingLocation.Origin.y as originY,
+    bis.SectionDrawingLocation.Origin.z as originZ,
     bis.SectionDrawingLocation.Yaw as yaw,
     bis.SectionDrawingLocation.Pitch as pitch,
     bis.SectionDrawingLocation.Roll as roll,
-    bis.SectionDrawingLocation.BBoxLow as bboxLow,
-    bis.SectionDrawingLocation.BBoxHigh as bboxHigh,
+    bis.SectionDrawingLocation.BBoxLow.x as bboxLowX,
+    bis.SectionDrawingLocation.BBoxLow.y as bboxLowY,
+    bis.SectionDrawingLocation.BBoxLow.z as bboxLowZ,
+    bis.SectionDrawingLocation.BBoxHigh.x as bboxHighX,
+    bis.SectionDrawingLocation.BBoxHigh.y as bboxHighY,
+    bis.SectionDrawingLocation.BBoxHigh.z as bboxHighZ,
     bis.SectionDrawingLocation.UserLabel as userLabel,
 
     bis.SectionDrawing.SectionType as sectionType,
@@ -42,10 +48,8 @@ const selectSectionDrawingLocationStatesECSql = `
   INNER JOIN bis.SpatialViewDefinition on bis.SpatialViewDefinition.ECInstanceId = bis.SectionDrawing.SpatialView.Id
 `;
 
-/** Raw data representing a [[SectionDrawingLocationState]]. This is an amalgamation of data from several related ECClasses.
- * @internal
- */
-export interface SectionDrawingLocationStateData {
+/** Fields shared by [[RawSectionDrawingLocationRow]] and [[SectionDrawingLocationStateData]]. */
+interface SectionDrawingLocationCommonData {
   sectionType: SectionType;
   drawingToSpatialTransform: string; // stringified TransformProps
   spatialViewId: Id64String;
@@ -59,13 +63,36 @@ export interface SectionDrawingLocationStateData {
   sectionLocationModelId: Id64String;
   sectionViewId: Id64String;
   categoryId: Id64String;
-  origin?: XYZProps;
   yaw?: number;
   pitch?: number;
   roll?: number;
+  userLabel: string;
+}
+
+/** Scalar row shape returned by [[selectSectionDrawingLocationStatesECSql]]; reassembled into [[SectionDrawingLocationStateData]] in [[SectionDrawingLocationState.queryAll]]. */
+interface RawSectionDrawingLocationRow extends SectionDrawingLocationCommonData {
+  originX?: number;
+  originY?: number;
+  originZ?: number;
+  bboxLowX?: number;
+  bboxLowY?: number;
+  bboxLowZ?: number;
+  bboxHighX?: number;
+  bboxHighY?: number;
+  bboxHighZ?: number;
+}
+
+function xyzFromRow(x?: number, y?: number, z?: number): XYZProps | undefined {
+  return (undefined !== x && undefined !== y && undefined !== z) ? { x, y, z } : undefined;
+}
+
+/** Raw data representing a [[SectionDrawingLocationState]]. This is an amalgamation of data from several related ECClasses.
+ * @internal
+ */
+export interface SectionDrawingLocationStateData extends SectionDrawingLocationCommonData {
+  origin?: XYZProps;
   bboxLow?: XYZProps;
   bboxHigh?: XYZProps;
-  userLabel: string;
 }
 
 /** Represents a [ViewAttachment]($backend) that attaches a [[SectionDrawingLocationState]] to a [Sheet]($backend) model.
@@ -204,9 +231,16 @@ export class SectionDrawingLocationState {
   public static async queryAll(iModel: IModelConnection): Promise<SectionDrawingLocationState[]> {
     const states: SectionDrawingLocationState[] = [];
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of iModel.createQueryReader(selectSectionDrawingLocationStatesECSql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
-        states.push(new SectionDrawingLocationState(row.toRow() as SectionDrawingLocationStateData, iModel));
+      for await (const row of iModel.createQueryReader(selectSectionDrawingLocationStatesECSql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+        const raw = row.toRow() as RawSectionDrawingLocationRow;
+        const data: SectionDrawingLocationStateData = {
+          ...raw,
+          origin: xyzFromRow(raw.originX, raw.originY, raw.originZ),
+          bboxLow: xyzFromRow(raw.bboxLowX, raw.bboxLowY, raw.bboxLowZ),
+          bboxHigh: xyzFromRow(raw.bboxHighX, raw.bboxHighY, raw.bboxHighZ),
+        };
+        states.push(new SectionDrawingLocationState(data, iModel));
+      }
     } catch {
       // If the iModel contains a version of BisCore schema older than 1.12.0, the query will produce an exception due to missing SectionDrawingLocation class. That's fine.
     }
