@@ -37,7 +37,7 @@ describe("SchemaView Examples", () => {
   it("obtaining a subset schema view", async () => {
     // __PUBLISH_EXTRACT_START__ SchemaView.obtain-subset
     // Load only a subset of schemas (plus their reference closure) instead of every schema.
-    // This is a separate, accumulating view that only carries the schemas you ask for.
+    // This is an accumulating view instance that initially contains only the schemas you ask for.
     const bisOnly = await iModel.getSchemaView({ schemas: ["BisCore"] });
     assert.isDefined(bisOnly.getSchema("BisCore"));
     assert.isDefined(bisOnly.findClass("BisCore:Element"));
