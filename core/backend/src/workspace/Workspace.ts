@@ -275,6 +275,8 @@ export interface WorkspaceDb {
    * @note The filename will be a hash value, not the resource name.
    * @note Workspace resource files are set as read-only as they are copied from the file.
    * To edit them, you must first copy them to another location.
+   * @deprecated File resources are deprecated. Store and retrieve binary data using [[EditableWorkspaceDb.addBlob]] and [[getBlob]],
+   * or text using [[EditableWorkspaceDb.addString]] and [[getString]]. This method remains available for existing resources.
    */
   getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
 

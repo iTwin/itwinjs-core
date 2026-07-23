@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as fs from "fs-extra";
-import { extname } from "path";
+import { dirname, extname, resolve } from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
@@ -134,8 +134,11 @@ describe("WorkspaceFile", () => {
     expect(testManifest.workspaceName).equals(manifest.workspaceName);
     expect(testManifest.contactName).equals("new contact");
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => wsFile.addFile(fileRscName, "bad file name")).to.throw("no such file");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => wsFile.updateFile(fileRscName, inFile)).to.throw("error replacing");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => wsFile.removeFile(fileRscName)).to.throw("does not exist");
 
     wsFile.addBlob(blobRscName, blobVal);
@@ -154,24 +157,77 @@ describe("WorkspaceFile", () => {
     expect(wsFile.getString(strRscName)).to.be.undefined;
     expect(wsFile.getBlob(blobRscName)).to.be.undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     wsFile.addFile(fileRscName, inFile);
     const writeFile = sinon.spy(wsFile.sqliteDb[_nativeDb], "extractEmbeddedFile");
     expect(writeFile.callCount).eq(0);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const outFile = wsFile.getFile(fileRscName)!;
     expect(writeFile.callCount).eq(1);
     expect(extname(outFile)).equals(".json5");
     compareFiles(inFile, outFile);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let outFile2 = wsFile.getFile(fileRscName)!;
     expect(writeFile.callCount).eq(1);
     expect(outFile).eq(outFile2);
 
     const inFile2 = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     wsFile.updateFile(fileRscName, inFile2);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     outFile2 = wsFile.getFile(fileRscName)!;
     expect(writeFile.callCount).eq(2);
     expect(outFile).eq(outFile2);
     compareFiles(inFile2, outFile);
+  });
+
+  it("rejects unsafe file resource extensions", async () => {
+    const wsFile = await makeEditableDb({ containerId: "unsafe-file-ext", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "unsafe file extension test" });
+    const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
+    const fileRscName = "unsafe-extension";
+
+    try {
+      const invalidFileExts = [..."<>:\"/\\|?*", ...Array.from({ length: 0x20 }, (_, code) => `safe${String.fromCharCode(code)}unsafe`), "json ", "json."];
+      for (const fileExt of invalidFileExts)
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        expect(() => wsFile.addFile(fileRscName, inFile, fileExt), JSON.stringify(fileExt)).to.throw("file extension contains characters that are invalid in file names");
+
+      expect(wsFile.sqliteDb[_nativeDb].queryEmbeddedFile(fileRscName)).to.be.undefined;
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      wsFile.addFile(fileRscName, inFile, ".archive.tar.gz");
+      expect(wsFile.sqliteDb[_nativeDb].queryEmbeddedFile(fileRscName)?.fileExt).equals("archive.tar.gz");
+    } finally {
+      wsFile.close();
+    }
+  });
+
+  it("ignores unsafe stored extensions in generated file paths", async () => {
+    const wsFile = await makeEditableDb({ containerId: "unsafe-stored-file-ext", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "unsafe stored file extension test" });
+    const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
+    const escapedFileName = resolve(wsFile.container.filesDir, "..", "outside");
+
+    try {
+      for (const [index, fileExt] of ["../../../outside", "json ", "json."].entries()) {
+        const fileRscName = `unsafe-stored-extension-${index}`;
+        wsFile.sqliteDb[_nativeDb].embedFile({
+          name: fileRscName,
+          localFileName: inFile,
+          date: fs.statSync(inFile).mtimeMs,
+          fileExt,
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        const extractedFileName = wsFile.getFile(fileRscName)!;
+        expect(dirname(extractedFileName), fileExt).equals(wsFile.container.filesDir);
+        expect(extname(extractedFileName), fileExt).equals("");
+        compareFiles(inFile, extractedFileName);
+      }
+    } finally {
+      fs.removeSync(escapedFileName);
+      wsFile.close();
+    }
   });
 
   it("stamps lastEditedAt and lastEditedBy when closing an editable WorkspaceDb during a write-lock session", async () => {
@@ -215,6 +271,7 @@ describe("WorkspaceFile", () => {
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
     const fontsDb = await makeEditableDb({ containerId: "fonts", dbName: "fonts", baseUri: "", storageType: "azure" }, { workspaceName, contactName: "font guy" });
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
   });

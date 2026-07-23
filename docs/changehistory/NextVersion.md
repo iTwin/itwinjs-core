@@ -10,6 +10,7 @@ publish: false
     - [Electron 43 support](#electron-43-support)
     - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
   - [@itwin/core-backend](#itwincore-backend)
+    - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Region Boolean enhancements](#region-boolean-enhancements)
@@ -75,6 +76,22 @@ Pending invocations are rejected if [IpcHost.shutdown]($backend) is called befor
 When a frontend handler throws, the error is surfaced to the backend caller following the [ITwinError]($bentley) paradigm: it is rebuilt as an `Error` preserving the message, `iTwinErrorId`, error number, logging metadata, and any custom properties, so the caller can identify it with [ITwinError.isError]($bentley) (or [BentleyError.isError]($bentley) for legacy error numbers) rather than relying on a class identity that cannot survive marshalling across the Ipc boundary. A non-`BentleyError` (e.g. a plain `Error`) is re-thrown with its message and any own-enumerable properties preserved. (The existing frontend-to-backend direction continues to rethrow a backend `BentleyError` as the pre-existing [BackendError]($common) for backwards compatibility.)
 
 ## @itwin/core-backend
+
+### WorkspaceDb file resource APIs deprecated
+
+The [WorkspaceDb.getFile]($backend), [EditableWorkspaceDb.addFile]($backend), [EditableWorkspaceDb.updateFile]($backend), and [EditableWorkspaceDb.removeFile]($backend) APIs are deprecated. Store binary resources with [EditableWorkspaceDb.addBlob]($backend), or text resources with [EditableWorkspaceDb.addString]($backend), so applications can read their contents directly from the [WorkspaceDb]($backend).
+
+```ts
+// Before
+editableDb.addFile("equipment-data", localFileName);
+const extractedFileName = workspaceDb.getFile("equipment-data");
+
+// After
+editableDb.addBlob("equipment-data", fs.readFileSync(localFileName));
+const contents = workspaceDb.getBlob("equipment-data");
+```
+
+The deprecated methods remain functional so existing file resources can be read, replaced, migrated, or removed. If still using `addFile()`, new file extensions now reject characters that are invalid in cross-platform filenames, and existing resources with unsafe extension metadata use an extensionless generated cache filename.
 
 ### ChangesetReader.setBatchSize
 
