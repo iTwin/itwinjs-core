@@ -82,7 +82,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
    * @param _acsName unused, this method creates an empty code as it lacks sufficient information to do otherwise.
    * @param iModel the iModel for which the ACS applies
    * @note Inserting a new named ACS element requires creating a CodeProps for the type of view and the view's definition model.
-   * This method doesn't have the information to do this so it creates and empty code.
+   * This method doesn't have the information to do this so it creates an empty code.
    * @example
    * ```typescript
    * const codeSpecName = vp.view.isSpatialView() ? BisCodeSpec.auxCoordSystemSpatial : (vp.view.is3d() ? BisCodeSpec.auxCoordSystem3d : BisCodeSpec.auxCoordSystem2d);
