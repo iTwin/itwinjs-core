@@ -112,6 +112,10 @@ export interface QuantityFieldFormatOptions {
    * Ignored when [[format]] is supplied. Defaults to "metric".
    */
   unitSystem?: FieldUnitSystem;
+  /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) to use as the source unit when constructing a [FormatterSpec]($core-quantity).
+   * If not supplied, the source unit is derived from the property's [KindOfQuantity]($ecschema-metadata).
+   */
+  persistenceUnit?: string;
   /** Full name of a [KindOfQuantity]($ecschema-metadata) (e.g. `"AecUnits.LENGTH"`) to look up via
    * the active [FormatsProvider]($core-quantity), overriding the property's own KindOfQuantity.
    * Ignored when [[format]] is supplied.
