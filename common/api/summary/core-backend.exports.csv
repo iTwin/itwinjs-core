@@ -521,6 +521,7 @@ preview;class;RepositoryLink
 public;class;RepositoryModel
 preview;class;RepositoryModel
 public;interface;RequestNewBriefcaseArg
+beta;interface;ReserveDefinitionElementsArgs
 public;type;RevertChangesArgs
 public;class;RoleElement
 preview;class;RoleElement
@@ -564,6 +565,7 @@ beta;namespace;SettingsPriority
 internal;const;settingsResourceName
 beta;interface;SettingsSchemas
 internal;const;settingsWorkspaceDbName
+beta;interface;SharedDefinitionReservations
 public;class;Sheet
 preview;class;Sheet
 public;class;SheetBorderTemplate

@@ -128,6 +128,10 @@ describe("Schema synchronization", function (this: Suite) {
     IModelHost.authorizationClient = undefined;
   });
 
+  afterEach(async () => {
+    HubMock.shutdown();
+  });
+
   const synchronizeSchemas = async (iModel: IModelDb) => {
     await SchemaSync.withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
       const uri = syncAccess.getUri();
@@ -235,8 +239,6 @@ describe("Schema synchronization", function (this: Suite) {
     b1.close();
     b2.close();
     b3.close();
-
-    HubMock.shutdown();
   });
   it("import same schema from different briefcase", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
@@ -323,8 +325,6 @@ describe("Schema synchronization", function (this: Suite) {
     b1.close();
     b2.close();
     b3.close();
-
-    HubMock.shutdown();
   });
   it("override schema sync container", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
@@ -501,7 +501,6 @@ describe("Schema synchronization", function (this: Suite) {
       withEditTxn(b, () => { });
       b.close();
     });
-    HubMock.shutdown();
   });
 
   it("test schema sync with profile and domain schema upgrade (from 4.0.0.1)", async () => {
@@ -852,7 +851,6 @@ describe("Schema synchronization", function (this: Suite) {
       withEditTxn(b, () => { });
       b.close();
     });
-    HubMock.shutdown();
   });
   it("test schema sync with profile and domain schema upgrade (from 4.0.0.3)", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
@@ -1195,7 +1193,6 @@ describe("Schema synchronization", function (this: Suite) {
       withEditTxn(b, () => { });
       b.close();
     });
-    HubMock.shutdown();
   });
   it("import schema acquire schema lock when need to transform data", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
@@ -1379,7 +1376,6 @@ describe("Schema synchronization", function (this: Suite) {
       withEditTxn(b, () => { });
       b.close();
     });
-    HubMock.shutdown();
   });
 
   it("revert timeline changes", async () => {
@@ -1418,6 +1414,9 @@ describe("Schema synchronization", function (this: Suite) {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     const [, drawingModelId] = withEditTxn(b1, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+    await b1.reservations.reserveDefinitionElements({
+      elements: [{ classFullName: DrawingCategory.classFullName, code: DrawingCategory.createCode(b1, IModel.dictionaryId, "MyDrawingCategory") }],
+    });
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
       drawingCategoryId = withEditTxn(b1, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
@@ -1600,6 +1599,5 @@ describe("Schema synchronization", function (this: Suite) {
     b1.close();
     b2.close();
     b3.close();
-    HubMock.shutdown();
   });
 });

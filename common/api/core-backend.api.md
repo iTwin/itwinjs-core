@@ -2033,6 +2033,8 @@ export abstract class DefinitionElement extends InformationContentElement {
     static deserialize(props: DeserializeEntityArgs): DefinitionElementProps;
     isPrivate: boolean;
     // @beta
+    protected static onInsert(arg: OnElementPropsArg): void;
+    // @beta
     static serialize(props: DefinitionElementProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): DefinitionElementProps;
@@ -4112,6 +4114,8 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
+    // @internal (undocumented)
+    initializeSharedDefinitionReservations(): Promise<void>;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
     // @beta
@@ -4176,6 +4180,10 @@ export abstract class IModelDb extends IModel {
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
     requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
+    // @beta
+    get reservations(): SharedDefinitionReservations;
+    // @internal (undocumented)
+    protected _reservations?: SharedDefinitionReservations;
     // @internal (undocumented)
     restartDefaultTxn(): void;
     // @internal (undocumented)
@@ -5578,6 +5586,7 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
 
 // @beta
 export interface OnElementPropsArg extends OnElementArg {
+    options: InsertElementOptions;
     props: ElementProps;
 }
 
@@ -6171,6 +6180,15 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
     onProgress?: ProgressFunction;
 }
 
+// @beta
+export interface ReserveDefinitionElementsArgs {
+    elements: Iterable<{
+        federationGuid?: GuidString;
+        classFullName: string;
+        code: CodeProps;
+    }>;
+}
+
 // @public
 export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
     onProgress?: ProgressFunction;
@@ -6301,14 +6319,52 @@ export class Schemas {
 
 // @internal (undocumented)
 export namespace SchemaSync {
-    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb, ReadMethods, WriteMethods> {
         constructor(props: CloudSqlite.ContainerAccessProps);
         // (undocumented)
         getUri(): string;
         static initializeDb(props: CloudSqlite.ContainerProps): Promise<void>;
     }
+    export interface ProposedDefinition {
+        // (undocumented)
+        readonly code: Code;
+        // (undocumented)
+        readonly ecClassId: Id64String;
+        readonly federationGuid?: GuidString;
+        // (undocumented)
+        readonly isCategory?: boolean;
+    }
+    // (undocumented)
+    export interface ProposedDefinitionWithFedGuid extends ProposedDefinition {
+        // (undocumented)
+        readonly federationGuid: GuidString;
+    }
+    // (undocumented)
+    export interface ReadMethods {
+        findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined;
+    }
+    export interface ReservedDefinition extends ProposedDefinitionWithFedGuid {
+        // (undocumented)
+        readonly elementId: Id64String;
+    }
+    export class SchemaSyncDb extends VersionedSqliteDb implements ReadMethods, WriteMethods {
+        // (undocumented)
+        protected createDDL(): void;
+        // (undocumented)
+        findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined;
+        // (undocumented)
+        readonly myVersion = "4.1.0";
+        // (undocumented)
+        openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
+        // (undocumented)
+        reserveDefinitionElements(elements: ProposedDefinition[]): Promise<void>;
+    }
     const // (undocumented)
     setTestCache: (iModel: IModelDb, cacheName?: string) => void;
+    const // (undocumented)
+    getCloudAccess: (arg: IModelDb | {
+        readonly fileName: LocalFileName;
+    }) => Promise<CloudAccess>;
     const // (undocumented)
     withLockedAccess: (iModel: IModelDb | {
         readonly fileName: LocalFileName;
@@ -6330,12 +6386,11 @@ export namespace SchemaSync {
         containerProps: CloudSqlite.ContainerProps;
         overrideContainer?: boolean;
     }) => Promise<void>;
-    export class SchemaSyncDb extends VersionedSqliteDb {
-        // (undocumented)
-        protected createDDL(): void;
-        // (undocumented)
-        readonly myVersion = "4.0.0";
+    // (undocumented)
+    export interface WriteMethods {
+        reserveDefinitionElements(identities: ProposedDefinition[]): Promise<void>;
     }
+    export {};
 }
 
 // @public
@@ -6542,6 +6597,21 @@ export interface SettingsSchemas {
 
 // @internal
 export const settingsWorkspaceDbName: WorkspaceDbName;
+
+// @beta
+export interface SharedDefinitionReservations {
+    // @internal
+    [_close]: () => void;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    [_onDefinitionElementInsert]: (id: OnElementPropsArg) => void;
+    // @internal
+    readonly isServerBased: boolean;
+    needsDefinitionReservation(federationGuid: GuidString): boolean;
+    needsDefinitionReservation(code: CodeProps): boolean;
+    reserveDefinitionElements(args: ReserveDefinitionElementsArgs): Promise<void>;
+}
 
 // @public @preview
 export class Sheet extends Document_2 {
