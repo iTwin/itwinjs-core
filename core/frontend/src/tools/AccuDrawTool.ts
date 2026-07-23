@@ -35,6 +35,9 @@ function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): 
  * @beta
  */
 export class AccuDrawShortcuts {
+  // Monotonic token used to ignore stale async ACS operations.
+  private static _acsRequestGeneration = 0;
+
   /** Disable/Enable AccuDraw for the session */
   public static sessionToggle(): void {
     const accudraw = IModelApp.accuDraw;
@@ -871,55 +874,40 @@ export class AccuDrawShortcuts {
     return IModelApp.tools.run("AccuDraw.DefineACSByPoints");
   }
 
-  private static async getACSCode(vp: Viewport, acsName: string): Promise<Code | undefined> {
-    try {
-      const codeSpecName = vp.view.isSpatialView() ? BisCodeSpec.auxCoordSystemSpatial : (vp.view.is3d() ? BisCodeSpec.auxCoordSystem3d : BisCodeSpec.auxCoordSystem2d);
-      const codeSpec = await vp.iModel.codeSpecs.getByName(codeSpecName);
-      return new Code({ spec: codeSpec.id, scope: vp.view.model, value: acsName });
-    } catch {
-      return undefined;
-    }
+  private static async getACSCode(vp: Viewport, acsName: string): Promise<Code> {
+    const codeSpecName = vp.view.isSpatialView() ? BisCodeSpec.auxCoordSystemSpatial : (vp.view.is3d() ? BisCodeSpec.auxCoordSystem3d : BisCodeSpec.auxCoordSystem2d);
+    const codeSpec = await vp.iModel.codeSpecs.getByName(codeSpecName);
+    return new Code({ spec: codeSpec.id, scope: vp.view.model, value: acsName });
   }
 
-  private static async getNamedACS(vp: Viewport, acsName: string): Promise<AuxCoordSystemState | undefined> {
-    try {
-      const acsCode = await this.getACSCode(vp, acsName);
-      if (!acsCode)
-        return undefined;
+  private static async getNamedACS(vp: Viewport, acsName: string): Promise<{ validForView: boolean, acs?: AuxCoordSystemState }> {
+    const acsCode = await this.getACSCode(vp, acsName);
+    const acsProps = await vp.iModel.elements.loadProps(acsCode.toJSON());
+    if (!acsProps)
+      return { validForView: false };
 
-      const acsProps = await vp.iModel.elements.loadProps(acsCode.toJSON());
-      if (!acsProps)
-        return undefined;
+    const namedAcs = AuxCoordSystemState.fromProps(acsProps, vp.iModel);
+    const validForView = namedAcs.isValidForView(vp.view);
 
-      const namedAcs = AuxCoordSystemState.fromProps(acsProps, vp.iModel);
-      return namedAcs.isValidForView(vp.view) ? namedAcs : undefined;
-    } catch {
-      return undefined;
-    }
+    return { validForView, acs: namedAcs };
   }
 
-  private static async createNewACS(vp: Viewport, acsName: string): Promise<AuxCoordSystemState | undefined> {
+  private static async createNewACS(vp: Viewport, acsName: string): Promise<AuxCoordSystemState> {
     // Want a CodeProps to support insert so ViewState.createAuxCoordSystem(acsName) is not called.
-    try {
-      const acsCode = await this.getACSCode(vp, acsName);
-      if (!acsCode)
-        return undefined;
+    const acsCode = await this.getACSCode(vp, acsName);
 
-      // Determine the class name based on view type
-      let classFullName: string;
-      if (vp.view.isSpatialView())
-        classFullName = "BisCore:AuxCoordSystemSpatial";
-      else if (vp.view.is3d())
-        classFullName = "BisCore:AuxCoordSystem3d";
-      else
-        classFullName = "BisCore:AuxCoordSystem2d";
+    // Determine the class name based on view type
+    let classFullName: string;
+    if (vp.view.isSpatialView())
+      classFullName = "BisCore:AuxCoordSystemSpatial";
+    else if (vp.view.is3d())
+      classFullName = "BisCore:AuxCoordSystem3d";
+    else
+      classFullName = "BisCore:AuxCoordSystem2d";
 
-      const acsProps: AuxCoordSystemProps = { model: acsCode.scope, code: acsCode.toJSON(), classFullName, type: ACSType.None };
-      const acs = AuxCoordSystemState.fromProps(acsProps, vp.iModel);
-      return acs;
-    } catch {
-      return undefined;
-    }
+    const acsProps: AuxCoordSystemProps = { model: acsCode.scope, code: acsCode.toJSON(), classFullName, type: ACSType.None };
+    const acs = AuxCoordSystemState.fromProps(acsProps, vp.iModel);
+    return acs;
   }
 
   /**
@@ -937,10 +925,20 @@ export class AccuDrawShortcuts {
     if (!vp)
       return undefined;
 
+    const requestGeneration = ++this._acsRequestGeneration;
+    const isRequestCurrent = () => accudraw.isEnabled && accudraw.currentView === vp && requestGeneration === this._acsRequestGeneration;
+
     let currentACS = vp.view.auxiliaryCoordinateSystem;
 
     if (acsName && "" !== acsName) {
-      const namedAcs = await this.getNamedACS(vp, acsName);
+      const namedAcsResult = await this.getNamedACS(vp, acsName);
+      if (!isRequestCurrent())
+        return undefined;
+
+      if (!namedAcsResult.validForView)
+        return undefined;
+
+      const namedAcs = namedAcsResult.acs;
       if (!namedAcs)
         return undefined;
 
@@ -953,6 +951,9 @@ export class AccuDrawShortcuts {
       AccuDraw.updateAuxCoordinateSystem(namedAcs, vp); // Sets AccuDrawFlags.OrientACS hint to orient AccuDraw to ACS...
       currentACS = namedAcs;
     }
+
+    if (!isRequestCurrent())
+      return undefined;
 
     if (useOrigin) {
       accudraw.origin.setFrom(currentACS.getOrigin());
@@ -994,16 +995,32 @@ export class AccuDrawShortcuts {
     if (!vp)
       return undefined;
 
-    let acs;
+    const requestGeneration = ++this._acsRequestGeneration;
+    const isRequestCurrent = () => accudraw.isEnabled && accudraw.currentView === vp && requestGeneration === this._acsRequestGeneration;
+
+    let acs: AuxCoordSystemState | undefined;
     if (acsName && "" !== acsName) {
-      const namedAcs = await this.getNamedACS(vp, acsName);
-      acs = namedAcs ?? await this.createNewACS(vp, acsName);
+      const namedAcsResult = await this.getNamedACS(vp, acsName);
+      if (!isRequestCurrent())
+        return undefined;
+
+      acs = namedAcsResult.acs;
+      if (!acs) {
+        acs = await this.createNewACS(vp, acsName);
+        if (!isRequestCurrent())
+          return undefined;
+      } else if (!namedAcsResult.validForView) {
+        return undefined;
+      }
     } else {
       acs = vp.view.auxiliaryCoordinateSystem.clone();
       acs.description = "";
     }
 
-    if (undefined === acs)
+    if (!isRequestCurrent())
+      return undefined;
+
+    if (!acs)
       return undefined;
 
     acs.setOrigin(accudraw.origin);
