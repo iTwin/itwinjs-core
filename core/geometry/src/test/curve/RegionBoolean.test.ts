@@ -698,7 +698,7 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/data/curve/laurynasRegion9.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/data/curve/disconnectedRegions.imjs", expectedNumComponents: 2 },
       { jsonFilePath: "./src/test/data/curve/laurynasLoops.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/data/curve/laurynasLoops.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
+      { jsonFilePath: "./src/test/data/curve/laurynasLoops.imjs", expectedNumComponents: 1, tolerance: 0.0001 }, // has ||v0-v1|| > 3.8e-5
       { jsonFilePath: "./src/test/data/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/data/curve/laurynasLoopsSimplified.imjs", expectedNumComponents: 1, tolerance: 0.0001 },
       { jsonFilePath: "./src/test/data/curve/laurynasLoopsInRectangle.imjs", expectedNumComponents: 1 },
@@ -725,15 +725,8 @@ describe("RegionBoolean", () => {
         let merged: AnyRegion | AnyRegion[] | undefined = inputs;
         if (!testCase.skipMerge) {
           // Merge inputs to split overlapping loops into disjoint loops.
-          // * This improves the results of constructAllXYRegionLoops.
-          // * This does not discover holes; this is OK, as we're only interested in the outer loop here.
-          // * It is hard to use RegionOps.regionBooleanXY to discover holes: you have to know a priori how to separate
-          //   the loops into arrays of solids and holes (for AMinusB operation) because both input arrays undergo a
-          //   union before the main parity operation starts.
-          // * RegionOps.sortOuterAndHoleLoopsXY can produce a Union/ParityRegion from loops, after which you know which
-          //   input loops are "holes". But because it doesn't compute intersections, it doesn't discover holes that
-          //   aren't already loops in the input array, and if a hole loop intersects any other loop, you don't know its
-          //   parity-rule-defined subregions.
+          // * This can improve the result of constructAllXYRegionLoops on sloppy data.
+          // * We don't use the `simplifyUnion` option, as we're only interested in the outer loop here.
           merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union, testCase.tolerance);
           if (ck.testDefined(merged, "regionBooleanXY succeeded")) {
             x0 += xDelta;
