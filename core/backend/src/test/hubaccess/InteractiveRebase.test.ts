@@ -375,4 +375,52 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours.CodeSpec).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeSpec);
     chai.expect(conflict.ours.CodeValue).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeValue);
   });
+
+  it("can present a conflict where local and upstream both inserted a row with the same primary key", async () => {
+    const guid = Guid.createValue();
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertElement({
+        id: "0x1234",
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
+        federationGuid: guid,
+      } as SomeGraphicalElementProps, {
+        forceUseId: true,
+      });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.insertElement({
+        id: "0x1234",
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "User2",
+        somePoint: new Point2d(3.0, 4.0),
+        federationGuid: guid,
+      } as SomeGraphicalElementProps, {
+        forceUseId: true,
+      });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.kind).to.equal("Insert");
+    chai.expect(conflict.id).to.equal("0x1234");
+  });
 });

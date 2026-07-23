@@ -374,10 +374,7 @@ export class InteractiveRebase {
         return UniqueConstraintRebaseConflictImpl.handle(this._conflicts, conflict);
       } else if (conflict.cause === "Conflict") {
         // The primary key already exists, which means local and upstream both inserted this instance.
-        // Leave the existing intact, but report the new column values for conflict resolution.
-        // --> InsertRebaseConflict
-        // TODO
-        return DbConflictResolution.Skip;
+        return InsertRebaseConflictImpl.handle(this._conflicts, conflict);
       }
       assert(false, `Conflicts during an Inserted change should only have Constraint or Conflict as the conflict cause. Unexpected cause: ${conflict.cause}`);
     } else if (conflict.opcode === "Updated") {
@@ -585,6 +582,38 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
     for (const conflict of ecConflict.dataConflictProperties) {
       instanceConflict.original[conflict] = ecConflict.original[conflict];
       instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
+    }
+
+    return DbConflictResolution.Replace;
+  }
+
+  public constructor(id: Id64String, classId: Id64String) {
+    this.id = id;
+    this.classId = classId;
+  }
+}
+
+class InsertRebaseConflictImpl implements InsertRebaseConflict {
+  public readonly kind: "Insert" = "Insert";
+
+  public readonly id: Id64String;
+  public readonly classId: Id64String;
+  public readonly theirs: RebaseConflictProperties = {};
+  public readonly ours: RebaseConflictProperties = {};
+
+  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+    const ecConflict = conflict.ecConflict;
+    const instanceId = ecConflict.ours.ECInstanceId;
+
+    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Insert") as InsertRebaseConflict | undefined;
+    if (instanceConflict === undefined) {
+      instanceConflict = new InsertRebaseConflictImpl(instanceId, ecConflict.ours.ECClassId);
+      conflicts.push(instanceConflict);
+    }
+
+    for (const conflict of ecConflict.dataConflictProperties) {
+      instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
+      instanceConflict.ours[conflict] = ecConflict.ours[conflict];
     }
 
     return DbConflictResolution.Replace;
