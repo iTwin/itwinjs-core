@@ -174,7 +174,11 @@ export class ECSqlRowExecutor implements Disposable {
       return { isSuccessful: true };
     } catch (error: any) {
       // Do not assign `_stmt` to an unprepared statement so disposal never tries to cache it.
-      stmt[Symbol.dispose]();
+      try {
+        stmt[Symbol.dispose]();
+      } catch {
+        // ignore - best effort
+      }
       return { isSuccessful: false, message: error.message };
     }
   }
