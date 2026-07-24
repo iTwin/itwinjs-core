@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "Add performance improvements for SchemaView. Filtering by schema, incremental loading, and a common lifetime manager class for invalidation.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}

@@ -1,33 +1,21 @@
 # SchemaView
 
-`SchemaView` is a high-performance, read-only schema metadata cache available in both backend and frontend. It loads a curated subset of an iModel's schemas in a single call and provides synchronous access to schemas, classes, properties, enumerations, kinds of quantity, and relationship constraints.
+The shape of data in iModels is expressed using [ECSchemas](../../bis/ec/ec-schema.md).
+Sometimes, these schemas can grow quite large and complex. It is possible to have a hundred schemas, thousands of classes and hundreds of thousands of properties flat, which expands to millions of properties when you include inherited properties. When that happens, performance and memory consumption suffer. 
 
-It lives in `@itwin/ecschema-metadata` and should be the first choice for accessing schema metadata at runtime - for example in presentation rules, property grids, or data-driven UI.
+`SchemaView` is the first library primarily aimed at performance and memory consumption. It uses a binary blob to fetch exactly the data it needs from the iModel in as few (async) calls as possible, including string and property deduplication. It is read-only and designed for synchronous access to schema metadata that is held in memory for the lifetime of a connection.
+
+It lives in `@itwin/ecschema-metadata` and should be the first choice for accessing schema metadata at runtime - for example in presentation layers, property grids, or data-driven UI.
 
 For the binary transport format specification, see [SchemaViewBinaryFormat.md](./SchemaViewBinaryFormat.md).
 
-`SchemaView` is a **lossy runtime** projection - it omits units, formats, and custom attribute instances. For the full, authoritative EC schema model and its interchange formats, see [ECSchema XML](../../bis/ec/ec-schema-xml.md) and [ECSchema JSON](../../bis/ec/ec-schema-json.md).
+`SchemaView` excludes some information like units, formats, and custom attribute instances. For the full, authoritative EC schema model and its interchange formats, see [ECSchema XML](../../bis/ec/ec-schema-xml.md) and [ECSchema JSON](../../bis/ec/ec-schema-json.md). For formats and units, a separate dedicated API is planned for the near future. For custom attributes, a sidecar will be provided alongside SchemaView which allows getting them on demand directly from the iModel.
 
 ## When to use SchemaView
 
-Use `SchemaView` when you need fast, synchronous, repeated lookups at runtime:
-
-- Property grids and data-driven UI
-- IS-A checks and class hierarchy navigation
-- Presentation rules and adapter layers
-- Iterating properties (including inherited) of a class
+Use `SchemaView` when you need fast, synchronous, repeated lookups at runtime without chatty calls into the iModel.
 
 Reach for the full-fidelity [SchemaContext]($ecschema-metadata) instead when you are: authoring, validating, serializing to XML/JSON, or accessing data that `SchemaView` deliberately omits (see [What is included](#what-is-included)). `SchemaContext` is the more expensive option - a full object graph with cross-references - use it when its completeness is what you actually need.
-
-|                       | SchemaView                                                              | SchemaContext                                            |
-| --------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------- |
-| **Loading**           | Single binary blob, one RPC call                                        | One async RPC per schema (84 schemas = 84 round-trips)   |
-| **Memory**            | Flat arrays, string dedup, property dedup; 90-95% less memory           | Full object graph with cross-references                  |
-| **Parse time**        | Very fast (binary decode into typed arrays)                             | Slow (JSON parse + object construction per schema)       |
-| **Access**            | Synchronous after one async hydration                                   | Async throughout                                         |
-| **Mutability**        | Read-only snapshot                                                      | Mutable; supports editing                                |
-| **Scope**             | Curated subset for runtime consumers                                    | Full EC spec                                             |
-| **Custom attributes** | Not modeled (selected concepts promoted to first-class - see below)     | All custom attribute instances available                 |
 
 ## What is included
 
@@ -35,26 +23,21 @@ Reach for the full-fidelity [SchemaContext]($ecschema-metadata) instead when you
 
 A small number of widely-used custom attributes are promoted to first-class concepts on the view objects:
 
-- **Views** - entity classes with the `QueryView` custom attribute are surfaced with `ClassType.View`, iterable via `schema.getClasses(ClassType.View)`.
+- **Views** - ECViews are surfaced as their own `ClassType.View` (see [Views](#views)).
 - **Mixin** - the mixin custom attribute is reflected in `classType` and is included in `applies-to`/`is-a` walks.
 - **Hidden** - hidden flags on schemas, classes, and properties are exposed directly (e.g. `schema.isHidden`).
 
 ## What is excluded
 
-The exclusion list is deliberate - it trades a small amount of breadth for a large reduction in transport size and load time. The omitted data is not "never needed", just needed rarely enough that pulling it on demand via `SchemaContext` or [ECDbMeta](../ECDbMeta.ecschema.md) ECSQL queries is a better trade-off than carrying it in every runtime cache.
+The exclusion list is a curated set of things we judged to be outside the sweet spot of what runtime consumers usually need. It is not primarily a size optimization - on a typical iModel the excluded data is a small fraction of the schema - it is about keeping the view focused, and keeping out data that has historically caused trouble. Custom attribute instances in particular have been a recurring source of performance problems in the heavier metadata layers: some iModels carry exceptionally large or numerous custom attributes that most apps never look at. Anything omitted is still reachable on demand via `SchemaContext` or [ECDbMeta](../ECDbMeta.ecschema.md) ECSQL queries. At a high level, `SchemaView` omits:
 
-Currently excluded:
+- **Custom attribute instances** - the values, not the classes.
+- **"Standard" schemas** - units, formats, core custom attributes, and the EC2-era legacy schemas (as defined by ECObjects' `ECSchema::IsStandardSchema`). `KindOfQuantity` still carries its persistence-unit and presentation-format strings; you resolve those names yourself (see [Resolving format and unit names](#resolving-format-and-unit-names)).
+- **ECDb-internal and pure custom-attribute schemas** - storage-mapping schemas and decoration-only schemas whose only value is the CA instances that aren't transported anyway. `ECDbMeta` is *not* excluded - it stays queryable via ECSQL.
 
-- **Custom attribute instances** on schemas, classes, properties, and relationship constraints. Promote what you need to a first-class concept if it becomes widespread (see above).
-- **All "standard" schemas** as defined by ECObjects' `ECSchema::IsStandardSchema`. This covers:
-  - The EC3 standards: `CoreCustomAttributes`, `Units`, `Formats`, `ECDbMap`, `SchemaLocalizationCustomAttributes`, `EditorCustomAttributes`. `KindOfQuantity` carries only persistence-unit and presentation-format strings; consumers resolve names against the dedicated units/formats APIs (today: `SchemaContext` or ECSQL - see [Resolving format and unit names](#resolving-format-and-unit-names)).
-  - Legacy EC2-era schemas: `Bentley_Standard_CustomAttributes`, `Bentley_Standard_Classes`, `Bentley_ECSchemaMap`, `Bentley_Common_Classes`, `Dimension_Schema`, `iip_mdb_customAttributes`, `KindOfQuantity_Schema`, `rdl_customAttributes`, `SIUnitSystemDefaults`, `Unit_Attributes`, `Units_Schema`, `USCustomaryUnitSystemDefaults`. These predate EC3.2 and are not referenced structurally by modern domain schemas.
-- **ECDb-internal schemas** beyond the standard list - `ECDbSystem`, `ECDbFileInfo`, `ECDbSchemaPolicies`. These describe storage-layer mapping and are not relevant to runtime consumers. Note that `ECDbMeta` is *not* excluded - it remains queryable via ECSQL.
-- **Pure custom-attribute schemas** beyond the standard list - `BisCustomAttributes`, `ECv3ConversionAttributes`, `SchemaUpgradeCustomAttributes`. These contain only `CustomAttribute` and `Struct` definitions used for decoration; since CA instances are not transported, the definitions add little value.
+For the exact schema names in each category, see [Full list of excluded schemas](#full-list-of-excluded-schemas). The authoritative logic lives in `IsExcludedSchema()` in [SchemaViewWriter](https://github.com/iTwin/imodel-native/blob/main/iModelCore/ECDb/ECDb/SchemaViewWriter.cpp), which delegates the standard-schema check to `ECSchema::IsStandardSchema`.
 
-The authoritative logic lives in `IsExcludedSchema()` in [SchemaViewWriter](https://github.com/iTwin/imodel-native/blob/main/iModelCore/ECDb/ECDb/SchemaViewWriter.cpp), which delegates the standard-schema check to `ECSchema::IsStandardSchema`.
-
-When you do need data from an excluded schema, [SchemaContext]($ecschema-metadata) and ECDbMeta queries remain available. Examples of resolving units and formats are in [Resolving format and unit names](#resolving-format-and-unit-names).
+The list is subject to debate - if a compelling use case emerges for any excluded schema, we will remove it. When you do need data from an excluded schema, [SchemaContext]($ecschema-metadata) and ECDbMeta queries remain available.
 
 ## Obtaining the schema view
 
@@ -65,6 +48,20 @@ The schema view is obtained from [IModelDb]($backend) (backend) or [IModelConnec
 ```
 
 The schema view is cached for the lifetime of the connection. Schema changes (via `importSchemas` or pulling changesets with schema changes) automatically invalidate the cache.
+
+### Loading only a subset of schemas
+
+By default `getSchemaView()` loads every (non-excluded) schema in the iModel. On a large iModel with many schemas, a consumer that only needs a few - for example a Models tree that starts from `BisCore` - can ask for just those schemas plus their references:
+
+```ts
+[[include:SchemaView.obtain-subset]]
+```
+
+We use a single accumulating `SchemaView`, so if multiple callers request different subsets, the union of all requested schemas is loaded. If one party loads the whole set, it will be cached for everybody despite what filters they requested. View the option like a "I care about these schemas" rather than "only return these".
+
+The trade-off is: you pay only for the schemas you load, but downward schema navigation (`derivedClasses`) will only reflect what is loaded. Reach for the full view when you need a complete picture, but try to limit the scope when possible.
+
+Additional instructions for backend/frontend developers: We strongly advise against loading the "full" SchemaView automatically on every connection. Try and keep this "on-demand" with limited scope, or else every consumer always pays the cost. That said, on backend, even the worst case scenarios should load in less than a second, asynchronously.
 
 ## Navigating schemas and classes
 
@@ -116,7 +113,7 @@ Properties can reference a kind of quantity (KoQ) or a property category. KoQs c
 
 ### Resolving format and unit names
 
-Presentation format names use schema aliases (e.g. `"f"` for `Formats`, `"u"` for `Units`). The Units and Formats schemas are excluded from `SchemaView` because they will be accessed through a separate dedicated API in the future.
+Presentation format names use schema aliases (e.g. `"f"` for `Formats`, `"u"` for `Units`). The Units and Formats schemas themselves are excluded from `SchemaView` (see [What is excluded](#what-is-excluded)), so you resolve these names yourself.
 
 > **Pre-EC3.2 iModels:** on the rare iModel still on ECDb profile `4.0.0.1` (predates the 2018 EC3.2 Units/Formats migration), `KindOfQuantity.persistenceUnit` and `presentationFormats` are returned in legacy FUS format and will not parse with the alias-qualified resolution patterns below. The fix is to upgrade the iModel's ECDb profile. See [SchemaViewBinaryFormat - ECDb Profile Compatibility](./SchemaViewBinaryFormat.md#ecdb-profile-compatibility).
 
@@ -178,7 +175,7 @@ for await (const row of iModel.createQueryReader(
 
 ## Views
 
-ECViews (entity classes with a `QueryView` custom attribute) are included in the runtime blob. They show up as classes with `ClassType.View` - use `schema.getClasses(ClassType.View)` to iterate just views, or `findClass(...)` + `isView()` to look one up by qualified name. Views expose their own properties but do not participate in class inheritance.
+ECViews (entity classes with a `QueryView` custom attribute) are included in the SchemaView as their own type distinct from entity classes. They show up as classes with `ClassType.View` - use `schema.getClasses(ClassType.View)` to iterate just views, or `findClass(...)` + `isView()` to look one up by qualified name. Views expose their own properties but do not participate in class inheritance.
 
 ```ts
 [[include:SchemaView.views]]
@@ -210,7 +207,7 @@ You can iterate every schema, class, and property in the schema view efficiently
 
 ## Sync/async contract
 
-All schema, class, and property access is **synchronous** - the data is fully loaded from the binary blob on first hydration. This is a key difference from ecschema-metadata, where loading schemas and resolving cross-references requires async calls.
+All schema, class, and property access is **synchronous**. `getSchemaView()` is the only asynchronous/IO step - it loads the binary blob once - and every read after that is synchronous. This is a key difference from ecschema-metadata, where loading schemas and resolving cross-references requires async calls and results in unpredictable loading behavior.
 
 ## View objects and allocation
 
@@ -238,6 +235,20 @@ The [ECDbMeta](../ECDbMeta.ecschema.md) schema (`meta.ECClassDef`, `meta.ECPrope
 If you need "give me all classes where property X has extended type Y" - use ECSQL. If you need "walk the property list of this class including inherited properties and check each one" - use `SchemaView`.
 
 At the time of writing, some concepts are not exposed through ECDbMeta, and some iModels may not have updated to its latest version which added CustomAttributes. Walking all flattened properties of a class is currently not something that ECDbMeta supports.
+
+</details>
+
+## Full list of excluded schemas
+
+<details>
+<summary><strong>Exact schema names excluded from SchemaView</strong></summary>
+
+- **Custom attribute instances** (all).
+- **All "standard" schemas** as defined by ECObjects' `ECSchema::IsStandardSchema`:
+  - EC3 standards: `CoreCustomAttributes`, `Units`, `Formats`, `ECDbMap`, `SchemaLocalizationCustomAttributes`, `EditorCustomAttributes`.
+  - Legacy EC2-era schemas: `Bentley_Standard_CustomAttributes`, `Bentley_Standard_Classes`, `Bentley_ECSchemaMap`, `Bentley_Common_Classes`, `Dimension_Schema`, `iip_mdb_customAttributes`, `KindOfQuantity_Schema`, `rdl_customAttributes`, `SIUnitSystemDefaults`, `Unit_Attributes`, `Units_Schema`, `USCustomaryUnitSystemDefaults`. These predate EC3.2 and are not referenced structurally by modern domain schemas.
+- **ECDb-internal schemas** beyond the standard list - `ECDbSystem`, `ECDbFileInfo`, `ECDbSchemaPolicies`. These describe storage-layer mapping and are not relevant to runtime consumers.
+- **Pure custom-attribute schemas** beyond the standard list - `BisCustomAttributes`, `ECv3ConversionAttributes`, `SchemaUpgradeCustomAttributes`. These contain only `CustomAttribute` and `Struct` definitions used for decoration; since CA instances are not transported, the definitions add little value.
 
 </details>
 

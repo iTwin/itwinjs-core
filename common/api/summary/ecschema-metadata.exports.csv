@@ -96,6 +96,7 @@ preview;class;Format
 beta;interface;FormatSet
 beta;class;FormatSetFormatsProvider
 internal;function;getFormatProps
+beta;interface;GetSchemaViewArgs
 public;interface;HasMixins
 preview;interface;HasMixins
 beta;interface;ILocalizationProvider
@@ -258,6 +259,10 @@ beta;class;SchemaLoader
 beta;class;SchemaLocalization
 beta;interface;SchemaLocalizationJson
 beta;interface;SchemaLocaterOptions
+beta;class;SchemaManifest
+beta;interface;SchemaManifestEntry
+internal;interface;SchemaManifestReferenceRow
+internal;interface;SchemaManifestSchemaRow
 public;enum;SchemaMatchType
 preview;enum;SchemaMatchType
 public;class;SchemaPartVisitorDelegate
@@ -275,9 +280,13 @@ beta;namespace;SchemaView
 internal;function;createClass
 internal;function;createProperty
 internal;function;parseFormatString
+beta;interface;SchemaViewBlob
 internal;class;SchemaViewBuilder
 internal;interface;SchemaViewData
+beta;interface;SchemaViewDataProvider
 beta;const;schemaViewFormatVersion
+beta;class;SchemaViewManager
+internal;class;SchemaViewMergeContext
 beta;enum;SchemaViewPrimitiveType
 internal;class;SchemaWalker
 public;enum;StrengthDirection

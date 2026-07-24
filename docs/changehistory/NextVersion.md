@@ -13,6 +13,10 @@ publish: false
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Region Boolean enhancements](#region-boolean-enhancements)
+      - [RegionBooleanXYOptions.simplifyUnion](#regionbooleanxyoptionssimplifyunion)
+      - [RegionBooleanXYOptions.operationGroupA/B](#regionbooleanxyoptionsoperationgroupab)
+  - [@itwin/ecschema-metadata](#itwinecschema-metadata)
+    - [SchemaView: load only a subset of schemas, cheaper cache invalidation](#schemaview-load-only-a-subset-of-schemas-cheaper-cache-invalidation)
 
 ## Quantity formatting
 
@@ -146,3 +150,25 @@ const result = RegionOps.regionBooleanXY([venn0, venn1, venn2, venn3], outer, Re
 ![Venn Output Region](./assets/venn-boolean-in-one-go.jpg "Outer loop minus Venn intersection")
 
 Note: The same result can also be obtained with `RegionBinaryOpType.BMinusA` instead of `RegionBinaryOpType.Parity`. To perform only the 4-way intersection, pass `undefined` for the second input group.
+
+## @itwin/ecschema-metadata
+
+### SchemaView: load only a subset of schemas, cheaper cache invalidation
+
+[SchemaView](../learning/metadata/SchemaView.md) got two changes to improve performance on iModels with very large schemas.
+
+`getSchemaView()` on [IModelDb]($backend) and [IModelConnection]($frontend) now takes an optional `schemas` argument to load only a subset:
+
+```ts
+// Unchanged: loads every schema in the iModel.
+const full = await iModel.getSchemaView();
+
+// New: load only BisCore and its references.
+const view = await iModel.getSchemaView({ schemas: ["BisCore"] });
+view.findClass("BisCore.Subject");        // present
+view.findClass("Generic.PhysicalObject"); // undefined - not loaded
+```
+
+The returned view accumulates: a later call with different schemas merges their reference closure into the same view, so schemas loaded by an earlier call stay available, and once the full set is loaded (via a call with no filter), every subsequent call is a synchronous no-op.
+
+Second, cache invalidation - detecting whether an iModel's schemas changed since a view was cached - switched from hashing the full contents of every schema table to hashing only each schema's name and version. On a large iModel (~30 GB, ~100 schemas), this dropped the check from over a second of CPU time to about a millisecond. The one accepted limitation: a schema whose content changes without a version bump is not detected. This can only happen with dynamic schemas, since ECDb requires a version increment for in-place re-import of any other schema.
