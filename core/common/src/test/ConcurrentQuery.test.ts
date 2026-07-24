@@ -7,7 +7,7 @@ import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { assert, describe, it } from "vitest";
 import { Base64 } from "js-base64";
 import { QueryBinder, QueryParamType } from "../ConcurrentQuery";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64String, ITwinError } from "@itwin/core-bentley";
 
 describe("QueryBinder", () => {
   it("binds values", async () => {
@@ -109,6 +109,110 @@ describe("QueryBinder", () => {
       () => queryBinder.bindBoolean(0, true),
       "expect index to be >= 1",
     );
+  });
+
+  describe("bindIdSet invalid entries", () => {
+    const invalidIds = [undefined, null, "0", "50", "", "not an id", 123, {}, ["0x1"]];
+    const cases = invalidIds.flatMap((invalidId) => [
+      { label: `${JSON.stringify(invalidId)} as the first entry`, ids: [invalidId, "0x22bd8"] },
+      { label: `${JSON.stringify(invalidId)} as the last entry`, ids: ["0x22bd8", invalidId] },
+      { label: `${JSON.stringify(invalidId)} as the only entry`, ids: [invalidId] },
+    ]);
+
+    for (const { label, ids } of cases) {
+      it(`throws an ITwinError with ${label}`, () => {
+        const queryBinder = new QueryBinder();
+        let thrown: unknown;
+        try {
+          queryBinder.bindIdSet("idSetValue", ids as unknown as Id64String[]);
+        } catch (error) {
+          thrown = error;
+        }
+        assert.isDefined(thrown, "expected bindIdSet to throw");
+        assert.isTrue(ITwinError.isError(thrown, "itwin-QueryBinder", "invalid-arguments"), 'expected an ITwinError with scope "itwin-QueryBinder" and key "invalid-arguments"');
+      });
+    }
+
+    it("throws when a single invalid Id64String (not wrapped in an array) is passed directly", () => {
+      const queryBinder = new QueryBinder();
+      assert.throws(() => queryBinder.bindIdSet("idSetValue", "not an id"));
+    });
+
+    it("does not bind a value when it throws", () => {
+      const queryBinder = new QueryBinder();
+      assert.throws(() => queryBinder.bindIdSet("idSetValue", ["0x22bd8", undefined] as unknown as Id64String[]));
+      assert.deepEqual(queryBinder.serialize(), {});
+    });
+
+    it("includes the offending value and the parameter name in the error message", () => {
+      const queryBinder = new QueryBinder();
+      try {
+        queryBinder.bindIdSet("idSetValue", ["0x22bd8", "not an id"]);
+        assert.fail("expected bindIdSet to throw");
+      } catch (error) {
+        if (!ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments"))
+          throw error;
+        assert.include(error.message, "\"not an id\"");
+        assert.include(error.message, "idSetValue");
+      }
+    });
+
+    it("distinguishes a string entry from an array entry in the error message", () => {
+      const queryBinder = new QueryBinder();
+      try {
+        queryBinder.bindIdSet("idSetValue", [["0x1"]] as unknown as Id64String[]);
+        assert.fail("expected bindIdSet to throw");
+      } catch (error) {
+        if (!ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments"))
+          throw error;
+        // JSON.stringify(["0x1"]) preserves the brackets; naive string interpolation would collapse it to "0x1", indistinguishable from a valid id.
+        assert.include(error.message, "[\"0x1\"]");
+      }
+    });
+  });
+
+  it("bindIdSet accepts an empty iterable", () => {
+    const queryBinder = new QueryBinder();
+    queryBinder.bindIdSet("idSetValue", []);
+    assert.deepEqual(queryBinder.serialize(), {
+      idSetValue: {
+        type: QueryParamType.IdSet,
+        value: "",
+      },
+    });
+  });
+
+  it("bindIdSet accepts any Iterable<Id64String>, not just arrays", () => {
+    const queryBinder = new QueryBinder();
+    queryBinder.bindIdSet("idSetValue", new Set(["0x22bd9", "0x22bd8"]));
+    assert.deepEqual(queryBinder.serialize(), {
+      idSetValue: {
+        type: QueryParamType.IdSet,
+        value: "+22BD8+1",
+      },
+    });
+  });
+
+  it("bindIdSet sorts and deduplicates ids", () => {
+    const queryBinder = new QueryBinder();
+    queryBinder.bindIdSet("idSetValue", ["0x22bd9", "0x22bd8", "0x22bd8"]);
+    assert.deepEqual(queryBinder.serialize(), {
+      idSetValue: {
+        type: QueryParamType.IdSet,
+        value: "+22BD8+1",
+      },
+    });
+  });
+
+  it("bindIdSet treats a single Id64String as a single id, not a string of characters", () => {
+    const queryBinder = new QueryBinder();
+    queryBinder.bindIdSet("idSetValue", "0x22bd8");
+    assert.deepEqual(queryBinder.serialize(), {
+      idSetValue: {
+        type: QueryParamType.IdSet,
+        value: "+22BD8",
+      },
+    });
   });
 
   it("allows bulk binding", () => {

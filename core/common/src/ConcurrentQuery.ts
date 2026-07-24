@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, ITwinError, OrderedId64Iterable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
 
@@ -478,15 +478,29 @@ export class QueryBinder {
    * @param indexOrName Specify parameter index or its name used in ECSQL statement.
    * @param val @type OrderedId64Iterable value to bind to ECSQL statement.
    * @returns @type QueryBinder to allow fluent interface.
+   * @throws an [[ITwinError]] with scope `"itwin-QueryBinder"` and key `"invalid-arguments"` if any entry is not a valid [Id64String]($bentley).
    */
   public bindIdSet(indexOrName: string | number, val: OrderedId64Iterable) {
     this.verify(indexOrName);
     const name = String(indexOrName);
-    OrderedId64Iterable.uniqueIterator(val);
+    const ids: Id64String[] = [];
+    // `string` is an Iterable<string>. In that case assume caller passed a single Id64String, matching CompressedId64Set.sortAndCompress.
+    const iterable = typeof val === "string" ? [val] : val;
+    for (const id of iterable) {
+      if (typeof id !== "string" || !Id64.isValidId64(id)) {
+        ITwinError.throwError<ITwinError>({
+          message: `QueryBinder.bindIdSet: entry ${JSON.stringify(id)} for parameter "${name}" is not a valid Id64String`,
+          iTwinErrorId: { scope: "itwin-QueryBinder", key: "invalid-arguments" },
+        });
+      }
+      ids.push(id);
+    }
+
+    OrderedId64Iterable.sortArray(ids);
     Object.defineProperty(this._args, name, {
       enumerable: true, value: {
         type: QueryParamType.IdSet,
-        value: CompressedId64Set.sortAndCompress(OrderedId64Iterable.uniqueIterator(val)),
+        value: CompressedId64Set.compressArray(ids),
       },
     });
     return this;
