@@ -38,6 +38,9 @@ export class PointCloudGeometry extends CachedGeometry implements RenderGeometry
 
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
   public override get asPointCloud(): PointCloudGeometry | undefined { return this; }
+  /** The number of points in this point cloud. */
+  public get vertexCount(): number { return this._vertexCount; }
+  public override get numDrawVertices(): number { return this._vertexCount; }
   public override get supportsThematicDisplay() { return true; }
   public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
 

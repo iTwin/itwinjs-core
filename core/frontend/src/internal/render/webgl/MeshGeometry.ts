@@ -25,6 +25,10 @@ export abstract class MeshGeometry extends LUTGeometry {
   public override get asMesh() { return this; }
   protected override _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
 
+  /** The number of indices used to draw this geometry. */
+  public get numIndices(): number { return this._numIndices; }
+  public override get numDrawVertices(): number { return this._numIndices; }
+
   // Convenience accessors...
   public get edgeWidth() { return this.mesh.edgeWidth; }
   public get edgeLineCode() { return this.mesh.edgeLineCode; }

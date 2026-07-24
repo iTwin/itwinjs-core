@@ -103,6 +103,11 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   // Draws this geometry
   public abstract draw(): void;
 
+  /** The number of vertices/indices submitted in each draw call for this geometry.
+   * Used for computing primitive statistics (triangles, lines, points).
+   */
+  public get numDrawVertices(): number { return 0; }
+
   public abstract [Symbol.dispose](): void;
 
   // Intended to be overridden by specific subclasses
@@ -270,6 +275,10 @@ export abstract class IndexedGeometry extends CachedGeometry {
     super();
     this._params = params;
   }
+
+  /** The number of indices used to draw this geometry. */
+  public get numIndices(): number { return this._params.numIndices; }
+  public override get numDrawVertices(): number { return this._params.numIndices; }
 
   public get isDisposed(): boolean { return this._params.isDisposed; }
 

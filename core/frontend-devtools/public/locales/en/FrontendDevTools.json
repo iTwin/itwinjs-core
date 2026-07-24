@@ -334,6 +334,9 @@
     "ChangeCamera": {
       "keyin": "fdt camera"
     },
+    "SetMovingDepthReduction": {
+      "keyin": "fdt set moving depth reduction"
+    },
     "ToggleDrawingGraphics": {
       "keyin": "fdt drawing graphics"
     },

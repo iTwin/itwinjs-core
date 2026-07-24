@@ -54,6 +54,10 @@ export abstract class TileTree {
   protected _lastSelected = BeTimePoint.now();
   /** @internal */
   protected _clipVolume?: RenderClipVolume;
+  /** The deepest depth of any leaf tile discovered so far in this tree. Updated as tiles are loaded.
+   * @internal
+   */
+  public deepestTileDepth = 0;
   public readonly iModel: IModelConnection;
   /** Transform from this tile tree's coordinate space to the iModel's coordinate space. */
   public readonly iModelTransform: Transform;
@@ -210,12 +214,12 @@ export abstract class TileTree {
    *
    * @internal
    */
-  public async onScheduleEditingChanged(_changes: RenderSchedule.EditingChanges[]): Promise<void> {}
+  public async onScheduleEditingChanged(_changes: RenderSchedule.EditingChanges[]): Promise<void> { }
   /**
    * Invoked when a schedule script is committed during editing.
    * Override in specific tile tree types to handle the change.
    * @internal
    */
-  public onScheduleEditingCommitted(): void {}
+  public onScheduleEditingCommitted(): void { }
 }
 
