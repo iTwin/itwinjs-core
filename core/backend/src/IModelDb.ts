@@ -68,11 +68,9 @@ import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { createNoOpReservations } from "./internal/NoReservations";
-import { createNoOpSchemaReservations } from "./internal/NoSchemaReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
-import { createSchemaSyncSchemaReservations } from "./internal/SchemaSyncSchemaReservations";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
@@ -82,7 +80,6 @@ import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 import { SharedDefinitionReservations } from "./SharedDefinitionReservations";
-import { SharedSchemaReservations } from "./SharedSchemaReservations";
 
 // spell:ignore fontid fontmap
 
