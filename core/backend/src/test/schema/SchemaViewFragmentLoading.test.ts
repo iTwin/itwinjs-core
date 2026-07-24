@@ -435,15 +435,6 @@ describe("SchemaView fragment loading", () => {
     // so it will issue the pragma with the `v<N>;` prefix. These tests prove the prefix contract
     // works end to end through ConcurrentQuery, not just in the native unit tests.
 
-    /** All schema names in the iModel. The full set is trivially dependency-closed, which the
-     * fragment pragma requires of its name list. */
-    async function queryAllSchemaNames(iModel: StandaloneDb): Promise<string[]> {
-      const names: string[] = [];
-      for await (const row of iModel.createQueryReader("SELECT Name FROM meta.ECSchemaDef"))
-        names.push(row[0] as string);
-      return names;
-    }
-
     /** Fetch one fragment blob directly via the pragma. Calls `next()` exactly once - PRAGMA
      * results must not be iterated, since ConcurrentQuery cannot paginate them. */
     async function fetchFragmentBlob(iModel: StandaloneDb, argument: string): Promise<{ data: Uint8Array, formatVersion: number }> {
