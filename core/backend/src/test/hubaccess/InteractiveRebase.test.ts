@@ -13,7 +13,7 @@ import { withEditTxn } from "../TestEditTxn";
 import { Code, GeometricElement2dProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory } from "../../core-backend";
 import { LineSegment3d, Point2d, Point3d, XYProps } from "@itwin/core-geometry";
-import { TheirDeleteOurUpdateRebaseConflict, TheirUpdateOurDeleteRebaseConflict, UniqueConstraintRebaseConflict, UpdateRebaseConflict } from "../../InteractiveRebase";
+import { InsertRebaseConflict, TheirDeleteOurUpdateRebaseConflict, TheirUpdateOurDeleteRebaseConflict, UniqueConstraintRebaseConflict, UpdateRebaseConflict } from "../../InteractiveRebase";
 import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
 chai.use(chaiAsPromised);
@@ -102,7 +102,28 @@ describe("InteractiveRebase", () => {
     HubMock.shutdown();
   });
 
-  it("can present an UPDATE conflict", async () => {
+  it("does not consider both deleting to be a conflict", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(0);
+  });
+
+  it("can present a conflict where both users update the same element", async () => {
     // Create a conflict on foo and somePoint between the two briefcases.
     // Also add a non-conflicting userLabel.
     await withEditTxn(briefcase1, async (txn) => {
@@ -137,11 +158,19 @@ describe("InteractiveRebase", () => {
     chai.expect(updateConflict.id).to.equal(id);
     chai.expect(updateConflict.kind).to.equal("Update");
 
+    // This property is not conflicting, and it is undefined in some cases, but it should
+    // still be present in all three sets of properties.
+    chai.expect(updateConflict.original).has.property("UserLabel");
+    chai.expect(updateConflict.ours).has.property("UserLabel");
+    chai.expect(updateConflict.theirs).has.property("UserLabel");
+
+    // Only the properties with actual conflicts should be found in conflictingProperties.
     chai.expect(updateConflict.conflictingProperties.length).to.equal(3);
     chai.expect(updateConflict.conflictingProperties).to.include("SomePoint");
     chai.expect(updateConflict.conflictingProperties).to.include("Foo");
     chai.expect(updateConflict.conflictingProperties).to.include("LastMod");
 
+    // All of the reported values should be correct.
     chai.expect(updateConflict.original["SomePoint"]).to.deep.equal({ X: 1.23, Y: 4.56 });
     chai.expect(updateConflict.ours["SomePoint"]).to.deep.equal({ X: 3.0, Y: 4.0 });
     chai.expect(updateConflict.theirs["SomePoint"]).to.deep.equal({ X: 1.0, Y: 2.0 });
@@ -187,29 +216,9 @@ describe("InteractiveRebase", () => {
     chai.expect(valuesOursSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
+    // acceptOurs and acceptTheirs should throw if we try to accept a property that is not in conflictingProperties.
     chai.expect(() => updateConflict.acceptOurs(interactive, ["UserLabel"])).to.throw(`Property UserLabel is not a conflicting property for instance ${id}`);
     chai.expect(() => updateConflict.acceptTheirs(interactive, ["UserLabel"])).to.throw(`Property UserLabel is not a conflicting property for instance ${id}`);
-  });
-
-  it("does not consider both deleting to be a conflict", async () => {
-    await withEditTxn(briefcase1, async (txn) => {
-      txn.deleteElement(id);
-    });
-
-    await withEditTxn(briefcase2, async (txn) => {
-      txn.deleteElement(id);
-    });
-
-    await briefcase1.pushChanges({ description: "User1" });
-
-    // Pull changes into briefcase2, which will create a conflict on the element.
-    using interactive = await briefcase2.pullChangesInteractive();
-    chai.expect(interactive).to.not.be.undefined;
-    if (!interactive) return;
-
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
-    chai.expect(interactive.conflicts.length).to.equal(0);
   });
 
   it("can present a conflict where we delete something the upstream modified", async () => {
@@ -238,6 +247,18 @@ describe("InteractiveRebase", () => {
 
     const deleteConflict = interactive.conflicts[0] as TheirUpdateOurDeleteRebaseConflict;
     chai.expect(deleteConflict.kind).to.equal("TheirUpdateOurDelete");
+
+    // The properties that were updated in their changes should be called out.
+    chai.expect(deleteConflict.updatedProperties.length).to.equal(3);
+    chai.expect(deleteConflict.updatedProperties).to.include("SomePoint");
+    chai.expect(deleteConflict.updatedProperties).to.include("Foo");
+    chai.expect(deleteConflict.updatedProperties).to.include("LastMod");
+
+    // UserLabel was not modified, and has no value, but it should still be included.
+    chai.expect(deleteConflict.original).to.have.property("UserLabel");
+    chai.expect(deleteConflict.theirs).to.have.property("UserLabel");
+
+    // The original and their values should both be correctly captured.
     chai.expect(deleteConflict.original["Foo"]).to.equal("Original");
     chai.expect(deleteConflict.original["SomePoint"]).to.deep.equal({ X: 1.23, Y: 4.56 });
     chai.expect(deleteConflict.theirs["Foo"]).to.equal("User1");
@@ -270,10 +291,71 @@ describe("InteractiveRebase", () => {
 
     const conflict = interactive.conflicts[0] as TheirDeleteOurUpdateRebaseConflict;
     chai.expect(conflict.kind).to.equal("TheirDeleteOurUpdate");
+
+    chai.expect(conflict.updatedProperties.length).to.equal(3);
+    chai.expect(conflict.updatedProperties).to.include("SomePoint");
+    chai.expect(conflict.updatedProperties).to.include("Foo");
+    chai.expect(conflict.updatedProperties).to.include("LastMod");
+
+    // The original and their values should both be correctly captured.
     chai.expect(conflict.original["Foo"]).to.equal("Original");
     chai.expect(conflict.original["SomePoint"]).to.deep.equal({ X: 1.23, Y: 4.56 });
     chai.expect(conflict.ours["Foo"]).to.equal("User2");
     chai.expect(conflict.ours["SomePoint"]).to.deep.equal({ X: 3.0, Y: 4.0 });
+  });
+
+  it("can present a conflict where local and upstream both insert a row with the same primary key", async () => {
+    const guid = Guid.createValue();
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertElement({
+        id: "0x1234",
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
+        federationGuid: guid,
+      } as SomeGraphicalElementProps, {
+        forceUseId: true,
+      });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.insertElement({
+        id: "0x1234",
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "User2",
+        somePoint: new Point2d(3.0, 4.0),
+        federationGuid: guid,
+      } as SomeGraphicalElementProps, {
+        forceUseId: true,
+      });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0] as InsertRebaseConflict;
+    chai.expect(conflict.kind).to.equal("Insert");
+
+    chai.expect(conflict.conflictingProperties.length).to.equal(3);
+    chai.expect(conflict.conflictingProperties).to.include("SomePoint");
+    chai.expect(conflict.conflictingProperties).to.include("Foo");
+    chai.expect(conflict.conflictingProperties).to.include("LastMod");
+
+    chai.expect(conflict.id).to.equal("0x1234");
   });
 
   it("can present a conflict where a locally-inserted row triggers a unique constraint violation", async () => {
@@ -319,6 +401,7 @@ describe("InteractiveRebase", () => {
 
     const conflict = interactive.conflicts[0] as UniqueConstraintRebaseConflict;
     chai.expect(conflict.kind).to.equal("UniqueConstraint");
+
     chai.expect(conflict.original).to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
     chai.expect(conflict.ours.FederationGuid).not.to.be.undefined;
@@ -382,53 +465,5 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours.CodeScope).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeScope);
     chai.expect(conflict.ours.CodeSpec).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeSpec);
     chai.expect(conflict.ours.CodeValue).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.CodeValue);
-  });
-
-  it("can present a conflict where local and upstream both inserted a row with the same primary key", async () => {
-    const guid = Guid.createValue();
-    await withEditTxn(briefcase1, async (txn) => {
-      txn.insertElement({
-        id: "0x1234",
-        classFullName: "irt:SomeGraphicalElement",
-        model: drawingModelId,
-        category: drawingCategoryId,
-        code: Code.createEmpty(),
-        foo: "User1",
-        somePoint: new Point2d(1.0, 2.0),
-        federationGuid: guid,
-      } as SomeGraphicalElementProps, {
-        forceUseId: true,
-      });
-    });
-
-    await withEditTxn(briefcase2, async (txn) => {
-      txn.insertElement({
-        id: "0x1234",
-        classFullName: "irt:SomeGraphicalElement",
-        model: drawingModelId,
-        category: drawingCategoryId,
-        code: Code.createEmpty(),
-        foo: "User2",
-        somePoint: new Point2d(3.0, 4.0),
-        federationGuid: guid,
-      } as SomeGraphicalElementProps, {
-        forceUseId: true,
-      });
-    });
-
-    await briefcase1.pushChanges({ description: "User1" });
-
-    // Pull changes into briefcase2, which will create a conflict on the element.
-    using interactive = await briefcase2.pullChangesInteractive();
-    chai.expect(interactive).to.not.be.undefined;
-    if (!interactive) return;
-
-    const moreGroups = interactive.nextGroup();
-    chai.expect(moreGroups).to.be.false;
-    chai.expect(interactive.conflicts.length).to.equal(1);
-
-    const conflict = interactive.conflicts[0];
-    chai.expect(conflict.kind).to.equal("Insert");
-    chai.expect(conflict.id).to.equal("0x1234");
   });
 });

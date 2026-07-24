@@ -67,19 +67,27 @@ export interface UpdateRebaseConflict extends RebaseConflict {
    * The original values of the instance. These were the values that were in place just before
    * we originally made our local changes.
    *
-   * This may not include every property of the instance. It only includes properties stored
-   * in underlying tables in which at least one conflict occurred for this instance.
+   * This will usually not include every property of the instance. Only the following properties
+   * are included:
+   * 1. The primary key(s) (usually ECInstanceId) and the class id (ECClassId).
+   * 2. Any properties that were modified by our local changes.
    */
   original: RebaseConflictProperties;
 
   /**
    * The new instance values after applying the incoming (their) changes. These are the new
    * values set by the upstream changes.
+   *
+   * This will usually not include every property of the instance. See {@link original} for
+   * details on which properties are included.
    */
   theirs: RebaseConflictProperties;
 
   /**
    * Our new values for the instance, as set by our local changes.
+   *
+   * This will usually not include every property of the instance. See {@link original} for
+   * details on which properties are included.
    */
   ours: RebaseConflictProperties;
 
@@ -123,14 +131,28 @@ export interface TheirUpdateOurDeleteRebaseConflict extends RebaseConflict {
 
   /**
    * The original property values that were in place just before we deleted the instance.
+   *
+   * This will usually not include every property of the instance. Only the following properties
+   * are included:
+   * 1. The primary key(s) (usually ECInstanceId) and the class id (ECClassId).
+   * 2. Any properties that were modified by the incoming (their) changes.
+   * 3. All properties that share an underlying table with the properties in (2).
    */
   original: RebaseConflictProperties;
 
   /**
-   * The values for the conflicting properties after applying the incoming changes. These are the new
+   * The new instance values after applying the incoming (their) changes. These are the new
    * values set by the upstream changes.
+   *
+   * This will usually not include every property of the instance. See {@link original} for
+   * details on which properties are included.
    */
   theirs: RebaseConflictProperties;
+
+  /**
+   * The properties that were modified by the incoming (their) changes.
+   */
+  updatedProperties: string[];
 }
 
 /**
@@ -139,8 +161,29 @@ export interface TheirUpdateOurDeleteRebaseConflict extends RebaseConflict {
  */
 export interface TheirDeleteOurUpdateRebaseConflict extends RebaseConflict {
   kind: "TheirDeleteOurUpdate";
+
+  /**
+   * The original property values that were in place just before we modified the instance.
+   *
+   * This will usually not include every property of the instance. Only the following properties
+   * are included:
+   * 1. The primary key(s) (usually ECInstanceId) and the class id (ECClassId).
+   * 2. Any properties that were modified by our local changes.
+   */
   original: RebaseConflictProperties;
+
+  /**
+   * Our new values for the instance, as set by our local changes.
+   *
+   * This will usually not include every property of the instance. See {@link original} for
+   * details on which properties are included.
+   */
   ours: RebaseConflictProperties;
+
+  /**
+   * The properties that were modified by the local (our) changes.
+   */
+  updatedProperties: string[];
 }
 
 /**
@@ -149,13 +192,22 @@ export interface TheirDeleteOurUpdateRebaseConflict extends RebaseConflict {
  */
 export interface InsertRebaseConflict extends RebaseConflict {
   kind: "Insert";
-  theirs: RebaseConflictProperties;
-  ours: RebaseConflictProperties;
-}
 
-export interface ForeignKeyConstraintRebaseConflict extends RebaseConflict {
-  kind: "ForeignKeyConstraint";
-  numberOfConflictingRows: number;
+  /**
+   * The new instance values after applying the incoming (their) changes.
+   */
+  theirs: RebaseConflictProperties;
+
+  /**
+   * The new instance values from the local (our) changes.
+   */
+  ours: RebaseConflictProperties;
+
+  /**
+   * The properties that are different (in conflict) between the incoming (their) changes and the local (our) changes.
+   * This may be empty if identical instances were inserted by both the incoming and local changes.
+   */
+  conflictingProperties: string[];
 }
 
 export interface UniqueConstraintViolation {
@@ -188,6 +240,11 @@ export interface UniqueConstraintRebaseConflict extends RebaseConflict {
    * The UNIQUE constraints that are violated after our change.
    */
   uniqueConstraintViolations: UniqueConstraintViolation[];
+}
+
+export interface ForeignKeyConstraintRebaseConflict extends RebaseConflict {
+  kind: "ForeignKeyConstraint";
+  numberOfConflictingRows: number;
 }
 
 export interface TxnRebaseGroup {
@@ -536,6 +593,38 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   }
 }
 
+class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteRebaseConflict {
+  public readonly kind: "TheirUpdateOurDelete" = "TheirUpdateOurDelete";
+
+  public readonly id: Id64String;
+  public readonly classId: Id64String;
+  public readonly original: RebaseConflictProperties = {};
+  public readonly theirs: RebaseConflictProperties = {};
+  public readonly updatedProperties: string[] = [];
+
+  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+    const ecConflict = conflict.ecConflict;
+    const instanceId = ecConflict.original.ECInstanceId;
+
+    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
+    if (instanceConflict === undefined) {
+      instanceConflict = new TheirUpdateOurDeleteRebaseConflictImpl(instanceId, ecConflict.original.ECClassId);
+      conflicts.push(instanceConflict);
+    }
+
+    instanceConflict.updatedProperties.push(...ecConflict.dataConflictProperties);
+    Object.assign(instanceConflict.original, ecConflict.original);
+    Object.assign(instanceConflict.theirs, ecConflict.theirs);
+
+    return DbConflictResolution.Replace;
+  }
+
+  public constructor(id: Id64String, classId: Id64String) {
+    this.id = id;
+    this.classId = classId;
+  }
+}
+
 class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateRebaseConflict {
   public readonly kind: "TheirDeleteOurUpdate" = "TheirDeleteOurUpdate";
 
@@ -543,6 +632,7 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
   public readonly classId: Id64String;
   public readonly original: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
+  public readonly updatedProperties: string[] = [];
 
   public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
@@ -554,12 +644,43 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
       conflicts.push(instanceConflict);
     }
 
-    for (const conflict of ecConflict.dataConflictProperties) {
-      instanceConflict.original[conflict] = ecConflict.original[conflict];
-      instanceConflict.ours[conflict] = ecConflict.ours[conflict];
-    }
+    instanceConflict.updatedProperties.push(...ecConflict.dataConflictProperties);
+    Object.assign(instanceConflict.original, ecConflict.original);
+    Object.assign(instanceConflict.ours, ecConflict.ours);
 
     return DbConflictResolution.Skip;
+  }
+
+  public constructor(id: Id64String, classId: Id64String) {
+    this.id = id;
+    this.classId = classId;
+  }
+}
+
+class InsertRebaseConflictImpl implements InsertRebaseConflict {
+  public readonly kind: "Insert" = "Insert";
+
+  public readonly id: Id64String;
+  public readonly classId: Id64String;
+  public readonly theirs: RebaseConflictProperties = {};
+  public readonly ours: RebaseConflictProperties = {};
+  public readonly conflictingProperties: string[] = [];
+
+  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+    const ecConflict = conflict.ecConflict;
+    const instanceId = ecConflict.ours.ECInstanceId;
+
+    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Insert") as InsertRebaseConflict | undefined;
+    if (instanceConflict === undefined) {
+      instanceConflict = new InsertRebaseConflictImpl(instanceId, ecConflict.ours.ECClassId);
+      conflicts.push(instanceConflict);
+    }
+
+    instanceConflict.conflictingProperties.push(...ecConflict.dataConflictProperties);
+    Object.assign(instanceConflict.theirs, ecConflict.theirs);
+    Object.assign(instanceConflict.ours, ecConflict.ours);
+
+    return DbConflictResolution.Replace;
   }
 
   public constructor(id: Id64String, classId: Id64String) {
@@ -606,76 +727,6 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
     instanceConflict.uniqueConstraintViolations = ecConflict.uniqueConstraintViolations;
 
     return DbConflictResolution.Skip;
-  }
-
-  public constructor(id: Id64String, classId: Id64String) {
-    this.id = id;
-    this.classId = classId;
-  }
-}
-
-class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteRebaseConflict {
-  public readonly kind: "TheirUpdateOurDelete" = "TheirUpdateOurDelete";
-
-  public readonly id: Id64String;
-  public readonly classId: Id64String;
-  public readonly original: RebaseConflictProperties = {};
-  public readonly theirs: RebaseConflictProperties = {};
-
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
-    const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.original.ECInstanceId;
-
-    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = {
-        kind: "TheirUpdateOurDelete",
-        id: instanceId,
-        classId: ecConflict.original.ECClassId,
-        original: {},
-        theirs: {}
-      };
-      conflicts.push(instanceConflict);
-    }
-
-    for (const conflict of ecConflict.dataConflictProperties) {
-      instanceConflict.original[conflict] = ecConflict.original[conflict];
-      instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
-    }
-
-    return DbConflictResolution.Replace;
-  }
-
-  public constructor(id: Id64String, classId: Id64String) {
-    this.id = id;
-    this.classId = classId;
-  }
-}
-
-class InsertRebaseConflictImpl implements InsertRebaseConflict {
-  public readonly kind: "Insert" = "Insert";
-
-  public readonly id: Id64String;
-  public readonly classId: Id64String;
-  public readonly theirs: RebaseConflictProperties = {};
-  public readonly ours: RebaseConflictProperties = {};
-
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
-    const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.ours.ECInstanceId;
-
-    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Insert") as InsertRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new InsertRebaseConflictImpl(instanceId, ecConflict.ours.ECClassId);
-      conflicts.push(instanceConflict);
-    }
-
-    for (const conflict of ecConflict.dataConflictProperties) {
-      instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
-      instanceConflict.ours[conflict] = ecConflict.ours[conflict];
-    }
-
-    return DbConflictResolution.Replace;
   }
 
   public constructor(id: Id64String, classId: Id64String) {
