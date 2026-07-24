@@ -144,7 +144,7 @@ describe("QueryBinder", () => {
       assert.deepEqual(queryBinder.serialize(), {});
     });
 
-    it("includes the offending value in the error message", () => {
+    it("includes the offending value and the parameter name in the error message", () => {
       const queryBinder = new QueryBinder();
       try {
         queryBinder.bindIdSet("idSetValue", ["0x22bd8", "not an id"]);
@@ -152,7 +152,21 @@ describe("QueryBinder", () => {
       } catch (error) {
         if (!ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments"))
           throw error;
-        assert.include(error.message, "not an id");
+        assert.include(error.message, "\"not an id\"");
+        assert.include(error.message, "idSetValue");
+      }
+    });
+
+    it("distinguishes a string entry from an array entry in the error message", () => {
+      const queryBinder = new QueryBinder();
+      try {
+        queryBinder.bindIdSet("idSetValue", [["0x1"]] as unknown as Id64String[]);
+        assert.fail("expected bindIdSet to throw");
+      } catch (error) {
+        if (!ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments"))
+          throw error;
+        // JSON.stringify(["0x1"]) preserves the brackets; naive string interpolation would collapse it to "0x1", indistinguishable from a valid id.
+        assert.include(error.message, "[\"0x1\"]");
       }
     });
   });

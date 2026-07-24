@@ -1740,7 +1740,6 @@ export enum CommonLoggerCategory {
     Annotations = "core-common.Annotations",
     ElementProps = "core-common.ElementProps",
     Geometry = "core-common.Geometry",
-    QueryBinder = "core-common.QueryBinder",
     RpcInterfaceBackend = "core-backend.RpcInterface",
     RpcInterfaceFrontend = "core-frontend.RpcInterface"
 }

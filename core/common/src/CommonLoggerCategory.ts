@@ -18,8 +18,6 @@ export enum CommonLoggerCategory {
   ElementProps = "core-common.ElementProps",
   /** The logger category used by common classes relating to Geometry. */
   Geometry = "core-common.Geometry",
-  /** The logger category used by [QueryBinder]($common). */
-  QueryBinder = "core-common.QueryBinder",
   /** The logger category used by the portions of the RpcInterface framework that run on the backend. */
   RpcInterfaceBackend = "core-backend.RpcInterface",
   /** The logger category used by the portions of the RpcInterface framework that run on the frontend. */

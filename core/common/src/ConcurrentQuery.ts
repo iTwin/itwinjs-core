@@ -489,7 +489,7 @@ export class QueryBinder {
     for (const id of iterable) {
       if (typeof id !== "string" || !Id64.isValidId64(id)) {
         ITwinError.throwError<ITwinError>({
-          message: `QueryBinder.bindIdSet: "${id}" is not a valid Id64String`,
+          message: `QueryBinder.bindIdSet: entry ${JSON.stringify(id)} for parameter "${name}" is not a valid Id64String`,
           iTwinErrorId: { scope: "itwin-QueryBinder", key: "invalid-arguments" },
         });
       }
