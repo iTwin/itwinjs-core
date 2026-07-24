@@ -269,7 +269,7 @@ export interface SchemaImportOptions<T = any> {
    * Optional application-specific data to be used by the channel upgrade or the schema import callbacks.
    * @beta
    */
-  data?: T
+  data?: T;
 }
 
 /** @internal */
@@ -1496,18 +1496,7 @@ export abstract class IModelDb extends IModel {
         try {
           nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonSchemaChanges();
-            if (this[_nativeDb].getITwinId() !== Guid.empty)
-              await this.acquireSchemaLock();
-            try {
-              nativeImportOp(schemas, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-            } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
-            }
-          } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
-          }
+          throw new IModelError(outerErr.errorNumber, outerErr.message);
         }
       });
     } else {
@@ -4086,7 +4075,7 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    // If this pull enabled or disabled SchemaSync for this briefcase, its SharedDefinitionReservations must now be re-initialized
+    // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
     if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
       await this.initializeSharedDefinitionReservations();
 
@@ -4292,7 +4281,7 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    // If this pull enabled or disabled SchemaSync for this briefcase, its SharedDefinitionReservations must now be re-initialized
+    // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
     if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
       await this.initializeSharedDefinitionReservations();
 
