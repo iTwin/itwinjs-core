@@ -145,7 +145,7 @@ export class ECSqlRowExecutor implements Disposable {
    */
   public fetchMetadata(options: IModelJsNative.ECSqlRowAdaptorOptions): QueryPropertyMetaData[] {
     if (!this._stmt?.isPrepared)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Statement is not prepared.");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Statement is not prepared. Likely cause: the db was closed before step is called or the ECSqlSyncReader is used outside the context of the callback passed to withQueryReader.");
     return this._stmt.getMetadata(options).properties;
   }
 
