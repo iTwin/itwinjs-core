@@ -885,8 +885,7 @@ export class AccuDrawShortcuts {
     static defineACSByElement(): Promise<boolean>;
     // (undocumented)
     static defineACSByPoints(): Promise<boolean>;
-    // (undocumented)
-    static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
+    static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): Promise<AuxCoordSystemState | undefined>;
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): Promise<void>;
     // (undocumented)
@@ -940,8 +939,7 @@ export class AccuDrawShortcuts {
     static suspendToggle(): void;
     // (undocumented)
     static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean;
-    // (undocumented)
-    static writeACS(_acsName: string): BentleyStatus;
+    static writeACS(acsName: string | undefined): Promise<AuxCoordSystemState | undefined>;
 }
 
 // @beta
@@ -1417,7 +1415,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     constructor(props: AuxCoordSystemProps, iModel: IModelConnection);
     // (undocumented)
     static get className(): string;
-    static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState;
+    static createNew(_acsName: string, iModel: IModelConnection): AuxCoordSystemState;
     // (undocumented)
     description?: string;
     // (undocumented)
