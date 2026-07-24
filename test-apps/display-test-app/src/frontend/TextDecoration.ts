@@ -409,7 +409,12 @@ export class TextDecorationTool extends Tool {
 
    // TODO: Remove before merging, just for convenience while testing.
   private async testText() {
-    const tabSize = "0.025";
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp) {
+      return;
+    }
+
+    const tabSize = 0.025;
 
     // Setup
     await this.parseAndRun("init", "0x20000000398");
@@ -417,170 +422,165 @@ export class TextDecorationTool extends Tool {
     await this.parseAndRun("font", "Arimo");
     await this.parseAndRun("center");
 
+    const label = (labelString: string) => {
+      editor.appendBreak();
+      editor.appendText(`${labelString}:`);
+      editor.appendTab(tabSize);
+    };
+
+    const field = (formatOptions?: FieldFormatOptions) => {
+      editor.appendField({
+        elementId: "0x20000001f27",
+        schemaName: "CivilSpatial",
+        className: "ParkingRow",
+        propertyName: "Origin",
+        formatOptions,
+      });
+    };
+
     // Appends: tab, then an italic gray comment run, then resets italic + color to black.
-    const comment = async (note: string) => {
+    const commentColor = ColorDef.fromString("#888888").toJSON();
+    const defaultColor = ColorDef.fromString("black").toJSON();
+    const comment = (note: string) => {
       // xl tab sizes for the comment runs, so they line up
-      await this.parseAndRun("tab", "0.075");
-      await this.parseAndRun("italic");
-      await this.parseAndRun("color", "#888888");
-      await this.parseAndRun("text", `// ${note}`);
-      await this.parseAndRun("italic");
-      await this.parseAndRun("color", "black");
+      editor.appendTab(tabSize);
+      editor.appendTab(tabSize);
+      editor.runStyle.isItalic = !editor.runStyle.isItalic;
+      editor.runStyle.color = commentColor;
+      editor.appendText(note);
+      editor.runStyle.isItalic = !editor.runStyle.isItalic;
+      editor.runStyle.color = defaultColor;
     };
 
     // Content
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "Origin:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "pu=Units.M",
-    );
-    await comment(
+    label("Origin (m)");
+    field({ quantity: { persistenceUnit: "Units.M" } });
+    comment("Expected: (30813.264 m, 58981.8092 m, 0.05 m)");
+    comment(
       "Default coordinate field (property KoQ + active unit system)",
     );
 
     // Default formatting (uses the property's KoQ + active unit system).
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "Default:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "pu=Units.M",
-    );
-    await comment(
+    label("Default");
+    field({ quantity: { persistenceUnit: "Units.M" } });
+    comment("Expected: (30813.2640 m, 58981.8092 m, 0.0500 m)");
+    comment(
       "No options — falls back to coordinate default (meters, 4 decimals)",
     );
 
     // Force imperial via unit system.
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "Imperial:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "us=imperial",
-      "pu=Units.M",
-    );
-    await comment("us=imperial — should render in feet (m -> ft conversion)");
+    label("Imperial");
+    field({ quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" } });
+    comment("Expected: (101093.3858 ft, 193509.8747 ft, 0.1640 ft)");
+    comment("us=imperial — should render in feet (m -> ft conversion)");
 
     // Force metric via unit system, with prefix/suffix.
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "Metric:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "us=metric",
-      "pre=L=",
-      "suf= (m)",
-      "pu=Units.M",
-    );
-    await comment("us=metric + prefix/suffix wrappers");
+    label("Metric");
+    field({
+      prefix: "L=",
+      suffix: " (m)",
+      quantity: { unitSystem: "metric", persistenceUnit: "Units.M" },
+    });
+    comment("Expected: (L=30813.2640 (m), L=58981.8092 (m), L=0.0500 (m))");
+    comment("us=metric + prefix/suffix wrappers");
 
     // Override the property's KoQ with a different KoQ full name.
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "KoQ override:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "koq=AecUnits.LENGTH_SHORT",
-      "pu=Units.M",
-    );
-    await comment("koq= overrides the property's own KoQ via FormatsProvider");
+    label("KoQ override");
+    field({
+      quantity: {
+        formatSetKey: "AecUnits.LENGTH_SHORT",
+        persistenceUnit: "Units.M",
+      },
+    });
+    comment("Expected: AecUnits.LENGTH_SHORT formatting (typically mm)");
+    comment("koq= overrides the property's own KoQ via FormatsProvider");
 
     // Inline FormatProps override — meters, 3 decimals.
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "Inline m:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "pu=Units.M",
-      `fp={"precision":3,"composite":{"units":[{"name":"Units.M","label":"m"}]}}`,
-    );
-    await comment("fp= inline FormatProps — meters, 3 decimals");
+    label("Inline m");
+    field({
+      quantity: {
+        persistenceUnit: "Units.M",
+        format: {
+          type: "Decimal",
+          precision: 3,
+          composite: { units: [{ name: "Units.M", label: "m" }] },
+        },
+      },
+    });
+    comment("Expected: (30813.264 m, 58981.809 m, 0.050 m)");
+    comment("fp= inline FormatProps — meters, 3 decimals");
 
     // Inline FormatProps override — millimeters (verifies m -> mm conversion).
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "Inline mm:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "pu=Units.M",
-      `fp={"precision":3,"composite":{"units":[{"name":"Units.MM","label":"mm"}]}}`,
-    );
-    await comment("Verifies m -> mm conversion (multiply by 1000)");
+    label("Inline mm");
+    field({
+      quantity: {
+        persistenceUnit: "Units.M",
+        format: {
+          type: "Decimal",
+          precision: 3,
+          composite: { units: [{ name: "Units.MM", label: "mm" }] },
+        },
+      },
+    });
+    comment("Expected: (30813264.000 mm, 58981809.200 mm, 50.000 mm)");
+    comment("Verifies m -> mm conversion (multiply by 1000)");
 
     // Inline FormatProps override — composite feet-inches (verifies m -> ft/in conversion).
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "Inline ft-in:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "pu=Units.M",
-      `fp={"type":"Fractional","precision":8,"composite":{"units":[{"name":"Units.FT","label":"'"},{"name":"Units.IN","label":"\\""}]}}`,
-    );
-    await comment("Verifies m -> composite ft/in conversion (fractional)");
+    label("Inline ft-in");
+    field({
+      quantity: {
+        persistenceUnit: "Units.M",
+        format: {
+          type: "Fractional",
+          precision: 8,
+          composite: {
+            units: [
+              { name: "Units.FT", label: "'" },
+              { name: "Units.IN", label: `"` },
+            ],
+          },
+        },
+      },
+    });
+    comment(`Expected: (101093'-4 5/8", 193509'-10 1/2", 0'-2")`);
+    comment("Verifies m -> composite ft/in conversion (fractional)");
 
     // Case transform on the formatted value.
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "Upper:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "us=imperial",
-      "case=upper",
-      "pu=Units.M",
-    );
-    await comment("case=upper — post-format text transform");
+    label("Upper");
+    field({
+      case: "upper",
+      quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" },
+    });
+    comment("Expected: (101093.3858 FT, 193509.8747 FT, 0.1640 FT)");
+    comment("case=upper — post-format text transform");
 
     // Coordinate field with inline format override (verifies coordinate unit conversion).
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "Origin (ft):");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "pu=Units.M",
-      `fp={"precision":2,"composite":{"units":[{"name":"Units.FT","label":"ft"}]}}`,
-    );
-    await comment(
+    label("Origin (ft)");
+    field({
+      quantity: {
+        persistenceUnit: "Units.M",
+        format: {
+          type: "Decimal",
+          precision: 2,
+          composite: { units: [{ name: "Units.FT", label: "ft" }] },
+        },
+      },
+    });
+    comment("Expected: (101093.39 ft, 193509.87 ft, 0.16 ft)");
+    comment(
       "Coordinate field with inline fp — verifies coord unit conversion",
     );
 
     // Full FieldFormatOptions JSON blob (legacy path).
-    await this.parseAndRun("break");
-    await this.parseAndRun("text", "JSON blob:");
-    await this.parseAndRun("tab", tabSize);
-    await this.parseAndRun(
-      "field",
-      "e=0x20000001f27",
-      "p=CivilSpatial:ParkingRow:Origin",
-      "pu=Units.M",
-      `f={"case":"upper","quantity":{"unitSystem":"imperial"}}`,
-    );
-    await comment("f= full FieldFormatOptions JSON (legacy path)");
+    label("Full JSON");
+    field({
+      case: "upper",
+      quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" },
+    });
+    comment("Expected: (101093.3858 FT, 193509.8747 FT, 0.1640 FT)");
+    comment("f= full FieldFormatOptions JSON (legacy path)");
 
-    await this.parseAndRun("break");
-
-    await this.parseAndRun("json");
+    await editor.update();
   }
 
   // TODO: Remove before merging, just for convenience while testing.
