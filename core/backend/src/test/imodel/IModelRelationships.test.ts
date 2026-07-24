@@ -49,7 +49,7 @@ function validateNavProp(imodel: IModelDb, expectedNavPropValue: any): void {
   assert.deepEqual(reader[0].navPropChildB, expectedNavPropValue, `Expected NavPropChildB to be "${expectedNavPropValue}"`);
 }
 
-describe("IModel relationships", () => {
+describe("iModel relationships", () => {
   before(async () => {
     await TestUtils.startBackend();
     IModelTestUtils.registerTestBimSchema();
