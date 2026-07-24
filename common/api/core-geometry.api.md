@@ -5589,6 +5589,7 @@ export class RegionOps {
         outsideOffsets: AnyCurve[];
         chains?: AnyChain;
     };
+    static computeMinimumArea(distanceTolerance?: number): number;
     static computeXYArea(region: AnyRegion): number | undefined;
     static computeXYAreaMoments(region: AnyRegion): MomentData | undefined;
     static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
