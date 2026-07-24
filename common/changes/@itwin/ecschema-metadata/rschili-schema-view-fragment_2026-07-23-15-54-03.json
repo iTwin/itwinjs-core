@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "add schema fragments feature and abstraction manager layer for schemaview",
+      "comment": "Add performance improvements for SchemaView. Filtering by schema, incremental loading, and a common lifetime manager class for invalidation.",
       "type": "none"
     }
   ],
