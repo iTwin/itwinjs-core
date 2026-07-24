@@ -11,6 +11,8 @@ publish: false
     - [Backend-to-frontend IPC invoke](#backend-to-frontend-ipc-invoke)
   - [@itwin/core-backend](#itwincore-backend)
     - [ChangesetReader.setBatchSize](#changesetreadersetbatchsize)
+  - [@itwin/core-common](#itwincore-common)
+    - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Region Boolean enhancements](#region-boolean-enhancements)
 
@@ -103,6 +105,12 @@ while (reader.step()) { /* ... */ }
 | InMemoryCache | 10,000 | 2.213 | 1.402 | 36.6% |
 | SqliteBackedCache | 1,000 | 0.399 | 0.207 | 48.1% |
 | SqliteBackedCache | 10,000 | 3.342 | 1.981 | 40.7% |
+
+## @itwin/core-common
+
+### QueryBinder.bindIdSet now throws on invalid ids
+
+[QueryBinder.bindIdSet]($common) previously threw an uncaught `TypeError` when given an entry that was not a valid [Id64String]($bentley) (for example `undefined` or `null`, which can occur when collecting ids from a nullable column via [ECSqlReader]($common)). It now throws a descriptive [ITwinError]($bentley) instead, identifiable via `ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments")`, so callers can catch and diagnose the invalid entry rather than encountering an opaque internal error.
 
 ## @itwin/core-geometry
 

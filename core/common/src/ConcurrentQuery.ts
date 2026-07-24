@@ -5,10 +5,9 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, ITwinError, OrderedId64Iterable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { Base64 } from "js-base64";
-import { CommonLoggerCategory } from "./CommonLoggerCategory";
 
 /**
  * Specifies the format of the rows returned by the `query` and `restartQuery` methods of
@@ -479,24 +478,23 @@ export class QueryBinder {
    * @param indexOrName Specify parameter index or its name used in ECSQL statement.
    * @param val @type OrderedId64Iterable value to bind to ECSQL statement.
    * @returns @type QueryBinder to allow fluent interface.
-   * @note Entries that are not valid [Id64String]($bentley)s are skipped with a logged warning.
+   * @throws an [[ITwinError]] with scope `"itwin-QueryBinder"` and key `"invalid-arguments"` if any entry is not a valid [Id64String]($bentley).
    */
   public bindIdSet(indexOrName: string | number, val: OrderedId64Iterable) {
     this.verify(indexOrName);
     const name = String(indexOrName);
     const ids: Id64String[] = [];
-    let skipped = 0;
     // `string` is an Iterable<string>. In that case assume caller passed a single Id64String, matching CompressedId64Set.sortAndCompress.
     const iterable = typeof val === "string" ? [val] : val;
     for (const id of iterable) {
-      if (typeof id === "string" && Id64.isValidId64(id))
-        ids.push(id);
-      else
-        skipped++;
+      if (typeof id !== "string" || !Id64.isValidId64(id)) {
+        ITwinError.throwError<ITwinError>({
+          message: `QueryBinder.bindIdSet: "${id}" is not a valid Id64String`,
+          iTwinErrorId: { scope: "itwin-QueryBinder", key: "invalid-arguments" },
+        });
+      }
+      ids.push(id);
     }
-
-    if (skipped > 0)
-      Logger.logWarning(CommonLoggerCategory.QueryBinder, `QueryBinder.bindIdSet: skipped ${skipped} entries that are not valid Id64Strings`);
 
     OrderedId64Iterable.sortArray(ids);
     Object.defineProperty(this._args, name, {

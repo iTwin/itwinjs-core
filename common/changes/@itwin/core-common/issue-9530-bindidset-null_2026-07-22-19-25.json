@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Fixed QueryBinder.bindIdSet throwing on entries that are not valid Id64Strings; such entries are now skipped with a warning, matching ECSqlStatement.bindIdSet.",
+      "comment": "QueryBinder.bindIdSet now throws a descriptive ITwinError (scope \"itwin-QueryBinder\", key \"invalid-arguments\") when an entry is not a valid Id64String, instead of an uncaught TypeError.",
       "type": "none"
     }
   ],
