@@ -13,7 +13,7 @@ import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
 import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
+import { _getStatementCache, _nativeDb } from "./internal/Symbols";
 import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
@@ -284,6 +284,15 @@ export class ECDb implements Disposable {
   public prepareWriteStatement(ecsql: string, logErrors = true): ECSqlWriteStatement {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     return new ECSqlWriteStatement(this.prepareStatement(ecsql, logErrors));
+  }
+
+  /** Provides the ECSQL statement cache to internal collaborators (e.g. [[ECSqlRowExecutor]]) so the
+   * synchronous reader path can reuse prepared statements instead of re-preparing on every call.
+   * @internal
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public [_getStatementCache](): StatementCache<ECSqlStatement> {
+    return this._statementCache;
   }
 
   /**

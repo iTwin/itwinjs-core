@@ -70,7 +70,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { _activeTxn, _cache, _close, _getStatementCache, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -882,6 +882,15 @@ export abstract class IModelDb extends IModel {
 
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return this.isOpen ? this[_nativeDb].getBriefcaseId() : BriefcaseIdValue.Illegal; }
+
+  /** Provides the ECSQL statement cache to internal collaborators (e.g. [[ECSqlRowExecutor]]) so the
+   * synchronous reader path can reuse prepared statements instead of re-preparing on every call.
+   * @internal
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public [_getStatementCache](): StatementCache<ECSqlStatement> {
+    return this._statementCache;
+  }
 
   /**
    * Use a prepared ECSQL statement, potentially from the statement cache. If the requested statement doesn't exist
