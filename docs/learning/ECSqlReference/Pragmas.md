@@ -257,7 +257,10 @@ PRAGMA schema_view_fragment('BisCore,Generic')
 PRAGMA schema_view_fragment('v1;BisCore,Generic')
 ```
 
-The caller must pass a **dependency-closed** name set - every schema referenced by a requested schema is also in the list - computed from the schema reference graph (`meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`). The pragma does not expand references itself.
+The pragma does not expand references itself - the caller controls exactly which schemas the blob contains, computed from the schema reference graph (`meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`). What set to pass depends on how the blob is consumed:
+
+- **Parsed standalone** (used on its own to build a `SchemaView`): pass a **dependency-closed** set - every schema referenced by a requested schema is also in the list. A referenced schema left out leaves its cross-references unresolved; they parse as "not present", the same as an [excluded schema](../metadata/SchemaView.md).
+- **Merged into an existing view** (incremental loading): references already merged from an earlier fragment may be omitted. Cross-references resolve against the accumulated view, so only the still-missing schemas need to be in the list. The incremental loader relies on this to avoid re-fetching schemas it already has.
 
 The result row has the same columns as [`schema_view`](#pragma-schema_view): `format`, `formatVersion`, `data`, `schemaToken`.
 

@@ -255,9 +255,10 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- PropertyDefTable ----
   expectTag(reader, Tag.PropertyDefTable);
   const defCount = reader.readU32();
-  // Each PreParsedDef is a fixed 46 bytes (10x u32 + 1x u16 + 4x u8).
-  // Use a conservative lower bound of 8 bytes to catch wildly oversized counts on malformed blobs.
-  reader.validateCount(defCount, 8, "PropertyDefTable");
+  // Each PreParsedDef is a fixed 46 bytes (10x u32 + 1x u16 + 4x u8). Use ~half that (23) as the
+  // plausibility bound: still catches wildly oversized counts on malformed blobs, but keeps a margin
+  // so a valid blob never trips the check.
+  reader.validateCount(defCount, 23, "PropertyDefTable");
   const preParsedDefs: PreParsedDef[] = new Array(defCount);
   for (let i = 0; i < defCount; i++) {
     preParsedDefs[i] = {
@@ -282,7 +283,8 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- SchemaTable ----
   expectTag(reader, Tag.SchemaTable);
   const schemaCount = reader.readU32();
-  reader.validateCount(schemaCount, 8, "SchemaTable");
+  // Fixed 27 bytes per record (4x SRef + 3x u16 + u32 + u8); ~half (13) as a safety-margin bound.
+  reader.validateCount(schemaCount, 13, "SchemaTable");
   for (let i = 0; i < schemaCount; i++) {
     const name = reader.readSRef();
     const vRead = reader.readU16();
@@ -337,7 +339,9 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- EnumTable ----
   expectTag(reader, Tag.EnumTable);
   const enumTotalCount = reader.readU32();
-  reader.validateCount(enumTotalCount, 8, "EnumTable");
+  // Fixed 27 bytes per record (5x SRef + u16 + u8 + u32); enumerators live inside a JSON SRef.
+  // ~half (13) as a safety-margin bound.
+  reader.validateCount(enumTotalCount, 13, "EnumTable");
   for (let i = 0; i < enumTotalCount; i++) {
     const schemaEcId = reader.readU32();
     const schemaIdx = trackItem(schemaEcId, builder.enumerationCount, schemaEnumStarts, schemaEnumCounts);
@@ -389,7 +393,8 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- KoQTable ----
   expectTag(reader, Tag.KoQTable);
   const koqTotalCount = reader.readU32();
-  reader.validateCount(koqTotalCount, 8, "KoQTable");
+  // Fixed 36 bytes per record (6x SRef + f64 + u32); ~half (18) as a safety-margin bound.
+  reader.validateCount(koqTotalCount, 18, "KoQTable");
   for (let i = 0; i < koqTotalCount; i++) {
     const schemaEcId = reader.readU32();
     const schemaIdx = trackItem(schemaEcId, builder.koqCount, schemaKoqStarts, schemaKoqCounts);
@@ -418,7 +423,8 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- PropCatTable ----
   expectTag(reader, Tag.PropCatTable);
   const catTotalCount = reader.readU32();
-  reader.validateCount(catTotalCount, 8, "PropCatTable");
+  // Fixed 24 bytes per record (4x SRef + i32 + u32); ~half (12) as a safety-margin bound.
+  reader.validateCount(catTotalCount, 12, "PropCatTable");
   for (let i = 0; i < catTotalCount; i++) {
     const schemaEcId = reader.readU32();
     const schemaIdx = trackItem(schemaEcId, builder.propCategoryCount, schemaCatStarts, schemaCatCounts);
@@ -443,7 +449,10 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- ClassTable ----
   expectTag(reader, Tag.ClassTable);
   const classTotalCount = reader.readU32();
-  reader.validateCount(classTotalCount, 8, "ClassTable");
+  // Minimum 27 bytes per record (3x SRef + 3x u8 + u32 + 2x u16 count prefixes); records grow with
+  // relationship strength/direction and the base-class, prop-ref, and constraint sub-lists. ~half
+  // (13) as a safety-margin bound.
+  reader.validateCount(classTotalCount, 13, "ClassTable");
   for (let i = 0; i < classTotalCount; i++) {
     const schemaEcId = reader.readU32();
     const schemaIdx = trackItem(schemaEcId, builder.classCount, schemaClassStarts, schemaClassCounts);

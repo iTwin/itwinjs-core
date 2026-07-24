@@ -157,9 +157,15 @@ export class SchemaViewManager {
       // The load failed; the next getSchemaView chains onto the rejected promise and rebuilds anyway.
       return;
     }
-    // Nothing loaded (reset continuation), or a husk that never fetched a blob and so carries no
-    // token - there is nothing worth invalidating.
-    if (existing === undefined || existing.schemaToken === "")
+    // Nothing loaded (reset continuation) - nothing to invalidate.
+    if (existing === undefined)
+      return;
+    // A husk with no token AND no cached manifest never fetched anything - nothing worth
+    // invalidating. But an empty token *with* a cached manifest means an incremental request loaded
+    // only the manifest (e.g. its requested names were all missing/excluded), leaving a manifest that
+    // can go stale on a later schema change. Fall through in that case and let the token check drop it
+    // - a real live token can never equal "" - rather than leaving the stale manifest cached forever.
+    if (existing.schemaToken === "" && this._manifest === undefined)
       return;
     try {
       const liveToken = await this._dataProvider.fetchSchemaToken();
