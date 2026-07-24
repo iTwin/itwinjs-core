@@ -24,6 +24,8 @@ export namespace InteractiveRebaseError {
   export type Key =
     /** The specified Txn indices are invalid */
     "invalid-txn-indices" |
+    /** The specified property is not a conflicting property */
+    "not-conflicting-property" |
     /** The rebase process is already complete */
     "rebase-complete" |
     /** The rebase process has already moved past the last group */
@@ -60,11 +62,55 @@ export interface RebaseConflictProperties {
  */
 export interface UpdateRebaseConflict extends RebaseConflict {
   kind: "Update";
+
+  /**
+   * The original values of the instance. These were the values that were in place just before
+   * we originally made our local changes.
+   *
+   * This may not include every property of the instance. It only includes properties stored
+   * in underlying tables in which at least one conflict occurred for this instance.
+   */
   original: RebaseConflictProperties;
+
+  /**
+   * The new instance values after applying the incoming (their) changes. These are the new
+   * values set by the upstream changes.
+   */
   theirs: RebaseConflictProperties;
+
+  /**
+   * Our new values for the instance, as set by our local changes.
+   */
   ours: RebaseConflictProperties;
 
+  /**
+   * The properties that are in conflict between the incoming (their) changes and the local (our) changes.
+   * Specifically, these are the properties where the "original" value is different from "their" value,
+   * meaning that the value has changed from when we originally modified it. A property is reported
+   * as a conflict even if both "theirs" and "ours" are the same.
+   */
+  conflictingProperties: string[];
+
+  /**
+   * Accepts the local (our) changes for some or all of the conflicting properties, and applies
+   * them to the instance in the iModel.
+   *
+   * @param rebase The in-progress interactive rebase operation.
+   * @param properties The conflicting properties for which to accept "our" value. If not specified, or if
+   * the array is empty, then the "our" value of all conflicting properties will be accepted. Properties
+   * that are not accepted are left unmodified.
+   */
   acceptOurs(rebase: InteractiveRebase, properties?: string[]): void;
+
+  /**
+   * Accepts the upstream (their) changes for some or all of the conflicting properties, and applies
+   * them to the instance in the iModel.
+   *
+   * @param rebase The in-progress interactive rebase operation.
+   * @param properties The conflicting properties for which to accept "their" value. If not specified, or if
+   * the array is empty, then the "their" value of all conflicting properties will be accepted. Properties
+   * that are not accepted are left unmodified.
+   */
   acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void;
 }
 
@@ -74,7 +120,16 @@ export interface UpdateRebaseConflict extends RebaseConflict {
  */
 export interface TheirUpdateOurDeleteRebaseConflict extends RebaseConflict {
   kind: "TheirUpdateOurDelete";
+
+  /**
+   * The original property values that were in place just before we deleted the instance.
+   */
   original: RebaseConflictProperties;
+
+  /**
+   * The values for the conflicting properties after applying the incoming changes. These are the new
+   * values set by the upstream changes.
+   */
   theirs: RebaseConflictProperties;
 }
 
@@ -423,6 +478,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   public readonly original: RebaseConflictProperties = {};
   public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
+  public readonly conflictingProperties: string[] = [];
 
   public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
@@ -434,11 +490,10 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
       conflicts.push(instanceConflict);
     }
 
-    for (const conflict of ecConflict.dataConflictProperties) {
-      instanceConflict.original[conflict] = ecConflict.original[conflict];
-      instanceConflict.theirs[conflict] = ecConflict.theirs[conflict];
-      instanceConflict.ours[conflict] = ecConflict.ours[conflict];
-    }
+    instanceConflict.conflictingProperties.push(...ecConflict.dataConflictProperties);
+    Object.assign(instanceConflict.original, ecConflict.original);
+    Object.assign(instanceConflict.theirs, ecConflict.theirs);
+    Object.assign(instanceConflict.ours, ecConflict.ours);
 
     // Always accept "our" changes at this stage. That minimizes the chances of further
     // conflicts in subsequent txns.
@@ -451,26 +506,30 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   }
 
   public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
+    if (!properties || properties.length === 0)
+      properties = this.conflictingProperties;
+
     const updateProps: RebaseConflictProperties = { id: this.id };
-    if (!properties || properties.length === 0) {
-      Object.assign(updateProps, this.ours);
-    } else {
-      for (const prop of properties) {
-        updateProps[prop] = this.ours[prop];
+    for (const prop of properties) {
+      if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
+        InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
       }
+      updateProps[prop] = this.ours[prop];
     }
 
     rebase.editTxn.updateElement(updateProps);
   }
 
   public acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void {
+    if (!properties || properties.length === 0)
+      properties = this.conflictingProperties;
+
     const updateProps: RebaseConflictProperties = { id: this.id };
-    if (!properties || properties.length === 0) {
-      Object.assign(updateProps, this.theirs);
-    } else {
-      for (const prop of properties) {
-        updateProps[prop] = this.theirs[prop];
+    for (const prop of properties) {
+      if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
+        InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
       }
+      updateProps[prop] = this.theirs[prop];
     }
 
     rebase.editTxn.updateElement(updateProps);

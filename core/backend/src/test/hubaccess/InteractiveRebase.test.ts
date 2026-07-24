@@ -137,6 +137,11 @@ describe("InteractiveRebase", () => {
     chai.expect(updateConflict.id).to.equal(id);
     chai.expect(updateConflict.kind).to.equal("Update");
 
+    chai.expect(updateConflict.conflictingProperties.length).to.equal(3);
+    chai.expect(updateConflict.conflictingProperties).to.include("SomePoint");
+    chai.expect(updateConflict.conflictingProperties).to.include("Foo");
+    chai.expect(updateConflict.conflictingProperties).to.include("LastMod");
+
     chai.expect(updateConflict.original["SomePoint"]).to.deep.equal({ X: 1.23, Y: 4.56 });
     chai.expect(updateConflict.ours["SomePoint"]).to.deep.equal({ X: 3.0, Y: 4.0 });
     chai.expect(updateConflict.theirs["SomePoint"]).to.deep.equal({ X: 1.0, Y: 2.0 });
@@ -181,6 +186,9 @@ describe("InteractiveRebase", () => {
     const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesOursSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+
+    chai.expect(() => updateConflict.acceptOurs(interactive, ["UserLabel"])).to.throw(`Property UserLabel is not a conflicting property for instance ${id}`);
+    chai.expect(() => updateConflict.acceptTheirs(interactive, ["UserLabel"])).to.throw(`Property UserLabel is not a conflicting property for instance ${id}`);
   });
 
   it("does not consider both deleting to be a conflict", async () => {
