@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "add schema filter to SchemaView",
+      "comment": "Add filtering support to SchemaView and improve performance.",
       "type": "none"
     }
   ],
