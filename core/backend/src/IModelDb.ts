@@ -1780,8 +1780,8 @@ export abstract class IModelDb extends IModel {
       fetchFullBlob: async () => this._fetchSchemaBlob("PRAGMA schema_view"),
       // The pragma takes the schema names directly (comma-separated; names are ECNames, so a comma
       // can never occur in one). Names come from the manifest's closure walk, i.e. from our own
-      // ECSchemaDef query; native re-validates each token as an ECName and fails on unknown names,
-      // which the schema-token comparison then resolves by invalidating the view.
+      // ECSchemaDef query, so in the normal case they are valid, existing schemas. Native re-validates
+      // each token as an ECName and fails the pragma on an unknown name.
       fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${schemaNames.join(",")}')`),
       fetchManifest: async () => {
         const schemaRows: SchemaManifestSchemaRow[] = [];
