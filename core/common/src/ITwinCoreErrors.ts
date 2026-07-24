@@ -344,36 +344,3 @@ export namespace DefinitionError {
     return ITwinError.isError<DefinitionError>(error, scope, key);
   }
 }
-
-/** An error originating from the shared schema import reservation APIs (see [SharedSchemaReservations]($backend)),
- * used to coordinate simultaneous schema imports across briefcases without id collisions.
- * @beta
- */
-export interface SchemaImportReservationError extends ITwinError { }
-
-/** @beta */
-export namespace SchemaImportReservationError {
-  /** The ITwinError scope for `SchemaImportReservationError`s. */
-  export const scope = "itwin-SchemaImportReservation";
-
-  /** Keys that identify `SchemaImportReservationError`s. */
-  export type Key =
-    /** The `schemaFileNames` argument is invalid (e.g. empty array or non-string elements). */
-    "invalid-argument" |
-    /** A `key→id` mapping required during schema import was absent from the sync-db reservation store; re-reserve online. */
-    "unreserved-key" |
-    /** No reservation store entry was found for the schema being imported. */
-    "reservation-not-found" |
-    /** The reservation was created against a different base schema state than the current iModel. */
-    "base-state-mismatch";
-
-  /** Instantiate and throw a SchemaImportReservationError. */
-  export function throwError(key: Key, e: Omit<SchemaImportReservationError, "name" | "iTwinErrorId">): never {
-    ITwinError.throwError<SchemaImportReservationError>({ ...e, iTwinErrorId: { scope, key } });
-  }
-
-  /** Determine whether an error object is a SchemaImportReservationError. */
-  export function isError(error: unknown, key?: Key): error is SchemaImportReservationError {
-    return ITwinError.isError<SchemaImportReservationError>(error, scope, key);
-  }
-}

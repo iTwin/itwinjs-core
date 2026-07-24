@@ -57,15 +57,14 @@ export namespace SchemaSync {
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
   export class SchemaSyncDb extends VersionedSqliteDb implements ReadMethods, WriteMethods {
     private _supportsDefinitions?: boolean;
-    public override readonly myVersion = "4.2.0";
+    public override readonly myVersion = "4.1.0";
     protected override createDDL() {
       this.ensureDefinitionElementsTable();
     }
 
     public override openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer) {
       super.openDb(dbName, openMode, container);
-      const minRequiredVersion = semver.minVersion(this.getRequiredVersions().readVersion) ?? "0.0.0";
-      this._supportsDefinitions = semver.lte(this.myVersion, minRequiredVersion);
+      this._supportsDefinitions = semver.lte(this.myVersion, semver.minVersion(this.getRequiredVersions().readVersion) ?? "0.0.0");
     }
 
     private ensureDefinitionElementsTable(): void {
@@ -334,7 +333,6 @@ export namespace SchemaSync {
     }
 
     await iModel.initializeSharedDefinitionReservations();
-    await iModel.initializeSharedSchemaReservations();
   };
 
   /** Provides access to a cloud-based `SchemaSyncDb` to hold ECSchemas.  */

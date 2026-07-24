@@ -495,9 +495,6 @@ export abstract class IModelDb extends IModel {
   protected _reservations?: SharedDefinitionReservations = createNoOpReservations();
 
   /** @internal */
-  protected _schemaReservations?: SharedSchemaReservations = createNoOpSchemaReservations();
-
-  /** @internal */
   protected _codeService?: CodeService;
 
   /**
@@ -539,23 +536,6 @@ export abstract class IModelDb extends IModel {
       this._reservations = await createSchemaSyncReservations(this);
     else
       this._reservations = createNoOpReservations();
-  }
-
-  /**
-   * The [[SharedSchemaReservations]] that manages pre-allocated `ec_*` id ranges for offline schema
-   * imports as part of [coordinating simultaneous edits]($docs/learning/backend/ConcurrencyControl.md).
-   * @beta
-   */
-  public get schemaReservations(): SharedSchemaReservations { return this._schemaReservations!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
-
-  /** @internal */
-  public async initializeSharedSchemaReservations(): Promise<void> {
-    this._schemaReservations?.[_close]();
-
-    if (SchemaSync.isEnabled(this))
-      this._schemaReservations = await createSchemaSyncSchemaReservations(this);
-    else
-      this._schemaReservations = createNoOpSchemaReservations();
   }
 
   /** Provides methods for interacting with [font-related information]($docs/learning/backend/Fonts.md) stored in this iModel.
@@ -745,8 +725,6 @@ export abstract class IModelDb extends IModel {
     this._locks = undefined;
     this.reservations[_close]();
     this._reservations = undefined;
-    this.schemaReservations[_close]();
-    this._schemaReservations = undefined;
     this._codeService?.close();
     this._codeService = undefined;
     this[_nativeDb].closeFile();
@@ -1518,28 +1496,10 @@ export abstract class IModelDb extends IModel {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveSchemaChanges();
 
-        // Build the base native options, then allow the schema-reservation hook to augment them.
-        const nativeOpts: IModelJsNative.SchemaImportOptions & Record<string, unknown> = {
-          schemaLockHeld: false,
-          ecSchemaXmlContext: maybeCustomNativeContext,
-          schemaSyncDbUri,
-        };
-
         try {
-          nativeImportOp(schemas, nativeOpts);
+          nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonSchemaChanges();
-            if (this[_nativeDb].getITwinId() !== Guid.empty)
-              await this.acquireSchemaLock();
-            try {
-              nativeImportOp(schemas, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-            } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
-            }
-          } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
-          }
+          throw new IModelError(outerErr.errorNumber, outerErr.message);
         }
       });
     } else {
@@ -3875,7 +3835,6 @@ export class BriefcaseDb extends IModelDb {
     // load all of the settings from workspaces
     await briefcaseDb.loadWorkspaceSettings();
     await briefcaseDb.initializeSharedDefinitionReservations();
-    await briefcaseDb.initializeSharedSchemaReservations();
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
@@ -4122,8 +4081,6 @@ export class BriefcaseDb extends IModelDb {
     // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
     if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
       await this.initializeSharedDefinitionReservations();
-    if (this.schemaReservations.isServerBased !== SchemaSync.isEnabled(this))
-      await this.initializeSharedSchemaReservations();
 
     this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
   }
@@ -4330,8 +4287,6 @@ export class BriefcaseDb extends IModelDb {
     // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
     if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
       await this.initializeSharedDefinitionReservations();
-    if (this.schemaReservations.isServerBased !== SchemaSync.isEnabled(this))
-      await this.initializeSharedSchemaReservations();
 
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
     BriefcaseManager.deleteRebaseFolders(this);
@@ -4535,7 +4490,6 @@ export class SnapshotDb extends IModelDb {
     const db = SnapshotDb.openFile(dbName, { key, container });
     await db.loadWorkspaceSettings();
     await db.initializeSharedDefinitionReservations();
-    await db.initializeSharedSchemaReservations();
     return db;
   }
 
