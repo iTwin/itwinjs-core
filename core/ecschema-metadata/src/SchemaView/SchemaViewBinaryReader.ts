@@ -166,14 +166,12 @@ function expectTag(reader: BinaryReader, expected: Tag): void {
     throw new Error(`Expected tag 0x${expected.toString(16)} but found 0x${tag.toString(16)} at offset ${reader.pos - 1}`);
 }
 
-/** Reusable parse/merge context for SchemaView blobs.
- *
- * Holds the live `SchemaViewBuilder` plus the cross-reference maps that must persist across
- * fragment merges. A single blob (the whole-iModel view) is just the degenerate case of one
- * fragment. Each call to `mergeBlob` appends one blob's schemas into the shared builder and
- * resolves every cross-reference - including cross-fragment refs - against the accumulated global
- * maps. Fragments must be merged in dependency order, so a fragment only ever references schemas
- * already merged by an earlier fragment (or excluded schemas, which resolve to "not present").
+/** Reusable parse/merge context for SchemaView blobs. Holds the live `SchemaViewBuilder` plus the
+ * cross-reference maps that must persist across fragment merges. Each `mergeBlob` appends one blob's
+ * schemas into the shared builder and resolves cross-references - including cross-fragment ones -
+ * against the accumulated maps. A whole-iModel blob is the degenerate case of a single fragment.
+ * @note Fragments must be merged in dependency order, so a fragment only references schemas already
+ * merged by an earlier one (or excluded schemas, which resolve to "not present").
  * @internal
  */
 export class SchemaViewMergeContext {
@@ -187,7 +185,7 @@ export class SchemaViewMergeContext {
   public readonly catRowIdToIdx = new Map<number, number>();
   public readonly classRowIdToIdx = new Map<number, number>();
   // "schemaname:classname" (both lowercased) -> global class index. Resolves base/mixin/constraint
-  // refs (which the blob encodes as schema+class name pairs) across fragment boundaries.
+  // refs, which the blob encodes as schema+class name pairs, across fragment boundaries.
   public readonly classResolver = new Map<string, number>();
   // global schemaIdx -> schema name, for building resolver keys and dangling-ref diagnostics.
   public readonly schemaNames: string[] = [];
@@ -215,9 +213,8 @@ export function parseSchemaViewBlob(data: Uint8Array, schemaToken?: string): Sch
 }
 
 /** Parse one fragment blob and append it into the context's builder, resolving cross-references
- * against the context's accumulated global maps. The body keeps per-fragment scratch state local;
- * everything that must outlive the fragment (the builder and the cross-reference maps) lives on
- * `ctx`. After this returns, the builder's lookup maps are brought up to date for the new schemas.
+ * against the context's accumulated global maps. Per-fragment scratch state stays local; everything
+ * that must outlive the fragment lives on `ctx`.
  */
 function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void {
   const builder = ctx.builder;
@@ -236,7 +233,6 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // Global index of the first schema this fragment adds. Local schema index = global - base.
   const schemaBaseIdx = builder.schemaCount;
 
-  // Cross-reference maps that persist across fragments live on the context.
   const { schemaECIdToIdx: schemaEcIdToIdx, enumRowIdToIdx, koqRowIdToIdx, catRowIdToIdx, classRowIdToIdx, classResolver } = ctx;
 
   // Per-schema item range tracking, indexed by LOCAL schema index (0-based within this fragment).
@@ -255,9 +251,8 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- PropertyDefTable ----
   expectTag(reader, Tag.PropertyDefTable);
   const defCount = reader.readU32();
-  // Each PreParsedDef is a fixed 46 bytes (10x u32 + 1x u16 + 4x u8). Use ~half that (23) as the
-  // plausibility bound: still catches wildly oversized counts on malformed blobs, but keeps a margin
-  // so a valid blob never trips the check.
+  // Each PreParsedDef is a fixed 46 bytes (10x u32 + 1x u16 + 4x u8). The bound is deliberately
+  // about half that, so a valid blob never trips the check.
   reader.validateCount(defCount, 23, "PropertyDefTable");
   const preParsedDefs: PreParsedDef[] = new Array(defCount);
   for (let i = 0; i < defCount; i++) {
@@ -283,7 +278,7 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- SchemaTable ----
   expectTag(reader, Tag.SchemaTable);
   const schemaCount = reader.readU32();
-  // Fixed 27 bytes per record (4x SRef + 3x u16 + u32 + u8); ~half (13) as a safety-margin bound.
+  // Fixed 27 bytes per record (4x SRef + 3x u16 + u32 + u8).
   reader.validateCount(schemaCount, 13, "SchemaTable");
   for (let i = 0; i < schemaCount; i++) {
     const name = reader.readSRef();
@@ -320,9 +315,8 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   }
 
   /** Track an item's schema ownership and update its owning schema's range counters. `globalIdx`
-   * is the item's global index in the builder; `starts`/`counts` are indexed by LOCAL schema index
-   * (global schema index minus this fragment's base). An item must be owned by a schema in its own
-   * fragment, so a foreign (prior-fragment) owner is a malformed blob. */
+   * is the item's global index in the builder; `starts`/`counts` are indexed by LOCAL schema index.
+   * An item must be owned by a schema in its own fragment, so a foreign owner is a malformed blob. */
   function trackItem(schemaEcId: number, globalIdx: number, starts: number[], counts: number[]): number {
     const schemaIdx = schemaEcIdToIdx.get(schemaEcId);
     if (schemaIdx === undefined)
@@ -340,7 +334,6 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   expectTag(reader, Tag.EnumTable);
   const enumTotalCount = reader.readU32();
   // Fixed 27 bytes per record (5x SRef + u16 + u8 + u32); enumerators live inside a JSON SRef.
-  // ~half (13) as a safety-margin bound.
   reader.validateCount(enumTotalCount, 13, "EnumTable");
   for (let i = 0; i < enumTotalCount; i++) {
     const schemaEcId = reader.readU32();
@@ -393,7 +386,7 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- KoQTable ----
   expectTag(reader, Tag.KoQTable);
   const koqTotalCount = reader.readU32();
-  // Fixed 36 bytes per record (6x SRef + f64 + u32); ~half (18) as a safety-margin bound.
+  // Fixed 36 bytes per record (6x SRef + f64 + u32).
   reader.validateCount(koqTotalCount, 18, "KoQTable");
   for (let i = 0; i < koqTotalCount; i++) {
     const schemaEcId = reader.readU32();
@@ -423,7 +416,7 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- PropCatTable ----
   expectTag(reader, Tag.PropCatTable);
   const catTotalCount = reader.readU32();
-  // Fixed 24 bytes per record (4x SRef + i32 + u32); ~half (12) as a safety-margin bound.
+  // Fixed 24 bytes per record (4x SRef + i32 + u32).
   reader.validateCount(catTotalCount, 12, "PropCatTable");
   for (let i = 0; i < catTotalCount; i++) {
     const schemaEcId = reader.readU32();
@@ -450,8 +443,7 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   expectTag(reader, Tag.ClassTable);
   const classTotalCount = reader.readU32();
   // Minimum 27 bytes per record (3x SRef + 3x u8 + u32 + 2x u16 count prefixes); records grow with
-  // relationship strength/direction and the base-class, prop-ref, and constraint sub-lists. ~half
-  // (13) as a safety-margin bound.
+  // relationship strength/direction and the base-class, prop-ref, and constraint sub-lists.
   reader.validateCount(classTotalCount, 13, "ClassTable");
   for (let i = 0; i < classTotalCount; i++) {
     const schemaEcId = reader.readU32();
@@ -762,8 +754,8 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
     Logger.logWarning("ecschema-metadata.SchemaView", `${danglingRefs.length} unresolved cross-reference(s) in schema view blob (likely from excluded schemas):\n  ${lines.join("\n  ")}`);
   }
 
-  // Bring the builder's lookup maps up to date for the schemas this fragment added. The owning
-  // schemas' item ranges were finalized above, so the per-schema name maps build correctly.
+  // Bring the builder's lookup maps up to date for the schemas this fragment added. Their item
+  // ranges were finalized above, so the per-schema name maps build correctly.
   builder.extendLookupMaps();
 }
 

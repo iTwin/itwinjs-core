@@ -6,9 +6,7 @@
  * @module Schema
  */
 
-/** One schema in a {@link SchemaManifest}: its identity, version, and the schemas it directly
- * references. References are held as direct entry objects, so closure and dependency-ordering walks
- * follow object links with no id or index indirection.
+/** One schema in a {@link SchemaManifest}: its name, version, and the entries it directly references.
  * @beta
  */
 export interface SchemaManifestEntry {
@@ -21,10 +19,10 @@ export interface SchemaManifestEntry {
 }
 
 /** One row of `SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM
- * meta.ECSchemaDef`, as passed to {@link SchemaManifest.fromRows}. The id is a plain number,
- * matching SchemaView's convention for schema-related rows: `ec_` metadata rowids carry no
- * briefcase prefix, so they are small and exactly representable. It is used only to wire
- * reference edges and is not retained in the manifest.
+ * meta.ECSchemaDef`, as passed to {@link SchemaManifest.fromRows}.
+ * @note `ecInstanceId` is a plain number, matching SchemaView's convention for schema-related rows:
+ * `ec_` metadata rowids carry no briefcase prefix, so they are exactly representable. It is used
+ * only to wire reference edges and is not retained in the manifest.
  * @internal
  */
 export interface SchemaManifestSchemaRow {
@@ -44,19 +42,15 @@ export interface SchemaManifestReferenceRow {
   readonly targetECInstanceId: number;
 }
 
-/** The reference graph of every schema in one iModel. It is the cheap stand-in a {@link (SchemaView:class)}
- * husk loads up front so it can answer "which schemas exist" and "what is the dependency-ordered set
- * I must load to satisfy a request" without hydrating any schema data.
+/** The reference graph of every schema in one iModel - names, versions and reference edges, without
+ * any schema data. A {@link (SchemaView:class)} husk loads it up front to answer which schemas exist
+ * and which dependency-ordered set it must load to satisfy a request.
  *
- * The graph is a flat array of {@link SchemaManifestEntry}, each holding direct references to the
- * entries it depends on. For the largest real iModels this is on the order of a hundred entries and
- * a few hundred edges, so closure and topological walks are trivial; a heavier object graph would
- * buy nothing.
- *
- * A `SchemaViewDataProvider` builds the manifest from ECDbMeta rows via {@link SchemaManifest.fromRows}; this class
- * keeps the entries free of any iModel or platform dependency and just indexes them by name and
- * answers closure queries. It knows nothing about which schemas are already loaded; the
- * `SchemaViewManager` tracks that and filters the result of {@link SchemaManifest.getSchemaClosure} itself.
+ * A `SchemaViewDataProvider` builds the manifest from ECDbMeta rows via {@link SchemaManifest.fromRows}.
+ * The entries are a flat array with no iModel or platform dependency; even the largest iModels hold
+ * on the order of a hundred schemas, so the closure and topological walks are plain recursion.
+ * @note The manifest does not track which schemas are already loaded. `SchemaViewManager` does that
+ * and filters the result of {@link SchemaManifest.getSchemaClosure} itself.
  * @beta
  */
 export class SchemaManifest {
@@ -72,21 +66,16 @@ export class SchemaManifest {
     this._byLowerName = byLowerName;
   }
 
-  /** Build a manifest from raw ECDbMeta query rows. This is the one place the row-to-graph wiring
-   * walk lives, so every `SchemaViewDataProvider` implementation just runs the two queries and hands
-   * the rows over. The `ec_Schema` ids in the rows are used only to connect reference edges; the
-   * manifest itself carries no ids.
-   *
-   * Reference rows whose endpoints are unknown or self-referential are skipped - a defensive guard
-   * that cannot happen for a well-formed iModel.
+  /** Build a manifest from raw ECDbMeta query rows, so a `SchemaViewDataProvider` only has to run
+   * the two queries and hand the rows over. Reference rows whose endpoints are unknown or
+   * self-referential are skipped; that cannot happen for a well-formed iModel.
    * @internal
    */
   public static fromRows(schemaRows: readonly SchemaManifestSchemaRow[], referenceRows: readonly SchemaManifestReferenceRow[]): SchemaManifest {
-    // Mutable during the wiring walk below; the manifest treats entries as read-only once handed over.
+    // Mutable during the wiring walk below; entries are read-only once handed to the manifest.
     type MutableEntry = Omit<SchemaManifestEntry, "references"> & { references: SchemaManifestEntry[] };
 
     const entries: MutableEntry[] = [];
-    // ec_Schema ECInstanceId -> entry, so the reference walk can look up both endpoints by id.
     const entryByECInstanceId = new Map<number, MutableEntry>();
     for (const row of schemaRows) {
       const entry: MutableEntry = {
@@ -114,8 +103,7 @@ export class SchemaManifest {
   /** The number of schemas in the iModel. */
   public get schemaCount(): number { return this._entries.length; }
 
-  /** The names of every schema in the iModel, in manifest order. Lets a husk enumerate what exists
-   * without hydrating - or minting any flyweight for - an unloaded schema. */
+  /** The names of every schema in the iModel, in manifest order. */
   public getAvailableSchemaNames(): string[] {
     return this._entries.map((entry) => entry.name);
   }
@@ -129,16 +117,11 @@ export class SchemaManifest {
     return this._byLowerName.get(name.toLowerCase());
   }
 
-  /** The transitive reference closure of the requested schemas: every requested schema the iModel
-   * contains, plus every schema reachable from it through references, as a flat, duplicate-free list
-   * of names. This is the full set that must be present to use the requested schemas. The order is
-   * unspecified - a caller that needs a load order runs {@link SchemaManifest.sortInDependencyOrder} on the result.
-   *
-   * The manifest does not know which schemas are already loaded; the result is the full closure and
-   * a caller that tracks loaded schemas filters them out itself.
-   *
-   * Requested names the iModel does not contain are ignored; a caller that needs to surface them can
-   * check {@link SchemaManifest.findByName} first.
+  /** The transitive reference closure of the requested schemas, as a flat, duplicate-free list of
+   * names: the full set that must be present to use them. The order is unspecified - run
+   * {@link SchemaManifest.sortInDependencyOrder} on the result when a load order is needed.
+   * @note Requested names the iModel does not contain are ignored; check
+   * {@link SchemaManifest.findByName} first to detect them.
    */
   public getSchemaClosure(requestedNames: Iterable<string>): string[] {
     const result: string[] = [];
@@ -161,11 +144,10 @@ export class SchemaManifest {
     return result;
   }
 
-  /** Orders the given schema names so that each appears after every schema it references, directly
-   * or transitively - a dependency order a caller can load front to back. References through schemas
-   * not in `schemaNames` are still honored, so the result is a correct order of the subset even when
-   * an intermediate schema is left out. Names the iModel does not contain are ignored, and reference
-   * cycles - which EC forbids - are broken arbitrarily rather than looping.
+  /** Orders the given schema names so each appears after every schema it references, directly or
+   * transitively. References through schemas not in `schemaNames` are still honored, so the order is
+   * correct even when an intermediate schema is left out. Names the iModel does not contain are
+   * ignored, and reference cycles - which EC forbids - are broken arbitrarily rather than looping.
    * @internal
    */
   public sortInDependencyOrder(schemaNames: Iterable<string>): string[] {

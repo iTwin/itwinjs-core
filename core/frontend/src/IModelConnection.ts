@@ -160,9 +160,8 @@ export abstract class IModelConnection extends IModel {
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   private _schemaContext?: SchemaContext;
-  // Owns the lifetime of this iModel's SchemaView: lazy loading, incremental (filtered) hydration,
-  // serialization of concurrent requests, and invalidation. Created lazily on the first
-  // getSchemaView call; all data access goes through the SchemaViewDataProvider implemented below.
+  // Created lazily on the first getSchemaView call. Owns the SchemaView's lifetime and does all its
+  // data access through the SchemaViewDataProvider implemented below.
   private _schemaViewManager?: SchemaViewManager;
 
   /** Load the FontMap for this IModelConnection.
@@ -705,26 +704,22 @@ export abstract class IModelConnection extends IModel {
 
   /** The [SchemaViewDataProvider]($ecschema-metadata) backing this iModel's [[getSchemaView]]: the
    * transport-specific half of schema-view loading, issued through the queryRows RPC
-   * (ConcurrentQuery). Unlike the backend, the frontend *pins* the blob format version in both
-   * pragmas: the backend it talks to can be older or newer than this frontend, and the pin ensures
-   * it returns a blob this code can parse (or fails cleanly) instead of an unreadable newer format.
+   * (ConcurrentQuery). The frontend *pins* the blob format version in both pragmas, because the
+   * backend it talks to can be older or newer; the pin makes it return a blob this code can parse,
+   * or fail cleanly.
    */
   private _createSchemaViewDataProvider(): SchemaViewDataProvider {
     return {
       fetchFullBlob: async () => this._fetchSchemaBlob(`PRAGMA schema_view(${schemaViewFormatVersion})`),
-      // The pragma takes the schema names directly (comma-separated; names are ECNames, so a comma
-      // can never occur in one). Names come from the manifest's closure walk, i.e. from our own
-      // ECSchemaDef query, so in the normal case they are valid, existing schemas. Native re-validates
-      // each token as an ECName and fails the pragma on an unknown name. The `v<N>;` prefix pins
-      // the blob format version.
+      // Names are ECNames, so a comma can never occur in one. Native re-validates each token as an
+      // ECName and fails the pragma on an unknown name. The `v<N>;` prefix pins the format version.
       fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('v${schemaViewFormatVersion};${schemaNames.join(",")}')`),
       fetchManifest: async () => {
         const schemaRows: SchemaManifestSchemaRow[] = [];
         const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
         for await (const row of this.createQueryReader(schemaSql)) {
-          // ECInstanceId arrives as a hex Id64String. Schema rows are plain `ec_` metadata rowids
-          // with no briefcase prefix, so the local id is the full value; Id64.getLocalId is the
-          // codebase's precision-safe hex-to-number extraction.
+          // ECInstanceId arrives as a hex Id64String. `ec_` metadata rowids carry no briefcase
+          // prefix, so the local id is the full value.
           schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
         }
 

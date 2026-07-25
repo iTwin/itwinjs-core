@@ -78,9 +78,8 @@ export class SchemaView {
   private _schemaToken: string;
   private _outdated = false;
 
-  /** When present, this view is a *husk* that can incrementally merge fragment blobs via
-   * `mergeFragment`. It retains the live builder and cross-reference maps used to append and
-   * resolve further fragments. Undefined for one-shot views built by `fromBinary`. */
+  /** When present, this view is a *husk*: it retains the live builder and cross-reference maps, so
+   * `mergeFragment` can append further fragment blobs. Undefined for one-shot views from `fromBinary`. */
   private readonly _mergeContext?: SchemaViewMergeContext;
 
   /** @internal */
@@ -114,8 +113,7 @@ export class SchemaView {
   public markOutdated(): void { this._outdated = true; }
 
   /** Set the cache-invalidation token. Called by the host after loading schema data into a husk,
-   * since the token is not known until the first blob is fetched. The token identifies the whole
-   * iModel's schema set, so it is the same for a full load or any fragment.
+   * since the token is not known until the first blob is fetched.
    * @internal
    */
   public setSchemaToken(token: string): void { this._schemaToken = token; }
@@ -185,13 +183,11 @@ export class SchemaView {
     return parseSchemaViewBlob(blob, schemaToken);
   }
 
-  /** Create an empty, *mergeable* view (a "husk"). It contains no schemas until
-   * `mergeFragment` is called with one or more fragment blobs. Each merged fragment is appended
-   * into the same view instance, so flyweights and cached cross-references obtained earlier stay
-   * valid (indices are append-only and never reordered).
-   *
-   * Fragments must be merged in dependency order: a fragment may reference schemas in fragments
-   * already merged.
+  /** Create an empty, *mergeable* view (a "husk"). It contains no schemas until `mergeFragment` is
+   * called. Each merged fragment is appended into the same instance, so flyweights and cached
+   * cross-references obtained earlier stay valid - indices are append-only and never reordered.
+   * @note Fragments must be merged in dependency order: a fragment may only reference schemas from
+   * fragments already merged.
    * @internal
    */
   public static createMergeable(schemaToken?: string): SchemaView {
@@ -200,10 +196,9 @@ export class SchemaView {
   }
 
   /** Merge one fragment blob into this view. Only valid on a view created via `createMergeable`.
-   * Synchronous. On success the view reflects the merged schemas, and any flyweight or cached index
-   * obtained before the call remains valid. If the merge throws (e.g. on a malformed blob), the view
-   * may be left partially extended and must be discarded by the host. Throws if this view is not
-   * mergeable.
+   * Synchronous. Any flyweight or cached index obtained before the call remains valid.
+   * @note If the merge throws (e.g. on a malformed blob), the view may be left partially extended
+   * and must be discarded by the host.
    * @internal
    */
   public mergeFragment(blob: Uint8Array): void {
@@ -1231,9 +1226,9 @@ export class SchemaViewBuilder {
   // For PropertyDef dedup
   private readonly _propDefMap = new Map<string, number>(); // signature string -> defIdx
 
-  // Lookup maps - owned by the builder so a husk can share and extend them across fragment
-  // merges. `build()` and each merge call `extendLookupMaps()` to bring them up to date; the
-  // view receives these same Map objects via `assembleData()`, so in-place growth is visible.
+  // Lookup maps - owned by the builder so a husk can share and extend them across fragment merges.
+  // `build()` and each merge call `extendLookupMaps()`; the view receives these same Map objects
+  // via `assembleData()`, so in-place growth is visible.
   private readonly _schemaByName = new Map<string, number>();
   private readonly _schemaByAlias = new Map<string, number>();
   private readonly _classByName = new Map<number, Map<string, number>>();
@@ -1343,19 +1338,22 @@ export class SchemaViewBuilder {
   /** The current count of class mixins (used to set mixinStartIdx). */
   public get classMixinCount(): number { return this._classMixins.length; }
 
-  /** The current count of schemas. Used by fragment merging to compute global indices. @internal */
+  // The counts below are the base indices fragment merging uses to translate a fragment's local
+  // indices into global ones.
+
+  /** The current count of schemas. @internal */
   public get schemaCount(): number { return this._schemas.length; }
 
-  /** The current count of classes. Used by fragment merging to compute global indices. @internal */
+  /** The current count of classes. @internal */
   public get classCount(): number { return this._classes.length; }
 
-  /** The current count of enumerations. Used by fragment merging to compute global indices. @internal */
+  /** The current count of enumerations. @internal */
   public get enumerationCount(): number { return this._enumerations.length; }
 
-  /** The current count of KindOfQuantities. Used by fragment merging to compute global indices. @internal */
+  /** The current count of KindOfQuantities. @internal */
   public get koqCount(): number { return this._koqs.length; }
 
-  /** The current count of property categories. Used by fragment merging to compute global indices. @internal */
+  /** The current count of property categories. @internal */
   public get propCategoryCount(): number { return this._propCategories.length; }
 
   /** Get a string by SID. @internal */
@@ -1377,8 +1375,8 @@ export class SchemaViewBuilder {
   }
 
   /** Build lookup-map entries for any schemas added since the last call. Idempotent and
-   * append-only, so it is safe to call after each fragment merge. The owning schema's item
-   * ranges must already be finalized (via `updateSchemaRanges`) before the schema is processed.
+   * append-only, so it is safe to call after each fragment merge. A schema's item ranges must
+   * already be finalized (via `updateSchemaRanges`) before it is processed.
    * @internal */
   public extendLookupMaps(): void {
     for (let i = this._lookupMapsBuiltUpto; i < this._schemas.length; i++) {
@@ -1415,9 +1413,9 @@ export class SchemaViewBuilder {
   }
 
   /** Assemble a {@link SchemaViewData} bag that references this builder's live arrays and lookup
-   * maps. The result is a *live* view: continued building (e.g. fragment merges that append to
-   * the arrays and extend the maps in place) is reflected through the shared references, so a
-   * husk holding this data sees merged schemas without rebuilding. @internal */
+   * maps. Continued building - fragment merges that append to the arrays and extend the maps in
+   * place - is visible through the shared references, so a husk holding this data sees merged
+   * schemas without rebuilding. @internal */
   public assembleData(): SchemaViewData {
     return {
       strings: this._strings,
@@ -1441,7 +1439,6 @@ export class SchemaViewBuilder {
       catByName: this._catByName,
     };
   }
-
 
   /** Produce a dedup signature for a PropertyDef. Label and priority are excluded because
    * they are per-PropertyRef overrides, not part of the structural definition.

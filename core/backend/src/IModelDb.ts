@@ -475,9 +475,8 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  // Owns the lifetime of this iModel's SchemaView: lazy loading, incremental (filtered) hydration,
-  // serialization of concurrent requests, and invalidation. Created lazily on the first
-  // getSchemaView call; all data access goes through the SchemaViewDataProvider implemented below.
+  // Created lazily on the first getSchemaView call. Owns the SchemaView's lifetime and does all its
+  // data access through the SchemaViewDataProvider implemented below.
   private _schemaViewManager?: SchemaViewManager;
   /** @deprecated in 5.0.0 - might be removed in next major version. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
@@ -1778,18 +1777,15 @@ export abstract class IModelDb extends IModel {
   private _createSchemaViewDataProvider(): SchemaViewDataProvider {
     return {
       fetchFullBlob: async () => this._fetchSchemaBlob("PRAGMA schema_view"),
-      // The pragma takes the schema names directly (comma-separated; names are ECNames, so a comma
-      // can never occur in one). Names come from the manifest's closure walk, i.e. from our own
-      // ECSchemaDef query, so in the normal case they are valid, existing schemas. Native re-validates
-      // each token as an ECName and fails the pragma on an unknown name.
+      // Names are ECNames, so a comma can never occur in one. Native re-validates each token as an
+      // ECName and fails the pragma on an unknown name.
       fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${schemaNames.join(",")}')`),
       fetchManifest: async () => {
         const schemaRows: SchemaManifestSchemaRow[] = [];
         const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
         for await (const row of this.createQueryReader(schemaSql)) {
-          // ECInstanceId arrives as a hex Id64String. Schema rows are plain `ec_` metadata rowids
-          // with no briefcase prefix, so the local id is the full value; Id64.getLocalId is the
-          // codebase's precision-safe hex-to-number extraction.
+          // ECInstanceId arrives as a hex Id64String. `ec_` metadata rowids carry no briefcase
+          // prefix, so the local id is the full value.
           schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
         }
 
