@@ -134,38 +134,46 @@ export class SchemaViewManager {
    * @note If the token cannot be fetched, the view is discarded rather than risking stale metadata.
    */
   public async invalidateIfChanged(): Promise<void> {
-    const existingPromise = this._viewPromise;
-    if (existingPromise === undefined)
+    const previous = this._viewPromise;
+    if (previous === undefined)
       return;
+    // Queue the check on the same chain as loading, so a getSchemaView arriving while the token is
+    // in flight cannot swap in a new promise for the same stale view and hide the schema change.
+    const next = this._invalidateIfChanged(previous);
+    this._viewPromise = next;
+    await next;
+  }
+
+  /** Serialized body of {@link SchemaViewManager.invalidateIfChanged}. Resolves to the view to keep,
+   * or to `undefined` when it was discarded and the next getSchemaView has to start over.
+   */
+  private async _invalidateIfChanged(previous: Promise<SchemaView | undefined>): Promise<SchemaView | undefined> {
     let existing: SchemaView | undefined;
     try {
-      existing = await existingPromise;
+      existing = await previous;
     } catch {
-      // The load failed; the next getSchemaView chains onto the rejected promise and rebuilds anyway.
-      return;
+      // The load failed and already cleared the incremental state; nothing to invalidate.
+      return undefined;
     }
-    // Nothing loaded (reset continuation) - nothing to invalidate.
+    // Nothing loaded (an earlier reset) - nothing to invalidate.
     if (existing === undefined)
-      return;
+      return undefined;
     // A husk with no token and no cached manifest never fetched anything. With a manifest an
     // incremental request did run (loading only the manifest, e.g. all its names were missing), and
     // that manifest can go stale - fall through so the token check drops it; a live token can never
     // equal "".
     if (existing.schemaToken === "" && this._manifest === undefined)
-      return;
+      return existing;
+
     try {
-      const liveToken = await this._dataProvider.fetchSchemaToken();
-      if (liveToken === existing.schemaToken || this._viewPromise !== existingPromise)
-        return;
+      if (await this._dataProvider.fetchSchemaToken() === existing.schemaToken)
+        return existing;
     } catch {
-      // Cannot verify the cached view: drop it rather than risk stale metadata. The guard keeps a
-      // concurrent reload's fresh view from being discarded by this stale check.
-      if (this._viewPromise !== existingPromise)
-        return;
+      // Cannot verify the cached view: drop it rather than risk stale metadata.
     }
-    this.reset();
-    // Await the queued teardown so callers like pullChanges see the invalidation fully applied.
-    await this._viewPromise;
+    existing.markOutdated();
+    this._resetIncrementalState();
+    return undefined;
   }
 
   /** Serialized body of {@link SchemaViewManager.getSchemaView}. Waits for the prior load, optionally discards

@@ -661,8 +661,7 @@ export abstract class IModelConnection extends IModel {
 
   /** Get the schema view for this iModel. The view is built lazily on
    * first call by fetching compact binary schema data via `PRAGMA schema_view` through
-   * the existing queryRows RPC (ConcurrentQuery). Subsequent calls return the cached view.
-   * Multiple concurrent callers share a single in-flight fetch.
+   * the existing queryRows RPC (ConcurrentQuery).
    *
    * The returned `SchemaView` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
@@ -670,9 +669,10 @@ export abstract class IModelConnection extends IModel {
    * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for custom-attribute
    * deserialization or anywhere you need the full ecschema-metadata object graph.
    *
-   * Pass `args.schemas` to request only a subset (plus its references) instead of every schema.
-   * The view accumulates: a later call merges any still-missing schemas into the same instance.
-   * See [GetSchemaViewArgs]($ecschema-metadata).
+   * Every call shares one accumulating view instance and concurrent calls are serialized, so a
+   * caller never observes a partially loaded view. The instance is discarded once the connection
+   * detects that schemas changed, for example after [[BriefcaseConnection.pullChanges]]; the next
+   * call builds a new one. See [GetSchemaViewArgs]($ecschema-metadata) for the arguments.
    * @beta
    */
   public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
