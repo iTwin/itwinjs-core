@@ -418,9 +418,11 @@ export class TextDecorationTool extends Tool {
       const defaultColor = ColorDef.fromString("black").toJSON();
 
       // Label
-      editor.runStyle.color = defaultColor;
       editor.appendBreak();
+      editor.runStyle.color = defaultColor;
+      editor.runStyle.isBold = true;
       editor.appendText(title);
+      editor.runStyle.isBold = false;
       editor.appendBreak();
 
       // Expected value
@@ -431,17 +433,18 @@ export class TextDecorationTool extends Tool {
       editor.runStyle.color = defaultColor;
 
       // Actual field
-      editor.appendBreak();
-      editor.appendText("Actual: ");
-      editor.runStyle.color = actualColor;
-      editor.appendTab(tabSize);
-      editor.appendField({
+      const fieldProps = {
         elementId: "0x20000001f27",
         schemaName: "CivilSpatial",
         className: "ParkingRow",
         propertyName: "Origin",
         formatOptions,
-      });
+      };
+      editor.appendBreak();
+      editor.appendText("Actual: ");
+      editor.runStyle.color = actualColor;
+      editor.appendTab(tabSize);
+      editor.appendField(fieldProps);
       editor.runStyle.color = defaultColor;
 
       // Comment
@@ -453,6 +456,9 @@ export class TextDecorationTool extends Tool {
         editor.runStyle.isItalic = false;
         editor.runStyle.color = defaultColor;
       }
+
+      editor.appendBreak();
+      editor.appendText(JSON.stringify({ formatOptions }));
 
       editor.appendBreak();
       editor.appendText(" ");
