@@ -69,7 +69,7 @@ export interface UpdateRebaseConflict extends RebaseConflict {
    *
    * This will usually not include every property of the instance. Only the following properties
    * are included:
-   * 1. The primary key(s) (usually ECInstanceId) and the class id (ECClassId).
+   * 1. The primary key(s) (usually `id`) and the `className` if the table has one.
    * 2. Any properties that were modified by our local changes.
    */
   original: RebaseConflictProperties;
@@ -134,7 +134,7 @@ export interface TheirUpdateOurDeleteRebaseConflict extends RebaseConflict {
    *
    * This will usually not include every property of the instance. Only the following properties
    * are included:
-   * 1. The primary key(s) (usually ECInstanceId) and the class id (ECClassId).
+   * 1. The primary key(s) (usually `id`) and the `className` if the table has one.
    * 2. Any properties that were modified by the incoming (their) changes.
    * 3. All properties that share an underlying table with the properties in (2).
    */
@@ -167,7 +167,7 @@ export interface TheirDeleteOurUpdateRebaseConflict extends RebaseConflict {
    *
    * This will usually not include every property of the instance. Only the following properties
    * are included:
-   * 1. The primary key(s) (usually ECInstanceId) and the class id (ECClassId).
+   * 1. The primary key(s) (usually `id`) and the `className` if the table has one.
    * 2. Any properties that were modified by our local changes.
    */
   original: RebaseConflictProperties;
