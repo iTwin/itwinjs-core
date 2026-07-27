@@ -30,6 +30,7 @@ import {
 } from "./Tool";
 import { ToolSettings } from "./ToolSettings";
 import { ViewTool } from "./ViewTool";
+import { DomInteractionTracker, DomState } from "../DomState";
 
 /**
  * @public
@@ -364,6 +365,13 @@ export class ToolAdmin {
   private _lastHandledMotionTime?: BeTimePoint;
   private _mouseMoveOverTimeout?: NodeJS.Timeout;
   private _editCommandHandler?: EditCommandHandler;
+  private _domInteractionTracker = new DomInteractionTracker();
+  /**
+   * Cache of keyboard events (computed during key capture time) and whether they were fully handled:
+   * - True: no further processing needed - run default DOM behavior, cannot trigger shortcuts.
+   * - False: default DOM behavior is prevented or is irrelevant - can be further processed by active Tool, can trigger shortcuts.
+   */
+  private readonly _capturedKeyboardEvents = new WeakMap<KeyboardEvent, boolean>();
 
   /** The name of the [[PrimitiveTool]] to use as the default tool.
    * Defaults to "Select", referring to [[SelectionTool]].
@@ -488,6 +496,9 @@ export class ToolAdmin {
     const ev = event as KeyboardEvent;
     if (!ev.repeat) {
       try {
+        const handled = IModelApp.toolAdmin.processKeyboardEvent(ev, ev.type === "keydown");
+        IModelApp.toolAdmin._capturedKeyboardEvents.set(ev, handled);
+
         await IModelApp.toolAdmin.onKeyTransitionCaptured(ev);
       } catch (err) {
         await ToolAdmin.exceptionHandler(err);
@@ -501,6 +512,7 @@ export class ToolAdmin {
       return;    // if document isn't defined, we're probably running in a test environment. At any rate, we can't have interactive tools.
 
     this._idleTool = IModelApp.tools.create("Idle") as InteractiveTool;
+    this._domInteractionTracker.attach();
 
     ["keydown", "keyup"].forEach((type) => {
       document.addEventListener(type, ToolAdmin._keyEventCaptureHandler, true);
@@ -517,6 +529,7 @@ export class ToolAdmin {
   public onShutDown() {
     this.clearMotionPromises();
     this._idleTool = undefined;
+    this._domInteractionTracker.detach();
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._removals.forEach((remove) => remove());
     ToolAdmin._removals.length = 0;
@@ -1521,26 +1534,76 @@ export class ToolAdmin {
    * @return true if handled and no further processing of event should occur.
    */
   protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
-    if (ToolAdmin.isFocusHome() || undefined !== IModelApp.accuDraw.getFocusItem())
-      return false; // Focus is Home or AccuDraw, allow shortcuts...
+    if (undefined !== IModelApp.accuDraw.getFocusItem())
+      return false; // Focus is AccuDraw, allow shortcuts...
 
-    if (keyEvent.defaultPrevented || keyEvent.isComposing)
-      return true; // Respect UI handling / IME composition; don't process shortcuts
-
-    // NOTE: Provide a convenient way for the user to move focus to Home to use shortcuts.
-    // Escape is the only practical choice with its default behavior that can cancel/close/blur.
-    // Intentionally not checking wentDown as some ui elements stop propagation of down but not up (moving to capture is not a good option).
-    // Apps that want to use Escape to start the default tool still can with Home focus in processShortcutKey.
-    if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome) {
-      ToolAdmin.setFocusHome();
-      return true;
-    }
+    // // NOTE: Provide a convenient way for the user to move focus to Home to use shortcuts.
+    // // Escape is the only practical choice with its default behavior that can cancel/close/blur.
+    // // Intentionally not checking wentDown as some ui elements stop propagation of down but not up (moving to capture is not a good option).
+    // // Apps that want to use Escape to start the default tool still can with Home focus in processShortcutKey.
+    // if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome) {
+    //   ToolAdmin.setFocusHome();
+    //   return true;
+    // }
 
     if (ToolAdmin.isContextMenuOpen())
       return true; // Don't allow shortcuts if context menu is open...
 
-    if (ToolAdmin.isElement(keyEvent.target) && ToolAdmin.isEditable(keyEvent.target))
-      return true; // Don't allow shortcuts when event target is editable...
+    // An IME is composing text (Chinese/Japanese input) - all keystrokes belong to it
+    if (keyEvent.isComposing)
+      return true;
+
+    const dom = DomState.captureDomState(this._domInteractionTracker);
+
+    // Modal dialog is open - it owns all input
+    if (dom.blockingElement !== undefined)
+      return true;
+
+    // The user is mid-drag, or an element captured/locked the pointer - don't allow shortcuts
+    if (dom.isDragging || dom.hasPointerCapture || dom.isPointerLocked)
+      return true;
+
+    // Tab always belongs to the browser (focus navigation)
+    if (keyEvent.key === "Tab")
+      return true;
+
+    const activeElement = dom.activeElement;
+    if (activeElement !== undefined) {
+      // A text field is focused: it owns everything, focus-visible or not
+      if (DomState.isEditable(activeElement))
+        return true;
+
+      // Focus is inside a type-ahead widget (listbox, menu, tree...) - typing navigates it
+      if (DomState.isInsideTypeAheadWidget(activeElement))
+        return true;
+
+      const isActivatable = DomState.isActivatable(activeElement, keyEvent.key);
+      const isNavigationClaimed = DomState.isNavigationClaimed(activeElement, keyEvent.key);
+      const isNativeTextEditingShortcut = DomState.isNativeTextEditingShortcut(keyEvent);
+      if (isActivatable || isNavigationClaimed || isNativeTextEditingShortcut) {
+        // The focused element natively handles this key (button + Enter, arrow keys in a
+        // tablist, Ctrl+Z with visible focus, etc.). If the focus ring is visible the user is
+        // keyboard-navigating, so the browser wins - don't allow shortcuts
+        if (dom.isFocusVisible)
+          return true;
+
+        // Focus is stale (e.g. left over from a mouse click). Prevent browser default behavior
+        // so stale focus buttons don't activate on space/enter - instead allow shortcuts
+        keyEvent.preventDefault();
+        return false;
+      }
+    }
+
+    if (DomState.isNativeTextEditingShortcut(keyEvent)) {
+      // Text is selected on the page: Ctrl+C/X/A etc. must keep working natively
+      if (dom.selectedText !== undefined && dom.selectedText.length > 0)
+        return true;
+
+      // No text selected - allow Tool layer to handle this shortcut (e.g. Undo for Ctrl+Z).
+      // Prevent browser default so Ctrl+Z/Y doesn't move focus to last edited text field.
+      keyEvent.preventDefault();
+      return false;
+    }
 
     return false;
   }
@@ -1560,7 +1623,8 @@ export class ToolAdmin {
   private async onKeyTransition(event: ToolEvent, wentDown: boolean): Promise<any> {
     const keyEvent = event.ev as KeyboardEvent;
 
-    if (this.processKeyboardEvent(keyEvent, wentDown))
+    const wasHandledDuringCaptureTime = this._capturedKeyboardEvents.get(keyEvent) ?? false;
+    if (wasHandledDuringCaptureTime || this.processKeyboardEvent(keyEvent, wentDown))
       return EventHandled.Yes;
 
     if (wentDown && keyEvent.ctrlKey) {
