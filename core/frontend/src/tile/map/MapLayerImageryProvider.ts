@@ -568,9 +568,8 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
-    const trustedOrigin = this.isCredentialsSharingAllowed(url);
     let headers: Headers | undefined;
-    if (trustedOrigin) {
+    if (this.isCredentialsSharingAllowed(url)) {
       headers = new Headers();
       this.setRequestAuthorization(headers);
     }
@@ -588,7 +587,8 @@ export abstract class MapLayerImageryProvider {
       if (text) {
         // Tooltip content (e.g. WMS GetFeatureInfo responses) is rendered as HTML downstream and may
         // deliberately contain markup; text from origins not trusted for credentials is escaped.
-        if (!trustedOrigin)
+        // fetch follows redirects transparently, so the text may come from a different origin than requested.
+        if (!this.isCredentialsSharingAllowed(response.url || url))
           text = escapeHtml(text);
         strings.push(text);
       }

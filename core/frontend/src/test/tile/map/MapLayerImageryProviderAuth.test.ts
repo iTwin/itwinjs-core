@@ -281,6 +281,20 @@ describe("MapLayerImageryProvider authorization", () => {
     expect(strings).toEqual(["<b>feature info</b>"]);
   });
 
+  it("escapes html in tooltip text redirected from the settings origin to an untrusted origin", async () => {
+    fetchMock.mockResolvedValue(redirectedTo(new Response("<b>feature info</b>", { status: 200 }), "https://evil.example.net/wms"));
+
+    const provider = createProvider();
+    const strings: string[] = [];
+    await provider.testToolTipFromUrl(strings, sameOriginUrl);
+
+    expect(strings).toHaveLength(1);
+    const div = document.createElement("div");
+    div.innerHTML = strings[0];
+    expect(div.querySelector("b")).toBeNull();
+    expect(div.textContent).toEqual("<b>feature info</b>");
+  });
+
   it("preserves html in tooltip text when restriction is disabled (legacy default)", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
     fetchMock.mockResolvedValue(new Response("<b>feature info</b>", { status: 200 }));
