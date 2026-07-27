@@ -225,7 +225,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     const metadata = await this.getServiceJson();
 
     if (metadata?.content === undefined) {
-      // By returning (i.e not throwing), we ensure the tileTree get created and current provider is preserved to report status.
+      // By returning (i.e., not throwing), we ensure the tile tree gets created and the current provider is preserved to report status.
       if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin)
         return;
       throw new ServerError(IModelStatus.ValidationFailed, "");
