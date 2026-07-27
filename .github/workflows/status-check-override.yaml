@@ -24,7 +24,7 @@
 # HOW TO: Add New Files To The Exclusion List
 # 1. Add files to *this* config to trigger
 # 1. Add the glob of paths to trigger on to the "paths:" list below.
-# 2. Add the same paths to the regex pattern in the "Get specific changed files" step below.
+# 2. Add the same paths to the `allowed_path` function in the "Get specific changed files" step below.
 # 3. For any status check that should potentially be skipped and/or faked, go to the
 #    status check's config and add the relevant paths to the paths exclusion list.
 #    ("paths-ignore" for Github Actions and "paths.exclude" for Azure Pipelines.)
@@ -59,37 +59,43 @@ jobs:
           EXPECTED_CHANGED_FILES: ${{ github.event.pull_request.changed_files }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Retrieve all changed file paths in the PR via the GitHub API (handles pagination).
-          CHANGED_FILES=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
-            --paginate --jq '.[].filename')
-
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
+          # Keep filenames as JSON so unusual Git filenames cannot affect record boundaries
+          # or inject workflow commands into the log.
+          FILES_JSON=$(gh api \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files?per_page=100" \
+            --paginate --slurp)
 
           # The pull request files endpoint returns at most 3,000 files. Fail closed if
-          # the response is incomplete so that required checks are never faked in error.
-          FETCHED_CHANGED_FILES=$(printf '%s\n' "$CHANGED_FILES" | sed '/^$/d' | wc -l | tr -d ' ')
-          ONLY_MODIFIED="true"
-          if [ "$FETCHED_CHANGED_FILES" -ne "$EXPECTED_CHANGED_FILES" ]; then
-            ONLY_MODIFIED="false"
-            echo "Expected $EXPECTED_CHANGED_FILES changed files but fetched $FETCHED_CHANGED_FILES; required checks will not be faked."
-          fi
+          # the response is incomplete. For renames, both the old and new paths must be
+          # eligible so moving source code into docs cannot incorrectly fake required checks.
+          RESULT=$(jq -c --argjson expected "$EXPECTED_CHANGED_FILES" '
+            def allowed_path:
+              endswith(".md")
+              or startswith("docs/")
+              or . == ".github/CODEOWNERS"
+              or (startswith("common/changes/") and endswith(".json"))
+              or ((split("/") | last) == "CHANGELOG.json")
+              or ((split("/") | last) == "CHANGELOG.md");
 
-          # Check whether every changed file matches one of the allowed patterns:
-          #   **.md            – any Markdown file
-          #   docs/**          – anything under docs/
-          #   .github/CODEOWNERS
-          #   common/changes/**/*.json
-          #   **/CHANGELOG.json
-          #   **/CHANGELOG.md
-          while [ "$ONLY_MODIFIED" = "true" ] && IFS= read -r file; do
-            [ -z "$file" ] && continue
-            if ! echo "$file" | grep -qE '\.md$|^docs/|^\.github/CODEOWNERS$|^common/changes/.*\.json$|(^|.*/)CHANGELOG\.(json|md)$'; then
-              ONLY_MODIFIED="false"
-              echo "File not in skip list: $file"
-            fi
-          done <<< "$CHANGED_FILES"
+            (add // []) as $files
+            | {
+                fetched: ($files | length),
+                only_modified: (
+                  ($files | length) == $expected
+                  and all($files[];
+                    (.filename | allowed_path)
+                    and (
+                      .status != "renamed"
+                      or ((.previous_filename? // "") | allowed_path)
+                    )
+                  )
+                )
+              }
+          ' <<< "$FILES_JSON")
 
+          FETCHED_CHANGED_FILES=$(jq -r '.fetched' <<< "$RESULT")
+          ONLY_MODIFIED=$(jq -r '.only_modified' <<< "$RESULT")
+          echo "Expected $EXPECTED_CHANGED_FILES changed files; fetched $FETCHED_CHANGED_FILES."
           echo "only_modified=$ONLY_MODIFIED" >> "$GITHUB_OUTPUT"
 
       # Fake required checks if necessary
