@@ -65,17 +65,19 @@ export class UnitGraph {
     const { schemaName, schemaItemName } = this.resolveSchemaName(name, currentSchema);
 
     if (schemaName !== "") {
-      // Create schema key with schema name
-      const schemaKey = new SchemaKey(schemaName);
-      // Get schema with schema key
-      const schema = await this._context.getSchema(schemaKey);
-      if (!schema) {
-        throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
-          return { schema: schemaName };
-        });
-      } else {
-        // Set currentSchema to look up schemaItem to be whatever is prefixed in name
-        currentSchema = schema;
+      if (schemaName !== currentSchema.name) {
+        // Create schema key with schema name
+        const schemaKey = new SchemaKey(schemaName);
+        // Get schema with schema key
+        const schema = await this._context.getSchema(schemaKey);
+        if (!schema) {
+          throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
+            return { schema: schemaName };
+          });
+        } else {
+          // Set currentSchema to look up schemaItem to be whatever is prefixed in name
+          currentSchema = schema;
+        }
       }
       // Update name to not have prefix
       name = schemaItemName;
@@ -96,17 +98,19 @@ export class UnitGraph {
     const { schemaName, schemaItemName } = this.resolveSchemaName(name, currentSchema);
 
     if (schemaName !== "") {
-      // Create schema key with schema name
-      const schemaKey = new SchemaKey(schemaName);
-      // Get schema with schema key
-      const schema = this._context.getSchemaSync(schemaKey);
-      if (!schema) {
-        throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
-          return { schema: schemaName };
-        });
-      } else {
-        // Set currentSchema to look up schemaItem to be whatever is prefixed in name
-        currentSchema = schema;
+      if (schemaName !== currentSchema.name) {
+        // Create schema key with schema name
+        const schemaKey = new SchemaKey(schemaName);
+        // Get schema with schema key
+        const schema = this._context.getSchemaSync(schemaKey);
+        if (!schema) {
+          throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
+            return { schema: schemaName };
+          });
+        } else {
+          // Set currentSchema to look up schemaItem to be whatever is prefixed in name
+          currentSchema = schema;
+        }
       }
       // Update name to not have prefix
       name = schemaItemName;
