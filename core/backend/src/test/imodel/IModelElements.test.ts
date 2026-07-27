@@ -74,7 +74,7 @@ describe("iModel elements", () => {
     return imodel;
   };
 
-  it("should be able to get properties of an iIModel", () => {
+  it("should be able to get properties of an iModel", () => {
     const imodel1 = testBimReadonly;
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
     const extents: AxisAlignedBox3d = imodel1.projectExtents;
@@ -997,7 +997,7 @@ describe("iModel elements", () => {
     imodel.close();
   });
 
-  it("should throw iTwinErrors on element CRUD opertion fails", async () => {
+  it("should throw iTwinErrors on element CRUD operation fails", async () => {
     const imodel1 = trackMutableIModel(await generateTestSnapshot("elements-crud-errors.bim", "test.bim"));
     const txn = new EditTxn(imodel1, "element CRUD failure cases");
     txn.start();

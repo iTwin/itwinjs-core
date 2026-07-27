@@ -166,7 +166,7 @@ describe("iModel relationships", () => {
     testImodel.close();
   });
 
-  it("should throw \"constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)\" when inserting a relationsip instance with the same prop twice", () => {
+  it("should throw \"constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)\" when inserting a relationship instance with the same prop twice", () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "insertDuplicateInstance.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "insertDuplicateInstance" } });
     const txn = new EditTxn(imodel, "insert duplicate relationship instance");
