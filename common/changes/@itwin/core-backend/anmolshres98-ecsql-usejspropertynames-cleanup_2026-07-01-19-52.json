@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Stopped using deprecated QueryRowFormat.UseJsPropertyNames in IModelDb ECSQL queries.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "anmolshres98@users.noreply.github.com"
+}

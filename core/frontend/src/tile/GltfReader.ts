@@ -2319,6 +2319,9 @@ export abstract class GltfReader {
       }
       case GltfMeshMode.LineStrip: {
         assert(undefined !== bufferView); // compiler can't seem to infer this...
+        // Per the KHR_mesh_primitive_restart extension (https://github.com/KhronosGroup/glTF/pull/2569), the indices accessor may contain
+        // "primitive restart" values - the maximum value for the accessor's component type - each of which terminates the current line strip
+        // and begins a new one. This permits many strips to be batched into a single primitive.
         const restart = GltfDataType.UnsignedByte === bufferView.type ? 0xff : (GltfDataType.UnsignedShort === bufferView.type ? 0xffff : 0xffffffff);
         for (const index of data.buffer) {
           if (index === restart) {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add internal applyChangeset (and test-support startChangeTracking/executeDdl/createChangeset) API to SQLiteDb.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "affan.khan@users.noreply.github.com"
+}
