@@ -6,10 +6,8 @@
 import {
   BaselineShift,
   ColorDef,
-  FieldCase,
   FieldFormatOptions,
   FieldRun,
-  FieldUnitSystem,
   FractionRun,
   LeaderTextPointOptions,
   LineBreakRun,
@@ -40,7 +38,6 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { dtaIpc } from "./App";
-import { parseArgs } from "@itwin/frontend-devtools";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
 // cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint, subscriptscale, superscriptscale, insertstyle, updatestyle, deletestyle, applystyle
@@ -346,14 +343,7 @@ export class TextDecorationTool extends Tool {
     ["font <name>", "Set the font for subsequent runs."],
     ["text <content>", "Append a text run."],
     ["fraction <numerator> <denominator>", "Append a stacked fraction run."],
-    ["field e=<elementId> p=<schema:class:property>", "Append a field run. Accepts optional format-option args below."],
-    ["  f=<formatOptionsJson>", "Full FieldFormatOptions JSON blob (other args are merged on top)."],
-    ["  pre=<str>", "Prefix inserted before the formatted value."],
-    ["  suf=<str>", "Suffix inserted after the formatted value."],
-    ["  case=<upper|lower|as-is>", "Case transform applied to the formatted value."],
-    ["  us=<metric|imperial|usCustomary|usSurvey>", "Unit system used when resolving a format from the property's KindOfQuantity."],
-    ["  koq=<schema.koq>", "Full name of a KindOfQuantity to look up via the FormatsProvider (overrides the property's own KoQ)."],
-    ["  fp=<formatPropsJson>", "Inline FormatProps override (highest priority; ignores us/koq)."],
+    ["field <fieldPropsJson>", "Append a field run. JSON with elementId, schemaName, className, propertyName, and optional formatOptions. Use single quotes instead of double quotes in the JSON."],
     ["break", "Append a line break."],
     ["tab [spaces]", "Append a tab run with an optional tab interval."],
     ["paragraph", "Append a new paragraph."],
@@ -678,41 +668,17 @@ export class TextDecorationTool extends Tool {
         editor.appendFraction(inArgs[1], inArgs[2]);
         break;
       case "field": {
-        const fieldArgs = parseArgs(inArgs.slice(1));
-        const elementId = fieldArgs.get("e");
-        const propertyParts = fieldArgs.get("p")?.split(":");
-        if (!elementId || propertyParts?.length !== 3) {
-          throw new Error("Expected e=elementId p=schema:class:propertyName");
+        if (!arg) {
+          throw new Error("Expected JSON blob with elementId, schemaName, className, propertyName, and optional formatOptions");
         }
-        const formatString = fieldArgs.get("f");
-        const formatOptions: FieldFormatOptions = formatString ? JSON.parse(formatString) : {};
-
-        const prefix = fieldArgs.get("pre");
-        if (prefix !== undefined) formatOptions.prefix = prefix;
-        const suffix = fieldArgs.get("suf");
-        if (suffix !== undefined) formatOptions.suffix = suffix;
-        const caseOpt = fieldArgs.get("case");
-        if (caseOpt !== undefined) formatOptions.case = caseOpt as FieldCase;
-
-        const unitSystem = fieldArgs.get("us");
-        const formatSetKey = fieldArgs.get("koq");
-        const inlineFormat = fieldArgs.get("fp");
-        const persistenceUnit = fieldArgs.get("pu");
-        if (unitSystem !== undefined || formatSetKey !== undefined || inlineFormat !== undefined || persistenceUnit !== undefined) {
-          formatOptions.quantity = { ...(formatOptions.quantity ?? {}) };
-          if (unitSystem !== undefined) formatOptions.quantity.unitSystem = unitSystem as FieldUnitSystem;
-          if (formatSetKey !== undefined) formatOptions.quantity.formatSetKey = formatSetKey;
-          if (inlineFormat !== undefined) formatOptions.quantity.format = JSON.parse(inlineFormat);
-          if (persistenceUnit !== undefined) formatOptions.quantity.persistenceUnit = persistenceUnit;
-        }
-
-        editor.appendField({
-          elementId,
-          schemaName: propertyParts[0],
-          className: propertyParts[1],
-          propertyName: propertyParts[2],
-          formatOptions: Object.keys(formatOptions).length > 0 ? formatOptions : undefined,
-        });
+        const fieldProps = JSON.parse(arg.replaceAll("'", "\"")) as {
+          elementId: string,
+          schemaName: string,
+          className: string,
+          propertyName: string,
+          formatOptions?: FieldFormatOptions,
+        };
+        editor.appendField(fieldProps);
         break;
       }
       case "break":
