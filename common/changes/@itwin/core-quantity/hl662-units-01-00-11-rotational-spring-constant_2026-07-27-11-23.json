@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Added KN_M_PER_DEG and KPF_FT_PER_DEG units to the ROTATIONAL_SPRING_CONSTANT phenomenon (Units 01.00.11).",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
