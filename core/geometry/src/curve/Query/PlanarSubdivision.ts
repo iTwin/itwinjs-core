@@ -214,17 +214,15 @@ export class PlanarSubdivision {
   /**
    * Based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative,
    * or sliver loops.
-   * @param zeroAreaTolerance absolute area tolerance for sliver face detection
+   * @param areaTol absolute area tolerance for sliver face detection
    * @param isSliverFace whether the loop is known a priori (e.g., via topology) to have zero area
    * @returns the area (forced to zero if within tolerance)
    */
-  public static collectSignedLoop(
-    loop: Loop, outLoops: SignedLoops, zeroAreaTolerance: number = 1.0e-10, isSliverFace?: boolean,
-  ): number {
+  public static collectSignedLoop(loop: Loop, outLoops: SignedLoops, areaTol: number = 1.0e-10, isSliverFace?: boolean): number {
     let area = isSliverFace ? 0.0 : RegionOps.computeXYArea(loop);
     if (area === undefined)
       area = 0;
-    if (Math.abs(area) < zeroAreaTolerance)
+    if (Math.abs(area) < areaTol)
       area = 0.0;
     (loop as any).computedAreaInPlanarSubdivision = area;
     if (area > 0)
@@ -357,7 +355,7 @@ export class PlanarSubdivision {
     }
     return e1;
   }
-  public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, zeroAreaTolerance: number = 1.0e-10): SignedLoops[] {
+  public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, closureTol: number = Geometry.smallMetricDistance, areaTol: number = 1.0e-10): SignedLoops[] {
     const q = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, undefined);
     const result: SignedLoops[] = [];
     const edgeMap = new Map<HalfEdge, LoopCurveLoopCurve>();
@@ -381,9 +379,9 @@ export class PlanarSubdivision {
             }
           }
         };
-        const loop = this.createLoopInFace(faceSeed, { announceEdge });
+        const loop = this.createLoopInFace(faceSeed, { announceEdge, closureTol });
         if (loop)
-          this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance, isNullFace);
+          this.collectSignedLoop(loop, componentAreas, areaTol, isNullFace);
       }
       componentAreas.edges = edges;
       result.push(componentAreas);

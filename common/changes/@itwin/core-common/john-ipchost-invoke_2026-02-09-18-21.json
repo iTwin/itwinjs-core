@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added support for backend-to-frontend Ipc invoke calls (IpcHost.invoke/IpcApp.handle).",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

@@ -109,7 +109,7 @@ export class ElementState extends EntityState implements ElementProps {
   public override toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
     if (Id64.isValid(this.code.spec))
-      val.code = this.code;
+      val.code = this.code.toJSON(); // Ensure _value with get accessor is serialized...
 
     val.model = this.model;
     val.parent = this.parent;

@@ -1393,6 +1393,31 @@ describe("iModel", () => {
     assert.equal(physicalObjectIds.size, 1);
   });
 
+  it("queryEntityIds should skip undefined and null bindings", () => {
+    // Callers commonly build the WHERE clause conditionally but pass the bindings object
+    // unconditionally, relying on undefined entries being skipped (legacy bindValues semantics).
+    const baseline = imodel2.queryEntityIds({ from: "generic.PhysicalObject", where: "codevalue is null" });
+    assert.isAtLeast(baseline.size, 1);
+
+    const parent: string | undefined = undefined;
+    const where = "codevalue is null";
+    const withUnusedUndefined = imodel2.queryEntityIds({ from: "generic.PhysicalObject", where, bindings: { parent } });
+    assert.deepEqual(withUnusedUndefined, baseline);
+
+    const withUnusedNull = imodel2.queryEntityIds({ from: "generic.PhysicalObject", where: "codevalue is null", bindings: { parent: null } });
+    assert.deepEqual(withUnusedNull, baseline);
+
+    const someId = imodel2.queryEntityIds({ from: "bis.element", where: "CodeValue IS NOT NULL", limit: 1 }).values().next().value as string;
+    assert.isDefined(someId);
+    const codeValue = imodel2.elements.getElement(someId).code.value;
+    const mixed = imodel2.queryEntityIds({ from: "bis.element", where: "CodeValue=:cv", bindings: { cv: codeValue, parent: undefined } });
+    assert.isTrue(mixed.has(someId));
+
+    // positional form: trailing undefined beyond the parameter count must be skipped, not bound
+    const positional = imodel2.queryEntityIds({ from: "bis.element", where: "CodeValue=?", bindings: [codeValue, undefined] });
+    assert.isTrue(positional.has(someId));
+  });
+
   it("validate BisCodeSpecs", async () => {
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subCategory).scopeType, CodeScopeSpec.Type.ParentElement);

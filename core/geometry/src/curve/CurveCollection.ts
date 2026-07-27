@@ -194,6 +194,11 @@ export abstract class CurveCollection extends GeometryQuery {
     for (const curve of this.children)
       curve.reverseInPlace();
   }
+  /** Call [[reverseInPlace]] and return the instance. */
+  public reverse(): this {
+    this.reverseInPlace();
+    return this;
+  }
   /**
    * Return the max gap between adjacent primitives in Path and Loop collections.
    * * In a Path, gaps are computed between consecutive primitives.

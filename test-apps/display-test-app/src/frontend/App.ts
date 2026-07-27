@@ -51,6 +51,7 @@ import {
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
 import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
+import { InvokeFrontendIpcTool, registerDtaFrontendIpcHandler } from "./InvokeFrontendIpcTool";
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
@@ -408,6 +409,7 @@ export class DisplayTestApp {
       GenerateTileContentTool,
       GltfDecorationTool,
       IncidentMarkerDemoTool,
+      InvokeFrontendIpcTool,
       PathDecorationTestTool,
       MacroTool,
       MarkupSelectTestTool,
@@ -451,6 +453,8 @@ export class DisplayTestApp {
     ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
+
+    registerDtaFrontendIpcHandler();
 
     BingTerrainMeshProvider.register();
 
