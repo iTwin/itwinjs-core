@@ -6,10 +6,17 @@
 import { IModelError, QueryPropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DbResult } from "@itwin/core-bentley";
+import { BentleyError, DbResult, Logger } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { _getStatementCache, _nativeDb } from "./internal/Symbols";
 import { ECDb } from "./ECDb";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+
+const statementNotPreparedMessage = "Statement is not prepared. Likely cause: the db was closed before step is called or the ECSqlSyncReader is used outside the context of the callback passed to withQueryReader.";
+
+function logStatementCleanupError(message: string, error: unknown): void {
+  Logger.logTrace(BackendLoggerCategory.ECDb, message, () => ({ error: BentleyError.getErrorMessage(error) }));
+}
 
 // --------------------------------------------------------------------------------------------
 // Internal result types
@@ -57,9 +64,8 @@ export class ECSqlRowExecutor implements Disposable {
     this._stmt = undefined;
     try {
       stmt?.[Symbol.dispose]();
-    } catch {
-      // Best-effort teardown: disposing a statement whose native ECDb cache was already torn down
-      // may throw; swallow so db close is not disrupted.
+    } catch (error) {
+      logStatementCleanupError("Failed to dispose an ECSQL statement while closing its database.", error);
     }
   }
 
@@ -79,13 +85,14 @@ export class ECSqlRowExecutor implements Disposable {
         this._db[_getStatementCache]().addOrDispose(stmt);
       else
         stmt[Symbol.dispose]();
-    } catch {
+    } catch (error) {
+      logStatementCleanupError("Failed to return an ECSQL statement to the statement cache; disposing it instead.", error);
       // If returning the statement to the cache fails (e.g. the native ECDb cache was cleared while
       // the reader was active), dispose it directly and never mask the caller's original error.
       try {
         stmt[Symbol.dispose]();
-      } catch {
-        // ignore - best effort
+      } catch (disposeError) {
+        logStatementCleanupError("Failed to dispose an ECSQL statement after it could not be returned to the statement cache.", disposeError);
       }
     }
   }
@@ -128,7 +135,7 @@ export class ECSqlRowExecutor implements Disposable {
    */
   public stepNextRow(options: IModelJsNative.ECSqlRowAdaptorOptions): any {
     if (!this._stmt?.isPrepared)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Statement is not prepared. Likely cause: the db was closed before step is called or the ECSqlSyncReader is used outside the context of the callback passed to withQueryReader.");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, statementNotPreparedMessage);
     const stepResult = this._stmt.step();
     if (stepResult === DbResult.BE_SQLITE_ROW)
       return this._stmt.toRow(options).data;
@@ -145,7 +152,7 @@ export class ECSqlRowExecutor implements Disposable {
    */
   public fetchMetadata(options: IModelJsNative.ECSqlRowAdaptorOptions): QueryPropertyMetaData[] {
     if (!this._stmt?.isPrepared)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Statement is not prepared. Likely cause: the db was closed before step is called or the ECSqlSyncReader is used outside the context of the callback passed to withQueryReader.");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, statementNotPreparedMessage);
     return this._stmt.getMetadata(options).properties;
   }
 
@@ -176,8 +183,8 @@ export class ECSqlRowExecutor implements Disposable {
       // Do not assign `_stmt` to an unprepared statement so disposal never tries to cache it.
       try {
         stmt[Symbol.dispose]();
-      } catch {
-        // ignore - best effort
+      } catch (disposeError) {
+        logStatementCleanupError("Failed to dispose an ECSQL statement after preparation failed.", disposeError);
       }
       return { isSuccessful: false, message: error.message };
     }
@@ -194,7 +201,11 @@ export class ECSqlRowExecutor implements Disposable {
       if (args === undefined)
         return { isSuccessful: true };
 
-      this._stmt!.bindParams(args); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      const stmt = this._stmt;
+      if (!stmt?.isPrepared)
+        return { isSuccessful: false, message: statementNotPreparedMessage };
+
+      stmt.bindParams(args);
       return { isSuccessful: true };
     } catch (error: any) {
       return { isSuccessful: false, message: error.message };
