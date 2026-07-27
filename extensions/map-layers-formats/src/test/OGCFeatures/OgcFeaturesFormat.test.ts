@@ -116,6 +116,31 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
   });
 
+  it("reports InvalidCredentials when the credentialed collections fetch is challenged", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    registry.trustedCredentialsOrigins = ["https://third-party.example.org"];
+    stubFetch(
+      { [sourceUrl]: makeLandingPage(crossOriginCollectionsUrl) },
+      { [crossOriginCollectionsUrl]: 401 },
+    );
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(getAuthorization(fetchCalls[1].init)).to.not.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidCredentials);
+  });
+
+  it("reports InvalidUrl when the collections fetch fails for a non-auth reason", async () => {
+    stubFetch(
+      { [sourceUrl]: makeLandingPage(sameOriginCollectionsUrl) },
+      { [sameOriginCollectionsUrl]: 500 },
+    );
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidUrl);
+  });
+
   it("attaches basic-auth credentials to a same-origin collections link when restriction is enabled", async () => {
     registry.restrictCredentialsToTrustedOrigins = true;
     stubFetch({

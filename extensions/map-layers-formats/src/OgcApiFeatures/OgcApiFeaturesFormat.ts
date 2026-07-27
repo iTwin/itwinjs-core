@@ -87,9 +87,15 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
           IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(collectionsUrl, source.url);
 
         response = await fetch(collectionsUrl, allowCreds ? opts : { method: "GET" });
-        // Some servers reject unauthenticated requests with 403 (Forbidden) instead of a 401 challenge.
-        if (!allowCreds && (response.status === 401 || response.status === 403))
-          return { status: MapLayerSourceStatus.UntrustedOrigin };
+        if (!response.ok) {
+          // Some servers reject unauthenticated requests with 403 (Forbidden) instead of a 401 challenge.
+          if (response.status === 401 || response.status === 403) {
+            if (!allowCreds)
+              return { status: MapLayerSourceStatus.UntrustedOrigin };
+            return { status: (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth };
+          }
+          return { status: MapLayerSourceStatus.InvalidUrl };
+        }
 
         json = await response.json();
         if (Array.isArray(json.collections)) {
