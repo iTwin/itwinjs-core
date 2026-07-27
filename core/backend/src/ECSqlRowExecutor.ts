@@ -26,12 +26,18 @@ function logStatementCleanupError(loggerCategory: string, message: string, error
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-export function releaseECSqlStatement(stmt: ECSqlStatement, cache: StatementCache<ECSqlStatement>, loggerCategory: string): void {
-  try {
-    if (stmt.isPrepared)
-      cache.addOrDispose(stmt);
-    else
+export function releaseECSqlStatement(stmt: ECSqlStatement, cache: StatementCache<ECSqlStatement>, loggerCategory: string, canCache: boolean): void {
+  if (!canCache || !stmt.isPrepared) {
+    try {
       stmt[Symbol.dispose]();
+    } catch (error) {
+      logStatementCleanupError(loggerCategory, "Failed to dispose an ECSQL statement that could not be cached.", error);
+    }
+    return;
+  }
+
+  try {
+    cache.addOrDispose(stmt);
   } catch (error) {
     try {
       stmt[Symbol.dispose]();
@@ -66,6 +72,12 @@ interface OperationResult {
 export class ECSqlRowExecutor implements Disposable {
   private _removeListener: () => void;
   private _isDisposed = false;
+  private _canCacheStatement = true;
+
+  /** Whether the statement completed preparation and can be returned to its cache.
+   * @internal
+   */
+  public get canCacheStatement(): boolean { return this._canCacheStatement; }
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public constructor(private readonly _db: IModelDb | ECDb, private readonly _stmt: ECSqlStatement, private readonly _loggerCategory: string) {
@@ -174,6 +186,12 @@ export class ECSqlRowExecutor implements Disposable {
       this._stmt.prepare(this._db[_nativeDb], ecsql);
       return { isSuccessful: true };
     } catch (error: any) {
+      this._canCacheStatement = false;
+      try {
+        this._stmt[Symbol.dispose]();
+      } catch (disposeError) {
+        logStatementCleanupError(this._loggerCategory, "Failed to dispose an ECSQL statement after preparation failed.", disposeError);
+      }
       return { isSuccessful: false, message: error.message };
     }
   }

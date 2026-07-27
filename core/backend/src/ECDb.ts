@@ -486,7 +486,7 @@ export class ECDb implements Disposable {
     const executor = new ECSqlRowExecutor(this, stmt, loggerCategory);
     const release = () => {
       executor[Symbol.dispose]();
-      releaseECSqlStatement(stmt, this._statementCache, loggerCategory);
+      releaseECSqlStatement(stmt, this._statementCache, loggerCategory, executor.canCacheStatement);
     };
     try {
       const reader = new ECSqlSyncReader(executor, ecsql, params, config);

@@ -175,9 +175,12 @@ describe("WithQueryReaderTests", () => {
 
     it("recovers from a prepare failure without poisoning the cache", () => {
       iModel.clearCaches();
-      expect(() => iModel.withQueryReader("SELECT * FROM bis.ThisClassDoesNotExist", (reader) => reader.step()))
-        .to.throw();
-      // The failed prepare must not prevent later valid queries from working.
+      const invalidSql = "SELECT * FROM bis.ThisClassDoesNotExist";
+      const prepareSpy = sinon.spy(ECSqlStatement.prototype, "prepare"); // eslint-disable-line @typescript-eslint/no-deprecated
+      expect(() => iModel.withQueryReader(invalidSql, (reader) => reader.step())).to.throw();
+      expect(() => iModel.withQueryReader(invalidSql, (reader) => reader.step())).to.throw();
+      expect(prepareSpy.callCount).to.equal(2, "a statement that failed to prepare must not be cached");
+
       iModel.withQueryReader(sql, (reader) => {
         assert.isTrue(reader.step());
         expect(reader.current[0]).to.equal("0x1");
