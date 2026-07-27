@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-    "comment": "Add synchronous UnitConverter.calculateConversionSync for unit conversions.",
+      "comment": "Add synchronous UnitConverter.calculateConversionSync for unit conversions.",
       "type": "none"
     }
   ],
