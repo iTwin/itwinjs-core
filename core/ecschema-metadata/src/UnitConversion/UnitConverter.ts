@@ -64,6 +64,7 @@ export class UnitConverter {
    * @throws Error if from and to Units do not belong to the same phenomenon
    * @throws Error if definitions' SchemaItems cannot be found in its own or referenced Schemas
    * @throws Error if base units of source and target unit do not match
+   * @throws Error if an async unit-graph build is in progress on this converter and a synchronous conversion is requested
    */
   public calculateConversionSync(fromUnit: string, toUnit: string): UnitConversion {
     const { fromSchemaName, fromSchemaItemName, toSchemaName, toSchemaItemName, fromSchemaKey, toSchemaKey } = this.parseConversionInput(fromUnit, toUnit);
