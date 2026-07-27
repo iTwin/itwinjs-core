@@ -3127,6 +3127,7 @@ export class Unit extends SchemaItem {
 export class UnitConverter {
     constructor(_context: SchemaContext);
     calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion>;
+    calculateConversionSync(fromUnit: string, toUnit: string): UnitConversion;
 }
 
 // @public @preview (undocumented)
