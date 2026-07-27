@@ -97,8 +97,7 @@ export class UnitGraph {
   }
 
   private resolveSchemaName(name: string, currentSchema: Schema): { schemaName: string, schemaItemName: string } {
-    let [schemaName] = SchemaItem.parseFullName(name);
-    const [, schemaItemName] = SchemaItem.parseFullName(name);
+    let [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
     if (schemaName !== "") {
       if (schemaName === currentSchema.name || schemaName === currentSchema.alias) {
         schemaName = currentSchema.name;
