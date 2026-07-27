@@ -62,25 +62,9 @@ export class UnitGraph {
    * @param currentSchema schema to find name in; name could also be in a referenced schema of current schema
    */
   public async resolveUnit(name: string, currentSchema: Schema): Promise<Unit | Constant> {
-    let [schemaName] = SchemaItem.parseFullName(name);
-    const [, schemaItemName] = SchemaItem.parseFullName(name);
+    const { schemaName, schemaItemName } = this.resolveSchemaName(name, currentSchema);
 
     if (schemaName !== "") {
-      // Check if schemaName is schemaName or alias
-      const ref = currentSchema.getReferenceSync(schemaName);
-      const refName = currentSchema.getReferenceNameByAlias(schemaName);
-      if (ref) {
-        // Got schema by schemaName
-        schemaName = ref.name;
-      } else if (refName) {
-        // Got schema by alias
-        schemaName = refName;
-      } else {
-        // Didn't match any referenced schema, check if it is current schemaName or alias
-        if (schemaName === currentSchema.name || schemaName === currentSchema.alias)
-          schemaName = currentSchema.name;
-      }
-
       // Create schema key with schema name
       const schemaKey = new SchemaKey(schemaName);
       // Get schema with schema key
@@ -100,18 +84,7 @@ export class UnitGraph {
     // Create schema item key with name and schema
     const itemKey = new SchemaItemKey(name, currentSchema.schemaKey);
     // Get schema item with schema item key
-    const item = await this._context.getSchemaItem(itemKey);
-    if (!item)
-      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item", () => {
-        return { item: name };
-      });
-
-    if (item.schemaItemType === SchemaItemType.Unit || item.schemaItemType === SchemaItemType.Constant)
-      return item as Unit | Constant;
-
-    throw new BentleyError(BentleyStatus.ERROR, "Item is neither a unit or a constant", () => {
-      return { itemType: item.key.fullName };
-    });
+    return this.validateResolvedItem(await this._context.getSchemaItem(itemKey), name);
   }
 
   /**
@@ -120,25 +93,9 @@ export class UnitGraph {
    * @param currentSchema schema to find name in; name could also be in a referenced schema of current schema
    */
   public resolveUnitSync(name: string, currentSchema: Schema): Unit | Constant {
-    let [schemaName] = SchemaItem.parseFullName(name);
-    const [, schemaItemName] = SchemaItem.parseFullName(name);
+    const { schemaName, schemaItemName } = this.resolveSchemaName(name, currentSchema);
 
     if (schemaName !== "") {
-      // Check if schemaName is schemaName or alias
-      const ref = currentSchema.getReferenceSync(schemaName);
-      const refName = currentSchema.getReferenceNameByAlias(schemaName);
-      if (ref) {
-        // Got schema by schemaName
-        schemaName = ref.name;
-      } else if (refName) {
-        // Got schema by alias
-        schemaName = refName;
-      } else {
-        // Didn't match any referenced schema, check if it is current schemaName or alias
-        if (schemaName === currentSchema.name || schemaName === currentSchema.alias)
-          schemaName = currentSchema.name;
-      }
-
       // Create schema key with schema name
       const schemaKey = new SchemaKey(schemaName);
       // Get schema with schema key
@@ -158,10 +115,34 @@ export class UnitGraph {
     // Create schema item key with name and schema
     const itemKey = new SchemaItemKey(name, currentSchema.schemaKey);
     // Get schema item with schema item key
-    const item = this._context.getSchemaItemSync(itemKey);
+    return this.validateResolvedItem(this._context.getSchemaItemSync(itemKey), name);
+  }
+
+  private resolveSchemaName(name: string, currentSchema: Schema): { schemaName: string, schemaItemName: string } {
+    let [schemaName] = SchemaItem.parseFullName(name);
+    const [, schemaItemName] = SchemaItem.parseFullName(name);
+    if (schemaName !== "") {
+      // Check if schemaName is schemaName or alias
+      const ref = currentSchema.getReferenceSync(schemaName);
+      const refName = currentSchema.getReferenceNameByAlias(schemaName);
+      if (ref) {
+        // Got schema by schemaName
+        schemaName = ref.name;
+      } else if (refName) {
+        // Got schema by alias
+        schemaName = refName;
+      } else if (schemaName === currentSchema.name || schemaName === currentSchema.alias) {
+        // Didn't match any referenced schema, check if it is current schemaName or alias
+        schemaName = currentSchema.name;
+      }
+    }
+    return { schemaName, schemaItemName };
+  }
+
+  private validateResolvedItem(item: SchemaItem | undefined, itemName: string): Unit | Constant {
     if (!item)
       throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item", () => {
-        return { item: name };
+        return { item: itemName };
       });
 
     if (item.schemaItemType === SchemaItemType.Unit || item.schemaItemType === SchemaItemType.Constant)
