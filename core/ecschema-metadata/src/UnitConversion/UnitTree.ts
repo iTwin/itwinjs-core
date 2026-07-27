@@ -199,6 +199,12 @@ export class UnitGraph {
    * @param unit Current unit to be added to graph
    */
   public addUnitSync(unit: Unit | Constant): void {
+    if (this._unitsInProgress.size > 0) {
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot build UnitGraph synchronously while async graph construction is in progress", () => {
+        return { unit: unit.key.fullName };
+      });
+    }
+
     if (this._graph.hasNode(unit.key.fullName))
       return;
 
