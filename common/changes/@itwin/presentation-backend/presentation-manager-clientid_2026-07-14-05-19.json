@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Presentation manager caching no longer keys on the untrusted, caller-supplied clientId. In web (RPC) deployments the manager is keyed by the authenticated user (JWT sub claim); in IPC apps a single shared manager is used. This prevents arbitrary client ids from allocating unbounded managers.",
+      "type": "none",
+      "packageName": "@itwin/presentation-backend"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

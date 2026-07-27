@@ -161,7 +161,7 @@ export interface PresentationManagerProps {
    * store this ID in their local storage so the ID can be reused across
    * sessions - this allows reusing some caches.
    *
-   * Defaults to a unique GUID as a client id.
+   * @deprecated in 5.12. This property is no longer used and has no effect.
    */
   clientId?: string;
 
@@ -254,6 +254,7 @@ export class PresentationManager implements Disposable {
 
     this._requestsHandler =
       (props as PresentationManagerInternalProps)?.rpcRequestsHandler ??
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- `clientId` is still forwarded for backwards compatibility with older backends
       new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();

@@ -6,7 +6,7 @@
 
 import { expect } from "chai";
 import deepEqual from "deep-equal";
-import fastSort from "fast-sort";
+import { sort } from "fast-sort";
 import { IModelConnection } from "@itwin/core-frontend";
 import { InstanceKey, NodeKey, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
@@ -14,8 +14,6 @@ import { initialize, terminate } from "../../../IntegrationTests.js";
 import { printRuleset } from "../../Utils.js";
 import { collect } from "../../../Utils.js";
 import { TestIModelConnection } from "../../../IModelSetupUtils.js";
-
-const { sort } = fastSort;
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
