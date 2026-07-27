@@ -63,30 +63,17 @@ export class UnitGraph {
    */
   public async resolveUnit(name: string, currentSchema: Schema): Promise<Unit | Constant> {
     const { schemaName, schemaItemName } = this.resolveSchemaName(name, currentSchema);
-
-    if (schemaName !== "") {
-      if (schemaName !== currentSchema.name) {
-        // Create schema key with schema name
-        const schemaKey = new SchemaKey(schemaName);
-        // Get schema with schema key
-        const schema = await this._context.getSchema(schemaKey);
-        if (!schema) {
-          throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
-            return { schema: schemaName };
-          });
-        } else {
-          // Set currentSchema to look up schemaItem to be whatever is prefixed in name
-          currentSchema = schema;
-        }
-      }
-      // Update name to not have prefix
-      name = schemaItemName;
-    }
+    const schema = this.resolveLookupSchema(
+      currentSchema,
+      schemaName,
+      schemaName !== "" && schemaName !== currentSchema.name ? await this._context.getSchema(new SchemaKey(schemaName)) : currentSchema,
+    );
+    const itemName = this.resolveItemName(name, schemaName, schemaItemName);
 
     // Create schema item key with name and schema
-    const itemKey = new SchemaItemKey(name, currentSchema.schemaKey);
+    const itemKey = new SchemaItemKey(itemName, schema.schemaKey);
     // Get schema item with schema item key
-    return this.validateResolvedItem(await this._context.getSchemaItem(itemKey), name);
+    return this.validateResolvedItem(await this._context.getSchemaItem(itemKey), itemName);
   }
 
   /**
@@ -96,30 +83,17 @@ export class UnitGraph {
    */
   public resolveUnitSync(name: string, currentSchema: Schema): Unit | Constant {
     const { schemaName, schemaItemName } = this.resolveSchemaName(name, currentSchema);
-
-    if (schemaName !== "") {
-      if (schemaName !== currentSchema.name) {
-        // Create schema key with schema name
-        const schemaKey = new SchemaKey(schemaName);
-        // Get schema with schema key
-        const schema = this._context.getSchemaSync(schemaKey);
-        if (!schema) {
-          throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
-            return { schema: schemaName };
-          });
-        } else {
-          // Set currentSchema to look up schemaItem to be whatever is prefixed in name
-          currentSchema = schema;
-        }
-      }
-      // Update name to not have prefix
-      name = schemaItemName;
-    }
+    const schema = this.resolveLookupSchema(
+      currentSchema,
+      schemaName,
+      schemaName !== "" && schemaName !== currentSchema.name ? this._context.getSchemaSync(new SchemaKey(schemaName)) : currentSchema,
+    );
+    const itemName = this.resolveItemName(name, schemaName, schemaItemName);
 
     // Create schema item key with name and schema
-    const itemKey = new SchemaItemKey(name, currentSchema.schemaKey);
+    const itemKey = new SchemaItemKey(itemName, schema.schemaKey);
     // Get schema item with schema item key
-    return this.validateResolvedItem(this._context.getSchemaItemSync(itemKey), name);
+    return this.validateResolvedItem(this._context.getSchemaItemSync(itemKey), itemName);
   }
 
   private resolveSchemaName(name: string, currentSchema: Schema): { schemaName: string, schemaItemName: string } {
@@ -141,6 +115,23 @@ export class UnitGraph {
       }
     }
     return { schemaName, schemaItemName };
+  }
+
+  private resolveLookupSchema(currentSchema: Schema, schemaName: string, resolvedSchema: Schema | undefined): Schema {
+    if (schemaName === "" || schemaName === currentSchema.name)
+      return currentSchema;
+
+    if (!resolvedSchema) {
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
+        return { schema: schemaName };
+      });
+    }
+
+    return resolvedSchema;
+  }
+
+  private resolveItemName(name: string, schemaName: string, schemaItemName: string): string {
+    return schemaName === "" ? name : schemaItemName;
   }
 
   private validateResolvedItem(item: SchemaItem | undefined, itemName: string): Unit | Constant {

@@ -5,6 +5,7 @@
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { Constant } from "../Metadata/Constant";
+import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { SchemaKey } from "../SchemaKey";
@@ -37,19 +38,16 @@ export class UnitConverter {
    * @throws Error if base units of source and target unit do not match
    */
   public async calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion> {
-    const [fromSchemaName, fromSchemaItemName] = SchemaItem.parseFullName(fromUnit);
-    const [toSchemaName, toSchemaItemName] = SchemaItem.parseFullName(toUnit);
-    const fromSchemaKey = new SchemaKey(fromSchemaName);
-    const toSchemaKey = new SchemaKey(toSchemaName);
+    const { fromSchemaName, fromSchemaItemName, toSchemaName, toSchemaItemName, fromSchemaKey, toSchemaKey } = this.parseConversionInput(fromUnit, toUnit);
 
-    const fromSchema = await this._context.getSchema(fromSchemaKey);
-    const toSchema = await this._context.getSchema(toSchemaKey);
-
-    if (!fromSchema || !toSchema) {
-      throw new BentleyError(BentleyStatus.ERROR, "Cannot find from's and/or to's schema", () => {
-        return { from: fromUnit, fromSchema: fromSchemaName, to: toUnit, toSchema: toSchemaName };
-      });
-    }
+    const { fromSchema, toSchema } = this.ensureSchemasExist(
+      await this._context.getSchema(fromSchemaKey),
+      await this._context.getSchema(toSchemaKey),
+      fromUnit,
+      toUnit,
+      fromSchemaName,
+      toSchemaName,
+    );
 
     const from = await this._uGraph.resolveUnit(fromSchemaItemName, fromSchema);
     const to = await this._uGraph.resolveUnit(toSchemaItemName, toSchema);
@@ -68,19 +66,16 @@ export class UnitConverter {
    * @throws Error if base units of source and target unit do not match
    */
   public calculateConversionSync(fromUnit: string, toUnit: string): UnitConversion {
-    const [fromSchemaName, fromSchemaItemName] = SchemaItem.parseFullName(fromUnit);
-    const [toSchemaName, toSchemaItemName] = SchemaItem.parseFullName(toUnit);
-    const fromSchemaKey = new SchemaKey(fromSchemaName);
-    const toSchemaKey = new SchemaKey(toSchemaName);
+    const { fromSchemaName, fromSchemaItemName, toSchemaName, toSchemaItemName, fromSchemaKey, toSchemaKey } = this.parseConversionInput(fromUnit, toUnit);
 
-    const fromSchema = this._context.getSchemaSync(fromSchemaKey);
-    const toSchema = this._context.getSchemaSync(toSchemaKey);
-
-    if (!fromSchema || !toSchema) {
-      throw new BentleyError(BentleyStatus.ERROR, "Cannot find from's and/or to's schema", () => {
-        return { from: fromUnit, fromSchema: fromSchemaName, to: toUnit, toSchema: toSchemaName };
-      });
-    }
+    const { fromSchema, toSchema } = this.ensureSchemasExist(
+      this._context.getSchemaSync(fromSchemaKey),
+      this._context.getSchemaSync(toSchemaKey),
+      fromUnit,
+      toUnit,
+      fromSchemaName,
+      toSchemaName,
+    );
 
     const from = this._uGraph.resolveUnitSync(fromSchemaItemName, fromSchema);
     const to = this._uGraph.resolveUnitSync(toSchemaItemName, toSchema);
@@ -107,23 +102,30 @@ export class UnitConverter {
     await this._uGraph.addUnit(from);
     await this._uGraph.addUnit(to);
 
-    const fromBaseUnits = new Map<string, number>();
-    const toBaseUnits = new Map<string, number>();
-    // Calculate map of UnitConversions to get between from -> base
-    const fromMapStore = this._uGraph.reduce(from, fromBaseUnits);
-    // Calculate map of UnitConversions to get between base -> to
-    const toMapStore = this._uGraph.reduce(to, toBaseUnits);
+    return this.composeConversion(from, to);
+  }
 
-    if (!this.checkBaseUnitsMatch(fromBaseUnits, toBaseUnits))
-      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not have matching base units`, () => {
-        return { from, to };
+  private parseConversionInput(fromUnit: string, toUnit: string) {
+    const [fromSchemaName, fromSchemaItemName] = SchemaItem.parseFullName(fromUnit);
+    const [toSchemaName, toSchemaItemName] = SchemaItem.parseFullName(toUnit);
+    return {
+      fromSchemaName,
+      fromSchemaItemName,
+      toSchemaName,
+      toSchemaItemName,
+      fromSchemaKey: new SchemaKey(fromSchemaName),
+      toSchemaKey: new SchemaKey(toSchemaName),
+    };
+  }
+
+  private ensureSchemasExist(fromSchema: Schema | undefined, toSchema: Schema | undefined, fromUnit: string, toUnit: string, fromSchemaName: string, toSchemaName: string): { fromSchema: Schema, toSchema: Schema } {
+    if (!fromSchema || !toSchema) {
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find from's and/or to's schema", () => {
+        return { from: fromUnit, fromSchema: fromSchemaName, to: toUnit, toSchema: toSchemaName };
       });
+    }
 
-    // Final calculations to get singular UnitConversion between from -> to
-    const fromMap = fromMapStore.get(from.key.fullName) || UnitConversion.identity;
-    const toMap = toMapStore.get(to.key.fullName) || UnitConversion.identity;
-    const fromInverse = fromMap.inverse();
-    return fromInverse.compose(toMap);
+    return { fromSchema, toSchema };
   }
 
   /**
@@ -145,6 +147,11 @@ export class UnitConverter {
     // Add nodes and subsequent children to graph
     this._uGraph.addUnitSync(from);
     this._uGraph.addUnitSync(to);
+
+    return this.composeConversion(from, to);
+  }
+
+  private composeConversion(from: Unit | Constant, to: Unit | Constant): UnitConversion {
 
     const fromBaseUnits = new Map<string, number>();
     const toBaseUnits = new Map<string, number>();
