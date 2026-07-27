@@ -138,9 +138,11 @@ export class UnitConverter {
     if (from.key.matches(to.key))
       return UnitConversion.identity;
 
-    const fromPhenomenon = from.phenomenon;
-    const toPhenomenon = to.phenomenon;
-    if (!fromPhenomenon || !toPhenomenon || !fromPhenomenon.matches(toPhenomenon))
+    const fromPhenomenonKey = from.phenomenon;
+    const toPhenomenonKey = to.phenomenon;
+    const fromPhenomenonItem = fromPhenomenonKey ? from.schema.lookupItemSync(fromPhenomenonKey) : undefined;
+    const toPhenomenonItem = toPhenomenonKey ? to.schema.lookupItemSync(toPhenomenonKey) : undefined;
+    if (!fromPhenomenonKey || !toPhenomenonKey || !fromPhenomenonItem || !toPhenomenonItem || !fromPhenomenonKey.matches(toPhenomenonKey))
       throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, () => {
         return { from, to };
       });
