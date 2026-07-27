@@ -11,7 +11,7 @@ import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps 
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference, tryGetOrigin } from "../internal";
-const loggerCategory = "ArcGISFeatureProvider";
+const loggerCategory = "MapLayerFormatRegistry";
 
 /**
  * Class representing a map-layer format.
