@@ -75,7 +75,7 @@ import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView 
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
-import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
+import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
@@ -983,17 +983,23 @@ export abstract class IModelDb extends IModel {
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns the value returned by `callback`.
    * @throws IModelError if db is not open.
-   * Should be used when we want true step by step behaviour from the reader without any intermediate caching involved.
+   * Use this method for true step-by-step row consumption without intermediate result or page caching.
+   * The prepared ECSQL statement may be reused from the statement cache between completed calls.
    * @beta
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
-    const executor = new ECSqlRowExecutor(this);
-    const reader = new ECSqlSyncReader(executor, ecsql, params, config);
-    const release = () => executor[Symbol.dispose]();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? new ECSqlStatement();
+    const executor = new ECSqlRowExecutor(this, stmt, loggerCategory);
+    const release = () => {
+      executor[Symbol.dispose]();
+      releaseECSqlStatement(stmt, this._statementCache, loggerCategory, executor.canCacheStatement);
+    };
     try {
+      const reader = new ECSqlSyncReader(executor, ecsql, params, config);
       const val = callback(reader);
       if (val instanceof Promise) {
         val.then(release, release);
