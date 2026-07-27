@@ -4,9 +4,15 @@
     {
       "name": "audit",
       "commandKind": "global",
+<<<<<<< HEAD
       "summary": "Runs npm audit for the entire monorepo",
       "description": "Scans the entire monorepo for security vulnerabilities via npm audit",
       "shellCommand": "node common/scripts/install-run-rush-pnpm.js audit --audit-level high"
+=======
+      "summary": "Runs pnpm audit for the entire monorepo",
+      "description": "Scans the entire monorepo for security vulnerabilities via pnpm audit",
+      "shellCommand": "npx -y pnpm@11.13.0 audit --audit-level high --dir common/temp --ignore GHSA-mh99-v99m-4gvg"
+>>>>>>> 83d3627b3e (Security: ignore GHSA-mh99-v99m-4gvg (brace-expansion DoS) (#9544))
     },
     {
       "name": "fix-copyrights",
