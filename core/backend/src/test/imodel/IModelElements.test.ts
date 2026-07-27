@@ -997,7 +997,7 @@ describe("iModel elements", () => {
     imodel.close();
   });
 
-  it("should throw iTwinErrors on element CRUD opertion fails", async () => {
+  it("should throw iTwinErrors on element CRUD operation fails", async () => {
     const imodel1 = trackMutableIModel(await generateTestSnapshot("elements-crud-errors.bim", "test.bim"));
     const txn = new EditTxn(imodel1, "element CRUD failure cases");
     txn.start();
