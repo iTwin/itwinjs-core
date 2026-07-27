@@ -39,9 +39,11 @@ ${classXml}
 </ECSchema>`;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-const getPropNames = (db: BriefcaseDb, classFullName: string) =>
-  Object.getOwnPropertyNames(db.getMetaData(classFullName).properties);
+const getPropNames = async (db: BriefcaseDb, classFullName: string) => {
+  const view = await db.getSchemaView();
+  const classMeta = view.findClass(classFullName);
+  return (classMeta?.getProperties() ?? []).map((p) => p.name);
+};
 
 describe("Schema import with automatic reservation (SchemaSync)", function (this: Suite) {
   this.timeout(0);
@@ -103,7 +105,7 @@ describe("Schema import with automatic reservation (SchemaSync)", function (this
     await b1.importSchemaStrings([makeSchema("TestSchema", "01.00.00", [{ name: "Widget", props: ["p1", "p2"] }])]);
 
     assert.isTrue(b1.containsClass("TestSchema:Widget"));
-    assert.deepEqual(getPropNames(b1, "TestSchema:Widget"), ["p1", "p2"]);
+    assert.deepEqual(await getPropNames(b1, "TestSchema:Widget"), ["p1", "p2"]);
     b1.close();
   });
 
@@ -114,7 +116,7 @@ describe("Schema import with automatic reservation (SchemaSync)", function (this
     await b1.importSchemaStrings([makeSchema("TestSchema", "01.00.00", [{ name: "Widget", props: ["p1"] }])]);
     await b1.importSchemaStrings([makeSchema("TestSchema", "01.00.01", [{ name: "Widget", props: ["p1", "p2"] }])]);
 
-    assert.deepEqual(getPropNames(b1, "TestSchema:Widget"), ["p1", "p2"]);
+    assert.deepEqual(await getPropNames(b1, "TestSchema:Widget"), ["p1", "p2"]);
     b1.close();
   });
 
@@ -142,9 +144,8 @@ describe("Schema import with automatic reservation (SchemaSync)", function (this
 
     await b1.importSchemaStrings([makeSchema("TestSchema", "01.00.00", [{ name: "Pipe1", props: ["p1", "p2"] }])]);
 
-    // b2 sees the schema via SchemaSync (not yet via Hub changeset)
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    assert.deepEqual(getPropNames(b2, "TestSchema:Pipe1"), ["p1", "p2"]);
+    // b2 should not see the schema via SchemaSync (because v1 did not push it via Hub changeset)
+    assert.deepEqual(await getPropNames(b2, "TestSchema:Pipe1"), []);
 
     b1.close();
     b2.close();
