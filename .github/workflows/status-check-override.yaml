@@ -30,8 +30,11 @@
 
 name: Skip Check
 
+# SECURITY: pull_request_target keeps this workflow on trusted base-branch code while
+# allowing its narrowly scoped token to create checks for fork PRs. Never check out,
+# source, or execute code from the pull request head in this workflow.
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - master
       - release/*
