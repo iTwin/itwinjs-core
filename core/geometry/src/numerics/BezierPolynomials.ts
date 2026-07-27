@@ -669,7 +669,8 @@ export class UnivariateBezier extends BezierCoffs {
     const order = this.order;
     const coffs = this.coffs;
     const orderD = order - 1;
-    for (let iterations = 0; iterations++ < 20;) {
+    const maxIterations = 20;
+    for (let iterations = 0; iterations < maxIterations; iterations++) {
       UnivariateBezier._basisBuffer = PascalCoefficients.getBezierBasisValues(order, u, UnivariateBezier._basisBuffer);
       f = 0;
       for (let i = 0; i < order; i++)

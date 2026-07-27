@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Reduced Newton max iteration for spiral/bspline intersection",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

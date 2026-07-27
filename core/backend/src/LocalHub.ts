@@ -430,6 +430,34 @@ export class LocalHub {
     });
   }
 
+  /**
+   * Find the checkpoint nearest to `changesetIndex` (searching both backward and forward).
+   * When the previous and next checkpoints are equidistant, the newer (next) checkpoint is preferred,
+   * which enables the tip-then-reverse download path in [[V2CheckpointManager]].
+   */
+  public queryNearestCheckpoint(changesetIndex: ChangesetIndex): ChangesetIndex {
+    const prev = this.queryPreviousCheckpoint(changesetIndex); // always ≥ 0; returns 0 when none found
+
+    const next: ChangesetIndex | undefined = this.db.withSqliteStatement(
+      "SELECT min(csIndex) FROM checkpoints WHERE csIndex >= ?",
+      (stmt) => {
+        stmt.bindInteger(1, changesetIndex);
+        stmt.step();
+        const val = stmt.getValue(0);
+        return val.isNull ? undefined : val.getInteger();
+      }
+    );
+
+    if (next === undefined) return prev; // no checkpoint at or after requested index
+    if (next === prev) return prev;      // exact match
+
+    // Prefer the newer (next) checkpoint when equidistant so that CheckpointManager
+    // will reverse from a tip checkpoint rather than apply from an old seed.
+    const distPrev = changesetIndex - prev;
+    const distNext = next - changesetIndex;
+    return distNext <= distPrev ? next : prev;
+  }
+
   /** "download" a checkpoint */
   public downloadCheckpoint(arg: { changeset: ChangesetIndexOrId, targetFile: LocalFileName }) {
     const index = this.getIndexFromChangeset(arg.changeset);

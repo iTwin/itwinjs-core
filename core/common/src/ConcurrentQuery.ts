@@ -27,7 +27,7 @@ export enum QueryRowFormat {
   UseECSqlPropertyIndexes,
   /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
    * This format is backwards-compatible with the format produced by iTwin.js 2.x. Null values are omitted.
-   * @depreacted in 4.11.  Switch to UseECSqlPropertyIndexes for best performance, and UseECSqlPropertyNames if you want a JSON object as the result.
+   * @deprecated in 4.11 - might be removed in next major version. Switch to UseECSqlPropertyIndexes for best performance, and UseECSqlPropertyNames if you want a JSON object as the result.
    */
   UseJsPropertyNames,
 }
@@ -63,7 +63,7 @@ export interface QueryPropertyMetaData {
   /** The name is the property's alias if the property is a generated one, otherwise, it is the name of the property. */
   name: string;
   /** If this property is a PrimitiveECProperty, extend type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extend type is set to an empty string.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use extendedType instead
+   * @deprecated in 4.11 - might be removed in next major version. Use extendedType instead
    */
   extendType: string;
   /** If this property is a PrimitiveECProperty, extended type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extended type will be undefined. */
@@ -147,7 +147,7 @@ export interface QueryOptions extends BaseReaderOptions {
   /**
    * Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective name.
    * When true, XXXXClassId property will be returned as className.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use ecsql function ec_classname to get class name instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use ecsql function ec_classname to get class name instead.
    * */
   convertClassIdsToClassNames?: boolean;
   /**
@@ -228,7 +228,7 @@ export class QueryOptionsBuilder {
    * If set ECClassId, SourceECClassId and TargetECClassId system properties will return qualified name of class instead of a @typedef Id64String.
    * @param val A boolean value.
    * @returns @type QueryOptionsBuilder for fluent interface.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use ecsql function ec_classname to get class name instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use ecsql function ec_classname to get class name instead.
    */
   public setConvertClassIdsToNames(val: boolean) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -664,26 +664,50 @@ export class QueryBinder {
   }
 
   /**
-   * Allow bulk bind either parameters by index as value array or by parameter names as object.
-   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of reach value.
-   * @returns @type QueryBinder to allow fluent interface.
+   * Shared implementation for [[QueryBinder.from]] and [[QueryBinder.fromSkippingNullish]].
+   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of each value.
+   * @param skipNullish if true, entries whose value is `undefined` or `null` are skipped instead of bound as NULL.
    */
-  public static from(args: any[] | object | undefined): QueryBinder {
+  private static fromImpl(args: any[] | object | undefined, skipNullish: boolean): QueryBinder {
     const params = new QueryBinder();
     if (typeof args === "undefined")
       return params;
 
+    const shouldBind = (val: any) => !skipNullish || (val !== undefined && val !== null);
     if (Array.isArray(args)) {
       let i = 1;
       for (const val of args) {
-        this.bind(params, i++, val);
+        const index = i++;
+        if (shouldBind(val))
+          this.bind(params, index, val);
       }
     } else {
       for (const prop of Object.getOwnPropertyNames(args)) {
-        this.bind(params, prop, (args as any)[prop]);
+        const val = (args as any)[prop];
+        if (shouldBind(val))
+          this.bind(params, prop, val);
       }
     }
     return params;
+  }
+
+  /**
+   * Allow bulk bind either parameters by index as value array or by parameter names as object.
+   * @param args if array of values is provided then array index is used as index. If object is provided then object property name is used as parameter name of each value.
+   * @returns @type QueryBinder to allow fluent interface.
+   */
+  public static from(args: any[] | object | undefined): QueryBinder {
+    return this.fromImpl(args, false);
+  }
+
+  /**
+   * Same as [[QueryBinder.from]], except entries whose value is `undefined` or `null` are skipped instead of bound as NULL,
+   * matching the legacy `ECSqlStatement.bindValues` semantics. For positional arrays, skipped positions are left unbound
+   * and later positions keep their 1-based index.
+   * @internal
+   */
+  public static fromSkippingNullish(args: any[] | object | undefined): QueryBinder {
+    return this.fromImpl(args, true);
   }
 
   public serialize(): object {
@@ -706,19 +730,34 @@ export enum DbResponseKind {
 
 /** @internal */
 export enum DbResponseStatus {
-  Done = 1,  /* query ran to completion. */
-  Cancel = 2, /*  Requested by user.*/
-  Partial = 3, /*  query was running but ran out of quota.*/
-  Timeout = 4, /*  query time quota expired while it was in queue.*/
-  QueueFull = 5, /*  could not submit the query as queue was full.*/
-  ShuttingDown = 6, /*  Shutdown is in progress. */
-  Error = 100, /*  generic error*/
-  Error_ECSql_PreparedFailed = Error + 1, /*  ecsql prepared failed*/
-  Error_ECSql_StepFailed = Error + 2, /*  ecsql step failed*/
-  Error_ECSql_RowToJsonFailed = Error + 3, /*  ecsql failed to serialized row to json.*/
-  Error_ECSql_BindingFailed = Error + 4, /*  ecsql binding failed.*/
-  Error_BlobIO_OpenFailed = Error + 5, /*  class or property or instance specified was not found or property as not of type blob.*/
-  Error_BlobIO_OutOfRange = Error + 6, /*  range specified is invalid based on size of blob.*/
+  /** Query ran to completion. */
+  Done = 1,
+  /** Requested by user. */
+  Cancel = 2,
+  /** Query was running but ran out of quota. */
+  Partial = 3,
+  /** Query time quota expired while it was in queue. */
+  Timeout = 4,
+  /** Could not submit the query because the queue was full. */
+  QueueFull = 5,
+  /** Shutdown is in progress. */
+  ShuttingDown = 6,
+  /** iModel is not open. */
+  NotOpen = 7,
+  /** Generic error. */
+  Error = 100,
+  /** ECSQL prepare failed. */
+  Error_ECSql_PreparedFailed = Error + 1,
+  /** ECSQL step failed. */
+  Error_ECSql_StepFailed = Error + 2,
+  /** ECSQL failed to serialize row to JSON. */
+  Error_ECSql_RowToJsonFailed = Error + 3,
+  /** ECSQL binding failed. */
+  Error_ECSql_BindingFailed = Error + 4,
+  /** Class, property, or instance specified was not found, or property is not of type blob. */
+  Error_BlobIO_OpenFailed = Error + 5,
+  /** Range specified is invalid based on size of blob. */
+  Error_BlobIO_OutOfRange = Error + 6,
 }
 
 /** @internal */
@@ -798,7 +837,12 @@ export interface DbQueryConfig {
   requestQueueSize?: number;
   /** Number of worker thread, default to 4 */
   workerThreads?: number;
-  /** Use thread connection to prepare the statement */
+  /**
+   * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. No longer used. Worker connections now prepare statements against a shared, dedicated
+   * schema-source connection (falling back to their own connection) to avoid an AB-BA lock-ordering deadlock with
+   * the primary connection. The value is retained only for backward-compatible config (de)serialization; setting it
+   * has no effect on behavior.
+   */
   doNotUsePrimaryConnToPrepare?: boolean;
   /** After no activity for given time concurrent query will automatically shutdown */
   autoShutdownWhenIdleForSeconds?: number;

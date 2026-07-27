@@ -60,6 +60,14 @@ CLAUDE.local.md
 .claude/settings.local.json
 .claude/*.local.md
 
+# GitHub Copilot CLI - personal/local overrides (do not commit)
+COPILOT.local.md
+**/COPILOT.local.md
+AGENTS.local.md
+**/AGENTS.local.md
+.copilot/settings.local.json
+.copilot/*.local.md
+
 common/api/summary/summary.exports.csv
 
 *.log

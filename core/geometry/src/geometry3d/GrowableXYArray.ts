@@ -181,7 +181,7 @@ export class GrowableXYArray extends IndexedReadWriteXYCollection {
   }
   /**
    * Restructure MultiLineStringDataVariant as array of GrowableXYZArray
-   * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Moved to GrowableXYZArray class.
+   * @deprecated in 4.2.0 - might be removed in next major version. Moved to GrowableXYZArray class.
    */
   public static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined {
     return GrowableXYZArray.createArrayOfGrowableXYZArray(data);

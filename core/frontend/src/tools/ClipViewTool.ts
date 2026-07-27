@@ -564,8 +564,8 @@ export class ViewClipByPlaneTool extends ViewClipTool {
 export class ViewClipByShapeTool extends ViewClipTool {
   public static override toolId = "ViewClip.ByShape";
   public static override iconSpec = "icon-section-shape";
-  /** @internal */
   private _orientationValue: DialogItemValue = { value: ContextRotationId.Top };
+  private _lastMotion?: BeButtonEvent;
   /** @internal */
   protected readonly _points: Point3d[] = [];
   /** @internal */
@@ -718,9 +718,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
     if (context.viewport !== this.targetView)
       return;
 
-    const ev = new BeButtonEvent();
-    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-    if (undefined === ev.viewport)
+    const ev = this._lastMotion;
+    if (undefined === ev?.viewport)
       return;
     const points = this.getClipPoints(ev);
     if (points.length < 2)
@@ -747,6 +746,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
 
   /** @internal */
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    this._lastMotion = ev;
     if (this._points.length > 0 && undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
   }
@@ -805,6 +805,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
 export class ViewClipByRangeTool extends ViewClipTool {
   public static override toolId = "ViewClip.ByRange";
   public static override iconSpec = "icon-section-range";
+  private _lastMotion?: BeButtonEvent;
   /** @internal */
   protected _corner?: Point3d;
 
@@ -855,9 +856,8 @@ export class ViewClipByRangeTool extends ViewClipTool {
     if (context.viewport !== this.targetView || undefined === this._corner)
       return;
 
-    const ev = new BeButtonEvent();
-    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-    if (undefined === ev.viewport)
+    const ev = this._lastMotion;
+    if (undefined === ev?.viewport)
       return;
     const range = Range3d.create();
     const transform = Transform.createIdentity();
@@ -881,6 +881,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
 
   /** @internal */
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    this._lastMotion = ev;
     if (undefined !== this._corner && undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
   }

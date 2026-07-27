@@ -5,7 +5,7 @@ The application is built using [Vite](https://github.com/vitejs/vite), and scaff
 ## Setup
 
 - [Install necessary prerequisites](./development-prerequisites.md).
-- From a terminal, `npx degit iTwin/viewer/packages/templates/web#master your-app-name`
+- From a terminal, `npx degit itwin/viewer/packages/templates/web#master your-app-name`
   - This will scaffold a new application based on the iTwin Viewer React component in the `your-app-name` directory.
 - Open the `your-app-name` directory in VS Code and run `npm install`. This will install all the dependencies listed in your package.json.
 - Follow these steps to obtain a new OIDC client to use in your viewer application:
@@ -39,7 +39,7 @@ The application is built using [Vite](https://github.com/vitejs/vite), and scaff
 ## Useful Links
 
 - [iTwin Viewer React](https://www.npmjs.com/package/@itwin/web-viewer-react)
-- [iTwin Web Viewer Vite Template](https://github.com/iTwin/viewer/tree/master/packages/templates/web)
+- [iTwin Web Viewer Vite Template](https://github.com/itwin/viewer/tree/master/packages/templates/web)
 - [Vite](https://vite.dev/guide/)
 
 ## Next Steps

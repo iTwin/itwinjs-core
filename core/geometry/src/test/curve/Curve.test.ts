@@ -9,6 +9,7 @@ import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
+import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
@@ -1469,6 +1470,25 @@ describe("GeometryQuery", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "ClosestPoint");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
+
+describe("CurveBetweenCurves", () => {
+  it("Mismatches", () => {
+    const ck = new Checker();
+    const segment = LineSegment3d.createXYZXYZ(1, 2, 2, 4, 2, -1);
+    const arc = Arc3d.createUnitCircle();
+    const points = [Point3d.create(0, 0, 0), Point3d.create(1, 1, 0), Point3d.create(3, 1, 0), Point3d.create(3, 0, 0)];
+    const bcurve = BSplineCurve3d.createUniformKnots(points, 3)!;
+    const linestring = LineString3d.create(points);
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(segment, 0.5, arc));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(segment, 0.5, linestring));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(segment, 0.5, bcurve));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(arc, 0.5, linestring));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(linestring, 0.5, arc));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(arc, 0.5, bcurve));
+    ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(bcurve, 0.5, segment));
     expect(ck.getNumErrors()).toBe(0);
   });
 });

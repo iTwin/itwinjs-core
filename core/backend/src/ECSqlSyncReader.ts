@@ -65,6 +65,7 @@ export class ECSqlSyncReader extends ECSqlReaderBase implements IterableIterator
     this._executor.prepareAndBind(this.query, args);
 
     // Build and cache the native row-adaptor options — reused for every step call.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? DbValueFormat.JsNames : DbValueFormat.ECSqlNames;
     this._cachedRowOptions = {
       abbreviateBlobs: this._options.abbreviateBlobs ?? false,

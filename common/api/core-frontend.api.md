@@ -289,6 +289,7 @@ import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
 import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaView } from '@itwin/ecschema-metadata';
 import { SectionDrawingViewProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
@@ -534,6 +535,8 @@ export class AccuDraw {
     // @internal (undocumented)
     refreshDecorationsAndDynamics(): void;
     // @internal (undocumented)
+    requestInputFocus(): void;
+    // @internal (undocumented)
     restoreState(stateBuffer: SavedState): void;
     rotationMode: RotationMode;
     // @internal (undocumented)
@@ -584,7 +587,7 @@ export class AccuDraw {
     protected readonly _yColor: ColorDef;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawChangeModeTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -698,7 +701,7 @@ export class AccuDrawHintBuilder {
     setXAxis2(xAxis: Vector3d): void;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotate90AboutXTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -706,7 +709,7 @@ export class AccuDrawRotate90AboutXTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotate90AboutYTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -714,7 +717,7 @@ export class AccuDrawRotate90AboutYTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotate90AboutZTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -722,30 +725,22 @@ export class AccuDrawRotate90AboutZTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
-export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
+// @beta
+export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
     constructor(aboutCurrentZ?: boolean);
     // (undocumented)
     aboutCurrentZ: boolean;
     // @internal (undocumented)
-    protected get allowShortcut(): boolean;
-    // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static get maxArgs(): number;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
     // (undocumented)
     parseAndRun(...args: any[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    // @internal (undocumented)
-    protected get wantActivateOnStart(): boolean;
-    // @internal (undocumented)
-    protected get wantManipulationImmediate(): boolean;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateCycleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -753,25 +748,15 @@ export class AccuDrawRotateCycleTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
-export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
+// @beta
+export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected onManipulationComplete(): AccuDrawFlags;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static toolId: string;
-    // @internal (undocumented)
-    protected updateOrientation(snap: SnapDetail, viewport: ScreenViewport, _isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected get wantActivateOnStart(): boolean;
-    // @internal (undocumented)
-    protected get wantManipulationImmediate(): boolean;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateFrontTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -779,7 +764,15 @@ export class AccuDrawRotateFrontTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
+export class AccuDrawRotatePointsTool extends AccuDrawShortcutTool {
+    // @internal (undocumented)
+    protected createImplementation(): AccuDrawShortcutImplementation;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class AccuDrawRotateSideTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -787,7 +780,7 @@ export class AccuDrawRotateSideTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateTopTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -795,7 +788,7 @@ export class AccuDrawRotateTopTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateViewTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -803,7 +796,7 @@ export class AccuDrawRotateViewTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSessionToggleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -811,7 +804,7 @@ export class AccuDrawSessionToggleTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockAngleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -819,7 +812,7 @@ export class AccuDrawSetLockAngleTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockDistanceTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -827,7 +820,7 @@ export class AccuDrawSetLockDistanceTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockIndexTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -835,7 +828,7 @@ export class AccuDrawSetLockIndexTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockSmartTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -843,7 +836,7 @@ export class AccuDrawSetLockSmartTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockXTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -851,7 +844,7 @@ export class AccuDrawSetLockXTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockYTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -859,7 +852,7 @@ export class AccuDrawSetLockYTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockZTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -867,7 +860,7 @@ export class AccuDrawSetLockZTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetOriginTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -891,8 +884,7 @@ export class AccuDrawShortcuts {
     static defineACSByElement(): Promise<boolean>;
     // (undocumented)
     static defineACSByPoints(): Promise<boolean>;
-    // (undocumented)
-    static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
+    static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): Promise<AuxCoordSystemState | undefined>;
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): Promise<void>;
     // (undocumented)
@@ -946,11 +938,10 @@ export class AccuDrawShortcuts {
     static suspendToggle(): void;
     // (undocumented)
     static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean;
-    // (undocumented)
-    static writeACS(_acsName: string): BentleyStatus;
+    static writeACS(acsName: string | undefined): Promise<AuxCoordSystemState | undefined>;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSuspendToggleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -1233,7 +1224,7 @@ export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider 
     getAlternateUnitLabels(unit: UnitProps): string[] | undefined;
 }
 
-// @beta
+// @beta @deprecated
 export class AngleDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -1423,7 +1414,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     constructor(props: AuxCoordSystemProps, iModel: IModelConnection);
     // (undocumented)
     static get className(): string;
-    static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState;
+    static createNew(_acsName: string, iModel: IModelConnection): AuxCoordSystemState;
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -1692,20 +1683,25 @@ export interface BeWheelEventProps extends BeButtonEventProps {
     wheelDelta?: number;
 }
 
-// @public
+// @public @deprecated
 export class BingElevationProvider {
     constructor();
-    // @internal (undocumented)
+    // @internal
+    getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
+    // @internal @deprecated (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
-    getHeight(carto: Cartographic, geodetic?: boolean): Promise<any>;
+    getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
+    // @deprecated
     getHeightAverage(iModel: IModelConnection): Promise<number>;
+    // @deprecated
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
     // @beta
     getHeights(range: Range2d): Promise<number[] | undefined>;
+    // @deprecated
     getHeightValue(point: Point3d, iModel: IModelConnection, geodetic?: boolean): Promise<number>;
 }
 
-// @public
+// @public @deprecated
 export class BingLocationProvider {
     constructor();
     getLocation(query: string): Promise<GlobalLocation | undefined>;
@@ -2017,6 +2013,18 @@ export class CategorySelectorState extends ElementState {
     toJSON(): CategorySelectorProps;
 }
 
+// @beta
+export interface CesiumAccessClient {
+    getAssetEndpoint(assetId: string, iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined>;
+}
+
+// @beta
+export interface CesiumAssetEndpoint {
+    accessToken: string;
+    expiresAt?: Date;
+    url: string;
+}
+
 // @public
 export enum ChangeFlag {
     All = 268435455,
@@ -2318,6 +2326,18 @@ export interface CreateGraphicFromTemplateArgs {
 }
 
 // @beta
+export function createQuantityDescription(props: CreateQuantityDescriptionProps): PropertyDescription;
+
+// @beta
+export interface CreateQuantityDescriptionProps {
+    displayLabel: string;
+    kindOfQuantityName: string;
+    name: string;
+    parseError?: string;
+    persistenceUnitName: string;
+}
+
+// @beta
 export interface CreateRenderInstancesParamsBuilderArgs {
     modelId?: Id64String;
 }
@@ -2567,28 +2587,18 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     static toolId: string;
 }
 
-// @beta (undocumented)
-export class DefineACSByElementTool extends AccuDrawShortcutsTool {
+// @beta
+export class DefineACSByElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
-    decorate(context: DecorateContext): void;
-    // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static toolId: string;
-    // @internal (undocumented)
-    protected updateOrientation(snap: SnapDetail, vp: Viewport): boolean;
 }
 
-// @beta (undocumented)
-export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
+// @beta
+export class DefineACSByPointsTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
-    decorate(context: DecorateContext): void;
-    // @internal (undocumented)
-    protected doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected onManipulationStart(): void;
+    protected createImplementation(): AccuDrawShortcutImplementation;
     // (undocumented)
     static toolId: string;
 }
@@ -3163,6 +3173,12 @@ export class ElementState extends EntityState implements ElementProps {
     readonly userLabel?: string;
 }
 
+// @beta
+export interface ElevationProvider {
+    getHeight(carto: Cartographic, geodetic?: boolean): Promise<number>;
+    getHeights?(range: Range2d): Promise<number[] | undefined>;
+}
+
 // @public
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     constructor(opts: TerrainMeshProviderOptions);
@@ -3227,7 +3243,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     wantEmphasis: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export class EngineeringLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -3551,7 +3567,7 @@ export class FormatsProviderManager implements FormatsProvider {
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
-// @beta
+// @beta @deprecated
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(args: FormattedQuantityDescriptionArgs);
     constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
@@ -3569,7 +3585,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface FormattedQuantityDescriptionArgs {
     // (undocumented)
     displayLabel: string;
@@ -3793,6 +3809,11 @@ export class GeographicTilingScheme extends MapTilingScheme {
     yFractionToLatitude(yFraction: number): number;
 }
 
+// @beta
+export interface GeoidProvider {
+    getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
+}
+
 // @public
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
     constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState);
@@ -3891,6 +3912,12 @@ export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: P
 
 // @beta
 export function getGoogle3dTilesUrl(): string;
+
+// @beta
+export function getHeightAverage(provider: ElevationProvider, iModel: IModelConnection): Promise<number>;
+
+// @beta
+export function getHeightRange(provider: ElevationProvider, iModel: IModelConnection): Promise<Range1d>;
 
 // @public
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined;
@@ -4284,6 +4311,9 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     get briefcaseChannelName(): "itwinjs-core/editing-scope";
     // @deprecated (undocumented)
     dispose(): void;
+    // @beta
+    get dynamicGraphicsAbsolutePositionThreshold(): number;
+    set dynamicGraphicsAbsolutePositionThreshold(value: number);
     // @internal
     static enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope>;
     exit(): Promise<void>;
@@ -5008,6 +5038,9 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    // @beta
+    static get elevationProvider(): ElevationProvider;
+    static set elevationProvider(provider: ElevationProvider);
     // @alpha (undocumented)
     static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
@@ -5015,6 +5048,9 @@ export class IModelApp {
     // @beta
     static get formatsProvider(): FormatsProvider;
     static set formatsProvider(provider: FormatsProvider);
+    // @beta
+    static get geoidProvider(): GeoidProvider;
+    static set geoidProvider(provider: GeoidProvider);
     static getAccessToken(): Promise<AccessToken>;
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
@@ -5026,6 +5062,9 @@ export class IModelApp {
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
+    // @beta
+    static get locationProvider(): LocationProvider;
+    static set locationProvider(provider: LocationProvider);
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
     static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
@@ -5093,6 +5132,12 @@ export interface IModelAppOptions {
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
     formatsProvider?: FormatsProvider;
+    // @beta
+    geospatialProviders?: {
+        elevationProvider?: ElevationProvider;
+        geoidProvider?: GeoidProvider;
+        locationProvider?: LocationProvider;
+    };
     hubAccess?: FrontendHubAccess;
     // @beta
     incrementalSchemaLoading?: "enabled" | "disabled";
@@ -5162,8 +5207,12 @@ export abstract class IModelConnection extends IModel {
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // @deprecated
     getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
+    // @beta
+    getSchemaView(): Promise<SchemaView>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
+    // @internal
+    protected invalidateSchemaViewIfChanged(): Promise<void>;
     get isBlank(): boolean;
     isBlankConnection(): this is BlankConnection;
     get isBriefcase(): boolean;
@@ -5554,6 +5603,8 @@ export class IpcApp {
     static appFunctionIpc: PickAsyncMethods<IpcAppFunctions>;
     // @internal @deprecated (undocumented)
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
+    // @beta
+    static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
@@ -5569,6 +5620,13 @@ export class IpcApp {
 export interface IpcAppOptions {
     // (undocumented)
     iModelApp?: IModelAppOptions;
+}
+
+// @beta
+export abstract class IpcHandler {
+    // (undocumented)
+    abstract get channelName(): string;
+    static register(): RemoveFunction;
 }
 
 // @public
@@ -5686,7 +5744,7 @@ export class LayerTileTreeReferenceHandler {
     setLayerSettings(layerSettings: MapLayerSettings[]): void;
 }
 
-// @beta
+// @beta @deprecated
 export class LengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -5792,6 +5850,11 @@ export class LocateResponse {
     snapStatus: SnapStatus;
 }
 
+// @beta
+export interface LocationProvider {
+    getLocation(query: string): Promise<GlobalLocation | undefined>;
+}
+
 // @internal (undocumented)
 export enum LockedStates {
     // (undocumented)
@@ -5841,6 +5904,8 @@ export class LookAndMoveTool extends ViewManip {
     static iconSpec: string;
     // (undocumented)
     protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    onPostInstall(): Promise<void>;
     // (undocumented)
     protected provideInitialToolAssistance(): void;
     // (undocumented)
@@ -6203,6 +6268,7 @@ export interface MapLayerInfoFromTileTree {
 export interface MapLayerOptions {
     [format: string]: MapLayerKey | undefined;
     AzureMaps?: MapLayerKey;
+    // @deprecated
     BingMaps?: MapLayerKey;
     MapboxImagery?: MapLayerKey;
 }
@@ -6377,6 +6443,8 @@ export class MapTile extends RealityTile {
     protected _collectStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result?: Point3d[], heightRange?: Range1d): Point3d[];
+    // @internal
+    computeVisibilityFactor(args: TileDrawArgs): number;
     // @internal (undocumented)
     protected _cornerRays?: Ray3d[];
     // @internal (undocumented)
@@ -8130,7 +8198,9 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     // @beta
-    getSpecsByName(name: string): ReadonlyMap<string, FormattingSpecEntry> | undefined;
+    getSpecsByName(name: string, options?: {
+        system?: UnitSystemKey;
+    }): ReadonlyMap<string, FormattingSpecEntry> | undefined;
     // @beta
     getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
@@ -8211,7 +8281,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     [Symbol.dispose](): void;
     constructor();
     // (undocumented)
-    getFormat(name: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
+    getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
@@ -8455,6 +8525,8 @@ export class RealityTile extends Tile {
     computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number;
     // @internal (undocumented)
     computeVisibilityFactor(args: TileDrawArgs): number;
+    // @internal
+    readonly contentUrl?: string;
     // @internal (undocumented)
     get copyright(): string | undefined;
     // @internal (undocumented)
@@ -10335,6 +10407,7 @@ export { Storage_2 as Storage }
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
     add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
+    addChangedListener(listener: () => void): () => void;
     // (undocumented)
     attachToBriefcase(imodel: IModelConnection): void;
     // (undocumented)
@@ -10398,7 +10471,7 @@ export interface SubCategoriesRequest {
     readonly promise: Promise<boolean>;
 }
 
-// @beta
+// @beta @deprecated
 export class SurveyLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
@@ -10771,6 +10844,8 @@ export interface TerrainMeshProviderOptions {
     dataSource?: string;
     exaggeration: number;
     // @beta
+    iTwinId?: GuidString;
+    // @beta
     produceGeometry?: boolean;
     wantNormals: boolean;
     wantSkirts: boolean;
@@ -10973,7 +11048,11 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
-    // @beta (undocumented)
+    // @beta
+    get canAccessCesium(): boolean;
+    // @beta
+    readonly cesiumAccess?: CesiumAccessClient;
+    // @beta
     readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
@@ -11123,6 +11202,8 @@ export namespace TileAdmin {
         alwaysSubdivideIncompleteTiles?: boolean;
         // @internal
         cacheTileMetadata?: boolean;
+        // @beta
+        cesiumAccess?: CesiumAccessClient;
         cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;

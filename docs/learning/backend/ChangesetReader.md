@@ -12,9 +12,11 @@ A single EC entity may typically map to multiple tables or a single table.
 
 ### The reader–unifier pipeline
 
+```ts
 [[include:ChangesetReader.BasicPipeline]]
+```
 
-After draining the reader, `pcu.instances` yields one entry per (ECInstanceId + stage) pair, with properties merged across all contributing tables.
+After draining the reader, `pcu.instances` yields one entry per (ECInstanceId + stage) pair, with properties merged across all contributing tables. Use `pcu.instanceCount` to check how many merged instances were accumulated before iterating.
 
 ### [ChangeInstance]($backend) shape
 
@@ -44,7 +46,9 @@ interface ChangeMeta {
 
 Each [ChangeInstance]($backend) carries a `changeFetchedPropNames` array listing exactly which EC property names were fetched directly from the changeset binary (not from the live iModel). This is the ground truth for "what changed":
 
+```ts
 [[include:ChangesetReader.ChangeFetchedPropNames]]
+```
 
 #### Naming rules
 
@@ -75,7 +79,9 @@ A concrete example arises with a `Point3d` property. Insert the Point3d property
 - The `"New"` instance **has** `Position`(Point3d property) as a key (non-null value).
 - The `"Old"` instance does **not** have `Position` as a key (was NULL), but `"Position"` **is** listed in `changeFetchedPropNames` for both stages because the binary recorded the full transition.
 
+```ts
 [[include:ChangesetReader.NullValuedPoint3d]]
+```
 
 **Rule of thumb:** Use `changeFetchedPropNames` to determine *which* properties changed. Use `"propName" in instance` (or optional chaining) to distinguish "changed to/from a non-null value" from "changed to/from null".
 
@@ -85,36 +91,22 @@ A concrete example arises with a `Point3d` property. Insert the Point3d property
 
 [ChangesetReader]($backend) and [PartialChangeUnifier]($backend) both hold native resources (file handles, SQLite connections, memory allocations) that must be released when you are done. Failing to do so will leak native handles until the garbage collector eventually runs.
 
-The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown:
+The preferred approach is the `using` declaration (TC39 Explicit Resource Management, available in TypeScript ≥ 5.2). Objects declared with `using` are automatically disposed at the end of the enclosing block — even if an exception is thrown. Because the TypeScript runtime disposes each `using`-bound object independently, a throw from one disposal does not prevent the others from running:
 
 ```ts
-{
-  using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
-  using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
-
-  while (reader.step())
-    pcu.appendFrom(reader);
-
-  for (const instance of pcu.instances)
-    console.log(instance.$meta.op, instance.ECInstanceId);
-  // reader and pcu are disposed here automatically
-}
+[[include:ChangesetReader.DisposalUsing]]
 ```
 
-If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly in a `finally` block:
+If you cannot use `using` (e.g. the reader must cross async boundaries or live beyond the current block), call `[Symbol.dispose]()` explicitly. Because `close()` — and therefore `[Symbol.dispose]()` — **can throw**, you must nest the calls so that a failure in the first disposal does not prevent the second from running:
 
 ```ts
-const reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
-const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
-try {
-  while (reader.step())
-    pcu.appendFrom(reader);
-  for (const instance of pcu.instances)
-    console.log(instance.$meta.op, instance.ECInstanceId);
-} finally {
-  reader[Symbol.dispose]();
-  pcu[Symbol.dispose]();
-}
+[[include:ChangesetReader.DisposalNested]]
+```
+
+OR order them appropriately if you are sure only the last disposal might throw:
+
+```ts
+[[include:ChangesetReader.DisposalOrdered]]
 ```
 
 > **Important:** The same rule applies to [ChangeCache]($backend) instances created via [ChangeUnifierCache.createSqliteBackedCache]($backend) — they wrap a SQLite connection and must also be disposed.
@@ -125,29 +117,85 @@ try {
 
 ### [ChangesetReader.openFile]($backend) — read a single pushed changeset file
 
+```ts
 [[include:ChangesetReader.BasicPipeline]]
+```
+
+### `invert` — reading a changeset in reverse
+
+All `open*` methods accept an optional `invert: true` argument. When set, every operation is flipped: Inserts become Deletes, Deletes become Inserts, and for Updates the `"New"` and `"Old"` stages are swapped. This is useful when you need to *undo* the effect of a changeset — for example, rolling back to a previous state for auditing.
+
+```ts
+[[include:ChangesetReader.InvertChangeset]]
+```
 
 ### [ChangesetReader.openGroup]($backend) — read multiple changesets as a single stream
 
 [ChangesetReader.openGroup]($backend) concatenates multiple changeset files into one logical stream. The unifier merges them across the whole group — an element that was inserted in changeset 1 and updated in changeset 2 surfaces as a single `"Inserted"` `"New"` instance reflecting its final state.
 
+```ts
 [[include:ChangesetReader.OpenGroup]]
+```
 
 ### [ChangesetReader.openTxn]($backend) — read a saved (not yet pushed) local transaction
 
+```ts
 [[include:ChangesetReader.OpenTxn]]
+```
 
 ### [ChangesetReader.openLocalChanges]($backend) — read all local un-pushed saved changes
 
+```ts
 [[include:ChangesetReader.OpenLocalChanges]]
+```
 
 Pass `includeInMemoryChanges: true` to also include the in-memory (not yet saved) changes on top:
 
+```ts
 [[include:ChangesetReader.OpenLocalChangesIncludeInMemory]]
+```
 
 ### [ChangesetReader.openInMemoryChanges]($backend) — read only the in-memory (unsaved) changes
 
+```ts
 [[include:ChangesetReader.OpenInMemoryChanges]]
+```
+
+---
+
+## `spillThresholdInBytes` — bounding peak memory usage
+
+[ChangesetReader.openGroup]($backend), [ChangesetReader.openTxn]($backend), [ChangesetReader.openLocalChanges]($backend), and [ChangesetReader.openInMemoryChanges]($backend) all accept an optional `spillThresholdInBytes` argument. It controls whether the native reader buffers change data in memory or spills it to a temporary file on disk.
+
+| Scenario | Behaviour |
+|---|---|
+| Total change data **≤** `spillThresholdInBytes` | Changes are held in memory — fastest path |
+| Total change data **>** `spillThresholdInBytes` | Changes are written to a temporary file on disk and streamed from there — memory usage stays bounded |
+
+The default threshold is **50 MiB**. Reduce it when running in a memory-constrained environment or when processing an unusually large group of changesets:
+
+```ts
+[[include:ChangesetReader.SpillThreshold]]
+```
+
+The same parameter is available on the other open methods:
+
+**`openLocalChanges`:**
+```ts
+[[include:ChangesetReader.SpillThresholdOpenLocalChanges]]
+```
+
+**`openInMemoryChanges`:**
+```ts
+[[include:ChangesetReader.SpillThresholdOpenInMemoryChanges]]
+```
+
+**`openTxn`:**
+```ts
+[[include:ChangesetReader.SpillThresholdOpenTxn]]
+```
+
+> **Note:** [ChangesetReader.openFile]($backend) does not expose `spillThresholdInBytes` because it reads a single on-disk file sequentially and does not pre-buffer the change data.
 
 ---
 
@@ -161,7 +209,9 @@ All `open*` methods accept a `propFilter` argument that controls which propertie
 | `BisCoreElement` | For classes whose base class is `BisCore:Element` only `BisCore:Element` properties mapped to changed tables are returned. If no `BisCore:Element` class property is changed currently, only `ECInstanceId` and `ECClassId` is returned. For classes whose base class is not `BisCore:Element` all EC Properties mapped to changed tables are returned.|
 | `InstanceKey` | Only `ECInstanceId` and `ECClassId` |
 
+```ts
 [[include:ChangesetReader.ModeInstanceKey]]
+```
 
 The active filter is stored as a `PropertyFilter` enum value in `instance.$meta.propFilter`:
 
@@ -186,15 +236,21 @@ The active `rowOptions` object is stored on every instance's `$meta.rowOptions` 
 
 ### Example — `classIdsToClassNames`
 
+```ts
 [[include:ChangesetReader.RowOptionsClassNames]]
+```
 
 ### Example — `useJsName`
 
+```ts
 [[include:ChangesetReader.UseJsName]]
+```
 
 ### Example — reading full binary blobs
 
+```ts
 [[include:ChangesetReader.RowOptionsAbbreviateBlobs]]
+```
 
 ---
 
@@ -204,7 +260,9 @@ The active `rowOptions` object is stored on every instance's `$meta.rowOptions` 
 
 This means you must always check `changeFetchedPropNames` using the schema-level EC property name, not the JS name:
 
+```ts
 [[include:ChangesetReader.UseJsNameAndChangeFetchedPropNames]]
+```
 
 In short: use `useJsName` names when reading property values off the instance, but always use the original EC schema names when querying `changeFetchedPropNames`.
 
@@ -228,21 +286,84 @@ Each setter accepts a `Set<>`. Passing an empty `Set` is equivalent to calling t
 
 ### Example — only yield inserts and updates for a specific table
 
+```ts
 [[include:ChangesetReader.FilterTable]]
+```
 
 ### Example — only yield changes for a known set of EC class names
 
+```ts
 [[include:ChangesetReader.FilterClassNames]]
+```
 
-### Clearing filters at runtime
+### Clearing filters
 
-All three filters can be cleared individually without reopening the reader:
+All three filters can be cleared individually. Like the setters, the clear methods must be called **before** the first successful [ChangesetReader.step]($backend) call:
 
 ```ts
-reader.clearTableNameFilters();
+// All filter configuration (set or clear) must happen before step() returns true.
+reader.setTableNameFilters(new Set(["bis_Element"]));
+reader.clearTableNameFilters(); // removes the table filter again
 reader.clearOpCodeFilters();
 reader.clearClassNameFilters();
 ```
+
+---
+
+## Strict mode
+
+Strict mode controls how [ChangesetReader]($backend) handles a **column-count mismatch** between a change record and the corresponding live database table. A mismatch arises when columns have been added to a table after the changeset was written.
+
+When the reader processes a change row it first reads the table name, then compares the number of columns recorded in the change binary against the number of columns the table currently has in the live iModel:
+
+| Mode | Column-count mismatch behaviour |
+|---|---|
+| **Strict** (`enableStrictMode`) | Throws an error immediately — the row is not processed |
+| **Lenient** (`disableStrictMode`, the **default**) | Takes the **minimum** of the two counts and proceeds with that subset of columns |
+
+The lenient default is safe because SQLite only ever appends new columns at the end of a table and we never remove columns. An older change record therefore simply lacks the trailing columns that were added later; those missing columns are ignored and the rest of the mapping proceeds normally.
+
+### When to use strict mode
+
+Enable strict mode when you need a hard guarantee that every change row is interpreted against exactly the schema that was in effect when the changeset was written. Any schema evolution (added columns) that occurred between the changeset being created and it being read will surface as an error rather than being silently tolerated.
+
+```ts
+using reader = ChangesetReader.openFile({ db, fileName: changeset.pathname });
+reader.enableStrictMode(); // throw if column counts diverge between change record and live table
+
+while (reader.step()) {
+  // ...
+}
+```
+
+To return to the default lenient behaviour at any time:
+
+```ts
+reader.disableStrictMode();
+```
+
+> **Important:** Both `enableStrictMode` and `disableStrictMode` must be called **before** the first successful [ChangesetReader.step]($backend) call. Calling either method after iteration has begun will throw an `IModelError`.
+
+---
+
+## Batch size — tuning native fetch performance
+
+[ChangesetReader]($backend) exposes a `setBatchSize(n: number)` method that controls how many change rows are fetched and cached per native call. Increasing the batch size improves throughput when iterating large changesets at the cost of higher peak memory usage; decreasing it keeps memory consumption lower. Like filters and strict mode, `setBatchSize` must be called **before** the first [ChangesetReader.step]($backend) call.
+
+| Active configuration | Default |
+|---|---|
+| `propFilter: InstanceKey` | 100 |
+| `propFilter: BisCoreElement` | 20 |
+| `propFilter: All`, `abbreviateBlobs: false` | 5 |
+| `propFilter: All` (blobs abbreviated or unset) | 10 |
+
+Call `setBatchSize` before the first [ChangesetReader.step]($backend) call:
+
+```ts
+[[include:ChangesetReader.SetBatchSize]]
+```
+
+> **Note:** `setBatchSize` throws if called after the first successful `step()` call, or if the supplied value is not a positive integer.
 
 ---
 
@@ -250,7 +371,9 @@ reader.clearClassNameFilters();
 
 By default [PartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For very large changesets that would exhaust memory, use the SQLite-backed cache instead:
 
+```ts
 [[include:ChangesetReader.CacheStrategies]]
+```
 
 ---
 
@@ -258,7 +381,9 @@ By default [PartialChangeUnifier]($backend) uses an in-memory cache (`Map`). For
 
 The following example imports a custom schema, inserts an element, pushes a second update, and demonstrates reading each changeset independently and then together as a group:
 
+```ts
 [[include:ChangesetReader.WorkedExample]]
+```
 
 ---
 
@@ -267,7 +392,7 @@ The following example imports a custom schema, inserts an element, pushes a seco
 > **See also:** the test suite `"ChangesetReader: behaviour in case imodel is not in sync with change file or transaction being read"` in
 > `core/backend/src/test/standalone/ChangesetReader.test.ts`.
 
-[ChangesetReader]($backend) uses the **live iModel** in two ways: to resolve `ECClassId` in case it is not part of the changeset or transaction(very common in cases of `Update` because generally only element props are updated not the class of the instance), and to fill in the non-changed components of compound property values. For compound types — `Point2d`, `Point3d`, and navigation properties - when a changeset records a change to only one component, the reader must fetch the remaining components from the live iModel to reconstruct the full value. For example, if only `X` changes in a `Point2d` property, `Y` is read from the current live database state. This means the reader's output quality depends on the current state of the iModel — specifically whether the entity being read still exists in the database at the time of reading, and whether subsequent transactions have already modified the components that were not part of the recorded changeset delta.
+[ChangesetReader]($backend) uses the **live iModel** in two ways: to resolve `ECClassId` when it is absent from the changeset (this is typical for `Update` operations, where only changed properties are recorded, not the class identity), and to fill in the non-changed components of compound property values. For compound types — `Point2d`, `Point3d`, and navigation properties — when a changeset records a change to only one component, the reader fetches the remaining components from the live iModel to reconstruct the full value. For example, if only `X` changes in a `Point2d` property, `Y` is read from the current live database state. This means the reader's output quality depends on the current state of the iModel — specifically whether the entity still exists at the time of reading, and whether subsequent transactions have already modified the compound property components that were not part of the recorded delta.
 
 Two concrete failure modes arise:
 
@@ -275,7 +400,7 @@ Two concrete failure modes arise:
 
 **Scenario:** An element is inserted, updated, then deleted across three changesets. The update changeset (the "middle" one) is read **after** the element has already been deleted from the live iModel.
 
-**What happens:** As in the update changeset obviously the ECClassId was not updated for the instance, only some properties might have been updated so `ECClassId` was not part of the changeset. So when the reader resolves the `ECClassId` for a row, it performs a lookup in the live iModel's table. Because the element no longer exists, the native layer cannot determine which leaf domain class the row belongs to. It falls back to the per-table base class (`BisCore.Element` for `bis_Element`, `BisCore.GeometricElement2d` for `bis_GeometricElement2d`). The per-table instances are **not merged** into a single `TestDomain.Test2dElement` instance; instead they appear as separate entries under their base-class identities.
+**What happens:** In an update changeset the `ECClassId` is typically not included in the change data — only the modified properties are recorded. When the reader resolves the `ECClassId` for a row, it performs a lookup in the live iModel's table. Because the element no longer exists, the native layer cannot determine which leaf domain class the row belongs to. It falls back to the per-table base class (`BisCore.Element` for `bis_Element`, `BisCore.GeometricElement2d` for `bis_GeometricElement2d`). The per-table instances are **not merged** into a single `TestDomain.Test2dElement` instance; instead they appear as separate entries under their base-class identities.
 
 ```ts
 // After push 2 (insert), push 3 (update), push 4 (delete):
@@ -296,7 +421,7 @@ using reader = ChangesetReader.openFile({
 //   { ECClassId: "BisCore.GeometricElement2d",   stage: "Old" }
 ```
 
-**Rule of thumb:** To read a changeset reliably, the iModel's current state should be **at** the change being read or the consumers of the api must be sure that, the instance was not deleted and for the compound properties of the instance like `Point2d`, `Point3d` or `NavProps`, no change was done to them subsequently after. In practice this means: read changesets in order and keep the iModel at the point being inspected.
+**Rule of thumb:** For reliable results, the iModel's state should match the point at which the change was recorded. In practice: read changesets in order and keep the iModel at the state being inspected.
 
 ### 2. Subsequent unsaved transaction pollutes property values
 
@@ -328,7 +453,7 @@ const newX = elementNew.s.X; // 100 — correct
 
 ### Summary
 
-It doesnot depend on whether a change group or a changeset or a transaction is opened. It might happen when the iModel's state is not in sync with the change being read. In other words it might happen when the iModel's state is not **at** the change being read.
+This risk is not specific to changesets — it arises any time the iModel's state is not synchronized with the change being read.
 
 | Scenario | Risk | Mitigation |
 |---|---|---|

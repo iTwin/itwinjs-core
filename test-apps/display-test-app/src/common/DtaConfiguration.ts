@@ -49,6 +49,7 @@ export interface DtaStringConfiguration {
   iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share, and by iModel download
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined
+  azureMapsKey?: string; // default undefined
   googleMapsKey?: string; // default undefined
   cesiumIonKey?: string; // default undefined
   logLevel?: string; // default undefined
@@ -154,6 +155,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_BING_MAPS_KEY)
     configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
+
+  if (undefined !== process.env.IMJS_AZURE_MAPS_KEY)
+    configuration.azureMapsKey = process.env.IMJS_AZURE_MAPS_KEY;
 
   if (undefined !== process.env.IMJS_GOOGLE_MAPS_KEY)
     configuration.googleMapsKey = process.env.IMJS_GOOGLE_MAPS_KEY;

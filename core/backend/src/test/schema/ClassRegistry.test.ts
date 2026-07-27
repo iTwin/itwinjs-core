@@ -42,6 +42,7 @@ describe("Class Registry", () => {
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData = await el.getMetaData();
       assert.exists(metaData);
 
@@ -61,6 +62,7 @@ describe("Class Registry", () => {
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData = await el2.getMetaData();
       assert.exists(metaData);
 
@@ -426,6 +428,7 @@ describe("Class Registry - generated classes", () => {
     assert.instanceOf(errorElementInstance, Entity);
     assert.equal(errorElementInstance.className, "ErrorElement");
     assert.equal(errorElementInstance.schemaName, "CustomB");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metadata = await errorElementInstance.getMetaData();
     assert.exists(metadata);
     assert.equal(metadata.fullName, "CustomB.ErrorElement");
@@ -456,7 +459,7 @@ describe("Class Registry - generated classes", () => {
       },
     } as TestElementWithNavPropProps);
 
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+    // eslint-disable-next-line @typescript-eslint/dot-notation, @typescript-eslint/unbound-method -- The method is asserted but never invoked.
     assert.isDefined(GeneratedTestElementWithNavProp.prototype["collectReferenceIds"]);
     expect(
       [...elemWithNavProp.getReferenceIds()],
@@ -680,7 +683,7 @@ describe("Class Registry - generated classes", () => {
       },
     } as DerivedWithNavPropProps);
 
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+    // eslint-disable-next-line @typescript-eslint/dot-notation, @typescript-eslint/unbound-method -- The method is asserted but never invoked.
     assert.isDefined(ActualDerivedWithNavProp.prototype["collectReferenceIds"]);
     // This demonstrates that if a non-generated class has a registered non-biscore base, it will not get a generated impl,
     expect(
@@ -833,7 +836,7 @@ describe("Class Registry - generated classes", () => {
           Derived4,
           Derived5, // save as above (so will be removed from set)
           Derived6, // save as above (so will be removed from set)
-        ].map((e) => e.prototype["collectReferenceIds"]), // eslint-disable-line @typescript-eslint/dot-notation
+        ].map((e) => e.prototype["collectReferenceIds"]), // eslint-disable-line @typescript-eslint/dot-notation, @typescript-eslint/unbound-method -- The method is compared by identity, not invoked.
       ),
     ).to.deep.equal(
       new Set(
@@ -843,7 +846,7 @@ describe("Class Registry - generated classes", () => {
           ActualDerivedWithNavProp,
           Derived2,
           Derived4,
-        ].map((e) => e.prototype["collectReferenceIds"]), // eslint-disable-line @typescript-eslint/dot-notation
+        ].map((e) => e.prototype["collectReferenceIds"]), // eslint-disable-line @typescript-eslint/dot-notation, @typescript-eslint/unbound-method -- The method is compared by identity, not invoked.
       ),
     );
 

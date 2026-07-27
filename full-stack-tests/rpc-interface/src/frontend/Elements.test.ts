@@ -56,6 +56,7 @@ describe("Operational: Execute Query", () => {
     const query = "select count(*) nRows from(SELECT ECInstanceId FROM Bis.Element LIMIT 50)";
 
     const rows = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const row of iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       rows.push(row);
 

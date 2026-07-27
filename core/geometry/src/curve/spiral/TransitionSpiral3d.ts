@@ -22,7 +22,6 @@ import { TransitionConditionalProperties } from "./TransitionConditionalProperti
 
 import type { Vector3d } from "../../geometry3d/Point3dVector3d";
 import type { Ray3d } from "../../geometry3d/Ray3d";
-
 /**
  * This is the set of valid type names for "integrated" spirals.
  * * Behavior is expressed by a `NormalizedTransition` snap function.

@@ -654,15 +654,14 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return closestTangent;
   }
   /**
-   * Find intervals of this curvePrimitive that are interior to a clipper
+   * Find intervals of this curve that are interior to the clipper.
+   * * Default implementation calls `clipper.announceClippedCurveIntervals`; subclasses can implement more efficiently as necessary.
    * @param clipper clip structure (e.g. clip planes)
-   * @param announce (optional) function to be called announcing fractional intervals
-   * `announce(fraction0, fraction1, curvePrimitive)`
+   * @param announce (optional) called to announce each fractional interval: `announce(fraction0, fraction1, this)`
    * @returns true if any "in" segments are announced.
    */
-  public announceClipIntervals(_clipper: Clipper, _announce?: AnnounceNumberNumberCurvePrimitive): boolean {
-    // DEFAULT IMPLEMENTATION -- no interior parts
-    return false;
+  public announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return clipper.announceClippedCurveIntervals?.(this, announce) ?? false;
   }
   /** Return a deep clone. */
   public abstract override clone(): CurvePrimitive;
@@ -694,6 +693,11 @@ export abstract class CurvePrimitive extends GeometryQuery {
   }
   /** Reverse the curve's data so that its fractional stroking moves in the opposite direction. */
   public abstract reverseInPlace(): void;
+  /** Call [[reverseInPlace]] and return the instance. */
+  public reverse(): this {
+    this.reverseInPlace();
+    return this;
+  }
   /**
    * Compute intersections of the curve with a plane.
    * * The intersections are appended to the result array.

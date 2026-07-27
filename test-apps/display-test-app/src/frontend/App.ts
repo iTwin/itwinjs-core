@@ -31,7 +31,7 @@ import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, SetEditorToolSettingsTool } from "./EditingTools";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, ReproJaggedCurvesTool, SetEditorToolSettingsTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -51,6 +51,7 @@ import {
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
 import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
+import { InvokeFrontendIpcTool, registerDtaFrontendIpcHandler } from "./InvokeFrontendIpcTool";
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
@@ -388,6 +389,7 @@ export class DisplayTestApp {
       GenerateTileContentTool,
       GltfDecorationTool,
       IncidentMarkerDemoTool,
+      InvokeFrontendIpcTool,
       PathDecorationTestTool,
       MacroTool,
       MarkupSelectTestTool,
@@ -409,6 +411,7 @@ export class DisplayTestApp {
       RecordTileSizesTool,
       RefreshTilesTool,
       ReopenIModelTool,
+      ReproJaggedCurvesTool,
       ResizeWindowTool,
       RestoreWindowTool,
       SaveImageTool,
@@ -431,6 +434,8 @@ export class DisplayTestApp {
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 
+    registerDtaFrontendIpcHandler();
+
     BingTerrainMeshProvider.register();
 
     const realityApiKey = import.meta.env.IMJS_REALITY_DATA_KEY;
@@ -440,7 +445,11 @@ export class DisplayTestApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize();
-    await MapLayersFormats.initialize();
+    await MapLayersFormats.initialize({
+      azureMapsOpts: configuration.azureMapsKey
+        ? { subscriptionKey: configuration.azureMapsKey }
+        : undefined,
+    });
 
     EditTools.registerProjectLocationTools();
   }

@@ -8,7 +8,6 @@
 
 import { Id64String, JsonUtils } from "@itwin/core-bentley";
 import { EditTxn, ElementMultiAspect, IModelDb } from "@itwin/core-backend";
-import { _implicitTxn } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { RelatedElement } from "@itwin/core-common";
 import {
   DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps,
@@ -83,15 +82,20 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
     at: DistanceExpression, fromReferentId?: Id64String): void;
 
   /** Insert a new aspect.
-   * @deprecated Use LinearlyReferencedAtLocation.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearlyReferencedAtLocation.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insert(iModel: IModelDb, locatedElementId: Id64String,
     at: DistanceExpression, fromReferentId?: Id64String): void;
 
   public static insert(txnOrIModel: EditTxn | IModelDb, locatedElementId: Id64String,
     at: DistanceExpression, fromReferentId?: Id64String): void {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    txn.insertAspect(this.toProps(locatedElementId, at, fromReferentId));
+    const aspectProps = this.toProps(locatedElementId, at, fromReferentId);
+    if (txnOrIModel instanceof EditTxn)
+      txnOrIModel.insertAspect(aspectProps);
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+      txnOrIModel.elements.insertAspect(aspectProps);
+    }
   }
 }
 
@@ -141,14 +145,19 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
     from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void;
 
   /** Insert a new aspect.
-   * @deprecated Use LinearlyReferencedFromToLocation.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use LinearlyReferencedFromToLocation.insert(txn, ...) instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public static insert(iModel: IModelDb, locatedElementId: Id64String,
     from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void;
 
   public static insert(txnOrIModel: EditTxn | IModelDb, locatedElementId: Id64String,
     from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void {
-    const txn = txnOrIModel instanceof EditTxn ? txnOrIModel : txnOrIModel[_implicitTxn];
-    txn.insertAspect(this.toProps(locatedElementId, from, to, fromReferentId, toReferentId));
+    const aspectProps = this.toProps(locatedElementId, from, to, fromReferentId, toReferentId);
+    if (txnOrIModel instanceof EditTxn)
+      txnOrIModel.insertAspect(aspectProps);
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated IModelDb overload is intentionally preserved for backward compatibility.
+      txnOrIModel.elements.insertAspect(aspectProps);
+    }
   }
 }

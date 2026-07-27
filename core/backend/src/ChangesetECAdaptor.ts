@@ -7,7 +7,7 @@
  */
 import { DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
-import { Base64EncodedString } from "@itwin/core-common";
+import { Base64EncodedString, QueryBinder } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
 import { _nativeDb } from "./internal/Symbols";
 
@@ -354,7 +354,7 @@ class ECDbMap {
 /**
  * Record meta data for the change.
  * @beta
- * @deprecated Use [ChangeMeta]($backend) with [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangeMeta]($backend) with [ChangesetReader]($backend) instead.
  * */
 export interface ChangeMetaData {
   /** list of tables making up this EC change */
@@ -374,7 +374,7 @@ export interface ChangeMetaData {
 /**
  * Represent EC change derived from low level sqlite change
  * @beta
- * @deprecated Use [ChangeInstance]($backend) with [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangeInstance]($backend) with [ChangesetReader]($backend) instead.
  */
 export interface ChangedECInstance {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -388,7 +388,7 @@ export interface ChangedECInstance {
 /**
  * Helper function to convert between JS DateTime & SQLite JulianDay values.
  * @beta
- * @deprecated The DateTime namespace is deprecated and will be removed in a future release.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. The DateTime namespace is deprecated and will be removed in a future release.
  * */
 namespace DateTime {
   /**
@@ -416,7 +416,7 @@ namespace DateTime {
 /**
  * Represents a cache for unifying EC changes.
  * @beta
- * @deprecated Use [ChangeCache]($backend) with [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangeCache]($backend) with [ChangesetReader]($backend) instead.
  */
 export interface ECChangeUnifierCache extends Disposable {
   /**
@@ -447,7 +447,7 @@ export interface ECChangeUnifierCache extends Disposable {
 }
 /**
  * @beta
- * @deprecated Use [ChangeUnifierCache.createInMemoryCache]($backend) / [ChangeUnifierCache.createSqliteBackedCache]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangeUnifierCache.createInMemoryCache]($backend) / [ChangeUnifierCache.createSqliteBackedCache]($backend) instead.
 */
 export namespace ECChangeUnifierCache {
   /**
@@ -657,7 +657,7 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
  * Partial changes is per table and a single instance can
  * span multiple tables.
  * @beta
- * @deprecated Use [PartialChangeUnifier]($backend) with [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [PartialChangeUnifier]($backend) with [ChangesetReader]($backend) instead.
  */
 export class PartialECChangeUnifier implements Disposable {
   private _readonly = false;
@@ -716,13 +716,10 @@ export class PartialECChangeUnifier implements Disposable {
    * @returns `true` if `rhsClassId` is an instance of `lhsClassId`, `false` otherwise.
    */
   private instanceOf(rhsClassId: Id64String, lhsClassId: Id64String): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this._db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
-      stmt.bindId(1, rhsClassId);
-      stmt.bindId(2, lhsClassId);
-      stmt.step();
-      return stmt.getValue(0).getInteger() === 1;
-    });
+    return this._db.withQueryReader("SELECT ec_instanceof(?,?)", (reader) => {
+      reader.step();
+      return reader.current[0] === 1;
+    }, new QueryBinder().bindId(1, rhsClassId).bindId(2, lhsClassId));
   }
 
   /**
@@ -825,7 +822,7 @@ export class PartialECChangeUnifier implements Disposable {
  * it is per table while a single instance can span multiple table.
  * @note PrimitiveArray and StructArray are not supported types.
  * @beta
- * @deprecated Use [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangesetReader]($backend) instead.
  *
 */
 export class ChangesetECAdaptor implements Disposable {

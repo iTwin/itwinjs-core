@@ -54,6 +54,7 @@ import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
 import type { ObjectReference } from '@itwin/object-storage-core/lib/common';
 import { OpenMode } from '@itwin/core-bentley';
 import { OrderedId64Iterable } from '@itwin/core-bentley';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
@@ -2087,6 +2088,12 @@ export interface CreateIModelProps extends IModelProps {
     readonly thumbnail?: ThumbnailProps;
 }
 
+// @internal
+export function createIpcDispatcher(impl: object, channelName: string, includeStack: boolean | (() => boolean)): (funcName: string, ...args: any[]) => Promise<IpcInvokeReturn>;
+
+// @internal
+export function createIpcProxy<K>(call: (methodName: string, ...args: any[]) => Promise<any>): PickAsyncMethods<K>;
+
 // @public
 export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
@@ -2190,6 +2197,7 @@ export interface DbCloudContainerInfo {
     readonly containerId: string;
     readonly dbName?: string;
     readonly description?: string;
+    readonly includePrerelease?: boolean;
     readonly isPublic?: boolean;
     readonly storageType: "azure" | "google";
     readonly version?: string;
@@ -2199,6 +2207,7 @@ export interface DbCloudContainerInfo {
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
+    // @deprecated (undocumented)
     doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
@@ -2288,31 +2297,19 @@ export enum DbResponseKind {
 
 // @internal (undocumented)
 export enum DbResponseStatus {
-    // (undocumented)
-    Cancel = 2,/* query ran to completion. */
-    // (undocumented)
-    Done = 1,/*  Requested by user.*/
-    // (undocumented)
-    Error = 100,/*  query was running but ran out of quota.*/
-    // (undocumented)
-    Error_BlobIO_OpenFailed = 105,/*  query time quota expired while it was in queue.*/
-    // (undocumented)
-    Error_BlobIO_OutOfRange = 106,/*  could not submit the query as queue was full.*/
-    // (undocumented)
-    Error_ECSql_BindingFailed = 104,/*  Shutdown is in progress. */
-    // (undocumented)
-    Error_ECSql_PreparedFailed = 101,/*  generic error*/
-    // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,/*  ecsql prepared failed*/
-    // (undocumented)
-    Error_ECSql_StepFailed = 102,/*  ecsql step failed*/
-    // (undocumented)
-    Partial = 3,/*  ecsql failed to serialized row to json.*/
-    // (undocumented)
-    QueueFull = 5,/*  ecsql binding failed.*/
-    // (undocumented)
-    ShuttingDown = 6,/*  class or property or instance specified was not found or property as not of type blob.*/
-    // (undocumented)
+    Cancel = 2,
+    Done = 1,
+    Error = 100,
+    Error_BlobIO_OpenFailed = 105,
+    Error_BlobIO_OutOfRange = 106,
+    Error_ECSql_BindingFailed = 104,
+    Error_ECSql_PreparedFailed = 101,
+    Error_ECSql_RowToJsonFailed = 103,
+    Error_ECSql_StepFailed = 102,
+    NotOpen = 7,
+    Partial = 3,
+    QueueFull = 5,
+    ShuttingDown = 6,
     Timeout = 4
 }
 
@@ -3020,6 +3017,18 @@ export type ElementAlignedBox3d = Range3d;
 export interface ElementAspectProps extends EntityProps {
     // (undocumented)
     element: RelatedElementProps;
+}
+
+// @beta
+export namespace ElementError {
+    const scope = "itwin-Element";
+    export function isError(error: unknown, key?: Key): error is ITwinError;
+    export type Key =
+    /** The element's model type does not match the expected model type for the operation */
+    "model-type-mismatch" |
+    /** Invalid arguments were provided to an element operation */
+    "invalid-arguments";
+    export function throwError(key: Key, message: string): never;
 }
 
 // @beta
@@ -5804,7 +5813,7 @@ export namespace ITwinSettingsError {
     scope = "itwin-settings";
     export function isError(error: unknown, key?: Key): error is ITwinSettingsError;
     // (undocumented)
-    export type Key = "failed-to-obtain-container-token" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
+    export type Key = "failed-to-obtain-container-token" | "missing-container-itwinid" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
     export function throwError<T extends ITwinSettingsError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 
@@ -7829,6 +7838,8 @@ export class QueryBinder {
     bindString(indexOrName: string | number, val: string): this;
     bindStruct(indexOrName: string | number, val: object): this;
     static from(args: any[] | object | undefined): QueryBinder;
+    // @internal
+    static fromSkippingNullish(args: any[] | object | undefined): QueryBinder;
     // (undocumented)
     serialize(): object;
 }
@@ -7922,6 +7933,7 @@ export interface QueryQuota {
 export enum QueryRowFormat {
     UseECSqlPropertyIndexes = 1,
     UseECSqlPropertyNames = 0,
+    // @deprecated
     UseJsPropertyNames = 2
 }
 
@@ -8044,6 +8056,9 @@ export class RealityModelDisplaySettings {
     readonly pointCloud: PointCloudDisplaySettings;
     toJSON(): RealityModelDisplayProps | undefined;
 }
+
+// @internal
+export function rebuildIpcError(err: any, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): Error;
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
@@ -8622,7 +8637,7 @@ export function resolveNavProp(navProp: RelatedElementProps | undefined, depreca
 export function resolveNavPropId(navProp: RelatedElementProps | undefined, deprecatedNavPropId: Id64String): Id64String;
 
 // @internal (undocumented)
-export class ResponseLike implements Response {
+export class ResponseLike {
     constructor(data: any);
     // (undocumented)
     arrayBuffer(): Promise<ArrayBuffer>;
@@ -9557,6 +9572,9 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     // (undocumented)
     protocolVersion?: number;
 }
+
+// @internal
+export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvokeReturn;
 
 // @beta
 export namespace ServerBasedLocksError {
@@ -11422,6 +11440,9 @@ export enum TypeOfChange {
 
 // @public
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
+
+// @internal
+export function unwrapIpcInvokeReturn<T = unknown>(retVal: IpcInvokeReturn, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): T;
 
 // @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;

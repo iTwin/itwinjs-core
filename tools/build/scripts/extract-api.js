@@ -20,7 +20,7 @@ function getEntryPointDirName(){
   return dirname === "." ? "./lib/cjs" : dirname;
 };
 
-const isCI = (process.env.TF_BUILD);
+const isCI = (process.env.TF_BUILD || process.env.CI);
 const entryPointFileName = path.basename(argv.entry);
 const entryPointDirName = getEntryPointDirName();
 const ignoreMissingTags = argv.ignoreMissingTags;

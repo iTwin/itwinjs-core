@@ -340,7 +340,7 @@
     },
     {
       "name": "@itwin/presentation-shared",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@itwin/reality-data-client",
@@ -391,7 +391,7 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@vitest/browser",
+      "name": "@vitest/browser-playwright",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -889,6 +889,10 @@
     {
       "name": "ts-node",
       "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "tsx",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "tty-browserify",

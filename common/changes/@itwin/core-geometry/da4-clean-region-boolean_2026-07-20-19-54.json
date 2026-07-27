@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "RegionOps.regionBooleanXY enhancements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

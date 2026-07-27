@@ -1495,4 +1495,83 @@ describe("Server-based locks", () => {
       });
     });
   });
+
+  describe("New element tracking via high-water mark", () => {
+    let bc: BriefcaseDb;
+    let locks: ServerBasedLocks;
+
+    beforeEach(async () => {
+      bc = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+      expect(bc.locks.isServerBased).to.be.true;
+      locks = bc.locks as ServerBasedLocks;
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      await bc.pullChanges({ accessToken: "token" });
+    });
+
+    afterEach(async () => {
+      await locks[_releaseAllLocks]();
+      bc.close();
+    });
+
+    function makePhysicalProps(briefcase: BriefcaseDb): PhysicalElementProps {
+      const childId = IModelTestUtils.queryByUserLabel(briefcase, "ChildObject1B");
+      const childElement = briefcase.elements.getElement<PhysicalElement>(childId);
+      return {
+        classFullName: PhysicalObject.classFullName,
+        model: childElement.model,
+        parent: new ElementOwnsChildElements(childElement.parent!.id),
+        category: childElement.category,
+        code: Code.createEmpty(),
+      };
+    }
+
+    it("implicitly locks new elements without writing to the locks database", async () => {
+      const props = makePhysicalProps(bc);
+      await locks.acquireLocks({ shared: [props.model, (props.parent as ElementOwnsChildElements).id] });
+
+      const exclusiveCountBefore = locks.getLockCount(LockState.Exclusive);
+      const newElId = withEditTxn(bc, (txn) => txn.insertElement(props));
+
+      // The new element is implicitly exclusively locked via the high-water mark...
+      expect(locks.holdsExclusiveLock(newElId)).to.be.true;
+      // ...but no new entry was written to the locks database for it.
+      expect(locks.getLockCount(LockState.Exclusive)).to.equal(exclusiveCountBefore);
+
+      bc.txns.reverseAll(); // clean up pending changes
+    });
+
+    it("persists the high-water mark across briefcase close and reopen", async () => {
+      const props = makePhysicalProps(bc);
+      await locks.acquireLocks({ shared: [props.model, (props.parent as ElementOwnsChildElements).id] });
+
+      const newElId = withEditTxn(bc, (txn) => txn.insertElement(props));
+      expect(locks.holdsExclusiveLock(newElId)).to.be.true;
+
+      // Close and reopen without pushing.
+      bc.close();
+      bc = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
+      bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+      locks = bc.locks as ServerBasedLocks;
+
+      // The high-water mark is restored from the locks database, so the element
+      // is still covered by the implicit exclusive lock.
+      expect(locks.holdsExclusiveLock(newElId)).to.be.true;
+
+      bc.txns.reverseAll(); // clean up pending changes
+    });
+
+    it("stops covering elements after they have been pushed to the server", async () => {
+      const props = makePhysicalProps(bc);
+      await locks.acquireLocks({ shared: [props.model, (props.parent as ElementOwnsChildElements).id] });
+
+      const newElId = withEditTxn(bc, (txn) => txn.insertElement(props));
+      expect(locks.holdsExclusiveLock(newElId)).to.be.true;
+
+      // Push advances the high-water mark to cover the newly pushed element.
+      await bc.pushChanges({ accessToken: "token", description: "insert element" });
+
+      // The element is now on the server and requires an explicit server lock.
+      expect(locks.holdsExclusiveLock(newElId)).to.be.false;
+    });
+  });
 });

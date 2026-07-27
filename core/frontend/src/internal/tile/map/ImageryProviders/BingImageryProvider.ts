@@ -67,6 +67,7 @@ function replaceHttpWithHttps(originalUrl: string) {
   return originalUrl.startsWith("http:") ? "https:".concat(originalUrl.slice(5)) : originalUrl;
 }
 
+/** @deprecated in 5.11.0 - will not be removed until after 2027-07-03. Bing Maps imagery is deprecated. For basemap imagery providers, see `@itwin/map-layers-formats`. */
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   private _urlTemplate?: string;
   private _urlSubdomains?: string[];
@@ -145,7 +146,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     }
     return matchingAttributions;
   }
-   /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
+   /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);

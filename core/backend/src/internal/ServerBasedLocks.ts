@@ -40,6 +40,10 @@ export class ServerBasedLocks implements LockControl {
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
   private _removeOnCommitListener: () => void;
+  private _removeOnPushedListener: () => void;
+  /** The local ID portion of the highest element ID pushed to the server. Elements with this briefcase's ID
+   * and a local ID greater than this value are implicitly exclusively locked by us (no server lock required). */
+  private _highWaterLocalId: number = 0;
   private readonly _unsavedChangesTxnId = "0x7FFFFFFFFFFFFFFF"; // a placeholder txn id for locks acquired in the current unsaved Txn
 
   public constructor(iModel: BriefcaseDb) {
@@ -52,6 +56,8 @@ export class ServerBasedLocks implements LockControl {
       this.lockDb.createDb(dbName);
     }
 
+    this.lockDb[_nativeDb].enableWalMode(true);
+
     // Tracks the locks that are actively held.
     this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
     // Tracks the locks that are required by each Txn. They may or may not currently be held.
@@ -63,6 +69,23 @@ export class ServerBasedLocks implements LockControl {
         origin INTEGER NOT NULL,
         abandoned BOOLEAN NOT NULL,
         PRIMARY KEY (txnId, elementId))`);
+
+    // Stores persistent metadata, including the high-water mark for new-element lock tracking.
+    this.lockDb.executeSQL("CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY NOT NULL,value INTEGER NOT NULL)");
+
+    // Initialize the high-water mark. If an existing value is stored, use it. Otherwise derive it from
+    // the iModel's current element ID sequence — any element with this briefcase's ID and a local ID at
+    // or below the sequence was either already pushed or was created-then-abandoned in a previous session.
+    const storedHwm = this.lockDb.withSqliteStatement(
+      "SELECT value FROM metadata WHERE key='highWaterLocalId'",
+      (stmt) => (DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueInteger(0) : undefined)
+    );
+    if (storedHwm !== undefined) {
+      this._highWaterLocalId = storedHwm;
+    } else {
+      this.updateHighWaterMark();
+    }
+
     this.lockDb.saveChanges();
 
     this._removeOnCommitListener = this.briefcase.txns.onCommit.addListener(() => {
@@ -83,10 +106,16 @@ export class ServerBasedLocks implements LockControl {
 
       this.lockDb.saveChanges();
     });
+
+    this._removeOnPushedListener = this.briefcase.txns.onChangesPushed.addListener(() => {
+      this.updateHighWaterMark();
+      this.lockDb.saveChanges();
+    });
   }
 
   public [_close]() {
     this._removeOnCommitListener();
+    this._removeOnPushedListener();
 
     if (this.lockDb.isOpen)
       this.lockDb.closeDb();
@@ -108,6 +137,32 @@ export class ServerBasedLocks implements LockControl {
       stmt.bindId(1, id);
       return (DbResult.BE_SQLITE_ROW === stmt.step()) ? stmt.getValueInteger(0) : undefined;
     });
+  }
+
+  /** Read the local ID portion of the iModel's current element ID sequence counter.
+   * The native layer writes this value with BeInt64Id::ToString() (decimal by default) but
+   * BeInt64Id::FromString() accepts both decimal and "0x"-prefixed hex. BigInt() has the same
+   * dual-format behavior, so it is the canonical JS equivalent. Mask to the lower 40 bits. */
+  private readCurrentLocalIdSequence(): number {
+    const seqStr = this.briefcase[_nativeDb].queryLocalValue("bis_elementidsequence");
+    if (!seqStr)
+      return 0;
+    return Number(BigInt(seqStr) & 0xFFFFFFFFFFn);
+  }
+
+  /** Persist the current element ID sequence as the new high-water mark. Called after a successful push. */
+  private updateHighWaterMark(): void {
+    this._highWaterLocalId = this.readCurrentLocalIdSequence();
+    this.lockDb.withPreparedSqliteStatement(
+      "INSERT INTO metadata(key,value) VALUES('highWaterLocalId',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+      (stmt) => { stmt.bindInteger(1, this._highWaterLocalId); stmt.step(); }
+    );
+  }
+
+  /** Returns true if this element was created by this briefcase after the last push and therefore does not
+   * require a server lock. */
+  private isNewElement(id: Id64String): boolean {
+    return Id64.getBriefcaseId(id) === this.briefcase.briefcaseId && Id64.getLocalId(id) > this._highWaterLocalId;
   }
 
   /** Clear the cache of locally held locks.
@@ -215,11 +270,17 @@ export class ServerBasedLocks implements LockControl {
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
   public holdsExclusiveLock(id: Id64String): boolean {
+    // New elements (created by this briefcase since the last push) are implicitly exclusively locked.
+    if (this.isNewElement(id))
+      return true;
     // see if we hold the exclusive lock. or if one of the element's owners is exclusively locked (recursively)
     return this.getLockState(id) === LockState.Exclusive || this.ownerHoldsExclusiveLock(id);
   }
 
   public holdsSharedLock(id: Id64String): boolean {
+    // New elements are implicitly exclusively locked, which implies shared lock too.
+    if (this.isNewElement(id))
+      return true;
     const state = this.getLockState(id);
     // see if we hold shared or exclusive lock, or if an owner has exclusive lock. If so we implicitly have shared lock, but owner holding shared lock doesn't help.
     return (state === LockState.Shared || state === LockState.Exclusive) || this.ownerHoldsExclusiveLock(id);
@@ -517,8 +578,14 @@ export class ServerBasedLocks implements LockControl {
     this.lockDb.saveChanges();
   }
 
-  /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
+  /** When an element is newly created in a session, we hold the lock on it implicitly.
+   * For elements whose local ID is above the high-water mark this is already handled by [[isNewElement]],
+   * so no database write is needed. The only case that does require a write is when the element's ID is
+   * at or below the high-water mark (e.g. when re-applying a stash whose elements were created before
+   * the last push). */
   public [_elementWasCreated](id: Id64String) {
+    if (this.isNewElement(id))
+      return; // already covered implicitly; no database write needed
     this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement);
     this.insertTxnLockRecord(id, LockState.Exclusive, LockOrigin.NewElement);
     this.lockDb.saveChanges();

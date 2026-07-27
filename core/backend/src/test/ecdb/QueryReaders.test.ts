@@ -44,6 +44,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       const params = new QueryBinder();
       params.bindIdSet(1, ["0x32"]);
       const optionBuilder = new QueryOptionsBuilder();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
       const readerCallback = async (readerObj: ECSqlReader) => {
         const rows = await readerObj.toArray();
@@ -72,6 +73,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       const params = new QueryBinder();
       params.bindIdSet(1, ["0x32"]);
       const optionBuilder = new QueryOptionsBuilder();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
       const readerCallback = async (readerObj: ECSqlReader) => {
         const rows = await readerObj.toArray();
@@ -100,6 +102,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       const params = new QueryBinder();
       params.bindIdSet(1, ["50"]);
       const optionBuilder = new QueryOptionsBuilder();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
       const readerCallback = async (readerObj: ECSqlReader) => {
         const rows = await readerObj.toArray();
@@ -416,7 +419,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });
@@ -567,7 +572,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });
@@ -720,7 +727,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });
@@ -874,7 +883,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });
@@ -1016,7 +1027,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });

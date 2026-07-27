@@ -245,6 +245,7 @@ import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaItemKey } from '@itwin/ecschema-metadata';
 import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
+import { SchemaView } from '@itwin/ecschema-metadata';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
 import { SectionType } from '@itwin/core-common';
@@ -553,13 +554,17 @@ export namespace BlobContainer {
         label: string;
     }
     export interface MetadataResponse extends Metadata {
-        // (undocumented)
+        accountITwinId?: GuidString;
         containerId: string;
+        iTwinId?: GuidString;
     }
     export type Provider = "azure" | "google";
     export interface QueryContainerProps {
         containerType?: GuidString;
         iModelId?: GuidString;
+        includeParentITwins?: boolean | {
+            filter: "accountOnly";
+        };
         iTwinId: GuidString;
         label?: GuidString;
     }
@@ -606,6 +611,8 @@ export class BriefcaseDb extends IModelDb {
     close(options?: CloseIModelArgs): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
+    // @internal
+    disableFileBasedTxns(): void;
     // @preview
     discardChanges(args?: {
         retainLocks?: true;
@@ -613,12 +620,16 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     enableChangesetStatTracking(): Promise<void>;
     // @internal
+    enableFileBasedTxns(): void;
+    // @internal
     executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     // (undocumented)
     getAllChangesetHealthData(): Promise<ChangesetHealthStats[]>;
     get isBriefcase(): boolean;
+    // @internal
+    get isFileBasedTxnsEnabled(): boolean;
     get iTwinId(): GuidString;
     // (undocumented)
     protected makeLockControl(): void;
@@ -694,7 +705,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static getChangedElementsPathName(iModelId: GuidString): LocalFileName;
     // @internal
-    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): InstancePatch[];
+    static getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<InstancePatch>;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): LocalDirName;
     static getFileName(briefcase: BriefcaseProps): LocalFileName;
@@ -709,7 +720,9 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
     // @internal
-    static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
+    static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs & {
+        noUpdateLoop?: boolean;
+    }): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
     static queryChangeset(arg: {
@@ -730,6 +743,8 @@ export class BriefcaseManager {
     static semanticRebaseDataFolderExists(db: BriefcaseDb, txnId: string): boolean;
     // @internal
     static semanticRebaseSchemaFolderExists(db: BriefcaseDb, txnId: string): boolean;
+    // @internal
+    static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: IterableIterator<ChangeInstance>): void;
     // @internal
     static storeSchemasForSemanticRebase<T extends LocalFileName[] | string[]>(db: BriefcaseDb, txnId: string, schemaFileNames: T): void;
 }
@@ -919,6 +934,18 @@ export class ChangedElementsDb implements Disposable {
 }
 
 // @beta
+export interface ChangeElementModelProps {
+    id: Id64String;
+    modelId: Id64String;
+}
+
+// @beta
+export interface ChangeElementParentProps {
+    id: Id64String;
+    parentId: Id64String;
+}
+
+// @beta
 export interface ChangeFormatArgs {
     includeNullColumns?: true;
     includeOpCode?: true;
@@ -1015,8 +1042,10 @@ export class ChangesetReader implements Disposable, ChangeSource {
     clearTableNameFilters(): void;
     close(): void;
     readonly db: AnyDb;
-    deleted?: ChangeInstance;
-    inserted?: ChangeInstance;
+    get deleted(): ChangeInstance | undefined;
+    disableStrictMode(): void;
+    enableStrictMode(): void;
+    get inserted(): ChangeInstance | undefined;
     get isECTable(): boolean;
     get isIndirectChange(): boolean;
     get op(): SqliteChangeOp;
@@ -1025,18 +1054,23 @@ export class ChangesetReader implements Disposable, ChangeSource {
     } & ChangesetReaderArgs): ChangesetReader;
     static openGroup(args: {
         readonly changesetFiles: string[];
+        spillThresholdInBytes?: number;
     } & ChangesetReaderArgs): ChangesetReader;
     static openInMemoryChanges(args: Omit<ChangesetReaderArgs, "db"> & {
         db: IModelDb;
+        spillThresholdInBytes?: number;
     }): ChangesetReader;
     static openLocalChanges(args: Omit<ChangesetReaderArgs, "db"> & {
         db: IModelDb;
         includeInMemoryChanges?: boolean;
+        spillThresholdInBytes?: number;
     }): ChangesetReader;
     static openTxn(args: Omit<ChangesetReaderArgs, "db"> & {
         db: IModelDb;
         txnId: Id64String;
+        spillThresholdInBytes?: number;
     }): ChangesetReader;
+    setBatchSize(batchSize: number): void;
     setClassNameFilters(classNames: Set<string>): void;
     setOpCodeFilters(ops: Set<SqliteChangeOp>): void;
     setTableNameFilters(tableNames: Set<string>): void;
@@ -2713,6 +2747,8 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
 export class EditTxn {
     constructor(iModel: IModelDb, description: string);
     abandonChanges(): void;
+    changeElementModel(props: ChangeElementModelProps): void;
+    changeElementParent(props: ChangeElementParentProps): void;
     deleteAspect(aspectInstanceIds: Id64Arg): void;
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
@@ -2772,6 +2808,7 @@ class Element_2 extends Entity {
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
+    // @deprecated
     getMetaData(): Promise<EntityClass>;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
@@ -3117,12 +3154,13 @@ export class Entity {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
     static deserialize(props: DeserializeEntityArgs): EntityProps;
+    // @deprecated
     forEach(func: PropertyHandler, includeCustom?: boolean): void;
     // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @preview
+    // @deprecated @preview
     getMetaData(): Promise<EntityClass | RelationshipClass>;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     getMetaDataSync(): EntityClass | RelationshipClass;
     // @beta
     getReferenceIds(): EntityReferenceSet;
@@ -3821,6 +3859,11 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
 export function getAvailableCRSUnits(): string[];
 
 // @beta
+export interface GetResolvedSettingDefOptions {
+    readonly preserveExtends?: boolean;
+}
+
+// @beta
 export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
     accessToken: AccessToken;
 }
@@ -4060,6 +4103,8 @@ export abstract class IModelDb extends IModel {
     // @deprecated
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
+    // @beta
+    getSchemaView(): Promise<SchemaView>;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
@@ -4194,6 +4239,10 @@ export namespace IModelDb {
         readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
+        // @beta @deprecated
+        changeElementModel(props: ChangeElementModelProps): void;
+        // @beta @deprecated
+        changeElementParent(props: ChangeElementParentProps): void;
         createElement<T extends Element_2>(elProps: ElementProps): T;
         // @deprecated
         deleteAspect(aspectInstanceIds: Id64Arg): void;
@@ -4201,6 +4250,8 @@ export namespace IModelDb {
         deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
         // @deprecated
         deleteElement(ids: Id64Arg): void;
+        // @beta @deprecated
+        deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
@@ -4540,6 +4591,7 @@ export class IModelJsFs {
     static readdirSync(pathname: string): string[];
     static readFileSync(pathname: string): string | Buffer;
     static readFileWithEncodingSync(pathname: string, encoding: BufferEncoding): string;
+    static readLines(pathname: string): AsyncGenerator<string>;
     static recursiveFindSync(rootDir: string, pattern: RegExp): string[];
     static recursiveMkDirSync(dirPath: string): void;
     static removeSync(pathname: string): void;
@@ -4677,15 +4729,9 @@ export interface InstanceChange {
 }
 
 // @internal
-export interface InstancePatch {
+export interface InstancePatch extends Omit<ChangeInstance, "$meta"> {
     // (undocumented)
-    isIndirect: boolean;
-    // (undocumented)
-    key: PatchInstanceKey;
-    // (undocumented)
-    op: "Inserted" | "Updated" | "Deleted";
-    // (undocumented)
-    props?: ECSqlRow;
+    $meta: Pick<ChangeMeta, "op" | "stage" | "isIndirectChange">;
 }
 
 // @beta
@@ -4715,7 +4761,11 @@ export abstract class IpcHandler {
 export class IpcHost {
     static addListener(channel: string, listener: IpcListener): RemoveFunction;
     static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
+    // @beta
+    static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
+    // @beta
+    static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K>;
     // (undocumented)
     static noStack: boolean;
     // @internal (undocumented)
@@ -5144,6 +5194,7 @@ export class LocalHub {
     queryLocks(): LocksEntry[];
     // (undocumented)
     queryLockStatus(elementId: Id64String): LockStatus;
+    queryNearestCheckpoint(changesetIndex: ChangesetIndex): ChangesetIndex;
     queryPreviousCheckpoint(changesetIndex: ChangesetIndex): ChangesetIndex;
     // (undocumented)
     releaseAllLocks(arg: {
@@ -5964,6 +6015,7 @@ export class Relationship extends Entity {
     delete(): void;
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
+    // @deprecated
     getMetaData(): Promise<RelationshipClass>;
     // @beta
     insert(txn: EditTxn): Id64String;
@@ -6124,6 +6176,7 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
     onProgress?: ProgressFunction;
     toIndex: ChangesetIndex;
     skipSchemaChanges?: true;
+    inCaseOfFailure?: "retain" | "revert" | "delete";
 };
 
 // @public @preview
@@ -6345,6 +6398,7 @@ export interface SettingGroupSchema {
     readonly settingDefs?: {
         [name: string]: SettingSchema | undefined;
     };
+    readonly title?: string;
     readonly typeDefs?: {
         [name: string]: SettingSchema | undefined;
     };
@@ -6410,10 +6464,6 @@ export interface SettingsContainer {
 export namespace SettingsContainers {
     export function getITwinContainerId(iTwinId: GuidString): Promise<WorkspaceContainerId | undefined>;
     export function getITwinSettingsSources(iTwinId: GuidString): Promise<WorkspaceDbSettingsProps[] | undefined>;
-    export interface QueryArgs {
-        iTwinId: GuidString;
-        label?: string;
-    }
 }
 
 // @internal
@@ -6481,6 +6531,8 @@ export interface SettingsSchemas {
     addFile(fileName: LocalFileName): void;
     addGroup(settingsGroup: SettingGroupSchema | SettingGroupSchema[]): void;
     addJson(settingSchema: string): void;
+    getResolvedSettingDef(settingName: SettingName, options?: GetResolvedSettingDefOptions): SettingSchema | undefined;
+    readonly groups: ReadonlyMap<string, SettingGroupSchema>;
     readonly onSchemaChanged: BeEvent<() => void>;
     removeGroup(schemaPrefix: string): void;
     readonly settingDefs: ReadonlyMap<SettingName, SettingSchema>;
@@ -6928,11 +6980,15 @@ export class SQLiteDb {
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.SQLiteDb;
     abandonChanges(): void;
+    // @internal
+    applyChangeset(changesetFile: LocalFileName): void;
     closeDb(saveChanges?: boolean): void;
     // @beta
     get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @internal (undocumented)
     static createBlobIO(): SQLiteDb.BlobIO;
+    // @internal
+    createChangeset(changesetFile: LocalFileName): void;
     createDb(dbName: string): void;
     // @beta (undocumented)
     createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
@@ -6944,6 +7000,8 @@ export class SQLiteDb {
     }): void;
     // @deprecated
     dispose(): void;
+    // @internal
+    executeDdl(ddl: string): void;
     executeSQL(sql: string): DbResult;
     getLastInsertRowId(): number;
     get isOpen(): boolean;
@@ -6955,6 +7013,8 @@ export class SQLiteDb {
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     readLastModTime(tableName: string, rowId: number): Date;
     saveChanges(): void;
+    // @internal
+    startChangeTracking(): void;
     vacuum(args?: SQLiteDb.VacuumDbArgs): void;
     // @internal
     withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => Promise<T>): Promise<T>;
@@ -7562,6 +7622,8 @@ export class TxnManager {
     cancelTo(txnId: TxnIdString): IModelStatus;
     // @beta
     cancelToTxnAsync(txnId: TxnIdString, args?: ReverseTxnArgs): Promise<void>;
+    // @internal
+    protected _captureInstanceChanges(id: TxnIdString): void;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
@@ -8429,6 +8491,7 @@ export type WorkspaceContainerId = string;
 
 // @beta
 export interface WorkspaceContainerProps extends Optional<CloudSqlite.ContainerAccessProps, "accessToken"> {
+    readonly baseUri: string;
     readonly description?: string;
     readonly loadingHelp?: string;
     readonly syncOnConnect?: boolean;
@@ -8464,6 +8527,7 @@ export interface WorkspaceDb {
 
 // @beta
 export interface WorkspaceDbCloudProps extends WorkspaceDbProps, WorkspaceContainerProps, DbCloudContainerInfo {
+    readonly baseUri: string;
 }
 
 // @beta
@@ -8484,6 +8548,7 @@ export interface WorkspaceDbLoadErrors extends ITwinError {
 export interface WorkspaceDbManifest {
     readonly contactName?: string;
     readonly description?: string;
+    readonly lastEditedAt?: string;
     readonly lastEditedBy?: string;
     readonly workspaceName: string;
 }

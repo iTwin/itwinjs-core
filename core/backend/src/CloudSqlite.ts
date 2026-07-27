@@ -18,6 +18,7 @@ import { BlobContainer } from "./BlobContainerService";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { RpcTrace } from "./rpc/tracing";
+import { getOnlineStatus } from "./internal/OnlineStatus";
 
 import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
@@ -55,13 +56,16 @@ export namespace CloudSqlite {
 
   /**
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
-   * If the service is unavailable or returns an error, an empty token is returned.
+   * If the backend is considered offline, this returns an empty token without calling the service.
    */
   export async function requestToken(args: RequestTokenArgs): Promise<AccessToken> {
     // allow the userToken to be supplied via args. If not supplied, or blank, use the backend's accessToken. If that fails, use the value from the current RPC request
     let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
     if (userToken === "")
       userToken = RpcTrace.currentActivity?.accessToken ?? "";
+    if (!getOnlineStatus())
+      return "";
+
     const response = await getBlobService().requestToken({ ...args, userToken });
     return response?.token ?? "";
   }

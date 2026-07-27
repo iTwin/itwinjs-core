@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { EditTxn, withEditTxn } from "../../EditTxn";
+import { EditTxn } from "../../EditTxn";
 import {
   ChangesetIdWithIndex, Code, ColorDef,
-  GeometricElement2dProps, GeometryStreamProps, IModel, IModelVersion, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import * as chai from "chai";
@@ -29,7 +29,6 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
-
 chai.use(chaiAsPromised);
 
 
@@ -664,6 +663,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(queryRow.toRow());
     }
@@ -682,6 +682,7 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(queryRow.toRow());
       }
@@ -772,6 +773,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(queryRow.toRow());
     }
@@ -790,6 +792,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(queryRow.toRow());
     }
@@ -813,6 +816,7 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(queryRow.toRow());
       }
@@ -858,6 +862,7 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(queryRow.toRow());
       }
@@ -881,39 +886,6 @@ describe("IModelWriteTest", () => {
     }
     rwIModel.close();
     rwIModel2.close();
-  });
-
-  it("pulling a changeset with extents changes should update the extents of the opened imodel", async () => {
-    const accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
-    const version0 = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
-    const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName: "projectExtentsTest", version0 });
-    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId });
-    const changesetIdBeforeExtentsChange = iModel.changeset.id;
-    const extents = iModel.projectExtents;
-    const newExtents = extents.clone();
-    newExtents.low.x += 100;
-    newExtents.low.y += 100;
-    newExtents.high.x += 100;
-    newExtents.high.y += 100;
-    withEditTxn(iModel, "update project extents", (txn) => txn.updateProjectExtents(newExtents));
-    await iModel.pushChanges({ description: "update project extents" });
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
-    const iModelBeforeExtentsChange = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(changesetIdBeforeExtentsChange).toJSON() });
-    const extentsBeforePull = iModelBeforeExtentsChange.projectExtents;
-    // Read the extents fileProperty.
-    const extentsStrBeforePull = iModelBeforeExtentsChange.queryFilePropertyString({ name: "Extents", namespace: "dgn_Db" });
-    const ecefLocationBeforeExtentsChange = iModelBeforeExtentsChange.ecefLocation;
-    await iModelBeforeExtentsChange.pullChanges(); // Pulls the extents change.
-    const extentsAfterPull = iModelBeforeExtentsChange.projectExtents;
-    const extentsStrAfterPull = iModelBeforeExtentsChange.queryFilePropertyString({ name: "Extents", namespace: "dgn_Db" });
-    const ecefLocationAfterExtentsChange = iModelBeforeExtentsChange.ecefLocation;
-
-    expect(ecefLocationBeforeExtentsChange).to.not.be.undefined;
-    expect(ecefLocationAfterExtentsChange).to.not.be.undefined;
-    expect(ecefLocationBeforeExtentsChange?.isAlmostEqual(ecefLocationAfterExtentsChange!)).to.be.false;
-    expect(extentsStrAfterPull).to.not.equal(extentsStrBeforePull);
-    expect(extentsAfterPull.isAlmostEqual(extentsBeforePull)).to.be.false;
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModelBeforeExtentsChange);
   });
 
   it("parent lock should suffice when inserting into deeply nested sub-model", async () => {

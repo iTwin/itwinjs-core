@@ -76,6 +76,13 @@ export interface UnitConversionProps {
   offset: number;
   /** If set, inverts the unit value (1/x) before or after conversion. */
   inversion?: UnitConversionInvert;
+  /**
+   * If `true`, the conversion could not be resolved (e.g. unknown unit, incompatible phenomena).
+   * When `error` is `true`, `factor` MUST be `1.0` and `offset` MUST be `0.0` (identity).
+   * Callers must check this flag before applying the conversion — applying an identity conversion
+   * silently produces wrong output.
+   */
+  error?: boolean;
 }
 
 /** Interface that defines potential parse units that may be found in user's string input of a quantity value.
@@ -103,6 +110,13 @@ export interface UnitsProvider {
   findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
   getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
+  /**
+   * Compute the conversion factors from `fromUnit` to `toUnit`.
+   * On failure (unknown unit, incompatible phenomena), implementations MUST return
+   * `{ factor: 1.0, offset: 0.0, error: true }`. Throwing is also permitted;
+   * composite providers treat a throw as equivalent to `error: true`.
+   * Callers MUST check `result.error` before applying the conversion.
+   */
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
 }
 

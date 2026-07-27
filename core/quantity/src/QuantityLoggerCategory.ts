@@ -15,4 +15,6 @@ export enum QuantityLoggerCategory {
   Package = "core-quantity",
   /** Logger category for quantity formatting operations. */
   Formatting = "core-quantity.Formatting",
+  /** Logger category for quantity parsing operations. */
+  Parsing = "core-quantity.Parsing",
 }

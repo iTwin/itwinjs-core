@@ -1,6 +1,95 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 23 Apr 2026 18:06:53 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Jul 2026 19:42:09 GMT and should not be manually modified.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Deprecated the no-op `doNotUsePrimaryConnToPrepare` concurrent query config option. Worker connections now always prepare against a shared, dedicated schema-source connection (falling back to their own connection) to avoid a deadlock with the primary connection; the option is retained only for backward-compatible config serialization and no longer affects behavior.
+- Add EditTxn.changeElementParent and EditTxn.changeElementModel; add ElementError namespace.
+- Added an internal DbResponseStatus.NotOpen status for closed iModel query responses.
+- add "missing-container-itwinid" to ITwinSettingsError
+- Add includePrerelease to DbCloudContainerInfo.
+- Clarify that the legacy BingProvider background map path is retained for compatibility with existing persisted data.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+_Version update only_
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Fix misspelled @deprecated tag on QueryRowFormat.UseJsPropertyNames
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+_Version update only_
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+_Version update only_
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Updates
+
+- Added ITwinSettingsError for iTwin settings container API error handling.
+- added EditTxn apis
+- Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns.
+- Added ECSql-compatible navigation-property fields to `ViewDefinitionProps`, `SpatialViewDefinitionProps`, and `ViewDefinition2dProps` interfaces. The flat Id64String fields (`categorySelectorId`, `displayStyleId`, `modelSelectorId`, `baseModelId`) are deprecated in favor of the new navigation-property objects but remain as getter/setter pairs instead for backward compatibility.
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+_Version update only_
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:13 GMT

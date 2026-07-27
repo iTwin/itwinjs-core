@@ -14,6 +14,9 @@ import { InvertedUnit } from "../Metadata/InvertedUnit";
 
 /**
  * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel.
+ *
+ * To layer schema-defined units on top of the bundled BIS units from `@itwin/core-quantity`,
+ * pass this as `primary` to `createUnitsProvider` from `@itwin/core-quantity`.
  * @beta
  */
 export class SchemaUnitProvider implements UnitsProvider {

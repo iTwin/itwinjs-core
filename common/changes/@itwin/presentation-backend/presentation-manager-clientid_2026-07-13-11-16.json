@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "`Presentation.initialize`: Added `maxClientManagers` prop to cap the number of concurrent client `PresentationManager` instances kept in memory (default 100, least-recently-used evicted first), bounding memory and native-resource usage from many distinct client ids.",
+      "type": "none",
+      "packageName": "@itwin/presentation-backend"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

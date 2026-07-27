@@ -1,0 +1,346 @@
+{
+  "$schema": "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  "name": "TestBuilding",
+  "version": "01.00.00",
+  "alias": "tb",
+  "label": "Test Building Schema",
+  "description": "A test schema for building elements",
+  "items": {
+    "Building": {
+      "schemaItemType": "EntityClass",
+      "label": "Building",
+      "description": "A physical building structure",
+      "properties": [
+        {
+          "name": "Height",
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "label": "Height",
+          "description": "The height of the building in meters"
+        },
+        {
+          "name": "FloorCount",
+          "type": "PrimitiveProperty",
+          "typeName": "int",
+          "label": "Floor Count",
+          "description": "The number of floors in the building"
+        },
+        {
+          "name": "Name",
+          "type": "PrimitiveProperty",
+          "typeName": "string",
+          "label": "Name",
+          "description": "The name of the building"
+        },
+        {
+          "name": "YearBuilt",
+          "type": "PrimitiveProperty",
+          "typeName": "int",
+          "label": "Year Built",
+          "description": "The year the building was constructed"
+        }
+      ]
+    },
+    "Wall": {
+      "schemaItemType": "EntityClass",
+      "label": "Wall",
+      "description": "A vertical building component",
+      "properties": [
+        {
+          "name": "Thickness",
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "label": "Thickness",
+          "description": "The thickness of the wall in meters"
+        },
+        {
+          "name": "Material",
+          "type": "PrimitiveProperty",
+          "typeName": "string",
+          "label": "Material",
+          "description": "The material of the wall"
+        }
+      ]
+    },
+    "Room": {
+      "schemaItemType": "EntityClass",
+      "label": "Room",
+      "description": "A room within a building",
+      "properties": [
+        {
+          "name": "Area",
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "label": "Area",
+          "description": "The area of the room in square meters"
+        },
+        {
+          "name": "Purpose",
+          "type": "PrimitiveProperty",
+          "typeName": "string",
+          "label": "Purpose",
+          "description": "The purpose of the room"
+        }
+      ]
+    },
+    "Address": {
+      "schemaItemType": "StructClass",
+      "label": "Address",
+      "description": "A postal address structure",
+      "properties": [
+        {
+          "name": "Street",
+          "type": "PrimitiveProperty",
+          "typeName": "string",
+          "label": "Street"
+        },
+        {
+          "name": "City",
+          "type": "PrimitiveProperty",
+          "typeName": "string",
+          "label": "City"
+        }
+      ]
+    },
+    "Location": {
+      "schemaItemType": "StructClass",
+      "label": "Location",
+      "description": "A geographic location structure",
+      "properties": [
+        {
+          "name": "Latitude",
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "label": "Latitude"
+        },
+        {
+          "name": "Longitude",
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "label": "Longitude"
+        }
+      ]
+    },
+    "BuildingMetadata": {
+      "schemaItemType": "CustomAttributeClass",
+      "label": "Building Metadata",
+      "description": "Custom attribute for building metadata",
+      "appliesTo": "AnyClass"
+    },
+    "Deprecated": {
+      "schemaItemType": "CustomAttributeClass",
+      "label": "Deprecated",
+      "description": "Marks an element as deprecated",
+      "appliesTo": "AnyClass"
+    },
+    "BuildingHasRooms": {
+      "schemaItemType": "RelationshipClass",
+      "label": "Building Has Rooms",
+      "description": "Relationship between building and rooms",
+      "strength": "Embedding",
+      "strengthDirection": "Forward",
+      "source": {
+        "polymorphic": true,
+        "multiplicity": "(0..*)",
+        "roleLabel": "has",
+        "constraintClasses": [
+          "TestBuilding.Building"
+        ]
+      },
+      "target": {
+        "polymorphic": true,
+        "multiplicity": "(0..*)",
+        "roleLabel": "is contained in",
+        "constraintClasses": [
+          "TestBuilding.Building"
+        ]
+      }
+    },
+    "BuildingHasEquipment": {
+      "schemaItemType": "RelationshipClass",
+      "label": "Building Has Equipment",
+      "description": "Relationship between building and equipment",
+      "strength": "Embedding",
+      "strengthDirection": "Forward",
+      "source": {
+        "polymorphic": true,
+        "multiplicity": "(0..*)",
+        "roleLabel": "contains",
+        "constraintClasses": [
+          "TestBuilding.Building"
+        ]
+      },
+      "target": {
+        "polymorphic": true,
+        "multiplicity": "(0..*)",
+        "roleLabel": "is in",
+        "constraintClasses": [
+          "TestBuilding.Building"
+        ]
+      }
+    },
+    "ISpatialElement": {
+      "schemaItemType": "Mixin",
+      "label": "Spatial Element",
+      "description": "Mixin for spatial elements",
+      "appliesTo": "TestBuilding.Building"
+    },
+    "ITaggable": {
+      "schemaItemType": "Mixin",
+      "label": "Taggable",
+      "description": "Mixin for taggable elements",
+      "appliesTo": "TestBuilding.Building"
+    },
+    "BuildingType": {
+      "schemaItemType": "Enumeration",
+      "type": "int",
+      "isStrict": true,
+      "label": "Building Type",
+      "description": "Types of buildings",
+      "enumerators": [
+        {
+          "name": "Residential",
+          "value": 1,
+          "label": "Residential",
+          "description": "A residential building"
+        },
+        {
+          "name": "Commercial",
+          "value": 2,
+          "label": "Commercial",
+          "description": "A commercial building"
+        },
+        {
+          "name": "Industrial",
+          "value": 3,
+          "label": "Industrial",
+          "description": "An industrial building"
+        },
+        {
+          "name": "MixedUse",
+          "value": 4,
+          "label": "Mixed Use",
+          "description": "A mixed-use building"
+        }
+      ]
+    },
+    "MaterialType": {
+      "schemaItemType": "Enumeration",
+      "type": "int",
+      "isStrict": true,
+      "label": "Material Type",
+      "description": "Types of construction materials",
+      "enumerators": [
+        {
+          "name": "Concrete",
+          "value": 1,
+          "label": "Concrete",
+          "description": "Concrete material"
+        }
+      ]
+    },
+    "LENGTH": {
+      "schemaItemType": "Phenomenon",
+      "label": "Length",
+      "description": "Length phenomenon",
+      "definition": "LENGTH(1)"
+    },
+    "AREA": {
+      "schemaItemType": "Phenomenon",
+      "label": "Area",
+      "description": "Area phenomenon",
+      "definition": "LENGTH(2)"
+    },
+    "METRIC": {
+      "schemaItemType": "UnitSystem",
+      "label": "Metric",
+      "description": "Metric unit system"
+    },
+    "IMPERIAL": {
+      "schemaItemType": "UnitSystem",
+      "label": "Imperial",
+      "description": "Imperial unit system"
+    },
+    "M": {
+      "schemaItemType": "Unit",
+      "label": "Meter",
+      "description": "Meter unit",
+      "phenomenon": "TestBuilding.LENGTH",
+      "unitSystem": "TestBuilding.METRIC",
+      "definition": "M"
+    },
+    "FT": {
+      "schemaItemType": "Unit",
+      "label": "Foot",
+      "description": "Foot unit",
+      "phenomenon": "TestBuilding.LENGTH",
+      "unitSystem": "TestBuilding.IMPERIAL",
+      "definition": "FT"
+    },
+    "PER_M": {
+      "schemaItemType": "InvertedUnit",
+      "label": "Per Meter",
+      "description": "Inverted meter unit",
+      "invertsUnit": "TestBuilding.M",
+      "unitSystem": "TestBuilding.METRIC"
+    },
+    "SpatialCategory": {
+      "schemaItemType": "PropertyCategory",
+      "label": "Spatial Category",
+      "description": "Category for spatial properties",
+      "priority": 1
+    },
+    "TemporalCategory": {
+      "schemaItemType": "PropertyCategory",
+      "label": "Temporal Category",
+      "description": "Category for temporal properties",
+      "priority": 2
+    },
+    "DefaultReal": {
+      "schemaItemType": "Format",
+      "label": "Default Real Format",
+      "description": "Default format for real numbers",
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint"
+      ]
+    },
+    "DefaultInteger": {
+      "schemaItemType": "Format",
+      "label": "Default Integer Format",
+      "description": "Default format for integer numbers",
+      "type": "Decimal",
+      "precision": 0
+    },
+    "LENGTH_KOQ": {
+      "schemaItemType": "KindOfQuantity",
+      "label": "Length KOQ",
+      "description": "Kind of quantity for length",
+      "persistenceUnit": "TestBuilding.M",
+      "relativeError": 0.0001
+    },
+    "AREA_KOQ": {
+      "schemaItemType": "KindOfQuantity",
+      "label": "Area KOQ",
+      "description": "Kind of quantity for area",
+      "persistenceUnit": "TestBuilding.M",
+      "relativeError": 0.0001
+    },
+    "PI": {
+      "schemaItemType": "Constant",
+      "label": "Pi",
+      "description": "Mathematical constant Pi",
+      "phenomenon": "TestBuilding.LENGTH",
+      "definition": "PI"
+    },
+    "E": {
+      "schemaItemType": "Constant",
+      "label": "Euler's Number",
+      "description": "Mathematical constant E",
+      "phenomenon": "TestBuilding.LENGTH",
+      "definition": "E"
+    }
+  }
+}

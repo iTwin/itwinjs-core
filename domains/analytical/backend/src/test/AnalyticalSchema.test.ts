@@ -124,6 +124,7 @@ describe("AnalyticalSchema", () => {
     const elementId: Id64String = txn.insertElement(elementProps);
     // test forEachProperty and PropertyMetaData.isNavigation
     const element: GeometricElement3d = iModelDb.elements.getElement(elementId);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- exercising the deprecated path on purpose
     element.forEach((propName, property) => {
       switch (propName) {
         case "model":

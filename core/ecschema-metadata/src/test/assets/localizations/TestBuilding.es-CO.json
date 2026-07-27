@@ -1,0 +1,16 @@
+{
+  "$schema": "ecschema-localization-v1",
+  "name": "TestBuilding",
+  "version": "01.XX.XX",
+  "locale": "es-CO",
+  "label": "Esquema de Prueba de Construcciones",
+  "items": {
+    "Building": {
+      "label": "Construcción"
+    },
+    "Address": {
+      "label": "Dirección",
+      "description": "Una estructura de dirección postal colombiana"
+    }
+  }
+}

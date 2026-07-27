@@ -63,7 +63,7 @@ export interface ECSqlRowArg {
  * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iTwin.js API.
  * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iTwin.js API for executing and working with ECSQL
  * @public
- * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * @deprecated in 4.11 - might be removed in next major version. Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
  * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
  */
 export class ECSqlStatement implements IterableIterator<any>, Disposable {
@@ -132,7 +132,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     }
   }
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [Symbol.dispose] instead. */
   public dispose(): void {
     this[Symbol.dispose]();
   }
@@ -348,10 +348,12 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
 
     args = args ?? {};
     if (args.rowFormat === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       args.rowFormat = QueryRowFormat.UseJsPropertyNames;
     }
     const resp = this._stmt.toRow({
       classIdsToClassNames: args.classIdsToClassNames,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
       abbreviateBlobs: false,
       // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
@@ -398,6 +400,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
       throw new Error(`Failed to bind parameters: ${message}`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");
@@ -411,6 +414,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     }
     const formattedRow = {};
     for (const prop of this._props) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const propName = rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = currentResp.data[prop.index];
       if (typeof val !== "undefined" && val !== null) {
@@ -883,7 +887,7 @@ export class ECSqlBinder {
  * - [[ECSqlStatement.getValue]]
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  * @public
- * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11 - might be removed in next major version. Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
  */
 export interface ECEnumValue {
   schema: string;
@@ -899,7 +903,7 @@ export interface ECEnumValue {
  * - [ECSqlStatement.getValue]($backend)
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  * @public
- * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11 - might be removed in next major version. Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
 */
 export class ECSqlValue {
   private _val: IModelJsNative.ECSqlValue;
@@ -979,7 +983,7 @@ export class ECSqlValue {
 /** Iterator over members of a struct [ECSqlValue]($backend) or the elements of an array [ECSqlValue]($backend).
  * See [ECSqlValue.getStructIterator]($backend) or [ECSqlValue.getArrayIterator]($backend).
  * @public
- * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11 - might be removed in next major version. Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
 */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
@@ -1003,7 +1007,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 /** Information about an ECSQL column in an ECSQL query result.
  * See [ECSqlValue.columnInfo]($backend), [ECSqlStatement.getValue]($backend), [ECSqlStatement]($backend)
  * @public
- * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11 - might be removed in next major version. Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
  */
 export interface ECSqlColumnInfo {
   /** Gets the data type of the column.

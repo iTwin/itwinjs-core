@@ -6,12 +6,13 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, BeDuration, BeTimePoint, ByteStream, GuidString, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { CesiumIonAssetId, CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
 import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
+import { CesiumAccessClient, CesiumAssetEndpoint } from "../../CesiumAccessClient";
 import { IModelApp } from "../../IModelApp";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
@@ -27,7 +28,7 @@ enum QuantizedMeshExtensionIds {
   Metadata = 4,
 }
 
-/** Return the URL for a Cesium ion asset from its asset ID and request Key.
+/** Return the URL for a Cesium Ion asset from its asset ID and request Key.
  * @public
  */
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string {
@@ -36,11 +37,36 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 
 /** @internal */
 export function getCesiumOSMBuildingsUrl(): string | undefined {
-  const key = IModelApp.tileAdmin.cesiumIonKey;
-  if (undefined === key)
+  if (!IModelApp.tileAdmin.canAccessCesium)
     return undefined;
 
-  return getCesiumAssetUrl(+CesiumIonAssetId.OSMBuildings, key);
+  return getCesiumAssetUrl(+CesiumIonAssetId.OSMBuildings, "");
+}
+
+/** Returns the registered [[CesiumAccessClient]], or a default [[CesiumIonClient]] if none is registered.
+ * @internal
+ */
+export function getCesiumAccessClient(): CesiumAccessClient {
+  return IModelApp.tileAdmin.cesiumAccess ?? new CesiumIonClient();
+}
+
+const cesiumTokenTimeoutInterval = BeDuration.fromSeconds(60 * 30);    // Request a new access token every 30 minutes...
+const cesiumMinTokenTimeoutInterval = BeDuration.fromSeconds(60);      // ...but never re-resolve more often than once per minute.
+
+/** Compute when to next re-resolve a Cesium access token. Honors the endpoint's `expiresAt` when it is a valid
+ * future time, but guards against an invalid (NaN) date - which would otherwise disable refresh entirely - and
+ * against a past/imminent expiry that would re-resolve the endpoint on essentially every tile read.
+ * @internal
+ */
+export function computeCesiumTokenTimeoutInterval(expiresAt: Date | undefined): BeDuration {
+  if (undefined === expiresAt)
+    return cesiumTokenTimeoutInterval;
+
+  const remainingMs = expiresAt.getTime() - Date.now();
+  if (!Number.isFinite(remainingMs))
+    return cesiumTokenTimeoutInterval;
+
+  return BeDuration.fromMilliseconds(Math.max(remainingMs, cesiumMinTokenTimeoutInterval.milliseconds));
 }
 
 /** @internal */
@@ -80,16 +106,21 @@ function notifyTerrainError(detailedDescription?: string): void {
 
 /** @internal */
 export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
-  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(opts.dataSource || CesiumTerrainAssetId.Default);
-  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
+  const assetId = opts.dataSource || CesiumTerrainAssetId.Default;
+  const client = getCesiumAccessClient();
+  const endpoint = await client.getAssetEndpoint(assetId, opts.iTwinId);
+  if (!endpoint) {
     notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
     return undefined;
   }
 
+  // Resource paths (layer.json, tiles) are appended directly to the base URL, so ensure it ends with a slash.
+  const baseUrl = endpoint.url.endsWith("/") ? endpoint.url : `${endpoint.url}/`;
+
   let layers;
   try {
-    const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
-    const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
+    const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${endpoint.accessToken}` } };
+    const layerUrl = `${baseUrl}layer.json`;
     layers = await request(layerUrl, "json", layerRequestOptions);
   } catch {
     notifyTerrainError();
@@ -120,14 +151,14 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
     }
   }
 
-  let tileUrlTemplate = accessTokenAndEndpointUrl.url + layers.tiles[0].replace("{version}", layers.version);
+  let tileUrlTemplate = baseUrl + layers.tiles[0].replace("{version}", layers.version);
   if (opts.wantNormals)
     tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
 
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
   // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumTerrainProvider(opts, accessTokenAndEndpointUrl.token, tileUrlTemplate, maxDepth, tilingScheme, tileAvailability, layers.metadataAvailability);
+  return new CesiumTerrainProvider(opts, endpoint.accessToken, endpoint.expiresAt, tileUrlTemplate, maxDepth, tilingScheme, tileAvailability, layers.metadataAvailability);
 }
 
 function zigZagDecode(value: number) {
@@ -168,13 +199,13 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   private readonly _metaDataAvailableLevel?: number;
   private readonly _exaggeration: number;
   private readonly _assetId: string;
+  private readonly _iTwinId?: GuidString;
 
   private static _scratchQPoint2d = QPoint2d.fromScalars(0, 0);
   private static _scratchPoint2d = Point2d.createZero();
   private static _scratchPoint = Point3d.createZero();
   private static _scratchNormal = Vector3d.createZero();
   private static _scratchHeightRange = Range1d.createNull();
-  private static _tokenTimeoutInterval = BeDuration.fromSeconds(60 * 30);      // Request a new access token every 30 minutes...
   private _tokenTimeOut: BeTimePoint;
 
   public override forceTileLoad(tile: Tile): boolean {
@@ -183,7 +214,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return undefined !== this._metaDataAvailableLevel && mapTile.quadId.level === this._metaDataAvailableLevel && !mapTile.everLoaded;
   }
 
-  constructor(opts: TerrainMeshProviderOptions, accessToken: string, tileUrlTemplate: string, maxDepth: number, tilingScheme: MapTilingScheme,
+  constructor(opts: TerrainMeshProviderOptions, accessToken: string, expiresAt: Date | undefined, tileUrlTemplate: string, maxDepth: number, tilingScheme: MapTilingScheme,
     tileAvailability: TileAvailability | undefined, metaDataAvailableLevel: number | undefined) {
     super();
     this._wantSkirts = opts.wantSkirts;
@@ -196,11 +227,12 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tileAvailability = tileAvailability;
     this._metaDataAvailableLevel = metaDataAvailableLevel;
     this._assetId = opts.dataSource || CesiumTerrainAssetId.Default;
+    this._iTwinId = opts.iTwinId;
 
-    this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
+    this._tokenTimeOut = BeTimePoint.now().plus(computeCesiumTokenTimeoutInterval(expiresAt));
   }
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (cards.dataset.cesiumIonLogoCard)
       return;
@@ -253,12 +285,13 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     // ###TODO why does he update the access token when reading the mesh instead of when requesting it?
     // This function only returns undefined if it fails to acquire token - but it doesn't need the token...
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
-      const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(this._assetId);
-      if (!accessTokenAndEndpointUrl.token || args.isCanceled())
+      const client = getCesiumAccessClient();
+      const endpoint = await client.getAssetEndpoint(this._assetId, this._iTwinId);
+      if (!endpoint || args.isCanceled())
         return undefined;
 
-      this._accessToken = accessTokenAndEndpointUrl.token;
-      this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
+      this._accessToken = endpoint.accessToken;
+      this._tokenTimeOut = BeTimePoint.now().plus(computeCesiumTokenTimeoutInterval(endpoint.expiresAt));
     }
 
     const { data, tile } = args;
@@ -487,5 +520,19 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const heightRange = quadId.level <= 6 ? ApproximateTerrainHeights.instance.getTileHeightRange(quadId) : undefined;
 
     return undefined === heightRange ? parentRange : heightRange;
+  }
+}
+
+/** Default [[CesiumAccessClient]] that authenticates directly with Cesium Ion using [[TileAdmin.cesiumIonKey]].
+ * This is used when no custom [[CesiumAccessClient]] is registered via [[TileAdmin.Props.cesiumAccess]].
+ * @internal
+ */
+class CesiumIonClient implements CesiumAccessClient {
+  public async getAssetEndpoint(assetId: string, _iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined> {
+    const result = await getCesiumAccessTokenAndEndpointUrl(assetId);
+    if (!result.token || !result.url)
+      return undefined;
+
+    return { accessToken: result.token, url: result.url };
   }
 }

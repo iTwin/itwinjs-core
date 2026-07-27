@@ -36,6 +36,7 @@ export class SmartDeviceDecorator implements Decorator {
     `;
 
     const results = this.iModel.createQueryReader(query, undefined, {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       rowFormat: QueryRowFormat.UseJsPropertyNames,
     });
 

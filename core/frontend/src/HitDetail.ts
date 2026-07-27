@@ -6,7 +6,7 @@
  * @module LocatingElements
  */
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { Arc3d, CurvePrimitive, Geometry, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -251,7 +251,7 @@ export class HitDetail {
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
 
-  /** @deprecated in 4.1 - will not be removed until after 2026-06-13. Use the overload that takes a [[HitDetailProps]]. */
+  /** @deprecated in 4.1 - might be removed in next major version. Use the overload that takes a [[HitDetailProps]]. */
   public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
 
   /** @internal */
@@ -465,13 +465,19 @@ export class SnapDetail extends HitDetail {
     if (this.primitive instanceof LineString3d) {
       const ls = this.primitive;
       if (ls.points.length > 2) {
-        const loc = ls.closestPoint(this.snapPoint, false);
-        const nSegments = ls.points.length - 1;
-        const uSegRange = (1.0 / nSegments);
-        let segmentNo = Math.floor(loc.fraction / uSegRange);
-        if (segmentNo >= nSegments)
-          segmentNo = nSegments - 1;
-        return LineSegment3d.create(ls.points[segmentNo], ls.points[segmentNo + 1]);
+        const snapDetail = ls.closestPoint(this.snapPoint, false);
+        const segmentInfo = ls.globalFractionToSegmentIndexAndLocalFraction(snapDetail.fraction);
+
+        // Choose best segment when snapped to an interior vertex...
+        if (!(Geometry.isSameFraction(snapDetail.fraction, 0) || Geometry.isSameFraction(snapDetail.fraction, 1)) && (Geometry.isSameFraction(segmentInfo.fraction, 0) || Geometry.isSameFraction(segmentInfo.fraction, 1))) {
+          const hitDetail = ls.closestPoint(this.hitPoint, false);
+
+          // Bias location towards hit fraction, doesn't use hit fraction directly as its relevance to snap point depends on snap mode...
+          if (!Geometry.isSameFraction(snapDetail.fraction, hitDetail.fraction))
+            segmentInfo.index = ls.globalFractionToSegmentIndexAndLocalFraction(Geometry.clamp(snapDetail.fraction + (hitDetail.fraction > snapDetail.fraction ? Geometry.smallFraction : -Geometry.smallFraction), 0, 1)).index;
+        }
+
+        return ls.getIndexedSegment(segmentInfo.index);
       }
     }
 

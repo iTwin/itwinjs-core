@@ -122,11 +122,92 @@ describe("ChangesetReader Examples", () => {
       pcu.appendFrom(reader);
     }
 
+    // pcu.instanceCount tells you how many merged instances were accumulated.
+    expect(pcu.instanceCount).to.be.greaterThan(0);
+
     for (const instance of pcu.instances) {
       expect(instance.ECInstanceId).to.exist;
       expect(instance.$meta.op).to.exist;
       expect(instance.$meta.stage).to.exist;
 
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("disposal — using declaration (preferred)", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.DisposalUsing
+    {
+      using reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
+      using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+
+      while (reader.step())
+        pcu.appendFrom(reader);
+
+      for (const instance of pcu.instances) {
+        expect(instance.$meta.op).to.exist;
+        expect(instance.ECInstanceId).to.exist;
+      }
+      // reader and pcu are disposed here automatically, each independently
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("disposal — nested try/finally", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.DisposalNested
+    const reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    try {
+      while (reader.step())
+        pcu.appendFrom(reader);
+      for (const instance of pcu.instances) {
+        expect(instance.$meta.op).to.exist;
+        expect(instance.ECInstanceId).to.exist;
+      }
+    } finally {
+      // Nest the disposals: even if reader throws, pcu is still disposed.
+      try { reader[Symbol.dispose](); } finally { pcu[Symbol.dispose](); }
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("disposal — ordered try/finally", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.DisposalOrdered
+    const reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    const pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    try {
+      while (reader.step())
+        pcu.appendFrom(reader);
+      for (const instance of pcu.instances) {
+        expect(instance.$meta.op).to.exist;
+        expect(instance.ECInstanceId).to.exist;
+      }
+    } finally {
+      pcu[Symbol.dispose]();
+      reader[Symbol.dispose]();
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("invert — reading a changeset in reverse", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.InvertChangeset
+    // Pass invert: true to flip every operation:
+    //   Inserts become Deletes, Deletes become Inserts,
+    //   and for Updates the "New" and "Old" stages are swapped.
+    // Useful for rolling back or auditing what a changeset *undid*.
+    using reader = ChangesetReader.openFile({
+      db,
+      fileName: insertChangesetPath,
+      invert: true,
+    });
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    while (reader.step()) pcu.appendFrom(reader);
+
+    for (const instance of pcu.instances) {
+      // The original changeset was an insert, so with invert:true op becomes "Deleted"
+      // and every instance appears in the "Old" stage.
+      if (instance.ECInstanceId !== elementId) continue;
+      expect(instance.$meta.op).to.equal("Deleted");
+      expect(instance.$meta.stage).to.equal("Old");
     }
     // __PUBLISH_EXTRACT_END__
   });
@@ -153,6 +234,25 @@ describe("ChangesetReader Examples", () => {
         expect(instance.ECInstanceId).to.exist;
       }
     }
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SpillThreshold
+    // When the total change data size exceeds spillThresholdInBytes, the reader
+    // transparently writes the data to a temporary on-disk file and streams from
+    // there instead of buffering everything in memory. This keeps peak memory
+    // usage bounded and makes the API suitable for low-memory conditions.
+    //
+    // The default is 50 MiB. Pass a smaller value to spill sooner:
+    using spillReader = ChangesetReader.openGroup({
+      db,
+      changesetFiles: [insertChangesetPath, updateChangesetPath],
+      spillThresholdInBytes: 1024 * 1024, // 1 MiB — spill to disk when change data exceeds 1 MiB
+    });
+    using spillPcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    while (spillReader.step())
+      spillPcu.appendFrom(spillReader);
+    for (const instance of spillPcu.instances)
+      expect(instance.ECInstanceId).to.exist;
     // __PUBLISH_EXTRACT_END__
   });
 
@@ -293,7 +393,16 @@ describe("ChangesetReader Examples", () => {
     const instances = Array.from(pcu.instances);
     const changed = instances.find((i) => i.$meta.stage === "New");
     // __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SpillThresholdOpenTxn
+    // Pass spillThresholdInBytes to limit peak memory use (default 50 MiB):
+    using spillReader = ChangesetReader.openTxn({
+      db,
+      txnId,
+      spillThresholdInBytes: 4 * 1024 * 1024, // 4 MiB
+    });
+    // __PUBLISH_EXTRACT_END__
     void changed;
+    void spillReader;
   });
 
   it("useJsName row option", () => {
@@ -334,7 +443,23 @@ describe("ChangesetReader Examples", () => {
       expect(instance.$meta.op).to.exist;
       expect(instance.ECInstanceId).to.exist;
       expect(instance.ECClassId).to.exist;
+      // The active filter is recorded on every instance's $meta:
+      expect(instance.$meta.propFilter).to.equal(PropertyFilter.InstanceKey);
     }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("setBatchSize — tuning native fetch performance", () => {
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SetBatchSize
+    // setBatchSize controls how many rows are fetched and cached per native call.
+    // Must be called before the first step().
+    using reader = ChangesetReader.openFile({ db, fileName: insertChangesetPath });
+    reader.setBatchSize(10); // fetch 10 rows per native batch
+
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
+    while (reader.step()) pcu.appendFrom(reader);
+
+    expect(pcu.instanceCount).to.be.greaterThan(0);
     // __PUBLISH_EXTRACT_END__
   });
 
@@ -376,7 +501,15 @@ describe("ChangesetReader Examples", () => {
     // Pass includeInMemoryChanges: true to also include the in-memory (not yet saved) changes:
     using reader2 = ChangesetReader.openLocalChanges({ db, includeInMemoryChanges: true });
     // __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SpillThresholdOpenLocalChanges
+    // Pass spillThresholdInBytes to limit peak memory use (default 50 MiB):
+    using reader3 = ChangesetReader.openLocalChanges({
+      db,
+      spillThresholdInBytes: 4 * 1024 * 1024, // 4 MiB
+    });
+    // __PUBLISH_EXTRACT_END__
     void reader2;
+    void reader3;
   });
 
   it("openInMemoryChanges — read in-memory changes", async () => {
@@ -392,7 +525,15 @@ describe("ChangesetReader Examples", () => {
     // __PUBLISH_EXTRACT_START__ ChangesetReader.OpenInMemoryChanges
     using reader = ChangesetReader.openInMemoryChanges({ db });
     // __PUBLISH_EXTRACT_END__
+    // __PUBLISH_EXTRACT_START__ ChangesetReader.SpillThresholdOpenInMemoryChanges
+    // Pass spillThresholdInBytes to limit peak memory use (default 50 MiB):
+    using spillReader = ChangesetReader.openInMemoryChanges({
+      db,
+      spillThresholdInBytes: 4 * 1024 * 1024, // 4 MiB
+    });
+    // __PUBLISH_EXTRACT_END__
     void reader;
+    void spillReader;
   });
 });
 

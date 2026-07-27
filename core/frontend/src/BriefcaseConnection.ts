@@ -369,14 +369,14 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Commit pending changes to this briefcase.
    * @param description Optional description of the changes.
-   * @deprecated Use methods on EditCommand instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use methods on EditCommand instead.
    */
   public async saveChanges(description?: string): Promise<void> {
     await IpcApp.appFunctionIpc.saveChanges(this.key, description); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /** Abandon pending changes to this briefcase.
-   * @deprecated Use methods on EditCommand instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use methods on EditCommand instead.
    */
   public async abandonChanges(): Promise<void> {
     await IpcApp.appFunctionIpc.abandonChanges(this.key); // eslint-disable-line @typescript-eslint/no-deprecated
@@ -420,6 +420,7 @@ export class BriefcaseConnection extends IModelConnection {
     } finally {
       removeListeners.forEach((remove) => remove());
     }
+    await this.invalidateSchemaViewIfChanged();
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.

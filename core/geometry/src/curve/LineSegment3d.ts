@@ -35,8 +35,7 @@ import { StrokeOptions } from "./StrokeOptions";
  *   * endPoint
  * * The segment is parameterized with fraction 0 at the start and fraction 1 at the end, i.e. each of these
  * equivalent forms maps fraction `f` to a point `X(f)`:
- * ```
- * equation
+ * ```equation
  *  X(f) = P_0 + f*(P_1 - P_0)\newline
  *  X(f) = (1-f)*P_0 + f*P_1
  * ```

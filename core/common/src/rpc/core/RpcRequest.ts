@@ -26,7 +26,7 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** @internal */
-export class ResponseLike implements Response {
+export class ResponseLike {
   private _data: Promise<any>;
   public get body() { return null; }
   public async arrayBuffer(): Promise<ArrayBuffer> { return this._data; }

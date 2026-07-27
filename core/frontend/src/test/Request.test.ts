@@ -34,7 +34,7 @@ describe("request()", async () => {
     const fetchStub = vi.spyOn(window, "fetch").mockRejectedValue(error);
 
     const promise = request("https://www.itwinjs.org/", "text", { retryCount });
-    await expect(promise).rejects.toThrowError(error.message);
+    await expect(promise).rejects.toThrow(error.message);
 
     expect(fetchStub).toHaveBeenCalledTimes(retryCount + 1);
   });
@@ -46,7 +46,7 @@ describe("request()", async () => {
     const fetchStub = vi.spyOn(window, "fetch").mockRejectedValue(error);
 
     const promise = request("https://www.itwinjs.org/", "text");
-    await expect(promise).rejects.toThrowError(error.message);
+    await expect(promise).rejects.toThrow(error.message);
 
     expect(fetchStub).toHaveBeenCalledTimes(defaultRetryCount + 1);
   });
@@ -58,7 +58,7 @@ describe("request()", async () => {
     const fetchStub = vi.spyOn(window, "fetch").mockRejectedValue(error);
 
     const promise = request("https://www.itwinjs.org/", "text", { timeout: 10 });
-    await expect(promise).rejects.toThrowError(error.message);
+    await expect(promise).rejects.toThrow(error.message);
 
     expect(fetchStub).toHaveBeenCalledTimes(1);
     expect(fetchStub.mock.calls[0][1]?.signal).toBeDefined();

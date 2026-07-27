@@ -49,9 +49,8 @@ export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: Te
 
   // The tile generator does not produce an outline for shapes with blanking fill. We must add the outline separately.
   if (params.fillDisplay === FillDisplay.Blanking) {
-    const outlineParams = params.clone();
-    outlineParams.fillDisplay = FillDisplay.Never;
-    if (!builder.appendGeometryParamsChange(outlineParams) || !builder.appendGeometryQuery(frameGeometry)) {
+    const path = frameGeometry instanceof Loop ? Path.createArray(frameGeometry.children) : frameGeometry;
+    if (!builder.appendGeometryQuery(path)) {
       return false;
     }
   }

@@ -2,7 +2,10 @@
 
 ## Packages
 
-The metadata packages implement the abstract concepts of EC in typescript [EC overview](../../bis/ec/index.md)
+The metadata packages implement the abstract concepts of EC in typescript [EC overview](../../bis/ec/index.md).
+
+For schema access optimized for performance and synchronous lookups, see [SchemaView](./SchemaView.md).
+
 The API is split into these packages:
 
 - ($ecschema-metadata) is the basic package that exposes metadata objects.
@@ -11,7 +14,9 @@ The API is split into these packages:
 
 ## Obtaining metadata from an imodel
 
-An [IModelDb]($backend) owns a [SchemaContext]($ecschema-metadata) which can be used to access all the meta information stored inside of the imodel.
+For runtime read-only access - class/property iteration, IS-A checks, KOQ lookups, presentation logic - prefer [SchemaView](./SchemaView.md), available from [IModelDb]($backend) and [IModelConnection]($frontend) via `getSchemaView()`.
+
+An [IModelDb]($backend) also owns a [SchemaContext]($ecschema-metadata) which exposes the full ecschema-metadata object graph. Use the SchemaContext when you need schema authoring (see `@itwin/ecschema-editing`), custom-attribute deserialization, or any workflow that depends on the complete EC type system.
 
 *Example:*
 
@@ -69,5 +74,3 @@ For generic information about custom attributes see [ECCustomAttributes](../../b
 When accessing the custom attributes like in the example above, the information is provided as JSON.
 
 Accessing the information as shown above only yields information from local custom attributes (directly set on the object). To include inherited ones you can use the methods like [ECClass.getCustomAttributes]($ecschema-metadata) or [Property.getCustomAttributes]($ecschema-metadata). Most of the time we're only interested in local custom attributes, and traversing base objects takes additional time.
-
-

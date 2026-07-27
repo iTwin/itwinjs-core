@@ -7,7 +7,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import { Suite } from "mocha";
-import { BriefcaseDb, ChannelControl, DrawingCategory } from "@itwin/core-backend";
+import { BriefcaseDb, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 
@@ -149,13 +149,11 @@ class TestIModel {
  * They test scenarios with and without high-level merge operations to compare rebase performance.
  */
 describe("Semantic Rebase performance tests", function (this: Suite) {
-  this.timeout(60000); // operations can be slow
   let t: TestIModel | undefined;
 
   before(async () => {
-    // Note: In core/backend tests, we call TestUtils.shutdownBackend() and TestUtils.startBackend({ useSemanticRebase: true })
-    // For full-stack-tests, IModelHost is already started with appropriate configuration via StartupShutdown.ts
-    // If semantic rebase needs to be enabled, it should be configured in the test environment setup
+    await IModelHost.shutdown(); // ensure clean state before starting tests
+    await IModelHost.startup({ useSemanticRebase: true });
   });
 
   afterEach(() => {
@@ -166,7 +164,7 @@ describe("Semantic Rebase performance tests", function (this: Suite) {
   });
 
   after(async () => {
-    // IModelHost shutdown is handled by the test environment
+    await IModelHost.shutdown(); // ensure clean shutdown after all tests
   });
 
   // PERFORMANCE TESTS. These are not intended to be run as part of regular CI - they are here to allow easy manual execution and measurement as needed.

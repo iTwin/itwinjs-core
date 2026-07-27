@@ -1,0 +1,195 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+      - "release/**"
+    paths-ignore:
+      - "**/*.md"
+      - docs/**
+      - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
+  schedule:
+    # Nightly audit run at 05:00 UTC — only the `audit` job runs on schedule.
+    # All other jobs are pull_request only; master pushes are assumed clean.
+    - cron: "0 5 * * *"
+
+# Cancel in-progress runs for the same PR when new commits are pushed.
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # rush check — verify no inconsistent dependency versions across packages.
+  # PR only: master is assumed to have passed this check before merging.
+  # ---------------------------------------------------------------------------
+  rush-check:
+    if: github.event_name == 'pull_request'
+    name: rush check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # Pin to full commit SHA instead of a mutable tag to prevent tag-hijacking
+        # supply-chain attacks. See .github/actions/rush-setup/action.yml for details.
+        # actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Rush setup
+        uses: ./.github/actions/rush-setup
+
+      - name: rush check
+        run: node common/scripts/install-run-rush.js check
+
+  # ---------------------------------------------------------------------------
+  # rush change — verify that all changed packages have a changelog entry.
+  # PR only.
+  # ---------------------------------------------------------------------------
+  rush-change:
+    if: github.event_name == 'pull_request'
+    name: rush change
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # SHA-pinned — see rush-check job for rationale. actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          # Fetch enough history for rush change to compare against the base branch.
+          fetch-depth: 0
+
+      - name: Rush setup
+        uses: ./.github/actions/rush-setup
+
+      - name: Fetch base branch
+        # Ensure origin/<base_ref> exists locally for `rush change -b` comparison.
+        # fetch-depth: 0 fetches full history of the PR branch but does not
+        # guarantee all remote tracking refs are present.
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git fetch origin "$BASE_REF"
+
+      - name: rush change -v
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node common/scripts/install-run-rush.js change -v -b "origin/$BASE_REF"
+
+  # ---------------------------------------------------------------------------
+  # audit — run pnpm security audit.
+  # Runs on pull_request AND on a nightly schedule.
+  # Separated from the build+test matrix so that an audit failure never masks
+  # real test regressions in the main CI.
+  # ---------------------------------------------------------------------------
+  audit:
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    name: rush audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # SHA-pinned — see rush-check job for rationale. actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Rush setup
+        uses: ./.github/actions/rush-setup
+
+      - name: rush audit
+        run: node common/scripts/install-run-rush.js audit
+
+  # ---------------------------------------------------------------------------
+  # lint-and-extract-api — build once, then run lint and extract-api checks.
+  # PR only: master is assumed to have passed before merging.
+  # Both checks always run even if the other fails; the job fails if either
+  # check fails (tracked via step outcomes, reported at the end).
+  # Note: build is required before lint because TSC produces the type info
+  # that ESLint rules (including the deprecation rule) consume.
+  # No artifact upload for extract-api — in CI mode (GITHUB_ACTIONS=true) api-extractor
+  # exits non-zero if any api.md would change but does NOT write files to disk.
+  # Developers must run `rush extract-api` locally and commit the results before this job passes.
+  # ---------------------------------------------------------------------------
+  lint-and-extract-api:
+    if: github.event_name == 'pull_request'
+    name: rush lint + extract-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # SHA-pinned — see rush-check job for rationale. actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Rush setup
+        uses: ./.github/actions/rush-setup
+
+      - name: rush build
+        run: node common/scripts/install-run-rush.js build -v -p max --to-version-policy prerelease-monorepo-lockStep
+        env:
+          VITE_CI: true
+
+      - name: rush build cesium-renderer
+        run: node common/scripts/install-run-rush.js build --only @itwin/cesium-renderer
+
+      - name: rush lint
+        id: lint
+        continue-on-error: true
+        run: node common/scripts/install-run-rush.js lint
+
+      - name: rush extract-api
+        id: extract_api
+        continue-on-error: true
+        # api-extractor runs in CI mode (GITHUB_ACTIONS=true) and exits non-zero if
+        # any api.md would change — no separate git diff step needed for api.md files.
+        run: node common/scripts/install-run-rush.js extract-api --to-version-policy prerelease-monorepo-lockStep
+
+      - name: rush extract-api cesium-renderer
+        id: extract_api_cesium
+        continue-on-error: true
+        run: node common/scripts/install-run-rush.js extract-api --only @itwin/cesium-renderer
+
+      - name: rush generate-artifacts
+        if: ${{ steps.extract_api.outcome == 'success' }}
+        id: generate_artifacts
+        continue-on-error: true
+        run: node common/scripts/install-run-rush.js generate-artifacts
+
+      - name: Assert no uncommitted changes after generation
+        if: ${{ steps.extract_api.outcome == 'success' }}
+        id: generated_drift
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+            echo "The following generated files are out of date:"
+            git status --short --untracked-files=no
+            git diff
+            exit 1
+          fi
+
+      - name: Report results
+        if: always()
+        shell: bash
+        run: |
+          FAILED=0
+          if [ "${{ steps.lint.outcome }}" = "failure" ]; then
+            echo "::error::rush lint failed"
+            FAILED=1
+          fi
+          if [ "${{ steps.extract_api.outcome }}" = "failure" ]; then
+            echo "::error::rush extract-api failed — run 'rush extract-api' locally and commit all changed files (common/api/*.api.md)"
+            FAILED=1
+          fi
+          if [ "${{ steps.extract_api_cesium.outcome }}" = "failure" ]; then
+            echo "::error::rush extract-api failed for @itwin/cesium-renderer — run 'rush extract-api --only @itwin/cesium-renderer' locally and commit the changed common/api/cesium-renderer.api.md"
+            FAILED=1
+          fi
+          if [ "${{ steps.generate_artifacts.outcome }}" = "failure" ]; then
+            echo "::error::rush generate-artifacts failed — run 'rush generate-artifacts' locally, fix any errors, and commit any resulting tracked artifact changes"
+            FAILED=1
+          fi
+          if [ "${{ steps.generated_drift.outcome }}" = "failure" ]; then
+            echo "::error::Generated files are out of date — run 'rush generate-artifacts' for quantity artifacts or 'rush extract-api' for extension files, then commit any resulting tracked file changes"
+            FAILED=1
+          fi
+          exit $FAILED

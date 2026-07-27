@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed AccuDraw's manual bearing north-correction, now redundant since `@itwin/core-quantity` applies it automatically. Fixes a double-conversion bug in plane-fixed bearing mode.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "50554904+hl662@users.noreply.github.com"
+}

@@ -439,9 +439,11 @@ export class IModelHost {
    */
   public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
 
-  /** Obtain the [[Workspace]] for an iTwin by discovering its settings container.
-   * All named dictionary resources in the container's [[WorkspaceDb]] are loaded into the workspace at [[SettingsPriority.iTwin]].
-   * @note This method requires an internet connection to discover the container.
+  /** Obtain the [[Workspace]] for an iTwin by discovering its settings containers.
+   * Named dictionary resources from the account iTwin container are loaded at [[SettingsPriority.organization]];
+   * resources from the requested iTwin's container (when different from the account iTwin) are loaded at
+   * [[SettingsPriority.iTwin]].
+   * @note This method requires an internet connection to discover the containers.
    * To use an iTwin workspace offline, use the overload that accepts [[WorkspaceDbSettingsProps]].
    * @note The returned workspace is caller-owned. Call `close` when finished.
    * @beta
@@ -530,7 +532,7 @@ export class IModelHost {
   public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
-   * @deprecated in 4.10 - will not be removed until after 2026-06-13. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+   * @deprecated in 4.10 - might be removed in next major version. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
    */
   public static snapshotFileNameResolver?: FileNameResolver; // eslint-disable-line @typescript-eslint/no-deprecated
 
@@ -874,7 +876,7 @@ export class KnownLocations {
  * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
  * @see [[IModelHost.snapshotFileNameResolver]]
  * @public
- * @deprecated in 4.10 - will not be removed until after 2026-06-13. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+ * @deprecated in 4.10 - might be removed in next major version. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
  */
 export abstract class FileNameResolver {
   /** Resolve a file name from the specified key.

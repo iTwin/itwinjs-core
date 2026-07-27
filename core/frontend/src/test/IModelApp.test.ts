@@ -6,15 +6,14 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { EmptyLocalization } from "@itwin/core-common";
-import { UnitConversionProps, UnitProps } from "@itwin/core-quantity";
+import { BasicUnitsProvider, UnitConversionProps, UnitProps } from "@itwin/core-quantity";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../internal/render/MockRender";
-import { BasicUnitsProvider } from "../quantity-formatting/BasicUnitsProvider";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
-import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
+import { LookAndMoveTool, PanViewTool, RotateViewTool } from "../tools/ViewTool";
 import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
@@ -194,11 +193,37 @@ describe("IModelApp startup tests", () => {
   });
 });
 
+describe("LookAndMoveTool keyboard focus", () => {
+  afterEach(async () => {
+    document.body.focus();
+
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("moves focus Home after installation", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+    button.focus();
+    expect(document.activeElement).toBe(button);
+
+    try {
+      // Exercise the normal tool install pipeline (onInstall, onPostInstall, etc.) rather than invoking onPostInstall directly.
+      if (await IModelApp.tools.run(LookAndMoveTool.toolId))
+        expect(document.activeElement).toBe(document.body);
+    } finally {
+      button.remove();
+    }
+  });
+});
+
 /**
  * A UnitsProvider that is NOT a BasicUnitsProvider (bypasses the early-exit in resetToUseInternalUnitsProvider)
  * but still delegates to BasicUnitsProvider for correct behaviour.
  */
-class NonBasicUnitsProvider {
+class NonBundledUnitsProvider {
   private readonly _delegate = new BasicUnitsProvider();
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     return this._delegate.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
@@ -242,7 +267,7 @@ describe("Shutdown hardening — ToolAdmin and QuantityFormatter", () => {
     const formatter = IModelApp.quantityFormatter;
 
     // Install a non-default provider so resetToUseInternalUnitsProvider won't early-exit.
-    await formatter.setUnitsProvider(new NonBasicUnitsProvider());
+    await formatter.setUnitsProvider(new NonBundledUnitsProvider());
 
     await IModelApp.shutdown();
 

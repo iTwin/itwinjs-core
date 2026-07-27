@@ -1,0 +1,38 @@
+{
+  "$schema": "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  "name": "TestPerson",
+  "version": "01.00.00",
+  "alias": "tpers",
+  "label": "Test Person Schema",
+  "description": "A test schema for person data",
+  "items": {
+    "Person": {
+      "schemaItemType": "EntityClass",
+      "label": "Person",
+      "description": "A person entity",
+      "properties": [
+        {
+          "name": "FirstName",
+          "type": "PrimitiveProperty",
+          "typeName": "string",
+          "label": "First Name",
+          "description": "The first name"
+        },
+        {
+          "name": "LastName",
+          "type": "PrimitiveProperty",
+          "typeName": "string",
+          "label": "Last Name",
+          "description": "The last name"
+        },
+        {
+          "name": "Age",
+          "type": "PrimitiveProperty",
+          "typeName": "int",
+          "label": "Age",
+          "description": "The age in years"
+        }
+      ]
+    }
+  }
+}

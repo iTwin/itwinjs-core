@@ -35,5 +35,8 @@ export default defineConfig({
   optimizeDeps: {
     include: includePackages,
     force: true,
+    esbuildOptions: {
+      target: "es2022",
+    },
   }
 })

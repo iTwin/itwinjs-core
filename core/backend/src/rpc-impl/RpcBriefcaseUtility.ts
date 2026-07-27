@@ -129,7 +129,7 @@ export class RpcBriefcaseUtility {
 
   public static async open(args: DownloadAndOpenArgs & { syncMode: SyncMode.FixedVersion }): Promise<IModelDb>;
   /**
-   * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Only `SyncMode.FixedVersion` should be used in RPC backends
+   * @deprecated in 4.4.0 - might be removed in next major version. Only `SyncMode.FixedVersion` should be used in RPC backends
    */
   public static async open(args: DownloadAndOpenArgs & { syncMode: Exclude<SyncMode, "FixedVersion"> }): Promise<IModelDb>;
   /**
@@ -179,7 +179,7 @@ export class RpcBriefcaseUtility {
 
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode.FixedVersion, timeout?: number): Promise<IModelConnectionProps>;
   /**
-   * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Only `SyncMode.FixedVersion` should be used in RPC backends
+   * @deprecated in 4.4.0 - might be removed in next major version. Only `SyncMode.FixedVersion` should be used in RPC backends
    */
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: Exclude<SyncMode, "FixedVersion">, timeout?: number): Promise<IModelConnectionProps>;
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {

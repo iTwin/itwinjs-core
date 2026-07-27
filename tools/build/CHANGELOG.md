@@ -1,6 +1,92 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Thu, 23 Apr 2026 18:06:53 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Jul 2026 19:42:09 GMT and should not be manually modified.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- extract-api.js now checks the standard CI env var (in addition to TF_BUILD) so api-extractor runs in strict CI mode on GitHub Actions and other standard CI platforms without requiring a separate git-diff assertion step
+- Made mocha an optional peer dependency so it is no longer a direct dependency of @itwin/build-tools, removing its vulnerable transitive dependencies from the package's direct dependency closure for consumers that do not use the mocha reporter.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+_Version update only_
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+### Updates
+
+- extract-api.js now checks the standard CI env var (in addition to TF_BUILD) so api-extractor runs in strict CI mode on GitHub Actions and other standard CI platforms without requiring a separate git-diff assertion step
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Bumped `typedoc` version
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+_Version update only_
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+_Version update only_
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Updates
+
+- Update @microsoft/api-extractor to ~7.58.7 (removes lodash CVE GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh).
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+### Updates
+
+- Update @microsoft/api-extractor to ~7.58.7 (removes lodash CVE GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh).
 
 ## 5.8.4
 Thu, 23 Apr 2026 18:05:13 GMT

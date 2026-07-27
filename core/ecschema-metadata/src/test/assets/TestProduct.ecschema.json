@@ -1,0 +1,45 @@
+{
+  "$schema": "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  "name": "TestProduct",
+  "version": "01.00.00",
+  "alias": "tp",
+  "label": "Test Product Schema",
+  "description": "A test schema for product catalog",
+  "items": {
+    "Product": {
+      "schemaItemType": "EntityClass",
+      "label": "Product",
+      "description": "A product item",
+      "properties": [
+        {
+          "name": "Name",
+          "type": "PrimitiveProperty",
+          "typeName": "string",
+          "label": "Name",
+          "description": "The name of the product"
+        },
+        {
+          "name": "Price",
+          "type": "PrimitiveProperty",
+          "typeName": "double",
+          "label": "Price",
+          "description": "The price of the product"
+        }
+      ]
+    },
+    "Category": {
+      "schemaItemType": "EntityClass",
+      "label": "Category",
+      "description": "A product category",
+      "properties": [
+        {
+          "name": "Name",
+          "type": "PrimitiveProperty",
+          "typeName": "string",
+          "label": "Name",
+          "description": "The category name"
+        }
+      ]
+    }
+  }
+}

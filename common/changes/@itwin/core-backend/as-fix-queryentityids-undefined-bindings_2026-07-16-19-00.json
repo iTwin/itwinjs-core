@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed queryEntityIds and ViewStore selector queries throwing on undefined/null binding values.",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "anmolshres98@users.noreply.github.com"
+}
