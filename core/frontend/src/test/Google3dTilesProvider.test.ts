@@ -92,6 +92,8 @@ describe("Google3dTilesProvider", () => {
     expect(table.innerHTML).to.includes(`<img src="public/images/GoogleMaps_Logo_Gray.svg" style="padding: 10px 10px 5px;">`);
     expect(table.innerHTML).to.includes(`<h2 class="logo-card-header">Google Photorealistic 3D Tiles</h2>`);
     expect(table.innerHTML).to.includes(`Data provided by:<br><ul><li>Google</li><li>Bentley Systems, Inc.</li></ul>`);
+    // A <ul> notice line requires a non-paragraph container to produce valid markup.
+    expect(table.querySelector("div.logo-cards > ul")).to.not.be.null;
   });
 
   it("should render adversarial copyright text as plain text", async () => {

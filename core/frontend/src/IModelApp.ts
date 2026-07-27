@@ -806,7 +806,9 @@ export class IModelApp {
       else
         noticeCell.appendChild(opts.notice);
     } else if (undefined !== opts.noticeLines) {
-      const notice = IModelApp.makeHTMLElement("p", { parent: noticeCell, className: logoCardNoticeClassName });
+      // A <p> cannot legally contain flow content, so use a <div> when a line is an element.
+      const containerTag = opts.noticeLines.some((line) => typeof line !== "string") ? "div" : "p";
+      const notice = IModelApp.makeHTMLElement(containerTag, { parent: noticeCell, className: logoCardNoticeClassName });
       opts.noticeLines.forEach((line, index) => {
         if (index > 0)
           notice.appendChild(IModelApp.makeHTMLElement("br"));
