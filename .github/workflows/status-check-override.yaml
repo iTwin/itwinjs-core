@@ -6,7 +6,7 @@
 # real status check. That needs to be handled by each status check events' own config;
 # i.e., a Github Action's or Azure Pipeline's .yaml file.
 #
-# For example, if the extract-api status check is faked, the extract-api.yaml config
+# For example, if the "rush lint + extract-api" status check is faked, the ci.yaml config
 # needs to know for what files it should not run. (It will be faked as a successful
 # check, so there is no need for it to run.)
 #
@@ -22,8 +22,7 @@
 # GitHub's "required" check and thus these status checks do not need to be faked below.
 
 # HOW TO: Add New Files To The Exclusion List
-# 1. Add files to *this* config to trigger
-# 1. Add the glob of paths to trigger on to the "paths:" list below.
+# 1. Add the path glob to the "paths:" list below.
 # 2. Add the same paths to the `allowed_path` function in the "Get specific changed files" step below.
 # 3. For any status check that should potentially be skipped and/or faked, go to the
 #    status check's config and add the relevant paths to the paths exclusion list.
@@ -57,17 +56,37 @@ jobs:
         id: changed-files-specific
         env:
           EXPECTED_CHANGED_FILES: ${{ github.event.pull_request.changed_files }}
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          CURRENT_HEAD_BEFORE=$(gh api \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+            --jq '.head.sha')
+          if [ "$CURRENT_HEAD_BEFORE" != "$EXPECTED_HEAD_SHA" ]; then
+            echo "The pull request head changed before file inspection; required checks will not be faked."
+            echo "only_modified=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           # Keep filenames as JSON so unusual Git filenames cannot affect record boundaries
           # or inject workflow commands into the log.
           FILES_JSON=$(gh api \
             "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files?per_page=100" \
             --paginate --slurp)
 
-          # The pull request files endpoint returns at most 3,000 files. Fail closed if
-          # the response is incomplete. For renames, both the old and new paths must be
-          # eligible so moving source code into docs cannot incorrectly fake required checks.
+          CURRENT_HEAD_AFTER=$(gh api \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+            --jq '.head.sha')
+          if [ "$CURRENT_HEAD_AFTER" != "$EXPECTED_HEAD_SHA" ]; then
+            echo "The pull request head changed during file inspection; required checks will not be faked."
+            echo "only_modified=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Both the event's changed_files count and the files endpoint are capped at 3,000.
+          # Fail closed at that cap because the response may be incomplete. For renames,
+          # both the old and new paths must be eligible so moving source code into docs
+          # cannot incorrectly fake required checks.
           RESULT=$(jq -c --argjson expected "$EXPECTED_CHANGED_FILES" '
             def allowed_path:
               endswith(".md")
@@ -81,7 +100,8 @@ jobs:
             | {
                 fetched: ($files | length),
                 only_modified: (
-                  ($files | length) == $expected
+                  $expected < 3000
+                  and ($files | length) == $expected
                   and all($files[];
                     (.filename | allowed_path)
                     and (
