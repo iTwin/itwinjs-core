@@ -53,6 +53,28 @@ describe("Testing when unit conversion should throw", () => {
     expect(() => converter.calculateConversionSync("SIUnits:M", "MockSchema:CM")).toThrowError("Cannot find from's and/or to's schema");
   });
 
+  it("should throw synchronously for other validation failures", () => {
+    const converter = new UnitConverter(context);
+
+    expect(() => converter.calculateConversionSync("SIUnits:MockUnit", "MetricUnits:CM")).toThrowError("Cannot find schema item");
+    expect(() => converter.calculateConversionSync("MetricUnits:CM", "SIUnits:MockUnit")).toThrowError("Cannot find schema item");
+
+    expect(() => converter.calculateConversionSync("USUnits:SQ_FT", "SIUnits:M")).toThrowError("Source and target units do not belong to same phenomenon");
+    expect(() => converter.calculateConversionSync("SIUnits:M", "USUnits:SQ_FT")).toThrowError("Source and target units do not belong to same phenomenon");
+
+    expect(() => converter.calculateConversionSync("ValidationUnits:DM", "ValidationUnits:KM")).toThrowError("Cannot find schema item");
+
+    expect(() => converter.calculateConversionSync("ValidationUnits:FT", "ValidationUnits:KM")).toThrowError("Source and target units do not have matching base units");
+    expect(() => converter.calculateConversionSync("ValidationUnits:KM", "ValidationUnits:FT")).toThrowError("Source and target units do not have matching base units");
+    expect(() => converter.calculateConversionSync("ValidationUnits:YRD", "ValidationUnits:M")).toThrowError("Source and target units do not have matching base units");
+    expect(() => converter.calculateConversionSync("ValidationUnits:M", "ValidationUnits:YRD")).toThrowError("Source and target units do not have matching base units");
+
+    expect(() => converter.calculateConversionSync("ValidationUnits:MM_PER_SEC", "ValidationUnits:FT_PER_DAY")).toThrowError("Source and target units do not have matching base units");
+    expect(() => converter.calculateConversionSync("ValidationUnits:FT_PER_DAY", "ValidationUnits:MM_PER_SEC")).toThrowError("Source and target units do not have matching base units");
+    expect(() => converter.calculateConversionSync("ValidationUnits:MM_PER_HR", "ValidationUnits:FT_PER_SEC")).toThrowError("Source and target units do not have matching base units");
+    expect(() => converter.calculateConversionSync("ValidationUnits:FT_PER_SEC", "ValidationUnits:MM_PER_HR")).toThrowError("Source and target units do not have matching base units");
+  });
+
   it("should throw when schema item is not in schema ", async () => {
     const converter = new UnitConverter(context);
     try {
