@@ -710,9 +710,9 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
     return DbConflictResolution.Skip;
   }
 
-  public constructor(id: Id64String, classId: Id64String) {
+  public constructor(id: Id64String, className: string) {
     this.id = id;
-    this.className = classId;
+    this.className = className;
   }
 
   public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
@@ -725,8 +725,6 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
         InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
       }
       updateProps[prop] = this.ours[prop];
-      // if (prop === "UserLabel")
-      //   updateProps["userLabel"] = this.ours[prop];
     }
 
     rebase.editTxn.updateElement(updateProps);
