@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun } from "@itwin/core-common";
+import { FormatProps } from "@itwin/core-quantity";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
@@ -75,7 +76,7 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
   return elemId;
 }
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -288,7 +289,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   await iModel.importSchemaStrings([fieldsSchemaXml]);
 }
 
-describe("Field evaluation", () => {
+describe.only("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
@@ -600,6 +601,287 @@ describe("Field evaluation", () => {
 
       expect(updatedCount).to.equal(1);
       expect(stringField.cachedContent).to.equal("[a]");
+    });
+
+    // --- QuantityFieldFormatOptions ---
+
+    const propertyHost = { elementId: "", schemaName: "Fields", className: "TestElement" };
+    const doublesPath: FieldPropertyPath = { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] };
+    const pointPath: FieldPropertyPath = { propertyName: "point" };
+
+    async function runEvaluate(field: FieldRun): Promise<{ updatedCount: number, content: string }> {
+      const textBlock = TextBlock.create();
+      textBlock.appendRun(field);
+      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: textBlock });
+      return { updatedCount, content: field.cachedContent };
+    }
+
+    function decimalFormat(unitName: string, unitLabel: string, precision = 4): FormatProps {
+      return {
+        composite: { includeZero: true, units: [{ label: unitLabel, name: unitName }] },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision,
+        type: "Decimal",
+        uomSeparator: " ",
+      };
+    }
+
+    it("converts persistence meters to millimeters using an inline format override", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: doublesPath,
+        formatOptions: {
+          quantity: {
+            persistenceUnit: "Units.M",
+            format: decimalFormat("Units.MM", "mm", 2),
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      // doubles[0] === 1 m -> 1000 mm
+      expect(content).to.equal("1000 mm");
+    });
+
+    it("converts persistence meters to feet using an inline format override", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: doublesPath,
+        formatOptions: {
+          quantity: {
+            persistenceUnit: "Units.M",
+            format: decimalFormat("Units.FT", "ft", 4),
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      // 1 m -> 3.2808 ft
+      expect(content).to.equal("3.2808 ft");
+    });
+
+    it("formats coordinate values with an inline feet format override (with persistenceUnit)", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: pointPath,
+        formatOptions: {
+          quantity: {
+            persistenceUnit: "Units.M",
+            format: decimalFormat("Units.FT", "ft", 4),
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      // point = (1, 2, 3) m -> (3.2808 ft, 6.5617 ft, 9.8425 ft)
+      expect(content).to.equal("(3.2808 ft, 6.5617 ft, 9.8425 ft)");
+    });
+
+    it("applies prefix and suffix around a formatted quantity", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: doublesPath,
+        formatOptions: {
+          prefix: "[",
+          suffix: "]",
+          quantity: {
+            persistenceUnit: "Units.M",
+            format: decimalFormat("Units.M", "m", 2),
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      expect(content).to.equal("[1 m]");
+    });
+
+    it("applies prefix and suffix around a formatted coordinate", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: pointPath,
+        formatOptions: {
+          prefix: "L=",
+          suffix: " (m)",
+          quantity: {
+            persistenceUnit: "Units.M",
+            format: decimalFormat("Units.M", "m", 2),
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      expect(content).to.equal("L=(1 m, 2 m, 3 m) (m)");
+    });
+
+    it("applies case=upper to a formatted quantity but not to prefix/suffix", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: doublesPath,
+        formatOptions: {
+          case: "upper",
+          prefix: "pre-",
+          suffix: "-suf",
+          quantity: {
+            persistenceUnit: "Units.M",
+            format: decimalFormat("Units.M", "m", 2),
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      // formatted value "1 m" is uppercased to "1 M"; prefix/suffix preserved as-is
+      expect(content).to.equal("pre-1 M-suf");
+    });
+
+    it("applies case=lower to a formatted quantity", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: doublesPath,
+        formatOptions: {
+          case: "lower",
+          quantity: {
+            persistenceUnit: "Units.M",
+            format: decimalFormat("Units.M", "M", 2),
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      expect(content).to.equal("1 m");
+    });
+
+    it("formats a coordinate using a fractional feet/inches inline format", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: pointPath,
+        formatOptions: {
+          quantity: {
+            persistenceUnit: "Units.M",
+            format: {
+              type: "Fractional",
+              precision: 8,
+              formatTraits: ["keepSingleZero", "showUnitLabel"],
+              composite: {
+                includeZero: true,
+                units: [
+                  { name: "Units.FT", label: "'" },
+                  { name: "Units.IN", label: `"` },
+                ],
+              },
+            },
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      // (1, 2, 3) m ~ (3'-3 3/8", 6'-6 3/4", 9'-10 1/8")
+      expect(content).to.equal(`(3 ' 3 3/8 ", 6 ' 6 3/4 ", 9 ' 10 1/8 ")`);
+    });
+
+    it("ignores unitSystem when an inline format is supplied", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: doublesPath,
+        formatOptions: {
+          quantity: {
+            unitSystem: "imperial",
+            persistenceUnit: "Units.M",
+            format: decimalFormat("Units.M", "m", 2),
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      // Inline format is authoritative — value stays in meters.
+      expect(content).to.equal("1 m");
+    });
+
+    it("falls back to raw formatting when quantity.format is malformed", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: pointPath,
+        formatOptions: {
+          quantity: {
+            format: {
+              // Missing composite / units — FormatterSpec creation should fail and we fall back.
+              type: "Decimal",
+              precision: 2,
+            } as unknown as FormatProps,
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      // Falls back to formatFieldValue's basic point formatting.
+      expect(content).to.equal("(1, 2, 3)");
+    });
+
+    it("uses the default coordinate meters format when only persistenceUnit is set", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: pointPath,
+        formatOptions: {
+          quantity: {
+            persistenceUnit: "Units.M",
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      expect(content).to.equal("(1 m, 2 m, 3 m)");
+    });
+
+    it("marks the field invalid when a quantity property value is missing", async () => {
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        // maybeNull has no value on the test element.
+        propertyPath: { propertyName: "maybeNull" },
+        formatOptions: {
+          quantity: {
+            persistenceUnit: "Units.M",
+            format: decimalFormat("Units.M", "m", 2),
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const { updatedCount, content } = await runEvaluate(field);
+
+      expect(updatedCount).to.equal(1);
+      expect(content).to.equal(FieldRun.invalidContentIndicator);
     });
   });
 
