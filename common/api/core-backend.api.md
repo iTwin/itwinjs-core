@@ -2403,8 +2403,6 @@ export namespace ECChangeUnifierCache {
 
 // @public
 export class ECDb implements Disposable {
-    // @internal
-    [_getStatementCache](): StatementCache<ECSqlStatement>;
     // @internal (undocumented)
     get [_nativeDb](): IModelJsNative.ECDb;
     [Symbol.dispose](): void;
@@ -4002,8 +4000,6 @@ export interface ImageSourceFromImageBufferArgs {
 export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     [_activeTxn]: EditTxn | undefined;
-    // @internal
-    [_getStatementCache](): StatementCache<ECSqlStatement>;
     // @internal
     readonly [_implicitTxn]: EditTxn;
     // @internal (undocumented)

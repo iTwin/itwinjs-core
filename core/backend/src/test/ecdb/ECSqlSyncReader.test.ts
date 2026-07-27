@@ -12,7 +12,6 @@ import { Id64 } from "@itwin/core-bentley";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { _getStatementCache } from "../../internal/Symbols";
 
 describe("WithQueryReaderTests", () => {
   let iModel: SnapshotDb;
@@ -157,18 +156,6 @@ describe("WithQueryReaderTests", () => {
       expect(prepareSpy.callCount).to.equal(1, "queries with identical ECSQL text should re-use one cached prepared statement");
     });
 
-    it("returns the prepared statement to the db statement cache after use", () => {
-      iModel.clearCaches();
-      const statementCache = iModel[_getStatementCache]();
-      expect(statementCache.size).to.equal(0);
-      iModel.withQueryReader(sql, (reader) => reader.step(), new QueryBinder().bindId(1, "0x1"));
-      expect(statementCache.size).to.be.greaterThan(0);
-      // A subsequent call with the same SQL must be able to check the cached statement back out.
-      const found = statementCache.findAndRemove(sql);
-      expect(found, "statement should be cached keyed by its ECSQL text").to.not.be.undefined;
-      found?.[Symbol.dispose]();
-    });
-
     it("keeps nested withQueryReader calls on the same SQL independent", () => {
       iModel.clearCaches();
       // A nested reader on the same SQL must get its own statement (findAndRemove hands the outer
@@ -190,8 +177,7 @@ describe("WithQueryReaderTests", () => {
       iModel.clearCaches();
       expect(() => iModel.withQueryReader("SELECT * FROM bis.ThisClassDoesNotExist", (reader) => reader.step()))
         .to.throw();
-      // The failed prepare must not have cached anything, and later valid queries still work.
-      expect(iModel[_getStatementCache]().findAndRemove("SELECT * FROM bis.ThisClassDoesNotExist")).to.be.undefined;
+      // The failed prepare must not prevent later valid queries from working.
       iModel.withQueryReader(sql, (reader) => {
         assert.isTrue(reader.step());
         expect(reader.current[0]).to.equal("0x1");
@@ -226,7 +212,6 @@ describe("WithQueryReaderTests", () => {
       for (let i = 0; i < 10; i++)
         ecdb.withQueryReader(ecdbSql, (reader) => reader.step(), new QueryBinder().bindId(1, "0x1"));
       expect(prepareSpy.callCount).to.equal(1, "ECDb.withQueryReader should also reuse a cached prepared statement");
-      expect(ecdb[_getStatementCache]().size).to.be.greaterThan(0);
     });
   });
 });

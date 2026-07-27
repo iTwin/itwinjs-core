@@ -4,18 +4,42 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelError, QueryPropertyMetaData } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
+import type { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { BentleyError, DbResult, Logger } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { _getStatementCache, _nativeDb } from "./internal/Symbols";
-import { ECDb } from "./ECDb";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { _nativeDb } from "./internal/Symbols";
+import type { ECDb } from "./ECDb";
+import type { StatementCache } from "./SqliteStatement";
 
 const statementNotPreparedMessage = "Statement is not prepared. Likely cause: the db was closed before step is called or the ECSqlSyncReader is used outside the context of the callback passed to withQueryReader.";
 
-function logStatementCleanupError(message: string, error: unknown): void {
-  Logger.logTrace(BackendLoggerCategory.ECDb, message, () => ({ error: BentleyError.getErrorMessage(error) }));
+function logStatementCleanupError(loggerCategory: string, message: string, error: unknown): void {
+  try {
+    Logger.logTrace(loggerCategory, message, () => ({ error: BentleyError.getErrorMessage(error) }));
+  } catch {
+    // Cleanup diagnostics must not replace the original query error.
+  }
+}
+
+/** Returns a statement to its cache, falling back to direct disposal without throwing.
+ * @internal
+ */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export function releaseECSqlStatement(stmt: ECSqlStatement, cache: StatementCache<ECSqlStatement>, loggerCategory: string): void {
+  try {
+    if (stmt.isPrepared)
+      cache.addOrDispose(stmt);
+    else
+      stmt[Symbol.dispose]();
+  } catch (error) {
+    try {
+      stmt[Symbol.dispose]();
+    } catch (disposeError) {
+      logStatementCleanupError(loggerCategory, "Failed to dispose an ECSQL statement after it could not be returned to the statement cache.", disposeError);
+    }
+    logStatementCleanupError(loggerCategory, "Failed to return an ECSQL statement to the statement cache; attempted direct disposal instead.", error);
+  }
 }
 
 // --------------------------------------------------------------------------------------------
@@ -40,13 +64,11 @@ interface OperationResult {
  * @internal
  */
 export class ECSqlRowExecutor implements Disposable {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  private _stmt?: ECSqlStatement;
   private _removeListener: () => void;
+  private _isDisposed = false;
 
-  public constructor(private readonly _db: IModelDb | ECDb) {
-    // The statement is obtained lazily in `prepareAndBind` - either reused from the owning db's
-    // statement cache or freshly prepared - so repeated queries avoid re-compiling the ECSQL.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public constructor(private readonly _db: IModelDb | ECDb, private readonly _stmt: ECSqlStatement, private readonly _loggerCategory: string) {
     this._removeListener = this._db.onBeforeClose.addListener(() => this.cleanup());
   }
 
@@ -60,41 +82,20 @@ export class ECSqlRowExecutor implements Disposable {
    * @internal
    */
   private cleanup(): void {
-    const stmt = this._stmt;
-    this._stmt = undefined;
+    this._isDisposed = true;
     try {
-      stmt?.[Symbol.dispose]();
+      this._stmt[Symbol.dispose]();
     } catch (error) {
-      logStatementCleanupError("Failed to dispose an ECSQL statement while closing its database.", error);
+      logStatementCleanupError(this._loggerCategory, "Failed to dispose an ECSQL statement while closing its database.", error);
     }
   }
 
-  /** Call this function to dispose of the row executor.
-   * The prepared statement is returned to the owning db's statement cache for reuse (or disposed
-   * if it cannot be cached, e.g. preparation failed).
+  /** Removes the database-close listener owned by this row executor.
    * @internal
    */
   public [Symbol.dispose](): void {
+    this._isDisposed = true;
     this._removeListener();
-    const stmt = this._stmt;
-    this._stmt = undefined;
-    if (!stmt)
-      return;
-    try {
-      if (stmt.isPrepared)
-        this._db[_getStatementCache]().addOrDispose(stmt);
-      else
-        stmt[Symbol.dispose]();
-    } catch (error) {
-      logStatementCleanupError("Failed to return an ECSQL statement to the statement cache; disposing it instead.", error);
-      // If returning the statement to the cache fails (e.g. the native ECDb cache was cleared while
-      // the reader was active), dispose it directly and never mask the caller's original error.
-      try {
-        stmt[Symbol.dispose]();
-      } catch (disposeError) {
-        logStatementCleanupError("Failed to dispose an ECSQL statement after it could not be returned to the statement cache.", disposeError);
-      }
-    }
   }
 
   // --------------------------------------------------------------------------------------------
@@ -134,7 +135,7 @@ export class ECSqlRowExecutor implements Disposable {
    * @internal
    */
   public stepNextRow(options: IModelJsNative.ECSqlRowAdaptorOptions): any {
-    if (!this._stmt?.isPrepared)
+    if (this._isDisposed || !this._stmt.isPrepared)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, statementNotPreparedMessage);
     const stepResult = this._stmt.step();
     if (stepResult === DbResult.BE_SQLITE_ROW)
@@ -151,7 +152,7 @@ export class ECSqlRowExecutor implements Disposable {
    * @internal
    */
   public fetchMetadata(options: IModelJsNative.ECSqlRowAdaptorOptions): QueryPropertyMetaData[] {
-    if (!this._stmt?.isPrepared)
+    if (this._isDisposed || !this._stmt.isPrepared)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, statementNotPreparedMessage);
     return this._stmt.getMetadata(options).properties;
   }
@@ -160,38 +161,24 @@ export class ECSqlRowExecutor implements Disposable {
   // Execution phases
   // --------------------------------------------------------------------------------------------
 
-  /** Obtains a prepared ECSql statement for `ecsql`, reusing one from the owning db's statement
-   * cache when available (avoiding a native ECSQL re-compile) and otherwise preparing a fresh one.
-   * A statement returned by the cache is already reset with its bindings cleared.
+  /** Prepares the ECSql statement when the caller did not supply one from its cache.
    * @param ecsql - The ECSql text to prepare.
    * @returns An `OperationResult` indicating success or failure.
    * @internal
    */
   private prepareStmt(ecsql: string): OperationResult {
-    const cached = this._db[_getStatementCache]().findAndRemove(ecsql);
-    if (cached) {
-      this._stmt = cached;
+    if (this._stmt.isPrepared)
       return { isSuccessful: true };
-    }
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const stmt = new ECSqlStatement();
+
     try {
-      stmt.prepare(this._db[_nativeDb], ecsql);
-      this._stmt = stmt;
+      this._stmt.prepare(this._db[_nativeDb], ecsql);
       return { isSuccessful: true };
     } catch (error: any) {
-      // Do not assign `_stmt` to an unprepared statement so disposal never tries to cache it.
-      try {
-        stmt[Symbol.dispose]();
-      } catch (disposeError) {
-        logStatementCleanupError("Failed to dispose an ECSQL statement after preparation failed.", disposeError);
-      }
       return { isSuccessful: false, message: error.message };
     }
   }
 
-  /** Resets the statement and binds the given parameter values. Caches the arguments for later
-   * comparison so that redundant rebinds can be skipped.
+  /** Binds the supplied parameter values to the prepared statement.
    * @param args - The parameter object to bind, or `undefined` when no parameters are needed.
    * @returns An `OperationResult` indicating success or failure.
    * @internal
@@ -201,11 +188,10 @@ export class ECSqlRowExecutor implements Disposable {
       if (args === undefined)
         return { isSuccessful: true };
 
-      const stmt = this._stmt;
-      if (!stmt?.isPrepared)
+      if (!this._stmt.isPrepared)
         return { isSuccessful: false, message: statementNotPreparedMessage };
 
-      stmt.bindParams(args);
+      this._stmt.bindParams(args);
       return { isSuccessful: true };
     } catch (error: any) {
       return { isSuccessful: false, message: error.message };
