@@ -42,10 +42,6 @@ describe("SchemaSyncDb", () => {
   function simulatePreviousDbSchema() {
     let res = schemaDb.executeSQL("DROP TABLE definition_elements");
     expect(res).to.equal(DbResult.BE_SQLITE_DONE);
-    res = schemaDb.executeSQL("DROP TABLE IF EXISTS schema_reservation_ranges");
-    expect(res).to.equal(DbResult.BE_SQLITE_DONE);
-    res = schemaDb.executeSQL("DROP TABLE IF EXISTS schema_reservations");
-    expect(res).to.equal(DbResult.BE_SQLITE_DONE);
     res = schemaDb.executeSQL("DELETE FROM be_Prop WHERE namespace='schemasync'");
     expect(res).to.equal(DbResult.BE_SQLITE_DONE);
     schemaDb.setRequiredVersions({ readVersion: "^4.0.0", writeVersion: "^4.0.0" });
@@ -89,14 +85,6 @@ describe("SchemaSyncDb", () => {
       expect(names).to.deep.equal(["codeScope", "codeSpecId", "codeValue", "ecClassId", "elementId", "federationGuid"]);
       const elementIdCol = cols.find((c) => c.name === "elementId")!;
       expect(elementIdCol.notnull).to.equal(1);
-    });
-
-    it("creates the schema_reservations and schema_reservation_ranges tables", () => {
-      const reservationCols = getTableInfo("schema_reservations").map((c) => c.name).sort();
-      expect(reservationCols).to.deep.equal(["baseFingerprint", "schemaName", "versionMajor", "versionMinor", "versionPatch"]);
-
-      const rangeCols = getTableInfo("schema_reservation_ranges").map((c) => c.name).sort();
-      expect(rangeCols).to.deep.equal(["count", "schemaName", "startId", "tableName", "versionMajor", "versionMinor", "versionPatch"]);
     });
 
     it("lazily updates to new schema just before reserving definition elements", async () => {
