@@ -46,6 +46,13 @@ describe("Testing when unit conversion should throw", () => {
     }
   });
 
+  it("should throw synchronously when schema name is not in context", () => {
+    const converter = new UnitConverter(context);
+
+    expect(() => converter.calculateConversionSync("MockSchema:CM", "SIUnits:M")).toThrowError("Cannot find from's and/or to's schema");
+    expect(() => converter.calculateConversionSync("SIUnits:M", "MockSchema:CM")).toThrowError("Cannot find from's and/or to's schema");
+  });
+
   it("should throw when schema item is not in schema ", async () => {
     const converter = new UnitConverter(context);
     try {

@@ -115,6 +115,64 @@ export class UnitGraph {
   }
 
   /**
+   * Tries to find the unit/constant given by name in currentSchema
+   * @param name SchemaItem name or parsed definition to find unit of; Could be {schemaName}:{schemaItemName} or {alias}:{schemaItemName} or {schemaItemName}
+   * @param currentSchema schema to find name in; name could also be in a referenced schema of current schema
+   */
+  public resolveUnitSync(name: string, currentSchema: Schema): Unit | Constant {
+    let [schemaName] = SchemaItem.parseFullName(name);
+    const [, schemaItemName] = SchemaItem.parseFullName(name);
+
+    if (schemaName !== "") {
+      // Check if schemaName is schemaName or alias
+      const ref = currentSchema.getReferenceSync(schemaName);
+      const refName = currentSchema.getReferenceNameByAlias(schemaName);
+      if (ref) {
+        // Got schema by schemaName
+        schemaName = ref.name;
+      } else if (refName) {
+        // Got schema by alias
+        schemaName = refName;
+      } else {
+        // Didn't match any referenced schema, check if it is current schemaName or alias
+        if (schemaName === currentSchema.name || schemaName === currentSchema.alias)
+          schemaName = currentSchema.name;
+      }
+
+      // Create schema key with schema name
+      const schemaKey = new SchemaKey(schemaName);
+      // Get schema with schema key
+      const schema = this._context.getSchemaSync(schemaKey);
+      if (!schema) {
+        throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema", () => {
+          return { schema: schemaName };
+        });
+      } else {
+        // Set currentSchema to look up schemaItem to be whatever is prefixed in name
+        currentSchema = schema;
+      }
+      // Update name to not have prefix
+      name = schemaItemName;
+    }
+
+    // Create schema item key with name and schema
+    const itemKey = new SchemaItemKey(name, currentSchema.schemaKey);
+    // Get schema item with schema item key
+    const item = this._context.getSchemaItemSync(itemKey);
+    if (!item)
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item", () => {
+        return { item: name };
+      });
+
+    if (item.schemaItemType === SchemaItemType.Unit || item.schemaItemType === SchemaItemType.Constant)
+      return item as Unit | Constant;
+
+    throw new BentleyError(BentleyStatus.ERROR, "Item is neither a unit or a constant", () => {
+      return { itemType: item.key.fullName };
+    });
+  }
+
+  /**
    * Adds unit and corresponding children to graph as well as edges between units
    * @param unit Current unit to be added to graph
    */
@@ -134,6 +192,28 @@ export class UnitGraph {
 
     await promise
       .finally(() => this._unitsInProgress.delete(unit.key.fullName));
+  }
+
+  /**
+   * Adds unit and corresponding children to graph as well as edges between units
+   * @param unit Current unit to be added to graph
+   */
+  public addUnitSync(unit: Unit | Constant): void {
+    if (this._graph.hasNode(unit.key.fullName))
+      return;
+
+    this._graph.setNode(unit.key.fullName, unit);
+    if (this.isIdentity(unit))
+      return;
+
+    const umap = parseDefinition(unit.definition);
+    for (const [key, value] of umap) {
+      const resolvedUnit = this.resolveUnitSync(key, unit.schema);
+      this.addUnitSync(resolvedUnit);
+      this._graph.setEdge(unit.key.fullName, resolvedUnit.key.fullName, {
+        exponent: value.exponent,
+      });
+    }
   }
 
   private async addUnitToGraph(unit: Unit | Constant) {

@@ -42,6 +42,18 @@ describe("Unit Conversion tests", () => {
     ).to.be.true;
   }
 
+  function convertAndVerifyTestDataSync(test: TestData, converter: UnitConverter) {
+    const fromFullName = `Units:${test.from}`;
+    const toFullName = `Units:${test.to}`;
+    const map = converter.calculateConversionSync(fromFullName, toFullName);
+    const actual = map.evaluate(test.input);
+    expect(
+      almostEqual(test.expect, actual, tolerance),
+      `${test.input} ${test.from} in ${test.to} should be ${test.expect}
+       and not ${actual} error = ${Math.abs(test.expect - actual)} > ${tolerance}`,
+    ).to.be.true;
+  }
+
   testData.forEach((test: TestData) => {
     it(`should convert ${test.from} to ${test.to}`, async () => {
       const converter = new UnitConverter(context);
@@ -54,5 +66,11 @@ describe("Unit Conversion tests", () => {
     await Promise.all(testData.map(async (test: TestData) => {
       await convertAndVerifyTestData(test, converter);
     }));
+  });
+
+  it(`should convert units synchronously`, () => {
+    const converter = new UnitConverter(context);
+    for (const test of testData)
+      convertAndVerifyTestDataSync(test, converter);
   });
 });
