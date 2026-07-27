@@ -739,7 +739,7 @@ export class TextDecorationTool extends Tool {
                 ...editor.leaders[latestLeaderIndex].styleOverrides,
                 leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, targetPointOffsetFactor },
               };
-            } else throw new Error("Expected start, keypoint, nearest, textpoint");
+            } else throw new Error("Expected start, keypoint, nearest, textpoint, terminatorShape, showTargetPoint, targetPointShape, showLeaders, showTerminators, targetPointOffsetFactor");
           } else {
             throw new Error("No leaders created. Use dta text leader new.");
           }
