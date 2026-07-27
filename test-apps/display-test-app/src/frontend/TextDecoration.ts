@@ -18,6 +18,7 @@ import {
   Placement2dProps,
   Run,
   TabRun,
+  TargetPointShape,
   TerminatorShape,
   TextAnnotation,
   TextAnnotationAnchor,
@@ -710,6 +711,21 @@ export class TextDecorationTool extends Tool {
               const leaderStyle: TextLeaderStyleProps = editor.documentStyle.leader ?? {};
               leaderStyle.terminatorShape = shape;
               editor.documentStyle.leader = leaderStyle;
+            } else if (command === "showTargetPoint") {
+              const showTargetPoint = inArgs[2] === "true";
+              editor.leaders[latestLeaderIndex].styleOverrides = { ...editor.leaders[latestLeaderIndex].styleOverrides, leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, showTargetPoint } };
+            } else if (command === "targetPointShape") {
+              const shape = inArgs[2] as TargetPointShape;
+              editor.leaders[latestLeaderIndex].styleOverrides = { ...editor.leaders[latestLeaderIndex].styleOverrides, leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, targetPointShape: shape } };
+            } else if (command === "showLeaders") {
+              const showLeaders = inArgs[2] === "true";
+              editor.leaders[latestLeaderIndex].styleOverrides = { ...editor.leaders[latestLeaderIndex].styleOverrides, leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, showLeaders } };
+            } else if (command === "showTerminators") {
+              const showTerminators = inArgs[2] === "true";
+              editor.leaders[latestLeaderIndex].styleOverrides = { ...editor.leaders[latestLeaderIndex].styleOverrides, leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, showTerminators } };
+            } else if (command === "targetPointOffsetFactor") {
+              const targetPointOffsetFactor = Number(inArgs[2]);
+              editor.leaders[latestLeaderIndex].styleOverrides = { ...editor.leaders[latestLeaderIndex].styleOverrides, leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, targetPointOffsetFactor } };
             }
             else throw new Error("Expected start, keypoint, nearest, textpoint");
           } else {
