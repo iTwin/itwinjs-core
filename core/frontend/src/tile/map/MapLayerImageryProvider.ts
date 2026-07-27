@@ -528,7 +528,7 @@ export abstract class MapLayerImageryProvider {
     } else if ((response.status === 401 || response.status === 403) && credsWithheld) {
       // Some servers answer an unauthenticated request with 403 (Forbidden) rather than a 401 challenge;
       // since credentials were withheld here, either status most likely results from the withholding.
-      this.reportBlockedOrigin(url);
+      this.reportBlockedOrigin(challengedUrl);
     }
 
     return response;

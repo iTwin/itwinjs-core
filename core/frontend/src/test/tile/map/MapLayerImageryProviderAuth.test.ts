@@ -225,6 +225,16 @@ describe("MapLayerImageryProvider authorization", () => {
     expect(provider.blockedOrigins).toEqual(["https://other.example.org"]);
   });
 
+  it("reports the post-redirect origin when withheld basic-auth credentials lead to a 401", async () => {
+    fetchMock.mockResolvedValue(redirectedTo(new Response(null, { status: 401, headers: { "WWW-Authenticate": "Basic" } }), "https://redirect.example.net/wms/tile/0/0/0"));
+
+    const provider = createProvider({ userName: "user", password: "pwd" });
+    await provider.makeRequest(crossOriginUrl);
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["https://redirect.example.net"]);
+  });
+
   it("does not report UntrustedOrigin when a gate-blocked request succeeds anonymously", async () => {
     const provider = createProvider({ userName: "user", password: "pwd" });
     await provider.makeRequest(crossOriginUrl);
