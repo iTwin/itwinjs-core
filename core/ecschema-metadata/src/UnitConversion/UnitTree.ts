@@ -126,18 +126,19 @@ export class UnitGraph {
     let [schemaName] = SchemaItem.parseFullName(name);
     const [, schemaItemName] = SchemaItem.parseFullName(name);
     if (schemaName !== "") {
-      // Check if schemaName is schemaName or alias
-      const ref = currentSchema.getReferenceSync(schemaName);
-      const refName = currentSchema.getReferenceNameByAlias(schemaName);
-      if (ref) {
-        // Got schema by schemaName
-        schemaName = ref.name;
-      } else if (refName) {
-        // Got schema by alias
-        schemaName = refName;
-      } else if (schemaName === currentSchema.name || schemaName === currentSchema.alias) {
-        // Didn't match any referenced schema, check if it is current schemaName or alias
+      if (schemaName === currentSchema.name || schemaName === currentSchema.alias) {
         schemaName = currentSchema.name;
+      } else {
+        // Check if schemaName is schemaName or alias
+        const ref = currentSchema.getReferenceSync(schemaName);
+        const refName = currentSchema.getReferenceNameByAlias(schemaName);
+        if (ref) {
+          // Got schema by schemaName
+          schemaName = ref.name;
+        } else if (refName) {
+          // Got schema by alias
+          schemaName = refName;
+        }
       }
     }
     return { schemaName, schemaItemName };
