@@ -154,7 +154,6 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     for (const match of matchingAttributions)
       copyrights.push(match.copyrightMessage);
 
-    // Attribution strings are server-provided; noticeLines renders them as text, never parsed as HTML.
     cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", noticeLines: copyrights }));
   }
 

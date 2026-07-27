@@ -253,7 +253,6 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
     }
 
-    // Attribution strings are server-provided; noticeLines renders them as text, never parsed as HTML.
     const iconSrc = document.createElement("img");
     iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray.svg`;
     iconSrc.style.padding = "10px 10px 5px 10px";

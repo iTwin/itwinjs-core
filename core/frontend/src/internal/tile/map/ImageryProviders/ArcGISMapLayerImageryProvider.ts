@@ -225,8 +225,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     const metadata = await this.getServiceJson();
 
     if (metadata?.content === undefined) {
-      // If the service metadata could not be fetched because authentication was blocked for an untrusted
-      // origin, keep the tile tree alive (i.e. don't throw) so the provider is preserved to report status.
+      // By returning (i.e not throwing), we ensure the tileTree get created and current provider is preserved to report status.
       if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin)
         return;
       throw new ServerError(IModelStatus.ValidationFailed, "");
@@ -327,7 +326,6 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.arcGisLogoCard) {
       cards.dataset.arcGisLogoCard = "true";
-      // Copyright text is server-provided; noticeLines renders it as text, never parsed as HTML.
       cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", noticeLines: [this._copyrightText] }));
     }
   }
@@ -376,8 +374,6 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     if (json && Array.isArray(json.results)) {
       for (const result of json.results) {
         if (result.attributes !== undefined && result.attributes[result.displayFieldName] !== undefined) {
-          // Field names and values are server-controlled data, never intentional markup; escape them so they
-          // render literally when the tooltip strings are later assigned to innerHTML.
           const thisString = `${escapeHtml(String(result.displayFieldName))}: ${escapeHtml(String(result.attributes[result.displayFieldName]))}`;
           if (!stringSet.has(thisString)) {
             strings.push(thisString);

@@ -1038,9 +1038,7 @@ export class MapTileTreeReference extends TileTreeReference {
     const strings: string[] = [];
 
     const getTooltipFunc = async (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {
-      // The layer name originates from user-supplied settings (e.g. a display style); escape it so it
-      // renders literally when the joined strings are assigned to innerHTML below. (innerHTML is
-      // retained because imageryLoader.getToolTip may deliberately supply markup from trusted origins.)
+      // innerHTML is used below because imageryLoader.getToolTip may deliberately supply markup.
       const layerName = escapeHtml(imageryTreeRef.layerSettings.name);
       strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${layerName}`);
       carto = cartoGraphic;

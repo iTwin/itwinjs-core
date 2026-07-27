@@ -215,8 +215,7 @@ export class MapLayerFormatRegistry {
   /** Returns true if the basic-auth credentials belonging to a map-layer source or settings URL may be
    * attached to a request to the given URL. Always true unless [[restrictCredentialsToTrustedOrigins]]
    * is enabled (opt-in). When enabled, the origin of `settingsUrl` is implicitly trusted (the credentials
-   * belong to that server); other origins — including endpoints advertised by server-controlled documents
-   * such as an OGC API landing page — must be listed in [[trustedCredentialsOrigins]].
+   * belong to that server); any other origin must be listed in [[trustedCredentialsOrigins]].
    * @internal
    */
   public isCredentialsSharingAllowed(url: string, settingsUrl: string): boolean {

@@ -540,8 +540,6 @@ export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     if (this._name)
       strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
 
-    // The reality model name originates from user-supplied props (e.g. a display style); append as
-    // text nodes so it is never parsed as HTML.
     const div = document.createElement("div");
     strings.forEach((str, index) => {
       if (index > 0)

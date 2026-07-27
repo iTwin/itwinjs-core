@@ -445,20 +445,10 @@ export abstract class MapLayerImageryProvider {
   /** Detects that a request carrying browser credentials (see [[includeUserCredentials]]) was transparently
    * redirected to a different origin, and reports or logs that origin.
    *
-   * `fetch` follows redirects automatically and a browser offers no way to conditionally follow them
-   * (`redirect: "manual"` yields an opaque response whose destination cannot be inspected), so a redirect
-   * issued by an already-trusted origin can carry the user's cookies to the destination before this code
-   * can intervene. Refusing redirects outright (`redirect: "error"`) on every credentialed request would
-   * break legitimate same-origin redirects, which are common for tile URLs. This check is therefore
-   * **detection, not prevention**:
-   * - the exposure is bounded to the individual redirected request (and integrated authentication
-   *   additionally requires the destination to pass the browser's own integrated-auth policy);
-   * - the destination origin is never latched as SSO-succeeded, so credentials do not keep flowing to it
-   *   ([[includeUserCredentials]] validates the origin of each request URL);
-   * - when [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled, an untrusted
-   *   destination is reported via [[MapLayerImageryProviderStatus.UntrustedOrigin]] and [[blockedOrigins]];
-   *   otherwise it is surfaced by the once-per-origin discovery warning.
-   * Note the initial credential-bearing *retry* after a 401 challenge is stricter: it uses
+   * This is **detection, not prevention**: `fetch` follows redirects automatically and offers no way to
+   * inspect the destination beforehand, while refusing them outright would break the same-origin redirects
+   * commonly used for tile URLs. The destination origin is never latched as SSO-succeeded, so credentials
+   * do not keep flowing to it. Note the credential-bearing retry after a 401 challenge is stricter: it uses
    * `redirect: "error"`, because a redirect is never a legitimate part of an NTLM/Negotiate handshake.
    * @internal
    */
@@ -485,9 +475,6 @@ export abstract class MapLayerImageryProvider {
       headers = new Headers();
       headers.set("Authorization", authorization);
     } else if (this._settings.userName && this._settings.password) {
-      // When origin restrictions are enabled, authorization is inferred from the map-layer settings only
-      // when the request URL shares the same origin as the settings URL, to avoid leaking the credentials
-      // to third-party hosts.
       if (this.isCredentialsSharingAllowed(url)) {
         hasCreds = true;
         headers = new Headers();
@@ -510,14 +497,11 @@ export abstract class MapLayerImageryProvider {
 
     response = await fetch(url, opts);
 
-    // If the request carried browser credentials (latched SSO origin), detect a transparent redirect
-    // to a different origin — see [[checkCredentialedRedirect]] for why this is detection, not prevention.
     if (includeCredentials)
       this.checkCredentialedRedirect(url, response);
 
-    // fetch follows redirects transparently, so the response — including any authentication challenge —
-    // may originate from a different origin than the one requested. All trust decisions below target the
-    // final (post-redirect) URL reported by the response, not the URL we asked for.
+    // fetch follows redirects transparently, so all trust decisions below target the final
+    // (post-redirect) URL reported by the response, not the URL we asked for.
     const challengedUrl = response.url || url;
 
     if (response.status === 401
@@ -529,8 +513,6 @@ export abstract class MapLayerImageryProvider {
         // Removed the previous headers and make sure "include" credentials is set
         opts.headers = undefined;
         opts.credentials = "include";
-        // The retry targets the challenged (post-redirect) URL directly and refuses to follow any further
-        // redirect, so browser credentials can never be carried to an origin that was not validated above.
         // A Negotiate/NTLM handshake is a same-URL 401 round-trip, never a redirect flow, so "error" is safe here.
         opts.redirect = "error";
         this.logUntrustedOriginUse(challengedUrl);
@@ -541,13 +523,9 @@ export abstract class MapLayerImageryProvider {
           this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
         }
       } else {
-        // The SSO retry was suppressed because the challenged origin is not trusted; report it so the
-        // application can surface the blocked origin to the user.
         this.reportBlockedOrigin(challengedUrl);
       }
     } else if ((response.status === 401 || response.status === 403) && credsWithheld) {
-      // The server rejected the request and the stored basic-auth credentials were withheld because the
-      // origin is not trusted; report it so the application can surface the blocked origin to the user.
       // Some servers answer an unauthenticated request with 403 (Forbidden) rather than a 401 challenge;
       // since credentials were withheld here, either status most likely results from the withholding.
       this.reportBlockedOrigin(url);
@@ -590,9 +568,6 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
-    // When origin restrictions are enabled, authorization is inferred from the map-layer settings only
-    // when the request URL shares the same origin as the settings URL, to avoid leaking the credentials
-    // to third-party hosts.
     const trustedOrigin = this.isCredentialsSharingAllowed(url);
     let headers: Headers | undefined;
     if (trustedOrigin) {
@@ -601,23 +576,18 @@ export abstract class MapLayerImageryProvider {
     }
 
     try {
-      // includeUserCredentials re-checks the current trust policy, not just the handshake latch.
       const includeCredentials = this.includeUserCredentials(url);
       const response = await fetch(url, {
         method: "GET",
         headers,
         credentials: includeCredentials ? "include" : undefined,
       });
-      // Detect a credential-bearing request transparently redirected to a different origin
-      // (see [[checkCredentialedRedirect]]).
       if (includeCredentials)
         this.checkCredentialedRedirect(url, response);
       let text = await response.text();
       if (text) {
         // Tooltip content (e.g. WMS GetFeatureInfo responses) is rendered as HTML downstream and may
-        // deliberately contain markup; only origins trusted for credentials (the settings-URL origin or
-        // an entry of [[MapLayerFormatRegistry.trustedCredentialsOrigins]]) are also trusted to supply
-        // markup. Text from other origins is escaped so it renders literally.
+        // deliberately contain markup; text from origins not trusted for credentials is escaped.
         if (!trustedOrigin)
           text = escapeHtml(text);
         strings.push(text);

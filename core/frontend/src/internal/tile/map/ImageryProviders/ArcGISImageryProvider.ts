@@ -63,8 +63,6 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
 
     } catch (err) {
-      // The SSO retry was suppressed because the origin is not trusted; report the blocked origin
-      // (rather than asking for credentials) so the application can prompt for whitelisting.
       if (err instanceof MapLayerUntrustedOriginError)
         this.reportBlockedOrigin(err.url);
     }
@@ -121,27 +119,20 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       const includeCredentials = this.includeUserCredentials(requestUrl);
       response = await fetch(urlObj, {...options, credentials: includeCredentials ?  "include" : undefined});
 
-      // If the request carried browser credentials (latched SSO origin), detect a transparent redirect
-      // to a different origin — see [[MapLayerImageryProvider.checkCredentialedRedirect]].
       if (includeCredentials)
         this.checkCredentialedRedirect(requestUrl, response);
 
       if (response.status === 401 && !this._lastAccessToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-        // fetch follows redirects transparently, so the challenge may originate from a different origin
-        // than the one requested; the trust decision must target the final (post-redirect) URL.
+        // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
         const challengedUrl = response.url || requestUrl;
         if (this.isSsoAllowed(challengedUrl)) {
           // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
-          // The retry targets the challenged URL directly and refuses to follow any further redirect, so
-          // browser credentials can never be carried to an origin that was not validated above.
           this.logUntrustedOriginUse(challengedUrl);
           response = await fetch(challengedUrl, {...options, credentials: "include", redirect: "error" });
           if (response.status === 200) {
             this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
           }
         } else {
-          // The SSO retry was suppressed because the challenged origin is not trusted; report it so the
-          // application can surface the blocked origin to the user.
           this.reportBlockedOrigin(challengedUrl);
         }
       }

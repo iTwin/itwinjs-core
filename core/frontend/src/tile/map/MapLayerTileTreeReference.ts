@@ -79,8 +79,6 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.sourceId)
       return undefined;
 
-    // The layer name originates from user-supplied settings (e.g. a display style); assign as text
-    // so it is never parsed as HTML.
     const div = document.createElement("div");
     div.textContent = `Map Layer: ${this._layerSettings.name}`;
     return div;

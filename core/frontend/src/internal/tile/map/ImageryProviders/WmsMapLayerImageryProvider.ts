@@ -71,8 +71,6 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       // We want the tile tree to be created, so that end-user can get feedback on which layer is missing credentials.
       // When credentials will be provided, a new provider will be created, and initialization should be fine.
       if (error instanceof MapLayerUntrustedOriginError) {
-        // The SSO retry was suppressed because the origin is not trusted; report the blocked origin
-        // (rather than asking for credentials) so the application can prompt for whitelisting.
         this.reportBlockedOrigin(error.url);
       } else if (error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);

@@ -80,16 +80,14 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         let collectionsUrl = appendQueryParams(collectionsLink.href, source.savedQueryParams);
         collectionsUrl = appendQueryParams(collectionsUrl, source.unsavedQueryParams);
 
-        // The collections link is advertised by the server-controlled landing document; apply the
-        // origin-trust decision independently to it so the source's basic-auth credentials cannot be
-        // exfiltrated to an unrelated origin (see MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins).
+        // The collections link is advertised by the server-controlled landing document, so the trust
+        // decision is applied to it independently of the source URL.
         const allowCreds = IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(collectionsUrl, source.url);
         if (headers && allowCreds)
           IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(collectionsUrl, source.url);
 
         response = await fetch(collectionsUrl, allowCreds ? opts : { method: "GET" });
-        // Some servers reject unauthenticated requests with 403 (Forbidden) instead of a 401 challenge;
-        // since credentials were withheld, either status most likely results from the withholding.
+        // Some servers reject unauthenticated requests with 403 (Forbidden) instead of a 401 challenge.
         if (!allowCreds && (response.status === 401 || response.status === 403))
           return { status: MapLayerSourceStatus.UntrustedOrigin };
 
