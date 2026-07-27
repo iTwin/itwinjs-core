@@ -365,8 +365,13 @@ export class DisplayTestApp {
         }
       }
 
-      IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = trustedOrigins;
-      IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+      if (trustedOrigins.length > 0) {
+        IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = trustedOrigins;
+        IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn("IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS was set but contained no valid origins; leaving restrictCredentialsToTrustedOrigins disabled.");
+      }
     }
 
     IModelConnection.onOpen.addListener((imodel: IModelConnection) => {
