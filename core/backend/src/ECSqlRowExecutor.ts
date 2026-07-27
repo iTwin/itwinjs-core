@@ -69,7 +69,7 @@ export class ECSqlRowExecutor implements Disposable {
     }
   }
 
-  /** Call this function to dispose the row executor off.
+  /** Call this function to dispose of the row executor.
    * The prepared statement is returned to the owning db's statement cache for reuse (or disposed
    * if it cannot be cached, e.g. preparation failed).
    * @internal
