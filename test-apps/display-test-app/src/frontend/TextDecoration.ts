@@ -422,13 +422,29 @@ export class TextDecorationTool extends Tool {
     await this.parseAndRun("font", "Arimo");
     await this.parseAndRun("center");
 
-    const label = (labelString: string) => {
-      editor.appendBreak();
-      editor.appendText(`${labelString}:`);
-      editor.appendTab(tabSize);
-    };
+    const expectField = (title: string, expected: string, formatOptions: FieldFormatOptions, note?: string) => {
+      const expectedColor = ColorDef.fromString("#ff5959").toJSON();
+      const actualColor = ColorDef.fromString("#156715").toJSON();
+      const defaultColor = ColorDef.fromString("black").toJSON();
 
-    const field = (formatOptions?: FieldFormatOptions) => {
+      // Label
+      editor.runStyle.color = defaultColor;
+      editor.appendBreak();
+      editor.appendText(title);
+      editor.appendBreak();
+
+      // Expected value
+      editor.appendText("Expected: ");
+      editor.runStyle.color = expectedColor;
+      editor.appendTab(tabSize);
+      editor.appendText(expected);
+      editor.runStyle.color = defaultColor;
+
+      // Actual field
+      editor.appendBreak();
+      editor.appendText("Actual: ");
+      editor.runStyle.color = actualColor;
+      editor.appendTab(tabSize);
       editor.appendField({
         elementId: "0x20000001f27",
         schemaName: "CivilSpatial",
@@ -436,149 +452,147 @@ export class TextDecorationTool extends Tool {
         propertyName: "Origin",
         formatOptions,
       });
-    };
-
-    // Appends: tab, then an italic gray comment run, then resets italic + color to black.
-    const commentColor = ColorDef.fromString("#888888").toJSON();
-    const defaultColor = ColorDef.fromString("black").toJSON();
-    const comment = (note: string) => {
-      // xl tab sizes for the comment runs, so they line up
-      editor.appendTab(tabSize);
-      editor.appendTab(tabSize);
-      editor.runStyle.isItalic = !editor.runStyle.isItalic;
-      editor.runStyle.color = commentColor;
-      editor.appendText(note);
-      editor.runStyle.isItalic = !editor.runStyle.isItalic;
       editor.runStyle.color = defaultColor;
-    };
 
-    // Content
-    label("Origin (m)");
-    field({ quantity: { persistenceUnit: "Units.M" } });
-    comment("Expected: (30813.264 m, 58981.8092 m, 0.05 m)");
-    comment(
-      "Default coordinate field (property KoQ + active unit system)",
-    );
+      // Comment
+      if (note) {
+        editor.appendBreak();
+        editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
+        editor.runStyle.isItalic = true;
+        editor.appendText(note);
+        editor.runStyle.isItalic = false;
+        editor.runStyle.color = defaultColor;
+      }
+
+      editor.appendBreak();
+      editor.appendText(" ");
+    };
 
     // Default formatting (uses the property's KoQ + active unit system).
-    label("Default");
-    field({ quantity: { persistenceUnit: "Units.M" } });
-    comment("Expected: (30813.2640 m, 58981.8092 m, 0.0500 m)");
-    comment(
-      "No options — falls back to coordinate default (meters, 4 decimals)",
-    );
+    expectField("Origin (m)", "(30813.264 m, 58981.8092 m, 0.05 m)", { quantity: { persistenceUnit: "Units.M" } }, "Default formatting (uses the property's KoQ + active unit system)");
 
     // Force imperial via unit system.
-    label("Imperial");
-    field({ quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" } });
-    comment("Expected: (101093.3858 ft, 193509.8747 ft, 0.1640 ft)");
-    comment("us=imperial — should render in feet (m -> ft conversion)");
+    expectField("Imperial", "(101093.3858 ft, 193509.8747 ft, 0.1640 ft)", { quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" } }, "us=imperial — should render in feet (m -> ft conversion)");
 
     // Force metric via unit system, with prefix/suffix.
-    label("Metric");
-    field({
-      prefix: "L=",
-      suffix: " (m)",
-      quantity: { unitSystem: "metric", persistenceUnit: "Units.M" },
-    });
-    comment("Expected: (L=30813.2640 (m), L=58981.8092 (m), L=0.0500 (m))");
-    comment("us=metric + prefix/suffix wrappers");
+    expectField(
+      "Metric",
+      "(L=30813.2640 (m), L=58981.8092 (m), L=0.0500 (m))",
+      {
+        prefix: "L=",
+        suffix: " (m)",
+        quantity: { unitSystem: "metric", persistenceUnit: "Units.M" },
+      },
+      "us=metric + prefix/suffix wrappers",
+    );
 
     // Override the property's KoQ with a different KoQ full name.
-    label("KoQ override");
-    field({
-      quantity: {
-        formatSetKey: "AecUnits.LENGTH_SHORT",
-        persistenceUnit: "Units.M",
+    expectField(
+      "KoQ override",
+      "AecUnits.LENGTH_SHORT formatting (typically mm)",
+      {
+        quantity: {
+          formatSetKey: "AecUnits.LENGTH_SHORT",
+          persistenceUnit: "Units.M",
+        },
       },
-    });
-    comment("Expected: AecUnits.LENGTH_SHORT formatting (typically mm)");
-    comment("koq= overrides the property's own KoQ via FormatsProvider");
+      "koq= overrides the property's own KoQ via FormatsProvider",
+    );
 
     // Inline FormatProps override — meters, 3 decimals.
-    label("Inline m");
-    field({
-      quantity: {
-        persistenceUnit: "Units.M",
-        format: {
-          type: "Decimal",
-          precision: 3,
-          composite: { units: [{ name: "Units.M", label: "m" }] },
-        },
-      },
-    });
-    comment("Expected: (30813.264 m, 58981.809 m, 0.050 m)");
-    comment("fp= inline FormatProps — meters, 3 decimals");
-
-    // Inline FormatProps override — millimeters (verifies m -> mm conversion).
-    label("Inline mm");
-    field({
-      quantity: {
-        persistenceUnit: "Units.M",
-        format: {
-          type: "Decimal",
-          precision: 3,
-          composite: { units: [{ name: "Units.MM", label: "mm" }] },
-        },
-      },
-    });
-    comment("Expected: (30813264.000 mm, 58981809.200 mm, 50.000 mm)");
-    comment("Verifies m -> mm conversion (multiply by 1000)");
-
-    // Inline FormatProps override — composite feet-inches (verifies m -> ft/in conversion).
-    label("Inline ft-in");
-    field({
-      quantity: {
-        persistenceUnit: "Units.M",
-        format: {
-          type: "Fractional",
-          precision: 8,
-          composite: {
-            units: [
-              { name: "Units.FT", label: "'" },
-              { name: "Units.IN", label: `"` },
-            ],
+    expectField(
+      "Inline m",
+      "(30813.264 m, 58981.809 m, 0.050 m)",
+      {
+        quantity: {
+          persistenceUnit: "Units.M",
+          format: {
+            type: "Decimal",
+            precision: 3,
+            composite: { units: [{ name: "Units.M", label: "m" }] },
           },
         },
       },
-    });
-    comment(`Expected: (101093'-4 5/8", 193509'-10 1/2", 0'-2")`);
-    comment("Verifies m -> composite ft/in conversion (fractional)");
+      "fp= inline FormatProps — meters, 3 decimals",
+    );
 
-    // Case transform on the formatted value.
-    label("Upper");
-    field({
-      case: "upper",
-      quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" },
-    });
-    comment("Expected: (101093.3858 FT, 193509.8747 FT, 0.1640 FT)");
-    comment("case=upper — post-format text transform");
-
-    // Coordinate field with inline format override (verifies coordinate unit conversion).
-    label("Origin (ft)");
-    field({
-      quantity: {
-        persistenceUnit: "Units.M",
-        format: {
-          type: "Decimal",
-          precision: 2,
-          composite: { units: [{ name: "Units.FT", label: "ft" }] },
+    // Inline FormatProps override — millimeters (verifies m -> mm conversion).
+    expectField(
+      "Inline mm",
+      "(30813264.000 mm, 58981809.200 mm, 50.000 mm)",
+      {
+        quantity: {
+          persistenceUnit: "Units.M",
+          format: {
+            type: "Decimal",
+            precision: 3,
+            composite: { units: [{ name: "Units.MM", label: "mm" }] },
+          },
         },
       },
-    });
-    comment("Expected: (101093.39 ft, 193509.87 ft, 0.16 ft)");
-    comment(
+      "Verifies m -> mm conversion (multiply by 1000)",
+    );
+
+    // Inline FormatProps override — composite feet-inches (verifies m -> ft/in conversion).
+    expectField(
+      "Inline ft-in",
+      `(101093'-4 5/8", 193509'-10 1/2", 0'-2")`,
+      {
+        quantity: {
+          persistenceUnit: "Units.M",
+          format: {
+            type: "Fractional",
+            precision: 8,
+            composite: {
+              units: [
+                { name: "Units.FT", label: "'" },
+                { name: "Units.IN", label: `"` },
+              ],
+            },
+          },
+        },
+      },
+      "Verifies m -> composite ft/in conversion (fractional)",
+    );
+
+    // Case transform on the formatted value.
+    expectField(
+      "Upper",
+      "(101093.3858 FT, 193509.8747 FT, 0.1640 FT)",
+      {
+        case: "upper",
+        quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" },
+      },
+      "case=upper — post-format text transform",
+    );
+
+    // Coordinate field with inline format override (verifies coordinate unit conversion).
+    expectField(
+      "Origin (ft)",
+      "(101093.39 ft, 193509.87 ft, 0.16 ft)",
+      {
+        quantity: {
+          persistenceUnit: "Units.M",
+          format: {
+            type: "Decimal",
+            precision: 2,
+            composite: { units: [{ name: "Units.FT", label: "ft" }] },
+          },
+        },
+      },
       "Coordinate field with inline fp — verifies coord unit conversion",
     );
 
     // Full FieldFormatOptions JSON blob (legacy path).
-    label("Full JSON");
-    field({
-      case: "upper",
-      quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" },
-    });
-    comment("Expected: (101093.3858 FT, 193509.8747 FT, 0.1640 FT)");
-    comment("f= full FieldFormatOptions JSON (legacy path)");
+    expectField(
+      "Full JSON",
+      "(101093.3858 FT, 193509.8747 FT, 0.1640 FT)",
+      {
+        case: "upper",
+        quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" },
+      },
+      "f= full FieldFormatOptions JSON (legacy path)",
+    );
 
     await editor.update();
   }
