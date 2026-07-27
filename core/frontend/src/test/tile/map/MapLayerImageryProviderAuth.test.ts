@@ -395,21 +395,10 @@ describe("MapLayerImageryProvider authorization", () => {
     expect(provider.blockedOrigins).toEqual(["https://evil.example.net"]);
   });
 
-    const warnings = logWarning.mock.calls.filter((call) => {
-      const message = String(call[1]);
-      const urlMatch = message.match(/https?:\/\/[^\s)]+/);
-      if (!urlMatch)
-        return false;
-
-      try {
-        return new URL(urlMatch[0]).origin === "https://evil.example.net";
-      } catch {
-        return false;
-      }
-    });
+  it("logs the discovery warning when a credentialed request is transparently redirected cross-origin in legacy mode", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
     const logWarning = vi.spyOn(Logger, "logWarning");
-    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValue(okResponse());
+    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValueOnce(okResponse());
 
     const provider = createProvider();
     await provider.makeRequest(crossOriginUrl);   // legacy handshake latches the origin
