@@ -107,8 +107,8 @@ describe("SchemaSyncDb", () => {
       expect(getTableInfo("definition_elements")).to.not.be.empty;
       expect(readNextDefinitionLocalId()).to.equal(2);
       version = schemaDb.getRequiredVersions();
-      expect(version.readVersion).to.equal("^4.1.0");
-      expect(version.writeVersion).to.equal("^4.1.0");
+      expect(version.readVersion).to.equal("^4.2.0");
+      expect(version.writeVersion).to.equal("^4.2.0");
     });
   });
 
