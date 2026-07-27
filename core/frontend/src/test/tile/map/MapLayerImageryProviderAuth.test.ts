@@ -430,7 +430,8 @@ describe("MapLayerImageryProvider authorization", () => {
     fetchMock.mockResolvedValue(redirectedTo(okResponse(), "https://evil.example.net/steal"));
     await provider.makeRequest(crossOriginUrl);
 
-    const warnings = logWarning.mock.calls.filter((call) => String(call[1]).includes("https://evil.example.net"));
+    // Match the quoted origin from the warning message rather than a bare substring of the URL.
+    const warnings = logWarning.mock.calls.filter((call) => String(call[1]).includes(`origin 'https://evil.example.net'`));
     expect(warnings).toHaveLength(1);
   });
 });
