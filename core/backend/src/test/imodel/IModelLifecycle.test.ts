@@ -350,7 +350,7 @@ describe("iModel lifecycle", () => {
     const ecefLocation = new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } });
     const geographicCoordinateSystem = {
       horizontalCRS: { id: "10TM115-27" },
-    }
+    };
     let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName }, ecefLocation, geographicCoordinateSystem });
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
