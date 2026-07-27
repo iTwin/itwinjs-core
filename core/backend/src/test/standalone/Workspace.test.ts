@@ -188,16 +188,27 @@ describe("WorkspaceFile", () => {
     const fileRscName = "unsafe-extension";
 
     try {
-      const invalidFileExts = [..."<>:\"/\\|?*", ...Array.from({ length: 0x20 }, (_, code) => `safe${String.fromCharCode(code)}unsafe`), "json ", "json."];
+      const invalidFileExts = [
+        ..."<>:\"/\\|?*",
+        ...Array.from({ length: 0x20 }, (_, code) => `safe${String.fromCharCode(code)}unsafe`),
+        "json ",
+        "json.",
+        "a".repeat(215),
+        "é".repeat(108),
+      ];
       for (const fileExt of invalidFileExts)
         // eslint-disable-next-line @typescript-eslint/no-deprecated
-        expect(() => wsFile.addFile(fileRscName, inFile, fileExt), JSON.stringify(fileExt)).to.throw("file extension contains characters that are invalid in file names");
+        expect(() => wsFile.addFile(fileRscName, inFile, fileExt), JSON.stringify(fileExt)).to.throw("file extension is not valid for generated file names");
 
       expect(wsFile.sqliteDb[_nativeDb].queryEmbeddedFile(fileRscName)).to.be.undefined;
 
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       wsFile.addFile(fileRscName, inFile, ".archive.tar.gz");
       expect(wsFile.sqliteDb[_nativeDb].queryEmbeddedFile(fileRscName)?.fileExt).equals("archive.tar.gz");
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      wsFile.addFile(`${fileRscName}-max`, inFile, "a".repeat(214));
+      expect(wsFile.sqliteDb[_nativeDb].queryEmbeddedFile(`${fileRscName}-max`)?.fileExt).equals("a".repeat(214));
     } finally {
       wsFile.close();
     }
@@ -209,7 +220,7 @@ describe("WorkspaceFile", () => {
     const escapedFileName = resolve(wsFile.container.filesDir, "..", "outside");
 
     try {
-      for (const [index, fileExt] of ["../../../outside", "json ", "json."].entries()) {
+      for (const [index, fileExt] of ["../../../outside", "json ", "json.", "a".repeat(215), "é".repeat(108)].entries()) {
         const fileRscName = `unsafe-stored-extension-${index}`;
         wsFile.sqliteDb[_nativeDb].embedFile({
           name: fileRscName,

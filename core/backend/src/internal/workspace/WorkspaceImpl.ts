@@ -37,9 +37,13 @@ function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
 }
 
+const maxFileExtensionLength = 255 - 40 - 1; // Reserve space for the SHA-1 hash and "." in the generated filename.
+
 function isSafeFileExtension(fileExt: string): boolean {
   const invalidChars = "<>:\"/\\|?*";
-  return !fileExt.endsWith(" ")
+  return fileExt.length <= maxFileExtensionLength
+    && Buffer.byteLength(fileExt, "utf8") <= maxFileExtensionLength
+    && !fileExt.endsWith(" ")
     && !fileExt.endsWith(".")
     && !Array.from(fileExt).some((char) => invalidChars.includes(char) || char.charCodeAt(0) < 0x20);
 }
@@ -784,7 +788,7 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
     if (!isSafeFileExtension(fileExt))
-      WorkspaceError.throwError("invalid-name", { message: "file extension contains characters that are invalid in file names" });
+      WorkspaceError.throwError("invalid-name", { message: "file extension is not valid for generated file names" });
     this.sqliteDb[_nativeDb].embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
   }
   public updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void {
