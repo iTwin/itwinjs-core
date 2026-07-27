@@ -466,11 +466,13 @@ describe("iModel relationships", () => {
       assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement") >= Math.floor(relationships.length / 3));
       assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments") >= Math.floor(relationships.length / 3));
 
-      // Create a subset of random relationship entries to delete
+      // Select a deterministic, unique subset (every 4th relationship => 250 unique entries)
+      // so the test is stable, reproducible, and free of duplicate delete requests.
       const relationshipsToDelete: RelationshipProps[] = [];
-      for (let i = 0; i < 250; ++i) {
-        relationshipsToDelete.push(relationships[Math.floor(Math.random() * relationships.length)]);
+      for (let i = 0; i < relationships.length; i += 4) {
+        relationshipsToDelete.push(relationships[i]);
       }
+      assert.equal(relationshipsToDelete.length, 250);
 
       withEditTxn(testImodel, (txn) => {
         txn.deleteRelationships(relationshipsToDelete);
