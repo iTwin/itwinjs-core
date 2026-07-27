@@ -1000,9 +1000,9 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
     const executor = new ECSqlRowExecutor(this);
-    const reader = new ECSqlSyncReader(executor, ecsql, params, config);
     const release = () => executor[Symbol.dispose]();
     try {
+      const reader = new ECSqlSyncReader(executor, ecsql, params, config);
       const val = callback(reader);
       if (val instanceof Promise) {
         val.then(release, release);

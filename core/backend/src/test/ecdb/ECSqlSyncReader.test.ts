@@ -198,6 +198,21 @@ describe("WithQueryReaderTests", () => {
       }, new QueryBinder().bindId(1, "0x1"));
     });
 
+    it("releases the executor and cached statement when binding fails during reader construction", () => {
+      iModel.clearCaches();
+      const prepareSpy = sinon.spy(ECSqlStatement.prototype, "prepare"); // eslint-disable-line @typescript-eslint/no-deprecated
+      iModel.withQueryReader(sql, (reader) => reader.step(), new QueryBinder().bindId(1, "0x1"));
+      const listenerCount = iModel.onBeforeClose.numberOfListeners;
+
+      const bindStub = sinon.stub(ECSqlStatement.prototype, "bindParams").throws(new Error("Expected bind failure")); // eslint-disable-line @typescript-eslint/no-deprecated
+      expect(() => iModel.withQueryReader(sql, () => undefined, new QueryBinder().bindId(1, "0x1"))).to.throw("Expected bind failure");
+      bindStub.restore();
+      expect(iModel.onBeforeClose.numberOfListeners).to.equal(listenerCount);
+
+      iModel.withQueryReader(sql, (reader) => reader.step(), new QueryBinder().bindId(1, "0x1"));
+      expect(prepareSpy.callCount).to.equal(1, "the statement checked out before the bind failure should be returned to the cache");
+    });
+
     it("also caches for ECDb.withQueryReader (shared ECSqlRowExecutor path)", () => {
       using ecdb = ECDbTestHelper.createECDb(KnownTestLocations.outputDir, "syncReaderStmtCache.ecdb",
         `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
