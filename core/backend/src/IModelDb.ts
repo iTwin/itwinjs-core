@@ -983,7 +983,8 @@ export abstract class IModelDb extends IModel {
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns the value returned by `callback`.
    * @throws IModelError if db is not open.
-   * Should be used when we want true step by step behaviour from the reader without any intermediate caching involved.
+   * Use this method for true step-by-step row consumption without intermediate result or page caching.
+   * The prepared ECSQL statement may be reused from the statement cache between completed calls.
    * @beta
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
