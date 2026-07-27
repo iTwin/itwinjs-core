@@ -236,15 +236,19 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
     const lines: string[] = [];
+    const seen = new Set<string>();
     const tiles = this.getSelectedTiles(vp);
     if (tiles) {
       try {
         const attrList = await this.fetchAttributions(tiles);
         for (const attr of attrList) {
           attr.split(",").forEach((line) => {
-            // Attempt to reduce duplicates, since if there are multiple zoom levels sometimes the same info is returned
-            if (!lines.some((existing) => existing.includes(line)))
-              lines.push(line);
+            // The same info is often returned for multiple zoom levels.
+            const trimmed = line.trim();
+            if (trimmed.length > 0 && !seen.has(trimmed)) {
+              seen.add(trimmed);
+              lines.push(trimmed);
+            }
           });
         }
       }

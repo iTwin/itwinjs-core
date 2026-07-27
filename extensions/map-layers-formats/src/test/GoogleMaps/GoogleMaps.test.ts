@@ -186,9 +186,10 @@ describe("GoogleMapsProvider", () => {
     });
 
     // Two viewport-info responses sharing a common provider; the shared line must appear only once,
-    // even when it is a substring of an already-recorded line (e.g. differing only by leading whitespace).
+    // even though the second occurrence differs by leading whitespace. Distinct lines that happen to
+    // share a prefix ("Maxar" vs "Maxar Technologies") must both be kept.
     sandbox.stub(GoogleMapsImageryProvider.prototype as any, "fetchAttributions").callsFake(async function _() {
-      return ["Google, Airbus Imagery", "Airbus Imagery, Maxar"];
+      return ["Google, Airbus Imagery, Maxar", "Airbus Imagery, Maxar Technologies"];
     });
 
     sinon.stub(IModelApp, 'publicPath').get(() => 'public/');
@@ -199,9 +200,7 @@ describe("GoogleMapsProvider", () => {
     const table = document.createElement('table');
     await provider.addAttributions(table, {} as ScreenViewport);
 
-    // "Airbus Imagery" (from the second response) is a substring of the already-recorded " Airbus Imagery"
-    // and must be skipped; the remaining lines keep their original order and <br> separators.
-    expect(table.innerHTML).to.includes(`<p class="logo-cards">Google<br> Airbus Imagery<br> Maxar</p>`);
+    expect(table.innerHTML).to.includes(`<p class="logo-cards">Google<br>Airbus Imagery<br>Maxar<br>Maxar Technologies</p>`);
   });
 
   it("should render adversarial attribution text as plain text", async () => {
