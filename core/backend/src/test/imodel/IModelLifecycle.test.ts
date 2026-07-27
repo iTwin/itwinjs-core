@@ -383,10 +383,10 @@ describe("iModel lifecycle", () => {
     const snapshotFile2 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
     const snapshotFile3 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
     const imodel = await generateTestSnapshot("test_for_snapshot.bim", "test.bim");
-    const ecefLocation = new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const ecefLocation = new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } });
     const geographicCoordinateSystem = {
       horizontalCRS: { id: "10TM115-27" },
-    }
+    };
     let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true, ecefLocation, geographicCoordinateSystem });
     let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
     let snapshotDb3 = SnapshotDb.createFrom(imodel, snapshotFile3, { createClassViews: true });
