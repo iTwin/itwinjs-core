@@ -127,13 +127,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          COMPLETED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           for CHECK_NAME in "rush check" "rush change" "rush audit" "rush lint + extract-api"; do
             gh api "repos/${{ github.repository }}/check-runs" \
               --method POST \
               --field name="$CHECK_NAME" \
               --field head_sha="${{ github.event.pull_request.head.sha }}" \
               --field status="completed" \
-              --field conclusion="success"
+              --field conclusion="success" \
+              --field completed_at="$COMPLETED_AT"
           done
 
       # Add more status checks below if necessary
@@ -149,4 +151,5 @@ jobs:
       #       --field name="<name-of-any-status-check-to-simulate>" \
       #       --field head_sha="${{ github.event.pull_request.head.sha }}" \
       #       --field status="completed" \
-      #       --field conclusion="success"
+      #       --field conclusion="success" \
+      #       --field completed_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
