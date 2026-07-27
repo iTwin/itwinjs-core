@@ -46,7 +46,7 @@ export namespace InteractiveRebaseError {
 export interface RebaseConflict {
   kind: string;
   id: Id64String;
-  classId: Id64String;
+  className: string;
 }
 
 /**
@@ -208,6 +208,28 @@ export interface InsertRebaseConflict extends RebaseConflict {
    * This may be empty if identical instances were inserted by both the incoming and local changes.
    */
   conflictingProperties: string[];
+
+  /**
+   * Accepts the local (our) changes for some or all of the conflicting properties, and applies
+   * them to the instance in the iModel.
+   *
+   * @param rebase The in-progress interactive rebase operation.
+   * @param properties The conflicting properties for which to accept "our" value. If not specified, or if
+   * the array is empty, then the "our" value of all conflicting properties will be accepted. Properties
+   * that are not accepted are left unmodified.
+   */
+  acceptOurs(rebase: InteractiveRebase, properties?: string[]): void;
+
+  /**
+   * Accepts the upstream (their) changes for some or all of the conflicting properties, and applies
+   * them to the instance in the iModel.
+   *
+   * @param rebase The in-progress interactive rebase operation.
+   * @param properties The conflicting properties for which to accept "their" value. If not specified, or if
+   * the array is empty, then the "their" value of all conflicting properties will be accepted. Properties
+   * that are not accepted are left unmodified.
+   */
+  acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void;
 }
 
 export interface UniqueConstraintViolation {
@@ -486,7 +508,7 @@ export class InteractiveRebase {
         return UniqueConstraintRebaseConflictImpl.handle(this._conflicts, conflict);
       } else if (conflict.cause === "Conflict") {
         // The primary key already exists, which means local and upstream both inserted this instance.
-        return InsertRebaseConflictImpl.handle(this._conflicts, conflict);
+        return InsertRebaseConflictImpl.handle(this, this._conflicts, conflict);
       }
       assert(false, `Conflicts during an Inserted change should only have Constraint or Conflict as the conflict cause. Unexpected cause: ${conflict.cause}`);
     } else if (conflict.opcode === "Updated") {
@@ -531,7 +553,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   public readonly kind: "Update" = "Update";
 
   public readonly id: Id64String;
-  public readonly classId: Id64String;
+  public readonly className: string;
   public readonly original: RebaseConflictProperties = {};
   public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
@@ -539,11 +561,11 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
 
   public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.original.ECInstanceId;
+    const instanceId = ecConflict.original.id;
 
     let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Update") as UpdateRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new UpdateRebaseConflictImpl(instanceId, ecConflict.original.ECClassId);
+      instanceConflict = new UpdateRebaseConflictImpl(instanceId, ecConflict.original.className);
       conflicts.push(instanceConflict);
     }
 
@@ -557,9 +579,9 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
     return DbConflictResolution.Replace;
   }
 
-  public constructor(id: Id64String, classId: Id64String) {
+  public constructor(id: Id64String, className: string) {
     this.id = id;
-    this.classId = classId;
+    this.className = className;
   }
 
   public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
@@ -597,18 +619,18 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
   public readonly kind: "TheirUpdateOurDelete" = "TheirUpdateOurDelete";
 
   public readonly id: Id64String;
-  public readonly classId: Id64String;
+  public readonly className: string;
   public readonly original: RebaseConflictProperties = {};
   public readonly theirs: RebaseConflictProperties = {};
   public readonly updatedProperties: string[] = [];
 
   public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.original.ECInstanceId;
+    const instanceId = ecConflict.original.id;
 
     let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new TheirUpdateOurDeleteRebaseConflictImpl(instanceId, ecConflict.original.ECClassId);
+      instanceConflict = new TheirUpdateOurDeleteRebaseConflictImpl(instanceId, ecConflict.original.className);
       conflicts.push(instanceConflict);
     }
 
@@ -619,9 +641,9 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
     return DbConflictResolution.Replace;
   }
 
-  public constructor(id: Id64String, classId: Id64String) {
+  public constructor(id: Id64String, className: string) {
     this.id = id;
-    this.classId = classId;
+    this.className = className;
   }
 }
 
@@ -629,18 +651,18 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
   public readonly kind: "TheirDeleteOurUpdate" = "TheirDeleteOurUpdate";
 
   public readonly id: Id64String;
-  public readonly classId: Id64String;
+  public readonly className: string;
   public readonly original: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
   public readonly updatedProperties: string[] = [];
 
   public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.original.ECInstanceId;
+    const instanceId = ecConflict.original.id;
 
     let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirDeleteOurUpdate") as TheirDeleteOurUpdateRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new TheirDeleteOurUpdateRebaseConflictImpl(instanceId, ecConflict.original.ECClassId);
+      instanceConflict = new TheirDeleteOurUpdateRebaseConflictImpl(instanceId, ecConflict.original.className);
       conflicts.push(instanceConflict);
     }
 
@@ -651,9 +673,9 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
     return DbConflictResolution.Skip;
   }
 
-  public constructor(id: Id64String, classId: Id64String) {
+  public constructor(id: Id64String, className: string) {
     this.id = id;
-    this.classId = classId;
+    this.className = className;
   }
 }
 
@@ -661,18 +683,18 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
   public readonly kind: "Insert" = "Insert";
 
   public readonly id: Id64String;
-  public readonly classId: Id64String;
+  public readonly className: string;
   public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
   public readonly conflictingProperties: string[] = [];
 
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+  public static handle(interactive: InteractiveRebase, conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.ours.ECInstanceId;
+    const instanceId = ecConflict.ours.id;
 
     let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Insert") as InsertRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new InsertRebaseConflictImpl(instanceId, ecConflict.ours.ECClassId);
+      instanceConflict = new InsertRebaseConflictImpl(instanceId, ecConflict.ours.className);
       conflicts.push(instanceConflict);
     }
 
@@ -680,12 +702,49 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
     Object.assign(instanceConflict.theirs, ecConflict.theirs);
     Object.assign(instanceConflict.ours, ecConflict.ours);
 
-    return DbConflictResolution.Replace;
+    // We skip here because Replace means "delete the existing row and insert the new one."
+    // That, in turn, will trigger any CASCADE DELETEs on that row, which means we won't be
+    // notified of any potential conflicts in those related tables. So we apply Ours
+    // manually via Update instead.
+    instanceConflict.acceptOurs(interactive);
+    return DbConflictResolution.Skip;
   }
 
   public constructor(id: Id64String, classId: Id64String) {
     this.id = id;
-    this.classId = classId;
+    this.className = classId;
+  }
+
+  public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
+    if (!properties || properties.length === 0)
+      properties = this.conflictingProperties;
+
+    const updateProps: RebaseConflictProperties = { id: this.id };
+    for (const prop of properties) {
+      if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
+        InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
+      }
+      updateProps[prop] = this.ours[prop];
+      // if (prop === "UserLabel")
+      //   updateProps["userLabel"] = this.ours[prop];
+    }
+
+    rebase.editTxn.updateElement(updateProps);
+  }
+
+  public acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void {
+    if (!properties || properties.length === 0)
+      properties = this.conflictingProperties;
+
+    const updateProps: RebaseConflictProperties = { id: this.id };
+    for (const prop of properties) {
+      if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
+        InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
+      }
+      updateProps[prop] = this.theirs[prop];
+    }
+
+    rebase.editTxn.updateElement(updateProps);
   }
 }
 
@@ -693,7 +752,7 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
   public readonly kind: "UniqueConstraint" = "UniqueConstraint";
 
   public readonly id: Id64String;
-  public readonly classId: Id64String;
+  public readonly className: string;
   public readonly original: RebaseConflictProperties | undefined = undefined;
   public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
@@ -702,12 +761,12 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
   public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
 
-    const instanceId = ecConflict.ours.ECInstanceId ?? ecConflict.original.ECInstanceId;
-    const classId = ecConflict.ours.ECClassId ?? ecConflict.original.ECClassId;
+    const instanceId = ecConflict.ours.id ?? ecConflict.original.id;
+    const className = ecConflict.ours.className ?? ecConflict.original.className;
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "UniqueConstraint") as UniqueConstraintRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new UniqueConstraintRebaseConflictImpl(instanceId, classId);
+      instanceConflict = new UniqueConstraintRebaseConflictImpl(instanceId, className);
       conflicts.push(instanceConflict);
     }
 
@@ -729,8 +788,8 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
     return DbConflictResolution.Skip;
   }
 
-  public constructor(id: Id64String, classId: Id64String) {
+  public constructor(id: Id64String, className: string) {
     this.id = id;
-    this.classId = classId;
+    this.className = className;
   }
 }
