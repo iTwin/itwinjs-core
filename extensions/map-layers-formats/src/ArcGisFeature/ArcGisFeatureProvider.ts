@@ -114,6 +114,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     const json = metadata?.content;
 
     if (json === undefined) {
+      // By returning (i.e., not throwing), we ensure the tile tree gets created and the current provider is preserved to report status.
+      if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin)
+        return;
       Logger.logError(loggerCategory, "Could not get service JSON");
       throw new ServerError(IModelStatus.ValidationFailed, "");
     }

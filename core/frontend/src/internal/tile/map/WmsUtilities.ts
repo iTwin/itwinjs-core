@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { IModelApp } from "../../../IModelApp";
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
 import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
+import { MapLayerUntrustedOriginError } from "../../../tile/internal";
 
 /** @packageDocumentation
  * @module Tiles
@@ -31,8 +33,15 @@ export class WmsUtilities {
 
     let response = await fetch(url, { method: "GET", headers });
     if (!credentials && response.status === 401 && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-    // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication)
-      response = await fetch(url, { method: "GET", credentials: "include" });
+      // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
+      const challengedUrl = response.url || url;
+      if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(challengedUrl))
+        throw new MapLayerUntrustedOriginError(challengedUrl);
+
+      IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(challengedUrl);
+
+      // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication).
+      response = await fetch(challengedUrl, { method: "GET", credentials: "include", redirect: "error" });
     }
 
     if (response.status !== 200)

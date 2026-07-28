@@ -10,6 +10,7 @@ import { ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import {
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
+  MapLayerUntrustedOriginError,
   QuadId,
   WmsUtilities, WmtsCapabilities, WmtsCapability, WmtsConstants,
 } from "../../../../tile/internal";
@@ -52,7 +53,9 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       // Don't throw error if unauthorized status:
       // We want the tile tree to be created, so that end-user can get feedback on which layer is missing credentials.
       // When credentials will be provided, a new provider will be created, and initialization should be fine.
-      if (error?.status === 401) {
+      if (error instanceof MapLayerUntrustedOriginError) {
+        this.reportBlockedOrigin(error.url);
+      } else if (error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
       } else {
         throw new ServerError(IModelStatus.ValidationFailed, "");
