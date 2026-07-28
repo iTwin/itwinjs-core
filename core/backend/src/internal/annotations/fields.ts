@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldFormatterContext, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormatterContext, FieldFormattingSpecProvider, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -62,7 +62,14 @@ type FieldValueType = {
 export interface UpdateFieldsContext {
   readonly hostElementId: Id64String | undefined;
 
-  getProperty(field: FieldRun): FieldValue | undefined
+  getProperty(field: FieldRun): FieldValue | undefined;
+
+  /** Optional caller-supplied provider used to format `"quantity"` and `"coordinate"`
+   * [FieldRun]($common)s synchronously. When present, [[updateField]] uses it via
+   * [[formatFieldValueWithSpecProvider]]; when absent it falls back to the raw
+   * `toString()` path.
+   */
+  readonly formattingSpecProvider?: FieldFormattingSpecProvider;
 }
 
 // Resolve the raw primitive value of the property that a field points to.
@@ -331,15 +338,21 @@ function determineFieldPropertyType(prop: Property): FieldPropertyType | undefin
   return undefined;
 }
 
-export function createUpdateContext(hostElementId: string | undefined, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
+export function createUpdateContext(
+  hostElementId: string | undefined,
+  iModel: IModelDb,
+  deleted: boolean,
+  formattingSpecProvider?: FieldFormattingSpecProvider,
+): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
+    formattingSpecProvider,
   };
 }
 
 /** Build a [[FieldFormatterContext]] backed by an iModel's schema context, optionally overriding
- * either provider so that application-supplied FormatSet lookups (e.g. from Drawing Production's
+ * either provider so that application-supplied FormatSet lookups (e.g. from an app's
  * [FormattingSpecProvider]($core-quantity)) can be plugged in.
  * @internal
  */
@@ -366,7 +379,9 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   try {
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
-      newContent = formatFieldValue(propValue, field.formatOptions);
+      newContent = context.formattingSpecProvider
+        ? formatFieldValueWithSpecProvider(propValue, field.formatOptions, context.formattingSpecProvider)
+        : formatFieldValue(propValue, field.formatOptions);
     }
   } catch (err) {
     Logger.logError(BackendLoggerCategory.IModelDb, err);
@@ -432,12 +447,32 @@ export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFie
   return numUpdated;
 }
 
+// Per-iModel registry of application-supplied sync formatting spec providers. Populated by
+// `ElementDrivesTextAnnotation.setFieldFormattingProvider` and consulted by the synchronous
+// `updateField*` paths so the txn callback path can format quantity/coordinate fields via a
+// pre-warmed provider (e.g. an app's FormatSet-backed `FormattingSpecProvider`).
+const fieldFormattingProviders = new WeakMap<IModelDb, FieldFormattingSpecProvider>();
+
+/** @internal */
+export function setFieldFormattingProviderForIModel(iModel: IModelDb, provider: FieldFormattingSpecProvider | undefined): void {
+  if (provider) {
+    fieldFormattingProviders.set(iModel, provider);
+  } else {
+    fieldFormattingProviders.delete(iModel);
+  }
+}
+
+/** @internal */
+export function getFieldFormattingProviderForIModel(iModel: IModelDb): FieldFormattingSpecProvider | undefined {
+  return fieldFormattingProviders.get(iModel);
+}
+
 function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): void {
   const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(sourceId, iModel, deleted);
+      const context = createUpdateContext(sourceId, iModel, deleted, getFieldFormattingProviderForIModel(iModel));
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {

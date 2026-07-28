@@ -8,12 +8,12 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
-import { FormatsProvider, FormattingSpecArgs, UnitsProvider } from "@itwin/core-quantity";
+import { FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
-import { collectFieldFormattingRequirements, createFieldFormatterContext, createUpdateContext, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
+import { collectFieldFormattingRequirements, createFieldFormatterContext, createUpdateContext, getFieldFormattingProviderForIModel, setFieldFormattingProviderForIModel, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
@@ -215,11 +215,16 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).
+   *
+   * If a synchronous [FormattingSpecProvider]($core-quantity) has been registered for `args.iModel`
+   * via [[setFieldFormattingProvider]], `"quantity"` and `"coordinate"` fields are formatted
+   * through that provider using pre-built [FormatterSpec]($core-quantity)s. Otherwise those field
+   * types are rendered as their raw string representation (as in prior versions).
    * @returns the number of fields whose display strings were modified.
    * @throws Error if evaluation of any field fails.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
-    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false))
+    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, getFieldFormattingProviderForIModel(args.iModel)))
   }
 
   /** Async counterpart to [[evaluateFields]] that formats "quantity" and "coordinate" [FieldRun]($common)s
@@ -253,6 +258,34 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    */
   public static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[] {
     return collectFieldFormattingRequirements(args.block, args.iModel);
+  }
+
+  /** Registers a synchronous [FormattingSpecProvider]($core-quantity) for `iModel`. When
+   * registered, [[evaluateFields]] and the `TxnManager`-driven field-update callback path
+   * (triggered when a source element referenced by a [FieldRun]($common) is modified) will
+   * format `"quantity"` and `"coordinate"` fields through the provider using pre-built
+   * [FormatterSpec]($core-quantity)s.
+   *
+   * The provider is expected to have been pre-warmed with the requirements returned by
+   * [[collectFieldFormattingRequirements]] for every annotation that may be formatted through
+   * this iModel; if a required spec has not been prepared, formatting falls back to the raw
+   * string representation used prior to this feature.
+   *
+   * Pass `undefined` to unregister a previously-registered provider. The registration is held
+   * in a [WeakMap]() keyed by `iModel`, so it does not have to be cleared explicitly when the
+   * iModel is closed.
+   * @beta
+   */
+  public static setFieldFormattingProvider(iModel: IModelDb, provider: FormattingSpecProvider | undefined): void {
+    setFieldFormattingProviderForIModel(iModel, provider);
+  }
+
+  /** Returns the [FormattingSpecProvider]($core-quantity) previously registered for `iModel`
+   * via [[setFieldFormattingProvider]], if any.
+   * @beta
+   */
+  public static getFieldFormattingProvider(iModel: IModelDb): FormattingSpecProvider | undefined {
+    return getFieldFormattingProviderForIModel(iModel) as FormattingSpecProvider | undefined;
   }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element
