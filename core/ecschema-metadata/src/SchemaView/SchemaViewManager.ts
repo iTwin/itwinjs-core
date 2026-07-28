@@ -150,9 +150,9 @@ export class SchemaViewManager {
     }
     if (existing === undefined)
       return undefined;
-    // An empty token outside incremental mode means the view never fetched anything - nothing to go
-    // stale. In incremental mode a manifest was fetched and can go stale, so fall through.
-    if (existing.schemaToken === "" && this._manifest === undefined)
+    // A view without a token (e.g. built directly from a SchemaViewBuilder) cannot be verified by
+    // token; views loaded through this manager always carry one.
+    if (existing.schemaToken === "")
       return existing;
 
     try {
@@ -233,7 +233,7 @@ export class SchemaViewManager {
 
     const requested = schemas ?? manifest.getAvailableSchemaNames();
     const namesToLoad = manifest.getSchemaClosure(requested).filter((name) => !this._loadedSchemaNames.has(name.toLowerCase()));
-    const husk = currentView ?? SchemaView.createMergeable();
+    const husk = currentView ?? SchemaView.createMergeable(this._manifestToken);
     if (namesToLoad.length > 0) {
       const blob = await this._dataProvider.fetchFragmentBlob(namesToLoad);
       if (blob.schemaToken !== this._manifestToken) {
@@ -246,7 +246,6 @@ export class SchemaViewManager {
         return this._ensureSchemasLoaded(undefined, schemas, true);
       }
       husk.mergeFragment(blob.data);
-      husk.setSchemaToken(blob.schemaToken);
       // Record the whole closure as loaded, including *excluded* schemas (e.g. CoreCustomAttributes)
       // the writer emits no rows for, so later requests prune them instead of re-fetching.
       for (const name of namesToLoad)

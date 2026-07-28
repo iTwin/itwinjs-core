@@ -75,7 +75,7 @@ export class SchemaView {
   /** @internal */
   public readonly [_storage]: SchemaViewStorage;
 
-  private _schemaToken: string;
+  private readonly _schemaToken: string;
   private _outdated = false;
 
   /** When present, this view is a *husk*: it retains the live builder and cross-reference maps, so
@@ -111,12 +111,6 @@ export class SchemaView {
    * @internal
    */
   public markOutdated(): void { this._outdated = true; }
-
-  /** Set the cache-invalidation token. Called by the host after loading schema data into a husk,
-   * since the token is not known until the first blob is fetched.
-   * @internal
-   */
-  public setSchemaToken(token: string): void { this._schemaToken = token; }
 
   /** Number of schemas in the view. */
   public get schemaCount(): number { return this[_storage].schemas.length; }
