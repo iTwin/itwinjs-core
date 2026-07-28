@@ -3749,9 +3749,6 @@ export interface FieldRunProps extends TextBlockComponentProps {
     readonly type: "field";
 }
 
-// @beta
-export type FieldUnitSystem = "metric" | "imperial" | "usCustomary" | "usSurvey";
-
 // @internal
 export interface FieldValue {
     kindOfQuantityFullName?: string;
@@ -7836,7 +7833,6 @@ export interface QuantityFieldFormatOptions {
     format?: FormatProps;
     formatSetKey?: string;
     persistenceUnit?: string;
-    unitSystem?: FieldUnitSystem;
 }
 
 // @public
