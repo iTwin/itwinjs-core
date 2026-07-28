@@ -35,6 +35,7 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
     point: { x: 1, y: 2, z: 3 },
     strings: ["a", "b", `"name": "c"`],
     datetime: new Date("2025-08-28T13:45:30.123Z"),
+    lengthProp: 2.5,
     intEnum: 1,
     outerStruct: {
       innerStruct: { bool: false, doubles: [1, 2, 3] },
@@ -183,6 +184,10 @@ const fieldsSchemaXml = `
 <ECSchema schemaName="Fields" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
   <ECSchemaReference name='ECDbMap' version='02.00.04' alias='ecdbmap' />
+  <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>
+  <ECSchemaReference name="Units"   version="01.00.09" alias="u"/>
+
+  <KindOfQuantity typeName="LENGTH" displayLabel="Length" persistenceUnit="u:M" relativeError="0.0001" presentationUnits="f:DefaultRealU(4)[u:M]"/>
 
   <ECEnumeration typeName="IntEnum" backingTypeName="int">
     <ECEnumerator name="one" displayLabel="One" value="1" />
@@ -205,6 +210,7 @@ const fieldsSchemaXml = `
     <ECProperty propertyName="point" typeName="point3d"/>
     <ECProperty propertyName="maybeNull" typeName="int"/>
     <ECProperty propertyName="datetime" typeName="dateTime"/>
+    <ECProperty propertyName="lengthProp" typeName="double" kindOfQuantity="LENGTH"/>
     <ECArrayProperty propertyName="strings" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
     <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
     <ECStructArrayProperty propertyName="outerStructs" typeName="OuterStruct" minOccurs="0" maxOccurs="unbounded"/>
@@ -249,6 +255,7 @@ interface TestElementProps extends PhysicalElementProps {
   maybeNull?: number;
   strings: string[];
   datetime: Date;
+  lengthProp: number;
   outerStruct: OuterStruct;
   outerStructs: OuterStruct[];
   intEnum?: number;
@@ -261,6 +268,7 @@ class TestElement extends PhysicalElement {
   declare public maybeNull?: number;
   declare public strings: string[];
   declare public datetime: Date;
+  declare public lengthProp: number;
   declare public outerStruct: OuterStruct;
   declare public outerStructs: OuterStruct[];
 }
@@ -861,6 +869,105 @@ describe.only("Field evaluation", () => {
 
       expect(updatedCount).to.equal(1);
       expect(content).to.equal(FieldRun.invalidContentIndicator);
+    });
+  });
+
+  describe("collectFieldFormattingRequirements", () => {
+    function makeField(propertyPath: FieldPropertyPath, formatOptions?: FieldRun["formatOptions"]): FieldRun {
+      return FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath,
+        formatOptions,
+      });
+    }
+
+    function makeBlock(...fields: FieldRun[]): TextBlock {
+      const block = TextBlock.create();
+      for (const f of fields) {
+        block.appendRun(f);
+      }
+      return block;
+    }
+
+    it("returns the property's KoQ + persistence unit for a quantity field", () => {
+      const block = makeBlock(makeField({ propertyName: "lengthProp" }));
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.have.length(1);
+      expect(reqs[0].name).to.equal("Fields.LENGTH");
+      expect(reqs[0].persistenceUnitName).to.equal("Units.M");
+    });
+
+    it("uses formatSetKey and persistenceUnit overrides when supplied", () => {
+      const block = makeBlock(makeField(
+        { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] },
+        { quantity: { formatSetKey: "AecUnits.LENGTH", persistenceUnit: "Units.M" } },
+      ));
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.have.length(1);
+      expect(reqs[0].name).to.equal("AecUnits.LENGTH");
+      expect(reqs[0].persistenceUnitName).to.equal("Units.M");
+    });
+
+    it("prefers formatSetKey over property KoQ but keeps the property's persistence unit", () => {
+      const block = makeBlock(makeField(
+        { propertyName: "lengthProp" },
+        { quantity: { formatSetKey: "AecUnits.LENGTH" } },
+      ));
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.have.length(1);
+      expect(reqs[0].name).to.equal("AecUnits.LENGTH");
+      expect(reqs[0].persistenceUnitName).to.equal("Units.M");
+    });
+
+    it("skips fields with an inline format override", () => {
+      const inlineFormat: FormatProps = {
+        composite: { units: [{ label: "mm", name: "Units.MM" }] },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 2,
+        type: "Decimal",
+      };
+      const block = makeBlock(makeField({ propertyName: "lengthProp" }, { quantity: { format: inlineFormat } }));
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.have.length(0);
+    });
+
+    it("skips non-quantity fields", () => {
+      const block = makeBlock(
+        makeField({ propertyName: "intProp" }),
+        makeField({ propertyName: "strings", accessors: [0] }),
+        makeField({ propertyName: "datetime" }),
+      );
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.have.length(0);
+    });
+
+    it("skips quantity/coordinate fields whose property has no KoQ and no override", () => {
+      const block = makeBlock(
+        // point3d property has no KoQ.
+        makeField({ propertyName: "point" }),
+        // struct-array leaf double has no KoQ.
+        makeField({ propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] }),
+      );
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.have.length(0);
+    });
+
+    it("deduplicates identical requirements", () => {
+      const block = makeBlock(
+        makeField({ propertyName: "lengthProp" }),
+        makeField({ propertyName: "lengthProp" }),
+        makeField({ propertyName: "lengthProp" }, { quantity: { formatSetKey: "AecUnits.LENGTH" } }),
+        makeField({ propertyName: "lengthProp" }, { quantity: { formatSetKey: "AecUnits.LENGTH" } }),
+      );
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.have.length(2);
+      expect(reqs.map((r) => r.name).sort()).to.deep.equal(["AecUnits.LENGTH", "Fields.LENGTH"]);
+    });
+
+    it("returns nothing for a block with no fields", () => {
+      const block = makeBlock();
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.have.length(0);
     });
   });
 
