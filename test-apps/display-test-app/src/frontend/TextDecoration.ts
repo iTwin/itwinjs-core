@@ -385,6 +385,7 @@ export class TextDecorationTool extends Tool {
     ["update <annotationId>", "Update the given annotation element with the current state."],
     ["delete <annotationId>", "Delete the given annotation element."],
     ["scale <factor>", "Set the annotation scale factor for the current model."],
+    ["formatmode <default|demo|demo-throw>", "Toggle the DP-style FormattingSpecProvider integration for the current iModel."],
   ];
 
   private static printHelp(): void {
@@ -990,6 +991,15 @@ export class TextDecorationTool extends Tool {
         );
 
         break;
+      }
+      case "formatmode": {
+        if (arg !== "default" && arg !== "demo" && arg !== "demo-throw") {
+          throw new Error("Expected default, demo, or demo-throw");
+        }
+        await dtaIpc.setFieldFormattingMode(vp.iModel.key, arg);
+        // eslint-disable-next-line no-console
+        console.log(`Field formatting mode set to '${arg}' for iModel ${vp.iModel.key}`);
+        return true;
       }
       case "list": { // args are enumerator, terminator, case, index
 
