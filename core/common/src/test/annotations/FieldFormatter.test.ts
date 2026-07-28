@@ -280,29 +280,6 @@ describe("Async field formatting", () => {
       expect(result).toBe("3'-3 3/8\"");
     });
 
-    it("forwards the requested unit system to the FormatsProvider", async () => {
-      let receivedSystem: string | undefined;
-      const provider: FormatsProvider = {
-        getFormat: async (_name, system) => {
-          receivedSystem = system;
-          return metersFormat;
-        },
-        onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
-      };
-      const context: FieldFormatterContext = {
-        unitsProvider: new BasicUnitsProvider(),
-        formatsProvider: provider,
-        specCache: new Map(),
-      };
-
-      await formatFieldValueAsync(
-        { value: 1, type: "quantity", kindOfQuantityFullName: "AecUnits.LENGTH", persistenceUnitFullName: "Units.M" },
-        { quantity: { unitSystem: "imperial" } },
-        context,
-      );
-      expect(receivedSystem).toBe("imperial");
-    });
-
     it("applies prefix, suffix, and case around the formatted magnitude", async () => {
       const value: FieldValue = { value: 1, type: "quantity", persistenceUnitFullName: "Units.M" };
       const result = await formatFieldValueAsync(
@@ -328,7 +305,7 @@ describe("Async field formatting", () => {
       expect(result).toBe("<hello>");
     });
 
-    it("caches FormatterSpec instances by source, persistence unit, and unit system", async () => {
+    it("caches FormatterSpec instances by source and persistence unit", async () => {
       let getFormatCallCount = 0;
       const provider: FormatsProvider = {
         getFormat: async () => { getFormatCallCount++; return metersFormat; },

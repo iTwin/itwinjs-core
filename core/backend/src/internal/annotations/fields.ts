@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldFormatterContext, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldUnitSystem, FieldValue, formatFieldValue, formatFieldValueAsync, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormatterContext, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { createUnitsProvider, FormatterSpec } from "@itwin/core-quantity";
+import { createUnitsProvider, FormatterSpec, UnitSystemKey } from "@itwin/core-quantity";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -343,7 +343,7 @@ export function createUpdateContext(hostElementId: string | undefined, iModel: I
  * standard iTwin.js quantity formatting pipeline.
  * @internal
  */
-export function createFieldFormatterContext(iModel: IModelDb, unitSystem: FieldUnitSystem = "metric"): FieldFormatterContext {
+export function createFieldFormatterContext(iModel: IModelDb, unitSystem: UnitSystemKey = "metric"): FieldFormatterContext {
   const unitsProvider = createUnitsProvider({ primary: new SchemaUnitProvider(iModel.schemaContext) });
   const formatsProvider = new SchemaFormatsProvider(iModel.schemaContext, unitSystem);
   return {
