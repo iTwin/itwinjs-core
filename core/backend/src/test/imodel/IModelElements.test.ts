@@ -556,9 +556,9 @@ describe("iModel elements", () => {
     afterUpdateElemFetched.asAny.arrayOfInt = [99, 3];
     txn.updateElement(afterUpdateElemFetched.toJSON());
 
-    const afterShortenArray = imodel4.elements.getElement(afterUpdateElemFetched.id);
-    assert.equal(afterUpdateElemFetched.asAny.arrayOfInt.length, 2);
-    assert.deepEqual(afterShortenArray.asAny.arrayOfInt, [99, 3]);
+const afterShortenArray = imodel4.elements.getElement(afterUpdateElemFetched.id);
+assert.equal(afterShortenArray.asAny.arrayOfInt.length, 2);
+assert.deepEqual(afterShortenArray.asAny.arrayOfInt, [99, 3]);
 
     // Make array longer
     afterShortenArray.asAny.arrayOfInt = [1, 2, 3];
