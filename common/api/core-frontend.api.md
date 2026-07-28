@@ -11945,6 +11945,8 @@ export class ToolAdmin {
     gridLock: boolean;
     get idleTool(): InteractiveTool;
     set idleTool(idleTool: InteractiveTool);
+    protected isCtrlKeyShortcut(key: string): boolean;
+    protected isFocusValidForShortcuts(): boolean;
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;

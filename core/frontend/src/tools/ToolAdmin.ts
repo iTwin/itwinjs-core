@@ -479,8 +479,16 @@ export class ToolAdmin {
 
   /** Handler for keyboard events. */
   private static _keyEventHandler = (ev: KeyboardEvent) => {
-    if (!ev.repeat) // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
+    // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
+    if (!ev.repeat) {
+      // Suppress default (Ctrl+Z, Ctrl+Y, Ctrl+F2) behavior on keydown when handled as Redo/Undo...
+      if (ev.type === "keydown" && ev.ctrlKey && !ev.altKey && !ev.metaKey && !ev.defaultPrevented) {
+        if (IModelApp.toolAdmin.isCtrlKeyShortcut(ev.key) && IModelApp.toolAdmin.isFocusValidForShortcuts()) {
+          ev.preventDefault();
+        }
+      }
       ToolAdmin.addEvent(ev);
+    }
   };
 
   /** Handler for modifier key transitions captured before focused UI elements can stop propagation. */
@@ -1484,6 +1492,24 @@ export class ToolAdmin {
     return BeModifierKeys.None;
   }
 
+  /** Check if focus is Home or AccuDraw to allow shortcuts.
+   * Called by both pre-check (for synchronous preventDefault) and by processKeyboardEvent.
+   * @note Subclasses that override processKeyboardEvent should call this.
+   * @return true to allow shortcuts
+   */
+  protected isFocusValidForShortcuts(): boolean {
+    return ToolAdmin.isFocusHome() || undefined !== IModelApp.accuDraw.getFocusItem();
+  }
+
+  /** Check if a key is part of a Ctrl key shortcut handled by iTwin.js (Ctrl+Z, Ctrl+Y, Ctrl+F2).
+   * @note Subclasses can override to add custom Ctrl shortcuts and handled them with onCtrlKeyPressed.
+   * @return true if key is a Ctrl key shortcut
+   */
+  protected isCtrlKeyShortcut(key: string): boolean {
+    const lower = key.toLowerCase();
+    return lower === "z" || lower === "y" || key === "F2";
+  }
+
   /** Process key down events while the Ctrl key is pressed */
   public async onCtrlKeyPressed(keyEvent: KeyboardEvent): Promise<{ handled: boolean, result: boolean }> {
     let handled = false;
@@ -1521,8 +1547,8 @@ export class ToolAdmin {
    * @return true if handled and no further processing of event should occur.
    */
   protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
-    if (ToolAdmin.isFocusHome() || undefined !== IModelApp.accuDraw.getFocusItem())
-      return false; // Focus is Home or AccuDraw, allow shortcuts...
+    if (this.isFocusValidForShortcuts())
+      return false; // Allow shortcuts...
 
     if (keyEvent.defaultPrevented || keyEvent.isComposing)
       return true; // Respect UI handling / IME composition; don't process shortcuts
@@ -1563,7 +1589,7 @@ export class ToolAdmin {
     if (this.processKeyboardEvent(keyEvent, wentDown))
       return EventHandled.Yes;
 
-    if (wentDown && keyEvent.ctrlKey) {
+    if (wentDown && keyEvent.ctrlKey && this.isCtrlKeyShortcut(keyEvent.key)) {
       const { handled, result } = await this.onCtrlKeyPressed(keyEvent);
       if (handled)
         return result;
