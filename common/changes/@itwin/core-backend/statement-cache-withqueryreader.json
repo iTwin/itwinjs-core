@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Restore ECSQL statement caching in the synchronous withQueryReader path: ECSqlRowExecutor now reuses a prepared statement from the owning db's statement cache instead of re-compiling the ECSQL on every call, fixing a per-element performance regression.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
