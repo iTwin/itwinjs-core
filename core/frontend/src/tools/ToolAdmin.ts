@@ -1502,7 +1502,7 @@ export class ToolAdmin {
   }
 
   /** Check if a key is part of a Ctrl key shortcut handled by iTwin.js (Ctrl+Z, Ctrl+Y, Ctrl+F2).
-   * @note Subclasses can override to add custom Ctrl shortcuts and handled them with onCtrlKeyPressed.
+   * @note Subclasses can override to add custom Ctrl shortcuts and handle them with onCtrlKeyPressed.
    * @return true if key is a Ctrl key shortcut
    */
   protected isCtrlKeyShortcut(key: string): boolean {
