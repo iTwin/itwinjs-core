@@ -59,6 +59,7 @@ export class PointStringGeometry extends LUTGeometry implements RenderGeometry {
   public override getPass(): Pass { return "opaque-linear"; }
   public override get hasFeatures() { return this._hasFeatures; }
   public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
+  public override get numDrawVertices(): number { return this.numIndices; }
   protected override _getLineWeight(_params: ShaderProgramParams): number { return this.weight; }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {

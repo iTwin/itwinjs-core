@@ -66,6 +66,20 @@ export interface BatchedTilesetSpec {
   baseUrl: URL;
   props: BatchedTilesetProps;
   models: Map<Id64String, ModelMetadata>;
+  deepestTileDepth: number;
+}
+
+function computeDeepestTileDepth(tile: schema.Tile, currentDepth: number): number {
+  if (!tile.children || tile.children.length === 0)
+    return currentDepth;
+
+  let deepest = currentDepth;
+  for (const child of tile.children) {
+    const childDepth = computeDeepestTileDepth(child, currentDepth + 1);
+    if (childDepth > deepest)
+      deepest = childDepth;
+  }
+  return deepest;
 }
 
 /** @internal */
@@ -81,7 +95,8 @@ export namespace BatchedTilesetSpec {
       }
     }
 
-    return { baseUrl, props: json, models };
+    const deepestTileDepth = computeDeepestTileDepth(json.root, 0);
+    return { baseUrl, props: json, models, deepestTileDepth };
   }
 }
 
@@ -133,6 +148,7 @@ export class BatchedTilesetReader {
   }
 
   public get baseUrl(): URL { return this._spec.baseUrl; }
+  public get deepestTileDepth(): number { return this._spec.deepestTileDepth; }
 
   public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
     const content = json.content;

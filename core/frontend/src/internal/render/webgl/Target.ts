@@ -570,11 +570,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (_realityMapLayerChanged) {
       this.changePlanarClassifiers(undefined);
     } else if (this._planarClassifiers) {
-        const filteredClassifiers = new Map(
-            [...this._planarClassifiers.entries()]
-                .filter(([key]) => key.toLowerCase().includes("maplayer"))
-        );
-        this.changePlanarClassifiers(filteredClassifiers.size > 0 ? filteredClassifiers : undefined);
+      const filteredClassifiers = new Map(
+        [...this._planarClassifiers.entries()]
+          .filter(([key]) => key.toLowerCase().includes("maplayer"))
+      );
+      this.changePlanarClassifiers(filteredClassifiers.size > 0 ? filteredClassifiers : undefined);
     }
 
     this.changeTextureDrapes(undefined);
@@ -1201,6 +1201,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public getRenderCommands(): Array<{ name: string, count: number }> {
     return this._renderCommands.dump();
+  }
+
+  public getPrimitiveStatistics(): { triangles: number, lines: number, points: number } {
+    return this._renderCommands.getPrimitiveStatistics();
   }
 }
 

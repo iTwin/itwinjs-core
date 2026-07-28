@@ -3050,7 +3050,7 @@ export class PanViewTool extends ViewManip {
 export class RotateViewTool extends ViewManip {
   public static override toolId = "View.Rotate";
   public static override iconSpec = "icon-gyroscope";
-  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
+  constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = true) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
   protected override get isExitAllowedOnReinitialize(): boolean { return true; }

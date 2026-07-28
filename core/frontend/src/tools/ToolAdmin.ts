@@ -308,8 +308,9 @@ export class CurrentInputState {
     if (!state.isDown)
       return false;
 
-    if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds)
-      return false;
+    // For middle button, skip both the time delay and distance threshold so panning starts immediately.
+    if (button === BeButton.Middle)
+      return true;
 
     const vp = this.viewport;
     if (undefined === vp)
@@ -363,6 +364,7 @@ export class ToolAdmin {
   private _defaultToolArgs?: any[];
   private _lastHandledMotionTime?: BeTimePoint;
   private _mouseMoveOverTimeout?: NodeJS.Timeout;
+  private _depthReductionMotionTimeout?: NodeJS.Timeout;
   private _editCommandHandler?: EditCommandHandler;
 
   /** The name of the [[PrimitiveTool]] to use as the default tool.
@@ -567,6 +569,13 @@ export class ToolAdmin {
     const vp = event.vp!;
     const pos = this.getMousePosition(event);
     const button = this.getMouseButton(ev.button);
+
+    // If a deferred depth-reduction motion is pending, cancel it. The button-down
+    // processing will update the cursor position via fromButton.
+    if (isDown && this._depthReductionMotionTimeout !== undefined) {
+      clearTimeout(this._depthReductionMotionTimeout);
+      this._depthReductionMotionTimeout = undefined;
+    }
 
     this.currentInputState.setKeyQualifiers(ev);
     return isDown ? this.onButtonDown(vp, pos, button, InputSource.Mouse) : this.onButtonUp(vp, pos, button, InputSource.Mouse);
@@ -1167,6 +1176,10 @@ export class ToolAdmin {
       this.updateDynamics(ev);
     };
 
+    // For middle button drag, skip snap processing to start panning immediately without delay.
+    if (current.isStartDrag(BeButton.Middle))
+      return processMotion();
+
     const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
 
     /** When forceStartDrag is true, make sure we don't return a fulfilled promise until we've processed the motion so callers can await it.
@@ -1211,6 +1224,29 @@ export class ToolAdmin {
     const buttonMask = (event.ev as MouseEvent).buttons;
     if (!(buttonMask & 1))
       this.currentInputState.button[BeButton.Data].isDown = false;
+
+    // When depth reduction is active and the rotate tool is in use, skip hover processing
+    // (snap, highlight, cursor placement) to avoid unnecessary redraws.
+    // Once the mouse stops moving for a cooldown period, process one deferred motion event.
+    if (IModelApp.tileAdmin.movingDepthReduction > 0 && buttonMask === 0) {
+      // Clear any open tooltip immediately even though we skip full motion processing.
+      IModelApp.accuSnap.clearToolTip(undefined);
+
+      if (this._depthReductionMotionTimeout !== undefined)
+        clearTimeout(this._depthReductionMotionTimeout);
+
+      this._depthReductionMotionTimeout = setTimeout(() => {
+        this._depthReductionMotionTimeout = undefined;
+        // Pass undefined for movement to avoid driving view tool rotation from stale deltas.
+        this.onMotion(vp, pos, InputSource.Mouse, false, undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
+      }, 250);
+      return;
+    }
+
+    if (this._depthReductionMotionTimeout !== undefined) {
+      clearTimeout(this._depthReductionMotionTimeout);
+      this._depthReductionMotionTimeout = undefined;
+    }
 
     return this.onMotion(vp, pos, InputSource.Mouse, false, mov);
   }
@@ -1413,6 +1449,11 @@ export class ToolAdmin {
     current.onButtonDown(button);
     current.toEvent(ev, true);
     current.updateDownPoint(ev);
+
+    // When depth reduction is active, motion snap is throttled and may not have run recently.
+    // Force a snap now so that element locate/selection has up-to-date hit information.
+    if (IModelApp.tileAdmin.movingDepthReduction > 0 && undefined !== ev.viewport && ev.viewport.viewRect.containsPoint(ev.viewPoint))
+      await this.forceOnMotionSnap(ev);
 
     return this.sendButtonEvent(ev);
   }

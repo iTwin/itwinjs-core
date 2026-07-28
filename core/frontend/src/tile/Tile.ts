@@ -221,6 +221,8 @@ export abstract class Tile {
     this.disposeChildren();
     this._isLeaf = true;
     this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
+    if (this.depth > this.tree.deepestTileDepth)
+      this.tree.deepestTileDepth = this.depth;
   }
 
   /** True if this tile has no child tiles. */
@@ -446,6 +448,15 @@ export abstract class Tile {
       if (this.hasContentRange && this.isContentCulled(args))
         return TileVisibility.OutsideFrustum;
       else
+        return TileVisibility.Visible;
+    }
+
+    // When the viewport is in motion and depth reduction is enabled, treat tiles near the deepest
+    // known leaf depth as visible to prevent further recursion, improving performance during navigation.
+    const reduction = IModelApp.tileAdmin.movingDepthReduction;
+    if (reduction > 0 && args.context.viewport.isViewChanging) {
+      const deepest = this.tree.deepestTileDepth;
+      if (deepest > 0 && this.depth >= deepest - reduction)
         return TileVisibility.Visible;
     }
 

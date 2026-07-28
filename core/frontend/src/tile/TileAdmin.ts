@@ -114,6 +114,7 @@ export class TileAdmin {
   private readonly _tileUserSetsForRequests = new UniqueTileUserSets();
   private readonly _maxActiveTileTreePropsRequests: number;
   private _defaultTileSizeModifier: number;
+  private _movingDepthReduction = 0;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   /** @internal */
@@ -359,6 +360,29 @@ export class TileAdmin {
    */
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
     return getMaximumMajorTileFormatVersion(this.maximumMajorTileFormatVersion, formatVersion);
+  }
+
+  /** When the camera is moving, reduce the effective tile tree depth by this many levels from the deepest known leaf.
+   * A value of 0 (default) disables the feature. A value of 1 means don't recurse past (deepest leaf - 1), etc.
+   */
+  public get movingDepthReduction(): number { return this._movingDepthReduction; }
+  public set movingDepthReduction(value: number) {
+    this._movingDepthReduction = Math.max(0, Math.floor(value));
+  }
+
+  /** The deepest depth of any leaf tile discovered so far across all tile trees.*/
+  public get deepestTileDepth(): number {
+    let max = 0;
+    for (const user of this._users) {
+      const tiles = this._selectedAndReady.get(user);
+      if (tiles) {
+        for (const tile of tiles.selected) {
+          if (tile.tree.deepestTileDepth > max)
+            max = tile.tree.deepestTileDepth;
+        }
+      }
+    }
+    return max;
   }
 
   /** A default multiplier applied to the size in pixels of a [[Tile]] during tile selection for any [[Viewport]].
