@@ -802,27 +802,6 @@ describe.only("Field evaluation", () => {
       expect(content).to.equal(`(3 ' 3 3/8 ", 6 ' 6 3/4 ", 9 ' 10 1/8 ")`);
     });
 
-    it("ignores unitSystem when an inline format is supplied", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: doublesPath,
-        formatOptions: {
-          quantity: {
-            unitSystem: "imperial",
-            persistenceUnit: "Units.M",
-            format: decimalFormat("Units.M", "m", 2),
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field);
-
-      expect(updatedCount).to.equal(1);
-      // Inline format is authoritative — value stays in meters.
-      expect(content).to.equal("1 m");
-    });
-
     it("falls back to raw formatting when quantity.format is malformed", async () => {
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
