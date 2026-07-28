@@ -118,7 +118,7 @@ Each enumeration record:
 | uint32 | enumValuesSid  | Enumerator values as JSON string (SRef) |
 | uint32 | ecInstanceId   | ec_Enumeration.Id                       |
 
-Record size: **26 bytes** fixed.
+Record size: **27 bytes** fixed.
 
 The `enumValuesSid` field references a JSON array string stored in the string table. Each element has the shape: `{"Name":"...","IntValue":...,"StringValue":"...","DisplayLabel":"...","Description":"..."}`. The reader is responsible for parsing this JSON to extract individual enumerators.
 

@@ -7,7 +7,8 @@
  */
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { SchemaView, SchemaViewBuilder } from "./SchemaView";
+import { type SchemaView } from "./SchemaView";
+import { SchemaViewBuilder } from "./SchemaViewBuilder";
 import { StrengthDirection, StrengthType } from "../ECObjects";
 import { ClassData, ClassModifier, ClassType, PropertyDef, PropertyKind, schemaViewFormatVersion, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
 
@@ -333,7 +334,7 @@ function mergeFragmentBlob(ctx: SchemaViewMergeContext, data: Uint8Array): void 
   // ---- EnumTable ----
   expectTag(reader, Tag.EnumTable);
   const enumTotalCount = reader.readU32();
-  // Fixed 27 bytes per record (5x SRef + u16 + u8 + u32); enumerators live inside a JSON SRef.
+  // Fixed 27 bytes per record (4x SRef + 2x u32 + u16 + u8); enumerators live inside a JSON SRef.
   reader.validateCount(enumTotalCount, 13, "EnumTable");
   for (let i = 0; i < enumTotalCount; i++) {
     const schemaEcId = reader.readU32();

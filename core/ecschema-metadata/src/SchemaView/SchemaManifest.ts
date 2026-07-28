@@ -7,7 +7,7 @@
  */
 
 /** One schema in a {@link SchemaManifest}: its name, version, and the entries it directly references.
- * @beta
+ * @internal
  */
 export interface SchemaManifestEntry {
   readonly name: string;
@@ -51,7 +51,7 @@ export interface SchemaManifestReferenceRow {
  * on the order of a hundred schemas, so the closure and topological walks are plain recursion.
  * @note The manifest does not track which schemas are already loaded. `SchemaViewManager` does that
  * and filters the result of {@link SchemaManifest.getSchemaClosure} itself.
- * @beta
+ * @internal
  */
 export class SchemaManifest {
   private readonly _entries: readonly SchemaManifestEntry[];

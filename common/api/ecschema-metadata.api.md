@@ -2499,22 +2499,20 @@ export interface SchemaLocaterOptions {
     readonly loadPartialSchemaOnly?: boolean;
 }
 
-// @beta
+// @internal
 export class SchemaManifest {
     constructor(entries: readonly SchemaManifestEntry[]);
     // (undocumented)
     get entries(): readonly SchemaManifestEntry[];
     findByName(name: string): SchemaManifestEntry | undefined;
-    // @internal
     static fromRows(schemaRows: readonly SchemaManifestSchemaRow[], referenceRows: readonly SchemaManifestReferenceRow[]): SchemaManifest;
     getAvailableSchemaNames(): string[];
     getSchemaClosure(requestedNames: Iterable<string>): string[];
     get schemaCount(): number;
-    // @internal
     sortInDependencyOrder(schemaNames: Iterable<string>): string[];
 }
 
-// @beta
+// @internal
 export interface SchemaManifestEntry {
     // (undocumented)
     readonly minorVersion: number;
@@ -2547,6 +2545,13 @@ export interface SchemaManifestSchemaRow {
     readonly versionMinor: number;
     // (undocumented)
     readonly versionWrite: number;
+}
+
+// @internal
+export interface SchemaManifestSnapshot {
+    // (undocumented)
+    readonly manifest: SchemaManifest;
+    readonly schemaToken: string;
 }
 
 // @public @preview
@@ -2955,7 +2960,7 @@ export namespace SchemaView {
     }
 }
 
-// @beta
+// @internal
 export interface SchemaViewBlob {
     readonly data: Uint8Array;
     readonly schemaToken: string;
@@ -3043,18 +3048,18 @@ export interface SchemaViewData {
     readonly strings: readonly string[];
 }
 
-// @beta
+// @internal
 export interface SchemaViewDataProvider {
     fetchFragmentBlob(schemaNames: readonly string[]): Promise<SchemaViewBlob>;
     fetchFullBlob(): Promise<SchemaViewBlob>;
-    fetchManifest(): Promise<SchemaManifest>;
+    fetchManifest(): Promise<SchemaManifestSnapshot>;
     fetchSchemaToken(): Promise<string>;
 }
 
 // @beta
 export const schemaViewFormatVersion = 1;
 
-// @beta
+// @internal
 export class SchemaViewManager {
     constructor(dataProvider: SchemaViewDataProvider);
     getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView>;
