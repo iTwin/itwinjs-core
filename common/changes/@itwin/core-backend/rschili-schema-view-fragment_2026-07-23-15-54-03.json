@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add filtering support to SchemaView and improve performance.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

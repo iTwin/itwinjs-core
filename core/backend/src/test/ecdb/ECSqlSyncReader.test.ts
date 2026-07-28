@@ -4,10 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import * as sinon from "sinon";
+import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64 } from "@itwin/core-bentley";
+import { ECSqlStatement } from "../../ECSqlStatement";
+import { ECDbTestHelper } from "./ECDbTestHelper";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("WithQueryReaderTests", () => {
   let iModel: SnapshotDb;
@@ -129,5 +133,88 @@ describe("WithQueryReaderTests", () => {
       // With convertClassIdsToClassNames, ECClassId is resolved to "SchemaName.ClassName" instead of an Id
       assert.equal(classId, "BisCore.DrawingCategory");
     }, undefined, config);
+  });
+
+  describe("statement caching (regression)", () => {
+    // `withQueryReader` used to build a fresh `ECSqlStatement` and re-compile the ECSQL on every
+    // call (via `ECSqlRowExecutor`), with no caching. Callers such as `IModelTransformer` invoke
+    // per-element helpers (e.g. `hasSubModel`) once per element, so on large models this turned one
+    // cached ECSQL prepare into N full native compiles - a significant performance regression. The
+    // reader now reuses a prepared statement from the owning db's `_statementCache`.
+    const sql = "SELECT ECInstanceId FROM bis.Element WHERE ECInstanceId=?";
+
+    afterEach(() => sinon.restore());
+
+    it("reuses a single prepared statement across repeated calls instead of re-preparing", () => {
+      iModel.clearCaches();
+      const prepareSpy = sinon.spy(ECSqlStatement.prototype, "prepare"); // eslint-disable-line @typescript-eslint/no-deprecated
+      for (let i = 0; i < 20; i++) {
+        iModel.withQueryReader(sql, (reader) => {
+          reader.step();
+        }, new QueryBinder().bindId(1, "0x1"));
+      }
+      expect(prepareSpy.callCount).to.equal(1, "queries with identical ECSQL text should re-use one cached prepared statement");
+    });
+
+    it("keeps nested withQueryReader calls on the same SQL independent", () => {
+      iModel.clearCaches();
+      // A nested reader on the same SQL must get its own statement (findAndRemove hands the outer
+      // reader's statement out of the cache), so results do not corrupt each other.
+      const outerId = iModel.withQueryReader(sql, (outer) => {
+        assert.isTrue(outer.step());
+        const innerId = iModel.withQueryReader(sql, (inner) => {
+          assert.isTrue(inner.step());
+          return inner.current[0] as string;
+        }, new QueryBinder().bindId(1, "0xe"));
+        expect(innerId).to.equal("0xe");
+        // Outer reader's cursor must be unaffected by the nested reader.
+        return outer.current[0] as string;
+      }, new QueryBinder().bindId(1, "0x1"));
+      expect(outerId).to.equal("0x1");
+    });
+
+    it("recovers from a prepare failure without poisoning the cache", () => {
+      iModel.clearCaches();
+      const invalidSql = "SELECT * FROM bis.ThisClassDoesNotExist";
+      const prepareSpy = sinon.spy(ECSqlStatement.prototype, "prepare"); // eslint-disable-line @typescript-eslint/no-deprecated
+      expect(() => iModel.withQueryReader(invalidSql, (reader) => reader.step())).to.throw();
+      expect(() => iModel.withQueryReader(invalidSql, (reader) => reader.step())).to.throw();
+      expect(prepareSpy.callCount).to.equal(2, "a statement that failed to prepare must not be cached");
+
+      iModel.withQueryReader(sql, (reader) => {
+        assert.isTrue(reader.step());
+        expect(reader.current[0]).to.equal("0x1");
+      }, new QueryBinder().bindId(1, "0x1"));
+    });
+
+    it("releases the executor and cached statement when binding fails during reader construction", () => {
+      iModel.clearCaches();
+      const prepareSpy = sinon.spy(ECSqlStatement.prototype, "prepare"); // eslint-disable-line @typescript-eslint/no-deprecated
+      iModel.withQueryReader(sql, (reader) => reader.step(), new QueryBinder().bindId(1, "0x1"));
+      const listenerCount = iModel.onBeforeClose.numberOfListeners;
+
+      const bindStub = sinon.stub(ECSqlStatement.prototype, "bindParams").throws(new Error("Expected bind failure")); // eslint-disable-line @typescript-eslint/no-deprecated
+      expect(() => iModel.withQueryReader(sql, () => undefined, new QueryBinder().bindId(1, "0x1"))).to.throw("Expected bind failure");
+      bindStub.restore();
+      expect(iModel.onBeforeClose.numberOfListeners).to.equal(listenerCount);
+
+      iModel.withQueryReader(sql, (reader) => reader.step(), new QueryBinder().bindId(1, "0x1"));
+      expect(prepareSpy.callCount).to.equal(1, "the statement checked out before the bind failure should be returned to the cache");
+    });
+
+    it("also caches for ECDb.withQueryReader (shared ECSqlRowExecutor path)", () => {
+      using ecdb = ECDbTestHelper.createECDb(KnownTestLocations.outputDir, "syncReaderStmtCache.ecdb",
+        `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECEntityClass typeName="Foo" modifier="Sealed">
+            <ECProperty propertyName="n" typeName="int"/>
+          </ECEntityClass>
+        </ECSchema>`);
+      ecdb.saveChanges();
+      const ecdbSql = "SELECT ECInstanceId FROM meta.ECClassDef WHERE ECInstanceId=?";
+      const prepareSpy = sinon.spy(ECSqlStatement.prototype, "prepare"); // eslint-disable-line @typescript-eslint/no-deprecated
+      for (let i = 0; i < 10; i++)
+        ecdb.withQueryReader(ecdbSql, (reader) => reader.step(), new QueryBinder().bindId(1, "0x1"));
+      expect(prepareSpy.callCount).to.equal(1, "ECDb.withQueryReader should also reuse a cached prepared statement");
+    });
   });
 });
