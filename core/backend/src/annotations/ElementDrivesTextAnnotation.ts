@@ -8,11 +8,12 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FormattingSpecArgs } from "@itwin/core-quantity";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
-import { createFieldFormatterContext, createUpdateContext, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
+import { collectFieldFormattingRequirements, createFieldFormatterContext, createUpdateContext, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
@@ -204,6 +205,22 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     const context = createUpdateContext(undefined, args.iModel, false);
     const formatter = createFieldFormatterContext(args.iModel);
     return updateFieldsAsync(args.block, context, formatter);
+  }
+
+  /** Walks the [FieldRun]($common)s in a [TextBlock]($common) and returns a deduplicated
+   * collection of the [FormattingSpecArgs]($core-quantity) their "quantity" and "coordinate"
+   * values require in order to be formatted through the standard iTwin.js quantity pipeline.
+   *
+   * Intended to be consumed by an application-supplied [FormattingSpecProvider]($core-quantity)
+   * so it can pre-build the [FormatterSpec]($core-quantity)s referenced by the annotation
+   * before the annotation is inserted, updated, or re-evaluated. Fields that carry an inline
+   * [QuantityFieldFormatOptions.format]($common) override, or whose target property has no
+   * [KindOfQuantity]($ecschema-metadata) (and no `formatSetKey` / `persistenceUnit` override),
+   * are omitted because they do not require a provider lookup.
+   * @beta
+   */
+  public static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[] {
+    return collectFieldFormattingRequirements(args.block, args.iModel);
   }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element

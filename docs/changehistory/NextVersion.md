@@ -40,8 +40,9 @@ const fieldRun = FieldRun.create({
   propertyPath: { propertyName: "length" },
   formatOptions: {
     quantity: {
-      // Prefer imperial presentation units when resolving from the property's KindOfQuantity.
-      unitSystem: "imperial",
+      // Look up a specific KindOfQuantity via the active FormatsProvider, overriding
+      // the property's own KoQ.
+      formatSetKey: "AecUnits.LENGTH",
     },
   },
 });
@@ -51,7 +52,7 @@ A format is resolved in this priority order:
 
 1. `formatOptions.quantity.format` — an inline [FormatProps]($core-quantity) override.
 2. `formatOptions.quantity.formatSetKey` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
-3. The property's own [KindOfQuantity]($ecschema-metadata), filtered by `unitSystem` (defaults to `"metric"`).
+3. The property's own [KindOfQuantity]($ecschema-metadata).
 4. For `"coordinate"` only, a built-in meters fallback.
 
 Because [FormatterSpec]($core-quantity) creation is asynchronous, quantity formatting is only applied when a field is evaluated through the new async entry point [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend):
@@ -61,6 +62,16 @@ const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iMode
 ```
 
 The existing synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks continue to render `"quantity"` and `"coordinate"` fields as their raw string representation for backward compatibility. Applications that want formatted quantity output for text annotations should migrate their evaluation calls to the async variant.
+
+Applications integrating their own [FormattingSpecProvider]($core-quantity) can discover the [FormatterSpec]($core-quantity)s a [TextBlock]($common) will need before evaluating it, and pre-build them, via the new [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) entry point:
+
+```typescript
+const requirements = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block });
+// requirements: FormattingSpecArgs[] with { name, persistenceUnitName } for every quantity/coordinate FieldRun
+// whose target property carries a KindOfQuantity (or whose formatOptions override supplies one). Fields with an
+// inline `format` override are omitted because they do not require a provider lookup.
+await myFormattingSpecProvider.prepare(requirements);
+```
 
 ## Electron
 
