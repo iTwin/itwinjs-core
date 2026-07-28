@@ -481,7 +481,7 @@ export class ToolAdmin {
   private static _keyEventHandler = (ev: KeyboardEvent) => {
     // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
     if (!ev.repeat) {
-      // Suppress default (Ctrl+Z, Ctrl+Y, Ctrl+F2) behavior on keydown when handled as Redo/Undo...
+      // Suppress default browser behavior (Ctrl+Z, Ctrl+Y, Ctrl+F2) on keydown when the shortcut will be handled by iTwin.js.
       if (ev.type === "keydown" && ev.ctrlKey && !ev.altKey && !ev.metaKey && !ev.defaultPrevented) {
         if (IModelApp.toolAdmin.isCtrlKeyShortcut(ev.key) && IModelApp.toolAdmin.isFocusValidForShortcuts()) {
           ev.preventDefault();
