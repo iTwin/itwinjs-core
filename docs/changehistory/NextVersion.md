@@ -86,6 +86,20 @@ const requirements = ElementDrivesTextAnnotation.collectFieldFormattingRequireme
 await myFormattingSpecProvider.prepare(requirements);
 ```
 
+Because the transactional callback path that keeps field caches in sync when source elements change is synchronous, applications with a pre-populated [FormattingSpecProvider]($core-quantity) can register it against an [IModelDb]($backend) so that both [ElementDrivesTextAnnotation.evaluateFields]($backend) and txn-driven updates route through it:
+
+```typescript
+// Once, after `myFormattingSpecProvider.prepare(...)` has finished (see above):
+ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, myFormattingSpecProvider);
+
+// Later, any commit that dirties a source element for a FieldRun will re-format its cached content
+// through the registered provider automatically -- no application code required.
+// Passing `undefined` unregisters the provider:
+ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, undefined);
+```
+
+If no provider is registered (or the provider does not supply a spec for a given field), fields fall back to their existing raw string formatting.
+
 ## Electron
 
 ### Electron 43 support

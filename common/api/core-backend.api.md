@@ -114,6 +114,7 @@ import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
 import { FormatsProvider } from '@itwin/core-quantity';
 import { FormattingSpecArgs } from '@itwin/core-quantity';
+import { FormattingSpecProvider } from '@itwin/core-quantity';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -2953,12 +2954,14 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[];
     static evaluateFields(args: EvaluateFieldsArgs): number;
     static evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number>;
+    static getFieldFormattingProvider(iModel: IModelDb): FormattingSpecProvider | undefined;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
+    static setFieldFormattingProvider(iModel: IModelDb, provider: FormattingSpecProvider | undefined): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
     static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;

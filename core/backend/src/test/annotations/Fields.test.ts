@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun } from "@itwin/core-common";
-import { FormatProps, FormatsProvider } from "@itwin/core-quantity";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
+import { FormatProps, FormatsProvider, FormatterSpec, FormattingSpecEntry, FormattingSpecProvider } from "@itwin/core-quantity";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
-import { BeEvent, DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
+import { BeEvent, BeUnorderedUiEvent, DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
@@ -1090,6 +1090,167 @@ describe.only("Field evaluation", () => {
       const block = makeBlock();
       const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
       expect(reqs).to.have.length(0);
+    });
+  });
+
+  describe("setFieldFormattingProvider (sync path)", () => {
+    // A minimal FormattingSpecProvider stub that recognizes a single (name, persistenceUnit)
+    // combination and returns a fake FormatterSpec (never inspected by the provider itself).
+    function makeStubProvider(opts?: {
+      onLookup?: (args: { name: string; persistenceUnitName: string }) => void;
+      format?: (magnitude: number) => string;
+    }): FormattingSpecProvider {
+      const fakeSpec = {} as FormatterSpec;
+      return {
+        onFormattingReady: new BeUnorderedUiEvent(),
+        getSpecsByNameAndUnit(args) {
+          opts?.onLookup?.(args);
+          if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
+            return { formatterSpec: fakeSpec } as FormattingSpecEntry;
+          }
+          return undefined;
+        },
+        formatQuantity(magnitude) {
+          return opts?.format ? opts.format(magnitude) : `${magnitude * 1000} mm`;
+        },
+      };
+    }
+
+    afterEach(() => {
+      ElementDrivesTextAnnotation.setFieldFormattingProvider(imodel, undefined);
+      // Clean up any TextAnnotation3d elements produced below so we don't leak state
+      // (and their ElementDrivesTextAnnotation relationships) into later describe
+      // blocks that assert on relationship counts.
+      const ids: Id64String[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      imodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore.TextAnnotation3d", (stmt) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW)
+          ids.push(stmt.getValue(0).getId());
+      });
+      if (ids.length > 0)
+        withEditTxn(imodel, (txn) => { for (const id of ids) txn.deleteElement(id); });
+    });
+
+    it("routes evaluateFields quantity formatting through a registered provider", () => {
+      let lookups = 0;
+      ElementDrivesTextAnnotation.setFieldFormattingProvider(imodel, makeStubProvider({ onLookup: () => { lookups += 1; } }));
+
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
+
+      expect(updated).to.equal(1);
+      // lengthProp = 2.5 m -> stub renders as 2500 mm.
+      expect(field.cachedContent).to.equal("2500 mm");
+      expect(lookups).to.equal(1);
+    });
+
+    it("routes evaluateFields coordinate formatting through the provider when a spec is available", () => {
+      // Register a provider whose (Fields.LENGTH, Units.M) spec formats magnitudes in millimeters.
+      ElementDrivesTextAnnotation.setFieldFormattingProvider(imodel, makeStubProvider({
+        format: (m) => `${Math.round(m * 1000)} mm`,
+      }));
+
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        // point is a Point3d without a KoQ; supply overrides to route it through our stub.
+        propertyPath: { propertyName: "point" },
+        formatOptions: { quantity: { formatSetKey: "Fields.LENGTH", persistenceUnit: "Units.M" } },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("(1000 mm, 2000 mm, 3000 mm)");
+    });
+
+    it("falls back to raw string when the registered provider does not supply a spec", () => {
+      // Provider recognizes no (name, unit) combinations.
+      ElementDrivesTextAnnotation.setFieldFormattingProvider(imodel, {
+        onFormattingReady: new BeUnorderedUiEvent(),
+        getSpecsByNameAndUnit: () => undefined,
+        formatQuantity: (m) => `${m}`,
+      });
+
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("2.5");
+    });
+
+    it("preserves prior behavior when no provider is registered", () => {
+      // (Sanity check: no provider registered -> raw string formatting as before.)
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("2.5");
+    });
+
+    it("unregisters when passed undefined", () => {
+      ElementDrivesTextAnnotation.setFieldFormattingProvider(imodel, makeStubProvider());
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.not.be.undefined;
+
+      ElementDrivesTextAnnotation.setFieldFormattingProvider(imodel, undefined);
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.be.undefined;
+    });
+
+    it("routes txn-driven field updates through the registered provider", () => {
+      ElementDrivesTextAnnotation.setFieldFormattingProvider(imodel, makeStubProvider());
+
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        styleOverrides: { font: { name: "Karla" } },
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+
+      // Insert the annotation and let updateFieldDependencies fire, which triggers the sync
+      // txn callback path (doUpdateFields -> updateFields -> updateField using the registered
+      // provider).
+      const annotationElementId = insertAnnotationElement(textBlock);
+      withEditTxn(imodel, (txn) => {
+        ElementDrivesTextAnnotation.updateFieldDependencies(txn, annotationElementId);
+      });
+
+      const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
+      const reloadedBlock = reloaded.getAnnotation()?.textBlock;
+      expect(reloadedBlock).to.not.be.undefined;
+      let reloadedField: FieldRun | undefined;
+      for (const { child } of traverseTextBlockComponent(reloadedBlock!)) {
+        if (child.type === "field") {
+          reloadedField = child;
+          break;
+        }
+      }
+      expect(reloadedField).to.not.be.undefined;
+      expect(reloadedField!.cachedContent).to.equal("2500 mm");
     });
   });
 

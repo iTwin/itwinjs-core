@@ -279,3 +279,77 @@ export async function formatFieldValueAsync(
   }
 }
 
+// Minimal contract used by the synchronous formatting path: a lookup that returns an already-built
+// FormatterSpec keyed by (KoQ name, persistence unit name), plus a formatting function.
+// Duck-typed against `FormattingSpecProvider` in `@itwin/core-quantity` so this module can stay
+// independent of that concrete type.
+/** @internal */
+export interface FieldFormattingSpecProvider {
+  getSpecsByNameAndUnit(args: { name: string; persistenceUnitName: string }): { formatterSpec: FormatterSpec } | undefined;
+  formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+}
+
+function lookupSyncSpec(
+  quantityOptions: QuantityFieldFormatOptions | undefined,
+  value: FieldValue,
+  provider: FieldFormattingSpecProvider,
+): FormatterSpec | undefined {
+  // Inline FormatProps overrides bypass the provider entirely; they require async construction.
+  // Callers should therefore route inline-format fields through `formatFieldValueAsync` instead.
+  if (quantityOptions?.format) {
+    return undefined;
+  }
+
+  const name = quantityOptions?.formatSetKey ?? value.kindOfQuantityFullName;
+  const persistenceUnitName = quantityOptions?.persistenceUnit ?? value.persistenceUnitFullName;
+  if (!name || !persistenceUnitName) {
+    return undefined;
+  }
+
+  return provider.getSpecsByNameAndUnit({ name, persistenceUnitName })?.formatterSpec;
+}
+
+/** Synchronous counterpart to [[formatFieldValueAsync]] that formats "quantity" and "coordinate"
+ * field values via a caller-supplied [[FieldFormattingSpecProvider]] (typically a
+ * [FormattingSpecProvider]($core-quantity)). Intended for use on the txn callback path where
+ * the async pipeline cannot be awaited but the application has pre-built the required specs.
+ *
+ * For any other [[FieldPropertyType]], or when a quantity/coordinate field cannot be resolved
+ * to a [FormatterSpec]($core-quantity) via `provider`, falls back to [[formatFieldValue]].
+ * @internal
+ */
+export function formatFieldValueWithSpecProvider(
+  value: FieldValue,
+  options: FieldFormatOptions | undefined,
+  provider: FieldFormattingSpecProvider,
+): string | undefined {
+  if (value.type !== "quantity" && value.type !== "coordinate") {
+    return formatFieldValue(value, options);
+  }
+
+  try {
+    const spec = lookupSyncSpec(options?.quantity, value, provider);
+    if (!spec) {
+      return formatFieldValue(value, options);
+    }
+
+    let formatted: string | undefined;
+    if (value.type === "quantity") {
+      if (typeof value.value !== "number") {
+        return formatFieldValue(value, options);
+      }
+      formatted = provider.formatQuantity(value.value, spec);
+    } else {
+      const magnitudes = getCoordinateMagnitudes(value.value);
+      if (!magnitudes) {
+        return formatFieldValue(value, options);
+      }
+      formatted = `(${magnitudes.map((m) => provider.formatQuantity(m, spec)).join(", ")})`;
+    }
+
+    return formatString(formatted, options);
+  } catch {
+    return formatFieldValue(value, options);
+  }
+}
+
