@@ -11,6 +11,7 @@ import { ContextRealityModelState } from "../ContextRealityModelState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { createBlankConnection } from "./createBlankConnection";
+import { getCesiumOSMBuildingsUrl } from "../tile/internal";
 import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './../common/internal/Symbols';
 
 describe("DisplayStyleState", () => {
@@ -287,6 +288,52 @@ describe("DisplayStyleState", () => {
       } finally {
         (iModel as any).ecefLocation = originalEcefLocation;
       }
+    });
+  });
+
+  describe("getOSMBuildingRealityModel", () => {
+    let iModel: IModelConnection;
+
+    beforeAll(async () => {
+      await IModelApp.startup({ localization: new EmptyLocalization(), tileAdmin: { cesiumIonKey: "my-ion-key" } });
+      iModel = createBlankConnection();
+    });
+
+    afterAll(async () => {
+      await iModel.close();
+      await IModelApp.shutdown();
+    });
+
+    function makeStyle(): DisplayStyle3dState {
+      const props: DisplayStyle3dProps = {
+        id: "0xbeef",
+        code: Code.createEmpty(),
+        model: IModelConnection.dictionaryId,
+        classFullName: "BisCore:DisplayStyle3d",
+      };
+      return new DisplayStyle3dState(props, iModel);
+    }
+
+    it("matches a reality model persisted with a legacy key-bearing URL", () => {
+      // getCesiumOSMBuildingsUrl now returns a keyless prefix (e.g. `$CesiumIonAsset=96188:`). Reality models
+      // saved before this change embed the Ion key (`$CesiumIonAsset=96188:<key>`); the `startsWith` match must
+      // still find them so toggling OSM buildings off keeps working for legacy saved views.
+      const style = makeStyle();
+      const keylessPrefix = getCesiumOSMBuildingsUrl();
+      expect(keylessPrefix).toBeDefined();
+
+      const legacyModel = { url: `${keylessPrefix}LEGACY_EMBEDDED_KEY` } as unknown as ContextRealityModelState;
+      vi.spyOn(style, "contextRealityModelStates", "get").mockReturnValue([legacyModel]);
+
+      expect(style.getOSMBuildingRealityModel()).toBe(legacyModel);
+    });
+
+    it("returns undefined when no reality model matches the OSM buildings URL", () => {
+      const style = makeStyle();
+      const unrelatedModel = { url: "https://example.com/some-other-tileset/" } as unknown as ContextRealityModelState;
+      vi.spyOn(style, "contextRealityModelStates", "get").mockReturnValue([unrelatedModel]);
+
+      expect(style.getOSMBuildingRealityModel()).toBeUndefined();
     });
   });
 });

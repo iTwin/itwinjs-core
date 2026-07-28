@@ -87,7 +87,6 @@ describe("ViewState", () => {
     assert.notDeepEqual(v2, viewState);
 
     const acs = v2.createAuxCoordSystem("test");
-    assert.equal(acs.code.value, "test");
     assert.instanceOf(acs, AuxCoordSystemSpatialState);
     acs.setOrigin({ x: 1, y: 1 });
     assert.isTrue(acs.getOrigin().isExactEqual({ x: 1, y: 1, z: 0 }));

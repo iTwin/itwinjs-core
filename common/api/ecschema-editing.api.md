@@ -467,6 +467,7 @@ export const DiagnosticCodes: {
     ConstraintClassesDeriveFromAbstractConstraint: string;
     AtLeastOneConstraintClassDefined: string;
     AbstractConstraintMustExistWithMultipleConstraints: string;
+    NonPolymorphicConstraintMustBeConcrete: string;
 };
 
 // @beta
@@ -742,6 +743,17 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
+            category: DiagnosticCategory;
+        };
+    };
+    NonPolymorphicConstraintMustBeConcrete: {
+        new (constraint: RelationshipConstraint, messageArgs: [string, string, string], category?: DiagnosticCategory): {
+            readonly code: string;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: DiagnosticType;
+            ecDefinition: RelationshipConstraint;
+            messageArgs?: [string, string, string] | undefined;
             category: DiagnosticCategory;
         };
     };

@@ -6,11 +6,10 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement, SheetInformation, SheetInformationAspectProps } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, QueryBinder, RelatedElement, SheetInformation, SheetInformationAspectProps } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { ECSqlStatement } from "./ECSqlStatement";
-import { assert, DbResult, Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { _implicitTxn, _verifyChannel } from "./internal/Symbols";
 import { SheetOwnsSheetInformationAspect } from "./NavigationRelationship";
 import { Sheet } from "./Element";
@@ -134,7 +133,7 @@ export class ElementMultiAspect extends ElementAspect {
 export class ChannelRootAspect extends ElementUniqueAspect {
   public static override get className(): string { return "ChannelRootAspect"; }
   /** Insert a ChannelRootAspect on the specified element.
-   * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
+   * @deprecated in 4.0 - might be removed in next major version. Use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
    */
   public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
     const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
@@ -342,17 +341,13 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   */
   public static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{ elementId: Id64String, aspectId: Id64String }> {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
-    const found: Array<{ elementId: Id64String, aspectId: Id64String }> = [];
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      statement.bindId("scope", scope);
-      statement.bindString("kind", kind);
-      statement.bindString("identifier", identifier);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        found.push({ elementId: statement.getValue(0).getId(), aspectId: statement.getValue(1).getId() });
+    return iModelDb.withQueryReader(sql, (reader): Array<{ elementId: Id64String, aspectId: Id64String }> => {
+      const found: Array<{ elementId: Id64String, aspectId: Id64String }> = [];
+      for (const row of reader) {
+        found.push({ elementId: row[0], aspectId: row[1] });
       }
-    });
-    return found;
+      return found;
+    }, new QueryBinder().bindId("scope", scope).bindString("kind", kind).bindString("identifier", identifier));
   }
 
   public override toJSON(): ExternalSourceAspectProps {

@@ -341,6 +341,16 @@
           "FirstPoint": "Identify element to define rotation"
         }
       },
+      "RotatePoints": {
+        "keyin": "accudraw rotate points",
+        "description": "Set AccuDraw rotation by points",
+        "flyover": "Rotate Points",
+        "Prompts": {
+          "FirstPoint": "Define X axis origin",
+          "SecondPoint": "Define X axis",
+          "NextPoint": "Define Y axis"
+        }
+      },
       "DefineACSByElement": {
         "keyin": "define acs byelement",
         "description": "Set view ACS from element",

@@ -40,7 +40,9 @@ import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
 import { RealityDataSourceProviderRegistry } from "./RealityDataSource";
-import { MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
+import { BingElevationProvider, MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
+import { ElevationProvider, GeoidProvider, LocationProvider } from "./GeoProviders";
+import { BingLocationProvider } from "./BingLocation";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as idleTool from "./tools/IdleTool";
@@ -49,6 +51,7 @@ import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
+import * as setupCameraTool from "./tools/SetupCameraTools";
 import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
@@ -92,6 +95,20 @@ export interface IModelAppOptions {
    * @beta
    */
   mapLayerOptions?: MapLayerOptions;
+  /** Geospatial service providers for elevation, geoid, and geocoding.
+   * If not supplied, deprecated Bing-backed defaults are used for backward compatibility.
+   * @note If you have not yet migrated to custom providers, continue supplying the deprecated
+   * [[MapLayerOptions.BingMaps]] key as an interim measure. To fully remove the Bing dependency, supply custom implementations here.
+   * @beta
+   */
+  geospatialProviders?: {
+    /** Terrain height lookup. Defaults to [[BingElevationProvider]]. */
+    elevationProvider?: ElevationProvider;
+    /** Geodetic-to-sea-level offset. Defaults to [[BingElevationProvider]] (which implements both). */
+    geoidProvider?: GeoidProvider;
+    /** Geocoding (query string to location). Defaults to [[BingLocationProvider]]. */
+    locationProvider?: LocationProvider;
+  };
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
@@ -213,6 +230,9 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _terrainProviderRegistry: TerrainProviderRegistry;
+  private static _elevationProvider: ElevationProvider | undefined;
+  private static _geoidProvider: GeoidProvider | undefined;
+  private static _locationProvider: LocationProvider | undefined;
   private static _realityDataSourceProviders: RealityDataSourceProviderRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
@@ -239,6 +259,21 @@ export class IModelApp {
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
+  /** The [[ElevationProvider]] for this session.
+   * @beta
+   */
+  public static get elevationProvider(): ElevationProvider { return expectDefined(this._elevationProvider); }
+  public static set elevationProvider(provider: ElevationProvider) { this._elevationProvider = provider; }
+  /** The [[GeoidProvider]] for this session.
+   * @beta
+   */
+  public static get geoidProvider(): GeoidProvider { return expectDefined(this._geoidProvider); }
+  public static set geoidProvider(provider: GeoidProvider) { this._geoidProvider = provider; }
+  /** The [[LocationProvider]] for this session.
+   * @beta
+   */
+  public static get locationProvider(): LocationProvider { return expectDefined(this._locationProvider); }
+  public static set locationProvider(provider: LocationProvider) { this._locationProvider = provider; }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
    * @beta
    */
@@ -401,6 +436,7 @@ export class IModelApp {
       selectTool,
       idleTool,
       viewTool,
+      setupCameraTool,
       clipViewTool,
       measureTool,
       accudrawTool,
@@ -435,6 +471,15 @@ export class IModelApp {
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._terrainProviderRegistry = new TerrainProviderRegistry();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional: Bing is the backward-compat default until it is removed in a future major version
+    let defaultBingElevation: BingElevationProvider | undefined;
+    const geo = opts.geospatialProviders;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const lazyBing = () => defaultBingElevation ??= new BingElevationProvider();
+    this._elevationProvider = geo?.elevationProvider ?? lazyBing();
+    this._geoidProvider = geo?.geoidProvider ?? lazyBing();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this._locationProvider = geo?.locationProvider ?? new BingLocationProvider();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
@@ -479,6 +524,9 @@ export class IModelApp {
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this.tools.shutdown();
     this._renderSystem = dispose(this._renderSystem);
+    this._elevationProvider = undefined;
+    this._geoidProvider = undefined;
+    this._locationProvider = undefined;
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;

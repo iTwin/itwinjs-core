@@ -21,6 +21,7 @@ import { layoutTextBlock, TextStyleResolver } from "../../annotations/TextBlockL
 import { appendTextAnnotationGeometry, RenderPriority } from "../../annotations/TextAnnotationGeometry";
 import { IModelElementCloneContext } from "../../IModelElementCloneContext";
 import { EditTxn, withEditTxn } from "../../EditTxn";
+import { DisableNativeAssertions } from "../TestUtils";
 import * as fs from "fs";
 
 function mockIModel(): IModelDb {
@@ -647,6 +648,9 @@ describe("TextAnnotation element", () => {
             await clone(seedStyleId, seedStyleId);
             await clone(undefined, undefined);
             await clone("0x12345", "0x12345");
+
+            // The native code asserts on an invalid ID. Suppress this.
+            using _disableAssertions = new DisableNativeAssertions();
             await clone(Id64.invalid, undefined);
           });
         });

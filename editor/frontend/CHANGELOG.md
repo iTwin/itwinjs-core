@@ -1,6 +1,28 @@
 # Change Log - @itwin/editor-frontend
 
-This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Jul 2026 19:42:09 GMT and should not be manually modified.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:46 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Migrate project geolocation tool settings off deprecated quantity description classes to use createQuantityDescription.
 
 ## 5.10.3
 Tue, 16 Jun 2026 12:58:32 GMT

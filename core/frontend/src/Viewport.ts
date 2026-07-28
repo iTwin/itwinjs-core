@@ -804,8 +804,11 @@ export abstract class Viewport implements Disposable, TileUser {
       if (true === enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
 
-      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded)
+      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded) {
         this._changeFlags.setViewedCategories();
+        this.maybeInvalidateScene();
+        IModelApp.requestNextAnimation();
+      }
     });
   }
 
@@ -1175,7 +1178,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.detachFromView();
   }
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -1208,6 +1211,14 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateSubCategories(this.view.categorySelector.categories, undefined);
   }
 
+  private getSubCategoryReloadCategoryIds(): Id64Set {
+    const categoryIds = Id64.toIdSet(this.view.categorySelector.categories);
+    for (const { categoryId } of this.perModelCategoryVisibility)
+      categoryIds.add(categoryId);
+
+    return categoryIds;
+  }
+
   private registerViewListeners(): void {
     const view = this.view;
     const removals = this._detachFromView;
@@ -1222,6 +1233,10 @@ export abstract class Viewport implements Disposable, TileUser {
       this._changeFlags.setViewedCategories();
       this.updateSubCategories(view.categorySelector.categories, undefined);
       this.maybeInvalidateScene();
+    }));
+
+    removals.push(this.iModel.subcategories.addChangedListener(() => {
+      this.updateSubCategories(this.getSubCategoryReloadCategoryIds(), undefined);
     }));
 
     removals.push(view.onDisplayStyleChanged.addListener((newStyle) => {
@@ -1635,12 +1650,12 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   protected * tiledGraphicsProviderRefs(): Iterable<TileTreeReference> {
     for (const provider of this.tiledGraphicsProviders) {
-      yield * TiledGraphicsProvider.getTileTreeRefs(provider, this);
+      yield* TiledGraphicsProvider.getTileTreeRefs(provider, this);
     }
   }
 
   /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[mapTileTreeRefs]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[mapTileTreeRefs]] instead.
    */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
@@ -1654,7 +1669,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
 
   /** Apply a function to every [[TileTreeReference]] displayed by this viewport.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[getTileTreeRefs]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     for (const ref of this.getTileTreeRefs()) {
@@ -1664,9 +1679,9 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Iterate over every [[TileTreeReference]] displayed by this viewport. */
   public * getTileTreeRefs(): Iterable<TileTreeReference> {
-    yield * this.view.getTileTreeRefs();
-    yield * this.mapTileTreeRefs;
-    yield * this.tiledGraphicsProviderRefs();
+    yield* this.view.getTileTreeRefs();
+    yield* this.mapTileTreeRefs;
+    yield* this.tiledGraphicsProviderRefs();
   }
 
   /**
@@ -2391,11 +2406,11 @@ export abstract class Viewport implements Disposable, TileUser {
 
     switch (this.view.getGridOrientation()) {
       case GridOrientationType.View: {
-        const center = this.view.getCenter();
-        this.toViewOrientation(center);
-        this.toViewOrientation(origin);
+        const center = this.npcToView(NpcCenter);
+        rMatrix.setFrom(this.rotation);
+        rMatrix.multiplyVectorInPlace(origin);
         origin.z = center.z;
-        this.fromViewOrientation(origin);
+        rMatrix.multiplyTransposeVectorInPlace(origin);
         break;
       }
 
@@ -2426,28 +2441,28 @@ export abstract class Viewport implements Disposable, TileUser {
     eyeVec.normalizeInPlace();
     linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
 
-    // // get origin and point in view coordinate system
-    const pointView = point.clone();
-    const originView = origin.clone();
-    this.toViewOrientation(pointView);
-    this.toViewOrientation(originView);
+    // Get origin and point in the grid's local coordinate system.
+    const pointGrid = point.clone();
+    const originGrid = origin.clone();
+    rMatrix.multiplyXYZtoXYZ(pointGrid, pointGrid);
+    rMatrix.multiplyXYZtoXYZ(originGrid, originGrid);
 
     // subtract off the origin
-    pointView.y -= originView.y;
-    pointView.x -= originView.x;
+    pointGrid.y -= originGrid.y;
+    pointGrid.x -= originGrid.x;
 
     // round off the remainder to the grid distances
     const gridSpacing = this.view.getGridSpacing();
-    pointView.x = Viewport.roundGrid(pointView.x, gridSpacing.x);
-    pointView.y = Viewport.roundGrid(pointView.y, gridSpacing.y);
+    pointGrid.x = Viewport.roundGrid(pointGrid.x, gridSpacing.x);
+    pointGrid.y = Viewport.roundGrid(pointGrid.y, gridSpacing.y);
 
     // add the origin back in
-    pointView.x += originView.x;
-    pointView.y += originView.y;
+    pointGrid.x += originGrid.x;
+    pointGrid.y += originGrid.y;
 
     // go back to root coordinate system
-    this.fromViewOrientation(pointView);
-    point.setFrom(pointView);
+    rMatrix.multiplyTransposeVectorInPlace(pointGrid);
+    point.setFrom(pointGrid);
   }
 
   /** @internal */
@@ -2785,7 +2800,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
   * When using this overload, the returned image will not include canvas decorations if only one viewport is active.
   * If multiple viewports are active, the returned image will always include canvas decorations.
-  * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the overload accepting a ReadImageToCanvasOptions.
+  * @deprecated in 5.0 - might be removed in next major version. Use the overload accepting a ReadImageToCanvasOptions.
   */
   public readImageToCanvas(): HTMLCanvasElement;
 

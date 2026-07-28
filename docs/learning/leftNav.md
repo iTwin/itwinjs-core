@@ -27,6 +27,7 @@ matchChildUrls:
 ### Helpful links
 
 - [Tutorials](./tutorials/index.md)
+- [iModels for Developers](./iModelsForDevelopers.md)
 - [API support policies](./api-support-policies.md)
 - [ECSQL](./ECSQL.md)
 - [Display system](./display/index.md)

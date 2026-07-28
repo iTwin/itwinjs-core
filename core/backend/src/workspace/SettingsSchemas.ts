@@ -81,6 +81,22 @@ export interface SettingGroupSchema {
   readonly description: string;
 }
 
+/** Options controlling how [[SettingsSchemas.getResolvedSettingDef]] resolves a [[SettingSchema]].
+ * @beta
+ */
+export interface GetResolvedSettingDefOptions {
+  /** When `true`, the `extends` property is retained on resolved schemas that originally
+   * declared it. By default (`false`) it is stripped after resolution, because the inherited
+   * properties have already been merged into the output schema.
+   *
+   * Set to `true` when the caller needs to inspect schema inheritance - for example, when
+   * building a schema editor that shows which base type a setting definition inherits from.
+   *
+   * @defaultValue false
+   */
+  readonly preserveExtends?: boolean;
+}
+
 /**
  * The registry of available [[SettingGroupSchema]]s.
  * The registry is used for editing Settings files and for finding default values for settings.
@@ -154,13 +170,24 @@ export interface SettingsSchemas {
   /**
    * Looks up a setting schema in [[settingDefs]] and returns its resolved form.
    * Resolution uses the [[typeDefs]] currently registered with this [[SettingsSchemas]] instance.
+   * By default, `extends` metadata is removed from the resolved schema. Pass [[GetResolvedSettingDefOptions.preserveExtends]]
+   * to preserve `extends` members on resolved schemas that originally declared them.
    * @returns The resolved schema for `settingName`, or `undefined` if no schema has been registered for that setting.
    * @throws Error if a registered setting schema cannot be resolved because a referenced type definition is missing or circular.
-   * @example
+   * @example Default - `extends` is stripped after resolution:
    * ```ts
    * const resolved = IModelHost.settingsSchemas.getResolvedSettingDef("app/font");
+   * // resolved.extends === undefined
+   * ```
+   * @example Preserving `extends` for tooling (e.g. a schema editor):
+   * ```ts
+   * const resolved = IModelHost.settingsSchemas.getResolvedSettingDef(
+   *   "app/font",
+   *   { preserveExtends: true },
+   * );
+   * // resolved.extends === "app/baseFont"  (if originally declared)
    * ```
    */
-  getResolvedSettingDef(settingName: SettingName): SettingSchema | undefined;
+  getResolvedSettingDef(settingName: SettingName, options?: GetResolvedSettingDefOptions): SettingSchema | undefined;
 
 }

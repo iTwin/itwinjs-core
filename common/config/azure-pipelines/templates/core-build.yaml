@@ -68,7 +68,8 @@ steps:
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
       TOKEN: $(GitHubPAT)
-    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+    # TODO: Re-enable once the Android crash after the OpenSSL update is resolved.
+    condition: and(succeeded(), false, ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
