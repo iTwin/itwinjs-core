@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Fixed cloud container leaks: ViewStore closed on IModelDb.close, V2 checkpoint containers disconnected on IModelHost.shutdown; connected containers now keep the process alive",
+      "comment": "The process now stays alive until all connected `CloudSqlite.CloudContainer`s are disconnected; call `IModelHost.shutdown` before exiting to avoid hanging.",
       "type": "none"
     }
   ],
