@@ -484,7 +484,8 @@ export class ToolAdmin {
       // Suppress default browser behavior (Ctrl+Z, Ctrl+Y, Ctrl+F2) on keydown when the shortcut will be handled by iTwin.js.
       if (ev.type === "keydown" && ev.ctrlKey && !ev.altKey && !ev.metaKey && !ev.defaultPrevented) {
         if (IModelApp.toolAdmin.isCtrlKeyShortcut(ev.key) && IModelApp.toolAdmin.isFocusValidForShortcuts()) {
-          ev.preventDefault();
+          if (IModelApp.toolAdmin.shouldPreventCtrlDefault(ev.key))
+            ev.preventDefault();
         }
       }
       ToolAdmin.addEvent(ev);
@@ -1483,6 +1484,12 @@ export class ToolAdmin {
     return false;
   }
 
+  /** Check if there is currently an active text selection on the page. */
+  private static hasActiveTextSelection(): boolean {
+    const selection = window.getSelection();
+    return selection !== null && selection.toString().length > 0;
+  }
+
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
     switch (event.key) {
       case "Alt": return BeModifierKeys.Alt;
@@ -1501,13 +1508,30 @@ export class ToolAdmin {
     return ToolAdmin.isFocusHome() || undefined !== IModelApp.accuDraw.getFocusItem();
   }
 
-  /** Check if a key is part of a Ctrl key shortcut handled by iTwin.js (Ctrl+Z, Ctrl+Y, Ctrl+F2).
+  /** Check if a key is part of a Ctrl key shortcut handled by iTwin.js (Ctrl+Z, Ctrl+Y, Ctrl+C, Ctrl+X, Ctrl+V, Ctrl+F2).
    * @note Subclasses can override to add custom Ctrl shortcuts and handle them with onCtrlKeyPressed.
    * @return true if key is a Ctrl key shortcut
    */
   protected isCtrlKeyShortcut(key: string): boolean {
     const lower = key.toLowerCase();
-    return lower === "z" || lower === "y" || key === "F2";
+    return lower === "z" || lower === "y" || lower === "c" || lower === "x" || lower === "v" || lower === "f2";
+  }
+
+  /** Determine if the default browser action should be prevented for a Ctrl key shortcut.
+   * By default, allows browser copy/cut of selected text to work naturally, and prevents paste.
+   * Only called when focus is valid for shortcuts (Home or AccuDraw).
+   * @note This is called from _keyEventHandler to decide whether to call preventDefault().
+   * @return true if preventDefault() should be called; false to allow browser default
+   */
+  protected shouldPreventCtrlDefault(key: string): boolean {
+    const lower = key.toLowerCase();
+    // For copy/cut, only prevent if no active text selection (allow browser to handle text operations)
+    if (lower === "c" || lower === "x") {
+      return !ToolAdmin.hasActiveTextSelection();
+    }
+    // Prevent default for all other iTwin.js shortcuts (z, y, v, F2, custom)
+    // Caller already checked that focus is valid for shortcuts, so v (paste) should be prevented
+    return true;
   }
 
   /** Process key down events while the Ctrl key is pressed */
@@ -1515,18 +1539,28 @@ export class ToolAdmin {
     let handled = false;
     let result = false;
 
-    switch (keyEvent.key) {
+    switch (keyEvent.key.toLowerCase()) {
       case "z":
-      case "Z":
         result = await this.doUndoOperation();
         handled = true;
         break;
       case "y":
-      case "Y":
         result = await this.doRedoOperation();
         handled = true;
         break;
-      case "F2":
+      case "c":
+      case "x":
+        // If browser already handled copy/cut (text was selected, so default was not prevented),
+        // mark as handled to skip processShortcutKey.
+        if (!keyEvent.defaultPrevented) {
+          handled = true;
+        }
+        break;
+      case "v":
+        // Paste is prevented when focus is valid for shortcuts; processShortcutKey can handle Ctrl+V.
+        // When not prevented (e.g., in editable element), browser handles naturally.
+        break;
+      case "f2":
         result = IModelApp.uiAdmin.showKeyinPalette();
         handled = true;
         break;
