@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldFormatterContext, FieldFormattingSpecProvider, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormatterContext, FieldFormattingSpecProvider, FieldMissingSpecBehavior, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -70,6 +70,12 @@ export interface UpdateFieldsContext {
    * `toString()` path.
    */
   readonly formattingSpecProvider?: FieldFormattingSpecProvider;
+
+  /** Controls what happens when a `"quantity"` or `"coordinate"` field cannot be matched to
+   * a [FormatterSpec]($core-quantity). Defaults to `"fallback"` (silently use the raw string
+   * representation). When set to `"throw"`, formatting failures propagate.
+   */
+  readonly onMissingSpec?: FieldMissingSpecBehavior;
 }
 
 // Resolve the raw primitive value of the property that a field points to.
@@ -343,11 +349,13 @@ export function createUpdateContext(
   iModel: IModelDb,
   deleted: boolean,
   formattingSpecProvider?: FieldFormattingSpecProvider,
+  onMissingSpec?: FieldMissingSpecBehavior,
 ): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
     formattingSpecProvider,
+    onMissingSpec,
   };
 }
 
@@ -375,15 +383,17 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
     return false;
   }
 
+  const throwOnMiss = context.onMissingSpec === "throw";
   let newContent: string | undefined;
   try {
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
       newContent = context.formattingSpecProvider
-        ? formatFieldValueWithSpecProvider(propValue, field.formatOptions, context.formattingSpecProvider)
+        ? formatFieldValueWithSpecProvider(propValue, field.formatOptions, context.formattingSpecProvider, context.onMissingSpec)
         : formatFieldValue(propValue, field.formatOptions);
     }
   } catch (err) {
+    if (throwOnMiss) throw err;
     Logger.logError(BackendLoggerCategory.IModelDb, err);
   }
 
@@ -403,13 +413,15 @@ export async function updateFieldAsync(field: FieldRun, context: UpdateFieldsCon
     return false;
   }
 
+  const throwOnMiss = context.onMissingSpec === "throw";
   let newContent: string | undefined;
   try {
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
-      newContent = await formatFieldValueAsync(propValue, field.formatOptions, formatter);
+      newContent = await formatFieldValueAsync(propValue, field.formatOptions, formatter, context.onMissingSpec);
     }
   } catch (err) {
+    if (throwOnMiss) throw err;
     Logger.logError(BackendLoggerCategory.IModelDb, err);
   }
 
@@ -451,12 +463,26 @@ export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFie
 // `ElementDrivesTextAnnotation.setFieldFormattingProvider` and consulted by the synchronous
 // `updateField*` paths so the txn callback path can format quantity/coordinate fields via a
 // pre-warmed provider (e.g. an app's FormatSet-backed `FormattingSpecProvider`).
-const fieldFormattingProviders = new WeakMap<IModelDb, FieldFormattingSpecProvider>();
+interface RegisteredFieldFormattingProvider {
+  provider: FieldFormattingSpecProvider;
+  onMissingSpec?: FieldMissingSpecBehavior;
+}
+const fieldFormattingProviders = new WeakMap<IModelDb, RegisteredFieldFormattingProvider>();
 
 /** @internal */
-export function setFieldFormattingProviderForIModel(iModel: IModelDb, provider: FieldFormattingSpecProvider | undefined): void {
+export interface SetFieldFormattingProviderOptions {
+  /** See [[UpdateFieldsContext.onMissingSpec]]. */
+  onMissingSpec?: FieldMissingSpecBehavior;
+}
+
+/** @internal */
+export function setFieldFormattingProviderForIModel(
+  iModel: IModelDb,
+  provider: FieldFormattingSpecProvider | undefined,
+  options?: SetFieldFormattingProviderOptions,
+): void {
   if (provider) {
-    fieldFormattingProviders.set(iModel, provider);
+    fieldFormattingProviders.set(iModel, { provider, onMissingSpec: options?.onMissingSpec });
   } else {
     fieldFormattingProviders.delete(iModel);
   }
@@ -464,6 +490,11 @@ export function setFieldFormattingProviderForIModel(iModel: IModelDb, provider: 
 
 /** @internal */
 export function getFieldFormattingProviderForIModel(iModel: IModelDb): FieldFormattingSpecProvider | undefined {
+  return fieldFormattingProviders.get(iModel)?.provider;
+}
+
+/** @internal */
+export function getFieldFormattingRegistrationForIModel(iModel: IModelDb): RegisteredFieldFormattingProvider | undefined {
   return fieldFormattingProviders.get(iModel);
 }
 
@@ -472,7 +503,8 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(sourceId, iModel, deleted, getFieldFormattingProviderForIModel(iModel));
+      const registration = getFieldFormattingRegistrationForIModel(iModel);
+      const context = createUpdateContext(sourceId, iModel, deleted, registration?.provider, registration?.onMissingSpec);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {

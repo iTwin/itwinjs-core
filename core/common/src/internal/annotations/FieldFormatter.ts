@@ -241,24 +241,38 @@ function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
  * using the standard iTwin.js quantity formatting pipeline.
  *
  * For any other [[FieldPropertyType]], or when a quantity/coordinate field cannot be resolved to a
- * [FormatterSpec]($core-quantity), falls back to [[formatFieldValue]].
+ * [FormatterSpec]($core-quantity), `onMissingSpec` controls whether the function falls back to
+ * [[formatFieldValue]] (default) or throws.
  * @internal
  */
 export async function formatFieldValueAsync(
   value: FieldValue,
   options: FieldFormatOptions | undefined,
   context: FieldFormatterContext,
+  onMissingSpec: FieldMissingSpecBehavior = "fallback",
 ): Promise<string | undefined> {
   if (value.type !== "quantity" && value.type !== "coordinate") {
     return formatFieldValue(value, options);
   }
 
-  try {
-    const spec = await getFormatterSpec(options?.quantity, value, context);
-    if (!spec) {
-      return formatFieldValue(value, options);
-    }
+  const throwOnMiss = onMissingSpec === "throw";
 
+  let spec: FormatterSpec | undefined;
+  try {
+    spec = await getFormatterSpec(options?.quantity, value, context);
+  } catch (err) {
+    if (throwOnMiss) throw err;
+    return formatFieldValue(value, options);
+  }
+
+  if (!spec) {
+    if (throwOnMiss) {
+      throw missingSpecError(value, options, "no FormatProps could be resolved from the supplied FormatsProvider (KindOfQuantity, formatSetKey, and inline format overrides were all unavailable)");
+    }
+    return formatFieldValue(value, options);
+  }
+
+  try {
     let formatted: string | undefined;
     if (value.type === "quantity") {
       if (typeof value.value !== "number") {
@@ -274,7 +288,8 @@ export async function formatFieldValueAsync(
     }
 
     return formatString(formatted, options);
-  } catch {
+  } catch (err) {
+    if (throwOnMiss) throw err;
     return formatFieldValue(value, options);
   }
 }
@@ -287,6 +302,22 @@ export async function formatFieldValueAsync(
 export interface FieldFormattingSpecProvider {
   getSpecsByNameAndUnit(args: { name: string; persistenceUnitName: string }): { formatterSpec: FormatterSpec } | undefined;
   formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+}
+
+/** Controls what happens when a `"quantity"` or `"coordinate"` [FieldRun]($common) cannot be
+ * matched to a [FormatterSpec]($core-quantity):
+ *
+ * - `"fallback"` (default): silently fall back to the raw string representation used by
+ *   [[formatFieldValue]].
+ * - `"throw"`: throw an [[Error]] describing the missing spec.
+ * @internal
+ */
+export type FieldMissingSpecBehavior = "fallback" | "throw";
+
+function missingSpecError(value: FieldValue, options: FieldFormatOptions | undefined, reason: string): Error {
+  const koq = options?.quantity?.formatSetKey ?? value.kindOfQuantityFullName ?? "<unknown>";
+  const unit = options?.quantity?.persistenceUnit ?? value.persistenceUnitFullName ?? "<unknown>";
+  return new Error(`No FormatterSpec available for field (type=${value.type}, koq=${koq}, persistenceUnit=${unit}): ${reason}`);
 }
 
 function lookupSyncSpec(
@@ -315,41 +346,46 @@ function lookupSyncSpec(
  * the async pipeline cannot be awaited but the application has pre-built the required specs.
  *
  * For any other [[FieldPropertyType]], or when a quantity/coordinate field cannot be resolved
- * to a [FormatterSpec]($core-quantity) via `provider`, falls back to [[formatFieldValue]].
+ * to a [FormatterSpec]($core-quantity) via `provider`, `onMissingSpec` controls whether the
+ * function falls back to [[formatFieldValue]] (default) or throws.
  * @internal
  */
 export function formatFieldValueWithSpecProvider(
   value: FieldValue,
   options: FieldFormatOptions | undefined,
   provider: FieldFormattingSpecProvider,
+  onMissingSpec: FieldMissingSpecBehavior = "fallback",
 ): string | undefined {
   if (value.type !== "quantity" && value.type !== "coordinate") {
     return formatFieldValue(value, options);
   }
 
-  try {
-    const spec = lookupSyncSpec(options?.quantity, value, provider);
-    if (!spec) {
-      return formatFieldValue(value, options);
+  const spec = lookupSyncSpec(options?.quantity, value, provider);
+  if (!spec) {
+    if (onMissingSpec === "throw") {
+      const reason = options?.quantity?.format
+        ? "inline FormatProps overrides are not supported on the synchronous formatting path"
+        : "the registered FormattingSpecProvider did not supply a spec for this KindOfQuantity / persistence unit";
+      throw missingSpecError(value, options, reason);
     }
-
-    let formatted: string | undefined;
-    if (value.type === "quantity") {
-      if (typeof value.value !== "number") {
-        return formatFieldValue(value, options);
-      }
-      formatted = provider.formatQuantity(value.value, spec);
-    } else {
-      const magnitudes = getCoordinateMagnitudes(value.value);
-      if (!magnitudes) {
-        return formatFieldValue(value, options);
-      }
-      formatted = `(${magnitudes.map((m) => provider.formatQuantity(m, spec)).join(", ")})`;
-    }
-
-    return formatString(formatted, options);
-  } catch {
     return formatFieldValue(value, options);
   }
+
+  let formatted: string | undefined;
+  if (value.type === "quantity") {
+    if (typeof value.value !== "number") {
+      return formatFieldValue(value, options);
+    }
+    formatted = provider.formatQuantity(value.value, spec);
+  } else {
+    const magnitudes = getCoordinateMagnitudes(value.value);
+    if (!magnitudes) {
+      return formatFieldValue(value, options);
+    }
+    formatted = `(${magnitudes.map((m) => provider.formatQuantity(m, spec)).join(", ")})`;
+  }
+
+  return formatString(formatted, options);
 }
+
 

@@ -13,7 +13,7 @@ import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
-import { collectFieldFormattingRequirements, createFieldFormatterContext, createUpdateContext, getFieldFormattingProviderForIModel, setFieldFormattingProviderForIModel, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
+import { collectFieldFormattingRequirements, createFieldFormatterContext, createUpdateContext, getFieldFormattingProviderForIModel, getFieldFormattingRegistrationForIModel, setFieldFormattingProviderForIModel, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
@@ -80,6 +80,12 @@ export interface FieldFormattingProviders {
   formatsProvider?: FormatsProvider;
   /** Provider used to resolve [UnitProps]($core-quantity) (e.g. the persistence unit of a value). */
   unitsProvider?: UnitsProvider;
+  /** Controls what happens when a `"quantity"` or `"coordinate"` [FieldRun]($common) cannot
+   * be matched to a [FormatterSpec]($core-quantity). Defaults to `"fallback"` (silently use
+   * the raw string representation). When set to `"throw"`, the formatting call rejects with
+   * an [[Error]] describing the missing spec.
+   */
+  onMissingSpec?: "fallback" | "throw";
 }
 
 /** Arguments supplied to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]].
@@ -224,7 +230,8 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @throws Error if evaluation of any field fails.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
-    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, getFieldFormattingProviderForIModel(args.iModel)))
+    const registration = getFieldFormattingRegistrationForIModel(args.iModel);
+    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, registration?.provider, registration?.onMissingSpec))
   }
 
   /** Async counterpart to [[evaluateFields]] that formats "quantity" and "coordinate" [FieldRun]($common)s
@@ -239,7 +246,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @beta
    */
   public static async evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number> {
-    const context = createUpdateContext(undefined, args.iModel, false);
+    const context = createUpdateContext(undefined, args.iModel, false, undefined, args.formatting?.onMissingSpec);
     const formatter = createFieldFormatterContext(args.iModel, args.formatting);
     return updateFieldsAsync(args.block, context, formatter);
   }
@@ -269,15 +276,20 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * The provider is expected to have been pre-warmed with the requirements returned by
    * [[collectFieldFormattingRequirements]] for every annotation that may be formatted through
    * this iModel; if a required spec has not been prepared, formatting falls back to the raw
-   * string representation used prior to this feature.
+   * string representation used prior to this feature (or throws if `options.onMissingSpec`
+   * is `"throw"`).
    *
-   * Pass `undefined` to unregister a previously-registered provider. The registration is held
-   * in a [WeakMap]() keyed by `iModel`, so it does not have to be cleared explicitly when the
-   * iModel is closed.
+   * Pass `undefined` as `provider` to unregister a previously-registered provider. The
+   * registration is held in a [WeakMap]() keyed by `iModel`, so it does not have to be
+   * cleared explicitly when the iModel is closed.
    * @beta
    */
-  public static setFieldFormattingProvider(iModel: IModelDb, provider: FormattingSpecProvider | undefined): void {
-    setFieldFormattingProviderForIModel(iModel, provider);
+  public static setFieldFormattingProvider(
+    iModel: IModelDb,
+    provider: FormattingSpecProvider | undefined,
+    options?: { onMissingSpec?: "fallback" | "throw" },
+  ): void {
+    setFieldFormattingProviderForIModel(iModel, provider, options);
   }
 
   /** Returns the [FormattingSpecProvider]($core-quantity) previously registered for `iModel`
