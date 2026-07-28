@@ -11946,7 +11946,7 @@ export class ToolAdmin {
     gridLock: boolean;
     get idleTool(): InteractiveTool;
     set idleTool(idleTool: InteractiveTool);
-    protected isCtrlKeyShortcut(key: string): boolean;
+    protected isCtrlKeyShortcut(keyEvent: KeyboardEvent): boolean;
     protected isFocusValidForShortcuts(): boolean;
     // (undocumented)
     get isLocateCircleOn(): boolean;
@@ -12004,7 +12004,7 @@ export class ToolAdmin {
     setPrimitiveTool(newTool?: PrimitiveTool): Promise<void>;
     // @internal (undocumented)
     setViewTool(newTool?: ViewTool): Promise<void>;
-    protected shouldPreventCtrlDefault(key: string): boolean;
+    protected shouldPreventCtrlDefault(keyEvent: KeyboardEvent): boolean;
     simulateMotionEvent(): void;
     startDefaultTool(): Promise<void>;
     // @internal (undocumented)
