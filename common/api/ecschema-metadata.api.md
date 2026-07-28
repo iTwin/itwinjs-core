@@ -2547,13 +2547,6 @@ export interface SchemaManifestSchemaRow {
     readonly versionWrite: number;
 }
 
-// @internal
-export interface SchemaManifestSnapshot {
-    // (undocumented)
-    readonly manifest: SchemaManifest;
-    readonly schemaToken: string;
-}
-
 // @public @preview
 export enum SchemaMatchType {
     // (undocumented)
@@ -2673,8 +2666,6 @@ export class SchemaView {
     resolveClassIdx(qualifiedName: string): number;
     get schemaCount(): number;
     get schemaToken(): string;
-    // @internal
-    setSchemaToken(token: string): void;
 }
 
 // @beta (undocumented)
@@ -3052,7 +3043,7 @@ export interface SchemaViewData {
 export interface SchemaViewDataProvider {
     fetchFragmentBlob(schemaNames: readonly string[]): Promise<SchemaViewBlob>;
     fetchFullBlob(): Promise<SchemaViewBlob>;
-    fetchManifest(): Promise<SchemaManifestSnapshot>;
+    fetchManifest(): Promise<SchemaManifest>;
     fetchSchemaToken(): Promise<string>;
 }
 

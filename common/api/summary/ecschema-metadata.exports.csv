@@ -263,7 +263,6 @@ internal;class;SchemaManifest
 internal;interface;SchemaManifestEntry
 internal;interface;SchemaManifestReferenceRow
 internal;interface;SchemaManifestSchemaRow
-internal;interface;SchemaManifestSnapshot
 public;enum;SchemaMatchType
 preview;enum;SchemaMatchType
 public;class;SchemaPartVisitorDelegate
