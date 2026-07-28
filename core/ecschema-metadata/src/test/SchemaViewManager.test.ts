@@ -104,8 +104,9 @@ function makeManifest(...schemaNames: string[]): SchemaManifest {
   return new SchemaManifest(schemaNames.map((name) => ({ name, readVersion: 1, writeVersion: 0, minorVersion: 0, references: [] })));
 }
 
-/** A provider that reports the manifest and fragments under a schema-identity token the test can
- * flip between fetches, simulating a changeset pull changing schemas mid-load. */
+/** A provider that reports the schema-identity token and fragments under tokens the test can flip
+ * between fetches, simulating a changeset pull changing schemas mid-load. The manager fetches the
+ * token right before the manifest, so `manifestToken` is what a load attempt gets bound to. */
 function makeTokenFlippingProvider(state: { manifestToken: () => string, fragmentToken: () => string }) {
   const calls = { manifest: 0, fragment: 0 };
   const provider: SchemaViewDataProvider = {
@@ -116,9 +117,9 @@ function makeTokenFlippingProvider(state: { manifestToken: () => string, fragmen
     },
     fetchManifest: async () => {
       calls.manifest++;
-      return { manifest: makeManifest("SchemaA", "SchemaB"), schemaToken: state.manifestToken() };
+      return makeManifest("SchemaA", "SchemaB");
     },
-    fetchSchemaToken: async () => state.fragmentToken(),
+    fetchSchemaToken: async () => state.manifestToken(),
   };
   return { provider, calls };
 }

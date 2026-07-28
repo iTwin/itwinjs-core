@@ -1781,25 +1781,12 @@ export abstract class IModelDb extends IModel {
    * since it is strictly coupled with native code.
    */
   private _createSchemaViewDataProvider(): SchemaViewDataProvider {
-    const fetchSchemaToken = async (): Promise<string> => {
-      const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
-      const result = await reader.next();
-      if (result.done)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned no rows");
-      return result.value.sha3_256 as string;
-    };
-
     return {
       fetchFullBlob: async () => this._fetchSchemaBlob("PRAGMA schema_view"),
       // Names are ECNames, so a comma can never occur in one. Native re-validates each token as an
       // ECName and fails the pragma on an unknown name.
       fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${schemaNames.join(",")}')`),
       fetchManifest: async () => {
-        // Token first: a schema change slipping in after this point makes a later fragment's token
-        // differ from this snapshot's, which the manager detects (discard and retry) instead of
-        // mixing two schema revisions in one view.
-        const schemaToken = await fetchSchemaToken();
-
         const schemaRows: SchemaManifestSchemaRow[] = [];
         const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
         for await (const row of this.createQueryReader(schemaSql)) {
@@ -1813,9 +1800,15 @@ export abstract class IModelDb extends IModel {
         for await (const row of this.createQueryReader(referenceSql))
           referenceRows.push({ sourceECInstanceId: Id64.getLocalId(row[0]), targetECInstanceId: Id64.getLocalId(row[1]) });
 
-        return { manifest: SchemaManifest.fromRows(schemaRows, referenceRows), schemaToken };
+        return SchemaManifest.fromRows(schemaRows, referenceRows);
       },
-      fetchSchemaToken,
+      fetchSchemaToken: async () => {
+        const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
+        const result = await reader.next();
+        if (result.done)
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned no rows");
+        return result.value.sha3_256 as string;
+      },
     };
   }
 

@@ -16,27 +16,14 @@ import { SchemaView } from "./SchemaView";
 export interface SchemaViewBlob {
   /** The binary schema metadata (the `data` column of `PRAGMA schema_view` / `schema_view_fragment`). */
   readonly data: Uint8Array;
-  /** Schema-identity hash of the iModel's whole schema set (the `schemaToken` column). The token is
-   * the same for a full blob or any fragment. Empty string when unavailable. */
-  readonly schemaToken: string;
-}
-
-/** A {@link SchemaManifest} bound to the schema-identity token that was current when it was fetched,
- * as returned by {@link SchemaViewDataProvider.fetchManifest}. The manager compares every fragment's
- * token against this one, so a schema change between the manifest and a fragment fetch is detected
- * instead of silently mixing two schema revisions in one view.
- * @internal
- */
-export interface SchemaManifestSnapshot {
-  readonly manifest: SchemaManifest;
-  /** Schema-identity hash of the iModel's whole schema set at manifest-fetch time. */
+  /** Schema-identity hash of the iModel's whole schema set (the `schemaToken` column). Empty string when unavailable. */
   readonly schemaToken: string;
 }
 
 /** The data source a {@link SchemaViewManager} loads schema-view data from, implemented by the hosts
  * that own the query APIs: `IModelDb` on the backend and `IModelConnection` on the frontend. The
  * manager deals only in schema names, blobs and the manifest; everything transport-specific - pragma
- * strings, format-version pinning, mapping names to `ec_Schema` ids - belongs to the provider.
+ * strings, format-version pinning - belongs to the provider.
  * @internal
  */
 export interface SchemaViewDataProvider {
@@ -49,16 +36,10 @@ export interface SchemaViewDataProvider {
   fetchFragmentBlob(schemaNames: readonly string[]): Promise<SchemaViewBlob>;
 
   /** Fetch the reference graph of every schema in the iModel, built from ECDbMeta
-   * (`meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`; see {@link SchemaManifest.fromRows}),
-   * together with the schema-identity token current at fetch time.
-   * @note Implementations must fetch the token *before* the manifest rows. Then any schema change
-   * that slips in after the token fetch makes a later fragment carry a different token, which the
-   * manager detects (discard and retry) instead of merging data from two schema revisions.
-   */
-  fetchManifest(): Promise<SchemaManifestSnapshot>;
+   * (`meta.ECSchemaDef` + `meta.SchemaHasSchemaReferences`; see {@link SchemaManifest.fromRows}). */
+  fetchManifest(): Promise<SchemaManifest>;
 
-  /** Fetch the current schema-identity token (`PRAGMA checksum(schema_token)`), used by
-   * {@link SchemaViewManager.invalidateIfChanged} to detect schema changes. */
+  /** Fetch the current schema-identity token (`PRAGMA checksum(schema_token)`). */
   fetchSchemaToken(): Promise<string>;
 }
 
@@ -97,23 +78,17 @@ export interface GetSchemaViewArgs {
 export class SchemaViewManager {
   private readonly _dataProvider: SchemaViewDataProvider;
 
-  // Single accumulating schema view, held as a promise so every getSchemaView call chains onto it
-  // and loads never overlap. An `undefined` field, or a promise resolving to `undefined` (the
-  // continuation queued by `reset`), both mean nothing is loaded.
+  /** The single accumulating view, held as a promise so all requests chain onto it and never overlap.
+   * Undefined (or resolving to undefined) means nothing is loaded. */
   private _viewPromise?: Promise<SchemaView | undefined>;
 
-  // Loaded lazily the first time an incremental (filtered) load is needed. `undefined` means either
-  // the view is fully loaded, or nothing was loaded yet (`_viewPromise` is undefined too).
+  /** Reference graph for incremental loading; undefined when the view is (or will be) fully loaded. */
   private _manifest?: SchemaManifest;
 
-  // The schema-identity token the manifest was fetched under. Every fragment merged into the view
-  // must carry this exact token; a mismatch means schemas changed mid-load and the whole incremental
-  // state is discarded. Reset together with `_manifest`, so by induction every fragment already in
-  // the view carries this token too.
+  /** Schema-identity token the manifest - and thus every fragment merged under it - belongs to. */
   private _manifestToken?: string;
 
-  // Lower-cased names already merged into the SchemaView. Only used in incremental mode, to decide
-  // what a later filtered request still needs.
+  /** Lower-cased names already merged into the view (incremental mode only). */
   private readonly _loadedSchemaNames = new Set<string>();
 
   public constructor(dataProvider: SchemaViewDataProvider) {
@@ -125,19 +100,15 @@ export class SchemaViewManager {
    * user-facing contract on their `getSchemaView` methods.
    */
   public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
-    // Chain onto the previous request so loads run one at a time and only a single in-flight load
-    // ever mutates the shared state. `_loadSchemaView` swallows the previous load's failure; each
-    // caller observes its own outcome through the promise returned here.
     const previous = this._viewPromise;
     const next = this._loadSchemaView(previous, args?.schemas, args?.forceReload === true);
     this._viewPromise = next;
     return next;
   }
 
-  /** Throw away the current schema view. Called by the host when it *knows* schemas may have
-   * changed (e.g. `IModelDb.clearCaches` after a schema import). The teardown chains behind any
-   * in-flight load, marks the discarded view outdated and clears the incremental bookkeeping. The
-   * next getSchemaView chains after this and starts over.
+  /** Throw away the current schema view. Called by the host when schemas may have changed (e.g.
+   * `IModelDb.clearCaches` after a schema import). Chains behind any in-flight load and marks the
+   * discarded view outdated; the next getSchemaView starts over.
    */
   public reset(): void {
     if (this._viewPromise) {
@@ -175,16 +146,12 @@ export class SchemaViewManager {
     try {
       existing = await previous;
     } catch {
-      // The load failed and already cleared the incremental state; nothing to invalidate.
       return undefined;
     }
-    // Nothing loaded (an earlier reset) - nothing to invalidate.
     if (existing === undefined)
       return undefined;
-    // A husk with no token and no cached manifest never fetched anything. With a manifest an
-    // incremental request did run (loading only the manifest, e.g. all its names were missing), and
-    // that manifest can go stale - fall through so the token check drops it; a live token can never
-    // equal "".
+    // An empty token outside incremental mode means the view never fetched anything - nothing to go
+    // stale. In incremental mode a manifest was fetched and can go stale, so fall through.
     if (existing.schemaToken === "" && this._manifest === undefined)
       return existing;
 
@@ -199,19 +166,16 @@ export class SchemaViewManager {
     return undefined;
   }
 
-  /** Serialized body of {@link SchemaViewManager.getSchemaView}. Waits for the prior load, optionally discards
-   * everything (`forceReload`), then ensures the requested schemas (or all schemas, when no filter
-   * is given) are present in the single accumulating view. On failure it resets and rejects, so the
-   * next call retries from scratch.
+  /** Serialized body of {@link SchemaViewManager.getSchemaView}. On failure it resets and rejects,
+   * so the next call starts over.
    */
   private async _loadSchemaView(previous: Promise<SchemaView | undefined> | undefined, schemas: readonly string[] | undefined, forceReload: boolean): Promise<SchemaView> {
-    // A prior failure or reset leaves no usable view, so we simply start over.
     let currentView: SchemaView | undefined;
     if (previous !== undefined) {
       try {
         currentView = await previous;
       } catch {
-        currentView = undefined;
+        currentView = undefined; // the failed load already reset; start over
       }
     }
 
@@ -224,24 +188,9 @@ export class SchemaViewManager {
     try {
       return await this._ensureSchemasLoaded(currentView, schemas);
     } catch (err) {
-      // `_viewPromise` deliberately keeps pointing at this (now rejected) promise: the next call
-      // chains onto it, catches the rejection above and rebuilds, which also avoids stomping any
-      // newer queued load. A failed merge may have left the current view partially extended, so
-      // mark it outdated for callers still holding it.
+      // A failed merge may have left the view partially extended - discard everything.
       currentView?.markOutdated();
       this._resetIncrementalState();
-      if (err instanceof StaleSchemaTokenError) {
-        // Schemas changed between the manifest fetch and a fragment fetch. Nothing was merged, but
-        // everything accumulated so far belongs to the old revision, so it was discarded above.
-        // Retry once from scratch (fresh manifest, fresh view); a mismatch on the retry too means
-        // schemas are actively churning and the caller has to re-drive.
-        try {
-          return await this._ensureSchemasLoaded(undefined, schemas);
-        } catch (retryErr) {
-          this._resetIncrementalState();
-          throw retryErr;
-        }
-      }
       throw err;
     }
   }
@@ -254,16 +203,12 @@ export class SchemaViewManager {
   }
 
   /** Ensures the requested schemas (or all schemas, when no filter is given) are present in
-   * `currentView`, or in a freshly created view when nothing is loaded yet, and returns it.
-   *
-   * The strategy is fixed by the *first* load:
-   *  - No filter -> fetch every schema as one full blob (one round trip, best cross-schema dedup).
-   *    `_manifest` stays `undefined` and all later calls short-circuit.
-   *  - Filter -> fetch only the requested schemas and their references as a fragment blob, and keep
-   *    the manifest and loaded-name set to extend the *same* view on later calls. Once every schema
-   *    has been loaded this way, `_manifest` is cleared to collapse back to full mode.
+   * `currentView` (or a freshly created view) and returns it. The first load fixes the strategy:
+   * no filter fetches everything as one full blob; a filter fetches fragments and keeps the
+   * manifest and loaded-name set so later calls extend the same view. Once every schema is loaded
+   * the incremental state is dropped, collapsing back to full mode.
    */
-  private async _ensureSchemasLoaded(currentView: SchemaView | undefined, schemas: readonly string[] | undefined): Promise<SchemaView> {
+  private async _ensureSchemasLoaded(currentView: SchemaView | undefined, schemas: readonly string[] | undefined, isRetry = false): Promise<SchemaView> {
     const isFirstLoad = currentView === undefined;
     // No manifest means everything is loaded; in incremental mode a filtered request is satisfied as
     // soon as every requested name is present.
@@ -279,50 +224,37 @@ export class SchemaViewManager {
       return schemaView;
     }
 
-    let manifest = this._manifest;
-    if (manifest === undefined) {
-      const snapshot = await this._dataProvider.fetchManifest();
-      manifest = this._manifest = snapshot.manifest;
-      this._manifestToken = snapshot.schemaToken;
+    if (this._manifest === undefined) {
+      // Token first: any schema change after this point shows up as a token mismatch below.
+      this._manifestToken = await this._dataProvider.fetchSchemaToken();
+      this._manifest = await this._dataProvider.fetchManifest();
     }
+    const manifest = this._manifest;
 
-    // No filter in incremental mode means "load whatever is left".
     const requested = schemas ?? manifest.getAvailableSchemaNames();
-    // The manifest returns the whole closure of the request; dropping the already-loaded schemas is
-    // our concern, not the manifest's. Fragment load order does not matter (see the writer).
     const namesToLoad = manifest.getSchemaClosure(requested).filter((name) => !this._loadedSchemaNames.has(name.toLowerCase()));
     const husk = currentView ?? SchemaView.createMergeable();
     if (namesToLoad.length > 0) {
       const blob = await this._dataProvider.fetchFragmentBlob(namesToLoad);
-      // The fragment must belong to the same schema revision as the manifest (and thereby every
-      // fragment merged earlier - see `_manifestToken`). Throw *before* mutating anything, so the
-      // retry in `_loadSchemaView` starts from a clean slate.
-      if (blob.schemaToken !== this._manifestToken)
-        throw new StaleSchemaTokenError();
+      if (blob.schemaToken !== this._manifestToken) {
+        // Schemas changed between the manifest and fragment fetches. Everything loaded so far
+        // belongs to the old revision - discard it and start over, once.
+        currentView?.markOutdated();
+        this._resetIncrementalState();
+        if (isRetry)
+          throw new Error("The iModel's schemas changed while the schema view was loading.");
+        return this._ensureSchemasLoaded(undefined, schemas, true);
+      }
       husk.mergeFragment(blob.data);
       husk.setSchemaToken(blob.schemaToken);
-      // Record every closure entry as loaded, including *excluded* schemas (e.g. CoreCustomAttributes)
-      // that the writer emits no rows for and so never appear in the view. Tracking names rather than
-      // view contents is what lets a later request prune them instead of re-fetching.
+      // Record the whole closure as loaded, including *excluded* schemas (e.g. CoreCustomAttributes)
+      // the writer emits no rows for, so later requests prune them instead of re-fetching.
       for (const name of namesToLoad)
         this._loadedSchemaNames.add(name.toLowerCase());
     }
-    // Once everything is loaded, drop the incremental state so future requests hit the fast path above.
-    // The size comparison is an O(1) short-circuit in front of the O(n) `.every` scan (loaded names
-    // all come from the manifest, so fewer names than schemas can never be "all of them"); the
-    // `.every` is the authoritative check.
+    // Once every schema is loaded, collapse back to full mode (the size check is just a fast path).
     if (schemas === undefined || (this._loadedSchemaNames.size >= manifest.schemaCount && manifest.entries.every((entry) => this._loadedSchemaNames.has(entry.name.toLowerCase()))))
       this._resetIncrementalState();
     return husk;
-  }
-}
-
-/** Thrown (module-internally) when a fragment blob carries a different schema-identity token than
- * the manifest it was requested under, i.e. the iModel's schemas changed between the two fetches.
- * `_loadSchemaView` catches it, discards the old-revision state and retries once.
- */
-class StaleSchemaTokenError extends Error {
-  public constructor() {
-    super("The iModel's schemas changed while the schema view was loading.");
   }
 }
