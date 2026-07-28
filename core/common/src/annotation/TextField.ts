@@ -87,20 +87,13 @@ export interface DateTimeFieldFormatOptions {
   formatOptions?: Intl.DateTimeFormatOptions;
 }
 
-/** Identifies a unit system preference for resolving a [Format]($core-quantity) from a
- * [KindOfQuantity]($ecschema-metadata) when formatting a [[FieldRun]] whose property type is
- * "quantity" or "coordinate".
- * @beta
- */
-export type FieldUnitSystem = "metric" | "imperial" | "usCustomary" | "usSurvey";
-
 /** As part of a [[FieldFormatOptions]], specifies how to format properties of [[FieldPropertyType]]
  * "quantity" or "coordinate".
  *
  * At runtime, a format is resolved in this priority order:
  *  1. [[format]] - an inline [FormatProps]($core-quantity) override.
  *  2. [[formatSetKey]] - looked up via the active [FormatsProvider]($core-quantity).
- *  3. The property's own [KindOfQuantity]($ecschema-metadata), filtered by [[unitSystem]].
+ *  3. The property's own [KindOfQuantity]($ecschema-metadata).
  *  4. For "coordinate" only, a built-in default backed by `Units.LENGTH`.
  *
  * If none of the above yield a usable format, the raw value is rendered via its string
@@ -108,10 +101,6 @@ export type FieldUnitSystem = "metric" | "imperial" | "usCustomary" | "usSurvey"
  * @beta
  */
 export interface QuantityFieldFormatOptions {
-  /** Preferred unit system when resolving a format from the property's [KindOfQuantity]($ecschema-metadata).
-   * Ignored when [[format]] is supplied. Defaults to "metric".
-   */
-  unitSystem?: FieldUnitSystem;
   /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) to use as the source unit when constructing a [FormatterSpec]($core-quantity).
    * If not supplied, the source unit is derived from the property's [KindOfQuantity]($ecschema-metadata).
    */
@@ -122,7 +111,7 @@ export interface QuantityFieldFormatOptions {
    */
   formatSetKey?: string;
   /** Inline [FormatProps]($core-quantity) override. Highest priority; when present, [[formatSetKey]]
-   * and [[unitSystem]] are ignored.
+   * is ignored.
    */
   format?: FormatProps;
 }

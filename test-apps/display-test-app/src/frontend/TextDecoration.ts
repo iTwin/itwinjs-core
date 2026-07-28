@@ -468,7 +468,7 @@ export class TextDecorationTool extends Tool {
     expectField("Origin (m)", "(30813.264 m, 58981.8092 m, 0.05 m)", { quantity: { persistenceUnit: "Units.M" } }, "Default formatting (uses the property's KoQ + active unit system)");
 
     // Force imperial via unit system.
-    expectField("Imperial", "(101093.3858 ft, 193509.8747 ft, 0.1640 ft)", { quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" } }, "us=imperial — should render in feet (m -> ft conversion)");
+    expectField("Imperial", "(101093.3858 ft, 193509.8747 ft, 0.1640 ft)", { quantity: { persistenceUnit: "Units.M" } }, "should render in feet (m -> ft conversion)");
 
     // Force metric via unit system, with prefix/suffix.
     expectField(
@@ -477,9 +477,9 @@ export class TextDecorationTool extends Tool {
       {
         prefix: "L=",
         suffix: " (m)",
-        quantity: { unitSystem: "metric", persistenceUnit: "Units.M" },
+        quantity: { persistenceUnit: "Units.M" },
       },
-      "us=metric + prefix/suffix wrappers",
+      "prefix/suffix wrappers",
     );
 
     // Override the property's KoQ with a different KoQ full name.
@@ -557,7 +557,7 @@ export class TextDecorationTool extends Tool {
       "(101093.3858 FT, 193509.8747 FT, 0.1640 FT)",
       {
         case: "upper",
-        quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" },
+        quantity: { persistenceUnit: "Units.M" },
       },
       "case=upper — post-format text transform",
     );
@@ -585,7 +585,7 @@ export class TextDecorationTool extends Tool {
       "(101093.3858 FT, 193509.8747 FT, 0.1640 FT)",
       {
         case: "upper",
-        quantity: { unitSystem: "imperial", persistenceUnit: "Units.M" },
+        quantity: { persistenceUnit: "Units.M" },
       },
       "f= full FieldFormatOptions JSON (legacy path)",
     );

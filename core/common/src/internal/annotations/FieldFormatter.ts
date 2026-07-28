@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { Format, FormatProps, FormatsProvider, FormatterSpec, UnitProps, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { Format, FormatProps, FormatsProvider, FormatterSpec, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { DateTimeFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 
 /** A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -120,7 +120,7 @@ export function isKnownFieldPropertyType(type: string): type is FieldPropertyTyp
 /** Runtime context for [[formatFieldValueAsync]]. Provides the units and formats providers used to
  * resolve a [Format]($core-quantity) for "quantity" and "coordinate" field types, plus an optional
  * cache to avoid rebuilding a [FormatterSpec]($core-quantity) for repeated
- * (format source, persistence unit, unit system) combinations within a single formatting pass.
+ * (format source, persistence unit) combinations within a single formatting pass.
  * @internal
  */
 export interface FieldFormatterContext {
@@ -159,11 +159,9 @@ async function resolveFormatSource(
     return { formatProps: quantityOptions.format, cacheKeySource: `inline:${JSON.stringify(quantityOptions.format)}` };
   }
 
-  const unitSystem = quantityOptions?.unitSystem;
-
   // 2. Explicit format-set / KoQ override.
   if (quantityOptions?.formatSetKey) {
-    const def = await context.formatsProvider.getFormat(quantityOptions.formatSetKey, unitSystem);
+    const def = await context.formatsProvider.getFormat(quantityOptions.formatSetKey);
     if (def) {
       return { formatProps: def, cacheKeySource: `key:${quantityOptions.formatSetKey}` };
     }
@@ -171,7 +169,7 @@ async function resolveFormatSource(
 
   // 3. Property's own KindOfQuantity.
   if (value.kindOfQuantityFullName) {
-    const def = await context.formatsProvider.getFormat(value.kindOfQuantityFullName, unitSystem);
+    const def = await context.formatsProvider.getFormat(value.kindOfQuantityFullName);
     if (def) {
       return { formatProps: def, cacheKeySource: `koq:${value.kindOfQuantityFullName}` };
     }
@@ -213,8 +211,7 @@ async function getFormatterSpec(
   }
 
   const persistenceUnitName = value.persistenceUnitFullName ?? firstCompositeUnitName(source.formatProps) ?? "";
-  const unitSystemKey = quantityOptions?.unitSystem ?? "";
-  const cacheKey = `${source.cacheKeySource}|${persistenceUnitName}|${unitSystemKey}`;
+  const cacheKey = `${source.cacheKeySource}|${persistenceUnitName}`;
 
   const cached = context.specCache?.get(cacheKey);
   if (cached) {
