@@ -117,7 +117,11 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     try {
       const requestUrl = urlObj.toString();
       const includeCredentials = this.includeUserCredentials(requestUrl);
-      response = await fetch(urlObj, {...options, credentials: includeCredentials ?  "include" : undefined});
+      response = await fetch(urlObj, {
+        ...options,
+        credentials: includeCredentials ?  "include" : undefined,
+        redirect: includeCredentials ? this.credentialedRedirect : options?.redirect,
+      });
 
       if (includeCredentials)
         this.checkCredentialedRedirect(requestUrl, response);

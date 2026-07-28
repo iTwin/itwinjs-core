@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Map-layer credentials can now be restricted to trusted origins via the opt-in MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins, and blocked requests are reported through MapLayerImageryProviderStatus.UntrustedOrigin. Server-provided attribution and tooltip text is rendered as plain text instead of HTML.",
+      "comment": "Map-layer credentials can now be restricted to trusted origins via the opt-in MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins, and blocked requests are reported through MapLayerImageryProviderStatus.UntrustedOrigin. While the restriction is enabled, requests carrying credentials refuse redirects so that credentials cannot reach an unlisted origin. Server-provided attribution and tooltip text is rendered as plain text instead of HTML.",
       "type": "none"
     }
   ],

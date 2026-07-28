@@ -6157,6 +6157,8 @@ export abstract class MapLayerImageryProvider {
     protected checkCredentialedRedirect(requestedUrl: string, response: Response): void;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // @internal
+    protected get credentialedRedirect(): RequestRedirect | undefined;
     // @internal (undocumented)
     decorate(_context: DecorateContext): void;
     // @internal

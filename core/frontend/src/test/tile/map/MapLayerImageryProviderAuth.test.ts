@@ -403,20 +403,25 @@ describe("MapLayerImageryProvider authorization", () => {
     expect((fetchMock.mock.calls[3][1] as RequestInit).credentials).toBeUndefined();
   });
 
-  it("reports a credentialed request that was transparently redirected to an untrusted origin", async () => {
+  it("refuses redirects on credentialed requests while the restriction is enabled", async () => {
     IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://other.example.org"];
     fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValue(okResponse());
 
     const provider = createProvider();
     await provider.makeRequest(crossOriginUrl);   // validated handshake latches the origin
 
-    // A later latched (credential-bearing) request is transparently redirected cross-origin: the
-    // destination must be detected and reported, and must never become latched itself.
-    fetchMock.mockResolvedValue(redirectedTo(okResponse(), "https://evil.example.net/steal"));
+    // Later latched (credential-bearing) requests must refuse redirects outright: a followed redirect
+    // would have already delivered the credentials to the destination by the time it can be inspected.
     await provider.makeRequest(crossOriginUrl);
+    const latchedOpts = fetchMock.mock.calls[2][1] as RequestInit;
+    expect(latchedOpts.credentials).toEqual("include");
+    expect(latchedOpts.redirect).toEqual("error");
 
-    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
-    expect(provider.blockedOrigins).toEqual(["https://evil.example.net"]);
+    // Anonymous requests keep following redirects normally.
+    await provider.makeRequest(sameOriginUrl);
+    const anonymousOpts = fetchMock.mock.calls[3][1] as RequestInit;
+    expect(anonymousOpts.credentials).toBeUndefined();
+    expect(anonymousOpts.redirect).toBeUndefined();
   });
 
   it("logs the discovery warning when a credentialed request is transparently redirected cross-origin in legacy mode", async () => {
@@ -427,8 +432,10 @@ describe("MapLayerImageryProvider authorization", () => {
     const provider = createProvider();
     await provider.makeRequest(crossOriginUrl);   // legacy handshake latches the origin
 
+    // Legacy mode keeps following redirects, so the destination can only be detected after the fact.
     fetchMock.mockResolvedValue(redirectedTo(okResponse(), "https://evil.example.net/steal"));
     await provider.makeRequest(crossOriginUrl);
+    expect((fetchMock.mock.calls[2][1] as RequestInit).redirect).toBeUndefined();
 
     // Match the quoted origin from the warning message rather than a bare substring of the URL.
     const warnings = logWarning.mock.calls.filter((call) => String(call[1]).includes(`origin 'https://evil.example.net'`));
