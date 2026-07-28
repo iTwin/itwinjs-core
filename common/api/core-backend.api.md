@@ -114,6 +114,7 @@ import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { FormattingSpecArgs } from '@itwin/core-quantity';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
@@ -303,6 +304,7 @@ import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
+import { UnitsProvider } from '@itwin/core-quantity';
 import { UpgradeOptions } from '@itwin/core-common';
 import { UrlLinkProps } from '@itwin/core-common';
 import { Vector3d } from '@itwin/core-geometry';
@@ -3003,7 +3005,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static get className(): string;
     static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[];
     static evaluateFields(args: EvaluateFieldsArgs): number;
-    static evaluateFieldsAsync(args: EvaluateFieldsArgs): Promise<number>;
+    static evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number>;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
@@ -3294,6 +3296,11 @@ export interface EvaluateFieldsArgs {
     iModel: IModelDb;
 }
 
+// @beta
+export interface EvaluateFieldsAsyncArgs extends EvaluateFieldsArgs {
+    formatting?: FieldFormattingProviders;
+}
+
 // @public
 export namespace ExportGraphics {
     export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean;
@@ -3556,6 +3563,12 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @beta
+export interface FieldFormattingProviders {
+    formatsProvider?: FormatsProvider;
+    unitsProvider?: UnitsProvider;
 }
 
 // @public @deprecated

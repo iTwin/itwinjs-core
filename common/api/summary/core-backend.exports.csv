@@ -254,6 +254,7 @@ internal;function;isValid
 internal;function;makeInvalid
 internal;function;typeFromClass
 beta;interface;EvaluateFieldsArgs
+beta;interface;EvaluateFieldsAsyncArgs
 public;namespace;ExportGraphics
 public;type;ExportGraphicsFunction
 public;interface;ExportGraphicsInfo
@@ -283,6 +284,7 @@ beta;class;ExternalSourceGroup
 beta;class;ExternalSourceGroupGroupsSources
 beta;class;ExternalSourceIsInRepository
 beta;class;ExternalSourceOwnsAttachments
+beta;interface;FieldFormattingProviders
 public;class;FileNameResolver
 deprecated;class;FileNameResolver
 internal;type;FindFontId
