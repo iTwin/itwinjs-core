@@ -63,6 +63,19 @@ const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iMode
 
 The existing synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks continue to render `"quantity"` and `"coordinate"` fields as their raw string representation for backward compatibility. Applications that want formatted quantity output for text annotations should migrate their evaluation calls to the async variant.
 
+Applications that own a [FormatsProvider]($core-quantity) and/or [UnitsProvider]($core-quantity) — for example, one backed by an adopted FormatSet — can route field formatting through them by passing them on [EvaluateFieldsAsyncArgs.formatting]($backend). Either provider may be omitted; any provider not supplied is defaulted to a schema-backed implementation derived from the iModel's schema context.
+
+```typescript
+const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+  iModel,
+  block,
+  formatting: {
+    formatsProvider: myFormattingSpecProvider, // e.g. Drawing Production's FormatSet-backed provider
+    // unitsProvider omitted -> defaults to the iModel's schema-backed units provider
+  },
+});
+```
+
 Applications integrating their own [FormattingSpecProvider]($core-quantity) can discover the [FormatterSpec]($core-quantity)s a [TextBlock]($common) will need before evaluating it, and pre-build them, via the new [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) entry point:
 
 ```typescript
