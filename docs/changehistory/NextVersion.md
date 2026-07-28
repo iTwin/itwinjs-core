@@ -98,7 +98,23 @@ ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, myFormattingSpecP
 ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, undefined);
 ```
 
-If no provider is registered (or the provider does not supply a spec for a given field), fields fall back to their existing raw string formatting.
+If no provider is registered (or the provider does not supply a spec for a given field), fields fall back to their existing raw string formatting. To make missing specs surface as an error instead, pass `onMissingSpec: "throw"` when registering the provider (or via [[FieldFormattingProviders]] on the async path):
+
+```typescript
+ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, myFormattingSpecProvider, { onMissingSpec: "throw" });
+// Any FieldRun evaluated against `iModel` whose KindOfQuantity / persistence unit combination
+// has not been prepared on `myFormattingSpecProvider` will now throw from evaluateFields and from
+// the TxnManager field-update callback path, instead of silently reverting to the raw value.
+
+await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+  iModel,
+  block,
+  formatting: {
+    formatsProvider: myFormatsProvider,
+    onMissingSpec: "throw",
+  },
+});
+```
 
 ## Electron
 

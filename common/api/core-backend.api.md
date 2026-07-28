@@ -2961,7 +2961,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
-    static setFieldFormattingProvider(iModel: IModelDb, provider: FormattingSpecProvider | undefined): void;
+    static setFieldFormattingProvider(iModel: IModelDb, provider: FormattingSpecProvider | undefined, options?: {
+        onMissingSpec?: "fallback" | "throw";
+    }): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
     static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;
@@ -3518,6 +3520,7 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
 // @beta
 export interface FieldFormattingProviders {
     formatsProvider?: FormatsProvider;
+    onMissingSpec?: "fallback" | "throw";
     unitsProvider?: UnitsProvider;
 }
 
