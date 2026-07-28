@@ -114,6 +114,7 @@ import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
+import { FormattingSpecArgs } from '@itwin/core-quantity';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -3000,6 +3001,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
+    static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[];
     static evaluateFields(args: EvaluateFieldsArgs): number;
     static evaluateFieldsAsync(args: EvaluateFieldsArgs): Promise<number>;
     static isSupportedForIModel(iModel: IModelDb): boolean;

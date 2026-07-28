@@ -9,7 +9,7 @@ import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { createUnitsProvider, FormatterSpec, UnitSystemKey } from "@itwin/core-quantity";
+import { createUnitsProvider, FormatterSpec, FormattingSpecArgs, UnitSystemKey } from "@itwin/core-quantity";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -491,4 +491,127 @@ export function updateAllFields(annotationElementId: Id64String, txn: EditTxn): 
 
 export async function updateAllFieldsAsync(annotationElementId: Id64String, txn: EditTxn): Promise<void> {
   return doUpdateFieldsAsync(txn, annotationElementId, undefined, false);
+}
+
+// Resolve a FieldRun's target down to its terminal EC Property using schema metadata only
+// (no ECSQL, no element values). Returns undefined when the path cannot be followed in the schema
+// -- notably when it dives into a JSON-in-string leaf, since such paths have no reliable
+// ECProperty/KoQ association.
+function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Property | undefined {
+  const host = field.propertyHost;
+  const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
+  if (!EntityClass.isEntityClass(schemaItem)) {
+    return undefined;
+  }
+
+  let ecClass: AnyClass = schemaItem;
+  const { propertyName, accessors } = field.propertyPath;
+  let ecProp = ecClass.getPropertySync(propertyName);
+  if (!ecProp) {
+    return undefined;
+  }
+
+  if (!accessors || accessors.length === 0) {
+    return ecProp;
+  }
+
+  // Mirror the descent that getFieldPropertyValue performs at query time: when we enter a
+  // non-array struct at the root, subsequent named accessors are looked up on the struct's class.
+  if (ecProp.isStruct() && !ecProp.isArray()) {
+    ecClass = ecProp.structClass;
+  }
+
+  for (const accessor of accessors) {
+    if (typeof accessor === "number") {
+      if (!ecProp.isArray()) {
+        return undefined;
+      }
+      if (ecProp.isStruct()) {
+        ecClass = ecProp.structClass;
+      }
+      // For primitive arrays, ecProp already represents the element type -- nothing to advance.
+    } else {
+      // Named accessors require a struct context. A String primitive with a further accessor is
+      // a JSON-in-string path; those have no schema-driven KoQ.
+      if (!ecProp.isStruct()) {
+        return undefined;
+      }
+      const next: Property | undefined = ecClass.getPropertySync(accessor);
+      if (!next) {
+        return undefined;
+      }
+      ecProp = next;
+      if (ecProp.isStruct() && !ecProp.isArray()) {
+        ecClass = ecProp.structClass;
+      }
+    }
+  }
+
+  return ecProp;
+}
+
+// Emit a FormattingSpecArgs entry for a single field, or undefined if the field does not require
+// a prepared spec.
+function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs | undefined {
+  const quantityOptions = field.formatOptions?.quantity;
+
+  // A field with an inline FormatProps override is fully self-describing: no lookup on a
+  // FormattingSpecProvider is required.
+  if (quantityOptions?.format) {
+    return undefined;
+  }
+
+  const ecProp = resolveFieldTerminalProperty(field, iModel);
+  if (!ecProp) {
+    return undefined;
+  }
+
+  const propertyType = determineFieldPropertyType(ecProp);
+  if (propertyType !== "quantity" && propertyType !== "coordinate") {
+    return undefined;
+  }
+
+  // Resolve the KoQ name to look up. Priority: explicit formatSetKey override > property KoQ.
+  const koq = ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
+  const name = quantityOptions?.formatSetKey ?? koq?.fullName;
+  if (!name) {
+    return undefined;
+  }
+
+  // Resolve the source persistence unit. Priority: explicit persistenceUnit override > KoQ persistence unit.
+  const persistenceUnitName = quantityOptions?.persistenceUnit ?? koq?.persistenceUnit?.fullName;
+  if (!persistenceUnitName) {
+    return undefined;
+  }
+
+  const args: FormattingSpecArgs = { name, persistenceUnitName };
+  return args;
+}
+
+/** Walks the [FieldRun]($common)s in `textBlock` and returns a deduplicated collection of the
+ * [FormattingSpecArgs]($core-quantity) their "quantity" and "coordinate" values require in order
+ * to be formatted through the standard iTwin.js quantity pipeline.
+ *
+ * Intended to be used by an application-supplied [FormattingSpecProvider]($core-quantity) to
+ * pre-warm its cache before an annotation is inserted, updated, or re-evaluated. Fields that
+ * carry an inline [QuantityFieldFormatOptions.format]($common) override are excluded because
+ * they do not require a provider lookup.
+ * @internal
+ */
+export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel: IModelDb): FormattingSpecArgs[] {
+  const seen = new Map<string, FormattingSpecArgs>();
+  for (const { child } of traverseTextBlockComponent(textBlock)) {
+    if (child.type !== "field") {
+      continue;
+    }
+    const args = computeFieldFormattingRequirement(child, iModel);
+    if (!args) {
+      continue;
+    }
+    const key = `${args.name}|${args.persistenceUnitName}`;
+    if (!seen.has(key)) {
+      seen.set(key, args);
+    }
+  }
+  return Array.from(seen.values());
 }
