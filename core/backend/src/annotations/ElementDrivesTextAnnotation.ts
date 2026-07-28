@@ -8,7 +8,7 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
-import { FormattingSpecArgs } from "@itwin/core-quantity";
+import { FormatsProvider, FormattingSpecArgs, UnitsProvider } from "@itwin/core-quantity";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
@@ -63,6 +63,34 @@ export interface EvaluateFieldsArgs {
   block: TextBlock;
   /** The iModel containing the elements supplying the display strings for the fields in [[block]]. */
   iModel: IModelDb;
+}
+
+/** Application-supplied [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity)
+ * used to format `"quantity"` and `"coordinate"` [FieldRun]($common)s. Either provider may be
+ * omitted; any provider not supplied is defaulted to a schema-backed implementation
+ * derived from [[EvaluateFieldsArgs.iModel]]'s schema context.
+ *
+ * This is the injection point that a host that owns a
+ * [FormattingSpecProvider]($core-quantity) backed by an adopted FormatSet) uses to route
+ * FieldRun formatting through its own provider.
+ * @beta
+ */
+export interface FieldFormattingProviders {
+  /** Provider used to resolve a [FormatProps]($core-quantity) by KindOfQuantity name. */
+  formatsProvider?: FormatsProvider;
+  /** Provider used to resolve [UnitProps]($core-quantity) (e.g. the persistence unit of a value). */
+  unitsProvider?: UnitsProvider;
+}
+
+/** Arguments supplied to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]].
+ * @beta
+ */
+export interface EvaluateFieldsAsyncArgs extends EvaluateFieldsArgs {
+  /** Optional application-supplied formats/units providers used to format `"quantity"` and
+   * `"coordinate"` [FieldRun]($common)s. When omitted, a schema-backed default is built from
+   * [[iModel]].
+   */
+  formatting?: FieldFormattingProviders;
 }
 
 /** A relationship in which the source element hosts one or more properties that are displayed by a target [[ITextAnnotation]] element.
@@ -195,15 +223,19 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   /** Async counterpart to [[evaluateFields]] that formats "quantity" and "coordinate" [FieldRun]($common)s
-   * through the standard iTwin.js quantity formatting pipeline using a schema-backed
-   * [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity). Non-quantity field types
-   * are formatted identically to [[evaluateFields]].
+   * through the standard iTwin.js quantity formatting pipeline. Non-quantity field types are
+   * formatted identically to [[evaluateFields]].
+   *
+   * By default the [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity) used
+   * during formatting are derived from `args.iModel`'s schema context. To route formatting through
+   * an application-owned provider (e.g. a FormatSet-backed
+   * [FormattingSpecProvider]($core-quantity)), supply [[EvaluateFieldsAsyncArgs.formatting]].
    * @returns the number of fields whose display strings were modified.
    * @beta
    */
-  public static async evaluateFieldsAsync(args: EvaluateFieldsArgs): Promise<number> {
+  public static async evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number> {
     const context = createUpdateContext(undefined, args.iModel, false);
-    const formatter = createFieldFormatterContext(args.iModel);
+    const formatter = createFieldFormatterContext(args.iModel, args.formatting);
     return updateFieldsAsync(args.block, context, formatter);
   }
 

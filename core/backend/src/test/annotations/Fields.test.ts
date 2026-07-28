@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun } from "@itwin/core-common";
-import { FormatProps } from "@itwin/core-quantity";
+import { FormatProps, FormatsProvider } from "@itwin/core-quantity";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
-import { DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
+import { BeEvent, DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
@@ -869,6 +869,128 @@ describe.only("Field evaluation", () => {
 
       expect(updatedCount).to.equal(1);
       expect(content).to.equal(FieldRun.invalidContentIndicator);
+    });
+  });
+
+  describe("evaluateFieldsAsync (injected providers)", () => {
+    it("uses an application-supplied FormatsProvider to resolve KoQ formats", async () => {
+      const inlineFormat: FormatProps = {
+        composite: { includeZero: true, units: [{ label: "mm", name: "Units.MM" }] },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 2,
+        type: "Decimal",
+        uomSeparator: " ",
+      };
+      let lookups = 0;
+      const stubProvider: FormatsProvider = {
+        onFormatsChanged: new BeEvent(),
+        async getFormat(name) {
+          lookups += 1;
+          return name === "Fields.LENGTH" ? inlineFormat : undefined;
+        },
+      };
+
+      const block = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        cachedContent: "old",
+      });
+      block.appendRun(field);
+
+      const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+        iModel: imodel,
+        block,
+        formatting: { formatsProvider: stubProvider },
+      });
+
+      expect(updated).to.equal(1);
+      // lengthProp = 2.5 m -> 2500 mm via the injected provider.
+      expect(field.cachedContent).to.equal("2500 mm");
+      expect(lookups).to.equal(1);
+    });
+
+    it("still applies inline format overrides when a FormatsProvider is injected (no lookup)", async () => {
+      let lookups = 0;
+      const stubProvider: FormatsProvider = {
+        onFormatsChanged: new BeEvent(),
+        async getFormat() {
+          lookups += 1;
+          return undefined;
+        },
+      };
+
+      const block = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        formatOptions: {
+          quantity: {
+            format: {
+              composite: { includeZero: true, units: [{ label: "ft", name: "Units.FT" }] },
+              formatTraits: ["keepSingleZero", "showUnitLabel"],
+              precision: 4,
+              type: "Decimal",
+              uomSeparator: " ",
+            },
+          },
+        },
+        cachedContent: "old",
+      });
+      block.appendRun(field);
+
+      const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+        iModel: imodel,
+        block,
+        formatting: { formatsProvider: stubProvider },
+      });
+
+      expect(updated).to.equal(1);
+      // 2.5 m -> ~8.2021 ft; inline format wins over provider lookup.
+      expect(field.cachedContent).to.equal("8.2021 ft");
+      expect(lookups).to.equal(0);
+    });
+
+    it("falls back to raw formatting when an injected FormatsProvider returns undefined and no other source resolves", async () => {
+      const stubProvider: FormatsProvider = {
+        onFormatsChanged: new BeEvent(),
+        async getFormat() { return undefined; },
+      };
+
+      const block = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        // outerStruct.innerStruct.doubles[0] has no KoQ, so with the injected provider returning
+        // undefined and no override, formatting must fall back to raw string.
+        propertyPath: { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] },
+        cachedContent: "old",
+      });
+      block.appendRun(field);
+
+      const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+        iModel: imodel,
+        block,
+        formatting: { formatsProvider: stubProvider },
+      });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("1");
+    });
+
+    it("uses schema-backed providers when no overrides are supplied", async () => {
+      // Regression: omitting `formatting` should behave identically to before this API was added.
+      const block = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "point" },
+        cachedContent: "old",
+      });
+      block.appendRun(field);
+
+      const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("(1 m, 2 m, 3 m)");
     });
   });
 
