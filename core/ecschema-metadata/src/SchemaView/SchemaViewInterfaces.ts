@@ -65,7 +65,7 @@ export enum SchemaViewPrimitiveType {
   IGeometry = 0xa01,
 }
 
-import { StrengthDirection, StrengthType } from "./ECObjects";
+import { StrengthDirection, StrengthType } from "../ECObjects";
 
 /** Internal storage for a schema. Schemas own contiguous ranges of classes, enums, KoQs, and categories.
  * @internal
