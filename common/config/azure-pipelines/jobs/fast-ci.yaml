@@ -187,7 +187,12 @@ jobs:
     condition: and(succeeded('ParseCommitNotes'), not(canceled()))
     strategy:
       matrix:
-        # TEMPORARY: mac-only, pinned to a specific machine, to reproduce the iOS simulator boot failure.
+        "Windows_Node_24":
+          platform: Windows_NT
+          name: $(win_pool)
+        "Linux_Node_24":
+          platform: Linux
+          name: $(linux_pool)
         "MacOS_Node_24":
           platform: Darwin
           name: $(mac_pool)
@@ -196,7 +201,6 @@ jobs:
       name: $(name)
       demands:
         - Agent.OS -equals $(platform)
-        - Agent.ComputerName -equals BuildMacM1Minion54
 
     timeoutInMinutes: 60
 
