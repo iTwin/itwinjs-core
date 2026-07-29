@@ -33,10 +33,11 @@ The following path applies to each newly requested `IModelTile`:
    calls `TileRequestChannels.getIModelTileChannel`.
 2. [`TileRequestChannels.getIModelTileChannel`](../../../core/frontend/src/tile/TileRequestChannels.ts)
    calls `IModelTileRequestChannels.getChannelForTile`.
-3. For a new tile, `IModelTile.requestChannel` is undefined. Unless the
-   specialized metadata cache supplies content,
-   [`getChannelForTile`](../../../core/frontend/src/internal/tile/IModelTileRequestChannels.ts)
-   returns the `CloudStorageCacheChannel`.
+3. For a new tile, `IModelTile.requestChannel` is undefined. If the optional
+   metadata cache is enabled, it is tried first. Unless that cache supplies
+   content, [`getChannelForTile`](../../../core/frontend/src/internal/tile/IModelTileRequestChannels.ts)
+   returns the `CloudStorageCacheChannel`; otherwise it returns that channel
+   directly.
 4. The [`TileRequest`](../../../core/frontend/src/tile/TileRequest.ts)
    constructor captures that channel. When the channel dispatches the request,
    [`TileRequestChannel.dispatch`](../../../core/frontend/src/tile/TileRequestChannel.ts)
@@ -80,7 +81,7 @@ so the same cache miss produces one frontend dispatch instead of two.
 ## Automated proof
 
 [`TileRequestChannels.test.ts`](../../../core/frontend/src/test/tile/TileRequestChannels.test.ts)
-verifies both claims:
+verifies the channel-selection and request-flow claims:
 
 - The option enables or disables the cloud channel for both HTTP RPC and IPC.
   Transport selection does not affect the result.
@@ -89,6 +90,21 @@ verifies both claims:
   receives seven calls with the same seven tile objects. This guards against an
   implementation that checks only the first tile or only the first request for
   an iModel.
+- A real `TileRequest` is queued and dispatched through the cloud channel,
+  receives a cache miss, and is then queued and dispatched through RPC. The
+  test observes one dispatch and one cache miss on the cloud channel, one
+  dispatch and one completion on RPC, and two total dispatches.
+
+[`TileStorage.test.ts`](../../../core/frontend/src/test/tile/TileStorage.test.ts)
+verifies the no-cache backend behavior independently:
+
+- An `undefined` transfer configuration is cached per iModel.
+- Two tile downloads make one `getTileCacheConfig` call and no object-storage
+  download calls.
+
+These tests prove the frontend control flow and transfer-configuration
+behavior. They do not prove the measured timing reduction for a particular
+Electron workload.
 
 ## Electron measurement
 

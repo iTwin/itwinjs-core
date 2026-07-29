@@ -102,6 +102,59 @@ describe("TileRequestChannels", () => {
     }
   });
 
+  it("retries a cache miss through the RPC channel", async () => {
+    await MockRender.App.startup({ tileAdmin: { enableExternalTileCacheLookup: true } });
+
+    const requestCachedTileContent = vi.spyOn(IModelApp.tileAdmin, "requestCachedTileContent").mockResolvedValue(undefined);
+    const tile = Object.create(IModelTile.prototype) as IModelTile;
+    const iModel = { tiles: { isDisposed: false } };
+    Object.assign(tile, {
+      tree: { iModel },
+      _contentId: "tile",
+      _maximumSize: 1,
+      _isLeaf: true,
+      requestContent: vi.fn().mockResolvedValue(new Uint8Array([1])),
+      readContent: vi.fn().mockResolvedValue({ isLeaf: true }),
+      setContent: vi.fn(),
+      computeLoadPriority: () => 0,
+    });
+    const user = {
+      tileUserId: 1,
+      iModel,
+      discloseTileTrees: () => { },
+    };
+
+    IModelApp.tileAdmin.registerUser(user);
+    try {
+      const cacheRequest = new TileRequest(tile, user);
+      tile.request = cacheRequest;
+      cacheRequest.channel.append(cacheRequest);
+      cacheRequest.channel.process();
+      await vi.waitFor(() => expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage!.statistics.totalCacheMisses).toBe(1));
+
+      expect(cacheRequest.channel).toBe(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
+      expect(tile.requestChannel).toBe(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+      expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage!.statistics.totalDispatchedRequests).toBe(1);
+      expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage!.statistics.totalCacheMisses).toBe(1);
+
+      const rpcRequest = new TileRequest(tile, user);
+      tile.request = rpcRequest;
+      rpcRequest.channel.append(rpcRequest);
+      rpcRequest.channel.process();
+      await vi.waitFor(() => expect(tile.request).toBeUndefined());
+
+      expect(rpcRequest.channel).toBe(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+      expect(IModelApp.tileAdmin.channels.iModelChannels.rpc.statistics.totalDispatchedRequests).toBe(1);
+      expect(IModelApp.tileAdmin.statistics.totalDispatchedRequests).toBe(2);
+      expect(IModelApp.tileAdmin.statistics.totalCompletedRequests).toBe(1);
+      expect(requestCachedTileContent).toHaveBeenCalledTimes(1);
+    } finally {
+      IModelApp.tileAdmin.forgetUser(user);
+      requestCachedTileContent.mockRestore();
+      await MockRender.App.shutdown();
+    }
+  });
+
   it("returns whether channel is registered", () => {
     const channel = new TileRequestChannel("abc", 123);
     const channels = new TileRequestChannels(undefined, false);
