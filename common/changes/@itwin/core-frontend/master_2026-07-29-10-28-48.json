@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pullChanges",
+      "comment": "Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pushChanges",
       "type": "none"
     }
   ],
