@@ -486,23 +486,23 @@ export class TextDecorationTool extends Tool {
     // No formatOptions at all — cleanest test of the demo provider on both paths.
     expectField(
       "No overrides",
-      "raw: (30813.264, 58981.8092, 0.05); demo: uses ParkingRow.Origin's KoQ via FormatsProvider",
+      "(30813.264 m, 58981.8092 m, 0.05 m)",
       undefined,
-      "In demo mode, the demo provider looks up the property's own KoQ.",
+      "No formatOptions. Property KoQ can't be resolved, so falls through to defaultCoordinateFormatProps (precision 4 metres). Trailing zeros dropped (no `trailZeros` trait).",
     );
 
     // Only persistence unit
     expectField(
       "Only persistence unit",
-      "raw: (30813.264, 58981.8092, 0.05); demo: uses ParkingRow.Origin's KoQ via FormatsProvider",
+      "(30813.264 m, 58981.8092 m, 0.05 m)",
       { quantity: { persistenceUnit: "Units.M" } },
-      "In demo mode, the demo provider looks up the property's own KoQ.",
+      "persistenceUnit alone doesn't select a format; falls through to defaultCoordinateFormatProps.",
     );
 
     // formatSetKey chooses which KoQ the FormatsProvider resolves.
     expectField(
       "KoQ override (LENGTH_SHORT)",
-      "(30813264.04 [*]mm, 58981809.25 [*]mm, 50.00 [*]mm)",
+      "(30813264.04 [*]mm, 58981809.25 [*]mm, 50 [*]mm)",
       { quantity: { formatSetKey: "AecUnits.LENGTH_SHORT", persistenceUnit: "Units.M" } },
       "formatSetKey= overrides the property's own KoQ. DEMO_SEED_FORMATS supplies an [*]mm-marked stand-in so this works even without the AecUnits schema loaded.",
     );
@@ -510,7 +510,7 @@ export class TextDecorationTool extends Tool {
     // Post-format wrappers — no quantity override, so wraps whatever the active pathway produces.
     expectField(
       "Prefix/suffix wrappers",
-      "L=<coordinate rendering> (m)",
+      "L=(30813.264 m, 58981.8092 m, 0.05 m) (m)",
       { prefix: "L=", suffix: " (m)", quantity: { persistenceUnit: "Units.M" } },
       "prefix/suffix wrap the ENTIRE formatted coordinate string (not each magnitude).",
     );
@@ -518,7 +518,7 @@ export class TextDecorationTool extends Tool {
     // Post-format upper-case transform — no quantity override.
     expectField(
       "Case upper",
-      "<coordinate rendering> in upper case",
+      "(30813.264 M, 58981.8092 M, 0.05 M)",
       { case: "upper", quantity: { persistenceUnit: "Units.M" } },
       "case=upper is applied after formatting.",
     );
@@ -528,23 +528,23 @@ export class TextDecorationTool extends Tool {
     // property's own KoQ is unresolvable.
     expectField(
       "Seed Demo.LENGTH_M",
-      "(30813.2640 [#]m, 58981.8092 [#]m, 0.0500 [#]m)",
+      "(30813.264 [#]m, 58981.8092 [#]m, 0.05 [#]m)",
       { quantity: { formatSetKey: "Demo.LENGTH_M", persistenceUnit: "Units.M" } },
       "Uses DEMO_SEED_FORMATS['Demo.LENGTH_M'] — decimal metres, 4 dp. [#] marker confirms the demo seed applied.",
     );
 
     expectField(
       "Seed Demo.LENGTH_MM",
-      "(30813264.000 [*]mm, 58981809.200 [*]mm, 50.000 [*]mm)",
+      "(30813264.039 [*]mm, 58981809.247 [*]mm, 50 [*]mm)",
       { quantity: { formatSetKey: "Demo.LENGTH_MM", persistenceUnit: "Units.M" } },
-      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_MM'] — decimal mm, 3 dp (verifies m -> mm conversion). [*] marker confirms the demo seed applied.",
+      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_MM'] — decimal mm, 3 dp. Trailing digits reflect actual m->mm conversion. [*] marker confirms the demo seed applied.",
     );
 
     expectField(
       "Seed Demo.LENGTH_FT",
-      "(101093.3858 [~]ft, 193509.8747 [~]ft, 0.1640 [~]ft)",
+      "(101093.386 [~]ft, 193509.8729 [~]ft, 0.164 [~]ft)",
       { quantity: { formatSetKey: "Demo.LENGTH_FT", persistenceUnit: "Units.M" } },
-      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_FT'] — decimal ft, 4 dp (verifies m -> ft conversion). [~] marker confirms the demo seed applied.",
+      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_FT'] — decimal ft, 4 dp. Trailing digits reflect actual m->ft conversion. [~] marker confirms the demo seed applied.",
     );
 
     editor.appendBreak();
@@ -556,7 +556,7 @@ export class TextDecorationTool extends Tool {
     // Inline FormatProps override — meters, 3 decimals. Deterministic conversion.
     expectField(
       "Inline m (3 demo)",
-      "(30813.264 m, 58981.809 m, 0.050 m)",
+      "(30813.264 m, 58981.809 m, 0.05 m)",
       {
         quantity: {
           persistenceUnit: "Units.M",
@@ -568,13 +568,13 @@ export class TextDecorationTool extends Tool {
           },
         },
       },
-      "inline FormatProps — meters, 3 decimals.",
+      "inline FormatProps — meters, 3 decimals. Trailing zeros dropped (no `trailZeros` trait).",
     );
 
     // Inline FormatProps override — millimeters (verifies m -> mm conversion).
     expectField(
       "Inline mm (3 demo)",
-      "(30813264.000 mm, 58981809.200 mm, 50.000 mm)",
+      "(30813264.039 mm, 58981809.247 mm, 50 mm)",
       {
         quantity: {
           persistenceUnit: "Units.M",
@@ -586,7 +586,7 @@ export class TextDecorationTool extends Tool {
           },
         },
       },
-      "Verifies m -> mm conversion (multiply by 1000).",
+      "Verifies m -> mm conversion (multiply by 1000). Trailing digits reflect actual conversion.",
     );
 
     // Inline FormatProps override — feet, 2 decimals.
@@ -610,7 +610,7 @@ export class TextDecorationTool extends Tool {
     // Inline FormatProps override — composite feet-inches (verifies m -> ft/in conversion).
     expectField(
       "Inline ft-in (fractional)",
-      `(101093'-4 5/8", 193509'-10 1/2", 0'-2")`,
+      `(101093 ' 4 5/8 ", 193509 ' 10 1/2 ", 0 ' 2 ")`,
       {
         quantity: {
           persistenceUnit: "Units.M",
@@ -627,7 +627,7 @@ export class TextDecorationTool extends Tool {
           },
         },
       },
-      "Verifies m -> composite ft/in conversion (fractional).",
+      "Verifies m -> composite ft/in conversion (fractional). Default uomSeparator is a space; add `uomSeparator: \"\"` to eliminate it.",
     );
 
     // Inline override combined with post-format upper-case.
