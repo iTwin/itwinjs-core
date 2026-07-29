@@ -102,9 +102,11 @@ function log(message) {
   console.log(message);
 }
 
-// TEMPORARY: some CI agents report an iOS runtime as available while its profile can't actually
-// load ("runtime profile not found using 'System' match policy"), so boot fails. Pruning stale
-// devices and restarting CoreSimulator forces the daemon to re-scan the installed runtimes.
+// Best-effort repair for CI agents that report an iOS runtime as available while its profile
+// can't actually load ("runtime profile not found using 'System' match policy"), which makes
+// boot fail. Pruning stale devices and restarting CoreSimulator forces the daemon to re-scan the
+// installed runtimes. Kept in the code so the call in main() can be re-enabled when an agent gets
+// into this state again.
 function repairSimulators() {
   const commands = [
     "xcrun simctl shutdown all",
@@ -129,8 +131,9 @@ async function main() {
   // default to exiting with an error, only when we fully complete everything will it get set to 0
   process.exitCode = 1;
 
-  // TEMPORARY: attempt to repair broken simulator runtimes on the CI agent before booting.
-  repairSimulators();
+  // Normally disabled. Uncomment to repair a CI agent whose simulator runtime is reported as
+  // available but fails to boot ("runtime profile not found using 'System' match policy").
+  // repairSimulators();
 
   // get all iOS devices
   log("Getting iOS devices");
