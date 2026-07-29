@@ -23,7 +23,10 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
   let registry: MapLayerFormatRegistry;
   let fetchCalls: { url: string, init?: RequestInit }[];
 
-  const stubFetch = (responses: { [url: string]: unknown }, statusByUrl?: { [url: string]: number }) =>
+  /** `finalUrlByUrl` simulates fetch transparently following a redirect: the response reports a `url`
+   * that may differ in origin from the one that was requested.
+   */
+  const stubFetch = (responses: { [url: string]: unknown }, statusByUrl?: { [url: string]: number }, finalUrlByUrl?: { [url: string]: string }) =>
     sandbox.stub(globalThis, "fetch").callsFake(async function (input: RequestInfo | URL, init?: RequestInit) {
       const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
       fetchCalls.push({ url, init });
@@ -32,6 +35,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
         json: async () => responses[url],
         ok: status === 200,
         status,
+        url: finalUrlByUrl?.[url],
       } as unknown) as Response;
     });
 
@@ -127,6 +131,40 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
 
     expect(getAuthorization(fetchCalls[1].init)).to.not.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidCredentials);
+  });
+
+  it("reports UntrustedOrigin when a credentialed collections fetch is redirected to an untrusted origin", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    registry.trustedCredentialsOrigins = ["https://third-party.example.org"];
+    stubFetch(
+      { [sourceUrl]: makeLandingPage(crossOriginCollectionsUrl) },
+      { [crossOriginCollectionsUrl]: 401 },
+      { [crossOriginCollectionsUrl]: "https://evil.example.net/collections" },
+    );
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    // Credentials were attached because the advertised link was trusted, but fetch stripped them across the
+    // cross-origin redirect: the challenge comes from an origin that must not receive them.
+    expect(getAuthorization(fetchCalls[1].init)).to.not.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.UntrustedOrigin);
+  });
+
+  it("does not report UntrustedOrigin when an anonymous collections fetch is redirected to a trusted origin", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    registry.trustedCredentialsOrigins = ["https://redirect.example.net"];
+    stubFetch(
+      { [sourceUrl]: makeLandingPage(crossOriginCollectionsUrl) },
+      { [crossOriginCollectionsUrl]: 401 },
+      { [crossOriginCollectionsUrl]: "https://redirect.example.net/collections" },
+    );
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    // The challenge comes from an origin trusted to receive credentials, so this is an authentication
+    // failure rather than an origin our policy blocked.
+    expect(getAuthorization(fetchCalls[1].init)).to.be.null;
     expect(validation.status).to.equals(MapLayerSourceStatus.InvalidCredentials);
   });
 

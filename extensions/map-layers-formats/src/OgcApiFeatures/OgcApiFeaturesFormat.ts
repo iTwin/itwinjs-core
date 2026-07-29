@@ -90,7 +90,11 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         if (!response.ok) {
           // Some servers reject unauthenticated requests with 403 (Forbidden) instead of a 401 challenge.
           if (response.status === 401 || response.status === 403) {
-            if (!allowCreds)
+            // fetch follows redirects transparently, so the rejection may come from a different origin than
+            // the one classified above, and the Authorization header is stripped across a cross-origin
+            // redirect. Recompute the permission for the URL that actually rejected us.
+            const challengedUrl = response.url || collectionsUrl;
+            if (!IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(challengedUrl, source.url))
               return { status: MapLayerSourceStatus.UntrustedOrigin };
             return { status: (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth };
           }

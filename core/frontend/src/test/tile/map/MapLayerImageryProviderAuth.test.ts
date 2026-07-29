@@ -235,6 +235,32 @@ describe("MapLayerImageryProvider authorization", () => {
     expect(provider.blockedOrigins).toEqual(["https://redirect.example.net"]);
   });
 
+  it("reports the post-redirect origin when a trusted basic-auth request is redirected to an untrusted one", async () => {
+    // The request targets the settings origin, so credentials are attached; `fetch` then strips the
+    // Authorization header as it follows the cross-origin redirect, and the untrusted destination rejects it.
+    fetchMock.mockResolvedValue(redirectedTo(new Response(null, { status: 401, headers: { "WWW-Authenticate": "Basic" } }), "https://evil.example.net/steal"));
+
+    const provider = createProvider({ userName: "user", password: "pwd" });
+    await provider.makeRequest(sameOriginUrl);
+
+    expect((fetchMock.mock.calls[0][1] as RequestInit).headers).toBeDefined();   // credentials were attached to the request
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["https://evil.example.net"]);
+  });
+
+  it("does not report an untrusted request redirected to a trusted origin", async () => {
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://redirect.example.net"];
+    fetchMock.mockResolvedValue(redirectedTo(new Response(null, { status: 401, headers: { "WWW-Authenticate": "Basic" } }), "https://redirect.example.net/wms"));
+
+    const provider = createProvider({ userName: "user", password: "pwd" });
+    await provider.makeRequest(crossOriginUrl);
+
+    // The 401 comes from an origin trusted to receive credentials, so it is an authentication failure,
+    // not an origin our policy blocked.
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
+    expect(provider.blockedOrigins).toEqual([]);
+  });
+
   it("does not report UntrustedOrigin when a gate-blocked request succeeds anonymously", async () => {
     const provider = createProvider({ userName: "user", password: "pwd" });
     await provider.makeRequest(crossOriginUrl);

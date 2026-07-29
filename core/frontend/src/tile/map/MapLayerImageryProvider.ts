@@ -488,19 +488,19 @@ export abstract class MapLayerImageryProvider {
 
     let headers: Headers | undefined;
     let hasCreds = false;
-    let credsWithheld = false;
+    // Whether this request had basic-auth credentials of its own to offer. Requests carrying a caller-supplied
+    // `authorization` are excluded: those bypass the origin policy entirely.
+    const hasSettingsCreds = !authorization && !!this._settings.userName && !!this._settings.password;
     if (authorization) {
       headers = new Headers();
       headers.set("Authorization", authorization);
-    } else if (this._settings.userName && this._settings.password) {
+    } else if (hasSettingsCreds) {
       if (this.isCredentialsSharingAllowed(url)) {
         hasCreds = true;
         headers = new Headers();
         this.setRequestAuthorization(headers);
         if (!this.matchesSettingsUrlOrigin(url))
           this.logUntrustedOriginUse(url);
-      } else {
-        credsWithheld = true;
       }
     }
     const includeCredentials = this.includeUserCredentials(url);
@@ -544,9 +544,13 @@ export abstract class MapLayerImageryProvider {
       } else {
         this.reportBlockedOrigin(challengedUrl);
       }
-    } else if ((response.status === 401 || response.status === 403) && credsWithheld) {
+    } else if ((response.status === 401 || response.status === 403) && hasSettingsCreds && !this.isCredentialsSharingAllowed(challengedUrl)) {
       // Some servers answer an unauthenticated request with 403 (Forbidden) rather than a 401 challenge;
-      // since credentials were withheld here, either status most likely results from the withholding.
+      // since this request could not present its credentials to the challenging origin, either status most
+      // likely results from that. The permission is recomputed for the challenged URL rather than reusing the
+      // decision made for the requested one: `fetch` strips the Authorization header when it follows a
+      // cross-origin redirect, so a trusted request can still arrive unauthenticated at an untrusted origin,
+      // and conversely a request that started out untrusted may end up at an origin that is trusted.
       this.reportBlockedOrigin(challengedUrl);
     }
 
