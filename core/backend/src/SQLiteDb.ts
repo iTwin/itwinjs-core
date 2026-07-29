@@ -184,10 +184,12 @@ export class SQLiteDb {
   }
 
   /**
-   * Apply a changeset file - in the same on-disk format used for iModel changesets - to this SQLiteDb.
-   * Unlike `BriefcaseDb.pullChanges`, this does *not* validate the changeset header (e.g. parentId/changesetId)
-   * against the current state of the database - it simply applies the changes it contains. If applying the
-   * changeset encounters any conflict, or otherwise fails, this method throws (conflicts are never resolved
+   * Apply a raw sqlite changeset file - the plain, uncompressed byte stream produced by the sqlite session
+   * extension - to this SQLiteDb. This is *not* the same on-disk format used for iModel changesets.
+   * Unlike `BriefcaseDb.pullChanges`, this does *not* perform any iModel-style changeset relationship validation (e.g. parentId/changesetId)
+   * against the current state of the database (raw sqlite changesets have no header) - it simply applies the changes it contains. It also does *not*
+   * support DDL/schema changes - raw sqlite changesets cannot represent them. If applying the changeset
+   * encounters any conflict, or otherwise fails, this method throws (conflicts are never resolved
    * automatically).
    * @note this method only throws on failure - it does *not* commit or abandon any changes itself. If it
    * throws, some (but not necessarily all) of the changeset's changes may have already been applied to the
@@ -201,8 +203,10 @@ export class SQLiteDb {
   }
 
   /**
-   * Begin capturing DDL and data changes made to this SQLiteDb, so they may later be saved via [[createChangeset]].
+   * Begin capturing data changes made to this SQLiteDb, so they may later be saved via [[createChangeset]].
    * Intended only to produce changeset files for testing [[applyChangeset]] - not for any other purpose.
+   * @note DDL/schema changes are *not* captured - the raw sqlite changeset format produced by [[createChangeset]]
+   * cannot represent them. [[createChangeset]] throws if any DDL was executed via [[executeDdl]] since tracking began.
    * @internal
    */
   public startChangeTracking(): void {
@@ -210,9 +214,12 @@ export class SQLiteDb {
   }
 
   /**
-   * Execute a DDL statement (e.g. `CREATE TABLE`) so that, if change tracking is active (see [[startChangeTracking]]),
-   * the DDL is captured for inclusion in the changeset produced by [[createChangeset]]. DDL executed via [[executeSQL]]
-   * is *not* captured for change tracking purposes.
+   * Execute a DDL statement (e.g. `CREATE TABLE`). DDL cannot be represented in the raw sqlite changeset format
+   * produced by [[createChangeset]], so it is never included in a changeset regardless of how it is executed.
+   * However, unlike DDL executed via [[executeSQL]], DDL executed via this method *is* recorded by change
+   * tracking (see [[startChangeTracking]]) for detection purposes: if any DDL is executed via this method while
+   * tracking is active, [[createChangeset]] throws rather than silently producing a changeset that omits the
+   * schema change.
    * @internal
    */
   public executeDdl(ddl: string): void {
@@ -220,8 +227,10 @@ export class SQLiteDb {
   }
 
   /**
-   * Write out the changes captured since [[startChangeTracking]] was called to a changeset file, in the same
-   * on-disk format used for iModel changesets.
+   * Write out the changes captured since [[startChangeTracking]] was called to a changeset file, holding the
+   * raw sqlite changeset (the plain, uncompressed byte stream produced by the sqlite session extension). This
+   * is *not* the same on-disk format used for iModel changesets. Throws if any DDL/schema changes were captured,
+   * since raw sqlite changesets cannot represent them.
    * @param changesetFile the local file name to write the changeset to.
    * @internal
    */

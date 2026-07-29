@@ -872,7 +872,7 @@ export namespace ViewStore {
             if (typeof id === "string")
               ids.add(id);
           }
-        }, bindings ? QueryBinder.from(bindings) : undefined);
+        }, bindings ? QueryBinder.fromSkippingNullish(bindings) : undefined);
         this.iterateCompressedGuidRows(props.query.adds, (id) => ids.add(id));
         this.iterateCompressedGuidRows(props.query.removes, (id) => ids.delete(id)); // removes take precedence over adds
       } catch (err: any) {

@@ -7865,6 +7865,8 @@ export class QueryBinder {
     bindString(indexOrName: string | number, val: string): this;
     bindStruct(indexOrName: string | number, val: object): this;
     static from(args: any[] | object | undefined): QueryBinder;
+    // @internal
+    static fromSkippingNullish(args: any[] | object | undefined): QueryBinder;
     // (undocumented)
     serialize(): object;
 }
