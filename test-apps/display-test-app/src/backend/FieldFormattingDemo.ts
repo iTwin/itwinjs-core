@@ -27,14 +27,103 @@
 import { ElementDrivesTextAnnotation, IModelDb } from "@itwin/core-backend";
 import { TextBlock } from "@itwin/core-common";
 import { createUnitsProvider, Format, FormatProps, FormatsProvider, FormatterSpec, FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParserSpec, UnitsProvider } from "@itwin/core-quantity";
-import { BeUnorderedUiEvent } from "@itwin/core-bentley";
+import { BeEvent, BeUnorderedUiEvent } from "@itwin/core-bentley";
 import { SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
 /** Modes selectable via the `dta text formatmode ...` keyin. */
 export type FieldFormattingMode = "default" | "demo" | "demo-throw";
 
+/** A small set of pre-canned length [FormatProps]($core-quantity) that the demo provider
+ * seeds itself with. They are keyed by names in the `Demo.*` namespace so they don't collide
+ * with real KoQs and are usable as `formatSetKey` overrides from an authoring flow (e.g.
+ * `dta text field '{...formatOptions: {quantity: {formatSetKey: "Demo.LENGTH_MM", persistenceUnit: "Units.M"}}}'`).
+ *
+ * Each seed prefixes its unit label with a distinct emoji so you can visually confirm which
+ * seed formatted the value at a glance.
+ */
+export const DEMO_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
+  "Demo.LENGTH_M": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[#]m", name: "Units.M" }] },
+  },
+  "Demo.LENGTH_MM": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 3,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[*]mm", name: "Units.MM" }] },
+  },
+  "Demo.LENGTH_CM": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 2,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[+]cm", name: "Units.CM" }] },
+  },
+  "Demo.LENGTH_FT": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[~]ft", name: "Units.FT" }] },
+  },
+  "Demo.LENGTH_FT_IN": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 8,
+    type: "Fractional",
+    uomSeparator: "",
+    decimalSeparator: ".",
+    composite: {
+      units: [
+        { label: "[^]'", name: "Units.FT" },
+        { label: `[v]"`, name: "Units.IN" },
+      ],
+    },
+  },
+  // Marker-tagged stand-in for AecUnits.LENGTH_SHORT so the "KoQ override" scenario in
+  // `dta text test` produces visible output even when the iModel's schema context has no
+  // AecUnits schema loaded.
+  "AecUnits.LENGTH_SHORT": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 2,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[*]mm", name: "Units.MM" }] },
+  },
+};
+
+/** [FormatsProvider]($core-quantity) wrapper that overlays [[DEMO_SEED_FORMATS]] on top of an
+ * underlying (schema-backed) provider. The seed table wins so `Demo.*` keys resolve without
+ * requiring a schema, and marker-tagged formats consistently show up in DTA even when the
+ * iModel has no matching KoQ.
+ */
+class DemoOverlayFormatsProvider implements FormatsProvider {
+  public readonly onFormatsChanged = new BeEvent<(args: { formatsChanged: string[] | "all" }) => void>();
+
+  public constructor(private readonly _inner: FormatsProvider) {}
+
+  public async getFormat(name: string): Promise<FormatProps | undefined> {
+    if (DEMO_SEED_FORMATS[name]) {
+      return DEMO_SEED_FORMATS[name];
+    }
+    return this._inner.getFormat(name);
+  }
+}
+
 /** Minimal `FormattingSpecProvider` implementation that lazily prepares specs on demand
  * from an underlying [FormatsProvider]($core-quantity) / [UnitsProvider]($core-quantity).
+ *
+ * If the underlying `FormatsProvider` cannot resolve a requested name, the provider falls
+ * back to the [[DEMO_SEED_FORMATS]] table so testing scenarios work even when the iModel's
+ * schema context has no matching KoQ.
  */
 export class FieldFormattingDemoProvider implements FormattingSpecProvider {
   public readonly onFormattingReady = new BeUnorderedUiEvent<void>();
@@ -43,7 +132,7 @@ export class FieldFormattingDemoProvider implements FormattingSpecProvider {
   private readonly _specs = new Map<string, FormattingSpecEntry>();
 
   public constructor(iModel: IModelDb) {
-    this.formatsProvider = new SchemaFormatsProvider(iModel.schemaContext, "metric");
+    this.formatsProvider = new DemoOverlayFormatsProvider(new SchemaFormatsProvider(iModel.schemaContext, "metric"));
     this.unitsProvider = createUnitsProvider({ primary: new SchemaUnitProvider(iModel.schemaContext) });
   }
 
@@ -56,6 +145,17 @@ export class FieldFormattingDemoProvider implements FormattingSpecProvider {
    */
   public async prepareForBlock(iModel: IModelDb, block: TextBlock): Promise<void> {
     const requirements = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block });
+    await this.prepareForRequirements(requirements);
+  }
+
+  /** Preload every entry in [[DEMO_SEED_FORMATS]] against the given persistence unit
+   * (`Units.M` by default). Called automatically when the demo provider is registered.
+   */
+  public async preloadSeeds(persistenceUnitName: string = "Units.M"): Promise<void> {
+    const requirements: FormattingSpecArgs[] = Object.keys(DEMO_SEED_FORMATS).map((name) => ({
+      name,
+      persistenceUnitName,
+    }));
     await this.prepareForRequirements(requirements);
   }
 
@@ -78,7 +178,14 @@ export class FieldFormattingDemoProvider implements FormattingSpecProvider {
   }
 
   private async buildEntry(req: FormattingSpecArgs): Promise<FormattingSpecEntry | undefined> {
-    const formatProps: FormatProps | undefined = await this.formatsProvider.getFormat(req.name);
+    // 1. Try the underlying (schema-backed) FormatsProvider.
+    let formatProps: FormatProps | undefined = await this.formatsProvider.getFormat(req.name);
+
+    // 2. Fall back to the seed table so demo-only keys (Demo.*) resolve without a schema.
+    if (!formatProps) {
+      formatProps = DEMO_SEED_FORMATS[req.name];
+    }
+
     if (!formatProps) {
       return undefined;
     }
@@ -118,7 +225,7 @@ export function getFieldFormattingDemo(iModel: IModelDb): { mode: FieldFormattin
  *  - `"demo"`: register a fresh `FieldFormattingDemoProvider` with `onMissingSpec: "fallback"`.
  *  - `"demo-throw"`: register a fresh `FieldFormattingDemoProvider` with `onMissingSpec: "throw"`.
  */
-export function setFieldFormattingMode(iModel: IModelDb, mode: FieldFormattingMode): void {
+export async function setFieldFormattingMode(iModel: IModelDb, mode: FieldFormattingMode): Promise<void> {
   if (mode === "default") {
     ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, undefined);
     state.delete(iModel);
@@ -126,6 +233,7 @@ export function setFieldFormattingMode(iModel: IModelDb, mode: FieldFormattingMo
   }
 
   const provider = new FieldFormattingDemoProvider(iModel);
+  await provider.preloadSeeds();
   const onMissingSpec = mode === "demo-throw" ? "throw" : "fallback";
   ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, provider, { onMissingSpec });
   state.set(iModel, { mode, provider });

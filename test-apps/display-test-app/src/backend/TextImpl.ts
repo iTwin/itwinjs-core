@@ -141,7 +141,7 @@ async function prepareDemoProviderFor(iModel: IModelDb, annotationProps: TextAnn
  */
 export async function setFieldFormattingModeForIModel(iModelKey: string, mode: FieldFormattingMode): Promise<void> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
-  setFieldFormattingMode(iModel, mode);
+  await setFieldFormattingMode(iModel, mode);
 }
 
 /**
