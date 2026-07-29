@@ -192,6 +192,58 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
   });
 
+  it("resolves a relative collections link against the landing page URL", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    stubFetch({
+      [sourceUrl]: makeLandingPage("/collections"),
+      [sameOriginCollectionsUrl]: collectionsDoc,
+    });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(fetchCalls[1].url).to.equals(sameOriginCollectionsUrl);
+    // The resolved link shares the source origin, so credentials remain attached.
+    expect(getAuthorization(fetchCalls[1].init)).to.not.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
+  });
+
+  it("resolves a relative collections link and appends saved and unsaved query params", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    const source = createSource();
+    source.savedQueryParams = { saved: "1" };
+    source.unsavedQueryParams = { unsaved: "2" };
+    stubFetch({
+      [`${sourceUrl}?saved=1&unsaved=2`]: makeLandingPage("./collections"),
+      [`${sameOriginCollectionsUrl}?saved=1&unsaved=2`]: collectionsDoc,
+    });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source });
+
+    expect(fetchCalls[1].url).to.equals(`${sameOriginCollectionsUrl}?saved=1&unsaved=2`);
+    expect(getAuthorization(fetchCalls[1].init)).to.not.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
+  });
+
+  it("resolves a relative collections link against the post-redirect landing page URL", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    stubFetch(
+      {
+        [sourceUrl]: makeLandingPage("/collections"),
+        [crossOriginCollectionsUrl]: collectionsDoc,
+      },
+      undefined,
+      { [sourceUrl]: "https://third-party.example.org/landing" },
+    );
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    // The landing document was served from another origin, so the relative link resolves there too,
+    // and credentials must be withheld from it.
+    expect(fetchCalls[1].url).to.equals(crossOriginCollectionsUrl);
+    expect(getAuthorization(fetchCalls[1].init)).to.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
+  });
+
   it("attaches basic-auth credentials to a cross-origin collections link when restriction is disabled (legacy default)", async () => {
     stubFetch({
       [sourceUrl]: makeLandingPage(crossOriginCollectionsUrl),

@@ -77,7 +77,11 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       } else if (Array.isArray(json.links)) {
         // This might be the main landing page
         const collectionsLink = json.links.find((link: any)=> link.rel.includes("data") && link.type === "application/json");
-        let collectionsUrl = appendQueryParams(collectionsLink.href, source.savedQueryParams);
+        // Landing-page links are allowed to be relative, so resolve them against the URL the landing document
+        // was actually served from (which may differ from the requested one if the request was redirected)
+        // before appending query parameters or evaluating trust.
+        let collectionsUrl = new URL(collectionsLink.href, response.url || url).toString();
+        collectionsUrl = appendQueryParams(collectionsUrl, source.savedQueryParams);
         collectionsUrl = appendQueryParams(collectionsUrl, source.unsavedQueryParams);
 
         // The collections link is advertised by the server-controlled landing document, so the trust
