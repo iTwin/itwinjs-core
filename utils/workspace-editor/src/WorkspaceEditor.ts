@@ -287,6 +287,8 @@ async function addResource(args: AddFileOptions) {
           const val = fs.readFileSync(file);
           wsFile.addBlob(name, val);
         } else {
+          // Preserve the deprecated file-resource command so existing workspace maintenance scripts continue to work.
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           wsFile.addFile(name, file);
         }
         showMessage(` added "${file}" as ${args.type} resource [${name}]`);
@@ -313,6 +315,7 @@ async function replaceResource(args: AddFileOptions) {
           const val = fs.readFileSync(file);
           wsFile.updateBlob(name, val);
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           wsFile.updateFile(name, file);
         }
         showMessage(` updated "${file}" as ${args.type} resource [${name}]`);
@@ -337,6 +340,7 @@ async function extractResource(args: ExtractResourceOpts) {
     } else if (args.type === "blob") {
       fs.writeFileSync(args.fileName, verify(file.getBlob(args.rscName)));
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       verify(file.getFile(args.rscName, args.fileName));
     }
     showMessage(` ${args.type} resource [${args.rscName}] extracted to "${args.fileName}"`);
@@ -351,6 +355,7 @@ async function removeResource(args: RemoveResourceOpts) {
     else if (args.type === "blob")
       wsFile.removeBlob(args.rscName);
     else
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       wsFile.removeFile(args.rscName);
     showMessage(` removed ${args.type} resource [${args.rscName}]`);
   });
@@ -580,7 +585,17 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>, read
   };
 }
 
-const type: Yargs.Options = { alias: "t", describe: "Type of resource", choices: ["blob", "string", "file"], demandOption: true };
+const type: Yargs.Options = {
+  alias: "t",
+  describe: "Type of resource",
+  choices: ["blob", "string", "file"],
+  demandOption: true,
+  coerce: (value: RscType) => {
+    if (value === "file")
+      console.warn("Warning: --type=file is deprecated but supported for compatibility. Use --type=blob or --type=string for new resources.");
+    return value;
+  },
+};
 const addOrReplace = {
   rscName: { alias: "n", describe: "Resource name for file", string: true },
   root: { alias: "r", describe: "Root directory. Path parts after this will be saved in resource name", string: true },
