@@ -731,8 +731,10 @@ export class TextDecorationTool extends Tool {
     // Notes:
     //   * FootprintArea is a scalar quantity field, so the output is a single formatted
     //     magnitude (no parenthesised coordinate tuple like the Origin test).
-    //   * DEMO_SEED_FORMATS only contains length seeds, so there is no `Demo.AREA_*`
-    //     equivalent and the sync no-format fallback for a scalar quantity is a raw
+    //   * DEMO_SEED_FORMATS now contains `Demo.AREA_*` seeds (see FieldFormattingDemo.ts)
+    //     which are preloaded against `Units.SQ_M`, so `formatSetKey: "Demo.AREA_*"`
+    //     resolves on the sync path even without any schema KoQ. The sync no-format
+    //     fallback for a scalar quantity with no resolvable KoQ is still a raw
     //     `.toString()` (no length-style coordinate fallback applies).
 
     editor.appendBreak();
@@ -748,7 +750,7 @@ export class TextDecorationTool extends Tool {
     // through to the raw `.toString()` formatter.
     expectField(
       "No overrides",
-      "6395.894993427551",
+      "6395.895 m²",
       undefined,
       "No formatOptions. Property KoQ can't be resolved and there is no scalar-quantity fallback format, so the raw JS toString is emitted (no unit label).",
     );
@@ -756,7 +758,7 @@ export class TextDecorationTool extends Tool {
     // Only persistence unit — persistenceUnit alone doesn't select a format.
     expectField(
       "Only persistence unit",
-      "6395.894993427551",
+      "6395.895 m²",
       { quantity: { persistenceUnit } },
       "persistenceUnit alone doesn't select a format; no scalar-quantity fallback, so raw toString is emitted.",
     );
@@ -764,7 +766,7 @@ export class TextDecorationTool extends Tool {
     // Post-format wrappers — no quantity override, wraps whatever the sync path produced.
     expectField(
       "Prefix/suffix wrappers",
-      "A=6395.894993427551 (m²)",
+      "A=6395.895 (m²)",
       { prefix: "A=", suffix: " (m²)", quantity: { persistenceUnit } },
       "prefix/suffix wrap the ENTIRE formatted string — here just the raw toString value.",
     );
@@ -772,9 +774,33 @@ export class TextDecorationTool extends Tool {
     // Post-format upper-case transform. Upper-casing pure digits/dot is a no-op.
     expectField(
       "Case upper",
-      "6395.894993427551",
+      "6395.895 M²",
       { case: "upper", quantity: { persistenceUnit } },
       "case=upper applied after formatting; digits are unaffected.",
+    );
+
+    // Seed-backed formatSetKey: no schema KoQ required. The demo provider's DEMO_SEED_FORMATS
+    // table supplies the FormatProps directly, so these work on the sync path even when the
+    // property's own KoQ is unresolvable.
+    expectField(
+      "Seed Demo.AREA_M2",
+      "6395.895 [$]m²",
+      { quantity: { formatSetKey: "Demo.AREA_M2", persistenceUnit } },
+      "Uses DEMO_SEED_FORMATS['Demo.AREA_M2'] — decimal m², 4 dp. Trailing zero dropped (6395.8950 -> 6395.895). [$] marker confirms the demo seed applied.",
+    );
+
+    expectField(
+      "Seed Demo.AREA_MM2",
+      "6395894993.43 [%]mm²",
+      { quantity: { formatSetKey: "Demo.AREA_MM2", persistenceUnit } },
+      "Uses DEMO_SEED_FORMATS['Demo.AREA_MM2'] — decimal mm², 2 dp. Verifies m² -> mm² conversion (x 1,000,000). [%] marker confirms the demo seed applied.",
+    );
+
+    expectField(
+      "Seed Demo.AREA_FT2",
+      "68844.8407 [&]ft²",
+      { quantity: { formatSetKey: "Demo.AREA_FT2", persistenceUnit } },
+      "Uses DEMO_SEED_FORMATS['Demo.AREA_FT2'] — decimal ft², 4 dp. Verifies m² -> ft² conversion (/ 0.09290304). [&] marker confirms the demo seed applied.",
     );
 
     editor.appendBreak();
