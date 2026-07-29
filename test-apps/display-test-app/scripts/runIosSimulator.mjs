@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { copyFile } from 'fs/promises';
+import { execSync } from 'child_process';
 import { Simctl } from "node-simctl";
 import { fileURLToPath } from 'url';
 import * as path from "path";
@@ -101,11 +102,35 @@ function log(message) {
   console.log(message);
 }
 
+// TEMPORARY: some CI agents report an iOS runtime as available while its profile can't actually
+// load ("runtime profile not found using 'System' match policy"), so boot fails. Pruning stale
+// devices and restarting CoreSimulator forces the daemon to re-scan the installed runtimes.
+function repairSimulators() {
+  const commands = [
+    "xcrun simctl shutdown all",
+    "xcrun simctl delete unavailable",
+    "killall -9 com.apple.CoreSimulator.CoreSimulatorService",
+  ];
+  for (const command of commands) {
+    try {
+      log(`Running: ${command}`);
+      const output = execSync(command, { encoding: "utf-8", stdio: "pipe" });
+      if (output.trim())
+        log(output.trim());
+    } catch (err) {
+      log(`Command failed (continuing): ${command}\n${err}`);
+    }
+  }
+}
+
 async function main() {
   const simctl = new SimctlWithOpts();
 
   // default to exiting with an error, only when we fully complete everything will it get set to 0
   process.exitCode = 1;
+
+  // TEMPORARY: attempt to repair broken simulator runtimes on the CI agent before booting.
+  repairSimulators();
 
   // get all iOS devices
   log("Getting iOS devices");
