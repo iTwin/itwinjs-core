@@ -413,7 +413,7 @@ export class TextDecorationTool extends Tool {
     await this.parseAndRun("font", "Arimo");
     await this.parseAndRun("center");
 
-    const expectField = (title: string, expected: string, formatOptions: FieldFormatOptions, note?: string) => {
+    const expectField = (title: string, expected: string, formatOptions?: FieldFormatOptions, note?: string) => {
       const expectedColor = ColorDef.fromString("#ff5959").toJSON();
       const actualColor = ColorDef.fromString("#156715").toJSON();
       const defaultColor = ColorDef.fromString("black").toJSON();
@@ -459,85 +459,163 @@ export class TextDecorationTool extends Tool {
       }
 
       editor.appendBreak();
-      editor.appendText(JSON.stringify({ formatOptions }));
+      editor.appendText(JSON.stringify({ formatOptions: formatOptions ?? null }));
 
       editor.appendBreak();
       editor.appendText(" ");
     };
 
-    // Default formatting (uses the property's KoQ + active unit system).
-    expectField("Origin (m)", "(30813.264 m, 58981.8092 m, 0.05 m)", { quantity: { persistenceUnit: "Units.M" } }, "Default formatting (uses the property's KoQ + active unit system)");
+    // Raw (persistence) coordinate values for ParkingRow.Origin used as a reference below:
+    //   x = 30813.264 m, y = 58981.8092 m, z = 0.05 m
+    // Actual displayed values depend on which formatting pathway is active:
+    //   * `dta text formatmode default` -> raw JS toString fallback (see "Raw" below).
+    //   * `dta text formatmode demo`      -> demo FormattingSpecProvider using the property's
+    //                                       own KoQ + `SchemaFormatsProvider` for lookups.
+    //   * `dta text formatmode demo-throw` -> same as `demo`, but unknown KoQs throw.
+    //
+    // The "Expected" strings that describe deterministic conversions (inline FormatProps
+    // overrides) are exact; the ones that depend on the property's KoQ are annotated because
+    // their exact form depends on how ParkingRow.Origin's KoQ resolves in the FormatsProvider.
 
-    // Force imperial via unit system.
-    expectField("Imperial", "(101093.3858 ft, 193509.8747 ft, 0.1640 ft)", { quantity: { persistenceUnit: "Units.M" } }, "should render in feet (m -> ft conversion)");
+    editor.appendBreak();
+    editor.runStyle.isBold = true;
+    editor.appendText("Sync-friendly (no inline format override) — exercised by the txn callback path and evaluateFields");
+    editor.runStyle.isBold = false;
+    editor.appendBreak();
 
-    // Force metric via unit system, with prefix/suffix.
+    // No formatOptions at all — cleanest test of the demo provider on both paths.
     expectField(
-      "Metric",
-      "(L=30813.2640 (m), L=58981.8092 (m), L=0.0500 (m))",
-      {
-        prefix: "L=",
-        suffix: " (m)",
-        quantity: { persistenceUnit: "Units.M" },
-      },
-      "prefix/suffix wrappers",
+      "No overrides",
+      "raw: (30813.264, 58981.8092, 0.05); demo: uses ParkingRow.Origin's KoQ via FormatsProvider",
+      undefined,
+      "In demo mode, the demo provider looks up the property's own KoQ.",
     );
 
-    // Override the property's KoQ with a different KoQ full name.
+    // Only persistence unit
     expectField(
-      "KoQ override",
-      "AecUnits.LENGTH_SHORT formatting (typically mm)",
-      {
-        quantity: {
-          formatSetKey: "AecUnits.LENGTH_SHORT",
-          persistenceUnit: "Units.M",
-        },
-      },
-      "koq= overrides the property's own KoQ via FormatsProvider",
+      "Only persistence unit",
+      "raw: (30813.264, 58981.8092, 0.05); demo: uses ParkingRow.Origin's KoQ via FormatsProvider",
+      { quantity: { persistenceUnit: "Units.M" } },
+      "In demo mode, the demo provider looks up the property's own KoQ.",
     );
 
-    // Inline FormatProps override — meters, 3 decimals.
+    // formatSetKey chooses which KoQ the FormatsProvider resolves.
     expectField(
-      "Inline m",
+      "KoQ override (LENGTH_SHORT)",
+      "(30813264.04 [*]mm, 58981809.25 [*]mm, 50.00 [*]mm)",
+      { quantity: { formatSetKey: "AecUnits.LENGTH_SHORT", persistenceUnit: "Units.M" } },
+      "formatSetKey= overrides the property's own KoQ. DEMO_SEED_FORMATS supplies an [*]mm-marked stand-in so this works even without the AecUnits schema loaded.",
+    );
+
+    // Post-format wrappers — no quantity override, so wraps whatever the active pathway produces.
+    expectField(
+      "Prefix/suffix wrappers",
+      "L=<coordinate rendering> (m)",
+      { prefix: "L=", suffix: " (m)", quantity: { persistenceUnit: "Units.M" } },
+      "prefix/suffix wrap the ENTIRE formatted coordinate string (not each magnitude).",
+    );
+
+    // Post-format upper-case transform — no quantity override.
+    expectField(
+      "Case upper",
+      "<coordinate rendering> in upper case",
+      { case: "upper", quantity: { persistenceUnit: "Units.M" } },
+      "case=upper is applied after formatting.",
+    );
+
+    // Seed-backed formatSetKey: no schema KoQ required. The demo provider's DEMO_SEED_FORMATS
+    // table supplies the FormatProps directly, so these work on the sync path even when the
+    // property's own KoQ is unresolvable.
+    expectField(
+      "Seed Demo.LENGTH_M",
+      "(30813.2640 [#]m, 58981.8092 [#]m, 0.0500 [#]m)",
+      { quantity: { formatSetKey: "Demo.LENGTH_M", persistenceUnit: "Units.M" } },
+      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_M'] — decimal metres, 4 dp. [#] marker confirms the demo seed applied.",
+    );
+
+    expectField(
+      "Seed Demo.LENGTH_MM",
+      "(30813264.000 [*]mm, 58981809.200 [*]mm, 50.000 [*]mm)",
+      { quantity: { formatSetKey: "Demo.LENGTH_MM", persistenceUnit: "Units.M" } },
+      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_MM'] — decimal mm, 3 dp (verifies m -> mm conversion). [*] marker confirms the demo seed applied.",
+    );
+
+    expectField(
+      "Seed Demo.LENGTH_FT",
+      "(101093.3858 [~]ft, 193509.8747 [~]ft, 0.1640 [~]ft)",
+      { quantity: { formatSetKey: "Demo.LENGTH_FT", persistenceUnit: "Units.M" } },
+      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_FT'] — decimal ft, 4 dp (verifies m -> ft conversion). [~] marker confirms the demo seed applied.",
+    );
+
+    editor.appendBreak();
+    editor.runStyle.isBold = true;
+    editor.appendText("Async-only (inline format overrides) — bypasses sync provider, exercised only by evaluateFieldsAsync");
+    editor.runStyle.isBold = false;
+    editor.appendBreak();
+
+    // Inline FormatProps override — meters, 3 decimals. Deterministic conversion.
+    expectField(
+      "Inline m (3 demo)",
       "(30813.264 m, 58981.809 m, 0.050 m)",
       {
         quantity: {
           persistenceUnit: "Units.M",
           format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
             type: "Decimal",
             precision: 3,
             composite: { units: [{ name: "Units.M", label: "m" }] },
           },
         },
       },
-      "fp= inline FormatProps — meters, 3 decimals",
+      "inline FormatProps — meters, 3 decimals.",
     );
 
     // Inline FormatProps override — millimeters (verifies m -> mm conversion).
     expectField(
-      "Inline mm",
+      "Inline mm (3 demo)",
       "(30813264.000 mm, 58981809.200 mm, 50.000 mm)",
       {
         quantity: {
           persistenceUnit: "Units.M",
           format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
             type: "Decimal",
             precision: 3,
             composite: { units: [{ name: "Units.MM", label: "mm" }] },
           },
         },
       },
-      "Verifies m -> mm conversion (multiply by 1000)",
+      "Verifies m -> mm conversion (multiply by 1000).",
+    );
+
+    // Inline FormatProps override — feet, 2 decimals.
+    expectField(
+      "Inline ft (2 demo)",
+      "(101093.39 ft, 193509.87 ft, 0.16 ft)",
+      {
+        quantity: {
+          persistenceUnit: "Units.M",
+          format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
+            type: "Decimal",
+            precision: 2,
+            composite: { units: [{ name: "Units.FT", label: "ft" }] },
+          },
+        },
+      },
+      "Verifies m -> ft conversion (~3.281 ft/m).",
     );
 
     // Inline FormatProps override — composite feet-inches (verifies m -> ft/in conversion).
     expectField(
-      "Inline ft-in",
+      "Inline ft-in (fractional)",
       `(101093'-4 5/8", 193509'-10 1/2", 0'-2")`,
       {
         quantity: {
           persistenceUnit: "Units.M",
           format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
             type: "Fractional",
             precision: 8,
             composite: {
@@ -549,46 +627,26 @@ export class TextDecorationTool extends Tool {
           },
         },
       },
-      "Verifies m -> composite ft/in conversion (fractional)",
+      "Verifies m -> composite ft/in conversion (fractional).",
     );
 
-    // Case transform on the formatted value.
+    // Inline override combined with post-format upper-case.
     expectField(
-      "Upper",
-      "(101093.3858 FT, 193509.8747 FT, 0.1640 FT)",
+      "Inline ft + case upper",
+      "(101093.39 FT, 193509.87 FT, 0.16 FT)",
       {
         case: "upper",
-        quantity: { persistenceUnit: "Units.M" },
-      },
-      "case=upper — post-format text transform",
-    );
-
-    // Coordinate field with inline format override (verifies coordinate unit conversion).
-    expectField(
-      "Origin (ft)",
-      "(101093.39 ft, 193509.87 ft, 0.16 ft)",
-      {
         quantity: {
           persistenceUnit: "Units.M",
           format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
             type: "Decimal",
             precision: 2,
             composite: { units: [{ name: "Units.FT", label: "ft" }] },
           },
         },
       },
-      "Coordinate field with inline fp — verifies coord unit conversion",
-    );
-
-    // Full FieldFormatOptions JSON blob (legacy path).
-    expectField(
-      "Full JSON",
-      "(101093.3858 FT, 193509.8747 FT, 0.1640 FT)",
-      {
-        case: "upper",
-        quantity: { persistenceUnit: "Units.M" },
-      },
-      "f= full FieldFormatOptions JSON (legacy path)",
+      "case=upper applied after inline ft formatting.",
     );
 
     await editor.update();
