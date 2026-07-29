@@ -435,9 +435,9 @@ export class TextDecorationTool extends Tool {
 
       // Actual field
       const fieldProps = {
-        elementId: "0x20000001f27",
-        schemaName: "CivilSpatial",
-        className: "ParkingRow",
+        elementId: "0x20000001f05",
+        schemaName: "BuildingSpatial",
+        className: "Building",
         propertyName: "Origin",
         formatOptions,
       };
@@ -466,7 +466,7 @@ export class TextDecorationTool extends Tool {
     };
 
     // Raw (persistence) coordinate values for ParkingRow.Origin used as a reference below:
-    //   x = 30813.264 m, y = 58981.8092 m, z = 0.05 m
+    //   x = 30707.1467 m, y = 58893.3153 m, z = 0 m
     // Actual displayed values depend on which formatting pathway is active:
     //   * `dta text formatmode default` -> raw JS toString fallback (see "Raw" below).
     //   * `dta text formatmode demo`      -> demo FormattingSpecProvider using the property's
@@ -483,10 +483,13 @@ export class TextDecorationTool extends Tool {
     editor.runStyle.isBold = false;
     editor.appendBreak();
 
+    const persistenceUnit = "Units.M";
+    // const persistenceUnit = undefined;
+
     // No formatOptions at all — cleanest test of the demo provider on both paths.
     expectField(
       "No overrides",
-      "(30813.264 m, 58981.8092 m, 0.05 m)",
+      "(30707.1467 m, 58893.3153 m, 0 m)",
       undefined,
       "No formatOptions. Property KoQ can't be resolved, so falls through to defaultCoordinateFormatProps (precision 4 metres). Trailing zeros dropped (no `trailZeros` trait).",
     );
@@ -494,32 +497,32 @@ export class TextDecorationTool extends Tool {
     // Only persistence unit
     expectField(
       "Only persistence unit",
-      "(30813.264 m, 58981.8092 m, 0.05 m)",
-      { quantity: { persistenceUnit: "Units.M" } },
+      "(30707.1467 m, 58893.3153 m, 0 m)",
+      { quantity: { persistenceUnit } },
       "persistenceUnit alone doesn't select a format; falls through to defaultCoordinateFormatProps.",
     );
 
     // formatSetKey chooses which KoQ the FormatsProvider resolves.
     expectField(
       "KoQ override (LENGTH_SHORT)",
-      "(30813264.04 [*]mm, 58981809.25 [*]mm, 50 [*]mm)",
-      { quantity: { formatSetKey: "AecUnits.LENGTH_SHORT", persistenceUnit: "Units.M" } },
+      "(30707146.7 [*]mm, 58893315.3 [*]mm, 0 [*]mm)",
+      { quantity: { formatSetKey: "AecUnits.LENGTH_SHORT", persistenceUnit } },
       "formatSetKey= overrides the property's own KoQ. DEMO_SEED_FORMATS supplies an [*]mm-marked stand-in so this works even without the AecUnits schema loaded.",
     );
 
     // Post-format wrappers — no quantity override, so wraps whatever the active pathway produces.
     expectField(
       "Prefix/suffix wrappers",
-      "L=(30813.264 m, 58981.8092 m, 0.05 m) (m)",
-      { prefix: "L=", suffix: " (m)", quantity: { persistenceUnit: "Units.M" } },
+      "L=(30707.1467 m, 58893.3153 m, 0 m) (m)",
+      { prefix: "L=", suffix: " (m)", quantity: { persistenceUnit } },
       "prefix/suffix wrap the ENTIRE formatted coordinate string (not each magnitude).",
     );
 
     // Post-format upper-case transform — no quantity override.
     expectField(
       "Case upper",
-      "(30813.264 M, 58981.8092 M, 0.05 M)",
-      { case: "upper", quantity: { persistenceUnit: "Units.M" } },
+      "(30707.1467 M, 58893.3153 M, 0 M)",
+      { case: "upper", quantity: { persistenceUnit } },
       "case=upper is applied after formatting.",
     );
 
@@ -528,22 +531,22 @@ export class TextDecorationTool extends Tool {
     // property's own KoQ is unresolvable.
     expectField(
       "Seed Demo.LENGTH_M",
-      "(30813.264 [#]m, 58981.8092 [#]m, 0.05 [#]m)",
-      { quantity: { formatSetKey: "Demo.LENGTH_M", persistenceUnit: "Units.M" } },
+      "(30707.1467 [#]m, 58893.3153 [#]m, 0 [#]m)",
+      { quantity: { formatSetKey: "Demo.LENGTH_M", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.LENGTH_M'] — decimal metres, 4 dp. [#] marker confirms the demo seed applied.",
     );
 
     expectField(
       "Seed Demo.LENGTH_MM",
-      "(30813264.039 [*]mm, 58981809.247 [*]mm, 50 [*]mm)",
-      { quantity: { formatSetKey: "Demo.LENGTH_MM", persistenceUnit: "Units.M" } },
+      "(30707146.7 [*]mm, 58893315.3 [*]mm, 0 [*]mm)",
+      { quantity: { formatSetKey: "Demo.LENGTH_MM", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.LENGTH_MM'] — decimal mm, 3 dp. Trailing digits reflect actual m->mm conversion. [*] marker confirms the demo seed applied.",
     );
 
     expectField(
       "Seed Demo.LENGTH_FT",
-      "(101093.386 [~]ft, 193509.8729 [~]ft, 0.164 [~]ft)",
-      { quantity: { formatSetKey: "Demo.LENGTH_FT", persistenceUnit: "Units.M" } },
+      "(100745.232 [~]ft, 193219.5384 [~]ft, 0 [~]ft)",
+      { quantity: { formatSetKey: "Demo.LENGTH_FT", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.LENGTH_FT'] — decimal ft, 4 dp. Trailing digits reflect actual m->ft conversion. [~] marker confirms the demo seed applied.",
     );
 
@@ -556,10 +559,10 @@ export class TextDecorationTool extends Tool {
     // Inline FormatProps override — meters, 3 decimals. Deterministic conversion.
     expectField(
       "Inline m (3 demo)",
-      "(30813.264 m, 58981.809 m, 0.05 m)",
+      "(30707.147 m, 58893.315 m, 0 m)",
       {
         quantity: {
-          persistenceUnit: "Units.M",
+          persistenceUnit,
           format: {
             formatTraits: ["keepSingleZero", "showUnitLabel"],
             type: "Decimal",
@@ -574,10 +577,10 @@ export class TextDecorationTool extends Tool {
     // Inline FormatProps override — millimeters (verifies m -> mm conversion).
     expectField(
       "Inline mm (3 demo)",
-      "(30813264.039 mm, 58981809.247 mm, 50 mm)",
+      "(30707146.677 mm, 58893315.298 mm, 0 mm)",
       {
         quantity: {
-          persistenceUnit: "Units.M",
+          persistenceUnit,
           format: {
             formatTraits: ["keepSingleZero", "showUnitLabel"],
             type: "Decimal",
@@ -592,10 +595,10 @@ export class TextDecorationTool extends Tool {
     // Inline FormatProps override — feet, 2 decimals.
     expectField(
       "Inline ft (2 demo)",
-      "(101093.39 ft, 193509.87 ft, 0.16 ft)",
+      "(100745.23 ft, 193219.54 ft, 0 ft)",
       {
         quantity: {
-          persistenceUnit: "Units.M",
+          persistenceUnit,
           format: {
             formatTraits: ["keepSingleZero", "showUnitLabel"],
             type: "Decimal",
@@ -610,10 +613,10 @@ export class TextDecorationTool extends Tool {
     // Inline FormatProps override — composite feet-inches (verifies m -> ft/in conversion).
     expectField(
       "Inline ft-in (fractional)",
-      `(101093 ' 4 5/8 ", 193509 ' 10 1/2 ", 0 ' 2 ")`,
+      `(100745 ' 2 3/4 ", 193219 ' 6 1/2 ", 0 ' 0 ")`,
       {
         quantity: {
-          persistenceUnit: "Units.M",
+          persistenceUnit,
           format: {
             formatTraits: ["keepSingleZero", "showUnitLabel"],
             type: "Fractional",
@@ -633,11 +636,11 @@ export class TextDecorationTool extends Tool {
     // Inline override combined with post-format upper-case.
     expectField(
       "Inline ft + case upper",
-      "(101093.39 FT, 193509.87 FT, 0.16 FT)",
+      "(100745.23 FT, 193219.54 FT, 0 FT)",
       {
         case: "upper",
         quantity: {
-          persistenceUnit: "Units.M",
+          persistenceUnit,
           format: {
             formatTraits: ["keepSingleZero", "showUnitLabel"],
             type: "Decimal",
