@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pullChanges",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -430,7 +430,7 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pushChanges(description: string): Promise<ChangesetIndexAndId> {
     this.requireTimeline();
-    return IpcApp.appFunctionIpc.pushChanges(this.key, description);
+    return this.changeset = await IpcApp.appFunctionIpc.pushChanges(this.key, description);
   }
 
   /** The current graphical editing scope, if one is in progress.
