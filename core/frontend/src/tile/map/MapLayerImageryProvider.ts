@@ -31,15 +31,25 @@ export function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
-/** Returns the origin (scheme + host + port) of the given URL, or undefined if it cannot be parsed.
+/** Returns the origin (scheme + host + port) of the given URL, or undefined if it cannot be parsed or does
+ * not denote a distinct network origin.
+ *
+ * Only `http:` and `https:` URLs yield an origin. Every other scheme is rejected because opaque URLs
+ * — `file:`, `data:`, `about:`, `blob:null`, and the custom protocols Electron hosts commonly register —
+ * all serialize to the literal string `"null"`. Comparing those would make unrelated URLs look same-origin,
+ * so a single trusted entry could unlock all of them. Callers use this for credential-trust decisions, and
+ * returning `undefined` keeps those decisions fail-closed.
  * @internal
  */
 export function tryGetOrigin(url: string): string | undefined {
+  let parsed: URL;
   try {
-    return new URL(url).origin;
+    parsed = new URL(url);
   } catch {
     return undefined;
   }
+
+  return (parsed.protocol === "http:" || parsed.protocol === "https:") ? parsed.origin : undefined;
 }
 
 /** The status of the map layer imagery provider that lets you know if authentication is needed to request tiles.

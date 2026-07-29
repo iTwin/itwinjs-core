@@ -121,7 +121,7 @@ When `restrictCredentialsToTrustedOrigins` is enabled:
 - SSO retries after an NTLM/Negotiate challenge are performed only for origins explicitly listed in `trustedCredentialsOrigins`. Unlike basic-auth, the settings-URL origin is *not* implicitly trusted for SSO, because SSO shares the user's ambient identity while the settings URL itself may come from untrusted input.
 - Server-provided tooltip content that is intentionally HTML (see [Server-supplied text](#server-supplied-text) below) is rendered as markup only when it comes from the settings-URL origin or a listed origin.
 
-Entries in `trustedCredentialsOrigins` are normalized to their origin (scheme + host + port); invalid entries are ignored and logged.
+Entries in `trustedCredentialsOrigins` are normalized to their origin (scheme + host + port); entries that are not `http:` or `https:` URLs are ignored and logged. Opaque schemes - `file:`, `data:`, `about:`, `blob:null` and the custom protocols an Electron host may register - are rejected because they all share the same serialized origin (`"null"`), so trusting one of them would trust every other. For the same reason, a request or settings URL using one of those schemes is never considered to match any origin, and credentials are withheld from it.
 
 The default is `false`, which preserves the legacy behavior. While the restriction is disabled, every request that sends credentials to an origin not listed in `trustedCredentialsOrigins` logs a warning, once per origin - including the capability and service-metadata requests issued during provider initialization and source validation. Applications can use those warnings to discover the set of origins they need to whitelist before opting in.
 

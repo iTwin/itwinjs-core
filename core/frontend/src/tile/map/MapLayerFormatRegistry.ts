@@ -175,7 +175,10 @@ export class MapLayerFormatRegistry {
    * Only enforced when [[restrictCredentialsToTrustedOrigins]] is enabled.
    * For basic-auth, the origin of each map layer's settings URL is always implicitly trusted; for SSO,
    * origins must be explicitly listed here.
-   * Entries are normalized to their origin (scheme + host + port); invalid entries are ignored and logged.
+   * Entries are normalized to their origin (scheme + host + port); only `http:` and `https:` URLs are accepted,
+   * and any other entry is ignored and logged. Opaque schemes such as `file:`, `data:`, `about:` and custom
+   * Electron protocols are rejected because they all share the same serialized origin, so trusting one would
+   * trust every other.
    * @beta
    */
   public get trustedCredentialsOrigins(): ReadonlyArray<string> {
@@ -189,7 +192,7 @@ export class MapLayerFormatRegistry {
       if (origin !== undefined)
         normalized.push(origin);
       else
-        Logger.logWarning(loggerCategory, `trustedCredentialsOrigins: ignoring invalid origin '${entry}'`);
+        Logger.logWarning(loggerCategory, `trustedCredentialsOrigins: ignoring '${entry}'; entries must be http or https URLs.`);
     }
     this._trustedCredentialsOrigins = normalized;
   }

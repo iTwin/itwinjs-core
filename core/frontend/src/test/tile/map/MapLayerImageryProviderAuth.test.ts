@@ -27,11 +27,11 @@ const settingsUrl = "https://maps.example.com/wms";
 const sameOriginUrl = "https://maps.example.com/wms/tile/0/0/0";
 const crossOriginUrl = "https://other.example.org/tile/0/0/0";
 
-function createProvider(props?: { userName?: string, password?: string }): TestImageryProvider {
+function createProvider(props?: { userName?: string, password?: string, url?: string }): TestImageryProvider {
   const settings = ImageMapLayerSettings.fromJSON({
     formatId: "WMS",
     name: "TestLayer",
-    url: settingsUrl,
+    url: props?.url ?? settingsUrl,
   });
   if (props)
     settings.setCredentials(props.userName, props.password);
@@ -97,6 +97,30 @@ describe("MapLayerImageryProvider authorization", () => {
     await provider.makeRequest("not a valid url");
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getRequestHeaders()).toBeUndefined();
+  });
+
+  it("withholds basic-auth credentials for opaque request URLs", async () => {
+    // These all serialize to the origin "null", so they must never be treated as an origin at all.
+    for (const url of ["file:///c:/tiles/0/0/0", "data:text/plain,x", "about:blank", "myapp://tiles/0/0/0"]) {
+      const provider = createProvider({ userName: "user", password: "pwd" });
+      await provider.makeRequest(url);
+      expect(getRequestHeaders(fetchMock.mock.calls.length - 1), url).toBeUndefined();
+    }
+  });
+
+  it("does not treat two opaque URLs as sharing an origin", async () => {
+    // The settings URL is opaque, so its "origin" must not implicitly trust an unrelated opaque request URL.
+    const provider = createProvider({ userName: "user", password: "pwd", url: "myapp://tiles/wms" });
+    await provider.makeRequest("file:///c:/elsewhere/0/0/0");
+
+    expect(getRequestHeaders()).toBeUndefined();
+  });
+
+  it("withholds basic-auth credentials from an opaque settings URL even for itself", async () => {
+    const provider = createProvider({ userName: "user", password: "pwd", url: "myapp://tiles/wms" });
+    await provider.makeRequest("myapp://tiles/wms/0/0/0");
+
     expect(getRequestHeaders()).toBeUndefined();
   });
 
@@ -390,6 +414,49 @@ describe("MapLayerImageryProvider authorization", () => {
     ];
 
     expect(IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins).toEqual(["https://tiles.example.com"]);
+  });
+
+  it("ignores whitelist entries that do not denote an http or https origin", () => {
+    // Opaque URLs all serialize to the origin "null": trusting one would trust every other.
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = [
+      "file:///c:/tiles",
+      "data:text/plain,x",
+      "about:blank",
+      "blob:null/1234",
+      "myapp://tiles",
+      "https://tiles.example.com",
+    ];
+
+    expect(IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins).toEqual(["https://tiles.example.com"]);
+  });
+
+  it("accepts whitelist entries whose scheme or host is uppercase", () => {
+    // The URL parser lower-cases the scheme and host, so the http/https check and the subsequent
+    // exact-origin comparisons are case-insensitive.
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["HTTPS://Tiles.Example.COM", "HTTP://Other.Example.ORG:8080"];
+
+    expect(IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins).toEqual(["https://tiles.example.com", "http://other.example.org:8080"]);
+  });
+
+  it("retries with SSO credentials when the request URL uses an uppercase scheme", async () => {
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://other.example.org"];
+    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValueOnce(okResponse());
+
+    const provider = createProvider();
+    await provider.makeRequest("HTTPS://Other.Example.ORG/tile/0/0/0");
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect((fetchMock.mock.calls[1][1] as RequestInit).credentials).toEqual("include");
+  });
+
+  it("does not retry with SSO credentials for an opaque origin, even if it was whitelisted", async () => {
+    IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["myapp://tiles"];
+    fetchMock.mockResolvedValue(ntlmChallengeResponse());
+
+    const provider = createProvider({ url: "myapp://tiles/wms" });
+    await provider.makeRequest("myapp://tiles/wms/0/0/0");
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);   // no credentialed retry
   });
 
   it("gates the SSO retry on the origin that issued the challenge after a redirect", async () => {
