@@ -48,16 +48,31 @@ class SimctlWithOpts extends Simctl {
   }
 
   /**
+   * Returns the list of runtime versions that are actually installed and available.
+   * `simctl list devices` can report devices whose runtime profile is not actually
+   * installed; those devices appear available but fail to boot with an error like
+   * "simulator runtime is not available". Cross-referencing the runtimes list lets us
+   * avoid selecting such runtimes.
+   * @param {string} [platform='iOS']
+   * @returns {Promise<string[]>} Available runtime versions, sorted high to low.
+   */
+  async getAvailableRuntimeVersions(platform = 'iOS') {
+    const { stdout } = await this.exec('list', { args: ['runtimes', '--json'] });
+    /** @type {{ version: string, name: string, isAvailable?: boolean, availabilityError?: string }[]} */
+    const runtimes = (JSON.parse(stdout).runtimes);
+    return runtimes
+      .filter((r) => r.isAvailable === true && !r.availabilityError && r.name.toLowerCase().startsWith(platform.toLowerCase()))
+      .map((r) => r.version)
+      .sort(numericCompareDescending);
+  }
+
+  /**
    * @param {string} majorVersion
    * @param {string} [platform='iOS']
    */
   async getLatestRuntimeVersion(majorVersion, platform = 'iOS') {
-    const { stdout } = await this.exec('list', { args: ['runtimes', '--json'] });
-    /** @type {{ version: string, identifier: string, name: string }[]} */
-    const runtimes = (JSON.parse(stdout).runtimes);
-    runtimes.sort((a, b) => numericCompareDescending(a.version, b.version));
-    for (const { version, name } of runtimes) {
-      if (version.startsWith(`${majorVersion}.`) && name.toLowerCase().startsWith(platform.toLowerCase())) {
+    for (const version of await this.getAvailableRuntimeVersions(platform)) {
+      if (version.startsWith(`${majorVersion}.`)) {
         return version;
       }
     }
@@ -133,6 +148,13 @@ async function main() {
   // no actual data. The below filters out the empty entries.
   const results = Object.assign({}, ...Object.entries(allResults).filter(([_k, v]) => v.length > 0).map(([k, v]) => ({ [k]: v })));
   var keys = Object.keys(results).sort(numericCompareDescending);
+
+  // `simctl list devices` can report a device as available even when its runtime profile is
+  // not actually installed. Booting such a device fails with "simulator runtime is not
+  // available". Filter the discovered runtime versions down to those that are genuinely
+  // installed and available so we don't pick one that can't boot.
+  const availableRuntimeVersions = new Set(await simctl.getAvailableRuntimeVersions());
+  keys = keys.filter(key => availableRuntimeVersions.has(key));
 
   // determine desired device and runtime
   const deviceBaseName = "iPad Pro (11-inch)";
