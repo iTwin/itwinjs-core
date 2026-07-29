@@ -78,6 +78,22 @@ class SimctlWithOpts extends Simctl {
     }
     return undefined;
   };
+
+  /**
+   * Logs diagnostic information about the machine's simulator runtimes and devices. This is
+   * useful when a simulator fails to boot on CI, where the runtime list and the device list
+   * can disagree about what is actually installed.
+   */
+  async logDiagnostics() {
+    for (const args of [['runtimes'], ['devices']]) {
+      try {
+        const { stdout } = await this.exec('list', { args });
+        log(`=========simctl list ${args[0]}=========\n${stdout.trim()}`);
+      } catch (err) {
+        log(`Failed to run 'simctl list ${args[0]}': ${err}`);
+      }
+    }
+  }
 }
 
 /** @param {string} message */
@@ -156,10 +172,11 @@ async function main() {
   const availableRuntimeVersions = new Set(await simctl.getAvailableRuntimeVersions());
   keys = keys.filter(key => availableRuntimeVersions.has(key));
 
-  // determine desired device and runtime
-  const deviceBaseName = "iPad Pro (11-inch)";
-  var desiredDevice = `${deviceBaseName} (2nd generation)`;
-  var desiredRuntime = keys.length > 0 ? keys[0] : "16";
+  // determine desired device and runtime. The device type name must match one produced by the
+  // installed Xcode (Xcode 16.3 on CI); "iPad Pro 11-inch (M4)" is the current 11-inch iPad Pro.
+  const deviceBaseName = "iPad Pro 11-inch (M4)";
+  var desiredDevice = deviceBaseName;
+  var desiredRuntime = keys.length > 0 ? keys[0] : "18";
 
   keys = keys.filter(key => key.startsWith(desiredRuntime));
   /** @type {{ name: string; sdk: string; udid: string; state: string; } | undefined} */
@@ -201,7 +218,13 @@ async function main() {
   // Boot the simulator if needed
   if (device.state !== "Booted") {
     log(`Booting simulator: ${device.name}`);
-    await simctl.startBootMonitor({ shouldPreboot: true });
+    try {
+      await simctl.startBootMonitor({ shouldPreboot: true });
+    } catch (err) {
+      log(`Failed to boot simulator: ${err}`);
+      await simctl.logDiagnostics();
+      throw err;
+    }
   }
 
   // Install the app
