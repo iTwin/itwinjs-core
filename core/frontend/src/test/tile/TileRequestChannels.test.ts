@@ -2,7 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { IModelApp } from "../../IModelApp";
+import { IModelTile } from "../../internal/tile/IModelTile";
+import { MockRender } from "../../internal/render/MockRender";
+import { TileAdmin } from "../../tile/TileAdmin";
+import { TileRequest } from "../../tile/TileRequest";
 import {
   Tile, TileContentDecodingStatistics, TileRequestChannel, TileRequestChannels,
 } from "../../tile/internal";
@@ -58,11 +63,43 @@ describe("TileRequestChannels", () => {
     expect(channels.size).toEqual(5);
   });
 
-  it("always enables cloud storage cache", () => {
-    const channels = new TileRequestChannels(undefined, false);
-    expect(channels.iModelChannels.cloudStorage).toBeDefined();
-    expect(channels.iModelChannels.cloudStorage.concurrency).toEqual(channels.httpConcurrency);
-    expectClassName(channels.iModelChannels.cloudStorage, "CloudStorageCacheChannel");
+  it("configures external tile cache lookup independently of the transport", () => {
+    for (const rpcConcurrency of [undefined, 42]) {
+      const defaulted = new TileAdmin(false, rpcConcurrency);
+      expect(defaulted.enableExternalTileCacheLookup).toBe(true);
+      expect(defaulted.channels.iModelChannels.cloudStorage).toBeDefined();
+
+      const enabled = new TileAdmin(false, rpcConcurrency, { enableExternalTileCacheLookup: true });
+      expect(enabled.enableExternalTileCacheLookup).toBe(true);
+      expect(enabled.channels.iModelChannels.cloudStorage).toBeDefined();
+      expectClassName(enabled.channels.iModelChannels.cloudStorage!, "CloudStorageCacheChannel");
+
+      const disabled = new TileAdmin(false, rpcConcurrency, { enableExternalTileCacheLookup: false });
+      expect(disabled.enableExternalTileCacheLookup).toBe(false);
+      expect(disabled.channels.iModelChannels.cloudStorage).toBeUndefined();
+    }
+  });
+
+  it("checks the external tile cache for every newly requested iModel tile", async () => {
+    await MockRender.App.startup({ tileAdmin: { enableExternalTileCacheLookup: true } });
+    const requestCachedTileContent = vi.spyOn(IModelApp.tileAdmin, "requestCachedTileContent").mockResolvedValue(undefined);
+
+    try {
+      const tiles = Array.from({ length: 7 }, () => Object.create(IModelTile.prototype) as IModelTile);
+      for (const tile of tiles) {
+        const channel = tile.channel;
+        await channel.requestContent(tile, () => false);
+        expect(channel.onNoContent({ tile } as unknown as TileRequest)).toBe(true);
+        expect(tile.requestChannel).toBe(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+      }
+
+      expect(requestCachedTileContent).toHaveBeenCalledTimes(tiles.length);
+      expect(requestCachedTileContent.mock.calls.map(([tile]) => tile)).toEqual(tiles);
+      expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage!.statistics.totalCacheMisses).toBe(tiles.length);
+    } finally {
+      requestCachedTileContent.mockRestore();
+      await MockRender.App.shutdown();
+    }
   });
 
   it("returns whether channel is registered", () => {

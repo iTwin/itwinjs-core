@@ -146,7 +146,7 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
 /** TileRequestChannels used for requesting content for IModelTiles.
  */
 export class IModelTileRequestChannels {
-  private _cloudStorage: TileRequestChannel;
+  private readonly _cloudStorage?: TileRequestChannel;
   private readonly _contentCache?: IModelTileMetadataCacheChannel;
   public readonly rpc: TileRequestChannel;
 
@@ -155,6 +155,7 @@ export class IModelTileRequestChannels {
     usesHttp: boolean;
     cacheMetadata: boolean;
     cacheConcurrency: number;
+    enableExternalTileCacheLookup: boolean;
   }) {
     const channelName = "itwinjs-tile-rpc";
     this.rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
@@ -164,11 +165,13 @@ export class IModelTileRequestChannels {
       this._contentCache.registerChannel(this.rpc);
     }
 
-    this._cloudStorage = new CloudStorageCacheChannel("itwinjs-cloud-cache", args.cacheConcurrency);
-    this._contentCache?.registerChannel(this._cloudStorage);
+    if (args.enableExternalTileCacheLookup) {
+      this._cloudStorage = new CloudStorageCacheChannel("itwinjs-cloud-cache", args.cacheConcurrency);
+      this._contentCache?.registerChannel(this._cloudStorage);
+    }
   }
 
-  public get cloudStorage(): TileRequestChannel {
+  public get cloudStorage(): TileRequestChannel | undefined {
     return this._cloudStorage;
   }
 

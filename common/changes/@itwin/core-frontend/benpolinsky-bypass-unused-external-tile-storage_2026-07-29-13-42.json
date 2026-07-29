@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add an option to skip external iModel tile cache lookups before backend generation.",
+      "type": "none",
+      "packageName": "@itwin/core-frontend"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "78756012+ben-polinsky@users.noreply.github.com"
+}

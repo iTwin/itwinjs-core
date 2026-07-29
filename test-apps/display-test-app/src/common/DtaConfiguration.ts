@@ -32,6 +32,7 @@ export interface DtaBooleanConfiguration {
   openReadWrite?: boolean; // default false
   devTools?: boolean; // default true
   cacheTileMetadata?: boolean; // default false
+  enableExternalTileCacheLookup?: boolean; // defaults to TileAdmin's default
   ignoreCache?: boolean; // default is undefined, set to true to delete a cached version of a remote imodel before opening it.
   noElectronAuth?: boolean; // if true, don't initialize auth client. It currently has a bug that produces an exception on every attempt to obtain access token, i.e., every RPC call.
   noImdlWorker?: boolean; // if true, parse iMdl content on main thread instead of web worker (easier to debug).
@@ -179,6 +180,10 @@ export const getConfig = (): DtaConfiguration => {
 
   configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS;
   configuration.cacheTileMetadata = undefined !== process.env.IMJS_CACHE_TILE_METADATA;
+  const externalTileCacheLookup = process.env.IMJS_EXTERNAL_TILE_CACHE_LOOKUP;
+  if (undefined !== externalTileCacheLookup)
+    configuration.enableExternalTileCacheLookup = "0" !== externalTileCacheLookup && "false" !== externalTileCacheLookup.toLowerCase();
+
   configuration.useProjectExtents = undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
   configuration.noElectronAuth = undefined !== process.env.IMJS_NO_ELECTRON_AUTH;
   configuration.noImdlWorker = undefined !== process.env.IMJS_NO_IMDL_WORKER;

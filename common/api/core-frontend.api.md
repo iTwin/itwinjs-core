@@ -11063,6 +11063,8 @@ export class TileAdmin {
     get emptyTileUserSet(): ReadonlyTileUserSet;
     // @internal (undocumented)
     readonly enableExternalTextures: boolean;
+    // @beta
+    readonly enableExternalTileCacheLookup: boolean;
     // @internal (undocumented)
     readonly enableFrontendScheduleScripts: boolean;
     // @internal (undocumented)
@@ -11202,6 +11204,8 @@ export namespace TileAdmin {
         // @beta
         disablePolyfaceDecimation?: boolean;
         enableExternalTextures?: boolean;
+        // @beta
+        enableExternalTileCacheLookup?: boolean;
         enableFrontendScheduleScripts?: boolean;
         enableImprovedElision?: boolean;
         enableIndexedEdges?: boolean;
@@ -11553,7 +11557,7 @@ export class TileRequestChannel {
 export class TileRequestChannels {
     [Symbol.iterator](): Iterator<TileRequestChannel>;
     // @internal
-    constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean);
+    constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean, enableExternalTileCacheLookup?: boolean);
     add(channel: TileRequestChannel): void;
     readonly elementGraphicsRpc: TileRequestChannel;
     get(name: string): TileRequestChannel | undefined;

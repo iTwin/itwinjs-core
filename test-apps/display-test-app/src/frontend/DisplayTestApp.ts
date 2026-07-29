@@ -130,6 +130,8 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options |
   if (configuration.cacheTileMetadata)
     tileAdminProps.cacheTileMetadata = true;
 
+  tileAdminProps.enableExternalTileCacheLookup = configuration.enableExternalTileCacheLookup;
+
   if (configuration.disableMagnification)
     tileAdminProps.disableMagnification = true;
 

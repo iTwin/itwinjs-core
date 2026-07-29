@@ -24,3 +24,7 @@ You can configure a cloud-storage tile cache for your application backend in one
 2. Supply a [custom cloud storage provider](https://github.com/iTwin/object-storage/) to [IModelHostOptions.tileCacheStorage]($backend).
 
 By default, frontends can retrieve tiles from Azure blob storage container supplied by the backend. `IModelAppOptions.tileAdmin.tileStorage` can optionally be supplied to enable other storage providers. Note that supplying your own implementation will disable the built-in Azure support.
+
+See [IModel tile external-cache lookup](./IModelTileCacheLookup.md) for the
+frontend request path, explicit application control, and measurements of the
+cost of cache misses.

@@ -107,6 +107,11 @@ export interface GpuMemoryLimits {
 export class TileAdmin {
   private _versionInfo?: TileVersionInfo;
   public readonly channels: TileRequestChannels;
+  /** Whether each [[IModelTile]] is first requested from external tile storage before asking the backend to generate its content.
+   * @see [[TileAdmin.Props.enableExternalTileCacheLookup]]
+   * @beta
+   */
+  public readonly enableExternalTileCacheLookup: boolean;
   private readonly _users = new Set<TileUser>();
   private readonly _requestsPerUser = new Map<TileUser, Set<Tile>>();
   private readonly _tileUsagePerUser = new Map<TileUser, Set<TileUsageMarker>>();
@@ -239,7 +244,8 @@ export class TileAdmin {
     if (undefined === options)
       options = {};
 
-    this.channels = new TileRequestChannels(rpcConcurrency, true === options.cacheTileMetadata);
+    this.enableExternalTileCacheLookup = false !== options.enableExternalTileCacheLookup;
+    this.channels = new TileRequestChannels(rpcConcurrency, true === options.cacheTileMetadata, this.enableExternalTileCacheLookup);
 
     this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
@@ -1031,6 +1037,14 @@ export namespace TileAdmin {
      * @beta
      */
     tileStorage?: FrontendStorage;
+
+    /** Specifies whether each [[IModelTile]] should first be requested from external tile storage before asking the backend to generate its content.
+     * Set this to `false` when the application knows its backend does not use external tile storage.
+     *
+     * Default value: `true`.
+     * @beta
+     */
+    enableExternalTileCacheLookup?: boolean;
 
     /** The maximum number of simultaneously active requests for IModelTileTreeProps. Requests are fulfilled in FIFO order.
      *

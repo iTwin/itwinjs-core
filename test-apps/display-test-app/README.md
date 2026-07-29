@@ -122,6 +122,8 @@ You can use these environment variables to alter the default behavior of various
   * Allows display-test-app running in the browser to assume a common base path for ALL local iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
 * IMJS_STANDALONE_VIEWNAME
   * The name of a view to open by default within an iModel.
+* IMJS_EXTERNAL_TILE_CACHE_LOOKUP
+  * Set to `false` to skip the external tile cache lookup before requesting each iModel tile from the backend.
 * IMJS_STANDALONE_SIGNIN
   * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
 * IMJS_STARTUP_MACRO
