@@ -3847,6 +3847,15 @@ export class GeometryPart extends DefinitionElement {
 }
 
 // @beta
+export interface GetAspectsForElementsOptions {
+    aspectClassFullName?: string;
+    elementIds: Id64Arg;
+    excludedAspectClassFullNames?: ReadonlySet<string>;
+    groupByOwner?: boolean;
+    usePrimaryConn?: boolean;
+}
+
+// @beta
 export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]>;
 
 // @beta
@@ -4255,6 +4264,8 @@ export namespace IModelDb {
         deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
+        // @beta
+        getAspectsForElements(options: GetAspectsForElementsOptions): AsyncIterableIterator<ElementAspect>;
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
         getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T;
         // (undocumented)
