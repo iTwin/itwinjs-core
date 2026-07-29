@@ -656,6 +656,246 @@ export class TextDecorationTool extends Tool {
   }
 
   // TODO: Remove before merging, just for convenience while testing.
+  // Tests scalar quantity field formatting against Building.footprintArea.
+  private async testFootprintArea() {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp) {
+      return;
+    }
+
+    const tabSize = 0.025;
+
+    // Setup
+    await this.parseAndRun("init", "0x20000000398");
+    await this.parseAndRun("applystyle", "0x50000000001");
+    await this.parseAndRun("font", "Arimo");
+    await this.parseAndRun("center");
+
+    const expectField = (title: string, expected: string, formatOptions?: FieldFormatOptions, note?: string) => {
+      const expectedColor = ColorDef.fromString("#ff5959").toJSON();
+      const actualColor = ColorDef.fromString("#156715").toJSON();
+      const defaultColor = ColorDef.fromString("black").toJSON();
+
+      // Label
+      editor.appendBreak();
+      editor.runStyle.color = defaultColor;
+      editor.runStyle.isBold = true;
+      editor.appendText(title);
+      editor.runStyle.isBold = false;
+      editor.appendBreak();
+
+      // Expected value
+      editor.appendText("Expected: ");
+      editor.runStyle.color = expectedColor;
+      editor.appendTab(tabSize);
+      editor.appendText(expected);
+      editor.runStyle.color = defaultColor;
+
+      // Actual field
+      const fieldProps = {
+        elementId: "0x20000001f05",
+        schemaName: "BuildingSpatial",
+        className: "Building",
+        propertyName: "FootprintArea",
+        formatOptions,
+      };
+      editor.appendBreak();
+      editor.appendText("Actual: ");
+      editor.runStyle.color = actualColor;
+      editor.appendTab(tabSize);
+      editor.appendField(fieldProps);
+      editor.runStyle.color = defaultColor;
+
+      // Comment
+      if (note) {
+        editor.appendBreak();
+        editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
+        editor.runStyle.isItalic = true;
+        editor.appendText(note);
+        editor.runStyle.isItalic = false;
+        editor.runStyle.color = defaultColor;
+      }
+
+      editor.appendBreak();
+      editor.appendText(JSON.stringify({ formatOptions: formatOptions ?? null }));
+
+      editor.appendBreak();
+      editor.appendText(" ");
+    };
+
+    // Raw (persistence) value for Building.footprintArea used as reference below:
+    //   6395.894993427551 m²  (persistence unit: Units.SQ_M)
+    // Conversions:
+    //   m²  -> mm² : x 1,000,000  ->  6,395,894,993.427551
+    //   m²  -> ft² : / 0.09290304 ->  68,844.84074393637
+    // Notes:
+    //   * FootprintArea is a scalar quantity field, so the output is a single formatted
+    //     magnitude (no parenthesised coordinate tuple like the Origin test).
+    //   * DEMO_SEED_FORMATS only contains length seeds, so there is no `Demo.AREA_*`
+    //     equivalent and the sync no-format fallback for a scalar quantity is a raw
+    //     `.toString()` (no length-style coordinate fallback applies).
+
+    editor.appendBreak();
+    editor.runStyle.isBold = true;
+    editor.appendText("Sync-friendly (no inline format override) — exercised by the txn callback path and evaluateFields");
+    editor.runStyle.isBold = false;
+    editor.appendBreak();
+
+    // const persistenceUnit = "Units.SQ_M";
+    const persistenceUnit = undefined;
+
+    // No formatOptions at all — no coordinate fallback for scalar quantity, so falls
+    // through to the raw `.toString()` formatter.
+    expectField(
+      "No overrides",
+      "6395.894993427551",
+      undefined,
+      "No formatOptions. Property KoQ can't be resolved and there is no scalar-quantity fallback format, so the raw JS toString is emitted (no unit label).",
+    );
+
+    // Only persistence unit — persistenceUnit alone doesn't select a format.
+    expectField(
+      "Only persistence unit",
+      "6395.894993427551",
+      { quantity: { persistenceUnit } },
+      "persistenceUnit alone doesn't select a format; no scalar-quantity fallback, so raw toString is emitted.",
+    );
+
+    // Post-format wrappers — no quantity override, wraps whatever the sync path produced.
+    expectField(
+      "Prefix/suffix wrappers",
+      "A=6395.894993427551 (m²)",
+      { prefix: "A=", suffix: " (m²)", quantity: { persistenceUnit } },
+      "prefix/suffix wrap the ENTIRE formatted string — here just the raw toString value.",
+    );
+
+    // Post-format upper-case transform. Upper-casing pure digits/dot is a no-op.
+    expectField(
+      "Case upper",
+      "6395.894993427551",
+      { case: "upper", quantity: { persistenceUnit } },
+      "case=upper applied after formatting; digits are unaffected.",
+    );
+
+    editor.appendBreak();
+    editor.runStyle.isBold = true;
+    editor.appendText("Async-only (inline format overrides) — bypasses sync provider, exercised only by evaluateFieldsAsync");
+    editor.runStyle.isBold = false;
+    editor.appendBreak();
+
+    // Inline FormatProps override — square metres, 4 decimals. Deterministic.
+    expectField(
+      "Inline m² (4 demo)",
+      "6395.895 m²",
+      {
+        quantity: {
+          persistenceUnit,
+          format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
+            type: "Decimal",
+            precision: 4,
+            composite: { units: [{ name: "Units.SQ_M", label: "m²" }] },
+          },
+        },
+      },
+      "inline FormatProps — m², 4 decimals. Trailing zero dropped (no `trailZeros` trait): 6395.8950 -> 6395.895.",
+    );
+
+    // Inline FormatProps override — square metres, 3 decimals.
+    expectField(
+      "Inline m² (3 demo)",
+      "6395.895 m²",
+      {
+        quantity: {
+          persistenceUnit,
+          format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
+            type: "Decimal",
+            precision: 3,
+            composite: { units: [{ name: "Units.SQ_M", label: "m²" }] },
+          },
+        },
+      },
+      "inline FormatProps — m², 3 decimals.",
+    );
+
+    // Inline FormatProps override — square millimetres (verifies m² -> mm² conversion).
+    expectField(
+      "Inline mm² (2 demo)",
+      "6395894993.43 mm²",
+      {
+        quantity: {
+          persistenceUnit,
+          format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
+            type: "Decimal",
+            precision: 2,
+            composite: { units: [{ name: "Units.SQ_MM", label: "mm²" }] },
+          },
+        },
+      },
+      "Verifies m² -> mm² conversion (multiply by 1,000,000). 6,395,894,993.427551 rounded to 2 dp.",
+    );
+
+    // Inline FormatProps override — square feet, 4 decimals (verifies m² -> ft² conversion).
+    expectField(
+      "Inline ft² (4 demo)",
+      "68844.8407 ft²",
+      {
+        quantity: {
+          persistenceUnit,
+          format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
+            type: "Decimal",
+            precision: 4,
+            composite: { units: [{ name: "Units.SQ_FT", label: "ft²" }] },
+          },
+        },
+      },
+      "Verifies m² -> ft² conversion (divide by 0.09290304). 68844.84074393637 rounded to 4 dp.",
+    );
+
+    // Inline FormatProps override — square feet, 2 decimals.
+    expectField(
+      "Inline ft² (2 demo)",
+      "68844.84 ft²",
+      {
+        quantity: {
+          persistenceUnit,
+          format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
+            type: "Decimal",
+            precision: 2,
+            composite: { units: [{ name: "Units.SQ_FT", label: "ft²" }] },
+          },
+        },
+      },
+      "Verifies m² -> ft² conversion at 2 dp.",
+    );
+
+    // Inline override combined with post-format upper-case.
+    expectField(
+      "Inline ft² + case upper",
+      "68844.84 FT²",
+      {
+        case: "upper",
+        quantity: {
+          persistenceUnit,
+          format: {
+            formatTraits: ["keepSingleZero", "showUnitLabel"],
+            type: "Decimal",
+            precision: 2,
+            composite: { units: [{ name: "Units.SQ_FT", label: "ft²" }] },
+          },
+        },
+      },
+      "case=upper applied after inline ft² formatting.",
+    );
+
+    await editor.update();
+  }
+
+  // TODO: Remove before merging, just for convenience while testing.
   private async testTextFromJson(json: string) {
     await this.parseAndRun("init", "0x20000000398");
     await this.parseAndRun("applystyle", "0x50000000001");
@@ -670,6 +910,12 @@ export class TextDecorationTool extends Tool {
     // TODO: Remove before merging, just for convenience while testing.
     if (cmd === "test") {
       await this.testText();
+      return true;
+    }
+
+    // TODO: Remove before merging, just for convenience while testing.
+    if (cmd === "testarea") {
+      await this.testFootprintArea();
       return true;
     }
 
