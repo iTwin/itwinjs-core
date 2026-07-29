@@ -98,6 +98,42 @@ export const DEMO_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
     decimalSeparator: ".",
     composite: { units: [{ label: "[*]mm", name: "Units.MM" }] },
   },
+  // Area seeds — persistence unit is Units.SQ_M (see DEMO_SEED_PERSISTENCE_UNITS).
+  "Demo.AREA_M2": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[$]m²", name: "Units.SQ_M" }] },
+  },
+  "Demo.AREA_MM2": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 2,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[%]mm²", name: "Units.SQ_MM" }] },
+  },
+  "Demo.AREA_FT2": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[&]ft²", name: "Units.SQ_FT" }] },
+  },
+};
+
+/** Persistence unit each seed in [[DEMO_SEED_FORMATS]] expects to be compiled against.
+ * Seeds not listed here default to the `defaultPersistenceUnitName` passed to
+ * [[FieldFormattingDemoProvider.preloadSeeds]] (`Units.M`). Required for any seed whose
+ * composite unit belongs to a phenomenon other than LENGTH.
+ */
+const DEMO_SEED_PERSISTENCE_UNITS: { readonly [name: string]: string } = {
+  "Demo.AREA_M2": "Units.SQ_M",
+  "Demo.AREA_MM2": "Units.SQ_M",
+  "Demo.AREA_FT2": "Units.SQ_M",
 };
 
 /** [FormatsProvider]($core-quantity) wrapper that overlays [[DEMO_SEED_FORMATS]] on top of an
@@ -150,11 +186,13 @@ export class FieldFormattingDemoProvider implements FormattingSpecProvider {
 
   /** Preload every entry in [[DEMO_SEED_FORMATS]] against the given persistence unit
    * (`Units.M` by default). Called automatically when the demo provider is registered.
+   * Seeds whose composite unit belongs to a non-LENGTH phenomenon use the persistence
+   * unit declared in [[DEMO_SEED_PERSISTENCE_UNITS]] instead of `defaultPersistenceUnitName`.
    */
-  public async preloadSeeds(persistenceUnitName: string = "Units.M"): Promise<void> {
+  public async preloadSeeds(defaultPersistenceUnitName: string = "Units.M"): Promise<void> {
     const requirements: FormattingSpecArgs[] = Object.keys(DEMO_SEED_FORMATS).map((name) => ({
       name,
-      persistenceUnitName,
+      persistenceUnitName: DEMO_SEED_PERSISTENCE_UNITS[name] ?? defaultPersistenceUnitName,
     }));
     await this.prepareForRequirements(requirements);
   }
