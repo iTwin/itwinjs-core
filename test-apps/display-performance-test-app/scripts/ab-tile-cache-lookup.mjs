@@ -66,6 +66,10 @@ const reps = Number(args.reps ?? 5);
 const root = args.out ?? join("/tmp", `ab-tile-cache-${iModelName ?? "model"}`);
 const width = Number(args.width ?? 2400);
 const height = Number(args.height ?? 1600);
+// Values below 1.0 select higher-resolution tiles, which raises the number of tiles a view
+// requests. Useful for probing how the lookup overhead scales with tile count. Applied
+// identically to both variants.
+const tileSizeModifier = undefined !== args.tileSizeModifier ? Number(args.tileSizeModifier) : undefined;
 
 if (!iModelLocation || !iModelName || 0 === views.length) {
   console.error(`Missing required arguments.
@@ -76,6 +80,7 @@ if (!iModelLocation || !iModelName || 0 === views.length) {
   [--reps 5]               measured repetitions per variant
   [--out <dir>]            output directory
   [--width 2400] [--height 1600]
+  [--tileSizeModifier 1.0] below 1.0 selects higher-resolution tiles, raising tile count
 `);
   process.exit(1);
 }
@@ -84,6 +89,10 @@ rmSync(root, { recursive: true, force: true });
 mkdirSync(root, { recursive: true });
 
 function writeConfig(outDir, enableExternalTileCacheLookup) {
+  const tileProps = { enableExternalTileCacheLookup };
+  if (undefined !== tileSizeModifier)
+    tileProps.defaultTileSizeModifier = tileSizeModifier;
+
   const config = {
     outputName: "results.csv",
     outputPath: outDir,
@@ -93,7 +102,7 @@ function writeConfig(outDir, enableExternalTileCacheLookup) {
     numRendersToSkip: 10,
     numRendersToTime: 10,
     testSet: [{
-      tileProps: { enableExternalTileCacheLookup },
+      tileProps,
       tests: views.map((viewName) => ({ viewName })),
     }],
   };

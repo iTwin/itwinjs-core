@@ -67,6 +67,9 @@ node scripts/ab-tile-cache-lookup.mjs \
   --reps 5
 ```
 
+Pass `--tileSizeModifier` (values below 1.0) to raise the number of tiles a view requests;
+it is applied identically to both variants.
+
 It runs the same saved views with `tileProps.enableExternalTileCacheLookup` set
 to `true` and `false`, and reports median tile-loading time, interquartile
 range, and the request counts from the CSV columns `Tile Cache Misses`,
