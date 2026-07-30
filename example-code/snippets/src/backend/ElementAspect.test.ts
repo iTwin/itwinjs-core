@@ -3,17 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import { ElementAspect, ElementMultiAspect, SnapshotDb } from "@itwin/core-backend";
+import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { IModel } from "@itwin/core-common";
-import { ElementAspect, ElementMultiAspect, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ElementAspect examples", () => {
   let iModelDb: SnapshotDb;
 
   before(() => {
-    const seedFileName = IModelTestUtils.resolveAssetFile("ElementAspectTest.bim");
-    const testFileName = IModelTestUtils.prepareOutputFile("ElementAspectExamples", "ElementAspectTest.bim");
-    iModelDb = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    iModelDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("ElementAspectTest.bim"));
   });
 
   after(() => iModelDb.close());
