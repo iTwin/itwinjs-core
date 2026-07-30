@@ -64,3 +64,29 @@ export function createIModelFromSeed(targetFileName: string, seedAssetName: stri
 export function openSeedReadonly(seedAssetName: string): SnapshotDb {
   return SnapshotDb.openFile(IModelTestUtils.resolveAssetFile(seedAssetName));
 }
+
+/**
+ * Create a fresh writable copy from a seed asset, close it, and reopen it read-only.
+ *
+ * This is the canonical way to build a shared, per-file read-only fixture under the hybrid
+ * isolation policy: the read-only handle can be shared safely across tests in a file because
+ * nothing can mutate it, while each mutating test still gets its own writable copy elsewhere.
+ * When `importTestBim` is set, the `TestBim` schema is imported into the writable copy before
+ * it is reopened read-only.
+ */
+export async function openReadonlySeedCopy(targetFileName: string, seedAssetName: string, opts?: { importTestBim?: boolean }): Promise<SnapshotDb> {
+  const writable = opts?.importTestBim
+    ? await generateTestSnapshot(targetFileName, seedAssetName)
+    : createIModelFromSeed(targetFileName, seedAssetName);
+  const pathName = writable.pathName;
+  writable.close();
+  return SnapshotDb.openFile(pathName);
+}
+
+/** Close each provided database that is still open. Guards against `undefined` and already-closed handles. */
+export function closeIfOpen(...dbs: Array<SnapshotDb | undefined>): void {
+  for (const db of dbs) {
+    if (db !== undefined && db.isOpen)
+      db.close();
+  }
+}

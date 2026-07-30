@@ -27,7 +27,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { EntityClass } from "@itwin/ecschema-metadata";
-import { createIModelFromSeed, generateTestSnapshot, roundtripThroughJson } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, generateTestSnapshot, openReadonlySeedCopy, roundtripThroughJson } from "./IModelTestFixtures";
 
 
 describe("iModel elements", () => {
@@ -39,33 +39,16 @@ describe("iModel elements", () => {
     await TestUtils.startBackend();
     IModelTestUtils.registerTestBimSchema();
 
-    const testBimWritable = await generateTestSnapshot("elements-test.bim", "test.bim");
-    const testBimPath = testBimWritable.pathName;
-    testBimWritable.close();
-    testBimReadonly = SnapshotDb.openFile(testBimPath);
-
-    const compatibilityWritable = createIModelFromSeed("elements-CompatibilityTestSeed.bim", "CompatibilityTestSeed.bim");
-    const compatibilityPath = compatibilityWritable.pathName;
-    compatibilityWritable.close();
-    compatibilityReadonly = SnapshotDb.openFile(compatibilityPath);
+    testBimReadonly = await openReadonlySeedCopy("elements-test.bim", "test.bim", { importTestBim: true });
+    compatibilityReadonly = await openReadonlySeedCopy("elements-CompatibilityTestSeed.bim", "CompatibilityTestSeed.bim");
   });
 
-  after(async () => {
-    if (testBimReadonly !== undefined && testBimReadonly.isOpen)
-      testBimReadonly.close();
-    if (compatibilityReadonly !== undefined && compatibilityReadonly.isOpen)
-      compatibilityReadonly.close();
-    for (const imodel of mutableIModels.splice(0)) {
-      if (imodel.isOpen)
-        imodel.close();
-    }
+  after(() => {
+    closeIfOpen(testBimReadonly, compatibilityReadonly, ...mutableIModels.splice(0));
   });
 
   afterEach(() => {
-    for (const imodel of mutableIModels.splice(0)) {
-      if (imodel.isOpen)
-        imodel.close();
-    }
+    closeIfOpen(...mutableIModels.splice(0));
   });
 
   const trackMutableIModel = (imodel: SnapshotDb): SnapshotDb => {

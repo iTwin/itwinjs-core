@@ -11,7 +11,7 @@ import { EditTxn, withEditTxn } from "../../EditTxn";
 import { DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, IModelDb, SnapshotDb, ViewDefinition } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
-import { createIModelFromSeed } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, openReadonlySeedCopy } from "./IModelTestFixtures";
 
 
 describe("iModel views", () => {
@@ -22,26 +22,15 @@ describe("iModel views", () => {
     await TestUtils.startBackend();
     IModelTestUtils.registerTestBimSchema();
 
-    const compatibilityWritable = createIModelFromSeed("views-CompatibilityTestSeed.bim", "CompatibilityTestSeed.bim");
-    const compatibilityPath = compatibilityWritable.pathName;
-    compatibilityWritable.close();
-    compatibilityReadonly = SnapshotDb.openFile(compatibilityPath);
+    compatibilityReadonly = await openReadonlySeedCopy("views-CompatibilityTestSeed.bim", "CompatibilityTestSeed.bim");
   });
 
-  after(async () => {
-    if (compatibilityReadonly !== undefined && compatibilityReadonly.isOpen)
-      compatibilityReadonly.close();
-    for (const imodel of mutableIModels.splice(0)) {
-      if (imodel.isOpen)
-        imodel.close();
-    }
+  after(() => {
+    closeIfOpen(compatibilityReadonly, ...mutableIModels.splice(0));
   });
 
   afterEach(() => {
-    for (const imodel of mutableIModels.splice(0)) {
-      if (imodel.isOpen)
-        imodel.close();
-    }
+    closeIfOpen(...mutableIModels.splice(0));
   });
 
   const trackMutableIModel = (imodel: SnapshotDb): SnapshotDb => {

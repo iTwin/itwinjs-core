@@ -8,7 +8,7 @@ import { withEditTxn } from "../../EditTxn";
 import { Category, ECSqlStatement, Element, SnapshotDb, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
-import { createIModelFromSeed, generateTestSnapshot } from "./IModelTestFixtures";
+import { closeIfOpen, generateTestSnapshot, openReadonlySeedCopy } from "./IModelTestFixtures";
 
 
 describe("iModel ECSQL and SQL", () => {
@@ -19,22 +19,12 @@ describe("iModel ECSQL and SQL", () => {
     await TestUtils.startBackend();
     IModelTestUtils.registerTestBimSchema();
 
-    const testBimWritable = await generateTestSnapshot("ecsql-test.bim", "test.bim");
-    const testBimPath = testBimWritable.pathName;
-    testBimWritable.close();
-    testBimReadonly = SnapshotDb.openFile(testBimPath);
-
-    const compatibilityWritable = createIModelFromSeed("ecsql-CompatibilityTestSeed.bim", "CompatibilityTestSeed.bim");
-    const compatibilityPath = compatibilityWritable.pathName;
-    compatibilityWritable.close();
-    compatibilityReadonly = SnapshotDb.openFile(compatibilityPath);
+    testBimReadonly = await openReadonlySeedCopy("ecsql-test.bim", "test.bim", { importTestBim: true });
+    compatibilityReadonly = await openReadonlySeedCopy("ecsql-CompatibilityTestSeed.bim", "CompatibilityTestSeed.bim");
   });
 
-  after(async () => {
-    if (testBimReadonly !== undefined && testBimReadonly.isOpen)
-      testBimReadonly.close();
-    if (compatibilityReadonly !== undefined && compatibilityReadonly.isOpen)
-      compatibilityReadonly.close();
+  after(() => {
+    closeIfOpen(testBimReadonly, compatibilityReadonly);
   });
 
   // NOTE: this test can be removed when the deprecated executeQuery method is removed

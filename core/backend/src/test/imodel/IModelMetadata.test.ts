@@ -10,7 +10,7 @@ import { EditTxn, withEditTxn } from "../../EditTxn";
 import { BisCoreSchema, Category, ClassRegistry, Element, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
-import { createIModelFromSeed, generateTestSnapshot } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, generateTestSnapshot, openReadonlySeedCopy } from "./IModelTestFixtures";
 
 
 describe("iModel metadata and schemas", () => {
@@ -22,29 +22,16 @@ describe("iModel metadata and schemas", () => {
     await TestUtils.startBackend();
     IModelTestUtils.registerTestBimSchema();
 
-    const testBimWritable = await generateTestSnapshot("metadata-test.bim", "test.bim");
-    const testBimPath = testBimWritable.pathName;
-    testBimWritable.close();
-    testBimReadonly = SnapshotDb.openFile(testBimPath);
-
-    const compatibilityWritable = createIModelFromSeed("metadata-CompatibilityTestSeed.bim", "CompatibilityTestSeed.bim");
-    const compatibilityPath = compatibilityWritable.pathName;
-    compatibilityWritable.close();
-    compatibilityReadonly = SnapshotDb.openFile(compatibilityPath);
+    testBimReadonly = await openReadonlySeedCopy("metadata-test.bim", "test.bim", { importTestBim: true });
+    compatibilityReadonly = await openReadonlySeedCopy("metadata-CompatibilityTestSeed.bim", "CompatibilityTestSeed.bim");
   });
 
-  after(async () => {
-    if (testBimReadonly !== undefined && testBimReadonly.isOpen)
-      testBimReadonly.close();
-    if (compatibilityReadonly !== undefined && compatibilityReadonly.isOpen)
-      compatibilityReadonly.close();
+  after(() => {
+    closeIfOpen(testBimReadonly, compatibilityReadonly);
   });
 
   afterEach(() => {
-    for (const imodel of mutableIModels.splice(0)) {
-      if (imodel.isOpen)
-        imodel.close();
-    }
+    closeIfOpen(...mutableIModels.splice(0));
   });
 
   const trackMutableIModel = (imodel: SnapshotDb): SnapshotDb => {
