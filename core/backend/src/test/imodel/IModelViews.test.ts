@@ -13,7 +13,6 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
 import { createIModelFromSeed } from "./IModelTestFixtures";
 
-// spell-checker: disable
 
 describe("iModel views", () => {
   let compatibilityReadonly: SnapshotDb;

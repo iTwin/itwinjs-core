@@ -29,7 +29,6 @@ import { samplePngTexture } from "../imageData";
 import { EntityClass } from "@itwin/ecschema-metadata";
 import { createIModelFromSeed, generateTestSnapshot, roundtripThroughJson } from "./IModelTestFixtures";
 
-// spell-checker: disable
 
 describe("iModel elements", () => {
   let testBimReadonly: SnapshotDb;

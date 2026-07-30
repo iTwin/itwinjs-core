@@ -17,7 +17,6 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
 import { generateTestSnapshot } from "./IModelTestFixtures";
 
-// spell-checker: disable
 
 function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string): GeometricElementProps {
   const elementProps: GeometricElementProps = {

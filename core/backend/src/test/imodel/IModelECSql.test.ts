@@ -10,7 +10,6 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
 import { createIModelFromSeed, generateTestSnapshot } from "./IModelTestFixtures";
 
-// spell-checker: disable
 
 describe("iModel ECSQL and SQL", () => {
   let testBimReadonly: SnapshotDb;

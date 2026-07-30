@@ -16,7 +16,6 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions, TestUtils } from "../TestUtils";
 import { createIModelFromSeed, expectIModelError, generateTestSnapshot, getIModelError, roundtripThroughJson } from "./IModelTestFixtures";
 
-// spell-checker: disable
 
 describe("iModel models", () => {
   let testBimReadonly: SnapshotDb;

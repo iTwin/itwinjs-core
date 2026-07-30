@@ -20,7 +20,6 @@ import { TestUtils } from "../TestUtils";
 import { performance } from "perf_hooks";
 import { expectIModelError, generateTestSnapshot, getIModelError } from "./IModelTestFixtures";
 
-// spell-checker: disable
 
 describe("iModel lifecycle", () => {
   let originalEnv: NodeJS.ProcessEnv;
