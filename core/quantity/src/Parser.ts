@@ -970,7 +970,9 @@ export class Parser {
     if (!inString)
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
-    const separator = spec.format.ratioSeparator ?? ":";
+    const ratioSeparator = spec.format.ratioSeparator ?? ":";
+    const spacer = spec.format.spacer ?? "";
+    const separator = spacer ? `${spacer}${ratioSeparator}${spacer}` : ratioSeparator;
     const parts = inString.split(separator);
     if (parts.length > 2) return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 
