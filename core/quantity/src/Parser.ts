@@ -971,8 +971,8 @@ export class Parser {
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
     const ratioSeparator = spec.format.ratioSeparator ?? ":";
-    const spacer = spec.format.spacer ?? "";
-    const separator = spacer ? `${spacer}${ratioSeparator}${spacer}` : ratioSeparator;
+    const spacer = spec.format.spacer;
+    const separator = `${spacer}${ratioSeparator}${spacer}`;
     const parts = inString.split(separator);
     if (parts.length > 2) return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 
