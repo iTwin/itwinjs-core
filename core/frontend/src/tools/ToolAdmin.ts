@@ -1142,10 +1142,11 @@ export class ToolAdmin {
 
     this._mouseMoveOverTimeout = setTimeout(async () => {
       await this.onMotionEnd(vp, pt2d, inputSource);
-      await processMotion();
+      // Evaluate drag at the nominal timeout fire time, not the frozen event timestamp.
+      await processMotion(eventTime !== undefined ? eventTime + 100 : undefined);
     }, 100);
 
-    const processMotion = async (): Promise<void> => {
+    const processMotion = async (motionTime?: number): Promise<void> => {
       // Update event to account for AccuSnap adjustments...
       current.fromButton(vp, pt2d, inputSource, true);
       current.toEvent(ev, true);
@@ -1157,7 +1158,7 @@ export class ToolAdmin {
       const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
       this.setIncompatibleViewportCursor(isValidLocation);
 
-      if (forceStartDrag || current.isStartDrag(ev.button, eventTime)) {
+      if (forceStartDrag || current.isStartDrag(ev.button, motionTime)) {
         current.onStartDrag(ev.button);
         current.changeButtonToDownPoint(ev);
         ev.isDragging = true;
@@ -1185,7 +1186,7 @@ export class ToolAdmin {
      */
     if (forceStartDrag) {
       await snapPromise;
-      return processMotion();
+      return processMotion(eventTime);
     }
 
     if (this.isLocateCircleOn)
@@ -1194,7 +1195,7 @@ export class ToolAdmin {
     snapPromise.then(async (snapOk) => {
       if (!snapOk || snapPromise !== this._snapMotionPromise)
         return;
-      return processMotion();
+      return processMotion(eventTime);
     }).catch((_) => { });
   }
 
