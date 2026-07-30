@@ -227,6 +227,8 @@ describe("ElementAspect", () => {
         assert.isTrue(plan.some((detail) => /^SCAN (?:owners|IdSet) VIRTUAL TABLE INDEX/.test(detail)), plan.join("\n"));
         for (const aspectClass of ["ElementMultiAspect", "ElementUniqueAspect"])
           assert.isTrue(plan.some((detail) => new RegExp(`^SEARCH main\\.bis_${aspectClass} USING .*INDEX .*_target \\(ElementId=\\?\\)$`).test(detail)), plan.join("\n"));
+        if (!grouped)
+          assert.isFalse(plan.some((detail) => detail.startsWith("USE TEMP B-TREE FOR ORDER BY")), plan.join("\n"));
       }
     }
   });

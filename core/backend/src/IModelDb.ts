@@ -3277,7 +3277,7 @@ export namespace IModelDb {
       )`;
       const orderBy = options.groupByOwner
         ? "ORDER BY OwnerId, AspectKind, ECClassId, ECInstanceId"
-        : "ORDER BY AspectKind, ECClassId, ECInstanceId, OwnerId";
+        : "";
       // The IdSet virtual table is experimental and requires ENABLE_EXPERIMENTAL_FEATURES below.
       const sql = `WITH OwnerIds AS (SELECT id FROM IdSet(:elementIds))
         SELECT $ FROM (
