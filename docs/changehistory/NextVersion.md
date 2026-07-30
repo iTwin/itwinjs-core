@@ -5,9 +5,23 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
+    - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
 
 ## @itwin/core-backend
+
+### Edit from element, model, and aspect callbacks
+
+A new beta API, [IModelDb.getIndirectTxn]($backend), provides the [EditTxn]($backend) associated with an element, model, or aspect callback. Callbacks whose arguments provide an [IModelDb]($backend) but no transaction can use it to perform additional edits within the transaction that invoked the callback.
+
+```ts
+protected static override onUpdate(arg: OnElementPropsArg): void {
+  super.onUpdate(arg);
+  updateRelatedEntities(arg.iModel.getIndirectTxn(), arg.props);
+}
+```
+
+The operation that invoked the callback owns the returned transaction. The callback must not start, end, save, abandon, or otherwise manage the transaction lifecycle. Callbacks that receive `indirectEditTxn` directly should continue using that property.
 
 ### WorkspaceDb file resource APIs deprecated
 
