@@ -22,6 +22,22 @@ These options will work for running with electron or for a browser (though speci
 * To specify running headlessly with chrome, you can add the option "headless" to your command. For example, run the command "npm run test:chrome headless". This will cause chrome to run headlessly, so no chrome window will appear while the test is running. However, this option will have no affect if you are running in electron, edge, or firefox.
 * To specify running electron **without** opening the debugger automatically, you can add the option "no_debug" to your command. For example, run the command "npm run test:electron no_debug". This will run dpta without bringing the debugger up automatically when electron starts.
 
+## A/B comparison scripts
+
+The `scripts` directory contains harnesses that run the same saved views under two different configurations and report medians rather than single samples.
+
+`scripts/ab-tile-cache-lookup.mjs` compares `tileProps.enableExternalTileCacheLookup` on versus off:
+
+```sh
+node scripts/ab-tile-cache-lookup.mjs \
+  --iModelLocation /absolute/path/to/models \
+  --iModelName model.bim \
+  --views "Floor B1,Overview" \
+  --reps 5
+```
+
+It performs discarded warm-up runs so that the backend's persistent native tile cache (`<model>.bim.Tiles`) is equally populated for both variants, alternates run order ABBA across repetitions, and uses a fresh process per run. Those controls are required: without them, the variant that happens to run first absorbs the cost of backend tile generation, which is far larger than the difference being measured.
+
 ## Performance tests on Mac
 
 Performance tests should automatically operate on Mac the same as on a Windows machine. However, it should be noted that, as Safari does not support the GPU timer we are utilizing, performance results when running with Safari will not produce the following data columns in the csv file: GPU Total, Bound By, Effective Total Time, & Effective FPS.
