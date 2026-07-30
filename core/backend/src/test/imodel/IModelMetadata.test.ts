@@ -10,13 +10,13 @@ import { EditTxn, withEditTxn } from "../../EditTxn";
 import { BisCoreSchema, Category, ClassRegistry, Element, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
-import { closeIfOpen, createIModelFromSeed, generateTestSnapshot, openReadonlySeedCopy } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, generateTestSnapshot, openReadonlySeedCopy } from "./IModelTestFixtures";
 
 
 describe("iModel metadata and schemas", () => {
   let testBimReadonly: SnapshotDb;
   let compatibilityReadonly: SnapshotDb;
-  const mutableIModels: SnapshotDb[] = [];
+  const { trackMutableIModel, closeTrackedIModels } = createMutableIModelTracker();
 
   before(async () => {
     await TestUtils.startBackend();
@@ -28,16 +28,12 @@ describe("iModel metadata and schemas", () => {
 
   after(() => {
     closeIfOpen(testBimReadonly, compatibilityReadonly);
+    closeTrackedIModels();
   });
 
   afterEach(() => {
-    closeIfOpen(...mutableIModels.splice(0));
+    closeTrackedIModels();
   });
-
-  const trackMutableIModel = (imodel: SnapshotDb): SnapshotDb => {
-    mutableIModels.push(imodel);
-    return imodel;
-  };
 
   function checkElementMetaData(entityClass: EntityClass) {
     assert.isNotNull(entityClass);

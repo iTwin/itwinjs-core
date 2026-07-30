@@ -27,13 +27,13 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { EntityClass } from "@itwin/ecschema-metadata";
-import { closeIfOpen, createIModelFromSeed, generateTestSnapshot, openReadonlySeedCopy, roundtripThroughJson } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, generateTestSnapshot, openReadonlySeedCopy, roundtripThroughJson } from "./IModelTestFixtures";
 
 
 describe("iModel elements", () => {
   let testBimReadonly: SnapshotDb;
   let compatibilityReadonly: SnapshotDb;
-  const mutableIModels: SnapshotDb[] = [];
+  const { trackMutableIModel, closeTrackedIModels } = createMutableIModelTracker();
 
   before(async () => {
     await TestUtils.startBackend();
@@ -44,17 +44,13 @@ describe("iModel elements", () => {
   });
 
   after(() => {
-    closeIfOpen(testBimReadonly, compatibilityReadonly, ...mutableIModels.splice(0));
+    closeIfOpen(testBimReadonly, compatibilityReadonly);
+    closeTrackedIModels();
   });
 
   afterEach(() => {
-    closeIfOpen(...mutableIModels.splice(0));
+    closeTrackedIModels();
   });
-
-  const trackMutableIModel = (imodel: SnapshotDb): SnapshotDb => {
-    mutableIModels.push(imodel);
-    return imodel;
-  };
 
   it("should be able to get properties of an iModel", () => {
     const imodel1 = testBimReadonly;

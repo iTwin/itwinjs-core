@@ -90,3 +90,27 @@ export function closeIfOpen(...dbs: Array<SnapshotDb | undefined>): void {
       db.close();
   }
 }
+
+/**
+ * Create a tracker for the writable iModels a test file opens, so they are all closed during teardown.
+ *
+ * This is the mechanism that enforces the hybrid isolation policy for mutating tests: each test wraps
+ * its freshly-created writable copy in `trackMutableIModel(...)`, and the file's `afterEach`/`after`
+ * calls `closeTrackedIModels()` to close and forget them. `closeTrackedIModels` is idempotent, so it is
+ * safe to call from both hooks.
+ */
+export function createMutableIModelTracker(): {
+  trackMutableIModel: <T extends SnapshotDb>(imodel: T) => T;
+  closeTrackedIModels: () => void;
+} {
+  const tracked: SnapshotDb[] = [];
+  return {
+    trackMutableIModel: (imodel) => {
+      tracked.push(imodel);
+      return imodel;
+    },
+    closeTrackedIModels: () => {
+      closeIfOpen(...tracked.splice(0));
+    },
+  };
+}

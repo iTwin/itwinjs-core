@@ -14,13 +14,13 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions, TestUtils } from "../TestUtils";
-import { closeIfOpen, createIModelFromSeed, expectIModelError, generateTestSnapshot, getIModelError, openReadonlySeedCopy, roundtripThroughJson } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, expectIModelError, generateTestSnapshot, getIModelError, openReadonlySeedCopy, roundtripThroughJson } from "./IModelTestFixtures";
 
 
 describe("iModel models", () => {
   let testBimReadonly: SnapshotDb;
   let compatibilityReadonly: SnapshotDb;
-  const mutableIModels: SnapshotDb[] = [];
+  const { trackMutableIModel, closeTrackedIModels } = createMutableIModelTracker();
 
   before(async () => {
     await TestUtils.startBackend();
@@ -31,17 +31,13 @@ describe("iModel models", () => {
   });
 
   after(() => {
-    closeIfOpen(testBimReadonly, compatibilityReadonly, ...mutableIModels.splice(0));
+    closeIfOpen(testBimReadonly, compatibilityReadonly);
+    closeTrackedIModels();
   });
 
   afterEach(() => {
-    closeIfOpen(...mutableIModels.splice(0));
+    closeTrackedIModels();
   });
-
-  const trackMutableIModel = (imodel: SnapshotDb): SnapshotDb => {
-    mutableIModels.push(imodel);
-    return imodel;
-  };
 
   it("should load a known model by Id from an existing iModel", () => {
     const imodel1 = testBimReadonly;

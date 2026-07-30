@@ -11,12 +11,12 @@ import { EditTxn, withEditTxn } from "../../EditTxn";
 import { DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, IModelDb, SnapshotDb, ViewDefinition } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
-import { closeIfOpen, createIModelFromSeed, openReadonlySeedCopy } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, openReadonlySeedCopy } from "./IModelTestFixtures";
 
 
 describe("iModel views", () => {
   let compatibilityReadonly: SnapshotDb;
-  const mutableIModels: SnapshotDb[] = [];
+  const { trackMutableIModel, closeTrackedIModels } = createMutableIModelTracker();
 
   before(async () => {
     await TestUtils.startBackend();
@@ -26,17 +26,13 @@ describe("iModel views", () => {
   });
 
   after(() => {
-    closeIfOpen(compatibilityReadonly, ...mutableIModels.splice(0));
+    closeIfOpen(compatibilityReadonly);
+    closeTrackedIModels();
   });
 
   afterEach(() => {
-    closeIfOpen(...mutableIModels.splice(0));
+    closeTrackedIModels();
   });
-
-  const trackMutableIModel = (imodel: SnapshotDb): SnapshotDb => {
-    mutableIModels.push(imodel);
-    return imodel;
-  };
 
   it("should insert a DisplayStyle", () => {
     const imodel2 = trackMutableIModel(createIModelFromSeed("views-insert-display-style.bim", "CompatibilityTestSeed.bim"));
