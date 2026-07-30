@@ -222,7 +222,8 @@ export class Formatter {
           // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
           // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
           if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
-            return { componentText: "1:0", isNegative: false };
+            const sep = `${spec.format.spacer ?? ""}${spec.format.ratioSeparator}${spec.format.spacer ?? ""}`;
+            return { componentText: `1${sep}0`, isNegative: false };
           }
           throw e;
         }
@@ -668,7 +669,8 @@ export class Formatter {
       // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
       // For ratio, we return "1:0" as the formatted value.
       if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
-        return { componentText: "1:0", isNegative: false };
+        const sep = `${spec.format.spacer ?? ""}${spec.format.ratioSeparator}${spec.format.spacer ?? ""}`;
+        return { componentText: `1${sep}0`, isNegative: false };
       }
       throw e;
     }
