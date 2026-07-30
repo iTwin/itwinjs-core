@@ -457,7 +457,7 @@ describe("iModel relationships", () => {
       assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments"), "All ElementRefersToDocuments relationships should be deleted");
     });
 
-    it("deleteInstances for random relationship instances", async () => {
+    it("deleteInstances for subset including duplicate entries", async () => {
       const relationships = setupRelationships(1000, true);
 
       // Verify relationships exist before deletion
@@ -466,19 +466,26 @@ describe("iModel relationships", () => {
       assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments") >= Math.floor(relationships.length / 3));
 
       // Select a deterministic, unique subset (every 4th relationship => 250 unique entries)
-      // so the test is stable, reproducible, and free of duplicate delete requests.
+      // so the test is stable and reproducible.
       const relationshipsToDelete: RelationshipProps[] = [];
       for (let i = 0; i < relationships.length; i += 4) {
         relationshipsToDelete.push(relationships[i]);
       }
       assert.equal(relationshipsToDelete.length, 250);
 
+      // Intentionally pass one relationship twice in the same call. deleteRelationships must
+      // tolerate duplicate IDs in a single batch (deleting an already-deleted relationship is a no-op),
+      // which exercises the batch/native boundary that the previous with-replacement sampling covered.
+      const duplicated = relationshipsToDelete[0];
+      relationshipsToDelete.push(duplicated);
+
       withEditTxn(testImodel, (txn) => {
         txn.deleteRelationships(relationshipsToDelete);
       });
 
-      // Verify all relationships were deleted
-      for (const relClass of relationshipsToDelete) {
+      // Verify all relationships were deleted (dedupe so the duplicated entry is only checked once)
+      const uniqueDeleted = relationshipsToDelete.filter((rel, index) => relationshipsToDelete.indexOf(rel) === index);
+      for (const relClass of uniqueDeleted) {
         const reader = testImodel.createQueryReader(`SELECT ECInstanceId FROM ${relClass.classFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, new QueryBinder().bindId(1, relClass.sourceId).bindId(2, relClass.targetId));
         assert.isFalse(await reader.step(), `Relationship ${relClass.id} should be deleted`); // No row should be returned
       }
