@@ -15,10 +15,7 @@ publish: false
 A new beta API, [IModelDb.getIndirectTxn]($backend), provides the [EditTxn]($backend) associated with an element, model, or aspect callback. Callbacks whose arguments provide an [IModelDb]($backend) but no transaction can use it to perform additional edits within the transaction that invoked the callback.
 
 ```ts
-protected static override onUpdate(arg: OnElementPropsArg): void {
-  super.onUpdate(arg);
-  updateRelatedEntities(arg.iModel.getIndirectTxn(), arg.props);
-}
+[[include:EditTxn.ElementCallback]]
 ```
 
 The operation that invoked the callback owns the returned transaction. The callback must not start, end, save, abandon, or otherwise manage the transaction lifecycle. Callbacks that receive `indirectEditTxn` directly should continue using that property.

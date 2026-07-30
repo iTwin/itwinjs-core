@@ -104,10 +104,7 @@ Callbacks that make additional database changes must reuse the transaction assoc
 Dependency callbacks that provide `indirectEditTxn` should use that property directly. Element, model, and aspect callbacks provide an [IModelDb]($backend) but no transaction. When one of those callbacks calls an API that requires an [EditTxn]($backend), obtain it through [IModelDb.getIndirectTxn]($backend):
 
 ```ts
-protected static override onUpdate(arg: OnElementPropsArg): void {
-  super.onUpdate(arg);
-  updateRelatedElements(arg.iModel.getIndirectTxn(), arg.props);
-}
+[[include:EditTxn.ElementCallback]]
 ```
 
 `getIndirectTxn()` returns the active explicit transaction when one exists. Otherwise, it returns the implicit transaction used by legacy write paths, whose writes remain subject to [EditTxn.implicitWriteEnforcement]($backend).
