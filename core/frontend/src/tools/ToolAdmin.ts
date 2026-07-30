@@ -208,9 +208,10 @@ export class CurrentInputState {
 
   public updateDownPoint(ev: BeButtonEvent) { this.button[ev.button].downUorPt = ev.point; }
 
-  public onButtonDown(button: BeButton) {
+  public onButtonDown(button: BeButton, eventTime?: number) {
     let isDoubleClick = false;
-    const now = Date.now();
+    // Use event.timeStamp epoch (performance.now) so comparisons are immune to event-loop stalls
+    const now = eventTime ?? performance.now();
     const vp = this.viewport;
 
     if (undefined !== vp) {
@@ -299,7 +300,7 @@ export class CurrentInputState {
     IModelApp.toolAdmin.adjustPoint(this._point, vp, true, applyLocks);
   }
 
-  public isStartDrag(button: BeButton): boolean {
+  public isStartDrag(button: BeButton, motionEventTime?: number): boolean {
     // First make sure we aren't already dragging any button
     if (this.isAnyDragging())
       return false;
@@ -308,7 +309,8 @@ export class CurrentInputState {
     if (!state.isDown)
       return false;
 
-    if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds)
+    const elapsed = (motionEventTime ?? performance.now()) - state.downTime;
+    if (elapsed <= ToolSettings.startDragDelay.milliseconds)
       return false;
 
     const vp = this.viewport;
@@ -362,7 +364,7 @@ export class ToolAdmin {
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
   private _lastHandledMotionTime?: BeTimePoint;
-  private _mouseMoveOverTimeout?: NodeJS.Timeout;
+  private _mouseMoveOverTimeout?: ReturnType<typeof setTimeout>;
   private _editCommandHandler?: EditCommandHandler;
 
   /** The name of the [[PrimitiveTool]] to use as the default tool.
@@ -578,7 +580,7 @@ export class ToolAdmin {
     const button = this.getMouseButton(ev.button);
 
     this.currentInputState.setKeyQualifiers(ev);
-    return isDown ? this.onButtonDown(vp, pos, button, InputSource.Mouse) : this.onButtonUp(vp, pos, button, InputSource.Mouse);
+    return isDown ? this.onButtonDown(vp, pos, button, InputSource.Mouse, ev.timeStamp) : this.onButtonUp(vp, pos, button, InputSource.Mouse);
   }
 
   private async onWheel(event: ToolEvent): Promise<EventHandled> {
@@ -1112,7 +1114,7 @@ export class ToolAdmin {
     return this.idleTool.onMouseStartDrag(ev);
   }
 
-  private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY): Promise<any> {
+  private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY, eventTime?: number): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
 
@@ -1140,10 +1142,11 @@ export class ToolAdmin {
 
     this._mouseMoveOverTimeout = setTimeout(async () => {
       await this.onMotionEnd(vp, pt2d, inputSource);
-      await processMotion();
+      // Evaluate drag at the nominal timeout fire time, not the frozen event timestamp.
+      await processMotion(eventTime !== undefined ? eventTime + 100 : undefined);
     }, 100);
 
-    const processMotion = async (): Promise<void> => {
+    const processMotion = async (motionTime?: number): Promise<void> => {
       // Update event to account for AccuSnap adjustments...
       current.fromButton(vp, pt2d, inputSource, true);
       current.toEvent(ev, true);
@@ -1155,7 +1158,7 @@ export class ToolAdmin {
       const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
       this.setIncompatibleViewportCursor(isValidLocation);
 
-      if (forceStartDrag || current.isStartDrag(ev.button)) {
+      if (forceStartDrag || current.isStartDrag(ev.button, motionTime)) {
         current.onStartDrag(ev.button);
         current.changeButtonToDownPoint(ev);
         ev.isDragging = true;
@@ -1183,7 +1186,7 @@ export class ToolAdmin {
      */
     if (forceStartDrag) {
       await snapPromise;
-      return processMotion();
+      return processMotion(eventTime);
     }
 
     if (this.isLocateCircleOn)
@@ -1192,7 +1195,7 @@ export class ToolAdmin {
     snapPromise.then(async (snapOk) => {
       if (!snapOk || snapPromise !== this._snapMotionPromise)
         return;
-      return processMotion();
+      return processMotion(eventTime);
     }).catch((_) => { });
   }
 
@@ -1221,7 +1224,7 @@ export class ToolAdmin {
     if (!(buttonMask & 1))
       this.currentInputState.button[BeButton.Data].isDown = false;
 
-    return this.onMotion(vp, pos, InputSource.Mouse, false, mov);
+    return this.onMotion(vp, pos, InputSource.Mouse, false, mov, (event.ev as MouseEvent).timeStamp);
   }
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
@@ -1408,7 +1411,7 @@ export class ToolAdmin {
     this.updateDynamics(undefined, undefined, true);
   }
 
-  private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
+  private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource, eventTime?: number): Promise<any> {
     const filtered = this.filterViewport(vp);
     if (undefined === this._viewTool && button === BeButton.Data)
       await IModelApp.viewManager.setSelectedView(vp);
@@ -1419,7 +1422,7 @@ export class ToolAdmin {
     const ev = new BeButtonEvent();
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, inputSource, true);
-    current.onButtonDown(button);
+    current.onButtonDown(button, eventTime);
     current.toEvent(ev, true);
     current.updateDownPoint(ev);
 
