@@ -1,12 +1,12 @@
-# IModel tile external-cache lookup
+# iModel tile external-cache lookup
 
-This note documents the frontend request path for iModel tiles. It does not apply
-to reality models, map tiles, or 3D Tiles.
+This note documents the frontend request path for iModel tiles. It does not
+apply to reality models, map tiles, or 3D Tiles.
 
 ## Explicit application control
 
-An application can decide whether to query external tile storage before asking
-its backend to generate an iModel tile:
+An application can skip the initial external tile-storage lookup when its
+backend does not use external tile storage:
 
 ```ts
 await IModelApp.startup({
@@ -16,169 +16,85 @@ await IModelApp.startup({
 });
 ```
 
-The default is `true` for compatibility. The setting is not inferred from the
-RPC transport, the presence of IPC, or whether the iModel is local.
-After startup, an application can inspect the effective value through
-`IModelApp.tileAdmin.enableExternalTileCacheLookup`.
+The default remains `true` for compatibility. The setting is independent of
+the RPC transport, IPC, and whether the iModel is local.
 
-This setting controls the initial cache lookup only. If a cache-enabled backend
-generates a tile, uploads it, and returns `TileContentSource.ExternalCache`, the
-frontend still downloads that generated tile from external storage.
+This setting controls only the initial lookup. If a cache-enabled backend
+generates a tile, uploads it, and returns `TileContentSource.ExternalCache`,
+the frontend still downloads that generated tile from external storage.
 
-## Request path when lookup is enabled
+## Request path
 
-The following path applies to each newly requested `IModelTile`:
+For a newly requested `IModelTile`:
 
-1. [`IModelTile.channel`](../../../core/frontend/src/internal/tile/IModelTile.ts)
-   calls `TileRequestChannels.getIModelTileChannel`.
-2. [`TileRequestChannels.getIModelTileChannel`](../../../core/frontend/src/tile/TileRequestChannels.ts)
-   calls `IModelTileRequestChannels.getChannelForTile`.
-3. For a new tile, `IModelTile.requestChannel` is undefined. If the optional
-   metadata cache is enabled, it is tried first. Unless that cache supplies
-   content, [`getChannelForTile`](../../../core/frontend/src/internal/tile/IModelTileRequestChannels.ts)
-   returns the `CloudStorageCacheChannel`; otherwise it returns that channel
-   directly.
-4. The [`TileRequest`](../../../core/frontend/src/tile/TileRequest.ts)
-   constructor captures that channel. When the channel dispatches the request,
-   [`TileRequestChannel.dispatch`](../../../core/frontend/src/tile/TileRequestChannel.ts)
-   increments `totalDispatchedRequests`.
-5. `TileRequest.dispatch` calls `CloudStorageCacheChannel.requestContent`, which
-   unconditionally calls
-   [`TileAdmin.requestCachedTileContent`](../../../core/frontend/src/tile/TileAdmin.ts)
-   for that tile.
-6. `TileAdmin.requestCachedTileContent` calls
-   [`TileStorage.downloadTile`](../../../core/frontend/src/tile/TileStorage.ts).
-7. `TileStorage.downloadTile` obtains the backend's transfer configuration
-   through
-   [`IModelTileRpcInterface.getTileCacheConfig`](../../../core/common/src/rpc/IModelTileRpcInterface.ts)
-   and, if one exists, calls the configured `FrontendStorage.download`.
-8. When no cached content is returned,
-   `CloudStorageCacheChannel.onNoContent` assigns the RPC channel to
-   `tile.requestChannel`, increments `totalCacheMisses`, and permits a retry.
-9. `TileRequest.dispatch` clears the failed request without marking the tile as
-   permanently unavailable. When the tile is selected again, a new
-   `TileRequest` captures the RPC channel and dispatches the backend generation
-   request.
+1. The tile initially selects the optional metadata cache, then the external
+   `CloudStorageCacheChannel`, then RPC.
+2. The cloud channel calls `TileAdmin.requestCachedTileContent`.
+3. `TileStorage` obtains and caches the backend transfer configuration. If the
+   backend has no external tile storage, this configuration is `undefined` and
+   no object-storage download is issued.
+4. The cache channel reports a miss and changes the tile's request channel to
+   RPC.
+5. The tile is processed again through RPC, producing the backend-generated
+   content.
 
-Therefore, a tile that misses external storage produces two frontend tile
-dispatches: one external-cache dispatch and one backend dispatch. The cache
-channel is checked once for every new tile, not only for the first tile.
-After that tile's miss, its `requestChannel` remains set to RPC, so a later
-reload of the same in-memory tile object does not repeat the external lookup.
+Thus, when external storage is unavailable, lookup-on produces one cache
+dispatch and one RPC dispatch for each newly requested tile. Lookup-off selects
+RPC immediately and produces one dispatch. After a tile misses once, its
+`requestChannel` remains RPC for the lifetime of that tile object.
 
-There is an important network distinction. `TileStorage` caches the transfer
-configuration, including an `undefined` response. A backend with no external
-tile storage receives one `getTileCacheConfig` RPC per iModel, not one per tile.
-Every tile still enters `CloudStorageCacheChannel`, calls
-`requestCachedTileContent` and `downloadTile`, records a miss, and waits for a
-later processing pass to dispatch through RPC. It does not issue an object
-storage download when no transfer configuration exists.
+## Automated coverage
 
-With `enableExternalTileCacheLookup: false`, the cloud channel is not created.
-`IModelTileRequestChannels.getChannelForTile` selects RPC for the first request,
-so the same cache miss produces one frontend dispatch instead of two.
+`TileRequestChannels.test.ts` verifies:
 
-## Automated proof
+- The option enables or disables the cloud channel for both HTTP and IPC.
+- Every newly requested tile performs the lookup when enabled.
+- A real tile request retries through RPC after a cache miss.
 
-[`TileRequestChannels.test.ts`](../../../core/frontend/src/test/tile/TileRequestChannels.test.ts)
-verifies the channel-selection and request-flow claims:
+`TileStorage.test.ts` verifies that an undefined transfer configuration is
+cached per iModel and prevents object-storage downloads.
 
-- The option enables or disables the cloud channel for both HTTP RPC and IPC.
-  Transport selection does not affect the result.
-- Seven distinct `IModelTile` objects are passed through the real
-  `IModelTile.channel` getter. A spy on `TileAdmin.requestCachedTileContent`
-  receives seven calls with the same seven tile objects. This guards against an
-  implementation that checks only the first tile or only the first request for
-  an iModel.
-- A real `TileRequest` is queued and dispatched through the cloud channel,
-  receives a cache miss, and is then queued and dispatched through RPC. The
-  test observes one dispatch and one cache miss on the cloud channel, one
-  dispatch and one completion on RPC, and two total dispatches.
+## Reproducing the performance impact
 
-[`TileStorage.test.ts`](../../../core/frontend/src/test/tile/TileStorage.test.ts)
-verifies the no-cache backend behavior independently:
+The display performance test app already waits for
+`viewport.waitForSceneCompletion()` and records tile-loading time. Its CSV
+also includes:
 
-- An `undefined` transfer configuration is cached per iModel.
-- Two tile downloads make one `getTileCacheConfig` call and no object-storage
-  download calls.
+- `Tile Cache Misses`
+- `Tile Dispatched Requests`
+- `Tile Completed Requests`
 
-These tests prove the frontend control flow and transfer-configuration
-behavior. They do not prove the measured timing reduction for a particular
-Electron workload.
+Run the same saved views in two fresh Electron processes, changing only
+`tileProps.enableExternalTileCacheLookup`:
 
-## Electron measurement
-
-The display-test-app was measured against a local `outrigger-skyscraper.bim`
-with no external tile cache. Each variant used the same fixed close oblique
-camera, models, categories, viewport, tile settings, persistent native tile
-cache, tile IDs, and byte counts. Each row below was repeated five times.
-Frontend tile trees were cleared before each run, so each run created new
-`IModelTile` objects and exercised their first content requests.
-
-The 22–25% reduction measured below therefore applies to cold or recreated
-frontend tile trees. It does not apply to a later request for the same surviving
-tile object: after that object's first cache miss, its `requestChannel` remains
-set to RPC and bypasses the cache channel. Newly created tiles encountered
-during navigation still pay the lookup-on overhead once each.
-
-| Inspection pose | Completed tiles per run | Lookup-on cache misses | Lookup-on dispatches | Lookup-off cache misses | Lookup-off dispatches |
-|---|---:|---:|---:|---:|---:|
-| Structural close-up | 15 | 15 | 30 | 0 | 15 |
-| Opposite-facade detail | 12 | 12 | 24 | 0 | 12 |
-| Curtain-wall detail | 23 | 23 | 46 | 0 | 23 |
-
-Across the 15 lookup-on runs, 250 completed tiles produced 250 cache misses and
-500 dispatches. Across the 15 lookup-off runs, the same 250 tiles produced no
-cache misses and 250 dispatches. These values come from the existing
-`TileAdmin.statistics.totalCacheMisses`,
-`TileAdmin.statistics.totalDispatchedRequests`, and
-`TileAdmin.statistics.totalCompletedRequests` counters.
-
-The corresponding median completion times were:
-
-| Inspection pose | Lookup on | Lookup off | Reduction |
-|---|---:|---:|---:|
-| Structural close-up | 150.1 ms | 116.1 ms | 22.7% |
-| Opposite-facade detail | 149.3 ms | 116.0 ms | 22.3% |
-| Curtain-wall detail | 199.1 ms | 149.5 ms | 24.9% |
-
-The dispatch counts prove that the initial cache path runs for every requested
-tile in these workloads. The timing result shows the cost of the extra
-frontend dispatch/retry path; it should not be described as one network request
-per tile when the backend has already reported that no external cache exists.
-
-## Reproducing the comparison in display-test-app
-
-The display-test-app exposes the same option through
-`IMJS_EXTERNAL_TILE_CACHE_LOOKUP`.
-
-Run the lookup-on variant:
-
-```sh
-IMJS_EXTERNAL_TILE_CACHE_LOOKUP=true \
-IMJS_STANDALONE_FILENAME=/absolute/path/to/model.bim \
-rushx start
+```json
+{
+  "outputName": "tile-load.csv",
+  "outputPath": "/tmp/tile-load",
+  "iModelLocation": "/absolute/path/to/models",
+  "iModelName": "model.bim",
+  "view": { "width": 1200, "height": 800 },
+  "numRendersToSkip": 10,
+  "numRendersToTime": 10,
+  "testSet": [
+    {
+      "tileProps": {
+        "enableExternalTileCacheLookup": true
+      },
+      "tests": [
+        { "viewName": "Floor B1" },
+        { "viewName": "Overview" }
+      ]
+    }
+  ]
+}
 ```
 
-Run the lookup-off variant:
+Repeat with the option set to `false`. Use separate processes so renderer and
+`TileAdmin` state do not carry between variants. A persistent native tile cache
+is acceptable because it is shared by both variants; the comparison concerns
+the extra frontend cache lookup and retry.
 
-```sh
-IMJS_EXTERNAL_TILE_CACHE_LOOKUP=false \
-IMJS_STANDALONE_FILENAME=/absolute/path/to/model.bim \
-rushx start
-```
-
-Use the same saved view and viewport size for both runs. After tile loading
-settles, capture these existing counters from `IModelApp.tileAdmin.statistics`:
-
-```ts
-const {
-  totalCacheMisses,
-  totalCompletedRequests,
-  totalDispatchedRequests,
-} = IModelApp.tileAdmin.statistics;
-```
-
-For a backend without external tile storage, lookup-on should report one cache
-miss and two dispatches per completed tile. Lookup-off should report no cache
-misses and one dispatch per completed tile.
+For a backend without external tile storage, lookup-on should show one cache
+miss and two dispatched requests per completed tile. Lookup-off should show no
+cache misses and one dispatched request per completed tile.

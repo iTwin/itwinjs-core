@@ -9,7 +9,7 @@ import { MockRender } from "../../internal/render/MockRender";
 import { TileAdmin } from "../../tile/TileAdmin";
 import { TileRequest } from "../../tile/TileRequest";
 import {
-  Tile, TileContentDecodingStatistics, TileRequestChannel, TileRequestChannels,
+  Tile, TileContentDecodingStatistics, TileRequestChannel, TileRequestChannels, TileUser,
 } from "../../tile/internal";
 
 // Assumes no minification or uglification.
@@ -122,7 +122,7 @@ describe("TileRequestChannels", () => {
       tileUserId: 1,
       iModel,
       discloseTileTrees: () => { },
-    };
+    } as unknown as TileUser;
 
     IModelApp.tileAdmin.registerUser(user);
     try {

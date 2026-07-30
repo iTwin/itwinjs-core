@@ -66,6 +66,12 @@ interface TestResult {
   tileLoadingTime: number;
   /** The total number of milliseconds spent decoding content. */
   tileDecodingTime: number;
+  /** The number of external tile cache lookups that missed while loading the view. */
+  tileCacheMisses: number;
+  /** The number of tile requests dispatched while loading the view. */
+  tileDispatchedRequests: number;
+  /** The number of tile requests completed while loading the view. */
+  tileCompletedRequests: number;
   /** Amount of memory requested from the GPU for the graphics of the tiles selected for display. */
   selectedTileGpuBytes: number;
   /** Amount of memory requested from the GPU for the graphics of all tiles in the tile trees viewed by this test.
@@ -586,13 +592,17 @@ export class TestRunner {
     await viewport.waitForSceneCompletion();
     timer.stop();
 
-    const decodingTime = IModelApp.tileAdmin.statistics.decoding.total;
+    const statistics = IModelApp.tileAdmin.statistics;
+    const decodingTime = statistics.decoding.total;
     IModelApp.tileAdmin.resetStatistics();
 
     const selectedTiles = getSelectedTileStats(viewport);
     return {
       tileDecodingTime: decodingTime,
       tileLoadingTime: timer.current.milliseconds,
+      tileCacheMisses: statistics.totalCacheMisses,
+      tileDispatchedRequests: statistics.totalDispatchedRequests,
+      tileCompletedRequests: statistics.totalCompletedRequests,
       selectedTileIds: selectedTiles.ids,
       numSelectedTiles: selectedTiles.count,
       selectedTileGpuBytes: selectedTiles.gpuBytes,
@@ -916,6 +926,9 @@ export class TestRunner {
     if (!this._minimizeOutput) {
       rowData.set("Tile Decoding Time", test.tileDecodingTime);
       rowData.set("Tile Loading Time", test.tileLoadingTime);
+      rowData.set("Tile Cache Misses", test.tileCacheMisses);
+      rowData.set("Tile Dispatched Requests", test.tileDispatchedRequests);
+      rowData.set("Tile Completed Requests", test.tileCompletedRequests);
       rowData.set("Num Selected Tiles", test.numSelectedTiles);
       rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));
       rowData.set("Tile Tree GPU MB", test.viewedTileTreeGpuBytes / (1024 * 1024));
