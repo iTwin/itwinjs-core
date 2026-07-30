@@ -27,6 +27,7 @@ class ElementWithRelatedUpdate extends Element {
 
 describe("EditTxn examples", () => {
   it("reuses the active transaction for writes from an element callback", () => {
+    const previousEnforcement = EditTxn.implicitWriteEnforcement;
     const fileName = IModelTestUtils.prepareOutputFile("EditTxnExamples", "EditTxnExamples.bim");
     const iModel = StandaloneDb.createEmpty(fileName, {
       rootSubject: { name: "EditTxn examples" },
@@ -45,7 +46,7 @@ describe("EditTxn examples", () => {
 
       expect(iModel.elements.getElementProps(IModelDb.rootSubjectId).userLabel).to.equal(relatedElementLabel);
     } finally {
-      EditTxn.implicitWriteEnforcement = "allow";
+      EditTxn.implicitWriteEnforcement = previousEnforcement;
       iModel.close();
       IModelJsFs.removeSync(fileName);
     }
