@@ -683,7 +683,8 @@ export class Formatter {
       throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
 
     const precisionScale = Math.pow(10.0, spec.format.precision);
-    const separator = spec.format.ratioSeparator;
+    const spacer = spec.format.spacer ?? "";
+    const separator = `${spacer}${spec.format.ratioSeparator}${spacer}`;
     let reciprocal = 0;
 
     // Helper to get unit labels if ShowUnitLabel is set
