@@ -3153,17 +3153,23 @@ export namespace IModelDb {
     private static classMap = new Map<string, string>();
 
     private getAspectPropsFromInstanceQuery(rawInstance: unknown): ElementAspectProps {
-      const row: object = {};
-      const parsedRow: any = typeof rawInstance === "string" ? JSON.parse(rawInstance, Base64EncodedString.reviver) : rawInstance;
-      // eslint-disable-next-line guard-for-in
-      for (const key in parsedRow) {
-        const jsName = ECJsNames.toJsName(key[0].toUpperCase() + key.substring(1));
-        Object.defineProperty(row, jsName, { enumerable: true, configurable: true, writable: true, value: parsedRow[key] });
+      const parsedRow: unknown = typeof rawInstance === "string" ? JSON.parse(rawInstance, Base64EncodedString.reviver) : rawInstance;
+      if (!JsonUtils.isObject(parsedRow))
+        throw new IModelError(IModelStatus.BadRequest, "Expected an ElementAspect instance query to return an object");
+
+      const row: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(parsedRow)) {
+        const ecPropertyName = key.length === 0 ? key : key[0].toUpperCase() + key.substring(1);
+        row[ECJsNames.toJsName(ecPropertyName)] = value;
       }
-      const aspectProps: ElementAspectProps = row as any;
-      aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
-      (aspectProps as any).className = undefined; // clear property from SELECT $ that we don't want in the final instance
-      return aspectProps;
+
+      const className = row.className;
+      if (typeof className !== "string")
+        throw new IModelError(IModelStatus.BadRequest, "Expected an ElementAspect instance query to return a className");
+
+      row.classFullName = className.replace(".", ":"); // add in property required by EntityProps
+      delete row.className; // clear property from SELECT $ that we don't want in the final instance
+      return row as unknown as ElementAspectProps;
     }
 
     private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
@@ -3272,6 +3278,7 @@ export namespace IModelDb {
       const orderBy = options.groupByOwner
         ? "ORDER BY OwnerId, AspectKind, ECClassId, ECInstanceId"
         : "ORDER BY AspectKind, ECClassId, ECInstanceId, OwnerId";
+      // The IdSet virtual table is experimental and requires ENABLE_EXPERIMENTAL_FEATURES below.
       const sql = `WITH OwnerIds AS (SELECT id FROM IdSet(:elementIds))
         SELECT $ FROM (
           SELECT aspect.ECInstanceId, aspect.ECClassId, aspect.Element.Id AS OwnerId, 0 AS AspectKind

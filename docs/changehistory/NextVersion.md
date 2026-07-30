@@ -34,12 +34,4 @@ Use this method for batch processing, such as exporters and transformers, where 
 
 The options support the same polymorphic `aspectClassFullName` filter as `getAspects`, exact class exclusions, and owner-grouped results. Set `usePrimaryConn` when the query must include uncommitted aspects from an active edit transaction.
 
-```ts
-for await (const aspect of iModelDb.elements.getAspectsForElements({
-  elementIds,
-  aspectClassFullName: ElementMultiAspect.classFullName,
-  groupByOwner: true,
-})) {
-  processAspect(aspect);
-}
-```
+[[include:CoreBackend.IModelDb.GetAspectsForElements]]
