@@ -46,7 +46,7 @@ export namespace InteractiveRebaseError {
 export interface RebaseConflict {
   kind: string;
   id: Id64String;
-  className: string;
+  classFullName: string;
 }
 
 /**
@@ -69,7 +69,7 @@ export interface UpdateRebaseConflict extends RebaseConflict {
    *
    * This will usually not include every property of the instance. Only the following properties
    * are included:
-   * 1. The primary key(s) (usually `id`) and the `className` if the table has one.
+   * 1. The primary key(s) (usually `id`) and the `classFullName` if the table has one.
    * 2. Any properties that were modified by our local changes.
    */
   original: RebaseConflictProperties;
@@ -134,7 +134,7 @@ export interface TheirUpdateOurDeleteRebaseConflict extends RebaseConflict {
    *
    * This will usually not include every property of the instance. Only the following properties
    * are included:
-   * 1. The primary key(s) (usually `id`) and the `className` if the table has one.
+   * 1. The primary key(s) (usually `id`) and the `classFullName` if the table has one.
    * 2. Any properties that were modified by the incoming (their) changes.
    * 3. All properties that share an underlying table with the properties in (2).
    */
@@ -167,7 +167,7 @@ export interface TheirDeleteOurUpdateRebaseConflict extends RebaseConflict {
    *
    * This will usually not include every property of the instance. Only the following properties
    * are included:
-   * 1. The primary key(s) (usually `id`) and the `className` if the table has one.
+   * 1. The primary key(s) (usually `id`) and the `classFullName` if the table has one.
    * 2. Any properties that were modified by our local changes.
    */
   original: RebaseConflictProperties;
@@ -553,7 +553,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   public readonly kind: "Update" = "Update";
 
   public readonly id: Id64String;
-  public readonly className: string;
+  public readonly classFullName: string;
   public readonly original: RebaseConflictProperties = {};
   public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
@@ -565,7 +565,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
 
     let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Update") as UpdateRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new UpdateRebaseConflictImpl(instanceId, ecConflict.original.className);
+      instanceConflict = new UpdateRebaseConflictImpl(instanceId, ecConflict.original.classFullName);
       conflicts.push(instanceConflict);
     }
 
@@ -579,9 +579,9 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
     return DbConflictResolution.Replace;
   }
 
-  public constructor(id: Id64String, className: string) {
+  public constructor(id: Id64String, classFullName: string) {
     this.id = id;
-    this.className = className;
+    this.classFullName = classFullName;
   }
 
   public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
@@ -619,7 +619,7 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
   public readonly kind: "TheirUpdateOurDelete" = "TheirUpdateOurDelete";
 
   public readonly id: Id64String;
-  public readonly className: string;
+  public readonly classFullName: string;
   public readonly original: RebaseConflictProperties = {};
   public readonly theirs: RebaseConflictProperties = {};
   public readonly updatedProperties: string[] = [];
@@ -630,7 +630,7 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
 
     let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new TheirUpdateOurDeleteRebaseConflictImpl(instanceId, ecConflict.original.className);
+      instanceConflict = new TheirUpdateOurDeleteRebaseConflictImpl(instanceId, ecConflict.original.classFullName);
       conflicts.push(instanceConflict);
     }
 
@@ -641,9 +641,9 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
     return DbConflictResolution.Replace;
   }
 
-  public constructor(id: Id64String, className: string) {
+  public constructor(id: Id64String, classFullName: string) {
     this.id = id;
-    this.className = className;
+    this.classFullName = classFullName;
   }
 }
 
@@ -651,7 +651,7 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
   public readonly kind: "TheirDeleteOurUpdate" = "TheirDeleteOurUpdate";
 
   public readonly id: Id64String;
-  public readonly className: string;
+  public readonly classFullName: string;
   public readonly original: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
   public readonly updatedProperties: string[] = [];
@@ -662,7 +662,7 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
 
     let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirDeleteOurUpdate") as TheirDeleteOurUpdateRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new TheirDeleteOurUpdateRebaseConflictImpl(instanceId, ecConflict.original.className);
+      instanceConflict = new TheirDeleteOurUpdateRebaseConflictImpl(instanceId, ecConflict.original.classFullName);
       conflicts.push(instanceConflict);
     }
 
@@ -673,9 +673,9 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
     return DbConflictResolution.Skip;
   }
 
-  public constructor(id: Id64String, className: string) {
+  public constructor(id: Id64String, classFullName: string) {
     this.id = id;
-    this.className = className;
+    this.classFullName = classFullName;
   }
 }
 
@@ -683,7 +683,7 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
   public readonly kind: "Insert" = "Insert";
 
   public readonly id: Id64String;
-  public readonly className: string;
+  public readonly classFullName: string;
   public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
   public readonly conflictingProperties: string[] = [];
@@ -694,7 +694,7 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
 
     let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Insert") as InsertRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new InsertRebaseConflictImpl(instanceId, ecConflict.ours.className);
+      instanceConflict = new InsertRebaseConflictImpl(instanceId, ecConflict.ours.classFullName);
       conflicts.push(instanceConflict);
     }
 
@@ -710,9 +710,9 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
     return DbConflictResolution.Skip;
   }
 
-  public constructor(id: Id64String, className: string) {
+  public constructor(id: Id64String, classFullName: string) {
     this.id = id;
-    this.className = className;
+    this.classFullName = classFullName;
   }
 
   public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
@@ -750,7 +750,7 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
   public readonly kind: "UniqueConstraint" = "UniqueConstraint";
 
   public readonly id: Id64String;
-  public readonly className: string;
+  public readonly classFullName: string;
   public readonly original: RebaseConflictProperties | undefined = undefined;
   public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
@@ -760,11 +760,11 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
     const ecConflict = conflict.ecConflict;
 
     const instanceId = ecConflict.ours.id ?? ecConflict.original.id;
-    const className = ecConflict.ours.className ?? ecConflict.original.className;
+    const classFullName = ecConflict.ours.classFullName ?? ecConflict.original.classFullName;
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "UniqueConstraint") as UniqueConstraintRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new UniqueConstraintRebaseConflictImpl(instanceId, className);
+      instanceConflict = new UniqueConstraintRebaseConflictImpl(instanceId, classFullName);
       conflicts.push(instanceConflict);
     }
 
@@ -786,8 +786,8 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
     return DbConflictResolution.Skip;
   }
 
-  public constructor(id: Id64String, className: string) {
+  public constructor(id: Id64String, classFullName: string) {
     this.id = id;
-    this.className = className;
+    this.classFullName = classFullName;
   }
 }
