@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added `IModelDb.reservations` (@beta), an opt-in coordination mechanism that lets multiple briefcases concurrently insert the same shared definitions without producing duplicate or conflicting elements.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

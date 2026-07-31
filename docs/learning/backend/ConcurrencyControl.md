@@ -1,28 +1,31 @@
 # Concurrency Control
 
-Concurrency control is a way to coordinate simultaneous changes among multiple Briefcases while preserving data integrity. Concurrency control is implemented in the code of an app and is based on the identity of a briefcase. Concurrency control should not to be confused with user access control (the "right" to make changes based on roles). To make coordinated changes, an app must follow 2 basic rules:
+Concurrency control is how iTwin.js coordinates simultaneous changes to an iModel among multiple [briefcases](../Glossary.md#Briefcase) while preserving data integrity. It is based on the identity of a briefcase, and should not be confused with user access control (the "right" to make changes based on roles).
 
-1. Optionally lock models and elements before modifying them, depending on the iModel's [concurrency control policy](#concurrency-control-policies)
-1. [Pull and merge](./IModelDbSync.md) before pushing.
+iTwin.js provides two complementary mechanisms:
 
-An iModel has a concurrency control policy that specifies how multiple briefcases may modify elements. The policy may stipulate that locks must be used, forcing transactions to be sequential (pessimistic), or it may specify change-merging with conflict-resolution to combine the results of simultaneous transactions (optimistic).
+- **[Locks](#locks)** protect *existing* models and elements from conflicting concurrent modification. A lock is *pessimistic*: it serializes changes so that only one briefcase at a time can edit a given element.
+- **[Reservations](#reservations)** coordinate the concurrent *creation* of shared [DefinitionElement]($backend)s (categories, line styles, materials, and other reusable dependencies). Reservations let multiple briefcases add and reference the *same* definition at the same time without conflicting, and without serializing on a lock.
 
-The concurrency control policy for an iModel is established when it is created in iModelHub via the `noLocks` parameter of [BackendHubAccess.createNewIModel]. If `noLocks` is not specified (the default), iTwin.js will enforce that the appropriate locks must be acquired *before* modifying elements.
+The two work in tandem: locks keep concurrent edits to established data safe, while reservations keep concurrent *additions* of shared building blocks safe. To make coordinated changes, an app follows these rules:
 
-An app uses [BriefcaseDb.locks]($backend) to follow concurrency control rules.
+1. **Lock** the models and elements it intends to modify before modifying them (under the default [pessimistic policy](#concurrency-control-policies)).
+1. **Reserve** any shared DefinitionElements before inserting them, when the iModel uses [SchemaSync](#reservations-and-schemasync).
+1. **[Pull and merge](./IModelDbSync.md)** before pushing.
 
-Locks are associated with a briefcase while it is making changes and are (optionally) released when it pushes.
+An app uses [BriefcaseDb.locks]($backend) to work with locks and [IModelDb.reservations]($backend) to work with reservations.
 
 ## Background
 
 This article assumes that you already know that:
 
-- An iModel is a multi-user database
+- An iModel is a multi-user database.
 - An app works with a [briefcase](../Glossary.md#Briefcase) using the [BriefcaseDb]($backend) class.
 - A briefcase has a unique [BriefcaseId]($common) that is issued and tracked by [iModelHub](../IModelHub/index.md).
+- Every element has a unique [Id64]($bentley) that combines a briefcase id with a locally-sequential id, so that different briefcases never mint the same element id.
 - Changes are captured and distributed in the form of [Changesets](../IModelHub/briefcases.md).
 - Changesets are ordered in a sequence that is called the [timeline](../IModelHub/index.md#the-timeline-of-changes-to-an-imodel) of the iModel. A changeset's position on the timeline is indicated by its [ChangesetIndex]($common).
-- Changesets are stored in iModelHub
+- Changesets are stored in iModelHub.
 
 ## Concurrency Glossary
 
@@ -31,97 +34,178 @@ This article assumes that you already know that:
 | **Base**                            | Changeset B is *based* on Changeset A if B comes after A in the timeline.                                                                                                                                                                                           |
 | **Change-merging**                  | Same as merge.                                                                                                                                                                                                                                                      |
 | **Concurrency Control**             | How to coordinate simultaneous transactions while preserving data integrity.                                                                                                                                                                                        |
-| **Concurrency Control Policy**      | The rules that apps must follow when changing models and elements. May be [optimistic](#optimistic-concurrency-control) or [pessimistic](#pessimistic-concurrency-control).                                                                                         |
+| **Concurrency Control Policy**      | The rules that apps must follow when changing models and elements. Normally [pessimistic](#concurrency-control-policies).                                                                                                                                        |
 | **Conflict**                        | Arises when two Changesets change the same object in different ways, where neither Changeset is based on the other.                                                                                                                                                 |
-| **Conflict-resolution**             | Choosing how to resolve a conflict.                                                                                                                                                                                                                                 |
-| **Lock**                            | The right to access an Element and its descendant Elements.                                                                                                                                                                                                         |
+| **DefinitionElement**               | A reusable, shared element (e.g. a [Category]($backend), [LineStyle]($backend), or material) held in a [DefinitionModel]($backend) and referenced by many other elements. See [Reservations](#reservations).                                                         |
+| **Federation GUID**                 | A globally-unique identifier ([GuidString]($bentley)) that stably identifies an element across briefcases and iModels. Reservations use it to agree on a shared identity for a definition.                                                                      |
+| **Lock**                            | The right to modify an Element (and, for the exclusive lock, its descendant Elements).                                                                                                                                                                              |
 | **Merge**                           | Apply a Changeset to a briefcase.                                                                                                                                                                                                                                   |
-| **Optimistic Concurrency Control**  | A policy that allows apps to elements without acquiring locks.                                                                                                                                                                                                      |
-| **Pessimistic Concurrency Control** | A policy that requires apps to acquire locks before changing elements.                                                                                                                                                                                              |
-| **Push**                            | Upload a Changeset to iModelHub                                                                                                                                                                                                                                     |
-| **Pull**                            | Download a Changeset from iModelHub. See [IModelDb synchronization](./IModelDbSync.md)                                                                                                                                                                              |
+| **Pessimistic Concurrency Control** | The default policy: apps must acquire locks before changing existing elements.                                                                                                                                                                                     |
+| **Push**                            | Upload a Changeset to iModelHub.                                                                                                                                                                                                                                    |
+| **Pull**                            | Download a Changeset from iModelHub. See [IModelDb synchronization](./IModelDbSync.md).                                                                                                                                                                             |
+| **Reservation**                     | An agreement, coordinated through [SchemaSync](#reservations-and-schemasync), that pre-allocates a shared element id (and federation GUID) for a DefinitionElement so multiple briefcases can create the same definition concurrently. See [Reservations](#reservations). |
+| **Schema Lock**                     | The exclusive lock on the root (repository model) element. Blocks *all* other locks while held; required to import schemas. See [Schema Lock](#the-schema-lock).                                                                                                    |
 | **Tip**                             | The most recent version of an iModel. Also, the most recent Changeset in the timeline.                                                                                                                                                                              |
 | **Transaction**                     | A set of changes that are committed or abandoned atomically, making up a unit of work. A transaction is *committed* by calling [BriefcaseDb.saveChanges]($backend). Multiple transactions to a briefcase are combined into a [Changeset](../Glossary.md#Changeset). |
 | **Version**                         | The state of an iModel as of a specific point in its timeline, that is, the result of the Changesets up to that point.                                                                                                                                              |
 
 ## Concurrency Control Policies
 
-There are two locking policy options: pessimistic and optimistic. The choice of policy is determined when the iModel is created and cannot be changed. Whenever a [BriefcaseDb]($backend) is opened, the appropriate policy is enforced.
+By default, an iModel uses a **pessimistic** policy: models and elements must be locked before they can be modified. The policy is determined when the iModel is created in iModelHub via the `noLocks` parameter of [BackendHubAccess.createNewIModel]($backend). If `noLocks` is not specified (the default), iTwin.js enforces that the appropriate locks must be acquired *before* modifying elements. The policy is fixed for the life of the iModel, and is enforced whenever a [BriefcaseDb]($backend) is opened.
 
-### Pessimistic Concurrency Control
+> **Optimistic concurrency (experimental).** A `noLocks: true` iModel permits editing without locks, relying on property-level change-merging to reconcile concurrent edits when briefcases pull and push. This mode is **experimental and incomplete**: its conflict-resolution behavior is not fully specified and it is **not recommended for production applications**. Prefer the default pessimistic policy, and use [reservations](#reservations) — not `noLocks` — to enable concurrent creation of shared definitions.
 
-The pessimistic concurrency policy requires that Elements must be locked before changes can be made to them. Locking prevents concurrent changes and forces briefcase transactions affecting the same models and elements to merge without conflicts.
+## Locks
 
-#### Lock Types
+Locks implement the pessimistic policy. Locking an element before changing it prevents concurrent changes and forces briefcase transactions that affect the same models and elements to be serialized, so they merge without conflicts.
 
-Locks apply (only) to Elements and are acquired on behalf of a briefcase by specifying a Lock type and an ElementId.
+To work with a pessimistic iModel, apps follow the **pull → lock → change → push** pattern.
 
-There are two types of locks:
+### Lock Types
 
-- Exclusive Lock: Reserves an Element for exclusive access. Only holders of an exclusive lock may modify or delete an Element.
-- Shared Lock: Holding a Shared lock on an Element blocks other briefcases from acquiring the Exclusive lock on that Element.
+Locks apply (only) to Elements and are acquired on behalf of a briefcase by specifying a lock type and an ElementId. There are two types:
 
-#### Acquiring Locks On Elements
+- **Exclusive lock**: Reserves an Element for exclusive access. Only the holder of the exclusive lock may modify or delete the Element.
+- **Shared lock**: Holding a shared lock on an Element blocks other briefcases from acquiring the exclusive lock on that Element (but allows other shared locks).
 
-Locks are acquired via the [LockControl]($backend) interface by calling `BriefcaseDb.locks.acquireExclusiveLock` and `BriefcaseDb.locks.acquireSharedLock`, supplying one or more ElementIds.
+### Acquiring Locks
+
+Locks are acquired through the [LockControl]($backend) interface exposed by [BriefcaseDb.locks]($backend) — via [LockControl.acquireLocks]($backend), supplying the shared and/or exclusive ElementIds to lock.
 
 Rules for acquiring locks:
 
-- Ony one briefcase at a time may hold the Exclusive lock on an Element.
-- You may only obtain the Exclusive lock on an Element if your `BriefcaseDb.changeset.index` is equal or greater than the [ChangesetIndex]($common) specified the last time the lock was released. That is, you may only acquire the Exclusive lock on an Element if your briefcase holds its most recent state.
-- You cannot obtain a Shared lock on an Element while the Exclusive lock is held by another briefcase.
-- An attempt to obtain a lock on an Element (either Exclusive or Shared) requires also obtaining the Shared lock on its Model and its Parent, if it has one. This is both automatic and recursive. That is, a request to obtain a single lock may, in fact, require many locks all the way to the top of the hierarchy, if they are not already held. If any required lock is unavailable, no locks are obtained.
-- Acquiring the exclusive lock on a model (via its modeled element) implicitly acquires the exclusive lock on all its elements. Likewise, acquiring the exclusive lock on an element implicitly acquires the exclusive lock on its children.
+- Only one briefcase at a time may hold the exclusive lock on an Element.
+- You may only obtain the exclusive lock on an Element if your `BriefcaseDb.changeset.index` is equal to or greater than the [ChangesetIndex]($common) recorded the last time the lock was released. That is, you may only acquire the exclusive lock on an Element if your briefcase holds its most recent state.
+- You cannot obtain a shared lock on an Element while another briefcase holds the exclusive lock.
+- Obtaining a lock on an Element (either exclusive or shared) also requires the shared lock on its Model and its Parent, if it has one. This is automatic and recursive: a request for a single lock may in fact require many locks all the way up the hierarchy, if they are not already held. If any required lock is unavailable, no locks are obtained.
+- Acquiring the exclusive lock on a Model (via its modeled element) implicitly acquires the exclusive lock on all of its elements. Likewise, acquiring the exclusive lock on an element implicitly acquires the exclusive lock on its children.
 
-The "root" ElementId is the [IModel.repositoryModelId]($common). For convenience, the Exclusive lock on the root Element is called the **Schema Lock**. From the rules above you can tell that to obtain the Schema Lock of an iModel no other briefcase can be *holding any* locks. Further, while the Schema Lock is held, no other briefcases may *obtain any* locks.
+For reference, the locks required for direct element changes are:
 
-To work with an iModel with pessimistic concurrency control policy, apps must follow the pull -> lock -> change -> push pattern.
-
-For reference, the pessimistic locking rules are as follows:
-
-| Operation      | Locks Required                                      |
-| -------------- | --------------------------------------------------- |
-| Insert element | Shared lock on Model and Parent Element, if present |
-| Modify element | Exclusive Lock                                      |
-| Delete element | Exclusive Lock                                      |
+| Operation      | Locks Required                                       |
+| -------------- | ---------------------------------------------------- |
+| Insert element | Shared lock on Model and Parent Element, if present  |
+| Modify element | Exclusive lock                                       |
+| Delete element | Exclusive lock                                       |
 
 Notes:
 
-- these rules only apply to *direct* changes to Elements. *Indirect* changes, made during change propagation from ElementDrivesElement relationships, do *not* require locks.
+- **ElementAspects** do not have their own locks. An [ElementAspect]($backend) is owned by its element, so inserting, updating, or deleting an aspect is governed by the **exclusive lock on the owning element** — acquire that lock before changing any of the element's aspects.
+- These rules apply only to *direct* changes to Elements. *Indirect* changes made during change propagation (for example, from [ElementDrivesElement]($backend) relationships) do *not* require locks.
+- The lock on a Model is really a lock on its modeled element, since they share the same Id.
 
-- the lock on a Model is really a lock on its modeled element, since they have the same Id.
+### The Schema Lock
 
-#### Releasing Locks
+The "root" ElementId is the [IModel.repositoryModelId]($common). The exclusive lock on the root element is called the **Schema Lock**. It follows from the rules above that to obtain the Schema Lock, no other briefcase may be *holding any* locks; and while the Schema Lock is held, no other briefcase may *obtain any* locks. The Schema Lock is required to import a schema — see [Changesets and Schema Changes](#changesets-and-schema-changes).
 
-Locks are normally released when the briefcase pushes its changes via [BriefcaseDb.pushChanges]($backend), though they may optionally be retained via the `retainLocks` option. If locks are acquired and no changes were made, or if all changes were abandoned, locks can be manually released via [BriefcaseDb.locks.releaseAllLocks].
+### Releasing Locks
 
-### Optimistic Concurrency Control
+Locks are normally released when the briefcase pushes its changes via [BriefcaseDb.pushChanges]($backend), though they may optionally be retained via the `retainLocks` option. If locks are acquired but no changes were made, or all changes were abandoned, locks can be released manually via [LockControl.releaseAllLocks]($backend).
 
-An optimistic concurrency policy allows apps to modify elements and models in an iModel without acquiring locks. In this case, the app uses change-merging to reconcile local changes before pushing.
+## Reservations
 
-Working without locks opens up the possibility that other apps may add Changesets to the timeline while the local editing session is in progress. The briefcase must then merge before it can push.
+> Reservations are a `@beta` feature. See [IModelDb.reservations]($backend) and [SharedDefinitionReservations]($backend).
 
-Suppose, for example, that two briefcases were editing different properties of the same element at the same time. Suppose that the first briefcase pushed first, creating Changeset#1. Now, the second briefcase must pull and merge before it can push.
+Locks solve the problem of concurrent edits to *existing* data, but they are a poor fit for a common collaboration pattern: several users independently adding the *same* shared dependency at the same time. Consider two briefcases that each need a `"Steel"` material or a `"Hidden"` line style that does not yet exist. Each would insert its own copy, producing either duplicate definitions or a hard [Code]($common) uniqueness conflict on push. Forcing the two briefcases to serialize on a lock (or the Schema Lock) to avoid this defeats the goal of concurrent editing.
 
-![optimistic concurrency example workflow](./OptimisticConcurrencyControl.jpg)
+**Reservations** address this directly. A reservation is a small piece of shared bookkeeping — coordinated through [SchemaSync](#reservations-and-schemasync) — that agrees, ahead of time, on a single identity for a to-be-created DefinitionElement: one stable **[federation GUID](#concurrency-glossary)** and one pre-allocated **element id**. Once a definition is reserved, any briefcase that inserts it will get that *same* id and federation GUID. Two users can therefore create "the same" category concurrently and end up with one shared element, not a conflict.
 
-#### Conflicts
+### Reservations vs. Locks
 
-Working without locks also opens up the possibility that local changes may overlap with in-coming Changesets. When Changesets are merged into the briefcase, the change-merging algorithm checks for conflicts. The algorithm merges changes and checks for conflicts at the level of individual element properties. In the example above, the two briefcases changed different properties of the same element. That is not a conflict. Likewise, it is not a conflict for two briefcases both to set a property to the same value, or for two briefcases both to delete an element. Conflicts arise if the two briefcases set the same property to different values, or if one briefcase modifies a property and the other deletes the element.
+| | **Locks** | **Reservations** |
+| --- | --- | --- |
+| Protect against | Conflicting concurrent **modification** of existing elements | Conflicting concurrent **creation** of shared definitions |
+| Concurrency model | Pessimistic (serialize — one writer) | Cooperative (many briefcases create the *same* thing) |
+| Applies to | Any model or element | [DefinitionElement]($backend)s only |
+| Requirement | The iModel's pessimistic policy | [SchemaSync](#reservations-and-schemasync) is enabled |
+| API | [BriefcaseDb.locks]($backend) | [IModelDb.reservations]($backend) |
 
-If conflicts are found, the change-merging algorithm applies the iModel's conflict-resolution policy.
+The two are complementary, not alternatives. Inserting a reserved definition still follows the normal locking rules for an insert (a shared lock on its Model — typically the dictionary model, [IModel.dictionaryId]($common)). Reservations remove the *identity* conflict; locks continue to govern the *change*.
 
-| Local Change | RemoteChange | Resolution                                  |
-| ------------ | ------------ | ------------------------------------------- |
-| update       | update       | RejectIncomingChange                        |
-| update       | delete       | AcceptIncomingChange (reject not support)   |
-| delete       | update       | RejectIncomingChange (accept not supported) |
+### Reservations and SchemaSync
 
-Property-level change-merging is very fine-grained, and so it allows many kinds of changes to be made simultaneously without conflicts. A schema may also specify rules to check for conflicts on a higher level.
+Reservations require the iModel to have **SchemaSync** enabled. SchemaSync maintains a shared cloud database (a `SchemaSyncDb`) alongside the iModel; the reservation bookkeeping lives there, and its cloud write-lock serializes concurrent reservation requests so that id allocation and [Code]($common) uniqueness are enforced atomically across all briefcases.
+
+- When SchemaSync is **not** enabled, [IModelDb.reservations]($backend) is a no-op: [SharedDefinitionReservations.needsDefinitionReservation]($backend) always returns `false` and DefinitionElement inserts behave exactly as before. No reservation is required or performed.
+- When SchemaSync **is** enabled, DefinitionElement inserts are validated against reservations (see [Inserting a reserved definition](#inserting-a-reserved-definition)).
+
+Reservations are re-initialized automatically whenever a pull or push enables or disables SchemaSync for the briefcase.
+
+### Reserving Definitions
+
+Call [SharedDefinitionReservations.reserveDefinitionElements]($backend) with the definitions you intend to create. The whole batch succeeds or fails together. Each entry identifies a definition by its `classFullName` and [CodeProps]($common), and either supplies a `federationGuid` or lets one be resolved by `code`:
+
+- If you supply a **`federationGuid`**, the reservation is created (or matched) for that GUID.
+- If you **omit** it, the reservation is resolved by `code`: an existing reservation with the same code reuses its federation GUID, otherwise a new GUID is generated and reserved.
+
+A definition **must** specify either a `federationGuid` or a non-empty `code.value`.
+
+```ts
+// Reserve a shared line style before any briefcase inserts it.
+const fedGuid = Guid.createValue();
+await briefcase.reservations.reserveDefinitionElements({
+  elements: [{
+    federationGuid: fedGuid,
+    classFullName: LineStyle.classFullName,
+    code: LineStyle.createCode(briefcase, IModel.dictionaryId, "Hidden"),
+  }],
+});
+```
+
+Reserving is **idempotent**: if two briefcases reserve the identical identity (same GUID, class, and code) concurrently, both converge on the one reservation. If two briefcases reserve the *same Code* for *different* definitions, the container enforces Code uniqueness and exactly one caller wins; the other's promise rejects with a [DefinitionError]($common) (`reservation-conflict`).
+
+Use [SharedDefinitionReservations.needsDefinitionReservation]($backend) to check whether a definition still needs to be reserved. Because of local caching, a `false` result only means the reservation was seen as of the last [SharedDefinitionReservations.reserveDefinitionElements]($backend) call — it is not a hard guarantee against a concurrent reservation elsewhere; the container write-lock is the authority.
+
+### Inserting a Reserved Definition
+
+Once reserved, insert the DefinitionElement normally. When SchemaSync is enabled, the [DefinitionElement]($backend) insert hook resolves the reservation (by `federationGuid`, or by `code` when no GUID was supplied) and:
+
+- stamps the reserved **element id** onto the insert, so the definition gets the same id in every briefcase;
+- fills in the reserved **federation GUID** if the caller did not supply one;
+- verifies the insert's class and Code match what was reserved.
+
+```ts
+await briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
+const id = briefcase.elements.insertElement({
+  classFullName: LineStyle.classFullName,
+  model: IModel.dictionaryId,
+  code: LineStyle.createCode(briefcase, IModel.dictionaryId, "Hidden"),
+  federationGuid: fedGuid, // may be omitted to resolve by Code
+});
+```
+
+If SchemaSync is enabled and no matching reservation exists, the insert throws a [DefinitionError]($common) (`reservation-not-found`): reserve the definition first. Inserting under the Schema Lock bypasses reservation checks, since holding the Schema Lock already serializes all briefcases.
+
+### Reservation Errors
+
+Reservation and insert failures throw a [DefinitionError]($common), whose `key` distinguishes the cause:
+
+| Key                          | Meaning                                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| `invalid-definition`         | Malformed federation GUID or Code, unknown class, or neither a GUID nor a non-empty code value.  |
+| `reservation-conflict`       | The requested definition conflicts with an existing reservation (different class or Code).       |
+| `reservation-not-found`      | No reservation exists for the definition being inserted; reserve it first.                        |
+| `container-has-local-changes`| The SchemaSync container has un-pushed local changes; the insert cannot be trusted yet.          |
+| `id-sequence-exhausted`      | The pool of element ids available for reserved definitions has been exhausted.                   |
+| `corrupt-reservation-data`   | The persisted reservation bookkeeping is corrupt.                                                |
+
+Use [DefinitionError.isError]($common) to test for these, optionally passing a specific key.
+
+## Using Locks and Reservations Together
+
+A typical concurrent-editing session combines both mechanisms:
+
+1. **Pull and merge** to synchronize with the tip.
+1. **Reserve** any shared DefinitionElements you plan to create with [SharedDefinitionReservations.reserveDefinitionElements]($backend). This agrees on shared ids/GUIDs so other briefcases creating the same definitions won't conflict.
+1. **Lock** the models and elements you intend to modify (e.g. a shared lock on the dictionary model to insert the reserved definitions, and the exclusive lock on any existing elements you will edit).
+1. **Change** — insert the reserved definitions and make your edits within a transaction, then [BriefcaseDb.saveChanges]($backend).
+1. **Push** to iModelHub. Locks are released (unless retained); the reserved definitions land with their agreed-upon ids.
+
+Because reservations settle *identity* up front and locks serialize *modifications*, multiple users can add and reference the same shared definitions while independently editing different parts of the iModel — all without conflicts.
 
 ## Changesets and Schema Changes
 
-The Schema Lock must be acquired before importing a schema into a briefcase. Also, schema changes must be isolated in a dedicated Changeset, separate from other kinds of changes. This is true for either concurrency control policy. To import a schema, an app must:
+The Schema Lock must be acquired before importing a schema into a briefcase. Schema changes must also be isolated in a dedicated Changeset, separate from other kinds of changes. This is true regardless of whether reservations are in use. To import a schema, an app must:
 
 1. Pull and merge to synchronize with the tip.
 1. Push any local changes to iModelHub.
