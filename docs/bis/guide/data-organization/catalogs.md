@@ -8,18 +8,7 @@ This page describes how catalog-sourced definitions are organized inside an iMod
 
 ## A running example
 
-Catalogs behave much like a package registry, and importing a component behaves much like installing a package:
-
-| Catalog concept | Package-manager equivalent |
-|-----------------|----------------------------|
-| Catalog authority | Package registry |
-| Published catalog version | Published package version (immutable) |
-| Component: entry-point definition plus its dependencies | Package plus its transitive dependencies |
-| Importing a component | Installing: resolve the dependency graph, copy the closure |
-| Shared dependencies cached once per iModel | Dependency deduplication |
-| Stable entry identifier vs. `FederationGuid` | Package name vs. exact resolved version |
-
-The sections below follow one example through that lifecycle. A catalog authority publishes a *Piping Catalog* containing pipe types. Version 1 of the catalog includes **PVC-300**, a 300&nbsp;mm PVC pipe type modeled as a `PhysicalType`. An application imports PVC-300 into a project iModel so that pipes of that type can be placed. Later, the authority corrects PVC-300's wall thickness and publishes version 2 of the catalog.
+The sections below follow one example through the catalog lifecycle. A catalog authority publishes a *Piping Catalog* containing pipe types. Version 1 of the catalog includes **PVC-300**, a 300&nbsp;mm PVC pipe type modeled as a `PhysicalType`. An application imports PVC-300 into a project iModel so that pipes of that type can be placed. Later, the authority corrects PVC-300's wall thickness and publishes version 2 of the catalog.
 
 ## Why copy definitions into an iModel
 
