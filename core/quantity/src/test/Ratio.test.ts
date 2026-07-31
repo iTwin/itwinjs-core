@@ -1450,6 +1450,16 @@ describe("Ratio format tests", () => {
       }
     });
 
+    it("InvertingZero uses spacer around separator", async () => {
+      // Zero with inverted persistence/presentation units triggers the InvertingZero path
+      const formatProps: FormatProps = {
+        type: "Ratio", ratioType: "NToOne", ratioSeparator: "=", precision: 1,
+        composite: { includeZero: true, units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }] },
+      };
+      const { formatterSpec } = await createFormatAndSpecs("InvertingZeroSpacer", formatProps, "Units.HORIZONTAL_PER_VERTICAL");
+      expect(Formatter.formatQuantity(0, formatterSpec)).to.equal("1 = 0");
+    });
+
     it("parser accepts leading and trailing whitespace", async () => {
       const formatProps: FormatProps = { type: "Ratio", ratioType: "OneToN", ratioSeparator: ":", precision: 1, composite: { spacer: "", includeZero: true, units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }] } };
       const { parserSpec } = await createFormatAndSpecs("WhitespaceParse", formatProps, "Units.VERTICAL_PER_HORIZONTAL");
