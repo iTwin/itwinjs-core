@@ -135,6 +135,7 @@ import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GeometrySummaryRequestProps } from '@itwin/core-common';
+import { GetSchemaViewArgs } from '@itwin/ecschema-metadata';
 import { GlobeMode } from '@itwin/core-common';
 import { Gradient } from '@itwin/core-common';
 import { GraphicParams } from '@itwin/core-common';
@@ -587,7 +588,7 @@ export class AccuDraw {
     protected readonly _yColor: ColorDef;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawChangeModeTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -701,7 +702,7 @@ export class AccuDrawHintBuilder {
     setXAxis2(xAxis: Vector3d): void;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotate90AboutXTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -709,7 +710,7 @@ export class AccuDrawRotate90AboutXTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotate90AboutYTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -717,7 +718,7 @@ export class AccuDrawRotate90AboutYTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotate90AboutZTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -725,7 +726,7 @@ export class AccuDrawRotate90AboutZTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
     constructor(aboutCurrentZ?: boolean);
     // (undocumented)
@@ -740,7 +741,7 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateCycleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -748,7 +749,7 @@ export class AccuDrawRotateCycleTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
     protected createImplementation(): AccuDrawShortcutImplementation;
@@ -756,7 +757,7 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateFrontTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -764,7 +765,15 @@ export class AccuDrawRotateFrontTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
+export class AccuDrawRotatePointsTool extends AccuDrawShortcutTool {
+    // @internal (undocumented)
+    protected createImplementation(): AccuDrawShortcutImplementation;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class AccuDrawRotateSideTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -772,7 +781,7 @@ export class AccuDrawRotateSideTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateTopTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -780,7 +789,7 @@ export class AccuDrawRotateTopTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawRotateViewTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -788,7 +797,7 @@ export class AccuDrawRotateViewTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSessionToggleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -796,7 +805,7 @@ export class AccuDrawSessionToggleTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockAngleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -804,7 +813,7 @@ export class AccuDrawSetLockAngleTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockDistanceTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -812,7 +821,7 @@ export class AccuDrawSetLockDistanceTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockIndexTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -820,7 +829,7 @@ export class AccuDrawSetLockIndexTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockSmartTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -828,7 +837,7 @@ export class AccuDrawSetLockSmartTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockXTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -836,7 +845,7 @@ export class AccuDrawSetLockXTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockYTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -844,7 +853,7 @@ export class AccuDrawSetLockYTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetLockZTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -852,7 +861,7 @@ export class AccuDrawSetLockZTool extends Tool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSetOriginTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -876,8 +885,7 @@ export class AccuDrawShortcuts {
     static defineACSByElement(): Promise<boolean>;
     // (undocumented)
     static defineACSByPoints(): Promise<boolean>;
-    // (undocumented)
-    static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
+    static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): Promise<AuxCoordSystemState | undefined>;
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): Promise<void>;
     // (undocumented)
@@ -931,11 +939,10 @@ export class AccuDrawShortcuts {
     static suspendToggle(): void;
     // (undocumented)
     static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean;
-    // (undocumented)
-    static writeACS(_acsName: string): BentleyStatus;
+    static writeACS(acsName: string | undefined): Promise<AuxCoordSystemState | undefined>;
 }
 
-// @beta (undocumented)
+// @beta
 export class AccuDrawSuspendToggleTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -1408,7 +1415,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     constructor(props: AuxCoordSystemProps, iModel: IModelConnection);
     // (undocumented)
     static get className(): string;
-    static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState;
+    static createNew(_acsName: string, iModel: IModelConnection): AuxCoordSystemState;
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -2392,7 +2399,7 @@ export class CurrentInputState {
     // (undocumented)
     get isShiftDown(): boolean;
     // (undocumented)
-    isStartDrag(button: BeButton): boolean;
+    isStartDrag(button: BeButton, motionEventTime?: number): boolean;
     // (undocumented)
     lastButton: BeButton;
     // (undocumented)
@@ -2404,7 +2411,7 @@ export class CurrentInputState {
     // (undocumented)
     lastWheelEvent?: BeWheelEvent;
     // (undocumented)
-    onButtonDown(button: BeButton): void;
+    onButtonDown(button: BeButton, eventTime?: number): void;
     // (undocumented)
     onButtonUp(button: BeButton): void;
     // (undocumented)
@@ -2581,7 +2588,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class DefineACSByElementTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
     protected createImplementation(): AccuDrawShortcutImplementation;
@@ -2589,7 +2596,7 @@ export class DefineACSByElementTool extends AccuDrawShortcutTool {
     static toolId: string;
 }
 
-// @beta (undocumented)
+// @beta
 export class DefineACSByPointsTool extends AccuDrawShortcutTool {
     // @internal (undocumented)
     protected createImplementation(): AccuDrawShortcutImplementation;
@@ -5202,7 +5209,7 @@ export abstract class IModelConnection extends IModel {
     // @deprecated
     getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
     // @beta
-    getSchemaView(): Promise<SchemaView>;
+    getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
     // @internal
@@ -5597,6 +5604,8 @@ export class IpcApp {
     static appFunctionIpc: PickAsyncMethods<IpcAppFunctions>;
     // @internal @deprecated (undocumented)
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
+    // @beta
+    static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
@@ -5612,6 +5621,13 @@ export class IpcApp {
 export interface IpcAppOptions {
     // (undocumented)
     iModelApp?: IModelAppOptions;
+}
+
+// @beta
+export abstract class IpcHandler {
+    // (undocumented)
+    abstract get channelName(): string;
+    static register(): RemoveFunction;
 }
 
 // @public
@@ -11930,6 +11946,8 @@ export class ToolAdmin {
     gridLock: boolean;
     get idleTool(): InteractiveTool;
     set idleTool(idleTool: InteractiveTool);
+    protected isCtrlKeyShortcut(keyEvent: KeyboardEvent): boolean;
+    protected isFocusValidForShortcuts(): boolean;
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
@@ -11986,6 +12004,7 @@ export class ToolAdmin {
     setPrimitiveTool(newTool?: PrimitiveTool): Promise<void>;
     // @internal (undocumented)
     setViewTool(newTool?: ViewTool): Promise<void>;
+    protected shouldPreventCtrlDefault(keyEvent: KeyboardEvent): boolean;
     simulateMotionEvent(): void;
     startDefaultTool(): Promise<void>;
     // @internal (undocumented)

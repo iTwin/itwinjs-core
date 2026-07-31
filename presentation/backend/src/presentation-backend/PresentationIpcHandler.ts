@@ -16,13 +16,13 @@ export class PresentationIpcHandler extends IpcHandler implements PresentationIp
   public channelName = PRESENTATION_IPC_CHANNEL_NAME;
 
   public async setRulesetVariable(params: Parameters<PresentationIpcInterface["setRulesetVariable"]>[0]): Promise<void> {
-    const { clientId, rulesetId, variable } = params;
+    const { rulesetId, variable } = params;
     const parsedVariable = RulesetVariable.fromJSON(variable);
-    Presentation.getManager(clientId).vars(rulesetId).setValue(parsedVariable.id, parsedVariable.type, parsedVariable.value);
+    Presentation.getManager().vars(rulesetId).setValue(parsedVariable.id, parsedVariable.type, parsedVariable.value);
   }
 
   public async unsetRulesetVariable(params: Parameters<PresentationIpcInterface["unsetRulesetVariable"]>[0]): Promise<void> {
-    const { clientId, rulesetId, variableId } = params;
-    Presentation.getManager(clientId).vars(rulesetId).unset(variableId);
+    const { rulesetId, variableId } = params;
+    Presentation.getManager().vars(rulesetId).unset(variableId);
   }
 }

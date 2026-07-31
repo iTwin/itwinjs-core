@@ -208,9 +208,10 @@ export class CurrentInputState {
 
   public updateDownPoint(ev: BeButtonEvent) { this.button[ev.button].downUorPt = ev.point; }
 
-  public onButtonDown(button: BeButton) {
+  public onButtonDown(button: BeButton, eventTime?: number) {
     let isDoubleClick = false;
-    const now = Date.now();
+    // Use event.timeStamp epoch (performance.now) so comparisons are immune to event-loop stalls
+    const now = eventTime ?? performance.now();
     const vp = this.viewport;
 
     if (undefined !== vp) {
@@ -299,7 +300,7 @@ export class CurrentInputState {
     IModelApp.toolAdmin.adjustPoint(this._point, vp, true, applyLocks);
   }
 
-  public isStartDrag(button: BeButton): boolean {
+  public isStartDrag(button: BeButton, motionEventTime?: number): boolean {
     // First make sure we aren't already dragging any button
     if (this.isAnyDragging())
       return false;
@@ -308,7 +309,8 @@ export class CurrentInputState {
     if (!state.isDown)
       return false;
 
-    if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds)
+    const elapsed = (motionEventTime ?? performance.now()) - state.downTime;
+    if (elapsed <= ToolSettings.startDragDelay.milliseconds)
       return false;
 
     const vp = this.viewport;
@@ -362,7 +364,7 @@ export class ToolAdmin {
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
   private _lastHandledMotionTime?: BeTimePoint;
-  private _mouseMoveOverTimeout?: NodeJS.Timeout;
+  private _mouseMoveOverTimeout?: ReturnType<typeof setTimeout>;
   private _editCommandHandler?: EditCommandHandler;
 
   /** The name of the [[PrimitiveTool]] to use as the default tool.
@@ -479,8 +481,17 @@ export class ToolAdmin {
 
   /** Handler for keyboard events. */
   private static _keyEventHandler = (ev: KeyboardEvent) => {
-    if (!ev.repeat) // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
+    // we don't want repeated keyboard events. If we keep them they interfere with replacing mouse motion events, since they come as a stream.
+    if (!ev.repeat) {
+      // Suppress default browser behavior for iTwin.js Ctrl shortcuts (Z, Y, C, X, V, F2) on keydown when focus allows.
+      if (ev.type === "keydown" && !ev.isComposing && !ev.defaultPrevented) {
+        if (IModelApp.toolAdmin.isCtrlKeyShortcut(ev) && IModelApp.toolAdmin.isFocusValidForShortcuts()) {
+          if (IModelApp.toolAdmin.shouldPreventCtrlDefault(ev))
+            ev.preventDefault();
+        }
+      }
       ToolAdmin.addEvent(ev);
+    }
   };
 
   /** Handler for modifier key transitions captured before focused UI elements can stop propagation. */
@@ -569,7 +580,7 @@ export class ToolAdmin {
     const button = this.getMouseButton(ev.button);
 
     this.currentInputState.setKeyQualifiers(ev);
-    return isDown ? this.onButtonDown(vp, pos, button, InputSource.Mouse) : this.onButtonUp(vp, pos, button, InputSource.Mouse);
+    return isDown ? this.onButtonDown(vp, pos, button, InputSource.Mouse, ev.timeStamp) : this.onButtonUp(vp, pos, button, InputSource.Mouse);
   }
 
   private async onWheel(event: ToolEvent): Promise<EventHandled> {
@@ -1103,7 +1114,7 @@ export class ToolAdmin {
     return this.idleTool.onMouseStartDrag(ev);
   }
 
-  private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY): Promise<any> {
+  private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY, eventTime?: number): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
 
@@ -1131,10 +1142,11 @@ export class ToolAdmin {
 
     this._mouseMoveOverTimeout = setTimeout(async () => {
       await this.onMotionEnd(vp, pt2d, inputSource);
-      await processMotion();
+      // Evaluate drag at the nominal timeout fire time, not the frozen event timestamp.
+      await processMotion(eventTime !== undefined ? eventTime + 100 : undefined);
     }, 100);
 
-    const processMotion = async (): Promise<void> => {
+    const processMotion = async (motionTime?: number): Promise<void> => {
       // Update event to account for AccuSnap adjustments...
       current.fromButton(vp, pt2d, inputSource, true);
       current.toEvent(ev, true);
@@ -1146,7 +1158,7 @@ export class ToolAdmin {
       const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
       this.setIncompatibleViewportCursor(isValidLocation);
 
-      if (forceStartDrag || current.isStartDrag(ev.button)) {
+      if (forceStartDrag || current.isStartDrag(ev.button, motionTime)) {
         current.onStartDrag(ev.button);
         current.changeButtonToDownPoint(ev);
         ev.isDragging = true;
@@ -1174,7 +1186,7 @@ export class ToolAdmin {
      */
     if (forceStartDrag) {
       await snapPromise;
-      return processMotion();
+      return processMotion(eventTime);
     }
 
     if (this.isLocateCircleOn)
@@ -1183,7 +1195,7 @@ export class ToolAdmin {
     snapPromise.then(async (snapOk) => {
       if (!snapOk || snapPromise !== this._snapMotionPromise)
         return;
-      return processMotion();
+      return processMotion(eventTime);
     }).catch((_) => { });
   }
 
@@ -1212,7 +1224,7 @@ export class ToolAdmin {
     if (!(buttonMask & 1))
       this.currentInputState.button[BeButton.Data].isDown = false;
 
-    return this.onMotion(vp, pos, InputSource.Mouse, false, mov);
+    return this.onMotion(vp, pos, InputSource.Mouse, false, mov, (event.ev as MouseEvent).timeStamp);
   }
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
@@ -1399,7 +1411,7 @@ export class ToolAdmin {
     this.updateDynamics(undefined, undefined, true);
   }
 
-  private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
+  private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource, eventTime?: number): Promise<any> {
     const filtered = this.filterViewport(vp);
     if (undefined === this._viewTool && button === BeButton.Data)
       await IModelApp.viewManager.setSelectedView(vp);
@@ -1410,7 +1422,7 @@ export class ToolAdmin {
     const ev = new BeButtonEvent();
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, inputSource, true);
-    current.onButtonDown(button);
+    current.onButtonDown(button, eventTime);
     current.toEvent(ev, true);
     current.updateDownPoint(ev);
 
@@ -1461,10 +1473,6 @@ export class ToolAdmin {
     return document.querySelector(".core-context-menu-opened") !== null;
   }
 
-  private static isElement(target: EventTarget | null): target is Element {
-    return target instanceof Element;
-  }
-
   private static isEditable(element: Element): boolean {
     const tagName = element.tagName.toLowerCase();
     const editableTags = ["input", "textarea", "select"];
@@ -1473,6 +1481,12 @@ export class ToolAdmin {
     if (element instanceof HTMLElement && element.isContentEditable)
       return true;
     return false;
+  }
+
+  /** Check if there is currently an active text selection on the page. */
+  private static hasActiveTextSelection(): boolean {
+    const selection = window.getSelection();
+    return selection !== null && selection.toString().length > 0;
   }
 
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
@@ -1484,23 +1498,80 @@ export class ToolAdmin {
     return BeModifierKeys.None;
   }
 
+  /** Check if focus allows shortcuts to run — i.e., focus is Home or AccuDraw, or focus is not on an editable element and context menu is not open.
+   * Called synchronously in _keyEventHandler to decide whether to call preventDefault(), and in onKeyTransition to gate shortcut processing.
+   * @return true to allow shortcuts
+   */
+  protected isFocusValidForShortcuts(): boolean {
+    // Always allow shortcuts when focus is Home (document.body) or AccuDraw has focus
+    if (ToolAdmin.isFocusHome() || undefined !== IModelApp.accuDraw.getFocusItem())
+      return true;
+    // Block shortcuts when context menu is open or focus is on an editable element
+    if (ToolAdmin.isContextMenuOpen())
+      return false;
+    const active = document.activeElement;
+    if (active !== null && ToolAdmin.isEditable(active))
+      return false;
+    return true;
+  }
+
+  /** Check if a key is part of a Ctrl key shortcut handled by iTwin.js (Ctrl+Z, Ctrl+Y, Ctrl+C, Ctrl+X, Ctrl+V, Ctrl+F2).
+   * @note Subclasses can override to add custom Ctrl shortcuts and handle them with onCtrlKeyPressed.
+   * @return true if key is a Ctrl key shortcut
+   */
+  protected isCtrlKeyShortcut(keyEvent: KeyboardEvent): boolean {
+    if (!keyEvent.ctrlKey || keyEvent.altKey || keyEvent.metaKey)
+      return false;
+
+    const lower = keyEvent.key.toLowerCase();
+    return (lower === "z" || lower === "y" || lower === "c" || lower === "x" || lower === "v" || lower === "f2");
+  }
+
+  /** Determine if the default browser action should be prevented for a Ctrl key shortcut.
+   * By default, allows browser copy/cut of selected text to work naturally, and prevents paste.
+   * Only called when focus is valid for shortcuts (Home, AccuDraw, not on an editable element, context menu not open).
+   * @note This is called from _keyEventHandler to decide whether to call preventDefault().
+   * @note Subclasses can override to customize preventDefault behavior for Ctrl shortcuts.
+   * @return true if preventDefault() should be called; false to allow browser default
+   */
+  protected shouldPreventCtrlDefault(keyEvent: KeyboardEvent): boolean {
+    const lower = keyEvent.key.toLowerCase();
+    // For copy/cut, only prevent if no active text selection (allow browser to handle text operations)
+    if (lower === "c" || lower === "x") {
+      return !ToolAdmin.hasActiveTextSelection();
+    }
+    // Prevent default for all other iTwin.js shortcuts (z, y, v, F2, custom)
+    // Caller already checked that focus is valid for shortcuts, so v (paste) should be prevented
+    return true;
+  }
+
   /** Process key down events while the Ctrl key is pressed */
   public async onCtrlKeyPressed(keyEvent: KeyboardEvent): Promise<{ handled: boolean, result: boolean }> {
     let handled = false;
     let result = false;
 
-    switch (keyEvent.key) {
+    switch (keyEvent.key.toLowerCase()) {
       case "z":
-      case "Z":
         result = await this.doUndoOperation();
         handled = true;
         break;
       case "y":
-      case "Y":
         result = await this.doRedoOperation();
         handled = true;
         break;
-      case "F2":
+      case "c":
+      case "x":
+        // If browser already handled copy/cut (text was selected, so default was not prevented),
+        // mark as handled to skip processShortcutKey.
+        if (!keyEvent.defaultPrevented) {
+          handled = true;
+        }
+        break;
+      case "v":
+        // Paste is prevented when focus is valid for shortcuts; processShortcutKey can handle Ctrl+V.
+        // When not prevented (e.g., in editable element), browser handles naturally.
+        break;
+      case "f2":
         result = IModelApp.uiAdmin.showKeyinPalette();
         handled = true;
         break;
@@ -1517,32 +1588,23 @@ export class ToolAdmin {
   }
 
   /** Event for every key down and up transition.
-   * @note Called before processShortcutKey.
+   * @note Called before Ctrl shortcut and focus checks in onKeyTransition.
+   * For custom Ctrl shortcuts, override isCtrlKeyShortcut and onCtrlKeyPressed.
+   * For other shortcuts, override processShortcutKey.
    * @return true if handled and no further processing of event should occur.
    */
   protected processKeyboardEvent(keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
-    if (ToolAdmin.isFocusHome() || undefined !== IModelApp.accuDraw.getFocusItem())
-      return false; // Focus is Home or AccuDraw, allow shortcuts...
-
-    if (keyEvent.defaultPrevented || keyEvent.isComposing)
-      return true; // Respect UI handling / IME composition; don't process shortcuts
-
     // NOTE: Provide a convenient way for the user to move focus to Home to use shortcuts.
     // Escape is the only practical choice with its default behavior that can cancel/close/blur.
     // Intentionally not checking wentDown as some ui elements stop propagation of down but not up (moving to capture is not a good option).
     // Apps that want to use Escape to start the default tool still can with Home focus in processShortcutKey.
-    if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome) {
+    // Let AccuDraw handle Escape when it has focus—AccuDrawViewportUI.onKeyboardEvent manages this directly.
+    if (keyEvent.key === "Escape" && ToolSettings.escapeMovesFocusToHome && !ToolAdmin.isFocusHome() && undefined === IModelApp.accuDraw.getFocusItem()) {
       ToolAdmin.setFocusHome();
       return true;
     }
 
-    if (ToolAdmin.isContextMenuOpen())
-      return true; // Don't allow shortcuts if context menu is open...
-
-    if (ToolAdmin.isElement(keyEvent.target) && ToolAdmin.isEditable(keyEvent.target))
-      return true; // Don't allow shortcuts when event target is editable...
-
-    return false;
+    return false; // Not handled; continue processing
   }
 
   /** Need to check for modifier changes on capture phase as a ui element that calls stopPropagation
@@ -1560,10 +1622,28 @@ export class ToolAdmin {
   private async onKeyTransition(event: ToolEvent, wentDown: boolean): Promise<any> {
     const keyEvent = event.ev as KeyboardEvent;
 
+    // Respect IME composition; don't process shortcuts
+    if (keyEvent.isComposing)
+      return EventHandled.Yes;
+
     if (this.processKeyboardEvent(keyEvent, wentDown))
       return EventHandled.Yes;
 
-    if (wentDown && keyEvent.ctrlKey) {
+    // Respect if any other handler has handled this event, except for Ctrl shortcuts we manage ourselves.
+    // _keyEventHandler calls preventDefault() for our Ctrl shortcuts, but defaultPrevented should not block them.
+    // For all other keys, defaultPrevented signals that another UI handler has claimed the event.
+    // Exception: AccuDraw's input fields call preventDefault() but still want shortcuts to flow through.
+    const isCtrlShortcut = wentDown && this.isCtrlKeyShortcut(keyEvent);
+    const hasAccuDrawFocus = undefined !== IModelApp.accuDraw.getFocusItem();
+    if (keyEvent.defaultPrevented && !isCtrlShortcut && !hasAccuDrawFocus)
+      return EventHandled.Yes; // Respect other UI handling
+
+    // Check if focus is valid for shortcuts (Home, AccuDraw, not editable, no context menu)
+    if (!this.isFocusValidForShortcuts())
+      return EventHandled.No; // Focus is on an editable element or context menu is open; don't allow shortcuts
+
+    // Process Ctrl shortcuts if focus is valid
+    if (isCtrlShortcut) {
       const { handled, result } = await this.onCtrlKeyPressed(keyEvent);
       if (handled)
         return result;

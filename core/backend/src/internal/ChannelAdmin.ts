@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { ChannelControlError, ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
+import { ChannelControlError, ChannelRootAspectProps, IModel, IModelError, QueryBinder } from "@itwin/core-common";
 import { ChannelControl, ChannelKey, ChannelUpgradeContext, ChannelUpgradeOptions } from "../ChannelControl";
 import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
@@ -46,11 +46,9 @@ class ChannelAdmin implements ChannelControl {
       return ChannelControl.sharedChannelName;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const channel = this._iModel.withPreparedStatement(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (stmt) => {
-        stmt.bindId(1, elementId);
-        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
-      });
+      const channel = this._iModel.withQueryReader(`SELECT Owner FROM ${ChannelAdmin.channelClassName} WHERE Element.Id=?`, (reader) => {
+        return reader.step() ? reader.current[0] : undefined;
+      }, new QueryBinder().bindId(1, elementId));
 
       if (channel !== undefined)
         return channel;
@@ -134,11 +132,9 @@ class ChannelAdmin implements ChannelControl {
       return IModel.rootSubjectId;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const channelRoot = this._iModel.withPreparedStatement(`SELECT Element.Id FROM ${ChannelAdmin.channelClassName} WHERE Owner=?`, (stmt) => {
-        stmt.bindString(1, channelKey);
-        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getId() : undefined;
-      });
+      const channelRoot = this._iModel.withQueryReader(`SELECT Element.Id FROM ${ChannelAdmin.channelClassName} WHERE Owner=?`, (reader) => {
+        return reader.step() ? reader.current[0] : undefined;
+      }, new QueryBinder().bindString(1, channelKey));
 
       return channelRoot;
     } catch {
