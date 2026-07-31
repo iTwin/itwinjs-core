@@ -21,7 +21,7 @@ import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
-import { CanvasDecoration } from "../core-frontend";
+import { CanvasDecoration, DecorationsCache } from "../core-frontend";
 
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -710,6 +710,16 @@ describe("Viewport", () => {
     });
   });
 
+  function createViewport(): ScreenViewport {
+    const state = SpatialViewState.createBlank(createBlankConnection(), { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
+    const parentDiv = document.createElement("div");
+    parentDiv.setAttribute("height", "1px");
+    parentDiv.setAttribute("width", "1px");
+    parentDiv.style.height = parentDiv.style.width = "1px";
+    document.body.appendChild(parentDiv);
+    return ScreenViewport.create(parentDiv, state);
+  }
+
   describe("Read Image To Canvas", () => {
 
     class PixelCanvasDecoration implements CanvasDecoration {
@@ -726,16 +736,6 @@ describe("Viewport", () => {
         context.addDecorationFromBuilder(builder);
         context.addCanvasDecoration(new PixelCanvasDecoration());
       }
-    }
-
-    function createViewport(): ScreenViewport {
-      const state = SpatialViewState.createBlank(createBlankConnection(), { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
-      const parentDiv = document.createElement("div");
-      parentDiv.setAttribute("height", "1px");
-      parentDiv.setAttribute("width", "1px");
-      parentDiv.style.height = parentDiv.style.width = "1px";
-      document.body.appendChild(parentDiv);
-      return ScreenViewport.create(parentDiv, state);
     }
 
     const activeDecorators: Decorator[] = [];
@@ -870,6 +870,61 @@ describe("Viewport", () => {
 
       IModelApp.viewManager.dropViewport(vp);
       IModelApp.viewManager.dropViewport(vp2);
+    });
+  });
+
+  describe("Cached decorations", () => {
+    let vp: ScreenViewport;
+    let dec: Decorator;
+
+    beforeAll(() => {
+      vp = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+
+      dec = {
+        useCachedDecorations: true as const,
+        decorate: (context: DecorateContext) => {
+          context.addHtmlDecoration(document.createElement("div"));
+        },
+      };
+
+      IModelApp.viewManager.addDecorator(dec);
+    });
+
+    afterAll(() => {
+      IModelApp.viewManager.dropViewport(vp);
+      IModelApp.viewManager.dropDecorator(dec);
+    });
+
+    it("invalidates cached decorations when the visibility of scene objects changes", () => {
+      function test(expectCacheClear: boolean, operation: () => void): void {
+        const isCacheEmpty = () => {
+          const cache = (vp as any)._decorationCache as DecorationsCache;
+          return cache.size > 0;
+        }
+
+        // Ensure decorations are generated and cached.
+        vp.renderFrame();
+        expect(isCacheEmpty()).to.be.false;
+
+        // Ensure cache is cleared or preserved after operation is performed.
+        operation();
+        expect(isCacheEmpty()).to.equal(expectCacheClear);
+
+        // Ensure decorations are regenerated and cached.
+        vp.renderFrame();
+        expect(isCacheEmpty()).to.be.false;
+      }
+
+      test(false, () => {});
+
+      test(true, () => vp.setNeverDrawn(new Set<string>("0x123")));
+      test(true, () => vp.clearNeverDrawn());
+      test(true, () => vp.clearNeverDrawn());
+
+      test(true, () => vp.setAlwaysDrawn(new Set<string>("0x123")));
+      test(true, () => vp.clearAlwaysDrawn());
+      test(true, () => vp.clearAlwaysDrawn());
     });
   });
 });
