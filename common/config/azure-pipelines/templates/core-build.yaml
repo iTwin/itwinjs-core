@@ -68,8 +68,7 @@ steps:
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
       TOKEN: $(GitHubPAT)
-    # TODO: Re-enable once the Android crash after the OpenSSL update is resolved.
-    condition: and(succeeded(), false, ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
@@ -77,14 +76,12 @@ steps:
     env:
       IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
-    # TODO: Re-enable once the iOS Simulator runtime missing error is resolved.
-    condition: and(succeeded(), false, ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: npm run ios:all
     workingDirectory: core/backend
     displayName: Build & run iOS backend unit tests in Simulator
-    # TODO: Re-enable once the iOS Simulator runtime missing error is resolved.
-    condition: and(succeeded(), false, ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: node ./common/scripts/install-run-rush webpack:test -v
     workingDirectory: ${{ parameters.workingDir }}
