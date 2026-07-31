@@ -12,10 +12,28 @@ A catalog iModel has these properties:
 
 - `iTwinId` is always [Guid.empty]($bentley).
 - `BriefcaseId` is always [BriefcaseIdValue.Unassigned]($common).
-- It has no timeline and cannot apply or generate changesets.
+- It has no timeline and cannot apply or generate [changesets](../Glossary.md#changeset).
 - It does not use an iModelHub checkout.
 
-By contrast, an iModel managed by iModelHub uses a [BriefcaseDb]($backend), belongs to an iTwin, and records changes on an iModelHub timeline.
+By contrast, an iModel managed by iModelHub uses a [BriefcaseDb]($backend) (see [Accessing iModels](./AccessingIModels.md)), belongs to an iTwin, and records changes on an iModelHub timeline.
+
+## Opening a catalog
+
+Open a catalog with [CatalogDb.openReadonly]($backend) on the backend, or [CatalogConnection.openReadonly]($frontend) on the frontend. Both accept [CatalogIModel.OpenArgs]($common), which covers the two storage cases:
+
+- **Local file**: omit `containerId` and pass the file path as `dbName`.
+- **Cloud container**: pass the `containerId` of the [BlobContainer]($backend) that holds the catalog, and optionally a semantic-version range in `version` (defaults to the newest available version).
+
+Close the `CatalogDb` when finished with it.
+
+## Catalog versions
+
+Catalogs stored in cloud containers are versioned with [semantic versioning](https://semver.org), much like [WorkspaceDb]($backend)s. Once a version of a catalog has been published, it is immutable (unless it is a prerelease version). This is the concrete mechanism behind the immutable catalog versions that the [provenance mapping](../../bis/guide/data-organization/catalogs.md#provenance-of-cached-definitions) relies on.
+
+- [CatalogDb.openReadonly]($backend) resolves the `version` range in its arguments to a specific version.
+- `CatalogDb.getVersion` returns the version of an open catalog, and `CatalogDb.getManifest` returns the manifest stored inside it. Use these to identify the catalog version, for example when creating the `RepositoryLink` that records provenance.
+- Catalog authorities publish new versions with [CatalogDb.acquireWriteLock]($backend), [CatalogDb.createNewVersion]($backend) (a copy of an existing version, incremented as major, minor, or patch), [CatalogDb.openEditable]($backend) to modify the new version, and [CatalogDb.releaseWriteLock]($backend) to publish it.
+- [CatalogDb.createNewContainer]($backend) creates a new cloud container seeded from a local catalog file. It requires administrator authorization.
 
 ## Reading catalog contents
 
@@ -23,8 +41,6 @@ A catalog iModel contains Models and Elements defined by BIS and domain schemas,
 
 - [ECSQL](../ECSQL.md) to query catalog contents,
 - [Access Elements](./AccessElements.md) to read individual Elements.
-
-Close the `CatalogDb` when finished with it.
 
 ## Copying definitions into another iModel
 
