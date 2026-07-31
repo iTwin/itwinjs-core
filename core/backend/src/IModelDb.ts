@@ -1428,6 +1428,35 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Orchestration poc: deal with the schema imports other briefcases recorded in the schema sync db but did not push yet.
+   * Runs with the schema sync container write lock held, so the set cannot change underneath us.
+   */
+  private async processPendingSchemaImports(schemaSyncDbUri: string): Promise<void> {
+    const { action, pending } = await SchemaSync.resolvePendingImports(this, schemaSyncDbUri);
+    if (pending.length === 0)
+      return;
+
+    const describe = () => pending.map((p) => `#${p.id} by ${p.user} (${p.schemas.join(", ")})`).join("; ");
+
+    switch (action) {
+      case "cancel":
+        throw new IModelError(IModelStatus.BadRequest, `Schema import cancelled, there are pending schema imports from other briefcases: ${describe()}`);
+
+      case "reject":
+        this[_nativeDb].schemaSyncRejectImports(schemaSyncDbUri, pending.map((p) => p.id), IModelHost.userMoniker, "rejected in favour of a local schema import");
+        return;
+
+      case "applyPending":
+        try {
+          SchemaSync.replayImports(this, schemaSyncDbUri, pending);
+        } catch (err: any) {
+          this.abandonSchemaChanges();
+          throw new IModelError(err.errorNumber, `Failed to apply pending schema imports (${describe()}): ${err.message}`);
+        }
+        return;
+    }
+  }
+
   /** Shared implementation for importing schemas from file or string. */
   private async importSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
@@ -1477,15 +1506,17 @@ export abstract class IModelDb extends IModel {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveSchemaChanges();
 
+        await this.processPendingSchemaImports(schemaSyncDbUri);
+
         try {
-          nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+          nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri, user: IModelHost.userMoniker });
         } catch (outerErr: any) {
           if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
             this.abandonSchemaChanges();
             if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
             try {
-              nativeImportOp(schemas, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+              nativeImportOp(schemas, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri, user: IModelHost.userMoniker });
             } catch (innerErr: any) {
               throw new IModelError(innerErr.errorNumber, innerErr.message);
             }
