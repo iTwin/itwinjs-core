@@ -395,6 +395,8 @@ export class Format extends BaseFormat {
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
         if (jsonObj.composite.spacer.length > 1)
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
+        if (this.type === FormatType.Ratio && jsonObj.composite.spacer !== "" && jsonObj.composite.spacer !== " ")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite 'spacer' with an invalid 'spacer' attribute. It must be " " or "".`);
         this._spacer = jsonObj.composite.spacer;
       }
       if (jsonObj.composite.units !== undefined) { // If composite is defined, it must be an array with 1-4 units

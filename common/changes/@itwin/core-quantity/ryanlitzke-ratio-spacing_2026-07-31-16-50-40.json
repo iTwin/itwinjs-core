@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Added ability to set spacers around the ratio separator",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

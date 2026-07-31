@@ -39,7 +39,8 @@ export interface ResolvedFormatUnitSpec {
  * @beta
  */
 export interface FormatCompositeProps {
-  /** Separator character between unit values when formatting composite strings. Must be empty or a single character. */
+  /** Separator between unit values when formatting composite formats, and padding placed around `ratioSeparator` in ratio formats. Must be empty or a single character.
+   * For ratio formats only `" "` and `""` are accepted; non-whitespace spacers are rejected. Defaults to one space. */
   readonly spacer?: string;
   /** Whether to include unit segments with zero magnitude in the formatted output. */
   readonly includeZero?: boolean;

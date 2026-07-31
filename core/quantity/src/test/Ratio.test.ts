@@ -5,7 +5,7 @@ import { Formatter } from "../Formatter/Formatter";
 
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps } from "../core-quantity";
+import { FormatCompositeProps, FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps } from "../core-quantity";
 
 describe("Ratio format tests", () => {
   const vHUnitName = "Units.VERTICAL_PER_HORIZONTAL";
@@ -36,6 +36,7 @@ describe("Ratio format tests", () => {
       ratioType,
       precision: defaultPrecision,
       composite: {
+        spacer: "",
         includeZero: true,
         units: [
           { name: presentationUnitStr }, // presentation unit
@@ -275,6 +276,7 @@ describe("Ratio format tests", () => {
       expect(ratioFormat.units![0][0].name).to.equal("Units.M");
       expect(ratioFormat.units![1][0].name).to.equal("Units.M");
     });
+
   });
 
   describe("RatioType Tests with special values", () => {
@@ -346,32 +348,32 @@ describe("Ratio format tests", () => {
       // When persistence unit is IN_PER_FT_LENGTH_RATIO, magnitude is already in inches per foot
       const testCases = [
         // Architectural scales (magnitude in in/ft)
-        { magnitude: 12, expected: "12\"=1'" },     // Full scale (12 in/ft = 1:1)
-        { magnitude: 6, expected: "6\"=1'" },       // Half scale
-        { magnitude: 4, expected: "4\"=1'" },       // 1/3 scale
-        { magnitude: 3, expected: "3\"=1'" },       // Quarter scale
-        { magnitude: 2, expected: "2\"=1'" },       // 1/6 scale
-        { magnitude: 1.5, expected: "1.5\"=1'" },   // 1/8 scale
-        { magnitude: 1, expected: "1\"=1'" },       // 1/12 scale (1"=1')
-        { magnitude: 0.75, expected: "0.75\"=1'" }, // 1/16 scale (3/4"=1')
-        { magnitude: 0.5, expected: "0.5\"=1'" },   // 1/24 scale (1/2"=1')
-        { magnitude: 0.375, expected: "0.375\"=1'" }, // 1/32 scale (3/8"=1')
-        { magnitude: 0.25, expected: "0.25\"=1'" }, // 1/48 scale (1/4"=1')
-        { magnitude: 0.125, expected: "0.125\"=1'" }, // 1/96 scale (1/8"=1')
+        { magnitude: 12, expected: "12\" = 1'" },     // Full scale (12 in/ft = 1:1)
+        { magnitude: 6, expected: "6\" = 1'" },       // Half scale
+        { magnitude: 4, expected: "4\" = 1'" },       // 1/3 scale
+        { magnitude: 3, expected: "3\" = 1'" },       // Quarter scale
+        { magnitude: 2, expected: "2\" = 1'" },       // 1/6 scale
+        { magnitude: 1.5, expected: "1.5\" = 1'" },   // 1/8 scale
+        { magnitude: 1, expected: "1\" = 1'" },       // 1/12 scale (1" = 1')
+        { magnitude: 0.75, expected: "0.75\" = 1'" }, // 1/16 scale (3/4" = 1')
+        { magnitude: 0.5, expected: "0.5\" = 1'" },   // 1/24 scale (1/2" = 1')
+        { magnitude: 0.375, expected: "0.375\" = 1'" }, // 1/32 scale (3/8" = 1')
+        { magnitude: 0.25, expected: "0.25\" = 1'" }, // 1/48 scale (1/4" = 1')
+        { magnitude: 0.125, expected: "0.125\" = 1'" }, // 1/96 scale (1/8" = 1')
         // Engineering scales
-        { magnitude: 1.2, expected: "1.2\"=1'" },   // 1/10 scale
-        { magnitude: 0.6, expected: "0.6\"=1'" },   // 1/20 scale
-        { magnitude: 0.4, expected: "0.4\"=1'" },   // 1/30 scale
-        { magnitude: 0.3, expected: "0.3\"=1'" },   // 1/40 scale
-        { magnitude: 0.24, expected: "0.24\"=1'" }, // 1/50 scale
-        { magnitude: 0.2, expected: "0.2\"=1'" },   // 1/60 scale
-        { magnitude: 0.12, expected: "0.12\"=1'" }, // 1/100 scale
+        { magnitude: 1.2, expected: "1.2\" = 1'" },   // 1/10 scale
+        { magnitude: 0.6, expected: "0.6\" = 1'" },   // 1/20 scale
+        { magnitude: 0.4, expected: "0.4\" = 1'" },   // 1/30 scale
+        { magnitude: 0.3, expected: "0.3\" = 1'" },   // 1/40 scale
+        { magnitude: 0.24, expected: "0.24\" = 1'" }, // 1/50 scale
+        { magnitude: 0.2, expected: "0.2\" = 1'" },   // 1/60 scale
+        { magnitude: 0.12, expected: "0.12\" = 1'" }, // 1/100 scale
         // Civil/site scales
-        { magnitude: 0.1, expected: "0.1\"=1'" },   // 1/120 scale
-        { magnitude: 0.05, expected: "0.05\"=1'" }, // 1/240 scale
-        { magnitude: 0.025, expected: "0.025\"=1'" }, // 1/480 scale
-        { magnitude: 0.02, expected: "0.02\"=1'" }, // 1/600 scale
-        { magnitude: 0.01, expected: "0.01\"=1'" }, // 1/1200 scale
+        { magnitude: 0.1, expected: "0.1\" = 1'" },   // 1/120 scale
+        { magnitude: 0.05, expected: "0.05\" = 1'" }, // 1/240 scale
+        { magnitude: 0.025, expected: "0.025\" = 1'" }, // 1/480 scale
+        { magnitude: 0.02, expected: "0.02\" = 1'" }, // 1/600 scale
+        { magnitude: 0.01, expected: "0.01\" = 1'" }, // 1/1200 scale
       ];
 
       await testImperialScales(testCases, formatProps);
@@ -392,20 +394,20 @@ describe("Ratio format tests", () => {
 
       // When persistence unit is IN_PER_FT_LENGTH_RATIO, magnitude is already in inches per foot
       const testCases = [
-        { magnitude: 12, expected: "12\"=1'" },      // Full scale
-        { magnitude: 6, expected: "6\"=1'" },        // Half scale
-        { magnitude: 4, expected: "4\"=1'" },        // 1/3 scale
-        { magnitude: 3, expected: "3\"=1'" },        // Quarter scale
-        { magnitude: 2, expected: "2\"=1'" },        // 1/6 scale
-        { magnitude: 1.5, expected: "1 1/2\"=1'" },  // 1/8 scale
-        { magnitude: 1, expected: "1\"=1'" },        // 1/12 scale
-        { magnitude: 0.75, expected: "3/4\"=1'" },   // 1/16 scale
-        { magnitude: 0.5, expected: "1/2\"=1'" },    // 1/24 scale
-        { magnitude: 0.375, expected: "3/8\"=1'" },  // 1/32 scale
-        { magnitude: 0.25, expected: "1/4\"=1'" },   // 1/48 scale
-        { magnitude: 0.125, expected: "1/8\"=1'" },  // 1/96 scale
-        { magnitude: 0.0625, expected: "1/16\"=1'" }, // 1/192 scale
-        { magnitude: 1.2, expected: "1 3/16\"=1'" }, // 1/10 scale
+        { magnitude: 12, expected: "12\" = 1'" },      // Full scale
+        { magnitude: 6, expected: "6\" = 1'" },        // Half scale
+        { magnitude: 4, expected: "4\" = 1'" },        // 1/3 scale
+        { magnitude: 3, expected: "3\" = 1'" },        // Quarter scale
+        { magnitude: 2, expected: "2\" = 1'" },        // 1/6 scale
+        { magnitude: 1.5, expected: "1 1/2\" = 1'" },  // 1/8 scale
+        { magnitude: 1, expected: "1\" = 1'" },        // 1/12 scale
+        { magnitude: 0.75, expected: "3/4\" = 1'" },   // 1/16 scale
+        { magnitude: 0.5, expected: "1/2\" = 1'" },    // 1/24 scale
+        { magnitude: 0.375, expected: "3/8\" = 1'" },  // 1/32 scale
+        { magnitude: 0.25, expected: "1/4\" = 1'" },   // 1/48 scale
+        { magnitude: 0.125, expected: "1/8\" = 1'" },  // 1/96 scale
+        { magnitude: 0.0625, expected: "1/16\" = 1'" }, // 1/192 scale
+        { magnitude: 1.2, expected: "1 3/16\" = 1'" }, // 1/10 scale
       ];
 
       await testImperialScales(testCases, formatProps);
@@ -427,15 +429,15 @@ describe("Ratio format tests", () => {
       // When persistence unit is M_PER_M_LENGTH_RATIO, magnitude is dimensionless (m/m)
       // Conversion: 1 m/m = 12 in/ft (since 1 ft = 12 in)
       const testCases = [
-        { magnitude: 1, expected: "12\"=1'" },           // Full scale (1:1)
-        { magnitude: 0.5, expected: "6\"=1'" },          // Half scale (1:2)
-        { magnitude: 0.3333333, expected: "4\"=1'" },    // 1/3 scale (1:3)
-        { magnitude: 0.25, expected: "3\"=1'" },         // Quarter scale (1:4)
-        { magnitude: 0.125, expected: "1 1/2\"=1'" },    // 1/8 scale
-        { magnitude: 0.083333333, expected: "1\"=1'" },  // 1/12 scale
-        { magnitude: 0.0625, expected: "3/4\"=1'" },     // 1/16 scale
-        { magnitude: 0.041666667, expected: "1/2\"=1'" },// 1/24 scale
-        { magnitude: 0.03125, expected: "3/8\"=1'" },    // 1/32 scale
+        { magnitude: 1, expected: "12\" = 1'" },           // Full scale (1:1)
+        { magnitude: 0.5, expected: "6\" = 1'" },          // Half scale (1:2)
+        { magnitude: 0.3333333, expected: "4\" = 1'" },    // 1/3 scale (1:3)
+        { magnitude: 0.25, expected: "3\" = 1'" },         // Quarter scale (1:4)
+        { magnitude: 0.125, expected: "1 1/2\" = 1'" },    // 1/8 scale
+        { magnitude: 0.083333333, expected: "1\" = 1'" },  // 1/12 scale
+        { magnitude: 0.0625, expected: "3/4\" = 1'" },     // 1/16 scale
+        { magnitude: 0.041666667, expected: "1/2\" = 1'" },// 1/24 scale
+        { magnitude: 0.03125, expected: "3/8\" = 1'" },    // 1/32 scale
       ];
 
       const { formatterSpec } = await createFormatAndSpecs("ImperialScaleMetric", formatProps, "Units.M_PER_M_LENGTH_RATIO");
@@ -451,6 +453,7 @@ describe("Ratio format tests", () => {
         precision: 1,
         formatTraits: ["trailZeroes"],
         composite: {
+          spacer: "",
           includeZero: true,
           units: [{ name: "Units.M_PER_M_LENGTH_RATIO" }],
         },
@@ -513,24 +516,24 @@ describe("Ratio format tests", () => {
       const formatterSpec = await FormatterSpec.create("ImperialScaleParse", ratioFormat, unitsProvider, persistenceUnit);
       const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
 
-      // Test formatting with custom separator (magnitude 1 in/ft formats as 1"=1')
+      // Test formatting with custom separator (magnitude 1 in/ft formats as 1" = 1')
       const formatted = Formatter.formatQuantity(1, formatterSpec);
-      expect(formatted).to.equal("1\"=1'");
+      expect(formatted).to.equal("1\" = 1'");
 
       // Test parsing with custom separator (results in in/ft)
-      const parseResult1 = Parser.parseQuantityString("12\"=1'", parserSpec);
+      const parseResult1 = Parser.parseQuantityString("12\" = 1'", parserSpec);
       expect(Parser.isParsedQuantity(parseResult1)).to.be.true;
       if (Parser.isParsedQuantity(parseResult1)) {
         expect(parseResult1.value).to.be.closeTo(12, 0.0001);
       }
 
-      const parseResult2 = Parser.parseQuantityString("6\"=1'", parserSpec);
+      const parseResult2 = Parser.parseQuantityString("6\" = 1'", parserSpec);
       expect(Parser.isParsedQuantity(parseResult2)).to.be.true;
       if (Parser.isParsedQuantity(parseResult2)) {
         expect(parseResult2.value).to.be.closeTo(6, 0.0001);
       }
 
-      const parseResult3 = Parser.parseQuantityString("1\"=1'", parserSpec);
+      const parseResult3 = Parser.parseQuantityString("1\" = 1'", parserSpec);
       expect(Parser.isParsedQuantity(parseResult3)).to.be.true;
       if (Parser.isParsedQuantity(parseResult3)) {
         expect(parseResult3.value).to.be.closeTo(1, 0.0001);
@@ -552,6 +555,7 @@ describe("Ratio format tests", () => {
         type: "Ratio",
         ratioType: "NToOne",
         composite: {
+          spacer: "",
           includeZero: true,
           units: [{ name: presentationUnitStr }],
         },
@@ -650,6 +654,7 @@ describe("Ratio format tests", () => {
         ratioType: "OneToN",
         precision: 0,
         composite: {
+          spacer: "",
           includeZero: true,
           units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }],
         },
@@ -660,6 +665,7 @@ describe("Ratio format tests", () => {
         ratioType: "NToOne",
         precision: 0,
         composite: {
+          spacer: "",
           includeZero: true,
           units: [{ name: "Units.HORIZONTAL_PER_VERTICAL" }],
         },
@@ -769,8 +775,8 @@ describe("Ratio format tests", () => {
 
       // Test roundtrip for architectural scales (magnitude in in/ft)
       const testCases = [
-        { magnitude: 1.5, formatted: "1 1/2\"=1'" },  // Fractional with whole number
-        { magnitude: 0.375, formatted: "3/8\"=1'" },  // Pure fraction
+        { magnitude: 1.5, formatted: "1 1/2\" = 1'" },  // Fractional with whole number
+        { magnitude: 0.375, formatted: "3/8\" = 1'" },  // Pure fraction
       ];
 
       for (const testCase of testCases) {
@@ -813,13 +819,13 @@ describe("Ratio format tests", () => {
 
         // Test parsing common architectural scales with unit labels (results in in/ft)
         const testCases = [
-          { input: "12\"=1'", expected: 12 },
-          { input: "6\"=1'", expected: 6 },
-          { input: "3\"=1'", expected: 3 },
-          { input: "1.5\"=1'", expected: 1.5 },
-          { input: "1\"=1'", expected: 1 },
-          { input: "0.5\"=1'", expected: 0.5 },
-          { input: "0.25\"=1'", expected: 0.25 },
+          { input: "12\" = 1'", expected: 12 },
+          { input: "6\" = 1'", expected: 6 },
+          { input: "3\" = 1'", expected: 3 },
+          { input: "1.5\" = 1'", expected: 1.5 },
+          { input: "1\" = 1'", expected: 1 },
+          { input: "0.5\" = 1'", expected: 0.5 },
+          { input: "0.25\" = 1'", expected: 0.25 },
         ];
 
         for (const testCase of testCases) {
@@ -853,19 +859,19 @@ describe("Ratio format tests", () => {
 
         // Test parsing common architectural scales with fractional notation (results in in/ft)
         const testCases = [
-          { input: "12\"=1'", expected: 12 },
-          { input: "6\"=1'", expected: 6 },
-          { input: "4\"=1'", expected: 4 },
-          { input: "3\"=1'", expected: 3 },
-          { input: "2\"=1'", expected: 2 },
-          { input: "1 1/2\"=1'", expected: 1.5 },
-          { input: "1\"=1'", expected: 1 },
-          { input: "3/4\"=1'", expected: 0.75 },
-          { input: "1/2\"=1'", expected: 0.5 },
-          { input: "3/8\"=1'", expected: 0.375 },
-          { input: "1/4\"=1'", expected: 0.25 },
-          { input: "1/8\"=1'", expected: 0.125 },
-          { input: "1/16\"=1'", expected: 0.0625 },
+          { input: "12\" = 1'", expected: 12 },
+          { input: "6\" = 1'", expected: 6 },
+          { input: "4\" = 1'", expected: 4 },
+          { input: "3\" = 1'", expected: 3 },
+          { input: "2\" = 1'", expected: 2 },
+          { input: "1 1/2\" = 1'", expected: 1.5 },
+          { input: "1\" = 1'", expected: 1 },
+          { input: "3/4\" = 1'", expected: 0.75 },
+          { input: "1/2\" = 1'", expected: 0.5 },
+          { input: "3/8\" = 1'", expected: 0.375 },
+          { input: "1/4\" = 1'", expected: 0.25 },
+          { input: "1/8\" = 1'", expected: 0.125 },
+          { input: "1/16\" = 1'", expected: 0.0625 },
         ];
 
         for (const testCase of testCases) {
@@ -898,14 +904,14 @@ describe("Ratio format tests", () => {
 
         // Test parsing common engineering scales (results in in/ft)
         const testCases = [
-          { input: "1.2\"=1'", expected: 1.2 },
-          { input: "1\"=1'", expected: 1 },
-          { input: "0.6\"=1'", expected: 0.6 },
-          { input: "0.4\"=1'", expected: 0.4 },
-          { input: "0.3\"=1'", expected: 0.3 },
-          { input: "0.24\"=1'", expected: 0.24 },
-          { input: "0.2\"=1'", expected: 0.2 },
-          { input: "0.12\"=1'", expected: 0.12 },
+          { input: "1.2\" = 1'", expected: 1.2 },
+          { input: "1\" = 1'", expected: 1 },
+          { input: "0.6\" = 1'", expected: 0.6 },
+          { input: "0.4\" = 1'", expected: 0.4 },
+          { input: "0.3\" = 1'", expected: 0.3 },
+          { input: "0.24\" = 1'", expected: 0.24 },
+          { input: "0.2\" = 1'", expected: 0.2 },
+          { input: "0.12\" = 1'", expected: 0.12 },
         ];
 
         for (const testCase of testCases) {
@@ -925,6 +931,7 @@ describe("Ratio format tests", () => {
           precision: 2,
           formatTraits: ["showUnitLabel"],
           composite: {
+            spacer: "",
             units: [{ name: "Units.IN" }, { name: "Units.FT" }],
           },
         };
@@ -968,6 +975,7 @@ describe("Ratio format tests", () => {
           precision: 1,
           formatTraits: ["trailZeroes"],
           composite: {
+            spacer: "",
             includeZero: true,
             units: [{ name: "Units.M_PER_M_LENGTH_RATIO" }],
           },
@@ -1012,6 +1020,7 @@ describe("Ratio format tests", () => {
           ratioType: "NToOne",
           precision: 2,
           composite: {
+            spacer: "",
             includeZero: true,
             units: [{ name: "Units.M_PER_M_LENGTH_RATIO" }],
           },
@@ -1048,6 +1057,7 @@ describe("Ratio format tests", () => {
           ratioType: "NToOne",
           precision: 1,
           composite: {
+            spacer: "",
             includeZero: true,
             units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }],
           },
@@ -1102,11 +1112,11 @@ describe("Ratio format tests", () => {
         const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
 
         // These should parse correctly
-        const result1 = Parser.parseQuantityString("1\"=1'", parserSpec);
+        const result1 = Parser.parseQuantityString("1\" = 1'", parserSpec);
         if (!Parser.isParsedQuantity(result1)) {
-          assert.fail("Failed to parse 1\"=1'");
+          assert.fail("Failed to parse 1\" = 1'");
         }
-        // 1"=1' is 1 in/ft, persistence unit is IN_PER_FT so value is 1.0
+        // 1" = 1' is 1 in/ft, persistence unit is IN_PER_FT so value is 1.0
         expect(result1.value).to.be.closeTo(1.0, 0.0001);
       });
 
@@ -1130,8 +1140,7 @@ describe("Ratio format tests", () => {
         const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
 
         // Test with various whitespace configurations
-        // 1"=1' is 1 in/ft, persistence unit is IN_PER_FT so value is 1.0
-        const testCases = ["1\"=1'", " 1\" = 1' ", "1 \" = 1 '"];
+        const testCases = ["1\" = 1'", "1\"=1'", " 1\" = 1' ", " 1\"=1' ", "1 \" = 1 '", "1 \"=1 '"];
 
         for (const input of testCases) {
           const result = Parser.parseQuantityString(input, parserSpec);
@@ -1163,18 +1172,18 @@ describe("Ratio format tests", () => {
 
         // Input has wrong labels (m/ft instead of "/'), but parser ignores them
         // and uses the format's defined unit conversion (composite units: IN and FT)
-        const result1 = Parser.parseQuantityString("12m=1ft", parserSpec);
+        const result1 = Parser.parseQuantityString("12m = 1ft", parserSpec);
         if (!Parser.isParsedQuantity(result1)) {
-          assert.fail("Failed to parse 12m=1ft");
+          assert.fail("Failed to parse 12m = 1ft");
         }
-        // Even though input says "12m=1ft", it's interpreted as 12:1 in the IN_PER_FT ratio
+        // Even though input says "12m = 1ft", it's interpreted as 12:1 in the IN_PER_FT ratio
         // which equals 12.0 in IN_PER_FT_LENGTH_RATIO
         expect(result1.value).to.be.closeTo(12.0, 0.0001);
 
         // Input with completely unrecognized labels
-        const result2 = Parser.parseQuantityString("6xyz=1abc", parserSpec);
+        const result2 = Parser.parseQuantityString("6xyz = 1abc", parserSpec);
         if (!Parser.isParsedQuantity(result2)) {
-          assert.fail("Failed to parse 6xyz=1abc");
+          assert.fail("Failed to parse 6xyz = 1abc");
         }
         // Labels are ignored, numeric values 6:1 in IN_PER_FT ratio = 6.0 in IN_PER_FT_LENGTH_RATIO
         expect(result2.value).to.be.closeTo(6.0, 0.0001);
@@ -1200,12 +1209,12 @@ describe("Ratio format tests", () => {
         const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
 
         // Test with alternate labels that should be in parseLabels
-        // Values are in IN_PER_FT_LENGTH_RATIO so 12"=1' = 12.0, 6"=1' = 6.0, 1"=1' = 1.0
+        // Values are in IN_PER_FT_LENGTH_RATIO so 12" = 1' = 12.0, 6" = 1' = 6.0, 1" = 1' = 1.0
         const testCases = [
-          { input: "12IN=1FT", expected: 12.0 }, // using alternate labels
-          { input: "12\"=1'", expected: 12.0 }, // using custom labels
-          { input: "6IN=1F", expected: 6.0 }, // mixing alternate labels
-          { input: '1"=1FT', expected: 1.0 }, // mixing custom and alternate
+          { input: "12IN = 1FT", expected: 12.0 }, // using alternate labels
+          { input: "12\" = 1'", expected: 12.0 }, // using custom labels
+          { input: "6IN = 1F", expected: 6.0 }, // mixing alternate labels
+          { input: '1" = 1FT', expected: 1.0 }, // mixing custom and alternate
         ];
 
         for (const testCase of testCases) {
@@ -1294,17 +1303,176 @@ describe("Ratio format tests", () => {
         const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
 
         // Test formatting - should use custom \" for inches and default ft for feet
-        // 12.0 in IN_PER_FT_LENGTH_RATIO = 12"=1ft (full scale)
-        expect(Formatter.formatQuantity(12.0, formatterSpec)).to.equal('12"=1ft');
-        expect(Formatter.formatQuantity(1.0, formatterSpec)).to.equal('1"=1ft');
+        // 12.0 in IN_PER_FT_LENGTH_RATIO = 12" = 1ft (full scale)
+        expect(Formatter.formatQuantity(12.0, formatterSpec)).to.equal('12" = 1ft');
+        expect(Formatter.formatQuantity(1.0, formatterSpec)).to.equal('1" = 1ft');
 
         // Test parsing with mixed labels
-        const result = Parser.parseQuantityString('12"=1ft', parserSpec);
+        const result = Parser.parseQuantityString('12" = 1ft', parserSpec);
         if (!Parser.isParsedQuantity(result)) {
-          assert.fail('Failed to parse 12"=1ft');
+          assert.fail('Failed to parse 12" = 1ft');
         }
         expect(result.value).to.be.closeTo(12.0, 0.0001);
       });
     });
+  });
+
+  describe("Spacer around ratio separator", () => {
+    interface SpacerTestData {
+      magnitude: number;
+      formatted: string;
+      parseInputs?: string[];
+      parseErrors?: string[];
+    }
+
+    async function testSpacerConfig(ratioType: string, ratioSeparator: string, spacer: string | undefined, testData: SpacerTestData[]) {
+      const composite: FormatCompositeProps = { includeZero: true, units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }], ...(spacer !== undefined && { spacer }) };
+      const formatProps: FormatProps = { type: "Ratio", ratioType, ratioSeparator, precision: 1, composite };
+      const { formatterSpec, parserSpec } = await createFormatAndSpecs(`${ratioType}_${ratioSeparator}_${spacer}`, formatProps, "Units.VERTICAL_PER_HORIZONTAL");
+
+      for (const entry of testData) {
+        const result = Formatter.formatQuantity(entry.magnitude, formatterSpec);
+        expect(result, `format ${entry.magnitude}`).to.equal(entry.formatted);
+
+        const parsed = Parser.parseQuantityString(entry.formatted, parserSpec);
+        if (!Parser.isParsedQuantity(parsed))
+          assert.fail(`Roundtrip failed for '${entry.formatted}'`);
+        expect(parsed.value, `roundtrip '${entry.formatted}'`).to.be.closeTo(entry.magnitude, 0.0001);
+
+        for (const input of entry.parseInputs ?? []) {
+          const r = Parser.parseQuantityString(input, parserSpec);
+          if (!Parser.isParsedQuantity(r))
+            assert.fail(`Expected '${input}' to parse`);
+          expect(r.value, `parse '${input}'`).to.be.closeTo(entry.magnitude, 0.0001);
+        }
+
+        for (const input of entry.parseErrors ?? []) {
+          const r = Parser.parseQuantityString(input, parserSpec);
+          expect(Parser.isParseError(r), `expected '${input}' to fail`).to.be.true;
+        }
+      }
+    }
+
+    it("OneToN ':' spacer omitted", async () => {
+      await testSpacerConfig("OneToN", ":", undefined, [
+        { magnitude: 0.5, formatted: "1 : 2" },
+        { magnitude: 1.0, formatted: "1 : 1" },
+        { magnitude: 2.0, formatted: "1 : 0.5" },
+      ]);
+    });
+
+    it("OneToN ':' spacer ' '", async () => {
+      await testSpacerConfig("OneToN", ":", " ", [
+        { magnitude: 0.5, formatted: "1 : 2", parseInputs: ["1:2"], parseErrors: ["1:2:3", "1 : 2:3"] },
+        { magnitude: 1.0, formatted: "1 : 1" },
+        { magnitude: 2.0, formatted: "1 : 0.5" },
+      ]);
+    });
+
+    it("OneToN ':' spacer ''", async () => {
+      await testSpacerConfig("OneToN", ":", "", [
+        { magnitude: 0.5, formatted: "1:2", parseInputs: ["1 : 2"], parseErrors: ["1:2:3"] },
+        { magnitude: 1.0, formatted: "1:1" },
+        { magnitude: 2.0, formatted: "1:0.5" },
+      ]);
+    });
+
+    it("OneToN '=' spacer ' '", async () => {
+      await testSpacerConfig("OneToN", "=", " ", [
+        { magnitude: 0.5, formatted: "1 = 2" },
+        { magnitude: 1.0, formatted: "1 = 1" },
+      ]);
+    });
+
+    it("OneToN '=' spacer ''", async () => {
+      await testSpacerConfig("OneToN", "=", "", [
+        { magnitude: 0.5, formatted: "1=2" },
+        { magnitude: 1.0, formatted: "1=1" },
+      ]);
+    });
+
+    it("NToOne ':' spacer ' '", async () => {
+      await testSpacerConfig("NToOne", ":", " ", [
+        { magnitude: 2.0, formatted: "2 : 1" },
+        { magnitude: 0.5, formatted: "0.5 : 1" },
+        { magnitude: 1.0, formatted: "1 : 1" },
+      ]);
+    });
+
+    it("NToOne ':' spacer ''", async () => {
+      await testSpacerConfig("NToOne", ":", "", [
+        { magnitude: 2.0, formatted: "2:1" },
+        { magnitude: 0.5, formatted: "0.5:1" },
+        { magnitude: 1.0, formatted: "1:1" },
+      ]);
+    });
+
+    it("NToOne '=' spacer ' '", async () => {
+      await testSpacerConfig("NToOne", "=", " ", [
+        { magnitude: 2.0, formatted: "2 = 1" },
+        { magnitude: 0.5, formatted: "0.5 = 1" },
+        { magnitude: 1.0, formatted: "1 = 1" },
+      ]);
+    });
+
+    it("NToOne '=' spacer ''", async () => {
+      await testSpacerConfig("NToOne", "=", "", [
+        { magnitude: 2.0, formatted: "2=1" },
+        { magnitude: 0.5, formatted: "0.5=1" },
+        { magnitude: 1.0, formatted: "1=1" },
+      ]);
+    });
+
+    it("fractional imperial with spacer roundtrips", async () => {
+      const formatProps: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        ratioFormatType: "Fractional",
+        precision: 16,
+        formatTraits: ["showUnitLabel"],
+        composite: {
+          units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+        },
+      };
+      const { formatterSpec, parserSpec } = await createFormatAndSpecs("FractionalSpacer", formatProps, "Units.IN_PER_FT_LENGTH_RATIO");
+
+      const testCases = [
+        { magnitude: 0.375, formatted: "3/8\" = 1'" },
+        { magnitude: 1.5, formatted: "1 1/2\" = 1'" },
+        { magnitude: 12, formatted: "12\" = 1'" },
+      ];
+      for (const { magnitude, formatted } of testCases) {
+        expect(Formatter.formatQuantity(magnitude, formatterSpec), `format ${magnitude}`).to.equal(formatted);
+        const parsed = Parser.parseQuantityString(formatted, parserSpec);
+        if (!Parser.isParsedQuantity(parsed))
+          assert.fail(`Roundtrip failed for '${formatted}'`);
+        expect(parsed.value, `roundtrip '${formatted}'`).to.be.closeTo(magnitude, 0.0001);
+      }
+    });
+
+    it("InvertingZero uses spacer around separator", async () => {
+      // Zero with inverted persistence/presentation units triggers the InvertingZero path
+      const formatProps: FormatProps = {
+        type: "Ratio", ratioType: "NToOne", ratioSeparator: "=", precision: 1,
+        composite: { includeZero: true, units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }] },
+      };
+      const { formatterSpec } = await createFormatAndSpecs("InvertingZeroSpacer", formatProps, "Units.HORIZONTAL_PER_VERTICAL");
+      expect(Formatter.formatQuantity(0, formatterSpec)).to.equal("1 = 0");
+    });
+
+    it("parser accepts leading and trailing whitespace", async () => {
+      const formatProps: FormatProps = { type: "Ratio", ratioType: "OneToN", ratioSeparator: ":", precision: 1, composite: { spacer: "", includeZero: true, units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }] } };
+      const { parserSpec } = await createFormatAndSpecs("WhitespaceParse", formatProps, "Units.VERTICAL_PER_HORIZONTAL");
+
+      const inputs = [" 1:2", "1:2 ", " 1:2 ", " 1 : 2 "];
+      for (const input of inputs) {
+        const result = Parser.parseQuantityString(input, parserSpec);
+        if (!Parser.isParsedQuantity(result))
+          assert.fail(`Expected '${input}' to parse`);
+        expect(result.value, `parse '${input}'`).to.be.closeTo(0.5, 0.0001);
+      }
+    });
+
   });
 });

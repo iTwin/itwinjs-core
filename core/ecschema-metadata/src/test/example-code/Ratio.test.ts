@@ -34,6 +34,7 @@ describe("Ratio formatting examples", () => {
       precision: 1,
       formatTraits: ["trailZeroes"],
       composite: {
+        spacer: "",
         units: [
           { name: "Units.M" },
           { name: "Units.M" },
@@ -105,16 +106,16 @@ describe("Ratio formatting examples", () => {
     const spec = await FormatterSpec.create("ImperialScale", format, unitsProvider, persistenceUnit);
 
     // apply the formatting held in FormatterSpec
-    const formattedScale1 = spec.applyFormatting(scaleQuarterInch); // "1/4"=1'"
-    const formattedScale2 = spec.applyFormatting(scaleThreeQuarterInch); // "3/4"=1'"
-    const formattedScale3 = spec.applyFormatting(scaleOneAndHalfInch); // "1 1/2"=1'"
-    const formattedScale4 = spec.applyFormatting(scaleThreeInch); // "3"=1'"
+    const formattedScale1 = spec.applyFormatting(scaleQuarterInch); // "1/4" = 1'"
+    const formattedScale2 = spec.applyFormatting(scaleThreeQuarterInch); // "3/4" = 1'"
+    const formattedScale3 = spec.applyFormatting(scaleOneAndHalfInch); // "1 1/2" = 1'"
+    const formattedScale4 = spec.applyFormatting(scaleThreeInch); // "3" = 1'"
     // __PUBLISH_EXTRACT_END__
 
-    expect(formattedScale1).toBe("1/4\"=1'");
-    expect(formattedScale2).toBe("3/4\"=1'");
-    expect(formattedScale3).toBe("1 1/2\"=1'");
-    expect(formattedScale4).toBe("3\"=1'");
+    expect(formattedScale1).toBe("1/4\" = 1'");
+    expect(formattedScale2).toBe("3/4\" = 1'");
+    expect(formattedScale3).toBe("1 1/2\" = 1'");
+    expect(formattedScale4).toBe("3\" = 1'");
   });
 
   it("Metric Scale Ratio Parsing", async () => {
@@ -127,6 +128,7 @@ describe("Ratio formatting examples", () => {
       precision: 1,
       formatTraits: ["trailZeroes"],
       composite: {
+        spacer: "",
         units: [
           { name: "Units.M" },
           { name: "Units.M" },
@@ -183,10 +185,10 @@ describe("Ratio formatting examples", () => {
     const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
 
     // parse various imperial scale notations with fractional values
-    const parsedQuarterInch = parserSpec.parseToQuantityValue("1/4\"=1'");
-    const parsedThreeQuarterInch = parserSpec.parseToQuantityValue("3/4\"=1'");
-    const parsedOneAndHalfInch = parserSpec.parseToQuantityValue("1 1/2\"=1'");
-    const parsedThreeInch = parserSpec.parseToQuantityValue("3\"=1'");
+    const parsedQuarterInch = parserSpec.parseToQuantityValue("1/4\" = 1'");
+    const parsedThreeQuarterInch = parserSpec.parseToQuantityValue("3/4\" = 1'");
+    const parsedOneAndHalfInch = parserSpec.parseToQuantityValue("1 1/2\" = 1'");
+    const parsedThreeInch = parserSpec.parseToQuantityValue("3\" = 1'");
     // results: 0.25, 0.75, 1.5, 3.0 (in inches per foot ratio)
     // __PUBLISH_EXTRACT_END__
 
@@ -228,7 +230,7 @@ describe("Ratio formatting examples", () => {
     // Test formatting - value 12.0 in/ft means full scale (12 inches = 1 foot)
     const persistenceUnitImperial = await unitsProvider.findUnitByName("RatioUnits.IN_PER_FT_LENGTH_RATIO");
     const specImperial = await FormatterSpec.create("ImperialScale", formatImperial, unitsProvider, persistenceUnitImperial);
-    expect(Formatter.formatQuantity(12.0, specImperial)).toBe("12\"=1'");
+    expect(Formatter.formatQuantity(12.0, specImperial)).toBe("12\" = 1'");
 
     // __PUBLISH_EXTRACT_END__
   });
