@@ -35,6 +35,11 @@
       }
     }
   },
+  "minimumReleaseAgeMinutes": 1440,
+  "minimumReleaseAgeExclude": [
+    "@bentley/*",
+    "@itwin/*"
+  ],
   "globalOnlyBuiltDependencies": [
     "@bentley/imodeljs-native",
     "@itwin/oidc-signin-tool",
