@@ -45,21 +45,9 @@ This section discusses data types that warrant special consideration before deci
 
 An infrastructure model may use standard components from a catalog.
 Once a component is placed, its type definition belongs in the iModel.
-In general, also persist the type definitions for components that are likely to be placed during the project.
+In general, also persist the type definitions for components that are likely to be placed during the project, but for a large catalog, import only the definitions that are relevant to the iModel.
 
-This has the following benefits:
-
-- Changes to definitions are tracked with the infrastructure model.
-- Other elements can form relationships to the definitions.
-- The component's type remains unambiguous.
-- The definitions remain available offline.
-- Applications can handle components consistently, whether or not they came from a catalog.
-
-For a large catalog, import only the definitions that are relevant to the iModel.
-
-> Note: Applications should give these component type definitions a provenance link to the original catalog if they need to check for catalog updates.
-
-> See [Catalogs in the BIS Guide](../../bis/guide/data-organization/catalogs.md) for how cached catalog definitions are organized in an iModel and the recommended provenance mapping, and [Catalogs](./Catalogs.md) for the backend APIs. `CatalogDb` does not copy or synchronize definitions; the application must create and maintain provenance links.
+> See [Catalogs in the BIS Guide](../../bis/guide/data-organization/catalogs.md) for why definitions are copied into the iModel, how cached catalog definitions are organized, and the recommended provenance mapping, and [Catalogs](./Catalogs.md) for the backend APIs. `CatalogDb` does not copy or synchronize definitions; the application must create and maintain provenance links.
 
 ### Standard Definitions
 

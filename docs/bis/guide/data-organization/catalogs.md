@@ -4,13 +4,32 @@ A **catalog** is a repository of reusable definitions (component types, template
 
 This page describes how catalog-sourced definitions are organized inside an iModel and how their provenance is recorded. It does not cover how a catalog authority hosts, stores, or serves its catalogs; those are implementation choices of each authority. For the backend APIs that can open a catalog stored as an iModel, see [Catalogs in the backend documentation](../../../learning/backend/Catalogs.md).
 
+> The organization and provenance patterns on this page are the working conventions adopted by current catalog implementations. They are recommended for any catalog authority, but they are not (yet) formalized BIS standards and may evolve.
+
+## A running example
+
+Catalogs behave much like a package registry, and importing a component behaves much like installing a package:
+
+| Catalog concept | Package-manager equivalent |
+|-----------------|----------------------------|
+| Catalog authority | Package registry |
+| Published catalog version | Published package version (immutable) |
+| Component: entry-point definition plus its dependencies | Package plus its transitive dependencies |
+| Importing a component | Installing: resolve the dependency graph, copy the closure |
+| Shared dependencies cached once per iModel | Dependency deduplication |
+| Stable entry identifier vs. `FederationGuid` | Package name vs. exact resolved version |
+
+The sections below follow one example through that lifecycle. A catalog authority publishes a *Piping Catalog* containing pipe types. Version 1 of the catalog includes **PVC-300**, a 300&nbsp;mm PVC pipe type modeled as a `PhysicalType`. An application imports PVC-300 into a project iModel so that pipes of that type can be placed. Later, the authority corrects PVC-300's wall thickness and publishes version 2 of the catalog.
+
 ## Why copy definitions into an iModel
 
 The catalog authority remains the source of truth for its definitions. An iModel caches only the definitions that are used, or that the user intends to use, rather than entire catalogs. Copying a definition into the iModel:
 
 - makes the definition available offline,
 - tracks changes to the definition with the iModel's own change history,
-- allows other elements in the iModel to reference the definition, and
+- allows other elements in the iModel to reference the definition,
+- keeps the type of a placed instance unambiguous,
+- lets applications handle components consistently, whether or not they came from a catalog, and
 - preserves the meaning of placed instances even if the catalog later changes.
 
 See [Components from Catalogs](../../../learning/backend/IModelContents.md#components-from-catalogs) for guidance on which definitions belong in an iModel.
@@ -25,12 +44,44 @@ See [Components from Catalogs](../../../learning/backend/IModelContents.md#compo
 - `ElementAspect`s owned by any of those elements, and
 - the relationships among all of the above.
 
+In the running example, the PVC-300 component is more than its `PhysicalType` element:
+
+```mermaid
+graph TD
+    PT["PhysicalType<br/>PVC-300 (entry point)"]
+    SM["Sub-model of PVC-300"]
+    GEO["GeometricElement3d<br/>template geometry"]
+    CAT["SpatialCategory<br/>Pipes"]
+    MAT["PhysicalMaterial<br/>PVC"]
+    ASP["ElementAspect<br/>pressure rating"]
+    PT2["PhysicalType<br/>PVC-450 (another component)"]
+
+    PT -- "is sub-modeled by" --> SM
+    SM -- "contains" --> GEO
+    GEO -- "is in category" --> CAT
+    PT -- "references" --> MAT
+    PT -- "owns" --> ASP
+    PT2 -. "also references" .-> CAT
+    PT2 -. "also references" .-> MAT
+
+    classDef entry fill:#e7f1ff,stroke:#477db3,stroke-width:2px,color:#1f2937
+    classDef dep fill:#eef1f4,stroke:#6b7280,stroke-width:1px,color:#1f2937
+    classDef shared fill:#fdf3e0,stroke:#b98a2f,stroke-width:1px,color:#1f2937
+    classDef other fill:#f4f4f4,stroke:#8a8a8a,stroke-width:1px,color:#1f2937
+    class PT entry
+    class SM,GEO,ASP dep
+    class CAT,MAT shared
+    class PT2 other
+```
+
+Importing PVC-300 means copying every solid-arrow node above: the `PhysicalType`, its sub-model and template geometry, the *Pipes* category, the *PVC* material, and the aspect, together with the relationships among them. The amber nodes are dependencies that PVC-300 shares with other components such as PVC-450.
+
 There is currently no single BIS construct that identifies this bundle of elements as a unit. Discovering it requires traversing outward from the entry-point element: follow the `ModelModelsElement` relationship to its sub-model, the contained elements of that sub-model, navigation properties and relationships to referenced definitions, and owned aspects, recursively, until no new dependent elements are found.
 
 When copying a component:
 
 1. **Copy its dependencies, not just the entry-point element.** An application that imports a catalog entry must traverse and copy all of its dependencies. Copying only the entry-point element produces a broken definition.
-2. **Dependencies may be shared.** A single `Category` or `PhysicalMaterial` may be referenced by many components. Such shared dependencies belong to more than one component and must be copied only once into the destination iModel.
+2. **Dependencies may be shared.** A single `Category` or `PhysicalMaterial` may be referenced by many components. Such shared dependencies belong to more than one component and must be copied only once into the destination iModel: if PVC-300 was imported earlier, importing PVC-450 reuses the already-copied *Pipes* category and *PVC* material.
 
 ## Organization of cached definitions in an iModel
 
@@ -39,6 +90,8 @@ Definitions cached from a catalog authority are *Application-rank* standardized 
 - A well-known `DefinitionContainer`, with its `Rank` property set to `Application`, is created in the [DictionaryModel](../references/glossary.md#DictionaryModel) as the entry point for all definitions cached from a given catalog authority. Its `CodeValue` follows the `{organization name}:{application name}:Definitions` convention described in [Organizing Definition Elements](./organizing-definition-elements.md#dictionarymodel-for-global-scoped-definitions).
 - The sub-model of that `DefinitionContainer` contains the cached definitions.
 - A definition is cached **only once per iModel**, no matter how many catalogs or catalog versions include it.
+
+In the running example, the application creates (or finds) its well-known `DefinitionContainer` in the project iModel's `DictionaryModel` and copies PVC-300 and its dependencies into that container's sub-model. When PVC-450 is imported later, it lands in the same sub-model, reusing the shared category and material already there.
 
 Local `DefinitionElement`s that an application creates for its own purposes, without any association to a catalog, do not belong under this container. They are stored in `DefinitionModel`s within the application's [Channel](../../../learning/backend/Channel.md).
 
@@ -60,7 +113,55 @@ The recommended mapping is:
 - **Definition-version identity → [FederationGuid](../fundamentals/federationGuids.md).** The cached `DefinitionElement`'s `FederationGuid` holds the catalog authority's identifier for the *specific version* of the definition. When a changed catalog entry is cached, the new copy is a new `DefinitionElement` with a new `FederationGuid`, while its `Code` and its stable identifier in `ExternalSourceAspect.Identifier` may remain unchanged.
 - **Code scope.** The `RepositoryLink` representing the catalog version under which a definition was first cached serves as the `CodeScope` element for that cached `DefinitionElement`.
 
-> This mapping is the recommended approach for catalog authorities today. It is not (yet) a formalized BIS standard that all catalog authorities are required to follow.
+### The example, end to end
+
+Applying the mapping to the running example:
+
+1. The application imports PVC-300 from Piping Catalog version 1. It creates a `RepositoryLink` for *Piping Catalog v1*, copies the component into the well-known container's sub-model, sets the cached `PhysicalType`'s `FederationGuid` to the authority's identifier for *this version* of PVC-300, and attaches an `ExternalSourceAspect` with `Identifier` set to the authority's stable identifier for PVC-300 and `Scope` referencing the v1 `RepositoryLink`.
+2. The authority corrects PVC-300's wall thickness and publishes catalog version 2. Version 1 is unchanged; it remains valid and immutable.
+3. The application detects (by its own means; nothing in the iModel does this automatically) that catalog v2 contains a newer PVC-300 and imports it. The updated pipe type is a **new** `DefinitionElement` with a **new** `FederationGuid`, an `ExternalSourceAspect` with the **same** stable `Identifier`, and `Scope` referencing a new *Piping Catalog v2* `RepositoryLink`.
+4. The *PVC* material did not change between v1 and v2. It stays cached once, and gains a second `ExternalSourceAspect` scoped to the v2 `RepositoryLink`.
+
+```mermaid
+graph TD
+    subgraph DICT["DictionaryModel"]
+        DC["DefinitionContainer<br/>Rank = Application"]
+    end
+    subgraph CSM["Sub-model of the DefinitionContainer"]
+        D1["PhysicalType PVC-300<br/>FederationGuid = G1"]
+        D2["PhysicalType PVC-300 (updated)<br/>FederationGuid = G2"]
+        MAT["PhysicalMaterial PVC<br/>cached once"]
+    end
+    RL1["RepositoryLink<br/>Piping Catalog v1"]
+    RL2["RepositoryLink<br/>Piping Catalog v2"]
+    A1["ExternalSourceAspect<br/>Identifier = PVC-300"]
+    A2["ExternalSourceAspect<br/>Identifier = PVC-300"]
+    A3["ExternalSourceAspect<br/>Identifier = PVC"]
+    A4["ExternalSourceAspect<br/>Identifier = PVC"]
+
+    DC -- "is sub-modeled by" --> CSM
+    D1 -- "owns" --> A1
+    D2 -- "owns" --> A2
+    MAT -- "owns" --> A3
+    MAT -- "owns" --> A4
+    A1 -- "Scope" --> RL1
+    A2 -- "Scope" --> RL2
+    A3 -- "Scope" --> RL1
+    A4 -- "Scope" --> RL2
+
+    classDef model fill:#f4f4f4,stroke:#8a8a8a,stroke-width:1px,color:#1f2937
+    classDef def fill:#e7f1ff,stroke:#477db3,stroke-width:1px,color:#1f2937
+    classDef prov fill:#fdf3e0,stroke:#b98a2f,stroke-width:1px,color:#1f2937
+    classDef link fill:#eef1f4,stroke:#6b7280,stroke-width:1px,color:#1f2937
+    class DC def
+    class D1,D2,MAT def
+    class A1,A2,A3,A4 prov
+    class RL1,RL2 link
+    style DICT fill:#fafafa,stroke:#b8b8b8,stroke-width:1px,color:#1f2937
+    style CSM fill:#f7fbff,stroke:#8fb3d9,stroke-width:1px,color:#1f2937
+```
+
+The two cached PVC-300 elements share a stable `Identifier` but have different `FederationGuid`s; the unchanged *PVC* material is cached once with one aspect per catalog version that includes it. To check whether a newer version of a cached definition exists, the application looks up the definition's stable `Identifier` in the latest catalog version and compares the authority's version identifier there against the cached `FederationGuid`.
 
 ## Scope and future standardization
 
