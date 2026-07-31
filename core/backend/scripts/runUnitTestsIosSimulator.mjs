@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { createWriteStream, copyFile } from 'fs';
+import { execSync } from 'child_process';
 import { Simctl } from "node-simctl";
 import { fileURLToPath } from 'url';
 import * as path from "path";
@@ -99,6 +100,75 @@ class SimctlWithOpts extends Simctl {
 /** @param {string} message */
 function log(message) {
   console.log(message);
+}
+
+// Best-effort repair for CI agents whose CoreSimulator service is in a bad state. Two known
+// symptoms: an iOS runtime reported as available while its profile can't actually load ("runtime
+// profile not found using 'System' match policy"), and a boot that hangs indefinitely (e.g. stuck
+// "Waiting on System App"). Pruning stale devices and restarting CoreSimulator forces the daemon to
+// re-scan the installed runtimes and clears the wedged service. Invoked reactively by bootSimulator
+// when a boot fails or times out.
+function repairSimulators() {
+  const commands = [
+    "xcrun simctl shutdown all",
+    "xcrun simctl delete unavailable",
+    "killall -9 com.apple.CoreSimulator.CoreSimulatorService",
+  ];
+  for (const command of commands) {
+    try {
+      log(`Running: ${command}`);
+      const output = execSync(command, { encoding: "utf-8", stdio: "pipe" });
+      if (output.trim())
+        log(output.trim());
+    } catch (err) {
+      log(`Command failed (continuing): ${command}\n${err}`);
+    }
+  }
+}
+
+/**
+ * Boots and monitors the simulator, logging diagnostics before rethrowing on failure.
+ * @param {SimctlWithOpts} simctl
+ * @param {string} [context] extra text appended to the failure message (e.g. " after repair")
+ */
+async function startBoot(simctl, context = "") {
+  try {
+    await simctl.startBootMonitor({ shouldPreboot: true });
+  } catch (err) {
+    log(`Failed to boot simulator${context}: ${err}`);
+    await simctl.logDiagnostics();
+    throw err;
+  }
+}
+
+/**
+ * Boots the given simulator, monitoring until it finishes. Booting occasionally fails outright or
+ * hangs indefinitely (e.g. stuck "Waiting on System App" until the boot monitor times out) when a
+ * CI agent's CoreSimulator service is wedged or the device state is corrupted. When that happens,
+ * repair the service, erase the device to clear the corrupted state, and retry the boot once.
+ * @param {SimctlWithOpts} simctl
+ * @param {{ name: string; udid: string; state: string; }} device
+ */
+async function bootSimulator(simctl, device) {
+  log(`Booting simulator: ${device.name}`);
+  try {
+    await startBoot(simctl);
+    return;
+  } catch {
+    // Fall through to repair-and-retry below.
+  }
+
+  // Recover a wedged CoreSimulator service and clear any corrupted device state, then retry once.
+  log("Attempting to repair simulators and retry boot");
+  repairSimulators();
+  try {
+    await simctl.exec("erase", { args: [device.udid] });
+  } catch (err) {
+    log(`Failed to erase simulator (continuing): ${err}`);
+  }
+
+  log(`Re-booting simulator: ${device.name}`);
+  await startBoot(simctl, " after repair");
 }
 
 /**
@@ -217,14 +287,7 @@ async function main() {
 
   // Boot the simulator if needed
   if (device.state !== "Booted") {
-    log(`Booting simulator: ${device.name}`);
-    try {
-      await simctl.startBootMonitor({ shouldPreboot: true });
-    } catch (err) {
-      log(`Failed to boot simulator: ${err}`);
-      await simctl.logDiagnostics();
-      throw err;
-    }
+    await bootSimulator(simctl, device);
   }
 
   // Install the app

@@ -102,11 +102,12 @@ function log(message) {
   console.log(message);
 }
 
-// Best-effort repair for CI agents that report an iOS runtime as available while its profile
-// can't actually load ("runtime profile not found using 'System' match policy"), which makes
-// boot fail. Pruning stale devices and restarting CoreSimulator forces the daemon to re-scan the
-// installed runtimes. Kept in the code so the call in main() can be re-enabled when an agent gets
-// into this state again.
+// Best-effort repair for CI agents whose CoreSimulator service is in a bad state. Two known
+// symptoms: an iOS runtime reported as available while its profile can't actually load ("runtime
+// profile not found using 'System' match policy"), and a boot that hangs indefinitely (e.g. stuck
+// "Waiting on System App"). Pruning stale devices and restarting CoreSimulator forces the daemon to
+// re-scan the installed runtimes and clears the wedged service. Invoked reactively by bootSimulator
+// when a boot fails or times out.
 function repairSimulators() {
   const commands = [
     "xcrun simctl shutdown all",
@@ -125,6 +126,51 @@ function repairSimulators() {
   }
 }
 
+/**
+ * Boots and monitors the simulator, logging diagnostics before rethrowing on failure.
+ * @param {SimctlWithOpts} simctl
+ * @param {string} [context] extra text appended to the failure message (e.g. " after repair")
+ */
+async function startBoot(simctl, context = "") {
+  try {
+    await simctl.startBootMonitor({ shouldPreboot: true });
+  } catch (err) {
+    log(`Failed to boot simulator${context}: ${err}`);
+    await simctl.logDiagnostics();
+    throw err;
+  }
+}
+
+/**
+ * Boots the given simulator, monitoring until it finishes. Booting occasionally fails outright or
+ * hangs indefinitely (e.g. stuck "Waiting on System App" until the boot monitor times out) when a
+ * CI agent's CoreSimulator service is wedged or the device state is corrupted. When that happens,
+ * repair the service, erase the device to clear the corrupted state, and retry the boot once.
+ * @param {SimctlWithOpts} simctl
+ * @param {{ name: string; udid: string; state: string; }} device
+ */
+async function bootSimulator(simctl, device) {
+  log(`Booting simulator: ${device.name}`);
+  try {
+    await startBoot(simctl);
+    return;
+  } catch {
+    // Fall through to repair-and-retry below.
+  }
+
+  // Recover a wedged CoreSimulator service and clear any corrupted device state, then retry once.
+  log("Attempting to repair simulators and retry boot");
+  repairSimulators();
+  try {
+    await simctl.exec("erase", { args: [device.udid] });
+  } catch (err) {
+    log(`Failed to erase simulator (continuing): ${err}`);
+  }
+
+  log(`Re-booting simulator: ${device.name}`);
+  await startBoot(simctl, " after repair");
+}
+
 async function main() {
   const simctl = new SimctlWithOpts();
 
@@ -133,9 +179,7 @@ async function main() {
 
   // Normally disabled. Uncomment to repair a CI agent whose simulator runtime is reported as
   // available but fails to boot ("runtime profile not found using 'System' match policy").
-  // repairSimulators();
-
-  // get all iOS devices
+  // repairSimulators();  // get all iOS devices
   log("Getting iOS devices");
   const allResults = await simctl.getDevices(undefined, 'iOS');
   // If xcode-select picks an earlier Xcode, allResults can contain entries for newer iOS versions with
@@ -195,14 +239,7 @@ async function main() {
 
   // Boot the simulator if needed
   if (device.state !== "Booted") {
-    log(`Booting simulator: ${device.name}`);
-    try {
-      await simctl.startBootMonitor({ shouldPreboot: true });
-    } catch (err) {
-      log(`Failed to boot simulator: ${err}`);
-      await simctl.logDiagnostics();
-      throw err;
-    }
+    await bootSimulator(simctl, device);
   }
 
   // Install the app
