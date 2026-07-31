@@ -397,7 +397,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         return false;
       this.recordPointWithLocalFractions(fA, cpA, fractionA0, fractionA1, fB, arc, 0, 1, reversed);
       return true;
-    }
+    };
     const data = arc.toTransformedVectors(this._worldToLocalAffine);
     let pointA0Local = pointA0;
     let pointA1Local = pointA1;
@@ -464,7 +464,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         return false;
       this.recordPointWithLocalFractions(fA, cpA, fractionA0, fractionA1, fB, arc, 0, 1, reversed);
       return true;
-    }
+    };
     const data = arc.toTransformedPoint4d(this._worldToLocalPerspective);
     const pointA0H = this._worldToLocalPerspective.multiplyPoint3d(pointA0, 1);
     const pointA1H = this._worldToLocalPerspective.multiplyPoint3d(pointA1, 1);
@@ -493,7 +493,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     for (const root of roots) {
       const { fArc, fArcNearest01, fLine, arcPt, linePt } = root;
       if (closeApproach) {
-        const dist2 = arcPt.realDistanceSquaredXY(linePt)
+        const dist2 = arcPt.realDistanceSquaredXY(linePt);
         if (dist2 === undefined || !Geometry.isDistanceWithinTol(dist2, tol2))
           continue;
       }
