@@ -220,7 +220,7 @@ export class Formatter {
           ratioUnitValue = applyConversion(remainingMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
         } catch (e) {
           // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
-          // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
+          // For ratio, we actually want to support this corner case and return "1 : 0" as the formatted value.
           if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
             const sep = this.ratioSeparatorString(spec);
             return { componentText: `1${sep}0`, isNegative: false };
@@ -671,7 +671,7 @@ export class Formatter {
       unitValue = applyConversion(magnitude, unitConversion) + this.FPV_MINTHRESHOLD;
     } catch (e) {
       // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
-      // For ratio, we return "1:0" as the formatted value.
+      // For ratio, we return "1 : 0" as the formatted value.
       if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
         const sep = this.ratioSeparatorString(spec);
         return { componentText: `1${sep}0`, isNegative: false };
