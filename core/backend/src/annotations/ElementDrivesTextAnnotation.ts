@@ -259,7 +259,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * so it can pre-build the [FormatterSpec]($core-quantity)s referenced by the annotation
    * before the annotation is inserted, updated, or re-evaluated. Fields that carry an inline
    * [QuantityFieldFormatOptions.format]($common) override, or whose target property has no
-   * [KindOfQuantity]($ecschema-metadata) (and no `formatSetKey` / `persistenceUnit` override),
+   * [KindOfQuantity]($ecschema-metadata) (and no `kindOfQuantity` / `persistenceUnit` override),
    * are omitted because they do not require a provider lookup.
    * @beta
    */

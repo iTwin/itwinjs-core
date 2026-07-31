@@ -92,7 +92,7 @@ export interface DateTimeFieldFormatOptions {
  *
  * At runtime, a format is resolved in this priority order:
  *  1. [[format]] - an inline [FormatProps]($core-quantity) override.
- *  2. [[formatSetKey]] - looked up via the active [FormatsProvider]($core-quantity).
+ *  2. [[kindOfQuantity]] - looked up via the active [FormatsProvider]($core-quantity).
  *  3. The property's own [KindOfQuantity]($ecschema-metadata).
  *  4. For "coordinate" only, a built-in default backed by `Units.LENGTH`.
  *
@@ -109,8 +109,8 @@ export interface QuantityFieldFormatOptions {
    * the active [FormatsProvider]($core-quantity), overriding the property's own KindOfQuantity.
    * Ignored when [[format]] is supplied.
    */
-  formatSetKey?: string;
-  /** Inline [FormatProps]($core-quantity) override. Highest priority; when present, [[formatSetKey]]
+  kindOfQuantity?: string;
+  /** Inline [FormatProps]($core-quantity) override. Highest priority; when present, [[kindOfQuantity]]
    * is ignored.
    */
   format?: FormatProps;
