@@ -1316,4 +1316,155 @@ describe("Ratio format tests", () => {
       });
     });
   });
+
+  describe("Spacer around ratio separator", () => {
+    interface SpacerTestData {
+      magnitude: number;
+      formatted: string;
+      parseInputs?: string[];
+      parseErrors?: string[];
+    }
+
+    async function testSpacerConfig(ratioType: string, ratioSeparator: string, spacer: string | undefined, testData: SpacerTestData[]) {
+      const composite: any = { includeZero: true, units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }] };
+      if (spacer !== undefined)
+        composite.spacer = spacer;
+      const formatProps: FormatProps = { type: "Ratio", ratioType, ratioSeparator, precision: 1, composite };
+      const { formatterSpec, parserSpec } = await createFormatAndSpecs(`${ratioType}_${ratioSeparator}_${spacer}`, formatProps, "Units.VERTICAL_PER_HORIZONTAL");
+
+      for (const entry of testData) {
+        const result = Formatter.formatQuantity(entry.magnitude, formatterSpec);
+        expect(result, `format ${entry.magnitude}`).to.equal(entry.formatted);
+
+        const parsed = Parser.parseQuantityString(entry.formatted, parserSpec);
+        if (!Parser.isParsedQuantity(parsed))
+          assert.fail(`Roundtrip failed for '${entry.formatted}'`);
+        expect(parsed.value, `roundtrip '${entry.formatted}'`).to.be.closeTo(entry.magnitude, 0.0001);
+
+        for (const input of entry.parseInputs ?? []) {
+          const r = Parser.parseQuantityString(input, parserSpec);
+          if (!Parser.isParsedQuantity(r))
+            assert.fail(`Expected '${input}' to parse`);
+          expect(r.value, `parse '${input}'`).to.be.closeTo(entry.magnitude, 0.0001);
+        }
+
+        for (const input of entry.parseErrors ?? []) {
+          const r = Parser.parseQuantityString(input, parserSpec);
+          expect(Parser.isParseError(r), `expected '${input}' to fail`).to.be.true;
+        }
+      }
+    }
+
+    it("OneToN ':' spacer omitted", async () => {
+      await testSpacerConfig("OneToN", ":", undefined, [
+        { magnitude: 0.5, formatted: "1 : 2" },
+        { magnitude: 1.0, formatted: "1 : 1" },
+        { magnitude: 2.0, formatted: "1 : 0.5" },
+      ]);
+    });
+
+    it("OneToN ':' spacer ' '", async () => {
+      await testSpacerConfig("OneToN", ":", " ", [
+        { magnitude: 0.5, formatted: "1 : 2", parseInputs: ["1:2"], parseErrors: ["1:2:3", "1 : 2:3"] },
+        { magnitude: 1.0, formatted: "1 : 1" },
+        { magnitude: 2.0, formatted: "1 : 0.5" },
+      ]);
+    });
+
+    it("OneToN ':' spacer ''", async () => {
+      await testSpacerConfig("OneToN", ":", "", [
+        { magnitude: 0.5, formatted: "1:2", parseInputs: ["1 : 2"], parseErrors: ["1:2:3"] },
+        { magnitude: 1.0, formatted: "1:1" },
+        { magnitude: 2.0, formatted: "1:0.5" },
+      ]);
+    });
+
+    it("OneToN '=' spacer ' '", async () => {
+      await testSpacerConfig("OneToN", "=", " ", [
+        { magnitude: 0.5, formatted: "1 = 2" },
+        { magnitude: 1.0, formatted: "1 = 1" },
+      ]);
+    });
+
+    it("OneToN '=' spacer ''", async () => {
+      await testSpacerConfig("OneToN", "=", "", [
+        { magnitude: 0.5, formatted: "1=2" },
+        { magnitude: 1.0, formatted: "1=1" },
+      ]);
+    });
+
+    it("NToOne ':' spacer ' '", async () => {
+      await testSpacerConfig("NToOne", ":", " ", [
+        { magnitude: 2.0, formatted: "2 : 1" },
+        { magnitude: 0.5, formatted: "0.5 : 1" },
+        { magnitude: 1.0, formatted: "1 : 1" },
+      ]);
+    });
+
+    it("NToOne ':' spacer ''", async () => {
+      await testSpacerConfig("NToOne", ":", "", [
+        { magnitude: 2.0, formatted: "2:1" },
+        { magnitude: 0.5, formatted: "0.5:1" },
+        { magnitude: 1.0, formatted: "1:1" },
+      ]);
+    });
+
+    it("NToOne '=' spacer ' '", async () => {
+      await testSpacerConfig("NToOne", "=", " ", [
+        { magnitude: 2.0, formatted: "2 = 1" },
+        { magnitude: 0.5, formatted: "0.5 = 1" },
+        { magnitude: 1.0, formatted: "1 = 1" },
+      ]);
+    });
+
+    it("NToOne '=' spacer ''", async () => {
+      await testSpacerConfig("NToOne", "=", "", [
+        { magnitude: 2.0, formatted: "2=1" },
+        { magnitude: 0.5, formatted: "0.5=1" },
+        { magnitude: 1.0, formatted: "1=1" },
+      ]);
+    });
+
+    it("fractional imperial with spacer roundtrips", async () => {
+      const formatProps: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        ratioFormatType: "Fractional",
+        precision: 16,
+        formatTraits: ["showUnitLabel"],
+        composite: {
+          units: [{ name: "Units.IN", label: '"' }, { name: "Units.FT", label: "'" }],
+        },
+      };
+      const { formatterSpec, parserSpec } = await createFormatAndSpecs("FractionalSpacer", formatProps, "Units.IN_PER_FT_LENGTH_RATIO");
+
+      const testCases = [
+        { magnitude: 0.375, formatted: "3/8\" = 1'" },
+        { magnitude: 1.5, formatted: "1 1/2\" = 1'" },
+        { magnitude: 12, formatted: "12\" = 1'" },
+      ];
+      for (const { magnitude, formatted } of testCases) {
+        expect(Formatter.formatQuantity(magnitude, formatterSpec), `format ${magnitude}`).to.equal(formatted);
+        const parsed = Parser.parseQuantityString(formatted, parserSpec);
+        if (!Parser.isParsedQuantity(parsed))
+          assert.fail(`Roundtrip failed for '${formatted}'`);
+        expect(parsed.value, `roundtrip '${formatted}'`).to.be.closeTo(magnitude, 0.0001);
+      }
+    });
+
+    it("parser accepts leading and trailing whitespace", async () => {
+      const formatProps: FormatProps = { type: "Ratio", ratioType: "OneToN", ratioSeparator: ":", precision: 1, composite: { spacer: "", includeZero: true, units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }] } };
+      const { parserSpec } = await createFormatAndSpecs("WhitespaceParse", formatProps, "Units.VERTICAL_PER_HORIZONTAL");
+
+      const inputs = [" 1:2", "1:2 ", " 1:2 ", " 1 : 2 "];
+      for (const input of inputs) {
+        const result = Parser.parseQuantityString(input, parserSpec);
+        if (!Parser.isParsedQuantity(result))
+          assert.fail(`Expected '${input}' to parse`);
+        expect(result.value, `parse '${input}'`).to.be.closeTo(0.5, 0.0001);
+      }
+    });
+
+  });
 });
