@@ -73,10 +73,7 @@ Displays values as ratios (e.g., 1:100, 12"=1'). See [Ratio Format Properties](#
   "precision": 1,
   "formatTraits": ["trailZeroes"],
   "composite": {
-    "units": [
-      { "name": "Units.M" },
-      { "name": "Units.M" }
-    ]
+    "units": [{ "name": "Units.M" }, { "name": "Units.M" }]
   }
 }
 ```
@@ -154,8 +151,6 @@ This format displays values as feet and inches with fractional inch precision:
 
 Station formatting in iTwin.js supports properties that control how values are broken down into major and minor station components:
 
-
-
 ### stationOffsetSize
 
 The `stationOffsetSize` property specifies the number of decimal places for calculating the station offset magnitude. This must be a positive integer greater than 0. This works with `stationBaseFactor` to determine the effective station offset using the formula: `effective offset = stationBaseFactor * 10^stationOffsetSize`.
@@ -219,6 +214,8 @@ The `ratioSeparator` property specifies the character used to separate the numer
 
 The separator must be a single character string.
 
+The `composite.spacer` property controls padding placed around the ratio separator in the formatted output. With `spacer: " "` (the default), a ratio formats as `1 : 2`; with `spacer: ""`, it formats as `1:2`. Only `" "` and `""` are valid spacer values for ratio formats. The parser accepts both spaced and unspaced input regardless of the configured spacer.
+
 ### ratioFormatType
 
 The `ratioFormatType` property controls how the numeric values within the ratio are formatted. This optional property defaults to `"Decimal"` if not specified:
@@ -275,20 +272,20 @@ When using composite units for ratio formats, unit labels are displayed when the
 
 ### Ratio Format Examples
 
-| ratioType | ratioFormatType | precision | magnitude | separator | composite.units | Formatted Result |
-| --------- | --------------- | --------- | --------- | --------- | --------------- | ---------------- |
-| NToOne | Decimal | 2 | 1.0 | ":" | - | 1:1 |
-| NToOne | Decimal | 2 | 0.5 | ":" | - | 0.5:1 |
-| OneToN | Decimal | 0 | 0.01 | ":" | - | 1:100 |
-| ValueBased | Decimal | 3 | 2.0 | ":" | - | 2:1 |
-| ValueBased | Decimal | 3 | 0.5 | ":" | - | 1:2 |
-| UseGreatestCommonDivisor | Decimal | 3 | 0.5 | ":" | - | 1:2 |
-| NToOne | Decimal | 2 | 12.0 | "=" | [IN, FT] * | 12"=1' |
-| NToOne | Decimal | 2 | 1.0 | "=" | [IN, FT] * | 1"=1' |
-| NToOne | Fractional | 16 | 1.5 | "=" | [IN, FT] * | 1 1/2"=1' |
-| NToOne | Fractional | 16 | 0.75 | "=" | [IN, FT] * | 3/4"=1' |
+| ratioType                | ratioFormatType | precision | magnitude | separator | composite.units | Formatted Result |
+| ------------------------ | --------------- | --------- | --------- | --------- | --------------- | ---------------- |
+| NToOne                   | Decimal         | 2         | 1.0       | ":"       | -               | 1:1              |
+| NToOne                   | Decimal         | 2         | 0.5       | ":"       | -               | 0.5:1            |
+| OneToN                   | Decimal         | 0         | 0.01      | ":"       | -               | 1:100            |
+| ValueBased               | Decimal         | 3         | 2.0       | ":"       | -               | 2:1              |
+| ValueBased               | Decimal         | 3         | 0.5       | ":"       | -               | 1:2              |
+| UseGreatestCommonDivisor | Decimal         | 3         | 0.5       | ":"       | -               | 1:2              |
+| NToOne                   | Decimal         | 2         | 12.0      | "="       | [IN, FT] \*     | 12"=1'           |
+| NToOne                   | Decimal         | 2         | 1.0       | "="       | [IN, FT] \*     | 1"=1'            |
+| NToOne                   | Fractional      | 16        | 1.5       | "="       | [IN, FT] \*     | 1 1/2"=1'        |
+| NToOne                   | Fractional      | 16        | 0.75      | "="       | [IN, FT] \*     | 3/4"=1'          |
 
-\* *Assumes `composite: { units: [IN(label="\""), FT(label="'")] }`, persistence unit `IN_PER_FT_LENGTH_RATIO`, and `showUnitLabel` trait is set*
+\* _Assumes `composite: { units: [IN(label="\""), FT(label="'")] }`, persistence unit `IN_PER_FT_LENGTH_RATIO`, and `showUnitLabel` trait is set_
 
 ### Parsing Ratio Strings
 
@@ -331,7 +328,6 @@ The parser supports parsing ratio strings with various formats and handles sever
 5. Calculate ratio: `numerator / denominator`
 6. Apply unit conversion using the format's defined ratio unit
 7. Return the final value in the persistence unit
-
 
 ## Code Examples
 
