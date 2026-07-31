@@ -976,6 +976,10 @@ export class Parser {
     const parts = inString.split(separator);
     if (parts.length > 2) return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 
+    // Reject input where a bare separator survives inside a part after splitting on the spaced separator
+    if (parts.length === 2 && parts.some((p) => p.includes(ratioSeparator)))
+      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+
     // If the string doesn't contain the expected separator but contains other ratio-like separators,
     // return an error since the wrong separator was used
     if (parts.length === 1 && !inString.includes(separator)) {
