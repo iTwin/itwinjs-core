@@ -67,10 +67,33 @@ import { UnionRegion } from "./UnionRegion";
 export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any;
 
 /**
- * * Options to control method [[RegionOps.consolidateAdjacentPrimitives]].
+ * Options to control method [[RegionOps.consolidateAdjacentPrimitives]].
  * @public
  */
-export class ConsolidateAdjacentCurvePrimitivesOptions {
+export interface ConsolidateAdjacentPrimitivesOptions {
+  /** True to consolidate adjacent linear geometry into a single LineString3d. Default value is `true`. */
+  consolidateLinearGeometry?: boolean;
+  /** True to consolidate contiguous compatible arcs into a single Arc3d. Default value is `true`. */
+  consolidateCompatibleArcs?: boolean;
+  /**
+   * True to attempt consolidation of the first and last primitives of a [[Loop]] or physically closed linestring data,
+   * allowing location of the seam to change. Default value is `false`.
+   */
+  consolidateLoopSeam?: boolean;
+  /** Disable LineSegment3d and LineString3d point compression. Default value is `false`.*/
+  disableLinearCompression?: boolean;
+  /** Tolerance for detecting identical points. Default value is [[Geometry.smallMetricDistance]]. */
+  duplicatePointTolerance?: number;
+  /** Tolerance for removing interior colinear points (if `!disableLinearCompression`). Default value is [[Geometry.smallMetricDistance]]. */
+  colinearPointTolerance?: number;
+}
+
+/**
+ * Options to control method [[RegionOps.consolidateAdjacentPrimitives]].
+ * @deprecated in 5.11.13 - might be removed in next major version. Use [[ConsolidateAdjacentPrimitivesOptions]], which is more convenient as an interface, and has better name.
+ * @public
+ */
+export class ConsolidateAdjacentCurvePrimitivesOptions implements ConsolidateAdjacentPrimitivesOptions {
   /** True to consolidate adjacent linear geometry into a single LineString3d. */
   public consolidateLinearGeometry: boolean = true;
   /** True to consolidate contiguous compatible arcs into a single Arc3d. */
@@ -853,7 +876,7 @@ export class RegionOps {
    * @param curves Path or loop (or larger collection containing paths and loops) to be simplified
    * @param options options for tolerance and selective simplification.
    */
-  public static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void {
+  public static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentPrimitivesOptions): void {
     const context = new ConsolidateAdjacentCurvePrimitivesContext(options);
     curves.dispatchToGeometryHandler(context);
   }

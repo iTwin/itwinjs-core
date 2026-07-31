@@ -17,7 +17,7 @@ import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
 import { ParityRegion } from "../ParityRegion";
-import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../RegionOps";
+import { RegionOps } from "../RegionOps";
 import { RegionGroupMember, RegionGroupOpType } from "../RegionOpsClassificationSweeps";
 
 /** @packageDocumentation
@@ -278,9 +278,7 @@ export class PlanarSubdivision {
     else
       face.announceEdgesInFace(addEdgeCurve);
     if (consolidate) {
-      const consolidateOptions = new ConsolidateAdjacentCurvePrimitivesOptions();
-      consolidateOptions.consolidateLoopSeam = true;
-      RegionOps.consolidateAdjacentPrimitives(loop, consolidateOptions);
+      RegionOps.consolidateAdjacentPrimitives(loop, { consolidateLoopSeam: true });
     }
     if (loop.isPhysicallyClosedCurve(options?.closureTol, true))
       return loop;
