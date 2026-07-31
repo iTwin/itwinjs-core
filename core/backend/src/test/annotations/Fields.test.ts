@@ -25,6 +25,8 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
+//cspell: ignore classid ecdbmap oldval reqs uppercased
+
 function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String, overrides?: Partial<TestElementProps>, aspectProp = 999): Id64String {
   const props: TestElementProps = {
     classFullName: "Fields:TestElement",
@@ -1381,7 +1383,6 @@ describe.only("Field evaluation", () => {
 
     it("throws from evaluateFieldsAsync when onMissingSpec is 'throw' and no format resolves", async () => {
       const emptyFormatsProvider: FormatsProvider = {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         getFormat: async () => undefined,
         onFormatsChanged: new BeEvent(),
       };
@@ -1428,18 +1429,16 @@ describe.only("Field evaluation", () => {
   }
 
   describe("ElementDrivesTextAnnotation", () => {
-    function expectNumRelationships(expected: number, targetId?: Id64String): void {
+    async function expectNumRelationships(expected: number, targetId?: Id64String): Promise<void> {
       const where = targetId ? ` WHERE TargetECInstanceId=${targetId}` : "";
       const ecsql = `SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation ${where}`;
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      imodel.withPreparedStatement(ecsql, (stmt) => {
-        expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
-        expect(stmt.getValue(0).getInteger()).to.equal(expected);
-      });
+      const reader = imodel.createQueryReader(ecsql);
+      expect(await reader.step()).to.be.true;
+      expect(reader.current[0]).to.equal(expected);
     }
 
-    it("can be inserted", () => {
-      expectNumRelationships(0);
+    it("can be inserted", async () => {
+      await expectNumRelationships(0);
 
       const targetId = insertAnnotationElement(undefined);
       expect(targetId).not.to.equal(Id64.invalid);
@@ -1455,7 +1454,7 @@ describe.only("Field evaluation", () => {
       const relId = withEditTxn(imodel, (txn) => txn.insertRelationship(rel.toJSON()));
       expect(relId).not.to.equal(Id64.invalid);
 
-      expectNumRelationships(1);
+      await expectNumRelationships(1);
 
       const relationship = imodel.relationships.getInstance("BisCore:ElementDrivesTextAnnotation", relId);
       expect(relationship.sourceId).to.equal(sourceElementId);
@@ -1476,13 +1475,13 @@ describe.only("Field evaluation", () => {
     }
 
     describe("updateFieldDependencies", () => {
-      it("creates exactly one relationship for each unique source element on insert and update", () => {
+      it("creates exactly one relationship for each unique source element on insert and update", async () => {
         const source1 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         const block = TextBlock.create();
         block.appendRun(createField(source1, "1"));
         const targetId = insertAnnotationElement(block);
 
-        expectNumRelationships(1, targetId);
+        await expectNumRelationships(1, targetId);
 
         const source2 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
@@ -1491,23 +1490,23 @@ describe.only("Field evaluation", () => {
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(2, targetId);
+        await expectNumRelationships(2, targetId);
 
         anno.textBlock.appendRun(createField(source2, "2b"));
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(2, targetId);
+        await expectNumRelationships(2, targetId);
 
         const source3 = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         anno.textBlock.appendRun(createField(source3, "3"));
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(3, targetId);
+        await expectNumRelationships(3, targetId);
       });
 
-      it("deletes stale relationships", () => {
+      it("deletes stale relationships", async () => {
         const sourceA = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         const sourceB = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
 
@@ -1516,7 +1515,7 @@ describe.only("Field evaluation", () => {
         block.appendRun(createField(sourceB, "B"));
         const targetId = insertAnnotationElement(block);
 
-        expectNumRelationships(2, targetId);
+        await expectNumRelationships(2, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
 
@@ -1530,7 +1529,7 @@ describe.only("Field evaluation", () => {
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(1, targetId);
+        await expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
 
@@ -1539,7 +1538,7 @@ describe.only("Field evaluation", () => {
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(1, targetId);
+        await expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
 
@@ -1551,12 +1550,12 @@ describe.only("Field evaluation", () => {
         target.setAnnotation(anno);
         withEditTxn(imodel, (txn) => target.update(txn));
 
-        expectNumRelationships(0, targetId);
+        await expectNumRelationships(0, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
       });
 
-      it("ignores invalid source element Ids", () => {
+      it("ignores invalid source element Ids", async () => {
         const source = withEditTxn(imodel, (editTxn) => insertTestElement(editTxn, model, category));
         const block = TextBlock.create();
         block.appendRun(createField(Id64.invalid, "invalid"));
@@ -1564,7 +1563,7 @@ describe.only("Field evaluation", () => {
         block.appendRun(createField(source, "valid"));
 
         const targetId = insertAnnotationElement(block);
-        expectNumRelationships(1, targetId);
+        await expectNumRelationships(1, targetId);
       });
     });
 
