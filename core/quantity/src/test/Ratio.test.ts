@@ -5,7 +5,7 @@ import { Formatter } from "../Formatter/Formatter";
 
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps } from "../core-quantity";
+import { FormatCompositeProps, FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps } from "../core-quantity";
 
 describe("Ratio format tests", () => {
   const vHUnitName = "Units.VERTICAL_PER_HORIZONTAL";
@@ -1326,9 +1326,7 @@ describe("Ratio format tests", () => {
     }
 
     async function testSpacerConfig(ratioType: string, ratioSeparator: string, spacer: string | undefined, testData: SpacerTestData[]) {
-      const composite: any = { includeZero: true, units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }] };
-      if (spacer !== undefined)
-        composite.spacer = spacer;
+      const composite: FormatCompositeProps = { includeZero: true, units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }], ...(spacer !== undefined && { spacer }) };
       const formatProps: FormatProps = { type: "Ratio", ratioType, ratioSeparator, precision: 1, composite };
       const { formatterSpec, parserSpec } = await createFormatAndSpecs(`${ratioType}_${ratioSeparator}_${spacer}`, formatProps, "Units.VERTICAL_PER_HORIZONTAL");
 
