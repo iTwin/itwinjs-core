@@ -160,10 +160,10 @@ async function resolveFormatSource(
   }
 
   // 2. Explicit format-set / KoQ override.
-  if (quantityOptions?.formatSetKey) {
-    const def = await context.formatsProvider.getFormat(quantityOptions.formatSetKey);
+  if (quantityOptions?.kindOfQuantity) {
+    const def = await context.formatsProvider.getFormat(quantityOptions.kindOfQuantity);
     if (def) {
-      return { formatProps: def, cacheKeySource: `key:${quantityOptions.formatSetKey}` };
+      return { formatProps: def, cacheKeySource: `key:${quantityOptions.kindOfQuantity}` };
     }
   }
 
@@ -267,7 +267,7 @@ export async function formatFieldValueAsync(
 
   if (!spec) {
     if (throwOnMiss) {
-      throw missingSpecError(value, options, "no FormatProps could be resolved from the supplied FormatsProvider (KindOfQuantity, formatSetKey, and inline format overrides were all unavailable)");
+      throw missingSpecError(value, options, "no FormatProps could be resolved from the supplied FormatsProvider (the property's KindOfQuantity, the kindOfQuantity override, and the inline format override were all unavailable)");
     }
     return formatFieldValue(value, options);
   }
@@ -315,7 +315,7 @@ export interface FieldFormattingSpecProvider {
 export type FieldMissingSpecBehavior = "fallback" | "throw";
 
 function missingSpecError(value: FieldValue, options: FieldFormatOptions | undefined, reason: string): Error {
-  const koq = options?.quantity?.formatSetKey ?? value.kindOfQuantityFullName ?? "<unknown>";
+  const koq = options?.quantity?.kindOfQuantity ?? value.kindOfQuantityFullName ?? "<unknown>";
   const unit = options?.quantity?.persistenceUnit ?? value.persistenceUnitFullName ?? "<unknown>";
   return new Error(`No FormatterSpec available for field (type=${value.type}, koq=${koq}, persistenceUnit=${unit}): ${reason}`);
 }
@@ -331,7 +331,7 @@ function lookupSyncSpec(
     return undefined;
   }
 
-  const name = quantityOptions?.formatSetKey ?? value.kindOfQuantityFullName;
+  const name = quantityOptions?.kindOfQuantity ?? value.kindOfQuantityFullName;
   const persistenceUnitName = quantityOptions?.persistenceUnit ?? value.persistenceUnitFullName;
   if (!name || !persistenceUnitName) {
     return undefined;

@@ -7875,7 +7875,7 @@ export class QPoint3dList {
 // @beta
 export interface QuantityFieldFormatOptions {
     format?: FormatProps;
-    formatSetKey?: string;
+    kindOfQuantity?: string;
     persistenceUnit?: string;
 }
 
