@@ -90,18 +90,30 @@ Because the transactional callback path that keeps field caches in sync when sou
 
 ```typescript
 // Once, after `myFormattingSpecProvider.prepare(...)` has finished (see above):
-ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, myFormattingSpecProvider);
+ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { provider: myFormattingSpecProvider });
 
 // Later, any commit that dirties a source element for a FieldRun will re-format its cached content
 // through the registered provider automatically -- no application code required.
-// Passing `undefined` unregisters the provider:
-ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, undefined);
+// Call `unregisterFieldFormattingProvider` to remove the registration:
+ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
 ```
 
-If no provider is registered (or the provider does not supply a spec for a given field), fields fall back to their existing raw string formatting. To make missing specs surface as an error instead, pass `onMissingSpec: "throw"` when registering the provider (or via [[FieldFormattingProviders]] on the async path):
+You can register different providers per FormatSet by supplying an `Id64String` `formatSet` id at registration time, and pointing a FieldRun at that FormatSet via [QuantityFieldFormatOptions.formatSet]($common). At evaluation time, each FieldRun is routed by cascading lookup: its `formatSet`-specific registration first, then the iModel-level default registration (registered with no `formatSet`), then the raw string fallback.
 
 ```typescript
-ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, myFormattingSpecProvider, { onMissingSpec: "throw" });
+ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { provider: defaultProvider });
+ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { formatSet: mySheetFormatSetId, provider: sheetProvider });
+
+const fieldRun = FieldRun.create({
+  propertyHost, propertyPath,
+  formatOptions: { quantity: { formatSet: mySheetFormatSetId } },
+});
+```
+
+If no registration matches (or the resolved provider does not supply a spec for a given field), fields fall back to their existing raw string formatting. To make missing specs surface as an error instead, pass `onMissingSpec: "throw"` when registering the provider (or via [[FieldFormattingProviders]] on the async path):
+
+```typescript
+ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { provider: myFormattingSpecProvider, onMissingSpec: "throw" });
 // Any FieldRun evaluated against `iModel` whose KindOfQuantity / persistence unit combination
 // has not been prepared on `myFormattingSpecProvider` will now throw from evaluateFields and from
 // the TxnManager field-update callback path, instead of silently reverting to the raw value.

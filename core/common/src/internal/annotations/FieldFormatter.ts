@@ -340,6 +340,32 @@ function lookupSyncSpec(
   return provider.getSpecsByNameAndUnit({ name, persistenceUnitName })?.formatterSpec;
 }
 
+/** Result returned by [[FieldFormattingSpecResolver.resolve]] describing which registered
+ * synchronous provider should handle a given [FieldRun]($common).
+ * @internal
+ */
+export interface ResolvedFieldFormattingSpecProvider {
+  provider: FieldFormattingSpecProvider;
+  onMissingSpec?: FieldMissingSpecBehavior;
+}
+
+/** Cascading lookup used by the synchronous formatting path to select which registered
+ * [FieldFormattingSpecProvider]($common) to consult for a given [FieldRun]($common). A caller
+ * (typically the backend) constructs one of these over its per-iModel provider registry and
+ * hands it to [[formatFieldValueWithSpecResolver]] via [[UpdateFieldsContext]].
+ *
+ * Implementations should encapsulate the cascading behavior:
+ *  1. If `formatSet` is defined, return the provider registered under it.
+ *  2. Otherwise (or if no provider was registered for `formatSet`), return the iModel-level
+ *     default provider registration.
+ *  3. Return `undefined` when no registration matches; callers then fall back to the raw
+ *     string representation.
+ * @internal
+ */
+export interface FieldFormattingSpecResolver {
+  resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined;
+}
+
 /** Synchronous counterpart to [[formatFieldValueAsync]] that formats "quantity" and "coordinate"
  * field values via a caller-supplied [[FieldFormattingSpecProvider]] (typically a
  * [FormattingSpecProvider]($core-quantity)). Intended for use on the txn callback path where
@@ -386,6 +412,33 @@ export function formatFieldValueWithSpecProvider(
   }
 
   return formatString(formatted, options);
+}
+
+/** Synchronous formatting entry point that consults a [[FieldFormattingSpecResolver]] to pick
+ * which registered provider (keyed by [QuantityFieldFormatOptions.formatSet]($common)) should
+ * format `value`, then delegates to [[formatFieldValueWithSpecProvider]] using the resolved
+ * provider and its `onMissingSpec` policy.
+ *
+ * If the resolver returns `undefined` (no registration matches the field's `formatSet` and no
+ * iModel-level default is registered), quantity/coordinate values fall back to the raw string
+ * representation from [[formatFieldValue]].
+ * @internal
+ */
+export function formatFieldValueWithSpecResolver(
+  value: FieldValue,
+  options: FieldFormatOptions | undefined,
+  resolver: FieldFormattingSpecResolver,
+): string | undefined {
+  if (value.type !== "quantity" && value.type !== "coordinate") {
+    return formatFieldValue(value, options);
+  }
+
+  const resolved = resolver.resolve(options?.quantity?.formatSet);
+  if (!resolved) {
+    return formatFieldValue(value, options);
+  }
+
+  return formatFieldValueWithSpecProvider(value, options, resolved.provider, resolved.onMissingSpec);
 }
 
 

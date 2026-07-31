@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldFormatterContext, FieldFormattingSpecProvider, FieldMissingSpecBehavior, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormatterContext, FieldFormattingSpecProvider, FieldFormattingSpecResolver, FieldMissingSpecBehavior, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecResolver, QueryBinder, QueryRowFormat, RelationshipProps, ResolvedFieldFormattingSpecProvider, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -64,16 +64,21 @@ export interface UpdateFieldsContext {
 
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Optional caller-supplied provider used to format `"quantity"` and `"coordinate"`
-   * [FieldRun]($common)s synchronously. When present, [[updateField]] uses it via
-   * [[formatFieldValueWithSpecProvider]]; when absent it falls back to the raw
-   * `toString()` path.
+  /** Optional caller-supplied resolver used to select a synchronous
+   * [FieldFormattingSpecProvider]($common) per [FieldRun]($common). When present, [[updateField]]
+   * formats `"quantity"` and `"coordinate"` values via
+   * [[formatFieldValueWithSpecResolver]]; when absent it falls back to the raw `toString()` path.
+   *
+   * The resolver is expected to encapsulate the cascading lookup described on
+   * [QuantityFieldFormatOptions.formatSet]($common): the field's `formatSet`-specific registration
+   * first, then the iModel-level default registration.
    */
-  readonly formattingSpecProvider?: FieldFormattingSpecProvider;
+  readonly formattingSpecResolver?: FieldFormattingSpecResolver;
 
-  /** Controls what happens when a `"quantity"` or `"coordinate"` field cannot be matched to
-   * a [FormatterSpec]($core-quantity). Defaults to `"fallback"` (silently use the raw string
-   * representation). When set to `"throw"`, formatting failures propagate.
+  /** Fallback [[FieldMissingSpecBehavior]] applied to fields when no resolver is present or the
+   * resolver does not attach one of its own. Used by the async formatting path (which does not
+   * go through a resolver) and by any future callers that want to opt in to throw-behavior
+   * without registering a provider. Defaults to `"fallback"`.
    */
   readonly onMissingSpec?: FieldMissingSpecBehavior;
 }
@@ -348,13 +353,13 @@ export function createUpdateContext(
   hostElementId: string | undefined,
   iModel: IModelDb,
   deleted: boolean,
-  formattingSpecProvider?: FieldFormattingSpecProvider,
+  formattingSpecResolver?: FieldFormattingSpecResolver,
   onMissingSpec?: FieldMissingSpecBehavior,
 ): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
-    formattingSpecProvider,
+    formattingSpecResolver,
     onMissingSpec,
   };
 }
@@ -384,17 +389,24 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   }
 
   const throwOnMiss = context.onMissingSpec === "throw";
-  let newContent: string | undefined;
+  let propValue: FieldValue | undefined;
   try {
-    const propValue = context.getProperty(field);
-    if (undefined !== propValue) {
-      newContent = context.formattingSpecProvider
-        ? formatFieldValueWithSpecProvider(propValue, field.formatOptions, context.formattingSpecProvider, context.onMissingSpec)
-        : formatFieldValue(propValue, field.formatOptions);
-    }
+    propValue = context.getProperty(field);
   } catch (err) {
     if (throwOnMiss) throw err;
     Logger.logError(BackendLoggerCategory.IModelDb, err);
+  }
+
+  let newContent: string | undefined;
+  if (undefined !== propValue) {
+    // Format errors originating from a resolver-selected provider's own `onMissingSpec: "throw"`
+    // policy always propagate; the context-level `onMissingSpec` only governs the fallback path
+    // used when no resolver is registered.
+    if (context.formattingSpecResolver) {
+      newContent = formatFieldValueWithSpecResolver(propValue, field.formatOptions, context.formattingSpecResolver);
+    } else {
+      newContent = formatFieldValue(propValue, field.formatOptions);
+    }
   }
 
   newContent = newContent ?? FieldRun.invalidContentIndicator;
@@ -460,42 +472,106 @@ export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFie
 }
 
 // Per-iModel registry of application-supplied sync formatting spec providers. Populated by
-// `ElementDrivesTextAnnotation.setFieldFormattingProvider` and consulted by the synchronous
+// `ElementDrivesTextAnnotation.registerFieldFormattingProvider` and consulted by the synchronous
 // `updateField*` paths so the txn callback path can format quantity/coordinate fields via a
 // pre-warmed provider (e.g. an app's FormatSet-backed `FormattingSpecProvider`).
+//
+// Each iModel can carry multiple registrations keyed by the [Id64String]() of a FormatSet
+// element; the entry stored under the `DEFAULT_FORMAT_SET_KEY` sentinel is used when a field
+// does not specify a `formatSet` or when its `formatSet` has no registration.
 interface RegisteredFieldFormattingProvider {
   provider: FieldFormattingSpecProvider;
   onMissingSpec?: FieldMissingSpecBehavior;
 }
-const fieldFormattingProviders = new WeakMap<IModelDb, RegisteredFieldFormattingProvider>();
+const DEFAULT_FORMAT_SET_KEY = "__default__";
+const fieldFormattingProviders = new WeakMap<IModelDb, Map<string, RegisteredFieldFormattingProvider>>();
+
+function keyForFormatSet(formatSet: Id64String | undefined): string {
+  return formatSet ?? DEFAULT_FORMAT_SET_KEY;
+}
 
 /** @internal */
-export interface SetFieldFormattingProviderOptions {
-  /** See [[UpdateFieldsContext.onMissingSpec]]. */
+export interface RegisterFieldFormattingProviderArgs {
+  /** [Id64String]($bentley) of the FormatSet element whose providers should be routed through
+   * this registration. Omit to register the iModel-level default provider (used by any FieldRun
+   * that does not declare its own `formatSet`, or whose declared `formatSet` has no matching
+   * registration).
+   */
+  formatSet?: Id64String;
+  /** The provider to associate with `formatSet` (or with the iModel-level default when
+   * `formatSet` is omitted).
+   */
+  provider: FieldFormattingSpecProvider;
+  /** See [[UpdateFieldsContext.onMissingSpec]]. Applied when this registration's provider is
+   * selected but does not supply a spec for a given field. Defaults to `"fallback"`.
+   */
   onMissingSpec?: FieldMissingSpecBehavior;
 }
 
 /** @internal */
-export function setFieldFormattingProviderForIModel(
+export function registerFieldFormattingProviderForIModel(
   iModel: IModelDb,
-  provider: FieldFormattingSpecProvider | undefined,
-  options?: SetFieldFormattingProviderOptions,
+  args: RegisterFieldFormattingProviderArgs,
 ): void {
-  if (provider) {
-    fieldFormattingProviders.set(iModel, { provider, onMissingSpec: options?.onMissingSpec });
-  } else {
+  let byFormatSet = fieldFormattingProviders.get(iModel);
+  if (!byFormatSet) {
+    byFormatSet = new Map<string, RegisteredFieldFormattingProvider>();
+    fieldFormattingProviders.set(iModel, byFormatSet);
+  }
+  byFormatSet.set(keyForFormatSet(args.formatSet), { provider: args.provider, onMissingSpec: args.onMissingSpec });
+}
+
+/** @internal */
+export function unregisterFieldFormattingProviderForIModel(
+  iModel: IModelDb,
+  formatSet?: Id64String,
+): void {
+  const byFormatSet = fieldFormattingProviders.get(iModel);
+  if (!byFormatSet) {
+    return;
+  }
+  byFormatSet.delete(keyForFormatSet(formatSet));
+  if (byFormatSet.size === 0) {
     fieldFormattingProviders.delete(iModel);
   }
 }
 
 /** @internal */
-export function getFieldFormattingProviderForIModel(iModel: IModelDb): FieldFormattingSpecProvider | undefined {
-  return fieldFormattingProviders.get(iModel)?.provider;
+export function clearFieldFormattingProvidersForIModel(iModel: IModelDb): void {
+  fieldFormattingProviders.delete(iModel);
 }
 
 /** @internal */
-export function getFieldFormattingRegistrationForIModel(iModel: IModelDb): RegisteredFieldFormattingProvider | undefined {
-  return fieldFormattingProviders.get(iModel);
+export function getFieldFormattingProviderForIModel(
+  iModel: IModelDb,
+  formatSet?: Id64String,
+): FieldFormattingSpecProvider | undefined {
+  return fieldFormattingProviders.get(iModel)?.get(keyForFormatSet(formatSet))?.provider;
+}
+
+/** Builds a resolver that implements the cascading lookup described on
+ * [QuantityFieldFormatOptions.formatSet]($common): the field's `formatSet`-specific registration
+ * first, then the iModel-level default. Returns `undefined` when no registrations exist for
+ * `iModel`.
+ * @internal
+ */
+export function createFieldFormattingSpecResolverForIModel(iModel: IModelDb): FieldFormattingSpecResolver | undefined {
+  const byFormatSet = fieldFormattingProviders.get(iModel);
+  if (!byFormatSet || byFormatSet.size === 0) {
+    return undefined;
+  }
+  return {
+    resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined {
+      if (formatSet) {
+        const specific = byFormatSet.get(formatSet);
+        if (specific) {
+          return { provider: specific.provider, onMissingSpec: specific.onMissingSpec };
+        }
+      }
+      const fallback = byFormatSet.get(DEFAULT_FORMAT_SET_KEY);
+      return fallback ? { provider: fallback.provider, onMissingSpec: fallback.onMissingSpec } : undefined;
+    },
+  };
 }
 
 function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): void {
@@ -503,8 +579,8 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const registration = getFieldFormattingRegistrationForIModel(iModel);
-      const context = createUpdateContext(sourceId, iModel, deleted, registration?.provider, registration?.onMissingSpec);
+      const resolver = createFieldFormattingSpecResolverForIModel(iModel);
+      const context = createUpdateContext(sourceId, iModel, deleted, resolver);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {

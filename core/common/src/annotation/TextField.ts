@@ -110,6 +110,16 @@ export interface QuantityFieldFormatOptions {
    * Ignored when [[format]] is supplied.
    */
   kindOfQuantity?: string;
+  /** [Id64String]($bentley) of a persisted FormatSet element that selects which registered
+   * synchronous [FormattingSpecProvider]($core-quantity) should format this field. When
+   * supplied, the txn callback path and [ElementDrivesTextAnnotation.evaluateFields]($backend)
+   * look up the provider that was registered under this FormatSet id via
+   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend). If no provider is
+   * registered under `formatSet`, resolution falls back to the iModel's default registration
+   * (a registration with no `formatSet`) and then to the raw string representation.
+   * Ignored when [[format]] is supplied.
+   */
+  formatSet?: Id64String;
   /** Inline [FormatProps]($core-quantity) override. Highest priority; when present, [[kindOfQuantity]]
    * is ignored.
    */
