@@ -33,7 +33,7 @@ import {
   TextRun,
   TextStyleSettingsProps,
 } from "@itwin/core-common";
-import { DecorateContext, Decorator, EmphasizeElements, GraphicType, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
+import { DecorateContext, Decorator, EmphasizeElements, GraphicType, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority,  readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
