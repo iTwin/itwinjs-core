@@ -248,9 +248,9 @@ When a ratio format includes exactly **two units** in its `composite.units` arra
 [[include:Quantity_Formatting.Imperial_Scale_FormatProps]]
 ```
 
-With a persistence unit of `IN_PER_FT_LENGTH_RATIO` and magnitude `1.0`, this would format as `1"=1'` (1 inch equals 1 foot, representing a 1:12 scale).
+With a persistence unit of `IN_PER_FT_LENGTH_RATIO` and magnitude `1.0`, this would format as `1" = 1'` (1 inch equals 1 foot, representing a 1:12 scale).
 
-For the same format with persistence unit `M_PER_M_LENGTH_RATIO` (dimensionless meter per meter ratio) and magnitude `0.0208` (or `1/48`), this would also format as `1/4"=1'` (quarter inch equals 1 foot, representing a 1:48 scale).
+For the same format with persistence unit `M_PER_M_LENGTH_RATIO` (dimensionless meter per meter ratio) and magnitude `0.0208` (or `1/48`), this would also format as `1/4" = 1'` (quarter inch equals 1 foot, representing a 1:48 scale).
 
 **Scale factor conversion details:**
 
