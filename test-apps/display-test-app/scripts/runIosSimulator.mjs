@@ -177,9 +177,16 @@ async function main() {
   // default to exiting with an error, only when we fully complete everything will it get set to 0
   process.exitCode = 1;
 
+  // By default we never trust a leftover running simulator: a clean run always shuts its simulator
+  // down, so a still-booted one likely means a wedged/aborted previous run. Pass --use-booted to
+  // opt into reusing an already-booted simulator, e.g. to watch execution locally in a running one.
+  const useBooted = process.argv.includes("--use-booted");
+
   // Normally disabled. Uncomment to repair a CI agent whose simulator runtime is reported as
   // available but fails to boot ("runtime profile not found using 'System' match policy").
-  // repairSimulators();  // get all iOS devices
+  // repairSimulators();
+
+  // get all iOS devices
   log("Getting iOS devices");
   const allResults = await simctl.getDevices(undefined, 'iOS');
   // If xcode-select picks an earlier Xcode, allResults can contain entries for newer iOS versions with
@@ -204,13 +211,15 @@ async function main() {
   /** @type {{ name: string; sdk: string; udid: string; state: string; } | undefined} */
   var device;
   if (keys.length) {
-    // Look for a booted simulator
-    for (const key of keys) {
-      device = results[key].find(/** @param {{ state: string; }} curr*/(curr) => curr.state === "Booted");
-      if (device)
-        break;
+    // Only reuse an already-booted simulator when explicitly opted in (see --use-booted above).
+    if (useBooted) {
+      for (const key of keys) {
+        device = results[key].find(/** @param {{ state: string; }} curr*/(curr) => curr.state === "Booted");
+        if (device)
+          break;
+      }
     }
-    // If none are booted, use the deviceBaseName or fall back to the first one
+    // Otherwise (or if none are booted), use the deviceBaseName or fall back to the first one
     if (!device) {
       device = results[keys[0]].find(/** @param {{ name: string; }} device*/(device) => device.name.startsWith(deviceBaseName)) ?? results[keys[0]][0];
     }
@@ -237,9 +246,23 @@ async function main() {
   log(`Using simulator: ${device.name} iOS: ${device.sdk}`);
   simctl.udid = device.udid;
 
+  // Unless we're intentionally reusing a running simulator, shut down a leftover booted one so we
+  // always start from a clean boot (a still-booted sim here signals a wedged/aborted previous run).
+  if (device.state === "Booted" && !useBooted) {
+    log(`Shutting down leftover booted simulator to start fresh: ${device.name}`);
+    try {
+      await simctl.shutdownDevice();
+    } catch (err) {
+      log(`Failed to shut down simulator (continuing): ${err}`);
+    }
+    device.state = "Shutdown";
+  }
+
   // Boot the simulator if needed
   if (device.state !== "Booted") {
     await bootSimulator(simctl, device);
+  } else {
+    log(`Reusing already-booted simulator: ${device.name}`);
   }
 
   // Install the app
