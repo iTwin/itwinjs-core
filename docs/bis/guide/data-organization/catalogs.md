@@ -119,9 +119,9 @@ graph TD
         DC["DefinitionContainer<br/>Rank = Application"]
     end
     subgraph CSM["Sub-model of the DefinitionContainer"]
-        D1["PhysicalType PVC-300<br/>FederationGuid = G1"]
+        D1["PhysicalType PVC-300<br/>FederationGuid = G1<br/>Code = &quot;PVC-300&quot; scoped to v1"]
         MAT["PhysicalMaterial PVC<br/>cached once"]
-        D2["PhysicalType PVC-300 (updated)<br/>FederationGuid = G2"]
+        D2["PhysicalType PVC-300 (updated)<br/>FederationGuid = G2<br/>Code = &quot;PVC-300&quot; scoped to v2"]
     end
     A1["ExternalSourceAspect<br/>Identifier = PVC-300"]
     A3["ExternalSourceAspect<br/>Identifier = PVC"]
@@ -152,7 +152,7 @@ graph TD
     style CSM fill:#f7fbff,stroke:#8fb3d9,stroke-width:1px,color:#1f2937
 ```
 
-The two cached PVC-300 elements share a stable `Identifier` but have different `FederationGuid`s; the unchanged *PVC* material is cached once with one aspect per catalog version that includes it. To check whether a newer version of a cached definition exists, the application looks up the definition's stable `Identifier` in the latest catalog version and compares the authority's version identifier there against the cached `FederationGuid`.
+The two cached PVC-300 elements share a stable `Identifier` and a `CodeValue` but have different `FederationGuid`s and `CodeScope`s; the unchanged *PVC* material is cached once with one aspect per catalog version that includes it. To check whether a newer version of a cached definition exists, the application looks up the definition's stable `Identifier` in the latest catalog version and compares the authority's version identifier there against the cached `FederationGuid`.
 
 ## Scope and future standardization
 
