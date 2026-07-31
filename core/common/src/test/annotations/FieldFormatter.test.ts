@@ -6,12 +6,14 @@
 import { describe, expect, it } from "vitest";
 import { BeEvent } from "@itwin/core-bentley";
 import { BasicUnitsProvider, FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider } from "@itwin/core-quantity";
-import { FieldFormatterContext, formatFieldValue as fmtFldVal, formatFieldValueAsync, FieldValue } from "../../internal/annotations/FieldFormatter";
+import { FieldFormatterContext, FieldValue, formatFieldValue as fmtFldVal, formatFieldValueAsync } from "../../internal/annotations/FieldFormatter";
 import type { FieldFormatOptions, FieldPrimitiveValue, FieldPropertyType } from "../../core-common";
 
 function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
   return fmtFldVal({ value, type }, options);
 }
+
+//cspell:ignore WUZZY Freitag Jumat Juni петак
 
 describe("Field formatting", () => {
   describe("string", () => {

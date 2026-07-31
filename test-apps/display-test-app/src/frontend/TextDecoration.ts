@@ -40,7 +40,7 @@ import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geomet
 import { dtaIpc } from "./App";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
-// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint, subscriptscale, superscriptscale, insertstyle, updatestyle, deletestyle, applystyle
+// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint, subscriptscale, superscriptscale, insertstyle, updatestyle, deletestyle, applystyle, docheight, textheight, formatmode
 
 class TextEditor implements Decorator {
   // Geometry properties
@@ -310,6 +310,7 @@ class TextEditor implements Decorator {
       const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
       this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error("Error generating text annotation graphics:", err, "\nAnnotation props:", this.annotationProps, "\nPlacement props:", this.placementProps, "\nCategory ID:", this.categoryId, "\nModel ID:", this.modelId);
       throw err;
     }
@@ -845,7 +846,7 @@ export class TextDecorationTool extends Tool {
       "inline FormatProps — m², 3 decimals.",
     );
 
-    // Inline FormatProps override — square millimetres (verifies m² -> mm² conversion).
+    // Inline FormatProps override — square millimeters (verifies m² -> mm² conversion).
     expectField(
       "Inline mm² (2 demo)",
       "6395894993.43 mm²",
