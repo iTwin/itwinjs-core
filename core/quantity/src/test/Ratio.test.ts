@@ -1139,8 +1139,7 @@ describe("Ratio format tests", () => {
         const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
 
         // Test with various whitespace configurations
-        // 1" = 1' is 1 in/ft, persistence unit is IN_PER_FT so value is 1.0
-        const testCases = ["1\" = 1'", " 1\" = 1' ", "1 \" = 1 '"];
+        const testCases = ["1\" = 1'", "1\"=1'", " 1\" = 1' ", " 1\"=1' ", "1 \" = 1 '", "1 \"=1 '"];
 
         for (const input of testCases) {
           const result = Parser.parseQuantityString(input, parserSpec);
