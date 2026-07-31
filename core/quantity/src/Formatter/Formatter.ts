@@ -222,7 +222,7 @@ export class Formatter {
           // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
           // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
           if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
-            const sep = `${spec.format.spacer}${spec.format.ratioSeparator}${spec.format.spacer}`;
+            const sep = this.ratioSeparatorString(spec);
             return { componentText: `1${sep}0`, isNegative: false };
           }
           throw e;
@@ -637,6 +637,10 @@ export class Formatter {
     return converted.magnitude;
   }
 
+  private static ratioSeparatorString(spec: FormatterSpec): string {
+    return `${spec.format.spacer}${spec.format.ratioSeparator}${spec.format.spacer}`;
+  }
+
   private static formatRatioPart(value: number, spec: FormatterSpec, side: "numerator" | "denominator"): string {
     const formatType = spec.format.ratioFormatType === "Fractional" ? FormatType.Fractional : FormatType.Decimal;
     const tempFormat = spec.format.clone({ type: formatType });
@@ -669,7 +673,7 @@ export class Formatter {
       // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
       // For ratio, we return "1:0" as the formatted value.
       if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
-        const sep = `${spec.format.spacer}${spec.format.ratioSeparator}${spec.format.spacer}`;
+        const sep = this.ratioSeparatorString(spec);
         return { componentText: `1${sep}0`, isNegative: false };
       }
       throw e;
@@ -685,8 +689,7 @@ export class Formatter {
       throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
 
     const precisionScale = Math.pow(10.0, spec.format.precision);
-    const spacer = spec.format.spacer;
-    const separator = `${spacer}${spec.format.ratioSeparator}${spacer}`;
+    const separator = this.ratioSeparatorString(spec);
     let reciprocal = 0;
 
     // Helper to get unit labels if ShowUnitLabel is set
