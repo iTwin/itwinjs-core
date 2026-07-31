@@ -1,6 +1,6 @@
 # Catalogs (CatalogDb)
 
-A **catalog** is a repository of reusable definitions that applications copy into iModels. The concepts — what a catalog is, what makes up a component, how cached definitions are organized in an iModel, and how their provenance is recorded — are described in [Catalogs in the BIS Guide](../../bis/guide/data-organization/catalogs.md). This page covers the backend APIs for working with a catalog that is stored as an iModel.
+This page covers the backend APIs for working with a **catalog**, a repository of reusable definitions that applications copy into iModels, when that catalog is stored as an iModel. The concepts (what a catalog is, what makes up a component, how cached definitions are organized in an iModel, and how their provenance is recorded) are described in [Catalogs in the BIS Guide](../../bis/guide/data-organization/catalogs.md).
 
 Storing a catalog as an iModel is one possible implementation, not a requirement. A catalog authority may host and serve its definitions any way it chooses; the BIS organization and provenance patterns apply to the *destination* iModel regardless of how the catalog itself is stored.
 
@@ -28,7 +28,7 @@ Close the `CatalogDb` when finished with it.
 
 ## Copying definitions into another iModel
 
-`CatalogDb` does not copy definitions into another iModel, and iTwin.js does not detect catalog changes automatically. Applications implement the import workflow with the standard element-reading and element-creation APIs (see [Create Elements](./CreateElements.md)).
+`CatalogDb` does not copy definitions into another iModel. Applications implement the import workflow with the standard element-reading and element-creation APIs (see [Create Elements](./CreateElements.md)).
 
 ```mermaid
 graph LR
@@ -75,18 +75,18 @@ The blue boxes are APIs supplied by iTwin.js. The gray boxes are workflow steps 
 
 The application must decide:
 
-- which definitions to copy — a catalog entry's usable form is its entry-point `DefinitionElement` *plus all of its dependencies* (sub-models, geometric elements, categories, materials, aspects, and relationships); see [What is a "component"?](../../bis/guide/data-organization/catalogs.md#what-is-a-component) for what that closure contains and why copying only the entry-point element produces a broken definition,
-- how to record their origin — follow the [recommended provenance mapping](../../bis/guide/data-organization/catalogs.md#provenance-of-cached-definitions) using [RepositoryLink]($backend), [ExternalSourceAspect]($backend), and `FederationGuid`, and
+- which definitions to copy: the entry-point `DefinitionElement` plus all of its dependencies (sub-models, geometric elements, categories, materials, aspects, and relationships),
+- how to record their origin: follow the [recommended provenance mapping](../../bis/guide/data-organization/catalogs.md#provenance-of-cached-definitions) using [RepositoryLink]($backend), [ExternalSourceAspect]($backend), and `FederationGuid`, and
 - whether and how to offer later updates when the catalog publishes a new version.
 
-The destination iModel owns each copied definition independently of the catalog.
+Copying only the entry-point element produces a broken definition. See [Components and their dependencies](../../bis/guide/data-organization/catalogs.md#components-and-their-dependencies) for what the full set of dependencies contains and why. The destination iModel owns each copied definition independently of the catalog.
 
 ## What remains application-specific
 
 Applications and domain schemas define the parts of the catalog workflow that iTwin.js does not provide:
 
 - administering and discovering available catalogs,
-- selecting catalog entries — selection UX is application- and context-specific (an application presents domain choices such as "pipe type", not raw definition elements),
+- selecting catalog entries; selection UX is application- and context-specific (an application presents domain choices such as "pipe type", not raw definition elements),
 - traversing dependencies and copying definitions into other iModels,
 - recording provenance,
 - detecting and presenting updates, and

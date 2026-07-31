@@ -7,7 +7,7 @@ Two recurring run-time needs in non-trivial iTwin.js applications are **configur
 
 These two systems are deliberately separate. If everything were stored in workspace containers, there would be no way to know which container to open first. Settings containers solve this bootstrapping problem — they are loaded first and tell the application which workspace containers to open.
 
-[Catalogs](./Catalogs.md) store reusable definitions, commonly [DefinitionElement](../../bis/guide/references/glossary.md#definitionelement)s, that applications copy into other iModels — see [Catalogs in the BIS Guide](../../bis/guide/data-organization/catalogs.md) for the concepts. Applications may use catalogs alongside Settings and Workspace resources, but must define how users discover and administer them.
+[Catalogs](./Catalogs.md) store reusable definitions, commonly [DefinitionElement](../../bis/guide/references/glossary.md#definitionelement)s, that applications copy into other iModels; see [Catalogs in the BIS Guide](../../bis/guide/data-organization/catalogs.md) for the concepts. Applications may use catalogs alongside Settings and Workspace resources, but must define how users discover and administer them.
 
 At runtime, settings and resources are accessed through one of three workspace scopes:
 
