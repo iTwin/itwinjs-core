@@ -757,11 +757,13 @@ export abstract class Viewport implements Disposable, TileUser {
     this.view.displayStyle.settings.dropModelAppearanceOverride(id);
   }
 
-  /** Some changes may or may not require us to invalidate the scene.
+  /** Some changes do not alter the set of graphics being displayed (the "scene") but may alter the visibility of objects within those graphics.
+   * Under certain circumstances, we may want to recreate the scene after such changes.
    * Specifically, when shadows are enabled or we are displaying view attachments, the following changes may affect the visibility or transparency of elements or features:
    * - Viewed categories and subcategories;
    * - Always/never drawn elements
    * - Symbology overrides.
+   * Cached decorations will also be invalidated in case they depend on object visibility.
    */
   private maybeInvalidateScene(): void {
     // When shadows are being displayed and the set of displayed categories changes, we must invalidate the scene so that shadows will be regenerated.
@@ -771,7 +773,12 @@ export abstract class Viewport implements Disposable, TileUser {
 
     if (this.view.displayStyle.wantShadows || this.view.isSheetView())
       this.invalidateScene();
+
+    this.onSceneVisibilityChanged();
   }
+
+  /** @internal Invoked by [[maybeInvalidateScene]] when the visibility of objects in the scene may have changed, but the scene itself has not changed. */
+  protected onSceneVisibilityChanged() { }
 
   /** Enable or disable display of elements belonging to a set of categories specified by Id.
    * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
@@ -3209,6 +3216,12 @@ export class ScreenViewport extends Viewport {
     super.invalidateScene();
 
     // When the scene is invalidated, so are all cached decorations - they will be regenerated.
+    this._decorationCache.clear();
+  }
+
+  /** @internal */
+  protected override onSceneVisibilityChanged(): void {
+    // Cached decorations may be associated with objects in the scene whose visibility has changed. Give them the opportunity to react.
     this._decorationCache.clear();
   }
 
