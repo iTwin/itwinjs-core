@@ -3859,9 +3859,6 @@ importers:
       npm-run-all2:
         specifier: ^7.0.2
         version: 7.0.2
-      null-loader:
-        specifier: ^4.0.1
-        version: 4.0.1(webpack@5.108.4)
       react:
         specifier: ^18.0.0
         version: 18.3.1
@@ -3892,9 +3889,6 @@ importers:
       vite-plugin-env-compatible:
         specifier: ^2.0.1
         version: 2.0.1
-      webpack:
-        specifier: ^5.97.1
-        version: 5.108.4(webpack-cli@5.1.4)
 
   ../../test-apps/export-gltf:
     dependencies:
