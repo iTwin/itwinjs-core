@@ -13,7 +13,7 @@
  *     before writing the annotation, so the [FormatterSpec]($core-quantity)s required by
  *     any [FieldRun]($common)s in the block are hot before the txn commits.
  *   - The provider is registered against the iModel via
- *     [ElementDrivesTextAnnotation.setFieldFormattingProvider]($backend), so the txn callback
+ *     [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), so the txn callback
  *     path that recomputes field content synchronously routes through the provider.
  *   - `Backend.generateTextAnnotationGeometry` passes the same underlying
  *     [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity) to
@@ -265,7 +265,7 @@ export function getFieldFormattingDemo(iModel: IModelDb): { mode: FieldFormattin
  */
 export async function setFieldFormattingMode(iModel: IModelDb, mode: FieldFormattingMode): Promise<void> {
   if (mode === "default") {
-    ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, undefined);
+    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
     state.delete(iModel);
     return;
   }
@@ -273,6 +273,6 @@ export async function setFieldFormattingMode(iModel: IModelDb, mode: FieldFormat
   const provider = new FieldFormattingDemoProvider(iModel);
   await provider.preloadSeeds();
   const onMissingSpec = mode === "demo-throw" ? "throw" : "fallback";
-  ElementDrivesTextAnnotation.setFieldFormattingProvider(iModel, provider, { onMissingSpec });
+  ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { provider, onMissingSpec });
   state.set(iModel, { mode, provider });
 }
