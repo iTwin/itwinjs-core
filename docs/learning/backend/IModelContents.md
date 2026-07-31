@@ -59,7 +59,7 @@ For a large catalog, import only the definitions that are relevant to the iModel
 
 > Note: Applications should give these component type definitions a provenance link to the original catalog if they need to check for catalog updates.
 
-> See [Catalogs](./Catalogs.md) for how applications can organize reusable definitions in a catalog iModel. `CatalogDb` does not copy or synchronize definitions. The application must create and maintain provenance links, for example with [ExternalSourceAspect](../../bis/domains/Provenance-in-BIS.md#externalsourceaspect).
+> See [Catalogs in the BIS Guide](../../bis/guide/data-organization/catalogs.md) for how cached catalog definitions are organized in an iModel and the recommended provenance mapping, and [Catalogs](./Catalogs.md) for the backend APIs. `CatalogDb` does not copy or synchronize definitions; the application must create and maintain provenance links.
 
 ### Standard Definitions
 
