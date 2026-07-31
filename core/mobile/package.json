@@ -58,7 +58,6 @@
     "@types/superagent": "^8.1.6",
     "@types/ws": "^7.0.0",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.1",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
     "eslint": "^9.31.0",
