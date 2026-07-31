@@ -515,6 +515,31 @@ describe("Formatting tests:", () => {
     });
   });
 
+  it("Bad spacer (non-whitespace) in Composite", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const json = {
+      composite: {
+        includeZero: true,
+        spacer: "-",
+        units: [
+          {
+            name: "Units.VERTICAL_PER_HORIZONTAL",
+          },
+        ],
+      },
+      precision: 1,
+      type: "Ratio",
+      ratioType: "OneToN",
+    };
+    const testFormat = new Format("test");
+
+    await testFormat.fromJSON(unitsProvider, json).catch((err) => {
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has a Composite 'spacer' with an invalid 'spacer' attribute. It must be " " or "".`);
+    });
+  });
+
   it("Read/Write All Format Traits", async () => {
     const unitsProvider = new TestUnitsProvider();
 

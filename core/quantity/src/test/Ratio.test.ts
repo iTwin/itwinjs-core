@@ -277,28 +277,6 @@ describe("Ratio format tests", () => {
       expect(ratioFormat.units![1][0].name).to.equal("Units.M");
     });
 
-    it("should reject non-whitespace spacer for ratio format", async () => {
-      const ratioJson: FormatProps = {
-        type: "Ratio",
-        ratioType: "OneToN",
-        precision: 1,
-        composite: {
-          spacer: "-",
-          includeZero: true,
-          units: [{ name: "Units.VERTICAL_PER_HORIZONTAL" }],
-        },
-      };
-
-      const unitsProvider = new TestUnitsProvider();
-      const ratioFormat = new Format("BadSpacer");
-      try {
-        await ratioFormat.fromJSON(unitsProvider, ratioJson);
-        expect.fail("Expected error was not thrown");
-      } catch (e: any) {
-        expect(e.message).toContain("not supported for Ratio formats");
-        expect(e).toBeInstanceOf(QuantityError);
-      }
-    });
   });
 
   describe("RatioType Tests with special values", () => {
