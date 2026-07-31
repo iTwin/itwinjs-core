@@ -35,8 +35,8 @@ export type FieldFormattingMode = "default" | "demo" | "demo-throw";
 
 /** A small set of pre-canned length [FormatProps]($core-quantity) that the demo provider
  * seeds itself with. They are keyed by names in the `Demo.*` namespace so they don't collide
- * with real KoQs and are usable as `formatSetKey` overrides from an authoring flow (e.g.
- * `dta text field '{...formatOptions: {quantity: {formatSetKey: "Demo.LENGTH_MM", persistenceUnit: "Units.M"}}}'`).
+ * with real KoQs and are usable as `kindOfQuantity` overrides from an authoring flow (e.g.
+ * `dta text field '{...formatOptions: {quantity: {kindOfQuantity: "Demo.LENGTH_MM", persistenceUnit: "Units.M"}}}'`).
  *
  * Each seed prefixes its unit label with a distinct emoji so you can visually confirm which
  * seed formatted the value at a glance.

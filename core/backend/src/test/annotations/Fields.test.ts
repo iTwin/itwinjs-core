@@ -1019,10 +1019,10 @@ describe.only("Field evaluation", () => {
       expect(reqs[0].persistenceUnitName).to.equal("Units.M");
     });
 
-    it("uses formatSetKey and persistenceUnit overrides when supplied", () => {
+    it("uses kindOfQuantity and persistenceUnit overrides when supplied", () => {
       const block = makeBlock(makeField(
         { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] },
-        { quantity: { formatSetKey: "AecUnits.LENGTH", persistenceUnit: "Units.M" } },
+        { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } },
       ));
       const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
       expect(reqs).to.have.length(1);
@@ -1030,10 +1030,10 @@ describe.only("Field evaluation", () => {
       expect(reqs[0].persistenceUnitName).to.equal("Units.M");
     });
 
-    it("prefers formatSetKey over property KoQ but keeps the property's persistence unit", () => {
+    it("prefers kindOfQuantity over property KoQ but keeps the property's persistence unit", () => {
       const block = makeBlock(makeField(
         { propertyName: "lengthProp" },
-        { quantity: { formatSetKey: "AecUnits.LENGTH" } },
+        { quantity: { kindOfQuantity: "AecUnits.LENGTH" } },
       ));
       const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
       expect(reqs).to.have.length(1);
@@ -1078,8 +1078,8 @@ describe.only("Field evaluation", () => {
       const block = makeBlock(
         makeField({ propertyName: "lengthProp" }),
         makeField({ propertyName: "lengthProp" }),
-        makeField({ propertyName: "lengthProp" }, { quantity: { formatSetKey: "AecUnits.LENGTH" } }),
-        makeField({ propertyName: "lengthProp" }, { quantity: { formatSetKey: "AecUnits.LENGTH" } }),
+        makeField({ propertyName: "lengthProp" }, { quantity: { kindOfQuantity: "AecUnits.LENGTH" } }),
+        makeField({ propertyName: "lengthProp" }, { quantity: { kindOfQuantity: "AecUnits.LENGTH" } }),
       );
       const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
       expect(reqs).to.have.length(2);
@@ -1162,7 +1162,7 @@ describe.only("Field evaluation", () => {
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         // point is a Point3d without a KoQ; supply overrides to route it through our stub.
         propertyPath: { propertyName: "point" },
-        formatOptions: { quantity: { formatSetKey: "Fields.LENGTH", persistenceUnit: "Units.M" } },
+        formatOptions: { quantity: { kindOfQuantity: "Fields.LENGTH", persistenceUnit: "Units.M" } },
         cachedContent: "old",
       });
       textBlock.appendRun(field);
@@ -1263,7 +1263,7 @@ describe.only("Field evaluation", () => {
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
         cachedContent: "old",
-        formatOptions: { quantity: { formatSetKey: "MissingKoq" } },
+        formatOptions: { quantity: { kindOfQuantity: "MissingKoq" } },
       }));
 
       expect(() => ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock }))
@@ -1278,7 +1278,7 @@ describe.only("Field evaluation", () => {
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
         cachedContent: "old",
-        formatOptions: { quantity: { formatSetKey: "MissingKoq" } },
+        formatOptions: { quantity: { kindOfQuantity: "MissingKoq" } },
       });
       textBlock.appendRun(field);
 
@@ -1298,7 +1298,7 @@ describe.only("Field evaluation", () => {
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
         cachedContent: "old",
-        formatOptions: { quantity: { formatSetKey: "MissingKoq" } },
+        formatOptions: { quantity: { kindOfQuantity: "MissingKoq" } },
       }));
 
       await expect(ElementDrivesTextAnnotation.evaluateFieldsAsync({

@@ -502,12 +502,12 @@ export class TextDecorationTool extends Tool {
       "persistenceUnit alone doesn't select a format; falls through to defaultCoordinateFormatProps.",
     );
 
-    // formatSetKey chooses which KoQ the FormatsProvider resolves.
+    // kindOfQuantity chooses which KoQ the FormatsProvider resolves.
     expectField(
       "KoQ override (LENGTH_SHORT)",
       "(30707146.7 [*]mm, 58893315.3 [*]mm, 0 [*]mm)",
-      { quantity: { formatSetKey: "AecUnits.LENGTH_SHORT", persistenceUnit } },
-      "formatSetKey= overrides the property's own KoQ. DEMO_SEED_FORMATS supplies an [*]mm-marked stand-in so this works even without the AecUnits schema loaded.",
+      { quantity: { kindOfQuantity: "AecUnits.LENGTH_SHORT", persistenceUnit } },
+      "kindOfQuantity= overrides the property's own KoQ. DEMO_SEED_FORMATS supplies an [*]mm-marked stand-in so this works even without the AecUnits schema loaded.",
     );
 
     // Post-format wrappers — no quantity override, so wraps whatever the active pathway produces.
@@ -526,27 +526,27 @@ export class TextDecorationTool extends Tool {
       "case=upper is applied after formatting.",
     );
 
-    // Seed-backed formatSetKey: no schema KoQ required. The demo provider's DEMO_SEED_FORMATS
+    // Seed-backed kindOfQuantity: no schema KoQ required. The demo provider's DEMO_SEED_FORMATS
     // table supplies the FormatProps directly, so these work on the sync path even when the
     // property's own KoQ is unresolvable.
     expectField(
       "Seed Demo.LENGTH_M",
       "(30707.1467 [#]m, 58893.3153 [#]m, 0 [#]m)",
-      { quantity: { formatSetKey: "Demo.LENGTH_M", persistenceUnit } },
+      { quantity: { kindOfQuantity: "Demo.LENGTH_M", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.LENGTH_M'] — decimal metres, 4 dp. [#] marker confirms the demo seed applied.",
     );
 
     expectField(
       "Seed Demo.LENGTH_MM",
       "(30707146.7 [*]mm, 58893315.3 [*]mm, 0 [*]mm)",
-      { quantity: { formatSetKey: "Demo.LENGTH_MM", persistenceUnit } },
+      { quantity: { kindOfQuantity: "Demo.LENGTH_MM", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.LENGTH_MM'] — decimal mm, 3 dp. Trailing digits reflect actual m->mm conversion. [*] marker confirms the demo seed applied.",
     );
 
     expectField(
       "Seed Demo.LENGTH_FT",
       "(100745.232 [~]ft, 193219.5384 [~]ft, 0 [~]ft)",
-      { quantity: { formatSetKey: "Demo.LENGTH_FT", persistenceUnit } },
+      { quantity: { kindOfQuantity: "Demo.LENGTH_FT", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.LENGTH_FT'] — decimal ft, 4 dp. Trailing digits reflect actual m->ft conversion. [~] marker confirms the demo seed applied.",
     );
 
@@ -732,7 +732,7 @@ export class TextDecorationTool extends Tool {
     //   * FootprintArea is a scalar quantity field, so the output is a single formatted
     //     magnitude (no parenthesised coordinate tuple like the Origin test).
     //   * DEMO_SEED_FORMATS now contains `Demo.AREA_*` seeds (see FieldFormattingDemo.ts)
-    //     which are preloaded against `Units.SQ_M`, so `formatSetKey: "Demo.AREA_*"`
+    //     which are preloaded against `Units.SQ_M`, so `kindOfQuantity: "Demo.AREA_*"`
     //     resolves on the sync path even without any schema KoQ. The sync no-format
     //     fallback for a scalar quantity with no resolvable KoQ is still a raw
     //     `.toString()` (no length-style coordinate fallback applies).
@@ -779,27 +779,27 @@ export class TextDecorationTool extends Tool {
       "case=upper applied after formatting; digits are unaffected.",
     );
 
-    // Seed-backed formatSetKey: no schema KoQ required. The demo provider's DEMO_SEED_FORMATS
+    // Seed-backed kindOfQuantity: no schema KoQ required. The demo provider's DEMO_SEED_FORMATS
     // table supplies the FormatProps directly, so these work on the sync path even when the
     // property's own KoQ is unresolvable.
     expectField(
       "Seed Demo.AREA_M2",
       "6395.895 [$]m²",
-      { quantity: { formatSetKey: "Demo.AREA_M2", persistenceUnit } },
+      { quantity: { kindOfQuantity: "Demo.AREA_M2", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.AREA_M2'] — decimal m², 4 dp. Trailing zero dropped (6395.8950 -> 6395.895). [$] marker confirms the demo seed applied.",
     );
 
     expectField(
       "Seed Demo.AREA_MM2",
       "6395894993.43 [%]mm²",
-      { quantity: { formatSetKey: "Demo.AREA_MM2", persistenceUnit } },
+      { quantity: { kindOfQuantity: "Demo.AREA_MM2", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.AREA_MM2'] — decimal mm², 2 dp. Verifies m² -> mm² conversion (x 1,000,000). [%] marker confirms the demo seed applied.",
     );
 
     expectField(
       "Seed Demo.AREA_FT2",
       "68844.8407 [&]ft²",
-      { quantity: { formatSetKey: "Demo.AREA_FT2", persistenceUnit } },
+      { quantity: { kindOfQuantity: "Demo.AREA_FT2", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.AREA_FT2'] — decimal ft², 4 dp. Verifies m² -> ft² conversion (/ 0.09290304). [&] marker confirms the demo seed applied.",
     );
 

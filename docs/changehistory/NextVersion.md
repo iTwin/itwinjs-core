@@ -42,7 +42,7 @@ const fieldRun = FieldRun.create({
     quantity: {
       // Look up a specific KindOfQuantity via the active FormatsProvider, overriding
       // the property's own KoQ.
-      formatSetKey: "AecUnits.LENGTH",
+      kindOfQuantity: "AecUnits.LENGTH",
     },
   },
 });
@@ -51,7 +51,7 @@ const fieldRun = FieldRun.create({
 A format is resolved in this priority order:
 
 1. `formatOptions.quantity.format` — an inline [FormatProps]($core-quantity) override.
-2. `formatOptions.quantity.formatSetKey` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
+2. `formatOptions.quantity.kindOfQuantity` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
 3. The property's own [KindOfQuantity]($ecschema-metadata).
 4. For `"coordinate"` only, a built-in meters fallback.
 

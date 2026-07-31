@@ -641,9 +641,9 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
     return undefined;
   }
 
-  // Resolve the KoQ name to look up. Priority: explicit formatSetKey override > property KoQ.
+  // Resolve the KoQ name to look up. Priority: explicit kindOfQuantity override > property KoQ.
   const koq = ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
-  const name = quantityOptions?.formatSetKey ?? koq?.fullName;
+  const name = quantityOptions?.kindOfQuantity ?? koq?.fullName;
   if (!name) {
     return undefined;
   }

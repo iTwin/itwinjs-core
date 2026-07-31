@@ -199,7 +199,7 @@ describe("Field formatting", () => {
 });
 
 describe("Async field formatting", () => {
-  // A fake FormatsProvider used to exercise the KindOfQuantity / formatSetKey resolution paths
+  // A fake FormatsProvider used to exercise the property-KoQ / kindOfQuantity-override resolution paths
   // without requiring an EC SchemaContext in these unit tests.
   function createFakeFormatsProvider(map: Record<string, FormatDefinition>): FormatsProvider {
     return {
@@ -262,7 +262,7 @@ describe("Async field formatting", () => {
       expect(result).toBe("2 m");
     });
 
-    it("resolves format via a formatSetKey override, taking precedence over KoQ", async () => {
+    it("resolves format via a kindOfQuantity override, taking precedence over KoQ", async () => {
       const value: FieldValue = {
         value: 1,
         type: "quantity",
@@ -271,7 +271,7 @@ describe("Async field formatting", () => {
       };
       const result = await formatFieldValueAsync(
         value,
-        { quantity: { formatSetKey: "MySet.LENGTH_FT" } },
+        { quantity: { kindOfQuantity: "MySet.LENGTH_FT" } },
         createContext({
           "AecUnits.LENGTH": metersFormat,
           "MySet.LENGTH_FT": feetInchesFormat,
