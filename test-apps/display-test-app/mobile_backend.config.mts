@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { builtinModules } from "node:module";
+import { isBuiltin } from "node:module";
 import path from "node:path";
 import { defineConfig, type Plugin } from "vite";
 
@@ -34,11 +34,6 @@ function ignoreDesktopModules(): Plugin {
   };
 }
 
-const nodeBuiltins = new Set([
-  ...builtinModules,
-  ...builtinModules.map((name) => `node:${name}`),
-]);
-
 export default defineConfig({
   build: {
     commonjsOptions: {
@@ -48,23 +43,20 @@ export default defineConfig({
       include: [/./],
       transformMixedEsModules: true,
     },
-    emptyOutDir: true,
     minify: false,
     outDir: path.resolve(__dirname, "lib/mobile"),
     reportCompressedSize: false,
     rollupOptions: {
-      external: (id) => nodeBuiltins.has(id)
+      external: (id) => isBuiltin(id)
         || id === "electron"
         || id === "bufferutil"
         || id === "utf-8-validate",
       input: path.resolve(__dirname, "lib/backend/MobileMain.js"),
       output: {
-        chunkFileNames: "[name].js",
         entryFileNames: "main.js",
-        exports: "auto",
-        // Preserve the named CommonJS2 library export without replacing helpers imported by lazy chunks.
-        footer: (chunk) => chunk.isEntry ? "module.exports.main = {};" : "",
+        footer: "module.exports = { main: {} };",
         format: "cjs",
+        inlineDynamicImports: true,
       },
     },
     sourcemap: "inline",
