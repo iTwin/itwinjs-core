@@ -64,9 +64,9 @@ export default defineConfig({
   },
   define: {
     // The existing mobile command produces a development-mode Webpack bundle.
-    "process.env.NODE_ENV": JSON.stringify("development"),
+    "process.env.NODE_ENV": '"development"',
     "global.GENTLY": "false",
-    "process.version": JSON.stringify("v10.9.0"),
+    "process.version": '"v10.9.0"',
   },
   plugins: [ignoreDesktopModules()],
   publicDir: false,
