@@ -157,9 +157,6 @@ importers:
       node-simctl:
         specifier: ~7.6.1
         version: 7.6.5
-      null-loader:
-        specifier: ^4.0.1
-        version: 4.0.1(webpack@5.108.4)
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
@@ -169,18 +166,15 @@ importers:
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.108.4)
       sql-formatter:
         specifier: ^15.4.6
         version: 15.8.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      webpack:
-        specifier: ^5.97.1
-        version: 5.108.4(webpack-cli@5.1.4)
+      vite:
+        specifier: ^6.4.3
+        version: 6.4.3(@types/node@20.17.58)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)
 
   ../../core/bentley:
     devDependencies:

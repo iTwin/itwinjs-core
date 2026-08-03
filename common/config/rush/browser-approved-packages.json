@@ -932,7 +932,7 @@
     },
     {
       "name": "vite",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "internal" ]
     },
     {
       "name": "vite-multiple-assets",
