@@ -136,12 +136,6 @@ importers:
       deep-equal-in-any-order:
         specifier: ^2.0.6
         version: 2.2.0
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.6.1
-      dotenv-expand:
-        specifier: ^5.1.0
-        version: 5.1.0
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -236,9 +230,6 @@ importers:
       '@itwin/object-storage-core':
         specifier: ^3.0.4
         version: 3.1.3
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
       '@types/flatbuffers':
         specifier: ~1.10.0
         version: 1.10.3
@@ -251,9 +242,6 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
@@ -645,13 +633,6 @@ importers:
         version: 5.6.3
 
   ../../core/electron:
-    dependencies:
-      '@openid/appauth':
-        specifier: ^1.3.2
-        version: 1.3.2
-      username:
-        specifier: ^7.0.0
-        version: 7.0.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -796,9 +777,6 @@ importers:
         specifier: workspace:*
         version: link:../frontend
     devDependencies:
-      '@itwin/build-tools':
-        specifier: workspace:*
-        version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
@@ -875,12 +853,6 @@ importers:
       '@itwin/object-storage-core':
         specifier: ^3.0.4
         version: 3.1.3
-      '@types/chai-as-promised':
-        specifier: ^7
-        version: 7.1.8
-      '@types/draco3d':
-        specifier: ^1.4.10
-        version: 1.4.10
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
@@ -917,9 +889,6 @@ importers:
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      vite-multiple-assets:
-        specifier: ^1.3.1
-        version: 1.3.1(mime-types@2.1.35)(vite@6.4.3(@types/node@20.17.58)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0))
       vite-plugin-static-copy:
         specifier: 2.2.0
         version: 2.2.0(vite@6.4.3(@types/node@20.17.58)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0))
@@ -1107,12 +1076,6 @@ importers:
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/i18next':
-        specifier: ^8.4.2
-        version: 8.4.6
-      '@types/i18next-browser-languagedetector':
-        specifier: ^2.0.1
-        version: 2.0.2
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.10
@@ -1201,12 +1164,6 @@ importers:
       glob:
         specifier: ^13.0.6
         version: 13.0.6
-      mocha:
-        specifier: ^11.1.0
-        version: 11.7.6
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
@@ -1274,9 +1231,6 @@ importers:
       chai:
         specifier: ^4.3.10
         version: 4.5.0
-      chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.2(chai@4.5.0)
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
@@ -1301,9 +1255,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/core-bentley':
-        specifier: workspace:*
-        version: link:../bentley
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
@@ -1322,9 +1273,6 @@ importers:
       cpx2:
         specifier: ^8.0.0
         version: 8.0.2
-      debug:
-        specifier: ^2.6.9
-        version: 2.6.9
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -5784,9 +5732,6 @@ packages:
   '@types/detect-port@1.1.0':
     resolution: {integrity: sha512-hN/DSlHo2R1LQtle6dPyprULgn2P0sEZsuCwwOkW6apfExwEEGsGRj59C3VPnmTgi83CN2IxpuxvnyAMPYe8cg==}
 
-  '@types/draco3d@1.4.10':
-    resolution: {integrity: sha512-AX22jp8Y7wwaBgAixaSvkoG4M/+PlAcm3Qs4OW8yT9DM4xUpWKeFhLueTAyZF39pviAdcDdeJoACapiAceqNcw==}
-
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
@@ -5831,12 +5776,6 @@ packages:
 
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
-
-  '@types/i18next-browser-languagedetector@2.0.2':
-    resolution: {integrity: sha512-5KhnWbUIfncsFQvZO2/k0P4qqvWpI8Isd3wa/56zVqORl9db3J+aPFgoeO0FN8oKozaT+s0U9RoQnSlqI5YRhw==}
-
-  '@types/i18next@8.4.6':
-    resolution: {integrity: sha512-ZiSCqW8j9/gQCYixz1nMhyCprSGh3rwdyX+FHAzEN+bMCmc7yCYjNutl6jvMYSxSIGeL0CLEXPM8Nlk2lE0t5w==}
 
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
@@ -10314,12 +10253,6 @@ packages:
   vhacd-js@0.0.1:
     resolution: {integrity: sha512-UfFbxWkl59mjtMX1z5AhWxGu91RdHK67JOHyfgIUA/gk+XD30djG6XJgEpVY65X4W/a04U9urWQnlLjsWwlgKA==}
 
-  vite-multiple-assets@1.3.1:
-    resolution: {integrity: sha512-iV7lJiunCUyTq2hIsnnoZF2LBKLs9e1ezee0I3TOG9SgBrM2w5vrf4RXDJdVdYmCthujnz2aIx4wYax+0Gpcwg==}
-    peerDependencies:
-      mime-types: ^2.1.35
-      vite: '>=2.9.6'
-
   vite-plugin-env-compatible@2.0.1:
     resolution: {integrity: sha512-DRrOZTg/W44ojVQQfGSMPEgYQGzp5TeIpt9cpaK35hTOC/b2D7Ffl8/RIgK8vQ0mlnDIUgETcA173bnMEkyzdw==}
 
@@ -12092,8 +12025,6 @@ snapshots:
 
   '@types/detect-port@1.1.0': {}
 
-  '@types/draco3d@1.4.10': {}
-
   '@types/estree@1.0.9': {}
 
   '@types/express-serve-static-core@4.19.9':
@@ -12148,10 +12079,6 @@ snapshots:
   '@types/http-cache-semantics@4.2.0': {}
 
   '@types/http-errors@2.0.5': {}
-
-  '@types/i18next-browser-languagedetector@2.0.2': {}
-
-  '@types/i18next@8.4.6': {}
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 
@@ -12439,7 +12366,7 @@ snapshots:
       '@vitest/mocker': 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0))
       playwright: 1.56.1
       tinyrainbow: 3.1.0
-      vitest: 4.1.10(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -12455,7 +12382,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.0
-      vitest: 4.1.10(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)
       ws: 8.21.1
     transitivePeerDependencies:
       - bufferutil
@@ -12475,7 +12402,7 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.10(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)
     optionalDependencies:
       '@vitest/browser': 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.10)
 
@@ -17230,11 +17157,6 @@ snapshots:
   vary@1.1.2: {}
 
   vhacd-js@0.0.1: {}
-
-  vite-multiple-assets@1.3.1(mime-types@2.1.35)(vite@6.4.3(@types/node@20.17.58)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)):
-    dependencies:
-      mime-types: 2.1.35
-      vite: 6.4.3(@types/node@20.17.58)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)
 
   vite-plugin-env-compatible@2.0.1:
     dependencies:
