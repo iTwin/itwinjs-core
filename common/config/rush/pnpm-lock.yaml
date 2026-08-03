@@ -3536,9 +3536,6 @@ importers:
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../../core/geometry
-      '@itwin/core-mobile':
-        specifier: workspace:*
-        version: link:../../core/mobile
       '@itwin/core-quantity':
         specifier: workspace:*
         version: link:../../core/quantity
@@ -3606,9 +3603,6 @@ importers:
       chrome-launcher:
         specifier: ^0.15.2
         version: 0.15.2
-      cpx2:
-        specifier: ^8.0.0
-        version: 8.0.2
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -3633,9 +3627,6 @@ importers:
       npm-run-all2:
         specifier: ^7.0.2
         version: 7.0.2
-      null-loader:
-        specifier: ^4.0.1
-        version: 4.0.1(webpack@5.108.4)
       react:
         specifier: ^18.0.0
         version: 18.3.1
@@ -3666,9 +3657,6 @@ importers:
       vite-plugin-env-compatible:
         specifier: ^2.0.1
         version: 2.0.1
-      webpack:
-        specifier: ^5.97.1
-        version: 5.108.4(webpack-cli@5.1.4)
 
   ../../test-apps/display-test-app:
     dependencies:
