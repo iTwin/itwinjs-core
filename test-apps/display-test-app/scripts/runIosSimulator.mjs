@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { copyFile } from 'fs/promises';
+import { execSync } from 'child_process';
 import { Simctl } from "node-simctl";
 import { fileURLToPath } from 'url';
 import * as path from "path";
@@ -48,21 +49,52 @@ class SimctlWithOpts extends Simctl {
   }
 
   /**
+   * Returns the list of runtime versions that are actually installed and available.
+   * `simctl list devices` can report devices whose runtime profile is not actually
+   * installed; those devices appear available but fail to boot with an error like
+   * "simulator runtime is not available". Cross-referencing the runtimes list lets us
+   * avoid selecting such runtimes.
+   * @param {string} [platform='iOS']
+   * @returns {Promise<string[]>} Available runtime versions, sorted high to low.
+   */
+  async getAvailableRuntimeVersions(platform = 'iOS') {
+    const { stdout } = await this.exec('list', { args: ['runtimes', '--json'] });
+    /** @type {{ version: string, name: string, isAvailable?: boolean, availabilityError?: string }[]} */
+    const runtimes = (JSON.parse(stdout).runtimes);
+    return runtimes
+      .filter((r) => r.isAvailable === true && !r.availabilityError && r.name.toLowerCase().startsWith(platform.toLowerCase()))
+      .map((r) => r.version)
+      .sort(numericCompareDescending);
+  }
+
+  /**
    * @param {string} majorVersion
    * @param {string} [platform='iOS']
    */
   async getLatestRuntimeVersion(majorVersion, platform = 'iOS') {
-    const { stdout } = await this.exec('list', { args: ['runtimes', '--json'] });
-    /** @type {{ version: string, identifier: string, name: string }[]} */
-    const runtimes = (JSON.parse(stdout).runtimes);
-    runtimes.sort((a, b) => numericCompareDescending(a.version, b.version));
-    for (const { version, name } of runtimes) {
-      if (version.startsWith(`${majorVersion}.`) && name.toLowerCase().startsWith(platform.toLowerCase())) {
+    for (const version of await this.getAvailableRuntimeVersions(platform)) {
+      if (version.startsWith(`${majorVersion}.`)) {
         return version;
       }
     }
     return undefined;
   };
+
+  /**
+   * Logs diagnostic information about the machine's simulator runtimes and devices. This is
+   * useful when a simulator fails to boot on CI, where the runtime list and the device list
+   * can disagree about what is actually installed.
+   */
+  async logDiagnostics() {
+    for (const args of [['runtimes'], ['devices']]) {
+      try {
+        const { stdout } = await this.exec('list', { args });
+        log(`=========simctl list ${args[0]}=========\n${stdout.trim()}`);
+      } catch (err) {
+        log(`Failed to run 'simctl list ${args[0]}': ${err}`);
+      }
+    }
+  }
 }
 
 /** @param {string} message */
@@ -70,8 +102,6 @@ function log(message) {
   console.log(message);
 }
 
-<<<<<<< HEAD
-=======
 // Best-effort repair for CI agents whose CoreSimulator service is in a bad state. Two known
 // symptoms: an iOS runtime reported as available while its profile can't actually load ("runtime
 // profile not found using 'System' match policy"), and a boot that hangs indefinitely (e.g. stuck
@@ -141,15 +171,12 @@ async function bootSimulator(simctl, device) {
   await startBoot(simctl, " after repair");
 }
 
->>>>>>> 96f9d53894 (Try to auto-fix iOS Simulator failures when they happen (#9580))
 async function main() {
   const simctl = new SimctlWithOpts();
 
   // default to exiting with an error, only when we fully complete everything will it get set to 0
   process.exitCode = 1;
 
-<<<<<<< HEAD
-=======
   // By default we never trust a leftover running simulator: a clean run always shuts its simulator
   // down, so a still-booted one likely means a wedged/aborted previous run. Pass --use-booted to
   // opt into reusing an already-booted simulator, e.g. to watch execution locally in a running one.
@@ -159,7 +186,6 @@ async function main() {
   // available but fails to boot ("runtime profile not found using 'System' match policy").
   // repairSimulators();
 
->>>>>>> 96f9d53894 (Try to auto-fix iOS Simulator failures when they happen (#9580))
   // get all iOS devices
   log("Getting iOS devices");
   const allResults = await simctl.getDevices(undefined, 'iOS');
@@ -168,10 +194,18 @@ async function main() {
   const results = Object.assign({}, ...Object.entries(allResults).filter(([_k, v]) => v.length > 0).map(([k, v]) => ({ [k]: v })));
   var keys = Object.keys(results).sort(numericCompareDescending);
 
-  // determine desired device and runtime
-  const deviceBaseName = "iPad Pro (11-inch)";
-  var desiredDevice = `${deviceBaseName} (2nd generation)`;
-  var desiredRuntime = keys.length > 0 ? keys[0] : "16";
+  // `simctl list devices` can report a device as available even when its runtime profile is
+  // not actually installed. Booting such a device fails with "simulator runtime is not
+  // available". Filter the discovered runtime versions down to those that are genuinely
+  // installed and available so we don't pick one that can't boot.
+  const availableRuntimeVersions = new Set(await simctl.getAvailableRuntimeVersions());
+  keys = keys.filter(key => availableRuntimeVersions.has(key));
+
+  // determine desired device and runtime. The device type name must match one produced by the
+  // installed Xcode (Xcode 16.3 on CI); "iPad Pro 11-inch (M4)" is the current 11-inch iPad Pro.
+  const deviceBaseName = "iPad Pro 11-inch (M4)";
+  var desiredDevice = deviceBaseName;
+  var desiredRuntime = keys.length > 0 ? keys[0] : "18";
 
   keys = keys.filter(key => key.startsWith(desiredRuntime));
   /** @type {{ name: string; sdk: string; udid: string; state: string; } | undefined} */
@@ -226,14 +260,9 @@ async function main() {
 
   // Boot the simulator if needed
   if (device.state !== "Booted") {
-<<<<<<< HEAD
-    log(`Booting simulator: ${device.name}`);
-    await simctl.startBootMonitor({ shouldPreboot: true });
-=======
     await bootSimulator(simctl, device);
   } else {
     log(`Reusing already-booted simulator: ${device.name}`);
->>>>>>> 96f9d53894 (Try to auto-fix iOS Simulator failures when they happen (#9580))
   }
 
   // Install the app
