@@ -500,22 +500,16 @@ SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId
 
 # Testing by binding with decimal ids for QueryReaders
 
-`The purpose of this test is to show that bindIdSet when working with QueryReaders only takes into account hex ids and not decimal ids`
+`bindIdSet on QueryReaders only accepts valid (hex) Id64Strings. Binding a decimal id throws an ITwinError, so the reader fails to prepare.`
 
 - dataset: AllProperties.bim
 - bindIdSet 1, [21, 24, 25]
 - mode: QueryReader
+- errorDuringPrepare: true
 
 ```sql
 SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId
 ```
-
-| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
-| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int  | i                  |
-
-| i   |
-| --- |
 
 # Testing IdSet following cte subquery
 
