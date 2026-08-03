@@ -2,6 +2,21 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.12.0",
+      "tag": "@itwin/core-common_v5.12.0",
+      "date": "Mon, 03 Aug 2026 12:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added an internal QueryBinder helper to support restoring legacy binding-skip semantics in downstream packages."
+          },
+          {
+            "comment": "Added support for backend-to-frontend Ipc invoke calls (IpcHost.invoke/IpcApp.handle)."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.11.3",
       "tag": "@itwin/core-common_v5.11.3",
       "date": "Wed, 15 Jul 2026 19:40:44 GMT",

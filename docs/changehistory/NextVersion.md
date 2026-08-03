@@ -5,10 +5,23 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
+    - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
+  - [@itwin/core-geometry](#itwincore-geometry)
+    - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
 
 ## @itwin/core-backend
+
+### Edit from element, model, and aspect callbacks
+
+A new beta API, [IModelDb.getIndirectTxn]($backend), provides the [EditTxn]($backend) associated with an element, model, or aspect callback. Callbacks whose arguments provide an [IModelDb]($backend) but no transaction can use it to perform additional edits within the transaction that invoked the callback.
+
+```ts
+[[include:EditTxn.ElementCallback]]
+```
+
+The operation that invoked the callback owns the returned transaction. The callback must not start, end, save, abandon, or otherwise manage the transaction lifecycle. Callbacks that receive `indirectEditTxn` directly should continue using that property.
 
 ### WorkspaceDb file resource APIs deprecated
 
@@ -35,3 +48,9 @@ Use this method for batch processing, such as exporters and transformers, where 
 The options support the same polymorphic `aspectClassFullName` filter as `getAspects`, exact class exclusions, and owner-grouped results. Set `usePrimaryConn` when the query must include uncommitted aspects from an active edit transaction.
 
 [[include:CoreBackend.IModelDb.GetAspectsForElements]]
+
+## @itwin/geometry
+
+### Simplifying filleted line strings
+
+The [CurveFactory.createFilletsInLineString]($core-geometry) options bundle [CreateFilletsInLineStringOptions]($core-geometry) has a new optional property `CreateFilletsInLineStringOptions.simplifyPath` defaulting to `false`. When set to `true`, the output [Path]($core-geometry) is simplified by removing small segments less than the `CreateFilletsInLineStringOptions.closureTolerance` in length, and by merging adjacent arcs where possible. This is particularly helpful in cleaning up an output `Path` containing fillets that entirely consume an input line string edge (or nearly so).

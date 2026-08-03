@@ -133,10 +133,11 @@ export interface CreateFilletsInLineStringOptions {
    */
   filletClosure?: boolean;
   /**
-   * Maximum distance between first and last input points for the line string to be considered closed. Default value is
-   * [[Geometry.smallMetricDistance]].
+   * An absolute distance tolerance for comparing points. Default value is [[Geometry.smallMetricDistance]].
+   * * If the first and last input points are within this distance, the line string is considered to be closed.
    * * This distance is used when `filletClosure` is `true` to detect whether the last point is redundant and thus to
    * be ignored during processing.
+   * * This distance is also used when `simplifyPath` is `true` to detect small line segments.
    */
   closureTolerance?: number;
   /**
@@ -150,14 +151,21 @@ export interface CreateFilletsInLineStringOptions {
    */
   cuspTolerance?: number;
   /**
-   *  Whether to output a `LineSegment3d` for each cusp segment. Default value is `true`.
+   * Whether to output a `LineSegment3d` for each cusp segment. Default value is `true`.
    * * The _cusp segment_ of a cusp is the retrograde line segment that bridges the gap formed by the cusp along its
    * consumed line string edge, possibly extended.
-   * * When `allowCusp` and `cuspSegments` are `true`, the output `Path` is guaranteed to be continuous; otherwise, the
-   * output `Path` has a gap at each cusp, and downstream processing may not tolerate these gaps if they are too large.
-   * * Compare this option to `allowCusp`, which controls the presence of the cusps themselves.
+   * * When `allowCusp` and `cuspSegments` are `true` (and `simplifyPath` is `false`), the output `Path` is guaranteed
+   * to be continuous; otherwise, it may have gaps, and downstream processing may not tolerate these gaps if they are
+   * too large.
+   * * Compare this option to `allowCusp`, which controls the presence of cusps in output, and to `simplifyPath`,
+   * which removes small cusp segments in output.
    */
   cuspSegments?: boolean;
+  /**
+   * Whether to post-process the resulting Path to remove line segments smaller than `closureTolerance` and to
+   * consolidate adjacent fillets. Default value is `false`.
+   */
+  simplifyPath?: boolean;
 }
 
 /**
@@ -234,6 +242,7 @@ export class CurveFactory {
     const closureTolerance = haveBoolean ? Geometry.smallMetricDistance : allowCuspOrOptions.closureTolerance ?? Geometry.smallMetricDistance;
     const cuspTolerance = haveBoolean ? Geometry.smallMetricDistance : allowCuspOrOptions.cuspTolerance ?? Geometry.smallMetricDistance;
     const cuspSegments = haveBoolean ? true : allowCuspOrOptions.cuspSegments ?? true;
+    const simplifyPath = haveBoolean ? false : allowCuspOrOptions.simplifyPath ?? false;
     let n = points.length;
     if (filletClosure && points.almostEqualIndexIndex(0, n - 1, closureTolerance))
       n--; // ignore closure point
@@ -306,7 +315,16 @@ export class CurveFactory {
         this.addPartialSegment(path, cuspSegments, b0.point, b1.point, b0.fraction12, 1 - b1.fraction10);
       }
     }
-    return path;
+    if (!simplifyPath)
+      return path;
+    // remove tiny children, merge adjacent arcs
+    const distTol2 = closureTolerance * closureTolerance;
+    const sufficientlyLargeChildren = path.children.filter((c: CurvePrimitive) => c.range().diagonalLengthSquared(true) >= distTol2);
+    if (sufficientlyLargeChildren.length === 0)
+      return undefined;
+    const simplerPath = Path.create(...sufficientlyLargeChildren);
+    RegionOps.consolidateAdjacentPrimitives(simplerPath, { consolidateLoopSeam: true, duplicatePointTolerance: closureTolerance, colinearPointTolerance: closureTolerance });
+    return simplerPath;
   }
   /** If an open filletedLineString starts/ends with an arc, add a zero-length line segment to its start/end. */
   private static validateOpenPathStartEnd(filletedLineString: Path): Path {
