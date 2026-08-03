@@ -7,14 +7,13 @@
   "typings": "lib/cjs/core-frontend",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm && npm run -s webpackWorkers && npm run -s copy:workers && npm run -s copy:draco",
+    "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm && npm run -s build:workers && npm run -s copy:draco",
     "build:cjs": "npm run -s copy:js:cjs && tsc 1>&2 --outDir lib/cjs",
     "build:esm": "npm run -s copy:js:esm && tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
     "copy:js:cjs": "cpx \"./src/**/*.js\" ./lib/cjs",
     "copy:js:esm": "cpx \"./src/**/*.js\" ./lib/esm",
-    "copy:workers": "cpx \"./lib/workers/webpack/parse-imdl-worker.js\" ./lib/public/scripts",
     "copy:draco": "cpx \"./node_modules/@loaders.gl/draco/dist/libs/*\" ./lib/public/scripts",
     "docs": "betools docs --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts && npm run -s extract",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test/example-code --recursive --out=../../generated-docs/extract",
@@ -24,11 +23,10 @@
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
-    "test": "npm run webpackTestWorker && vitest --run",
-    "cover": "npm run webpackTestWorker && vitest --run",
-    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2 && npm run -s webpackTestWorker",
-    "webpackTestWorker": "webpack --config ./src/test/worker/webpack.config.js 1>&2 && cpx \"./lib/test/test-worker.js\" ./lib/test",
-    "webpackWorkers": "webpack --config ./src/workers/ImdlParser/webpack.config.js 1>&2"
+    "test": "npm run build:test-worker && vitest --run",
+    "cover": "npm run build:test-worker && vitest --run",
+    "build:test-worker": "vite build --config ./src/test/worker/vite.config.mts 1>&2",
+    "build:workers": "rimraf lib/workers/webpack && vite build --config ./src/workers/ImdlParser/vite.config.mts 1>&2"
   },
   "repository": {
     "type": "git",
@@ -83,16 +81,14 @@
     "@vitest/coverage-v8": "^4.1.10",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^13.0.6",
     "playwright": "~1.56.1",
     "rimraf": "^6.0.1",
     "sinon": "^17.0.2",
-    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
+    "vite": "^6.4.3",
     "vitest": "^4.1.10",
     "vite-multiple-assets": "^1.3.1",
-    "vite-plugin-static-copy": "2.2.0",
-    "webpack": "^5.97.1"
+    "vite-plugin-static-copy": "2.2.0"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
