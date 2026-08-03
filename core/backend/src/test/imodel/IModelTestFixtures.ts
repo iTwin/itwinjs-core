@@ -10,21 +10,29 @@ import { Entity, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-/** Awaits a promise and returns the {@link IModelError} it rejected with, or `undefined` if it resolved. */
+/**
+ * Awaits `promise` and returns the {@link IModelError} it rejected with, or `undefined` if it resolved.
+ *
+ * A rejection that is not an {@link IModelError} is rethrown rather than swallowed, so an unexpected
+ * failure surfaces with its original message and stack trace instead of being misreported as
+ * "no error was thrown". This means `undefined` unambiguously means the promise resolved.
+ */
 export async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
   try {
     await promise;
     return undefined;
   } catch (err) {
-    return err instanceof IModelError ? err : undefined;
+    if (err instanceof IModelError)
+      return err;
+    throw err;
   }
 }
 
 /** Asserts that `error` is an {@link IModelError} carrying the expected error number. */
 export function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: IModelError | undefined): void {
-  expect(error).not.to.be.undefined;
-  expect(error).instanceof(IModelError);
-  expect(error!.errorNumber).to.equal(expectedErrorNumber);
+  if (error === undefined)
+    expect.fail(`Expected an IModelError with errorNumber ${expectedErrorNumber}, but the call resolved without throwing.`);
+  expect(error.errorNumber).to.equal(expectedErrorNumber);
 }
 
 /** Roundtrip an entity through a JSON string and back to a new entity, asserting the serialization is stable. */
