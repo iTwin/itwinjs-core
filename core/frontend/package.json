@@ -26,7 +26,7 @@
     "test": "npm run build:test-worker && vitest --run",
     "cover": "npm run build:test-worker && vitest --run",
     "build:test-worker": "vite build --config ./src/test/worker/vite.config.mts 1>&2",
-    "build:workers": "vite build --config ./src/workers/ImdlParser/vite.config.mts 1>&2"
+    "build:workers": "rimraf lib/workers/webpack && vite build --config ./src/workers/ImdlParser/vite.config.mts 1>&2"
   },
   "repository": {
     "type": "git",
