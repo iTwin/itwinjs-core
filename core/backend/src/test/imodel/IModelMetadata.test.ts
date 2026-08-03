@@ -10,7 +10,7 @@ import { EditTxn, withEditTxn } from "../../EditTxn";
 import { BisCoreSchema, Category, ClassRegistry, Element, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
-import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, generateTestSnapshot, openReadonlySeedCopy } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, importTestBim, openReadonlySeedCopy } from "./IModelTestFixtures";
 
 
 describe("iModel metadata and schemas", () => {
@@ -83,7 +83,7 @@ describe("iModel metadata and schemas", () => {
   });
 
   it("Fonts", async () => {
-    const imodel1 = trackMutableIModel(await generateTestSnapshot("metadata-fonts.bim", "test.bim"));
+    const imodel1 = trackMutableIModel(await importTestBim(createIModelFromSeed("metadata-fonts.bim", "test.bim")));
     const dbFonts = imodel1.fonts;
     expect(Array.from(dbFonts.queryMappedFamilies({ includeNonEmbedded: true })).length).to.equal(4);
     expect(dbFonts.findDescriptor(1)).to.deep.equal({ name: "Arial", type: FontType.TrueType });
@@ -303,7 +303,7 @@ describe("iModel metadata and schemas", () => {
   });
 
   it("should import schemas", async () => {
-    const imodel1 = trackMutableIModel(await generateTestSnapshot("metadata-import-schemas.bim", "test.bim"));
+    const imodel1 = trackMutableIModel(await importTestBim(createIModelFromSeed("metadata-import-schemas.bim", "test.bim")));
     const metaData = await imodel1.schemaContext.getSchemaItem("TestBim:TestDocument", EntityClass);
     assert.isDefined(metaData);
     if (metaData !== undefined) {

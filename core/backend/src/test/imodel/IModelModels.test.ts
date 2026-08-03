@@ -14,7 +14,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions, TestUtils } from "../TestUtils";
-import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, expectIModelError, generateTestSnapshot, getIModelError, openReadonlySeedCopy, roundtripThroughJson } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, expectIModelError, getIModelError, importTestBim, openReadonlySeedCopy, roundtripThroughJson } from "./IModelTestFixtures";
 
 
 describe("iModel models", () => {
@@ -248,7 +248,7 @@ describe("iModel models", () => {
   });
 
   it("update the project extents", async () => {
-    const imodel1 = trackMutableIModel(await generateTestSnapshot("models-project-extents.bim", "test.bim"));
+    const imodel1 = trackMutableIModel(await importTestBim(createIModelFromSeed("models-project-extents.bim", "test.bim")));
     const originalExtents = imodel1.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
     newExtents.low.x -= 50;

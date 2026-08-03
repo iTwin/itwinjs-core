@@ -38,26 +38,24 @@ export function roundtripThroughJson(entity1: Entity): Entity {
 }
 
 /**
- * Create a fresh writable snapshot from a seed asset and import the `TestBim` schema into it.
- * Use this for tests that mutate the iModel so each gets its own isolated copy.
- */
-export async function generateTestSnapshot(targetFileName: string, seedAssetName: string): Promise<SnapshotDb> {
-  const seedFile = IModelTestUtils.resolveAssetFile(seedAssetName);
-  const snapshotFile = IModelTestUtils.prepareOutputFile("IModel", targetFileName);
-  const imodel = IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
-  const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-  await imodel.importSchemas([schemaPathname]);
-  return imodel;
-}
-
-/**
- * Create a fresh writable snapshot copied from a seed asset. Use in `beforeEach` for mutating
- * tests (hybrid isolation) so state never leaks between tests.
+ * Create a fresh writable snapshot copied from a seed asset. This is the single creation path for
+ * mutating tests (hybrid isolation) so state never leaks between tests. Compose with
+ * {@link importTestBim} when the test also needs the `TestBim` schema.
  */
 export function createIModelFromSeed(targetFileName: string, seedAssetName: string): SnapshotDb {
   const seedFile = IModelTestUtils.resolveAssetFile(seedAssetName);
   const snapshotFile = IModelTestUtils.prepareOutputFile("IModel", targetFileName);
   return IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
+}
+
+/**
+ * Import the `TestBim` schema into `imodel` and return it, so this can wrap a creation call:
+ * `await importTestBim(createIModelFromSeed(target, seed))`.
+ */
+export async function importTestBim<T extends SnapshotDb>(imodel: T): Promise<T> {
+  const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+  await imodel.importSchemas([schemaPathname]);
+  return imodel;
 }
 
 /**
@@ -70,9 +68,9 @@ export function createIModelFromSeed(targetFileName: string, seedAssetName: stri
  * it is reopened read-only.
  */
 export async function openReadonlySeedCopy(targetFileName: string, seedAssetName: string, opts?: { importTestBim?: boolean }): Promise<SnapshotDb> {
-  const writable = opts?.importTestBim
-    ? await generateTestSnapshot(targetFileName, seedAssetName)
-    : createIModelFromSeed(targetFileName, seedAssetName);
+  const writable = createIModelFromSeed(targetFileName, seedAssetName);
+  if (opts?.importTestBim)
+    await importTestBim(writable);
   const pathName = writable.pathName;
   writable.close();
   return SnapshotDb.openFile(pathName);

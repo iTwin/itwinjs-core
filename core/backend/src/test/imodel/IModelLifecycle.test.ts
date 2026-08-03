@@ -18,7 +18,7 @@ import { _cache, _hubAccess, _instanceKeyCache, _nativeDb } from "../../internal
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
 import { performance } from "perf_hooks";
-import { expectIModelError, generateTestSnapshot, getIModelError } from "./IModelTestFixtures";
+import { createIModelFromSeed, expectIModelError, getIModelError, importTestBim } from "./IModelTestFixtures";
 
 
 describe("iModel lifecycle", () => {
@@ -190,7 +190,7 @@ describe("iModel lifecycle", () => {
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.CHECKPOINT_CACHE_DIR = "/foo/";
     const accessToken = "token";
-    const imodel = await generateTestSnapshot("reattachNonCheckpoint.bim", "test.bim");
+    const imodel = await importTestBim(createIModelFromSeed("reattachNonCheckpoint.bim", "test.bim"));
     try {
       await imodel.refreshContainerForRpc(accessToken);
     } finally {
@@ -381,7 +381,7 @@ describe("iModel lifecycle", () => {
     const snapshotFile1 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
     const snapshotFile2 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
     const snapshotFile3 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
-    const imodel = await generateTestSnapshot("test_for_snapshot.bim", "test.bim");
+    const imodel = await importTestBim(createIModelFromSeed("test_for_snapshot.bim", "test.bim"));
     const ecefLocation = new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } });
     const geographicCoordinateSystem = {
       horizontalCRS: { id: "10TM115-27" },

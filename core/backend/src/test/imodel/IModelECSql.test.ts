@@ -8,7 +8,7 @@ import { withEditTxn } from "../../EditTxn";
 import { Category, ECSqlStatement, Element, SnapshotDb, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
-import { closeIfOpen, generateTestSnapshot, openReadonlySeedCopy } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, importTestBim, openReadonlySeedCopy } from "./IModelTestFixtures";
 
 
 describe("iModel ECSQL and SQL", () => {
@@ -186,7 +186,7 @@ describe("iModel ECSQL and SQL", () => {
     let imodel1: SnapshotDb;
 
     beforeEach(async () => {
-      imodel1 = await generateTestSnapshot("ecsql-plain-sql.bim", "test.bim");
+      imodel1 = await importTestBim(createIModelFromSeed("ecsql-plain-sql.bim", "test.bim"));
     });
 
     afterEach(() => {

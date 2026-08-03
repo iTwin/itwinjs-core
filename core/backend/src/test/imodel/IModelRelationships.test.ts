@@ -15,7 +15,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
-import { generateTestSnapshot } from "./IModelTestFixtures";
+import { createIModelFromSeed, importTestBim } from "./IModelTestFixtures";
 
 
 function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string): GeometricElementProps {
@@ -58,7 +58,7 @@ describe("iModel relationships", () => {
     let imodel: SnapshotDb;
 
     beforeEach(async () => {
-      imodel = await generateTestSnapshot("relationships.bim", "test.bim");
+      imodel = await importTestBim(createIModelFromSeed("relationships.bim", "test.bim"));
     });
 
     afterEach(() => {

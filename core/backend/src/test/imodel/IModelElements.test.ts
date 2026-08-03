@@ -27,7 +27,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { EntityClass } from "@itwin/ecschema-metadata";
-import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, generateTestSnapshot, openReadonlySeedCopy, roundtripThroughJson } from "./IModelTestFixtures";
+import { closeIfOpen, createIModelFromSeed, createMutableIModelTracker, importTestBim, openReadonlySeedCopy, roundtripThroughJson } from "./IModelTestFixtures";
 
 
 describe("iModel elements", () => {
@@ -595,7 +595,7 @@ describe("iModel elements", () => {
 
   it("should set EC properties of various types", async () => {
 
-    const testImodel = trackMutableIModel(await generateTestSnapshot("elements-ec-properties.bim", "test.bim"));
+    const testImodel = trackMutableIModel(await importTestBim(createIModelFromSeed("elements-ec-properties.bim", "test.bim")));
     assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemSync("TestBim:TestPhysicalObject", EntityClass), "TestPhysicalObject is expected to be defined in TestBim.ecschema.xml");
     const txn = new EditTxn(testImodel, "set EC properties of various types");
     txn.start();
@@ -702,7 +702,7 @@ describe("iModel elements", () => {
   });
 
   it("should update UserLabel", async () => {
-    const imodel1 = trackMutableIModel(await generateTestSnapshot("elements-update-user-label.bim", "test.bim"));
+    const imodel1 = trackMutableIModel(await importTestBim(createIModelFromSeed("elements-update-user-label.bim", "test.bim")));
     const txn = new EditTxn(imodel1, "update user label");
     txn.start();
     // type coercion reminder!
@@ -756,7 +756,7 @@ describe("iModel elements", () => {
   });
 
   it("should update FederationGuid", async () => {
-    const imodel1 = trackMutableIModel(await generateTestSnapshot("elements-update-federation-guid.bim", "test.bim"));
+    const imodel1 = trackMutableIModel(await importTestBim(createIModelFromSeed("elements-update-federation-guid.bim", "test.bim")));
     const txn = new EditTxn(imodel1, "update federation guid");
     txn.start();
     // insert element with an undefined FederationGuid
@@ -811,7 +811,7 @@ describe("iModel elements", () => {
   });
 
   it("should support partial update", async () => {
-    const imodel1 = trackMutableIModel(await generateTestSnapshot("elements-partial-update.bim", "test.bim"));
+    const imodel1 = trackMutableIModel(await importTestBim(createIModelFromSeed("elements-partial-update.bim", "test.bim")));
     const txn = new EditTxn(imodel1, "partial element update");
     txn.start();
     // Insert Subject elements - initializing Description and UserLabel to similar values
@@ -976,7 +976,7 @@ describe("iModel elements", () => {
   });
 
   it("should throw iTwinErrors on element CRUD operation fails", async () => {
-    const imodel1 = trackMutableIModel(await generateTestSnapshot("elements-crud-errors.bim", "test.bim"));
+    const imodel1 = trackMutableIModel(await importTestBim(createIModelFromSeed("elements-crud-errors.bim", "test.bim")));
     const txn = new EditTxn(imodel1, "element CRUD failure cases");
     txn.start();
     const code = Code.createEmpty();
