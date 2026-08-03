@@ -64,7 +64,8 @@ export function createWorkerConfig(options: WorkerConfigOptions) {
     publicDir: false,
     logLevel: "error",
     define: {
-      "process.env.NODE_ENV": JSON.stringify("production"),
+      // Vite treats string values as replacement expressions, so include quotes to produce a string literal.
+      "process.env.NODE_ENV": '"production"',
     },
     plugins: [stubNodeModules(), verifyWorkerBundle(options.outputFileName)],
     build: {
