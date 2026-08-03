@@ -70,8 +70,6 @@ function log(message) {
   console.log(message);
 }
 
-<<<<<<< HEAD
-=======
 // Best-effort repair for CI agents whose CoreSimulator service is in a bad state. Two known
 // symptoms: an iOS runtime reported as available while its profile can't actually load ("runtime
 // profile not found using 'System' match policy"), and a boot that hangs indefinitely (e.g. stuck
@@ -141,15 +139,12 @@ async function bootSimulator(simctl, device) {
   await startBoot(simctl, " after repair");
 }
 
->>>>>>> 96f9d53894 (Try to auto-fix iOS Simulator failures when they happen (#9580))
 async function main() {
   const simctl = new SimctlWithOpts();
 
   // default to exiting with an error, only when we fully complete everything will it get set to 0
   process.exitCode = 1;
 
-<<<<<<< HEAD
-=======
   // By default we never trust a leftover running simulator: a clean run always shuts its simulator
   // down, so a still-booted one likely means a wedged/aborted previous run. Pass --use-booted to
   // opt into reusing an already-booted simulator, e.g. to watch execution locally in a running one.
@@ -159,7 +154,6 @@ async function main() {
   // available but fails to boot ("runtime profile not found using 'System' match policy").
   // repairSimulators();
 
->>>>>>> 96f9d53894 (Try to auto-fix iOS Simulator failures when they happen (#9580))
   // get all iOS devices
   log("Getting iOS devices");
   const allResults = await simctl.getDevices(undefined, 'iOS');
@@ -226,14 +220,9 @@ async function main() {
 
   // Boot the simulator if needed
   if (device.state !== "Booted") {
-<<<<<<< HEAD
-    log(`Booting simulator: ${device.name}`);
-    await simctl.startBootMonitor({ shouldPreboot: true });
-=======
     await bootSimulator(simctl, device);
   } else {
     log(`Reusing already-booted simulator: ${device.name}`);
->>>>>>> 96f9d53894 (Try to auto-fix iOS Simulator failures when they happen (#9580))
   }
 
   // Install the app

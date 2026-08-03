@@ -267,14 +267,9 @@ async function main() {
 
   // Boot the simulator if needed
   if (device.state !== "Booted") {
-<<<<<<< HEAD
-    log(`Booting simulator: ${device.name}`);
-    await simctl.startBootMonitor({ shouldPreboot: true });
-=======
     await bootSimulator(simctl, device);
   } else {
     log(`Reusing already-booted simulator: ${device.name}`);
->>>>>>> 96f9d53894 (Try to auto-fix iOS Simulator failures when they happen (#9580))
   }
 
   // Install the app
