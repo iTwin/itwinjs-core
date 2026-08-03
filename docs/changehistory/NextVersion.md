@@ -13,9 +13,13 @@ publish: false
     - [Reality model tiles with JSON glTF content now render](#reality-model-tiles-with-json-gltf-content-now-render)
     - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
     - [Bing Maps deprecation and new geospatial provider interfaces](#bing-maps-deprecation-and-new-geospatial-provider-interfaces)
+      - [What's new](#whats-new)
+      - [What's deprecated](#whats-deprecated)
     - [Graphics no longer disappear when a new category is inserted](#graphics-no-longer-disappear-when-a-new-category-is-inserted)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
   - [@itwin/core-geometry](#itwincore-geometry)
-    - [`CurveFactory.createFilletsInLineString` expanded options](#curve-factory-create-fillets-in-line-string-expanded-options)
+    - [`CurveFactory.createFilletsInLineString` expanded options](#curvefactorycreatefilletsinlinestring-expanded-options)
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
     - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
   - [@itwin/build-tools](#itwinbuild-tools)
@@ -47,7 +51,7 @@ A new [CesiumAccessClient]($frontend) interface and [TileAdmin.Props.cesiumAcces
 Two authentication paths coexist:
 
 | Path | When to use | How to configure |
-|---|---|---|
+| --- | --- | --- |
 | `cesiumIonKey` (existing) | App has a direct Cesium Ion subscription | `tileAdmin: { cesiumIonKey: "my-key" }` |
 | `cesiumAccess` (new, `@beta`) | iTwin Platform proxy or any custom resolver | `tileAdmin: { cesiumAccess: new MyClient() }` |
 
@@ -193,11 +197,121 @@ Inserting a new `Category` also inserts that category's default `SubCategory`. T
 
 The cache now keeps serving the previously-loaded data and instead marks the affected categories as stale, reloading them in the background. Already-viewed graphics remain visible throughout, and the [Viewport]($frontend) automatically reloads and repaints the affected categories.
 
+## @itwin/core-backend
+
+### Quantity formatting for text annotation fields
+
+[FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value can now be rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation. Field-level formatting is configured via a new [QuantityFieldFormatOptions]($common) block on [FieldFormatOptions]($common):
+
+```typescript
+const fieldRun = FieldRun.create({
+  propertyHost: { elementId, schemaName: "MyDomain", className: "Widget" },
+  propertyPath: { propertyName: "length" },
+  formatOptions: {
+    quantity: {
+      // Look up a specific KindOfQuantity via the active FormatsProvider, overriding
+      // the property's own KoQ.
+      kindOfQuantity: "AecUnits.LENGTH",
+    },
+  },
+});
+```
+
+A format is resolved in this priority order:
+
+1. `formatOptions.quantity.format` — an inline [FormatProps]($core-quantity) override.
+2. `formatOptions.quantity.kindOfQuantity` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
+3. The property's own [KindOfQuantity]($ecschema-metadata).
+4. For `"coordinate"` only, a built-in meters fallback.
+
+Because [FormatterSpec]($core-quantity) creation is asynchronous, quantity formatting is only applied when a field is evaluated through the new async entry point [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend):
+
+```typescript
+const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel, block });
+```
+
+The existing synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks continue to render `"quantity"` and `"coordinate"` fields as their raw string representation for backward compatibility. Applications that want formatted quantity output for text annotations should migrate their evaluation calls to the async variant.
+
+Applications that own a [FormatsProvider]($core-quantity) and/or [UnitsProvider]($core-quantity) — for example, one backed by an adopted FormatSet — can route field formatting through them by passing them on [EvaluateFieldsAsyncArgs.formatting]($backend). Either provider may be omitted; any provider not supplied is defaulted to a schema-backed implementation derived from the iModel's schema context.
+
+```typescript
+const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+  iModel,
+  block,
+  formatting: {
+    formatsProvider: myFormatsProvider, // e.g. Drawing Production's FormatSet-backed provider
+    // unitsProvider omitted -> defaults to the iModel's schema-backed units provider
+  },
+});
+```
+
+Applications integrating their own [FormattingSpecProvider]($core-quantity) can discover the [FormatterSpec]($core-quantity)s a [TextBlock]($common) will need before evaluating it, and pre-build them, via the new [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) entry point:
+
+```typescript
+const requirements = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block });
+// requirements: FormattingSpecArgs[] with { name, persistenceUnitName } for every quantity/coordinate FieldRun
+// whose target property carries a KindOfQuantity (or whose formatOptions override supplies one). Fields with an
+// inline `format` override are omitted because they do not require a provider lookup.
+// Feed `requirements` into your provider's cache-population routine so that every spec is ready before
+// synchronous evaluation runs.
+```
+
+Because the transactional callback path that keeps field caches in sync when source elements change is synchronous, applications with a pre-populated [FormattingSpecProvider]($core-quantity) can register it against an [IModelDb]($backend) so that both [ElementDrivesTextAnnotation.evaluateFields]($backend) and txn-driven updates route through it:
+
+```typescript
+// Once the provider's cache has been populated with the requirements collected above:
+ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { provider: myFormattingSpecProvider });
+
+// Later, any commit that dirties a source element for a FieldRun will re-format its cached content
+// through the registered provider automatically -- no application code required.
+// Call `unregisterFieldFormattingProvider` to remove the registration:
+ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
+```
+
+An application can register different providers for different FormatSets by supplying a `formatSet: Id64String` at registration time, and pointing individual FieldRuns at that FormatSet via [QuantityFieldFormatOptions.formatSet]($common). At evaluation time, each FieldRun is routed by cascading lookup: its `formatSet`-scoped registration first, then the iModel-level default registration (registered with no `formatSet`).
+
+```typescript
+ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { provider: defaultProvider });
+ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, {
+  formatSet: mySheetFormatSetId,
+  provider: sheetProvider,
+});
+
+const fieldRun = FieldRun.create({
+  propertyHost, propertyPath,
+  formatOptions: { quantity: { formatSet: mySheetFormatSetId } },
+});
+
+// Later, to remove just the sheet-scoped registration (the iModel-level default remains):
+ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel, mySheetFormatSetId);
+```
+
+If no registration matches (or the resolved provider does not supply a spec for a given field), fields fall back to their existing raw string formatting. To make missing specs surface as an error instead, pass `onMissingSpec: "throw"` when registering the provider (or via [FieldFormattingProviders]($backend) on the async path):
+
+```typescript
+ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, {
+  provider: myFormattingSpecProvider,
+  onMissingSpec: "throw",
+});
+// Any FieldRun evaluated against `iModel` whose KindOfQuantity / persistence unit combination
+// has not been prepared on `myFormattingSpecProvider` will now throw from evaluateFields and from
+// the TxnManager field-update callback path, instead of silently reverting to the raw value.
+
+await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+  iModel,
+  block,
+  formatting: {
+    formatsProvider: myFormatsProvider,
+    onMissingSpec: "throw",
+  },
+});
+```
+
 ## @itwin/core-geometry
 
 ### `CurveFactory.createFilletsInLineString` expanded options
 
-[CurveFactory.createFilletsInLineString]($core-geometry) has three new [CreateFilletsInLineStringOptions]($core-geometry) interface options to control the construction of the output `Path`, particularly with respect to the appearance of cusps in the output. A _cusp_ occurs when a fillet's radius is too large, and the arc consumes one or both adjacent line string edges. Cusps in the output of this method (especially large cusps) are generally considered to be undesirable.
+[CurveFactory.createFilletsInLineString]($core-geometry) has three new [CreateFilletsInLineStringOptions]($core-geometry) interface options to control the construction of the output `Path`, particularly with respect to the appearance of cusps in the output. A *cusp* occurs when a fillet's radius is too large, and the arc consumes one or both adjacent line string edges. Cusps in the output of this method (especially large cusps) are generally considered to be undesirable.
 
 [CreateFilletsInLineStringOptions.closureTolerance]($core-geometry) is used when [CreateFilletsInLineStringOptions.filletClosure]($core-geometry) is `true` to determine whether the final input point is to be considered equal to the first input point. If these points have distance less than `closureTolerance`, the final point is ignored when the input polygon is filleted. The default value of this option is [Geometry.smallMetricDistance]($core-geometry), matching previous behavior.
 
