@@ -12,7 +12,7 @@ import { withEditTxn } from "../../EditTxn";
 import { SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUtils } from "../TestUtils";
-import { createIModelFromSeed } from "./IModelTestFixtures";
+import { closeIfOpen, openReadonlySeedCopy } from "./IModelTestFixtures";
 
 
 describe("iModel geolocation", () => {
@@ -27,17 +27,13 @@ describe("iModel geolocation", () => {
 
     IModelTestUtils.registerTestBimSchema();
 
-    const mirukuruWritable = createIModelFromSeed("geolocation-mirukuru.ibim", "mirukuru.ibim");
-    const mirukuruPath = mirukuruWritable.pathName;
-    mirukuruWritable.close();
-    mirukuruReadonly = SnapshotDb.openFile(mirukuruPath);
+    mirukuruReadonly = await openReadonlySeedCopy("geolocation-mirukuru.ibim", "mirukuru.ibim");
   });
 
   after(async () => {
     process.env = originalEnv;
 
-    if (mirukuruReadonly !== undefined && mirukuruReadonly.isOpen)
-      mirukuruReadonly.close();
+    closeIfOpen(mirukuruReadonly);
 
     await TestUtils.shutdownBackend();
     await TestUtils.startBackend();

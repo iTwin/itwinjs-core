@@ -60,11 +60,6 @@ export function createIModelFromSeed(targetFileName: string, seedAssetName: stri
   return IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
 }
 
-/** Open a seed asset directly as a read-only snapshot. Use for shared, pure-read fixtures. */
-export function openSeedReadonly(seedAssetName: string): SnapshotDb {
-  return SnapshotDb.openFile(IModelTestUtils.resolveAssetFile(seedAssetName));
-}
-
 /**
  * Create a fresh writable copy from a seed asset, close it, and reopen it read-only.
  *
