@@ -502,12 +502,16 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public [_activeTxn]: EditTxn | undefined;
 
-  /** Returns the active [[EditTxn]] if one is current, otherwise the implicit transaction.
-   * Use this inside element and relationship callbacks that may be invoked either during an explicit transaction or
-   * during indirect change processing.
-   * @note This method is a temporary workaround until [[OnElementArg]] (and related callback arg types) are updated
-   * to carry the transaction directly in a future PR.
-   * @internal
+  /** Returns the transaction to use for additional edits from an element, model, or aspect callback.
+   * In callbacks whose arguments provide an [[IModelDb]] but no transaction, obtain this transaction through
+   * `arg.iModel.getIndirectTxn()` and pass it to APIs that accept an [[EditTxn]].
+   *
+   * If an explicit transaction is active, this returns that transaction. Otherwise, it returns the implicit transaction
+   * used by legacy write paths. Callbacks that receive an `indirectEditTxn` argument should use that transaction directly.
+   *
+   * @note The operation that invoked the callback owns the transaction. Callback implementations must not invoke transaction
+   * lifecycle methods such as [[EditTxn.start]], [[EditTxn.end]], [[EditTxn.saveChanges]], [[EditTxn.abandonChanges]], or [[EditTxn.onClose]].
+   * @beta
    */
   public getIndirectTxn(): EditTxn {
     return this[_activeTxn] ?? this[_implicitTxn];

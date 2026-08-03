@@ -2965,4 +2965,20 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXY", "FilletLineIntersection2");
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("TinyLineBigArcIntersection", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const arc = Arc3d.create(Point3d.create(0, -30), Vector3d.create(30), Vector3d.create(0, 30));
+    const line = LineSegment3d.createXYXY(0, 0, 2, 6.5788704698143165e-06);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc, line]);
+
+    const intersections = CurveCurve.intersectionXYPairs(line, false, arc, false);
+    if (ck.testExactNumber(1, intersections.length, "computed expected number of intersections between the line and arc")) {
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersections[0].detailA.point, 1);
+      ck.testPoint3d(Point3d.createZero(), intersections[0].detailA.point, "expected intersection point");
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "TinyLineBigArcIntersection");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
