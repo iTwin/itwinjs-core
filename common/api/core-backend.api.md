@@ -6332,7 +6332,7 @@ export namespace SchemaSync {
     }
     // (undocumented)
     export interface ReadMethods {
-        findReservedElement(key: GuidString | CodeProps): ReservedElement | undefined;
+        findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
     }
     export interface ReservedElement extends ProposedElementReservation {
         // (undocumented)
@@ -6342,7 +6342,7 @@ export namespace SchemaSync {
         // (undocumented)
         protected createDDL(): void;
         // (undocumented)
-        findReservedElement(key: GuidString | CodeProps): ReservedElement | undefined;
+        findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
         // (undocumented)
         readonly myVersion = "4.1.0";
         // (undocumented)
