@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-locaters",
-      "comment": "Use Units schema 01.00.11.",
+      "comment": "Update Units Schema to 01.00.11.",
       "type": "none"
     }
   ],

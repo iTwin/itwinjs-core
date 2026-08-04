@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-quantity",
-      "comment": "Use Units schema 01.00.11, including KN_M_PER_DEG and KPF_FT_PER_DEG in the ROTATIONAL_SPRING_CONSTANT phenomenon.",
+      "comment": "Update Units Schema to 01.00.11.",
       "type": "none"
     }
   ],
