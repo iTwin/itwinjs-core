@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { globSync } from "glob";
+import MagicString from "magic-string";
 import { isBuiltin } from "node:module";
 import path from "node:path";
 
@@ -11,7 +12,7 @@ const builtinModulePrefix = "\0ios-node-builtin:";
 const emptyModuleId = "\0ios-empty-module";
 const testEntryId = "\0ios-test-entry";
 
-const callableCommonJsModules = ["assert", "chai-as-promised", "deep-equal-in-any-order", "touch"];
+const callableCommonJsModules = ["chai-as-promised", "deep-equal-in-any-order", "touch"];
 
 const modulesToIgnore = [
   /ECSqlTestParser\.js$/,
@@ -24,17 +25,6 @@ const modulesToIgnore = [
   /supports-color/,
 ];
 
-function createLineIdentitySourceMap(id: string, source: string) {
-  const lineCount = source.split("\n").length;
-  return {
-    mappings: Array.from({ length: lineCount }, (_, index) => index === 0 ? "AAAA" : "AACA").join(";"),
-    names: [],
-    sources: [id],
-    sourcesContent: [source],
-    version: 3,
-  };
-}
-
 // The compiled ESM preserves namespace imports, but the iOS tests call these CommonJS exports as functions.
 // Rewrite only known callable dependencies and Node builtins before Rollup resolves them.
 function normalizeCallableCommonJsImports() {
@@ -42,21 +32,33 @@ function normalizeCallableCommonJsImports() {
     name: "normalize-callable-commonjs-imports",
     enforce: "pre",
     transform(code, id) {
-      let transformed = code;
+      const transformed = new MagicString(code);
+      let changed = false;
+
       for (const moduleName of callableCommonJsModules) {
         const namespaceImport = new RegExp(`import \\* as ([A-Za-z_$][\\w$]*) from (["'])${moduleName}\\2;`, "g");
-        transformed = transformed.replace(namespaceImport, `import $1 from "${moduleName}";`);
+        for (const match of code.matchAll(namespaceImport)) {
+          transformed.overwrite(match.index, match.index + match[0].length, `import ${match[1]} from "${moduleName}";`);
+          changed = true;
+        }
       }
 
       const builtinNamespaceImport = /import \* as ([A-Za-z_$][\w$]*) from (["'])([^"']+)\2;/g;
-      transformed = transformed.replace(builtinNamespaceImport, (statement, binding, _quote, moduleName) =>
-        isBuiltin(moduleName) ? `import ${binding} from "${moduleName}";` : statement);
+      for (const match of code.matchAll(builtinNamespaceImport)) {
+        if (!isBuiltin(match[3]))
+          continue;
 
-      if (transformed === code)
+        transformed.overwrite(match.index, match.index + match[0].length, `import ${match[1]} from "${match[3]}";`);
+        changed = true;
+      }
+
+      if (!changed)
         return undefined;
 
-      // These replacements preserve line boundaries, so line-level mappings are sufficient for downstream source maps.
-      return { code: transformed, map: createLineIdentitySourceMap(id, code) };
+      return {
+        code: transformed.toString(),
+        map: transformed.generateMap({ hires: true, includeContent: true, source: id }),
+      };
     },
   };
 }

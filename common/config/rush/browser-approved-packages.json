@@ -695,6 +695,10 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "magic-string",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "marked",
       "allowedCategories": [ "backend" ]
     },
