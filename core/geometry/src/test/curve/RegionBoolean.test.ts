@@ -263,10 +263,10 @@ describe("RegionBoolean", () => {
     if (undefined !== expected) {
       if (ck.testExactNumber(outLoops.length, expected.length, "created expected number of SignedRegions")) {
         for (let i = 0; i < outLoops.length; ++i) {
-          ck.testExactNumber(outLoops[i].positiveAreaLoops.length, expected[i].numPositiveAreaLoops);
-          ck.testExactNumber(outLoops[i].negativeAreaLoops.length, expected[i].numNegativeAreaLoops);
-          ck.testExactNumber(outLoops[i].slivers.length, expected[i].numSlivers);
-          ck.testExactNumber(outLoops[i].edges?.length ?? 0, expected[i].numEdges ?? 0);
+          ck.testExactNumber(outLoops[i].positiveAreaLoops.length, expected[i].numPositiveAreaLoops, "created expected number of positive area loops");
+          ck.testExactNumber(outLoops[i].negativeAreaLoops.length, expected[i].numNegativeAreaLoops, "created expected number of negative area loops");
+          ck.testExactNumber(outLoops[i].slivers.length, expected[i].numSlivers, "created expected number of slivers");
+          ck.testExactNumber(outLoops[i].edges?.length ?? 0, expected[i].numEdges ?? 0, "created expected number of edges");
         }
       }
     }
