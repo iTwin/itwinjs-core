@@ -12,7 +12,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, Code, CodeProps, ElementReservationError, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
+import { BriefcaseIdValue, Code, ElementReservationError, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
 import { _implicitTxn, _nativeDb } from "./internal/Symbols";
