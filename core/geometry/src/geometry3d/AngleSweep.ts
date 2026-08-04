@@ -278,7 +278,7 @@ export class AngleSweep implements BeJSONFunctions {
    * @param toNegativeFraction exterior fraction handling:
    * * if true, return `fraction` period-shifted to within one period of the start
    * * if false, return `fraction` period-shifted to within one period of the end
-   * * if undefined, return the period-shift of `fraction` closest to [0,1].
+   * * if undefined, return the period-shift of `fraction` closest in fraction space to [0,1].
    * @returns period-shifted fraction. If `fraction` is already in [0,1], or the sweep is empty, then `fraction` is
    * returned unchanged.
    */
@@ -310,7 +310,7 @@ export class AngleSweep implements BeJSONFunctions {
    * @param toNegativeFraction exterior fraction handling:
    * * if true, return `fraction` period-shifted to within one period of the start
    * * if false, return `fraction` period-shifted to within one period of the end
-   * * if undefined, return the period-shift of `fraction` closest to [0,1].
+   * * if undefined, return the period-shift of `fraction` closest in fraction space to [0,1].
    * @returns period-shifted fraction. If `fraction` is already in [0,1], or the sweep is empty, then `fraction` is
    * returned unchanged.
    */

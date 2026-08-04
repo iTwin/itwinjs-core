@@ -2779,6 +2779,88 @@ describe("RegionOps.tolerance", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
+  it("constructAllXYRegionLoops2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // real world input with sloppy joints and tiny segments
+    const ls0 = LineString3d.create([[655245.8212348033, 502688.16534745035], [655284.2934468491, 502732.66332764784]]);
+    const p00 = LineSegment3d.createXYXY(655263.7970248897, 502699.5708375231, 655263.7970248822, 502699.5708375297);
+    const p01 = Arc3d.create(Point3d.create(655259.7779398533, 502694.9873703478), Vector3d.create(-0.42032342630975916, 6.081491930059205), Vector3d.create(-6.081491930059205, -0.420323426309758), AngleSweep.createStartEndDegrees(-45.20013233465027, 45.20013233465027));
+    const p02 = LineSegment3d.createXYXY(655255.1665076711, 502698.97433775524, 655255.1665076645, 502698.9743377476);
+    const ls1 = LineString3d.create([[655263.7970035723, 502699.5708562155], [655286.7143395197, 502679.4754310378]]);
+    const p10 = LineSegment3d.createXYXY(655275.7484804267, 502713.52443396795, 655275.7484804193, 502713.52443397447);
+    const p11 = Arc3d.create(Point3d.create(655279.7675654482, 502718.1079011564), Vector3d.create(-6.081491930058463, -0.4203234263204782), Vector3d.create(-0.4203234263204787, 6.081491930058464), AngleSweep.createStartEndDegrees(-44.7998676653186, 44.7998676653186));
+    const p12 = LineSegment3d.createXYXY(655275.1561332662, 502722.0948685639, 655275.1561332726, 502722.0948685714);
+    const ls2 = LineString3d.create([[655275.7484518765, 502713.5244590028], [655323.9666987768, 502671.24353354913]]);
+    const arc0 = Arc3d.create(Point3d.create(655273.4923369358, 502664.39672170795), Vector3d.create(20.05464602992984), Vector3d.create(0, 20.05464602992984), AngleSweep.createStartEndDegrees(48.75358841777849, -12.125343981122347));
+    const arc1 = Arc3d.create(Point3d.create(655311.9666557856, 502656.1307400103), Vector3d.create(19.297605041552625), Vector3d.create(0, 19.297605041552625), AngleSweep.createStartEndDegrees(167.87465601900755, 411.5492972695961));
+    const curves = [ls0, p00, p01, p02, ls1, p10, p11, p12, ls2, arc0, arc1];
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curves);
+
+    // p01 and ls1 are separated by a cusp of length 2.8e-5, so default tol cannot bridge the gap
+    const tol = 3e-5;
+    const result = RegionOps.constructAllXYRegionLoops(curves, tol);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...result.map((component) => component.positiveAreaLoops).flat()], 0, 0, 10);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...result.map((component) => component.negativeAreaLoops).flat()], 0, 0, -10);
+    ck.testExactNumber(1, result.length, "RegionOps.constructAllXYRegionLoops found one component");
+    if (result.length > 0) {
+      ck.testExactNumber(1, result[0].positiveAreaLoops.length, "RegionOps.constructAllXYRegionLoops found one positive area loop");
+      ck.testExactNumber(1, result[0].negativeAreaLoops.length, "RegionOps.constructAllXYRegionLoops found one negative area loop");
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.tolerance", "constructAllXYRegionLoops2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("createFilletsInLineString", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+
+    // sanitized example from test RegionOps.tolerance.constructAllXYRegionLoops2
+    const ls0 = LineString3d.create([[655245.82122244302, 502688.16533315415],[655284.29343448882, 502732.66331335163]]);
+    const ls = LineString3d.create([[655255.16650767101, 502698.97433775524], [655259.18142552266, 502703.61809816194], [655295.57493297535, 502671.70588080626], [655289.62424868520, 502644.00819974177], [655320.53875350184, 502632.19819975598], [655336.53271463106, 502660.26213800261], [655271.19692172192, 502717.5155395490], [655275.15741209406, 502722.09634769033]]);
+    const radii: number[] = [0, 6.09599999, 20.05464603, 19.29760504, 19.29760504, 19.29760504, 6.09599999, 0];
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [ls0, ls], x0);
+
+    const distTol = Geometry.smallMetricDistance;
+    const path = CurveFactory.createFilletsInLineString(ls, radii, { simplifyPath: true, closureTolerance: distTol });
+    if (ck.testDefined(path, "CurveFactory.createFilletsInLineString succeeded")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0 += 100);
+
+      const smallestCurveDiag2 = distTol * distTol;
+      const isSmallCurve = (c: CurvePrimitive) => c.range().diagonalLengthSquared(true) < smallestCurveDiag2;
+      const countSmallChildren = (children: CurvePrimitive[]) => children.filter(isSmallCurve).length;
+      const countArcs = (children: CurvePrimitive[]) => children.filter((c: CurvePrimitive) => c instanceof Arc3d).length;
+
+      // createFilletsInLineString can produce miniscule line segments between adjacent fillets. The simplifyPath option removed them.
+      ck.testExactNumber(0, countSmallChildren(path.children), "createFilletsInLineString: all miniscule segments are removed");
+      ck.testExactNumber(4, countArcs(path.children), "createFilletsInLineString: adjacent arcs are maximally consolidated");
+
+      // finding regions is more robust when tiny segments are absent
+      const result = RegionOps.constructAllXYRegionLoops([ls0, path], distTol);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...result.map((component) => component.negativeAreaLoops).flat()], x0 += 100);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [...result.map((component) => component.positiveAreaLoops).flat()], x0, 0, 10);
+      ck.testExactNumber(1, result.length, "RegionOps.constructAllXYRegionLoops found one component");
+      if (result.length > 0) {
+        ck.testExactNumber(1, result[0].negativeAreaLoops.length, "RegionOps.constructAllXYRegionLoops found one negative area loop");
+        ck.testExactNumber(1, result[0].positiveAreaLoops.length, "RegionOps.constructAllXYRegionLoops found one positive area loop");
+
+        // constructAllXYRegionLoops can split inputs as it sees fit; consolidateAdjacentPrimitives can merge those that are lines/arcs
+        if (result[0].positiveAreaLoops.length > 0) {
+          const loop = result[0].positiveAreaLoops[0];
+          RegionOps.consolidateAdjacentPrimitives(loop, { consolidateLoopSeam: true, colinearPointTolerance: distTol, duplicatePointTolerance: distTol });
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, x0 += 100);
+          ck.testExactNumber(0, countSmallChildren(loop.children), "consolidateAdjacentPrimitives: all miniscule segments are removed");
+          ck.testExactNumber(4, countArcs(loop.children), "consolidateAdjacentPrimitives: adjacent arcs are maximally consolidated");
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.tolerance", "createFilletsInLineString");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
   it("collectChains", () => { // verifies simpler gapTolerance logic
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

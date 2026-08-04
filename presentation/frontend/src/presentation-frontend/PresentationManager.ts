@@ -161,7 +161,7 @@ export interface PresentationManagerProps {
    * store this ID in their local storage so the ID can be reused across
    * sessions - this allows reusing some caches.
    *
-   * @deprecated in 5.12. This property is no longer used and has no effect.
+   * @deprecated in 5.12 - will not be removed until after 2027-08-03. This property is no longer used and has no effect.
    */
   clientId?: string;
 
