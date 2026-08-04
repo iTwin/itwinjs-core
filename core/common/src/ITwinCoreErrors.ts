@@ -305,42 +305,42 @@ export namespace ElementError {
   }
 }
 
-/** An error originating from the shared DefinitionElement reservation APIs (see [SharedDefinitionReservations]($backend)),
- * used to coordinate simultaneous creation of shared definitions across briefcases.
+/** An error originating from the shared element reservation APIs (see [SynchronousChannel.Reservations]($backend)),
+ * used to coordinate simultaneous creation of elements with shared identities across briefcases.
  * @beta
  */
-export interface DefinitionError extends ITwinError {
-  /** The federationGuid of the DefinitionElement involved in the error, when known. */
+export interface ElementReservationError extends ITwinError {
+  /** The federationGuid of the element involved in the error, when known. */
   readonly federationGuid?: GuidString;
 }
 
 /** @beta */
-export namespace DefinitionError {
-  /** the ITwinError scope for `DefinitionError`s. */
-  export const scope = "itwin-Definition";
+export namespace ElementReservationError {
+  /** the ITwinError scope for `ElementReservationError`s. */
+  export const scope = "itwin-ElementReservation";
 
-  /** Keys that identify `DefinitionError`s */
+  /** Keys that identify `ElementReservationError`s */
   export type Key =
-    /** A proposed or inserted definition is invalid: e.g. a malformed federationGuid, an invalid code, an unknown class, or neither a federationGuid nor a non-empty code. */
-    "invalid-definition" |
-    /** The requested definition conflicts with an existing reservation (a different class or code). */
+    /** A proposed or inserted reservation is invalid: e.g. a malformed federationGuid, an invalid code, an unknown class, or a missing federationGuid. */
+    "invalid-reservation" |
+    /** The requested reservation conflicts with an existing reservation (a different class or code). */
     "reservation-conflict" |
-    /** No reservation exists for the definition being inserted; it must be reserved first. */
+    /** No reservation exists for the element being inserted; it must be reserved first. */
     "reservation-not-found" |
-    /** The DefinitionElement cannot be inserted because the SchemaSync container has un-pushed local changes. */
+    /** The element cannot be inserted because the SchemaSync container has un-pushed local changes. */
     "container-has-local-changes" |
-    /** The pool of element ids available for reserved definitions has been exhausted. */
+    /** The pool of element ids available for reservations has been exhausted. */
     "id-sequence-exhausted" |
     /** The persisted reservation bookkeeping data is corrupt. */
     "corrupt-reservation-data";
 
-  /** Instantiate and throw a DefinitionError */
-  export function throwError<T extends DefinitionError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never {
-    ITwinError.throwError<DefinitionError>({ ...e, iTwinErrorId: { scope, key } });
+  /** Instantiate and throw an ElementReservationError */
+  export function throwError<T extends ElementReservationError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never {
+    ITwinError.throwError<ElementReservationError>({ ...e, iTwinErrorId: { scope, key } });
   }
 
-  /** Determine whether an error object is a DefinitionError */
-  export function isError(error: unknown, key?: Key): error is DefinitionError {
-    return ITwinError.isError<DefinitionError>(error, scope, key);
+  /** Determine whether an error object is an ElementReservationError */
+  export function isError(error: unknown, key?: Key): error is ElementReservationError {
+    return ITwinError.isError<ElementReservationError>(error, scope, key);
   }
 }

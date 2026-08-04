@@ -12,7 +12,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, Code, CodeProps, DefinitionError, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
+import { BriefcaseIdValue, Code, CodeProps, ElementReservationError, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
 import { _implicitTxn, _nativeDb } from "./internal/Symbols";
@@ -20,59 +20,52 @@ import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 /** @internal */
 export namespace SchemaSync {
   const lockParams: CloudSqlite.ObtainLockParams = { retryDelayMs: 1000, nRetries: 30 };
-  const definitionElementsTableName = "definition_elements";
+  const reservedElementsTableName = "reserved_elements";
   const maxLocalIdExclusive = 0x10000000000; // 2^40
-  const idSequenceProp: FilePropertyProps = { namespace: "schemasync", name: "nextDefinitionLocalId" };
+  const idSequenceProp: FilePropertyProps = { namespace: "schemasync", name: "nextReservedElementLocalId" };
 
-  /** Identifies a DefinitionElement to be reserved in a `SchemaSyncDb`. @internal */
-  export interface ProposedDefinition {
-    /** When omitted, the reservation is resolved (or created) by Code instead. */
-    readonly federationGuid?: GuidString;
+  /** Identifies an element to be reserved in a `SchemaSyncDb`. @internal */
+  export interface ProposedElementReservation {
+    readonly federationGuid: GuidString;
     readonly ecClassId: Id64String;
     readonly code: Code;
     readonly isCategory?: boolean;
   }
-  interface ProposedDefinitionWithFedGuid extends ProposedDefinition {
-    readonly federationGuid: GuidString;
-  }
 
-  /** A DefinitionElement reservation that has been persisted in a `SchemaSyncDb`. @internal */
-  interface ReservedDefinition extends ProposedDefinitionWithFedGuid {
+  /** An element reservation that has been persisted in a `SchemaSyncDb`. @internal */
+  export interface ReservedElement extends ProposedElementReservation {
     readonly elementId: Id64String;
   }
 
   export interface ReadMethods {
-    /**
-     * Look up an existing DefinitionElement reservation by federationGuid or Code.
-     * When a `Code` is supplied, returns `undefined` for empty `codeValue`s (they are not unique).
-     */
-    findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined;
+    /** Look up an existing element reservation by federationGuid. */
+    findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
   }
 
   export interface WriteMethods {
-    /** Reserve the specified DefinitionElements in the `SchemaSyncDb`.  Throws if any of the requested reservations conflict with existing reservations. */
-    reserveDefinitionElements(identities: ProposedDefinition[]): Promise<void>;
+    /** Reserve the specified elements in the `SchemaSyncDb`.  Throws if any of the requested reservations conflict with existing reservations. */
+    reserveElements(identities: ProposedElementReservation[]): Promise<void>;
   }
 
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
   export class SchemaSyncDb extends VersionedSqliteDb implements ReadMethods, WriteMethods {
-    private _supportsDefinitions?: boolean;
+    private _supportsReservations?: boolean;
     public override readonly myVersion = "4.1.0";
     protected override createDDL() {
-      this.ensureDefinitionElementsTable();
+      this.ensureReservedElementsTable();
     }
 
     public override openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer) {
       super.openDb(dbName, openMode, container);
-      this._supportsDefinitions = semver.lte(this.myVersion, semver.minVersion(this.getRequiredVersions().readVersion) ?? "0.0.0");
+      this._supportsReservations = semver.lte(this.myVersion, semver.minVersion(this.getRequiredVersions().readVersion) ?? "0.0.0");
     }
 
-    private ensureDefinitionElementsTable(): void {
-      if (this._supportsDefinitions)
+    private ensureReservedElementsTable(): void {
+      if (this._supportsReservations)
         return;
 
       this.executeSQL(`
-        CREATE TABLE IF NOT EXISTS ${definitionElementsTableName} (
+        CREATE TABLE IF NOT EXISTS ${reservedElementsTableName} (
           federationGuid BLOB    PRIMARY KEY,
           elementId      INTEGER NOT NULL UNIQUE,
           ecClassId      INTEGER NOT NULL,
@@ -80,22 +73,18 @@ export namespace SchemaSync {
           codeScope      TEXT NOT NULL,
           codeValue      TEXT COLLATE NOCASE
         )`);
-      this.executeSQL(`CREATE UNIQUE INDEX IF NOT EXISTS idx_def_elem_code  ON ${definitionElementsTableName}(codeSpecId, codeScope, codeValue)`);
+      this.executeSQL(`CREATE UNIQUE INDEX IF NOT EXISTS idx_reserved_elem_code  ON ${reservedElementsTableName}(codeSpecId, codeScope, codeValue)`);
       const minVersion = `^${this.myVersion}`;
       this.setRequiredVersions({ readVersion: minVersion, writeVersion: minVersion });
-      this._supportsDefinitions = true;
+      this._supportsReservations = true;
     }
 
-    public findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined {
-      if (!this._supportsDefinitions)
+    public findReservedElement(federationGuid: GuidString): ReservedElement | undefined {
+      if (!this._supportsReservations)
         return undefined;
 
-      return (typeof key === "string") ? this._findByGuid(key) : this._findByCode(key);
-    }
-
-    private _findByGuid(federationGuid: GuidString): ReservedDefinition | undefined {
       return this.withPreparedSqliteStatement(
-        `SELECT elementId, ecClassId, codeSpecId, codeScope, codeValue FROM ${definitionElementsTableName} WHERE federationGuid=?`,
+        `SELECT elementId, ecClassId, codeSpecId, codeScope, codeValue FROM ${reservedElementsTableName} WHERE federationGuid=?`,
         (stmt) => {
           stmt.bindGuid(1, federationGuid);
           if (!stmt.nextRow())
@@ -115,32 +104,9 @@ export namespace SchemaSync {
       );
     }
 
-    private _findByCode(code: CodeProps): ReservedDefinition | undefined {
-      if (!code.value)
-        return undefined;
-
-      return this.withPreparedSqliteStatement(
-        `SELECT federationGuid, elementId, ecClassId FROM ${definitionElementsTableName} WHERE codeSpecId=? AND codeScope=? AND codeValue=?`,
-        (stmt) => {
-          stmt.bindId(1, code.spec);
-          stmt.bindString(2, code.scope);
-          stmt.bindString(3, code.value ?? "");
-          if (!stmt.nextRow())
-            return undefined;
-
-          return {
-            federationGuid: stmt.getValueGuid(0),
-            elementId: stmt.getValueId(1),
-            ecClassId: stmt.getValueId(2),
-            code: new Code(code),
-          };
-        },
-      );
-    }
-
-    private insertReservedDefinition(id: ProposedDefinitionWithFedGuid, elementId: Id64String): void {
+    private insertReservedElement(id: ProposedElementReservation, elementId: Id64String): void {
       this.withPreparedSqliteStatement(
-        `INSERT INTO ${definitionElementsTableName} (federationGuid, elementId, ecClassId, codeSpecId, codeScope, codeValue) VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO ${reservedElementsTableName} (federationGuid, elementId, ecClassId, codeSpecId, codeScope, codeValue) VALUES (?, ?, ?, ?, ?, ?)`,
         (stmt) => {
           stmt.bindGuid(1, id.federationGuid);
           stmt.bindId(2, elementId);
@@ -156,63 +122,63 @@ export namespace SchemaSync {
       );
     }
 
-    public async reserveDefinitionElements(elements: ProposedDefinition[]): Promise<void> {
-      this.ensureDefinitionElementsTable();
+    public async reserveElements(elements: ProposedElementReservation[]): Promise<void> {
+      this.ensureReservedElementsTable();
 
       // Insert new reservations as we go, so later entries in `elements` can dedupe against earlier ones
       // through the shared (still-uncommitted) transaction. The caller commits on success and abandons on error.
-      let nextLocalId = this.getNextDefinitionLocalId();
+      let nextLocalId = this.getNextReservedElementLocalId();
       const firstLocalId = nextLocalId;
 
       for (const def of elements) {
-        // Find a matching reservation: by guid when supplied, otherwise by code. If found, it must match.
-        const existing = this.findReservedDefinition(def.federationGuid ?? def.code);
+        if (!def.federationGuid || !Guid.isGuid(def.federationGuid)) {
+          ElementReservationError.throwError("invalid-reservation", {
+            message: "Element reservation requires an explicit, valid federationGuid",
+          });
+        }
+
+        // Identity is always the federationGuid. If a reservation already exists for it, it must match exactly.
+        const existing = this.findReservedElement(def.federationGuid);
         if (existing) {
-          if (!this.existingMatches(existing, { ...def, federationGuid: existing.federationGuid })) {
-            DefinitionError.throwError("reservation-conflict", {
-              message: `SchemaSync DefinitionElement reservation conflict for federationGuid ${existing.federationGuid}: existing row does not match requested class/code`,
+          if (!this.existingMatches(existing, def)) {
+            ElementReservationError.throwError("reservation-conflict", {
+              message: `Element reservation conflict for federationGuid ${existing.federationGuid}: existing row does not match requested class/code`,
               federationGuid: existing.federationGuid,
             });
           }
           continue;
         }
 
-        if (!def.federationGuid && !def.code.value) {
-          DefinitionError.throwError("invalid-definition", {
-            message: "SchemaSync DefinitionElement reservation requires either a federationGuid or a non-empty code value",
-          });
-        }
-
-        const elementId = Id64.fromLocalAndBriefcaseIds(nextLocalId, BriefcaseIdValue.SchemaSyncDefinitionReserved);
-        this.insertReservedDefinition({ ...def, federationGuid: def.federationGuid ?? Guid.createValue() }, elementId);
+        const elementId = Id64.fromLocalAndBriefcaseIds(nextLocalId, BriefcaseIdValue.SchemaSyncElementReserved);
+        this.insertReservedElement(def, elementId);
         // skip a local id for each reserved category because category inserts always trigger a second insert for default subcategory
         nextLocalId += def.isCategory ? 2 : 1;
         if (nextLocalId >= maxLocalIdExclusive) {
           this.abandonChanges();
-          DefinitionError.throwError("id-sequence-exhausted", { message: `SchemaSync DefinitionElement local-id sequence exhausted` });
+          ElementReservationError.throwError("id-sequence-exhausted", { message: `SchemaSync reserved-element local-id sequence exhausted` });
         }
       }
 
       if (nextLocalId !== firstLocalId)
-        this.setNextDefinitionLocalId(nextLocalId);
+        this.setNextReservedElementLocalId(nextLocalId);
     }
 
-    private existingMatches(existing: SchemaSync.ProposedDefinition, id: SchemaSync.ProposedDefinition): boolean {
+    private existingMatches(existing: ProposedElementReservation, id: ProposedElementReservation): boolean {
       return existing.federationGuid === id.federationGuid
         && existing.ecClassId === id.ecClassId
         && existing.code.equals(id.code);
     }
 
-    private getNextDefinitionLocalId(): number {
+    private getNextReservedElementLocalId(): number {
       const stored = this[_nativeDb].queryFileProperty(idSequenceProp, true) as string | undefined;
       const current = stored ? Number(stored) : 1;
       if (!Number.isInteger(current) || current < 1)
-        DefinitionError.throwError("corrupt-reservation-data", { message: `Corrupt SchemaSync DefinitionElement local-id counter: '${stored}'` });
+        ElementReservationError.throwError("corrupt-reservation-data", { message: `Corrupt SchemaSync reserved-element local-id counter: '${stored}'` });
 
       return current;
     }
 
-    private setNextDefinitionLocalId(next: number): void {
+    private setNextReservedElementLocalId(next: number): void {
       this[_nativeDb].saveFileProperty(idSequenceProp, String(next));
     }
   }
@@ -332,7 +298,7 @@ export namespace SchemaSync {
         await briefcase.pushChanges({ description: `Enable SchemaSync for iModel with container-id: ${props.containerId}` });
     }
 
-    await iModel.initializeSharedDefinitionReservations();
+    await iModel.initializeSharedElementReservations();
   };
 
   /** Provides access to a cloud-based `SchemaSyncDb` to hold ECSchemas.  */

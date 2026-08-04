@@ -7,19 +7,19 @@
  * @module iModels
  */
 
-import { SharedDefinitionReservations } from "../SharedDefinitionReservations";
-import { _close, _implementationProhibited, _onDefinitionElementInsert } from "./Symbols";
+import { SynchronousChannel } from "../SynchronousChannel";
+import { _close, _implementationProhibited, _onReservedElementInsert } from "./Symbols";
 
-/** A null-implementation of SharedDefinitionReservations for iModels that don't use SchemaSync-backed reservations. */
-class NoReservations implements SharedDefinitionReservations {
+/** A null-implementation of SynchronousChannel.Reservations for iModels that don't use SchemaSync-backed reservations. */
+class NoReservations implements SynchronousChannel.Reservations {
   public readonly [_implementationProhibited] = undefined;
   public get isServerBased() { return false; }
   public [_close](): void { }
-  public [_onDefinitionElementInsert](): void { }
-  public needsDefinitionReservation(): boolean { return false; }
-  public async reserveDefinitionElements(): Promise<void> { }
+  public [_onReservedElementInsert](): void { }
+  public needsElementReservation(): boolean { return false; }
+  public async reserveElements(): Promise<void> { }
 }
 
-export function createNoOpReservations(): SharedDefinitionReservations {
+export function createNoOpReservations(): SynchronousChannel.Reservations {
   return new NoReservations();
 }

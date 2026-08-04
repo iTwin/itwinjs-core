@@ -80,7 +80,7 @@ import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater
 import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
-import { SharedDefinitionReservations } from "./SharedDefinitionReservations";
+import { SynchronousChannel } from "./SynchronousChannel";
 
 // spell:ignore fontid fontmap
 
@@ -144,6 +144,13 @@ export interface InsertElementOptions {
    * @beta
    */
   forceUseId?: boolean;
+
+  /** If true, bypass the shared-element reservation check that otherwise requires an element inserted with an explicitly-set `federationGuid` to have been
+   * [reserved]($docs/learning/backend/ConcurrencyControl.md) first when SchemaSync is enabled. Intended only for trusted bulk inserters (e.g. the iModel transformer
+   * and connectors) that use other locking strategies to avoid conflicts.
+   * @internal
+   */
+  skipReservationCheck?: boolean;
 }
 
 /** Options for [[EditTxn.changeElementParent]].
@@ -492,7 +499,7 @@ export abstract class IModelDb extends IModel {
   protected _locks?: LockControl = createNoOpLockControl();
 
   /** @internal */
-  protected _reservations?: SharedDefinitionReservations = createNoOpReservations();
+  protected _reservations?: SynchronousChannel.Reservations = createNoOpReservations();
 
   /** @internal */
   protected _codeService?: CodeService;
@@ -529,11 +536,11 @@ export abstract class IModelDb extends IModel {
   /** The [[LockControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
   public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
-  /** @beta The [[SharedDefinitionReservations]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
-  public get reservations(): SharedDefinitionReservations { return this._reservations!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  /** @beta The [[SynchronousChannel.Reservations]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
+  public get reservations(): SynchronousChannel.Reservations { return this._reservations!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** @internal */
-  public async initializeSharedDefinitionReservations(): Promise<void> {
+  public async initializeSharedElementReservations(): Promise<void> {
     this._reservations?.[_close]();
 
     if (SchemaSync.isEnabled(this))
@@ -3858,7 +3865,7 @@ export class BriefcaseDb extends IModelDb {
 
     // load all of the settings from workspaces
     await briefcaseDb.loadWorkspaceSettings();
-    await briefcaseDb.initializeSharedDefinitionReservations();
+    await briefcaseDb.initializeSharedElementReservations();
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
@@ -4102,9 +4109,9 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    // If this pull enabled or disabled SchemaSync for this briefcase, its SharedDefinitionReservations must now be re-initialized
+    // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
     if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
-      await this.initializeSharedDefinitionReservations();
+      await this.initializeSharedElementReservations();
 
     this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
   }
@@ -4308,9 +4315,9 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    // If this pull enabled or disabled SchemaSync for this briefcase, its SharedDefinitionReservations must now be re-initialized
+    // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
     if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
-      await this.initializeSharedDefinitionReservations();
+      await this.initializeSharedElementReservations();
 
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
     BriefcaseManager.deleteRebaseFolders(this);
@@ -4513,7 +4520,7 @@ export class SnapshotDb extends IModelDb {
     const key = CheckpointManager.getKey(checkpoint);
     const db = SnapshotDb.openFile(dbName, { key, container });
     await db.loadWorkspaceSettings();
-    await db.initializeSharedDefinitionReservations();
+    await db.initializeSharedElementReservations();
     return db;
   }
 

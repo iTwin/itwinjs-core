@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Fixed `Code.equals` to be case-insensitive with code values and added error types for the new `SharedDefinitionReservations` backend API.",
+      "comment": "Fixed `Code.equals` to be case-insensitive with code values and added error types for the new `SynchronousChannel.Reservations` backend API.",
       "type": "none"
     }
   ],

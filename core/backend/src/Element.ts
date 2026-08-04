@@ -21,7 +21,7 @@ import { IModelDb, InsertElementOptions } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
-import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _onDefinitionElementInsert, _verifyChannel } from "./internal/Symbols";
+import { _cache, _elementWasCreated, _implicitTxn, _nativeDb, _onReservedElementInsert, _verifyChannel } from "./internal/Symbols";
 import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
 /** Argument for the `Element.onXxx` static methods
@@ -43,7 +43,7 @@ export interface OnElementPropsArg extends OnElementArg {
   /** Mutable options that will be supplied to the native insert/update operation.
    * @beta
    */
-  options: InsertElementOptions;
+  options?: InsertElementOptions;
 }
 
 /** Argument for the `Element.onXxx` static methods that notify of operations to an existing Element supplying its Id, ModelId and FederationGuid.
@@ -273,6 +273,11 @@ export class Element extends Entity {
     if (props.parent)   // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parent.id, "parent", operation);
     iModel.codeService?.verifyCode(arg);
+
+    // Any element inserted with an explicitly-set federationGuid must first be reserved (when SchemaSync is enabled),
+    // unless the caller explicitly opts out. See [[SynchronousChannel.Reservations]].
+    if (props.federationGuid !== undefined && !arg.options?.skipReservationCheck)
+      iModel.reservations[_onReservedElementInsert](arg);
   }
 
   /** Called after a new Element was inserted.
@@ -1606,16 +1611,6 @@ export abstract class DefinitionElement extends InformationContentElement {
     const val = super.toJSON() as DefinitionElementProps;
     val.isPrivate = this.isPrivate;
     return val;
-  }
-
-  /**
-   * DefinitionElement checks reservations on insert.
-   * @inheritdoc
-   * @beta
-   */
-  protected static override onInsert(arg: OnElementPropsArg): void {
-    super.onInsert(arg);
-    arg.iModel.reservations[_onDefinitionElementInsert](arg);
   }
 }
 

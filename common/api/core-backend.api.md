@@ -2034,8 +2034,6 @@ export abstract class DefinitionElement extends InformationContentElement {
     static deserialize(props: DeserializeEntityArgs): DefinitionElementProps;
     isPrivate: boolean;
     // @beta
-    protected static onInsert(arg: OnElementPropsArg): void;
-    // @beta
     static serialize(props: DefinitionElementProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): DefinitionElementProps;
@@ -4119,7 +4117,7 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
     // @internal (undocumented)
-    initializeSharedDefinitionReservations(): Promise<void>;
+    initializeSharedElementReservations(): Promise<void>;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
     // @beta
@@ -4185,9 +4183,9 @@ export abstract class IModelDb extends IModel {
     // @beta
     requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
     // @beta
-    get reservations(): SharedDefinitionReservations;
+    get reservations(): SynchronousChannel.Reservations;
     // @internal (undocumented)
-    protected _reservations?: SharedDefinitionReservations;
+    protected _reservations?: SynchronousChannel.Reservations;
     // @internal (undocumented)
     restartDefaultTxn(): void;
     // @internal (undocumented)
@@ -4721,6 +4719,8 @@ export interface InlineGeometryPartsResult {
 export interface InsertElementOptions {
     // @beta
     forceUseId?: boolean;
+    // @internal
+    skipReservationCheck?: boolean;
 }
 
 // @beta
@@ -5590,7 +5590,7 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
 
 // @beta
 export interface OnElementPropsArg extends OnElementArg {
-    options: InsertElementOptions;
+    options?: InsertElementOptions;
     props: ElementProps;
 }
 
@@ -6184,15 +6184,6 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
     onProgress?: ProgressFunction;
 }
 
-// @beta
-export interface ReserveDefinitionElementsArgs {
-    elements: Iterable<{
-        federationGuid?: GuidString;
-        classFullName: string;
-        code: CodeProps;
-    }>;
-}
-
 // @public
 export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
     onProgress?: ProgressFunction;
@@ -6329,25 +6320,21 @@ export namespace SchemaSync {
         getUri(): string;
         static initializeDb(props: CloudSqlite.ContainerProps): Promise<void>;
     }
-    export interface ProposedDefinition {
+    export interface ProposedElementReservation {
         // (undocumented)
         readonly code: Code;
         // (undocumented)
         readonly ecClassId: Id64String;
-        readonly federationGuid?: GuidString;
+        // (undocumented)
+        readonly federationGuid: GuidString;
         // (undocumented)
         readonly isCategory?: boolean;
     }
     // (undocumented)
-    export interface ProposedDefinitionWithFedGuid extends ProposedDefinition {
-        // (undocumented)
-        readonly federationGuid: GuidString;
-    }
-    // (undocumented)
     export interface ReadMethods {
-        findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined;
+        findReservedElement(key: GuidString | CodeProps): ReservedElement | undefined;
     }
-    export interface ReservedDefinition extends ProposedDefinitionWithFedGuid {
+    export interface ReservedElement extends ProposedElementReservation {
         // (undocumented)
         readonly elementId: Id64String;
     }
@@ -6355,13 +6342,13 @@ export namespace SchemaSync {
         // (undocumented)
         protected createDDL(): void;
         // (undocumented)
-        findReservedDefinition(key: GuidString | CodeProps): ReservedDefinition | undefined;
+        findReservedElement(key: GuidString | CodeProps): ReservedElement | undefined;
         // (undocumented)
         readonly myVersion = "4.1.0";
         // (undocumented)
         openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
         // (undocumented)
-        reserveDefinitionElements(elements: ProposedDefinition[]): Promise<void>;
+        reserveElements(elements: ProposedElementReservation[]): Promise<void>;
     }
     const // (undocumented)
     setTestCache: (iModel: IModelDb, cacheName?: string) => void;
@@ -6392,9 +6379,8 @@ export namespace SchemaSync {
     }) => Promise<void>;
     // (undocumented)
     export interface WriteMethods {
-        reserveDefinitionElements(identities: ProposedDefinition[]): Promise<void>;
+        reserveElements(identities: ProposedElementReservation[]): Promise<void>;
     }
-    export {};
 }
 
 // @public
@@ -6601,21 +6587,6 @@ export interface SettingsSchemas {
 
 // @internal
 export const settingsWorkspaceDbName: WorkspaceDbName;
-
-// @beta
-export interface SharedDefinitionReservations {
-    // @internal
-    [_close]: () => void;
-    // @internal (undocumented)
-    readonly [_implementationProhibited]: unknown;
-    // @internal
-    [_onDefinitionElementInsert]: (id: OnElementPropsArg) => void;
-    // @internal
-    readonly isServerBased: boolean;
-    needsDefinitionReservation(federationGuid: GuidString): boolean;
-    needsDefinitionReservation(code: CodeProps): boolean;
-    reserveDefinitionElements(args: ReserveDefinitionElementsArgs): Promise<void>;
-}
 
 // @public @preview
 export class Sheet extends Document_2 {
@@ -7398,6 +7369,29 @@ export class SynchronizationConfigProcessesSources extends ElementRefersToElemen
 export class SynchronizationConfigSpecifiesRootSources extends SynchronizationConfigProcessesSources {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export namespace SynchronousChannel {
+    export interface Reservations {
+        // @internal
+        [_close]: () => void;
+        // @internal (undocumented)
+        readonly [_implementationProhibited]: unknown;
+        // @internal
+        [_onReservedElementInsert]: (arg: OnElementPropsArg) => void;
+        // @internal
+        readonly isServerBased: boolean;
+        needsElementReservation(federationGuid: GuidString): boolean;
+        reserveElements(args: ReserveElementsArgs): Promise<void>;
+    }
+    export interface ReserveElementsArgs {
+        elements: Iterable<{
+            federationGuid: GuidString;
+            classFullName: string;
+            code?: CodeProps;
+        }>;
+    }
 }
 
 // @beta (undocumented)
