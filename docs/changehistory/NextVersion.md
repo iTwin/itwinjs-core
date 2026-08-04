@@ -5,12 +5,45 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
+    - [Reserving elements for concurrent creation](#reserving-elements-for-concurrent-creation)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
 
 ## @itwin/core-backend
+
+### Reserving elements for concurrent creation
+
+A new `@beta` synchronous coordination channel, [IModelDb.reservations]($backend), lets multiple briefcases concurrently create elements that share a stable identity without producing duplicate or conflicting elements once their changesets merge. It is the first of a planned family of [SynchronousChannel]($backend) coordination surfaces.
+
+**Who is affected:** only iModels that have SchemaSync enabled. When SchemaSync is not enabled, [IModelDb.reservations]($backend) is a no-op and element inserts behave exactly as before — no action is required.
+
+**New rule:** when SchemaSync is enabled and you are not holding the Schema Lock, **any element inserted with an explicitly-set `federationGuid` must first be reserved**. This covers shared definitions (e.g. categories, line styles) as well as the non-definition template elements contained in component recipes. Elements inserted without an explicit `federationGuid` are unaffected.
+
+Reserve the elements you intend to create, then insert them normally:
+
+```ts
+await briefcase.reservations.reserveElements({
+  elements: [{
+    federationGuid: fedGuid,
+    classFullName: SpatialCategory.classFullName,
+    code: SpatialCategory.createCode(briefcase, IModel.dictionaryId, "Equipment"),
+  }],
+});
+
+await briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
+const categoryId = briefcase.elements.insertElement({
+  classFullName: SpatialCategory.classFullName,
+  model: IModel.dictionaryId,
+  code: SpatialCategory.createCode(briefcase, IModel.dictionaryId, "Equipment"),
+  federationGuid: fedGuid,
+});
+```
+
+The insert resolves the reservation by `federationGuid`, uses the pre-reserved element id (so the element gets the same id in every briefcase), and verifies that the insert's class and Code match what was reserved.
+
+**How to react:** if your app inserts elements with explicit `federationGuid`s, add a [SynchronousChannel.Reservations.reserveElements]($backend) call before the insert. An unreserved insert now throws an [ElementReservationError]($common) (`reservation-not-found`). Use [SynchronousChannel.Reservations.needsElementReservation]($backend) to check whether an element still needs reserving, and [ElementReservationError.isError]($common) to detect and classify failures. Inserting under the Schema Lock continues to bypass reservation checks, since it already serializes all briefcases. See [Concurrency Control](../learning/backend/ConcurrencyControl.md) for the full workflow.
 
 ### Edit from element, model, and aspect callbacks
 
