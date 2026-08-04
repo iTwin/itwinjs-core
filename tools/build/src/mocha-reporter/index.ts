@@ -83,7 +83,7 @@ class BentleyMochaReporter extends Spec {
             if (i + 1 < process.argv.length && process.argv[i + 1] === "chrome") {
               this._chrome = true;
               process.on("chrome-test-runner-done", () => {
-                this.confirmExit();
+                this.confirmExit(30);
               });
             }
             break;

@@ -73,6 +73,7 @@ export namespace CloudSqlite {
   interface CloudContainerInternal extends CloudContainer {
     timer?: NodeJS.Timeout;
     refreshPromise?: Promise<void>;
+    refreshGeneration: number;
     lockExpireSeconds: number;
     writeLockHeldBy?: string;
   }
@@ -101,6 +102,7 @@ export namespace CloudSqlite {
     // when the object is cloned (e.g. when included in an exception across processes).
     addHiddenProperty(container, "timer");
     addHiddenProperty(container, "refreshPromise");
+    addHiddenProperty(container, "refreshGeneration", 0);
 
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
     container.lockExpireSeconds = args.lockExpireSeconds ?? 60 * 60; // default is 1 hour
@@ -119,16 +121,23 @@ export namespace CloudSqlite {
         }
         container.accessToken = newToken ?? "";
       };
-      const tokenRefreshFn = () => {
+      // `generation` guards against a refresh that was already in flight when the container was disconnected (and possibly reconnected)
+      // from unconditionally rescheduling itself once it completes.
+      const tokenRefreshFn = (generation: number) => {
         container.timer = setTimeout(async () => {
           container.refreshPromise = doRefresh(); // this promise is stored on the container so it can be awaited in tests
           await container.refreshPromise;
           container.refreshPromise = undefined;
-          tokenRefreshFn(); // schedule next refresh
+          if (container.refreshGeneration === generation)
+            tokenRefreshFn(generation); // schedule next refresh
         }, refreshSeconds * 1000);
       };
-      addHiddenProperty(container, "onConnected", tokenRefreshFn); // schedule the first refresh when the container is connected
+      addHiddenProperty(container, "onConnected", () => { // schedule the first refresh when the container is connected
+        const generation = ++container.refreshGeneration;
+        tokenRefreshFn(generation);
+      });
       addHiddenProperty(container, "onDisconnect", () => { // clear the refresh timer when the container is disconnected
+        ++container.refreshGeneration;
         if (container.timer !== undefined) {
           clearTimeout(container.timer);
           container.timer = undefined;

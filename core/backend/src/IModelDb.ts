@@ -3292,6 +3292,8 @@ export namespace IModelDb {
       return this._viewStore;
     }
     public set viewStore(viewStore: ViewStore.CloudAccess) {
+      if (this._viewStore !== undefined && this._viewStore !== viewStore)
+        this._viewStore.close();
       this._viewStore = viewStore;
     }
     /** Close the ViewStore for this iModel, if one is open. Called when the iModel is closed.
