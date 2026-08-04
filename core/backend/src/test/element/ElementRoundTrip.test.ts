@@ -744,7 +744,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     // Verify inserted element aspect properties
     const actualAspectValue = await verifyElementAspect(elementAspectId, expectedAspectValue, elId, expectedAspectValue.classFullName, imodel);
     const batchedAspects: TestElementAspect[] = [];
-    for await (const aspect of imodel.elements.getAspectsForElements({ elementIds: elId }))
+    for await (const aspect of imodel.elements.queryAspects({ elementIds: elId }))
       batchedAspects.push(aspect.toJSON());
     assert.lengthOf(batchedAspects, 1);
     verifyTestElementAspect(batchedAspects[0], expectedAspectValue);

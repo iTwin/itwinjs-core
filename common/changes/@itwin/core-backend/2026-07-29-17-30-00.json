@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add IModelDb.Elements.getAspectsForElements to stream typed ElementAspects for multiple owning elements in one query.",
+      "comment": "Add IModelDb.Elements.queryAspects to stream typed ElementAspects for multiple owning elements in one query.",
       "type": "none"
     }
   ],

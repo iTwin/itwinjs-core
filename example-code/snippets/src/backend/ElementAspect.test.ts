@@ -21,8 +21,8 @@ describe("ElementAspect examples", () => {
     const processedAspects: ElementAspect[] = [];
     const processAspect = (aspect: ElementAspect) => processedAspects.push(aspect);
 
-    // __PUBLISH_EXTRACT_START__ CoreBackend.IModelDb.GetAspectsForElements
-    for await (const aspect of iModelDb.elements.getAspectsForElements({
+    // __PUBLISH_EXTRACT_START__ CoreBackend.IModelDb.QueryAspects
+    for await (const aspect of iModelDb.elements.queryAspects({
       elementIds,
       aspectClassFullName: ElementMultiAspect.classFullName,
       groupByOwner: true,

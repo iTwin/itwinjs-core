@@ -172,10 +172,10 @@ export interface ChangeElementModelProps {
 }
 
 /** Options for streaming the aspects owned by a set of elements.
- * @see [[IModelDb.Elements.getAspectsForElements]]
+ * @see [[IModelDb.Elements.queryAspects]]
  * @beta
  */
-export interface GetAspectsForElementsOptions {
+export interface QueryAspectOptions {
   /** The elements whose aspects to return. Duplicate Ids are ignored. */
   elementIds: Id64Arg;
   /** Return only instances of this aspect class or its subclasses. */
@@ -3251,12 +3251,12 @@ export namespace IModelDb {
      *
      * Use this method instead of calling [[getAspects]] repeatedly when reading aspects for multiple elements or when the result may be large. The query reads all requested owners together and yields each aspect without buffering the complete result set. For a single element with a small result, [[getAspects]] provides a simpler synchronous API.
      *
-     * The order is unspecified unless [[GetAspectsForElementsOptions.groupByOwner]] is true.
+     * The order is unspecified unless [[QueryAspectOptions.groupByOwner]] is true.
      * @param options Defines the element Ids, class filters, result ordering, and query connection.
      * @returns An async iterator over the matching aspects.
      * @beta
      */
-    public async *getAspectsForElements(options: GetAspectsForElementsOptions): AsyncIterableIterator<ElementAspect> {
+    public async *queryAspects(options: QueryAspectOptions): AsyncIterableIterator<ElementAspect> {
       const elementIds = Id64.toIdSet(options.elementIds);
       if (elementIds.size === 0)
         return;
@@ -3282,7 +3282,6 @@ export namespace IModelDb {
       const orderBy = options.groupByOwner
         ? "ORDER BY OwnerId, AspectKind, ECClassId, ECInstanceId"
         : "";
-      // The IdSet virtual table is experimental and requires ENABLE_EXPERIMENTAL_FEATURES below.
       const sql = `WITH OwnerIds AS (SELECT id FROM IdSet(:elementIds))
         SELECT $ FROM (
           SELECT aspect.ECInstanceId, aspect.ECClassId, aspect.Element.Id AS OwnerId, 0 AS AspectKind
@@ -3295,7 +3294,7 @@ export namespace IModelDb {
           CROSS JOIN Bis.ElementUniqueAspect aspect ON aspect.Element.Id=owners.id
           WHERE TRUE ${classFilter} ${excludedClassFilter}
         ) ${orderBy}
-        OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB ENABLE_EXPERIMENTAL_FEATURES`;
+        OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`;
 
       const reader = this._iModel.createQueryReader(sql, params, { usePrimaryConn: options.usePrimaryConn });
       for await (const queryRow of reader)
