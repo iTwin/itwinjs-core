@@ -6,6 +6,7 @@
 import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
@@ -19,18 +20,17 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
-import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../../curve/RegionOps";
+import { ConsolidateAdjacentPrimitivesOptions, RegionOps } from "../../curve/RegionOps";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { Sample } from "../GeometrySamples";
 
 const consolidateAdjacentPath = "./src/test/data/curve/";
 
@@ -342,11 +342,9 @@ describe("ConsolidateAdjacentPrimitives", () => {
     markLimits(allGeometry, chain1.collectCurvePrimitives(), 0.01, 0.03, 0.01, x0, y0);
     x0 += 20.0;
     for (const optionBits of [0, 1, 2, 3]) {
-      const options = new ConsolidateAdjacentCurvePrimitivesOptions();
+      const options: ConsolidateAdjacentPrimitivesOptions = { consolidateLinearGeometry: false, consolidateCompatibleArcs: false };
       let dx = 0;
       let dy = 0;
-      options.consolidateLinearGeometry = false;
-      options.consolidateCompatibleArcs = false;
       if ((optionBits & 0x01) !== 0) {
         dx = 10;
         options.consolidateLinearGeometry = true;
@@ -453,18 +451,14 @@ describe("ConsolidateAdjacentPrimitives", () => {
         ck.testExactNumber(6, loop0.children[0].packedPoints.length, "...with minimal point count");
 
     const loop1 = loop.clone();
-    const options1 = new ConsolidateAdjacentCurvePrimitivesOptions();
-    options1.consolidateLoopSeam = true;
-    RegionOps.consolidateAdjacentPrimitives(loop1, options1);
+    RegionOps.consolidateAdjacentPrimitives(loop1, { consolidateLoopSeam: true });
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, x0 += 3);
     if (ck.testExactNumber(1, loop1.children.length, "consolidated all children into one..."))
       if (ck.testType(loop1.children[0], LineString3d, "...cyclic linestring..."))
         ck.testExactNumber(5, loop1.children[0].packedPoints.length, "...with minimal point count");
 
     const loop2 = loop.clone();
-    const options2 = new ConsolidateAdjacentCurvePrimitivesOptions();
-    options2.disableLinearCompression = true;
-    RegionOps.consolidateAdjacentPrimitives(loop2, options2);
+    RegionOps.consolidateAdjacentPrimitives(loop2, { disableLinearCompression: true });
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, x0 += 3);
     if (ck.testExactNumber(1, loop2.children.length, "consolidated all children into one..."))
       if (ck.testType(loop2.children[0], LineString3d, "...linestring..."))

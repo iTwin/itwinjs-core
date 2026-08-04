@@ -37,6 +37,17 @@ function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
 }
 
+const maxFileExtensionLength = 255 - 40 - 1; // Reserve space for the SHA-1 hash and "." in the generated filename.
+
+function isSafeFileExtension(fileExt: string): boolean {
+  const invalidChars = "<>:\"/\\|?*";
+  return fileExt.length <= maxFileExtensionLength
+    && Buffer.byteLength(fileExt, "utf8") <= maxFileExtensionLength
+    && !fileExt.endsWith(" ")
+    && !fileExt.endsWith(".")
+    && !Array.from(fileExt).some((char) => invalidChars.includes(char) || char.charCodeAt(0) < 0x20);
+}
+
 /** file extension for local WorkspaceDbs */
 export const workspaceDbFileExt = "itwin-workspace";
 
@@ -198,7 +209,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
     // since resource names can contain illegal characters, path separators, etc., we make the local file name from its hash, in hex.
     let localFileName = join(this._container.filesDir, createHash("sha1").update(this.dbFileName).update(rscName).digest("hex"));
-    if (info.fileExt !== "") // since some applications may expect to see the extension, append it here if it was supplied.
+    if (info.fileExt !== "" && isSafeFileExtension(info.fileExt)) // since some applications may expect to see the extension, append it here if it was supplied.
       localFileName = `${localFileName}.${info.fileExt}`;
     return { localFileName, info };
   }
@@ -776,6 +787,8 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     fileExt = fileExt ?? extname(localFileName);
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
+    if (!isSafeFileExtension(fileExt))
+      WorkspaceError.throwError("invalid-name", { message: "file extension is not valid for generated file names" });
     this.sqliteDb[_nativeDb].embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
   }
   public updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void {
