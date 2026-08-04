@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Use Units schema 01.00.11.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
