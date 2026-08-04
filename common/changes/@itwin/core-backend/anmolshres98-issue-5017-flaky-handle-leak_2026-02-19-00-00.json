@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "The process now stays alive until all connected `CloudSqlite.CloudContainer`s are disconnected; call `IModelHost.shutdown` before exiting to avoid hanging.",
+      "comment": "IModelDb.close() now closes its ViewStore, and IModelHost.shutdown() now also disconnects V2 checkpoint containers. Separately, non-public containers with token-refresh enabled (`tokenRefreshSeconds > 0`, the default) keep the process alive until disconnected - disconnect any you manage outside `CloudSqlite.CloudCaches` before exiting.",
       "type": "none"
     }
   ],
