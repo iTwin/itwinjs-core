@@ -14,7 +14,7 @@ import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
 import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
-import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
+import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
@@ -481,10 +481,15 @@ export class ECDb implements Disposable {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
-    const executor = new ECSqlRowExecutor(this);
-    const reader = new ECSqlSyncReader(executor, ecsql, params, config);
-    const release = () => executor[Symbol.dispose]();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? new ECSqlStatement();
+    const executor = new ECSqlRowExecutor(this, stmt, loggerCategory);
+    const release = () => {
+      executor[Symbol.dispose]();
+      releaseECSqlStatement(stmt, this._statementCache, loggerCategory, executor.canCacheStatement);
+    };
     try {
+      const reader = new ECSqlSyncReader(executor, ecsql, params, config);
       const val = callback(reader);
       if (val instanceof Promise) {
         val.then(release, release);
