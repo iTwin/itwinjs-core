@@ -19,7 +19,10 @@ publish: false
   - [@itwin/core-backend](#itwincore-backend)
     - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
+    - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
+    - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
   - [@itwin/geometry](#itwingeometry)
+    - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
 
 ## @itwin/core-bentley
 
@@ -226,6 +229,19 @@ Because [FormatterSpec]($core-quantity) creation is asynchronous, quantity forma
 const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel, block });
 ```
 
+Applications that own a [FormatsProvider]($core-quantity) (for example a FormatSet-backed provider from Drawing Production) can route formatting through it by supplying [FieldFormattingProviders]($backend):
+
+```typescript
+const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+  iModel,
+  block,
+  formatting: {
+    formatsProvider: myFormatsProvider, // e.g. Drawing Production's FormatSet-backed provider
+    // unitsProvider omitted -> defaults to the iModel's schema-backed units provider
+  },
+});
+```
+
 The existing synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks continue to render `"quantity"` and `"coordinate"` fields as their raw string representation for backward compatibility. Applications that want formatted quantity output for text annotations should migrate their evaluation calls to the async variant.
 
 ### Stream element aspects for multiple elements
@@ -238,17 +254,34 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 
 [[include:CoreBackend.IModelDb.QueryAspects]]
 
+### Edit from element, model, and aspect callbacks
+
+A new beta API, [IModelDb.getIndirectTxn]($backend), provides the [EditTxn]($backend) associated with an element, model, or aspect callback. Callbacks whose arguments provide an [IModelDb]($backend) but no transaction can use it to perform additional edits within the transaction that invoked the callback.
+
+```ts
+[[include:EditTxn.ElementCallback]]
+```
+
+The operation that invoked the callback owns the returned transaction. The callback must not start, end, save, abandon, or otherwise manage the transaction lifecycle. Callbacks that receive `indirectEditTxn` directly should continue using that property.
+
+### WorkspaceDb file resource APIs deprecated
+
+The [WorkspaceDb.getFile]($backend), [EditableWorkspaceDb.addFile]($backend), [EditableWorkspaceDb.updateFile]($backend), and [EditableWorkspaceDb.removeFile]($backend) APIs are deprecated. Store binary resources with [EditableWorkspaceDb.addBlob]($backend), or text resources with [EditableWorkspaceDb.addString]($backend), so applications can read their contents directly from the [WorkspaceDb]($backend).
+
+```ts
+// Before
+editableDb.addFile("equipment-data", localFileName);
+const extractedFileName = workspaceDb.getFile("equipment-data");
+
+// After
+editableDb.addBlob("equipment-data", fs.readFileSync(localFileName));
+const contents = workspaceDb.getBlob("equipment-data");
+```
+
+The deprecated methods remain functional so existing file resources can be read, replaced, migrated, or removed. If still using `addFile()`, new file extensions now reject characters that are invalid in cross-platform filenames, and existing resources with unsafe extension metadata use an extensionless generated cache filename.
+
 ## @itwin/geometry
 
-```typescript
-const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-  iModel,
-  block,
-  formatting: {
-    formatsProvider: myFormatsProvider, // e.g. Drawing Production's FormatSet-backed provider
-    // unitsProvider omitted -> defaults to the iModel's schema-backed units provider
-  },
-});
-```
+### Simplifying filleted line strings
 
 The [CurveFactory.createFilletsInLineString]($core-geometry) options bundle [CreateFilletsInLineStringOptions]($core-geometry) has a new optional property `CreateFilletsInLineStringOptions.simplifyPath` defaulting to `false`. When set to `true`, the output [Path]($core-geometry) is simplified by removing small segments less than the `CreateFilletsInLineStringOptions.closureTolerance` in length, and by merging adjacent arcs where possible. This is particularly helpful in cleaning up an output `Path` containing fillets that entirely consume an input line string edge (or nearly so).
