@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Fri, 10 Jul 2026 12:22:07 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Aug 2026 12:28:16 GMT and should not be manually modified.
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Bearing/Azimuth formatting and parsing now only apply the north-measured conversion when the persistence unit's phenomenon is `Units.ANGLE`. `Units.HORIZONTAL_DIRECTION` values are already true azimuths and are left unconverted.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
 
 ## 5.11.2
 Fri, 10 Jul 2026 12:20:31 GMT

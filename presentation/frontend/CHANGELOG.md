@@ -1,6 +1,18 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Fri, 10 Jul 2026 12:22:08 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Aug 2026 12:28:16 GMT and should not be manually modified.
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:50 GMT
+
+### Updates
+
+- Deprecated `PresentationManagerProps.clientId`. It is no longer used and has no effect: the backend now keys `PresentationManager` instances by the authenticated user (web deployments) or uses a single shared manager (IPC apps) instead of by a caller-supplied `clientId`. The value is still sent to the backend for backwards compatibility with older backends.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
 
 ## 5.11.2
 Fri, 10 Jul 2026 12:20:31 GMT

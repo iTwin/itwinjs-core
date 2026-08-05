@@ -279,6 +279,10 @@ export class InterpolationCurve3d extends ProxyCurve {
       return new InterpolationCurve3d(options, proxyCurve);
     return undefined;
   }
+  /** Return the (pointer to) the proxy B-spline curve. */
+  public override get proxyCurve(): BSplineCurve3d {
+    return this._proxyCurve as BSplineCurve3d;
+  }
   /** Return a (copy of) the defining points, packed as a Float64Array */
   public copyFitPointsFloat64Array(): Float64Array {
     return Point3dArray.cloneXYZPropsAsFloat64Array(this._options.fitPoints);
@@ -334,6 +338,10 @@ export class InterpolationCurve3d extends ProxyCurve {
   /** Return a deep clone */
   public override clone(): InterpolationCurve3d {
     return new InterpolationCurve3d(this._options.clone(), this._proxyCurve.clone());
+  }
+  /** Return a transformed clone. */
+  public override cloneTransformed(transform: Transform): InterpolationCurve3d | undefined {
+    return super.cloneTransformed(transform) as InterpolationCurve3d | undefined;
   }
 
   public override isAlmostEqual(other: GeometryQuery): boolean {

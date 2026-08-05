@@ -32,6 +32,7 @@ import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs }
 import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
+import { getRuntimeClass, reshapeInstanceRow } from "./internal/ECSqlInstanceReshaper";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
@@ -70,11 +71,11 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
-import { ECSqlRowExecutor } from "./ECSqlRowExecutor";
+import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 import { InteractiveRebase } from "./InteractiveRebase";
@@ -475,7 +476,9 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  private _schemasPromise?: Promise<SchemaView>;
+  // Created lazily on the first getSchemaView call. Owns the SchemaView's lifetime and does all its
+  // data access through the SchemaViewDataProvider implemented below.
+  private _schemaViewManager?: SchemaViewManager;
   /** @deprecated in 5.0.0 - might be removed in next major version. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -500,12 +503,16 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public [_activeTxn]: EditTxn | undefined;
 
-  /** Returns the active [[EditTxn]] if one is current, otherwise the implicit transaction.
-   * Use this inside element and relationship callbacks that may be invoked either during an explicit transaction or
-   * during indirect change processing.
-   * @note This method is a temporary workaround until [[OnElementArg]] (and related callback arg types) are updated
-   * to carry the transaction directly in a future PR.
-   * @internal
+  /** Returns the transaction to use for additional edits from an element, model, or aspect callback.
+   * In callbacks whose arguments provide an [[IModelDb]] but no transaction, obtain this transaction through
+   * `arg.iModel.getIndirectTxn()` and pass it to APIs that accept an [[EditTxn]].
+   *
+   * If an explicit transaction is active, this returns that transaction. Otherwise, it returns the implicit transaction
+   * used by legacy write paths. Callbacks that receive an `indirectEditTxn` argument should use that transaction directly.
+   *
+   * @note The operation that invoked the callback owns the transaction. Callback implementations must not invoke transaction
+   * lifecycle methods such as [[EditTxn.start]], [[EditTxn.end]], [[EditTxn.saveChanges]], [[EditTxn.abandonChanges]], or [[EditTxn.onClose]].
+   * @beta
    */
   public getIndirectTxn(): EditTxn {
     return this[_activeTxn] ?? this[_implicitTxn];
@@ -983,17 +990,23 @@ export abstract class IModelDb extends IModel {
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns the value returned by `callback`.
    * @throws IModelError if db is not open.
-   * Should be used when we want true step by step behaviour from the reader without any intermediate caching involved.
+   * Use this method for true step-by-step row consumption without intermediate result or page caching.
+   * The prepared ECSQL statement may be reused from the statement cache between completed calls.
    * @beta
    * */
   public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
     if (!this[_nativeDb].isOpen())
       throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
-    const executor = new ECSqlRowExecutor(this);
-    const reader = new ECSqlSyncReader(executor, ecsql, params, config);
-    const release = () => executor[Symbol.dispose]();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? new ECSqlStatement();
+    const executor = new ECSqlRowExecutor(this, stmt, loggerCategory);
+    const release = () => {
+      executor[Symbol.dispose]();
+      releaseECSqlStatement(stmt, this._statementCache, loggerCategory, executor.canCacheStatement);
+    };
     try {
+      const reader = new ECSqlSyncReader(executor, ecsql, params, config);
       const val = callback(reader);
       if (val instanceof Promise) {
         val.then(release, release);
@@ -1091,8 +1104,7 @@ export abstract class IModelDb extends IModel {
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
@@ -1113,8 +1125,7 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
@@ -1161,7 +1172,7 @@ export abstract class IModelDb extends IModel {
           }
         }
       }
-    }, QueryBinder.from(params.bindings));
+    }, QueryBinder.fromSkippingNullish(params.bindings));
     return ids;
   }
 
@@ -1182,11 +1193,7 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
-      if (this._schemasPromise) {
-        const old = this._schemasPromise;
-        this._schemasPromise = undefined;
-        old.then((view) => view.markOutdated()).catch(() => { });
-      }
+      this._schemaViewManager?.reset();
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1754,54 +1761,78 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Get the schema view for this iModel. The view is built lazily on
-   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
-   * the ConcurrentQuery thread pool. Subsequent calls return the cached view. Multiple
-   * concurrent callers share a single in-flight build.
+   * first call by fetching compact binary schema data through
+   * the ConcurrentQuery thread pool.
    *
    * The returned `SchemaView` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
    * It is the recommended default for runtime read-only metadata access and is significantly
    * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
    * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
+   *
+   * Every call shares one accumulating view instance and concurrent calls are serialized, so a
+   * caller never observes a partially loaded view. The instance is discarded by [[clearCaches]],
+   * for example after a schema import; the next call builds a new one. See
+   * [GetSchemaViewArgs]($ecschema-metadata) for the arguments.
    * @beta
    */
-  public async getSchemaView(): Promise<SchemaView> {
-    if (this._schemasPromise) {
-      const ctx = await this._schemasPromise;
-      if (!ctx.isOutdated)
-        return ctx;
-    }
-    // Capture the in-flight promise locally so the rejection handler only clears
-    // `_schemasPromise` if it still points at this build. A concurrent invalidation +
-    // re-fetch could otherwise replace the field before our hydrate fails, and a naive
-    // `_schemasPromise = undefined` would clobber that newer reference.
-    const inflight = this._hydrateSchemas();
-    this._schemasPromise = inflight;
-    inflight.catch(() => {
-      if (this._schemasPromise === inflight)
-        this._schemasPromise = undefined;
-    });
-    return inflight;
+  public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
+    this._schemaViewManager ??= new SchemaViewManager(this._createSchemaViewDataProvider());
+    return this._schemaViewManager.getSchemaView(args);
   }
 
-  private async _hydrateSchemas(): Promise<SchemaView> {
-    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
-    // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
-    // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
-    // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
-    // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
-    // don't support OFFSET-based pagination.
-    // This implementation uses the non-pinned version of the pragma other than frontend - because backend
-    // is always strictly coupled with the native code.
-    const reader = this.createQueryReader("PRAGMA schema_view");
+  /** The [SchemaViewDataProvider]($ecschema-metadata) backing this iModel's [[getSchemaView]]: the
+   * transport-specific half of schema-view loading. The backend always uses the latest blob version
+   * since it is strictly coupled with native code.
+   */
+  private _createSchemaViewDataProvider(): SchemaViewDataProvider {
+    return {
+      fetchFullBlob: async () => this._fetchSchemaBlob("PRAGMA schema_view"),
+      // Names are ECNames, so a comma can never occur in one. Native re-validates each token as an
+      // ECName and fails the pragma on an unknown name.
+      fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${schemaNames.join(",")}')`),
+      fetchManifest: async () => {
+        const schemaRows: SchemaManifestSchemaRow[] = [];
+        const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
+        for await (const row of this.createQueryReader(schemaSql)) {
+          // ECInstanceId arrives as a hex Id64String. `ec_` metadata rowids carry no briefcase
+          // prefix, so the local id is the full value.
+          schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
+        }
+
+        const referenceRows: SchemaManifestReferenceRow[] = [];
+        const referenceSql = "SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences";
+        for await (const row of this.createQueryReader(referenceSql))
+          referenceRows.push({ sourceECInstanceId: Id64.getLocalId(row[0]), targetECInstanceId: Id64.getLocalId(row[1]) });
+
+        return SchemaManifest.fromRows(schemaRows, referenceRows);
+      },
+      fetchSchemaToken: async () => {
+        const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
+        const result = await reader.next();
+        if (result.done)
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned no rows");
+        return result.value.sha3_256 as string;
+      },
+    };
+  }
+
+  /** Fetch one schema-view blob (full or fragment). Both `PRAGMA schema_view` and
+   * `PRAGMA schema_view_fragment` return a single row with the same columns. */
+  private async _fetchSchemaBlob(pragma: string): Promise<SchemaViewBlob> {
+    // Only call reader.next() once - do NOT use `for await` on PRAGMA results. ConcurrentQuery wraps
+    // regular ECSQL in LIMIT/OFFSET for pagination but skips this for PRAGMAs; if the serialized result
+    // exceeds the memory threshold the response is marked "Partial", and a `for await` loop would
+    // re-issue the same PRAGMA forever since PRAGMAs don't support OFFSET-based pagination.
+    const reader = this.createQueryReader(pragma);
     const result = await reader.next();
     if (result.done)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned no rows");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned no rows`);
     const data = result.value.data as Uint8Array | undefined;
     const token = result.value.schemaToken as string | undefined;
     if (data === undefined || data === null)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned null data column");
-    return SchemaView.fromBinary(data, token ?? "");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned null data column`);
+    return { data, schemaToken: token ?? "" };
   }
 
   /** Get the linkTableRelationships for this IModel */
@@ -3072,16 +3103,21 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
-      const sql = `SELECT *, ec_classname(ECClassId, 's:c') classFullName FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
+      // `SELECT *` targets a caller/runtime-determined ElementAspect subclass, so its shape can't be decomposed
+      // ahead of time. Query using the non-deprecated UseECSqlPropertyNames format and reshape the row into the
+      // legacy UseJsPropertyNames shape using ECSchema metadata (see ECSqlInstanceReshaper for why a naive,
+      // non-schema-aware rename isn't safe here).
+      const ecClass = getRuntimeClass(this._iModel, aspectClassName);
+      const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
       const aspect: ElementAspectProps | undefined = this._iModel.withQueryReader(sql, (reader): ElementAspectProps | undefined => {
         if (reader.step()) {
-          const aspectProps: ElementAspectProps = { ...reader.current.toRow() }; // start with everything that SELECT * returned; classFullName is supplied by the ec_classname alias
-          (aspectProps as any).className = undefined; // clear the raw ECClassId-derived property from SELECT * that we don't want in the final instance
-          return aspectProps;
+          const aspectProps = reshapeInstanceRow(reader.current.toRow(), ecClass, this._iModel) as Omit<ElementAspectProps, "classFullName"> & { className?: string, classFullName?: string };
+          aspectProps.classFullName = (aspectProps.className as string).replace(".", ":"); // add in property required by EntityProps
+          aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
+          return aspectProps as ElementAspectProps;
         }
         return undefined;
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
       if (undefined === aspect) {
         throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}, ${aspectClassName}`);
       }

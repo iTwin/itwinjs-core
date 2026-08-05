@@ -522,6 +522,14 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public diagonal(result?: Vector3d): Vector3d {
     return this.low.vectorTo(this.high, result);
   }
+  /** Return the length of the range diagonal, optionally ignoring z extent. */
+  public diagonalLength(ignoreZ: boolean = false): number {
+    return ignoreZ ? this.low.distanceXY(this.high) : this.low.distance(this.high);
+  }
+  /** Return the squared length of the range diagonal, optionally ignoring z extent. */
+  public diagonalLengthSquared(ignoreZ: boolean = false): number {
+    return ignoreZ ? this.low.distanceSquaredXY(this.high) : this.low.distanceSquared(this.high);
+  }
   /**
    * Return the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very
    * large negative coordinates.
@@ -1676,6 +1684,14 @@ export class Range2d extends RangeBase implements LowAndHighXY {
    */
   public diagonal(result?: Vector2d): Vector2d {
     return this.low.vectorTo(this.high, result);
+  }
+  /** Return the length of the range diagonal. */
+  public diagonalLength(): number {
+    return this.low.distance(this.high);
+  }
+  /** Return the squared length of the range diagonal. */
+  public diagonalLengthSquared(): number {
+    return this.low.distanceSquared(this.high);
   }
   /**
    * Return the point at the specified fraction along the diagonal vector. There is no check for isNull -- if the

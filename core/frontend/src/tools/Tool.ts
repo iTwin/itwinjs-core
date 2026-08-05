@@ -87,7 +87,7 @@ export enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1
 export class BeButtonState {
   private readonly _downUorPt: Point3d = new Point3d();
   private readonly _downRawPt: Point3d = new Point3d();
-  public downTime: number = 0;
+  public downTime: number = Number.NEGATIVE_INFINITY;
   public isDown: boolean = false;
   public isDoubleClick: boolean = false;
   public isDragging: boolean = false;

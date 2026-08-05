@@ -135,6 +135,7 @@ import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GeometrySummaryRequestProps } from '@itwin/core-common';
+import { GetSchemaViewArgs } from '@itwin/ecschema-metadata';
 import { GlobeMode } from '@itwin/core-common';
 import { Gradient } from '@itwin/core-common';
 import { GraphicParams } from '@itwin/core-common';
@@ -884,8 +885,7 @@ export class AccuDrawShortcuts {
     static defineACSByElement(): Promise<boolean>;
     // (undocumented)
     static defineACSByPoints(): Promise<boolean>;
-    // (undocumented)
-    static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
+    static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): Promise<AuxCoordSystemState | undefined>;
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): Promise<void>;
     // (undocumented)
@@ -939,8 +939,7 @@ export class AccuDrawShortcuts {
     static suspendToggle(): void;
     // (undocumented)
     static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean;
-    // (undocumented)
-    static writeACS(_acsName: string): BentleyStatus;
+    static writeACS(acsName: string | undefined): Promise<AuxCoordSystemState | undefined>;
 }
 
 // @beta
@@ -1416,7 +1415,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     constructor(props: AuxCoordSystemProps, iModel: IModelConnection);
     // (undocumented)
     static get className(): string;
-    static createNew(acsName: string, iModel: IModelConnection): AuxCoordSystemState;
+    static createNew(_acsName: string, iModel: IModelConnection): AuxCoordSystemState;
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -2400,7 +2399,7 @@ export class CurrentInputState {
     // (undocumented)
     get isShiftDown(): boolean;
     // (undocumented)
-    isStartDrag(button: BeButton): boolean;
+    isStartDrag(button: BeButton, motionEventTime?: number): boolean;
     // (undocumented)
     lastButton: BeButton;
     // (undocumented)
@@ -2412,7 +2411,7 @@ export class CurrentInputState {
     // (undocumented)
     lastWheelEvent?: BeWheelEvent;
     // (undocumented)
-    onButtonDown(button: BeButton): void;
+    onButtonDown(button: BeButton, eventTime?: number): void;
     // (undocumented)
     onButtonUp(button: BeButton): void;
     // (undocumented)
@@ -5210,7 +5209,7 @@ export abstract class IModelConnection extends IModel {
     // @deprecated
     getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
     // @beta
-    getSchemaView(): Promise<SchemaView>;
+    getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
     // @internal
@@ -5605,6 +5604,8 @@ export class IpcApp {
     static appFunctionIpc: PickAsyncMethods<IpcAppFunctions>;
     // @internal @deprecated (undocumented)
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
+    // @beta
+    static handle(channel: string, handler: (...args: any[]) => Promise<any>): RemoveFunction;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
@@ -5620,6 +5621,13 @@ export class IpcApp {
 export interface IpcAppOptions {
     // (undocumented)
     iModelApp?: IModelAppOptions;
+}
+
+// @beta
+export abstract class IpcHandler {
+    // (undocumented)
+    abstract get channelName(): string;
+    static register(): RemoveFunction;
 }
 
 // @public
@@ -11938,6 +11946,8 @@ export class ToolAdmin {
     gridLock: boolean;
     get idleTool(): InteractiveTool;
     set idleTool(idleTool: InteractiveTool);
+    protected isCtrlKeyShortcut(keyEvent: KeyboardEvent): boolean;
+    protected isFocusValidForShortcuts(): boolean;
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
@@ -11994,6 +12004,7 @@ export class ToolAdmin {
     setPrimitiveTool(newTool?: PrimitiveTool): Promise<void>;
     // @internal (undocumented)
     setViewTool(newTool?: ViewTool): Promise<void>;
+    protected shouldPreventCtrlDefault(keyEvent: KeyboardEvent): boolean;
     simulateMotionEvent(): void;
     startDefaultTool(): Promise<void>;
     // @internal (undocumented)

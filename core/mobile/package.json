@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "5.12.0-dev.9",
+  "version": "5.13.0-dev.5",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -50,19 +50,11 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
-    "@types/chai": "4.3.1",
-    "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.202",
-    "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "@types/superagent": "^8.1.6",
     "@types/ws": "^7.0.0",
-    "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.1",
-    "dotenv": "^16.4.5",
-    "dotenv-expand": "^5.1.0",
     "eslint": "^9.31.0",
-    "mocha": "^11.1.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   }
