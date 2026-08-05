@@ -117,23 +117,32 @@ describe("CloudSqlite.createCloudContainer token-refresh scheduling", () => {
       tokenFn,
     }) as TestCloudContainer;
 
-    container.onConnected?.(container);
-    await new Promise((resolve) => setTimeout(resolve, 25));
-    expect(resolveFns, "first refresh should be in flight").to.have.lengthOf(1);
+    try {
+      container.onConnected?.(container);
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      expect(resolveFns, "first (stale) refresh should be in flight").to.have.lengthOf(1);
 
-    // disconnect and reconnect while the first refresh is still in flight; this starts a second, newer refresh
-    container.onDisconnect?.(container, false);
-    container.onConnected?.(container);
-    await new Promise((resolve) => setTimeout(resolve, 25));
-    expect(resolveFns, "second refresh should now also be in flight").to.have.lengthOf(2);
+      // disconnect and reconnect while the first refresh is still in flight; this starts a second, newer refresh
+      container.onDisconnect?.(container, false);
+      container.onConnected?.(container);
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      expect(resolveFns, "second refresh should now also be in flight").to.have.lengthOf(2);
 
-    // resolve the newer refresh first, then the stale one
-    resolveFns[1]("newer-token");
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    resolveFns[0]("stale-token");
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    await new Promise((resolve) => setTimeout(resolve, 0));
+      // let the newer refresh reschedule and start its next refresh, so there's a live `refreshPromise` for the stale one to clobber
+      resolveFns[1]("newer-token");
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      expect(resolveFns, "the newer generation's next refresh should now be in flight").to.have.lengthOf(3);
+      const currentRefreshPromise = container.refreshPromise;
+      expect(currentRefreshPromise, "a refresh should currently be in flight").to.not.be.undefined;
 
-    expect(container.accessToken, "the stale refresh must not overwrite the newer token").to.equal("newer-token");
+      resolveFns[0]("stale-token");
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(container.accessToken, "the stale refresh must not overwrite the newer token").to.equal("newer-token");
+      expect(container.refreshPromise, "the stale refresh must not clobber the current generation's in-flight refreshPromise").to.equal(currentRefreshPromise);
+    } finally {
+      container.onDisconnect?.(container, false);
+    }
   });
 });
