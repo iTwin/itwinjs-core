@@ -393,7 +393,7 @@ class WorkspaceImpl implements Workspace {
       if (props.accessToken) {
         container = new WorkspaceContainerImpl(this, { ...props, accessToken: props.accessToken });
       } else {
-        const accessToken = (props.baseUri === "" || props.isPublic) ? "" : await CloudSqlite.requestToken({ accessLevel: "read", ...props });
+        const accessToken = (props.baseUri === "" || props.isPublic) ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
         container = new WorkspaceContainerImpl(this, { ...props, accessToken });
       }
     }
