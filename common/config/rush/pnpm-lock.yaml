@@ -157,9 +157,6 @@ importers:
       node-simctl:
         specifier: ~7.6.1
         version: 7.6.5
-      null-loader:
-        specifier: ^4.0.1
-        version: 4.0.1(webpack@5.108.4)
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
@@ -169,18 +166,15 @@ importers:
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.108.4)
       sql-formatter:
         specifier: ^15.4.6
         version: 15.8.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      webpack:
-        specifier: ^5.97.1
-        version: 5.108.4(webpack-cli@5.1.4)
+      vite:
+        specifier: ^6.4.3
+        version: 6.4.3(@types/node@20.17.58)(terser@5.49.0)(tsx@4.22.5)(yaml@2.9.0)
 
   ../../core/bentley:
     devDependencies:
@@ -4312,6 +4306,9 @@ importers:
       glob:
         specifier: ^13.0.6
         version: 13.0.6
+      magic-string:
+        specifier: ^1.1.0
+        version: 1.1.0
       mocha:
         specifier: ^11.1.0
         version: 11.7.6
@@ -8543,6 +8540,9 @@ packages:
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
+
+  magic-string@1.1.0:
+    resolution: {integrity: sha512-kS3VHe0nEPST2saQV4Rbkchcd3UBRkVTQHo1D3h/ZTwFDhai/mfKkmtPAtD129EOI7K3HlHIsFOt0WrI2/oU9g==}
 
   magicast@0.5.3:
     resolution: {integrity: sha512-pVKE4UdSQ7DvHzivsCIFx2BJn1mHG6KsyrFcaxFx6tONdneEuThrDx0Cj3AMg58KyN4pzYT+LHOotxDQDjNvkw==}
@@ -15353,6 +15353,10 @@ snapshots:
   luxon@3.7.2: {}
 
   magic-string@0.30.21:
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.5
+
+  magic-string@1.1.0:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
