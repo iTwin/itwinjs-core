@@ -36,12 +36,15 @@ const tableName = "[InstanceChanges]";
  */
 export class RebaseInstanceStore implements Disposable {
   private readonly _db = new SQLiteDb();
+  private readonly _writable: boolean;
 
-  private constructor() { }
+  private constructor(writable: boolean) {
+    this._writable = writable;
+  }
 
   /** Creates a new, empty store at `path`, overwriting any existing file. Used while capturing a Txn's changes. */
   public static createNew(path: string): RebaseInstanceStore {
-    const store = new RebaseInstanceStore();
+    const store = new RebaseInstanceStore(true);
     store._db.createDb(path, undefined, { skipFileCheck: true, rawSQLite: true });
     store._db.executeSQL(`CREATE TABLE ${tableName} ([instanceKey] TEXT PRIMARY KEY, [old] TEXT, [new] TEXT)`);
     return store;
@@ -49,13 +52,14 @@ export class RebaseInstanceStore implements Disposable {
 
   /** Opens an existing store at `path` for reading. Used to replay a Txn's previously-captured changes. */
   public static openExisting(path: string): RebaseInstanceStore {
-    const store = new RebaseInstanceStore();
+    const store = new RebaseInstanceStore(false);
     store._db.openDb(path, OpenMode.Readonly);
     return store;
   }
 
+  /** Persists writes (when created via [[createNew]]) before closing; readonly stores are simply closed. */
   public [Symbol.dispose](): void {
-    this._db.closeDb();
+    this._db.closeDb(this._writable);
   }
 
   /** Merges a single row from a [ChangesetReader]($backend) - possibly one of several tables mapped

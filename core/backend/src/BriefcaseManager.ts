@@ -14,7 +14,6 @@ import {
   AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
 } from "@itwin/core-bentley";
 import {
-  Base64EncodedString,
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps,
   TxnProps,
@@ -29,17 +28,9 @@ import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 import { StashManager, StashProps } from "./StashManager";
-import { ChangeInstance, ChangeMeta } from "./ChangesetReaderTypes";
 import { InteractiveRebase } from "./InteractiveRebase";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
-
-/** The argument for patch instances during semantic rebase
- * @internal
- */
-export interface InstancePatch extends Omit<ChangeInstance, "$meta"> {
-  $meta: Pick<ChangeMeta, "op" | "stage" | "isIndirectChange">;
-}
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @public
@@ -1050,52 +1041,6 @@ export class BriefcaseManager {
   }
 
   /**
-   * Stores changed instances for semantic rebase locally in appropriate json file in a folder structure
-   * @param db The [BriefcaseDb]($backend) instance for storing the changed instances against a txn
-   * @param txnId The txn id for which we are storing the changed instances
-   * @param instancePatches The [ChangeInstance]($backend) IterableIterator instance patches to be stored
-   * @internal
-   */
-  public static storeChangedInstancesForSemanticRebase(db: BriefcaseDb, txnId: string, instancePatches: IterableIterator<ChangeInstance>): void {
-    const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
-    const targetDir = path.join(basePath, txnId, this.DATA_FOLDER);
-    const filePath = path.join(targetDir, this.DATA_FILE_NAME);
-
-    if (IModelJsFs.existsSync(targetDir))
-      IModelJsFs.removeSync(targetDir);
-
-    IModelJsFs.recursiveMkDirSync(targetDir);
-
-    const BATCH_SIZE = 100;
-    let isFirst = true;
-    let batchParts: string[] = [];
-
-    const flushBatch = () => {
-      if (batchParts.length === 0) return;
-      IModelJsFs.appendFileSync(filePath, batchParts.join(""));
-      batchParts = [];
-    };
-
-    IModelJsFs.writeFileSync(filePath, "[");
-    for (const instancePatch of instancePatches) {
-      // we will not take the old stage of updated instances for now, because we still don't have conflict resolution on instance level while using semantic rebase.
-      // Once we have conflict resolution on instance level, we can consider taking old stage of updated instances as well.
-      if (instancePatch.$meta.op === "Updated" && instancePatch.$meta.stage === "Old") continue;
-      const { $meta, ...rest } = instancePatch;
-      const transformedInstance: InstancePatch = {
-        ...rest,
-        $meta: { op: $meta.op, stage: $meta.stage, isIndirectChange: $meta.isIndirectChange },
-      };
-      batchParts.push(`${isFirst ? "" : ","}\n${JSON.stringify(transformedInstance, Base64EncodedString.replacer)}`);
-      isFirst = false;
-      if (batchParts.length >= BATCH_SIZE)
-        flushBatch();
-    }
-    flushBatch();
-    IModelJsFs.appendFileSync(filePath, "\n]");
-  }
-
-  /**
    * Gets the base path for semantic rebase local files
    * @param db The {@link BriefcaseDb} instance for which to get the base path
    * @returns base path for semantic rebase local files
@@ -1147,24 +1092,6 @@ export class BriefcaseManager {
     const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
     const folderPath = path.join(basePath, txnId, BriefcaseManager.SCHEMAS_FOLDER);
     return IModelJsFs.readdirSync(folderPath).map((file) => path.join(folderPath, file));
-  }
-
-  /**
-   * Get the changed instances data for semantic rebase for a txn
-   * @param db - The [BriefcaseDb]($backend) instance for getting the locally stored changed instances against a txn
-   * @param txnId - The txn id for which we are getting the changed instances
-   * @returns Instance patches
-   * @internal
-   */
-  public static async *getChangedInstancesDataForTxn(db: BriefcaseDb, txnId: string): AsyncGenerator<InstancePatch> {
-    const basePath = BriefcaseManager.getBasePathForSemanticRebaseLocalFiles(db);
-    const folderPath = path.join(basePath, txnId, BriefcaseManager.DATA_FOLDER);
-    const filePath = path.join(folderPath, BriefcaseManager.DATA_FILE_NAME);
-    for await (const line of IModelJsFs.readLines(filePath)) {
-      if (line === "[" || line === "]" || line === "") continue;
-      const trimmedLine = line.trim().endsWith(",") ? line.trim().slice(0, -1) : line.trim(); // remove trailing comma if exists
-      yield JSON.parse(trimmedLine, Base64EncodedString.reviver) as InstancePatch;
-    }
   }
 
   /**

@@ -19,10 +19,10 @@ import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
-import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ChangesetReader } from "./ChangesetReader";
-import { RebaseInstanceStore } from "./internal/RebaseInstanceStore";
+import { RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -704,14 +704,16 @@ export class RebaseManager {
         throw new IModelError(IModelStatus.BadRequest, `Local folder does not exist for transaction ${txnProps.id}`);
       }
 
-      for await (const instance of BriefcaseManager.getChangedInstancesDataForTxn(this._iModel, txnProps.id)) {
-        if (instance.$meta.isIndirectChange) {
+      const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._iModel, txnProps.id);
+      using store = RebaseInstanceStore.openExisting(dbPath);
+      for (const change of store.all()) {
+        if (change.new?.$meta.isIndirectChange || change.old?.$meta.isIndirectChange) {
           this._iModel.txns.withIndirectTxnMode(() => {
-            this.applyInstancePatch(instance);
+            this.applyInstanceChange(change);
           });
           continue;
         }
-        this.applyInstancePatch(instance);
+        this.applyInstanceChange(change);
       }
 
       BriefcaseManager.deleteTxnDataFolder(this._iModel, txnProps.id); // delete the folder after importing
@@ -722,40 +724,31 @@ export class RebaseManager {
   }
 
   /**
-   * Applies instance patch during rebase
-   * @param instance
+   * Applies a single instance's captured old/new snapshot pair during rebase, inferring
+   * Insert/Update/Delete from which of "old"/"new" were captured.
+   * @param change
    * @internal
    */
-  private applyInstancePatch(instance: InstancePatch) {
+  private applyInstanceChange(change: RebaseInstanceChange) {
     const nativeDb = this._iModel[_nativeDb];
-    const { $meta, ...props } = instance;
-    switch ($meta.op) {
-      case "Inserted": {
-        if (!props)
-          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
+    if (change.new) {
+      const { $meta: _newMeta, ...props } = change.new;
+      if (change.old) {
+        const isSuccess = nativeDb.updateInstance(props, { useJsNames: true });
+        if (!isSuccess)
+          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.id}`);
+      } else {
         const options = { forceUseId: true, useJsNames: true };
         const id = nativeDb.insertInstance(props, options);
         if (!Id64.isValidId64(id))
           throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${props.id}`);
-        break;
       }
-      case "Updated": {
-        if (!props)
-          throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
-        const isSuccess = nativeDb.updateInstance(props, { useJsNames: true });
-        if (!isSuccess)
-          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.id}`);
-        break;
-      }
-      case "Deleted": {
-        const key = { id: props.id, classFullName: props.className };
-        const isSuccess = nativeDb.deleteInstance(key, { useJsNames: true });
-        if (!isSuccess)
-          throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.id}`);
-        break;
-      }
-      default:
-        throw new IModelError(IModelStatus.BadRequest, `Unknown InstancePatch op '${$meta.op as string}'`);
+    } else if (change.old) {
+      const { $meta: _oldMeta, ...props } = change.old;
+      const key = { id: props.id, classFullName: props.className };
+      const isSuccess = nativeDb.deleteInstance(key, { useJsNames: true });
+      if (!isSuccess)
+        throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.id}`);
     }
   }
 
