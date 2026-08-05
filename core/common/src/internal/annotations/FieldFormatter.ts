@@ -276,12 +276,18 @@ export async function formatFieldValueAsync(
     let formatted: string | undefined;
     if (value.type === "quantity") {
       if (typeof value.value !== "number") {
+        if (throwOnMiss) {
+          throw missingSpecError(value, options, `expected a numeric quantity value, got ${typeof value.value}`);
+        }
         return formatFieldValue(value, options);
       }
       formatted = spec.applyFormatting(value.value);
     } else {
       const magnitudes = getCoordinateMagnitudes(value.value);
       if (!magnitudes) {
+        if (throwOnMiss) {
+          throw missingSpecError(value, options, "coordinate value is missing x/y magnitudes");
+        }
         return formatFieldValue(value, options);
       }
       formatted = `(${magnitudes.map((m) => spec.applyFormatting(m)).join(", ")})`;
@@ -400,12 +406,18 @@ export function formatFieldValueWithSpecProvider(
   let formatted: string | undefined;
   if (value.type === "quantity") {
     if (typeof value.value !== "number") {
+      if (onMissingSpec === "throw") {
+        throw missingSpecError(value, options, `expected a numeric quantity value, got ${typeof value.value}`);
+      }
       return formatFieldValue(value, options);
     }
     formatted = provider.formatQuantity(value.value, spec);
   } else {
     const magnitudes = getCoordinateMagnitudes(value.value);
     if (!magnitudes) {
+      if (onMissingSpec === "throw") {
+        throw missingSpecError(value, options, "coordinate value is missing x/y magnitudes");
+      }
       return formatFieldValue(value, options);
     }
     formatted = `(${magnitudes.map((m) => provider.formatQuantity(m, spec)).join(", ")})`;
