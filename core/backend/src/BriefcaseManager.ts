@@ -633,7 +633,7 @@ export class BriefcaseManager {
     // If we need to rebase, reverse the local changes first.
     if (rebaseChangesets.length > 0) {
       db.txns.rebaser.notifyReverseLocalChangesBegin();
-      const reversedTxns = nativeDb.pullMergeReverseLocalChanges(false);
+      const reversedTxns = nativeDb.pullMergeReverseLocalChanges(true);
       const reversedTxnProps = reversedTxns.map((txn) => db.txns.getTxnProps(txn)).filter((props): props is TxnProps => props !== undefined);
       db.txns.rebaser.notifyReverseLocalChangesEnd(reversedTxnProps);
       Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
@@ -1038,7 +1038,16 @@ export class BriefcaseManager {
   private static readonly EC_FOLDER = "ec";
   private static readonly SCHEMAS_FOLDER = "schemas";
   private static readonly DATA_FOLDER = "data";
-  private static readonly DATA_FILE_NAME = "data.json";
+  private static readonly DATA_FILE_NAME = "changed-instances.sqlite";
+
+  public static createAndGetTxnChangedInstancePath(db: BriefcaseDb, txnId: string): string {
+    const basePath = this.getBasePathForSemanticRebaseLocalFiles(db);
+    const targetDir = path.join(basePath, txnId, this.DATA_FOLDER);
+    const filePath = path.join(targetDir, this.DATA_FILE_NAME);
+    if (!IModelJsFs.existsSync(targetDir))
+      IModelJsFs.recursiveMkDirSync(targetDir);
+    return filePath;
+  }
 
   /**
    * Stores changed instances for semantic rebase locally in appropriate json file in a folder structure

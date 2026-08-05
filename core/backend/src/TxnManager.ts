@@ -1029,11 +1029,13 @@ export class TxnManager {
     // because the number of columns in table A will be different than what it was when the changes were originally made.
     // So to avoid this issue we are not using strict mode here.
     using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
-    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
+
+    const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._iModel, id);
+    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache(1024 * 1024 * 10, dbPath));
     while (reader.step()) {
       pcu.appendFrom(reader);
     }
-    BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
+    // BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
   }
 
   /** @internal */

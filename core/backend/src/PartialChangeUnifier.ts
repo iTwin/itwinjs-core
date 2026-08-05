@@ -55,9 +55,11 @@ export namespace ChangeUnifierCache {
    * @beta
    */
   export function createSqliteBackedCache(
+    // TODO: switch to an options parameter
     bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10,
+    databasePath?: string
   ): ChangeCache {
-    return new SqliteBackedCache(bufferedReadInstanceSizeInBytes);
+    return new SqliteBackedCache(bufferedReadInstanceSizeInBytes, databasePath);
   }
 }
 
@@ -103,14 +105,15 @@ class InMemoryCache implements ChangeCache {
 // ---------------------------------------------------------------------------
 
 class SqliteBackedCache implements ChangeCache {
-  private readonly _cacheTable = `[${Guid.createValue()}]`;
+  private readonly _cacheTable = `[ChangeInstances]`;
   public static readonly defaultBufferSize = 1024 * 1024 * 10; // 10 MB
   private _db: SQLiteDb;
   public constructor(
     public readonly bufferedReadInstanceSizeInBytes: number = SqliteBackedCache.defaultBufferSize,
+    databasePath?: string
   ) {
     this._db = new SQLiteDb();
-    this._db.openDb("", { skipFileCheck: true, rawSQLite: true, openMode: OpenMode.ReadWrite }); // creating temp sqlite db https://sqlite.org/inmemorydb.html#:~:text=Temporary%20Databases,under%20the%20default%20SQLite%20configuration.
+    this._db.createDb(databasePath ?? "", undefined, { skipFileCheck: true, rawSQLite: true }); // creating temp sqlite db https://sqlite.org/inmemorydb.html#:~:text=Temporary%20Databases,under%20the%20default%20SQLite%20configuration.
     if (bufferedReadInstanceSizeInBytes <= 0)
       throw new Error("bufferedReadInstanceSizeInBytes must be greater than 0");
     this.createTempTable();
