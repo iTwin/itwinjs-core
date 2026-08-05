@@ -99,4 +99,41 @@ describe("CloudSqlite.createCloudContainer token-refresh scheduling", () => {
 
     expect(container.timer, "a disconnected container must not have its refresh timer rescheduled").to.be.undefined;
   });
+
+  it("does not let a stale refresh overwrite a newer token or clobber a newer refresh's promise after reconnect", async () => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const fakeNativeLib = { CloudContainer: FakeNativeCloudContainer };
+    sinon.stub(NativeLibrary, "nativeLib").get(() => fakeNativeLib);
+
+    const resolveFns: Array<(token: string) => void> = [];
+    const tokenFn = async () => new Promise<string>((resolve) => resolveFns.push(resolve));
+
+    const container = CloudSqlite.createCloudContainer({
+      containerId: "test-container",
+      baseUri: "https://example.invalid",
+      storageType: "azure",
+      accessToken: "",
+      tokenRefreshSeconds: 0.01,
+      tokenFn,
+    }) as TestCloudContainer;
+
+    container.onConnected?.(container);
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    expect(resolveFns, "first refresh should be in flight").to.have.lengthOf(1);
+
+    // disconnect and reconnect while the first refresh is still in flight; this starts a second, newer refresh
+    container.onDisconnect?.(container, false);
+    container.onConnected?.(container);
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    expect(resolveFns, "second refresh should now also be in flight").to.have.lengthOf(2);
+
+    // resolve the newer refresh first, then the stale one
+    resolveFns[1]("newer-token");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    resolveFns[0]("stale-token");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(container.accessToken, "the stale refresh must not overwrite the newer token").to.equal("newer-token");
+  });
 });

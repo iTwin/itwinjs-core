@@ -110,7 +110,10 @@ export namespace CloudSqlite {
     // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
       const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, accessLevel: args.accessLevel };
-      const doRefresh = async () => {
+      // `generation` is bumped on every connect/disconnect. A refresh only applies its result, clears/reschedules its timer, if the
+      // generation it captured when scheduled is still current - this stops a refresh already in flight when disconnect (and possibly
+      // reconnect) happens from clobbering a newer refresh's token/promise or rearming a live timer after it should have stopped.
+      const doRefresh = async (generation: number) => {
         let newToken: AccessToken | undefined;
         const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
         try {
@@ -119,17 +122,17 @@ export namespace CloudSqlite {
         } catch (err: any) {
           logError(`Error refreshing token for container ${url}: ${err.message}`);
         }
-        container.accessToken = newToken ?? "";
+        if (container.refreshGeneration === generation)
+          container.accessToken = newToken ?? "";
       };
-      // `generation` guards against a refresh that was already in flight when the container was disconnected (and possibly reconnected)
-      // from unconditionally rescheduling itself once it completes.
       const tokenRefreshFn = (generation: number) => {
         container.timer = setTimeout(async () => {
-          container.refreshPromise = doRefresh(); // this promise is stored on the container so it can be awaited in tests
+          container.refreshPromise = doRefresh(generation); // this promise is stored on the container so it can be awaited in tests
           await container.refreshPromise;
-          container.refreshPromise = undefined;
-          if (container.refreshGeneration === generation)
+          if (container.refreshGeneration === generation) {
+            container.refreshPromise = undefined;
             tokenRefreshFn(generation); // schedule next refresh
+          }
         }, refreshSeconds * 1000);
       };
       addHiddenProperty(container, "onConnected", () => { // schedule the first refresh when the container is connected
