@@ -15,7 +15,7 @@ import {
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
@@ -169,6 +169,23 @@ export interface ChangeElementModelProps {
   id: Id64String;
   /** The Id of the target model. The element becomes a root element (no parent) in this model. */
   modelId: Id64String;
+}
+
+/** Options for streaming the aspects owned by a set of elements.
+ * @see [[IModelDb.Elements.queryAspects]]
+ * @beta
+ */
+export interface QueryAspectOptions {
+  /** The elements whose aspects to return. Duplicate Ids are ignored. */
+  elementIds: Id64Arg;
+  /** Return only instances of this aspect class or its subclasses. */
+  aspectClassFullName?: string;
+  /** Omit instances of these exact aspect classes. Subclasses are not automatically omitted. */
+  excludedAspectClassFullNames?: ReadonlySet<string>;
+  /** If true, order the results so that aspects owned by the same element are contiguous. */
+  groupByOwner?: boolean;
+  /** If true, run the query on the primary connection so that uncommitted changes in an edit transaction are visible. */
+  usePrimaryConn?: boolean;
 }
 
 /** Options supplied to [[IModelDb.clearCaches]].
@@ -3139,21 +3156,31 @@ export namespace IModelDb {
 
     private static classMap = new Map<string, string>();
 
+    private getAspectPropsFromInstanceQuery(rawInstance: unknown): ElementAspectProps {
+      const parsedRow: unknown = typeof rawInstance === "string" ? JSON.parse(rawInstance, Base64EncodedString.reviver) : rawInstance;
+      if (!JsonUtils.isObject(parsedRow))
+        throw new IModelError(IModelStatus.BadRequest, "Expected an ElementAspect instance query to return an object");
+
+      const row: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(parsedRow)) {
+        const ecPropertyName = key.length === 0 ? key : key[0].toUpperCase() + key.substring(1);
+        row[ECJsNames.toJsName(ecPropertyName)] = value;
+      }
+
+      const className = row.className;
+      if (typeof className !== "string")
+        throw new IModelError(IModelStatus.BadRequest, "Expected an ElementAspect instance query to return a className");
+
+      row.classFullName = className.replace(".", ":"); // add in property required by EntityProps
+      delete row.className; // clear property from SELECT $ that we don't want in the final instance
+      return row as unknown as ElementAspectProps;
+    }
+
     private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
       return this._iModel.withQueryReader(sql, (reader) => {
         const aspects: ElementAspect[] = [];
         for (const queryRow of reader) {
-          const row: object = {};
-          const rawInstance = queryRow[0];
-          const parsedRow = typeof rawInstance === "string" ? JSON.parse(rawInstance) : rawInstance;
-          // eslint-disable-next-line guard-for-in
-          for (const key in parsedRow) {
-            const jsName = ECJsNames.toJsName(key[0].toUpperCase() + key.substring(1));
-            Object.defineProperty(row, jsName, { enumerable: true, configurable: true, writable: true, value: parsedRow[key] });
-          }
-          const aspectProps: ElementAspectProps = row as any;
-          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
-          (aspectProps as any).className = undefined; // clear property from SELECT $ that we don't want in the final instance
+          const aspectProps = this.getAspectPropsFromInstanceQuery(queryRow[0]);
           if ((undefined === excludedClassFullNames) || !excludedClassFullNames.has(aspectProps.classFullName))
             aspects.push(this._iModel.constructEntity<ElementAspect>(aspectProps));
         }
@@ -3218,6 +3245,60 @@ export namespace IModelDb {
       if (aspects.length === 0)
         Logger.logInfo(BackendLoggerCategory.ECDb, `No aspects found for class ${aspectClassFullName} and element ${elementId}`);
       return aspects;
+    }
+
+    /** Stream the [[ElementAspect]] instances owned by a set of elements.
+     *
+     * Use this method instead of calling [[getAspects]] repeatedly when reading aspects for multiple elements or when the result may be large. The query reads all requested owners together and yields each aspect without buffering the complete result set. For a single element with a small result, [[getAspects]] provides a simpler synchronous API.
+     *
+     * The order is unspecified unless [[QueryAspectOptions.groupByOwner]] is true.
+     * @param options Defines the element Ids, class filters, result ordering, and query connection.
+     * @returns An async iterator over the matching aspects.
+     * @beta
+     */
+    public async *queryAspects(options: QueryAspectOptions): AsyncIterableIterator<ElementAspect> {
+      const elementIds = Id64.toIdSet(options.elementIds);
+      if (elementIds.size === 0)
+        return;
+
+      const params = new QueryBinder().bindIdSet("elementIds", elementIds);
+      const classFilter = options.aspectClassFullName === undefined ? "" : `AND aspect.ECClassId IN (
+        SELECT SourceECInstanceId FROM meta.ClassHasAllBaseClasses
+        WHERE TargetECInstanceId=ec_classid(:aspectClassFullName)
+      )`;
+      if (options.aspectClassFullName !== undefined)
+        params.bindString("aspectClassFullName", options.aspectClassFullName.replace(".", ":"));
+
+      const excludedClassIds: string[] = [];
+      let excludedClassIndex = 0;
+      for (const classFullName of options.excludedAspectClassFullNames ?? []) {
+        const parameterName = `excludedAspectClass${excludedClassIndex++}`;
+        excludedClassIds.push(`ec_classid(:${parameterName})`);
+        params.bindString(parameterName, classFullName.replace(".", ":"));
+      }
+      const excludedClassFilter = excludedClassIds.length === 0 ? "" : `AND aspect.ECClassId NOT IN (
+        SELECT ECInstanceId FROM meta.ECClassDef WHERE ECInstanceId IN (${excludedClassIds.join(",")})
+      )`;
+      const orderBy = options.groupByOwner
+        ? "ORDER BY OwnerId, AspectKind, ECClassId, ECInstanceId"
+        : "";
+      const sql = `WITH OwnerIds AS (SELECT id FROM IdSet(:elementIds))
+        SELECT $ FROM (
+          SELECT aspect.ECInstanceId, aspect.ECClassId, aspect.Element.Id AS OwnerId, 0 AS AspectKind
+          FROM OwnerIds owners
+          CROSS JOIN Bis.ElementMultiAspect aspect ON aspect.Element.Id=owners.id
+          WHERE TRUE ${classFilter} ${excludedClassFilter}
+          UNION ALL
+          SELECT aspect.ECInstanceId, aspect.ECClassId, aspect.Element.Id AS OwnerId, 1 AS AspectKind
+          FROM OwnerIds owners
+          CROSS JOIN Bis.ElementUniqueAspect aspect ON aspect.Element.Id=owners.id
+          WHERE TRUE ${classFilter} ${excludedClassFilter}
+        ) ${orderBy}
+        OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`;
+
+      const reader = this._iModel.createQueryReader(sql, params, { usePrimaryConn: options.usePrimaryConn });
+      for await (const queryRow of reader)
+        yield this._iModel.constructEntity<ElementAspect>(this.getAspectPropsFromInstanceQuery(queryRow[0]));
     }
 
     /** Insert a new ElementAspect into the iModel.
