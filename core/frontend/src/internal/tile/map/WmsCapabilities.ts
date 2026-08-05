@@ -197,7 +197,7 @@ export class WmsCapabilities {
       this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}): Promise<WmsCapabilities | undefined> {
+  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}, headers?: {[key: string]: string}): Promise<WmsCapabilities | undefined> {
     if (!ignoreCache) {
       const cached = WmsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
@@ -213,13 +213,13 @@ export class WmsCapabilities {
           tmpUrl.searchParams.append(paramKey, queryParams[paramKey]);
       });
     }
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials);
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials, headers);
 
     if (!xmlCapabilities)
       return undefined;
 
     const capabilities = new WmsCapabilities(new WMS().parse(xmlCapabilities));
-    if (!credentials) {
+    if (!credentials && !(headers && Object.keys(headers).length > 0)) {
       // Avoid caching protected data
       WmsCapabilities._capabilitiesCache.set(url, capabilities);
     }

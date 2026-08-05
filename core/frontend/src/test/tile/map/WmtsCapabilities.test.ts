@@ -422,6 +422,23 @@ describe("WmtsCapabilities1", () => {
     expect(firstCall[0]).toEqual(`${sampleUrl}?request=GetCapabilities&service=WMTS&${searchParams.toString()}`);
   });
 
+  it("should not cache header-authenticated capabilities", async () => {
+    const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response("<Capabilities/>", { status: 200 }));
+    const url = "https://service.server.com/rest/WMTS-headers";
+    // Custom headers make the response protected; the URL-keyed cache must not serve it to later requests.
+    await WmtsCapabilities.create(url, undefined, false, undefined, { "X-Api-Key": "secret" });
+    await WmtsCapabilities.create(url, undefined, false, undefined, { "X-Api-Key": "secret" });
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+  });
+
+  it("should cache capabilities when no auth headers are present", async () => {
+    const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response("<Capabilities/>", { status: 200 }));
+    const url = "https://service.server.com/rest/WMTS-cached";
+    await WmtsCapabilities.create(url);
+    await WmtsCapabilities.create(url);
+    expect(fetchStub).toHaveBeenCalledOnce();
+  });
+
 });
 
 

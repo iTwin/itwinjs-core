@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add `savedHeaders`/`unsavedHeaders` and `collectHeaders()` to `ImageMapLayerSettings` (and a `headers` prop on `ImageMapLayerProps`) so custom HTTP headers such as an API key header can be applied to map layer requests.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

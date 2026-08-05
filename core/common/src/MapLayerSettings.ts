@@ -183,6 +183,12 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   */
   queryParams?: { [key: string]: string };
 
+  /** List of HTTP headers that will get added to the requests made for this source, persisted as part of the JSON representation.
+   * @note Sensitive information such as API keys should be provided at runtime via [[ImageMapLayerSettings.unsavedHeaders]] to ensure it is never persisted.
+   * @beta
+  */
+  headers?: { [key: string]: string };
+
   /** Properties specific to the map layer provider.
    * @beta
   */
@@ -332,6 +338,17 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   */
   public unsavedQueryParams?: { [key: string]: string };
 
+  /** List of HTTP headers to add to the requests made for this layer and persisted as part of the JSON representation.
+   * @note Sensitive information such as API keys should be provided in [[unsavedHeaders]] to ensure it is never persisted.
+   * @beta
+  */
+  public savedHeaders?: { [key: string]: string };
+
+  /** List of HTTP headers to add to the requests made for this layer that should *not* be persisted as part of the JSON representation.
+   * @beta
+  */
+  public unsavedHeaders?: { [key: string]: string };
+
   /** Properties specific to the map layer provider.
    * @beta
   */
@@ -350,6 +367,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.accessKey = props.accessKey;
     if (props.queryParams) {
       this.savedQueryParams = {...props.queryParams};
+    }
+
+    if (props.headers) {
+      this.savedHeaders = {...props.headers};
     }
 
     if (props.properties) {
@@ -383,6 +404,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (this.savedQueryParams)
       props.queryParams = {...this.savedQueryParams};
 
+    if (this.savedHeaders)
+      props.headers = {...this.savedHeaders};
+
     if (this.properties) {
       props.properties = structuredClone(this.properties);
     }
@@ -404,6 +428,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       clone.unsavedQueryParams = {...this.unsavedQueryParams};
     if (this.savedQueryParams)
       clone.savedQueryParams = {...this.savedQueryParams};
+    if (this.unsavedHeaders)
+      clone.unsavedHeaders = {...this.unsavedHeaders};
+    if (this.savedHeaders)
+      clone.savedHeaders = {...this.savedHeaders};
 
     return clone;
   }
@@ -420,6 +448,12 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       props.queryParams = {...changedProps.queryParams};
     } else if (this.savedQueryParams) {
       props.queryParams = {...this.savedQueryParams};
+    }
+
+    if (changedProps.headers) {
+      props.headers = {...changedProps.headers};
+    } else if (this.savedHeaders) {
+      props.headers = {...this.savedHeaders};
     }
 
     if (changedProps.properties) {
@@ -525,6 +559,20 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       queryParams = {...queryParams, ...this.unsavedQueryParams};
 
     return queryParams;
+  }
+
+  /** Collect all HTTP headers, merging [[unsavedHeaders]] over [[savedHeaders]].
+ * @beta
+ */
+  public collectHeaders() {
+    let headers: {[key: string]: string} = {};
+    if (this.savedHeaders)
+      headers = {...this.savedHeaders};
+
+    if (this.unsavedHeaders)
+      headers = {...headers, ...this.unsavedHeaders};
+
+    return headers;
   }
 }
 

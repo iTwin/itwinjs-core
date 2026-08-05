@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support custom HTTP headers (e.g. an API key header) on map layers: `MapLayerSource` gains `savedHeaders`/`unsavedHeaders`/`collectHeaders()` and a `headers` prop, and the headers are applied during both source validation and tile requests for WMS, WMTS, ArcGIS and TileURL layers.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

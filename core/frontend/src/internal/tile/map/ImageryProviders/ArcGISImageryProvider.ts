@@ -60,7 +60,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   protected async getServiceJson() {
     let metadata: ArcGISServiceMetadata|undefined;
     try {
-      metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
+      metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams(), headers: this._settings.collectHeaders()});
 
     } catch {
     }
@@ -95,6 +95,14 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       if (!urlObj.searchParams.has(paramKey))
         urlObj.searchParams.append(paramKey, queryParams[paramKey]);
     });
+
+    // Apply any custom HTTP headers (e.g. an API key header) configured on the layer settings.
+    const customHeaders = this._settings.collectHeaders();
+    if (Object.keys(customHeaders).length > 0) {
+      const requestHeaders = new Headers(options?.headers);
+      this.setRequestHeaders(requestHeaders);
+      options = { ...options, headers: requestHeaders };
+    }
 
     if (this._accessTokenRequired && this._accessClient) {
       this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {

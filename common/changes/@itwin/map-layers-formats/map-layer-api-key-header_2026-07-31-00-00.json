@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-formats",
+      "comment": "Forward custom HTTP headers (e.g. an API key header) configured on map layer settings when validating and requesting OGC API Features and ArcGIS Feature layers.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-formats"
+}

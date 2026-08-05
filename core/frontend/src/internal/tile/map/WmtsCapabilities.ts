@@ -554,7 +554,7 @@ export class WmtsCapabilities {
     return new WmtsCapabilities(xmlDoc);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}): Promise<WmtsCapabilities | undefined> {
+  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}, headers?: {[key: string]: string}): Promise<WmtsCapabilities | undefined> {
     if (!ignoreCache) {
       const cached = WmtsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
@@ -571,13 +571,15 @@ export class WmtsCapabilities {
       });
     }
 
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials);
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials, headers);
     if (!xmlCapabilities)
       return undefined;
 
     const capabilities = WmtsCapabilities.createFromXml(xmlCapabilities);
-    if (capabilities)
+    if (capabilities && !credentials && !(headers && Object.keys(headers).length > 0)) {
+      // Avoid caching protected data
       WmtsCapabilities._capabilitiesCache.set(url, capabilities);
+    }
 
     return capabilities;
   }

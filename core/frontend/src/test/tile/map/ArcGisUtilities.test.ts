@@ -120,6 +120,29 @@ describe("ArcGisUtilities", () => {
     expect(firstCall[0].toString()).toEqual(`${source.url}?f=json&${saved.toString()}&${unsaved.toString()}`);
   });
 
+  it("should send custom headers on the getServiceJson request", async () => {
+    const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+      new Response(JSON.stringify({}), { headers: { "content-type": "application/json" } }));
+
+    await ArcGisUtilities.getServiceJson({ url: "https://arcgis.test/header-service/MapServer", formatId: "ArcGIS", headers: { "X-Api-Key": "secret" }, ignoreCache: true });
+
+    const requestInit = fetchStub.mock.calls[0][1];
+    const headers = requestInit?.headers as Headers | undefined;
+    expect(headers?.get("X-Api-Key")).toEqual("secret");
+  });
+
+  it("should not cache header-authenticated getServiceJson responses", async () => {
+    const url = "https://arcgis.test/nocache-service/MapServer";
+    const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+      new Response(JSON.stringify({}), { headers: { "content-type": "application/json" } }));
+
+    // With custom headers the response is protected and must not be cached (cache is keyed by URL only),
+    // so a second request re-fetches instead of returning a cached response from the first.
+    await ArcGisUtilities.getServiceJson({ url, formatId: "ArcGIS", headers: { "X-Api-Key": "secret" } });
+    await ArcGisUtilities.getServiceJson({ url, formatId: "ArcGIS", headers: { "X-Api-Key": "secret" } });
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+  });
+
   it("should fetch service json with proper URL", async () => {
     const stub = stubGetServiceJson({ content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired: false });
     const source = getSampleSourceWithQueryParamsAndCreds();
