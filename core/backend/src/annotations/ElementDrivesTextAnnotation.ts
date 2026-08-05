@@ -84,6 +84,12 @@ export interface FieldFormattingProviders {
    * be matched to a [FormatterSpec]($core-quantity). Defaults to `"fallback"` (silently use
    * the raw string representation). When set to `"throw"`, the formatting call rejects with
    * an [[Error]] describing the missing spec.
+   *
+   * Only applies to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]]. The synchronous
+   * [[ElementDrivesTextAnnotation.evaluateFields]] path uses the `onMissingSpec` policy of
+   * the registered [FormattingSpecProvider]($core-quantity) (see
+   * [[ElementDrivesTextAnnotation.registerFieldFormattingProvider]]); callers that never
+   * register a provider always fall back to the raw string representation.
    */
   onMissingSpec?: "fallback" | "throw";
 }
@@ -304,6 +310,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       /** Controls what happens when this registration's provider is selected but does not supply
        * a spec for a given field. Defaults to `"fallback"` (raw string representation). When set
        * to `"throw"`, formatting failures propagate.
+       *
+       * Note that on the `TxnManager`-driven field-update callback path a `"throw"` error is
+       * caught at the top of the callback and logged via [Logger]($bentley); it does not abort
+       * the transaction. Callers that need hard failure should invoke
+       * [[ElementDrivesTextAnnotation.evaluateFields]] (or
+       * [[ElementDrivesTextAnnotation.evaluateFieldsAsync]]) directly.
        */
       onMissingSpec?: "fallback" | "throw";
     },
