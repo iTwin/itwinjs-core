@@ -41,6 +41,10 @@ export interface CustomHandledProperty {
   readonly propertyName: string;
   /** Where the property is defined */
   readonly source: "Class" | "Computed";
+  /** The name of the property that {@link propertyName} is deserialized into, if different from `propertyName` itself
+   * (e.g. Element's `codeSpec`, `codeScope`, and `codeValue` all deserialize into a single `code` property).
+   * @beta */
+  readonly deserializedPropertyName?: string;
 }
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
@@ -133,6 +137,21 @@ export class Entity {
     ];
   }
 
+  /** Maps property names as they appear in an ECSqlRow (e.g. `codeSpec`) to the property name(s) they are deserialized
+   * into on an [[EntityProps]] (e.g. `code`). This is useful for translating a list of raw property names - such as the
+   * conflicting properties reported by a rebase conflict - into the shape produced by {@link deserialize}, without having
+   * to deserialize a full row.
+   * @beta */
+  public static mapToDeserializedPropertyNames(propertyNames: Iterable<string>): string[] {
+    const customHandledProperties = this.getCustomHandledProperties();
+    const result = new Set<string>();
+    for (const propertyName of propertyNames) {
+      const entry = customHandledProperties.find((prop) => prop.propertyName === propertyName);
+      result.add(entry?.deserializedPropertyName ?? propertyName);
+    }
+    return [...result];
+  }
+
   /** Converts an ECSqlRow of an Entity to an EntityProps. This is used to deserialize an Entity from the database.
    * @beta */
   public static deserialize(props: DeserializeEntityArgs): EntityProps {
@@ -153,7 +172,7 @@ export class Entity {
       );
     // Handles custom relClassNames to use '.' instead of ':'
     Object.keys(enProps).forEach((propertyName) => {
-      if ((enProps as ECSqlRow)[propertyName].relClassName !== undefined && propertyName !== "modeledElement" && propertyName !== "parentModel") {
+      if ((enProps as ECSqlRow)[propertyName]?.relClassName !== undefined && propertyName !== "modeledElement" && propertyName !== "parentModel") {
         (enProps as ECSqlRow)[propertyName].relClassName = (enProps as ECSqlRow)[propertyName].relClassName.replace(':', '.');
       }
     });
@@ -293,7 +312,7 @@ export class Entity {
       throw new Error(`Cannot get metadata for ${this.classFullName}`);
     }
   }
-  
+
   /** @internal */
   public static get protectedOperations(): string[] { return []; }
 

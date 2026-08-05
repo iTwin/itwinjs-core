@@ -2778,6 +2778,17 @@ export namespace IModelDb {
       return elProp;
     }
 
+    public getRawElementInstance(props: Id64String | GuidString | Code | ElementLoadProps): ECSqlRow {
+      if (typeof props === "string") {
+        props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
+      } else if (props instanceof Code) {
+        props = { code: props };
+      }
+      const options = { ...props, useJsNames: true };
+      const instanceKey = this.resolveElementKey(props);
+      return this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
+    }
+
     private resolveElementKey(props: Id64String | GuidString | Code | ElementLoadProps): IModelJsNative.ResolveInstanceKeyResult {
       const baseClassName = "BisCore:Element";
       let args: IModelJsNative.ResolveInstanceKeyArgs;

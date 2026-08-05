@@ -6,12 +6,18 @@
  * @module iModels
  */
 
-import { BriefcaseDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { EditTxn } from "./EditTxn";
 import { assert, DbConflictResolution, Id64String, ITwinError } from "@itwin/core-bentley";
 import { TxnProps } from "@itwin/core-common";
 import { _nativeDb } from "./internal/Symbols";
-import { RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
+import { ConflictEcChange, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
+import { ECSqlRow } from "./Entity";
+import { Element } from "./Element";
+
+// TODO:
+// * [ ] Handling of conflicts in Aspects?
+
 
 /** Errors originating from the server-based implementation of the [LockControl]($backend) interface.
  * @beta
@@ -320,6 +326,13 @@ export class InteractiveRebase {
   }
 
   /**
+   * Gets the iModel being rebased.
+   */
+  public get iModel(): IModelDb {
+    return this._db;
+  }
+
+  /**
    * Gets the local Txns that are being rebased.
    */
   public get txns(): ReadonlyArray<Readonly<TxnProps>> {
@@ -497,7 +510,7 @@ export class InteractiveRebase {
       } else if (conflict.cause === "Data") {
         // Our txn is trying to delete a row that has been modified by the new upstream changesets.
         // Proceed with the delete but report the conflicting update.
-        return TheirUpdateOurDeleteRebaseConflictImpl.handle(this._conflicts, conflict);
+        return TheirUpdateOurDeleteRebaseConflictImpl.handle(this, this._conflicts, conflict);
       }
       assert(false, `Conflicts during a Deleted change should only have NotFound or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
     } else if (conflict.opcode === "Inserted") {
@@ -505,7 +518,7 @@ export class InteractiveRebase {
         // Because this change was valid when it was created, and the schema has not changed,
         // this can _only_ be a UNIQUE constraint violation.
         // We must SKIP, because REPLACE is not allowed. But report the new column values for conflict resolution.
-        return UniqueConstraintRebaseConflictImpl.handle(this._conflicts, conflict);
+        return UniqueConstraintRebaseConflictImpl.handle(this, this._conflicts, conflict);
       } else if (conflict.cause === "Conflict") {
         // The primary key already exists, which means local and upstream both inserted this instance.
         return InsertRebaseConflictImpl.handle(this, this._conflicts, conflict);
@@ -515,16 +528,16 @@ export class InteractiveRebase {
       if (conflict.cause === "NotFound") {
         // Our txn is trying to update a row that has been deleted by the new upstream changesets.
         // Let the delete stand, but report the conflict.
-        return TheirDeleteOurUpdateRebaseConflictImpl.handle(this._conflicts, conflict);
+        return TheirDeleteOurUpdateRebaseConflictImpl.handle(this, this._conflicts, conflict);
       } else if (conflict.cause === "Constraint") {
         // Because this change was valid when it was created, and the schema has not changed,
         // this can _only_ be a UNIQUE constraint violation.
         // We must SKIP - REPLACE is not allowed. But report the new column values for conflict resolution.
-        return UniqueConstraintRebaseConflictImpl.handle(this._conflicts, conflict);
+        return UniqueConstraintRebaseConflictImpl.handle(this, this._conflicts, conflict);
       } else if (conflict.cause === "Data") {
         // Our txn is changing the values in an existing row, and the new upstream changesets
         // have also changed one or more values in that row.
-        return UpdateRebaseConflictImpl.handle(this._conflicts, conflict);
+        return UpdateRebaseConflictImpl.handle(this, this._conflicts, conflict);
       }
       assert(false, `Conflicts during an Updated change should only have NotFound, Constraint, or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
     } else if (conflict.opcode === undefined) {
@@ -559,7 +572,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   public readonly ours: RebaseConflictProperties = {};
   public readonly conflictingProperties: string[] = [];
 
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+  public static handle(interactive: InteractiveRebase, conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
     const instanceId = ecConflict.original.id;
 
@@ -569,7 +582,11 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.conflictingProperties.push(...ecConflict.dataConflictProperties);
+    const classDef = interactive.iModel.getJsClass<typeof Element>(ecConflict.original.classFullName);
+    for (const propertyName of classDef.mapToDeserializedPropertyNames(ecConflict.dataConflictProperties)) {
+      if (!instanceConflict.conflictingProperties.includes(propertyName))
+        instanceConflict.conflictingProperties.push(propertyName);
+    }
     Object.assign(instanceConflict.original, ecConflict.original);
     Object.assign(instanceConflict.theirs, ecConflict.theirs);
     Object.assign(instanceConflict.ours, ecConflict.ours);
@@ -624,7 +641,7 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
   public readonly theirs: RebaseConflictProperties = {};
   public readonly updatedProperties: string[] = [];
 
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+  public static handle(interactive: InteractiveRebase, conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
     const instanceId = ecConflict.original.id;
 
@@ -634,7 +651,11 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.updatedProperties.push(...ecConflict.dataConflictProperties);
+    const classDef = interactive.iModel.getJsClass<typeof Element>(ecConflict.original.classFullName);
+    for (const propertyName of classDef.mapToDeserializedPropertyNames(ecConflict.dataConflictProperties)) {
+      if (!instanceConflict.updatedProperties.includes(propertyName))
+        instanceConflict.updatedProperties.push(propertyName);
+    }
     Object.assign(instanceConflict.original, ecConflict.original);
     Object.assign(instanceConflict.theirs, ecConflict.theirs);
 
@@ -656,7 +677,7 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
   public readonly ours: RebaseConflictProperties = {};
   public readonly updatedProperties: string[] = [];
 
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+  public static handle(interactive: InteractiveRebase, conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
     const instanceId = ecConflict.original.id;
 
@@ -666,7 +687,11 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.updatedProperties.push(...ecConflict.dataConflictProperties);
+    const classDef = interactive.iModel.getJsClass<typeof Element>(ecConflict.original.classFullName);
+    for (const propertyName of classDef.mapToDeserializedPropertyNames(ecConflict.dataConflictProperties)) {
+      if (!instanceConflict.updatedProperties.includes(propertyName))
+        instanceConflict.updatedProperties.push(propertyName);
+    }
     Object.assign(instanceConflict.original, ecConflict.original);
     Object.assign(instanceConflict.ours, ecConflict.ours);
 
@@ -698,7 +723,11 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.conflictingProperties.push(...ecConflict.dataConflictProperties);
+    const classDef = interactive.iModel.getJsClass<typeof Element>(instanceConflict.classFullName);
+    for (const propertyName of classDef.mapToDeserializedPropertyNames(ecConflict.dataConflictProperties)) {
+      if (!instanceConflict.conflictingProperties.includes(propertyName))
+        instanceConflict.conflictingProperties.push(propertyName);
+    }
     Object.assign(instanceConflict.theirs, ecConflict.theirs);
     Object.assign(instanceConflict.ours, ecConflict.ours);
 
@@ -751,43 +780,72 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
 
   public readonly id: Id64String;
   public readonly classFullName: string;
-  public readonly original: RebaseConflictProperties | undefined = undefined;
-  public readonly theirs: RebaseConflictProperties = {};
-  public readonly ours: RebaseConflictProperties = {};
+
+  private _db: IModelDb;
+  private _classDef: typeof Element;
+  private _rawCurrent: ECSqlRow;
+  private _rawOriginal: ECSqlRow | undefined;
+  private _rawOurs: ECSqlRow = {};
+
+  public get original(): RebaseConflictProperties | undefined {
+    if (this._rawOriginal === undefined)
+      return undefined;
+
+    return this._classDef.deserialize({ row: this._rawOriginal, iModel: this._db });
+  }
+
+  public get ours(): RebaseConflictProperties {
+    return this._classDef.deserialize({ row: this._rawOurs, iModel: this._db });
+  }
+
   public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
 
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
+  public static handle(interactive: InteractiveRebase, conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
     const ecConflict = conflict.ecConflict;
-
     const instanceId = ecConflict.ours.id ?? ecConflict.original.id;
-    const classFullName = ecConflict.ours.classFullName ?? ecConflict.original.classFullName;
 
-    let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "UniqueConstraint") as UniqueConstraintRebaseConflict | undefined;
+    let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "UniqueConstraint") as UniqueConstraintRebaseConflictImpl | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new UniqueConstraintRebaseConflictImpl(instanceId, classFullName);
-      conflicts.push(instanceConflict);
+      conflicts.push(new UniqueConstraintRebaseConflictImpl(instanceId, conflict, ecConflict, interactive.iModel));
+    } else {
+      instanceConflict.merge(conflict, ecConflict);
     }
-
-    for (const prop of Object.keys(ecConflict.ours)) {
-      instanceConflict.ours[prop] = ecConflict.ours[prop];
-    }
-
-    if (ecConflict.original) {
-      if (instanceConflict.original === undefined) {
-        instanceConflict.original = {};
-      }
-      for (const prop of Object.keys(ecConflict.original)) {
-        instanceConflict.original[prop] = ecConflict.original[prop];
-      }
-    }
-
-    instanceConflict.uniqueConstraintViolations = ecConflict.uniqueConstraintViolations;
 
     return DbConflictResolution.Skip;
   }
 
-  public constructor(id: Id64String, classFullName: string) {
+  public constructor(id: Id64String, conflict: RebaseChangesetConflictArgs, ecConflict: ConflictEcChange, db: IModelDb) {
     this.id = id;
-    this.classFullName = classFullName;
+    this.classFullName = ecConflict.ours.classFullName ?? ecConflict.original.classFullName;
+    this._db = db;
+    this._classDef = db.getJsClass<typeof Element>(this.classFullName);
+
+    if (conflict.opcode !== "Inserted") {
+      // TODO: what if this instance is not an Element?
+      this._rawCurrent = this._db.elements.getRawElementInstance(this.id);
+    } else {
+      // No element with this ID existed prior to this changeset.
+      this._rawCurrent = {};
+    }
+
+    this.merge(conflict, ecConflict);
+  }
+
+  private merge(conflict: RebaseChangesetConflictArgs, ecConflict: ConflictEcChange): void {
+    if (conflict.opcode !== "Inserted") {
+      this._rawOriginal = Object.assign(this._rawOriginal ?? {}, this._rawCurrent);
+      Object.assign(this._rawOriginal, ecConflict.original);
+    }
+
+    Object.assign(this._rawOurs, this._rawCurrent);
+    Object.assign(this._rawOurs, ecConflict.ours);
+
+    for (const violation of ecConflict.uniqueConstraintViolations) {
+      const conflictingClass = this._db.getJsClass<typeof Element>(violation.conflictingRow.classFullName);
+      this.uniqueConstraintViolations.push({
+        uniqueConstraintProperties: conflictingClass.mapToDeserializedPropertyNames(violation.uniqueConstraintProperties),
+        conflictingRow: conflictingClass.deserialize({ row: violation.conflictingRow, iModel: this._db }),
+      });
+    }
   }
 }

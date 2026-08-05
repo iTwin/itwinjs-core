@@ -212,9 +212,9 @@ export class Element extends Entity {
    * @beta
    */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
-    { propertyName: "codeValue", source: "Class" },
-    { propertyName: "codeSpec", source: "Class" },
-    { propertyName: "codeScope", source: "Class" },
+    { propertyName: "codeValue", source: "Class", deserializedPropertyName: "code" },
+    { propertyName: "codeSpec", source: "Class", deserializedPropertyName: "code" },
+    { propertyName: "codeScope", source: "Class", deserializedPropertyName: "code" },
     { propertyName: "model", source: "Class" },
     { propertyName: "parent", source: "Class" },
     { propertyName: "federationGuid", source: "Class" },
