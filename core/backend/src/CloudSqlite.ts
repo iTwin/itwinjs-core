@@ -73,6 +73,7 @@ export namespace CloudSqlite {
   interface CloudContainerInternal extends CloudContainer {
     timer?: NodeJS.Timeout;
     refreshPromise?: Promise<void>;
+    refreshGeneration: number;
     lockExpireSeconds: number;
     writeLockHeldBy?: string;
   }
@@ -101,6 +102,7 @@ export namespace CloudSqlite {
     // when the object is cloned (e.g. when included in an exception across processes).
     addHiddenProperty(container, "timer");
     addHiddenProperty(container, "refreshPromise");
+    addHiddenProperty(container, "refreshGeneration", 0);
 
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
     container.lockExpireSeconds = args.lockExpireSeconds ?? 60 * 60; // default is 1 hour
@@ -108,7 +110,10 @@ export namespace CloudSqlite {
     // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
       const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, accessLevel: args.accessLevel };
-      const doRefresh = async () => {
+      // `generation` is bumped on every connect/disconnect. A refresh only applies its result, clears/reschedules its timer, if the
+      // generation it captured when scheduled is still current - this stops a refresh already in flight when disconnect (and possibly
+      // reconnect) happens from clobbering a newer refresh's token/promise or rearming a live timer after it should have stopped.
+      const doRefresh = async (generation: number) => {
         let newToken: AccessToken | undefined;
         const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
         try {
@@ -117,18 +122,25 @@ export namespace CloudSqlite {
         } catch (err: any) {
           logError(`Error refreshing token for container ${url}: ${err.message}`);
         }
-        container.accessToken = newToken ?? "";
+        if (container.refreshGeneration === generation)
+          container.accessToken = newToken ?? "";
       };
-      const tokenRefreshFn = () => {
+      const tokenRefreshFn = (generation: number) => {
         container.timer = setTimeout(async () => {
-          container.refreshPromise = doRefresh(); // this promise is stored on the container so it can be awaited in tests
+          container.refreshPromise = doRefresh(generation); // this promise is stored on the container so it can be awaited in tests
           await container.refreshPromise;
-          container.refreshPromise = undefined;
-          tokenRefreshFn(); // schedule next refresh
-        }, refreshSeconds * 1000).unref(); // unref so it doesn't keep the process alive
+          if (container.refreshGeneration === generation) {
+            container.refreshPromise = undefined;
+            tokenRefreshFn(generation); // schedule next refresh
+          }
+        }, refreshSeconds * 1000);
       };
-      addHiddenProperty(container, "onConnected", tokenRefreshFn); // schedule the first refresh when the container is connected
+      addHiddenProperty(container, "onConnected", () => { // schedule the first refresh when the container is connected
+        const generation = ++container.refreshGeneration;
+        tokenRefreshFn(generation);
+      });
       addHiddenProperty(container, "onDisconnect", () => { // clear the refresh timer when the container is disconnected
+        ++container.refreshGeneration;
         if (container.timer !== undefined) {
           clearTimeout(container.timer);
           container.timer = undefined;
