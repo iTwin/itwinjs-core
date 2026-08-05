@@ -22,7 +22,7 @@ import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./in
 import { BriefcaseManager, InstancePatch } from "./BriefcaseManager";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ChangesetReader } from "./ChangesetReader";
-import { ChangeUnifierCache, PartialChangeUnifier } from "./PartialChangeUnifier";
+import { RebaseInstanceStore } from "./internal/RebaseInstanceStore";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -1031,11 +1031,10 @@ export class TxnManager {
     using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
 
     const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._iModel, id);
-    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache(1024 * 1024 * 10, dbPath));
+    using store = RebaseInstanceStore.createNew(dbPath);
     while (reader.step()) {
-      pcu.appendFrom(reader);
+      store.appendChange(reader);
     }
-    // BriefcaseManager.storeChangedInstancesForSemanticRebase(this._iModel, id, pcu.instances);
   }
 
   /** @internal */
