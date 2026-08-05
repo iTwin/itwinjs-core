@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Add quantity formatting support for FieldRuns in text annotations, including inline FormatProps overrides, FormatSet key overrides, and unit system preferences. See ElementDrivesTextAnnotation.evaluateFieldsAsync.",
+      "comment": "Add quantity formatting for FieldRun values in text annotations via `ElementDrivesTextAnnotation.evaluateFieldsAsync`. Format is resolved in priority order: inline `FormatProps` override, KoQ name looked up via the active `FormatsProvider`, the ECProperty's own `KindOfQuantity`, then a meters fallback for `\"coordinate\"`. The synchronous `evaluateFields` and txn field-update callbacks continue to use `value.toString()` for back-compat.",
       "type": "none",
       "packageName": "@itwin/core-common"
     }
