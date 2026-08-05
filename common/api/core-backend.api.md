@@ -2727,6 +2727,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 // @beta
 export interface EditableWorkspaceDb extends WorkspaceDb {
     addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    // @deprecated
     addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
     addString(rscName: WorkspaceResourceName, val: string): void;
     get cloudProps(): WorkspaceDbCloudProps | undefined;
@@ -2735,9 +2736,11 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
     // @internal
     getBlobWriter(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
     removeBlob(rscName: WorkspaceResourceName): void;
+    // @deprecated
     removeFile(rscName: WorkspaceResourceName): void;
     removeString(rscName: WorkspaceResourceName): void;
     updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    // @deprecated
     updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
     updateManifest(manifest: WorkspaceDbManifest): void;
     updateSettingsResource(settings: SettingsContainer, rscName?: string): void;
@@ -4094,7 +4097,7 @@ export abstract class IModelDb extends IModel {
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
-    // @internal
+    // @beta
     getIndirectTxn(): EditTxn;
     // @internal
     getInstanceArgs(instanceId?: Id64String, baseClassName?: string, federationGuid?: GuidString, code?: CodeProps): IModelJsNative.ResolveInstanceKeyArgs;
@@ -4267,6 +4270,8 @@ export namespace IModelDb {
         insertAspect(aspectProps: ElementAspectProps): Id64String;
         // @deprecated
         insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
+        // @beta
+        queryAspects(options: QueryAspectOptions): AsyncIterableIterator<ElementAspect>;
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
@@ -5903,6 +5908,15 @@ export interface PushChangesArgs extends TokenArg {
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
     retainLocks?: true;
+}
+
+// @beta
+export interface QueryAspectOptions {
+    aspectClassFullName?: string;
+    elementIds: Id64Arg;
+    excludedAspectClassFullNames?: ReadonlySet<string>;
+    groupByOwner?: boolean;
+    usePrimaryConn?: boolean;
 }
 
 // @beta
@@ -8509,6 +8523,7 @@ export interface WorkspaceDb {
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     // @internal
     getBlobReader(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
+    // @deprecated
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResourceName): string | undefined;
     readonly isOpen: boolean;

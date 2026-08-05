@@ -1,6 +1,23 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 15 Jul 2026 19:42:09 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Aug 2026 12:28:16 GMT and should not be manually modified.
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Add internal applyChangeset (and test-support startChangeTracking/executeDdl/createChangeset) API to SQLiteDb.
+- Unskipped previously mark flaky test
+- Stopped using deprecated QueryRowFormat.UseJsPropertyNames in IModelDb ECSQL queries.
+- Fixed queryEntityIds and ViewStore selector queries throwing on undefined/null binding values.
+- Add preserveExtends option to getResolvedSettingDef
+- Use a documented GetResolvedSettingDefOptions interface for getResolvedSettingDef options
+- Added IpcHost.invoke and makeIpcProxy for backend-to-frontend IPC calls.
+- Add filtering support to SchemaView and improve performance.
+- Added caching behaviour to ChangesetReader api
+- Changed error codes for "createQueryReader" and "withQueryReader" api and made error messages consistent across the native node add-on apis for the case of db being closed
+- Restore ECSQL statement caching in the synchronous withQueryReader path: ECSqlRowExecutor now reuses a prepared statement from the owning db's statement cache instead of re-compiling the ECSQL on every call, fixing a per-element performance regression.
 
 ## 5.11.3
 Wed, 15 Jul 2026 19:40:44 GMT

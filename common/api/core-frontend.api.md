@@ -2403,7 +2403,7 @@ export class CurrentInputState {
     // (undocumented)
     get isShiftDown(): boolean;
     // (undocumented)
-    isStartDrag(button: BeButton): boolean;
+    isStartDrag(button: BeButton, motionEventTime?: number): boolean;
     // (undocumented)
     lastButton: BeButton;
     // (undocumented)
@@ -2415,7 +2415,7 @@ export class CurrentInputState {
     // (undocumented)
     lastWheelEvent?: BeWheelEvent;
     // (undocumented)
-    onButtonDown(button: BeButton): void;
+    onButtonDown(button: BeButton, eventTime?: number): void;
     // (undocumented)
     onButtonUp(button: BeButton): void;
     // (undocumented)
