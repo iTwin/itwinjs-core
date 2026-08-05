@@ -1219,6 +1219,54 @@ describe.only("Field evaluation", () => {
       expect(field.cachedContent).to.equal("2.5");
     });
 
+    it("preserves prior coordinate behavior when no provider is registered", () => {
+      // Coordinate back-compat: with no provider registered the sync path routes through
+      // formatFieldValue -> formatPointBasic, matching pre-KoQ behavior.
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "point" },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("(1, 2, 3)");
+    });
+
+    it("preserves prior behavior on the txn callback path when no provider is registered", () => {
+      // Txn-callback back-compat: doUpdateFields must produce toString()-style output for
+      // callers who never adopt registerFieldFormattingProvider.
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        styleOverrides: { font: { name: "Karla" } },
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+
+      const annotationElementId = insertAnnotationElement(textBlock);
+      withEditTxn(imodel, (txn) => {
+        ElementDrivesTextAnnotation.updateFieldDependencies(txn, annotationElementId);
+      });
+
+      const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
+      const reloadedBlock = reloaded.getAnnotation()?.textBlock;
+      expect(reloadedBlock).to.not.be.undefined;
+      let reloadedField: FieldRun | undefined;
+      for (const { child } of traverseTextBlockComponent(reloadedBlock!)) {
+        if (child.type === "field") {
+          reloadedField = child;
+          break;
+        }
+      }
+      expect(reloadedField).to.not.be.undefined;
+      expect(reloadedField!.cachedContent).to.equal("2.5");
+    });
+
     it("unregisters the iModel-level default via unregisterFieldFormattingProvider", () => {
       ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { provider: makeStubProvider() });
       expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.not.be.undefined;
