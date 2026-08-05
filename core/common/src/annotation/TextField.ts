@@ -139,6 +139,8 @@ export interface FieldFormatOptions {
   case?: FieldCase;
   /** Formatting options for [[FieldPropertyType]] "datetime". */
   dateTime?: DateTimeFieldFormatOptions;
-  /** Formatting options for [[FieldPropertyType]] "quantity" and "coordinate". */
+  /** Formatting options for [[FieldPropertyType]] "quantity" and "coordinate". See
+   * [[QuantityFieldFormatOptions]] for the format-resolution priority order.
+   */
   quantity?: QuantityFieldFormatOptions;
 }

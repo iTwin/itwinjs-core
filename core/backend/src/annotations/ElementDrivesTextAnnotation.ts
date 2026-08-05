@@ -250,6 +250,17 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * during formatting are derived from `args.iModel`'s schema context. To route formatting through
    * an application-owned provider (e.g. a FormatSet-backed
    * [FormattingSpecProvider]($core-quantity)), supply [[EvaluateFieldsAsyncArgs.formatting]].
+   *
+   * For each `"quantity"` or `"coordinate"` field, the format is resolved in this priority order
+   * (see [QuantityFieldFormatOptions]($common) for the full contract):
+   *   1. [QuantityFieldFormatOptions.format]($common) - an inline [FormatProps]($core-quantity) override.
+   *   2. [QuantityFieldFormatOptions.kindOfQuantity]($common) - looked up via the active [FormatsProvider]($core-quantity).
+   *   3. The property's own [KindOfQuantity]($ecschema-metadata).
+   *   4. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
+   *
+   * If none of the above yield a usable format, the raw value is rendered via its string
+   * representation (or an error is thrown when
+   * [FieldFormattingProviders.onMissingSpec]($backend) is `"throw"`).
    * @returns the number of fields whose display strings were modified.
    * @beta
    */
