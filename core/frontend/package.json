@@ -61,7 +61,7 @@
   "devDependencies": {
     "@bentley/aec-units-schema": "^1.0.3",
     "@bentley/formats-schema": "^1.0.0",
-    "@bentley/units-schema": "^1.0.10",
+    "@bentley/units-schema": "^1.0.11",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
