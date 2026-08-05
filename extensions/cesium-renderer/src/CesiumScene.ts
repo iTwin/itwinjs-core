@@ -183,9 +183,10 @@ export class CesiumScene {
     }
   }
 
-  // ###TODO Temporary prototype hack: relocate the splat tileset directly in front of the camera
-  // (which is continuously synced to the iTwin.js viewport) so it is visible without navigating
-  // to the tileset's real georeferenced location.
+  // ###TODO Temporary prototype hack: relocate the splat tileset to a fixed spot in front of the
+  // initial camera (which is continuously synced to the iTwin.js viewport), scaled up so it is
+  // comparable in size to the test decorations (which span hundreds of km). The real tileset is a
+  // ~75m tower georeferenced near Philadelphia; unscaled it would be invisible at this range.
   private placeSplatIfReady(): void {
     const tileset = this._splatTileset;
     if (!tileset || this._splatPlaced)
@@ -193,10 +194,16 @@ export class CesiumScene {
 
     const camera = this._scene.camera;
     const radius = tileset.boundingSphere.radius;
-    const offset = Cartesian3.multiplyByScalar(camera.directionWC, radius * 4, new Cartesian3());
+    const scale = 1000.0;
+    const scaledRadius = radius * scale;
+    const offset = Cartesian3.multiplyByScalar(camera.directionWC, scaledRadius * 4, new Cartesian3());
     const target = Cartesian3.add(camera.positionWC, offset, new Cartesian3());
-    const translation = Cartesian3.subtract(target, tileset.boundingSphere.center, new Cartesian3());
-    tileset.modelMatrix = Matrix4.fromTranslation(translation);
+    const center = tileset.boundingSphere.center;
+    // M = T(target) * S(scale) * T(-center): scale about the bounding sphere center, then move it to target.
+    const modelMatrix = Matrix4.fromTranslation(target);
+    Matrix4.multiplyByUniformScale(modelMatrix, scale, modelMatrix);
+    Matrix4.multiplyByTranslation(modelMatrix, Cartesian3.negate(center, new Cartesian3()), modelMatrix);
+    tileset.modelMatrix = modelMatrix;
 
     this._splatPlaced = true;
     this._scene.requestRender();
