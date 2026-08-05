@@ -5,6 +5,15 @@ parameters:
     displayName: Publish
     type: boolean
     default: false
+  # TEMPORARY (issue #2299 timing test): selects which BeMetalsmith install approach to time in
+  # isolation, so runs of one approach aren't affected by warm caches left by the other.
+  - name: bmsTestMode
+    displayName: "[TEST] BeMetalsmith install approach to time"
+    type: string
+    default: npm
+    values:
+      - npm
+      - gitClone
 
 trigger:
   branches:
@@ -39,3 +48,4 @@ jobs:
       workingDir: $(Pipeline.Workspace)/itwinjs-core
       outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
       shouldPublish: ${{ or(parameters.forcePublish, eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')) }}
+      bmsTestMode: ${{ parameters.bmsTestMode }}
