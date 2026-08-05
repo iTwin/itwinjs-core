@@ -3702,6 +3702,28 @@ export interface FieldFormatterContext {
     unitsProvider: UnitsProvider;
 }
 
+// @internal (undocumented)
+export interface FieldFormattingSpecProvider {
+    // (undocumented)
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    // (undocumented)
+    getSpecsByNameAndUnit(args: {
+        name: string;
+        persistenceUnitName: string;
+    }): {
+        formatterSpec: FormatterSpec;
+    } | undefined;
+}
+
+// @internal
+export interface FieldFormattingSpecResolver {
+    // (undocumented)
+    resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined;
+}
+
+// @internal
+export type FieldMissingSpecBehavior = "fallback" | "throw";
+
 // @internal
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
@@ -3853,7 +3875,13 @@ export enum FontType {
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
 
 // @internal
-export function formatFieldValueAsync(value: FieldValue, options: FieldFormatOptions | undefined, context: FieldFormatterContext): Promise<string | undefined>;
+export function formatFieldValueAsync(value: FieldValue, options: FieldFormatOptions | undefined, context: FieldFormatterContext, onMissingSpec?: FieldMissingSpecBehavior): Promise<string | undefined>;
+
+// @internal
+export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FieldFormattingSpecProvider, onMissingSpec?: FieldMissingSpecBehavior): string | undefined;
+
+// @internal
+export function formatFieldValueWithSpecResolver(value: FieldValue, options: FieldFormatOptions | undefined, resolver: FieldFormattingSpecResolver): string | undefined;
 
 // @internal (undocumented)
 export interface FormDataCommon {
@@ -8656,6 +8684,14 @@ export interface RequestNewBriefcaseProps {
     readonly fileName?: LocalFileName;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
+}
+
+// @internal
+export interface ResolvedFieldFormattingSpecProvider {
+    // (undocumented)
+    onMissingSpec?: FieldMissingSpecBehavior;
+    // (undocumented)
+    provider: FieldFormattingSpecProvider;
 }
 
 // @internal

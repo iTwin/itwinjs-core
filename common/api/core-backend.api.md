@@ -2964,12 +2964,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
-    static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     static registerFieldFormattingProvider(iModel: IModelDb, args: {
         formatSet?: Id64String;
         provider: FormattingSpecProvider;
         onMissingSpec?: "fallback" | "throw";
     }): void;
+    static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     static unregisterFieldFormattingProvider(iModel: IModelDb, formatSet?: Id64String): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
