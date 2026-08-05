@@ -71,57 +71,64 @@ jobs:
           git config --local user.name imodeljs-admin
         displayName: Setup git config
 
-      # TEMPORARY (issue #2299 timing test): rush install/build/docs, archive-tag, core-docs-artifact
-      # download, and gather-docs steps are commented out below since they're irrelevant to timing
-      # the BeMetalsmith install approaches and would otherwise dominate the pipeline run time.
-      # - script: node common/scripts/install-run-rush.js install
-      #   displayName: rush install
-      #   workingDirectory: ${{ parameters.workingDir }}
-      #   condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
+      # Only install and build the docs if not using the core artifact
+      - script: node common/scripts/install-run-rush.js install
+        displayName: rush install
+        workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
-      # - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
-      #   displayName: rush build
-      #   workingDirectory: ${{ parameters.workingDir }}
-      #   env:
-      #     RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-      #     RUSH_BUILD_CACHE_ENABLED: 1
-      #   condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
+      - script: node common/scripts/install-run-rush.js build --to-version-policy prerelease-monorepo-lockStep
+        displayName: rush build
+        workingDirectory: ${{ parameters.workingDir }}
+        env:
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+          RUSH_BUILD_CACHE_ENABLED: 1
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
-      # - script: node common/scripts/install-run-rush.js docs
-      #   displayName: rush docs
-      #   workingDirectory: ${{ parameters.workingDir }}
-      #   condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
+      - script: node common/scripts/install-run-rush.js docs
+        displayName: rush docs
+        workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
-      # - bash: |
-      #     branchName="$(Build.SourceBranch)"
-      #     archiveTag=""
-      #     if [[ -n "$archiveTag" ]]; then
-      #       echo "Adding output variable $archiveTag"
-      #       echo "##vso[task.setvariable variable=archiveTag;]$archiveTag"
-      #     fi
-      #   displayName: Set archive vars if necessary
-      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+      - bash: |
+          branchName="$(Build.SourceBranch)"
+          archiveTag=""
 
-      # - task: DownloadPipelineArtifact@2
-      #   displayName: Download Core Generated Docs Artifact
-      #   inputs:
-      #     source: "specific"
-      #     project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-      #     pipeline: 7436 # iTwin.js Docs (docs-ci.yaml)
-      #     artifact: Core Generated Docs
-      #     path: ${{ parameters.workingDir }}/generated-docs
-      #   condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', true))
+          # Add conditions here for branches that should produce archives
+          # For example, 'refs/heads/release/5.10.x' should be archived as 'v5':
+          # if [[ $branchName == "refs/heads/release/5.10.x" ]]; then
+          #   archiveTag="v5"
+          # fi
 
-      # - template: ../templates/gather-docs.yaml
-      #   parameters:
-      #     workingDir: ${{ parameters.workingDir }}
-      #     stagingDir: ${{ parameters.stagingDir }}
-      #     useCurrentAppUIDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
-      #     useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
-      #     useCurrentPresentationDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
-      #     useCurrentTransformerDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
-      #     useCurrentAuthClientsDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
-      #     useCurrentConnectorFrameworkDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
+          if [[ -n "$archiveTag" ]]; then
+            echo "Adding output variable $archiveTag"
+            echo "##vso[task.setvariable variable=archiveTag;]$archiveTag"
+          fi
+        displayName: Set archive vars if necessary
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
+      # if using the core artifact, download the Core Generated Docs artifact it to the workingDir using downloadPipelineArtifact task
+      - task: DownloadPipelineArtifact@2
+        displayName: Download Core Generated Docs Artifact
+        inputs:
+          source: "specific"
+          project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+          pipeline: 7436 # iTwin.js Docs (docs-ci.yaml)
+          artifact: Core Generated Docs
+          path: ${{ parameters.workingDir }}/generated-docs
+        condition: and(succeeded(), eq('${{ parameters.useCoreDocsArtifact }}', true))
+
+      # Gather all the pieces to run BeMetalsmith
+      - template: ../templates/gather-docs.yaml
+        parameters:
+          workingDir: ${{ parameters.workingDir }}
+          stagingDir: ${{ parameters.stagingDir }}
+          useCurrentAppUIDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
+          useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
+          useCurrentPresentationDocsArtifact: ${{ parameters.useCurrentPresentationDocsArtifact }}
+          useCurrentTransformerDocsArtifact: ${{ parameters.useCurrentTransformerDocsArtifact }}
+          useCurrentAuthClientsDocsArtifact: ${{ parameters.useCurrentAuthClientsDocsArtifact }}
+          useCurrentConnectorFrameworkDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
       # TEMPORARY (issue #2299 timing test): only one of the two steps below runs per pipeline
@@ -155,18 +162,39 @@ jobs:
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
         condition: and(succeeded(), eq('${{ parameters.bmsTestMode }}', 'gitClone'))
 
-      # TEMPORARY (issue #2299 timing test): bmsBuild, publish, and tagging steps below are commented
-      # out since there's no staging content (rush docs/gather-docs skipped above) and they're
-      # irrelevant to the BeMetalsmith install timing comparison.
-      # - script: |
-      #     siteRootFlag=""
-      #     if [ -n "$(archiveTag)" ]; then
-      #       siteRootFlag="--siteRoot $(archiveTag)"
-      #     fi
-      #     ./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js $siteRootFlag
-      #   displayName: Run bmsBuild
-      #   workingDirectory: ${{ parameters.workingDir }}
+      # TEMPORARY (issue #2299 timing test): bmsBuild is now run and timed for each approach.
+      # npm approach: uses ./node_modules/.bin/bmsBuild installed in the previous step.
+      - bash: |
+          siteRootFlag=""
+          if [ -n "$(archiveTag)" ]; then
+            siteRootFlag="--siteRoot $(archiveTag)"
+          fi
+          echo "=== [TEST] Timing: Run bmsBuild (npm-installed) ==="
+          START=$(date +%s)
+          ./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js $siteRootFlag
+          END=$(date +%s)
+          echo "##[section][TEST] Run bmsBuild (npm-installed) took $((END-START)) seconds"
+        displayName: "[TEST] Run bmsBuild via npm-installed package (timed)"
+        workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.bmsTestMode }}', 'npm'))
 
+      # gitClone approach: uses the bmsBuild binary built from source in the previous step.
+      - bash: |
+          siteRootFlag=""
+          if [ -n "$(archiveTag)" ]; then
+            siteRootFlag="--siteRoot $(archiveTag)"
+          fi
+          echo "=== [TEST] Timing: Run bmsBuild (built from source) ==="
+          START=$(date +%s)
+          node "$(Agent.TempDirectory)/BeMetalsmith/packages/bemetalsmith/build/bmsBuild.js" --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js $siteRootFlag
+          END=$(date +%s)
+          echo "##[section][TEST] Run bmsBuild (built from source) took $((END-START)) seconds"
+        displayName: "[TEST] Run bmsBuild via source build (timed)"
+        workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.bmsTestMode }}', 'gitClone'))
+
+      # TEMPORARY (issue #2299 timing test): publish and tagging steps below are commented out
+      # since they're not needed for the BeMetalsmith install/build timing comparison.
       # - publish: ${{ parameters.workingDir }}/generated-docs
       #   artifact: Core Generated Docs
       #   displayName: Publish Core Generated Docs Artifact
