@@ -446,10 +446,10 @@ describe("InteractiveRebase", () => {
 
     chai.expect(conflict.original).to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
-    chai.expect(conflict.ours["federationGuid"]).not.to.be.undefined;
-    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
+    chai.expect(conflict.ours.federationGuid).not.to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
-    chai.expect(conflict.ours["federationGuid"]).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow["federationGuid"]);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
+    chai.expect(conflict.ours.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
   });
 
   it("can present a conflict where a locally-updated row triggers a unique constraint violation", async () => {
@@ -507,5 +507,103 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours.codeScope).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.codeScope);
     chai.expect(conflict.ours.codeSpec).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.codeSpec);
     chai.expect(conflict.ours.codeValue).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.codeValue);
+  });
+
+  it("can present a conflict where a partial update of a code triggers a unique constraint violation", async () => {
+    const code1 = new Code({
+      spec: IModel.dictionaryId,
+      scope: IModel.dictionaryId,
+      value: "SomeValue"
+    });
+    const code2 = new Code({
+      spec: IModel.dictionaryId,
+      scope: IModel.dictionaryId,
+      value: "AnotherValue"
+    });
+
+    // Add two elements with two different codes.
+    const ids = await withEditTxn(briefcase1, async (txn) => {
+      return [
+        txn.insertElement({
+          classFullName: "irt:SomeGraphicalElement",
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: code1,
+          foo: "User1",
+          somePoint: new Point2d(1.0, 2.0),
+        } as SomeGraphicalElementProps),
+        txn.insertElement({
+          classFullName: "irt:SomeGraphicalElement",
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: code2,
+          foo: "User1",
+          somePoint: new Point2d(3.0, 4.0),
+        } as SomeGraphicalElementProps)
+      ];
+    });
+
+    await briefcase1.pushChanges({ description: "Set initial code" });
+    await briefcase2.pullChanges();
+
+    // Update both codes in two different briefcases so that they now conflict
+    const conflictingCode = new Code({
+      spec: IModel.dictionaryId,
+      scope: IModel.dictionaryId,
+      value: "ConflictingValue"
+    });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement({
+        id: ids[0],
+        code: conflictingCode,
+      });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement({
+        id: ids[1],
+        code: conflictingCode,
+      });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0] as UniqueConstraintRebaseConflict;
+    chai.expect(conflict.kind).to.equal("UniqueConstraint");
+
+    // The codeValue should be included, because it was changed.
+    chai.expect(conflict.original?.codeValue).not.to.be.undefined;
+    chai.expect(conflict.ours.codeValue).not.to.be.undefined;
+
+    // codeSpec and codeScope should not be included because they were not changed.
+    chai.expect(conflict.original?.codeSpec).to.be.undefined;
+    chai.expect(conflict.original?.codeScope).to.be.undefined;
+    chai.expect(conflict.ours.codeSpec).to.be.undefined;
+    chai.expect(conflict.ours.codeScope).to.be.undefined;
+
+    // The conflict should correctly identify which unique constraint was violated.
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("codeScope");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("codeSpec");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("codeValue");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
+
+    // The conflicting row should include the changed codeValue property
+    chai.expect(conflict.original?.codeValue).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.codeValue);
+    chai.expect(conflict.ours.codeValue).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.codeValue);
+
+    // And it should also contain the unchanged codeSpec and codeScope properties, which are part of the unique constraint.
+    chai.expect(conflict.uniqueConstraintViolations[0].conflictingRow.codeSpec.id).to.equal(IModel.dictionaryId);
+    chai.expect(conflict.uniqueConstraintViolations[0].conflictingRow.codeScope.id).to.equal(IModel.dictionaryId);
   });
 });
