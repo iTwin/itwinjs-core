@@ -5,7 +5,7 @@
 
 import { ViewDefinition3dProps } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, createWorldImageryAsync, defined, Ellipsoid, Globe, ImageryLayer, Ion, IonWorldImageryStyle, OrthographicFrustum, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
+import { Cartesian3, Cesium3DTileset, Clock, Color, createWorldImageryAsync, defined, Ellipsoid, Globe, ImageryLayer, Ion, IonWorldImageryStyle, Matrix4, OrthographicFrustum, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
 
 /** Options to configure a Cesium scene.
@@ -30,6 +30,8 @@ export class CesiumScene {
   private _canvasClientWidth: number = 0;
   private _canvasClientHeight: number = 0;
   private _lastDevicePixelRatio: number = 1;
+  private _splatTileset?: Cesium3DTileset;
+  private _splatPlaced = false;
 
   /** Get access to the underlying CesiumJS Scene for advanced operations */
   public get cesiumScene(): Scene {
@@ -112,6 +114,10 @@ export class CesiumScene {
 
     this._screenSpaceEventHandler = new ScreenSpaceEventHandler(this._canvas);
 
+    // ###TODO Temporary hardcoded gaussian splat tileset for prototyping. Uses the publicly-hosted
+    // "tower" sample (KHR_gaussian_splatting + spz_2) from the CesiumGS/cesium repository.
+    void this.loadGaussianSplatTileset("https://raw.githubusercontent.com/CesiumGS/cesium/1.135/Specs/Data/Cesium3DTiles/GaussianSplats/tower/tileset.json");
+
     const onRenderError = function (_scene: any, error: any) {
       const title =
         "An error occurred while rendering. Rendering has stopped.";
@@ -122,6 +128,7 @@ export class CesiumScene {
 
     IModelApp.viewManager.onBeginRender.addListener(() => {
       this.resize();
+      this.placeSplatIfReady();
 
       // ###TODO figure out how to handle the need to call `initializeFrame` in Cesium.
       // That function inside Cesium has the following comment: "Destroy released shaders and textures once every 120 frames to avoid thrashing the cache"
@@ -163,6 +170,36 @@ export class CesiumScene {
         });
       });
     });
+  }
+
+  private async loadGaussianSplatTileset(url: string): Promise<void> {
+    try {
+      const tileset = await Cesium3DTileset.fromUrl(url);
+      this._scene.primitives.add(tileset);
+      this._splatTileset = tileset;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log("Failed to load gaussian splat tileset", error);
+    }
+  }
+
+  // ###TODO Temporary prototype hack: relocate the splat tileset directly in front of the camera
+  // (which is continuously synced to the iTwin.js viewport) so it is visible without navigating
+  // to the tileset's real georeferenced location.
+  private placeSplatIfReady(): void {
+    const tileset = this._splatTileset;
+    if (!tileset || this._splatPlaced)
+      return;
+
+    const camera = this._scene.camera;
+    const radius = tileset.boundingSphere.radius;
+    const offset = Cartesian3.multiplyByScalar(camera.directionWC, radius * 4, new Cartesian3());
+    const target = Cartesian3.add(camera.positionWC, offset, new Cartesian3());
+    const translation = Cartesian3.subtract(target, tileset.boundingSphere.center, new Cartesian3());
+    tileset.modelMatrix = Matrix4.fromTranslation(translation);
+
+    this._splatPlaced = true;
+    this._scene.requestRender();
   }
 
   private configurePixelRatio() {

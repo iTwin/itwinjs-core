@@ -140,6 +140,8 @@ export default defineConfig(() => {
           },
           { src: `${cesiumEngineDir}/Build/Workers`, dest: cesiumBaseUrl },
           { src: `${cesiumEngineDir}/Build/ThirdParty`, dest: cesiumBaseUrl },
+          // Wasm modules (e.g. the gaussian splat sorter) live in Source/ThirdParty
+          { src: `${cesiumEngineDir}/Source/ThirdParty/*.wasm`, dest: `${cesiumBaseUrl}/ThirdParty` },
           { src: `${cesiumEngineDir}/Source/Assets`, dest: cesiumBaseUrl },
         ],
         overwrite: true,
