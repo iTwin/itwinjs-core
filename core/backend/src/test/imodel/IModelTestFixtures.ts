@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import * as path from "path";
+import * as path from "node:path";
 import { DbResult, IModelStatus } from "@itwin/core-bentley";
 import { EntityProps, IModelError } from "@itwin/core-common";
 import { Entity, SnapshotDb } from "../../core-backend";
