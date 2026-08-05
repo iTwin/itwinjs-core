@@ -379,8 +379,12 @@ class WorkspaceImpl implements Workspace {
   public async getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb> {
     let container: WorkspaceContainer | undefined = this.findContainer(props.containerId);
     if (undefined === container) {
-      const accessToken = (props.baseUri === "" || props.isPublic) ? "" : await CloudSqlite.requestToken({ accessLevel: "read", ...props });
-      container = new WorkspaceContainerImpl(this, { ...props, accessToken });
+      if (props.accessToken) {
+        container = new WorkspaceContainerImpl(this, { ...props, accessToken: props.accessToken });
+      } else {
+        const accessToken = (props.baseUri === "" || props.isPublic) ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
+        container = new WorkspaceContainerImpl(this, { ...props, accessToken });
+      }
     }
     return container.getWorkspaceDb(props);
   }
