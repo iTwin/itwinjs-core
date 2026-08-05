@@ -18,12 +18,8 @@ publish: false
     - [Graphics no longer disappear when a new category is inserted](#graphics-no-longer-disappear-when-a-new-category-is-inserted)
   - [@itwin/core-backend](#itwincore-backend)
     - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
-  - [@itwin/core-geometry](#itwincore-geometry)
-    - [`CurveFactory.createFilletsInLineString` expanded options](#curvefactorycreatefilletsinlinestring-expanded-options)
-  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
-    - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
-  - [@itwin/build-tools](#itwinbuild-tools)
-    - [`mocha` is now an optional peer dependency](#mocha-is-now-an-optional-peer-dependency)
+    - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
+  - [@itwin/geometry](#itwingeometry)
 
 ## @itwin/core-bentley
 
@@ -232,7 +228,17 @@ const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iMode
 
 The existing synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks continue to render `"quantity"` and `"coordinate"` fields as their raw string representation for backward compatibility. Applications that want formatted quantity output for text annotations should migrate their evaluation calls to the async variant.
 
-Applications that own a [FormatsProvider]($core-quantity) and/or [UnitsProvider]($core-quantity) — for example, one backed by an adopted FormatSet — can route field formatting through them by passing them on [EvaluateFieldsAsyncArgs.formatting]($backend). Either provider may be omitted; any provider not supplied is defaulted to a schema-backed implementation derived from the iModel's schema context.
+### Stream element aspects for multiple elements
+
+Use [IModelDb.Elements.queryAspects]($backend) to read the [ElementAspect]($backend) instances owned by a set of elements. The method queries all supplied element Ids together and returns an async iterator, so callers can process each aspect without buffering the complete result set.
+
+Use this method for batch processing, such as exporters and transformers, where calling [IModelDb.Elements.getAspects]($backend) once per element would issue many separate queries. Continue to use `getAspects` when reading a small result from one element and a synchronous array is more convenient.
+
+The options support the same polymorphic `aspectClassFullName` filter as `getAspects`, exact class exclusions, and owner-grouped results. Set `usePrimaryConn` when the query must include uncommitted aspects from an active edit transaction.
+
+[[include:CoreBackend.IModelDb.QueryAspects]]
+
+## @itwin/geometry
 
 ```typescript
 const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
@@ -245,104 +251,4 @@ const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
 });
 ```
 
-Applications integrating their own [FormattingSpecProvider]($core-quantity) can discover the [FormatterSpec]($core-quantity)s a [TextBlock]($common) will need before evaluating it, and pre-build them, via the new [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) entry point:
-
-```typescript
-const requirements = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block });
-// requirements: FormattingSpecArgs[] with { name, persistenceUnitName } for every quantity/coordinate FieldRun
-// whose target property carries a KindOfQuantity (or whose formatOptions override supplies one). Fields with an
-// inline `format` override are omitted because they do not require a provider lookup.
-// Feed `requirements` into your provider's cache-population routine so that every spec is ready before
-// synchronous evaluation runs.
-```
-
-Because the transactional callback path that keeps field caches in sync when source elements change is synchronous, applications with a pre-populated [FormattingSpecProvider]($core-quantity) can register it against an [IModelDb]($backend) so that both [ElementDrivesTextAnnotation.evaluateFields]($backend) and txn-driven updates route through it:
-
-```typescript
-// Once the provider's cache has been populated with the requirements collected above:
-ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { provider: myFormattingSpecProvider });
-
-// Later, any commit that dirties a source element for a FieldRun will re-format its cached content
-// through the registered provider automatically -- no application code required.
-// Call `unregisterFieldFormattingProvider` to remove the registration:
-ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
-```
-
-An application can register different providers for different FormatSets by supplying a `formatSet: Id64String` at registration time, and pointing individual FieldRuns at that FormatSet via [QuantityFieldFormatOptions.formatSet]($common). At evaluation time, each FieldRun is routed by cascading lookup: its `formatSet`-scoped registration first, then the iModel-level default registration (registered with no `formatSet`).
-
-```typescript
-ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { provider: defaultProvider });
-ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, {
-  formatSet: mySheetFormatSetId,
-  provider: sheetProvider,
-});
-
-const fieldRun = FieldRun.create({
-  propertyHost, propertyPath,
-  formatOptions: { quantity: { formatSet: mySheetFormatSetId } },
-});
-
-// Later, to remove just the sheet-scoped registration (the iModel-level default remains):
-ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel, mySheetFormatSetId);
-```
-
-If no registration matches (or the resolved provider does not supply a spec for a given field), fields fall back to their existing raw string formatting. To make missing specs surface as an error instead, pass `onMissingSpec: "throw"` when registering the provider (or via [FieldFormattingProviders]($backend) on the async path):
-
-```typescript
-ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, {
-  provider: myFormattingSpecProvider,
-  onMissingSpec: "throw",
-});
-// Any FieldRun evaluated against `iModel` whose KindOfQuantity / persistence unit combination
-// has not been prepared on `myFormattingSpecProvider` will now throw from evaluateFields and from
-// the TxnManager field-update callback path, instead of silently reverting to the raw value.
-
-await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-  iModel,
-  block,
-  formatting: {
-    formatsProvider: myFormatsProvider,
-    onMissingSpec: "throw",
-  },
-});
-```
-
-## @itwin/core-geometry
-
-### `CurveFactory.createFilletsInLineString` expanded options
-
-[CurveFactory.createFilletsInLineString]($core-geometry) has three new [CreateFilletsInLineStringOptions]($core-geometry) interface options to control the construction of the output `Path`, particularly with respect to the appearance of cusps in the output. A *cusp* occurs when a fillet's radius is too large, and the arc consumes one or both adjacent line string edges. Cusps in the output of this method (especially large cusps) are generally considered to be undesirable.
-
-[CreateFilletsInLineStringOptions.closureTolerance]($core-geometry) is used when [CreateFilletsInLineStringOptions.filletClosure]($core-geometry) is `true` to determine whether the final input point is to be considered equal to the first input point. If these points have distance less than `closureTolerance`, the final point is ignored when the input polygon is filleted. The default value of this option is [Geometry.smallMetricDistance]($core-geometry), matching previous behavior.
-
-[CreateFilletsInLineStringOptions.cuspSegments]($core-geometry) is used when [CreateFilletsInLineStringOptions.allowCusp]($core-geometry) is `true` to insert a `LineSegment3d` in the output `Path` at each cusp. These extra `Path` children are retrograde line segments that bridge the gap formed by each cusp and thereby maintain the chain's continuity. To avoid these extra output segments, the caller can pass `cuspSegments = false` at the cost of chain discontinuity (if the gaps are small enough, they may be tolerated by chain processing downstream). The default value of this option is `true`, matching previous behavior.
-
-[CreateFilletsInLineStringOptions.cuspTolerance]($core-geometry) is used when [CreateFilletsInLineStringOptions.allowCusp]($core-geometry) is `true` to determine whether to suppress large cusps in the output. A cusp segment whose length exceeds `cuspTolerance` will be eliminated in the output `Path` by the removal of one or both of its constituent fillet arcs. The default value of this option is [Geometry.smallMetricDistance]($core-geometry), which is a slight deviation from previous default behavior. The new default behavior allows only miniscule cusps, whereas the old default behavior allowed cusps of any size. The old default behavior is considered to be a bug.
-
-## @itwin/map-layers-formats
-
-### Azure Maps basemap support is available through map-layers-formats
-
-`@itwin/map-layers-formats` now registers Azure Maps imagery support through `MapLayersFormats.initialize()` and exposes a beta `AzureMaps` helper for applying Azure Maps Street, Aerial, and Hybrid basemaps.
-
-Applications configure the Azure Maps key when initializing `@itwin/map-layers-formats` with `MapLayersFormats.initialize({ azureMapsOpts: { subscriptionKey: ... } })`. After initializing `@itwin/map-layers-formats`, code that wants Azure-specific basemap helpers can import `AzureMaps` from that package.
-
-## @itwin/build-tools
-
-### `mocha` is now an optional peer dependency
-
-`@itwin/build-tools` no longer declares `mocha` as a direct dependency. It is now an optional [peer dependency](https://nodejs.org/en/blog/npm/peer-dependencies), because the only part of the package that uses `mocha` is the `mocha-reporter` (`BentleyMochaReporter`), which always runs inside a consumer that is already executing `mocha`.
-
-This removes `mocha` — and its vulnerable transitive dependencies such as `serialize-javascript` and `diff` — from the *direct* dependency closure of `@itwin/build-tools`. Consumers that do not use the reporter (and therefore do not run `mocha`) no longer pull `mocha` in through `@itwin/build-tools`, so it stops surfacing in their audits under pnpm and yarn. Note that `@itwin/build-tools` still depends on `mocha-junit-reporter`, which declares a required peer dependency on `mocha`; package managers that auto-install required peers (such as npm v7+) may therefore still resolve `mocha` transitively.
-
-If you consume the reporter via `@itwin/build-tools/mocha-reporter`, declare `mocha` in your own package's `devDependencies` (most packages running mocha already do):
-
-```json
-{
-  "devDependencies": {
-    "mocha": "^11.1.0"
-  }
-}
-```
-
-Packages that do not use the `mocha-reporter` are unaffected, and the optional peer dependency itself produces no installation warnings when `mocha` is absent under pnpm and yarn.
+The [CurveFactory.createFilletsInLineString]($core-geometry) options bundle [CreateFilletsInLineStringOptions]($core-geometry) has a new optional property `CreateFilletsInLineStringOptions.simplifyPath` defaulting to `false`. When set to `true`, the output [Path]($core-geometry) is simplified by removing small segments less than the `CreateFilletsInLineStringOptions.closureTolerance` in length, and by merging adjacent arcs where possible. This is particularly helpful in cleaning up an output `Path` containing fillets that entirely consume an input line string edge (or nearly so).
