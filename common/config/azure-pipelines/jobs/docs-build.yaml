@@ -193,44 +193,44 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.bmsTestMode }}', 'gitClone'))
 
-      # TEMPORARY (issue #2299 timing test): publish and tagging steps below are commented out
-      # since they're not needed for the BeMetalsmith install/build timing comparison.
-      # - publish: ${{ parameters.workingDir }}/generated-docs
-      #   artifact: Core Generated Docs
-      #   displayName: Publish Core Generated Docs Artifact
-      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.useCoreDocsArtifact }}', false))
+      # Restored: full pipeline (publish + tagging steps) to measure BeMetalsmith install/build
+      # timing as a percentage of total pipeline run time — see issue #2299.
+      - publish: ${{ parameters.workingDir }}/generated-docs
+        artifact: Core Generated Docs
+        displayName: Publish Core Generated Docs Artifact
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
-      # - publish: ${{ parameters.stagingDir }}/config/.updated.json
-      #   artifact: .updated.json
-      #   displayName: Publish Pipeline Artifact - .updated.json
-      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+      - publish: ${{ parameters.stagingDir }}/config/.updated.json
+        artifact: .updated.json
+        displayName: Publish Pipeline Artifact - .updated.json
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
-      # - publish: ${{ parameters.outputDir }}
-      #   artifact: DocsBuild
-      #   displayName: Publish Pipeline Artifact - DocsBuild
+      - publish: ${{ parameters.outputDir }}
+        artifact: DocsBuild
+        displayName: Publish Pipeline Artifact - DocsBuild
 
-      # - bash: |
-      #     if [[ -n "$(archiveTag)" ]]; then
-      #       echo "Tagging build with $(archiveTag) for archival purposes."
-      #       echo "##vso[build.addbuildtag]$(archiveTag)"
-      #     fi
-      #   displayName: Tag build for version archival (e.g., v4)
-      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), ne(variables['archiveTag'], ''))
+      - bash: |
+          if [[ -n "$(archiveTag)" ]]; then
+            echo "Tagging build with $(archiveTag) for archival purposes."
+            echo "##vso[build.addbuildtag]$(archiveTag)"
+          fi
+        displayName: Tag build for version archival (e.g., v4)
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), ne(variables['archiveTag'], ''))
 
-      # - bash: |
-      #     commitMsg="${BUILD_SOURCEVERSIONMESSAGE}"
-      #     if [[ $commitMsg =~ ^([0-9]+\.[0-9]+\.[0-9]+)(-dev\.[0-9]+)?$ ]]; then
-      #       echo "'$commitMsg' is a version bump"
-      #       echo '##vso[build.addbuildtag]iTwinJsDocsRelease'
-      #     else
-      #       echo "'$commitMsg' is not a version bump"
-      #     fi
-      #   displayName: Tag release if version bump
-      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.isExternalBuild }}', false))
+      - bash: |
+          commitMsg="${BUILD_SOURCEVERSIONMESSAGE}"
+          if [[ $commitMsg =~ ^([0-9]+\.[0-9]+\.[0-9]+)(-dev\.[0-9]+)?$ ]]; then
+            echo "'$commitMsg' is a version bump"
+            echo '##vso[build.addbuildtag]iTwinJsDocsRelease'
+          else
+            echo "'$commitMsg' is not a version bump"
+          fi
+        displayName: Tag release if version bump
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.isExternalBuild }}', false))
 
-      # - task: tagBuildOrRelease@0
-      #   displayName: Tag release if externally triggered
-      #   inputs:
-      #     type: "Build"
-      #     tags: "iTwinJsDocsRelease"
-      #   condition: and(succeeded(), ${{ parameters.shouldPublish }}, eq('${{ parameters.isExternalBuild }}', true))
+      - task: tagBuildOrRelease@0
+        displayName: Tag release if externally triggered
+        inputs:
+          type: "Build"
+          tags: "iTwinJsDocsRelease"
+        condition: and(succeeded(), ${{ parameters.shouldPublish }}, eq('${{ parameters.isExternalBuild }}', true))
