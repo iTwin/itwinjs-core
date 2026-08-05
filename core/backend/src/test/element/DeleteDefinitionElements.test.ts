@@ -3,21 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { Id64, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
+import { Guid, Id64, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { Code, CodeScopeSpec, GeometricElement2dProps, GeometryPartProps, ImageSourceFormat, IModel, PhysicalElementProps, PhysicalTypeProps, QueryBinder, QueryRowFormat, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
 import { EditTxn } from "../../EditTxn";
 import {
-  CategorySelector, ChannelControl, DefinitionContainer, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
+  BriefcaseDb, CategorySelector, ChannelControl, DefinitionContainer, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
   DrawingGraphic, DrawingViewDefinition, GenericGraphicalType2d, GenericPhysicalType, GeometryPart,
   GraphicalElement2dIsOfType, IModelJsFs, InformationPartitionElement, ModelSelector, OrthographicViewDefinition, PhysicalElementIsOfType,
   PhysicalModel, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
 } from "../../core-backend";
-import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
+import { HubMock } from "../../internal/HubMock";
+import { ExtensiveTestScenario, HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { withEditTxn } from "../TestEditTxn";
+
+chai.use(chaiAsPromised);
+const assert = chai.assert;
+const expect = chai.expect;
 
 describe("DeleteDefinitionElements", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "DeleteDefinitionElements");
@@ -1137,6 +1143,275 @@ describe("DeleteDefinitionElements", () => {
           false,
         );
         assertModelExists(containerId, "DefinitionContainer sub-model row must survive when an element inside it is blocked");
+      });
+    });
+  });
+
+  describe("deleteElementsWithLocks", () => {
+    const accessToken = "user1";
+    let briefcase: BriefcaseDb;
+    let iModelId: string;
+    let defModelId: Id64String;
+    let physModelId: Id64String;
+    let catId: Id64String;
+    let txn: EditTxn;
+    let elementCounter = 0;
+
+    before(async () => {
+      IModelJsFs.recursiveMkDirSync(KnownTestLocations.outputDir);
+      HubMock.startup("DeleteDefinitionElementsLocks", KnownTestLocations.outputDir);
+
+      iModelId = await HubMock.createNewIModel({
+        accessToken,
+        iTwinId: HubMock.iTwinId,
+        iModelName: `DeleteDefinitionElementsLocks-${Guid.createValue()}`,
+        description: "DeleteDefinitionElementsLocks",
+      });
+
+      briefcase = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId: HubMock.iTwinId, iModelId });
+      briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      await briefcase.locks.acquireLocks({ shared: [IModel.rootSubjectId, IModel.dictionaryId] });
+      startTxn("create fixture");
+      defModelId = DefinitionModel.insert(txn, IModel.rootSubjectId, "LockDefinitionModel");
+      physModelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "LockPhysicalModel");
+      catId = SpatialCategory.insert(txn, defModelId, "LockCategory", new SubCategoryAppearance());
+      endTxn("save");
+
+      await briefcase.pushChanges({ accessToken, description: "seed" });
+    });
+
+    beforeEach(async () => {
+      // Shared locks are required to insert each test's fixture elements
+      await briefcase.locks.acquireLocks({ shared: [IModel.rootSubjectId, IModel.dictionaryId, defModelId, physModelId] });
+      startTxn("test");
+    });
+
+    afterEach(async () => {
+      endTxn("abandon");
+      await releaseLocks();
+    });
+
+    after(async () => {
+      if (briefcase?.isOpen) {
+        endTxn("abandon");
+        await briefcase.locks.releaseAllLocks().catch(() => { });
+        briefcase.close();
+      }
+      HubMock.shutdown();
+    });
+
+    /** Start the shared [[EditTxn]] through which every write in this suite is routed. */
+    const startTxn = (description: string) => {
+      txn = new EditTxn(briefcase, description);
+      txn.start();
+    };
+
+    /** End the shared [[EditTxn]], if it is active. */
+    const endTxn = (mode: "save" | "abandon") => {
+      if (txn?.isActive)
+        txn.end(mode);
+    };
+
+    /** Discard pending changes while keeping the shared [[EditTxn]] active. */
+    const abandonChanges = () => txn.abandonChanges();
+
+    /**
+     * Return the briefcase to a "holds no locks" state. Locks cannot be released while local changes exist, so
+     * the shared transaction is saved and its changes pushed first, which also releases the locks. The shared
+     * transaction is restarted afterwards so callers can keep writing through it.
+     */
+    const releaseLocks = async () => {
+      const wasActive = txn?.isActive === true;
+      const description = txn?.description ?? "test";
+      if (wasActive)
+        txn.end("save");
+
+      if (briefcase.txns.hasPendingTxns)
+        await briefcase.pushChanges({ accessToken, description: "setup" });
+      else
+        await briefcase.locks.releaseAllLocks();
+
+      assert.isFalse(briefcase.locks.holdsExclusiveLock(defModelId), "no exclusive locks may remain");
+
+      if (wasActive)
+        startTxn(description);
+    };
+
+    /** Run `fn` on the shared [[EditTxn]] and always abandon its changes, so each scenario leaves the briefcase as it found it. */
+    const withAbandonedTxn = async <T>(description: string, fn: (editTxn: EditTxn) => Promise<T>): Promise<T> => {
+      txn.description = description;
+      try {
+        return await fn(txn);
+      } finally {
+        abandonChanges();
+      }
+    };
+
+    const insertDefinitionElement = (parentId?: Id64String, modelId?: Id64String): Id64String => {
+      const props: GeometryPartProps = {
+        classFullName: GeometryPart.classFullName,
+        model: modelId ?? defModelId,
+        code: GeometryPart.createCode(briefcase, modelId ?? defModelId, `LockTestPart_${++elementCounter}`),
+        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        ...(parentId ? { parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
+      };
+      return txn.insertElement(props);
+    };
+
+    /** Reference a GeometryPart from a PhysicalObject's geometry stream so it becomes "in use". */
+    const referenceAsUsed = (partId: Id64String): Id64String => {
+      const props: PhysicalElementProps = {
+        classFullName: "Generic:PhysicalObject",
+        model: physModelId,
+        category: catId,
+        code: Code.createEmpty(),
+        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
+        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1), catId, undefined, undefined, partId),
+      };
+      return txn.insertElement(props);
+    };
+
+    const assertExists = (id: Id64String, msg: string) => assert.isDefined(briefcase.elements.tryGetElement(id), msg);
+    const assertDeleted = (id: Id64String, msg: string) => assert.isUndefined(briefcase.elements.tryGetElement(id), msg);
+
+    /**
+     * Run a scenario against the same starting state:
+     *  1. `deleteElements` without locks - must throw (and change nothing) whenever something would actually
+     *     be deleted. When every id is blocked/pruned (`deleted` is empty), nothing is ever deleted, so no
+     *     lock is checked and the call succeeds even without locks.
+     *  2. `deleteElementsWithLocks` - acquires the exclusive locks and produces the expected result.
+     */
+    const executeLockedTestCase = async (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array = []) => {
+      await releaseLocks();
+
+      const expectThrow = deleted.length > 0;
+      if (idsToDelete.length > 0) {
+        await withAbandonedTxn("delete without locks", async (editTxn) => {
+          if (expectThrow) {
+            assert.throws(() => editTxn.deleteElements(idsToDelete), /exclusive lock/, `[${label}] deleteElements must throw without locks`);
+          } else {
+            const result = editTxn.deleteElements(idsToDelete);
+            assert.sameMembers(Array.from(result.failedIds), expectedFailed, `[${label}] failed set mismatch (no locks)`);
+          }
+        });
+
+        for (const id of [...deleted, ...retained])
+          assertExists(id, `[${label}] ${id} must survive a delete attempt without locks`);
+      }
+
+      await withAbandonedTxn("delete with locks", async (editTxn) => {
+        const result = await editTxn.deleteElementsWithLocks(idsToDelete);
+        assert.sameMembers(Array.from(result.failedIds), expectedFailed, `[${label}] failed set mismatch`);
+
+        for (const id of deleted)
+          assertDeleted(id, `[${label}] ${id} should have been deleted`);
+        for (const id of retained)
+          assertExists(id, `[${label}] ${id} should have been retained`);
+
+        for (const id of idsToDelete)
+          assert.isTrue(briefcase.locks.holdsExclusiveLock(id), `[${label}] exclusive lock should have been acquired for ${id}`);
+      });
+    };
+
+    it("deletes an unused definition element only after locks are acquired", async () => {
+      const part = insertDefinitionElement();
+      await executeLockedTestCase("single unused definition element", [part], [part], []);
+    });
+
+    it("deletes multiple unused definition elements in one call, requiring locks on all of them", async () => {
+      const part1 = insertDefinitionElement();
+      const part2 = insertDefinitionElement();
+      const part3 = insertDefinitionElement();
+      await executeLockedTestCase("multiple unused definition elements", [part1, part2, part3], [part1, part2, part3], []);
+    });
+
+    it("an in-use definition element stays in the failed set and never requires a lock", async () => {
+      const usedPart = insertDefinitionElement();
+      const userElem = referenceAsUsed(usedPart);
+      // Nothing is actually deleted, so no lock is ever acquired or required for the in-use part.
+      await executeLockedTestCase("in-use definition element", [usedPart], [], [usedPart, userElem], [usedPart]);
+    });
+
+    it("mixes an in-use and an unused definition element: only the unused one requires a lock", async () => {
+      const unusedPart = insertDefinitionElement();
+      const usedPart = insertDefinitionElement();
+      const userElem = referenceAsUsed(usedPart);
+      await executeLockedTestCase("mixed used + unused", [unusedPart, usedPart], [unusedPart], [usedPart, userElem], [usedPart]);
+    });
+
+    it("deleting a parent definition element cascades to its child, and both must be locked", async () => {
+      const parent = insertDefinitionElement();
+      const child = insertDefinitionElement(parent);
+      await executeLockedTestCase("parent-child cascade", [parent], [parent, child], []);
+    });
+
+    describe("sub-model (DefinitionContainer) hierarchy", () => {
+      let containerCounter = 0;
+
+      /** Insert a DefinitionContainer (and its sub-model) and acquire the shared lock needed to insert into it. */
+      const insertDefinitionContainer = async (): Promise<Id64String> => {
+        const codeSpecId = briefcase.codeSpecs.insert(txn, `LockContainerCodeSpec_${++containerCounter}`, CodeScopeSpec.Type.Model);
+        const code = new Code({ spec: codeSpecId, scope: IModel.dictionaryId, value: `LockContainer_${containerCounter}-${Guid.createValue()}` });
+        const container = DefinitionContainer.insert(txn, IModel.dictionaryId, code);
+        await briefcase.locks.acquireLocks({ shared: container });
+        return container;
+      };
+
+      const assertModelExists = (id: Id64String, msg: string) => assert.isDefined(briefcase.models.tryGetModelProps(id), msg);
+
+      it("deleting a DefinitionContainer requires locks on the container and everything inside its sub-model", async () => {
+        const container = await insertDefinitionContainer();
+        const inner1 = insertDefinitionElement(undefined, container);
+        const inner2 = insertDefinitionElement(undefined, container);
+
+        await executeLockedTestCase("DefinitionContainer cascade", [container], [container, inner1, inner2], []);
+        assertModelExists(container, "sub-model should be restored after abandoning the delete");
+      });
+    });
+
+    describe("lock-specific behavior", () => {
+      it("throws if the EditTxn is not active, without acquiring any locks", async () => {
+        const part = insertDefinitionElement();
+        await releaseLocks();
+
+        const inactiveTxn = new EditTxn(briefcase, "inactive");
+        await expect(inactiveTxn.deleteElementsWithLocks([part])).to.eventually.be.rejected;
+        assert.isFalse(briefcase.locks.holdsExclusiveLock(part), "no locks may be acquired when the txn is not active");
+        assertExists(part, "element must survive");
+      });
+
+      it("fails when another briefcase holds the exclusive lock", async () => {
+        const part = insertDefinitionElement();
+        await releaseLocks();
+
+        const other = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
+        try {
+          other.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+          await other.locks.acquireLocks({ exclusive: part });
+
+          await withAbandonedTxn("delete while other holds lock", async (editTxn) => {
+            await expect(editTxn.deleteElementsWithLocks([part])).to.eventually.be.rejected;
+          });
+
+          assertExists(part, "element must survive when the lock cannot be acquired");
+        } finally {
+          await other.locks.releaseAllLocks().catch(() => { });
+          other.close();
+        }
+      });
+
+      it("is a no-op re-acquisition when the exclusive lock is already held", async () => {
+        const part = insertDefinitionElement();
+        await releaseLocks();
+        await briefcase.locks.acquireLocks({ exclusive: part });
+        assert.isTrue(briefcase.locks.holdsExclusiveLock(part));
+
+        await withAbandonedTxn("delete with lock already held", async (editTxn) => {
+          const result = await editTxn.deleteElementsWithLocks([part]);
+          assert.equal(result.failedIds.size, 0);
+          assertDeleted(part, "element should be deleted");
+        });
       });
     });
   });

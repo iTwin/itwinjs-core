@@ -1,14 +1,32 @@
-import { assert } from "chai";
-import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import { DbResult, Guid, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { BulkDeleteElementsResult, BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SnapshotDb, SpatialCategory, Subject } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { BriefcaseDb, BulkDeleteElementsResult, BulkDeleteElementsStatus, ChannelControl, EditTxn, IModelJsFs, PhysicalModel, SpatialCategory, Subject } from "../../core-backend";
+import { HubMock } from "../../internal/HubMock";
+import { HubWrappers } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { withEditTxn } from "../TestEditTxn";
 
+chai.use(chaiAsPromised);
+const assert = chai.assert;
+const expect = chai.expect;
+
+/**
+ * Tests for the native bulk delete API, exercised against a [[BriefcaseDb]].
+ *
+ * Each scenario runs through [[executeTestCase]], which asserts three things against the same starting state:
+ *  1. `EditTxn.deleteElements` throws when the caller does not hold the required exclusive locks, and changes nothing.
+ *  2. `EditTxn.deleteElementsWithLocks` acquires those locks and produces the expected result.
+ *  3. The deprecated `IModelDb.Elements.deleteElements` produces the identical result once the locks are held.
+ */
 describe("deleteElements (native bulk delete API)", () => {
-  let seedDb: SnapshotDb;
-  let iModelDb: SnapshotDb;
+  const accessToken = "user1";
+  let briefcase: BriefcaseDb;
+  let iModelId: string;
   let modelId: Id64String;
   let categoryId: Id64String;
   let codeSpecId: Id64String;
@@ -16,44 +34,104 @@ describe("deleteElements (native bulk delete API)", () => {
 
   before(async () => {
     IModelJsFs.recursiveMkDirSync(KnownTestLocations.outputDir);
-    const seedFile = IModelTestUtils.prepareOutputFile("DeleteElements", "seed.bim");
-    seedDb = SnapshotDb.createEmpty(seedFile, { rootSubject: { name: "DeleteElements" } });
+    HubMock.startup("DeleteElements", KnownTestLocations.outputDir);
 
-    await withEditTxn(seedDb, "create elements", async (editTxn) => {
-      modelId = PhysicalModel.insert(editTxn, IModel.rootSubjectId, "TestModel");
-      categoryId = SpatialCategory.insert(editTxn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
-      codeSpecId = seedDb.codeSpecs.insert(editTxn, "TestScopeSpec", CodeScopeSpec.Type.RelatedElement);
-      assert.isNotEmpty(modelId, "Expected a valid PhysicalModel id");
-      assert.isNotEmpty(categoryId, "Expected a valid SpatialCategory id");
-      assert.isNotEmpty(codeSpecId, "Expected a valid CodeSpec id");
+    iModelId = await HubMock.createNewIModel({
+      accessToken,
+      iTwinId: HubMock.iTwinId,
+      iModelName: `DeleteElements-${Guid.createValue()}`,
+      description: "DeleteElements",
     });
+
+    briefcase = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId: HubMock.iTwinId, iModelId });
+    briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    await briefcase.locks.acquireLocks({ shared: [IModel.rootSubjectId, IModel.dictionaryId] });
+    startTxn("create model/category");
+    modelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "TestModel");
+    categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
+    codeSpecId = briefcase.codeSpecs.insert(txn, "TestScopeSpec", CodeScopeSpec.Type.RelatedElement);
+    endTxn("save");
+
+    assert.isNotEmpty(modelId, "Expected a valid PhysicalModel id");
+    assert.isNotEmpty(categoryId, "Expected a valid SpatialCategory id");
+    assert.isNotEmpty(codeSpecId, "Expected a valid CodeSpec id");
+
+    await briefcase.pushChanges({ accessToken, description: "seed" });
   });
 
-  beforeEach(() => {
-    iModelDb = SnapshotDb.createFrom(seedDb, IModelTestUtils.prepareOutputFile("DeleteElements", "DeleteElements.bim"));
-    assert.isTrue(iModelDb.isOpen);
-    txn = new EditTxn(iModelDb, "delete elements");
-    txn.start();
-    iModelDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+  beforeEach(async () => {
+    // Shared locks are required to insert each test's fixture elements.
+    await briefcase.locks.acquireLocks({ shared: [IModel.rootSubjectId, IModel.dictionaryId, modelId] });
+    startTxn("test");
   });
 
-  afterEach(() => {
-    txn.end("abandon");
-    if (iModelDb.isOpen) {
-      iModelDb.close();
+  afterEach(async () => {
+    endTxn("abandon");
+    await releaseLocks();
+  });
+
+  after(async () => {
+    if (briefcase?.isOpen) {
+      endTxn("abandon");
+      await briefcase.locks.releaseAllLocks().catch(() => { });
+      briefcase.close();
     }
+    HubMock.shutdown();
   });
 
-  after(() => {
-    if (seedDb.isOpen)
-      seedDb.close();
-  });
+  /** Start the shared [[EditTxn]] through which every write in this suite is routed. */
+  const startTxn = (description: string) => {
+    txn = new EditTxn(briefcase, description);
+    txn.start();
+  };
 
-  const insertElement = (opts: { parentId?: Id64String; codeScope?: Id64String; codeValue?: string } = {}): Id64String => {
+  /** End the shared [[EditTxn]], if it is active. */
+  const endTxn = (mode: "save" | "abandon") => {
+    if (txn?.isActive)
+      txn.end(mode);
+  };
+
+  /** Discard pending changes while keeping the shared [[EditTxn]] active. */
+  const abandonChanges = () => txn.abandonChanges();
+
+  /**
+   * Return the briefcase to a "holds no locks" state. Locks cannot be released while local changes exist, so the
+   * shared transaction is saved and its changes pushed first, which also releases the locks. The shared transaction
+   * is restarted afterwards so callers can keep writing through it.
+   */
+  const releaseLocks = async () => {
+    const wasActive = txn?.isActive === true;
+    const description = txn?.description ?? "test";
+    if (wasActive)
+      txn.end("save");
+
+    if (briefcase.txns.hasPendingTxns)
+      await briefcase.pushChanges({ accessToken, description: "setup" });
+    else
+      await briefcase.locks.releaseAllLocks();
+
+    assert.isFalse(briefcase.locks.holdsExclusiveLock(modelId), "no exclusive locks may remain");
+
+    if (wasActive)
+      startTxn(description);
+  };
+
+  /** Run `fn` on the shared [[EditTxn]] and always abandon its changes, so each scenario leaves the briefcase as it found it. */
+  const withAbandonedTxn = async <T>(description: string, fn: (editTxn: EditTxn) => Promise<T>): Promise<T> => {
+    txn.description = description;
+    try {
+      return await fn(txn);
+    } finally {
+      abandonChanges();
+    }
+  };
+
+  const insertElement = (opts: { parentId?: Id64String; modelId?: Id64String; codeScope?: Id64String; codeValue?: string } = {}): Id64String => {
     const { parentId, codeScope, codeValue } = opts;
     const props: PhysicalElementProps = {
       classFullName: "Generic:PhysicalObject",
-      model: modelId,
+      model: opts.modelId ?? modelId,
       category: categoryId,
       code: codeScope && codeValue ? { spec: codeSpecId, scope: codeScope, value: codeValue } : Code.createEmpty(),
       placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
@@ -61,60 +139,87 @@ describe("deleteElements (native bulk delete API)", () => {
     };
     const id = txn.insertElement(props);
     assert.isNotEmpty(id, "insertElement must return a valid ID");
-    txn.saveChanges();
     return id;
   };
 
   /** Assert that the element with the given id exists or has been deleted. */
-  const assertExists = (id: Id64String, msg: string) => assert.isDefined(iModelDb.elements.tryGetElement(id), msg);
-  const assertDeleted = (id: Id64String, msg: string) => assert.isUndefined(iModelDb.elements.tryGetElement(id), msg);
+  const assertExists = (id: Id64String, msg: string) => assert.isDefined(briefcase.elements.tryGetElement(id), msg);
+  const assertDeleted = (id: Id64String, msg: string) => assert.isUndefined(briefcase.elements.tryGetElement(id), msg);
+  /** Assert that the sub-model with the given id exists or has been deleted. */
+  const assertModelExists = (id: Id64String, msg: string) => assert.isDefined(briefcase.models.tryGetModelProps(id), msg);
+  const assertModelDeleted = (id: Id64String, msg: string) => assert.isUndefined(briefcase.models.tryGetModelProps(id), msg);
 
-  // Run deleteElements, then verify the returned failed set, check each id in `deleted` is gone and each id in `retained` is still present.
-  const executeTestCase = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array = []) => {
-    const resultStatus: BulkDeleteElementsResult = txn.deleteElements(idsToDelete);
+  const assertResult = (label: string, result: BulkDeleteElementsResult, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array) => {
     if (expectedFailed.length === 0)
-      assert.equal(resultStatus.status, BulkDeleteElementsStatus.Success);
+      assert.equal(result.status, BulkDeleteElementsStatus.Success, `[${label}] expected success`);
     else
-      assert.equal(resultStatus.status, (expectedFailed.length === idsToDelete.length) ? BulkDeleteElementsStatus.DeletionFailed : BulkDeleteElementsStatus.PartialSuccess);
+      assert.equal(result.status, (expectedFailed.length === idsToDelete.length) ? BulkDeleteElementsStatus.DeletionFailed : BulkDeleteElementsStatus.PartialSuccess, `[${label}] unexpected status`);
 
-    assert.sameMembers(Array.from(resultStatus.failedIds), expectedFailed, `[${label}] failed set mismatch`);
+    assert.sameMembers(Array.from(result.failedIds), expectedFailed, `[${label}] failed set mismatch`);
 
     for (const id of deleted)
       assertDeleted(id, `[${label}] ${id} should have been deleted`);
 
     for (const id of retained)
       assertExists(id, `[${label}] ${id} should have been retained`);
+  };
 
-    txn.abandonChanges();
+  /**
+   * Run a single scenario three times against the same starting state:
+   *  1. `deleteElements` while holding no locks - must throw and change nothing.
+   *  2. `deleteElementsWithLocks` - must acquire the exclusive locks and produce the expected result.
+   *  3. the deprecated `IModelDb.Elements.deleteElements` - must produce the identical result now that the locks are held.
+   */
+  const executeTestCase = async (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array = [], expectThrow = true) => {
+    await releaseLocks();
 
-    // Verify that the same test case produces the same result when using the deprecated iModelDb.elements.deleteElements API, to ensure that the deprecation does not cause any regressions.
+    // 1. Without locks the synchronous API must refuse: Element.onDelete calls checkExclusiveLock.
+    for (const id of idsToDelete) {
+      assert.isFalse(briefcase.locks.holdsExclusiveLock(id));
+    }
+
+    if (idsToDelete.length > 0) {
+      await withAbandonedTxn("delete without locks", async (txn) => {
+        try {
+          txn.deleteElements(idsToDelete)
+          if (expectThrow)
+            assert.fail(`[${label}] deleteElements must throw without locks`);
+        } catch (err: any) {
+          if (expectThrow)
+            assert.match(err.message, /exclusive lock/, `[${label}] deleteElements must throw without locks`);
+          else
+            throw err;
+        }
+      });
+
+      for (const id of [...deleted, ...retained])
+        assertExists(id, `[${label}] ${id} must survive a delete that failed the lock check`);
+    }
+
+    // 2. deleteElementsWithLocks acquires the exclusive locks first, so the same call now succeeds.
+    await withAbandonedTxn("delete with locks", async (txn) => {
+      const result = await txn.deleteElementsWithLocks(idsToDelete);
+      assertResult(label, result, idsToDelete, deleted, retained, expectedFailed);
+
+      for (const id of idsToDelete)
+        assert.isTrue(briefcase.locks.holdsExclusiveLock(id), `[${label}] exclusive lock should have been acquired for ${id}`);
+    });
+
+    // 3. The deprecated API must behave identically. The locks acquired above are still held.
     executeTestCaseDeprecated(label, idsToDelete, deleted, retained, expectedFailed);
   };
 
-  const executeTestCaseDeprecated = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array = []) => {
+  const executeTestCaseDeprecated = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array) => {
+    // The deprecated API always routes through the iModel's implicit transaction (never the active EditTxn),
+    // so implicit-write enforcement must be relaxed here regardless of the shared txn's state.
     const previousEnforcement = EditTxn.implicitWriteEnforcement;
     EditTxn.implicitWriteEnforcement = "allow";
-
     try {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const resultStatus: BulkDeleteElementsResult = iModelDb.elements.deleteElements(idsToDelete);
-
-      if (expectedFailed.length === 0)
-        assert.equal(resultStatus.status, BulkDeleteElementsStatus.Success);
-      else
-        assert.equal(resultStatus.status, (expectedFailed.length === idsToDelete.length) ? BulkDeleteElementsStatus.DeletionFailed : BulkDeleteElementsStatus.PartialSuccess);
-
-      assert.sameMembers(Array.from(resultStatus.failedIds), expectedFailed, `[${label}] failed set mismatch`);
-
-      for (const id of deleted)
-        assertDeleted(id, `[${label}] ${id} should have been deleted`);
-
-      for (const id of retained)
-        assertExists(id, `[${label}] ${id} should have been retained`);
+      const result: BulkDeleteElementsResult = briefcase.elements.deleteElements(idsToDelete);
+      assertResult(`${label} (deprecated API)`, result, idsToDelete, deleted, retained, expectedFailed);
     } finally {
-
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      iModelDb.abandonChanges();
+      abandonChanges();
       EditTxn.implicitWriteEnforcement = previousEnforcement;
     }
   };
@@ -136,7 +241,9 @@ describe("deleteElements (native bulk delete API)", () => {
     let standalone: Id64String, childS1: Id64String;
     let all: Id64Array;
 
-    beforeEach(() => {
+    before(async () => {
+      await briefcase.locks.acquireLocks({ shared: [IModel.rootSubjectId, IModel.dictionaryId, modelId] });
+      startTxn("basic tests fixture");
       parentA = insertElement();
       childA1 = insertElement({ parentId: parentA });
       grandchildA1 = insertElement({ parentId: childA1 });
@@ -148,137 +255,149 @@ describe("deleteElements (native bulk delete API)", () => {
       childB2 = insertElement({ parentId: parentB });
       standalone = insertElement();
       childS1 = insertElement({ parentId: standalone });
-      all = [parentA, childA1, grandchildA1, childA2, grandchildA2, childA3,
-        parentB, childB1, childB2, standalone, childS1];
+      all = [parentA, childA1, grandchildA1, childA2, grandchildA2, childA3, parentB, childB1, childB2, standalone, childS1];
+
+      endTxn("save");
+      await releaseLocks();
     });
 
-    it("delete a root element", () => {
-      executeTestCase("root cascades",
+    it("delete a root element", async () => {
+      await executeTestCase("root cascades",
         [parentA],
         [parentA, childA1, grandchildA1, childA2, grandchildA2, childA3],
         [parentB, childB1, childB2, standalone, childS1]);
     });
 
-    it("Second call to deleteElement fails if a read cursor on a temp table is open", () => {
+    it("Second call to deleteElement fails if a read cursor on a temp table is open", async () => {
       // Create a temp table on the same SQLite connection that the native bulk-delete will use to simulate a shared temp table lock
-      iModelDb.withSqliteStatement("CREATE TABLE IF NOT EXISTS temp.temp_table (x INTEGER)", (s) => s.step());
-      iModelDb.withSqliteStatement("INSERT INTO temp.temp_table VALUES (1)", (s) => s.step());
+      briefcase.withSqliteStatement("CREATE TABLE IF NOT EXISTS temp.temp_table (x INTEGER)", (s) => s.step());
+      briefcase.withSqliteStatement("INSERT INTO temp.temp_table VALUES (1)", (s) => s.step());
 
-      const lockStmt = iModelDb.prepareSqliteStatement("SELECT x FROM temp.temp_table");
+      const lockStmt = briefcase.prepareSqliteStatement("SELECT x FROM temp.temp_table");
       assert.equal(lockStmt.step(), DbResult.BE_SQLITE_ROW);
 
       const el1 = insertElement();
       const el2 = insertElement();
+      await releaseLocks();
 
-      const result1 = txn.deleteElements([el1]);
-      const result2 = txn.deleteElements([el2]);
+      await withAbandonedTxn("delete elements", async (txn) => {
+        const result1 = await txn.deleteElementsWithLocks([el1]);
+        const result2 = await txn.deleteElementsWithLocks([el2]);
 
-      for (const result of [result1, result2]) {
-        assert.equal(result.failedIds.size, 0);
-        assert.equal(result.status, BulkDeleteElementsStatus.Success, "deleteElements call must succeed");
-        assert.equal(result.sqlDeleteStatus, DbResult.BE_SQLITE_OK);
-      }
+        for (const result of [result1, result2]) {
+          assert.equal(result.failedIds.size, 0);
+          assert.equal(result.status, BulkDeleteElementsStatus.Success, "deleteElements call must succeed");
+          assert.equal(result.sqlDeleteStatus, DbResult.BE_SQLITE_OK);
+        }
 
-      // Would have been the case if "DROP TABLE IF EXISTS..." was used (bug)
-      assert.notEqual(result2.status, BulkDeleteElementsStatus.DeletionFailed);
-      assert.notEqual(result2.sqlDeleteStatus, DbResult.BE_SQLITE_LOCKED);
+        // Would have been the case if "DROP TABLE IF EXISTS..." was used (bug)
+        assert.notEqual(result2.status, BulkDeleteElementsStatus.DeletionFailed);
+        assert.notEqual(result2.sqlDeleteStatus, DbResult.BE_SQLITE_LOCKED);
+      });
 
       lockStmt[Symbol.dispose](); // release the simulated read-lock
-
-      txn.abandonChanges();
     });
 
-    it("explicitly delete the whole tree", () => {
-      executeTestCase("redundant descendants in input",
+    it("explicitly delete the whole tree", async () => {
+      await executeTestCase("redundant descendants in input",
         [parentA, childA1, grandchildA1, childA2],
         [parentA, childA1, grandchildA1, childA2, grandchildA2, childA3],
         [parentB, childB1, childB2, standalone, childS1]);
     });
 
-    it("deleting all roots removes every element", () => {
-      executeTestCase("delete all roots",
+    it("deleting all roots removes every element", async () => {
+      await executeTestCase("delete all roots",
         [parentA, parentB, standalone],
         all,
         []);
     });
 
-    it("empty input set is a no-op", () => {
-      executeTestCase("empty set",
+    it("empty input set is a no-op", async () => {
+      await executeTestCase("empty set",
         [],
         [],
         all);
     });
 
-    it("duplicate IDs should be handled", () => {
-      const rootA = insertElement();
-      const rootB = insertElement();
+    it("duplicate IDs should be handled", async () => {
+      await releaseLocks();
 
-      // rootA appears twice - should not throw and should be deleted exactly once.
-      assert.equal(txn.deleteElements([rootA, rootA, rootB]).status, BulkDeleteElementsStatus.Success);
-      assertDeleted(rootA, "rootA should be deleted");
-      assertDeleted(rootB, "rootB should be deleted");
+      await withAbandonedTxn("delete duplicates", async (txn) => {
+        // parentB appears twice - it must be locked and deleted exactly once.
+        const result = await txn.deleteElementsWithLocks([parentB, parentB, standalone]);
+        assert.equal(result.status, BulkDeleteElementsStatus.Success);
+        assertDeleted(parentB, "parentB should be deleted");
+        assertDeleted(standalone, "standalone should be deleted");
+      });
     });
 
-    it("invalid IDs in the input throw an exception", () => {
-      const rootA = insertElement();
+    it("invalid IDs in the input throw an exception", async () => {
+      await releaseLocks();
 
-      assert.throws(() => txn.deleteElements([Id64.invalid, rootA]), `Invalid element ids: 0`);
-      assert.throws(() => txn.deleteElements(["not-an-id", rootA]), `Invalid element ids: not-an-id`);
+      await withAbandonedTxn("delete invalid ids", async (txn) => {
+        // The synchronous API validates the ids up front, before any lock check.
+        assert.throws(() => txn.deleteElements([Id64.invalid, parentA]), `Invalid element ids: 0`);
+        assert.throws(() => txn.deleteElements(["not-an-id", parentA]), `Invalid element ids: not-an-id`);
 
-      assertExists(rootA, "rootA should not have been deleted after a throw");
+        // deleteElementsWithLocks must also reject, and must not delete anything.
+        await expect(txn.deleteElementsWithLocks([Id64.invalid, parentA])).to.eventually.be.rejected;
+        await expect(txn.deleteElementsWithLocks(["not-an-id", parentA])).to.eventually.be.rejected;
+
+        assertExists(parentA, "parentA should not have been deleted after a throw");
+      });
     });
 
-    it("deleting a child removes its subtree but leaves the parent", () => {
-      executeTestCase("delete depth-1 child",
+    it("deleting a child removes its subtree but leaves the parent", async () => {
+      await executeTestCase("delete depth-1 child",
         [childA1],
         [childA1, grandchildA1],
         [parentA, childA2, grandchildA2, childA3, parentB, childB1, childB2, standalone, childS1]);
     });
 
-    it("deleting two mid-tree siblings leaves their parent and unrelated siblings", () => {
-      executeTestCase("delete two depth-1 siblings",
+    it("deleting two mid-tree siblings leaves their parent and unrelated siblings", async () => {
+      await executeTestCase("delete two depth-1 siblings",
         [childA1, childA2],
         [childA1, grandchildA1, childA2, grandchildA2],
         [parentA, childA3, parentB, childB1, childB2, standalone, childS1]);
     });
 
-    it("deleting a child from one tree and a child from another tree", () => {
-      executeTestCase("cross-tree mid-tree delete",
+    it("deleting a child from one tree and a child from another tree", async () => {
+      await executeTestCase("cross-tree mid-tree delete",
         [childA1, childB2],
         [childA1, grandchildA1, childB2],
         [parentA, childA2, grandchildA2, childA3, parentB, childB1, standalone, childS1]);
     });
 
-    it("deleting mid-tree nodes mixed with a root", () => {
-      executeTestCase("mid-tree + roots mixed",
+    it("deleting mid-tree nodes mixed with a root", async () => {
+      await executeTestCase("mid-tree + roots mixed",
         [childA1, childA3, parentB, standalone],
         [childA1, grandchildA1, childA3, parentB, childB1, childB2, standalone, childS1],
         [parentA, childA2, grandchildA2]);
     });
 
-    it("deleting only grandchildren leaves all ancestors", () => {
-      executeTestCase("delete leaves only",
+    it("deleting only grandchildren leaves all ancestors", async () => {
+      await executeTestCase("delete leaves only",
         [grandchildA1, grandchildA2],
         [grandchildA1, grandchildA2],
         [parentA, childA1, childA2, childA3, parentB, childB1, childB2, standalone, childS1]);
     });
 
-    it("deleting leaves from different subtrees simultaneously", () => {
-      executeTestCase("leaves from multiple subtrees",
+    it("deleting leaves from different subtrees simultaneously", async () => {
+      await executeTestCase("leaves from multiple subtrees",
         [grandchildA1, childB1, childS1],
         [grandchildA1, childB1, childS1],
         [parentA, childA1, childA2, grandchildA2, childA3, parentB, childB2, standalone]);
     });
 
-    it("deleting root, mid-tree and leaf", () => {
-      executeTestCase("root + child + grandchild + leaf",
+    it("deleting root, mid-tree and leaf", async () => {
+      await executeTestCase("root + child + grandchild + leaf",
         [childA1, grandchildA2, parentB, childS1],
         [childA1, grandchildA1, grandchildA2, parentB, childB1, childB2, childS1],
         [parentA, childA2, childA3, standalone]);
     });
 
-    it("parent and its grandchild", () => {
-      executeTestCase("parent + grandchild redundant",
+    it("parent and its grandchild", async () => {
+      await executeTestCase("parent + grandchild redundant",
         [parentA, grandchildA1],
         [parentA, childA1, grandchildA1, childA2, grandchildA2, childA3],
         [parentB, childB1, childB2, standalone, childS1]);
@@ -286,94 +405,103 @@ describe("deleteElements (native bulk delete API)", () => {
   });
 
   describe("intra-set code scope dependency", () => {
-    it("child element is the code scope for an unrelated element", () => {
+    it("child element is the code scope for an unrelated element", async () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: childA, codeValue: "rootB-code" });
-      executeTestCase("depth-1 child scopes unrelated root - delete child+root directly",
+      await executeTestCase("depth-1 child scopes unrelated root - delete child+root directly",
         [childA, rootB],
         [childA, rootB],
         [rootA]);
 
-      executeTestCase("depth-1 child scopes unrelated root - delete child only",
+      await executeTestCase("depth-1 child scopes unrelated root - delete child only",
         [childA],
         [],
         [rootA, childA, rootB],
-        [childA]);
+        [childA],
+        false);
 
-      executeTestCase("depth-1 child scopes unrelated root - delete root only",
+      await executeTestCase("depth-1 child scopes unrelated root - delete root only",
         [rootB],
         [rootB],
         [rootA, childA]);
     });
 
-    it("grandchild is the code scope for an unrelated root", () => {
+    it("grandchild is the code scope for an unrelated root", async () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const grandchildA = insertElement({ parentId: childA });
       const rootB = insertElement({ codeScope: grandchildA, codeValue: "rootB-code" });
-      executeTestCase("depth-2 grandchild scopes unrelated root - delete both roots",
+      await executeTestCase("depth-2 grandchild scopes unrelated root - delete both roots",
         [rootA, rootB],
         [rootA, childA, grandchildA, rootB],
         []);
 
-      executeTestCase("depth-2 grandchild scopes unrelated root - delete grandchild+root directly",
+      await executeTestCase("depth-2 grandchild scopes unrelated root - delete grandchild+root directly",
         [grandchildA, rootB],
         [grandchildA, rootB],
         [rootA, childA]);
     });
 
-    it("root element scopes a child in another subtree", () => {
+    it("root element scopes a child in another subtree", async () => {
       const rootA = insertElement();
       const rootB = insertElement();
       const childB = insertElement({ parentId: rootB, codeScope: rootA, codeValue: "childB-code" });
-      executeTestCase("root scopes depth-1 child in sibling tree",
+      await executeTestCase("root scopes depth-1 child in sibling tree",
         [rootA, rootB],
         [rootA, rootB, childB],
         []);
     });
 
-    it("scope chains", () => {
+    it("scope chains", async () => {
       // C -> B -> A
       // Test all combinations of inputs
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
-      executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC], [rootA]);
-      executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC], [rootB]);
-      executeTestCase("scope chain single C", [rootC], [rootC], [rootA, rootB]);
+      await executeTestCase("scope chain single A", [rootA], [], [rootA, rootB, rootC], [rootA], false);
+      await executeTestCase("scope chain single B", [rootB], [], [rootA, rootB, rootC], [rootB], false);
+      await executeTestCase("scope chain single C", [rootC], [rootC], [rootA, rootB]);
 
-      executeTestCase("scope chain forward", [rootA, rootB, rootC], [rootA, rootB, rootC], []);
-      executeTestCase("scope chain reversed", [rootC, rootB, rootA], [rootA, rootB, rootC], []);
-      executeTestCase("scope chain middle-first", [rootB, rootA, rootC], [rootA, rootB, rootC], []);
+      await executeTestCase("scope chain forward", [rootA, rootB, rootC], [rootA, rootB, rootC], []);
+      await executeTestCase("scope chain reversed", [rootC, rootB, rootA], [rootA, rootB, rootC], []);
+      await executeTestCase("scope chain middle-first", [rootB, rootA, rootC], [rootA, rootB, rootC], []);
     });
 
-    it("scope chain A -> B -> C -> D where only A and D are in the delete set", () => {
+    it("scope chain A -> B -> C -> D where only A and D are in the delete set", async () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
       const rootD = insertElement({ codeScope: rootC, codeValue: "rootD-code" });
 
       // Only A and D in the delete set. B is external -> A ignored. D's scope (C) is not being deleted -> D is safe.
-      executeTestCase("deep gap chain: A ignored, D deleted",
+      await executeTestCase("deep gap chain: A ignored, D deleted",
         [rootA, rootD],
         [rootD],
         [rootA, rootB, rootC],
         [rootA]);
     });
 
-    it("scope chain delete with skipping constraint validation should fail", () => {
+    it("scope chain delete with skipping constraint validation should fail", async () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootB, codeValue: "rootC-code" });
       const rootD = insertElement({ codeScope: rootC, codeValue: "rootD-code" });
+      await releaseLocks();
 
-      const resultStatus: BulkDeleteElementsResult = txn.deleteElements([rootA, rootD], { skipFKConstraintValidations: true });
-      assert.equal(resultStatus.status, BulkDeleteElementsStatus.DeletionFailed);
-      assert.equal(resultStatus.sqlDeleteStatus, DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY);
+      await withAbandonedTxn("delete skipping FK validation", async (txn) => {
+        const result = await txn.deleteElementsWithLocks([rootA, rootD], { skipFKConstraintValidations: true });
+        assert.equal(result.status, BulkDeleteElementsStatus.DeletionFailed);
+        assert.equal(result.sqlDeleteStatus, DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY);
+        // The locks were still acquired, even though the delete failed.
+        assert.isTrue(briefcase.locks.holdsExclusiveLock(rootA));
+        assert.isTrue(briefcase.locks.holdsExclusiveLock(rootD));
+        assertExists(rootB, "rootB should be retained");
+        assertExists(rootC, "rootC should be retained");
+      });
     });
 
-    it("two elements using the same scope", () => {
+    it("two elements using the same scope", async () => {
       // A is the code scope for both B and C independently.
       //     A
       //    / \
@@ -381,27 +509,27 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const rootC = insertElement({ codeScope: rootA, codeValue: "rootC-code" });
-      executeTestCase("delete all three",
+      await executeTestCase("delete all three",
         [rootA, rootB, rootC],
         [rootA, rootB, rootC],
         []);
 
-      executeTestCase("delete only B and C",
+      await executeTestCase("delete only B and C",
         [rootB, rootC],
         [rootB, rootC],
         [rootA]);
     });
 
-    it("parent is also the code scope of its own child", () => {
+    it("parent is also the code scope of its own child", async () => {
       const rootP = insertElement();
       const childC = insertElement({ parentId: rootP, codeScope: rootP, codeValue: "childC-code" });
-      executeTestCase("parent is code scope of child - delete parent",
+      await executeTestCase("parent is code scope of child - delete parent",
         [rootP],
         [rootP, childC],
         []);
     });
 
-    it("sibling scopes it's own sibling", () => {
+    it("sibling scopes it's own sibling", async () => {
       // parent
       //  ├─ childA  (code scope for childB)
       //  └─ childB  (scoped by childA)
@@ -410,98 +538,100 @@ describe("deleteElements (native bulk delete API)", () => {
       const childB = insertElement({ parentId: parent, codeScope: childA, codeValue: "childB-code" });
 
       // Delete via parent cascade - sibling scope must not block deletion.
-      executeTestCase("sibling scope - delete via parent",
+      await executeTestCase("sibling scope - delete via parent",
         [parent],
         [parent, childA, childB],
         []);
 
       // Delete both siblings directly - intra-set scope, no external violation.
-      executeTestCase("sibling scope - delete both directly",
+      await executeTestCase("sibling scope - delete both directly",
         [childA, childB],
         [childA, childB],
         [parent]);
 
       // Delete only the scoped child - its scope (childA) is not being deleted, safe to delete.
-      executeTestCase("sibling scope - delete only scoped child",
+      await executeTestCase("sibling scope - delete only scoped child",
         [childB],
         [childB],
         [parent, childA]);
 
       // Delete only the scope element - childB is external -> childA ignored.
-      executeTestCase("sibling scope - delete only scope element, ignored due to external childB",
+      await executeTestCase("sibling scope - delete only scope element, ignored due to external childB",
         [childA],
         [],
         [parent, childA, childB],
-        [childA]);
+        [childA],
+        false);
     });
   });
 
   describe("Code scope violations to test delete set element pruning", () => {
-    it("root is code scope for an external element", () => {
+    it("root is code scope for an external element", async () => {
       const rootA = insertElement();
       const external = insertElement({ codeScope: rootA, codeValue: "ext-code" });
       const rootB = insertElement();
-      executeTestCase("external scopes root",
+      await executeTestCase("external scopes root",
         [rootA, rootB],
         [rootB],
         [rootA, external],
         [rootA]);
     });
 
-    it("depth-1 child is code scope for external", () => {
+    it("depth-1 child is code scope for external", async () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const external = insertElement({ codeScope: childA, codeValue: "ext-code" });
       const rootB = insertElement();
-      executeTestCase("external scopes depth-1 child - parent subtree ignored",
+      await executeTestCase("external scopes depth-1 child - parent subtree ignored",
         [rootA, rootB],
         [rootB],
         [rootA, childA, external],
         [rootA]);
     });
 
-    it("depth-2 grandchild is code scope for external", () => {
+    it("depth-2 grandchild is code scope for external", async () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const grandchildA = insertElement({ parentId: childA });
       const external = insertElement({ codeScope: grandchildA, codeValue: "ext-code" });
       const rootB = insertElement();
-      executeTestCase("external scopes depth-2 grandchild - grandparent subtree ignored",
+      await executeTestCase("external scopes depth-2 grandchild - grandparent subtree ignored",
         [rootA, rootB],
         [rootB],
         [rootA, childA, grandchildA, external],
         [rootA]);
     });
 
-    it("only the child is passed for deletion", () => {
+    it("only the child is passed for deletion", async () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const external = insertElement({ codeScope: childA, codeValue: "ext-code" });
-      executeTestCase("external scopes requested child",
+      await executeTestCase("external scopes requested child",
         [childA],
         [],
         [rootA, childA, external],
-        [childA]);
+        [childA],
+        false);
     });
 
-    it("root has both an external scope dependent AND an intra-set scope dependent", () => {
+    it("root has both an external scope dependent AND an intra-set scope dependent", async () => {
       const rootA = insertElement();
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const external = insertElement({ codeScope: rootA, codeValue: "ext-code" });
-      executeTestCase("root ignored due to external; sibling still deleted",
+      await executeTestCase("root ignored due to external; sibling still deleted",
         [rootA, rootB],
         [rootB],
         [rootA, external],
         [rootA]);
     });
 
-    it("two independent external scope violations", () => {
+    it("two independent external scope violations", async () => {
       const rootA = insertElement();
       const rootB = insertElement();
       const extX = insertElement({ codeScope: rootA, codeValue: "extX" });
       const extY = insertElement({ codeScope: rootB, codeValue: "extY" });
       const rootC = insertElement();
-      executeTestCase("two independent violations",
+      await executeTestCase("two independent violations",
         [rootA, rootB, rootC],
         [rootC],
         [rootA, rootB, extX, extY],
@@ -510,102 +640,102 @@ describe("deleteElements (native bulk delete API)", () => {
   });
 
   describe("mixed element hierarchy and code scope violations", () => {
-    it("root scopes another root - delete both roots, all descendants removed", () => {
+    it("root scopes another root - delete both roots, all descendants removed", async () => {
       const rootA = insertElement();
       const childA1 = insertElement({ parentId: rootA });
       const childA2 = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: rootA, codeValue: "rootB-code" });
       const childB1 = insertElement({ parentId: rootB });
-      executeTestCase("root scopes root - delete both roots",
+      await executeTestCase("root scopes root - delete both roots",
         [rootA, rootB],
         [rootA, childA1, childA2, rootB, childB1],
         []);
     });
 
-    it("depth-1 child scopes an unrelated root", () => {
+    it("depth-1 child scopes an unrelated root", async () => {
       const rootA = insertElement();
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: childA1, codeValue: "rootB-code" });
       const childB1 = insertElement({ parentId: rootB });
-      executeTestCase("depth-1 child scopes root - delete both via parents",
+      await executeTestCase("depth-1 child scopes root - delete both via parents",
         [rootA, rootB],
         [rootA, childA1, rootB, childB1],
         []);
       // Reverse input order - result must be identical
-      executeTestCase("depth-1 child scopes root - reverse input order",
+      await executeTestCase("depth-1 child scopes root - reverse input order",
         [rootB, rootA],
         [rootA, childA1, rootB, childB1],
         []);
     });
 
-    it("depth-1 child scopes an unrelated root - delete child and root directly (parent survives)", () => {
+    it("depth-1 child scopes an unrelated root - delete child and root directly (parent survives)", async () => {
       const rootA = insertElement();
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: childA1, codeValue: "rootB-code" });
       const childB1 = insertElement({ parentId: rootB });
       // Only childA1 and rootB - rootA is NOT in the delete set.
-      executeTestCase("depth-1 child scopes root - delete child + scoped root directly",
+      await executeTestCase("depth-1 child scopes root - delete child + scoped root directly",
         [childA1, rootB],
         [childA1, rootB, childB1],
         [rootA]);
     });
 
-    it("depth-1 child scopes an unrelated root - deleting only the child cascades into the scoped root's subtree", () => {
-      // childA1 is the code scope of rootB. When childA1 is deleted, rootB loses its scope
-      // element -> rootB (and its children) must also be deleted.
+    it("depth-1 child scopes an unrelated root - deleting only the child is pruned from the delete set", async () => {
+      // childA1 is the code scope of rootB, and rootB is not in the delete set, so childA1 is pruned.
       const rootA = insertElement();
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement({ codeScope: childA1, codeValue: "rootB-code" });
       const childB1 = insertElement({ parentId: rootB });
-      executeTestCase("delete child only - scoped root also removed",
+      await executeTestCase("delete child only - pruned",
         [childA1],
         [],
         [rootA, childA1, rootB, childB1],
-        [childA1]);
+        [childA1],
+        false);
     });
 
-    it("root scopes a depth-1 child in sibling tree - delete both roots, all descendants removed", () => {
+    it("root scopes a depth-1 child in sibling tree - delete both roots, all descendants removed", async () => {
       const rootA = insertElement();
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement();
       const childB1 = insertElement({ parentId: rootB, codeScope: rootA, codeValue: "childB1-code" });
-      executeTestCase("root scopes depth-1 child - delete both roots",
+      await executeTestCase("root scopes depth-1 child - delete both roots",
         [rootA, rootB],
         [rootA, childA1, rootB, childB1],
         []);
     });
 
-    it("depth-1 child scopes a depth-1 child in sibling tree - delete both children directly (parents survive)", () => {
+    it("depth-1 child scopes a depth-1 child in sibling tree - delete both children directly (parents survive)", async () => {
       const rootA = insertElement();
       const childA1 = insertElement({ parentId: rootA });
       const rootB = insertElement();
       const childB1 = insertElement({ parentId: rootB, codeScope: childA1, codeValue: "childB1-code" });
       const childB2 = insertElement({ parentId: rootB });
-      executeTestCase("sibling-child scope - delete both children directly",
+      await executeTestCase("sibling-child scope - delete both children directly",
         [childA1, childB1],
         [childA1, childB1],
         [rootA, rootB, childB2]);
     });
 
-    it("depth-2 grandchild scopes an unrelated root - delete grandparent + scoped root", () => {
+    it("depth-2 grandchild scopes an unrelated root - delete grandparent + scoped root", async () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const grandchildA = insertElement({ parentId: childA });
       const rootB = insertElement({ codeScope: grandchildA, codeValue: "rootB-code" });
       const childB = insertElement({ parentId: rootB });
-      executeTestCase("depth-2 grandchild scopes root - delete both roots",
+      await executeTestCase("depth-2 grandchild scopes root - delete both roots",
         [rootA, rootB],
         [rootA, childA, grandchildA, rootB, childB],
         []);
 
       // Delete grandchild and scoped root directly (rootA and childA survive)
-      executeTestCase("depth-2 grandchild scopes root - delete grandchild + root directly",
+      await executeTestCase("depth-2 grandchild scopes root - delete grandchild + root directly",
         [grandchildA, rootB],
         [grandchildA, rootB, childB],
         [rootA, childA]);
     });
 
-    it("external element scopes a depth-2 grandchild, mixed with an unrelated deletion", () => {
+    it("external element scopes a depth-2 grandchild, mixed with an unrelated deletion", async () => {
       // Unique case: grandchild has an external scope violation, but an unrelated element from
       // another tree (childB) is also requested and has no violation - it should be deleted.
       const rootA = insertElement();
@@ -614,14 +744,14 @@ describe("deleteElements (native bulk delete API)", () => {
       const rootB = insertElement();
       const childB = insertElement({ parentId: rootB });
       const external = insertElement({ codeScope: grandchildA, codeValue: "ext-code" });
-      executeTestCase("external scopes depth-2 grandchild, unrelated childB deleted",
+      await executeTestCase("external scopes depth-2 grandchild, unrelated childB deleted",
         [grandchildA, rootA, childB],
         [childB],
         [rootA, childA, grandchildA, rootB, external],
         [rootA, grandchildA]);
     });
 
-    it("two trees: one has external scope violation, other is deleted cleanly", () => {
+    it("two trees: one has external scope violation, other is deleted cleanly", async () => {
       const rootA = insertElement();
       const childA = insertElement({ parentId: rootA });
       const gcA = insertElement({ parentId: childA });
@@ -630,7 +760,7 @@ describe("deleteElements (native bulk delete API)", () => {
       const childB1 = insertElement({ parentId: rootB });
       const childB2 = insertElement({ parentId: rootB });
       const gcB = insertElement({ parentId: childB1 });
-      executeTestCase("one tree ignored, other fully deleted",
+      await executeTestCase("one tree ignored, other fully deleted",
         [rootA, rootB],
         [rootB, childB1, childB2, gcB],
         [rootA, childA, gcA, external],
@@ -641,48 +771,33 @@ describe("deleteElements (native bulk delete API)", () => {
   describe("sub-model hierarchy", () => {
     let partitionCounter = 0;
 
-    const insertSubModel = (): Id64String => {
-      const name = `SubModelPartition-${++partitionCounter}`;
-      return PhysicalModel.insert(txn, IModel.rootSubjectId, name);
-    };
-
-    const insertElementInModel = (subModelId: Id64String, opts: { parentId?: Id64String } = {}): Id64String => {
-      const props: PhysicalElementProps = {
-        classFullName: "Generic:PhysicalObject",
-        model: subModelId,
-        category: categoryId,
-        code: Code.createEmpty(),
-        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
-        ...(opts.parentId ? { parent: { id: opts.parentId, relClassName: "BisCore:ElementOwnsChildElements" } } : {}),
-      };
-      const id = txn.insertElement(props);
-      assert.isNotEmpty(id, "insertElementInModel must return a valid ID");
-      txn.saveChanges();
+    /** Insert a PhysicalPartition (and its sub-model) and acquire the shared lock needed to insert into it. */
+    const insertSubModel = async (parentId: Id64String = IModel.rootSubjectId): Promise<Id64String> => {
+      const name = `SubModelPartition-${++partitionCounter}-${Guid.createValue()}`;
+      const id = PhysicalModel.insert(txn, parentId, name);
+      await briefcase.locks.acquireLocks({ shared: id });
       return id;
     };
 
-    /** Assert that the sub-model has been deleted. */
-    const assertModelDeleted = (id: Id64String, msg: string) =>
-      assert.isUndefined(iModelDb.models.tryGetModelProps(id), msg);
+    const insertSubject = (parentId: Id64String): Id64String =>
+      Subject.insert(txn, parentId, `Subject-${++partitionCounter}-${Guid.createValue()}`);
 
-    /** Assert that the sub-model still exists. */
-    const assertModelExists = (id: Id64String, msg: string) =>
-      assert.isDefined(iModelDb.models.tryGetModelProps(id), msg);
+    const insertElementInModel = (subModelId: Id64String, opts: { parentId?: Id64String } = {}): Id64String =>
+      insertElement({ modelId: subModelId, parentId: opts.parentId });
 
-    it("delete a modeled element cascades into its sub-model", () => {
-      const partitionId = insertSubModel();
+    it("delete a modeled element cascades into its sub-model", async () => {
+      const partitionId = await insertSubModel();
       const elem1 = insertElementInModel(partitionId);
       const elem2 = insertElementInModel(partitionId);
       const unrelated = insertElement();
 
-      const result = txn.deleteElements([partitionId]);
-      assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assert.isEmpty(result.failedIds);
-      assertDeleted(partitionId, "partition element should be deleted");
-      assertModelDeleted(partitionId, "sub-model should be deleted");
-      assertDeleted(elem1, "elem1 inside sub-model should be deleted");
-      assertDeleted(elem2, "elem2 inside sub-model should be deleted");
-      assertExists(unrelated, "unrelated element should be retained");
+      await executeTestCase("delete partition",
+        [partitionId],
+        [partitionId, elem1, elem2],
+        [unrelated]);
+
+      // Every scenario is abandoned, so the sub-model must be back.
+      assertModelExists(partitionId, "sub-model should be restored after abandoning the delete");
     });
 
     /**
@@ -693,20 +808,17 @@ describe("deleteElements (native bulk delete API)", () => {
      *          [M:childPartition] -> elem1
      *   unrelated
      */
-    it("delete a parent whose child is a modeled element cascades into the sub-model", () => {
-      const subjectA = Subject.insert(txn, IModel.rootSubjectId, `SubjectA-${++partitionCounter}`);
-      const childPartitionId = PhysicalModel.insert(txn, subjectA, `ChildPartition-${partitionCounter}`);
+    it("delete a parent whose child is a modeled element cascades into the sub-model", async () => {
+      const subjectA = insertSubject(IModel.rootSubjectId);
+      const childPartitionId = await insertSubModel(subjectA);
       const elem1 = insertElementInModel(childPartitionId);
       const unrelated = insertElement();
 
       // Deleting subjectA cascades (parent-child) to childPartitionId, which then cascades (modeled-element) into elem1.
-      const result = txn.deleteElements([subjectA]);
-      assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assertDeleted(subjectA, "subject should be deleted");
-      assertDeleted(childPartitionId, "child partition element should be deleted");
-      assertModelDeleted(childPartitionId, "child partition sub-model should be deleted");
-      assertDeleted(elem1, "elem1 inside child partition sub-model should be deleted");
-      assertExists(unrelated, "unrelated element should be retained");
+      await executeTestCase("delete subject cascading into sub-model",
+        [subjectA],
+        [subjectA, childPartitionId, elem1],
+        [unrelated]);
     });
 
     /**
@@ -719,23 +831,18 @@ describe("deleteElements (native bulk delete API)", () => {
      *                   elem2
      *   unrelated element
      */
-    it("delete a modeled element whose sub-model elements have children", () => {
-      const partitionId = insertSubModel();
+    it("delete a modeled element whose sub-model elements have children", async () => {
+      const partitionId = await insertSubModel();
       const elem1 = insertElementInModel(partitionId);
       const childOfElem1 = insertElementInModel(partitionId, { parentId: elem1 });
       const grandchildOfElem1 = insertElementInModel(partitionId, { parentId: childOfElem1 });
       const elem2 = insertElementInModel(partitionId);
       const unrelated = insertElement();
 
-      const result = txn.deleteElements([partitionId]);
-      assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assertDeleted(partitionId, "partition should be deleted");
-      assertModelDeleted(partitionId, "sub-model should be deleted");
-      assertDeleted(elem1, "elem1 should be deleted");
-      assertDeleted(childOfElem1, "child of elem1 should be deleted");
-      assertDeleted(grandchildOfElem1, "grandchild of elem1 should be deleted");
-      assertDeleted(elem2, "elem2 should be deleted");
-      assertExists(unrelated, "unrelated should be retained");
+      await executeTestCase("delete partition with nested children",
+        [partitionId],
+        [partitionId, elem1, childOfElem1, grandchildOfElem1, elem2],
+        [unrelated]);
     });
 
     /**
@@ -747,8 +854,8 @@ describe("deleteElements (native bulk delete API)", () => {
      *   external (not in delete set)
      *   unrelated
      */
-    it("partition ignored when a sub-model element is a code scope for an external element", () => {
-      const partitionId = insertSubModel();
+    it("partition ignored when a sub-model element is a code scope for an external element", async () => {
+      const partitionId = await insertSubModel();
       const scopingElem = insertElementInModel(partitionId);
       const otherElem = insertElementInModel(partitionId);
       const external = insertElement({ codeScope: scopingElem, codeValue: "ext-code" });
@@ -756,14 +863,13 @@ describe("deleteElements (native bulk delete API)", () => {
 
       // `external` is NOT in the delete set and uses scopingElem as its code scope -> the
       // entire partition subtree (including the sub-model) must be ignored from the delete set.
-      const result = txn.deleteElements([partitionId, unrelated]);
-      assert.equal(result.status, BulkDeleteElementsStatus.PartialSuccess);
-      assertExists(partitionId, "partition should be ignored (retained)");
+      await executeTestCase("partition ignored due to external code scope",
+        [partitionId, unrelated],
+        [unrelated],
+        [partitionId, scopingElem, otherElem, external],
+        [partitionId]);
+
       assertModelExists(partitionId, "sub-model should be retained");
-      assertExists(scopingElem, "scopingElem should be retained");
-      assertExists(otherElem, "otherElem should be retained");
-      assertExists(external, "external should be retained");
-      assertDeleted(unrelated, "unrelated should still be deleted");
     });
 
     /**
@@ -774,30 +880,17 @@ describe("deleteElements (native bulk delete API)", () => {
      *   [P:p1]  [M:p1] -> scopingElem
      *   [P:p2]  [M:p2] -> dependentElem  (codeScope = scopingElem)
      */
-    it("cross-sub-model intra-set code scope dependency: both partitions deleted cleanly", () => {
-      const p1 = insertSubModel();
+    it("cross-sub-model intra-set code scope dependency: both partitions deleted cleanly", async () => {
+      const p1 = await insertSubModel();
       const scopingElem = insertElementInModel(p1);
-      const p2 = insertSubModel();
-      const dependentElem = insertElementInModel(p2, {});
-      // Manually assign the code scope after insertion is not possible through insertElementInModel,
-      // so use a dedicated insert call.
-      const dependentId = txn.insertElement({
-        classFullName: "Generic:PhysicalObject",
-        model: p2,
-        category: categoryId,
-        code: { spec: codeSpecId, scope: scopingElem, value: "dep-code" },
-        placement: { origin: [0, 0, 0], angles: { yaw: 0, pitch: 0, roll: 0 } },
-      } as PhysicalElementProps);
+      const p2 = await insertSubModel();
+      const dependentElem = insertElementInModel(p2);
+      const dependentId = insertElement({ modelId: p2, codeScope: scopingElem, codeValue: "dep-code" });
 
-      const result = txn.deleteElements([p1, p2]);
-      assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assertDeleted(p1, "p1 should be deleted");
-      assertModelDeleted(p1, "sub-model of p1 should be deleted");
-      assertDeleted(scopingElem, "scopingElem should be deleted");
-      assertDeleted(p2, "p2 should be deleted");
-      assertModelDeleted(p2, "sub-model of p2 should be deleted");
-      assertDeleted(dependentElem, "dependentElem should be deleted");
-      assertDeleted(dependentId, "dependentId should be deleted");
+      await executeTestCase("cross sub-model scope",
+        [p1, p2],
+        [p1, scopingElem, p2, dependentElem, dependentId],
+        []);
     });
 
     /**
@@ -810,23 +903,18 @@ describe("deleteElements (native bulk delete API)", () => {
      *               [M:grandchildPartition] -> innerElem1, innerElem2
      *   unrelated
      */
-    it("deep cascade: grandparent Subject -> child Subject -> partition -> sub-model elements", () => {
-      const grandparentSubjectId = Subject.insert(txn, IModel.rootSubjectId, `GrandparentSubject-${++partitionCounter}`);
-      const childSubjectId = Subject.insert(txn, grandparentSubjectId, `ChildSubject-${partitionCounter}`);
-      const grandchildPartitionId = PhysicalModel.insert(txn, childSubjectId, `GrandchildPartition-${partitionCounter}`);
+    it("deep cascade: grandparent Subject -> child Subject -> partition -> sub-model elements", async () => {
+      const grandparentSubjectId = insertSubject(IModel.rootSubjectId);
+      const childSubjectId = insertSubject(grandparentSubjectId);
+      const grandchildPartitionId = await insertSubModel(childSubjectId);
       const innerElem1 = insertElementInModel(grandchildPartitionId);
       const innerElem2 = insertElementInModel(grandchildPartitionId);
       const unrelated = insertElement();
 
-      const result = txn.deleteElements([grandparentSubjectId]);
-      assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assertDeleted(grandparentSubjectId, "grandparent subject should be deleted");
-      assertDeleted(childSubjectId, "child subject should be deleted");
-      assertDeleted(grandchildPartitionId, "grandchild partition should be deleted");
-      assertModelDeleted(grandchildPartitionId, "grandchild sub-model should be deleted");
-      assertDeleted(innerElem1, "innerElem1 should be deleted");
-      assertDeleted(innerElem2, "innerElem2 should be deleted");
-      assertExists(unrelated, "unrelated should be retained");
+      await executeTestCase("deep cascade",
+        [grandparentSubjectId],
+        [grandparentSubjectId, childSubjectId, grandchildPartitionId, innerElem1, innerElem2],
+        [unrelated]);
     });
 
     /**
@@ -835,43 +923,31 @@ describe("deleteElements (native bulk delete API)", () => {
      *   [P:partition]  [M:partition]  (empty)
      *   unrelated
      */
-    it("delete a modeled element whose sub-model is empty", () => {
-      const partitionId = insertSubModel();
+    it("delete a modeled element whose sub-model is empty", async () => {
+      const partitionId = await insertSubModel();
       const unrelated = insertElement();
 
-      const result = txn.deleteElements([partitionId]);
-      assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assertDeleted(partitionId, "partition should be deleted");
-      assertModelDeleted(partitionId, "empty sub-model should be deleted");
-      assertExists(unrelated, "unrelated should be retained");
+      await executeTestCase("delete empty partition",
+        [partitionId],
+        [partitionId],
+        [unrelated]);
     });
 
     /**
-     * Scenario: a regular element has two children, one of which is a partition with a
-     * sub-model, while the other is an ordinary element.  Deleting the regular parent
-     * removes both children and all sub-model contents.
-     *
-     *   regularParent  (lives in modelId)
-     *     ├─ ordinaryChild
-     *     └─ [P:partitionChild]
-     *          [M:partitionChild] -> subElem1, subElem2
-     *   unrelated
+     * Scenario: a Subject has a partition child with a sub-model. Deleting the Subject removes the
+     * partition and all sub-model contents.
      */
-    it("deleting a regular element with a mix of ordinary and partition children cascades correctly", () => {
-      const subjectA = Subject.insert(txn, IModel.rootSubjectId, `MixedChildSubject-${++partitionCounter}`);
-      const partitionChild = PhysicalModel.insert(txn, subjectA, `MixedChildPartition-${partitionCounter}`);
+    it("deleting a regular element with a partition child cascades correctly", async () => {
+      const subjectA = insertSubject(IModel.rootSubjectId);
+      const partitionChild = await insertSubModel(subjectA);
       const subElem1 = insertElementInModel(partitionChild);
       const subElem2 = insertElementInModel(partitionChild);
       const unrelated = insertElement();
 
-      const result = txn.deleteElements([subjectA]);
-      assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assertDeleted(subjectA, "subjectA should be deleted");
-      assertDeleted(partitionChild, "partition child should be deleted");
-      assertModelDeleted(partitionChild, "sub-model of partition child should be deleted");
-      assertDeleted(subElem1, "subElem1 should be deleted");
-      assertDeleted(subElem2, "subElem2 should be deleted");
-      assertExists(unrelated, "unrelated should be retained");
+      await executeTestCase("subject with partition child",
+        [subjectA],
+        [subjectA, partitionChild, subElem1, subElem2],
+        [unrelated]);
     });
 
     /**
@@ -879,42 +955,99 @@ describe("deleteElements (native bulk delete API)", () => {
      * direct parent (not the grandparent root) for deletion cascades into the sub-model while
      * the grandparent survives.
      *
-     *   grandparent  (lives in modelId)
+     *   grandparent
      *     └─ parent           <- passed for deletion
      *          └─ [P:partition]
      *               [M:partition] -> subElem1, subElem2
      */
-    it("deleting a mid-tree regular element whose child is a partition cascades into the sub-model; grandparent survives", () => {
-      const subjectGP = Subject.insert(txn, IModel.rootSubjectId, `MidTreeGP-${++partitionCounter}`);
-      const subjectP = Subject.insert(txn, subjectGP, `MidTreeP-${partitionCounter}`);
-      const partitionId = PhysicalModel.insert(txn, subjectP, `MidTreePartition-${partitionCounter}`);
+    it("deleting a mid-tree regular element whose child is a partition cascades into the sub-model; grandparent survives", async () => {
+      const subjectGP = insertSubject(IModel.rootSubjectId);
+      const subjectP = insertSubject(subjectGP);
+      const partitionId = await insertSubModel(subjectP);
       const subElem1 = insertElementInModel(partitionId);
       const subElem2 = insertElementInModel(partitionId);
 
       // Only pass subjectP - grandparent must survive, everything below subjectP must go.
-      const result = txn.deleteElements([subjectP]);
-      assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assertExists(subjectGP, "grandparent should survive");
-      assertDeleted(subjectP, "parent should be deleted");
-      assertDeleted(partitionId, "partition should be deleted");
-      assertModelDeleted(partitionId, "sub-model should be deleted");
-      assertDeleted(subElem1, "subElem1 should be deleted");
-      assertDeleted(subElem2, "subElem2 should be deleted");
+      await executeTestCase("mid-tree subject with partition descendant",
+        [subjectP],
+        [subjectP, partitionId, subElem1, subElem2],
+        [subjectGP]);
     });
 
-    it("deleting a partition element directly (not via its regular parent) cascades into the sub-model; parent survives", () => {
-      const subjectA = Subject.insert(txn, IModel.rootSubjectId, `DirectPartSubject-${++partitionCounter}`);
-      const partitionId = PhysicalModel.insert(txn, subjectA, `DirectPartPartition-${partitionCounter}`);
+    it("deleting a partition element directly (not via its regular parent) cascades into the sub-model; parent survives", async () => {
+      const subjectA = insertSubject(IModel.rootSubjectId);
+      const partitionId = await insertSubModel(subjectA);
       const subElem1 = insertElementInModel(partitionId);
       const subElem2 = insertElementInModel(partitionId);
 
-      const result = txn.deleteElements([partitionId]);
-      assert.equal(result.status, BulkDeleteElementsStatus.Success);
-      assertExists(subjectA, "subject (regular parent) should survive");
-      assertDeleted(partitionId, "partition should be deleted");
-      assertModelDeleted(partitionId, "sub-model should be deleted");
-      assertDeleted(subElem1, "subElem1 should be deleted");
-      assertDeleted(subElem2, "subElem2 should be deleted");
+      await executeTestCase("partition deleted directly",
+        [partitionId],
+        [partitionId, subElem1, subElem2],
+        [subjectA]);
+    });
+  });
+
+  describe("lock-specific behavior", () => {
+    it("throws if the EditTxn is not active, without acquiring any locks", async () => {
+      const elementId = insertElement();
+      await releaseLocks();
+
+      const inactiveTxn = new EditTxn(briefcase, "inactive");
+      await expect(inactiveTxn.deleteElementsWithLocks([elementId])).to.eventually.be.rejected;
+      assert.isFalse(briefcase.locks.holdsExclusiveLock(elementId), "no locks may be acquired when the txn is not active");
+      assertExists(elementId, "element must survive");
+    });
+
+    it("fails when another briefcase holds the exclusive lock", async () => {
+      const elementId = insertElement();
+      await releaseLocks();
+
+      const other = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
+      try {
+        other.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+        await other.locks.acquireLocks({ exclusive: elementId });
+
+        await withAbandonedTxn("delete while other holds lock", async (txn) => {
+          await expect(txn.deleteElementsWithLocks([elementId])).to.eventually.be.rejected;
+        });
+
+        assertExists(elementId, "element must survive when the lock cannot be acquired");
+      } finally {
+        await other.locks.releaseAllLocks().catch(() => { });
+        other.close();
+      }
+    });
+
+    it("is a no-op re-acquisition when the exclusive lock is already held", async () => {
+      const elementId = insertElement();
+      await releaseLocks();
+      await briefcase.locks.acquireLocks({ exclusive: elementId });
+      assert.isTrue(briefcase.locks.holdsExclusiveLock(elementId));
+
+      await withAbandonedTxn("delete with lock already held", async (txn) => {
+        const result = await txn.deleteElementsWithLocks([elementId]);
+        assert.equal(result.status, BulkDeleteElementsStatus.Success);
+        assertDeleted(elementId, "element should be deleted");
+      });
+    });
+
+    it("deleting a sub-model's contents also requires and acquires their locks", async () => {
+      const partitionId = PhysicalModel.insert(txn, IModel.rootSubjectId, `LockPartition-${Guid.createValue()}`);
+      await briefcase.locks.acquireLocks({ shared: partitionId });
+      const inner = insertElement({ modelId: partitionId });
+      await releaseLocks();
+
+      // The lock check runs for every cascaded element too, so the un-requested `inner` must also be covered.
+      await withAbandonedTxn("delete partition without locks", async (txn) => {
+        assert.throws(() => txn.deleteElements([partitionId]), /exclusive lock/);
+      });
+
+      await withAbandonedTxn("delete partition with locks", async (txn) => {
+        const result = await txn.deleteElementsWithLocks([partitionId]);
+        assert.equal(result.status, BulkDeleteElementsStatus.Success);
+        assertDeleted(inner, "sub-model element should be deleted");
+        assertModelDeleted(partitionId, "sub-model should be deleted");
+      });
     });
   });
 });

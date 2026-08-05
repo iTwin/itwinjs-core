@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added a new beta api deleteElementsWithLocks which acquires exclusive locks internally before calling the bulk element delete api.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

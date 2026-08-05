@@ -2757,6 +2757,7 @@ export class EditTxn {
     deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
     deleteElement(ids: Id64Arg): void;
     deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult;
+    deleteElementsWithLocks(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): Promise<BulkDeleteElementsResult>;
     deleteFileProperty(prop: FilePropertyProps): void;
     deleteModel(ids: Id64Arg): void;
     deleteRelationship(props: RelationshipProps): void;

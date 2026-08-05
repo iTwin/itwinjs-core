@@ -428,16 +428,7 @@ export class EditTxn {
     return ids;
   }
 
-  /**
-   * Delete multiple elements from the iModel.
-   * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
-   * @param deleteOptions Options for the delete operation.
-   * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
-   * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
-   * @beta
-   */
-  public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
-    this.verifyWriteable();
+  private deleteElementsBase(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
     const invalidIds: Id64Set = new Set<Id64String>();
     for (const id of ids) {
       if (!Id64.isValidId64(id))
@@ -461,6 +452,33 @@ export class EditTxn {
     }
 
     return finalResult;
+  }
+
+  /**
+   * Delete multiple elements from the iModel.
+   * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
+   * @param deleteOptions Options for the delete operation.
+   * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
+   * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s or if exclusive locks are not already acquired.
+   * @beta
+   */
+  public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
+    this.verifyWriteable();
+    return this.deleteElementsBase(ids, deleteOptions);
+  }
+
+  /**
+   * Acquires the necessary exclusive locks and deletes multiple elements from the iModel.
+   * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
+   * @param deleteOptions Options for the delete operation.
+   * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
+   * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
+   * @beta
+   */
+  public async deleteElementsWithLocks(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): Promise<BulkDeleteElementsResult> {
+    this.verifyWriteable();
+    await this.iModel.locks.acquireLocks({ exclusive: ids });
+    return this.deleteElementsBase(ids, deleteOptions);
   }
 
   /** Insert a new aspect into the iModel.
