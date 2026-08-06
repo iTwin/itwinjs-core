@@ -117,6 +117,7 @@ export class CesiumScene {
     // ###TODO Temporary hardcoded gaussian splat tileset for prototyping. Uses the publicly-hosted
     // "tower" sample (KHR_gaussian_splatting + spz_2) from the CesiumGS/cesium repository.
     void this.loadGaussianSplatTileset("https://raw.githubusercontent.com/CesiumGS/cesium/1.135/Specs/Data/Cesium3DTiles/GaussianSplats/tower/tileset.json");
+    // void this.loadGaussianSplatTileset(3667783);
 
     const onRenderError = function (_scene: any, error: any) {
       const title =
@@ -172,9 +173,9 @@ export class CesiumScene {
     });
   }
 
-  private async loadGaussianSplatTileset(url: string): Promise<void> {
+  private async loadGaussianSplatTileset(urlOrId: string | number): Promise<void> {
     try {
-      const tileset = await Cesium3DTileset.fromUrl(url);
+      const tileset = await (typeof urlOrId === "string" ? Cesium3DTileset.fromUrl(urlOrId) : Cesium3DTileset.fromIonAssetId(urlOrId));
       // const tileset = await Cesium3DTileset.fromIonAssetId(3667783)
       this._scene.primitives.add(tileset);
       this._splatTileset = tileset;
@@ -193,6 +194,7 @@ export class CesiumScene {
     if (!tileset || this._splatPlaced)
       return;
 
+    /*
     const camera = this._scene.camera;
     const radius = tileset.boundingSphere.radius;
     const scale = 1; // 1000.0;
@@ -205,6 +207,7 @@ export class CesiumScene {
     Matrix4.multiplyByUniformScale(modelMatrix, scale, modelMatrix);
     Matrix4.multiplyByTranslation(modelMatrix, Cartesian3.negate(center, new Cartesian3()), modelMatrix);
     tileset.modelMatrix = modelMatrix;
+    */
 
     this._splatPlaced = true;
     this._scene.requestRender();
