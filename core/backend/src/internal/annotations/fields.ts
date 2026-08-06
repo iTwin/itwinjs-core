@@ -64,21 +64,20 @@ export interface UpdateFieldsContext {
 
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Optional caller-supplied resolver used to select a synchronous
-   * [FieldFormattingSpecProvider]($common) per [FieldRun]($common). When present, [[updateField]]
-   * formats `"quantity"` and `"coordinate"` values via
-   * [[formatFieldValueWithSpecResolver]]; when absent it falls back to the raw `toString()` path.
+  /** Optional resolver used to select a synchronous [FieldFormattingSpecProvider]($common) per
+   * [FieldRun]($common). When present, [[updateField]] formats `"quantity"` and `"coordinate"`
+   * values via [[formatFieldValueWithSpecResolver]]; when absent it falls back to `toString()`.
    *
-   * The resolver is expected to encapsulate the cascading lookup described on
-   * [QuantityFieldFormatOptions.formatSet]($common): the field's `formatSet`-specific registration
-   * first, then the iModel-level default registration.
+   * The resolver encapsulates the cascading lookup on
+   * [QuantityFieldFormatOptions.formatSet]($common):
+   *   1. The field's `formatSet` registration.
+   *   2. The iModel-level default registration.
    */
   readonly formattingSpecResolver?: FieldFormattingSpecResolver;
 
-  /** Fallback [[FieldMissingSpecBehavior]] applied to fields when no resolver is present or the
-   * resolver does not attach one of its own. Used by the async formatting path (which does not
-   * go through a resolver) and by any future callers that want to opt in to throw-behavior
-   * without registering a provider. Defaults to `"fallback"`.
+  /** Fallback [[FieldMissingSpecBehavior]] applied when no resolver is present, or the resolver
+   * does not attach one of its own. Used by the async path and by callers opting into
+   * throw-behavior without registering a provider. Defaults to `"fallback"`.
    */
   readonly onMissingSpec?: FieldMissingSpecBehavior;
 }
@@ -130,10 +129,9 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
         return { primitive: new Date(rootValue) };
       }
 
-      // If the property is a string that holds serialized JSON and the field
-      // wants to index into it, parse and treat it as a deserialized object/array.
-      // Only deserialize when accessors are present; otherwise, keep the raw string
-      // so the field can display the value directly.
+      // If the property is a string holding serialized JSON and the field indexes into it, parse
+      // and treat as a deserialized object/array. Without accessors, keep the raw string so the
+      // field can display it directly.
       if (ecProp.primitiveType === PrimitiveType.String && typeof rootValue === "string" && accessors && accessors.length > 0) {
         const deserialized = tryDeserializeJson(rootValue);
         if (deserialized) {
@@ -245,9 +243,9 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     return undefined;
   }
 
-  // Capture KindOfQuantity + persistence unit for the schema-defined property so that
-  // quantity/coordinate fields can be formatted via the standard iTwin.js quantity pipeline.
-  // JSON-in-string values have no reliable KoQ association, so skip them.
+  // Capture the property's KindOfQuantity and persistence unit so quantity/coordinate fields
+  // can be formatted through the standard iTwin.js quantity pipeline. JSON-in-string values
+  // have no reliable KoQ association, so skip them.
   let kindOfQuantityFullName: string | undefined;
   let persistenceUnitFullName: string | undefined;
   if (propertyType === "quantity" || propertyType === "coordinate") {
@@ -364,9 +362,8 @@ export function createUpdateContext(
   };
 }
 
-/** Build a [[FieldFormatterContext]] backed by an iModel's schema context, optionally overriding
- * either provider so that application-supplied FormatSet lookups (e.g. from an app's
- * [FormattingSpecProvider]($core-quantity)) can be plugged in.
+/** Builds a [[FieldFormatterContext]] backed by an iModel's schema context. Either provider may
+ * be overridden to plug in an app's [FormattingSpecProvider]($core-quantity) (e.g. FormatSet-backed).
  * @internal
  */
 export function createFieldFormatterContext(
@@ -399,9 +396,8 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 
   let newContent: string | undefined;
   if (undefined !== propValue) {
-    // Format errors originating from a resolver-selected provider's own `onMissingSpec: "throw"`
-    // policy always propagate; the context-level `onMissingSpec` only governs the fallback path
-    // used when no resolver is registered.
+    // Errors from a resolver-selected provider's own `onMissingSpec: "throw"` always propagate;
+    // the context-level `onMissingSpec` only governs the no-resolver fallback path.
     if (context.formattingSpecResolver) {
       newContent = formatFieldValueWithSpecResolver(propValue, field.formatOptions, context.formattingSpecResolver);
     } else {
@@ -418,8 +414,8 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   return true;
 }
 
-// Async counterpart to updateField. Uses formatFieldValueAsync so "quantity" and "coordinate" field
-// types are rendered through the real quantity formatting pipeline.
+// Async counterpart to updateField. Uses formatFieldValueAsync so "quantity" and "coordinate"
+// fields render through the real quantity formatting pipeline.
 export async function updateFieldAsync(field: FieldRun, context: UpdateFieldsContext, formatter: FieldFormatterContext): Promise<boolean> {
   if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
     return false;
@@ -471,14 +467,12 @@ export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFie
   return numUpdated;
 }
 
-// Per-iModel registry of application-supplied sync formatting spec providers. Populated by
-// `ElementDrivesTextAnnotation.registerFieldFormattingProvider` and consulted by the synchronous
-// `updateField*` paths so the txn callback path can format quantity/coordinate fields via a
-// pre-warmed provider (e.g. an app's FormatSet-backed `FormattingSpecProvider`).
-//
-// Each iModel can carry multiple registrations keyed by the [Id64String]() of a FormatSet
-// element; the entry stored under the `DEFAULT_FORMAT_SET_KEY` sentinel is used when a field
-// does not specify a `formatSet` or when its `formatSet` has no registration.
+// Per-iModel registry of app-supplied sync formatting spec providers. Populated by
+// `ElementDrivesTextAnnotation.registerFieldFormattingProvider` and consulted by the sync
+// `updateField*` paths so txn callbacks can format quantity/coordinate fields via a pre-warmed
+// provider (e.g. a FormatSet-backed `FormattingSpecProvider`). Entries are keyed by FormatSet
+// [Id64String](); the `DEFAULT_FORMAT_SET_KEY` sentinel holds the iModel-level default used
+// when a field has no `formatSet` or no matching registration.
 interface RegisteredFieldFormattingProvider {
   provider: FieldFormattingSpecProvider;
   onMissingSpec?: FieldMissingSpecBehavior;
@@ -492,18 +486,15 @@ function keyForFormatSet(formatSet: Id64String | undefined): string {
 
 /** @internal */
 export interface RegisterFieldFormattingProviderArgs {
-  /** [Id64String]($bentley) of the FormatSet element whose providers should be routed through
-   * this registration. Omit to register the iModel-level default provider (used by any FieldRun
-   * that does not declare its own `formatSet`, or whose declared `formatSet` has no matching
+  /** [Id64String]($bentley) of the FormatSet element whose fields route to `provider`. Omit to
+   * register the iModel-level default (used when a field has no `formatSet` or no matching
    * registration).
    */
   formatSet?: Id64String;
-  /** The provider to associate with `formatSet` (or with the iModel-level default when
-   * `formatSet` is omitted).
-   */
+  /** Provider associated with `formatSet` (or the iModel-level default when omitted). */
   provider: FieldFormattingSpecProvider;
-  /** See [[UpdateFieldsContext.onMissingSpec]]. Applied when this registration's provider is
-   * selected but does not supply a spec for a given field. Defaults to `"fallback"`.
+  /** See [[UpdateFieldsContext.onMissingSpec]]. Applied when this provider has no spec for a
+   * given field. Defaults to `"fallback"`.
    */
   onMissingSpec?: FieldMissingSpecBehavior;
 }
@@ -549,10 +540,9 @@ export function getFieldFormattingProviderForIModel(
   return fieldFormattingProviders.get(iModel)?.get(keyForFormatSet(formatSet))?.provider;
 }
 
-/** Builds a resolver that implements the cascading lookup described on
- * [QuantityFieldFormatOptions.formatSet]($common): the field's `formatSet`-specific registration
- * first, then the iModel-level default. Returns `undefined` when no registrations exist for
- * `iModel`.
+/** Builds a resolver implementing the cascading lookup on
+ * [QuantityFieldFormatOptions.formatSet]($common): the field's `formatSet` registration first,
+ * then the iModel-level default. Returns `undefined` when `iModel` has no registrations.
  * @internal
  */
 export function createFieldFormattingSpecResolverForIModel(iModel: IModelDb): FieldFormattingSpecResolver | undefined {
@@ -639,9 +629,9 @@ export async function updateAllFieldsAsync(annotationElementId: Id64String, txn:
   return doUpdateFieldsAsync(txn, annotationElementId, undefined, false);
 }
 
-// Resolve a FieldRun's target down to its terminal EC Property using schema metadata only
-// (no ECSQL, no element values). Returns undefined when the path cannot be followed in the schema
-// -- notably when it dives into a JSON-in-string leaf, since such paths have no reliable
+// Resolves a FieldRun's target down to its terminal EC Property using schema metadata only
+// (no ECSQL, no element values). Returns undefined when the path cannot be followed in the
+// schema — notably when it dives into a JSON-in-string leaf, since such paths have no reliable
 // ECProperty/KoQ association.
 function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Property | undefined {
   const host = field.propertyHost;
@@ -661,8 +651,8 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Proper
     return ecProp;
   }
 
-  // Mirror the descent that getFieldPropertyValue performs at query time: when we enter a
-  // non-array struct at the root, subsequent named accessors are looked up on the struct's class.
+  // Mirror the descent getFieldPropertyValue performs at query time: on entering a non-array
+  // struct at the root, subsequent named accessors are looked up on the struct's class.
   if (ecProp.isStruct() && !ecProp.isArray()) {
     ecClass = ecProp.structClass;
   }
@@ -675,10 +665,10 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Proper
       if (ecProp.isStruct()) {
         ecClass = ecProp.structClass;
       }
-      // For primitive arrays, ecProp already represents the element type -- nothing to advance.
+      // For primitive arrays, ecProp already represents the element type — nothing to advance.
     } else {
-      // Named accessors require a struct context. A String primitive with a further accessor is
-      // a JSON-in-string path; those have no schema-driven KoQ.
+      // Named accessors require a struct context. A String primitive with further accessors is
+      // a JSON-in-string path, which has no schema-driven KoQ.
       if (!ecProp.isStruct()) {
         return undefined;
       }
@@ -696,13 +686,12 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Proper
   return ecProp;
 }
 
-// Emit a FormattingSpecArgs entry for a single field, or undefined if the field does not require
-// a prepared spec.
+// Returns a FormattingSpecArgs entry for a single field, or undefined if the field needs no
+// prepared spec.
 function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs | undefined {
   const quantityOptions = field.formatOptions?.quantity;
 
-  // A field with an inline FormatProps override is fully self-describing: no lookup on a
-  // FormattingSpecProvider is required.
+  // An inline FormatProps override is fully self-describing — no provider lookup needed.
   if (quantityOptions?.format) {
     return undefined;
   }
@@ -717,14 +706,14 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
     return undefined;
   }
 
-  // Resolve the KoQ name to look up. Priority: explicit kindOfQuantity override > property KoQ.
+  // KoQ name: explicit kindOfQuantity override > property KoQ.
   const koq = ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
   const name = quantityOptions?.kindOfQuantity ?? koq?.fullName;
   if (!name) {
     return undefined;
   }
 
-  // Resolve the source persistence unit. Priority: explicit persistenceUnit override > KoQ persistence unit.
+  // Persistence unit: explicit persistenceUnit override > KoQ persistence unit.
   const persistenceUnitName = quantityOptions?.persistenceUnit ?? koq?.persistenceUnit?.fullName;
   if (!persistenceUnitName) {
     return undefined;
@@ -734,14 +723,13 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
   return args;
 }
 
-/** Walks the [FieldRun]($common)s in `textBlock` and returns a deduplicated collection of the
- * [FormattingSpecArgs]($core-quantity) their "quantity" and "coordinate" values require in order
- * to be formatted through the standard iTwin.js quantity pipeline.
+/** Walks the [FieldRun]($common)s in `textBlock` and returns a deduplicated list of the
+ * [FormattingSpecArgs]($core-quantity) their `"quantity"` and `"coordinate"` values need to be
+ * formatted through the standard iTwin.js quantity pipeline.
  *
- * Intended to be used by an application-supplied [FormattingSpecProvider]($core-quantity) to
- * pre-warm its cache before an annotation is inserted, updated, or re-evaluated. Fields that
- * carry an inline [QuantityFieldFormatOptions.format]($common) override are excluded because
- * they do not require a provider lookup.
+ * Intended for an app-supplied [FormattingSpecProvider]($core-quantity) to pre-warm its cache
+ * before an annotation is inserted, updated, or re-evaluated. Fields carrying an inline
+ * [QuantityFieldFormatOptions.format]($common) override are excluded — they need no lookup.
  * @internal
  */
 export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel: IModelDb): FormattingSpecArgs[] {
