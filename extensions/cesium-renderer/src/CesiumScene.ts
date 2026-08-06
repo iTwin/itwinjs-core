@@ -209,6 +209,13 @@ export class CesiumScene {
     tileset.modelMatrix = modelMatrix;
     */
 
+    // Place it in Exton, PA
+    const center = tileset.boundingSphere.center;
+    const target = Cartesian3.fromDegrees(-75.686694, 40.065757, 25);
+    const modelMatrix = Matrix4.fromTranslation(target);
+    Matrix4.multiplyByTranslation(modelMatrix, Cartesian3.negate(center, new Cartesian3()), modelMatrix);
+    tileset.modelMatrix = modelMatrix;
+
     this._splatPlaced = true;
     this._scene.requestRender();
   }
