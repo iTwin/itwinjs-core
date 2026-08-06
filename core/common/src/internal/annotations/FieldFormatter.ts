@@ -18,15 +18,14 @@ export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYA
 export interface FieldValue {
   value: FieldPrimitiveValue;
   type: FieldPropertyType;
-  /** Full name (e.g. `"AecUnits.LENGTH"`) of the [KindOfQuantity]($ecschema-metadata)
-   * associated with the resolved property, if any. Used by the runtime to look up a
-   * default [Format]($core-quantity) when [[FieldFormatOptions.quantity]] does not
-   * provide one.
+  /** Full name (e.g. `"AecUnits.LENGTH"`) of the resolved property's
+   * [KindOfQuantity]($ecschema-metadata), if any. Used to look up a default
+   * [Format]($core-quantity) when [[FieldFormatOptions.quantity]] does not provide one.
    */
   kindOfQuantityFullName?: string;
-  /** Full name (e.g. `"Units.M"`) of the persistence unit of the resolved property,
-   * if resolvable from its [KindOfQuantity]($ecschema-metadata). Used as the source
-   * unit when constructing a [FormatterSpec]($core-quantity).
+  /** Full name (e.g. `"Units.M"`) of the persistence unit of the resolved property, if
+   * derivable from its [KindOfQuantity]($ecschema-metadata). Used as the source unit when
+   * constructing a [FormatterSpec]($core-quantity).
    */
   persistenceUnitFullName?: string;
 }
@@ -117,10 +116,10 @@ export function isKnownFieldPropertyType(type: string): type is FieldPropertyTyp
   return type in formatters;
 }
 
-/** Runtime context for [[formatFieldValueAsync]]. Provides the units and formats providers used to
- * resolve a [Format]($core-quantity) for "quantity" and "coordinate" field types, plus an optional
- * cache to avoid rebuilding a [FormatterSpec]($core-quantity) for repeated
- * (format source, persistence unit) combinations within a single formatting pass.
+/** Runtime context for [[formatFieldValueAsync]]. Supplies the units/formats providers used to
+ * resolve a [Format]($core-quantity) for `"quantity"` and `"coordinate"` fields, plus an optional
+ * cache to avoid rebuilding a [FormatterSpec]($core-quantity) for repeated (format source,
+ * persistence unit) pairs within a single pass.
  * @internal
  */
 export interface FieldFormatterContext {
@@ -129,8 +128,8 @@ export interface FieldFormatterContext {
   specCache?: Map<string, FormatterSpec>;
 }
 
-// Fallback FormatProps used by coordinate fields whose property has no KindOfQuantity.
-// Assumes the value is stored in meters (BIS geometry persistence).
+// Fallback FormatProps for coordinate fields whose property has no KindOfQuantity. Assumes the
+// value is stored in meters (BIS geometry persistence).
 const defaultCoordinateFormatProps: FormatProps = {
   formatTraits: ["keepSingleZero", "showUnitLabel"],
   precision: 4,
@@ -147,7 +146,7 @@ function firstCompositeUnitName(formatProps: FormatProps): string | undefined {
   return formatProps.composite?.units?.[0]?.name;
 }
 
-// Resolves the FormatProps to use for a field, together with a stable cache key describing its source.
+// Resolves the FormatProps to use for a field and a stable cache key describing its source.
 // Returns undefined if no format source is available.
 async function resolveFormatSource(
   quantityOptions: QuantityFieldFormatOptions | undefined,
@@ -237,12 +236,12 @@ function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
   return parts;
 }
 
-/** Async counterpart to [[formatFieldValue]] that formats "quantity" and "coordinate" field values
- * using the standard iTwin.js quantity formatting pipeline.
+/** Async counterpart to [[formatFieldValue]] that formats `"quantity"` and `"coordinate"`
+ * values through the standard iTwin.js quantity formatting pipeline.
  *
- * For any other [[FieldPropertyType]], or when a quantity/coordinate field cannot be resolved to a
- * [FormatterSpec]($core-quantity), `onMissingSpec` controls whether the function falls back to
- * [[formatFieldValue]] (default) or throws.
+ * For other [[FieldPropertyType]]s, or when a quantity/coordinate field cannot be resolved to
+ * a [FormatterSpec]($core-quantity), `onMissingSpec` controls whether the function falls back
+ * to [[formatFieldValue]] (default) or throws.
  * @internal
  */
 export async function formatFieldValueAsync(
@@ -300,22 +299,19 @@ export async function formatFieldValueAsync(
   }
 }
 
-// Minimal contract used by the synchronous formatting path: a lookup that returns an already-built
-// FormatterSpec keyed by (KoQ name, persistence unit name), plus a formatting function.
-// Duck-typed against `FormattingSpecProvider` in `@itwin/core-quantity` so this module can stay
-// independent of that concrete type.
+// Minimal contract used by the sync formatting path: an already-built FormatterSpec lookup keyed
+// by (KoQ name, persistence unit name), plus a formatting function. Duck-typed against
+// `FormattingSpecProvider` in `@itwin/core-quantity` so this module stays independent of it.
 /** @internal */
 export interface FieldFormattingSpecProvider {
   getSpecsByNameAndUnit(args: { name: string; persistenceUnitName: string }): { formatterSpec: FormatterSpec } | undefined;
   formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
 }
 
-/** Controls what happens when a `"quantity"` or `"coordinate"` [FieldRun]($common) cannot be
- * matched to a [FormatterSpec]($core-quantity):
- *
- * - `"fallback"` (default): silently fall back to the raw string representation used by
- *   [[formatFieldValue]].
- * - `"throw"`: throw an [[Error]] describing the missing spec.
+/** Behavior when a `"quantity"` or `"coordinate"` [FieldRun]($common) cannot be matched to a
+ * [FormatterSpec]($core-quantity):
+ *  - `"fallback"` (default): silently use the raw string representation from [[formatFieldValue]].
+ *  - `"throw"`: throw an [[Error]] describing the missing spec.
  * @internal
  */
 export type FieldMissingSpecBehavior = "fallback" | "throw";
@@ -331,8 +327,8 @@ function lookupSyncSpec(
   value: FieldValue,
   provider: FieldFormattingSpecProvider,
 ): FormatterSpec | undefined {
-  // Inline FormatProps overrides bypass the provider entirely; they require async construction.
-  // Callers should therefore route inline-format fields through `formatFieldValueAsync` instead.
+  // Inline FormatProps overrides bypass the provider and require async construction; callers
+  // should route inline-format fields through `formatFieldValueAsync` instead.
   if (quantityOptions?.format) {
     return undefined;
   }
@@ -346,8 +342,8 @@ function lookupSyncSpec(
   return provider.getSpecsByNameAndUnit({ name, persistenceUnitName })?.formatterSpec;
 }
 
-/** Result returned by [[FieldFormattingSpecResolver.resolve]] describing which registered
- * synchronous provider should handle a given [FieldRun]($common).
+/** Result of [[FieldFormattingSpecResolver.resolve]] describing which registered synchronous
+ * provider should handle a given [FieldRun]($common).
  * @internal
  */
 export interface ResolvedFieldFormattingSpecProvider {
@@ -355,31 +351,30 @@ export interface ResolvedFieldFormattingSpecProvider {
   onMissingSpec?: FieldMissingSpecBehavior;
 }
 
-/** Cascading lookup used by the synchronous formatting path to select which registered
- * [FieldFormattingSpecProvider]($common) to consult for a given [FieldRun]($common). A caller
- * (typically the backend) constructs one of these over its per-iModel provider registry and
- * hands it to [[formatFieldValueWithSpecResolver]] via [[UpdateFieldsContext]].
+/** Cascading lookup used by the sync formatting path to pick a registered
+ * [FieldFormattingSpecProvider]($common) for a given [FieldRun]($common). Callers (typically
+ * the backend) construct one over their per-iModel provider registry and hand it to
+ * [[formatFieldValueWithSpecResolver]] via [[UpdateFieldsContext]].
  *
- * Implementations should encapsulate the cascading behavior:
+ * Implementations encapsulate the cascading behavior:
  *  1. If `formatSet` is defined, return the provider registered under it.
- *  2. Otherwise (or if no provider was registered for `formatSet`), return the iModel-level
- *     default provider registration.
- *  3. Return `undefined` when no registration matches; callers then fall back to the raw
- *     string representation.
+ *  2. Otherwise (or if `formatSet` has no match), return the iModel-level default registration.
+ *  3. Return `undefined` when no registration matches; callers then fall back to the raw string
+ *     representation.
  * @internal
  */
 export interface FieldFormattingSpecResolver {
   resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined;
 }
 
-/** Synchronous counterpart to [[formatFieldValueAsync]] that formats "quantity" and "coordinate"
- * field values via a caller-supplied [[FieldFormattingSpecProvider]] (typically a
- * [FormattingSpecProvider]($core-quantity)). Intended for use on the txn callback path where
- * the async pipeline cannot be awaited but the application has pre-built the required specs.
+/** Synchronous counterpart to [[formatFieldValueAsync]] that formats `"quantity"` and
+ * `"coordinate"` values via a caller-supplied [[FieldFormattingSpecProvider]] (typically a
+ * [FormattingSpecProvider]($core-quantity)). Intended for the txn callback path, where the async
+ * pipeline cannot be awaited but the app has pre-built the required specs.
  *
- * For any other [[FieldPropertyType]], or when a quantity/coordinate field cannot be resolved
- * to a [FormatterSpec]($core-quantity) via `provider`, `onMissingSpec` controls whether the
- * function falls back to [[formatFieldValue]] (default) or throws.
+ * For other [[FieldPropertyType]]s, or when a quantity/coordinate field cannot be resolved to a
+ * [FormatterSpec]($core-quantity) via `provider`, `onMissingSpec` controls whether the function
+ * falls back to [[formatFieldValue]] (default) or throws.
  * @internal
  */
 export function formatFieldValueWithSpecProvider(
@@ -427,13 +422,12 @@ export function formatFieldValueWithSpecProvider(
 }
 
 /** Synchronous formatting entry point that consults a [[FieldFormattingSpecResolver]] to pick
- * which registered provider (keyed by [QuantityFieldFormatOptions.formatSet]($common)) should
- * format `value`, then delegates to [[formatFieldValueWithSpecProvider]] using the resolved
- * provider and its `onMissingSpec` policy.
+ * which registered provider (keyed by [QuantityFieldFormatOptions.formatSet]($common)) formats
+ * `value`, then delegates to [[formatFieldValueWithSpecProvider]] using that provider and its
+ * `onMissingSpec` policy.
  *
- * If the resolver returns `undefined` (no registration matches the field's `formatSet` and no
- * iModel-level default is registered), quantity/coordinate values fall back to the raw string
- * representation from [[formatFieldValue]].
+ * If the resolver returns `undefined` (no matching registration and no iModel-level default),
+ * quantity/coordinate values fall back to the raw string representation from [[formatFieldValue]].
  * @internal
  */
 export function formatFieldValueWithSpecResolver(
