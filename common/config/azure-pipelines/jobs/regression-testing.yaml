@@ -43,6 +43,10 @@ jobs:
           platform: Darwin
           name: $(mac_pool)
           node_version: 20.x
+        "LinuxArm64_Node_20":
+          platform: Linux
+          name: $(linuxARM64_pool)
+          node_version: 20.x
         "Windows_Node_22":
           OS: windows-latest
           platform: Windows_NT
@@ -58,10 +62,10 @@ jobs:
           platform: Darwin
           name: $(mac_pool)
           node_version: 22.x
-        "LinuxArm64_Node_24":
+        "LinuxArm64_Node_22":
           platform: Linux
           name: $(linuxARM64_pool)
-          node_version: 24.x
+          node_version: 22.x
       maxParallel: 3
 
     pool:
