@@ -151,7 +151,9 @@ export class V2CheckpointManager {
     return cloudCachePath;
   }
 
-  /* only used by tests that reset the state of the v2CheckpointManager. all dbs should be closed before calling this function. */
+  /** Disconnects all checkpoint containers and resets the state of the V2CheckpointManager. All dbs should be closed before calling this function.
+   * Called automatically on IModelHost shutdown; also used directly by tests.
+   */
   public static cleanup(): void {
     for (const [_, value] of this.containers.entries()) {
       if (value.isConnected)
