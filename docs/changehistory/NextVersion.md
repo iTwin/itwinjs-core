@@ -218,10 +218,9 @@ const fieldRun = FieldRun.create({
 
 A format is resolved in this priority order:
 
-1. `formatOptions.quantity.format` — an inline [FormatProps]($core-quantity) override.
-2. `formatOptions.quantity.kindOfQuantity` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
-3. The property's own [KindOfQuantity]($ecschema-metadata).
-4. For `"coordinate"` only, a built-in meters fallback.
+1. `formatOptions.quantity.kindOfQuantity` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
+2. The property's own [KindOfQuantity]($ecschema-metadata).
+3. For `"coordinate"` only, a built-in meters fallback.
 
 Because [FormatterSpec]($core-quantity) creation is asynchronous, quantity formatting is only applied when a field is evaluated through the new async entry point [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend):
 

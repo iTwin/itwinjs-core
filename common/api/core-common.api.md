@@ -26,7 +26,6 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DeepReadonlyObject } from '@itwin/core-bentley';
 import { DeepRequiredObject } from '@itwin/core-bentley';
-import { FormatProps } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { GeometryQuery } from '@itwin/core-geometry';
@@ -7858,7 +7857,6 @@ export class QPoint3dList {
 
 // @beta
 export interface QuantityFieldFormatOptions {
-    format?: FormatProps;
     formatSet?: Id64String;
     kindOfQuantity?: string;
     persistenceUnit?: string;

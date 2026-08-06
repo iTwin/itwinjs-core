@@ -141,7 +141,7 @@ const defaultCoordinateFormatProps: FormatProps = {
   },
 };
 
-// Extracts the persistence unit's full name from an inline FormatProps by inspecting its composite.
+// Extracts the persistence unit's full name from a FormatProps by inspecting its composite.
 function firstCompositeUnitName(formatProps: FormatProps): string | undefined {
   return formatProps.composite?.units?.[0]?.name;
 }
@@ -153,12 +153,7 @@ async function resolveFormatSource(
   value: FieldValue,
   context: FieldFormatterContext,
 ): Promise<{ formatProps: FormatProps, cacheKeySource: string } | undefined> {
-  // 1. Inline FormatProps override.
-  if (quantityOptions?.format) {
-    return { formatProps: quantityOptions.format, cacheKeySource: `inline:${JSON.stringify(quantityOptions.format)}` };
-  }
-
-  // 2. Explicit format-set / KoQ override.
+  // 1. Explicit format-set / KoQ override.
   if (quantityOptions?.kindOfQuantity) {
     const def = await context.formatsProvider.getFormat(quantityOptions.kindOfQuantity);
     if (def) {
@@ -166,7 +161,7 @@ async function resolveFormatSource(
     }
   }
 
-  // 3. Property's own KindOfQuantity.
+  // 2. Property's own KindOfQuantity.
   if (value.kindOfQuantityFullName) {
     const def = await context.formatsProvider.getFormat(value.kindOfQuantityFullName);
     if (def) {
@@ -174,7 +169,7 @@ async function resolveFormatSource(
     }
   }
 
-  // 4. Coordinate fallback: assume length in meters.
+  // 3. Coordinate fallback: assume length in meters.
   if (value.type === "coordinate") {
     return { formatProps: defaultCoordinateFormatProps, cacheKeySource: "default:coordinate" };
   }
@@ -266,7 +261,7 @@ export async function formatFieldValueAsync(
 
   if (!spec) {
     if (throwOnMiss) {
-      throw missingSpecError(value, options, "no FormatProps could be resolved from the supplied FormatsProvider (the property's KindOfQuantity, the kindOfQuantity override, and the inline format override were all unavailable)");
+      throw missingSpecError(value, options, "no FormatProps could be resolved from the supplied FormatsProvider (the property's KindOfQuantity and the kindOfQuantity override were both unavailable)");
     }
     return formatFieldValue(value, options);
   }
@@ -327,12 +322,6 @@ function lookupSyncSpec(
   value: FieldValue,
   provider: FieldFormattingSpecProvider,
 ): FormatterSpec | undefined {
-  // Inline FormatProps overrides bypass the provider and require async construction; callers
-  // should route inline-format fields through `formatFieldValueAsync` instead.
-  if (quantityOptions?.format) {
-    return undefined;
-  }
-
   const name = quantityOptions?.kindOfQuantity ?? value.kindOfQuantityFullName;
   const persistenceUnitName = quantityOptions?.persistenceUnit ?? value.persistenceUnitFullName;
   if (!name || !persistenceUnitName) {
@@ -390,10 +379,7 @@ export function formatFieldValueWithSpecProvider(
   const spec = lookupSyncSpec(options?.quantity, value, provider);
   if (!spec) {
     if (onMissingSpec === "throw") {
-      const reason = options?.quantity?.format
-        ? "inline FormatProps overrides are not supported on the synchronous formatting path"
-        : "the registered FormattingSpecProvider did not supply a spec for this KindOfQuantity / persistence unit";
-      throw missingSpecError(value, options, reason);
+      throw missingSpecError(value, options, "the registered FormattingSpecProvider did not supply a spec for this KindOfQuantity / persistence unit");
     }
     return formatFieldValue(value, options);
   }

@@ -691,11 +691,6 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Proper
 function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs | undefined {
   const quantityOptions = field.formatOptions?.quantity;
 
-  // An inline FormatProps override is fully self-describing — no provider lookup needed.
-  if (quantityOptions?.format) {
-    return undefined;
-  }
-
   const ecProp = resolveFieldTerminalProperty(field, iModel);
   if (!ecProp) {
     return undefined;

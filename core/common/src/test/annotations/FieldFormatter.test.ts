@@ -239,16 +239,6 @@ describe("Async field formatting", () => {
   };
 
   describe("quantity", () => {
-    it("formats a magnitude using an inline FormatProps override (feet-inches from meters)", async () => {
-      const value: FieldValue = { value: 1, type: "quantity", persistenceUnitFullName: "Units.M" };
-      const result = await formatFieldValueAsync(
-        value,
-        { quantity: { format: feetInchesFormat } },
-        createContext(),
-      );
-      expect(result).toBe("3'-3 3/8\"");
-    });
-
     it("resolves format from the property's KindOfQuantity via the FormatsProvider", async () => {
       const value: FieldValue = {
         value: 2,
@@ -283,11 +273,16 @@ describe("Async field formatting", () => {
     });
 
     it("applies prefix, suffix, and case around the formatted magnitude", async () => {
-      const value: FieldValue = { value: 1, type: "quantity", persistenceUnitFullName: "Units.M" };
+      const value: FieldValue = {
+        value: 1,
+        type: "quantity",
+        kindOfQuantityFullName: "AecUnits.LENGTH",
+        persistenceUnitFullName: "Units.M",
+      };
       const result = await formatFieldValueAsync(
         value,
-        { prefix: "Length: ", suffix: "!", case: "upper", quantity: { format: metersFormat } },
-        createContext(),
+        { prefix: "Length: ", suffix: "!", case: "upper" },
+        createContext({ "AecUnits.LENGTH": metersFormat }),
       );
       expect(result).toBe("Length: 1 M!");
     });
@@ -337,20 +332,20 @@ describe("Async field formatting", () => {
   });
 
   describe("coordinate", () => {
-    it("formats Point2d using an inline quantity format", async () => {
+    it("formats Point2d via the FormatsProvider using kindOfQuantity", async () => {
       const result = await formatFieldValueAsync(
         { value: { x: 1, y: 2 }, type: "coordinate", persistenceUnitFullName: "Units.M" },
-        { quantity: { format: metersFormat } },
-        createContext(),
+        { quantity: { kindOfQuantity: "AecUnits.LENGTH" } },
+        createContext({ "AecUnits.LENGTH": metersFormat }),
       );
       expect(result).toBe("(1 m, 2 m)");
     });
 
-    it("formats Point3d using an inline quantity format", async () => {
+    it("formats Point3d via the FormatsProvider using kindOfQuantity", async () => {
       const result = await formatFieldValueAsync(
         { value: { x: 1, y: 2, z: 3 }, type: "coordinate", persistenceUnitFullName: "Units.M" },
-        { quantity: { format: metersFormat } },
-        createContext(),
+        { quantity: { kindOfQuantity: "AecUnits.LENGTH" } },
+        createContext({ "AecUnits.LENGTH": metersFormat }),
       );
       expect(result).toBe("(1 m, 2 m, 3 m)");
     });
@@ -366,9 +361,9 @@ describe("Async field formatting", () => {
 
     it("applies prefix/suffix/case around the joined coordinate", async () => {
       const result = await formatFieldValueAsync(
-        { value: { x: 1, y: 2 }, type: "coordinate", persistenceUnitFullName: "Units.M" },
-        { prefix: "at ", case: "upper", quantity: { format: metersFormat } },
-        createContext(),
+        { value: { x: 1, y: 2 }, type: "coordinate", persistenceUnitFullName: "Units.M", kindOfQuantityFullName: "AecUnits.LENGTH" },
+        { prefix: "at ", case: "upper" },
+        createContext({ "AecUnits.LENGTH": metersFormat }),
       );
       expect(result).toBe("at (1 M, 2 M)");
     });

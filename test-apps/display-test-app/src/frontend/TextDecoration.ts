@@ -474,13 +474,13 @@ export class TextDecorationTool extends Tool {
     //                                       own KoQ + `SchemaFormatsProvider` for lookups.
     //   * `dta text formatmode demo-throw` -> same as `demo`, but unknown KoQs throw.
     //
-    // The "Expected" strings that describe deterministic conversions (inline FormatProps
-    // overrides) are exact; the ones that depend on the property's KoQ are annotated because
-    // their exact form depends on how ParkingRow.Origin's KoQ resolves in the FormatsProvider.
+    // The "Expected" strings that describe deterministic conversions via seed-supplied FormatProps
+    // are exact; the ones that depend on the property's KoQ are annotated because their exact
+    // form depends on how ParkingRow.Origin's KoQ resolves in the FormatsProvider.
 
     editor.appendBreak();
     editor.runStyle.isBold = true;
-    editor.appendText("Sync-friendly (no inline format override) — exercised by the txn callback path and evaluateFields");
+    editor.appendText("Quantity formatting cases — exercised by both the txn callback path and evaluateFields/evaluateFieldsAsync");
     editor.runStyle.isBold = false;
     editor.appendBreak();
 
@@ -549,108 +549,6 @@ export class TextDecorationTool extends Tool {
       "(100745.232 [~]ft, 193219.5384 [~]ft, 0 [~]ft)",
       { quantity: { kindOfQuantity: "Demo.LENGTH_FT", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.LENGTH_FT'] — decimal ft, 4 dp. Trailing digits reflect actual m->ft conversion. [~] marker confirms the demo seed applied.",
-    );
-
-    editor.appendBreak();
-    editor.runStyle.isBold = true;
-    editor.appendText("Async-only (inline format overrides) — bypasses sync provider, exercised only by evaluateFieldsAsync");
-    editor.runStyle.isBold = false;
-    editor.appendBreak();
-
-    // Inline FormatProps override — meters, 3 decimals. Deterministic conversion.
-    expectField(
-      "Inline m (3 demo)",
-      "(30707.147 m, 58893.315 m, 0 m)",
-      {
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 3,
-            composite: { units: [{ name: "Units.M", label: "m" }] },
-          },
-        },
-      },
-      "inline FormatProps — meters, 3 decimals. Trailing zeros dropped (no `trailZeros` trait).",
-    );
-
-    // Inline FormatProps override — millimeters (verifies m -> mm conversion).
-    expectField(
-      "Inline mm (3 demo)",
-      "(30707146.677 mm, 58893315.298 mm, 0 mm)",
-      {
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 3,
-            composite: { units: [{ name: "Units.MM", label: "mm" }] },
-          },
-        },
-      },
-      "Verifies m -> mm conversion (multiply by 1000). Trailing digits reflect actual conversion.",
-    );
-
-    // Inline FormatProps override — feet, 2 decimals.
-    expectField(
-      "Inline ft (2 demo)",
-      "(100745.23 ft, 193219.54 ft, 0 ft)",
-      {
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 2,
-            composite: { units: [{ name: "Units.FT", label: "ft" }] },
-          },
-        },
-      },
-      "Verifies m -> ft conversion (~3.281 ft/m).",
-    );
-
-    // Inline FormatProps override — composite feet-inches (verifies m -> ft/in conversion).
-    expectField(
-      "Inline ft-in (fractional)",
-      `(100745 ' 2 3/4 ", 193219 ' 6 1/2 ", 0 ' 0 ")`,
-      {
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Fractional",
-            precision: 8,
-            composite: {
-              units: [
-                { name: "Units.FT", label: "'" },
-                { name: "Units.IN", label: `"` },
-              ],
-            },
-          },
-        },
-      },
-      "Verifies m -> composite ft/in conversion (fractional). Default uomSeparator is a space; add `uomSeparator: \"\"` to eliminate it.",
-    );
-
-    // Inline override combined with post-format upper-case.
-    expectField(
-      "Inline ft + case upper",
-      "(100745.23 FT, 193219.54 FT, 0 FT)",
-      {
-        case: "upper",
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 2,
-            composite: { units: [{ name: "Units.FT", label: "ft" }] },
-          },
-        },
-      },
-      "case=upper applied after inline ft formatting.",
     );
 
     await editor.update();
@@ -740,7 +638,7 @@ export class TextDecorationTool extends Tool {
 
     editor.appendBreak();
     editor.runStyle.isBold = true;
-    editor.appendText("Sync-friendly (no inline format override) — exercised by the txn callback path and evaluateFields");
+    editor.appendText("Quantity formatting cases — exercised by both the txn callback path and evaluateFields/evaluateFieldsAsync");
     editor.runStyle.isBold = false;
     editor.appendBreak();
 
@@ -802,121 +700,6 @@ export class TextDecorationTool extends Tool {
       "68844.8407 [&]ft²",
       { quantity: { kindOfQuantity: "Demo.AREA_FT2", persistenceUnit } },
       "Uses DEMO_SEED_FORMATS['Demo.AREA_FT2'] — decimal ft², 4 dp. Verifies m² -> ft² conversion (/ 0.09290304). [&] marker confirms the demo seed applied.",
-    );
-
-    editor.appendBreak();
-    editor.runStyle.isBold = true;
-    editor.appendText("Async-only (inline format overrides) — bypasses sync provider, exercised only by evaluateFieldsAsync");
-    editor.runStyle.isBold = false;
-    editor.appendBreak();
-
-    // Inline FormatProps override — square metres, 4 decimals. Deterministic.
-    expectField(
-      "Inline m² (4 demo)",
-      "6395.895 m²",
-      {
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 4,
-            composite: { units: [{ name: "Units.SQ_M", label: "m²" }] },
-          },
-        },
-      },
-      "inline FormatProps — m², 4 decimals. Trailing zero dropped (no `trailZeros` trait): 6395.8950 -> 6395.895.",
-    );
-
-    // Inline FormatProps override — square metres, 3 decimals.
-    expectField(
-      "Inline m² (3 demo)",
-      "6395.895 m²",
-      {
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 3,
-            composite: { units: [{ name: "Units.SQ_M", label: "m²" }] },
-          },
-        },
-      },
-      "inline FormatProps — m², 3 decimals.",
-    );
-
-    // Inline FormatProps override — square millimeters (verifies m² -> mm² conversion).
-    expectField(
-      "Inline mm² (2 demo)",
-      "6395894993.43 mm²",
-      {
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 2,
-            composite: { units: [{ name: "Units.SQ_MM", label: "mm²" }] },
-          },
-        },
-      },
-      "Verifies m² -> mm² conversion (multiply by 1,000,000). 6,395,894,993.427551 rounded to 2 dp.",
-    );
-
-    // Inline FormatProps override — square feet, 4 decimals (verifies m² -> ft² conversion).
-    expectField(
-      "Inline ft² (4 demo)",
-      "68844.8407 ft²",
-      {
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 4,
-            composite: { units: [{ name: "Units.SQ_FT", label: "ft²" }] },
-          },
-        },
-      },
-      "Verifies m² -> ft² conversion (divide by 0.09290304). 68844.84074393637 rounded to 4 dp.",
-    );
-
-    // Inline FormatProps override — square feet, 2 decimals.
-    expectField(
-      "Inline ft² (2 demo)",
-      "68844.84 ft²",
-      {
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 2,
-            composite: { units: [{ name: "Units.SQ_FT", label: "ft²" }] },
-          },
-        },
-      },
-      "Verifies m² -> ft² conversion at 2 dp.",
-    );
-
-    // Inline override combined with post-format upper-case.
-    expectField(
-      "Inline ft² + case upper",
-      "68844.84 FT²",
-      {
-        case: "upper",
-        quantity: {
-          persistenceUnit,
-          format: {
-            formatTraits: ["keepSingleZero", "showUnitLabel"],
-            type: "Decimal",
-            precision: 2,
-            composite: { units: [{ name: "Units.SQ_FT", label: "ft²" }] },
-          },
-        },
-      },
-      "case=upper applied after inline ft² formatting.",
     );
 
     await editor.update();
