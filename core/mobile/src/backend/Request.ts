@@ -185,7 +185,7 @@ export class ResponseError extends BentleyError {
 const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (res: sarequest.Response) => {
   const elapsed = new Date().getTime() - startTime;
   const elapsedTime = `${elapsed}ms`;
-  Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
+  Logger.logTrace(loggerCategory, `${req.method.toUpperCase()} ${res.status} ${getSafeUrlForLogging(req.url)} (${elapsedTime})`);
 };
 
 const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentRequest => {
@@ -199,12 +199,16 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
  * @internal
  */
 export function getSafeUrlForLogging(url: string): string {
-  const safeToLogDownloadUrl = new URL(url);
-  if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
-    safeToLogDownloadUrl.search = "...";
-  if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
-    safeToLogDownloadUrl.hash = "...";
-  return safeToLogDownloadUrl.toString();
+  try {
+    const safeToLogDownloadUrl = new URL(url);
+    if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
+      safeToLogDownloadUrl.search = "...";
+    if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
+      safeToLogDownloadUrl.hash = "...";
+    return safeToLogDownloadUrl.toString();
+  } catch {
+    return "<unparsable url>"; // never fall back to the raw url - it may contain a token
+  }
 }
 
 /** Wrapper around making HTTP requests with the specific options.
