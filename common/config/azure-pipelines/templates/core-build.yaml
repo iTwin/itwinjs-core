@@ -8,8 +8,8 @@ parameters:
     type: string
     default: $(System.DefaultWorkingDirectory)
   - name: rushBuildCacheEnabled
-    type: number
-    default: 1
+    type: string
+    default: '1'
   - name: buildMobile
     type: boolean
     default: false

@@ -228,7 +228,7 @@ jobs:
         parameters:
           nodeVersion: 24.x
           buildMobile: true
-          rushBuildCacheEnabled: $[ variables.cacheEnabled ]
+          rushBuildCacheEnabled: $(cacheEnabled)
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
