@@ -112,6 +112,9 @@ import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
+import { FormatsProvider } from '@itwin/core-quantity';
+import { FormattingSpecArgs } from '@itwin/core-quantity';
+import { FormattingSpecProvider } from '@itwin/core-quantity';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -299,6 +302,7 @@ import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
+import { UnitsProvider } from '@itwin/core-quantity';
 import { UpgradeOptions } from '@itwin/core-common';
 import { UrlLinkProps } from '@itwin/core-common';
 import { Vector3d } from '@itwin/core-geometry';
@@ -2951,13 +2955,22 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
+    static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[];
     static evaluateFields(args: EvaluateFieldsArgs): number;
+    static evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number>;
+    static getFieldFormattingProvider(iModel: IModelDb, formatSet?: Id64String): FormattingSpecProvider | undefined;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
+    static registerFieldFormattingProvider(iModel: IModelDb, args: {
+        formatSet?: Id64String;
+        provider: FormattingSpecProvider;
+        onMissingSpec?: "fallback" | "throw";
+    }): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
+    static unregisterFieldFormattingProvider(iModel: IModelDb, formatSet?: Id64String): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
     static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;
@@ -3242,6 +3255,11 @@ export interface EvaluateFieldsArgs {
     iModel: IModelDb;
 }
 
+// @beta
+export interface EvaluateFieldsAsyncArgs extends EvaluateFieldsArgs {
+    formatting?: FieldFormattingProviders;
+}
+
 // @public
 export namespace ExportGraphics {
     export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean;
@@ -3504,6 +3522,13 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @beta
+export interface FieldFormattingProviders {
+    formatsProvider?: FormatsProvider;
+    onMissingSpec?: "fallback" | "throw";
+    unitsProvider?: UnitsProvider;
 }
 
 // @public @deprecated

@@ -7,6 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
+import { FormatProps } from "@itwin/core-quantity";
 
 /** Enumerates the different kinds of [Property]($ecschema-metadata) values that can be used as the basis for a [[FieldRun]]'s display string.
  * A field's property type is derived from the property's [PrimitiveType]($ecschema-metadata) and other attributes like its [PrimitiveOrEnumPropertyBase.extendedTypeName]($ecschema-metadata).
@@ -19,7 +20,10 @@ import { Id64String } from "@itwin/core-bentley";
  *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
  *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
  *  - "string": a value convertible to a string.
- * @note Currently, only formatting of "string" and "datetime" types is implemented. Other types are converted to and formatted as "string".
+ * @note "quantity" and "coordinate" fields are formatted through the iTwin.js quantity pipeline
+ * only on the async formatting path (e.g. [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend));
+ * the sync path falls back to a plain string representation. Formatting for "boolean", "int-enum",
+ * and "string-enum" is not yet implemented; those values are converted to and formatted as "string".
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
@@ -64,7 +68,7 @@ export interface FieldPropertyHost {
   className: string;
 }
 
-/** As part of [[FieldFormatOptions]], specifies how to modify the case of the display string.
+/** As part of a [[FieldFormatOptions]], specifies how to modify the case of the display string.
  * "as-is" leaves it unmodified. "upper" and "lower" convert it to all upper-case or all lower-case, respectively.
  * @beta
  */
@@ -82,6 +86,47 @@ export interface DateTimeFieldFormatOptions {
   formatOptions?: Intl.DateTimeFormatOptions;
 }
 
+/** As part of a [[FieldFormatOptions]], specifies how to format [[FieldPropertyType]]
+ * `"quantity"` or `"coordinate"` values.
+ *
+ * At runtime, a format is resolved in this priority order:
+ *  1. [[format]] — inline [FormatProps]($core-quantity) override.
+ *  2. [[kindOfQuantity]] — looked up via the active [FormatsProvider]($core-quantity).
+ *  3. The property's own [KindOfQuantity]($ecschema-metadata).
+ *  4. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
+ *
+ * If none yields a usable format, the raw value is rendered via `toString()`.
+ * @beta
+ */
+export interface QuantityFieldFormatOptions {
+  /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) used as the source unit when
+   * constructing a [FormatterSpec]($core-quantity). Defaults to the persistence unit of the
+   * property's [KindOfQuantity]($ecschema-metadata).
+   */
+  persistenceUnit?: string;
+  /** Full name of a [KindOfQuantity]($ecschema-metadata) (e.g. `"AecUnits.LENGTH"`) to look up
+   * via the active [FormatsProvider]($core-quantity), overriding the property's own KoQ.
+   * Ignored when [[format]] is supplied.
+   */
+  kindOfQuantity?: string;
+  /** [Id64String]($bentley) of a persisted FormatSet element that selects which registered
+   * synchronous [FormattingSpecProvider]($core-quantity) formats this field. The txn callback
+   * path and [ElementDrivesTextAnnotation.evaluateFields]($backend) look up the provider
+   * registered under this FormatSet id via
+   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend):
+   *  1. The provider registered under `formatSet`.
+   *  2. The iModel-level default registration (registered with no `formatSet`).
+   *  3. Raw string representation.
+   *
+   * Ignored when [[format]] is supplied.
+   */
+  formatSet?: Id64String;
+  /** Inline [FormatProps]($core-quantity) override. Highest priority; when present,
+   * [[kindOfQuantity]] is ignored.
+   */
+  format?: FormatProps;
+}
+
 /** Customizes how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
  * The exact options used depend upon the [[FieldPropertyType]].
  * @beta
@@ -95,4 +140,8 @@ export interface FieldFormatOptions {
   case?: FieldCase;
   /** Formatting options for [[FieldPropertyType]] "datetime". */
   dateTime?: DateTimeFieldFormatOptions;
+  /** Formatting options for [[FieldPropertyType]] `"quantity"` and `"coordinate"`. See
+   * [[QuantityFieldFormatOptions]] for the resolution priority.
+   */
+  quantity?: QuantityFieldFormatOptions;
 }

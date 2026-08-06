@@ -26,6 +26,9 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DeepReadonlyObject } from '@itwin/core-bentley';
 import { DeepRequiredObject } from '@itwin/core-bentley';
+import { FormatProps } from '@itwin/core-quantity';
+import { FormatsProvider } from '@itwin/core-quantity';
+import { FormatterSpec } from '@itwin/core-quantity';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
@@ -73,6 +76,7 @@ import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UintArray } from '@itwin/core-bentley';
+import { UnitsProvider } from '@itwin/core-quantity';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import type { Writable } from 'stream';
@@ -3684,8 +3688,41 @@ export interface FieldFormatOptions {
     case?: FieldCase;
     dateTime?: DateTimeFieldFormatOptions;
     prefix?: string;
+    quantity?: QuantityFieldFormatOptions;
     suffix?: string;
 }
+
+// @internal
+export interface FieldFormatterContext {
+    // (undocumented)
+    formatsProvider: FormatsProvider;
+    // (undocumented)
+    specCache?: Map<string, FormatterSpec>;
+    // (undocumented)
+    unitsProvider: UnitsProvider;
+}
+
+// @internal (undocumented)
+export interface FieldFormattingSpecProvider {
+    // (undocumented)
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    // (undocumented)
+    getSpecsByNameAndUnit(args: {
+        name: string;
+        persistenceUnitName: string;
+    }): {
+        formatterSpec: FormatterSpec;
+    } | undefined;
+}
+
+// @internal
+export interface FieldFormattingSpecResolver {
+    // (undocumented)
+    resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined;
+}
+
+// @internal
+export type FieldMissingSpecBehavior = "fallback" | "throw";
 
 // @internal
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
@@ -3736,6 +3773,8 @@ export interface FieldRunProps extends TextBlockComponentProps {
 
 // @internal
 export interface FieldValue {
+    kindOfQuantityFullName?: string;
+    persistenceUnitFullName?: string;
     // (undocumented)
     type: FieldPropertyType;
     // (undocumented)
@@ -3834,6 +3873,15 @@ export enum FontType {
 
 // @internal (undocumented)
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
+
+// @internal
+export function formatFieldValueAsync(value: FieldValue, options: FieldFormatOptions | undefined, context: FieldFormatterContext, onMissingSpec?: FieldMissingSpecBehavior): Promise<string | undefined>;
+
+// @internal
+export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FieldFormattingSpecProvider, onMissingSpec?: FieldMissingSpecBehavior): string | undefined;
+
+// @internal
+export function formatFieldValueWithSpecResolver(value: FieldValue, options: FieldFormatOptions | undefined, resolver: FieldFormattingSpecResolver): string | undefined;
 
 // @internal (undocumented)
 export interface FormDataCommon {
@@ -7808,6 +7856,14 @@ export class QPoint3dList {
     unquantize(index: number, out?: Point3d): Point3d;
 }
 
+// @beta
+export interface QuantityFieldFormatOptions {
+    format?: FormatProps;
+    formatSet?: Id64String;
+    kindOfQuantity?: string;
+    persistenceUnit?: string;
+}
+
 // @public
 export namespace Quantization {
     const // (undocumented)
@@ -8628,6 +8684,14 @@ export interface RequestNewBriefcaseProps {
     readonly fileName?: LocalFileName;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
+}
+
+// @internal
+export interface ResolvedFieldFormattingSpecProvider {
+    // (undocumented)
+    onMissingSpec?: FieldMissingSpecBehavior;
+    // (undocumented)
+    provider: FieldFormattingSpecProvider;
 }
 
 // @internal

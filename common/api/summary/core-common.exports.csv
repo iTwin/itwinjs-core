@@ -325,6 +325,10 @@ public;class;FeatureTable
 internal;class;FeatureTableHeader
 beta;type;FieldCase
 beta;interface;FieldFormatOptions
+internal;interface;FieldFormatterContext
+internal;interface;FieldFormattingSpecProvider
+internal;interface;FieldFormattingSpecResolver
+internal;type;FieldMissingSpecBehavior
 internal;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath
@@ -347,6 +351,9 @@ deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;function;formatFieldValue
+internal;function;formatFieldValueAsync
+internal;function;formatFieldValueWithSpecProvider
+internal;function;formatFieldValueWithSpecResolver
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps
@@ -720,6 +727,7 @@ public;interface;QPoint3dBuffer
 public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
+beta;interface;QuantityFieldFormatOptions
 public;namespace;Quantization
 public;class;QueryBinder
 public;interface;QueryLimit
@@ -779,6 +787,7 @@ preview;interface;RenderTimelineProps
 public;interface;RepositoryLinkProps
 preview;interface;RepositoryLinkProps
 public;interface;RequestNewBriefcaseProps
+internal;interface;ResolvedFieldFormattingSpecProvider
 internal;function;resolveNavProp
 internal;function;resolveNavPropId
 internal;class;ResponseLike

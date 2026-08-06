@@ -23,6 +23,7 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 import { FormatSet } from "@itwin/ecschema-metadata";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
+import { getFieldFormattingDemo } from "./FieldFormattingDemo";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -198,7 +199,26 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     const iModel = IModelDb.findByKey(iModelToken.key);
 
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
-    ElementDrivesTextAnnotation.evaluateFields({ block: textBlock, iModel });
+
+    const demo = getFieldFormattingDemo(iModel);
+    if (demo) {
+      // Keep the async pipeline consistent with the sync (txn callback) pipeline: use the
+      // demo provider's own FormatsProvider/UnitsProvider so both produce identical output.
+      // Preload the specs so `formatQuantity` calls that happen implicitly through the async
+      // formatter can use them if the async path decides to consult the cache.
+      await demo.provider.prepareForBlock(iModel, textBlock);
+      await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+        block: textBlock,
+        iModel,
+        formatting: {
+          formatsProvider: demo.provider.formatsProvider,
+          unitsProvider: demo.provider.unitsProvider,
+          onMissingSpec: demo.mode === "demo-throw" ? "throw" : "fallback",
+        },
+      });
+    } else {
+      await ElementDrivesTextAnnotation.evaluateFieldsAsync({ block: textBlock, iModel });
+    }
 
     let scaleFactor = 1;
     if (modelId) {

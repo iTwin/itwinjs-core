@@ -8,11 +8,12 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
-import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
+import { collectFieldFormattingRequirements, createFieldFormatterContext, createFieldFormattingSpecResolverForIModel, createUpdateContext, getFieldFormattingProviderForIModel, registerFieldFormattingProviderForIModel, unregisterFieldFormattingProviderForIModel, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
@@ -62,6 +63,40 @@ export interface EvaluateFieldsArgs {
   block: TextBlock;
   /** The iModel containing the elements supplying the display strings for the fields in [[block]]. */
   iModel: IModelDb;
+}
+
+/** Application-supplied providers used to format `"quantity"` and `"coordinate"` [FieldRun]($common)s.
+ * Any omitted provider defaults to a schema-backed implementation derived from
+ * [[EvaluateFieldsArgs.iModel]]'s schema context. Hosts that own a
+ * [FormattingSpecProvider]($core-quantity) backed by an adopted FormatSet supply it here to route
+ * FieldRun formatting through their own provider.
+ * @beta
+ */
+export interface FieldFormattingProviders {
+  /** Resolves a [FormatProps]($core-quantity) by KindOfQuantity name. */
+  formatsProvider?: FormatsProvider;
+  /** Resolves [UnitProps]($core-quantity) (e.g. a value's persistence unit). */
+  unitsProvider?: UnitsProvider;
+  /** Behavior when a `"quantity"` or `"coordinate"` [FieldRun]($common) has no matching
+   * [FormatterSpec]($core-quantity). `"fallback"` (default) renders the raw string; `"throw"`
+   * rejects with an [[Error]] describing the missing spec.
+   *
+   * Applies only to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]]. The synchronous
+   * [[ElementDrivesTextAnnotation.evaluateFields]] and `TxnManager` callback paths use the
+   * `onMissingSpec` supplied at [[ElementDrivesTextAnnotation.registerFieldFormattingProvider]];
+   * with no provider registered, they always fall back.
+   */
+  onMissingSpec?: "fallback" | "throw";
+}
+
+/** Arguments supplied to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]].
+ * @beta
+ */
+export interface EvaluateFieldsAsyncArgs extends EvaluateFieldsArgs {
+  /** Providers used to format `"quantity"` and `"coordinate"` [FieldRun]($common)s. When
+   * omitted, a schema-backed default is built from [[iModel]].
+   */
+  formatting?: FieldFormattingProviders;
 }
 
 /** A relationship in which the source element hosts one or more properties that are displayed by a target [[ITextAnnotation]] element.
@@ -186,11 +221,122 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).
+   *
+   * If [FormattingSpecProvider]($core-quantity)s have been registered for `args.iModel` via
+   * [[registerFieldFormattingProvider]], each `"quantity"` or `"coordinate"` field is routed
+   * using the cascading lookup on [QuantityFieldFormatOptions.formatSet]($common):
+   *   1. The field's `formatSet` registration.
+   *   2. The iModel-level default registration (registered with no `formatSet`).
+   *   3. Raw string representation.
    * @returns the number of fields whose display strings were modified.
    * @throws Error if evaluation of any field fails.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
-    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false))
+    const resolver = createFieldFormattingSpecResolverForIModel(args.iModel);
+    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, resolver))
+  }
+
+  /** Async counterpart to [[evaluateFields]] that formats `"quantity"` and `"coordinate"`
+   * [FieldRun]($common)s through the standard iTwin.js quantity pipeline. Non-quantity fields
+   * are formatted identically to [[evaluateFields]].
+   *
+   * By default the [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity) are
+   * derived from `args.iModel`'s schema context. Supply [[EvaluateFieldsAsyncArgs.formatting]]
+   * to route formatting through an application-owned provider (e.g. a FormatSet-backed
+   * [FormattingSpecProvider]($core-quantity)).
+   *
+   * For each `"quantity"` or `"coordinate"` field the format is resolved in this priority
+   * order (see [QuantityFieldFormatOptions]($common) for the full contract):
+   *   1. [QuantityFieldFormatOptions.format]($common) — inline [FormatProps]($core-quantity) override.
+   *   2. [QuantityFieldFormatOptions.kindOfQuantity]($common) — looked up via the active [FormatsProvider]($core-quantity).
+   *   3. The property's own [KindOfQuantity]($ecschema-metadata).
+   *   4. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
+   *
+   * If none yields a usable format, the raw value is rendered via `toString()` (or an error is
+   * thrown when [FieldFormattingProviders.onMissingSpec]($backend) is `"throw"`).
+   * @returns the number of fields whose display strings were modified.
+   * @beta
+   */
+  public static async evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number> {
+    const context = createUpdateContext(undefined, args.iModel, false, undefined, args.formatting?.onMissingSpec);
+    const formatter = createFieldFormatterContext(args.iModel, args.formatting);
+    return updateFieldsAsync(args.block, context, formatter);
+  }
+
+  /** Walks the [FieldRun]($common)s in a [TextBlock]($common) and returns a deduplicated list
+   * of the [FormattingSpecArgs]($core-quantity) their `"quantity"` and `"coordinate"` values
+   * need to be formatted through the standard iTwin.js quantity pipeline.
+   *
+   * Intended for an application-supplied [FormattingSpecProvider]($core-quantity) to pre-build
+   * the [FormatterSpec]($core-quantity)s referenced by the annotation before it is inserted,
+   * updated, or re-evaluated. Fields carrying an inline [QuantityFieldFormatOptions.format]($common)
+   * override, or whose target property has no [KindOfQuantity]($ecschema-metadata) (and no
+   * `kindOfQuantity` / `persistenceUnit` override), are omitted — they need no provider lookup.
+   * @beta
+   */
+  public static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[] {
+    return collectFieldFormattingRequirements(args.block, args.iModel);
+  }
+
+  /** Registers a synchronous [FormattingSpecProvider]($core-quantity) for `iModel`, optionally
+   * scoped to a specific FormatSet element. Once registered, [[evaluateFields]] and the
+   * `TxnManager`-driven field-update callback path format `"quantity"` and `"coordinate"` fields
+   * via the cascading lookup on [QuantityFieldFormatOptions.formatSet]($common):
+   *   1. The field's `formatSet` registration.
+   *   2. The iModel-level default registration (registered with no `formatSet`).
+   *   3. Raw string representation.
+   *
+   * Providers should be pre-warmed with the results of [[collectFieldFormattingRequirements]].
+   * Missing specs fall back to the raw string (or throw when the selected registration's
+   * `onMissingSpec` is `"throw"`).
+   *
+   * Each registration replaces any prior one for the same `formatSet`. Registrations are held
+   * in a [WeakMap]() keyed by an `Id64String` and need not be cleared on close; use
+   * [[unregisterFieldFormattingProvider]] to remove one.
+   *
+   * TODO: Maybe this is unnecessary if we store the FormatSets in the iModel and look them up on demand.
+   *
+   * @beta
+   */
+  public static registerFieldFormattingProvider(
+    iModel: IModelDb,
+    args: {
+      /** [Id64String]($bentley) of the FormatSet element whose fields route to `provider`. Omit
+       * to register the iModel-level default.
+       */
+      formatSet?: Id64String;
+      /** Provider associated with `formatSet` (or the iModel-level default when omitted). */
+      provider: FormattingSpecProvider;
+      /** Behavior when this provider has no spec for a given field.
+       *   - `"fallback"` (default) renders the raw string;
+       *   - `"throw"` propagates the failure.
+       *
+       * On the `TxnManager` driven callback path, a `"throw"` error is caught and logged via
+       * [Logger]($bentley) rather than aborting the transaction; for hard failure, call
+       * [[evaluateFields]] or [[evaluateFieldsAsync]] directly.
+       */
+      onMissingSpec?: "fallback" | "throw";
+    },
+  ): void {
+    registerFieldFormattingProviderForIModel(iModel, args);
+  }
+
+  /** Removes a registration previously created by [[registerFieldFormattingProvider]]. Pass
+   * `formatSet` to remove a specific FormatSet-scoped registration; omit to remove the
+   * iModel-level default.
+   * @beta
+   */
+  public static unregisterFieldFormattingProvider(iModel: IModelDb, formatSet?: Id64String): void {
+    unregisterFieldFormattingProviderForIModel(iModel, formatSet);
+  }
+
+  /** Returns the [FormattingSpecProvider]($core-quantity) previously registered for `iModel`
+   * under `formatSet` via [[registerFieldFormattingProvider]], if any. Pass `formatSet` for a
+   * specific FormatSet-scoped registration; omit for the iModel-level default.
+   * @beta
+   */
+  public static getFieldFormattingProvider(iModel: IModelDb, formatSet?: Id64String): FormattingSpecProvider | undefined {
+    return getFieldFormattingProviderForIModel(iModel, formatSet) as FormattingSpecProvider | undefined;
   }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element
