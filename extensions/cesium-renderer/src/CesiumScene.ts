@@ -175,6 +175,7 @@ export class CesiumScene {
   private async loadGaussianSplatTileset(url: string): Promise<void> {
     try {
       const tileset = await Cesium3DTileset.fromUrl(url);
+      // const tileset = await Cesium3DTileset.fromIonAssetId(3667783)
       this._scene.primitives.add(tileset);
       this._splatTileset = tileset;
     } catch (error) {
@@ -194,7 +195,7 @@ export class CesiumScene {
 
     const camera = this._scene.camera;
     const radius = tileset.boundingSphere.radius;
-    const scale = 1000.0;
+    const scale = 1; // 1000.0;
     const scaledRadius = radius * scale;
     const offset = Cartesian3.multiplyByScalar(camera.directionWC, scaledRadius * 4, new Cartesian3());
     const target = Cartesian3.add(camera.positionWC, offset, new Cartesian3());
