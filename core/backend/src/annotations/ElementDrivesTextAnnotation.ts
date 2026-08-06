@@ -224,9 +224,10 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *
    * If [FormattingSpecProvider]($core-quantity)s have been registered for `args.iModel` via
    * [[registerFieldFormattingProvider]], each `"quantity"` or `"coordinate"` field is routed
-   * using the cascading lookup on [QuantityFieldFormatOptions.formatSet]($common) (field's
-   * `formatSet` registration first, then the iModel-level default). Fields with no matching
-   * registration render as their raw string representation.
+   * using the cascading lookup on [QuantityFieldFormatOptions.formatSet]($common):
+   *   1. The field's `formatSet` registration.
+   *   2. The iModel-level default registration (registered with no `formatSet`).
+   *   3. Raw string representation.
    * @returns the number of fields whose display strings were modified.
    * @throws Error if evaluation of any field fails.
    */
@@ -278,38 +279,41 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   /** Registers a synchronous [FormattingSpecProvider]($core-quantity) for `iModel`, optionally
-   * scoped to a specific FormatSet element. Once any provider is registered, [[evaluateFields]]
-   * and the `TxnManager`-driven field-update callback path format `"quantity"` and `"coordinate"`
-   * fields using the cascading lookup on [QuantityFieldFormatOptions.formatSet]($common):
-   *   1. Field's `formatSet` matches a registration → that provider.
-   *   2. Otherwise the iModel-level default registration (registered with no `formatSet`).
-   *   3. No match → raw string representation.
+   * scoped to a specific FormatSet element. Once registered, [[evaluateFields]] and the
+   * `TxnManager`-driven field-update callback path format `"quantity"` and `"coordinate"` fields
+   * via the cascading lookup on [QuantityFieldFormatOptions.formatSet]($common):
+   *   1. The field's `formatSet` registration.
+   *   2. The iModel-level default registration (registered with no `formatSet`).
+   *   3. Raw string representation.
    *
-   * Providers are expected to have been pre-warmed with the results of
-   * [[collectFieldFormattingRequirements]]. If a required spec is missing, formatting falls back
-   * to the raw string (or throws when the selected registration's `onMissingSpec` is `"throw"`).
+   * Providers should be pre-warmed with the results of [[collectFieldFormattingRequirements]].
+   * Missing specs fall back to the raw string (or throw when the selected registration's
+   * `onMissingSpec` is `"throw"`).
    *
    * Each registration replaces any prior one for the same `formatSet`. Registrations are held
-   * in a [WeakMap]() keyed by `iModel`, so they need not be cleared explicitly on close. Use
+   * in a [WeakMap]() keyed by an `Id64String` and need not be cleared on close; use
    * [[unregisterFieldFormattingProvider]] to remove one.
+   *
+   * TODO: Maybe this is unnecessary if we store the FormatSets in the iModel and look them up on demand.
+   *
    * @beta
    */
   public static registerFieldFormattingProvider(
     iModel: IModelDb,
     args: {
       /** [Id64String]($bentley) of the FormatSet element whose fields route to `provider`. Omit
-       * to register the iModel-level default (used when a field has no `formatSet` or its
-       * `formatSet` has no matching registration).
+       * to register the iModel-level default.
        */
       formatSet?: Id64String;
       /** Provider associated with `formatSet` (or the iModel-level default when omitted). */
       provider: FormattingSpecProvider;
-      /** Behavior when this registration's provider does not supply a spec for a given field.
-       * `"fallback"` (default) renders the raw string; `"throw"` propagates the failure.
+      /** Behavior when this provider has no spec for a given field.
+       *   - `"fallback"` (default) renders the raw string;
+       *   - `"throw"` propagates the failure.
        *
-       * On the `TxnManager`-driven callback path a `"throw"` error is caught at the top of the
-       * callback and logged via [Logger]($bentley) — it does not abort the transaction. For
-       * hard failure, call [[evaluateFields]] or [[evaluateFieldsAsync]] directly.
+       * On the `TxnManager` driven callback path, a `"throw"` error is caught and logged via
+       * [Logger]($bentley) rather than aborting the transaction; for hard failure, call
+       * [[evaluateFields]] or [[evaluateFieldsAsync]] directly.
        */
       onMissingSpec?: "fallback" | "throw";
     },
