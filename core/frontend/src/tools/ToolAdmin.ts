@@ -797,7 +797,7 @@ export class ToolAdmin {
       return false;
     const last = ToolAdmin._toolEvents[ToolAdmin._toolEvents.length - 1];
     const lastType = last.ev.type;
-    if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove"))
+    if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove" && lastType !== "pointermove"))
       return false; // only mousemove and touchmove can replace previous
     last.ev = ev; // sequential moves are not important. Replace the previous one with this one.
     last.vp = vp;
@@ -846,6 +846,9 @@ export class ToolAdmin {
       case "touchend": return this.onTouch(event);
       case "touchcancel": return this.onTouch(event);
       case "touchmove": return this.onTouch(event);
+      case "pointerdown": return this.onMouseButton(event, true);
+      case "pointerup": return this.onMouseButton(event, false);
+      case "pointermove": return this.onMouseMove(event);
     }
   }
 
