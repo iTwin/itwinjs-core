@@ -25,6 +25,16 @@ steps:
       checkLatest: true
 
   - script: |
+      echo "=========================================================="
+      echo "1. Compile-Time Literal Syntax passed to template:"
+      echo "   Value: '${{ parameters.rushBuildCacheEnabled }}'"
+      echo "=========================================================="
+      echo "2. Evaluated Runtime Value inside the current Matrix job:"
+      echo "   Value: $(rushBuildCacheEnabled)"
+      echo "=========================================================="
+    displayName: "DEBUG: Verify Matrix Cache Parameter Value"
+
+  - script: |
       git config --local user.email imodeljs-admin@users.noreply.github.com
       git config --local user.name imodeljs-admin
     displayName: git config
