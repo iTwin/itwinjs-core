@@ -3737,8 +3737,6 @@ export interface FieldFormatterContext {
 // @internal (undocumented)
 export interface FieldFormattingSpecProvider {
     // (undocumented)
-    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
-    // (undocumented)
     getSpecsByNameAndUnit(args: {
         name: string;
         persistenceUnitName: string;

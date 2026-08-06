@@ -231,6 +231,36 @@ function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
   return parts;
 }
 
+// Applies a pre-resolved FormatterSpec to a quantity or coordinate FieldValue and wraps the
+// result with prefix/suffix/case. Shared by both the async and sync spec-based paths.
+function applySpecToFieldValue(
+  value: FieldValue,
+  options: FieldFormatOptions | undefined,
+  spec: FormatterSpec,
+  onMissingSpec: FieldMissingSpecBehavior,
+): string | undefined {
+  let formatted: string | undefined;
+  if (value.type === "quantity") {
+    if (typeof value.value !== "number") {
+      if (onMissingSpec === "throw") {
+        throw missingSpecError(value, options, `expected a numeric quantity value, got ${typeof value.value}`);
+      }
+      return formatFieldValue(value, options);
+    }
+    formatted = spec.applyFormatting(value.value);
+  } else {
+    const magnitudes = getCoordinateMagnitudes(value.value);
+    if (!magnitudes) {
+      if (onMissingSpec === "throw") {
+        throw missingSpecError(value, options, "coordinate value is missing x/y magnitudes");
+      }
+      return formatFieldValue(value, options);
+    }
+    formatted = `(${magnitudes.map((m) => spec.applyFormatting(m)).join(", ")})`;
+  }
+  return formatString(formatted, options);
+}
+
 /** Async counterpart to [[formatFieldValue]] that formats `"quantity"` and `"coordinate"`
  * values through the standard iTwin.js quantity formatting pipeline.
  *
@@ -267,27 +297,7 @@ export async function formatFieldValueAsync(
   }
 
   try {
-    let formatted: string | undefined;
-    if (value.type === "quantity") {
-      if (typeof value.value !== "number") {
-        if (throwOnMiss) {
-          throw missingSpecError(value, options, `expected a numeric quantity value, got ${typeof value.value}`);
-        }
-        return formatFieldValue(value, options);
-      }
-      formatted = spec.applyFormatting(value.value);
-    } else {
-      const magnitudes = getCoordinateMagnitudes(value.value);
-      if (!magnitudes) {
-        if (throwOnMiss) {
-          throw missingSpecError(value, options, "coordinate value is missing x/y magnitudes");
-        }
-        return formatFieldValue(value, options);
-      }
-      formatted = `(${magnitudes.map((m) => spec.applyFormatting(m)).join(", ")})`;
-    }
-
-    return formatString(formatted, options);
+    return applySpecToFieldValue(value, options, spec, onMissingSpec);
   } catch (err) {
     if (throwOnMiss) throw err;
     return formatFieldValue(value, options);
@@ -295,12 +305,12 @@ export async function formatFieldValueAsync(
 }
 
 // Minimal contract used by the sync formatting path: an already-built FormatterSpec lookup keyed
-// by (KoQ name, persistence unit name), plus a formatting function. Duck-typed against
-// `FormattingSpecProvider` in `@itwin/core-quantity` so this module stays independent of it.
+// by (KoQ name, persistence unit name). Duck-typed against `FormattingSpecProvider` in
+// `@itwin/core-quantity` so this module stays independent of it. `FormatterSpec.applyFormatting`
+// is used directly to render magnitudes, so no `formatQuantity` method is required.
 /** @internal */
 export interface FieldFormattingSpecProvider {
   getSpecsByNameAndUnit(args: { name: string; persistenceUnitName: string }): { formatterSpec: FormatterSpec } | undefined;
-  formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
 }
 
 /** Behavior when a `"quantity"` or `"coordinate"` [FieldRun]($common) cannot be matched to a
@@ -384,27 +394,7 @@ export function formatFieldValueWithSpecProvider(
     return formatFieldValue(value, options);
   }
 
-  let formatted: string | undefined;
-  if (value.type === "quantity") {
-    if (typeof value.value !== "number") {
-      if (onMissingSpec === "throw") {
-        throw missingSpecError(value, options, `expected a numeric quantity value, got ${typeof value.value}`);
-      }
-      return formatFieldValue(value, options);
-    }
-    formatted = provider.formatQuantity(value.value, spec);
-  } else {
-    const magnitudes = getCoordinateMagnitudes(value.value);
-    if (!magnitudes) {
-      if (onMissingSpec === "throw") {
-        throw missingSpecError(value, options, "coordinate value is missing x/y magnitudes");
-      }
-      return formatFieldValue(value, options);
-    }
-    formatted = `(${magnitudes.map((m) => provider.formatQuantity(m, spec)).join(", ")})`;
-  }
-
-  return formatString(formatted, options);
+  return applySpecToFieldValue(value, options, spec, onMissingSpec);
 }
 
 /** Synchronous formatting entry point that consults a [[FieldFormattingSpecResolver]] to pick
