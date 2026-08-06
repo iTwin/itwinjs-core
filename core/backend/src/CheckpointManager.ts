@@ -238,7 +238,8 @@ export class V2CheckpointManager {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, nRequests: maxRequests, timeout }));
         } else {
-          Logger.logInfo(loggerCategory, `Skipping prefetch due to size limits or ongoing prefetch.`, { maxBlocks, numPrefetches: dbStats?.nPrefetch, totalBlocksInDb: dbStats?.totalBlocks, v2props });
+          const logV2Props = v2props.sasToken ? { ...v2props, sasToken: "..." } : v2props;
+          Logger.logInfo(loggerCategory, `Skipping prefetch due to size limits or ongoing prefetch.`, { maxBlocks, numPrefetches: dbStats?.nPrefetch, totalBlocksInDb: dbStats?.totalBlocks, v2props: logV2Props });
         }
       }
       return { dbName, container };

@@ -193,6 +193,20 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
   return req.on("response", logResponse(req, startTime));
 };
 
+/**
+ * Make url safe for logging by removing sensitive information
+ * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
+ * @internal
+ */
+export function getSafeUrlForLogging(url: string): string {
+  const safeToLogDownloadUrl = new URL(url);
+  if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
+    safeToLogDownloadUrl.search = "...";
+  if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
+    safeToLogDownloadUrl.hash = "...";
+  return safeToLogDownloadUrl.toString();
+}
+
 /** Wrapper around making HTTP requests with the specific options.
  *
  * Usable in both a browser and node based environment.
@@ -214,7 +228,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   if (options.headers)
     sareq = sareq.set(options.headers);
 
-  Logger.logInfo(loggerCategory, url);
+  Logger.logInfo(loggerCategory, getSafeUrlForLogging(url));
 
   if (options.accept)
     sareq = sareq.accept(options.accept);
