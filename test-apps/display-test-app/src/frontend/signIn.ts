@@ -35,7 +35,7 @@ export async function signIn(): Promise<boolean> {
   } else {
     const clientId = getConfigurationString("oidcClientId") ?? "imodeljs-spa-test";
     const redirectUri = getConfigurationString("oidcRedirectUri") ?? "http://localhost:3000/signin-callback";
-    const scope = getConfigurationString("oidcScope") ?? "projects:read realitydata:read imodels:read imodels:modify imodelaccess:read";
+    const scope = getConfigurationString("oidcScope") ?? "itwin-platform";
     const responseType = "code";
     authClient = new BrowserAuthorizationClient({
       clientId,
