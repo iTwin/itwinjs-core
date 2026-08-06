@@ -33,9 +33,6 @@ jobs:
           imageName: macos-latest
           poolName: "iModelTechMacArm"
           nodeVersion: 20.x
-        LinuxARM64_node_20_x:
-          poolName: "Platform-Debian12-ARM"
-          nodeVersion: 20.x
         Linux_node_22_x:
           imageName: ubuntu-latest
           poolName:
