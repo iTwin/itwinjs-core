@@ -152,7 +152,7 @@ export class CesiumDecorator implements Decorator {
     const center = this._iModel.projectExtents.center;
 
     const shapes = [
-      {
+      /*{
         points: [
           new Point3d(center.x - 80000, center.y - 80000, center.z + 15000),
           new Point3d(center.x + 80000, center.y - 80000, center.z + 15000),
@@ -161,7 +161,7 @@ export class CesiumDecorator implements Decorator {
         ],
         type: GraphicType.WorldDecoration,
         color: ColorDef.from(0, 255, 0),
-      },
+      },*/
       {
         points: [
           new Point3d(center.x - 60000, center.y + 40000, center.z + 25000),
