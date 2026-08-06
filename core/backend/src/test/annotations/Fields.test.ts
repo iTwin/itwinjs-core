@@ -570,33 +570,6 @@ describe.only("Field evaluation", () => {
       expect(fieldRun.cachedContent).to.equal("(1 m, 2 m, 3 m)");
     });
 
-    it("formats a quantity FieldRun using an inline FormatProps override", async () => {
-      const textBlock = TextBlock.create();
-      const fieldRun = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        // outerStruct.innerStruct.doubles[0] === 1 (a "quantity" typed double property without a KoQ)
-        propertyPath: { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] },
-        formatOptions: {
-          quantity: {
-            format: {
-              composite: { includeZero: true, units: [{ label: "m", name: "Units.M" }] },
-              formatTraits: ["keepSingleZero", "showUnitLabel"],
-              precision: 4,
-              type: "Decimal",
-              uomSeparator: " ",
-            },
-          },
-        },
-        cachedContent: "old",
-      });
-      textBlock.appendRun(fieldRun);
-
-      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: textBlock });
-
-      expect(updatedCount).to.equal(1);
-      expect(fieldRun.cachedContent).to.equal("1 m");
-    });
-
     it("preserves non-quantity field formatting when using the async pipeline", async () => {
       const textBlock = TextBlock.create();
       const stringField = FieldRun.create({
@@ -636,203 +609,68 @@ describe.only("Field evaluation", () => {
       };
     }
 
-    it("converts persistence meters to millimeters using an inline format override", async () => {
+    it("converts persistence meters to millimeters using a kindOfQuantity override", async () => {
+      const stubProvider: FormatsProvider = {
+        onFormatsChanged: new BeEvent(),
+        async getFormat(name) {
+          return name === "MyKoq.LengthMm" ? decimalFormat("Units.MM", "mm", 2) : undefined;
+        },
+      };
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
         propertyPath: doublesPath,
         formatOptions: {
           quantity: {
             persistenceUnit: "Units.M",
-            format: decimalFormat("Units.MM", "mm", 2),
+            kindOfQuantity: "MyKoq.LengthMm",
           },
         },
         cachedContent: "old",
       });
 
-      const { updatedCount, content } = await runEvaluate(field);
+      const block = TextBlock.create();
+      block.appendRun(field);
+      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+        iModel: imodel,
+        block,
+        formatting: { formatsProvider: stubProvider },
+      });
 
       expect(updatedCount).to.equal(1);
       // doubles[0] === 1 m -> 1000 mm
-      expect(content).to.equal("1000 mm");
+      expect(field.cachedContent).to.equal("1000 mm");
     });
 
-    it("converts persistence meters to feet using an inline format override", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: doublesPath,
-        formatOptions: {
-          quantity: {
-            persistenceUnit: "Units.M",
-            format: decimalFormat("Units.FT", "ft", 4),
-          },
+    it("formats coordinate values through a kindOfQuantity override", async () => {
+      const stubProvider: FormatsProvider = {
+        onFormatsChanged: new BeEvent(),
+        async getFormat(name) {
+          return name === "MyKoq.LengthFt" ? decimalFormat("Units.FT", "ft", 4) : undefined;
         },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field);
-
-      expect(updatedCount).to.equal(1);
-      // 1 m -> 3.2808 ft
-      expect(content).to.equal("3.2808 ft");
-    });
-
-    it("formats coordinate values with an inline feet format override (with persistenceUnit)", async () => {
+      };
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
         propertyPath: pointPath,
         formatOptions: {
           quantity: {
             persistenceUnit: "Units.M",
-            format: decimalFormat("Units.FT", "ft", 4),
+            kindOfQuantity: "MyKoq.LengthFt",
           },
         },
         cachedContent: "old",
       });
 
-      const { updatedCount, content } = await runEvaluate(field);
+      const block = TextBlock.create();
+      block.appendRun(field);
+      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+        iModel: imodel,
+        block,
+        formatting: { formatsProvider: stubProvider },
+      });
 
       expect(updatedCount).to.equal(1);
       // point = (1, 2, 3) m -> (3.2808 ft, 6.5617 ft, 9.8425 ft)
-      expect(content).to.equal("(3.2808 ft, 6.5617 ft, 9.8425 ft)");
-    });
-
-    it("applies prefix and suffix around a formatted quantity", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: doublesPath,
-        formatOptions: {
-          prefix: "[",
-          suffix: "]",
-          quantity: {
-            persistenceUnit: "Units.M",
-            format: decimalFormat("Units.M", "m", 2),
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field);
-
-      expect(updatedCount).to.equal(1);
-      expect(content).to.equal("[1 m]");
-    });
-
-    it("applies prefix and suffix around a formatted coordinate", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: pointPath,
-        formatOptions: {
-          prefix: "L=",
-          suffix: " (m)",
-          quantity: {
-            persistenceUnit: "Units.M",
-            format: decimalFormat("Units.M", "m", 2),
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field);
-
-      expect(updatedCount).to.equal(1);
-      expect(content).to.equal("L=(1 m, 2 m, 3 m) (m)");
-    });
-
-    it("applies case=upper to a formatted quantity but not to prefix/suffix", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: doublesPath,
-        formatOptions: {
-          case: "upper",
-          prefix: "pre-",
-          suffix: "-suf",
-          quantity: {
-            persistenceUnit: "Units.M",
-            format: decimalFormat("Units.M", "m", 2),
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field);
-
-      expect(updatedCount).to.equal(1);
-      // formatted value "1 m" is uppercased to "1 M"; prefix/suffix preserved as-is
-      expect(content).to.equal("pre-1 M-suf");
-    });
-
-    it("applies case=lower to a formatted quantity", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: doublesPath,
-        formatOptions: {
-          case: "lower",
-          quantity: {
-            persistenceUnit: "Units.M",
-            format: decimalFormat("Units.M", "M", 2),
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field);
-
-      expect(updatedCount).to.equal(1);
-      expect(content).to.equal("1 m");
-    });
-
-    it("formats a coordinate using a fractional feet/inches inline format", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: pointPath,
-        formatOptions: {
-          quantity: {
-            persistenceUnit: "Units.M",
-            format: {
-              type: "Fractional",
-              precision: 8,
-              formatTraits: ["keepSingleZero", "showUnitLabel"],
-              composite: {
-                includeZero: true,
-                units: [
-                  { name: "Units.FT", label: "'" },
-                  { name: "Units.IN", label: `"` },
-                ],
-              },
-            },
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field);
-
-      expect(updatedCount).to.equal(1);
-      // (1, 2, 3) m ~ (3'-3 3/8", 6'-6 3/4", 9'-10 1/8")
-      expect(content).to.equal(`(3 ' 3 3/8 ", 6 ' 6 3/4 ", 9 ' 10 1/8 ")`);
-    });
-
-    it("falls back to raw formatting when quantity.format is malformed", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: pointPath,
-        formatOptions: {
-          quantity: {
-            format: {
-              // Missing composite / units — FormatterSpec creation should fail and we fall back.
-              type: "Decimal",
-              precision: 2,
-            } as unknown as FormatProps,
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field);
-
-      expect(updatedCount).to.equal(1);
-      // Falls back to formatFieldValue's basic point formatting.
-      expect(content).to.equal("(1, 2, 3)");
+      expect(field.cachedContent).to.equal("(3.2808 ft, 6.5617 ft, 9.8425 ft)");
     });
 
     it("uses the default coordinate meters format when only persistenceUnit is set", async () => {
@@ -861,7 +699,6 @@ describe.only("Field evaluation", () => {
         formatOptions: {
           quantity: {
             persistenceUnit: "Units.M",
-            format: decimalFormat("Units.M", "m", 2),
           },
         },
         cachedContent: "old",
@@ -910,47 +747,6 @@ describe.only("Field evaluation", () => {
       // lengthProp = 2.5 m -> 2500 mm via the injected provider.
       expect(field.cachedContent).to.equal("2500 mm");
       expect(lookups).to.equal(1);
-    });
-
-    it("still applies inline format overrides when a FormatsProvider is injected (no lookup)", async () => {
-      let lookups = 0;
-      const stubProvider: FormatsProvider = {
-        onFormatsChanged: new BeEvent(),
-        async getFormat() {
-          lookups += 1;
-          return undefined;
-        },
-      };
-
-      const block = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: {
-          quantity: {
-            format: {
-              composite: { includeZero: true, units: [{ label: "ft", name: "Units.FT" }] },
-              formatTraits: ["keepSingleZero", "showUnitLabel"],
-              precision: 4,
-              type: "Decimal",
-              uomSeparator: " ",
-            },
-          },
-        },
-        cachedContent: "old",
-      });
-      block.appendRun(field);
-
-      const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        iModel: imodel,
-        block,
-        formatting: { formatsProvider: stubProvider },
-      });
-
-      expect(updated).to.equal(1);
-      // 2.5 m -> ~8.2021 ft; inline format wins over provider lookup.
-      expect(field.cachedContent).to.equal("8.2021 ft");
-      expect(lookups).to.equal(0);
     });
 
     it("falls back to raw formatting when an injected FormatsProvider returns undefined and no other source resolves", async () => {
@@ -1041,18 +837,6 @@ describe.only("Field evaluation", () => {
       expect(reqs).to.have.length(1);
       expect(reqs[0].name).to.equal("AecUnits.LENGTH");
       expect(reqs[0].persistenceUnitName).to.equal("Units.M");
-    });
-
-    it("skips fields with an inline format override", () => {
-      const inlineFormat: FormatProps = {
-        composite: { units: [{ label: "mm", name: "Units.MM" }] },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 2,
-        type: "Decimal",
-      };
-      const block = makeBlock(makeField({ propertyName: "lengthProp" }, { quantity: { format: inlineFormat } }));
-      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(0);
     });
 
     it("skips non-quantity fields", () => {

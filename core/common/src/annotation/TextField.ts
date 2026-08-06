@@ -7,7 +7,6 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { FormatProps } from "@itwin/core-quantity";
 
 /** Enumerates the different kinds of [Property]($ecschema-metadata) values that can be used as the basis for a [[FieldRun]]'s display string.
  * A field's property type is derived from the property's [PrimitiveType]($ecschema-metadata) and other attributes like its [PrimitiveOrEnumPropertyBase.extendedTypeName]($ecschema-metadata).
@@ -90,10 +89,9 @@ export interface DateTimeFieldFormatOptions {
  * `"quantity"` or `"coordinate"` values.
  *
  * At runtime, a format is resolved in this priority order:
- *  1. [[format]] — inline [FormatProps]($core-quantity) override.
- *  2. [[kindOfQuantity]] — looked up via the active [FormatsProvider]($core-quantity).
- *  3. The property's own [KindOfQuantity]($ecschema-metadata).
- *  4. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
+ *  1. [[kindOfQuantity]] — looked up via the active [FormatsProvider]($core-quantity).
+ *  2. The property's own [KindOfQuantity]($ecschema-metadata).
+ *  3. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
  *
  * If none yields a usable format, the raw value is rendered via `toString()`.
  * @beta
@@ -106,7 +104,6 @@ export interface QuantityFieldFormatOptions {
   persistenceUnit?: string;
   /** Full name of a [KindOfQuantity]($ecschema-metadata) (e.g. `"AecUnits.LENGTH"`) to look up
    * via the active [FormatsProvider]($core-quantity), overriding the property's own KoQ.
-   * Ignored when [[format]] is supplied.
    */
   kindOfQuantity?: string;
   /** [Id64String]($bentley) of a persisted FormatSet element that selects which registered
@@ -117,14 +114,8 @@ export interface QuantityFieldFormatOptions {
    *  1. The provider registered under `formatSet`.
    *  2. The iModel-level default registration (registered with no `formatSet`).
    *  3. Raw string representation.
-   *
-   * Ignored when [[format]] is supplied.
    */
   formatSet?: Id64String;
-  /** Inline [FormatProps]($core-quantity) override. Highest priority; when present,
-   * [[kindOfQuantity]] is ignored.
-   */
-  format?: FormatProps;
 }
 
 /** Customizes how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
