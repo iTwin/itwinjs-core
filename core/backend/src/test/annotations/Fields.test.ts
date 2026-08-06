@@ -881,12 +881,14 @@ describe.only("Field evaluation", () => {
 
   describe("registerFieldFormattingProvider (sync path)", () => {
     // A minimal FormattingSpecProvider stub that recognizes a single (name, persistenceUnit)
-    // combination and returns a fake FormatterSpec (never inspected by the provider itself).
+    // combination and returns a fake FormatterSpec whose `applyFormatting` is what actually
+    // renders magnitudes on the sync formatting path.
     function makeStubProvider(opts?: {
       onLookup?: (args: { name: string; persistenceUnitName: string }) => void;
       format?: (magnitude: number) => string;
     }): FormattingSpecProvider {
-      const fakeSpec = {} as FormatterSpec;
+      const format = opts?.format ?? ((m: number) => `${m * 1000} mm`);
+      const fakeSpec = { applyFormatting: (m: number) => format(m) } as unknown as FormatterSpec;
       return {
         onFormattingReady: new BeUnorderedUiEvent(),
         getSpecsByNameAndUnit(args) {
@@ -896,8 +898,8 @@ describe.only("Field evaluation", () => {
           }
           return undefined;
         },
-        formatQuantity(magnitude) {
-          return opts?.format ? opts.format(magnitude) : `${magnitude * 1000} mm`;
+        formatQuantity(magnitude, spec) {
+          return spec.applyFormatting(magnitude);
         },
       };
     }
