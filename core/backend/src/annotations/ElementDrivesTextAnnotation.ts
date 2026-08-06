@@ -247,10 +247,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *
    * For each `"quantity"` or `"coordinate"` field the format is resolved in this priority
    * order (see [QuantityFieldFormatOptions]($common) for the full contract):
-   *   1. [QuantityFieldFormatOptions.format]($common) — inline [FormatProps]($core-quantity) override.
-   *   2. [QuantityFieldFormatOptions.kindOfQuantity]($common) — looked up via the active [FormatsProvider]($core-quantity).
-   *   3. The property's own [KindOfQuantity]($ecschema-metadata).
-   *   4. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
+   *   1. [QuantityFieldFormatOptions.kindOfQuantity]($common) — looked up via the active [FormatsProvider]($core-quantity).
+   *   2. The property's own [KindOfQuantity]($ecschema-metadata).
+   *   3. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
    *
    * If none yields a usable format, the raw value is rendered via `toString()` (or an error is
    * thrown when [FieldFormattingProviders.onMissingSpec]($backend) is `"throw"`).
@@ -269,9 +268,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *
    * Intended for an application-supplied [FormattingSpecProvider]($core-quantity) to pre-build
    * the [FormatterSpec]($core-quantity)s referenced by the annotation before it is inserted,
-   * updated, or re-evaluated. Fields carrying an inline [QuantityFieldFormatOptions.format]($common)
-   * override, or whose target property has no [KindOfQuantity]($ecschema-metadata) (and no
-   * `kindOfQuantity` / `persistenceUnit` override), are omitted — they need no provider lookup.
+   * updated, or re-evaluated. Fields whose target property has no [KindOfQuantity]($ecschema-metadata)
+   * (and no `kindOfQuantity` / `persistenceUnit` override) are omitted — they need no provider
+   * lookup.
    * @beta
    */
   public static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[] {
