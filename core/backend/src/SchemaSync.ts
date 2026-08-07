@@ -10,6 +10,7 @@
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -22,7 +23,10 @@ export namespace SchemaSync {
 
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
   export class SchemaSyncDb extends VersionedSqliteDb {
-    public override readonly myVersion = "4.0.0";
+    /** 5.x is the orchestration poc: the container holds the log of schema import calls instead of a copy of the `ec_` tables.
+     * It is deliberately incompatible with the 4.x layout in both directions.
+     */
+    public override readonly myVersion = "5.0.0";
     protected override createDDL() { }
   }
 
@@ -90,16 +94,78 @@ export namespace SchemaSync {
     return iModel[_nativeDb].schemaSyncEnabled();
   };
 
-  /** Synchronize local briefcase schemas with cloud container */
-  export const pull = async (iModel: IModelDb) => {
-    if (iModel[_nativeDb].schemaSyncEnabled() && !iModel.isReadonly) {
-      await SchemaSync.withReadonlyAccess(iModel, async (syncAccess) => {
-        const schemaSyncDbUri = syncAccess.getUri();
-        iModel.clearCaches();
-        iModel[_nativeDb].schemaSyncPull(schemaSyncDbUri);
-        iModel[_implicitTxn].saveChanges("schema synchronized with cloud container");
+  /** One recorded `importSchemas` call in the schema sync import log.
+   * @internal
+   */
+  export type PendingImport = IModelJsNative.SchemaSyncImportRecord;
+
+  /** What a briefcase does about the imports other briefcases recorded but did not push yet.
+   *  - `cancel`: stop, import nothing.
+   *  - `reject`: mark the pending imports rejected and run the local import anyway.
+   *  - `applyPending`: run the pending imports locally first, then the local import.
+   * @internal
+   */
+  export type PendingImportAction = "cancel" | "reject" | "applyPending";
+
+  /** Decides what to do about pending imports. Called while the schema sync container write lock is held.
+   * @internal
+   */
+  export type PendingImportResolver = (arg: { iModel: IModelDb, pending: PendingImport[] }) => Promise<PendingImportAction> | PendingImportAction;
+
+  const defaultPendingImportResolver: PendingImportResolver = () => "applyPending";
+  let pendingImportResolver = defaultPendingImportResolver;
+
+  /** Replaces the callback that decides what to do about pending imports. Pass `undefined` to go back to the default, which applies them.
+   * @internal
+   */
+  export const setPendingImportResolver = (resolver?: PendingImportResolver) => {
+    pendingImportResolver = resolver ?? defaultPendingImportResolver;
+  };
+
+  /** Reads the pending imports and asks the resolver what to do about them.
+   * @internal
+   */
+  export const resolvePendingImports = async (iModel: IModelDb, syncDbUri: string): Promise<{ action: PendingImportAction, pending: PendingImport[] }> => {
+    const pending = iModel[_nativeDb].schemaSyncQueryPendingImports(syncDbUri);
+    if (pending.length === 0)
+      return { action: "applyPending", pending };
+
+    return { action: await pendingImportResolver({ iModel, pending }), pending };
+  };
+
+  /** Runs the given recorded imports locally, in log order, through the real importer.
+   * Native records nothing for these calls, it only notes that this briefcase caught up with them.
+   * @internal
+   */
+  export const replayImports = (iModel: IModelDb, syncDbUri: string, records: PendingImport[]) => {
+    for (const record of records) {
+      const schemaXml = iModel[_nativeDb].schemaSyncQueryImportSchemas(syncDbUri, record.id);
+      iModel[_nativeDb].importXmlSchemas(schemaXml, {
+        schemaLockHeld: false,
+        schemaSyncDbUri: syncDbUri,
+        schemaSyncReplayOfImportId: record.id,
+        user: IModelHost.userMoniker,
       });
+      iModel[_implicitTxn].saveChanges(`applied pending schema import #${record.id}`);
     }
+  };
+
+  /** Bring the local briefcase up to date with every schema import recorded in the container.
+   * Replaying writes nothing to the container, so this only needs read access.
+   */
+  export const pull = async (iModel: IModelDb) => {
+    if (!iModel[_nativeDb].schemaSyncEnabled() || iModel.isReadonly)
+      return;
+
+    await SchemaSync.withReadonlyAccess(iModel, async (syncAccess) => {
+      const syncDbUri = syncAccess.getUri();
+      const pending = iModel[_nativeDb].schemaSyncQueryPendingImports(syncDbUri);
+      if (pending.length === 0)
+        return;
+
+      iModel.clearCaches();
+      replayImports(iModel, syncDbUri, pending);
+    });
   };
 
   export const initializeForIModel = async (arg: { iModel: IModelDb, containerProps: CloudSqlite.ContainerProps, overrideContainer?: boolean }) => {
