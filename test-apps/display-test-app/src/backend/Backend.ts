@@ -213,7 +213,6 @@ class DisplayTestAppRpc extends DtaRpcInterface {
         formatting: {
           formatsProvider: demo.formatsProvider,
           unitsProvider: demo.unitsProvider,
-          onMissingSpec: demo.onMissingSpec,
         },
       });
     } else {

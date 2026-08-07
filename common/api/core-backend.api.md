@@ -2967,7 +2967,6 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static registerFieldFormattingProvider(args: {
         formatSet: Id64String;
         provider: FormattingSpecProvider;
-        onMissingSpec?: "fallback" | "throw";
     }): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     static unregisterFieldFormattingProvider(formatSet: Id64String): void;
@@ -3527,7 +3526,6 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
 // @beta
 export interface FieldFormattingProviders {
     formatsProvider?: FormatsProvider;
-    onMissingSpec?: "fallback" | "throw";
     unitsProvider?: UnitsProvider;
 }
 

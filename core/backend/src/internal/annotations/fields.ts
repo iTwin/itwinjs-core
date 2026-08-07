@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldFormatterContext, FieldFormattingSpecResolver, FieldMissingSpecBehavior, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecResolver, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormatterContext, FieldFormattingSpecResolver, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecResolver, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -71,12 +71,6 @@ export interface UpdateFieldsContext {
    * `toString()`.
    */
   readonly formattingSpecResolver?: FieldFormattingSpecResolver;
-
-  /** Fallback [[FieldMissingSpecBehavior]] applied when no resolver is present, or the resolver
-   * does not attach one of its own. Used by the async path and by callers opting into
-   * throw-behavior without registering a provider. Defaults to `"fallback"`.
-   */
-  readonly onMissingSpec?: FieldMissingSpecBehavior;
 }
 
 // Resolve the raw primitive value of the property that a field points to.
@@ -349,13 +343,11 @@ export function createUpdateContext(
   iModel: IModelDb,
   deleted: boolean,
   formattingSpecResolver?: FieldFormattingSpecResolver,
-  onMissingSpec?: FieldMissingSpecBehavior,
 ): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
     formattingSpecResolver,
-    onMissingSpec,
   };
 }
 
@@ -382,19 +374,15 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
     return false;
   }
 
-  const throwOnMiss = context.onMissingSpec === "throw";
   let propValue: FieldValue | undefined;
   try {
     propValue = context.getProperty(field);
   } catch (err) {
-    if (throwOnMiss) throw err;
     Logger.logError(BackendLoggerCategory.IModelDb, err);
   }
 
   let newContent: string | undefined;
   if (undefined !== propValue) {
-    // Errors from a resolver-selected provider's own `onMissingSpec: "throw"` always propagate;
-    // the context-level `onMissingSpec` only governs the no-resolver fallback path.
     if (context.formattingSpecResolver) {
       newContent = formatFieldValueWithSpecResolver(propValue, field.formatOptions, context.formattingSpecResolver);
     } else {
@@ -418,15 +406,13 @@ export async function updateFieldAsync(field: FieldRun, context: UpdateFieldsCon
     return false;
   }
 
-  const throwOnMiss = context.onMissingSpec === "throw";
   let newContent: string | undefined;
   try {
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
-      newContent = await formatFieldValueAsync(propValue, field.formatOptions, formatter, context.onMissingSpec);
+      newContent = await formatFieldValueAsync(propValue, field.formatOptions, formatter);
     }
   } catch (err) {
-    if (throwOnMiss) throw err;
     Logger.logError(BackendLoggerCategory.IModelDb, err);
   }
 

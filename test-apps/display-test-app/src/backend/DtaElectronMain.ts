@@ -75,8 +75,8 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
     return setScaleFactor(iModelKey, modelId, scaleFactor);
   }
 
-  public async enableFieldFormattingDemo(iModelKey: string, onMissingSpec: "fallback" | "throw"): Promise<void> {
-    return enableFieldFormattingDemoForIModel(iModelKey, onMissingSpec);
+  public async enableFieldFormattingDemo(iModelKey: string): Promise<void> {
+    return enableFieldFormattingDemoForIModel(iModelKey);
   }
 
   public async disableFieldFormattingDemo(iModelKey: string): Promise<void> {

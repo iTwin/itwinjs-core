@@ -3719,9 +3719,6 @@ export interface FieldFormattingSpecResolver {
 }
 
 // @internal
-export type FieldMissingSpecBehavior = "fallback" | "throw";
-
-// @internal
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
 // @beta
@@ -3872,10 +3869,10 @@ export enum FontType {
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
 
 // @internal
-export function formatFieldValueAsync(value: FieldValue, options: FieldFormatOptions | undefined, context: FieldFormatterContext, onMissingSpec?: FieldMissingSpecBehavior): Promise<string | undefined>;
+export function formatFieldValueAsync(value: FieldValue, options: FieldFormatOptions | undefined, context: FieldFormatterContext): Promise<string | undefined>;
 
 // @internal
-export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FieldFormattingSpecProvider, onMissingSpec?: FieldMissingSpecBehavior): string | undefined;
+export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FieldFormattingSpecProvider): string | undefined;
 
 // @internal
 export function formatFieldValueWithSpecResolver(value: FieldValue, options: FieldFormatOptions | undefined, resolver: FieldFormattingSpecResolver): string | undefined;
@@ -8684,8 +8681,6 @@ export interface RequestNewBriefcaseProps {
 
 // @internal
 export interface ResolvedFieldFormattingSpecProvider {
-    // (undocumented)
-    onMissingSpec?: FieldMissingSpecBehavior;
     // (undocumented)
     provider: FieldFormattingSpecProvider;
 }

@@ -26,11 +26,7 @@ import { EditTxn } from "../EditTxn";
 // [QuantityFieldFormatOptions.formatSet]($common) does not match any registration is left to the
 // caller's fallback (raw string on the sync path; the iModel's [SchemaFormatsProvider]($ecschema-metadata)
 // on the async path — see [[evaluateFieldsAsync]]).
-interface RegisteredFieldFormattingProvider {
-  provider: FormattingSpecProvider;
-  onMissingSpec?: "fallback" | "throw";
-}
-const fieldFormattingProviders = new Map<Id64String, RegisteredFieldFormattingProvider>();
+const fieldFormattingProviders = new Map<Id64String, FormattingSpecProvider>();
 
 /** Builds a resolver that looks up a registered provider by the field's `formatSet`. Returns
  * `undefined` when no providers are registered, or when a resolve call cannot match the
@@ -45,8 +41,8 @@ function createFieldFormattingSpecResolver(): FieldFormattingSpecResolver | unde
       if (!formatSet) {
         return undefined;
       }
-      const entry = fieldFormattingProviders.get(formatSet);
-      return entry ? { provider: entry.provider, onMissingSpec: entry.onMissingSpec } : undefined;
+      const provider = fieldFormattingProviders.get(formatSet);
+      return provider ? { provider } : undefined;
     },
   };
 }
@@ -110,16 +106,6 @@ export interface FieldFormattingProviders {
   formatsProvider?: FormatsProvider;
   /** Resolves [UnitProps]($core-quantity) (e.g. a value's persistence unit). */
   unitsProvider?: UnitsProvider;
-  /** Behavior when a `"quantity"` or `"coordinate"` [FieldRun]($common) has no matching
-   * [FormatterSpec]($core-quantity). `"fallback"` (default) renders the raw string; `"throw"`
-   * rejects with an [[Error]] describing the missing spec.
-   *
-   * Applies only to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]]. The synchronous
-   * [[ElementDrivesTextAnnotation.evaluateFields]] and `TxnManager` callback paths use the
-   * `onMissingSpec` supplied at [[ElementDrivesTextAnnotation.registerFieldFormattingProvider]];
-   * with no provider registered, they always fall back.
-   */
-  onMissingSpec?: "fallback" | "throw";
 }
 
 /** Arguments supplied to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]].
@@ -284,13 +270,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *   2. The property's own [KindOfQuantity]($ecschema-metadata).
    *   3. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
    *
-   * If none yields a usable format, the raw value is rendered via `toString()` (or an error is
-   * thrown when [FieldFormattingProviders.onMissingSpec]($backend) is `"throw"`).
+   * If none yields a usable format, the raw value is rendered via `toString()`.
    * @returns the number of fields whose display strings were modified.
    * @beta
    */
   public static async evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number> {
-    const context = createUpdateContext(undefined, args.iModel, false, undefined, args.formatting?.onMissingSpec);
+    const context = createUpdateContext(undefined, args.iModel, false, undefined);
     const formatter = createFieldFormatterContext(args.iModel, args.formatting);
     return updateFieldsAsync(args.block, context, formatter);
   }
@@ -320,7 +305,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * use [[evaluateFieldsAsync]] for that fallback.
    *
    * Providers should be pre-warmed with the results of [[collectFieldFormattingRequirements]].
-   * Missing specs fall back to the raw string (or throw when `onMissingSpec` is `"throw"`).
+   * Missing specs fall back to the raw string.
    *
    * Each registration replaces any prior one for the same `formatSet`. Registrations are
    * process-wide; use [[unregisterFieldFormattingProvider]] to remove one.
@@ -335,18 +320,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       formatSet: Id64String;
       /** Provider associated with `formatSet`. */
       provider: FormattingSpecProvider;
-      /** Behavior when this provider has no spec for a given field.
-       *   - `"fallback"` (default) renders the raw string;
-       *   - `"throw"` propagates the failure.
-       *
-       * On the `TxnManager` driven callback path, a `"throw"` error is caught and logged via
-       * [Logger]($bentley) rather than aborting the transaction; for hard failure, call
-       * [[evaluateFields]] or [[evaluateFieldsAsync]] directly.
-       */
-      onMissingSpec?: "fallback" | "throw";
     },
   ): void {
-    fieldFormattingProviders.set(args.formatSet, { provider: args.provider, onMissingSpec: args.onMissingSpec });
+    fieldFormattingProviders.set(args.formatSet, args.provider);
   }
 
   /** Removes the registration previously created by [[registerFieldFormattingProvider]] for
@@ -362,7 +338,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @beta
    */
   public static getFieldFormattingProvider(formatSet: Id64String): FormattingSpecProvider | undefined {
-    return fieldFormattingProviders.get(formatSet)?.provider;
+    return fieldFormattingProviders.get(formatSet);
   }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element

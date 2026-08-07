@@ -328,7 +328,6 @@ beta;interface;FieldFormatOptions
 internal;interface;FieldFormatterContext
 internal;interface;FieldFormattingSpecProvider
 internal;interface;FieldFormattingSpecResolver
-internal;type;FieldMissingSpecBehavior
 internal;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath

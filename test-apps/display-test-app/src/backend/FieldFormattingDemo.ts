@@ -8,12 +8,11 @@
  * [FormattingSpecProvider]($core-quantity) with the FieldRun formatting pathways
  * exposed by `@itwin/core-backend`.
  *
- * The keyin `dta text demo <on|off|throw>` toggles this integration for the current iModel
+ * The keyin `dta text demo <on|off>` toggles this integration for the current iModel
  * (see `TextDecoration.ts` and the `enable`/`disableFieldFormattingDemo` IPC methods on
  * [[DtaIpcInterface]]):
- *   1. `dta text demo on` registers [[FieldFormattingDemoProvider]] with
- *      `onMissingSpec: "fallback"`. `dta text demo throw` registers it with
- *      `onMissingSpec: "throw"`. `dta text demo off` unregisters.
+ *   1. `dta text demo on` registers [[FieldFormattingDemoProvider]]. `dta text demo off`
+ *      unregisters.
  *   2. Fields whose `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID`
  *      (`"0xDEMO"`) format through the demo provider. When enabled:
  *      - `TextImpl.insertText` / `updateText` call [[FieldFormattingDemoProvider.prepareForBlock]]
@@ -175,11 +174,6 @@ export class FieldFormattingDemoProvider implements FormattingSpecProvider {
   public readonly onFormattingReady = new BeUnorderedUiEvent<void>();
   public readonly formatsProvider: FormatsProvider;
   public readonly unitsProvider: UnitsProvider;
-  /** Mirrored copy of the `onMissingSpec` policy this provider was registered with, so callers
-   * on the async path (e.g. `Backend.generateTextAnnotationGeometry`) can pass the same policy
-   * to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]] and keep the two paths consistent.
-   */
-  public onMissingSpec: "fallback" | "throw" = "fallback";
   private readonly _specs = new Map<string, FormattingSpecEntry>();
 
   public constructor(iModel: IModelDb) {
@@ -276,17 +270,15 @@ export function getFieldFormattingDemo(): FieldFormattingDemoProvider | undefine
 /** Registers a fresh [[FieldFormattingDemoProvider]] under [[DEMO_FORMAT_SET_ID]] for
  * `iModel`, so `"quantity"` and `"coordinate"` fields whose
  * `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID` format through the demo
- * provider on both the sync and async paths. Toggled by the `dta text demo <on|off|throw>`
+ * provider on both the sync and async paths. Toggled by the `dta text demo <on|off>`
  * keyin.
  */
-export async function enableFieldFormattingDemo(iModel: IModelDb, opts?: { onMissingSpec?: "fallback" | "throw" }): Promise<void> {
+export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void> {
   const provider = new FieldFormattingDemoProvider(iModel);
-  provider.onMissingSpec = opts?.onMissingSpec ?? "fallback";
   await provider.preloadSeeds();
   ElementDrivesTextAnnotation.registerFieldFormattingProvider({
     formatSet: DEMO_FORMAT_SET_ID,
     provider,
-    onMissingSpec: provider.onMissingSpec,
   });
   currentDemo = provider;
 }
