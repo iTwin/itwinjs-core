@@ -1194,60 +1194,6 @@ describe.only("Field evaluation", () => {
       expect(reloadedField).to.not.be.undefined;
       expect(reloadedField!.cachedContent).to.equal("2500 mm");
     });
-
-    it("throws from evaluateFields when onMissingSpec is 'throw' and no spec is available", () => {
-      // Register a stub provider that recognizes Fields.LENGTH+Units.M, then aim a field
-      // at a KoQ the provider doesn't know about.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider(), onMissingSpec: "throw" });
-
-      const textBlock = TextBlock.create();
-      textBlock.appendRun(FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        cachedContent: "old",
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "MissingKoq" } },
-      }));
-
-      expect(() => ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock }))
-        .to.throw(/No FormatterSpec available/);
-    });
-
-    it("falls back silently when onMissingSpec is 'fallback' (or unset)", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider(), onMissingSpec: "fallback" });
-
-      const textBlock = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        cachedContent: "old",
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "MissingKoq" } },
-      });
-      textBlock.appendRun(field);
-
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
-      expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2.5");
-    });
-
-    it("throws from evaluateFieldsAsync when onMissingSpec is 'throw' and no format resolves", async () => {
-      const emptyFormatsProvider: FormatsProvider = {
-        getFormat: async () => undefined,
-        onFormatsChanged: new BeEvent(),
-      };
-      const textBlock = TextBlock.create();
-      textBlock.appendRun(FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        cachedContent: "old",
-        formatOptions: { quantity: { kindOfQuantity: "MissingKoq" } },
-      }));
-
-      await expect(ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        iModel: imodel,
-        block: textBlock,
-        formatting: { formatsProvider: emptyFormatsProvider, onMissingSpec: "throw" },
-      })).to.be.rejectedWith(/No FormatterSpec available/);
-    });
   });
 
   function createAnnotationElement(textBlock: TextBlock | undefined): TextAnnotation3d {

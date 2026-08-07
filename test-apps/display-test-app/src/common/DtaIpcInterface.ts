@@ -85,10 +85,9 @@ export interface DtaIpcInterface {
    * Registers the DTA `FieldFormattingDemoProvider` for the specified iModel under
    * `FieldFormattingDemo.DEMO_FORMAT_SET_ID`, so `"quantity"` / `"coordinate"` FieldRuns
    * whose `formatOptions.quantity.formatSet` matches route through the demo provider on
-   * both the sync and async paths. Pass `onMissingSpec: "throw"` to make unknown KoQs
-   * throw instead of silently falling back to the raw string.
+   * both the sync and async paths.
    */
-  enableFieldFormattingDemo(iModelKey: string, onMissingSpec: "fallback" | "throw"): Promise<void>;
+  enableFieldFormattingDemo(iModelKey: string): Promise<void>;
 
   /**
    * Unregisters the DTA `FieldFormattingDemoProvider` previously registered via
