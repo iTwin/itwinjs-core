@@ -264,7 +264,10 @@ export class ArcGisUtilities {
 
   public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
     const {url, formatId, userName, password, queryParams, headers, ignoreCache, requireToken} = args;
-    if (!ignoreCache) {
+    const hasHeaders = headers !== undefined && Object.keys(headers).length > 0;
+    // Skip cache lookup when custom headers are present: the cache is keyed by URL only, so a header-authenticated
+    // request must not be served a response cached from a different (e.g. unauthenticated) request.
+    if (!ignoreCache && !hasHeaders) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)
         return cached;
@@ -285,7 +288,6 @@ export class ArcGisUtilities {
       return tmpUrl;
     };
 
-    const hasHeaders = headers !== undefined && Object.keys(headers).length > 0;
     const createFetchOptions = (base?: RequestInit): RequestInit => {
       const opts: RequestInit = { method: "GET", ...base };
       if (hasHeaders) {
