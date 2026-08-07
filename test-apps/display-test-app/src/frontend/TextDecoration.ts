@@ -386,7 +386,6 @@ export class TextDecorationTool extends Tool {
     ["update <annotationId>", "Update the given annotation element with the current state."],
     ["delete <annotationId>", "Delete the given annotation element."],
     ["scale <factor>", "Set the annotation scale factor for the current model."],
-    ["formatmode <default|demo|demo-throw>", "Toggle the DP-style FormattingSpecProvider integration for the current iModel."],
   ];
 
   private static printHelp(): void {
@@ -468,11 +467,11 @@ export class TextDecorationTool extends Tool {
 
     // Raw (persistence) coordinate values for ParkingRow.Origin used as a reference below:
     //   x = 30707.1467 m, y = 58893.3153 m, z = 0 m
-    // Actual displayed values depend on which formatting pathway is active:
-    //   * `dta text formatmode default` -> raw JS toString fallback (see "Raw" below).
-    //   * `dta text formatmode demo`      -> demo FormattingSpecProvider using the property's
-    //                                       own KoQ + `SchemaFormatsProvider` for lookups.
-    //   * `dta text formatmode demo-throw` -> same as `demo`, but unknown KoQs throw.
+    // Actual displayed values depend on whether the demo FormattingSpecProvider (see
+    // `FieldFormattingDemo.ts`) is registered against the current iModel:
+    //   * demo provider NOT registered  -> raw JS toString fallback (see "Raw" below).
+    //   * demo provider registered      -> uses the property's own KoQ + `SchemaFormatsProvider`
+    //                                      for lookups.
     //
     // The "Expected" strings that describe deterministic conversions via seed-supplied FormatProps
     // are exact; the ones that depend on the property's KoQ are annotated because their exact
@@ -491,7 +490,7 @@ export class TextDecorationTool extends Tool {
     editor.appendBreak();
     editor.appendText("  • TxnManager callback — fires when a source element changes or is deleted.");
     editor.appendBreak();
-    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `dta text formatmode demo` (or `demo-throw`).");
+    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `FieldFormattingDemo.enableFieldFormattingDemo` (see backend).");
     editor.appendBreak();
     editor.appendText("Async path (formatFieldValueAsync):");
     editor.appendBreak();
@@ -667,7 +666,7 @@ export class TextDecorationTool extends Tool {
     editor.appendBreak();
     editor.appendText("  • TxnManager callback — fires when a source element changes or is deleted.");
     editor.appendBreak();
-    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `dta text formatmode demo` (or `demo-throw`).");
+    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `FieldFormattingDemo.enableFieldFormattingDemo` (see backend).");
     editor.appendBreak();
     editor.appendText("Async path (formatFieldValueAsync):");
     editor.appendBreak();
@@ -1144,15 +1143,6 @@ export class TextDecorationTool extends Tool {
         );
 
         break;
-      }
-      case "formatmode": {
-        if (arg !== "default" && arg !== "demo" && arg !== "demo-throw") {
-          throw new Error("Expected default, demo, or demo-throw");
-        }
-        await dtaIpc.setFieldFormattingMode(vp.iModel.key, arg);
-        // eslint-disable-next-line no-console
-        console.log(`Field formatting mode set to '${arg}' for iModel ${vp.iModel.key}`);
-        return true;
       }
       case "list": { // args are enumerator, terminator, case, index
 

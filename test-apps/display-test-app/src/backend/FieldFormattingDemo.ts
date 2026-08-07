@@ -8,17 +8,22 @@
  * [FormattingSpecProvider]($core-quantity) with the FieldRun formatting pathways
  * exposed by `@itwin/core-backend`.
  *
- * When "demo" mode is active for an [IModelDb]($backend):
- *   - `TextImpl.insertText` / `updateText` call [[FieldFormattingDemoProvider.prepareForBlock]]
- *     before writing the annotation, so the [FormatterSpec]($core-quantity)s required by
- *     any [FieldRun]($common)s in the block are hot before the txn commits.
- *   - The provider is registered against the iModel via
- *     [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), so the txn callback
- *     path that recomputes field content synchronously routes through the provider.
- *   - `Backend.generateTextAnnotationGeometry` passes the same underlying
- *     [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity) to
- *     [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend), so the async pathway
- *     used to render dynamic geometry produces the same output as the sync one.
+ * The keyin toggle has been removed. To exercise the demo integration:
+ *   1. Uncomment a call to `enableFieldFormattingDemo(iModel, { onMissingSpec: "fallback" })`
+ *      in a backend startup / iModel-open path (e.g. after `BriefcaseDb.open`).
+ *   2. Restart DTA.
+ *   3. Fields whose `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID`
+ *      (`"0xDEMO"`) will format through the demo provider. When enabled:
+ *      - `TextImpl.insertText` / `updateText` call [[FieldFormattingDemoProvider.prepareForBlock]]
+ *        before writing the annotation, so the [FormatterSpec]($core-quantity)s required by
+ *        any [FieldRun]($common)s in the block are hot before the txn commits.
+ *      - The provider is registered against the iModel via
+ *        [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), so the txn
+ *        callback path that recomputes field content synchronously routes through the provider.
+ *      - `Backend.generateTextAnnotationGeometry` passes the same underlying
+ *        [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity) to
+ *        [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend), so the async pathway
+ *        used to render dynamic geometry produces the same output as the sync one.
  *
  * This is intentionally minimal - it exists to exercise the new pathways from DTA, not to
  * be a production-quality implementation.
@@ -27,11 +32,14 @@
 import { ElementDrivesTextAnnotation, IModelDb } from "@itwin/core-backend";
 import { TextBlock } from "@itwin/core-common";
 import { createUnitsProvider, Format, FormatProps, FormatsProvider, FormatterSpec, FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParserSpec, UnitsProvider } from "@itwin/core-quantity";
-import { BeEvent, BeUnorderedUiEvent } from "@itwin/core-bentley";
+import { BeEvent, BeUnorderedUiEvent, Id64String } from "@itwin/core-bentley";
 import { SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
-/** Modes selectable via the `dta text formatmode ...` keyin. */
-export type FieldFormattingMode = "default" | "demo" | "demo-throw";
+/** [Id64String]($bentley) used by the DTA demo to register its provider. Fields whose
+ * `formatOptions.quantity.formatSet` equals this id route through the demo provider (when
+ * enabled via [[enableFieldFormattingDemo]]).
+ */
+export const DEMO_FORMAT_SET_ID: Id64String = "0xDEMO";
 
 /** A small set of pre-canned length [FormatProps]($core-quantity) that the demo provider
  * seeds itself with. They are keyed by names in the `Demo.*` namespace so they don't collide
@@ -165,6 +173,11 @@ export class FieldFormattingDemoProvider implements FormattingSpecProvider {
   public readonly onFormattingReady = new BeUnorderedUiEvent<void>();
   public readonly formatsProvider: FormatsProvider;
   public readonly unitsProvider: UnitsProvider;
+  /** Mirrored copy of the `onMissingSpec` policy this provider was registered with, so callers
+   * on the async path (e.g. `Backend.generateTextAnnotationGeometry`) can pass the same policy
+   * to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]] and keep the two paths consistent.
+   */
+  public onMissingSpec: "fallback" | "throw" = "fallback";
   private readonly _specs = new Map<string, FormattingSpecEntry>();
 
   public constructor(iModel: IModelDb) {
@@ -251,28 +264,35 @@ export class FieldFormattingDemoProvider implements FormattingSpecProvider {
   }
 }
 
-const state = new WeakMap<IModelDb, { mode: FieldFormattingMode; provider: FieldFormattingDemoProvider }>();
+let currentDemo: FieldFormattingDemoProvider | undefined;
 
-/** Returns the demo provider registered against `iModel`, if any. */
-export function getFieldFormattingDemo(iModel: IModelDb): { mode: FieldFormattingMode; provider: FieldFormattingDemoProvider } | undefined {
-  return state.get(iModel);
+/** Returns the currently-registered demo provider, if any. */
+export function getFieldFormattingDemo(): FieldFormattingDemoProvider | undefined {
+  return currentDemo;
 }
 
-/** Applies `mode` to `iModel`:
- *  - `"default"`: unregister the demo provider (raw string fallback on the sync path).
- *  - `"demo"`: register a fresh `FieldFormattingDemoProvider` with `onMissingSpec: "fallback"`.
- *  - `"demo-throw"`: register a fresh `FieldFormattingDemoProvider` with `onMissingSpec: "throw"`.
+/** Registers a fresh [[FieldFormattingDemoProvider]] under [[DEMO_FORMAT_SET_ID]] for
+ * `iModel`, so `"quantity"` and `"coordinate"` fields whose
+ * `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID` format through the demo
+ * provider on both the sync and async paths.
+ *
+ * Intended to be called by hand during DTA testing — uncomment a call from a startup path,
+ * then restart the app.
  */
-export async function setFieldFormattingMode(iModel: IModelDb, mode: FieldFormattingMode): Promise<void> {
-  if (mode === "default") {
-    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider();
-    state.delete(iModel);
-    return;
-  }
-
+export async function enableFieldFormattingDemo(iModel: IModelDb, opts?: { onMissingSpec?: "fallback" | "throw" }): Promise<void> {
   const provider = new FieldFormattingDemoProvider(iModel);
+  provider.onMissingSpec = opts?.onMissingSpec ?? "fallback";
   await provider.preloadSeeds();
-  const onMissingSpec = mode === "demo-throw" ? "throw" : "fallback";
-  ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider, onMissingSpec });
-  state.set(iModel, { mode, provider });
+  ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+    formatSet: DEMO_FORMAT_SET_ID,
+    provider,
+    onMissingSpec: provider.onMissingSpec,
+  });
+  currentDemo = provider;
+}
+
+/** Unregisters the demo provider previously registered via [[enableFieldFormattingDemo]]. */
+export function disableFieldFormattingDemo(): void {
+  ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(DEMO_FORMAT_SET_ID);
+  currentDemo = undefined;
 }
