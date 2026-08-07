@@ -71,7 +71,7 @@ export interface UpdateFieldsContext {
    * The resolver encapsulates the cascading lookup on
    * [QuantityFieldFormatOptions.formatSet]($common):
    *   1. The field's `formatSet` registration.
-   *   2. The iModel-level default registration.
+   *   2. The default registration.
    */
   readonly formattingSpecResolver?: FieldFormattingSpecResolver;
 
@@ -467,18 +467,18 @@ export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFie
   return numUpdated;
 }
 
-// Per-iModel registry of app-supplied sync formatting spec providers. Populated by
+// Process-wide registry of app-supplied sync formatting spec providers. Populated by
 // `ElementDrivesTextAnnotation.registerFieldFormattingProvider` and consulted by the sync
 // `updateField*` paths so txn callbacks can format quantity/coordinate fields via a pre-warmed
 // provider (e.g. a FormatSet-backed `FormattingSpecProvider`). Entries are keyed by FormatSet
-// [Id64String](); the `DEFAULT_FORMAT_SET_KEY` sentinel holds the iModel-level default used
-// when a field has no `formatSet` or no matching registration.
+// [Id64String](); the `DEFAULT_FORMAT_SET_KEY` sentinel holds the default used when a field has
+// no `formatSet` or no matching registration.
 interface RegisteredFieldFormattingProvider {
   provider: FieldFormattingSpecProvider;
   onMissingSpec?: FieldMissingSpecBehavior;
 }
 const DEFAULT_FORMAT_SET_KEY = "__default__";
-const fieldFormattingProviders = new WeakMap<IModelDb, Map<string, RegisteredFieldFormattingProvider>>();
+const fieldFormattingProviders = new Map<string, RegisteredFieldFormattingProvider>();
 
 function keyForFormatSet(formatSet: Id64String | undefined): string {
   return formatSet ?? DEFAULT_FORMAT_SET_KEY;
@@ -487,11 +487,10 @@ function keyForFormatSet(formatSet: Id64String | undefined): string {
 /** @internal */
 export interface RegisterFieldFormattingProviderArgs {
   /** [Id64String]($bentley) of the FormatSet element whose fields route to `provider`. Omit to
-   * register the iModel-level default (used when a field has no `formatSet` or no matching
-   * registration).
+   * register the default (used when a field has no `formatSet` or no matching registration).
    */
   formatSet?: Id64String;
-  /** Provider associated with `formatSet` (or the iModel-level default when omitted). */
+  /** Provider associated with `formatSet` (or the default when omitted). */
   provider: FieldFormattingSpecProvider;
   /** See [[UpdateFieldsContext.onMissingSpec]]. Applied when this provider has no spec for a
    * given field. Defaults to `"fallback"`.
@@ -500,65 +499,43 @@ export interface RegisterFieldFormattingProviderArgs {
 }
 
 /** @internal */
-export function registerFieldFormattingProviderForIModel(
-  iModel: IModelDb,
-  args: RegisterFieldFormattingProviderArgs,
-): void {
-  let byFormatSet = fieldFormattingProviders.get(iModel);
-  if (!byFormatSet) {
-    byFormatSet = new Map<string, RegisteredFieldFormattingProvider>();
-    fieldFormattingProviders.set(iModel, byFormatSet);
-  }
-  byFormatSet.set(keyForFormatSet(args.formatSet), { provider: args.provider, onMissingSpec: args.onMissingSpec });
+export function registerFieldFormattingProvider(args: RegisterFieldFormattingProviderArgs): void {
+  fieldFormattingProviders.set(keyForFormatSet(args.formatSet), { provider: args.provider, onMissingSpec: args.onMissingSpec });
 }
 
 /** @internal */
-export function unregisterFieldFormattingProviderForIModel(
-  iModel: IModelDb,
-  formatSet?: Id64String,
-): void {
-  const byFormatSet = fieldFormattingProviders.get(iModel);
-  if (!byFormatSet) {
-    return;
-  }
-  byFormatSet.delete(keyForFormatSet(formatSet));
-  if (byFormatSet.size === 0) {
-    fieldFormattingProviders.delete(iModel);
-  }
+export function unregisterFieldFormattingProvider(formatSet?: Id64String): void {
+  fieldFormattingProviders.delete(keyForFormatSet(formatSet));
 }
 
 /** @internal */
-export function clearFieldFormattingProvidersForIModel(iModel: IModelDb): void {
-  fieldFormattingProviders.delete(iModel);
+export function clearFieldFormattingProviders(): void {
+  fieldFormattingProviders.clear();
 }
 
 /** @internal */
-export function getFieldFormattingProviderForIModel(
-  iModel: IModelDb,
-  formatSet?: Id64String,
-): FieldFormattingSpecProvider | undefined {
-  return fieldFormattingProviders.get(iModel)?.get(keyForFormatSet(formatSet))?.provider;
+export function getFieldFormattingProvider(formatSet?: Id64String): FieldFormattingSpecProvider | undefined {
+  return fieldFormattingProviders.get(keyForFormatSet(formatSet))?.provider;
 }
 
 /** Builds a resolver implementing the cascading lookup on
  * [QuantityFieldFormatOptions.formatSet]($common): the field's `formatSet` registration first,
- * then the iModel-level default. Returns `undefined` when `iModel` has no registrations.
+ * then the default. Returns `undefined` when no providers are registered.
  * @internal
  */
-export function createFieldFormattingSpecResolverForIModel(iModel: IModelDb): FieldFormattingSpecResolver | undefined {
-  const byFormatSet = fieldFormattingProviders.get(iModel);
-  if (!byFormatSet || byFormatSet.size === 0) {
+export function createFieldFormattingSpecResolver(): FieldFormattingSpecResolver | undefined {
+  if (fieldFormattingProviders.size === 0) {
     return undefined;
   }
   return {
     resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined {
       if (formatSet) {
-        const specific = byFormatSet.get(formatSet);
+        const specific = fieldFormattingProviders.get(formatSet);
         if (specific) {
           return { provider: specific.provider, onMissingSpec: specific.onMissingSpec };
         }
       }
-      const fallback = byFormatSet.get(DEFAULT_FORMAT_SET_KEY);
+      const fallback = fieldFormattingProviders.get(DEFAULT_FORMAT_SET_KEY);
       return fallback ? { provider: fallback.provider, onMissingSpec: fallback.onMissingSpec } : undefined;
     },
   };
@@ -569,7 +546,7 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const resolver = createFieldFormattingSpecResolverForIModel(iModel);
+      const resolver = createFieldFormattingSpecResolver();
       const context = createUpdateContext(sourceId, iModel, deleted, resolver);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
