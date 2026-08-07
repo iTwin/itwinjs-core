@@ -32,6 +32,7 @@ For supported versions of iTwin.js, please refer to [Version support status](./a
 | Operating System | Architectures | Versions                                                                                                           | Notes           |
 | ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------- |
 | Linux            | x64           | GLIBC >= 2.36, GLIBCXX >= 3.4.30                                                                                   |                 |
+| Linux            | arm64         | GLIBC >= 2.36, GLIBCXX >= 3.4.30                                                                                   | >= iTwin.js 5.12 |
 | Windows          | x64           | [Visual Studio 2022 Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version) |                 |
 | macOS            | x64           | **Discontinued in iTwin.js 5.0**                                                                                                  |                 |
 | macOS            | arm64         | >= 14                                                                                                              | >= iTwin.js 3.3 |
