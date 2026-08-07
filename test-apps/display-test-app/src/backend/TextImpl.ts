@@ -136,9 +136,9 @@ async function prepareDemoProviderFor(iModel: IModelDb, annotationProps: TextAnn
 }
 
 /** Registers the DTA `FieldFormattingDemoProvider` against the specified iModel. */
-export async function enableFieldFormattingDemoForIModel(iModelKey: string, onMissingSpec: "fallback" | "throw"): Promise<void> {
+export async function enableFieldFormattingDemoForIModel(iModelKey: string): Promise<void> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
-  await enableFieldFormattingDemo(iModel, { onMissingSpec });
+  await enableFieldFormattingDemo(iModel);
 }
 
 /** Unregisters the DTA `FieldFormattingDemoProvider`. */

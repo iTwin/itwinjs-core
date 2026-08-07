@@ -237,23 +237,16 @@ function applySpecToFieldValue(
   value: FieldValue,
   options: FieldFormatOptions | undefined,
   spec: FormatterSpec,
-  onMissingSpec: FieldMissingSpecBehavior,
 ): string | undefined {
   let formatted: string | undefined;
   if (value.type === "quantity") {
     if (typeof value.value !== "number") {
-      if (onMissingSpec === "throw") {
-        throw missingSpecError(value, options, `expected a numeric quantity value, got ${typeof value.value}`);
-      }
       return formatFieldValue(value, options);
     }
     formatted = spec.applyFormatting(value.value);
   } else {
     const magnitudes = getCoordinateMagnitudes(value.value);
     if (!magnitudes) {
-      if (onMissingSpec === "throw") {
-        throw missingSpecError(value, options, "coordinate value is missing x/y magnitudes");
-      }
       return formatFieldValue(value, options);
     }
     formatted = `(${magnitudes.map((m) => spec.applyFormatting(m)).join(", ")})`;
@@ -265,41 +258,32 @@ function applySpecToFieldValue(
  * values through the standard iTwin.js quantity formatting pipeline.
  *
  * For other [[FieldPropertyType]]s, or when a quantity/coordinate field cannot be resolved to
- * a [FormatterSpec]($core-quantity), `onMissingSpec` controls whether the function falls back
- * to [[formatFieldValue]] (default) or throws.
+ * a [FormatterSpec]($core-quantity), falls back to [[formatFieldValue]].
  * @internal
  */
 export async function formatFieldValueAsync(
   value: FieldValue,
   options: FieldFormatOptions | undefined,
   context: FieldFormatterContext,
-  onMissingSpec: FieldMissingSpecBehavior = "fallback",
 ): Promise<string | undefined> {
   if (value.type !== "quantity" && value.type !== "coordinate") {
     return formatFieldValue(value, options);
   }
 
-  const throwOnMiss = onMissingSpec === "throw";
-
   let spec: FormatterSpec | undefined;
   try {
     spec = await getFormatterSpec(options?.quantity, value, context);
-  } catch (err) {
-    if (throwOnMiss) throw err;
+  } catch {
     return formatFieldValue(value, options);
   }
 
   if (!spec) {
-    if (throwOnMiss) {
-      throw missingSpecError(value, options, "no FormatProps could be resolved from the supplied FormatsProvider (the property's KindOfQuantity and the kindOfQuantity override were both unavailable)");
-    }
     return formatFieldValue(value, options);
   }
 
   try {
-    return applySpecToFieldValue(value, options, spec, onMissingSpec);
-  } catch (err) {
-    if (throwOnMiss) throw err;
+    return applySpecToFieldValue(value, options, spec);
+  } catch {
     return formatFieldValue(value, options);
   }
 }
@@ -311,20 +295,6 @@ export async function formatFieldValueAsync(
 /** @internal */
 export interface FieldFormattingSpecProvider {
   getSpecsByNameAndUnit(args: { name: string; persistenceUnitName: string }): { formatterSpec: FormatterSpec } | undefined;
-}
-
-/** Behavior when a `"quantity"` or `"coordinate"` [FieldRun]($common) cannot be matched to a
- * [FormatterSpec]($core-quantity):
- *  - `"fallback"` (default): silently use the raw string representation from [[formatFieldValue]].
- *  - `"throw"`: throw an [[Error]] describing the missing spec.
- * @internal
- */
-export type FieldMissingSpecBehavior = "fallback" | "throw";
-
-function missingSpecError(value: FieldValue, options: FieldFormatOptions | undefined, reason: string): Error {
-  const koq = options?.quantity?.kindOfQuantity ?? value.kindOfQuantityFullName ?? "<unknown>";
-  const unit = options?.quantity?.persistenceUnit ?? value.persistenceUnitFullName ?? "<unknown>";
-  return new Error(`No FormatterSpec available for field (type=${value.type}, koq=${koq}, persistenceUnit=${unit}): ${reason}`);
 }
 
 function lookupSyncSpec(
@@ -347,8 +317,8 @@ function lookupSyncSpec(
  */
 export interface ResolvedFieldFormattingSpecProvider {
   provider: FieldFormattingSpecProvider;
-  onMissingSpec?: FieldMissingSpecBehavior;
 }
+
 
 /** Lookup used by the sync formatting path to pick a registered
  * [FieldFormattingSpecProvider]($common) for a given [FieldRun]($common). Callers (typically
@@ -370,15 +340,13 @@ export interface FieldFormattingSpecResolver {
  * pipeline cannot be awaited but the app has pre-built the required specs.
  *
  * For other [[FieldPropertyType]]s, or when a quantity/coordinate field cannot be resolved to a
- * [FormatterSpec]($core-quantity) via `provider`, `onMissingSpec` controls whether the function
- * falls back to [[formatFieldValue]] (default) or throws.
+ * [FormatterSpec]($core-quantity) via `provider`, falls back to [[formatFieldValue]].
  * @internal
  */
 export function formatFieldValueWithSpecProvider(
   value: FieldValue,
   options: FieldFormatOptions | undefined,
   provider: FieldFormattingSpecProvider,
-  onMissingSpec: FieldMissingSpecBehavior = "fallback",
 ): string | undefined {
   if (value.type !== "quantity" && value.type !== "coordinate") {
     return formatFieldValue(value, options);
@@ -386,19 +354,15 @@ export function formatFieldValueWithSpecProvider(
 
   const spec = lookupSyncSpec(options?.quantity, value, provider);
   if (!spec) {
-    if (onMissingSpec === "throw") {
-      throw missingSpecError(value, options, "the registered FormattingSpecProvider did not supply a spec for this KindOfQuantity / persistence unit");
-    }
     return formatFieldValue(value, options);
   }
 
-  return applySpecToFieldValue(value, options, spec, onMissingSpec);
+  return applySpecToFieldValue(value, options, spec);
 }
 
 /** Synchronous formatting entry point that consults a [[FieldFormattingSpecResolver]] to pick
  * which registered provider (keyed by [QuantityFieldFormatOptions.formatSet]($common)) formats
- * `value`, then delegates to [[formatFieldValueWithSpecProvider]] using that provider and its
- * `onMissingSpec` policy.
+ * `value`, then delegates to [[formatFieldValueWithSpecProvider]] using that provider.
  *
  * If the resolver returns `undefined` (no matching registration for the field's `formatSet`),
  * quantity/coordinate values fall back to the raw string representation from [[formatFieldValue]].
@@ -418,7 +382,5 @@ export function formatFieldValueWithSpecResolver(
     return formatFieldValue(value, options);
   }
 
-  return formatFieldValueWithSpecProvider(value, options, resolved.provider, resolved.onMissingSpec);
+  return formatFieldValueWithSpecProvider(value, options, resolved.provider);
 }
-
-
