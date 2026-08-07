@@ -385,6 +385,13 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta clip element geometry` - Starts a tool that clips the view based on the geometry of the selected element(s).
 * `dta record tilesize [on|off|toggle]` - When turned on, begins recording the encoded size of every subsequently requested iMdl tile's content. When turned off, copies the tile sizes in CSV format to the clipboard. See TileSizeRecorder.ts for details. If no argument is supplied, it defaults to `toggle`.
 * `dta imodel attach` - Toggles a secondary IModelConnection to be displayed in the active viewport. The first time it is invoked, it opens a file open dialog from which you can select the iModel. All of the 3d models in the secondary iModel will be displayed in the viewport. Invoke it again to remove the secondary iModel from the view.
+* `dta attach map layer headers` - Attach an image map layer to the selected viewport with custom HTTP headers, to test API-key header authentication (`ImageMapLayerSettings.unsavedHeaders`/`savedHeaders`/`collectHeaders()`). The collected headers are sent on every request the layer makes. Arguments are `key=value` pairs:
+  * `url=` (required) - the map layer URL.
+  * `format=` - the format id (`WMS`, `WMTS`, `ArcGIS`, `ArcGISFeature`, `OgcApiFeatures`, `TileURL`). Defaults to `WMS`.
+  * `name=` - a friendly name for the layer. Defaults to the URL.
+  * `header=Name:Value` - an *unsaved* header (never persisted); use this for API keys. Repeatable.
+  * `saved=Name:Value` - a *saved* header (persisted in the layer's JSON). Repeatable.
+  * e.g. `dta attach map layer headers url=https://example.com/wms header=X-Api-Key:secret123`
 
 ## Editing
 

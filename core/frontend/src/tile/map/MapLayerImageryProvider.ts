@@ -14,7 +14,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationM
 import { ScreenViewport } from "../../Viewport";
 import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
-import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
+import { headersIncludeAuthMethod, setBasicAuthorization, setRequestHeaders, setRequestTimeout } from "../../request/utils";
 import { DecorateContext } from "../../ViewContext";
 
 /** @internal */
@@ -289,6 +289,13 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
+  /** Apply custom HTTP headers (such as an API key header) configured on the layer settings.
+   * @internal
+   */
+  protected setRequestHeaders(headers: Headers) {
+    setRequestHeaders(headers, this._settings.collectHeaders());
+  }
+
   /** @internal */
   public async makeTileRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
 
@@ -317,16 +324,15 @@ export abstract class MapLayerImageryProvider {
 
     let response: Response|undefined;
 
-    let headers: Headers | undefined;
+    const headers = new Headers();
     let hasCreds = false;
     if (authorization) {
-      headers = new Headers();
       headers.set("Authorization", authorization);
     } else if (this._settings.userName && this._settings.password) {
       hasCreds = true;
-      headers = new Headers();
       this.setRequestAuthorization(headers);
     }
+    this.setRequestHeaders(headers);
     const opts: RequestInit = {
       method: "GET",
       headers,
@@ -393,6 +399,7 @@ export abstract class MapLayerImageryProvider {
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
     const headers = new Headers();
     this.setRequestAuthorization(headers);
+    this.setRequestHeaders(headers);
 
     try {
       const response = await fetch(url, {

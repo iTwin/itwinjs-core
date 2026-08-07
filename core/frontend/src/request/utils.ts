@@ -51,6 +51,17 @@ export function setBasicAuthorization(headers: Headers, userOrCreds: string|Requ
 }
 
 /**
+ * Add a set of custom HTTP headers (e.g. an API key header) to a Headers object.
+ * @internal
+ */
+export function setRequestHeaders(headers: Headers, customHeaders?: { [key: string]: string }): void {
+  if (customHeaders) {
+    for (const [key, value] of Object.entries(customHeaders))
+      headers.set(key, value);
+  }
+}
+
+/**
  * Set number of milliseconds a request can take before automatically being terminated
  * @internal
  */

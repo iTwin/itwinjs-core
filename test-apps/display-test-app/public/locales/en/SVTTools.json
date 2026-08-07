@@ -13,6 +13,9 @@
     "GridSettings": {
       "keyin": "dta grid settings"
     },
+    "AttachMapLayerWithHeaders": {
+      "keyin": "dta attach map layer headers"
+    },
     "Markup": {
       "keyin": "dta markup",
       "TestSelect": {

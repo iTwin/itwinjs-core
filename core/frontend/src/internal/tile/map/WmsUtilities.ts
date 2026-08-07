@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
-import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
+import { headersIncludeAuthMethod, setBasicAuthorization, setRequestHeaders } from "../../../request/utils";
 
 /** @packageDocumentation
  * @module Tiles
@@ -21,12 +21,17 @@ export class WmsUtilities {
  * fetch XML from HTTP request
  * @param url server URL to address the request
  */
-  public static async fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string> {
+  public static async fetchXml(url: string, credentials?: RequestBasicCredentials, customHeaders?: { [key: string]: string }): Promise<string> {
 
     let headers: Headers|undefined;
     if (credentials && credentials.user && credentials.password) {
       headers = new Headers();
       setBasicAuthorization(headers, credentials);
+    }
+
+    if (customHeaders && Object.keys(customHeaders).length > 0) {
+      headers ??= new Headers();
+      setRequestHeaders(headers, customHeaders);
     }
 
     let response = await fetch(url, { method: "GET", headers });

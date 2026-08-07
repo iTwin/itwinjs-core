@@ -554,8 +554,11 @@ export class WmtsCapabilities {
     return new WmtsCapabilities(xmlDoc);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}): Promise<WmtsCapabilities | undefined> {
-    if (!ignoreCache) {
+  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}, headers?: {[key: string]: string}): Promise<WmtsCapabilities | undefined> {
+    const hasHeaders = headers !== undefined && Object.keys(headers).length > 0;
+    // Skip cache lookup when credentials or custom headers are present: the cache is keyed by URL only, so an
+    // authenticated request must not be served a response cached from a different (e.g. unauthenticated) request.
+    if (!ignoreCache && !credentials && !hasHeaders) {
       const cached = WmtsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
         return cached;
@@ -571,13 +574,15 @@ export class WmtsCapabilities {
       });
     }
 
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials);
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials, headers);
     if (!xmlCapabilities)
       return undefined;
 
     const capabilities = WmtsCapabilities.createFromXml(xmlCapabilities);
-    if (capabilities)
+    if (capabilities && !credentials && !hasHeaders) {
+      // Avoid caching protected data
       WmtsCapabilities._capabilitiesCache.set(url, capabilities);
+    }
 
     return capabilities;
   }
