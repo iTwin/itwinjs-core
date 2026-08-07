@@ -490,45 +490,13 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
   }
 }
 
-async function doUpdateFieldsAsync(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): Promise<void> {
-  const iModel = txn.iModel;
-  try {
-    const target = iModel.elements.getElement(annotationId);
-    if (isITextAnnotation(target)) {
-      const context = createUpdateContext(sourceId, iModel, deleted);
-      const formatter = createFieldFormatterContext(iModel);
-      const updatedBlocks = [];
-      for (const block of target.getTextBlocks()) {
-        if (await updateFieldsAsync(block.textBlock, context, formatter)) {
-          updatedBlocks.push(block);
-        }
-      }
-
-      if (updatedBlocks.length > 0) {
-        target.updateTextBlocks(updatedBlocks);
-        target.update(txn);
-      }
-    }
-  } catch (err) {
-    Logger.logError(BackendLoggerCategory.IModelDb, err);
-  }
-}
-
 // Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
 export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, resolver?: FieldFormattingSpecResolver): void {
   doUpdateFields(txn, props.targetId, props.sourceId, deleted, resolver);
 }
 
-export async function updateElementFieldsAsync(props: RelationshipProps, txn: EditTxn, deleted: boolean): Promise<void> {
-  return doUpdateFieldsAsync(txn, props.targetId, props.sourceId, deleted);
-}
-
 export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, resolver?: FieldFormattingSpecResolver): void {
   doUpdateFields(txn, annotationElementId, undefined, false, resolver);
-}
-
-export async function updateAllFieldsAsync(annotationElementId: Id64String, txn: EditTxn): Promise<void> {
-  return doUpdateFieldsAsync(txn, annotationElementId, undefined, false);
 }
 
 // Resolves a FieldRun's target down to its terminal EC Property using schema metadata only
