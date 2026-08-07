@@ -112,7 +112,7 @@ export interface QuantityFieldFormatOptions {
    * registered under this FormatSet id via
    * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend):
    *  1. The provider registered under `formatSet`.
-   *  2. The iModel-level default registration (registered with no `formatSet`).
+   *  2. The default registration (registered with no `formatSet`).
    *  3. Raw string representation.
    */
   formatSet?: Id64String;

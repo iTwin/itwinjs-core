@@ -13,7 +13,7 @@ import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
-import { collectFieldFormattingRequirements, createFieldFormatterContext, createFieldFormattingSpecResolverForIModel, createUpdateContext, getFieldFormattingProviderForIModel, registerFieldFormattingProviderForIModel, unregisterFieldFormattingProviderForIModel, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
+import { collectFieldFormattingRequirements, createFieldFormatterContext, createFieldFormattingSpecResolver, createUpdateContext, getFieldFormattingProvider, registerFieldFormattingProvider, unregisterFieldFormattingProvider, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
@@ -222,17 +222,17 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).
    *
-   * If [FormattingSpecProvider]($core-quantity)s have been registered for `args.iModel` via
+   * If [FormattingSpecProvider]($core-quantity)s have been registered via
    * [[registerFieldFormattingProvider]], each `"quantity"` or `"coordinate"` field is routed
    * using the cascading lookup on [QuantityFieldFormatOptions.formatSet]($common):
    *   1. The field's `formatSet` registration.
-   *   2. The iModel-level default registration (registered with no `formatSet`).
+   *   2. The default registration (registered with no `formatSet`).
    *   3. Raw string representation.
    * @returns the number of fields whose display strings were modified.
    * @throws Error if evaluation of any field fails.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
-    const resolver = createFieldFormattingSpecResolverForIModel(args.iModel);
+    const resolver = createFieldFormattingSpecResolver();
     return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, resolver))
   }
 
@@ -277,34 +277,32 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     return collectFieldFormattingRequirements(args.block, args.iModel);
   }
 
-  /** Registers a synchronous [FormattingSpecProvider]($core-quantity) for `iModel`, optionally
-   * scoped to a specific FormatSet element. Once registered, [[evaluateFields]] and the
-   * `TxnManager`-driven field-update callback path format `"quantity"` and `"coordinate"` fields
-   * via the cascading lookup on [QuantityFieldFormatOptions.formatSet]($common):
+  /** Registers a synchronous [FormattingSpecProvider]($core-quantity), optionally scoped to a
+   * specific FormatSet element. Once registered, [[evaluateFields]] and the `TxnManager`-driven
+   * field-update callback path format `"quantity"` and `"coordinate"` fields via the cascading
+   * lookup on [QuantityFieldFormatOptions.formatSet]($common):
    *   1. The field's `formatSet` registration.
-   *   2. The iModel-level default registration (registered with no `formatSet`).
+   *   2. The default registration (registered with no `formatSet`).
    *   3. Raw string representation.
    *
    * Providers should be pre-warmed with the results of [[collectFieldFormattingRequirements]].
    * Missing specs fall back to the raw string (or throw when the selected registration's
    * `onMissingSpec` is `"throw"`).
    *
-   * Each registration replaces any prior one for the same `formatSet`. Registrations are held
-   * in a [WeakMap]() keyed by an `Id64String` and need not be cleared on close; use
-   * [[unregisterFieldFormattingProvider]] to remove one.
+   * Each registration replaces any prior one for the same `formatSet`. Registrations are
+   * process-wide; use [[unregisterFieldFormattingProvider]] to remove one.
    *
    * TODO: Maybe this is unnecessary if we store the FormatSets in the iModel and look them up on demand.
    *
    * @beta
    */
   public static registerFieldFormattingProvider(
-    iModel: IModelDb,
     args: {
       /** [Id64String]($bentley) of the FormatSet element whose fields route to `provider`. Omit
-       * to register the iModel-level default.
+       * to register the default.
        */
       formatSet?: Id64String;
-      /** Provider associated with `formatSet` (or the iModel-level default when omitted). */
+      /** Provider associated with `formatSet` (or the default when omitted). */
       provider: FormattingSpecProvider;
       /** Behavior when this provider has no spec for a given field.
        *   - `"fallback"` (default) renders the raw string;
@@ -317,25 +315,24 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       onMissingSpec?: "fallback" | "throw";
     },
   ): void {
-    registerFieldFormattingProviderForIModel(iModel, args);
+    registerFieldFormattingProvider(args);
   }
 
   /** Removes a registration previously created by [[registerFieldFormattingProvider]]. Pass
-   * `formatSet` to remove a specific FormatSet-scoped registration; omit to remove the
-   * iModel-level default.
+   * `formatSet` to remove a specific FormatSet-scoped registration; omit to remove the default.
    * @beta
    */
-  public static unregisterFieldFormattingProvider(iModel: IModelDb, formatSet?: Id64String): void {
-    unregisterFieldFormattingProviderForIModel(iModel, formatSet);
+  public static unregisterFieldFormattingProvider(formatSet?: Id64String): void {
+    unregisterFieldFormattingProvider(formatSet);
   }
 
-  /** Returns the [FormattingSpecProvider]($core-quantity) previously registered for `iModel`
-   * under `formatSet` via [[registerFieldFormattingProvider]], if any. Pass `formatSet` for a
-   * specific FormatSet-scoped registration; omit for the iModel-level default.
+  /** Returns the [FormattingSpecProvider]($core-quantity) previously registered under
+   * `formatSet` via [[registerFieldFormattingProvider]], if any. Pass `formatSet` for a
+   * specific FormatSet-scoped registration; omit for the default.
    * @beta
    */
-  public static getFieldFormattingProvider(iModel: IModelDb, formatSet?: Id64String): FormattingSpecProvider | undefined {
-    return getFieldFormattingProviderForIModel(iModel, formatSet) as FormattingSpecProvider | undefined;
+  public static getFieldFormattingProvider(formatSet?: Id64String): FormattingSpecProvider | undefined {
+    return getFieldFormattingProvider(formatSet) as FormattingSpecProvider | undefined;
   }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element

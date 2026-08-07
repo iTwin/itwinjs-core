@@ -905,11 +905,11 @@ describe.only("Field evaluation", () => {
     }
 
     afterEach(() => {
-      // Unregister the iModel default plus the FormatSet-scoped registrations used by tests
+      // Unregister the default plus the FormatSet-scoped registrations used by tests
       // in this block, so leftover providers don't leak into later cases.
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel, "0x123");
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel, "0xdead");
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider();
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider("0x123");
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider("0xdead");
       // Clean up any TextAnnotation3d elements produced below so we don't leak state
       // (and their ElementDrivesTextAnnotation relationships) into later describe
       // blocks that assert on relationship counts.
@@ -925,7 +925,7 @@ describe.only("Field evaluation", () => {
 
     it("routes evaluateFields quantity formatting through a registered provider", () => {
       let lookups = 0;
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { provider: makeStubProvider({ onLookup: () => { lookups += 1; } }) });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider({ onLookup: () => { lookups += 1; } }) });
 
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
@@ -945,7 +945,7 @@ describe.only("Field evaluation", () => {
 
     it("routes evaluateFields coordinate formatting through the provider when a spec is available", () => {
       // Register a provider whose (Fields.LENGTH, Units.M) spec formats magnitudes in millimeters.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, {
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         provider: makeStubProvider({ format: (m) => `${Math.round(m * 1000)} mm` }),
       });
 
@@ -967,7 +967,7 @@ describe.only("Field evaluation", () => {
 
     it("falls back to raw string when the registered provider does not supply a spec", () => {
       // Provider recognizes no (name, unit) combinations.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, {
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         provider: {
           onFormattingReady: new BeUnorderedUiEvent(),
           getSpecsByNameAndUnit: () => undefined,
@@ -1053,21 +1053,21 @@ describe.only("Field evaluation", () => {
       expect(reloadedField!.cachedContent).to.equal("2.5");
     });
 
-    it("unregisters the iModel-level default via unregisterFieldFormattingProvider", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { provider: makeStubProvider() });
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.not.be.undefined;
+    it("unregisters the default via unregisterFieldFormattingProvider", () => {
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider() });
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider()).to.not.be.undefined;
 
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.be.undefined;
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider();
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider()).to.be.undefined;
     });
 
     it("routes fields to the FormatSet-scoped provider identified by formatOptions.quantity.formatSet", () => {
-      // Register two providers: an iModel-level default that formats magnitudes in millimeters,
+      // Register two providers: a default that formats magnitudes in millimeters,
       // and a FormatSet-scoped provider (id "0x123") that formats in centimeters.
       const defaultProvider = makeStubProvider({ format: (m) => `${m * 1000} mm` });
       const cmProvider = makeStubProvider({ format: (m) => `${m * 100} cm` });
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { provider: defaultProvider });
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { formatSet: "0x123", provider: cmProvider });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: defaultProvider });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: "0x123", provider: cmProvider });
 
       const block = TextBlock.create();
       const defaultField = FieldRun.create({
@@ -1091,10 +1091,10 @@ describe.only("Field evaluation", () => {
       expect(scopedField.cachedContent).to.equal("250 cm");
     });
 
-    it("falls back from a missing FormatSet-scoped registration to the iModel-level default", () => {
+    it("falls back from a missing FormatSet-scoped registration to the default", () => {
       // Only a default is registered; a field pointing at an unregistered FormatSet id should
       // fall through to the default.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, {
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         provider: makeStubProvider({ format: (m) => `${m * 1000} mm` }),
       });
 
@@ -1116,7 +1116,7 @@ describe.only("Field evaluation", () => {
     it("falls back to raw string when a field targets a FormatSet with no default fallback", () => {
       // Register only a FormatSet-scoped provider; a field with no formatSet should fall through
       // to the raw string path because there's no default registration.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, {
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         formatSet: "0x123",
         provider: makeStubProvider(),
       });
@@ -1136,19 +1136,19 @@ describe.only("Field evaluation", () => {
     });
 
     it("unregisters a FormatSet-scoped registration without affecting others", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { provider: makeStubProvider() });
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { formatSet: "0x123", provider: makeStubProvider() });
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.not.be.undefined;
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel, "0x123")).to.not.be.undefined;
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider() });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: "0x123", provider: makeStubProvider() });
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider()).to.not.be.undefined;
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider("0x123")).to.not.be.undefined;
 
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel, "0x123");
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider("0x123");
 
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.not.be.undefined;
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel, "0x123")).to.be.undefined;
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider()).to.not.be.undefined;
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider("0x123")).to.be.undefined;
     });
 
     it("routes txn-driven field updates through the registered provider", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { provider: makeStubProvider() });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider() });
 
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
@@ -1184,7 +1184,7 @@ describe.only("Field evaluation", () => {
     it("throws from evaluateFields when onMissingSpec is 'throw' and no spec is available", () => {
       // Register a stub provider that recognizes Fields.LENGTH+Units.M, then aim a field
       // at a KoQ the provider doesn't know about.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { provider: makeStubProvider(), onMissingSpec: "throw" });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider(), onMissingSpec: "throw" });
 
       const textBlock = TextBlock.create();
       textBlock.appendRun(FieldRun.create({
@@ -1199,7 +1199,7 @@ describe.only("Field evaluation", () => {
     });
 
     it("falls back silently when onMissingSpec is 'fallback' (or unset)", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider(imodel, { provider: makeStubProvider(), onMissingSpec: "fallback" });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider(), onMissingSpec: "fallback" });
 
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
