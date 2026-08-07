@@ -8,12 +8,14 @@
  * [FormattingSpecProvider]($core-quantity) with the FieldRun formatting pathways
  * exposed by `@itwin/core-backend`.
  *
- * The keyin toggle has been removed. To exercise the demo integration:
- *   1. Uncomment a call to `enableFieldFormattingDemo(iModel, { onMissingSpec: "fallback" })`
- *      in a backend startup / iModel-open path (e.g. after `BriefcaseDb.open`).
- *   2. Restart DTA.
- *   3. Fields whose `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID`
- *      (`"0xDEMO"`) will format through the demo provider. When enabled:
+ * The keyin `dta text demo <on|off|throw>` toggles this integration for the current iModel
+ * (see `TextDecoration.ts` and the `enable`/`disableFieldFormattingDemo` IPC methods on
+ * [[DtaIpcInterface]]):
+ *   1. `dta text demo on` registers [[FieldFormattingDemoProvider]] with
+ *      `onMissingSpec: "fallback"`. `dta text demo throw` registers it with
+ *      `onMissingSpec: "throw"`. `dta text demo off` unregisters.
+ *   2. Fields whose `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID`
+ *      (`"0xDEMO"`) format through the demo provider. When enabled:
  *      - `TextImpl.insertText` / `updateText` call [[FieldFormattingDemoProvider.prepareForBlock]]
  *        before writing the annotation, so the [FormatterSpec]($core-quantity)s required by
  *        any [FieldRun]($common)s in the block are hot before the txn commits.
@@ -274,10 +276,8 @@ export function getFieldFormattingDemo(): FieldFormattingDemoProvider | undefine
 /** Registers a fresh [[FieldFormattingDemoProvider]] under [[DEMO_FORMAT_SET_ID]] for
  * `iModel`, so `"quantity"` and `"coordinate"` fields whose
  * `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID` format through the demo
- * provider on both the sync and async paths.
- *
- * Intended to be called by hand during DTA testing — uncomment a call from a startup path,
- * then restart the app.
+ * provider on both the sync and async paths. Toggled by the `dta text demo <on|off|throw>`
+ * keyin.
  */
 export async function enableFieldFormattingDemo(iModel: IModelDb, opts?: { onMissingSpec?: "fallback" | "throw" }): Promise<void> {
   const provider = new FieldFormattingDemoProvider(iModel);

@@ -80,4 +80,19 @@ export interface DtaIpcInterface {
    * If the model is a DrawingModel, sets the scale factor on the Drawing element.
    */
   setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
+
+  /**
+   * Registers the DTA `FieldFormattingDemoProvider` for the specified iModel under
+   * `FieldFormattingDemo.DEMO_FORMAT_SET_ID`, so `"quantity"` / `"coordinate"` FieldRuns
+   * whose `formatOptions.quantity.formatSet` matches route through the demo provider on
+   * both the sync and async paths. Pass `onMissingSpec: "throw"` to make unknown KoQs
+   * throw instead of silently falling back to the raw string.
+   */
+  enableFieldFormattingDemo(iModelKey: string, onMissingSpec: "fallback" | "throw"): Promise<void>;
+
+  /**
+   * Unregisters the DTA `FieldFormattingDemoProvider` previously registered via
+   * [[enableFieldFormattingDemo]] for the specified iModel.
+   */
+  disableFieldFormattingDemo(iModelKey: string): Promise<void>;
 }

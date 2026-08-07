@@ -1,7 +1,7 @@
 import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault, withEditTxn } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { getFieldFormattingDemo } from "./FieldFormattingDemo";
+import { disableFieldFormattingDemo, enableFieldFormattingDemo, getFieldFormattingDemo } from "./FieldFormattingDemo";
 
 /**
  * Inserts a new text style into the iModel.
@@ -133,6 +133,17 @@ async function prepareDemoProviderFor(iModel: IModelDb, annotationProps: TextAnn
   }
   const block = TextAnnotation.fromJSON(annotationProps).textBlock;
   await demo.prepareForBlock(iModel, block);
+}
+
+/** Registers the DTA `FieldFormattingDemoProvider` against the specified iModel. */
+export async function enableFieldFormattingDemoForIModel(iModelKey: string, onMissingSpec: "fallback" | "throw"): Promise<void> {
+  const iModel = BriefcaseDb.findByKey(iModelKey);
+  await enableFieldFormattingDemo(iModel, { onMissingSpec });
+}
+
+/** Unregisters the DTA `FieldFormattingDemoProvider`. */
+export async function disableFieldFormattingDemoForIModel(_iModelKey: string): Promise<void> {
+  disableFieldFormattingDemo();
 }
 
 /**
