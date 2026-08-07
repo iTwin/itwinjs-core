@@ -265,7 +265,7 @@ export function getFieldFormattingDemo(iModel: IModelDb): { mode: FieldFormattin
  */
 export async function setFieldFormattingMode(iModel: IModelDb, mode: FieldFormattingMode): Promise<void> {
   if (mode === "default") {
-    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
+    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider();
     state.delete(iModel);
     return;
   }
@@ -273,6 +273,6 @@ export async function setFieldFormattingMode(iModel: IModelDb, mode: FieldFormat
   const provider = new FieldFormattingDemoProvider(iModel);
   await provider.preloadSeeds();
   const onMissingSpec = mode === "demo-throw" ? "throw" : "fallback";
-  ElementDrivesTextAnnotation.registerFieldFormattingProvider(iModel, { provider, onMissingSpec });
+  ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider, onMissingSpec });
   state.set(iModel, { mode, provider });
 }
