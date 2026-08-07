@@ -80,15 +80,4 @@ export interface DtaIpcInterface {
    * If the model is a DrawingModel, sets the scale factor on the Drawing element.
    */
   setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
-
-  /**
-   * Sets the FieldRun formatting integration mode for the specified iModel:
-   *  - `"default"`: default behavior (no app-owned FormattingSpecProvider registered).
-   *  - `"demo"`: registers a demo Drawing-Production-style FormattingSpecProvider that
-   *    formats quantity/coordinate FieldRuns through the standard iTwin.js quantity
-   *    pipeline for both the async `evaluateFieldsAsync` path and the sync txn
-   *    callback path. Missing specs silently fall back to the raw string.
-   *  - `"demo-throw"`: same as `"demo"` but missing specs throw instead of falling back.
-   */
-  setFieldFormattingMode(iModelKey: string, mode: "default" | "demo" | "demo-throw"): Promise<void>;
 }

@@ -1,7 +1,7 @@
 import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault, withEditTxn } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { FieldFormattingMode, getFieldFormattingDemo, setFieldFormattingMode } from "./FieldFormattingDemo";
+import { getFieldFormattingDemo } from "./FieldFormattingDemo";
 
 /**
  * Inserts a new text style into the iModel.
@@ -127,21 +127,12 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 }
 
 async function prepareDemoProviderFor(iModel: IModelDb, annotationProps: TextAnnotationProps): Promise<void> {
-  const demo = getFieldFormattingDemo(iModel);
+  const demo = getFieldFormattingDemo();
   if (!demo) {
     return;
   }
   const block = TextAnnotation.fromJSON(annotationProps).textBlock;
-  await demo.provider.prepareForBlock(iModel, block);
-}
-
-/** Applies a DP-style [FormattingSpecProvider]($core-quantity) integration to `iModel` so
- * subsequent `insertText` / `updateText` (and the txn callback that recomputes field content)
- * route quantity/coordinate field formatting through the demo provider.
- */
-export async function setFieldFormattingModeForIModel(iModelKey: string, mode: FieldFormattingMode): Promise<void> {
-  const iModel = BriefcaseDb.findByKey(iModelKey);
-  await setFieldFormattingMode(iModel, mode);
+  await demo.prepareForBlock(iModel, block);
 }
 
 /**
