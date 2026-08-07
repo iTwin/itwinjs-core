@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldFormatterContext, FieldFormattingSpecProvider, FieldFormattingSpecResolver, FieldMissingSpecBehavior, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecResolver, QueryBinder, QueryRowFormat, RelationshipProps, ResolvedFieldFormattingSpecProvider, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormatterContext, FieldFormattingSpecResolver, FieldMissingSpecBehavior, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecResolver, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -467,86 +467,11 @@ export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFie
   return numUpdated;
 }
 
-// Process-wide registry of app-supplied sync formatting spec providers. Populated by
-// `ElementDrivesTextAnnotation.registerFieldFormattingProvider` and consulted by the sync
-// `updateField*` paths so txn callbacks can format quantity/coordinate fields via a pre-warmed
-// provider (e.g. a FormatSet-backed `FormattingSpecProvider`). Entries are keyed by FormatSet
-// [Id64String](); the `DEFAULT_FORMAT_SET_KEY` sentinel holds the default used when a field has
-// no `formatSet` or no matching registration.
-interface RegisteredFieldFormattingProvider {
-  provider: FieldFormattingSpecProvider;
-  onMissingSpec?: FieldMissingSpecBehavior;
-}
-const DEFAULT_FORMAT_SET_KEY = "__default__";
-const fieldFormattingProviders = new Map<string, RegisteredFieldFormattingProvider>();
-
-function keyForFormatSet(formatSet: Id64String | undefined): string {
-  return formatSet ?? DEFAULT_FORMAT_SET_KEY;
-}
-
-/** @internal */
-export interface RegisterFieldFormattingProviderArgs {
-  /** [Id64String]($bentley) of the FormatSet element whose fields route to `provider`. Omit to
-   * register the default (used when a field has no `formatSet` or no matching registration).
-   */
-  formatSet?: Id64String;
-  /** Provider associated with `formatSet` (or the default when omitted). */
-  provider: FieldFormattingSpecProvider;
-  /** See [[UpdateFieldsContext.onMissingSpec]]. Applied when this provider has no spec for a
-   * given field. Defaults to `"fallback"`.
-   */
-  onMissingSpec?: FieldMissingSpecBehavior;
-}
-
-/** @internal */
-export function registerFieldFormattingProvider(args: RegisterFieldFormattingProviderArgs): void {
-  fieldFormattingProviders.set(keyForFormatSet(args.formatSet), { provider: args.provider, onMissingSpec: args.onMissingSpec });
-}
-
-/** @internal */
-export function unregisterFieldFormattingProvider(formatSet?: Id64String): void {
-  fieldFormattingProviders.delete(keyForFormatSet(formatSet));
-}
-
-/** @internal */
-export function clearFieldFormattingProviders(): void {
-  fieldFormattingProviders.clear();
-}
-
-/** @internal */
-export function getFieldFormattingProvider(formatSet?: Id64String): FieldFormattingSpecProvider | undefined {
-  return fieldFormattingProviders.get(keyForFormatSet(formatSet))?.provider;
-}
-
-/** Builds a resolver implementing the cascading lookup on
- * [QuantityFieldFormatOptions.formatSet]($common): the field's `formatSet` registration first,
- * then the default. Returns `undefined` when no providers are registered.
- * @internal
- */
-export function createFieldFormattingSpecResolver(): FieldFormattingSpecResolver | undefined {
-  if (fieldFormattingProviders.size === 0) {
-    return undefined;
-  }
-  return {
-    resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined {
-      if (formatSet) {
-        const specific = fieldFormattingProviders.get(formatSet);
-        if (specific) {
-          return { provider: specific.provider, onMissingSpec: specific.onMissingSpec };
-        }
-      }
-      const fallback = fieldFormattingProviders.get(DEFAULT_FORMAT_SET_KEY);
-      return fallback ? { provider: fallback.provider, onMissingSpec: fallback.onMissingSpec } : undefined;
-    },
-  };
-}
-
-function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): void {
+function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, resolver: FieldFormattingSpecResolver | undefined): void {
   const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const resolver = createFieldFormattingSpecResolver();
       const context = createUpdateContext(sourceId, iModel, deleted, resolver);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
@@ -590,16 +515,16 @@ async function doUpdateFieldsAsync(txn: EditTxn, annotationId: Id64String, sourc
 }
 
 // Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
-export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean): void {
-  doUpdateFields(txn, props.targetId, props.sourceId, deleted);
+export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, resolver?: FieldFormattingSpecResolver): void {
+  doUpdateFields(txn, props.targetId, props.sourceId, deleted, resolver);
 }
 
 export async function updateElementFieldsAsync(props: RelationshipProps, txn: EditTxn, deleted: boolean): Promise<void> {
   return doUpdateFieldsAsync(txn, props.targetId, props.sourceId, deleted);
 }
 
-export function updateAllFields(annotationElementId: Id64String, txn: EditTxn): void {
-  doUpdateFields(txn, annotationElementId, undefined, false);
+export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, resolver?: FieldFormattingSpecResolver): void {
+  doUpdateFields(txn, annotationElementId, undefined, false, resolver);
 }
 
 export async function updateAllFieldsAsync(annotationElementId: Id64String, txn: EditTxn): Promise<void> {
