@@ -59,6 +59,18 @@ export const terminatorShapes = ["openArrow", "closedArrow", "closedArrowFilled"
 export type TerminatorShape = typeof terminatorShapes[number];
 
 /**
+ * Predefined shapes that can be used to indicate the target point of a leader in a [[TextAnnotation]].
+ * @beta
+ */
+export const targetPointShapes = ["cross", "plus", "circle", "square", "rectangle"] as const;
+/**
+ * Describes a predefined shape that can be used to indicate the target point of a leader in a [[TextAnnotation]].
+ * @beta
+ */
+export type TargetPointShape = typeof targetPointShapes[number];
+
+
+/**
  * Describes what color to use when filling the frame around a [[TextBlock]].
  * If `background` is specified, [[GeometryParams.BackgroundFill]] will be set to `BackgroundFill.Outline`.
  * If `none` is specified, no fill will be applied.
@@ -150,6 +162,26 @@ export interface TextLeaderStyleProps {
    * Default: 1.0
    */
   terminatorWidthFactor?: number;
+  /**
+   * Whether to show the leaders in a [[TextAnnotation]].
+   */
+  showLeaders?: boolean;
+  /**
+   * Whether to show the leader terminator in a [[TextAnnotation]].
+   */
+  showTerminators?: boolean;
+  /**
+   * Whether to show the target point in a [[TextAnnotation]].
+   */
+  showTargetPoint?: boolean;
+  /**
+   * The shape of the target point in a [[TextAnnotation]].
+   */
+  targetPointShape?: TargetPointShape;
+  /**
+   * Multiplier to compute the offset of the target point from the end of the leader start point.
+   */
+  targetPointOffsetFactor?: number;
 }
 
 /** Serves both as the JSON representation of a [[TextStyleSettings]], and a way for a [[TextBlockComponent]] to selectively override aspects of a [AnnotationTextStyle]($backend)'s properties.
@@ -227,7 +259,7 @@ export interface TextStyleSettingsProps {
 
   /** Properties describing appearance of leaders in a [[TextAnnotation]]
    * Used when producing geometry for [[TextAnnotation]]
-   * Default: {color:"subcategory", wantElbow:"false",elbowLength:1, terminatorShape:"openArrow",terminatorWidthFactor:1, terminatorHeightFactor:1}.
+   * Default: {color:"inherit", wantElbow:"false",elbowLength:1, terminatorShape:"openArrow",terminatorWidthFactor:1, terminatorHeightFactor:1, showTargetPoint: false, targetPointShape:"cross", showLeaders:true, showTerminators:true, targetPointOffsetFactor:0}.
    */
   leader?: TextLeaderStyleProps;
   /** The size (in meters) used to calculate the tab stops in a run.
@@ -383,6 +415,11 @@ export class TextStyleSettings {
       terminatorShape: terminatorShapes[0],
       terminatorHeightFactor: 1.0,
       terminatorWidthFactor: 1.0,
+      showLeaders: true,
+      showTerminators: true,
+      showTargetPoint: false,
+      targetPointShape: targetPointShapes[0],
+      targetPointOffsetFactor: 0,
     },
     tabInterval: 4,
     indentation: 0,
@@ -436,6 +473,11 @@ export class TextStyleSettings {
       terminatorShape: props.leader?.terminatorShape ?? defaults.leader.terminatorShape,
       terminatorHeightFactor: props.leader?.terminatorHeightFactor ?? defaults.leader.terminatorHeightFactor,
       terminatorWidthFactor: props.leader?.terminatorWidthFactor ?? defaults.leader.terminatorWidthFactor,
+      showLeaders: props.leader?.showLeaders ?? defaults.leader.showLeaders,
+      showTerminators: props.leader?.showTerminators ?? defaults.leader.showTerminators,
+      showTargetPoint: props.leader?.showTargetPoint ?? defaults.leader.showTargetPoint,
+      targetPointShape: props.leader?.targetPointShape ?? defaults.leader.targetPointShape,
+      targetPointOffsetFactor: props.leader?.targetPointOffsetFactor ?? defaults.leader.targetPointOffsetFactor,
     }
     this.leader = Object.freeze(leader) as Readonly<Required<TextLeaderStyleProps>>;
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
@@ -477,9 +519,17 @@ export class TextStyleSettings {
    * @returns true if the two leader styles are equal, false otherwise.
    */
   public leaderEquals(other: TextLeaderStyleProps): boolean {
-    return this.leader.color === other.color && this.leader.wantElbow === other.wantElbow
-      && this.leader.elbowLength === other.elbowLength && this.leader.terminatorShape === other.terminatorShape && this.leader.terminatorHeightFactor === other.terminatorHeightFactor
-      && this.leader.terminatorWidthFactor === other.terminatorWidthFactor;
+    return this.leader.color === other.color
+      && this.leader.wantElbow === other.wantElbow
+      && this.leader.elbowLength === other.elbowLength
+      && this.leader.terminatorShape === other.terminatorShape
+      && this.leader.terminatorHeightFactor === other.terminatorHeightFactor
+      && this.leader.terminatorWidthFactor === other.terminatorWidthFactor
+      && this.leader.showLeaders === other.showLeaders
+      && this.leader.showTerminators === other.showTerminators
+      && this.leader.showTargetPoint === other.showTargetPoint
+      && this.leader.targetPointShape === other.targetPointShape
+      && this.leader.targetPointOffsetFactor === other.targetPointOffsetFactor;
   }
 
   public frameEquals(other: TextFrameStyleProps): boolean {
