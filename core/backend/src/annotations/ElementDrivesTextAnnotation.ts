@@ -7,16 +7,55 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormattingSpecResolver, QueryBinder, RelatedElement, ResolvedFieldFormattingSpecProvider, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
-import { collectFieldFormattingRequirements, createFieldFormatterContext, createFieldFormattingSpecResolver, createUpdateContext, getFieldFormattingProvider, registerFieldFormattingProvider, unregisterFieldFormattingProvider, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
+import { collectFieldFormattingRequirements, createFieldFormatterContext, createUpdateContext, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
+
+// Process-wide registry of app-supplied sync formatting spec providers. Populated by
+// `ElementDrivesTextAnnotation.registerFieldFormattingProvider` and consulted by the sync
+// `updateField*` paths so txn callbacks can format quantity/coordinate fields via a pre-warmed
+// provider (e.g. a FormatSet-backed `FormattingSpecProvider`). Entries are keyed by FormatSet
+// [Id64String](); the `DEFAULT_FORMAT_SET_KEY` sentinel holds the default used when a field has
+// no `formatSet` or no matching registration.
+interface RegisteredFieldFormattingProvider {
+  provider: FormattingSpecProvider;
+  onMissingSpec?: "fallback" | "throw";
+}
+const DEFAULT_FORMAT_SET_KEY = "__default__";
+const fieldFormattingProviders = new Map<string, RegisteredFieldFormattingProvider>();
+
+function keyForFormatSet(formatSet: Id64String | undefined): string {
+  return formatSet ?? DEFAULT_FORMAT_SET_KEY;
+}
+
+/** Builds a resolver implementing the cascading lookup on
+ * [QuantityFieldFormatOptions.formatSet]($common): the field's `formatSet` registration first,
+ * then the default. Returns `undefined` when no providers are registered.
+ */
+function createFieldFormattingSpecResolver(): FieldFormattingSpecResolver | undefined {
+  if (fieldFormattingProviders.size === 0) {
+    return undefined;
+  }
+  return {
+    resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined {
+      if (formatSet) {
+        const specific = fieldFormattingProviders.get(formatSet);
+        if (specific) {
+          return { provider: specific.provider, onMissingSpec: specific.onMissingSpec };
+        }
+      }
+      const fallback = fieldFormattingProviders.get(DEFAULT_FORMAT_SET_KEY);
+      return fallback ? { provider: fallback.provider, onMissingSpec: fallback.onMissingSpec } : undefined;
+    },
+  };
+}
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
@@ -145,7 +184,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     if (haveFields) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
-      updateAllFields(annotationElementId, txn);
+      updateAllFields(annotationElementId, txn, createFieldFormattingSpecResolver());
     }
 
     const staleRelationships = new Set<Id64String>();
@@ -183,12 +222,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** @internal */
   public static override onRootChangedArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, false);
+    updateElementFields(arg.props, arg.indirectEditTxn, false, createFieldFormattingSpecResolver());
   }
 
   /** @internal */
   public static override onDeletedDependencyArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, true);
+    updateElementFields(arg.props, arg.indirectEditTxn, true, createFieldFormattingSpecResolver());
   }
 
   /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.
@@ -315,7 +354,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       onMissingSpec?: "fallback" | "throw";
     },
   ): void {
-    registerFieldFormattingProvider(args);
+    fieldFormattingProviders.set(keyForFormatSet(args.formatSet), { provider: args.provider, onMissingSpec: args.onMissingSpec });
   }
 
   /** Removes a registration previously created by [[registerFieldFormattingProvider]]. Pass
@@ -323,7 +362,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @beta
    */
   public static unregisterFieldFormattingProvider(formatSet?: Id64String): void {
-    unregisterFieldFormattingProvider(formatSet);
+    fieldFormattingProviders.delete(keyForFormatSet(formatSet));
   }
 
   /** Returns the [FormattingSpecProvider]($core-quantity) previously registered under
@@ -332,7 +371,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @beta
    */
   public static getFieldFormattingProvider(formatSet?: Id64String): FormattingSpecProvider | undefined {
-    return getFieldFormattingProvider(formatSet) as FormattingSpecProvider | undefined;
+    return fieldFormattingProviders.get(keyForFormatSet(formatSet))?.provider;
   }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element
