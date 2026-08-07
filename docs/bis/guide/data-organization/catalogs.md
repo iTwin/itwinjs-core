@@ -4,7 +4,7 @@ A **catalog** is a repository of reusable definitions (component types, template
 
 This page describes how catalog-sourced definitions are organized inside a BIS repository and how their provenance is recorded. It does not cover how a catalog authority hosts, stores, or serves its catalogs; those are implementation choices of each authority. For the backend APIs that can open a catalog stored as an iModel, see [Catalogs in the backend documentation](../../../learning/backend/Catalogs.md).
 
-> The organization and provenance patterns on this page are the working conventions adopted by current catalog implementations. They are recommended for any catalog authority, but they are not (yet) formalized BIS standards and may evolve.
+> The organization and provenance patterns on this page are evolving conventions adopted by current catalog implementations; they are not yet formalized BIS standards. BIS defines several reusable discovery mechanisms, but it does not yet define a complete, generic way to discover every dependency of a catalog entry. Domain schemas and applications may require additional rules.
 
 ## A running example
 
@@ -27,12 +27,14 @@ See [Components from Catalogs](../../../learning/backend/IModelContents.md#compo
 
 ## Components and their dependencies
 
-*Component* commonly refers to a single reusable catalog entry: a pipe type, a valve, a title-block template. In BIS terms, a catalog entry is rooted at a [DefinitionElement](../references/glossary.md#DefinitionElement), typically a [TypeDefinitionElement](../fundamentals/type-definitions.md), but that entry-point element is rarely self-contained. A usable component consists of the entry-point `DefinitionElement` **and all of its dependencies**, which may include:
+*Component* commonly refers to a single reusable catalog entry: a pipe type, a valve, a title-block template. In BIS terms, a catalog entry is rooted at a [DefinitionElement](../references/glossary.md#DefinitionElement), typically a [TypeDefinitionElement](../fundamentals/type-definitions.md), but that entry-point element is rarely self-contained. On this page, a *definition bundle* means the entry-point `DefinitionElement` together with the owned and referenced data required to use it. This is descriptive terminology, not a formal BIS construct.
 
-- `ElementAspect`s and child elements owned by any element in the component,
-- a sub-model of any `ISubModeledElement` in the component and the elements contained in that model,
+A definition bundle may include:
+
+- `ElementAspect`s and child elements owned by any element in the bundle,
+- a sub-model of any `ISubModeledElement` in the bundle and the elements contained in that model,
 - elements referenced through navigation properties, such as a `RecipeDefinitionElement`, `Category`, `PhysicalMaterial`, or `RenderMaterial`, and
-- definitions referenced through `ElementRefersToElements` relationships defined by BIS or a domain schema.
+- definitions referenced through relationships with known dependency semantics, including specific subclasses of [`ElementRefersToElements`](../fundamentals/relationship-fundamentals.md#link-table) when their schema or application defines how they should be traversed.
 
 In the running example, the PVC-300 component is more than its `PhysicalType` element:
 
@@ -68,22 +70,43 @@ graph TD
 
 Importing PVC-300 means copying every node above except PVC-450: the `PhysicalType`, its referenced `TemplateRecipe3d`, the recipe's template sub-model and geometry, the *Pipes* category, the *PVC* material, and the aspect, together with the relationships among them. The amber nodes are dependencies that may be shared with other components; PVC-450 is shown sharing the *Pipes* category and *PVC* material.
 
-There is currently no single BIS construct that identifies this bundle of elements as a unit. Starting with the entry-point element, an application discovers the bundle by recursively applying these rules until it finds no new dependencies:
+There is currently no single BIS construct that identifies a definition bundle as a unit.
 
-- Include owned `ElementAspect`s and child elements.
+### Generic discovery mechanisms
+
+Starting with the entry-point element, apply these BIS mechanisms recursively to each element they discover:
+
+- Include owned `ElementAspect`s and child elements. Classes expected to own children implement `IParentElement`.
 - For each `ISubModeledElement`, include its sub-model and the elements contained in that model. `TemplateRecipe3d` and `DefinitionContainer` are examples of sub-modeled elements.
-- Include elements referenced through navigation properties. Examples include `TypeDefinitionElement.Recipe`, `PhysicalType.PhysicalMaterial`, `GeometricElement3d.Category`, and `PhysicalMaterial.RenderMaterial`.
-- Include definitions referenced through subclasses of `ElementRefersToElements`. Domain schemas may define additional relationships, including relationships between type definitions for different modeling perspectives.
+- Follow navigation properties from the referencing element to the referenced element, not in the reverse direction. Examples include `TypeDefinitionElement.Recipe`, `PhysicalType.PhysicalMaterial`, `GeometricElement3d.Category`, and `PhysicalMaterial.RenderMaterial`.
 
-For PVC-300, these rules first follow the `Recipe` navigation property from the `PhysicalType` to its `TemplateRecipe3d`, then include the recipe's sub-model and its contents. The traversal also includes the referenced *Pipes* category and *PVC* material, the owned aspect, and any dependencies discovered from those elements.
+For PVC-300, these mechanisms first follow the `Recipe` navigation property from the `PhysicalType` to its `TemplateRecipe3d`, then include the recipe's sub-model and its contents. The traversal also includes the referenced *Pipes* category and *PVC* material, the owned aspect, and any dependencies discovered from those elements.
 
-Not every dependency is discoverable through BIS relationships. For example, a `RenderMaterial` can identify a `Texture` through its `JsonProperties`. Applications must provide specific handling for dependencies represented outside the schema relationships.
+### Relationship-specific discovery
 
-A `TemplateRecipe3d` can be referenced by multiple `PhysicalType`s. Types and recipes may also be maintained in separate catalogs, potentially by different personas and on different release schedules, so an application may need to resolve dependencies across catalog boundaries.
+The [OpenSite domain schema](https://github.com/iTwin/bis-schemas/blob/master/Domains/4-Application/OpenSite/OpenSite.ecschema.xml) provides one example. Its abstract `CategorySymbolizesClassification` relationship derives from `ElementRefersToElements`. Concrete subclasses relate a source `Category` to a target `Classification`.
+
+Suppose the *Pipes* `SpatialCategory` in the PVC-300 example participates in one of these concrete relationships. The OpenSite schema or application must decide whether PVC-300 requires the related classification. If it does, traverse from the *Pipes* category to the classification. Do not traverse in reverse when importing a classification, because that would import every category that symbolizes it.
+
+For each relevant relationship class, the schema or application must define:
+
+- when the related element is required,
+- which endpoint an importer starts from, and
+- which related endpoint it includes.
+
+A relationship's source and target constraints describe which classes may participate; they do not necessarily define dependency direction. Inheriting from `ElementRefersToElements` is not sufficient reason to traverse a relationship or include its related element in every definition bundle.
+
+### Discovery limits
+
+These mechanisms do not guarantee discovery of every dependency. They cover dependencies expressed through BIS ownership, sub-modeling, navigation properties, and relationships whose dependency semantics are known.
+
+Other dependencies may be encoded in property payloads, geometry streams, application-defined data, or relationships that do not define a universal dependency direction. Those dependencies require class-, schema-, or application-specific discovery and copy handling. For example, a geometry stream may refer to a `RenderMaterial`, while a `RenderMaterial` may identify a `Texture` through its `JsonProperties`. These examples are not exhaustive.
+
+A `TemplateRecipe3d` can be referenced by multiple `PhysicalType`s, and required dependencies may cross catalog boundaries. Resolving dependencies across separately maintained catalogs is application-specific.
 
 When copying a component:
 
-1. **Copy its dependencies, not just the entry-point element.** An application that imports a catalog entry must traverse and copy all of its dependencies. Copying only the entry-point element produces a broken definition.
+1. **Copy its required dependencies, not just the entry-point element.** Apply the generic mechanisms above together with any class-, schema-, or application-specific rules. Copying only the entry-point element can produce an incomplete definition.
 2. **Dependencies may be shared.** A single `TemplateRecipe3d`, `Category`, or `PhysicalMaterial` may be referenced by more than one component and must be copied only once into the destination BIS repository: if PVC-300 was imported earlier, importing PVC-450 reuses the already-copied *Pipes* category and *PVC* material.
 
 ## Organization of cached definitions in a BIS repository
@@ -117,6 +140,8 @@ The recommended mapping is:
 - **Code scope.** The `RepositoryLink` representing the catalog version under which a definition was first cached serves as the `CodeScope` element for that cached `DefinitionElement` (see [Codes](../fundamentals/codes.md)). Scoping the `Code` to a catalog version prevents code collisions between coexisting copies of the same definition: two cached versions of one catalog entry share a `CodeValue` but have different `CodeScope`s.
 
 The `ExternalSourceAspect` class has additional properties, such as `Source` and `Kind`, described in [Provenance in BIS](../../domains/Provenance-in-BIS.md#externalsourceaspect). Their values for catalog-cached definitions are authority-specific and are not standardized by this mapping.
+
+This mapping applies to definitions cached beneath the catalog authority's well-known `DefinitionContainer`. If an application copies a definition elsewhere only when a recipe or template is used, how that copy retains its catalog provenance is application-specific and is not standardized by this mapping.
 
 ### The example, end to end
 
@@ -170,7 +195,7 @@ The two cached PVC-300 elements share a stable `Identifier` and a `CodeValue` bu
 
 ## Scope and future standardization
 
-The organization and provenance patterns above generalize to any catalog authority. Authority-specific concerns (identifier formats, publishing workflows, hosting, storage, and APIs for browsing or downloading catalogs) are outside the scope of BIS and of this page. Broader standards for third-party catalog authorities are deferred until concrete use cases arise.
+The organization and provenance conventions above are intended to apply across catalog authorities. The dependency-discovery mechanisms cover only the BIS patterns described above; domain schemas and applications may define additional rules. Authority-specific concerns (identifier formats, publishing workflows, hosting, storage, and APIs for browsing or downloading catalogs) are outside the scope of BIS and of this page. Broader standards for third-party catalog authorities are deferred until concrete use cases arise.
 
 ---
 

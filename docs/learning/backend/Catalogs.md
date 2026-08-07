@@ -91,11 +91,13 @@ The blue boxes are APIs supplied by iTwin.js. The gray boxes are workflow steps 
 
 The application must decide:
 
-- which definitions to copy: the entry-point `DefinitionElement` plus all of its dependencies (sub-models, geometric elements, categories, materials, aspects, and relationships),
-- how to record their origin: follow the [recommended provenance mapping](../../bis/guide/data-organization/catalogs.md#provenance-of-cached-definitions) using [RepositoryLink]($backend), [ExternalSourceAspect]($backend), and `FederationGuid`, and
+- which definitions to copy: the entry-point `DefinitionElement` plus its required dependencies,
+- how to discover dependencies that require class-, schema-, or application-specific handling,
+- how to record the origin of definitions cached beneath the catalog authority's well-known `DefinitionContainer`: follow the [recommended provenance mapping](../../bis/guide/data-organization/catalogs.md#provenance-of-cached-definitions) using [RepositoryLink]($backend), [ExternalSourceAspect]($backend), and `FederationGuid`,
+- how to record the origin of definitions copied elsewhere when a recipe or template is used; this remains application-specific, and
 - whether and how to offer later updates when the catalog publishes a new version.
 
-Copying only the entry-point element produces a broken definition. See [Components and their dependencies](../../bis/guide/data-organization/catalogs.md#components-and-their-dependencies) for what the full set of dependencies contains and why. The destination iModel owns each copied definition independently of the catalog.
+Copying only the entry-point element can produce an incomplete definition. See [Components and their dependencies](../../bis/guide/data-organization/catalogs.md#components-and-their-dependencies) for the generic discovery mechanisms and their limits. The destination iModel owns each copied definition independently of the catalog.
 
 ## What remains application-specific
 
@@ -103,7 +105,7 @@ Applications and domain schemas define the parts of the catalog workflow that iT
 
 - administering and discovering available catalogs,
 - selecting catalog entries; selection UX is application- and context-specific (an application presents domain choices such as "pipe type", not raw definition elements),
-- traversing dependencies and copying definitions into other iModels,
+- applying generic and domain-specific dependency rules and copying definitions into other iModels,
 - recording provenance,
 - detecting and presenting updates, and
 - integrating domain-specific definitions.
