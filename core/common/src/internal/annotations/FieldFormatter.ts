@@ -350,16 +350,14 @@ export interface ResolvedFieldFormattingSpecProvider {
   onMissingSpec?: FieldMissingSpecBehavior;
 }
 
-/** Cascading lookup used by the sync formatting path to pick a registered
+/** Lookup used by the sync formatting path to pick a registered
  * [FieldFormattingSpecProvider]($common) for a given [FieldRun]($common). Callers (typically
  * the backend) construct one over their process-wide provider registry and hand it to
  * [[formatFieldValueWithSpecResolver]] via [[UpdateFieldsContext]].
  *
- * Implementations encapsulate the cascading behavior:
- *  1. If `formatSet` is defined, return the provider registered under it.
- *  2. Otherwise (or if `formatSet` has no match), return the default schema registration.
- *  3. Return `undefined` when no registration matches; callers then fall back to the raw string
- *     representation.
+ * Implementations return the provider registered under `formatSet`, or `undefined` when
+ * `formatSet` is not defined or no registration matches; callers then fall back to the raw
+ * string representation.
  * @internal
  */
 export interface FieldFormattingSpecResolver {
@@ -402,7 +400,7 @@ export function formatFieldValueWithSpecProvider(
  * `value`, then delegates to [[formatFieldValueWithSpecProvider]] using that provider and its
  * `onMissingSpec` policy.
  *
- * If the resolver returns `undefined` (no matching registration and no default),
+ * If the resolver returns `undefined` (no matching registration for the field's `formatSet`),
  * quantity/coordinate values fall back to the raw string representation from [[formatFieldValue]].
  * @internal
  */

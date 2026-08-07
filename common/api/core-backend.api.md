@@ -2958,19 +2958,19 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[];
     static evaluateFields(args: EvaluateFieldsArgs): number;
     static evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number>;
-    static getFieldFormattingProvider(formatSet?: Id64String): FormattingSpecProvider | undefined;
+    static getFieldFormattingProvider(formatSet: Id64String): FormattingSpecProvider | undefined;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
     static registerFieldFormattingProvider(args: {
-        formatSet?: Id64String;
+        formatSet: Id64String;
         provider: FormattingSpecProvider;
         onMissingSpec?: "fallback" | "throw";
     }): void;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
-    static unregisterFieldFormattingProvider(formatSet?: Id64String): void;
+    static unregisterFieldFormattingProvider(formatSet: Id64String): void;
     // @deprecated
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
     static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;

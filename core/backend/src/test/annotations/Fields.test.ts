@@ -880,6 +880,12 @@ describe.only("Field evaluation", () => {
   });
 
   describe("registerFieldFormattingProvider (sync path)", () => {
+    // Every sync-path registration is scoped to a specific FormatSet id; there is no default
+    // registration. Tests use these two ids: PRIMARY is the "normal" FormatSet under test, and
+    // SECONDARY exercises multi-FormatSet behavior.
+    const PRIMARY_FORMAT_SET = "0x111";
+    const SECONDARY_FORMAT_SET = "0x222";
+
     // A minimal FormattingSpecProvider stub that recognizes a single (name, persistenceUnit)
     // combination and returns a fake FormatterSpec whose `applyFormatting` is what actually
     // renders magnitudes on the sync formatting path.
@@ -905,11 +911,10 @@ describe.only("Field evaluation", () => {
     }
 
     afterEach(() => {
-      // Unregister the default plus the FormatSet-scoped registrations used by tests
-      // in this block, so leftover providers don't leak into later cases.
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider();
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider("0x123");
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider("0xdead");
+      // Unregister the FormatSet-scoped registrations used by tests in this block, so leftover
+      // providers don't leak into later cases.
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(PRIMARY_FORMAT_SET);
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(SECONDARY_FORMAT_SET);
       // Clean up any TextAnnotation3d elements produced below so we don't leak state
       // (and their ElementDrivesTextAnnotation relationships) into later describe
       // blocks that assert on relationship counts.
@@ -925,12 +930,16 @@ describe.only("Field evaluation", () => {
 
     it("routes evaluateFields quantity formatting through a registered provider", () => {
       let lookups = 0;
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider({ onLookup: () => { lookups += 1; } }) });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        formatSet: PRIMARY_FORMAT_SET,
+        provider: makeStubProvider({ onLookup: () => { lookups += 1; } }),
+      });
 
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
         cachedContent: "old",
       });
       textBlock.appendRun(field);
@@ -946,6 +955,7 @@ describe.only("Field evaluation", () => {
     it("routes evaluateFields coordinate formatting through the provider when a spec is available", () => {
       // Register a provider whose (Fields.LENGTH, Units.M) spec formats magnitudes in millimeters.
       ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        formatSet: PRIMARY_FORMAT_SET,
         provider: makeStubProvider({ format: (m) => `${Math.round(m * 1000)} mm` }),
       });
 
@@ -954,7 +964,7 @@ describe.only("Field evaluation", () => {
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         // point is a Point3d without a KoQ; supply overrides to route it through our stub.
         propertyPath: { propertyName: "point" },
-        formatOptions: { quantity: { kindOfQuantity: "Fields.LENGTH", persistenceUnit: "Units.M" } },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "Fields.LENGTH", persistenceUnit: "Units.M" } },
         cachedContent: "old",
       });
       textBlock.appendRun(field);
@@ -968,6 +978,7 @@ describe.only("Field evaluation", () => {
     it("falls back to raw string when the registered provider does not supply a spec", () => {
       // Provider recognizes no (name, unit) combinations.
       ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        formatSet: PRIMARY_FORMAT_SET,
         provider: {
           onFormattingReady: new BeUnorderedUiEvent(),
           getSpecsByNameAndUnit: () => undefined,
@@ -979,6 +990,7 @@ describe.only("Field evaluation", () => {
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
         cachedContent: "old",
       });
       textBlock.appendRun(field);
@@ -1053,71 +1065,50 @@ describe.only("Field evaluation", () => {
       expect(reloadedField!.cachedContent).to.equal("2.5");
     });
 
-    it("unregisters the default via unregisterFieldFormattingProvider", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider() });
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider()).to.not.be.undefined;
+    it("unregisters a FormatSet registration via unregisterFieldFormattingProvider", () => {
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(PRIMARY_FORMAT_SET)).to.not.be.undefined;
 
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider();
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider()).to.be.undefined;
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(PRIMARY_FORMAT_SET);
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(PRIMARY_FORMAT_SET)).to.be.undefined;
     });
 
-    it("routes fields to the FormatSet-scoped provider identified by formatOptions.quantity.formatSet", () => {
-      // Register two providers: a default that formats magnitudes in millimeters,
-      // and a FormatSet-scoped provider (id "0x123") that formats in centimeters.
-      const defaultProvider = makeStubProvider({ format: (m) => `${m * 1000} mm` });
+    it("routes each field to the FormatSet-scoped provider identified by formatOptions.quantity.formatSet", () => {
+      // Register two providers under distinct FormatSet ids and confirm each field picks the
+      // one that matches its formatOptions.quantity.formatSet.
+      const mmProvider = makeStubProvider({ format: (m) => `${m * 1000} mm` });
       const cmProvider = makeStubProvider({ format: (m) => `${m * 100} cm` });
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: defaultProvider });
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: "0x123", provider: cmProvider });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: mmProvider });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: SECONDARY_FORMAT_SET, provider: cmProvider });
 
       const block = TextBlock.create();
-      const defaultField = FieldRun.create({
+      const primaryField = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
         cachedContent: "old",
       });
-      const scopedField = FieldRun.create({
+      const secondaryField = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: "0x123" } },
+        formatOptions: { quantity: { formatSet: SECONDARY_FORMAT_SET } },
         cachedContent: "old",
       });
-      block.appendRun(defaultField);
-      block.appendRun(scopedField);
+      block.appendRun(primaryField);
+      block.appendRun(secondaryField);
 
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(updated).to.equal(2);
-      expect(defaultField.cachedContent).to.equal("2500 mm");
-      expect(scopedField.cachedContent).to.equal("250 cm");
+      expect(primaryField.cachedContent).to.equal("2500 mm");
+      expect(secondaryField.cachedContent).to.equal("250 cm");
     });
 
-    it("falls back from a missing FormatSet-scoped registration to the default", () => {
-      // Only a default is registered; a field pointing at an unregistered FormatSet id should
-      // fall through to the default.
+    it("falls back to raw string when a field's formatSet is unset", () => {
+      // With only a FormatSet-scoped provider registered, a field that omits formatSet cannot
+      // match any registration and falls through to the raw string path.
       ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        provider: makeStubProvider({ format: (m) => `${m * 1000} mm` }),
-      });
-
-      const block = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: "0xdead" } },
-        cachedContent: "old",
-      });
-      block.appendRun(field);
-
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-      expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2500 mm");
-    });
-
-    it("falls back to raw string when a field targets a FormatSet with no default fallback", () => {
-      // Register only a FormatSet-scoped provider; a field with no formatSet should fall through
-      // to the raw string path because there's no default registration.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        formatSet: "0x123",
+        formatSet: PRIMARY_FORMAT_SET,
         provider: makeStubProvider(),
       });
 
@@ -1135,26 +1126,49 @@ describe.only("Field evaluation", () => {
       expect(field.cachedContent).to.equal("2.5");
     });
 
+    it("falls back to raw string when a field's formatSet does not match any registration", () => {
+      // Register under PRIMARY; the field targets SECONDARY -> no match -> raw string.
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        formatSet: PRIMARY_FORMAT_SET,
+        provider: makeStubProvider(),
+      });
+
+      const block = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { formatSet: SECONDARY_FORMAT_SET } },
+        cachedContent: "old",
+      });
+      block.appendRun(field);
+
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("2.5");
+    });
+
     it("unregisters a FormatSet-scoped registration without affecting others", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider() });
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: "0x123", provider: makeStubProvider() });
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider()).to.not.be.undefined;
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider("0x123")).to.not.be.undefined;
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: SECONDARY_FORMAT_SET, provider: makeStubProvider() });
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(PRIMARY_FORMAT_SET)).to.not.be.undefined;
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(SECONDARY_FORMAT_SET)).to.not.be.undefined;
 
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider("0x123");
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(SECONDARY_FORMAT_SET);
 
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider()).to.not.be.undefined;
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider("0x123")).to.be.undefined;
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(PRIMARY_FORMAT_SET)).to.not.be.undefined;
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(SECONDARY_FORMAT_SET)).to.be.undefined;
     });
 
     it("routes txn-driven field updates through the registered provider", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider() });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
 
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         styleOverrides: { font: { name: "Karla" } },
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
         cachedContent: "old",
       });
       textBlock.appendRun(field);
@@ -1184,14 +1198,14 @@ describe.only("Field evaluation", () => {
     it("throws from evaluateFields when onMissingSpec is 'throw' and no spec is available", () => {
       // Register a stub provider that recognizes Fields.LENGTH+Units.M, then aim a field
       // at a KoQ the provider doesn't know about.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider(), onMissingSpec: "throw" });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider(), onMissingSpec: "throw" });
 
       const textBlock = TextBlock.create();
       textBlock.appendRun(FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
         cachedContent: "old",
-        formatOptions: { quantity: { kindOfQuantity: "MissingKoq" } },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "MissingKoq" } },
       }));
 
       expect(() => ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock }))
@@ -1199,14 +1213,14 @@ describe.only("Field evaluation", () => {
     });
 
     it("falls back silently when onMissingSpec is 'fallback' (or unset)", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ provider: makeStubProvider(), onMissingSpec: "fallback" });
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider(), onMissingSpec: "fallback" });
 
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
         cachedContent: "old",
-        formatOptions: { quantity: { kindOfQuantity: "MissingKoq" } },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "MissingKoq" } },
       });
       textBlock.appendRun(field);
 
