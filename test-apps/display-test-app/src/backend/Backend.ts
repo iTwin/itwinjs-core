@@ -200,20 +200,20 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
 
-    const demo = getFieldFormattingDemo(iModel);
+    const demo = getFieldFormattingDemo();
     if (demo) {
       // Keep the async pipeline consistent with the sync (txn callback) pipeline: use the
       // demo provider's own FormatsProvider/UnitsProvider so both produce identical output.
       // Preload the specs so `formatQuantity` calls that happen implicitly through the async
       // formatter can use them if the async path decides to consult the cache.
-      await demo.provider.prepareForBlock(iModel, textBlock);
+      await demo.prepareForBlock(iModel, textBlock);
       await ElementDrivesTextAnnotation.evaluateFieldsAsync({
         block: textBlock,
         iModel,
         formatting: {
-          formatsProvider: demo.provider.formatsProvider,
-          unitsProvider: demo.provider.unitsProvider,
-          onMissingSpec: demo.mode === "demo-throw" ? "throw" : "fallback",
+          formatsProvider: demo.formatsProvider,
+          unitsProvider: demo.unitsProvider,
+          onMissingSpec: demo.onMissingSpec,
         },
       });
     } else {
