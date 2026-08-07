@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "QueryBinder.bindIdSet now throws a descriptive ITwinError (scope \"itwin-QueryBinder\", key \"invalid-arguments\") when an entry is not a valid Id64String, instead of an uncaught TypeError.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

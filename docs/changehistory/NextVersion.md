@@ -4,12 +4,22 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [@itwin/core-common](#itwincore-common)
+    - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
   - [@itwin/core-backend](#itwincore-backend)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
+
+## @itwin/core-common
+
+### QueryBinder.bindIdSet now throws on invalid ids
+
+[QueryBinder.bindIdSet]($common) previously threw an uncaught `TypeError` when given an entry that was not a valid [Id64String]($bentley) (for example `undefined` or `null`, which can occur when collecting ids from a nullable column via [ECSqlReader]($common)). It now throws a descriptive [ITwinError]($bentley) instead, identifiable via `ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments")`, so callers can catch and diagnose the invalid entry rather than encountering an opaque internal error.
+
+**Note:** string entries that are not valid `Id64String`s (for example `"50"` or `""`) previously passed through and were ignored during id compression. They now throw the same error, so callers binding ids from untyped or nullable query data should filter invalid values before calling `bindIdSet`.
 
 ## @itwin/core-backend
 
