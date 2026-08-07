@@ -9,7 +9,7 @@ import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { createUnitsProvider, FormatsProvider, FormatterSpec, FormattingSpecArgs, UnitsProvider } from "@itwin/core-quantity";
+import { createUnitsProvider, FormatsProvider, FormattingSpecArgs, UnitsProvider } from "@itwin/core-quantity";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -364,7 +364,6 @@ export function createFieldFormatterContext(
   return {
     unitsProvider,
     formatsProvider,
-    specCache: new Map<string, FormatterSpec>(),
   };
 }
 

@@ -3729,8 +3729,6 @@ export interface FieldFormatterContext {
     // (undocumented)
     formatsProvider: FormatsProvider;
     // (undocumented)
-    specCache?: Map<string, FormatterSpec>;
-    // (undocumented)
     unitsProvider: UnitsProvider;
 }
 

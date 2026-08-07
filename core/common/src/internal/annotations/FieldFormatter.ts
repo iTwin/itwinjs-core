@@ -117,15 +117,12 @@ export function isKnownFieldPropertyType(type: string): type is FieldPropertyTyp
 }
 
 /** Runtime context for [[formatFieldValueAsync]]. Supplies the units/formats providers used to
- * resolve a [Format]($core-quantity) for `"quantity"` and `"coordinate"` fields, plus an optional
- * cache to avoid rebuilding a [FormatterSpec]($core-quantity) for repeated (format source,
- * persistence unit) pairs within a single pass.
+ * resolve a [Format]($core-quantity) for `"quantity"` and `"coordinate"` fields.
  * @internal
  */
 export interface FieldFormatterContext {
   unitsProvider: UnitsProvider;
   formatsProvider: FormatsProvider;
-  specCache?: Map<string, FormatterSpec>;
 }
 
 // Fallback FormatProps for coordinate fields whose property has no KindOfQuantity. Assumes the
@@ -146,18 +143,17 @@ function firstCompositeUnitName(formatProps: FormatProps): string | undefined {
   return formatProps.composite?.units?.[0]?.name;
 }
 
-// Resolves the FormatProps to use for a field and a stable cache key describing its source.
-// Returns undefined if no format source is available.
+// Resolves the FormatProps to use for a field. Returns undefined if no format source is available.
 async function resolveFormatSource(
   quantityOptions: QuantityFieldFormatOptions | undefined,
   value: FieldValue,
   context: FieldFormatterContext,
-): Promise<{ formatProps: FormatProps, cacheKeySource: string } | undefined> {
+): Promise<FormatProps | undefined> {
   // 1. Explicit format-set / KoQ override.
   if (quantityOptions?.kindOfQuantity) {
     const def = await context.formatsProvider.getFormat(quantityOptions.kindOfQuantity);
     if (def) {
-      return { formatProps: def, cacheKeySource: `key:${quantityOptions.kindOfQuantity}` };
+      return def;
     }
   }
 
@@ -165,13 +161,13 @@ async function resolveFormatSource(
   if (value.kindOfQuantityFullName) {
     const def = await context.formatsProvider.getFormat(value.kindOfQuantityFullName);
     if (def) {
-      return { formatProps: def, cacheKeySource: `koq:${value.kindOfQuantityFullName}` };
+      return def;
     }
   }
 
   // 3. Coordinate fallback: assume length in meters.
   if (value.type === "coordinate") {
-    return { formatProps: defaultCoordinateFormatProps, cacheKeySource: "default:coordinate" };
+    return defaultCoordinateFormatProps;
   }
 
   return undefined;
@@ -199,24 +195,14 @@ async function getFormatterSpec(
   value: FieldValue,
   context: FieldFormatterContext,
 ): Promise<FormatterSpec | undefined> {
-  const source = await resolveFormatSource(quantityOptions, value, context);
-  if (!source) {
+  const formatProps = await resolveFormatSource(quantityOptions, value, context);
+  if (!formatProps) {
     return undefined;
   }
 
-  const persistenceUnitName = value.persistenceUnitFullName ?? firstCompositeUnitName(source.formatProps) ?? "";
-  const cacheKey = `${source.cacheKeySource}|${persistenceUnitName}`;
-
-  const cached = context.specCache?.get(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
-  const format = await Format.createFromJSON("fieldFormat", context.unitsProvider, source.formatProps);
-  const persistenceUnit = await resolvePersistenceUnit(value, source.formatProps, context);
-  const spec = await FormatterSpec.create("fieldFormat", format, context.unitsProvider, persistenceUnit);
-  context.specCache?.set(cacheKey, spec);
-  return spec;
+  const format = await Format.createFromJSON("fieldFormat", context.unitsProvider, formatProps);
+  const persistenceUnit = await resolvePersistenceUnit(value, formatProps, context);
+  return FormatterSpec.create("fieldFormat", format, context.unitsProvider, persistenceUnit);
 }
 
 function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
