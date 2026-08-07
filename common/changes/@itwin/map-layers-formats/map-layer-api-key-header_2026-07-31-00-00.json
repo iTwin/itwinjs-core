@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers-formats",
-      "comment": "Forward custom HTTP headers (e.g. an API key header) configured on map layer settings when validating and requesting OGC API Features and ArcGIS Feature layers.",
+      "comment": "Forward custom HTTP headers (e.g. an API key header) configured on map layer settings when validating and requesting OGC API Features and ArcGIS Feature layers. When custom headers are present, ArcGIS Feature layer extent requests bypass the URL-keyed extent cache so responses are not shared across differing authentication contexts.",
       "type": "none"
     }
   ],
