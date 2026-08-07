@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "fix: Workspace.getWorkspaceDb to reuse a pre-supplied accessToken instead of always requesting a new one",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -1,6 +1,6 @@
 {
   "version": "01.00.00",
-  "sourceEcSchemaVersion": "01.00.10",
+  "sourceEcSchemaVersion": "01.00.11",
   "name": "Units",
   "alias": "u",
   "label": "Units",
@@ -1127,12 +1127,26 @@
       "unitSystem": "Units.METRIC",
       "definition": "N_M*ARC_DEG(-1)"
     },
+    "KN_M_PER_DEG": {
+      "schemaItemType": "Unit",
+      "label": "kN·m/deg",
+      "phenomenon": "Units.ROTATIONAL_SPRING_CONSTANT",
+      "unitSystem": "Units.METRIC",
+      "definition": "KN_M*ARC_DEG(-1)"
+    },
     "KPF_FT_PER_RAD": {
       "schemaItemType": "Unit",
       "label": "kpf·ft/rad",
       "phenomenon": "Units.ROTATIONAL_SPRING_CONSTANT",
       "unitSystem": "Units.USCUSTOM",
       "definition": "KPF_FT*RAD(-1)"
+    },
+    "KPF_FT_PER_DEG": {
+      "schemaItemType": "Unit",
+      "label": "kpf·ft/deg",
+      "phenomenon": "Units.ROTATIONAL_SPRING_CONSTANT",
+      "unitSystem": "Units.USCUSTOM",
+      "definition": "KPF_FT*ARC_DEG(-1)"
     },
     "N_PER_RAD": {
       "schemaItemType": "Unit",
