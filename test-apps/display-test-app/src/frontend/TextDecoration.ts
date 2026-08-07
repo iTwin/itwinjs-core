@@ -386,6 +386,7 @@ export class TextDecorationTool extends Tool {
     ["update <annotationId>", "Update the given annotation element with the current state."],
     ["delete <annotationId>", "Delete the given annotation element."],
     ["scale <factor>", "Set the annotation scale factor for the current model."],
+    ["demo <on|off|throw>", "Register/unregister the DTA FieldFormattingDemoProvider under DEMO_FORMAT_SET_ID for the current iModel. `on` = enable with fallback; `throw` = enable with throw-on-missing-spec; `off` = disable."],
   ];
 
   private static printHelp(): void {
@@ -490,7 +491,7 @@ export class TextDecorationTool extends Tool {
     editor.appendBreak();
     editor.appendText("  • TxnManager callback — fires when a source element changes or is deleted.");
     editor.appendBreak();
-    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `FieldFormattingDemo.enableFieldFormattingDemo` (see backend).");
+    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `dta text demo on` / `dta text demo throw`.");
     editor.appendBreak();
     editor.appendText("Async path (formatFieldValueAsync):");
     editor.appendBreak();
@@ -666,7 +667,7 @@ export class TextDecorationTool extends Tool {
     editor.appendBreak();
     editor.appendText("  • TxnManager callback — fires when a source element changes or is deleted.");
     editor.appendBreak();
-    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `FieldFormattingDemo.enableFieldFormattingDemo` (see backend).");
+    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `dta text demo on` / `dta text demo throw`.");
     editor.appendBreak();
     editor.appendText("Async path (formatFieldValueAsync):");
     editor.appendBreak();
@@ -1143,6 +1144,18 @@ export class TextDecorationTool extends Tool {
         );
 
         break;
+      }
+      case "demo": {
+        if (arg === "off") {
+          await dtaIpc.disableFieldFormattingDemo(vp.iModel.key);
+        } else if (arg === "on" || arg === "throw") {
+          await dtaIpc.enableFieldFormattingDemo(vp.iModel.key, arg === "throw" ? "throw" : "fallback");
+        } else {
+          throw new Error("Expected on, off, or throw");
+        }
+        // eslint-disable-next-line no-console
+        console.log(`FieldFormattingDemoProvider ${arg === "off" ? "unregistered" : `registered (${arg})`} for iModel ${vp.iModel.key}`);
+        return true;
       }
       case "list": { // args are enumerator, terminator, case, index
 
