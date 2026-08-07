@@ -532,8 +532,8 @@ export class TextDecorationTool extends Tool {
     // Post-format wrappers — no quantity override, so wraps whatever the active pathway produces.
     expectField(
       "Prefix/suffix wrappers",
-      "L=(30707.1467 m, 58893.3153 m, 0 m) (m)",
-      { prefix: "L=", suffix: " (m)", quantity: { persistenceUnit } },
+      "L=(30707.1467 m, 58893.3153 m, 0 m) (actual)",
+      { prefix: "L=", suffix: " (actual)", quantity: { persistenceUnit } },
       "prefix/suffix wrap the ENTIRE formatted coordinate string (not each magnitude).",
     );
 
@@ -701,8 +701,8 @@ export class TextDecorationTool extends Tool {
     // Post-format wrappers — no quantity override, wraps whatever the sync path produced.
     expectField(
       "Prefix/suffix wrappers",
-      "A=6395.895 (m²)",
-      { prefix: "A=", suffix: " (m²)", quantity: { persistenceUnit } },
+      "A=6395.895 m² (actual)",
+      { prefix: "A=", suffix: " (actual)", quantity: { persistenceUnit } },
       "prefix/suffix wrap the ENTIRE formatted string — here just the raw toString value.",
     );
 
