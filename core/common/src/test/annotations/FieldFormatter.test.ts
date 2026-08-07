@@ -214,7 +214,6 @@ describe("Async field formatting", () => {
     return {
       unitsProvider: new BasicUnitsProvider(),
       formatsProvider: createFakeFormatsProvider(formats),
-      specCache: new Map(),
     };
   }
 
@@ -300,34 +299,6 @@ describe("Async field formatting", () => {
         createContext(),
       );
       expect(result).toBe("<hello>");
-    });
-
-    it("caches FormatterSpec instances by source and persistence unit", async () => {
-      let getFormatCallCount = 0;
-      const provider: FormatsProvider = {
-        getFormat: async () => { getFormatCallCount++; return metersFormat; },
-        onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
-      };
-      const context: FieldFormatterContext = {
-        unitsProvider: new BasicUnitsProvider(),
-        formatsProvider: provider,
-        specCache: new Map(),
-      };
-      const value: FieldValue = {
-        value: 1,
-        type: "quantity",
-        kindOfQuantityFullName: "AecUnits.LENGTH",
-        persistenceUnitFullName: "Units.M",
-      };
-
-      await formatFieldValueAsync(value, undefined, context);
-      await formatFieldValueAsync(value, undefined, context);
-      await formatFieldValueAsync({ ...value, value: 5 }, undefined, context);
-      // getFormat is called every pass (the FormatsProvider is not cached), but the cache should
-      // prevent a second FormatterSpec build for the same triple. Its main observable effect is
-      // that identical inputs yield identical formatted output.
-      expect(getFormatCallCount).toBeGreaterThan(0);
-      expect(context.specCache?.size).toBe(1);
     });
   });
 
