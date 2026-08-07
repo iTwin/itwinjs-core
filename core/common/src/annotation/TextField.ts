@@ -110,10 +110,11 @@ export interface QuantityFieldFormatOptions {
    * synchronous [FormattingSpecProvider]($core-quantity) formats this field. The txn callback
    * path and [ElementDrivesTextAnnotation.evaluateFields]($backend) look up the provider
    * registered under this FormatSet id via
-   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend):
-   *  1. The provider registered under `formatSet`.
-   *  2. The default registration (registered with no `formatSet`).
-   *  3. Raw string representation.
+   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend). If `formatSet` is
+   * unset or no provider is registered under it, the field renders as its raw string
+   * representation on the sync path; on the async
+   * [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path the iModel's
+   * [SchemaFormatsProvider]($ecschema-metadata) is consulted instead.
    */
   formatSet?: Id64String;
 }

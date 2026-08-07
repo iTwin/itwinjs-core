@@ -66,12 +66,9 @@ export interface UpdateFieldsContext {
 
   /** Optional resolver used to select a synchronous [FieldFormattingSpecProvider]($common) per
    * [FieldRun]($common). When present, [[updateField]] formats `"quantity"` and `"coordinate"`
-   * values via [[formatFieldValueWithSpecResolver]]; when absent it falls back to `toString()`.
-   *
-   * The resolver encapsulates the cascading lookup on
-   * [QuantityFieldFormatOptions.formatSet]($common):
-   *   1. The field's `formatSet` registration.
-   *   2. The default registration.
+   * values via [[formatFieldValueWithSpecResolver]]; when absent (or when the resolver has no
+   * match for the field's [QuantityFieldFormatOptions.formatSet]($common)) it falls back to
+   * `toString()`.
    */
   readonly formattingSpecResolver?: FieldFormattingSpecResolver;
 
