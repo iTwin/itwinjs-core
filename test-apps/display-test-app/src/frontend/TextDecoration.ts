@@ -502,8 +502,8 @@ export class TextDecorationTool extends Tool {
     editor.runStyle.color = ColorDef.fromString("black").toJSON();
     editor.appendBreak();
 
-    const persistenceUnit = "Units.M";
-    // const persistenceUnit = undefined;
+    // const persistenceUnit = "Units.M";
+    const persistenceUnit = undefined;
 
     // No formatOptions at all — cleanest test of the demo provider on both paths.
     expectField(

@@ -727,6 +727,39 @@ describe.only("Field evaluation", () => {
       expect(field.cachedContent).to.equal("2500 mm");
     });
 
+    it("falls back to the property's KindOfQuantity when the override KoQ isn't in the FormatsProvider", async () => {
+      // The caller pins a preferred FormatSet KoQ (Missing.KOQ) but the active provider only
+      // knows about the property's KoQ (Fields.LENGTH). The formatter should use the
+      // property-side pair rather than dropping to raw output.
+      const stubProvider: FormatsProvider = {
+        onFormatsChanged: new BeEvent(),
+        async getFormat(name) {
+          return name === "Fields.LENGTH" ? decimalFormat("Units.MM", "mm", 2) : undefined;
+        },
+      };
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: { propertyName: "lengthProp" },
+        formatOptions: {
+          quantity: {
+            kindOfQuantity: "Missing.KOQ",
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const block = TextBlock.create();
+      block.appendRun(field);
+      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+        iModel: imodel,
+        block,
+        formatting: { formatsProvider: stubProvider },
+      });
+
+      expect(updatedCount).to.equal(1);
+      expect(field.cachedContent).to.equal("2500 mm");
+    });
+
     it("marks the field invalid when a quantity property value is missing", async () => {
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
@@ -864,15 +897,20 @@ describe.only("Field evaluation", () => {
       expect(reqs[0].persistenceUnitName).to.equal("Units.M");
     });
 
-    it("prefers kindOfQuantity over property KoQ but keeps the property's persistence unit", () => {
+    it("prefers kindOfQuantity override but also emits the property KoQ as a fallback pre-warm", () => {
+      // Fields with a kindOfQuantity override should emit both the effective pair (override
+      // KoQ + property persistence unit) and the property-side pair. That way apps pre-warming
+      // via this API cover the formatter's runtime fallback if the override name isn't in the
+      // active FormatSet.
       const block = makeBlock(makeField(
         { propertyName: "lengthProp" },
         { quantity: { kindOfQuantity: "AecUnits.LENGTH" } },
       ));
       const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
-      expect(reqs).to.have.length(1);
-      expect(reqs[0].name).to.equal("AecUnits.LENGTH");
-      expect(reqs[0].persistenceUnitName).to.equal("Units.M");
+      expect(reqs).to.have.length(2);
+      const sorted = [...reqs].sort((a, b) => a.name.localeCompare(b.name));
+      expect(sorted[0]).to.deep.equal({ name: "AecUnits.LENGTH", persistenceUnitName: "Units.M" });
+      expect(sorted[1]).to.deep.equal({ name: "Fields.LENGTH", persistenceUnitName: "Units.M" });
     });
 
     it("skips non-quantity fields", () => {
