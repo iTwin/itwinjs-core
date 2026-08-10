@@ -1612,8 +1612,6 @@ export abstract class DefinitionElement extends InformationContentElement {
 export abstract class DefinitionSet extends DefinitionElement {
   public static override get className(): string { return "DefinitionSet"; }
   /** The Rank of a DefinitionSet indicates how it was created, who is aware of it and where it can be used.
-   * @note Setting this property when inserting or updating an element is not currently persisted - see
-   * [[DefinitionSetProps.rank]] for details.
    * @beta
    */
   public rank?: Rank;

@@ -1681,16 +1681,16 @@ describe("iModel", () => {
   });
 
   describe("DefinitionSet.rank", () => {
-    // BisCore:DefinitionSet.Rank is a CustomHandledProperty, but DefinitionSet has no ClassHasHandler, so native's
-    // insertElement/updateElement silently drop the value - see https://github.com/iTwin/itwinjs-backlog/issues/2314
-    // and https://github.com/iTwin/itwinjs-core/issues/9500. These tests exercise the TypeScript-side (de)serialization
-    // of DefinitionSet.rank using the native ECSQL instance-write API to seed the column directly.
+    // BisCore:DefinitionSet.Rank is a CustomHandledProperty. Native insertElement/updateElement now persist it
+    // correctly (see https://github.com/iTwin/itwinjs-backlog/issues/2314 and
+    // https://github.com/iTwin/itwinjs-core/issues/9500). These tests exercise both the TypeScript-side
+    // (de)serialization of DefinitionSet.rank and its round-trip through the normal insert/update element APIs.
 
     function setRank(iModelDb: StandaloneDb, id: Id64String, className: string, rank: Rank | undefined): void {
       withEditTxn(iModelDb, (txn) => txn.updateElement<DefinitionSetProps>({ id, classFullName: className, rank }));
     }
 
-    it("should read and serialize rank once persisted (write path is not yet supported by native)", () => {
+    it("should insert, update, read and serialize rank", () => {
       const iModelFileName = IModelTestUtils.prepareOutputFile("IModel", "DefinitionSetRank.bim");
       const iModelDb = StandaloneDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionSetRank" } });
 
@@ -1742,10 +1742,7 @@ describe("iModel", () => {
       iModelDb.close();
     });
 
-    // The following reproduces the scenario from https://github.com/iTwin/itwinjs-backlog/issues/2314: setting `rank`
-    // on insert is not currently persisted because native's insertElement silently drops DefinitionSet.Rank. Skipped
-    // until there is native/bis-schemas support for handling this CustomHandledProperty.
-    it.skip("should insert a DefinitionContainer with rank property", () => {
+    it("should insert a DefinitionContainer with rank property", () => {
       const iModelFileName = IModelTestUtils.prepareOutputFile("IModel", "DefinitionContainerRank.bim");
       const iModelDb = StandaloneDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionContainerRank" } });
 

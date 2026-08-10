@@ -556,9 +556,6 @@ export enum Rank {
 }
 
 /** Parameters of a [DefinitionSet]($backend), unifying [DefinitionContainer]($backend) and [DefinitionGroup]($backend).
- * @note Setting `rank` when inserting or updating an element is not currently persisted - see the corresponding
- * [GitHub issue](https://github.com/iTwin/itwinjs-core/issues/9500) for details. Values already stored in an iModel
- * are read back correctly.
  * @beta
  */
 export interface DefinitionSetProps extends DefinitionElementProps {
