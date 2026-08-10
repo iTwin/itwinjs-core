@@ -102,6 +102,17 @@ export namespace SchemaSync {
     }
   };
 
+  /** Build the tables and indexes the briefcase's `ec_` rows describe. A merged schema changeset carries
+   * those rows but no DDL, so the physical columns are missing until this runs. Needs no cloud access.
+   */
+  export const updateDbSchema = (iModel: IModelDb) => {
+    if (iModel[_nativeDb].schemaSyncEnabled() && !iModel.isReadonly) {
+      iModel.clearCaches();
+      iModel[_nativeDb].schemaSyncUpdateDbSchema();
+      iModel[_implicitTxn].saveChanges("materialized db schema from ec_ tables");
+    }
+  };
+
   export const initializeForIModel = async (arg: { iModel: IModelDb, containerProps: CloudSqlite.ContainerProps, overrideContainer?: boolean }) => {
     const props = { baseUri: arg.containerProps.baseUri, containerId: arg.containerProps.containerId, storageType: arg.containerProps.storageType }; // sanitize to only known properties
     const iModel = arg.iModel;

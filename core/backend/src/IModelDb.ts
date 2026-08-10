@@ -287,6 +287,17 @@ export interface SchemaImportOptions<T = any> {
   data?: T
 }
 
+/** Arguments for [[BriefcaseDb.importSchemasWithDataTransform]].
+ * @alpha
+ */
+export interface ImportSchemasWithDataTransformArgs extends PushChangesArgs {
+  /**
+   * An [[ECSchemaXmlContext]] to use instead of building a default one.
+   * @internal
+   */
+  ecSchemaXmlContext?: ECSchemaXmlContext;
+}
+
 /** @internal */
 export enum BriefcaseLocalValue {
   StandaloneEdit = "StandaloneEdit",
@@ -731,7 +742,11 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].closeFile();
   }
 
-  private saveSchemaChanges(args?: string): void {
+  /**
+   * Save any unsaved schema changes in this iModel.
+   * @internal
+  */
+  protected saveSchemaChanges(args?: string): void {
     if (!this[_nativeDb].hasUnsavedChanges())
       return;
 
@@ -739,7 +754,11 @@ export abstract class IModelDb extends IModel {
     saveArgs === undefined ? this[_nativeDb].saveChanges() : this[_nativeDb].saveChanges(JSON.stringify(saveArgs));
   }
 
-  private abandonSchemaChanges(): void {
+  /**
+   * Abandon any unsaved schema changes in this iModel.
+   * @internal
+   */
+  protected abandonSchemaChanges(): void {
     if (!this[_nativeDb].hasUnsavedChanges())
       return;
 
@@ -1447,7 +1466,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Shared implementation for importing schemas from file or string. */
-  private async importSchemasInternal<T extends LocalFileName[] | string[]>(
+  protected async importSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
@@ -1491,25 +1510,22 @@ export abstract class IModelDb extends IModel {
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
     if (this[_nativeDb].schemaSyncEnabled()) {
+      // The shared lock lets concurrent updates through while blocking anyone taking the exclusive lock for an upgrade.
+      if (this[_nativeDb].getITwinId() !== Guid.empty)
+        await this.locks.acquireLocks({ shared: IModel.repositoryModelId });
+
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         this.saveSchemaChanges();
 
         try {
           nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-        } catch (outerErr: any) {
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonSchemaChanges();
-            if (this[_nativeDb].getITwinId() !== Guid.empty)
-              await this.acquireSchemaLock();
-            try {
-              nativeImportOp(schemas, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-            } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
-            }
-          } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
-          }
+        } catch (err: any) {
+          this.abandonSchemaChanges();
+          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === err.errorNumber)
+            throw new IModelError(err.errorNumber, `${err.message} - this schema change moves data. Use BriefcaseDb.importSchemasWithDataTransform, which takes the exclusive lock and pushes the result.`);
+
+          throw new IModelError(err.errorNumber, err.message);
         }
       });
     } else {
@@ -4170,7 +4186,7 @@ export class BriefcaseDb extends IModelDb {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
       if (!this.skipSyncSchemasOnPullAndPush)
-        await SchemaSync.pull(this);
+        SchemaSync.updateDbSchema(this);
       this.initializeIModelDb("pullMerge");
     });
 
@@ -4378,6 +4394,74 @@ export class BriefcaseDb extends IModelDb {
 
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
     BriefcaseManager.deleteRebaseFolders(this);
+  }
+
+  /** Import schemas whose changes move existing data. [[importSchemas]] rejects those on an iModel with
+   * SchemaSync enabled, because every briefcase has to agree on where that data ends up.
+   *
+   * Takes the exclusive schema lock, pulls to the tip, imports, then pushes the changeset and uploads the
+   * sync db before releasing either lock. The result cannot be kept local.
+   * @note The briefcase must have no local changes. Acquiring the exclusive lock fails while anyone else
+   * holds a lock, so no other briefcase can be sitting on unpushed changes either.
+   * @alpha
+   */
+  public async importSchemasWithDataTransform(schemaFileNames: LocalFileName[], arg: ImportSchemasWithDataTransformArgs): Promise<void> {
+    return this.importWithDataTransformInternal(
+      schemaFileNames,
+      arg,
+      (schemas, importOptions) => this[_nativeDb].importSchemas(schemas, importOptions),
+    );
+  }
+
+  /** The [[importSchemaStrings]] counterpart of [[importSchemasWithDataTransform]].
+   * @alpha
+   */
+  public async importSchemaStringsWithDataTransform(serializedXmlSchemas: string[], arg: ImportSchemasWithDataTransformArgs): Promise<void> {
+    return this.importWithDataTransformInternal(
+      serializedXmlSchemas,
+      arg,
+      (schemas, importOptions) => this[_nativeDb].importXmlSchemas(schemas, importOptions),
+    );
+  }
+
+  private async importWithDataTransformInternal<T extends LocalFileName[] | string[]>(
+    schemas: T,
+    arg: ImportSchemasWithDataTransformArgs,
+    nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
+  ): Promise<void> {
+    if (schemas.length === 0)
+      return;
+
+    if (this[_nativeDb].hasUnsavedChanges() || this.txns.hasLocalChanges)
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot import schemas with a data transform while there are local changes");
+
+    await this.acquireSchemaLock();
+    await this.pullChanges({ accessToken: arg.accessToken });
+
+    if (!this[_nativeDb].schemaSyncEnabled()) {
+      await this.importSchemasInternal(schemas, { ecSchemaXmlContext: arg.ecSchemaXmlContext }, nativeImportOp);
+      await this.pushChanges(arg);
+      return;
+    }
+
+    await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema data transform" }, async (syncAccess) => {
+      this.saveSchemaChanges();
+      try {
+        nativeImportOp(schemas, {
+          schemaLockHeld: true,
+          ecSchemaXmlContext: arg.ecSchemaXmlContext?.nativeContext,
+          schemaSyncDbUri: syncAccess.getUri(),
+        });
+      } catch (err: any) {
+        this.abandonSchemaChanges();
+        throw new IModelError(err.errorNumber, err.message);
+      }
+
+      this.clearCaches();
+      // The changeset goes first. If the sync db upload then fails, the sync db trails the timeline, which the
+      // next import repairs - the reverse would leave layout decisions no briefcase has.
+      await this.pushChanges(arg);
+    });
   }
 
   public override close(options?: CloseIModelArgs) {
