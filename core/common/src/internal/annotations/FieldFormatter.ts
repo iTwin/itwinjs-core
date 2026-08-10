@@ -160,7 +160,12 @@ function collectFormatterSpecCandidates(
   value: FieldValue,
 ): FormatterSpecCandidate[] {
   const propertyName = value.kindOfQuantityFullName;
-  const propertyPersistence = value.persistenceUnitFullName;
+  // Coordinate values are BIS geometry, which is persisted in meters. Treat that as the
+  // implicit persistence unit whenever nothing else (property KoQ or override) supplied one,
+  // so a `kindOfQuantity` override on a coordinate property without its own KoQ still gets
+  // matched against `"Units.M"` instead of being dropped for lack of a unit.
+  const coordinateImplicitPersistence = value.type === "coordinate" ? "Units.M" : undefined;
+  const propertyPersistence = value.persistenceUnitFullName ?? coordinateImplicitPersistence;
   const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
   const effectivePersistence = quantityOptions?.persistenceUnit ?? propertyPersistence;
 
@@ -296,7 +301,10 @@ function lookupSyncSpec(
   provider: FieldFormattingSpecProvider,
 ): FormatterSpec | undefined {
   const propertyName = value.kindOfQuantityFullName;
-  const propertyPersistence = value.persistenceUnitFullName;
+  // Coordinate values are BIS geometry (meters); treat "Units.M" as the implicit persistence
+  // unit so a `kindOfQuantity` override on a coordinate property with no KoQ still resolves.
+  const coordinateImplicitPersistence = value.type === "coordinate" ? "Units.M" : undefined;
+  const propertyPersistence = value.persistenceUnitFullName ?? coordinateImplicitPersistence;
   const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
   const effectivePersistence = quantityOptions?.persistenceUnit ?? propertyPersistence;
 
