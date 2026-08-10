@@ -292,6 +292,25 @@ describe("Async field formatting", () => {
       expect(result).toBe("42");
     });
 
+    it("falls back to raw when a format resolves but no persistence unit is known", async () => {
+      // Regression: previously the formatter used the composite's presentation unit as a
+      // stand-in persistence unit. That could either mis-convert or silently render raw
+      // magnitudes with a presentation label. The correct behavior is to bail out and let the
+      // caller render the raw value.
+      const value: FieldValue = {
+        value: 2,
+        type: "quantity",
+        kindOfQuantityFullName: "AecUnits.LENGTH",
+        // persistenceUnitFullName intentionally omitted.
+      };
+      const result = await formatFieldValueAsync(
+        value,
+        undefined,
+        createContext({ "AecUnits.LENGTH": metersFormat }),
+      );
+      expect(result).toBe("2");
+    });
+
     it("delegates non-quantity, non-coordinate types to the sync formatter", async () => {
       const result = await formatFieldValueAsync(
         { value: "hello", type: "string" },

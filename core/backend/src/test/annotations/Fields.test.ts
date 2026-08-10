@@ -691,6 +691,42 @@ describe.only("Field evaluation", () => {
       expect(content).to.equal("(1 m, 2 m, 3 m)");
     });
 
+    it("still uses the property's KindOfQuantity when only persistenceUnit is overridden", async () => {
+      // Regression: setting `formatOptions.quantity.persistenceUnit` alone must not suppress the
+      // property's own KindOfQuantity — the two overrides are independent. Under the previous
+      // logic, providing `persistenceUnit` cleared `kindOfQuantityFullName` on the FieldValue,
+      // so the FormatsProvider was never consulted and the field rendered as a raw number.
+      const stubProvider: FormatsProvider = {
+        onFormatsChanged: new BeEvent(),
+        async getFormat(name) {
+          return name === "Fields.LENGTH" ? decimalFormat("Units.MM", "mm", 2) : undefined;
+        },
+      };
+      const field = FieldRun.create({
+        propertyHost: { ...propertyHost, elementId: sourceElementId },
+        propertyPath: { propertyName: "lengthProp" },
+        formatOptions: {
+          quantity: {
+            persistenceUnit: "Units.M",
+          },
+        },
+        cachedContent: "old",
+      });
+
+      const block = TextBlock.create();
+      block.appendRun(field);
+      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+        iModel: imodel,
+        block,
+        formatting: { formatsProvider: stubProvider },
+      });
+
+      expect(updatedCount).to.equal(1);
+      // lengthProp = 2.5 m persisted; property KoQ Fields.LENGTH still drives format lookup;
+      // stub returns a mm format; converted to 2500 mm.
+      expect(field.cachedContent).to.equal("2500 mm");
+    });
+
     it("marks the field invalid when a quantity property value is missing", async () => {
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
