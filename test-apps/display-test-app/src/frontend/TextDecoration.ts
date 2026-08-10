@@ -1186,13 +1186,16 @@ export class TextDecorationTool extends Tool {
       }
 
       case "json": {
-        const props = inArgs[1] && (JSON.parse(inArgs[1].replaceAll("'", "\"")) as TextBlockProps);
+
+        const rawProps = inArgs[1]?.replaceAll("'", "\"")?.replaceAll("\\'", "'"); // Remove escape characters for easier copy/paste into command line.
+        const props = rawProps && (JSON.parse(rawProps) as TextBlockProps);
 
         if (props) {
           editor.setTextBlock(props);
         } else {
+          const textBlockJsonString = JSON.stringify(editor.annotationProps.textBlock).replaceAll("'", "\\'").replaceAll("\"", "'");
           // eslint-disable-next-line no-console
-          console.log(JSON.stringify(editor.annotationProps.textBlock).replaceAll("\"", "'"));
+          console.log(textBlockJsonString);
         }
 
         break;
