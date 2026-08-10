@@ -555,7 +555,11 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
 
   const koq = ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
   const propertyName = koq?.fullName;
-  const propertyPersistenceUnitName = koq?.persistenceUnit?.fullName;
+  // Coordinate properties (Point2d/Point3d) always persist in meters, even when the property
+  // itself carries no KindOfQuantity. Reflect that implicit persistence unit so pre-warm covers
+  // a `kindOfQuantity` override against `"Units.M"`.
+  const coordinateImplicitPersistence = propertyType === "coordinate" ? "Units.M" : undefined;
+  const propertyPersistenceUnitName = koq?.persistenceUnit?.fullName ?? coordinateImplicitPersistence;
 
   // Effective pair: override wins per-dimension, otherwise property KoQ.
   const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
