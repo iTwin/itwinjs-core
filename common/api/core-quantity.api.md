@@ -1551,7 +1551,9 @@ export const Units: {
         readonly PROBABILITY_PERCENT: "Units.PROBABILITY_PERCENT";
     };
     readonly ROTATIONAL_SPRING_CONSTANT: {
+        readonly KN_M_PER_DEG: "Units.KN_M_PER_DEG";
         readonly KN_M_PER_RAD: "Units.KN_M_PER_RAD";
+        readonly KPF_FT_PER_DEG: "Units.KPF_FT_PER_DEG";
         readonly KPF_FT_PER_RAD: "Units.KPF_FT_PER_RAD";
         readonly N_M_PER_DEG: "Units.N_M_PER_DEG";
         readonly N_M_PER_RAD: "Units.N_M_PER_RAD";
