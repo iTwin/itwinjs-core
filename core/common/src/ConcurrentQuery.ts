@@ -487,7 +487,7 @@ export class QueryBinder {
     // `string` is an Iterable<string>. In that case assume caller passed a single Id64String, matching CompressedId64Set.sortAndCompress.
     const iterable = typeof val === "string" ? [val] : val;
     for (const id of iterable) {
-      if (typeof id !== "string" || !Id64.isValidId64(id)) {
+      if (!Id64.isValidId64(id)) {
         ITwinError.throwError<ITwinError>({
           message: `QueryBinder.bindIdSet: entry ${JSON.stringify(id)} for parameter "${name}" is not a valid Id64String`,
           iTwinErrorId: { scope: "itwin-QueryBinder", key: "invalid-arguments" },

@@ -112,7 +112,7 @@ describe("QueryBinder", () => {
   });
 
   describe("bindIdSet invalid entries", () => {
-    const invalidIds = [undefined, null, "0", "50", "", "not an id", 123, {}, ["0x1"]];
+    const invalidIds = ["0", "50", "", "not an id"];
     const cases = invalidIds.flatMap((invalidId) => [
       { label: `${JSON.stringify(invalidId)} as the first entry`, ids: [invalidId, "0x22bd8"] },
       { label: `${JSON.stringify(invalidId)} as the last entry`, ids: ["0x22bd8", invalidId] },
@@ -124,7 +124,7 @@ describe("QueryBinder", () => {
         const queryBinder = new QueryBinder();
         let thrown: unknown;
         try {
-          queryBinder.bindIdSet("idSetValue", ids as unknown as Id64String[]);
+          queryBinder.bindIdSet("idSetValue", ids);
         } catch (error) {
           thrown = error;
         }
@@ -140,7 +140,7 @@ describe("QueryBinder", () => {
 
     it("does not bind a value when it throws", () => {
       const queryBinder = new QueryBinder();
-      assert.throws(() => queryBinder.bindIdSet("idSetValue", ["0x22bd8", undefined] as unknown as Id64String[]));
+      assert.throws(() => queryBinder.bindIdSet("idSetValue", ["0x22bd8", "not an id"]));
       assert.deepEqual(queryBinder.serialize(), {});
     });
 
@@ -157,18 +157,6 @@ describe("QueryBinder", () => {
       }
     });
 
-    it("distinguishes a string entry from an array entry in the error message", () => {
-      const queryBinder = new QueryBinder();
-      try {
-        queryBinder.bindIdSet("idSetValue", [["0x1"]] as unknown as Id64String[]);
-        assert.fail("expected bindIdSet to throw");
-      } catch (error) {
-        if (!ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments"))
-          throw error;
-        // JSON.stringify(["0x1"]) preserves the brackets; naive string interpolation would collapse it to "0x1", indistinguishable from a valid id.
-        assert.include(error.message, "[\"0x1\"]");
-      }
-    });
   });
 
   it("bindIdSet accepts an empty iterable", () => {

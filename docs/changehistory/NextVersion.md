@@ -17,9 +17,9 @@ publish: false
 
 ### QueryBinder.bindIdSet now throws on invalid ids
 
-[QueryBinder.bindIdSet]($common) previously threw an uncaught `TypeError` when given an entry that was not a valid [Id64String]($bentley) (for example `undefined` or `null`, which can occur when collecting ids from a nullable column via [ECSqlReader]($common)). It now throws a descriptive [ITwinError]($bentley) instead, identifiable via `ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments")`, so callers can catch and diagnose the invalid entry rather than encountering an opaque internal error.
+[QueryBinder.bindIdSet]($common) previously silently ignored string entries that are not valid [Id64String]($bentley)s (for example `"50"` or `""`) during id compression. It now throws a descriptive [ITwinError]($bentley) instead, identifiable via `ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments")`, so callers can catch and diagnose the invalid entry rather than having it silently dropped.
 
-**Note:** string entries that are not valid `Id64String`s (for example `"50"` or `""`) previously passed through and were ignored during id compression. They now throw the same error, so callers binding ids from untyped or nullable query data should filter invalid values before calling `bindIdSet`.
+**Note:** `bindIdSet` still expects entries typed as `Id64String`. Callers binding ids from untyped or nullable query data (for example a nullable column via [ECSqlReader]($common)) should filter out non-string/`null`/`undefined` values before calling `bindIdSet`, as such entries remain outside the documented contract and are not guaranteed to produce this descriptive error.
 
 ## @itwin/core-backend
 
