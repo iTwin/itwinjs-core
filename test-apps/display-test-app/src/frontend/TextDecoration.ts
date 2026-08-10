@@ -381,7 +381,6 @@ export class TextDecorationTool extends Tool {
     ["updatestyle <name>", "Update an existing text style using the current run/document style."],
     ["deletestyle <name>", "Delete a text style by name."],
     ["applystyle <styleId>", "Apply the given default text style id and clear overrides."],
-    ["load <annotationId>", "Load an existing text annotation element into the editor."],
     ["insert", "Insert the current annotation into the iModel (2d views only)."],
     ["update <annotationId>", "Update the given annotation element with the current state."],
     ["delete <annotationId>", "Delete the given annotation element."],
@@ -1056,31 +1055,6 @@ export class TextDecorationTool extends Tool {
       case "applystyle": {
         editor.defaultTextStyleId = arg;
         editor.textBlock.clearStyleOverrides();
-        break;
-      }
-      case "load": {
-        if (!arg) {
-          throw new Error("Expected annotation ID");
-        }
-
-        const result = await dtaIpc.getText(vp.iModel.key, arg);
-
-        if (!result) {
-          throw new Error(`No text annotation found with id ${arg}`);
-        }
-
-        const anno = TextAnnotation.fromJSON(result.annotationProps);
-        editor.textBlock = anno.textBlock;
-        editor.anchor = anno.anchor;
-        editor.rotation = YawPitchRollAngles.fromJSON(anno.orientation).yaw.degrees;
-        editor.offset = anno.offset;
-        editor.leaders = anno.leaders ?? [];
-        editor.categoryId = result.categoryId;
-        editor.modelId = result.modelId;
-        editor.defaultTextStyleId = result.defaultTextStyleId;
-        editor.origin = Point3d.fromJSON(result.placement.origin);
-
-        editor.emphasizeElements.hideElements(arg, vp);
         break;
       }
       case "insert": {
