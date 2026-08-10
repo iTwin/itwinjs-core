@@ -10,10 +10,10 @@ import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, Ope
 import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
+  DefinitionSetProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, QueryBinder, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  PointWithStatus, QueryBinder, Rank, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, TypeDefinitionElementProps, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -1680,6 +1680,92 @@ describe("iModel", () => {
     iModelDb.close();
   });
 
+  describe("DefinitionSet.rank", () => {
+    // BisCore:DefinitionSet.Rank is a CustomHandledProperty, but DefinitionSet has no ClassHasHandler, so native's
+    // insertElement/updateElement silently drop the value - see https://github.com/iTwin/itwinjs-backlog/issues/2314
+    // and https://github.com/iTwin/itwinjs-core/issues/9500. These tests exercise the TypeScript-side (de)serialization
+    // of DefinitionSet.rank using the native ECSQL instance-write API to seed the column directly.
+
+    function setRank(iModelDb: StandaloneDb, id: Id64String, className: string, rank: Rank | undefined): void {
+      withEditTxn(iModelDb, (txn) => txn.updateElement<DefinitionSetProps>({ id, classFullName: className, rank }));
+    }
+
+    it("should read and serialize rank once persisted (write path is not yet supported by native)", () => {
+      const iModelFileName = IModelTestUtils.prepareOutputFile("IModel", "DefinitionSetRank.bim");
+      const iModelDb = StandaloneDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionSetRank" } });
+
+      const containerId = withEditTxn(iModelDb, (txn) => DefinitionContainer.insert(txn, IModel.dictionaryId, Code.createEmpty()));
+      const groupId = withEditTxn(iModelDb, (txn) => DefinitionGroup.create(iModelDb, IModel.dictionaryId, Code.createEmpty()).insert(txn));
+
+      // Freshly inserted DefinitionSets have no rank persisted.
+      assert.isUndefined(iModelDb.elements.getElementProps<DefinitionSetProps>(containerId).rank);
+      assert.isUndefined(iModelDb.elements.getElement<DefinitionContainer>(containerId).rank);
+
+      setRank(iModelDb, containerId, DefinitionContainer.classFullName, Rank.Application);
+      setRank(iModelDb, groupId, DefinitionGroup.classFullName, Rank.Domain);
+
+      const containerProps = iModelDb.elements.getElementProps<DefinitionSetProps>(containerId);
+      assert.equal(containerProps.rank, Rank.Application);
+
+      const container = iModelDb.elements.getElement<DefinitionContainer>(containerId);
+      assert.equal(container.rank, Rank.Application);
+      assert.equal(container.toJSON().rank, Rank.Application);
+
+      const group = iModelDb.elements.getElement<DefinitionGroup>(groupId);
+      assert.equal(group.rank, Rank.Domain);
+      assert.equal(group.toJSON().rank, Rank.Domain);
+
+      iModelDb.close();
+    });
+
+    it("should serialize/deserialize DefinitionSet.rank via DefinitionSet.serialize/deserialize", () => {
+      const iModelFileName = IModelTestUtils.prepareOutputFile("IModel", "DefinitionSetRankSerialize.bim");
+      const iModelDb = StandaloneDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionSetRankSerialize" } });
+
+      const props: DefinitionSetProps = {
+        classFullName: DefinitionContainer.classFullName,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+        rank: Rank.User,
+      };
+      const row = DefinitionContainer.serialize(props, iModelDb);
+      assert.equal(row.rank, Rank.User);
+
+      const propsWithoutRank: DefinitionSetProps = {
+        classFullName: DefinitionContainer.classFullName,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+      };
+      const rowWithoutRank = DefinitionContainer.serialize(propsWithoutRank, iModelDb);
+      assert.isUndefined(rowWithoutRank.rank);
+
+      iModelDb.close();
+    });
+
+    // The following reproduces the scenario from https://github.com/iTwin/itwinjs-backlog/issues/2314: setting `rank`
+    // on insert is not currently persisted because native's insertElement silently drops DefinitionSet.Rank. Skipped
+    // until there is native/bis-schemas support for handling this CustomHandledProperty.
+    it.skip("should insert a DefinitionContainer with rank property", () => {
+      const iModelFileName = IModelTestUtils.prepareOutputFile("IModel", "DefinitionContainerRank.bim");
+      const iModelDb = StandaloneDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionContainerRank" } });
+
+      const containerId = withEditTxn(iModelDb, (txn) => {
+        const containerProps: DefinitionSetProps = {
+          classFullName: DefinitionContainer.classFullName,
+          model: IModel.dictionaryId,
+          code: Code.createEmpty(),
+          rank: Rank.Application,
+        };
+        return txn.insertElement(containerProps);
+      });
+
+      const inserted = iModelDb.elements.getElementProps<DefinitionSetProps>(containerId);
+      assert.equal(inserted.rank, Rank.Application);
+
+      iModelDb.close();
+    });
+  });
+
   it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
@@ -2603,6 +2689,49 @@ describe("iModel", () => {
     expect((db as any)._statementCache.size).to.be.greaterThan(0);
 
     txn.end("abandon");
+    db.close();
+  });
+
+  it("hasSubModel should not re-prepare its ECSqlStatement on every call (regression, see #9489)", () => {
+    // `IModelDb.Elements.hasSubModel` (and several other per-element query helpers such as `getChildrenIds`,
+    // `getParentId`, and `queryLastModifiedTime`) were migrated from `withPreparedStatement` - which reuses a
+    // compiled statement via `IModelDb._statementCache` - to `withQueryReader`, whose own doc comment states it
+    // is "step by step behaviour from the reader without any intermediate caching involved". Since these methods
+    // are invoked once per element by callers like IModelTransformer, losing statement-reuse means every call
+    // pays for a full native ECSqlStatement prepare, even though the ECSQL text never changes between calls.
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "HasSubModelStatementReuse.bim");
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "HasSubModelStatementReuse" } });
+
+    const elementIds: Id64String[] = withEditTxn(db, "insert elements for hasSubModel reuse test", (txn) => {
+      const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", { color: ColorDef.white.toJSON() });
+      const modelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "TestPhysicalModel");
+      const ids: Id64String[] = [];
+      for (let i = 0; i < 25; i++) {
+        const props: PhysicalElementProps = {
+          classFullName: PhysicalObject.classFullName,
+          model: modelId,
+          category: categoryId,
+          code: Code.createEmpty(),
+        };
+        ids.push(txn.insertElement(props));
+      }
+      return ids;
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const prepareSpy = sinon.spy(ECSqlStatement.prototype, "prepare");
+
+    for (const elementId of elementIds) {
+      // None of these elements have a sub-model, but the ECSQL text `hasSubModel` runs is identical on every
+      // call - only the bound elementId changes - so a statement cache should let this prepare once and reuse
+      // the compiled statement for every element.
+      expect(db.elements.hasSubModel(elementId)).to.be.false;
+    }
+
+    // This currently fails: hasSubModel's use of withQueryReader (no caching) means `prepare` is called once
+    // per element instead of once total.
+    expect(prepareSpy.callCount).to.equal(1, "hasSubModel should reuse a single cached prepared statement across repeated calls instead of re-preparing on every call");
+
     db.close();
   });
 

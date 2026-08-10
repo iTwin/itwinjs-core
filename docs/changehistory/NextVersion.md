@@ -8,6 +8,8 @@ publish: false
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
+  - [@itwin/core-common](#itwincore-common)
+    - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
 
@@ -49,7 +51,15 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 
 [[include:CoreBackend.IModelDb.QueryAspects]]
 
-## @itwin/geometry
+## @itwin/core-common
+
+### Rank support for DefinitionSet
+
+[BisCore:DefinitionSet]($docs/bis/domains/BisCore.ecschema.md) (the base class of [DefinitionContainer]($backend) and [DefinitionGroup]($backend)) has a `Rank` property, but the iTwin.js API had no counterpart for it - `Rank` was only exposed for [Category]($backend)/[SubCategory]($backend). The new `@beta` [DefinitionSetProps.rank]($common) property (and the corresponding [DefinitionSet.rank]($backend) member) close that gap, using the same [Rank]($common) enum already used by `CategoryProps.rank`.
+
+**Note:** setting `rank` when inserting or updating a `DefinitionContainer` or `DefinitionGroup` is not yet persisted - see [itwinjs-core#9500](https://github.com/iTwin/itwinjs-core/issues/9500) for details and status. `rank` values already present in an iModel (for example, set directly via ECSQL) are read back correctly through [IModelDb.Elements.getElementProps]($backend) and [DefinitionSet.toJSON]($backend).
+
+## @itwin/core-geometry
 
 ### Simplifying filleted line strings
 

@@ -540,7 +540,7 @@ export interface LightLocationProps extends GeometricElement3dProps {
   enabled?: boolean;
 }
 
-/** The *rank* for a Category
+/** The *rank* for a [Category]($backend), [SubCategory]($backend), or [DefinitionSet]($backend).
  * @public @preview
  * @extensions
  */
@@ -553,6 +553,16 @@ export enum Rank {
   Application = 2,
   /** This category is defined by a user. Elements in this category are not recognized by system, schema, and application classes. */
   User = 3,
+}
+
+/** Parameters of a [DefinitionSet]($backend), unifying [DefinitionContainer]($backend) and [DefinitionGroup]($backend).
+ * @note Setting `rank` when inserting or updating an element is not currently persisted - see the corresponding
+ * [GitHub issue](https://github.com/iTwin/itwinjs-core/issues/9500) for details. Values already stored in an iModel
+ * are read back correctly.
+ * @beta
+ */
+export interface DefinitionSetProps extends DefinitionElementProps {
+  rank?: Rank;
 }
 
 /** Parameters of a [Category]($backend)
