@@ -53,7 +53,7 @@ export class RebaseInstanceStore implements Disposable {
   /** Opens an existing store at `path` for reading. Used to replay a Txn's previously-captured changes. */
   public static openExisting(path: string): RebaseInstanceStore {
     const store = new RebaseInstanceStore(false);
-    store._db.openDb(path, OpenMode.Readonly);
+    store._db.openDb(path, { openMode: OpenMode.Readonly, skipFileCheck: true, rawSQLite: true });
     return store;
   }
 
