@@ -56,6 +56,11 @@ export interface RowFormatOptions {
    * When `false` (the default), properties with `null` values are omitted from the output.
    */
   includeNulls?: boolean;
+
+  /**
+   * When true, include `classFullName` instead of `className` in the output.
+   */
+  useClassFullNameInsteadofClassName?: boolean;
 }
 
 // ---------------------------------------------------------------------------

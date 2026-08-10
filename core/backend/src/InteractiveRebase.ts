@@ -500,7 +500,7 @@ export class InteractiveRebase {
       }
     } else if (change.old) {
       const { $meta: _oldMeta, ...oldProps } = change.old;
-      nativeDb.deleteInstance({ id: oldProps.id, classFullName: oldProps.className }, { useJsNames: true });
+      nativeDb.deleteInstance({ id: oldProps.id, classFullName: oldProps.classFullName }, { useJsNames: true });
     }
   }
 
@@ -543,14 +543,14 @@ export class InteractiveRebase {
     // The row still exists, but at least one property we touched no longer matches our captured
     // baseline, meaning the incoming changes also modified it. Accept "ours" by default (matching the
     // native changeset-conflict model), but report the conflict so the caller may later accept "theirs".
-    const theirs = this.readCurrentInstance(oldProps.id, oldProps.className);
+    const theirs = this.readCurrentInstance(oldProps.id, oldProps.classFullName);
     UpdateRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, theirs, newProps);
     this.applyOrRecordConstraintConflict(newProps, false, () => nativeDb.updateInstance(newProps, { useJsNames: true }));
   }
 
   private applyInteractiveDelete(oldProps: RebaseConflictProperties): void {
     const nativeDb = this._db[_nativeDb];
-    const key = { id: oldProps.id, classFullName: oldProps.className };
+    const key = { id: oldProps.id, classFullName: oldProps.classFullName };
     const result = this.applyOrRecordConstraintConflict(oldProps, false, () =>
       nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { deleted: boolean, rowExists: boolean });
     if (result === undefined || result.deleted || !result.rowExists) {
@@ -562,7 +562,7 @@ export class InteractiveRebase {
     // The row still exists but no longer matches our captured baseline, meaning the incoming changes
     // modified it. Report the conflict, but proceed with the delete (matching the native
     // changeset-conflict model for a Deleted opcode with a "Data" conflict cause).
-    const theirs = this.readCurrentInstance(oldProps.id, oldProps.className);
+    const theirs = this.readCurrentInstance(oldProps.id, oldProps.classFullName);
     TheirUpdateOurDeleteRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, theirs);
     nativeDb.deleteInstance(key, { useJsNames: true });
   }
@@ -599,7 +599,7 @@ export class InteractiveRebase {
         throw err;
       }
 
-      const theirs = isInsert ? this.tryReadCurrentInstance(props.id, props.className) : undefined;
+      const theirs = isInsert ? this.tryReadCurrentInstance(props.id, props.classFullName) : undefined;
       if (theirs !== undefined) {
         // Both local and incoming changes wrote an instance with the same id.
         InsertRebaseConflictImpl.handleInteractive(this, this._conflicts, props, theirs);
@@ -755,16 +755,16 @@ function computeChangedProperties(baseline: RebaseConflictProperties, compare: R
       : a !== b;
   }
 
-  return Object.keys(baseline).filter((prop) => prop !== "id" && prop !== "className" && valuesDiffer(baseline[prop], compare[prop]));
+  return Object.keys(baseline).filter((prop) => prop !== "id" && prop !== "classFullName" && valuesDiffer(baseline[prop], compare[prop]));
 }
 
-/** Strips the identity properties (`id`/`className`) and the auto-maintained `lastMod` timestamp from
- * a captured instance snapshot, leaving only the data properties that changed. `id`/`className` aren't
+/** Strips the identity properties (`id`/`classFullName`) and the auto-maintained `lastMod` timestamp from
+ * a captured instance snapshot, leaving only the data properties that changed. `id`/`classFullName` aren't
  * regular properties, and `lastMod` is a TimeStampProperty that native skips during insert/update (it's
  * maintained automatically), so neither can be used for `CompareBeforeUpdate`/`CompareBeforeDelete`.
  */
 function withoutIdentityProperties(props: RebaseConflictProperties): RebaseConflictProperties {
-  const { id: _id, className: _className, lastMod: _lastMod, ...rest } = props;
+  const { id: _id, classFullName: _classFullName, lastMod: _lastMod, ...rest } = props;
   return rest;
 }
 
@@ -807,7 +807,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "Update") as UpdateRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new UpdateRebaseConflictImpl(instanceId, original.className);
+      instanceConflict = new UpdateRebaseConflictImpl(instanceId, original.classFullName);
       conflicts.push(instanceConflict);
     }
 
@@ -826,7 +826,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
     if (!properties || properties.length === 0)
       properties = this.conflictingProperties;
 
-    const updateProps: RebaseConflictProperties = { id: this.id, className: this.classFullName };
+    const updateProps: RebaseConflictProperties = { id: this.id, classFullName: this.classFullName };
     for (const prop of properties) {
       if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
         InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
@@ -841,7 +841,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
     if (!properties || properties.length === 0)
       properties = this.conflictingProperties;
 
-    const updateProps: RebaseConflictProperties = { id: this.id, className: this.classFullName };
+    const updateProps: RebaseConflictProperties = { id: this.id, classFullName: this.classFullName };
     for (const prop of properties) {
       if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
         InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
@@ -887,7 +887,7 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new TheirUpdateOurDeleteRebaseConflictImpl(instanceId, original.className);
+      instanceConflict = new TheirUpdateOurDeleteRebaseConflictImpl(instanceId, original.classFullName);
       conflicts.push(instanceConflict);
     }
 
@@ -936,7 +936,7 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "TheirDeleteOurUpdate") as TheirDeleteOurUpdateRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new TheirDeleteOurUpdateRebaseConflictImpl(instanceId, original.className);
+      instanceConflict = new TheirDeleteOurUpdateRebaseConflictImpl(instanceId, original.classFullName);
       conflicts.push(instanceConflict);
     }
 
@@ -991,7 +991,7 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "Insert") as InsertRebaseConflict | undefined;
     if (instanceConflict === undefined) {
-      instanceConflict = new InsertRebaseConflictImpl(instanceId, ours.className);
+      instanceConflict = new InsertRebaseConflictImpl(instanceId, ours.classFullName);
       conflicts.push(instanceConflict);
     }
 
@@ -1011,7 +1011,7 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
     if (!properties || properties.length === 0)
       properties = this.conflictingProperties;
 
-    const updateProps: RebaseConflictProperties = { id: this.id, className: this.classFullName };
+    const updateProps: RebaseConflictProperties = { id: this.id, classFullName: this.classFullName };
     for (const prop of properties) {
       if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
         InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
@@ -1026,7 +1026,7 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
     if (!properties || properties.length === 0)
       properties = this.conflictingProperties;
 
-    const updateProps: RebaseConflictProperties = { id: this.id, className: this.classFullName };
+    const updateProps: RebaseConflictProperties = { id: this.id, classFullName: this.classFullName };
     for (const prop of properties) {
       if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
         InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
@@ -1089,7 +1089,7 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
    */
   public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties): void {
     const instanceId = ours.id ?? original?.id;
-    const classFullName = ours.className ?? original?.className;
+    const classFullName = ours.classFullName ?? original?.classFullName;
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "UniqueConstraint") as UniqueConstraintRebaseConflict | undefined;
     if (instanceConflict === undefined) {

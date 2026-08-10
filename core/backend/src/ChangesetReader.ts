@@ -171,6 +171,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
       classIdsToClassNames: opts.classIdsToClassNames,
       useJsName: opts.useJsName,
       includeNulls: opts.includeNulls,
+      useClassFullNameInsteadofClassName: opts.useClassFullNameInsteadofClassName
     };
   }
 
