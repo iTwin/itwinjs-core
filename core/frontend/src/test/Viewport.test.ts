@@ -928,7 +928,7 @@ describe("Viewport", () => {
       test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
       test(true, () => vp.clearNeverDrawn());
       // No-op because never-drawn is already empty.
-      test(false, () => vp.clearAlwaysDrawn());
+      test(false, () => vp.clearNeverDrawn());
 
       test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
       // It doesn't check if the contents of the set match the previous contents.
