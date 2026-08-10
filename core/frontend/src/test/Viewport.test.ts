@@ -896,48 +896,66 @@ describe("Viewport", () => {
       IModelApp.viewManager.dropDecorator(dec);
     });
 
-    it("invalidates cached decorations when the visibility of scene objects changes", () => {
-      function test(expectCacheClear: boolean, operation: () => void): void {
-        const isCacheEmpty = () => {
-          const cache = (vp as any)._decorationCache as DecorationsCache;
-          expect(cache.size).not.to.be.undefined;
-          return cache.size === 0;
-        }
+    function test(expectCacheClear: boolean, operation: () => void): void {
+      const isCacheEmpty = () => {
+        const cache = (vp as any)._decorationCache as DecorationsCache;
+        expect(cache.size).not.to.be.undefined;
+        return cache.size === 0;
+      }
 
-        // Ensure decorations are generated and cached.
-        vp.renderFrame();
-        expect(isCacheEmpty()).to.be.false;
+      // Ensure decorations are generated and cached.
+      vp.renderFrame();
+      expect(isCacheEmpty()).to.be.false;
 
-        // Ensure cache is cleared or preserved after operation is performed.
-        operation();
-        expect(isCacheEmpty()).to.equal(expectCacheClear);
+      // Ensure cache is cleared or preserved after operation is performed.
+      operation();
+      expect(isCacheEmpty()).to.equal(expectCacheClear);
 
-        // Ensure decorations are regenerated and cached.
-        vp.renderFrame();
-        expect(isCacheEmpty()).to.be.false;
+      // Ensure decorations are regenerated and cached.
+      vp.renderFrame();
+      expect(isCacheEmpty()).to.be.false;
+    }
+
+    it("are invalidated when always/never-drawn elements change", () => {
+      function makeIdSet(id: string): Set<string> {
+        return new Set<string>([id]);
       }
 
       test(false, () => {});
 
-      test(true, () => vp.setNeverDrawn(new Set<string>("0x123")));
+      test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
       // It doesn't check if the contents of the set match the previous contents.
-      test(true, () => vp.setNeverDrawn(new Set<string>("0x123")));
+      test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
       test(true, () => vp.clearNeverDrawn());
       // No-op because never-drawn is already empty.
       test(false, () => vp.clearAlwaysDrawn());
 
-      test(true, () => vp.setAlwaysDrawn(new Set<string>("0x123")));
+      test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
       // It doesn't check if the contents of the set match the previous contents.
-      test(true, () => vp.setAlwaysDrawn(new Set<string>("0x123")));
+      test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
       test(true, () => vp.clearAlwaysDrawn());
       // No-op because always-drawn is already empty
       test(false, () => vp.clearAlwaysDrawn());
 
-      test(true, () => vp.setAlwaysDrawn(new Set<string>("0x123"), true));
+      test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123"), true));
       expect(vp.isAlwaysDrawnExclusive).to.be.true;
       test(true, () => vp.clearAlwaysDrawn());
       expect(vp.isAlwaysDrawnExclusive).to.be.false;
       test(false, () => vp.clearAlwaysDrawn());
+    });
+
+    it("are invalidated when symbology overrides change", () => {
+      test(true, () => vp.setFeatureOverrideProviderChanged());
+    });
+
+    it("are invalidated when excluded elements change", () => {
+      test(true, () => vp.displayStyle.settings.addExcludedElements("0x123"));
+      // It doesn't try to detect no-ops.
+      test(true, () => vp.displayStyle.settings.addExcludedElements("0x123"));
+      test(true, () => vp.displayStyle.settings.addExcludedElements("0x456"));
+      test(true, () => vp.displayStyle.settings.dropExcludedElements("0x456"));
+      test(true, () => vp.displayStyle.settings.clearExcludedElements());
+      test(true, () => vp.displayStyle.settings.clearExcludedElements());
     });
   });
 });
