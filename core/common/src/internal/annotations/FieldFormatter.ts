@@ -138,11 +138,6 @@ const defaultCoordinateFormatProps: FormatProps = {
   },
 };
 
-// Extracts the persistence unit's full name from a FormatProps by inspecting its composite.
-function firstCompositeUnitName(formatProps: FormatProps): string | undefined {
-  return formatProps.composite?.units?.[0]?.name;
-}
-
 // Resolves the FormatProps to use for a field. Returns undefined if no format source is available.
 async function resolveFormatSource(
   quantityOptions: QuantityFieldFormatOptions | undefined,
@@ -173,12 +168,17 @@ async function resolveFormatSource(
   return undefined;
 }
 
+// Resolves the persistence unit for `value`. `"quantity"` fields require a real persistence unit
+// on the FieldValue (set by `getFieldPropertyValue` from the property's KoQ or the caller's
+// override); if unknown we return undefined and the caller falls back to the raw string rather
+// than guessing at the format's presentation unit. `"coordinate"` values are BIS geometry, which
+// is persisted in meters, so default to `"Units.M"` when no persistence unit was derivable.
 async function resolvePersistenceUnit(
   value: FieldValue,
-  formatProps: FormatProps,
   context: FieldFormatterContext,
 ): Promise<UnitProps | undefined> {
-  const unitName = value.persistenceUnitFullName ?? firstCompositeUnitName(formatProps);
+  const unitName = value.persistenceUnitFullName;
+    // ?? (value.type === "coordinate" ? "Units.M" : undefined);
   if (!unitName) {
     return undefined;
   }
@@ -200,8 +200,12 @@ async function getFormatterSpec(
     return undefined;
   }
 
+  const persistenceUnit = await resolvePersistenceUnit(value, context);
+  if (!persistenceUnit) {
+    return undefined;
+  }
+
   const format = await Format.createFromJSON("fieldFormat", context.unitsProvider, formatProps);
-  const persistenceUnit = await resolvePersistenceUnit(value, formatProps, context);
   return FormatterSpec.create("fieldFormat", format, context.unitsProvider, persistenceUnit);
 }
 
@@ -283,13 +287,16 @@ export interface FieldFormattingSpecProvider {
   getSpecsByNameAndUnit(args: { name: string; persistenceUnitName: string }): { formatterSpec: FormatterSpec } | undefined;
 }
 
+// Looks up an already-warmed FormatterSpec for `value` from `provider`. Callers rely on
+// `getFieldPropertyValue` (backend) having populated `kindOfQuantityFullName` and
+// `persistenceUnitFullName` from the property's KindOfQuantity or the field's overrides — this
+// is the single source of truth for both the sync and async paths.
 function lookupSyncSpec(
-  quantityOptions: QuantityFieldFormatOptions | undefined,
   value: FieldValue,
   provider: FieldFormattingSpecProvider,
 ): FormatterSpec | undefined {
-  const name = quantityOptions?.kindOfQuantity ?? value.kindOfQuantityFullName;
-  const persistenceUnitName = quantityOptions?.persistenceUnit ?? value.persistenceUnitFullName;
+  const name = value.kindOfQuantityFullName;
+  const persistenceUnitName = value.persistenceUnitFullName;
   if (!name || !persistenceUnitName) {
     return undefined;
   }
@@ -338,7 +345,7 @@ export function formatFieldValueWithSpecProvider(
     return formatFieldValue(value, options);
   }
 
-  const spec = lookupSyncSpec(options?.quantity, value, provider);
+  const spec = lookupSyncSpec(value, provider);
   if (!spec) {
     return formatFieldValue(value, options);
   }

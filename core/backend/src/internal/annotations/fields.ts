@@ -234,20 +234,19 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     return undefined;
   }
 
-  // Capture the property's KindOfQuantity and persistence unit so quantity/coordinate fields
-  // can be formatted through the standard iTwin.js quantity pipeline. JSON-in-string values
-  // have no reliable KoQ association, so skip them.
+  // Capture the KindOfQuantity name and persistence unit so quantity/coordinate fields can be
+  // formatted through the standard iTwin.js quantity pipeline. `formatOptions.quantity.kindOfQuantity`
+  // and `formatOptions.quantity.persistenceUnit` are independent overrides — either can be set
+  // alone, and whichever is unset falls through to the property's own KindOfQuantity. This matches
+  // the resolution used by `collectFieldFormattingRequirement` for pre-warming the provider cache.
+  // JSON-in-string values have no reliable KoQ association, so skip the property lookup for them.
   let kindOfQuantityFullName: string | undefined;
   let persistenceUnitFullName: string | undefined;
   if (propertyType === "quantity" || propertyType === "coordinate") {
-    if (field.formatOptions?.quantity?.persistenceUnit) {
-      persistenceUnitFullName = field.formatOptions.quantity.persistenceUnit;
-    } else if (!isJsonPath) {
-      kindOfQuantityFullName = ecProp.kindOfQuantity?.fullName;
-      if (kindOfQuantityFullName) {
-        persistenceUnitFullName = ecProp.getKindOfQuantitySync()?.persistenceUnit?.fullName;
-      }
-    }
+    const quantityOverrides = field.formatOptions?.quantity;
+    const koq = !isJsonPath && ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
+    kindOfQuantityFullName = quantityOverrides?.kindOfQuantity ?? koq?.fullName;
+    persistenceUnitFullName = quantityOverrides?.persistenceUnit ?? koq?.persistenceUnit?.fullName;
   }
 
 
