@@ -8,6 +8,8 @@ publish: false
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
+  - [@itwin/core-frontend](#itwincore-frontend)
+    - [Invalidate decorations when element visibility changes](#invalidate-decorations-when-element-visibility-changes)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
 
@@ -49,7 +51,13 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 
 [[include:CoreBackend.IModelDb.QueryAspects]]
 
-## @itwin/geometry
+## @itwin/core-frontend
+
+### Invalidate decorations when element visibility changes
+
+[ViewportDecorator]($frontend)s often produce decoration graphics associated with elements in the scene. Such graphics should be updated if the visibility of the associated element changes. For example, a measurement tool might draw a label near a pipe indicating its length. The label should disappear if the user hides the pipe. To facilitate this, all cached decorations (produced and reused when [ViewportDecorator.useCachedDecorations]($frontend) is `true`) are now recreated in response to potential changes to the visibility of elements in a viewport, including modification of the sets of always- and never-drawn elements, displayed categories and subcategories, and feature symbology overrides.
+
+## @itwin/core-geometry
 
 ### Simplifying filleted line strings
 
