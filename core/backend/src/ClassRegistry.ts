@@ -12,7 +12,7 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { EntityReferences } from "./EntityReferences";
-import * as assert from "assert";
+import { ok as assert } from "node:assert/strict";
 import { _nativeDb } from "./internal/Symbols";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
