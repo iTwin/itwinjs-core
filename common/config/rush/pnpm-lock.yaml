@@ -268,7 +268,7 @@ importers:
     devDependencies:
       '@bentley/units-schema':
         specifier: ^1.0.10
-        version: 1.0.10
+        version: 1.0.11
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -398,7 +398,7 @@ importers:
         version: 1.0.1
       '@bentley/units-schema':
         specifier: ^1.0.10
-        version: 1.0.10
+        version: 1.0.11
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -476,7 +476,7 @@ importers:
         version: 1.0.3
       '@bentley/units-schema':
         specifier: ^1.0.10
-        version: 1.0.10
+        version: 1.0.11
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -844,7 +844,7 @@ importers:
         version: 1.0.0
       '@bentley/units-schema':
         specifier: ^1.0.10
-        version: 1.0.10
+        version: 1.0.11
       '@itwin/appui-abstract':
         specifier: workspace:*
         version: link:../../ui/appui-abstract
@@ -1348,7 +1348,7 @@ importers:
     devDependencies:
       '@bentley/units-schema':
         specifier: ^1.0.10
-        version: 1.0.10
+        version: 1.0.11
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -1851,7 +1851,7 @@ importers:
         version: 1.0.0
       '@bentley/units-schema':
         specifier: ^1.0.10
-        version: 1.0.10
+        version: 1.0.11
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -4794,8 +4794,8 @@ packages:
   '@bentley/structural-physical-schema@1.0.1':
     resolution: {integrity: sha512-ND+R4BwoZlOhq0nNgF82v87LhtVW9Oydl6+ExezqPn3G3CdBjoPkTzT7LDVyXX7cOOIQOD3efvwOWBiGh3sShQ==}
 
-  '@bentley/units-schema@1.0.10':
-    resolution: {integrity: sha512-Zv0viE/PnBeGnIhmqxjOg7CU/5eMCgIOavjKjlTa+Rk1t3DPtbbrumhoUtlgfN6SFf5B5CskzTfBQ/f3Tj91pg==}
+  '@bentley/units-schema@1.0.11':
+    resolution: {integrity: sha512-JHQc1IKTnAP9Bds7Aw6tim4Iqq/63AT9jKndafEivGCydeQouXR8RCmjdRaNcXJ1VU0Jzbc1gTcRb3o/UCa2gA==}
 
   '@blazediff/core@1.9.1':
     resolution: {integrity: sha512-ehg3jIkYKulZh+8om/O25vkvSsXXwC+skXmyA87FFx6A/45eqOkZsBltMw/TVteb0mloiGT8oGRTcjRAz66zaA==}
@@ -11224,7 +11224,7 @@ snapshots:
 
   '@bentley/structural-physical-schema@1.0.1': {}
 
-  '@bentley/units-schema@1.0.10': {}
+  '@bentley/units-schema@1.0.11': {}
 
   '@blazediff/core@1.9.1': {}
 
