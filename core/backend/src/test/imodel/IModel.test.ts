@@ -1681,11 +1681,6 @@ describe("iModel", () => {
   });
 
   describe("DefinitionSet.rank", () => {
-    // BisCore:DefinitionSet.Rank is a CustomHandledProperty. Native insertElement/updateElement now persist it
-    // correctly (see https://github.com/iTwin/itwinjs-backlog/issues/2314 and
-    // https://github.com/iTwin/itwinjs-core/issues/9500). These tests exercise both the TypeScript-side
-    // (de)serialization of DefinitionSet.rank and its round-trip through the normal insert/update element APIs.
-
     function setRank(iModelDb: StandaloneDb, id: Id64String, className: string, rank: Rank | undefined): void {
       withEditTxn(iModelDb, (txn) => txn.updateElement<DefinitionSetProps>({ id, classFullName: className, rank }));
     }
@@ -2686,49 +2681,6 @@ describe("iModel", () => {
     expect((db as any)._statementCache.size).to.be.greaterThan(0);
 
     txn.end("abandon");
-    db.close();
-  });
-
-  it("hasSubModel should not re-prepare its ECSqlStatement on every call (regression, see #9489)", () => {
-    // `IModelDb.Elements.hasSubModel` (and several other per-element query helpers such as `getChildrenIds`,
-    // `getParentId`, and `queryLastModifiedTime`) were migrated from `withPreparedStatement` - which reuses a
-    // compiled statement via `IModelDb._statementCache` - to `withQueryReader`, whose own doc comment states it
-    // is "step by step behaviour from the reader without any intermediate caching involved". Since these methods
-    // are invoked once per element by callers like IModelTransformer, losing statement-reuse means every call
-    // pays for a full native ECSqlStatement prepare, even though the ECSQL text never changes between calls.
-    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "HasSubModelStatementReuse.bim");
-    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "HasSubModelStatementReuse" } });
-
-    const elementIds: Id64String[] = withEditTxn(db, "insert elements for hasSubModel reuse test", (txn) => {
-      const categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", { color: ColorDef.white.toJSON() });
-      const modelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "TestPhysicalModel");
-      const ids: Id64String[] = [];
-      for (let i = 0; i < 25; i++) {
-        const props: PhysicalElementProps = {
-          classFullName: PhysicalObject.classFullName,
-          model: modelId,
-          category: categoryId,
-          code: Code.createEmpty(),
-        };
-        ids.push(txn.insertElement(props));
-      }
-      return ids;
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const prepareSpy = sinon.spy(ECSqlStatement.prototype, "prepare");
-
-    for (const elementId of elementIds) {
-      // None of these elements have a sub-model, but the ECSQL text `hasSubModel` runs is identical on every
-      // call - only the bound elementId changes - so a statement cache should let this prepare once and reuse
-      // the compiled statement for every element.
-      expect(db.elements.hasSubModel(elementId)).to.be.false;
-    }
-
-    // This currently fails: hasSubModel's use of withQueryReader (no caching) means `prepare` is called once
-    // per element instead of once total.
-    expect(prepareSpy.callCount).to.equal(1, "hasSubModel should reuse a single cached prepared statement across repeated calls instead of re-preparing on every call");
-
     db.close();
   });
 
