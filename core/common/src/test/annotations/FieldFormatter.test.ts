@@ -367,6 +367,26 @@ describe("Async field formatting", () => {
       expect(result).toBe("(1.5 m, 2 m)");
     });
 
+    it("applies a kindOfQuantity override on a coordinate value with no property KoQ (implicit meters persistence)", async () => {
+      // Regression: coordinate properties (Point2d/Point3d) with no KindOfQuantity produced no
+      // `persistenceUnitFullName` on the FieldValue, so an override `kindOfQuantity` was
+      // dropped in favour of the built-in meters fallback. Coordinates always persist in meters
+      // per BIS geometry, so the override pair should resolve against `"Units.M"` implicitly.
+      const feetFormat: FormatProps = {
+        composite: { includeZero: true, units: [{ label: "ft", name: "Units.FT" }] },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 2,
+        type: "Decimal",
+        uomSeparator: " ",
+      };
+      const result = await formatFieldValueAsync(
+        { value: { x: 1, y: 2, z: 3 }, type: "coordinate" },
+        { quantity: { kindOfQuantity: "MySet.LENGTH_FT" } },
+        createContext({ "MySet.LENGTH_FT": feetFormat }),
+      );
+      expect(result).toBe("(3.28 ft, 6.56 ft, 9.84 ft)");
+    });
+
     it("applies prefix/suffix/case around the joined coordinate", async () => {
       const result = await formatFieldValueAsync(
         { value: { x: 1, y: 2 }, type: "coordinate", persistenceUnitFullName: "Units.M", kindOfQuantityFullName: "AecUnits.LENGTH" },

@@ -61,7 +61,7 @@ export const DEMO_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
   },
   "Demo.LENGTH_MM": {
     formatTraits: ["keepSingleZero", "showUnitLabel"],
-    precision: 3,
+    precision: 1,
     type: "Decimal",
     uomSeparator: " ",
     decimalSeparator: ".",
@@ -77,7 +77,7 @@ export const DEMO_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
   },
   "Demo.LENGTH_FT": {
     formatTraits: ["keepSingleZero", "showUnitLabel"],
-    precision: 4,
+    precision: 3,
     type: "Decimal",
     uomSeparator: " ",
     decimalSeparator: ".",
