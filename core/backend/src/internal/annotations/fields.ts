@@ -234,19 +234,17 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     return undefined;
   }
 
-  // Capture the KindOfQuantity name and persistence unit so quantity/coordinate fields can be
-  // formatted through the standard iTwin.js quantity pipeline. `formatOptions.quantity.kindOfQuantity`
-  // and `formatOptions.quantity.persistenceUnit` are independent overrides — either can be set
-  // alone, and whichever is unset falls through to the property's own KindOfQuantity. This matches
-  // the resolution used by `collectFieldFormattingRequirement` for pre-warming the provider cache.
-  // JSON-in-string values have no reliable KoQ association, so skip the property lookup for them.
+  // Capture the KindOfQuantity and persistence unit **as defined by the ECProperty**. Any
+  // `formatOptions.quantity.kindOfQuantity` / `.persistenceUnit` overrides are consulted at
+  // formatting time so we can fall back to the property values if the override doesn't resolve
+  // in the active FormatsProvider. JSON-in-string values have no reliable KoQ association, so
+  // skip the property lookup for them.
   let kindOfQuantityFullName: string | undefined;
   let persistenceUnitFullName: string | undefined;
   if (propertyType === "quantity" || propertyType === "coordinate") {
-    const quantityOverrides = field.formatOptions?.quantity;
     const koq = !isJsonPath && ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
-    kindOfQuantityFullName = quantityOverrides?.kindOfQuantity ?? koq?.fullName;
-    persistenceUnitFullName = quantityOverrides?.persistenceUnit ?? koq?.persistenceUnit?.fullName;
+    kindOfQuantityFullName = koq?.fullName;
+    persistenceUnitFullName = koq?.persistenceUnit?.fullName;
   }
 
 
@@ -537,36 +535,45 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Proper
   return ecProp;
 }
 
-// Returns a FormattingSpecArgs entry for a single field, or undefined if the field needs no
-// prepared spec.
-function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs | undefined {
+// Returns the FormattingSpecArgs entries the given field may consult at formatting time. In the
+// simple case that's a single (KoQ, persistence unit) pair. When `formatOptions.quantity`
+// overrides differ from the property's own KoQ, we emit both the override pair and the
+// property-side pair so pre-warmed provider caches cover the runtime fallback path — if the
+// override name isn't in the active FormatsProvider the formatter falls back to the property.
+function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
   const quantityOptions = field.formatOptions?.quantity;
 
   const ecProp = resolveFieldTerminalProperty(field, iModel);
   if (!ecProp) {
-    return undefined;
+    return [];
   }
 
   const propertyType = determineFieldPropertyType(ecProp);
   if (propertyType !== "quantity" && propertyType !== "coordinate") {
-    return undefined;
+    return [];
   }
 
-  // KoQ name: explicit kindOfQuantity override > property KoQ.
   const koq = ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
-  const name = quantityOptions?.kindOfQuantity ?? koq?.fullName;
-  if (!name) {
-    return undefined;
-  }
+  const propertyName = koq?.fullName;
+  const propertyPersistenceUnitName = koq?.persistenceUnit?.fullName;
 
-  // Persistence unit: explicit persistenceUnit override > KoQ persistence unit.
-  const persistenceUnitName = quantityOptions?.persistenceUnit ?? koq?.persistenceUnit?.fullName;
-  if (!persistenceUnitName) {
-    return undefined;
-  }
+  // Effective pair: override wins per-dimension, otherwise property KoQ.
+  const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
+  const effectivePersistenceUnitName = quantityOptions?.persistenceUnit ?? propertyPersistenceUnitName;
 
-  const args: FormattingSpecArgs = { name, persistenceUnitName };
-  return args;
+  const results: FormattingSpecArgs[] = [];
+  if (effectiveName && effectivePersistenceUnitName) {
+    results.push({ name: effectiveName, persistenceUnitName: effectivePersistenceUnitName });
+  }
+  // Property-side fallback, only if it differs from the effective pair. The formatter will try
+  // this if the effective pair fails to resolve in the FormatsProvider.
+  if (
+    propertyName && propertyPersistenceUnitName &&
+    (propertyName !== effectiveName || propertyPersistenceUnitName !== effectivePersistenceUnitName)
+  ) {
+    results.push({ name: propertyName, persistenceUnitName: propertyPersistenceUnitName });
+  }
+  return results;
 }
 
 /** Walks the [FieldRun]($common)s in `textBlock` and returns a deduplicated list of the
@@ -584,13 +591,11 @@ export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel:
     if (child.type !== "field") {
       continue;
     }
-    const args = computeFieldFormattingRequirement(child, iModel);
-    if (!args) {
-      continue;
-    }
-    const key = `${args.name}|${args.persistenceUnitName}`;
-    if (!seen.has(key)) {
-      seen.set(key, args);
+    for (const args of computeFieldFormattingRequirement(child, iModel)) {
+      const key = `${args.name}|${args.persistenceUnitName}`;
+      if (!seen.has(key)) {
+        seen.set(key, args);
+      }
     }
   }
   return Array.from(seen.values());

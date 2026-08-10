@@ -311,6 +311,24 @@ describe("Async field formatting", () => {
       expect(result).toBe("2");
     });
 
+    it("falls back to the property's KindOfQuantity when the override KoQ is missing from the provider", async () => {
+      // Caller pinned "MySet.LENGTH_FT" but the active provider only knows the property KoQ.
+      // The formatter should try the override, fail, then fall back to the property pair.
+      const value: FieldValue = {
+        value: 1,
+        type: "quantity",
+        kindOfQuantityFullName: "AecUnits.LENGTH",
+        persistenceUnitFullName: "Units.M",
+      };
+      const result = await formatFieldValueAsync(
+        value,
+        { quantity: { kindOfQuantity: "MySet.LENGTH_FT" } },
+        // Note: "MySet.LENGTH_FT" is intentionally absent.
+        createContext({ "AecUnits.LENGTH": metersFormat }),
+      );
+      expect(result).toBe("1 m");
+    });
+
     it("delegates non-quantity, non-coordinate types to the sync formatter", async () => {
       const result = await formatFieldValueAsync(
         { value: "hello", type: "string" },
