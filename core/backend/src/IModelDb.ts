@@ -3839,9 +3839,13 @@ export class BriefcaseDb extends IModelDb {
       wasChanges = nativeDb.hasPendingTxns();
       nativeDb.closeFile();
     };
+    const push = async () => {
+      if (wasChanges)
+        await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
+    };
 
     const isSchemaSyncEnabled = await withBriefcaseDb(briefcase, async (db) => {
-      await SchemaSync.pull(db);
+      SchemaSync.updateDbSchema(db);
       return db[_nativeDb].schemaSyncEnabled();
     }) as boolean;
 
@@ -3850,17 +3854,19 @@ export class BriefcaseDb extends IModelDb {
         const schemaSyncDbUri = syncAccess.getUri();
         executeUpgrade();
         await withBriefcaseDb(briefcase, async (db) => {
-          db[_nativeDb].schemaSyncPush(schemaSyncDbUri);
+          // A profile upgrade runs on the file itself, so the sync db learns about it by being rebuilt from
+          // the result. That discards whatever the sync db held beyond this briefcase, which is why the
+          // changeset has to be pushed before the container lock is released.
+          db[_nativeDb].schemaSyncOverwrite(schemaSyncDbUri);
           db[_nativeDb].saveChanges();
         });
+        await push();
         syncAccess.synchronizeWithCloud();
       });
     } else {
       executeUpgrade();
+      await push(); // TODO: pushing here is a behavior change, we need to discuss this. If we allow this without push, the sync db will be updated without the corresponding changeset being pushed.
     }
-
-    if (wasChanges)
-      await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
   }
 
   /** Upgrades the schemas in the iModel based on the current version of the software. Follows a sequence of operations -
