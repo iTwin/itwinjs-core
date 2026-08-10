@@ -55,7 +55,7 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 
 ### Invalidate decorations when element visibility changes
 
-[ViewportDecorator]($frontend)s often produce decoration graphics associated with elements in the scene. Such graphics should be updated if the visibility of the associated element changes. For example, a measurement tool might draw a label near a pipe indicating its length. The label should disappear if the user hides the pipe. To facilitate this, all cached decorations (produced and reused when [ViewportDecorator.useCachedDecorations]($frontend) is `true`) are now recreated whenever the set of always- or never-drawn elements in a viewport changes via [Viewport.setNeverDrawn]($frontend), [Viewport.setAlwaysDrawn]($frontend), [Viewport.clearNeverDrawn]($frontend), and [Viewport.clearAlwaysDrawn]($frontend).
+[ViewportDecorator]($frontend)s often produce decoration graphics associated with elements in the scene. Such graphics should be updated if the visibility of the associated element changes. For example, a measurement tool might draw a label near a pipe indicating its length. The label should disappear if the user hides the pipe. To facilitate this, all cached decorations (produced and reused when [ViewportDecorator.useCachedDecorations]($frontend) is `true`) are now recreated in response to potential changes to the visibility of elements in a viewport, including modification of the sets of always- and never-drawn elements, displayed categories and subcategories, and feature symbology overrides.
 
 ## @itwin/core-geometry
 
