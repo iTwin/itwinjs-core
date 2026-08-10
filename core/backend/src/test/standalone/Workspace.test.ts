@@ -11,7 +11,7 @@ import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { SettingsPriority } from "../../workspace/Settings";
 import { settingsWorkspaceDbName } from "../../workspace/SettingsDb";
-import { Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDbLoadError, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
+import { Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDbCloudProps, WorkspaceDbLoadError, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { validateWorkspaceContainerId } from "../../internal/workspace/WorkspaceImpl";
@@ -531,6 +531,68 @@ describe("WorkspaceFile", () => {
       expect(getContainerStub.calledOnce).to.be.true;
       expect(getContainerStub.firstCall.args[0].accessToken).to.equal("resolved-token");
       expect(container.fromProps.accessToken).to.equal("resolved-token");
+    });
+  });
+
+  describe("getWorkspaceDb token resolution", () => {
+    afterEach(() => sinon.restore());
+
+    it("preserves an explicitly-provided accessToken", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
+      const props: WorkspaceDbCloudProps = {
+        containerId: "explicit-token-getdb-test",
+        baseUri: "",
+        storageType: "azure",
+        accessToken: "my-explicit-token",
+        dbName: "test-db",
+      };
+
+      await workspace.getWorkspaceDb(props);
+
+      expect(requestTokenStub.called).to.be.false;
+      expect(workspace.findContainer(props.containerId)?.fromProps.accessToken).to.equal("my-explicit-token");
+    });
+
+    it("uses empty token for local containers with empty baseUri", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").rejects(new Error("should not be called"));
+      const props: WorkspaceDbCloudProps = {
+        containerId: "local-token-getdb-test",
+        baseUri: "",
+        storageType: "azure",
+        dbName: "test-db",
+      };
+
+      await workspace.getWorkspaceDb(props);
+
+      expect(requestTokenStub.called).to.be.false;
+      expect(workspace.findContainer(props.containerId)?.fromProps.accessToken).to.equal("");
+    });
+
+    it("calls requestToken when no accessToken is provided for a cloud container", async () => {
+      const requestTokenStub = sinon.stub(CloudSqlite, "requestToken").resolves("resolved-token");
+      sinon.stub(CloudSqlite, "createCloudContainer").returns({
+        connect: () => { },
+        disconnect: () => { },
+        checkForChanges: () => { },
+        queryDatabase: () => undefined,
+        queryDatabases: () => [],
+        containerId: "cloud-no-token-getdb-test",
+        baseUri: "https://some-cloud-uri",
+        storageType: "azure",
+        isPublic: false,
+      } as unknown as CloudSqlite.CloudContainer);
+      sinon.stub(CloudSqlite, "querySemverMatch").callsFake((cloudProps) => CloudSqlite.makeSemverName(cloudProps.dbName, "1.0.0"));
+      const props: WorkspaceDbCloudProps = {
+        containerId: "cloud-no-token-getdb-test",
+        baseUri: "https://some-cloud-uri",
+        storageType: "azure",
+        dbName: "test-db",
+      };
+
+      await workspace.getWorkspaceDb(props);
+
+      expect(requestTokenStub.calledOnce).to.be.true;
+      expect(workspace.findContainer(props.containerId)?.fromProps.accessToken).to.equal("resolved-token");
     });
   });
 
