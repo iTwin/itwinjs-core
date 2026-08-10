@@ -3223,6 +3223,7 @@ export class ScreenViewport extends Viewport {
   protected override onSceneVisibilityChanged(): void {
     // Cached decorations may be associated with objects in the scene whose visibility has changed. Give them the opportunity to react.
     this._decorationCache.clear();
+    this.invalidateDecorations();
   }
 
   /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.

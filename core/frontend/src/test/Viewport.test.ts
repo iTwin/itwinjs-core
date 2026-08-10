@@ -900,7 +900,8 @@ describe("Viewport", () => {
       function test(expectCacheClear: boolean, operation: () => void): void {
         const isCacheEmpty = () => {
           const cache = (vp as any)._decorationCache as DecorationsCache;
-          return cache.size > 0;
+          expect(cache.size).not.to.be.undefined;
+          return cache.size === 0;
         }
 
         // Ensure decorations are generated and cached.
@@ -919,12 +920,24 @@ describe("Viewport", () => {
       test(false, () => {});
 
       test(true, () => vp.setNeverDrawn(new Set<string>("0x123")));
+      // It doesn't check if the contents of the set match the previous contents.
+      test(true, () => vp.setNeverDrawn(new Set<string>("0x123")));
       test(true, () => vp.clearNeverDrawn());
-      test(true, () => vp.clearNeverDrawn());
+      // No-op because never-drawn is already empty.
+      test(false, () => vp.clearAlwaysDrawn());
 
       test(true, () => vp.setAlwaysDrawn(new Set<string>("0x123")));
+      // It doesn't check if the contents of the set match the previous contents.
+      test(true, () => vp.setAlwaysDrawn(new Set<string>("0x123")));
       test(true, () => vp.clearAlwaysDrawn());
+      // No-op because always-drawn is already empty
+      test(false, () => vp.clearAlwaysDrawn());
+
+      test(true, () => vp.setAlwaysDrawn(new Set<string>("0x123"), true));
+      expect(vp.isAlwaysDrawnExclusive).to.be.true;
       test(true, () => vp.clearAlwaysDrawn());
+      expect(vp.isAlwaysDrawnExclusive).to.be.false;
+      test(false, () => vp.clearAlwaysDrawn());
     });
   });
 });
