@@ -124,7 +124,11 @@ export class RebaseInstanceStore implements Disposable {
   }
 
   private write(column: "old" | "new", key: string, instance: ChangeInstance): void {
-    const json = JSON.stringify(instance, Base64EncodedString.replacer);
+    const json = JSON.stringify(instance, (name: string, value: any) => {
+      // The native layer unhelpfully represents nulls as `undefined`. So turn them back into nulls for the JSON.
+      if (value === undefined) return null;
+      else return Base64EncodedString.replacer(name, value);
+    });
     this._db.withPreparedSqliteStatement(
       `INSERT INTO ${tableName} ([instanceKey], [${column}]) VALUES (?, ?) ON CONFLICT ([instanceKey]) DO UPDATE SET [${column}] = [excluded].[${column}]`,
       (stmt: SqliteStatement) => {

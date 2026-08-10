@@ -49,6 +49,13 @@ export interface RowFormatOptions {
    * `{ id, relClassName }` instead of `{ Id, RelECClassId }`.
    */
   useJsName?: boolean;
+
+  /**
+   * When `true`, all properties are included in the output, even if their values are `null`.
+   * In this case, `null` properties will have a value of `undefined`.
+   * When `false` (the default), properties with `null` values are omitted from the output.
+   */
+  includeNulls?: boolean;
 }
 
 // ---------------------------------------------------------------------------

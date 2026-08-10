@@ -615,7 +615,7 @@ export class InteractiveRebase {
   }
 
   private readCurrentInstance(id: Id64String, classFullName: string): RebaseConflictProperties {
-    return this._db[_nativeDb].readInstance({ id, classFullName }, { useJsNames: true }) as RebaseConflictProperties;
+    return this._db[_nativeDb].readInstance({ id, classFullName }, { useJsNames: true, includeNulls: true }) as RebaseConflictProperties;
   }
 
   private tryReadCurrentInstance(id: Id64String, classFullName: string): RebaseConflictProperties | undefined {
@@ -634,6 +634,9 @@ export class InteractiveRebase {
    */
   public applyConflictResolution(props: RebaseConflictProperties): void {
     this._db[_nativeDb].updateInstance(props, { useJsNames: true });
+
+    // TODO: too heavy-handed?
+    this._db.clearCaches();
   }
 
   /**
@@ -744,9 +747,13 @@ export class InteractiveRebase {
  * gets this list directly from `ecConflict.dataConflictProperties` instead.
  */
 function computeChangedProperties(baseline: RebaseConflictProperties, compare: RebaseConflictProperties): string[] {
-  const valuesDiffer = (a: any, b: any): boolean => (a !== null && typeof a === "object") || (b !== null && typeof b === "object")
-    ? JSON.stringify(a) !== JSON.stringify(b)
-    : a !== b;
+  const valuesDiffer = (a: any, b: any): boolean => {
+    if ((a === undefined || a === null) && (b === undefined || b === null))
+      return false;
+    return typeof a === "object" || typeof b === "object"
+      ? JSON.stringify(a) !== JSON.stringify(b)
+      : a !== b;
+  }
 
   return Object.keys(baseline).filter((prop) => prop !== "id" && prop !== "className" && valuesDiffer(baseline[prop], compare[prop]));
 }

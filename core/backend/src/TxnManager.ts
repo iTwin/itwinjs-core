@@ -1021,7 +1021,7 @@ export class TxnManager {
     // so using strict mode will cause error in this case when we will try to capture changes for first txn
     // because the number of columns in table A will be different than what it was when the changes were originally made.
     // So to avoid this issue we are not using strict mode here.
-    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false, includeNulls: true } });
 
     const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._iModel, id);
     using store = RebaseInstanceStore.createNew(dbPath);
