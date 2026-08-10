@@ -14,7 +14,8 @@ module.exports = [
   {
     files: ["**/*.ts"],
     rules: {
-      "@typescript-eslint/no-non-null-assertion": "warn"
+      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/unbound-method": "warn"
     }
   },
   {
