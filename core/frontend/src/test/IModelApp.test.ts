@@ -14,7 +14,7 @@ import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
 import { LookAndMoveTool, PanViewTool, RotateViewTool } from "../tools/ViewTool";
-import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
+import { BentleyStatus, DbResult, IModelStatus, Logger } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -343,5 +343,71 @@ describe("Undo/redo edit command cleanup", () => {
     selectedViewSpy.mockRestore();
     activeToolSpy.mockRestore();
     outputMessageSpy.mockRestore();
+  });
+});
+
+describe("callOnCleanup edit command cleanup", () => {
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("uses setPrimitiveTool path to cleanup primitive and finish edit command without notification", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const primitiveCleanup = vi.fn(async () => { });
+    (toolAdmin as any)._primitiveTool = { onCleanup: primitiveCleanup };
+
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(primitiveCleanup).toHaveBeenCalledOnce();
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect((toolAdmin as any)._primitiveTool).toBeUndefined();
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+  });
+
+  it("finishes edit command directly when no primitive tool is active", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._primitiveTool = undefined;
+
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const setPrimitiveToolSpy = vi.spyOn(toolAdmin, "setPrimitiveTool");
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(setPrimitiveToolSpy).not.toHaveBeenCalled();
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+  });
+
+  it("logs and suppresses notification when edit command finish throws during no-primitive cleanup", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._primitiveTool = undefined;
+
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const logSpy = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledOnce();
   });
 });
