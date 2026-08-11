@@ -1268,6 +1268,127 @@ describe.only("Field evaluation", () => {
       expect(reloadedField).to.not.be.undefined;
       expect(reloadedField!.cachedContent).to.equal("2500 mm");
     });
+
+    function readFieldCachedContentById(annotationElementId: Id64String): string | undefined {
+      const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
+      const reloadedBlock = reloaded.getAnnotation()?.textBlock;
+      if (!reloadedBlock) return undefined;
+      for (const { child } of traverseTextBlockComponent(reloadedBlock)) {
+        if (child.type === "field") {
+          return child.cachedContent;
+        }
+      }
+      return undefined;
+    }
+
+    function insertAnnotationWithLengthField(sourceId: Id64String): Id64String {
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        styleOverrides: { font: { name: "Karla" } },
+        propertyHost: { elementId: sourceId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+      const annotationElementId = insertAnnotationElement(textBlock);
+      withEditTxn(imodel, (txn) => {
+        ElementDrivesTextAnnotation.updateFieldDependencies(txn, annotationElementId);
+      });
+      return annotationElementId;
+    }
+
+    // TODO: WIP tests
+    it("Formats persisted cachedContent when the source element is later updated", () => {
+      // Update-path counterpart to "routes txn-driven field updates through the registered
+      // provider" above (which only covers the insert path). Confirms the txn callback fired
+      // via onRootChangedArg also routes through the resolver, not just the initial
+      // updateFieldDependencies call.
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
+
+      const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
+      const annotationElementId = insertAnnotationWithLengthField(sourceId);
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
+
+      // Mutate the source to fire the txn callback.
+      const source = imodel.elements.getElement<TestElement>(sourceId);
+      source.lengthProp = 4.25;
+      withEditTxn(imodel, "source update", (txn) => {
+        source.update(txn);
+        txn.saveChanges("source update");
+      });
+
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("4250 mm");
+    });
+
+    // TODO: WIP tests
+    it("Does not re-format existing annotations when a provider is registered after save", () => {
+      // Registering a provider does not walk existing annotations. Persisted cachedContent
+      // stays at whatever the previous save produced until the next source update (or an
+      // explicit evaluateFields[Async] + save by the caller). Document this so Drawing
+      // Production knows it owns the "reformat everything after FormatSet swap" flow.
+      const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
+      // No provider registered yet -> insert persists the raw fallback.
+      const annotationElementId = insertAnnotationWithLengthField(sourceId);
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
+
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
+
+      // Registration alone must not touch persisted content.
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
+    });
+
+    // TODO: WIP tests
+    it("Regresses persisted cachedContent to raw when the provider is unregistered before a source update", () => {
+      // Silent-downgrade probe. Once a provider is unregistered, the next txn callback
+      // rewrites cachedContent through the raw fallback, overwriting a previously-formatted
+      // value. This is a real behavioral question worth surfacing: is silent regression the
+      // right default, or should the sync path preserve the last-formatted value when it has
+      // no provider available? Pinned as-is for now; escalate through #6/#7 if we want to
+      // change it.
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
+
+      const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
+      const annotationElementId = insertAnnotationWithLengthField(sourceId);
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
+
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(PRIMARY_FORMAT_SET);
+
+      const source = imodel.elements.getElement<TestElement>(sourceId);
+      source.lengthProp = 3.5;
+      withEditTxn(imodel, "source update after unregister", (txn) => {
+        source.update(txn);
+        txn.saveChanges("source update after unregister");
+      });
+
+      // Previously-formatted "2500 mm" is overwritten by the raw fallback.
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("3.5");
+    });
+
+    // TODO: WIP tests
+    it("EvaluateFieldsAsync mutates the in-memory TextBlock but does not persist to the element on its own", async () => {
+      // Contract: evaluateFieldsAsync formats in place and returns a count. Persistence is the
+      // caller's responsibility (setAnnotation + element.update inside an EditTxn). Documents
+      // that even a successful async re-evaluation leaves the DB copy stale until an explicit
+      // save. If we ever want a "format + save" convenience wrapper, this is the test that
+      // pins the pre-existing behavior we'd be changing.
+      const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
+      const annotationElementId = insertAnnotationWithLengthField(sourceId);
+      const persistedBefore = readFieldCachedContentById(annotationElementId);
+      expect(persistedBefore).to.equal("2.5");
+
+      const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
+      const annotation = reloaded.getAnnotation()!;
+      const inMemoryBlock = annotation.textBlock;
+
+      // Whatever the async path resolves to (formatted, raw fallback, or unchanged), the
+      // persisted disk copy must be untouched — nothing between evaluateFieldsAsync and disk
+      // called `update`. Uses the default schema-backed FormatsProvider derived from
+      // args.iModel; the assertion only depends on the "no persistence" side of the contract.
+      await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: inMemoryBlock });
+
+      expect(readFieldCachedContentById(annotationElementId)).to.equal(persistedBefore);
+    });
   });
 
   function createAnnotationElement(textBlock: TextBlock | undefined): TextAnnotation3d {
