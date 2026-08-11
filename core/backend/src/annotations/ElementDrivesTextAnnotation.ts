@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { FieldFormattingSpecResolver, QueryBinder, RelatedElement, ResolvedFieldFormattingSpecProvider, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormattingSpecResolver, QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
@@ -36,14 +36,11 @@ function createFieldFormattingSpecResolver(): FieldFormattingSpecResolver | unde
   if (fieldFormattingProviders.size === 0) {
     return undefined;
   }
-  return {
-    resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined {
-      if (!formatSet) {
-        return undefined;
-      }
-      const provider = fieldFormattingProviders.get(formatSet);
-      return provider ? { provider } : undefined;
-    },
+  return (formatSet) => {
+    if (!formatSet) {
+      return undefined;
+    }
+    return fieldFormattingProviders.get(formatSet);
   };
 }
 
