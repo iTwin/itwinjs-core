@@ -64,7 +64,7 @@ export interface UpdateFieldsContext {
 
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Optional resolver used to select a synchronous [FieldFormattingSpecProvider]($common) per
+  /** Optional resolver used to select a synchronous [FormattingSpecProvider]($core-quantity) per
    * [FieldRun]($common). When present, [[updateField]] formats `"quantity"` and `"coordinate"`
    * values via [[formatFieldValueWithSpecResolver]]; when absent (or when the resolver has no
    * match for the field's [QuantityFieldFormatOptions.formatSet]($common)) it falls back to
