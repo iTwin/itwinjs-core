@@ -8,9 +8,9 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DrawingProps, ElementAlignedBox3d,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DefinitionSetProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
-  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, RelatedElement, RenderSchedule,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, Rank, RelatedElement, RenderSchedule,
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
@@ -1611,6 +1611,56 @@ export abstract class DefinitionElement extends InformationContentElement {
  */
 export abstract class DefinitionSet extends DefinitionElement {
   public static override get className(): string { return "DefinitionSet"; }
+  /** The Rank of a DefinitionSet indicates how it was created, who is aware of it and where it can be used.
+   * @beta
+   */
+  public rank?: Rank;
+
+  protected constructor(props: DefinitionSetProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.rank = props.rank;
+  }
+
+  /**
+   * DefinitionSet custom HandledProps include 'rank'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "rank", source: "Class" },
+  ];
+
+  /**
+   * DefinitionSet deserializes 'rank'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): DefinitionSetProps {
+    const elProps = super.deserialize(props) as DefinitionSetProps;
+    if (props.row.rank !== undefined)
+      elProps.rank = JsonUtils.asInt(props.row.rank);
+    return elProps;
+  }
+
+  /**
+   * DefinitionSet serializes 'rank'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: DefinitionSetProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (undefined !== props.rank) {
+      inst.rank = props.rank;
+    }
+    return inst;
+  }
+
+  public override toJSON(): DefinitionSetProps {
+    const val = super.toJSON() as DefinitionSetProps;
+    if (undefined !== this.rank)
+      val.rank = this.rank;
+    return val;
+  }
 }
 
 /** A DefinitionContainer exclusively owns a set of DefinitionElements contained within its sub-model (of type DefinitionModel).
