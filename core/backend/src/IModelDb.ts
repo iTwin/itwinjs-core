@@ -3726,11 +3726,6 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
-  private _skipSyncSchemasOnPullAndPush?: true;
-
-  /** @internal */
-  public get skipSyncSchemasOnPullAndPush() { return this._skipSyncSchemasOnPullAndPush ?? false; }
-
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -4191,8 +4186,7 @@ export class BriefcaseDb extends IModelDb {
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
-      if (!this.skipSyncSchemasOnPullAndPush)
-        SchemaSync.updateDbSchema(this);
+      SchemaSync.updateDbSchema(this);
       this.initializeIModelDb("pullMerge");
     });
 
@@ -4287,22 +4281,9 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot revert with pending txns");
     }
 
-    const skipSchemaSyncPull = async <T>(func: () => Promise<T>) => {
-      if (nativeDb.schemaSyncEnabled()) {
-        this._skipSyncSchemasOnPullAndPush = true;
-        try {
-          return await func();
-        } finally {
-          this._skipSyncSchemasOnPullAndPush = undefined;
-        }
-      } else {
-        return func();
-      }
-    };
     this.clearCaches();
-    await skipSchemaSyncPull(async () => this.pullChanges({ ...arg, toIndex: undefined }));
+    await this.pullChanges({ ...arg, toIndex: undefined });
     await this.acquireSchemaLock();
-
     if (nativeDb.schemaSyncEnabled()) {
       arg.skipSchemaChanges = true;
     }
@@ -4326,7 +4307,7 @@ export class BriefcaseDb extends IModelDb {
         pushRetryDelay: arg.pushRetryDelay,
         retainLocks: arg.retainLocks,
       };
-      await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
+      await this.pushChanges(pushArgs);
       this.clearCaches();
     } catch (err) {
       const failureAction = arg.inCaseOfFailure ?? "revert";

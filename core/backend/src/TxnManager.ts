@@ -1076,13 +1076,9 @@ export class TxnManager {
       };
     }
 
-    // Default conflict resolution for which custom handler is never called.
+    // Default conflict resolution for which custom handler is never called. Where schema sync is in
+    // use, native has already resolved ec_ rows by comparing sync db versions before we get here.
     if (args.cause === "Data" && !args.indirect) {
-      if (args.tableName === "be_Prop") {
-        if (args.getValueText(0, "Old") === "ec_Db" && args.getValueText(1, "Old") === "localDbInfo") {
-          return DbConflictResolution.Skip;
-        }
-      }
       if (args.tableName.startsWith("ec_")) {
         return DbConflictResolution.Skip;
       }

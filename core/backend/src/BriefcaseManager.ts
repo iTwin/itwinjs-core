@@ -851,8 +851,7 @@ export class BriefcaseManager {
     while (true) {
       try {
         await BriefcaseManager.pullAndApplyChangesets(db, arg);
-        if (!db.skipSyncSchemasOnPullAndPush)
-          SchemaSync.updateDbSchema(db);
+        SchemaSync.updateDbSchema(db);
         // pullAndApply rebase changes and might remove redundant changes in local briefcase
         // this mean hasPendingTxns was true before but now after pullAndApply it might be false
         if (!db[_nativeDb].hasPendingTxns())

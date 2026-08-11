@@ -689,7 +689,7 @@ describe("Schema synchronization", function (this: Suite) {
 
     // B3 will not be able to pull any changes as its does not even know if container was setup.
     assert.isUndefined(querySchemaSyncDataVer(b3));
-    await SchemaSync.pull(b3); // has no effect as b3 does not know if imodel has schema sync enabled.
+    SchemaSync.updateDbSchema(b3); // has no effect as b3 does not know if imodel has schema sync enabled.
     assert.isUndefined(querySchemaSyncDataVer(b3));
     assert.deepEqual(queryPropNames(b3, "Test1:Pipe1"), []);
     assert.deepEqual(queryPropNames(b3, "Test2:Pipe1"), []);
@@ -1010,7 +1010,7 @@ describe("Schema synchronization", function (this: Suite) {
 
     // B3 will not be able to pull any changes as its does not even know if container was setup.
     assert.isUndefined(querySchemaSyncDataVer(b3));
-    await SchemaSync.pull(b3); // has no effect as b3 does not know if imodel has schema sync enabled.
+    SchemaSync.updateDbSchema(b3); // has no effect as b3 does not know if imodel has schema sync enabled.
     assert.isUndefined(querySchemaSyncDataVer(b3));
     assert.deepEqual(queryPropNames(b3, "Test1:Pipe1"), []);
     assert.deepEqual(queryPropNames(b3, "Test2:Pipe1"), []);

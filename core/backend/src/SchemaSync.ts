@@ -75,31 +75,8 @@ export namespace SchemaSync {
     }
   };
 
-  export const withReadonlyAccess = async (iModel: IModelDb | { readonly fileName: LocalFileName }, operation: (access: CloudAccess) => Promise<void>): Promise<void> => {
-    const access = await getCloudAccess(iModel);
-    access.synchronizeWithCloud();
-    access.openForRead();
-    try {
-      await operation(access);
-    } finally {
-      access.close();
-    }
-  };
-
   export const isEnabled = (iModel: IModelDb) => {
     return iModel[_nativeDb].schemaSyncEnabled();
-  };
-
-  /** Synchronize local briefcase schemas with cloud container */
-  export const pull = async (iModel: IModelDb) => {
-    if (iModel[_nativeDb].schemaSyncEnabled() && !iModel.isReadonly) {
-      await SchemaSync.withReadonlyAccess(iModel, async (syncAccess) => {
-        const schemaSyncDbUri = syncAccess.getUri();
-        iModel.clearCaches();
-        iModel[_nativeDb].schemaSyncPull(schemaSyncDbUri);
-        iModel[_implicitTxn].saveChanges("schema synchronized with cloud container");
-      });
-    }
   };
 
   /** Build the tables and indexes the briefcase's `ec_` rows describe. A merged schema changeset carries
