@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, assert, BeEvent, BeTimePoint, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, BentleyError, BeTimePoint, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
@@ -1847,11 +1847,32 @@ export class ToolAdmin {
 
   /** @internal */
   public async setPrimitiveTool(newTool?: PrimitiveTool) {
-    if (undefined !== this._primitiveTool) {
-      await this._primitiveTool.onCleanup();
-      if (undefined !== this._editCommandHandler)
-        await this._editCommandHandler.finishCommand();
-      this._primitiveTool = undefined;
+    const oldTool = this._primitiveTool;
+    if (undefined !== oldTool) {
+      let mainError: Error | undefined;
+      try {
+        await oldTool.onCleanup();
+      } catch (err) {
+        mainError = (err instanceof Error) ? err : new Error(BentleyError.getErrorMessage(err));
+      }
+
+      try {
+        if (undefined !== this._editCommandHandler)
+          await this._editCommandHandler.finishCommand();
+      } catch (err) {
+        // throw finishCommand error if onCleanup succeeded, otherwise log finishCommand failure...
+        if (undefined === mainError)
+          mainError = (err instanceof Error) ? err : new Error(BentleyError.getErrorMessage(err));
+        else
+          Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, err);
+      } finally {
+        // Force-clear stale tool state if either onCleanup or finishCommand failed...
+        if (this._primitiveTool === oldTool)
+          this._primitiveTool = undefined;
+      }
+
+      if (undefined !== mainError)
+        throw mainError;
     }
     this._primitiveTool = newTool;
   }

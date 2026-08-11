@@ -410,4 +410,24 @@ describe("callOnCleanup edit command cleanup", () => {
     expect(outputMessageSpy).not.toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledOnce();
   });
+
+  it("clears stale primitive tool when primitive cleanup throws", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._primitiveTool = {
+      onCleanup: vi.fn(async () => { throw new Error("cleanup failed"); }),
+    };
+
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const logSpy = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect((toolAdmin as any)._primitiveTool).toBeUndefined();
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(logSpy).toHaveBeenCalledOnce();
+  });
 });
