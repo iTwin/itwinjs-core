@@ -326,8 +326,7 @@ internal;class;FeatureTableHeader
 beta;type;FieldCase
 beta;interface;FieldFormatOptions
 internal;interface;FieldFormatterContext
-internal;interface;FieldFormattingSpecProvider
-internal;interface;FieldFormattingSpecResolver
+internal;type;FieldFormattingSpecResolver
 internal;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath
@@ -786,7 +785,6 @@ preview;interface;RenderTimelineProps
 public;interface;RepositoryLinkProps
 preview;interface;RepositoryLinkProps
 public;interface;RequestNewBriefcaseProps
-internal;interface;ResolvedFieldFormattingSpecProvider
 internal;function;resolveNavProp
 internal;function;resolveNavPropId
 internal;class;ResponseLike

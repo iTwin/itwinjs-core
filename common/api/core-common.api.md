@@ -27,7 +27,7 @@ import { DbResult } from '@itwin/core-bentley';
 import { DeepReadonlyObject } from '@itwin/core-bentley';
 import { DeepRequiredObject } from '@itwin/core-bentley';
 import { FormatsProvider } from '@itwin/core-quantity';
-import { FormatterSpec } from '@itwin/core-quantity';
+import { FormattingSpecProvider } from '@itwin/core-quantity';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
@@ -3699,22 +3699,8 @@ export interface FieldFormatterContext {
     unitsProvider: UnitsProvider;
 }
 
-// @internal (undocumented)
-export interface FieldFormattingSpecProvider {
-    // (undocumented)
-    getSpecsByNameAndUnit(args: {
-        name: string;
-        persistenceUnitName: string;
-    }): {
-        formatterSpec: FormatterSpec;
-    } | undefined;
-}
-
 // @internal
-export interface FieldFormattingSpecResolver {
-    // (undocumented)
-    resolve(formatSet: string | undefined): ResolvedFieldFormattingSpecProvider | undefined;
-}
+export type FieldFormattingSpecResolver = (formatSet: string | undefined) => FormattingSpecProvider | undefined;
 
 // @internal
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
@@ -3870,7 +3856,7 @@ export function formatFieldValue(value: FieldValue, options: FieldFormatOptions 
 export function formatFieldValueAsync(value: FieldValue, options: FieldFormatOptions | undefined, context: FieldFormatterContext): Promise<string | undefined>;
 
 // @internal
-export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FieldFormattingSpecProvider): string | undefined;
+export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FormattingSpecProvider): string | undefined;
 
 // @internal
 export function formatFieldValueWithSpecResolver(value: FieldValue, options: FieldFormatOptions | undefined, resolver: FieldFormattingSpecResolver): string | undefined;
@@ -8675,12 +8661,6 @@ export interface RequestNewBriefcaseProps {
     readonly fileName?: LocalFileName;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
-}
-
-// @internal
-export interface ResolvedFieldFormattingSpecProvider {
-    // (undocumented)
-    provider: FieldFormattingSpecProvider;
 }
 
 // @internal
