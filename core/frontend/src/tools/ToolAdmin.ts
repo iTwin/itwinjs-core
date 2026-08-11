@@ -2203,8 +2203,7 @@ export class ToolAdmin {
       else if (undefined !== this._editCommandHandler)
         await this._editCommandHandler.finishCommand(); // Cleanup immediate edit command for special case of no active/default tool...
     } catch (err) {
-      const message = err instanceof Error ? err.message : IModelApp.localization.getLocalizedString("iModelJs:Errors.UnableToFinishActiveEditCommand");
-      Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, `callOnCleanup failed to clear primitive tool/edit command: ${message}`);
+      Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, err);
     }
   }
 }
