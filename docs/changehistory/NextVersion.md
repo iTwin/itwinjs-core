@@ -4,6 +4,8 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [@itwin/core-common](#itwincore-common)
+    - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
   - [@itwin/core-backend](#itwincore-backend)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
@@ -12,6 +14,14 @@ publish: false
     - [Invalidate decorations when element visibility changes](#invalidate-decorations-when-element-visibility-changes)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
+
+## @itwin/core-common
+
+### QueryBinder.bindIdSet now throws on invalid ids
+
+[QueryBinder.bindIdSet]($common) previously silently ignored string entries that are not valid [Id64String]($bentley)s (for example `"50"` or `""`) during id compression. It now throws a descriptive [ITwinError]($bentley) instead, identifiable via `ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments")`, so callers can catch and diagnose the invalid entry rather than having it silently dropped.
+
+**Note:** `bindIdSet` still expects entries typed as `Id64String`. Callers binding ids from untyped or nullable query data (for example a nullable column via [ECSqlReader]($common)) should filter out non-string/`null`/`undefined` values before calling `bindIdSet`, as such entries remain outside the documented contract and are not guaranteed to produce this descriptive error.
 
 ## @itwin/core-backend
 
