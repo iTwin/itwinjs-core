@@ -484,7 +484,8 @@ export class BriefcaseManager {
   }
 
   private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean, noUpdateLoop?: boolean) {
-    if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
+    // SchemaSync sets the Schema bit on top of its own, so test the bit rather than comparing whole values.
+    if ((changesetFile.changesType & ChangesetType.Schema) !== 0)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
     db[_nativeDb].applyChangeset(changesetFile, fastForward, noUpdateLoop);
@@ -618,7 +619,7 @@ export class BriefcaseManager {
       await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
     }
 
-    const hasIncomingSchemaChange: boolean = changesets.some((changeset) => changeset.changesType === ChangesetType.Schema);
+    const hasIncomingSchemaChange: boolean = changesets.some((changeset) => (changeset.changesType & ChangesetType.Schema) !== 0);
     const hasLocalSchemaTxn: boolean = briefcaseDb?.checkIfSchemaTxnExists() ?? false;
     const useSemanticRebase: boolean =
       briefcaseDb !== undefined &&
