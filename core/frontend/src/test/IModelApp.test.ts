@@ -369,6 +369,7 @@ describe("callOnCleanup edit command cleanup", () => {
 
     expect(primitiveCleanup).toHaveBeenCalledOnce();
     expect(finishCommand).toHaveBeenCalledOnce();
+    expect(finishCommand.mock.invocationCallOrder[0]).toBeLessThan(primitiveCleanup.mock.invocationCallOrder[0]);
     expect((toolAdmin as any)._primitiveTool).toBeUndefined();
     expect(outputMessageSpy).not.toHaveBeenCalled();
   });

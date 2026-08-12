@@ -1847,6 +1847,10 @@ export class ToolAdmin {
 
   /** @internal */
   public async setPrimitiveTool(newTool?: PrimitiveTool) {
+    return this.setPrimitiveToolInternal(newTool);
+  }
+
+  private async setPrimitiveToolInternal(newTool?: PrimitiveTool, pendingFinishCommand?: Promise<string>) {
     const oldTool = this._primitiveTool;
     if (undefined !== oldTool) {
       let mainError: Error | undefined;
@@ -1857,7 +1861,9 @@ export class ToolAdmin {
       }
 
       try {
-        if (undefined !== this._editCommandHandler)
+        if (undefined !== pendingFinishCommand)
+          await pendingFinishCommand;
+        else if (undefined !== this._editCommandHandler)
           await this._editCommandHandler.finishCommand();
       } catch (err) {
         // throw finishCommand error if onCleanup succeeded, otherwise log finishCommand failure...
@@ -2214,15 +2220,23 @@ export class ToolAdmin {
 
   /** @internal */
   public async callOnCleanup() {
-    await this.exitViewTool();
-    await this.exitInputCollector();
-
+    let pendingFinishCommand: Promise<string> | undefined;
     try {
+      // Start the edit-command cleanup before the first await. ViewManager can invoke this method
+      // without awaiting it when the last viewport is dropped.
+      if (undefined !== this._editCommandHandler)
+        pendingFinishCommand = this._editCommandHandler.finishCommand();
+
+      if (undefined !== this._viewTool)
+        await this.exitViewTool();
+      if (undefined !== this._inputCollector)
+        await this.exitInputCollector();
+
       // Keep cleanup path consistent with other primitive-tool transitions.
       if (undefined !== this._primitiveTool)
-        await this.setPrimitiveTool(undefined); // NOTE: ViewManager.setSelectedView will call startDefaultTool if a new view is opened...
-      else if (undefined !== this._editCommandHandler)
-        await this._editCommandHandler.finishCommand(); // Cleanup immediate edit command for special case of no active/default tool...
+        await this.setPrimitiveToolInternal(undefined, pendingFinishCommand); // NOTE: ViewManager.setSelectedView will call startDefaultTool if a new view is opened...
+      else if (undefined !== pendingFinishCommand)
+        await pendingFinishCommand;
     } catch (err) {
       Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, err);
     }
