@@ -46,7 +46,7 @@ export class MobileRpcServer {
      */
     this._pingTimer = setInterval(() => { }, 5);
     this._port = MobileRpcConfiguration.setup.obtainPort();
-    this._server = new ws.Server({ port: this._port });
+    this._server = new ws.Server({ host: "127.0.0.1", port: this._port });
     this._connectionId = ++MobileRpcServer._nextId;
     MobileRpcServer.interop.connectionId = this._connectionId;
     this._onListening();

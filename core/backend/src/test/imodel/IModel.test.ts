@@ -10,10 +10,10 @@ import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, Ope
 import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
+  DefinitionSetProps, DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, QueryBinder, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  PointWithStatus, QueryBinder, Rank, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, TypeDefinitionElementProps, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -1678,6 +1678,84 @@ describe("iModel", () => {
     assert.equal(numMembers, 3);
     txn.end();
     iModelDb.close();
+  });
+
+  describe("DefinitionSet.rank", () => {
+    function setRank(iModelDb: StandaloneDb, id: Id64String, className: string, rank: Rank | undefined): void {
+      withEditTxn(iModelDb, (txn) => txn.updateElement<DefinitionSetProps>({ id, classFullName: className, rank }));
+    }
+
+    it("should insert, update, read and serialize rank", () => {
+      const iModelFileName = IModelTestUtils.prepareOutputFile("IModel", "DefinitionSetRank.bim");
+      const iModelDb = StandaloneDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionSetRank" } });
+
+      const containerId = withEditTxn(iModelDb, (txn) => DefinitionContainer.insert(txn, IModel.dictionaryId, Code.createEmpty()));
+      const groupId = withEditTxn(iModelDb, (txn) => DefinitionGroup.create(iModelDb, IModel.dictionaryId, Code.createEmpty()).insert(txn));
+
+      // Freshly inserted DefinitionSets have no rank persisted.
+      assert.isUndefined(iModelDb.elements.getElementProps<DefinitionSetProps>(containerId).rank);
+      assert.isUndefined(iModelDb.elements.getElement<DefinitionContainer>(containerId).rank);
+
+      setRank(iModelDb, containerId, DefinitionContainer.classFullName, Rank.Application);
+      setRank(iModelDb, groupId, DefinitionGroup.classFullName, Rank.Domain);
+
+      const containerProps = iModelDb.elements.getElementProps<DefinitionSetProps>(containerId);
+      assert.equal(containerProps.rank, Rank.Application);
+
+      const container = iModelDb.elements.getElement<DefinitionContainer>(containerId);
+      assert.equal(container.rank, Rank.Application);
+      assert.equal(container.toJSON().rank, Rank.Application);
+
+      const group = iModelDb.elements.getElement<DefinitionGroup>(groupId);
+      assert.equal(group.rank, Rank.Domain);
+      assert.equal(group.toJSON().rank, Rank.Domain);
+
+      iModelDb.close();
+    });
+
+    it("should serialize/deserialize DefinitionSet.rank via DefinitionSet.serialize/deserialize", () => {
+      const iModelFileName = IModelTestUtils.prepareOutputFile("IModel", "DefinitionSetRankSerialize.bim");
+      const iModelDb = StandaloneDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionSetRankSerialize" } });
+
+      const props: DefinitionSetProps = {
+        classFullName: DefinitionContainer.classFullName,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+        rank: Rank.User,
+      };
+      const row = DefinitionContainer.serialize(props, iModelDb);
+      assert.equal(row.rank, Rank.User);
+
+      const propsWithoutRank: DefinitionSetProps = {
+        classFullName: DefinitionContainer.classFullName,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+      };
+      const rowWithoutRank = DefinitionContainer.serialize(propsWithoutRank, iModelDb);
+      assert.isUndefined(rowWithoutRank.rank);
+
+      iModelDb.close();
+    });
+
+    it("should insert a DefinitionContainer with rank property", () => {
+      const iModelFileName = IModelTestUtils.prepareOutputFile("IModel", "DefinitionContainerRank.bim");
+      const iModelDb = StandaloneDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionContainerRank" } });
+
+      const containerId = withEditTxn(iModelDb, (txn) => {
+        const containerProps: DefinitionSetProps = {
+          classFullName: DefinitionContainer.classFullName,
+          model: IModel.dictionaryId,
+          code: Code.createEmpty(),
+          rank: Rank.Application,
+        };
+        return txn.insertElement(containerProps);
+      });
+
+      const inserted = iModelDb.elements.getElementProps<DefinitionSetProps>(containerId);
+      assert.equal(inserted.rank, Rank.Application);
+
+      iModelDb.close();
+    });
   });
 
   it("should set EC properties of various types", async () => {

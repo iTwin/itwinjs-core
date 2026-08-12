@@ -64,6 +64,7 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
+import { DefinitionSetProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
 import { DisplayStyle3dSettings } from '@itwin/core-common';
 import { DisplayStyle3dSettingsProps } from '@itwin/core-common';
@@ -2074,8 +2075,19 @@ export class DefinitionPartition extends InformationPartitionElement {
 
 // @public @preview
 export abstract class DefinitionSet extends DefinitionElement {
+    protected constructor(props: DefinitionSetProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): DefinitionSetProps;
+    // @beta
+    rank?: Rank;
+    // @beta
+    static serialize(props: DefinitionSetProps, iModel: IModelDb): ECSqlRow;
+    // (undocumented)
+    toJSON(): DefinitionSetProps;
 }
 
 // @beta
