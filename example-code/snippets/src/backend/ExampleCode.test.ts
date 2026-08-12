@@ -181,25 +181,6 @@ describe("Example Code", () => {
       assert.isTrue(Geometry.isAlmostEqualNumber(meshVolume, PolyfaceQuery.sumTetrahedralVolumes(mesh)), "all meshes have same volume");
   });
 
-  it.only("ClashDetectionBim", async () => {
-    const inFile = "locationPath"; // path to a ClashDetectionBim file, e.g., "D:\\tmp\\ClashDetectionBim.bim"
-    const elementIds: Id64Array = ["0x200000321ee", "0x200000321ef"];
-
-    const outDir = "D:\\tmp";
-    if (!IModelJsFs.existsSync(outDir))
-      IModelJsFs.mkdirSync(outDir);
-
-    for (const elementId of elementIds) {
-      const meshes: IndexedPolyface[] = [];
-      await Snippets.extractGeometryFromBimFile(inFile, [elementId], meshes);
-      assert.isAtLeast(meshes.length, 1, `extracted mesh for ${elementId}`);
-
-      const outFile = `D:\\tmp\\mesh-${elementId}.json`;
-      const json = IModelJson.Writer.toIModelJson(meshes[0]);
-      IModelJsFs.writeFileSync(outFile, JSON.stringify(json));
-    }
-  });
-
   it("CodeService", async () => {
 
     if (false) { // this will compile but it will not run, because the root element has no federationGuid -- waiting for a fix
