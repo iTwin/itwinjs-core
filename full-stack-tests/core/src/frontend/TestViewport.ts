@@ -349,6 +349,8 @@ export async function testOnScreenViewport(view: ViewState | Id64String, imodel:
   } finally {
     onscreen.continuousRendering = false;
   }
+
+  await IModelApp.viewManager.waitForSelectedViewportChange();
 }
 
 export async function testOffScreenViewport(view: ViewState | Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
