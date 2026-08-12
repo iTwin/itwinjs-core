@@ -251,8 +251,9 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
   /** @internal */
   public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined) {
-    const handleSelectedViewportChange = async () => IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
-    this._selectedViewportChange = this._selectedViewportChange.then(handleSelectedViewportChange, handleSelectedViewportChange);
+    const selectedViewportChange = IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
+    this._selectedViewportChange = this._selectedViewportChange.then(async () => selectedViewportChange, async () => selectedViewportChange)
+      .then(() => undefined, () => undefined);
     this.onSelectedViewportChanged.emit({ previous, current });
   }
 

@@ -1880,7 +1880,9 @@ export class ToolAdmin {
       if (undefined !== mainError)
         throw mainError;
     }
-    this._primitiveTool = newTool;
+    // Do not let a delayed transition overwrite a tool installed by a newer transition.
+    if (undefined === oldTool || this._primitiveTool === oldTool)
+      this._primitiveTool = newTool;
   }
 
   // serialize concurrent starts to avoid two tools installing simultaneously.
@@ -2224,8 +2226,14 @@ export class ToolAdmin {
     try {
       // Start the edit-command cleanup before the first await. ViewManager can invoke this method
       // without awaiting it when the last viewport is dropped.
-      if (undefined !== this._editCommandHandler)
-        pendingFinishCommand = this._editCommandHandler.finishCommand();
+      if (undefined !== this._editCommandHandler) {
+        const finishCommand = this._editCommandHandler.finishCommand();
+        // Attach a rejection handler immediately: another cleanup operation may fail before this promise is awaited.
+        pendingFinishCommand = finishCommand.catch((err) => {
+          Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, err);
+          return "";
+        });
+      }
 
       if (undefined !== this._viewTool)
         await this.exitViewTool();

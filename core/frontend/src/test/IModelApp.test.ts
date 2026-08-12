@@ -412,6 +412,23 @@ describe("callOnCleanup edit command cleanup", () => {
     expect(logSpy).toHaveBeenCalledOnce();
   });
 
+  it("observes rejected edit command when view cleanup also throws", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._viewTool = { onCleanup: vi.fn(async () => { throw new Error("view cleanup failed"); }) };
+
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const logSpy = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(logSpy).toHaveBeenCalledTimes(2);
+  });
+
   it("clears stale primitive tool when primitive cleanup throws", async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
 
@@ -430,5 +447,25 @@ describe("callOnCleanup edit command cleanup", () => {
     expect((toolAdmin as any)._primitiveTool).toBeUndefined();
     expect(finishCommand).toHaveBeenCalledOnce();
     expect(logSpy).toHaveBeenCalledOnce();
+  });
+
+  it("does not overwrite a replacement primitive tool after delayed cleanup", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    let releaseCleanup: (() => void) | undefined;
+    const cleanupReleased = new Promise<void>((resolve) => releaseCleanup = resolve);
+    const oldTool = { onCleanup: vi.fn(async () => cleanupReleased) };
+    const replacementTool = { onCleanup: vi.fn(async () => { }) };
+    (toolAdmin as any)._primitiveTool = oldTool;
+
+    const transition = toolAdmin.setPrimitiveTool(undefined);
+    await Promise.resolve();
+    (toolAdmin as any)._primitiveTool = replacementTool;
+
+    releaseCleanup?.();
+    await transition;
+
+    expect((toolAdmin as any)._primitiveTool).toBe(replacementTool);
   });
 });

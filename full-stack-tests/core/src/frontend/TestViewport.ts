@@ -342,15 +342,18 @@ export async function testOnScreenViewport(view: ViewState | Id64String, imodel:
     return;
 
   // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
-  using onscreen = await createOnScreenTestViewport(view, imodel, width, height, devicePixelRatio);
-  onscreen.continuousRendering = true;
+  const onscreen = await createOnScreenTestViewport(view, imodel, width, height, devicePixelRatio);
   try {
+    onscreen.continuousRendering = true;
     await test(onscreen);
   } finally {
     onscreen.continuousRendering = false;
+    try {
+      onscreen[Symbol.dispose]();
+    } finally {
+      await IModelApp.viewManager.waitForSelectedViewportChange();
+    }
   }
-
-  await IModelApp.viewManager.waitForSelectedViewportChange();
 }
 
 export async function testOffScreenViewport(view: ViewState | Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {

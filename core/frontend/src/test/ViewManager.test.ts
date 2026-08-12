@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { OnScreenTarget } from "../internal/render/webgl/Target";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -64,5 +64,53 @@ describe("ViewManager", () => {
     await IModelApp.shutdown();
 
     expect(vp.isDisposed).toBe(true);
+  });
+
+  it("should start edit command cleanup before final viewport disposal returns", async () => {
+    const vp = openBlankViewport({ width: 30, height: 30 });
+    const finishCommand = vi.fn(async () => {
+      expect(vp.isDisposed).toBe(false);
+      return "done";
+    });
+    IModelApp.toolAdmin.setEditCommandHandler({ finishCommand });
+    IModelApp.viewManager.addViewport(vp);
+
+    IModelApp.viewManager.dropViewport(vp);
+
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(vp.isDisposed).toBe(true);
+    await IModelApp.viewManager.waitForSelectedViewportChange();
+  });
+
+  it("should not overwrite a reopened viewport's tool after delayed last-viewport cleanup", async () => {
+    using firstViewport = openBlankViewport({ width: 30, height: 30 });
+    IModelApp.viewManager.addViewport(firstViewport);
+    await IModelApp.viewManager.waitForSelectedViewportChange();
+    await IModelApp.toolAdmin.startPrimitiveTool(undefined);
+
+    let releaseCleanup: (() => void) | undefined;
+    const cleanupReleased = new Promise<void>((resolve) => releaseCleanup = resolve);
+    const oldTool = {
+      onCleanup: vi.fn(async () => cleanupReleased),
+      onSelectedViewportChanged: vi.fn(),
+    };
+    const replacementTool = { onCleanup: vi.fn(async () => { }) };
+    (IModelApp.toolAdmin as any)._primitiveTool = oldTool;
+
+    const startDefaultTool = vi.spyOn(IModelApp.toolAdmin, "startDefaultTool").mockImplementation(async () => {
+      (IModelApp.toolAdmin as any)._primitiveTool = replacementTool;
+    });
+
+    IModelApp.viewManager.dropViewport(firstViewport, false);
+    using reopenedViewport = openBlankViewport({ width: 30, height: 30 });
+    IModelApp.viewManager.addViewport(reopenedViewport);
+
+    expect(startDefaultTool).toHaveBeenCalledOnce();
+    expect((IModelApp.toolAdmin as any)._primitiveTool).toBe(replacementTool);
+
+    releaseCleanup?.();
+    await IModelApp.viewManager.waitForSelectedViewportChange();
+
+    expect((IModelApp.toolAdmin as any)._primitiveTool).toBe(replacementTool);
   });
 });
