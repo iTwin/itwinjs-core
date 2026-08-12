@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Invalidate cached decorations when always/never-drawn elements change.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
