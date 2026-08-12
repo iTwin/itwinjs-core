@@ -525,7 +525,7 @@ export class InteractiveRebase {
   private applyInteractiveUpdate(oldProps: RebaseConflictProperties, newProps: RebaseConflictProperties): void {
     const nativeDb = this._db[_nativeDb];
     const result = this.applyOrRecordConstraintConflict(newProps, false, () =>
-      nativeDb.updateInstance(newProps, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { updated: boolean, rowExists: boolean });
+      nativeDb.updateInstance(newProps, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { updated: boolean, conflictingProperties: string[] });
     if (result === undefined) {
       // A constraint conflict occurred and was already recorded.
       return;
@@ -534,17 +534,18 @@ export class InteractiveRebase {
       return;
     }
 
-    if (!result.rowExists) {
+    if (result.conflictingProperties.length === 0) {
       // The incoming changes deleted the instance that our local change updated. Their delete stands.
       TheirDeleteOurUpdateRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, newProps);
       return;
     }
 
-    // The row still exists, but at least one property we touched no longer matches our captured
-    // baseline, meaning the incoming changes also modified it. Accept "ours" by default (matching the
-    // native changeset-conflict model), but report the conflict so the caller may later accept "theirs".
+    // The row still exists, but at least one property we touched (result.conflictingProperties) no
+    // longer matches our captured baseline, meaning the incoming changes also modified it. Accept "ours"
+    // by default (matching the native changeset-conflict model), but report the conflict so the caller
+    // may later accept "theirs".
     const theirs = this.readCurrentInstance(oldProps.id, oldProps.classFullName);
-    UpdateRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, theirs, newProps);
+    UpdateRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, theirs, newProps, result.conflictingProperties);
     this.applyOrRecordConstraintConflict(newProps, false, () => nativeDb.updateInstance(newProps, { useJsNames: true }));
   }
 
@@ -552,18 +553,18 @@ export class InteractiveRebase {
     const nativeDb = this._db[_nativeDb];
     const key = { id: oldProps.id, classFullName: oldProps.classFullName };
     const result = this.applyOrRecordConstraintConflict(oldProps, false, () =>
-      nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { deleted: boolean, rowExists: boolean });
-    if (result === undefined || result.deleted || !result.rowExists) {
+      nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { deleted: boolean, conflictingProperties: string[] });
+    if (result === undefined || result.deleted || result.conflictingProperties.length === 0) {
       // Either a constraint conflict was already recorded, we deleted it, or the incoming changes
       // already deleted it - nothing more to do.
       return;
     }
 
-    // The row still exists but no longer matches our captured baseline, meaning the incoming changes
-    // modified it. Report the conflict, but proceed with the delete (matching the native
-    // changeset-conflict model for a Deleted opcode with a "Data" conflict cause).
+    // The row still exists but no longer matches our captured baseline (result.conflictingProperties),
+    // meaning the incoming changes modified it. Report the conflict, but proceed with the delete (matching
+    // the native changeset-conflict model for a Deleted opcode with a "Data" conflict cause).
     const theirs = this.readCurrentInstance(oldProps.id, oldProps.classFullName);
-    TheirUpdateOurDeleteRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, theirs);
+    TheirUpdateOurDeleteRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, theirs, result.conflictingProperties);
     nativeDb.deleteInstance(key, { useJsNames: true });
   }
 
@@ -758,13 +759,13 @@ function computeChangedProperties(baseline: RebaseConflictProperties, compare: R
   return Object.keys(baseline).filter((prop) => prop !== "id" && prop !== "classFullName" && valuesDiffer(baseline[prop], compare[prop]));
 }
 
-/** Strips the identity properties (`id`/`classFullName`) and the auto-maintained `lastMod` timestamp from
- * a captured instance snapshot, leaving only the data properties that changed. `id`/`classFullName` aren't
- * regular properties, and `lastMod` is a TimeStampProperty that native skips during insert/update (it's
- * maintained automatically), so neither can be used for `CompareBeforeUpdate`/`CompareBeforeDelete`.
+/** Strips the identity properties (`id`/`classFullName`) from a captured instance snapshot, since they aren't
+ * regular properties and can't be used for `CompareBeforeUpdate`/`CompareBeforeDelete`. The class's
+ * TimeStampProperty (e.g. `lastMod`), if any, is left in: native excludes it from the optimistic-concurrency
+ * check itself (it always changes on any write) while still reporting it via `conflictingProperties`.
  */
 function withoutIdentityProperties(props: RebaseConflictProperties): RebaseConflictProperties {
-  const { id: _id, classFullName: _classFullName, lastMod: _lastMod, ...rest } = props;
+  const { id: _id, classFullName: _classFullName, ...rest } = props;
   return rest;
 }
 
@@ -800,9 +801,10 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
 
   /** JS-driven equivalent of [[handle]], used for "Data" txns reinstated via [[RebaseInstanceStore]]
    * instead of the native changeset-conflict callback. Also accepts "ours" immediately, mirroring
-   * `handle`'s `DbConflictResolution.Replace`.
+   * `handle`'s `DbConflictResolution.Replace`. `conflictingProperties` is the native-reported list of
+   * `original`'s properties whose current db value no longer matches (see `InstanceWriter::Update`).
    */
-  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties): void {
+  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
     const instanceId = original.id;
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "Update") as UpdateRebaseConflict | undefined;
@@ -811,7 +813,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.conflictingProperties.push(...computeChangedProperties(original, theirs));
+    instanceConflict.conflictingProperties.push(...conflictingProperties);
     Object.assign(instanceConflict.original, original);
     Object.assign(instanceConflict.theirs, theirs);
     Object.assign(instanceConflict.ours, ours);
@@ -880,9 +882,10 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
   }
 
   /** JS-driven equivalent of [[handle]], used for "Data" txns reinstated via [[RebaseInstanceStore]]
-   * instead of the native changeset-conflict callback.
+   * instead of the native changeset-conflict callback. `updatedProperties` is the native-reported list
+   * of `original`'s properties whose current db value no longer matches (see `InstanceWriter::Delete`).
    */
-  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties): void {
+  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
     const instanceId = original.id;
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
@@ -891,7 +894,7 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.updatedProperties.push(...computeChangedProperties(original, theirs));
+    instanceConflict.updatedProperties.push(...updatedProperties);
     Object.assign(instanceConflict.original, original);
     Object.assign(instanceConflict.theirs, theirs);
   }
