@@ -82,6 +82,22 @@ describe("ViewManager", () => {
     await IModelApp.viewManager.waitForSelectedViewportChange();
   });
 
+  it("should observe a rejected selected-viewport change immediately", async () => {
+    let releaseFirstChange: (() => void) | undefined;
+    const firstChange = new Promise<void>((resolve) => releaseFirstChange = resolve);
+    const secondChange = Promise.reject(new Error("selected viewport change failed"));
+    const selectedViewportChanged = vi.spyOn(IModelApp.toolAdmin, "onSelectedViewportChanged")
+      .mockReturnValueOnce(firstChange)
+      .mockReturnValueOnce(secondChange);
+
+    IModelApp.viewManager.notifySelectedViewportChanged(undefined, undefined);
+    IModelApp.viewManager.notifySelectedViewportChanged(undefined, undefined);
+
+    releaseFirstChange?.();
+    await IModelApp.viewManager.waitForSelectedViewportChange();
+    expect(selectedViewportChanged).toHaveBeenCalledTimes(2);
+  });
+
   it("should not overwrite a reopened viewport's tool after delayed last-viewport cleanup", async () => {
     using firstViewport = openBlankViewport({ width: 30, height: 30 });
     IModelApp.viewManager.addViewport(firstViewport);
@@ -94,23 +110,24 @@ describe("ViewManager", () => {
       onCleanup: vi.fn(async () => cleanupReleased),
       onSelectedViewportChanged: vi.fn(),
     };
-    const replacementTool = { onCleanup: vi.fn(async () => { }) };
     (IModelApp.toolAdmin as any)._primitiveTool = oldTool;
+    const finishCommand = vi.fn(async () => "done");
+    IModelApp.toolAdmin.setEditCommandHandler({ finishCommand });
 
-    const startDefaultTool = vi.spyOn(IModelApp.toolAdmin, "startDefaultTool").mockImplementation(async () => {
-      (IModelApp.toolAdmin as any)._primitiveTool = replacementTool;
-    });
+    const startPrimitiveTool = vi.spyOn(IModelApp.toolAdmin, "startPrimitiveTool");
 
     IModelApp.viewManager.dropViewport(firstViewport, false);
     using reopenedViewport = openBlankViewport({ width: 30, height: 30 });
     IModelApp.viewManager.addViewport(reopenedViewport);
 
-    expect(startDefaultTool).toHaveBeenCalledOnce();
-    expect((IModelApp.toolAdmin as any)._primitiveTool).toBe(replacementTool);
+    expect(oldTool.onCleanup).toHaveBeenCalledOnce();
+    expect(finishCommand).toHaveBeenCalledOnce();
 
     releaseCleanup?.();
     await IModelApp.viewManager.waitForSelectedViewportChange();
+    await startPrimitiveTool.mock.results[0].value;
 
-    expect((IModelApp.toolAdmin as any)._primitiveTool).toBe(replacementTool);
+    expect(oldTool.onCleanup).toHaveBeenCalledOnce();
+    expect(finishCommand).toHaveBeenCalledOnce();
   });
 });

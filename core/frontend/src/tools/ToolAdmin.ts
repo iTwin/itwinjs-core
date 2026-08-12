@@ -1852,6 +1852,7 @@ export class ToolAdmin {
 
   private async setPrimitiveToolInternal(newTool?: PrimitiveTool, pendingFinishCommand?: Promise<string>) {
     const oldTool = this._primitiveTool;
+    let ownsOldTool = undefined === oldTool;
     if (undefined !== oldTool) {
       let mainError: Error | undefined;
       try {
@@ -1873,7 +1874,8 @@ export class ToolAdmin {
           Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, err);
       } finally {
         // Force-clear stale tool state if either onCleanup or finishCommand failed...
-        if (this._primitiveTool === oldTool)
+        ownsOldTool = this._primitiveTool === oldTool;
+        if (ownsOldTool)
           this._primitiveTool = undefined;
       }
 
@@ -1881,21 +1883,21 @@ export class ToolAdmin {
         throw mainError;
     }
     // Do not let a delayed transition overwrite a tool installed by a newer transition.
-    if (undefined === oldTool || this._primitiveTool === oldTool)
+    if (ownsOldTool)
       this._primitiveTool = newTool;
   }
 
-  // serialize concurrent starts to avoid two tools installing simultaneously.
-  private _primitiveToolStarting?: Promise<void>;
+  // Serialize primitive starts and last-viewport cleanup to avoid overlapping transitions.
+  private _primitiveToolTransition?: Promise<void>;
 
   /** @internal */
   public async startPrimitiveTool(newTool?: PrimitiveTool) {
     // If another start is in progress wait for it to finish before proceeding.
-    while (undefined !== this._primitiveToolStarting)
-      await this._primitiveToolStarting;
+    while (undefined !== this._primitiveToolTransition)
+      await this._primitiveToolTransition;
 
-    let resolveStarting: (() => void) | undefined;
-    this._primitiveToolStarting = new Promise<void>((r) => { resolveStarting = r; });
+    let resolveTransition: (() => void) | undefined;
+    const transition = this._primitiveToolTransition = new Promise<void>((resolve) => { resolveTransition = resolve; });
 
     try {
       IModelApp.notifications.outputPrompt("");
@@ -1929,9 +1931,9 @@ export class ToolAdmin {
         return;
       this.onActiveToolChanged(activeTool, StartOrResume.Start);
     } finally {
-      if (resolveStarting)
-        resolveStarting();
-      this._primitiveToolStarting = undefined;
+      resolveTransition?.();
+      if (this._primitiveToolTransition === transition)
+        this._primitiveToolTransition = undefined;
     }
   }
 
@@ -2223,6 +2225,9 @@ export class ToolAdmin {
   /** @internal */
   public async callOnCleanup() {
     let pendingFinishCommand: Promise<string> | undefined;
+    const previousTransition = this._primitiveToolTransition;
+    let resolveTransition: (() => void) | undefined;
+    const transition = this._primitiveToolTransition = new Promise<void>((resolve) => { resolveTransition = resolve; });
     try {
       // Start the edit-command cleanup before the first await. ViewManager can invoke this method
       // without awaiting it when the last viewport is dropped.
@@ -2234,6 +2239,9 @@ export class ToolAdmin {
           return "";
         });
       }
+
+      if (undefined !== previousTransition)
+        await previousTransition;
 
       if (undefined !== this._viewTool)
         await this.exitViewTool();
@@ -2247,6 +2255,10 @@ export class ToolAdmin {
         await pendingFinishCommand;
     } catch (err) {
       Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, err);
+    } finally {
+      resolveTransition?.();
+      if (this._primitiveToolTransition === transition)
+        this._primitiveToolTransition = undefined;
     }
   }
 }

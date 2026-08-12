@@ -468,4 +468,18 @@ describe("callOnCleanup edit command cleanup", () => {
 
     expect((toolAdmin as any)._primitiveTool).toBe(replacementTool);
   });
+
+  it("installs replacement primitive tool after cleaning up old tool", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const oldTool = { onCleanup: vi.fn(async () => { }) };
+    const replacementTool = { onCleanup: vi.fn(async () => { }) };
+    (toolAdmin as any)._primitiveTool = oldTool;
+
+    await toolAdmin.setPrimitiveTool(replacementTool as any);
+
+    expect(oldTool.onCleanup).toHaveBeenCalledOnce();
+    expect((toolAdmin as any)._primitiveTool).toBe(replacementTool);
+  });
 });
