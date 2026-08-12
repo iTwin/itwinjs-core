@@ -8,7 +8,8 @@ publish: false
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
-  - [@itwin/core-geometry](#itwincore-geometry)
+    - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
+  - [@itwin/geometry](#itwingeometry)
     - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
 
 ## @itwin/core-backend
@@ -48,6 +49,51 @@ Use this method for batch processing, such as exporters and transformers, where 
 The options support the same polymorphic `aspectClassFullName` filter as `getAspects`, exact class exclusions, and owner-grouped results. Set `usePrimaryConn` when the query must include uncommitted aspects from an active edit transaction.
 
 [[include:CoreBackend.IModelDb.QueryAspects]]
+
+### Quantity formatting for text annotation fields
+
+[FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value can now be rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation. Field-level formatting is configured via a new [QuantityFieldFormatOptions]($common) block on [FieldFormatOptions]($common):
+
+```typescript
+const fieldRun = FieldRun.create({
+  propertyHost: { elementId, schemaName: "MyDomain", className: "Widget" },
+  propertyPath: { propertyName: "length" },
+  formatOptions: {
+    quantity: {
+      // Look up a specific KindOfQuantity via the active FormatsProvider, overriding
+      // the property's own KoQ.
+      kindOfQuantity: "AecUnits.LENGTH",
+    },
+  },
+});
+```
+
+A format is resolved in this priority order:
+
+1. `formatOptions.quantity.kindOfQuantity` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
+2. The property's own [KindOfQuantity]($ecschema-metadata).
+3. For `"coordinate"` only, a built-in meters fallback.
+
+Because [FormatterSpec]($core-quantity) creation is asynchronous, quantity formatting is only applied when a field is evaluated through the new async entry point [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend):
+
+```typescript
+const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel, block });
+```
+
+Applications that own a [FormatsProvider]($core-quantity) (for example a FormatSet-backed provider from Drawing Production) can route formatting through it by supplying [FieldFormattingProviders]($backend):
+
+```typescript
+const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+  iModel,
+  block,
+  formatting: {
+    formatsProvider: myFormatsProvider, // e.g. Drawing Production's FormatSet-backed provider
+    // unitsProvider omitted -> defaults to the iModel's schema-backed units provider
+  },
+});
+```
+
+The existing synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks continue to render `"quantity"` and `"coordinate"` fields as their raw string representation for backward compatibility. Applications that want formatted quantity output for text annotations should migrate their evaluation calls to the async variant.
 
 ## @itwin/geometry
 
