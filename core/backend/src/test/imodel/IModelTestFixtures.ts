@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DbResult, IModelStatus } from "@itwin/core-bentley";
 import { EntityProps, IModelError } from "@itwin/core-common";
-import { Entity, SnapshotDb } from "../../core-backend";
+import { Entity, IModelDb, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -85,7 +85,7 @@ export async function openReadonlySeedCopy(targetFileName: string, seedAssetName
 }
 
 /** Close each provided database that is still open. Guards against `undefined` and already-closed handles. */
-export function closeIfOpen(...dbs: Array<SnapshotDb | undefined>): void {
+export function closeIfOpen(...dbs: Array<IModelDb | undefined>): void {
   for (const db of dbs) {
     if (db !== undefined && db.isOpen)
       db.close();
@@ -101,10 +101,10 @@ export function closeIfOpen(...dbs: Array<SnapshotDb | undefined>): void {
  * safe to call from both hooks.
  */
 export function createMutableIModelTracker(): {
-  trackMutableIModel: <T extends SnapshotDb>(imodel: T) => T;
+  trackMutableIModel: <T extends IModelDb>(imodel: T) => T;
   closeTrackedIModels: () => void;
 } {
-  const tracked: SnapshotDb[] = [];
+  const tracked: IModelDb[] = [];
   return {
     trackMutableIModel: (imodel) => {
       tracked.push(imodel);
