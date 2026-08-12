@@ -4128,6 +4128,8 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
+    // @internal (undocumented)
+    initializeSharedElementReservations(): Promise<void>;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
     // @beta
@@ -4192,6 +4194,10 @@ export abstract class IModelDb extends IModel {
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
     requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
+    // @beta
+    get reservations(): SynchronousChannel.Reservations;
+    // @internal (undocumented)
+    protected _reservations?: SynchronousChannel.Reservations;
     // @internal (undocumented)
     restartDefaultTxn(): void;
     // @internal (undocumented)
@@ -4729,6 +4735,8 @@ export interface InlineGeometryPartsResult {
 export interface InsertElementOptions {
     // @beta
     forceUseId?: boolean;
+    // @internal
+    skipReservationCheck?: boolean;
 }
 
 // @beta
@@ -5598,6 +5606,7 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
 
 // @beta
 export interface OnElementPropsArg extends OnElementArg {
+    options?: InsertElementOptions;
     props: ElementProps;
 }
 
@@ -6330,14 +6339,48 @@ export class Schemas {
 
 // @internal (undocumented)
 export namespace SchemaSync {
-    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb, ReadMethods, WriteMethods> {
         constructor(props: CloudSqlite.ContainerAccessProps);
         // (undocumented)
         getUri(): string;
         static initializeDb(props: CloudSqlite.ContainerProps): Promise<void>;
     }
+    export interface ProposedElementReservation {
+        // (undocumented)
+        readonly code: Code;
+        // (undocumented)
+        readonly ecClassId: Id64String;
+        // (undocumented)
+        readonly federationGuid: GuidString;
+        // (undocumented)
+        readonly isCategory?: boolean;
+    }
+    // (undocumented)
+    export interface ReadMethods {
+        findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
+    }
+    export interface ReservedElement extends ProposedElementReservation {
+        // (undocumented)
+        readonly elementId: Id64String;
+    }
+    export class SchemaSyncDb extends VersionedSqliteDb implements ReadMethods, WriteMethods {
+        // (undocumented)
+        protected createDDL(): void;
+        // (undocumented)
+        findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
+        // (undocumented)
+        readonly myVersion = "4.1.0";
+        // (undocumented)
+        openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
+        // (undocumented)
+        reserveElements(elements: ProposedElementReservation[]): Promise<void>;
+    }
     const // (undocumented)
     setTestCache: (iModel: IModelDb, cacheName?: string) => void;
+    const // (undocumented)
+    getCloudAccess: (arg: IModelDb | {
+        readonly fileName: LocalFileName;
+    }) => Promise<CloudAccess>;
     const // (undocumented)
     withLockedAccess: (iModel: IModelDb | {
         readonly fileName: LocalFileName;
@@ -6359,11 +6402,9 @@ export namespace SchemaSync {
         containerProps: CloudSqlite.ContainerProps;
         overrideContainer?: boolean;
     }) => Promise<void>;
-    export class SchemaSyncDb extends VersionedSqliteDb {
-        // (undocumented)
-        protected createDDL(): void;
-        // (undocumented)
-        readonly myVersion = "4.0.0";
+    // (undocumented)
+    export interface WriteMethods {
+        reserveElements(identities: ProposedElementReservation[]): Promise<void>;
     }
 }
 
@@ -7353,6 +7394,29 @@ export class SynchronizationConfigProcessesSources extends ElementRefersToElemen
 export class SynchronizationConfigSpecifiesRootSources extends SynchronizationConfigProcessesSources {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export namespace SynchronousChannel {
+    export interface Reservations {
+        // @internal
+        [_close]: () => void;
+        // @internal (undocumented)
+        readonly [_implementationProhibited]: unknown;
+        // @internal
+        [_onReservedElementInsert]: (arg: OnElementPropsArg) => void;
+        // @internal
+        readonly isServerBased: boolean;
+        needsElementReservation(federationGuid: GuidString): boolean;
+        reserveElements(args: ReserveElementsArgs): Promise<void>;
+    }
+    export interface ReserveElementsArgs {
+        elements: Iterable<{
+            federationGuid: GuidString;
+            classFullName: string;
+            code?: CodeProps;
+        }>;
+    }
 }
 
 // @beta (undocumented)

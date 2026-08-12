@@ -2491,6 +2491,7 @@ describe("iModel", () => {
       setIModelDb: () => { },
       closeFile: () => { },
       clearECDbCache: () => { },
+      schemaSyncEnabled: () => false,
     };
 
     const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
