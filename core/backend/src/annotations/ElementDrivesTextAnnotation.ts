@@ -99,28 +99,23 @@ export interface EvaluateFieldsArgs {
   iModel: IModelDb;
 }
 
-/** Application-supplied providers used to format `"quantity"` and `"coordinate"` [FieldRun]($common)s.
- * Any omitted provider defaults to a schema-backed implementation derived from
- * [[EvaluateFieldsArgs.iModel]]'s schema context. Hosts that own a
- * [FormattingSpecProvider]($core-quantity) backed by an adopted FormatSet supply it here to route
- * FieldRun formatting through their own provider.
- * @beta
- */
-export interface FieldFormattingProviders {
-  /** Resolves a [FormatProps]($core-quantity) by KindOfQuantity name. */
-  formatsProvider?: FormatsProvider;
-  /** Resolves [UnitProps]($core-quantity) (e.g. a value's persistence unit). */
-  unitsProvider?: UnitsProvider;
-}
-
 /** Arguments supplied to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]].
+ *
+ * When omitted, [[formatsProvider]] and [[unitsProvider]] default to schema-backed
+ * implementations derived from [[iModel]]'s schema context. Hosts that own a
+ * [FormattingSpecProvider]($core-quantity) backed by an adopted FormatSet supply their own
+ * providers here to route FieldRun formatting through them.
  * @beta
  */
 export interface EvaluateFieldsAsyncArgs extends EvaluateFieldsArgs {
-  /** Providers used to format `"quantity"` and `"coordinate"` [FieldRun]($common)s. When
-   * omitted, a schema-backed default is built from [[iModel]].
+  /** Resolves a [FormatProps]($core-quantity) by KindOfQuantity name. Defaults to a
+   * [SchemaFormatsProvider]($ecschema-metadata) built from [[iModel]].
    */
-  formatting?: FieldFormattingProviders;
+  formatsProvider?: FormatsProvider;
+  /** Resolves [UnitProps]($core-quantity) (e.g. a value's persistence unit). Defaults to a
+   * [SchemaUnitProvider]($ecschema-metadata)-backed implementation built from [[iModel]].
+   */
+  unitsProvider?: UnitsProvider;
 }
 
 /** A relationship in which the source element hosts one or more properties that are displayed by a target [[ITextAnnotation]] element.
@@ -266,8 +261,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *
    * By default the [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity) are
    * derived from `args.iModel`'s schema context (via [SchemaFormatsProvider]($ecschema-metadata)).
-   * Supply [[EvaluateFieldsAsyncArgs.formatting]] to route formatting through an
-   * application-owned provider (e.g. a FormatSet-backed [FormattingSpecProvider]($core-quantity)).
+   * Supply [[EvaluateFieldsAsyncArgs.formatsProvider]] / [[EvaluateFieldsAsyncArgs.unitsProvider]]
+   * to route formatting through an application-owned provider (e.g. a FormatSet-backed
+   * [FormattingSpecProvider]($core-quantity)).
    *
    * For each `"quantity"` or `"coordinate"` field the format is resolved in this priority
    * order (see [QuantityFieldFormatOptions]($common) for the full contract):
@@ -281,7 +277,10 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    */
   public static async evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number> {
     const context = createUpdateContext(undefined, args.iModel, false, undefined);
-    const formatter = createFieldFormatterContext(args.iModel, args.formatting);
+    const formatter = createFieldFormatterContext(args.iModel, {
+      formatsProvider: args.formatsProvider,
+      unitsProvider: args.unitsProvider,
+    });
     return updateFieldsAsync(args.block, context, formatter);
   }
 

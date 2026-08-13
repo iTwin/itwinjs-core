@@ -210,10 +210,8 @@ class DisplayTestAppRpc extends DtaRpcInterface {
       await ElementDrivesTextAnnotation.evaluateFieldsAsync({
         block: textBlock,
         iModel,
-        formatting: {
-          formatsProvider: demo.formatsProvider,
-          unitsProvider: demo.unitsProvider,
-        },
+        formatsProvider: demo.formatsProvider,
+        unitsProvider: demo.unitsProvider,
       });
     } else {
       await ElementDrivesTextAnnotation.evaluateFieldsAsync({ block: textBlock, iModel });
