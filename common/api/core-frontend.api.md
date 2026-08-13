@@ -13213,6 +13213,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     protected updateRenderToScreen(): void;
     // @internal (undocumented)
     validateViewportScenes(): void;
+    // @internal (undocumented)
+    waitForSelectedViewportChange(): Promise<void>;
     // (undocumented)
     get walkCursor(): string;
     // (undocumented)
