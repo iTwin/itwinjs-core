@@ -636,7 +636,7 @@ describe("Full Schema Deserialization", () => {
 
       const context = new SchemaContext();
       let testSchema = new Schema(context);
-      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor as unknown as ISchemaPartVisitor);
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).toBeDefined();
       expect(mockVisitor!.visitEmptySchema).toHaveBeenCalledOnce();
@@ -695,7 +695,7 @@ describe("Full Schema Deserialization", () => {
 
       const context = new SchemaContext();
       let testSchema = new Schema(context);
-      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor as unknown as ISchemaPartVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).toBeDefined();
@@ -742,7 +742,7 @@ describe("Full Schema Deserialization", () => {
 
       const context = new SchemaContext();
       let testSchema = new Schema(context);
-      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor as unknown as ISchemaPartVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).toBeDefined();
@@ -811,7 +811,7 @@ describe("Full Schema Deserialization", () => {
 
       const context = new SchemaContext();
       let testSchema = new Schema(context);
-      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor as unknown as ISchemaPartVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).toBeDefined();
@@ -880,7 +880,7 @@ describe("Full Schema Deserialization", () => {
 
       const context = new SchemaContext();
       let testSchema = new Schema(context);
-      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, context, mockVisitor as unknown as ISchemaPartVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).toBeDefined();

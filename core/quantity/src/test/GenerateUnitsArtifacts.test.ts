@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import unitsSchema from "../assets/Units.json";
 import { basicUnitConversionData } from "../internal/BasicUnitConversions.generated";
@@ -12,7 +14,9 @@ import {
   buildGeneratedDefaultPersistenceModule,
   buildGeneratedUnitsModule,
   buildSerializedUnitsJson,
+  formatGeneratedNumber,
 } from "../../scripts/generatedModuleBuilders";
+import { generatedArtifactRelativePaths, generateUnitsArtifacts } from "../../scripts/generateUnitsJson";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sourceUnitsSchema = require("@bentley/units-schema/Units.ecschema.json") as typeof unitsSchema;
@@ -97,6 +101,22 @@ describe("Generated Units artifacts", () => {
     expect(rebuiltUnitsJson).toBe(`${JSON.stringify(unitsSchema, null, 2)}\n`);
   });
 
+  it("canonicalizes generated conversion values that drift across Node runtimes", () => {
+    const generatedSource = buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys);
+
+    expect(generatedSource).toContain('"Units.AT": ["Units.PRESSURE", 0.0000101971621297793, 0]');
+    expect(generatedSource).toContain('"Units.AT_GAUGE": ["Units.PRESSURE", 0.0000101971621297793, -1.03322745279989]');
+    expect(generatedSource).toContain('"Units.FT_TO_THE_FOURTH": ["Units.AREA_MOMENT_INERTIA", 115.861767458952, 0]');
+    expect(generatedSource).toContain('"Units.NG": ["Units.MASS", 1000000000000, 0]');
+    expect(generatedSource).toContain('"Units.N_CM_PER_SQ_CM": ["Units.AREA_TORQUE", 0.01, 0]');
+    expect(generatedSource).toContain('"Units.NMOL_PER_CUB_DM": ["Units.MOLAR_CONCENTRATION", 1000000, 0]');
+    expect(generatedSource).toContain('"Units.PER_FT": ["Units.LINEAR_RATE", 0.3048, 0]');
+  });
+
+  it("preserves finite values when canonicalization would overflow on reparse", () => {
+    expect(formatGeneratedNumber(Number.MAX_VALUE)).toBe(String(Number.MAX_VALUE));
+  });
+
   it("rebuilds the checked-in basic conversion artifact exactly from Units.json", () => {
     expect(normalizeLineEndings(buildGeneratedBasicConversionModule(unitsSchema, assertUniqueGeneratedKeys))).toBe(normalizeLineEndings(generatedBasicConversionsSource));
   });
@@ -105,17 +125,50 @@ describe("Generated Units artifacts", () => {
     const invalidSchema = JSON.parse(JSON.stringify(unitsSchema)) as typeof unitsSchema;
     (invalidSchema.items as Record<string, unknown>).FT = { ...invalidSchema.items.FT, numerator: 0 };
 
-    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrowError(/Invalid numerator for "FT"/);
+    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrow(/Invalid numerator for "FT"/);
   });
 
   it("fails generation when a unit denominator is zero", () => {
     const invalidSchema = JSON.parse(JSON.stringify(unitsSchema)) as typeof unitsSchema;
     (invalidSchema.items as Record<string, unknown>).FT = { ...invalidSchema.items.FT, denominator: 0 };
 
-    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrowError(/Invalid denominator for "FT"/);
+    expect(() => buildGeneratedBasicConversionModule(invalidSchema, assertUniqueGeneratedKeys)).toThrow(/Invalid denominator for "FT"/);
   });
 
   it("rebuilds the checked-in default persistence artifact exactly from Units.json", () => {
     expect(normalizeLineEndings(buildGeneratedDefaultPersistenceModule(unitsSchema, assertUniqueGeneratedKeys))).toBe(normalizeLineEndings(generatedDefaultPersistenceSource));
+  });
+
+  it("generates the tracked artifacts exactly into a temporary destination", () => {
+    const destinationRoot = mkdtempSync(join(tmpdir(), "core-quantity-generated-"));
+
+    try {
+      const result = generateUnitsArtifacts(destinationRoot);
+
+      const generatedArtifactPaths = Object.fromEntries(
+        Object.entries(generatedArtifactRelativePaths).map(([artifactName, relativePath]) => [artifactName, join(destinationRoot, relativePath)]),
+      ) as { [key in keyof typeof generatedArtifactRelativePaths]: string };
+
+      expect(result.anyChanged).toBe(true);
+      expect(result.destinationRoot).toBe(resolve(destinationRoot));
+      expect(result.schemaVersion).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(readFileSync(generatedArtifactPaths.unitsJson, "utf8")).toBe(`${JSON.stringify(unitsSchema, null, 2)}\n`);
+      expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.generatedTs, "utf8"))).toBe(normalizeLineEndings(generatedIdentifiersSource));
+      expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.basicConversionTs, "utf8"))).toBe(normalizeLineEndings(generatedBasicConversionsSource));
+      expect(normalizeLineEndings(readFileSync(generatedArtifactPaths.defaultPersistenceTs, "utf8"))).toBe(normalizeLineEndings(generatedDefaultPersistenceSource));
+    } finally {
+      rmSync(destinationRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("does not rewrite unchanged artifacts when rerun in the same destination", () => {
+    const destinationRoot = mkdtempSync(join(tmpdir(), "core-quantity-generated-"));
+
+    try {
+      expect(generateUnitsArtifacts(destinationRoot).anyChanged).toBe(true);
+      expect(generateUnitsArtifacts(destinationRoot).anyChanged).toBe(false);
+    } finally {
+      rmSync(destinationRoot, { recursive: true, force: true });
+    }
   });
 });

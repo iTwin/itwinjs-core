@@ -179,6 +179,7 @@ export default defineConfig(() => {
         "@itwin/core-common", //prevents rpc errors
       ],
       esbuildOptions: {
+        target: "es2022", // allow modern syntax (e.g. typed-array destructuring in flatbush) during dep pre-bundling
         plugins: [
           {
             name: "externalize-electron",

@@ -1,6 +1,56 @@
 # Change Log - @itwin/editor-common
 
-This log was last generated on Wed, 03 Jun 2026 20:21:39 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Aug 2026 20:40:09 GMT and should not be manually modified.
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+_Version update only_
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:46 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+_Version update only_
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+_Version update only_
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
 
 ## 5.10.0
 Wed, 03 Jun 2026 20:19:46 GMT

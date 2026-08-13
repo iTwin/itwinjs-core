@@ -57,7 +57,6 @@ export class BaseFormat {
     set azimuthBase(azimuthBase: number | undefined);
     // (undocumented)
     protected _azimuthBase?: number;
-    // (undocumented)
     get azimuthBaseUnit(): UnitProps | undefined;
     set azimuthBaseUnit(azimuthBaseUnit: UnitProps | undefined);
     // (undocumented)
@@ -115,7 +114,6 @@ export class BaseFormat {
     set ratioType(ratioType: RatioType | undefined);
     // (undocumented)
     protected _ratioType?: RatioType;
-    // (undocumented)
     get revolutionUnit(): UnitProps | undefined;
     set revolutionUnit(revolutionUnit: UnitProps | undefined);
     // (undocumented)
@@ -374,6 +372,8 @@ export const formatStringRgx: RegExp;
 // @beta
 export class Formatter {
     static formatQuantity(magnitude: number, spec: FormatterSpec): string;
+    // @internal
+    static normalizeToAzimuth(magnitude: number, phenomenon: string, revolution: number): number;
 }
 
 // @beta
@@ -1551,7 +1551,9 @@ export const Units: {
         readonly PROBABILITY_PERCENT: "Units.PROBABILITY_PERCENT";
     };
     readonly ROTATIONAL_SPRING_CONSTANT: {
+        readonly KN_M_PER_DEG: "Units.KN_M_PER_DEG";
         readonly KN_M_PER_RAD: "Units.KN_M_PER_RAD";
+        readonly KPF_FT_PER_DEG: "Units.KPF_FT_PER_DEG";
         readonly KPF_FT_PER_RAD: "Units.KPF_FT_PER_RAD";
         readonly N_M_PER_DEG: "Units.N_M_PER_DEG";
         readonly N_M_PER_RAD: "Units.N_M_PER_RAD";

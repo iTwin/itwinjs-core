@@ -164,7 +164,7 @@ describe("ECDb", () => {
         alias: "source",
         fileName: path.join(outDir, "source_file.ecdb"),
         profile: "SQLite"
-      }
+      },
     ]);
     testECDb1.detachDb("source");
     expect(await runDbListPragmaCCQ(testECDb1)).deep.equals([

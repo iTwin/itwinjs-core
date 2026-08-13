@@ -55,9 +55,9 @@ jobs:
         path: itwinjs-core
         clean: true
       - task: UseNode@1
-        displayName: Use Node 24.15.0
+        displayName: Use Node 24.x
         inputs:
-          version: 24.15.0
+          version: 24.x
           checkLatest: false
       - script: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
@@ -88,12 +88,10 @@ jobs:
           archiveTag=""
 
           # Add conditions here for branches that should produce archives
-          # For example, 'refs/heads/release/4.11.x' should be archived as 'v4':
-
-          if [[ $branchName == "refs/heads/release/4.11.x" ]]; then
-            echo "matches branch name"
-            archiveTag="v4"
-          fi
+          # For example, 'refs/heads/release/5.10.x' should be archived as 'v5':
+          # if [[ $branchName == "refs/heads/release/5.10.x" ]]; then
+          #   archiveTag="v5"
+          # fi
 
           if [[ -n "$archiveTag" ]]; then
             echo "Adding output variable $archiveTag"

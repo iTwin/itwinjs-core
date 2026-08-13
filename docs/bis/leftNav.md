@@ -135,6 +135,7 @@ defaultState: activeOpen
 - [Overview](./ec/index.md)
 - [ECSchema](./ec/ec-schema.md)
 - [ECSchema XML](./ec/ec-schema-xml.md)
+- [ECSchema JSON](./ec/ec-schema-json.md)
 - [EC Schema Validation](./ec/ec-schema-validation.md)
 - [ECClass](./ec/ec-class.md)
 - [ECEntityClass](./ec/ec-entity-class.md)

@@ -173,7 +173,6 @@ function comparePathToClippedCurves(
           clippedPath = clippedPath.children[0];
       }
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPath, 0, dy);
-      ck.testTrue(clippedPath instanceof CurvePrimitive, `clippedCurves[${i}] should be a CurvePrimitive`);
       const momentData = RegionOps.computeXYZWireMomentSums(clippedPath);
       if (ck.testDefined(momentData)) {
         const length = momentData.quantitySum;
@@ -874,8 +873,7 @@ describe("Voronoi", () => {
       for (const clipper of clippers)
         clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipper)); // use path to avoid region clip logic
 
-      // TODO: Restore this line after backlog issues 1580 and 1694 are addressed.
-      // comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+      comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "LoopFromJson0");
     expect(ck.getNumErrors()).toBe(0);
@@ -924,8 +922,7 @@ describe("Voronoi", () => {
       for (const clipper of clippers)
         clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipper));
 
-      // TODO: Restore this line after backlog issues 1580 and 1694 are addressed.
-      // comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+      comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson2");
     expect(ck.getNumErrors()).toBe(0);

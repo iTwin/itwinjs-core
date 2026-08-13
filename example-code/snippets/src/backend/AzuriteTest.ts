@@ -188,6 +188,7 @@ export namespace AzuriteTest {
           label: md.label ?? "",
           description: md.description,
           containerType: md.containertype ?? "",
+          iTwinId: md.itwinid ?? args.iTwinId,
         });
       }
       return results;

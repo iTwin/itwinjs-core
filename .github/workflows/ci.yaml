@@ -148,14 +148,22 @@ jobs:
         continue-on-error: true
         run: node common/scripts/install-run-rush.js extract-api --only @itwin/cesium-renderer
 
-      - name: Assert no uncommitted changes to generated extension files
-        id: ext_drift
+      - name: rush generate-artifacts
+        if: ${{ steps.extract_api.outcome == 'success' }}
+        id: generate_artifacts
+        continue-on-error: true
+        run: node common/scripts/install-run-rush.js generate-artifacts
+
+      - name: Assert no uncommitted changes after generation
+        if: ${{ steps.extract_api.outcome == 'success' }}
+        id: generated_drift
         continue-on-error: true
         shell: bash
         run: |
-          if [ -n "$(git status --porcelain core/extension/index.d.ts core/extension/index.js core/frontend/src/extension/ExtensionRuntime.ts)" ]; then
-            echo "The following generated extension files are out of date:"
-            git diff core/extension/index.d.ts core/extension/index.js core/frontend/src/extension/ExtensionRuntime.ts
+          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+            echo "The following generated files are out of date:"
+            git status --short --untracked-files=no
+            git diff
             exit 1
           fi
 
@@ -176,8 +184,12 @@ jobs:
             echo "::error::rush extract-api failed for @itwin/cesium-renderer — run 'rush extract-api --only @itwin/cesium-renderer' locally and commit the changed common/api/cesium-renderer.api.md"
             FAILED=1
           fi
-          if [ "${{ steps.ext_drift.outcome }}" = "failure" ]; then
-            echo "::error::Generated extension files are out of date — run 'rush extract-api' locally and commit core/extension/index.d.ts, core/extension/index.js, and core/frontend/src/extension/ExtensionRuntime.ts"
+          if [ "${{ steps.generate_artifacts.outcome }}" = "failure" ]; then
+            echo "::error::rush generate-artifacts failed — run 'rush generate-artifacts' locally, fix any errors, and commit any resulting tracked artifact changes"
+            FAILED=1
+          fi
+          if [ "${{ steps.generated_drift.outcome }}" = "failure" ]; then
+            echo "::error::Generated files are out of date — run 'rush generate-artifacts' for quantity artifacts or 'rush extract-api' for extension files, then commit any resulting tracked file changes"
             FAILED=1
           fi
           exit $FAILED

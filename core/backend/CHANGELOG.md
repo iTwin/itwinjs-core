@@ -1,6 +1,84 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 03 Jun 2026 20:21:39 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Aug 2026 20:40:09 GMT and should not be manually modified.
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+### Updates
+
+- fix: Workspace.getWorkspaceDb to reuse a pre-supplied accessToken instead of always requesting a new one
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Add internal applyChangeset (and test-support startChangeTracking/executeDdl/createChangeset) API to SQLiteDb.
+- Unskipped previously mark flaky test
+- Stopped using deprecated QueryRowFormat.UseJsPropertyNames in IModelDb ECSQL queries.
+- Fixed queryEntityIds and ViewStore selector queries throwing on undefined/null binding values.
+- Add preserveExtends option to getResolvedSettingDef
+- Use a documented GetResolvedSettingDefOptions interface for getResolvedSettingDef options
+- Added IpcHost.invoke and makeIpcProxy for backend-to-frontend IPC calls.
+- Add filtering support to SchemaView and improve performance.
+- Added caching behaviour to ChangesetReader api
+- Changed error codes for "createQueryReader" and "withQueryReader" api and made error messages consistent across the native node add-on apis for the case of db being closed
+- Restore ECSQL statement caching in the synchronous withQueryReader path: ECSqlRowExecutor now reuses a prepared statement from the owning db's statement cache instead of re-compiling the ECSQL on every call, fixing a per-element performance regression.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+### Updates
+
+- Add preserveExtends option to getResolvedSettingDef
+- Use a documented GetResolvedSettingDefOptions interface for getResolvedSettingDef options
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Fixed silent loss of CodeValue swaps when applying a changeset containing a single-transaction swap through a null intermediate; the unique-index conflict handler no longer skips the intermediate step during changeset application
+- Added regression coverage that the deprecated `doNotUsePrimaryConnToPrepare` concurrent query config option is a no-op that still round-trips for backward-compatible serialization.
+- Add EditTxn.changeElementParent and EditTxn.changeElementModel; add ElementError namespace.
+- Add performance test for concurrent query
+- Use `CompressedId64Set.isValid` in `DisplayStyle.deserialize` instead of an inline heuristic.
+- IModelHost.getITwinWorkspace() automatically gets settings for parent iTwins and treats those as a lower priority
+- Fix offline workspace open in Electron: CloudSqlite.requestToken returns an empty token if we are offline; NativeHost.overrideInternetConnectivity now calls setOnlineStatus for Electron backends (not just Mobile) so checkForChanges is correctly skipped when offline.
+- Document that an empty workspace baseUri uses a local WorkspaceDb.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+### Updates
+
+- Fix offline workspace open in Electron: CloudSqlite.requestToken returns an empty token if we are offline; NativeHost.overrideInternetConnectivity now calls setOnlineStatus for Electron backends (not just Mobile) so checkForChanges is correctly skipped when offline.
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+_Version update only_
 
 ## 5.10.0
 Wed, 03 Jun 2026 20:19:46 GMT

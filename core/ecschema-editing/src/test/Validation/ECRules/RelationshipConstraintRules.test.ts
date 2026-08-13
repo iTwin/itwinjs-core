@@ -226,4 +226,111 @@ describe("RelationshipConstraintRule tests", () => {
       }
     });
   });
+
+  describe("nonPolymorphicConstraintMustBeConcrete", () => {
+    it("non-polymorphic constraint references concrete classes only, rule passes", async () => {
+      const sourceConstraints = {
+        constraintClasses: ["TestSchema.SDE1"],
+      };
+      const targetConstraints = {
+        constraintClasses: ["TestSchema.TDE1"],
+      };
+      const baseJson = createBaseRelationship(false, sourceConstraints, targetConstraints);
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
+      const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
+
+      const sourceResult = Rules.nonPolymorphicConstraintMustBeConcrete(relationship.source);
+      for await (const _diagnostic of sourceResult) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+
+      const targetResult = Rules.nonPolymorphicConstraintMustBeConcrete(relationship.target);
+      for await (const _diagnostic of targetResult) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+
+    it("non-polymorphic source constraint references abstract class, rule violated", async () => {
+      const sourceConstraints = {
+        constraintClasses: ["TestSchema.SBE1"],
+      };
+      const targetConstraints = {
+        constraintClasses: ["TestSchema.TDE1"],
+      };
+      const baseJson = createBaseRelationship(false, sourceConstraints, targetConstraints);
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
+      const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
+
+      const targetResult = Rules.nonPolymorphicConstraintMustBeConcrete(relationship.target);
+      for await (const _diagnostic of targetResult) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+
+      const sourceResult = Rules.nonPolymorphicConstraintMustBeConcrete(relationship.source);
+      let resultHasEntries = false;
+      for await (const diagnostic of sourceResult) {
+        resultHasEntries = true;
+        expect(diagnostic.ecDefinition).to.equal(relationship.source);
+        expect(diagnostic.messageArgs).to.eql(["Source", "TestSchema.BaseRelationship", "TestSchema.SBE1"]);
+        expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.NonPolymorphicConstraintMustBeConcrete);
+        expect(diagnostic.diagnosticType).to.equal(DiagnosticType.RelationshipConstraint);
+        break;
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("non-polymorphic target constraint references abstract class, rule violated", async () => {
+      const sourceConstraints = {
+        constraintClasses: ["TestSchema.SDE1"],
+      };
+      const targetConstraints = {
+        constraintClasses: ["TestSchema.TBE1"],
+      };
+      const baseJson = createBaseRelationship(false, sourceConstraints, targetConstraints);
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
+      const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
+
+      const sourceResult = Rules.nonPolymorphicConstraintMustBeConcrete(relationship.source);
+      for await (const _diagnostic of sourceResult) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+
+      const targetResult = Rules.nonPolymorphicConstraintMustBeConcrete(relationship.target);
+      let resultHasEntries = false;
+      for await (const diagnostic of targetResult) {
+        resultHasEntries = true;
+        expect(diagnostic.ecDefinition).to.equal(relationship.target);
+        expect(diagnostic.messageArgs).to.eql(["Target", "TestSchema.BaseRelationship", "TestSchema.TBE1"]);
+        expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic.code).to.equal(Rules.DiagnosticCodes.NonPolymorphicConstraintMustBeConcrete);
+        expect(diagnostic.diagnosticType).to.equal(DiagnosticType.RelationshipConstraint);
+        break;
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("polymorphic constraint references abstract class, rule passes", async () => {
+      const sourceConstraints = {
+        constraintClasses: ["TestSchema.SBE1"],
+      };
+      const targetConstraints = {
+        constraintClasses: ["TestSchema.TBE1"],
+      };
+      const baseJson = createBaseRelationship(true, sourceConstraints, targetConstraints);
+      schema = await Schema.fromJson(createSchemaJson(baseJson, undefined), new SchemaContext());
+      const relationship = schema.getItemSync("BaseRelationship") as RelationshipClass;
+
+      const sourceResult = Rules.nonPolymorphicConstraintMustBeConcrete(relationship.source);
+      for await (const _diagnostic of sourceResult) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+
+      const targetResult = Rules.nonPolymorphicConstraintMustBeConcrete(relationship.target);
+      for await (const _diagnostic of targetResult) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+
+  });
 });

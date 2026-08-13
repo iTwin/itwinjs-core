@@ -110,6 +110,14 @@ describe("SettingsSchemas", () => {
       expect(nested).to.not.have.property("extends");
       expect(nested?.required).to.have.members(["nestedReq"]);
       expect(nested?.properties).to.include.keys("nestedReq", "nestedBaseOnly", "nestedChildOnly");
+
+      const resolvedPreservingExtends = schemas.getResolvedSettingDef(`${prefix}/thing`, { preserveExtends: true })!;
+      expect(resolvedPreservingExtends.extends).to.equal(`${prefix}/baseThing`);
+      expect(resolvedPreservingExtends.properties?.overridden.type).to.equal("number");
+
+      const nestedPreservingExtends = resolvedPreservingExtends.properties?.nested;
+      expect(nestedPreservingExtends?.extends).to.equal(`${prefix}/nestedBase`);
+      expect(nestedPreservingExtends?.properties).to.include.keys("nestedReq", "nestedBaseOnly", "nestedChildOnly");
     } finally {
       schemas.removeGroup(prefix);
     }

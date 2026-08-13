@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Reduced the mocha-reporter handle-leak detection timeout for non-Chrome Node test runs from 30 to 10 seconds; Chrome remains at 30 seconds.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}
