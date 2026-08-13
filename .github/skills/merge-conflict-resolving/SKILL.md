@@ -220,6 +220,68 @@ Rare in backports but possible when the same code area was modified on both bran
 - Apply the functional change to the release branch's version of the code
 - Do not blindly accept incoming — the release branch may have different surrounding context
 
+## Modify/Delete Conflicts on Refactored-Away Files
+
+Not all conflicts come from Mergify. A long-lived feature branch that **deletes or splits** a file will conflict with every master commit that touches that file, and the conflict **recurs on each merge** until the branch lands.
+
+```
+CONFLICT (modify/delete): core/backend/src/test/imodel/IModel.test.ts
+deleted in HEAD and modified in origin/master.
+```
+
+**Never just re-delete the file.** Git is telling you master added work that would be silently lost. The deletion is usually correct, but the incoming change must be **ported to its new home** first.
+
+### Workflow
+
+1. Identify exactly what master changed — do not read the whole file:
+
+    ```bash
+    base=$(git merge-base HEAD MERGE_HEAD)
+    git log --oneline $base..MERGE_HEAD -- <deleted-file>
+    git show <commit> -- <deleted-file>
+    ```
+
+2. Classify the incoming change and port it:
+
+    | Incoming change | Action |
+    | --- | --- |
+    | New test(s) added | Port into the file that now owns that feature area |
+    | Existing test modified | Apply the same edit to the migrated copy |
+    | Test removed or disabled | Remove/disable the migrated copy |
+
+3. Port faithfully, then adapt to the new file's conventions (shared fixtures, teardown helpers, tracker). Keep the assertions identical — only the fixture plumbing should change.
+
+4. Resolve the deletion and stage the port together:
+
+    ```bash
+    git rm <deleted-file>
+    git add <file-that-received-the-port>
+    ```
+
+5. Verify before committing. **Run the tests, not just the build** — a ported test that compiles can still fail on a stale dependency.
+
+6. Stop and summarize the port for the user before committing — see [Review Gate](#review-gate-modifydelete-conflicts-only). This is the one conflict type that requires review: the whole point is that work could have been silently dropped, and nothing in a green build would reveal it.
+
+7. Once approved, write a merge commit message that records where the change went, so the next person does not think it was dropped.
+
+### Incoming changes often carry dependency bumps
+
+A ported test may depend on a native addon or package version bumped in the same master commit. The symptom is a **confusing assertion failure rather than a dependency error** — for example `expected undefined to equal 2`, because the older BisCore schema lacks a property the new test expects.
+
+Check the manifest against what is installed, then run the Rush update flow:
+
+```bash
+git show <commit> -- core/backend/package.json   # did it bump @bentley/imodeljs-native?
+rush update
+rush build --to @itwin/core-backend
+```
+
+**Avoid:**
+
+- Re-deleting the file without inspecting the incoming diff — this silently drops master's work
+- Porting a test but leaving the accompanying dependency bump uninstalled
+- Assuming a clean build means the port is correct; `tsc` emits on type errors by default
+
 ## Combined Backports
 
 Sometimes Mergify cannot cherry-pick cleanly because multiple related changes need to land together. In this case, combine the changes into a single backport PR.
@@ -243,6 +305,7 @@ When combining:
     - **Rush change files:** Keep both / generate fresh → stage → commit
     - **NextVersion.md:** Check if `X.X.0.md` exists → Scenario A (keep empty, move to `X.X.0.md`) or B (merge both) → stage → commit
     - **CI/config files:** Manual edit favoring release branch → stage → commit
+    - **Modify/delete (file deleted on one side):** Port the incoming change to its new home → stage → **stop for review** (see [Review Gate](#review-gate-modifydelete-conflicts-only))
 
 3. **Check for residual conflict markers:**
 
@@ -252,13 +315,33 @@ When combining:
 
 4. **Verify:** Run `rush build` and ensure CI passes
 
-5. **Commit messages:**
+5. **Commit** — for every conflict type except modify/delete, commit directly using the messages below. If a **modify/delete** conflict was resolved, stop for review first (see [Review Gate](#review-gate-modifydelete-conflicts-only)).
     - Lock files: `"resolve pnpm-lock conflicts"`
     - pnpm-config.json: `"resolve pnpm-config.json conflicts in backport"`
     - Package.json: `"resolve package.json conflicts in backport"`
     - API files: `"regenerate api files after backport"`
     - Documentation: `"merge NextVersion.md from both branches"`
     - Multiple files: `"resolve conflicts"`
+
+## Review Gate: Modify/Delete Conflicts Only
+
+**When a conflict is modify/delete — the file was deleted on one side and modified on the other — stop and ask the user to review before committing.** Every other conflict type can be committed directly once verification passes.
+
+This case alone gets a gate because its worst failure mode is **invisible**: the incoming change is silently dropped, and the result still builds and passes tests. A green verification run proves the code you kept is correct — it proves nothing about the code you discarded. For content conflicts both sides remain visible in the diff, so a reviewer can see what happened; for modify/delete, the discarded work leaves no trace.
+
+Present a summary and wait for explicit approval:
+
+- **What was deleted, and by which side**
+- **What the incoming side changed** — the specific commits and what they added or modified
+- **Where each change was ported** — the new file and location that now owns it
+- **What was dropped, if anything** — call this out explicitly, even when dropping was clearly correct
+- **Verification evidence** — build, lint, and test results, including test counts before and after
+
+Keep the resolution staged but uncommitted while waiting. The tree stays inspectable, `git diff --cached` shows exactly what will land, and `git merge --abort` is still available if the user rejects it.
+
+Only after approval, create the commit and record in the message where the ported work went, so the next person does not think it was lost.
+
+**Exception:** if the user has already stated they want the merge committed without review, honor that. Otherwise, ask — including when the resolution looks trivial. A one-file deletion that quietly discarded a new test looks exactly like a one-file deletion that discarded nothing.
 
 ## Rollback
 
@@ -286,14 +369,17 @@ rush update
 | API signatures | `common/api/*.api.md` | `rush build` + `rush extract-api` | Never manually edit |
 | Rush change files | `common/changes/@itwin/*/` | Keep both or regenerate | Usually unique filenames, rarely conflict |
 | NextVersion.md | `docs/changehistory/NextVersion.md` | See scenarios A/B | If `X.X.0.md` exists: keep empty, move entries to `X.X.0.md`. Otherwise: merge both. |
+| Refactored-away file | any (modify/delete) | Port incoming change to its new home, then `git rm` | Never re-delete blindly; **stop for review before committing**; check for accompanying dependency bumps |
 | CI/config | `.github/workflows/*.yaml` | Manual edit | Favor release branch config |
 
 ## For Automated Agents
 
 - **Check target branch first** — Strategy differs for `master` vs `release/X.X.x`
 - **Mergify uses cherry-pick** — Recovery is `git cherry-pick --continue`, not merge
+- **Not every conflict is a backport** — A feature branch merging `master` uses `git merge`; recovery is `git merge --abort`. Modify/delete conflicts here mean incoming work needs porting, not discarding
 - **Parse structured data** — Extract version fields from package.json programmatically
 - **Always check for conflict markers** — `grep -r "<<<<<<< " .` before committing
 - **Verify after resolution** — Run `rush build`, `rush extract-api`, and check `git diff`
 - **Never commit without testing** — Ensure no syntax errors or breaking changes
+- **Never commit a modify/delete resolution without user approval** — Stage it, summarize what was ported and what was dropped, then wait. Tests cannot detect discarded work. All other conflict types can be committed directly once verification passes
 - **Reference the `cve-remediation` skill** — For understanding pnpm-config.json structure when resolving security backport conflicts
