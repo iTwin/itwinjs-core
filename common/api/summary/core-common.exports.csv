@@ -327,7 +327,6 @@ internal;class;FeatureTableHeader
 beta;type;FieldCase
 beta;interface;FieldFormatOptions
 internal;interface;FieldFormatterContext
-internal;type;FieldFormattingSpecResolver
 internal;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath
@@ -352,7 +351,6 @@ public;enum;FontType
 internal;function;formatFieldValue
 internal;function;formatFieldValueAsync
 internal;function;formatFieldValueWithSpecProvider
-internal;function;formatFieldValueWithSpecResolver
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps

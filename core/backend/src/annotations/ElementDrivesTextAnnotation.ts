@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { FieldFormattingSpecResolver, QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
@@ -34,11 +34,13 @@ import { EditTxn } from "../EditTxn";
 // does not silently pick up a stale provider from a previous session.
 const fieldFormattingProviders = new Map<Id64String, FormattingSpecProvider>();
 
-/** Builds a resolver that looks up a registered provider by the field's `formatSet`. Returns
- * `undefined` when no providers are registered, or when a resolve call cannot match the
- * field's `formatSet` (which puts the sync path onto the raw-string fallback).
+/** Builds a lookup that returns the registered [FormattingSpecProvider]($core-quantity) for a
+ * field's [QuantityFieldFormatOptions.formatSet]($common). Returns `undefined` when no
+ * providers are registered, so callers can short-circuit the whole sync-formatting branch; the
+ * inner function returns `undefined` when the field has no `formatSet` or no registration
+ * matches (which puts the sync path onto the raw-string fallback).
  */
-function createFieldFormattingSpecResolver(): FieldFormattingSpecResolver | undefined {
+function createFieldFormattingProviderLookup(): ((formatSet: string | undefined) => FormattingSpecProvider | undefined) | undefined {
   if (fieldFormattingProviders.size === 0) {
     return undefined;
   }
@@ -167,7 +169,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     if (haveFields) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
-      updateAllFields(annotationElementId, txn, createFieldFormattingSpecResolver());
+      updateAllFields(annotationElementId, txn, createFieldFormattingProviderLookup());
     }
 
     const staleRelationships = new Set<Id64String>();
@@ -205,12 +207,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** @internal */
   public static override onRootChangedArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, false, createFieldFormattingSpecResolver());
+    updateElementFields(arg.props, arg.indirectEditTxn, false, createFieldFormattingProviderLookup());
   }
 
   /** @internal */
   public static override onDeletedDependencyArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, true, createFieldFormattingSpecResolver());
+    updateElementFields(arg.props, arg.indirectEditTxn, true, createFieldFormattingProviderLookup());
   }
 
   /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.
@@ -254,8 +256,8 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @throws Error if evaluation of any field fails.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
-    const resolver = createFieldFormattingSpecResolver();
-    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, resolver))
+    const getProvider = createFieldFormattingProviderLookup();
+    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, getProvider))
   }
 
   /** Async counterpart to [[evaluateFields]] that formats `"quantity"` and `"coordinate"`

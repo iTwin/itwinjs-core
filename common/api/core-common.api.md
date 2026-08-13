@@ -3706,9 +3706,6 @@ export interface FieldFormatterContext {
 }
 
 // @internal
-export type FieldFormattingSpecResolver = (formatSet: string | undefined) => FormattingSpecProvider | undefined;
-
-// @internal
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
 // @beta
@@ -3863,9 +3860,6 @@ export function formatFieldValueAsync(value: FieldValue, options: FieldFormatOpt
 
 // @internal
 export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FormattingSpecProvider): string | undefined;
-
-// @internal
-export function formatFieldValueWithSpecResolver(value: FieldValue, options: FieldFormatOptions | undefined, resolver: FieldFormattingSpecResolver): string | undefined;
 
 // @internal (undocumented)
 export interface FormDataCommon {

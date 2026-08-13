@@ -484,7 +484,7 @@ export class TextDecorationTool extends Tool {
     editor.appendBreak();
     editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
     editor.runStyle.isItalic = true;
-    editor.appendText("Sync path (formatFieldValueWithSpecResolver):");
+    editor.appendText("Sync path (formatFieldValueWithSpecProvider):");
     editor.appendBreak();
     editor.appendText("  • ElementDrivesTextAnnotation.evaluateFields — the public sync API.");
     editor.appendBreak();
@@ -660,7 +660,7 @@ export class TextDecorationTool extends Tool {
     editor.appendBreak();
     editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
     editor.runStyle.isItalic = true;
-    editor.appendText("Sync path (formatFieldValueWithSpecResolver):");
+    editor.appendText("Sync path (formatFieldValueWithSpecProvider):");
     editor.appendBreak();
     editor.appendText("  • ElementDrivesTextAnnotation.evaluateFields — the public sync API.");
     editor.appendBreak();

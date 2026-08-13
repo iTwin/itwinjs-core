@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldFormatterContext, FieldFormattingSpecResolver, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecResolver, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldFormatterContext, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { createUnitsProvider, FormatsProvider, FormattingSpecArgs, UnitsProvider } from "@itwin/core-quantity";
+import { createUnitsProvider, FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -64,13 +64,13 @@ export interface UpdateFieldsContext {
 
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Optional resolver used to select a synchronous [FormattingSpecProvider]($core-quantity) per
-   * [FieldRun]($common). When present, [[updateField]] formats `"quantity"` and `"coordinate"`
-   * values via [[formatFieldValueWithSpecResolver]]; when absent (or when the resolver has no
-   * match for the field's [QuantityFieldFormatOptions.formatSet]($common)) it falls back to
-   * `toString()`.
+  /** Optional lookup used to select a synchronous [FormattingSpecProvider]($core-quantity) per
+   * [FieldRun]($common), keyed by [QuantityFieldFormatOptions.formatSet]($common). When
+   * present, [[updateField]] formats `"quantity"` and `"coordinate"` values via
+   * [[formatFieldValueWithSpecProvider]]; when absent (or when the lookup has no match for the
+   * field's `formatSet`) it falls back to `toString()`.
    */
-  readonly formattingSpecResolver?: FieldFormattingSpecResolver;
+  readonly getFormattingSpecProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined;
 }
 
 // Resolve the raw primitive value of the property that a field points to.
@@ -339,12 +339,12 @@ export function createUpdateContext(
   hostElementId: string | undefined,
   iModel: IModelDb,
   deleted: boolean,
-  formattingSpecResolver?: FieldFormattingSpecResolver,
+  getFormattingSpecProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined,
 ): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
-    formattingSpecResolver,
+    getFormattingSpecProvider,
   };
 }
 
@@ -379,11 +379,10 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 
   let newContent: string | undefined;
   if (undefined !== propValue) {
-    if (context.formattingSpecResolver) {
-      newContent = formatFieldValueWithSpecResolver(propValue, field.formatOptions, context.formattingSpecResolver);
-    } else {
-      newContent = formatFieldValue(propValue, field.formatOptions);
-    }
+    const provider = context.getFormattingSpecProvider?.(field.formatOptions?.quantity?.formatSet);
+    newContent = provider
+      ? formatFieldValueWithSpecProvider(propValue, field.formatOptions, provider)
+      : formatFieldValue(propValue, field.formatOptions);
   }
 
   newContent = newContent ?? FieldRun.invalidContentIndicator;
@@ -446,12 +445,12 @@ export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFie
   return numUpdated;
 }
 
-function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, resolver: FieldFormattingSpecResolver | undefined): void {
+function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, getProvider: ((formatSet: string | undefined) => FormattingSpecProvider | undefined) | undefined): void {
   const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(sourceId, iModel, deleted, resolver);
+      const context = createUpdateContext(sourceId, iModel, deleted, getProvider);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {
@@ -470,12 +469,12 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
 }
 
 // Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
-export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, resolver?: FieldFormattingSpecResolver): void {
-  doUpdateFields(txn, props.targetId, props.sourceId, deleted, resolver);
+export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, getProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined): void {
+  doUpdateFields(txn, props.targetId, props.sourceId, deleted, getProvider);
 }
 
-export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, resolver?: FieldFormattingSpecResolver): void {
-  doUpdateFields(txn, annotationElementId, undefined, false, resolver);
+export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, getProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined): void {
+  doUpdateFields(txn, annotationElementId, undefined, false, getProvider);
 }
 
 // Resolves a FieldRun's target down to its terminal EC Property using schema metadata only
