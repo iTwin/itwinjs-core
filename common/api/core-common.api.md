@@ -3699,9 +3699,7 @@ export interface FieldFormatOptions {
 
 // @internal
 export interface FieldFormatterContext {
-    // (undocumented)
     formatsProvider: FormatsProvider;
-    // (undocumented)
     unitsProvider: UnitsProvider;
 }
 
