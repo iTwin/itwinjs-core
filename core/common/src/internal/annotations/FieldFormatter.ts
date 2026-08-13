@@ -16,7 +16,14 @@ export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYA
  * @internal
  */
 export interface FieldValue {
+  /** The raw property value, typed by [[type]]. For structured or array properties, this is
+   * the primitive scalar the [FieldRun]($common)'s propertyPath ultimately resolved to.
+   */
   value: FieldPrimitiveValue;
+  /** How [[value]] should be formatted. Determines which of [[formatFieldValue]] /
+   * [[formatFieldValueAsync]]'s per-type branches runs, and (for `"quantity"` and
+   * `"coordinate"`) whether the KoQ / units pipeline is consulted.
+   */
   type: FieldPropertyType;
   /** Full name (e.g. `"AecUnits.LENGTH"`) of the resolved property's
    * [KindOfQuantity]($ecschema-metadata), if any. Used to look up a default
