@@ -9,7 +9,7 @@ import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { createUnitsProvider, FormatsProvider, FormattingSpecArgs, UnitsProvider } from "@itwin/core-quantity";
+import { createUnitsProvider, FormatsProvider, FormattingSpecArgs, Units, UnitsProvider } from "@itwin/core-quantity";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -557,8 +557,8 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
   const propertyName = koq?.fullName;
   // Coordinate properties (Point2d/Point3d) always persist in meters, even when the property
   // itself carries no KindOfQuantity. Reflect that implicit persistence unit so pre-warm covers
-  // a `kindOfQuantity` override against `"Units.M"`.
-  const coordinateImplicitPersistence = propertyType === "coordinate" ? "Units.M" : undefined;
+  // a `kindOfQuantity` override against `Units.LENGTH.M`.
+  const coordinateImplicitPersistence = propertyType === "coordinate" ? Units.LENGTH.M : undefined;
   const propertyPersistenceUnitName = koq?.persistenceUnit?.fullName ?? coordinateImplicitPersistence;
 
   // Effective pair: override wins per-dimension, otherwise property KoQ.

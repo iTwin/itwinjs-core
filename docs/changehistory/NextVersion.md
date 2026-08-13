@@ -72,7 +72,8 @@ A format is resolved in this priority order:
 
 1. `formatOptions.quantity.kindOfQuantity` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
 2. The property's own [KindOfQuantity]($ecschema-metadata).
-3. For `"coordinate"` only, a built-in meters fallback.
+
+If neither resolves in the active provider, `"quantity"` and `"coordinate"` fields fall back to their raw string representation. Core does not carry a built-in coordinate format: coordinate presentation is application policy and belongs to the FormatsProvider / FormatSet supplied by the host. Coordinate values whose EC property has no KindOfQuantity are still assumed to persist in meters (per [BIS geometry conventions](../bis/guide/other-topics/units.md)) so that a `kindOfQuantity` override can be looked up against `Units.LENGTH.M` without an explicit `persistenceUnit`.
 
 Because [FormatterSpec]($core-quantity) creation is asynchronous, quantity formatting is only applied when a field is evaluated through the new async entry point [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend):
 

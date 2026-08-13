@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { Format, FormatProps, FormatsProvider, FormatterSpec, FormattingSpecProvider, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { Format, FormatsProvider, FormatterSpec, FormattingSpecProvider, UnitProps, Units, UnitsProvider } from "@itwin/core-quantity";
 import { DateTimeFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 
 /** A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -125,25 +125,10 @@ export interface FieldFormatterContext {
   formatsProvider: FormatsProvider;
 }
 
-// Fallback FormatProps for coordinate fields whose property has no KindOfQuantity. Assumes the
-// value is stored in meters (BIS geometry persistence).
-const defaultCoordinateFormatProps: FormatProps = {
-  formatTraits: ["keepSingleZero", "showUnitLabel"],
-  precision: 4,
-  type: "Decimal",
-  uomSeparator: " ",
-  decimalSeparator: ".",
-  composite: {
-    units: [{ label: "m", name: "Units.M" }],
-  },
-};
-
 // A single (KindOfQuantity name, persistence unit name) pair that `getFormatterSpec` will try
-// to resolve into a FormatterSpec. Each candidate may either supply a KoQ name to look up via
-// the FormatsProvider, or an inline FormatProps (used for the coordinate default fallback).
+// to resolve into a FormatterSpec via the caller-supplied FormatsProvider.
 interface FormatterSpecCandidate {
-  name?: string;
-  formatProps?: FormatProps;
+  name: string;
   persistenceUnitName: string;
 }
 
@@ -154,17 +139,20 @@ interface FormatterSpecCandidate {
 //   2. The property-side pair on its own, if it differs from #1. This is the "the override
 //      didn't resolve; fall back to what's on the EC value" path — it lets callers pin a
 //      preferred FormatSet KoQ without losing rendering when that FormatSet isn't loaded.
-//   3. For coordinate fields, a built-in meters fallback so BIS geometry always renders.
+// If neither candidate resolves in the FormatsProvider, the formatter falls back to the raw
+// string representation (via `formatFieldValue`). Core does not carry a built-in coordinate
+// format: coordinate presentation is app policy and belongs to the FormatsProvider / FormatSet.
 function collectFormatterSpecCandidates(
   quantityOptions: QuantityFieldFormatOptions | undefined,
   value: FieldValue,
 ): FormatterSpecCandidate[] {
   const propertyName = value.kindOfQuantityFullName;
-  // Coordinate values are BIS geometry, which is persisted in meters. Treat that as the
-  // implicit persistence unit whenever nothing else (property KoQ or override) supplied one,
-  // so a `kindOfQuantity` override on a coordinate property without its own KoQ still gets
-  // matched against `"Units.M"` instead of being dropped for lack of a unit.
-  const coordinateImplicitPersistence = value.type === "coordinate" ? "Units.M" : undefined;
+  // Coordinate values are BIS geometry, which is persisted in meters (see
+  // docs/bis/guide/other-topics/units.md). Treat that as the implicit persistence unit
+  // whenever nothing else (property KoQ or override) supplied one, so a `kindOfQuantity`
+  // override on a coordinate property without its own KoQ still resolves against
+  // `Units.LENGTH.M` instead of being dropped for lack of a unit.
+  const coordinateImplicitPersistence = value.type === "coordinate" ? Units.LENGTH.M : undefined;
   const propertyPersistence = value.persistenceUnitFullName ?? coordinateImplicitPersistence;
   const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
   const effectivePersistence = quantityOptions?.persistenceUnit ?? propertyPersistence;
@@ -179,9 +167,6 @@ function collectFormatterSpecCandidates(
   ) {
     candidates.push({ name: propertyName, persistenceUnitName: propertyPersistence });
   }
-  if (value.type === "coordinate") {
-    candidates.push({ formatProps: defaultCoordinateFormatProps, persistenceUnitName: "Units.M" });
-  }
   return candidates;
 }
 
@@ -191,8 +176,7 @@ async function getFormatterSpec(
   context: FieldFormatterContext,
 ): Promise<FormatterSpec | undefined> {
   for (const candidate of collectFormatterSpecCandidates(quantityOptions, value)) {
-    const formatProps = candidate.formatProps
-      ?? (candidate.name ? await context.formatsProvider.getFormat(candidate.name) : undefined);
+    const formatProps = await context.formatsProvider.getFormat(candidate.name);
     if (!formatProps) {
       continue;
     }
@@ -292,9 +276,10 @@ function lookupSyncSpec(
   provider: FormattingSpecProvider,
 ): FormatterSpec | undefined {
   const propertyName = value.kindOfQuantityFullName;
-  // Coordinate values are BIS geometry (meters); treat "Units.M" as the implicit persistence
-  // unit so a `kindOfQuantity` override on a coordinate property with no KoQ still resolves.
-  const coordinateImplicitPersistence = value.type === "coordinate" ? "Units.M" : undefined;
+  // Coordinate values are BIS geometry (meters); treat `Units.LENGTH.M` as the implicit
+  // persistence unit so a `kindOfQuantity` override on a coordinate property with no KoQ still
+  // resolves.
+  const coordinateImplicitPersistence = value.type === "coordinate" ? Units.LENGTH.M : undefined;
   const propertyPersistence = value.persistenceUnitFullName ?? coordinateImplicitPersistence;
   const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
   const effectivePersistence = quantityOptions?.persistenceUnit ?? propertyPersistence;
