@@ -52,11 +52,14 @@ As you can see, the shared edge leads to duplicate data in `data.point`. To remo
 
 A Polyface dihedral angle is the angle between the normals of two adjacent facets. These angles are calculated in `PolyfaceQuery.dihedralAngleSummary`. This method is a test for the global convexity of the mesh, i.e., if all dihedral angles are positive, then the Polyface is probably convex with outward normals.
 
-Below is an example showing 2 facets of a polyface (black lines), their normals (red vectors `A` and `B`), and their face loops (orange vectors). The green vector `D` is the direction of the shared edge traversed by the facet with normal `A`.
+Below is an example showing 2 facets of a polyface (black lines), their normals (red vectors `A` and `B`), and their face loops (orange vectors). The green vector `D` is the direction of the shared edge traversed by the facet with normal `A`. This is the reference vector.
 ![>](./figs/Polyface/dihedralAnglePositive.png)
 
 To calculate the dihedral angle between the 2 facets, `PolyfaceQuery.dihedralAngleSummary` calls `Vector3d.signedAngleTo` function:
 ```
 theta = A.signedAngleTo(B,D)
 ```
-The angle `theta` is positive because the cross product `A x B` points into the same half-space as `D` following the right hand rule. Note that reversing the facet orientations results in reversed directions for all three vectors, but since `-A x -B` doesn't change direction, the cross product and `D` point into opposite half-spaces, and so the angle `theta` is negative.
+The angle `theta` is positive because the cross product `A x B` points into the same half-space as the reference vector `D` following the right hand rule. Note that reversing the facet orientations results in reversed directions for all three vectors, but since `-A x -B` doesn't change direction, the cross product and `D` point into opposite half-spaces, and so the angle `theta` is negative.
+
+**Note:** `PolyfaceQuery.dihedralAngleSummary` method is a test for the global convexity of the mesh, i.e., if all dihedral angles are positive, then the Polyface is probably convex with outward normals.
+![>](./figs/Polyface/dihedralAngleForConvexityTest.png)

@@ -92,6 +92,27 @@ describe("GraphicalEditingScope", () => {
       expect(imodel.editingScope).to.be.undefined;
     });
 
+    it("waits for deferred cleanup before testOnScreenViewport returns", async () => {
+      imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
+      const views = await imodel.views.getViewList({ wantPrivate: true });
+      let releaseFinishCommand: (() => void) | undefined;
+      const finishCommandDeferred = new Promise<string>((resolve) => releaseFinishCommand = () => resolve("done"));
+      IModelApp.toolAdmin.setEditCommandHandler({ finishCommand: async () => finishCommandDeferred });
+
+      let settled = false;
+      try {
+        const testViewport = testOnScreenViewport(views[0].id, imodel, 100, 100, async () => { }).finally(() => settled = true);
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        expect(settled).to.be.false;
+
+        releaseFinishCommand?.();
+        await testViewport;
+        expect(settled).to.be.true;
+      } finally {
+        IModelApp.toolAdmin.setEditCommandHandler();
+      }
+    });
+
     it("exposes a configurable dynamicGraphicsAbsolutePositionThreshold", async () => {
       imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
       const scope = await imodel.enterEditingScope();

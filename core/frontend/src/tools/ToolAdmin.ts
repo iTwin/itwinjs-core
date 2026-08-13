@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, assert, BeEvent, BeTimePoint, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, BentleyError, BeTimePoint, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
@@ -1847,26 +1847,57 @@ export class ToolAdmin {
 
   /** @internal */
   public async setPrimitiveTool(newTool?: PrimitiveTool) {
-    if (undefined !== this._primitiveTool) {
-      await this._primitiveTool.onCleanup();
-      if (undefined !== this._editCommandHandler)
-        await this._editCommandHandler.finishCommand();
-      this._primitiveTool = undefined;
-    }
-    this._primitiveTool = newTool;
+    return this.setPrimitiveToolInternal(newTool);
   }
 
-  // serialize concurrent starts to avoid two tools installing simultaneously.
-  private _primitiveToolStarting?: Promise<void>;
+  private async setPrimitiveToolInternal(newTool?: PrimitiveTool, pendingFinishCommand?: Promise<string>) {
+    const oldTool = this._primitiveTool;
+    let ownsOldTool = undefined === oldTool;
+    if (undefined !== oldTool) {
+      let mainError: Error | undefined;
+      try {
+        await oldTool.onCleanup();
+      } catch (err) {
+        mainError = (err instanceof Error) ? err : new Error(BentleyError.getErrorMessage(err));
+      }
+
+      try {
+        if (undefined !== pendingFinishCommand)
+          await pendingFinishCommand;
+        else if (undefined !== this._editCommandHandler)
+          await this._editCommandHandler.finishCommand();
+      } catch (err) {
+        // throw finishCommand error if onCleanup succeeded, otherwise log finishCommand failure...
+        if (undefined === mainError)
+          mainError = (err instanceof Error) ? err : new Error(BentleyError.getErrorMessage(err));
+        else
+          Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, err);
+      } finally {
+        // Force-clear stale tool state if either onCleanup or finishCommand failed...
+        ownsOldTool = this._primitiveTool === oldTool;
+        if (ownsOldTool)
+          this._primitiveTool = undefined;
+      }
+
+      if (undefined !== mainError)
+        throw mainError;
+    }
+    // Do not let a delayed transition overwrite a tool installed by a newer transition.
+    if (ownsOldTool)
+      this._primitiveTool = newTool;
+  }
+
+  // Serialize primitive starts and last-viewport cleanup to avoid overlapping transitions.
+  private _primitiveToolTransition?: Promise<void>;
 
   /** @internal */
   public async startPrimitiveTool(newTool?: PrimitiveTool) {
     // If another start is in progress wait for it to finish before proceeding.
-    while (undefined !== this._primitiveToolStarting)
-      await this._primitiveToolStarting;
+    while (undefined !== this._primitiveToolTransition)
+      await this._primitiveToolTransition;
 
-    let resolveStarting: (() => void) | undefined;
-    this._primitiveToolStarting = new Promise<void>((r) => { resolveStarting = r; });
+    let resolveTransition: (() => void) | undefined;
+    const transition = this._primitiveToolTransition = new Promise<void>((resolve) => { resolveTransition = resolve; });
 
     try {
       IModelApp.notifications.outputPrompt("");
@@ -1900,9 +1931,9 @@ export class ToolAdmin {
         return;
       this.onActiveToolChanged(activeTool, StartOrResume.Start);
     } finally {
-      if (resolveStarting)
-        resolveStarting();
-      this._primitiveToolStarting = undefined;
+      resolveTransition?.();
+      if (this._primitiveToolTransition === transition)
+        this._primitiveToolTransition = undefined;
     }
   }
 
@@ -2193,10 +2224,42 @@ export class ToolAdmin {
 
   /** @internal */
   public async callOnCleanup() {
-    await this.exitViewTool();
-    await this.exitInputCollector();
-    if (undefined !== this._primitiveTool)
-      await this._primitiveTool.onCleanup();
+    let pendingFinishCommand: Promise<string> | undefined;
+    const previousTransition = this._primitiveToolTransition;
+    let resolveTransition: (() => void) | undefined;
+    const transition = this._primitiveToolTransition = new Promise<void>((resolve) => { resolveTransition = resolve; });
+    try {
+      // Start the edit-command cleanup before the first await. ViewManager can invoke this method
+      // without awaiting it when the last viewport is dropped.
+      if (undefined !== this._editCommandHandler) {
+        const finishCommand = this._editCommandHandler.finishCommand();
+        // Attach a rejection handler immediately: another cleanup operation may fail before this promise is awaited.
+        pendingFinishCommand = finishCommand.catch((err) => {
+          Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, err);
+          return "";
+        });
+      }
+
+      if (undefined !== previousTransition)
+        await previousTransition;
+
+      if (undefined !== this._viewTool)
+        await this.exitViewTool();
+      if (undefined !== this._inputCollector)
+        await this.exitInputCollector();
+
+      // Keep cleanup path consistent with other primitive-tool transitions.
+      if (undefined !== this._primitiveTool)
+        await this.setPrimitiveToolInternal(undefined, pendingFinishCommand); // NOTE: ViewManager.setSelectedView will call startDefaultTool if a new view is opened...
+      else if (undefined !== pendingFinishCommand)
+        await pendingFinishCommand;
+    } catch (err) {
+      Logger.logError(`${FrontendLoggerCategory.Package}.toolAdmin`, err);
+    } finally {
+      resolveTransition?.();
+      if (this._primitiveToolTransition === transition)
+        this._primitiveToolTransition = undefined;
+    }
   }
 }
 
