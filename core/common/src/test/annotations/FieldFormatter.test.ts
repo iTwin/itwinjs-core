@@ -358,20 +358,22 @@ describe("Async field formatting", () => {
       expect(result).toBe("(1 m, 2 m, 3 m)");
     });
 
-    it("falls back to a built-in meters format when no KoQ or override is provided", async () => {
+    it("falls back to the raw coordinate string when no KoQ or override is provided", async () => {
+      // Core has no built-in coordinate format: presentation is app policy and belongs to the
+      // FormatsProvider. When nothing resolves, the async path drops to `formatFieldValue`.
       const result = await formatFieldValueAsync(
         { value: { x: 1.5, y: 2 }, type: "coordinate" },
         undefined,
         createContext(),
       );
-      expect(result).toBe("(1.5 m, 2 m)");
+      expect(result).toBe("(1.5, 2)");
     });
 
     it("applies a kindOfQuantity override on a coordinate value with no property KoQ (implicit meters persistence)", async () => {
-      // Regression: coordinate properties (Point2d/Point3d) with no KindOfQuantity produced no
-      // `persistenceUnitFullName` on the FieldValue, so an override `kindOfQuantity` was
-      // dropped in favour of the built-in meters fallback. Coordinates always persist in meters
-      // per BIS geometry, so the override pair should resolve against `"Units.M"` implicitly.
+      // Coordinate properties (Point2d/Point3d) with no KindOfQuantity produce no
+      // `persistenceUnitFullName` on the FieldValue. Because BIS geometry always persists in
+      // meters (docs/bis/guide/other-topics/units.md), the formatter infers `Units.LENGTH.M`
+      // as the source unit so an override `kindOfQuantity` still resolves.
       const feetFormat: FormatProps = {
         composite: { includeZero: true, units: [{ label: "ft", name: "Units.FT" }] },
         formatTraits: ["keepSingleZero", "showUnitLabel"],
