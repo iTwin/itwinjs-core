@@ -121,7 +121,16 @@ export function isKnownFieldPropertyType(type: string): type is FieldPropertyTyp
  * @internal
  */
 export interface FieldFormatterContext {
+  /** Resolves [UnitProps]($core-quantity) by full name — used to look up the persistence unit
+   * of a [FieldValue]($common) so [FormatterSpec.create]($core-quantity) can convert into the
+   * presentation unit declared by the format.
+   */
   unitsProvider: UnitsProvider;
+  /** Resolves a [FormatProps]($core-quantity) by [KindOfQuantity]($ecschema-metadata) full
+   * name. This is where a caller's FormatSet-backed provider plugs into the field-formatting
+   * pipeline; for the default schema-backed path, [SchemaFormatsProvider]($ecschema-metadata)
+   * is used.
+   */
   formatsProvider: FormatsProvider;
 }
 
