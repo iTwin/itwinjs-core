@@ -179,7 +179,7 @@ export interface TextLeaderStyleProps {
    */
   targetPointShape?: TargetPointShape;
   /**
-   * Multiplier to compute the offset of the target point from the end of the leader start point.
+   * Multiplier used to compute the offset distance between the target point (at the leader start point) and the start of the leader line, measured along the first leader segment.
    */
   targetPointOffsetFactor?: number;
 }
