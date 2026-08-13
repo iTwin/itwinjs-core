@@ -2381,6 +2381,12 @@ export interface DefinitionElementProps extends ElementProps {
     isPrivate?: boolean;
 }
 
+// @beta
+export interface DefinitionSetProps extends DefinitionElementProps {
+    // (undocumented)
+    rank?: Rank;
+}
+
 // @public
 export interface DeletedElementGeometryChange {
     readonly id: Id64String;

@@ -502,18 +502,19 @@ export class PolyfaceQuery {
    */
   public static dihedralAngleSummary(source: Polyface | PolyfaceVisitor, ignoreBoundaries: boolean = false): number {
     // more info can be found at geometry/internaldocs/Polyface.md
+    // visit all facets and collect normals and edges
     const edges = new IndexedEdgeMatcher();
     const vertices = source instanceof Polyface ? source.data.point : undefined;
     const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
     visitor.setNumWrap(1);
-    const centroidNormal: Ray3d[] = [];
+    const facetNormals: Ray3d[] = [];
     let normalCounter = 0;
     for (visitor.reset(); visitor.moveToNextFacet();) {
       const numEdges = visitor.pointCount - 1;
       const normal = PolygonOps.centroidAreaNormal(visitor.point);
       if (normal === undefined)
         return -2;
-      centroidNormal.push(normal);
+      facetNormals.push(normal);
       for (let i = 0; i < numEdges; i++) {
         const edge = edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), normalCounter);
         if (!vertices) // decorate if we don't have vertices to query later
@@ -529,21 +530,23 @@ export class PolyfaceQuery {
     edges.sortAndCollectClusters(manifoldClusters, ignoreBoundaries ? undefined : badClusters, undefined, badClusters);
     if (badClusters.length > 0)
       return -2;
-    // find angle between facet centroid normals (dihedral angles)
+    // find angle between facet normals (dihedral angles)
     let numPositive = 0;
     let numPlanar = 0;
     let numNegative = 0;
     const edgeVector = Vector3d.create();
     for (const cluster of manifoldClusters) {
       if (Array.isArray(cluster) && cluster.length === 2) {
-        const sideA = cluster[0];
-        const sideB = cluster[1];
-        if (vertices)
-          vertices.vectorIndexIndex(sideA.startVertex, sideA.endVertex, edgeVector);
-        else
+        const sideA = cluster[0]; // edge on facetA
+        const sideB = cluster[1]; // edge on facetB
+        if (vertices) {
+          if (!vertices.vectorIndexIndex(sideA.startVertex, sideA.endVertex, edgeVector))
+            return -2;
+        } else {
           edgeVector.setFrom((sideA as any).edgeVector);
-        const facetNormalA = centroidNormal[sideA.facetIndex].direction;
-        const facetNormalB = centroidNormal[sideB.facetIndex].direction;
+        }
+        const facetNormalA = facetNormals[sideA.facetIndex].direction;
+        const facetNormalB = facetNormals[sideB.facetIndex].direction;
         const dihedralAngle = facetNormalA.signedAngleTo(facetNormalB, edgeVector);
         if (dihedralAngle.isAlmostZero)
           numPlanar++;
