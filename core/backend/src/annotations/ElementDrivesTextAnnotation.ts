@@ -26,6 +26,12 @@ import { EditTxn } from "../EditTxn";
 // [QuantityFieldFormatOptions.formatSet]($common) does not match any registration is left to the
 // caller's fallback (raw string on the sync path; the iModel's [SchemaFormatsProvider]($ecschema-metadata)
 // on the async path — see [[evaluateFieldsAsync]]).
+//
+// Lifetime is owned by the host: this map is not scoped to any [IModelDb]($backend) and is
+// never swept automatically. Hosts that register a provider on iModel open MUST call
+// [[unregisterFieldFormattingProvider]] on iModel close (typically via
+// [IModelDb.onBeforeClose]($backend)) so that a later iModel carrying the same FormatSet id
+// does not silently pick up a stale provider from a previous session.
 const fieldFormattingProviders = new Map<Id64String, FormattingSpecProvider>();
 
 /** Builds a resolver that looks up a registered provider by the field's `formatSet`. Returns
@@ -304,10 +310,28 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * Providers should be pre-warmed with the results of [[collectFieldFormattingRequirements]].
    * Missing specs fall back to the raw string.
    *
-   * Each registration replaces any prior one for the same `formatSet`. Registrations are
-   * process-wide; use [[unregisterFieldFormattingProvider]] to remove one.
+   * Each registration replaces any prior one for the same `formatSet`.
    *
-   * TODO: Maybe this is unnecessary if we store the FormatSets in the iModel and look them up on demand.
+   * ### Registration lifetime is caller-owned
+   *
+   * Registrations are **process-wide** and are not scoped to any [IModelDb]($backend). Two
+   * iModels that happen to carry the same FormatSet [Id64String]($bentley) will share whichever
+   * provider was registered most recently — nothing associates a registration with the
+   * [IModelDb]($backend) the FormatSet came from.
+   *
+   * Hosts are responsible for registering a provider when the iModel it applies to opens and
+   * calling [[unregisterFieldFormattingProvider]] when that iModel closes. Failing to
+   * unregister leaves a stale entry in the process-wide registry that a subsequent iModel
+   * carrying the same FormatSet id may silently consume.
+   *
+   * The canonical pattern uses [IModelDb.onBeforeClose]($backend):
+   *
+   * ```ts
+   * iModel.onBeforeClose.addOnce(() => {
+   *   ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(formatSetId);
+   * });
+   * ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: formatSetId, provider });
+   * ```
    *
    * @beta
    */
@@ -324,6 +348,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** Removes the registration previously created by [[registerFieldFormattingProvider]] for
    * `formatSet`, if any.
+   *
+   * Hosts should call this when the iModel that owns the FormatSet closes (typically from an
+   * [IModelDb.onBeforeClose]($backend) listener installed alongside the corresponding
+   * [[registerFieldFormattingProvider]] call). See [[registerFieldFormattingProvider]] for the
+   * lifetime contract and the canonical pattern.
    * @beta
    */
   public static unregisterFieldFormattingProvider(formatSet: Id64String): void {
@@ -332,6 +361,10 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** Returns the [FormattingSpecProvider]($core-quantity) previously registered under
    * `formatSet` via [[registerFieldFormattingProvider]], if any.
+   *
+   * The returned provider is process-wide and not scoped to any [IModelDb]($backend); callers
+   * that need a per-iModel guarantee should verify against their own bookkeeping. See
+   * [[registerFieldFormattingProvider]] for the lifetime contract.
    * @beta
    */
   public static getFieldFormattingProvider(formatSet: Id64String): FormattingSpecProvider | undefined {

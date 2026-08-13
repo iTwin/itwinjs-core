@@ -96,6 +96,19 @@ const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
 
 The existing synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks continue to render `"quantity"` and `"coordinate"` fields as their raw string representation for backward compatibility. Applications that want formatted quantity output for text annotations should migrate their evaluation calls to the async variant.
 
+### FormatSet-backed synchronous formatting
+
+Hosts that need formatted quantity output from the synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and `TxnManager` field-update paths can register a pre-warmed [FormattingSpecProvider]($core-quantity) keyed by FormatSet [Id64String]($bentley):
+
+```typescript
+iModel.onBeforeClose.addOnce(() => {
+  ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(formatSetId);
+});
+ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: formatSetId, provider });
+```
+
+Registrations are **process-wide** — Core does not scope them to any [IModelDb]($backend), and never sweeps entries automatically. Hosts own the lifetime contract: register when the iModel that provides the FormatSet opens, and call [ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]($backend) when it closes. Failing to unregister leaves a stale entry that a subsequent iModel carrying the same FormatSet id may silently consume.
+
 ## @itwin/geometry
 
 ### Simplifying filleted line strings
