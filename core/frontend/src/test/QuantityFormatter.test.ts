@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { assert as bAssert } from "@itwin/core-bentley";
+import { assert as bAssert, BeEvent } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
-import { FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
+import { FormatDefinition, FormatsChangedArgs, FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps, UnitSystemKey } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
@@ -1453,5 +1453,87 @@ describe("_rebuildRegistryFromProvider", () => {
     const angleAfter = qf.getSpecsByNameAndUnit({ name: "DefaultToolsUnits.ANGLE", persistenceUnitName: "Units.RAD", system: "metric" });
     expect(lengthAfter).toBeDefined();
     expect(angleAfter).toBeDefined();
+  });
+
+  it("allows onBeforeFormattingReady to replace an incompatible provider format", async () => {
+    const name = "TestKoQ.HORIZONTAL_BEARING";
+    const providerFormat: FormatDefinition = {
+      type: "Bearing",
+      precision: 2,
+      revolutionUnit: "Units.REVOLUTION",
+      formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [{ name: "Units.ARC_DEG", label: "°" }],
+      },
+    };
+    const manuallyRegisteredFormat: FormatDefinition = {
+      ...providerFormat,
+      revolutionUnit: "Units.HORIZONTAL_DIR_REVOLUTION",
+      composite: {
+        ...providerFormat.composite,
+        units: [{ name: "Units.HORIZONTAL_DIR_ARC_DEG", label: "°" }],
+      },
+    };
+    const provider = {
+      onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
+      async getFormat(formatName: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
+        return formatName === name ? providerFormat : undefined;
+      },
+    };
+    const qf = new QuantityFormatter();
+    let removeReadyListener: (() => void) | undefined;
+
+    try {
+      IModelApp.formatsProvider = provider;
+      await qf.onInitialized();
+
+      // Schema-backed units providers throw when a format and persistence unit belong to different phenomena.
+      const unitsProvider = qf.unitsProvider;
+      const originalGetConversion = unitsProvider.getConversion.bind(unitsProvider);
+      unitsProvider.getConversion = async (fromUnit, toUnit) => {
+        if (fromUnit.phenomenon !== toUnit.phenomenon)
+          throw new Error("Source and target units do not belong to same phenomenon");
+        return originalGetConversion(fromUnit, toUnit);
+      };
+
+      await qf.addFormattingSpecsToRegistry({
+        name,
+        persistenceUnitName: "Units.HORIZONTAL_DIR_RAD",
+        formatProps: manuallyRegisteredFormat,
+        system: "metric",
+      });
+      expect(qf.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.HORIZONTAL_DIR_RAD", system: "metric" })).toBeDefined();
+
+      let replacementRegistered = false;
+      qf.onBeforeFormattingReady.addListener((collector) => {
+        if (!qf.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.HORIZONTAL_DIR_RAD", system: "metric" })) {
+          replacementRegistered = true;
+          collector.addPendingWork(qf.addFormattingSpecsToRegistry({
+            name,
+            persistenceUnitName: "Units.HORIZONTAL_DIR_RAD",
+            formatProps: manuallyRegisteredFormat,
+            system: "metric",
+          }));
+        }
+      });
+
+      const readySpy = vi.fn();
+      removeReadyListener = qf.onFormattingReady.addListener(readySpy);
+      provider.onFormatsChanged.raiseEvent({ formatsChanged: [name] });
+
+      await vi.waitFor(() => expect(readySpy).toHaveBeenCalledTimes(1), { timeout: 1000 });
+      expect(replacementRegistered).toBe(true);
+      const entryAfter = qf.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.HORIZONTAL_DIR_RAD", system: "metric" });
+      expect(entryAfter).toBeDefined();
+      expect(entryAfter?.formatterSpec.format.revolutionUnit?.name).toBe("Units.HORIZONTAL_DIR_REVOLUTION");
+      expect(entryAfter?.parserSpec.format.revolutionUnit?.name).toBe("Units.HORIZONTAL_DIR_REVOLUTION");
+    } finally {
+      removeReadyListener?.();
+      qf[Symbol.dispose]();
+      IModelApp.resetFormatsProvider();
+    }
   });
 });
