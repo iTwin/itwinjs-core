@@ -296,21 +296,14 @@ function lookupSyncSpec(
   return undefined;
 }
 
-/** Lookup used by the sync formatting path to pick a registered
- * [FormattingSpecProvider]($core-quantity) for a given [FieldRun]($common). Callers (typically
- * the backend) construct one over their process-wide provider registry and hand it to
- * [[formatFieldValueWithSpecResolver]] via [[UpdateFieldsContext]].
- *
- * Returns the provider registered under `formatSet`, or `undefined` when `formatSet` is not
- * defined or no registration matches; callers then fall back to the raw string representation.
- * @internal
- */
-export type FieldFormattingSpecResolver = (formatSet: string | undefined) => FormattingSpecProvider | undefined;
-
 /** Synchronous counterpart to [[formatFieldValueAsync]] that formats `"quantity"` and
  * `"coordinate"` values via a caller-supplied [FormattingSpecProvider]($core-quantity).
  * Intended for the txn callback path, where the async pipeline cannot be awaited but the app
  * has pre-built the required specs.
+ *
+ * Callers whose provider registry is keyed by [QuantityFieldFormatOptions.formatSet]($common)
+ * are expected to look up the provider from `options?.quantity?.formatSet` before calling this
+ * function, and fall back to [[formatFieldValue]] themselves when the lookup misses.
  *
  * For other [[FieldPropertyType]]s, or when a quantity/coordinate field cannot be resolved to a
  * [FormatterSpec]($core-quantity) via `provider`, falls back to [[formatFieldValue]].
@@ -331,29 +324,4 @@ export function formatFieldValueWithSpecProvider(
   }
 
   return applySpecToFieldValue(value, options, spec);
-}
-
-/** Synchronous formatting entry point that consults a [[FieldFormattingSpecResolver]] to pick
- * which registered provider (keyed by [QuantityFieldFormatOptions.formatSet]($common)) formats
- * `value`, then delegates to [[formatFieldValueWithSpecProvider]] using that provider.
- *
- * If the resolver returns `undefined` (no matching registration for the field's `formatSet`),
- * quantity/coordinate values fall back to the raw string representation from [[formatFieldValue]].
- * @internal
- */
-export function formatFieldValueWithSpecResolver(
-  value: FieldValue,
-  options: FieldFormatOptions | undefined,
-  resolver: FieldFormattingSpecResolver,
-): string | undefined {
-  if (value.type !== "quantity" && value.type !== "coordinate") {
-    return formatFieldValue(value, options);
-  }
-
-  const provider = resolver(options?.quantity?.formatSet);
-  if (!provider) {
-    return formatFieldValue(value, options);
-  }
-
-  return formatFieldValueWithSpecProvider(value, options, provider);
 }
