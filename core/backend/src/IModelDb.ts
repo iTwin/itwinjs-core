@@ -3857,7 +3857,7 @@ export class BriefcaseDb extends IModelDb {
       });
     } else {
       executeUpgrade();
-      await push(); // TODO: pushing here is a behavior change, we need to discuss this. If we allow this without push, the sync db will be updated without the corresponding changeset being pushed.
+      await push();
     }
   }
 

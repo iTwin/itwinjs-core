@@ -33,12 +33,12 @@ export namespace SchemaSync {
   export const containerType = "schema-sync";
   const testSyncCachePropKey = "test.schema_sync.cache_name";
   // for tests only
-  export const setTestCache = (iModel: IModelDb, cacheName?: string) => {
+  export function setTestCache(iModel: IModelDb, cacheName?: string): void {
     if (cacheName)
       iModel[_nativeDb].saveLocalValue(testSyncCachePropKey, cacheName);
     else
       iModel[_nativeDb].deleteLocalValue(testSyncCachePropKey);
-  };
+  }
 
   /** Either an open iModel or the name of a closed briefcase file. Every local read below accepts both, so
    * a caller that has only a file name does not have to open a `BriefcaseDb` to ask a question about it.
@@ -46,7 +46,7 @@ export namespace SchemaSync {
   export type IModelOrFileName = IModelDb | { readonly fileName: LocalFileName };
 
   /** Read from an open iModel, or from a closed file opened readonly for the duration of `operation`. */
-  const readFromIModel = <T>(arg: IModelOrFileName, operation: (nativeDb: IModelJsNative.DgnDb) => T): T => {
+  function readFromIModel<T>(arg: IModelOrFileName, operation: (nativeDb: IModelJsNative.DgnDb) => T): T {
     if (arg instanceof IModelDb)
       return operation(arg[_nativeDb]);
 
@@ -57,7 +57,7 @@ export namespace SchemaSync {
     } finally {
       nativeDb.closeFile();
     }
-  };
+  }
 
   /** Whether this iModel's ECSchemas are governed by a `SchemaSyncDb`.
    *
@@ -68,31 +68,33 @@ export namespace SchemaSync {
    * [[queryContainerProps]] for that. The two are separate on purpose: a file that says it is governed by a
    * sync db must never fall back to importing schemas on its own, whatever state the container is in.
    */
-  export const isEnabled = (arg: IModelOrFileName): boolean => {
+  export function isEnabled(arg: IModelOrFileName): boolean {
     return readFromIModel(arg, (nativeDb) => nativeDb.schemaSyncEnabled());
-  };
+  }
 
   /** One pass over the values schema sync keeps in the file: which container holds the sync db, plus the
    * test-only cache override. Read together so a closed file is opened once.
    */
-  const readLocalSyncProps = (arg: IModelOrFileName) => readFromIModel(arg, (nativeDb) => {
-    const propsString = nativeDb.queryFileProperty(syncProperty, true) as string | undefined;
-    return {
-      containerProps: propsString ? JSON.parse(propsString) as CloudSqlite.ContainerProps : undefined,
-      testCacheName: nativeDb.queryLocalValue(testSyncCachePropKey),
-    };
-  });
+  function readLocalSyncProps(arg: IModelOrFileName) {
+    return readFromIModel(arg, (nativeDb) => {
+      const propsString = nativeDb.queryFileProperty(syncProperty, true) as string | undefined;
+      return {
+        containerProps: propsString ? JSON.parse(propsString) as CloudSqlite.ContainerProps : undefined,
+        testCacheName: nativeDb.queryLocalValue(testSyncCachePropKey),
+      };
+    });
+  }
 
   /** The container holding this iModel's `SchemaSyncDb`, or `undefined` if schema sync was never enabled.
    *
    * Local read of the same `be_Prop` file property that [[initializeForIModel]] wrote. Requesting an access
    * token for the container is a separate, asynchronous step.
    */
-  export const queryContainerProps = (arg: IModelOrFileName): CloudSqlite.ContainerProps | undefined => {
+  export function queryContainerProps(arg: IModelOrFileName): CloudSqlite.ContainerProps | undefined {
     return readLocalSyncProps(arg).containerProps;
-  };
+  }
 
-  const getCloudAccess = async (arg: IModelOrFileName) => {
+  async function getCloudAccess(arg: IModelOrFileName): Promise<CloudAccess> {
     const { containerProps, testCacheName } = readLocalSyncProps(arg);
     if (undefined === containerProps)
       throw new IModelError(DbResult.BE_SQLITE_NOTFOUND, "iModel does not have a SchemaSyncDb");
@@ -103,27 +105,41 @@ export namespace SchemaSync {
     if (testCacheName)
       access.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: testCacheName }));
     return access;
-  };
+  }
 
-  export const withLockedAccess = async (iModel: IModelOrFileName, args: { operationName: string, openMode?: OpenMode, user?: string }, operation: (access: CloudAccess) => Promise<void>): Promise<void> => {
+  /** Arguments for [[withLockedAccess]]. */
+  export interface WithLockedAccessArgs {
+    operationName: string;
+    openMode?: OpenMode;
+    user?: string;
+  }
+
+  export async function withLockedAccess(iModel: IModelOrFileName, args: WithLockedAccessArgs, operation: (access: CloudAccess) => Promise<void>): Promise<void> {
     const access = await getCloudAccess(iModel);
     try {
       await access.withLockedDb(args, async () => operation(access));
     } finally {
       access.close();
     }
-  };
+  }
 
   /** Build the tables and indexes the briefcase's `ec_` rows describe. A merged schema changeset carries
    * those rows but no DDL, so the physical columns are missing until this runs. Needs no cloud access.
    */
-  export const updateDbSchema = (iModel: IModelDb) => {
+  export function updateDbSchema(iModel: IModelDb): void {
     if (isEnabled(iModel) && !iModel.isReadonly) {
       iModel.clearCaches();
       iModel[_nativeDb].schemaSyncUpdateDbSchema();
       iModel[_implicitTxn].saveChanges("materialized db schema from ec_ tables");
     }
-  };
+  }
+
+  /** Arguments for [[createContainerForIModel]]. */
+  export interface CreateContainerForIModelArgs {
+    iModel: IModelDb;
+    label?: string;
+    description?: string;
+  }
 
   /** Create a cloud container to hold this iModel's `SchemaSyncDb`, and initialize it as empty.
    *
@@ -132,7 +148,7 @@ export namespace SchemaSync {
    * iModel that was created without it.
    * @note The current user must be authorized to create containers for the iTwin.
    */
-  export const createContainerForIModel = async (arg: { iModel: IModelDb, label?: string, description?: string }): Promise<CloudSqlite.ContainerProps> => {
+  export async function createContainerForIModel(arg: CreateContainerForIModelArgs): Promise<CloudSqlite.ContainerProps> {
     const iModel = arg.iModel;
     const iTwinId = iModel.iTwinId;
     if (undefined === iTwinId)
@@ -142,14 +158,22 @@ export namespace SchemaSync {
       scope: { iTwinId, iModelId: iModel.iModelId },
       metadata: { label: arg.label ?? `SchemaSync for ${iModel.name}`, description: arg.description },
     });
-  };
+  }
+
+  /** Arguments for [[initializeForIModel]]. */
+  export interface InitializeForIModelArgs {
+    iModel: IModelDb;
+    containerProps: CloudSqlite.ContainerProps;
+    /** Replace the container already recorded on this iModel instead of failing. */
+    overrideContainer?: boolean;
+  }
 
   /** Enable schema sync for an iModel, seeding the container from this briefcase.
    * @note The sync db becomes a mirror of this briefcase's metadata, so the briefcase must be level with
    * the timeline: the exclusive schema lock is taken so nobody else can be holding changes, local changes
    * are refused, and the briefcase is pulled to the tip before the container is written.
    */
-  export const initializeForIModel = async (arg: { iModel: IModelDb, containerProps: CloudSqlite.ContainerProps, overrideContainer?: boolean }) => {
+  export async function initializeForIModel(arg: InitializeForIModelArgs): Promise<void> {
     const props = { baseUri: arg.containerProps.baseUri, containerId: arg.containerProps.containerId, storageType: arg.containerProps.storageType }; // sanitize to only known properties
     const iModel = arg.iModel;
     const briefcase = iModel instanceof BriefcaseDb ? iModel : undefined;
@@ -176,7 +200,7 @@ export namespace SchemaSync {
     } finally {
       iModel[_implicitTxn].abandonChanges();
     }
-  };
+  }
 
   /** Arguments for [[CloudAccess.createNewContainer]]. */
   export interface CreateNewContainerProps {
