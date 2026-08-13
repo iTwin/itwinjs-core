@@ -81,16 +81,14 @@ Because [FormatterSpec]($core-quantity) creation is asynchronous, quantity forma
 const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel, block });
 ```
 
-Applications that own a [FormatsProvider]($core-quantity) (for example a FormatSet-backed provider from Drawing Production) can route formatting through it by supplying [FieldFormattingProviders]($backend):
+Applications that own a [FormatsProvider]($core-quantity) (for example a FormatSet-backed provider from Drawing Production) can route formatting through it by supplying it directly on the args:
 
 ```typescript
 const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
   iModel,
   block,
-  formatting: {
-    formatsProvider: myFormatsProvider, // e.g. Drawing Production's FormatSet-backed provider
-    // unitsProvider omitted -> defaults to the iModel's schema-backed units provider
-  },
+  formatsProvider: myFormatsProvider, // e.g. Drawing Production's FormatSet-backed provider
+  // unitsProvider omitted -> defaults to the iModel's schema-backed units provider
 });
 ```
 

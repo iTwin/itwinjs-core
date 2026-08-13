@@ -280,7 +280,6 @@ beta;class;ExternalSourceGroup
 beta;class;ExternalSourceGroupGroupsSources
 beta;class;ExternalSourceIsInRepository
 beta;class;ExternalSourceOwnsAttachments
-beta;interface;FieldFormattingProviders
 public;class;FileNameResolver
 deprecated;class;FileNameResolver
 internal;type;FindFontId

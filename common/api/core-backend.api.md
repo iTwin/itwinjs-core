@@ -3268,7 +3268,8 @@ export interface EvaluateFieldsArgs {
 
 // @beta
 export interface EvaluateFieldsAsyncArgs extends EvaluateFieldsArgs {
-    formatting?: FieldFormattingProviders;
+    formatsProvider?: FormatsProvider;
+    unitsProvider?: UnitsProvider;
 }
 
 // @public
@@ -3533,12 +3534,6 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
-}
-
-// @beta
-export interface FieldFormattingProviders {
-    formatsProvider?: FormatsProvider;
-    unitsProvider?: UnitsProvider;
 }
 
 // @public @deprecated
