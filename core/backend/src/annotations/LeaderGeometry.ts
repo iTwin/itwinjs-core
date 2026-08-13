@@ -104,7 +104,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
       ).normalize();
       const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledBlockTextHeight;
       // Truncate the first segment of the leader lines to account for the arrowhead size when closedArrow (hollow triangle) terminatorShape is used.
-      if (leaderStyle.leader.terminatorShape === "closedArrow") {
+      if (leaderStyle.leader.showTerminators && leaderStyle.leader.terminatorShape === "closedArrow") {
         if (terminatorDirection)
           leaderLinePoints[0] = leaderLinePoints[0].plusScaled(terminatorDirection, terminatorWidth);
       }
@@ -234,14 +234,14 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
         point.plusXYZ(-halfSize, halfSize),
         point.plusXYZ(-halfSize, -halfSize),
       ]);
-      addGeometry(square, true);
+      addGeometry(square);
       break;
     }
 
     case "rectangle": {
       // Axis-aligned rectangle centered on the point (horizontal upright).
-      // Use the full terminator width so the shape is visibly wider than tall (rather than square).
-      const halfWidth = terminatorWidth;
+      // Respect the configured width/height factors directly.
+      const halfWidth = terminatorWidth / 2;
       const halfHeight = terminatorHalfHeight;
       const rectangle = LineString3d.create([
         point.plusXYZ(-halfWidth, -halfHeight),
@@ -250,7 +250,7 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
         point.plusXYZ(-halfWidth, halfHeight),
         point.plusXYZ(-halfWidth, -halfHeight),
       ]);
-      addGeometry(rectangle, true);
+      addGeometry(rectangle);
       break;
     }
   }
