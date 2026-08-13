@@ -33,8 +33,9 @@ A definition bundle may include:
 
 - `ElementAspect`s and child elements owned by any element in the bundle,
 - a sub-model of any `ISubModeledElement` in the bundle and the elements contained in that model,
+- for an element discovered in another model, its containing model, that model's modeled element, and the modeled element's parent hierarchy,
 - elements referenced through navigation properties, such as a `RecipeDefinitionElement`, `Category`, `PhysicalMaterial`, or `RenderMaterial`, and
-- definitions referenced through relationships with known dependency semantics, including specific subclasses of [`ElementRefersToElements`](../fundamentals/relationship-fundamentals.md#link-table) when their schema or application defines how they should be traversed.
+- dependency relationships represented by subclasses of [`ElementRefersToElements`](../fundamentals/relationship-fundamentals.md#link-table), together with the element at the opposite endpoint of each link-table relationship.
 
 In the running example, the PVC-300 component is more than its `PhysicalType` element:
 
@@ -47,6 +48,11 @@ graph TD
     CAT["SpatialCategory<br/>Pipes"]
     MAT["PhysicalMaterial<br/>PVC"]
     ASP["ElementAspect<br/>pressure rating"]
+    CLS["Classification<br/>Pipes"]
+    CLS2["Classification<br/>Manholes"]
+    CLSM["DefinitionModel<br/>classification table sub-model"]
+    CLST["ClassificationTable<br/>Utility Elements"]
+    CLSS["ClassificationSystem<br/>OpenSite Hierarchy"]
     PT2["PhysicalType<br/>PVC-450 (another component)"]
 
     PT -- "Recipe" --> TR
@@ -55,6 +61,11 @@ graph TD
     GEO -- "is in category" --> CAT
     PT -- "references" --> MAT
     PT -- "owns" --> ASP
+    CAT <-->|"symbolizes (link table)"| CLS
+    CLST -- "is sub-modeled by" --> CLSM
+    CLSM -- "contains" --> CLS
+    CLSM -- "contains" --> CLS2
+    CLST -- "is child of" --> CLSS
     PT2 -. "also references" .-> CAT
     PT2 -. "also references" .-> MAT
 
@@ -63,12 +74,16 @@ graph TD
     classDef shared fill:#fdf3e0,stroke:#b98a2f,stroke-width:1px,color:#1f2937
     classDef other fill:#f4f4f4,stroke:#8a8a8a,stroke-width:1px,color:#1f2937
     class PT entry
-    class TR,SM,GEO,ASP dep
-    class CAT,MAT shared
+    class TR,SM,GEO,ASP,CLSM dep
+    class CAT,MAT,CLS,CLS2,CLST,CLSS shared
     class PT2 other
 ```
 
-Importing PVC-300 means copying every node above except PVC-450: the `PhysicalType`, its referenced `TemplateRecipe3d`, the recipe's template sub-model and geometry, the *Pipes* category, the *PVC* material, and the aspect, together with the relationships among them. The amber nodes are dependencies that may be shared with other components; PVC-450 is shown sharing the *Pipes* category and *PVC* material.
+The PVC-300 bundle contains every node shown in the diagram except PVC-450. It includes the `PhysicalType`, its referenced `TemplateRecipe3d`, the recipe's template sub-model and geometry, the *Pipes* category, the *PVC* material, the `ElementAspect`, the classification structure, and the relationships among them.
+
+Following the category's link-table relationship discovers the *Pipes* classification. The bundle then includes the classification's `DefinitionModel`, the `ClassificationTable` modeled by that model, and the table's parent `ClassificationSystem`. Because discovery is recursive, the bundle also includes the other elements in the table's sub-model, such as the *Manholes* classification shown here. Newly discovered elements contribute their owned child elements.
+
+The amber nodes are dependencies that may be shared with other components. PVC-450 is shown sharing the *Pipes* category and *PVC* material.
 
 There is currently no single BIS construct that identifies a definition bundle as a unit.
 
@@ -78,31 +93,27 @@ Starting with the entry-point element, apply these BIS mechanisms recursively to
 
 - Include owned `ElementAspect`s and child elements. Classes expected to own children implement `IParentElement`.
 - For each `ISubModeledElement`, include its sub-model and the elements contained in that model. `TemplateRecipe3d` and `DefinitionContainer` are examples of sub-modeled elements.
+- When discovery pulls a required element from another model, include the model and its modeled element. If the modeled element is a child element, include its parent and continue through the complete ancestor hierarchy. The other discovery rules then apply recursively to those newly included elements, including their children and sub-model contents.
 - Follow navigation properties from the referencing element to the referenced element, not in the reverse direction. Examples include `TypeDefinitionElement.Recipe`, `PhysicalType.PhysicalMaterial`, `GeometricElement3d.Category`, and `PhysicalMaterial.RenderMaterial`.
+- Traverse dependency relationships represented by subclasses of `ElementRefersToElements` in either direction, include the link-table relationship, and include the element at the opposite endpoint.
 
 For PVC-300, these mechanisms first follow the `Recipe` navigation property from the `PhysicalType` to its `TemplateRecipe3d`, then include the recipe's sub-model and its contents. The traversal also includes the referenced *Pipes* category and *PVC* material, the owned aspect, and any dependencies discovered from those elements.
 
-### Relationship-specific discovery
+### Link-table relationship discovery
 
-The [OpenSite domain schema](https://github.com/iTwin/bis-schemas/blob/master/Domains/4-Application/OpenSite/OpenSite.ecschema.xml) provides one example. Its abstract `CategorySymbolizesClassification` relationship derives from `ElementRefersToElements`. Concrete subclasses relate a source `Category` to a target `Classification`.
+Navigation properties and link-table dependency relationships have different traversal rules. A navigation property is followed only from its referencing element to its referenced element. A dependency relationship represented by a subclass of `ElementRefersToElements` is traversed from either endpoint to the other.
 
-Suppose the *Pipes* `SpatialCategory` in the PVC-300 example participates in one of these concrete relationships. The OpenSite schema or application must decide whether PVC-300 requires the related classification. If it does, traverse from the *Pipes* category to the classification. Do not traverse in reverse when importing a classification, because that would import every category that symbolizes it.
+The [OpenSite domain schema](https://github.com/iTwin/bis-schemas/blob/master/Domains/4-Application/OpenSite/OpenSite.ecschema.xml) provides an example. Its abstract `CategorySymbolizesClassification` relationship derives from `ElementRefersToElements`; concrete subclasses relate a source `Category` to a target `Classification`. Reaching either endpoint therefore includes the relationship and the other endpoint. In the PVC-300 example, reaching the *Pipes* category discovers the *Pipes* classification. Reaching that classification first would likewise discover the category.
 
-For each relevant relationship class, the schema or application must define:
-
-- when the related element is required,
-- which endpoint an importer starts from, and
-- which related endpoint it includes.
-
-A relationship's source and target constraints describe which classes may participate; they do not necessarily define dependency direction. Inheriting from `ElementRefersToElements` is not sufficient reason to traverse a relationship or include its related element in every definition bundle.
+The classification also illustrates model and ownership closure. Its containing `DefinitionModel`, the `ClassificationTable` modeled by that model, and the table's parent `ClassificationSystem` are included. Applying the discovery rules recursively to those elements includes the table's complete sub-model contents and child elements nested beneath the discovered hierarchy. Because a `ClassificationSystem` owns its `ClassificationTable` child elements, the same recursive rules also include any other tables in that system, their sub-model contents, and their nested classifications.
 
 ### Discovery limits
 
-These mechanisms do not guarantee discovery of every dependency. They cover dependencies expressed through BIS ownership, sub-modeling, navigation properties, and relationships whose dependency semantics are known.
+These mechanisms do not guarantee discovery of every dependency. They cover dependencies expressed through BIS ownership, sub-modeling, navigation properties, and link-table dependency relationships.
 
-Other dependencies may be encoded in property payloads, geometry streams, application-defined data, or relationships that do not define a universal dependency direction. Those dependencies require class-, schema-, or application-specific discovery and copy handling. For example, a geometry stream may refer to a `RenderMaterial`, while a `RenderMaterial` may identify a `Texture` through its `JsonProperties`. These examples are not exhaustive.
+Other dependencies may be encoded in property payloads, geometry streams, or application-defined data. Those dependencies require class-, schema-, or application-specific discovery and copy handling. For example, a geometry stream may refer to a `RenderMaterial`, while a `RenderMaterial` may identify a `Texture` through its `JsonProperties`. These examples are not exhaustive.
 
-A `TemplateRecipe3d` can be referenced by multiple `PhysicalType`s, and required dependencies may cross catalog boundaries. Resolving dependencies across separately maintained catalogs is application-specific.
+A `TemplateRecipe3d` can be referenced by multiple `PhysicalType`s. Whether required dependencies should span separately maintained catalogs, and how versions of those catalogs would be resolved together, remain unresolved. This page does not define a cross-catalog version-resolution policy.
 
 When copying a component:
 
@@ -131,11 +142,13 @@ Applications must be able to determine where a cached definition came from (whic
 
 A published catalog version is treated as **immutable**: changing anything in a catalog produces a new catalog version.
 
+The mapping applies to every catalog-sourced `DefinitionElement` cached as part of a bundle, not only to the bundle's entry-point element. A locally created `DefinitionElement` that has no catalog source does not require this catalog provenance.
+
 The recommended mapping is:
 
 - **Catalog version → [RepositoryLink](../../domains/Provenance-in-BIS.md#repositorylink).** Each version of a catalog from which definitions were cached is represented by a `RepositoryLink` element identifying that specific, immutable catalog version.
 - **Cached definition → [ExternalSourceAspect](../../domains/Provenance-in-BIS.md#externalsourceaspect).** Each cached `DefinitionElement` carries one `ExternalSourceAspect` per catalog version that includes it, with the aspect's `Scope` referencing the corresponding `RepositoryLink`. A definition that appears unchanged across several catalog versions is still cached once, with multiple aspects recording each catalog version it belongs to.
-- **Stable entry identity → `ExternalSourceAspect.Identifier`.** The catalog authority's stable identifier for the catalog entry, the identity that persists as the entry evolves across versions, is recorded in the aspect's `Identifier` property.
+- **Stable entry identity → `ExternalSourceAspect.Identifier`.** The catalog authority's stable identifier for the catalog entry, the identity that persists as the entry evolves across versions, is recorded in the aspect's `Identifier` property. Correcting an existing entry preserves this identifier; a distinct replacement product is a new catalog entry with a new stable identifier.
 - **Definition-version identity → [FederationGuid](../fundamentals/federationGuids.md).** The cached `DefinitionElement`'s `FederationGuid` holds the catalog authority's identifier for the *specific version* of the definition. When a changed catalog entry is cached, the new copy is a new `DefinitionElement` with a new `FederationGuid`, while its `CodeValue` and its stable identifier in `ExternalSourceAspect.Identifier` may remain unchanged. A `FederationGuid` normally identifies the real-world entity an Element represents; here, each immutable published version of a definition is treated as a distinct entity, so each version gets its own `FederationGuid`, and the identity that persists across versions is carried by `ExternalSourceAspect.Identifier` instead.
 - **Code scope.** The `RepositoryLink` representing the catalog version under which a definition was first cached serves as the `CodeScope` element for that cached `DefinitionElement` (see [Codes](../fundamentals/codes.md)). Scoping the `Code` to a catalog version prevents code collisions between coexisting copies of the same definition: two cached versions of one catalog entry share a `CodeValue` but have different `CodeScope`s.
 
