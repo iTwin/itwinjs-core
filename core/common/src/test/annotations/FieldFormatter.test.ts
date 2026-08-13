@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { BeEvent } from "@itwin/core-bentley";
-import { BasicUnitsProvider, FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider } from "@itwin/core-quantity";
+import { BasicUnitsProvider, FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, Units } from "@itwin/core-quantity";
 import { FieldFormatterContext, FieldValue, formatFieldValue as fmtFldVal, formatFieldValueAsync } from "../../internal/annotations/FieldFormatter";
 import type { FieldFormatOptions, FieldPrimitiveValue, FieldPropertyType } from "../../core-common";
 
@@ -369,11 +369,13 @@ describe("Async field formatting", () => {
       expect(result).toBe("(1.5, 2)");
     });
 
-    it("applies a kindOfQuantity override on a coordinate value with no property KoQ (implicit meters persistence)", async () => {
-      // Coordinate properties (Point2d/Point3d) with no KindOfQuantity produce no
-      // `persistenceUnitFullName` on the FieldValue. Because BIS geometry always persists in
-      // meters (docs/bis/guide/other-topics/units.md), the formatter infers `Units.LENGTH.M`
-      // as the source unit so an override `kindOfQuantity` still resolves.
+    it("applies a kindOfQuantity override on a coordinate value only when the caller also supplies a persistenceUnit", async () => {
+      // Coordinate properties (Point2d/Point3d) that carry no KindOfQuantity produce no
+      // `persistenceUnitFullName` on the FieldValue. The formatter no longer synthesizes a
+      // meters persistence unit on the caller's behalf — an override `kindOfQuantity` without
+      // an explicit `persistenceUnit` falls back to the raw coordinate. Callers that want the
+      // BIS geometry meters convention (docs/bis/guide/other-topics/units.md) must pass it
+      // explicitly, typically via `Units.LENGTH.M`.
       const feetFormat: FormatProps = {
         composite: { includeZero: true, units: [{ label: "ft", name: "Units.FT" }] },
         formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -381,12 +383,23 @@ describe("Async field formatting", () => {
         type: "Decimal",
         uomSeparator: " ",
       };
-      const result = await formatFieldValueAsync(
+      const context = createContext({ "MySet.LENGTH_FT": feetFormat });
+
+      // Without an explicit persistenceUnit: raw coordinate, no override applied.
+      const rawResult = await formatFieldValueAsync(
         { value: { x: 1, y: 2, z: 3 }, type: "coordinate" },
         { quantity: { kindOfQuantity: "MySet.LENGTH_FT" } },
-        createContext({ "MySet.LENGTH_FT": feetFormat }),
+        context,
       );
-      expect(result).toBe("(3.28 ft, 6.56 ft, 9.84 ft)");
+      expect(rawResult).toBe("(1, 2, 3)");
+
+      // With an explicit persistenceUnit: override resolves.
+      const overrideResult = await formatFieldValueAsync(
+        { value: { x: 1, y: 2, z: 3 }, type: "coordinate" },
+        { quantity: { kindOfQuantity: "MySet.LENGTH_FT", persistenceUnit: Units.LENGTH.M } },
+        context,
+      );
+      expect(overrideResult).toBe("(3.28 ft, 6.56 ft, 9.84 ft)");
     });
 
     it("applies prefix/suffix/case around the joined coordinate", async () => {
