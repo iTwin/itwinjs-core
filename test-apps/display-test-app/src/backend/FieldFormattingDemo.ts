@@ -132,6 +132,36 @@ export const DEMO_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
     decimalSeparator: ".",
     composite: { units: [{ label: "[&]ft²", name: "Units.SQ_FT" }] },
   },
+  // Angle seeds. Two variants so both possible Rotation persistence conventions
+  // (BIS `GeometricElement2d.Placement.Rotation` can be authored as either) render:
+  //   * ANGLE_DEG_FROM_DEG: persistence = ARC_DEG, no unit conversion; use when the
+  //     property is stored in degrees.
+  //   * ANGLE_DEG_FROM_RAD: persistence = RAD, converts radians -> degrees for display;
+  //     use when the property is stored in radians (AecUnits.ANGLE convention).
+  "Demo.ANGLE_DEG_FROM_DEG": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 3,
+    type: "Decimal",
+    uomSeparator: "",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[°d]°", name: "Units.ARC_DEG" }] },
+  },
+  "Demo.ANGLE_DEG_FROM_RAD": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 3,
+    type: "Decimal",
+    uomSeparator: "",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[°r]°", name: "Units.ARC_DEG" }] },
+  },
+  "Demo.ANGLE_RAD": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[θ]rad", name: "Units.RAD" }] },
+  },
 };
 
 /** Persistence unit each seed in [[DEMO_SEED_FORMATS]] expects to be compiled against.
@@ -143,6 +173,9 @@ const DEMO_SEED_PERSISTENCE_UNITS: { readonly [name: string]: string } = {
   "Demo.AREA_M2": "Units.SQ_M",
   "Demo.AREA_MM2": "Units.SQ_M",
   "Demo.AREA_FT2": "Units.SQ_M",
+  "Demo.ANGLE_DEG_FROM_DEG": "Units.ARC_DEG",
+  "Demo.ANGLE_DEG_FROM_RAD": "Units.RAD",
+  "Demo.ANGLE_RAD": "Units.RAD",
 };
 
 /** [FormatsProvider]($core-quantity) wrapper that overlays [[DEMO_SEED_FORMATS]] on top of an

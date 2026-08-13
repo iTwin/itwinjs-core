@@ -741,6 +741,160 @@ export class TextDecorationTool extends Tool {
   }
 
   // TODO: Remove before merging, just for convenience while testing.
+  // Tests both a coordinate field (Origin) and a scalar quantity field (Rotation)
+  // on a single BisCore.DrawingGraphic in one pass.
+  private async testDrawingGraphic(elementId: string = "0x500000001b3") {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp) {
+      return;
+    }
+
+    const tabSize = 0.025;
+
+    // Setup — mirrors testText / testFootprintArea. Adjust the model / style ids to
+    // match a 2d drawing model in the iModel under test.
+    await this.parseAndRun("init", "0x20000000398");
+    await this.parseAndRun("applystyle", "0x50000000001");
+    await this.parseAndRun("font", "Arimo");
+    await this.parseAndRun("center");
+
+    const appendCase = (
+      title: string,
+      propertyName: "Origin" | "Rotation",
+      expected: string,
+      formatOptions?: FieldFormatOptions,
+      note?: string,
+    ) => {
+      const labelColor = ColorDef.fromString("black").toJSON();
+      const expectedColor = ColorDef.fromString("#ff5959").toJSON();
+      const actualColor = ColorDef.fromString("#156715").toJSON();
+
+      editor.appendBreak();
+      editor.runStyle.color = labelColor;
+      editor.runStyle.isBold = true;
+      editor.appendText(`${title} — ${propertyName}`);
+      editor.runStyle.isBold = false;
+      editor.appendBreak();
+
+      editor.appendText("Expected: ");
+      editor.runStyle.color = expectedColor;
+      editor.appendTab(tabSize);
+      editor.appendText(expected);
+      editor.runStyle.color = labelColor;
+      editor.appendBreak();
+
+      editor.appendText("Actual: ");
+      editor.runStyle.color = actualColor;
+      editor.appendTab(tabSize);
+      editor.appendField({
+        elementId,
+        schemaName: "BisCore",
+        className: "DrawingGraphic",
+        propertyName,
+        formatOptions,
+      });
+      editor.runStyle.color = labelColor;
+
+      if (note) {
+        editor.appendBreak();
+        editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
+        editor.runStyle.isItalic = true;
+        editor.appendText(note);
+        editor.runStyle.isItalic = false;
+        editor.runStyle.color = labelColor;
+      }
+
+      editor.appendBreak();
+      editor.appendText(JSON.stringify({ propertyName, formatOptions: formatOptions ?? null }));
+      editor.appendBreak();
+      editor.appendText(" ");
+    };
+
+    editor.appendBreak();
+    editor.runStyle.isBold = true;
+    editor.appendText(`BisCore.DrawingGraphic ${elementId} — Origin (coordinate) + Rotation (scalar quantity)`);
+    editor.runStyle.isBold = false;
+    editor.appendBreak();
+
+    // Raw persisted values for element 0x500000001b3 (observed):
+    //   Origin   : (0.8055525852652443, -0.7195653998007376)  metres
+    //   Rotation : 151.8583987677383                          degrees
+    // The coordinate/scalar format pipeline resolves via defaultCoordinateFormatProps
+    // for Origin (precision 4 m) and via DEMO_SEED_FORMATS for the seeded cases.
+    // Rotation has no coordinate fallback, so "No overrides" is raw toString.
+    // Prefix/suffix/case wrappers are applied on top of the formatted string.
+
+    // --- Origin: coordinate field ---
+    appendCase(
+      "No overrides",
+      "Origin",
+      "(0.8056 m, -0.7196 m)",
+      undefined,
+      "Coordinate fallback: defaultCoordinateFormatProps (precision 4 m) when the property has no resolvable KoQ.",
+    );
+    appendCase(
+      "Seed Demo.LENGTH_MM",
+      "Origin",
+      "(805.6 [*]mm, -719.6 [*]mm)",
+      { quantity: { kindOfQuantity: "Demo.LENGTH_MM" } },
+      "Convert Origin (persisted metres) to mm via demo seed. [*] marker confirms the demo seed applied.",
+    );
+    appendCase(
+      "Seed Demo.LENGTH_FT",
+      "Origin",
+      "(2.643 [~]ft, -2.361 [~]ft)",
+      { quantity: { kindOfQuantity: "Demo.LENGTH_FT" } },
+      "Convert Origin (persisted metres) to ft via demo seed. [~] marker confirms the demo seed applied.",
+    );
+
+    // --- Rotation: scalar angle ---
+    appendCase(
+      "No overrides",
+      "Rotation",
+      "151.8583987677383",
+      undefined,
+      "Scalar quantity with no coordinate fallback: raw toString when the property KoQ is unresolvable.",
+    );
+    appendCase(
+      "Seed Demo.ANGLE_DEG_FROM_DEG",
+      "Rotation",
+      "151.858[°d]°",
+      { quantity: { kindOfQuantity: "Demo.ANGLE_DEG_FROM_DEG", persistenceUnit: "Units.ARC_DEG" } },
+      "Use when Rotation is stored in degrees. No unit conversion. [°d] marker confirms the demo seed applied.",
+    );
+    appendCase(
+      "Seed Demo.ANGLE_DEG_FROM_RAD",
+      "Rotation",
+      "8700.845[°r]°",
+      { quantity: { kindOfQuantity: "Demo.ANGLE_DEG_FROM_RAD", persistenceUnit: "Units.RAD" } },
+      "Use when Rotation is stored in radians. Converts rad -> deg for display. [°r] marker confirms the demo seed applied. (Rotation is actually stored in degrees here, so 151.858 gets treated as radians -> 8700.845°.)",
+    );
+    appendCase(
+      "Seed Demo.ANGLE_RAD",
+      "Rotation",
+      "151.8584 [θ]rad",
+      { quantity: { kindOfQuantity: "Demo.ANGLE_RAD", persistenceUnit: "Units.RAD" } },
+      "Pass-through radians (persistence = RAD). [θ] marker confirms the demo seed applied.",
+    );
+    appendCase(
+      "Prefix/suffix wrappers",
+      "Rotation",
+      "θ=151.8583987677383 (deg)",
+      { prefix: "θ=", suffix: " (deg)" },
+      "prefix/suffix wrap whatever the underlying formatter produced.",
+    );
+    appendCase(
+      "Case upper",
+      "Rotation",
+      "151.8583987677383",
+      { case: "upper" },
+      "case=upper applied after formatting; digits are unaffected.",
+    );
+
+    await editor.update();
+  }
+
+  // TODO: Remove before merging, just for convenience while testing.
   private async testTextFromJson(json: string) {
     await this.parseAndRun("init", "0x20000000398");
     await this.parseAndRun("applystyle", "0x50000000001");
@@ -761,6 +915,13 @@ export class TextDecorationTool extends Tool {
     // TODO: Remove before merging, just for convenience while testing.
     if (cmd === "testarea") {
       await this.testFootprintArea();
+      return true;
+    }
+
+    // TODO: Remove before merging, just for convenience while testing.
+    if (cmd === "testdrawinggraphic") {
+      const elementId = inArgs[1];
+      await this.testDrawingGraphic(elementId);
       return true;
     }
 
