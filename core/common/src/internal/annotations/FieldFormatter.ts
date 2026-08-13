@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { Format, FormatsProvider, FormatterSpec, FormattingSpecProvider, UnitProps, Units, UnitsProvider } from "@itwin/core-quantity";
+import { Format, FormatsProvider, FormatterSpec, FormattingSpecArgs, FormattingSpecProvider, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { DateTimeFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 
 /** A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -125,49 +125,56 @@ export interface FieldFormatterContext {
   formatsProvider: FormatsProvider;
 }
 
-// A single (KindOfQuantity name, persistence unit name) pair that `getFormatterSpec` will try
-// to resolve into a FormatterSpec via the caller-supplied FormatsProvider.
-interface FormatterSpecCandidate {
-  name: string;
-  persistenceUnitName: string;
-}
-
-// Enumerates the candidates the formatter should try, in order of preference:
-//   1. The effective override pair: `formatOptions.quantity.{kindOfQuantity, persistenceUnit}`
-//      per-dimension, falling back to the property's own KoQ + persistence unit when the
-//      corresponding override is unset.
-//   2. The property-side pair on its own, if it differs from #1. This is the "the override
+// Builds the ordered list of (KoQ name, persistence unit) pairs — expressed as
+// [FormattingSpecArgs]($core-quantity) — that a quantity/coordinate FieldValue should be
+// formatted through, in order of preference:
+//   1. The **effective override pair** — per-dimension `override ?? property`. When only one of
+//      `kindOfQuantity` / `persistenceUnit` is overridden, the other still comes from the
+//      property.
+//   2. The **property-side pair** on its own, if it differs from #1. This is the "the override
 //      didn't resolve; fall back to what's on the EC value" path — it lets callers pin a
 //      preferred FormatSet KoQ without losing rendering when that FormatSet isn't loaded.
-// If neither candidate resolves in the FormatsProvider, the formatter falls back to the raw
-// string representation (via `formatFieldValue`). Core does not carry a built-in coordinate
-// format: coordinate presentation is app policy and belongs to the FormatsProvider / FormatSet.
-function collectFormatterSpecCandidates(
-  quantityOptions: QuantityFieldFormatOptions | undefined,
-  value: FieldValue,
-): FormatterSpecCandidate[] {
-  const propertyName = value.kindOfQuantityFullName;
-  // Coordinate values are BIS geometry, which is persisted in meters (see
-  // docs/bis/guide/other-topics/units.md). Treat that as the implicit persistence unit
-  // whenever nothing else (property KoQ or override) supplied one, so a `kindOfQuantity`
-  // override on a coordinate property without its own KoQ still resolves against
-  // `Units.LENGTH.M` instead of being dropped for lack of a unit.
-  const coordinateImplicitPersistence = value.type === "coordinate" ? Units.LENGTH.M : undefined;
-  const propertyPersistence = value.persistenceUnitFullName ?? coordinateImplicitPersistence;
-  const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
-  const effectivePersistence = quantityOptions?.persistenceUnit ?? propertyPersistence;
+// A candidate is only emitted when both its name and persistence unit are defined. Core makes
+// no assumption about coordinate persistence: a coordinate property without a KindOfQuantity
+// contributes no property-side pair, so a caller who wants to format such a value must supply
+// **both** `kindOfQuantity` and `persistenceUnit` in `formatOptions.quantity`.
+//
+// See `docs/bis/guide/other-topics/units.md` for the BIS convention that coordinate geometry is
+// persisted in meters — but Core no longer encodes that convention: callers targeting bare
+// `Point2d`/`Point3d` properties should pass `persistenceUnit: Units.LENGTH.M` explicitly.
+function collectFieldQuantityPairs(args: {
+  overrideName?: string;
+  overridePersistence?: string;
+  propertyName?: string;
+  propertyPersistence?: string;
+}): FormattingSpecArgs[] {
+  const { overrideName, overridePersistence, propertyName, propertyPersistence } = args;
+  const effectiveName = overrideName ?? propertyName;
+  const effectivePersistence = overridePersistence ?? propertyPersistence;
 
-  const candidates: FormatterSpecCandidate[] = [];
+  const pairs: FormattingSpecArgs[] = [];
   if (effectiveName && effectivePersistence) {
-    candidates.push({ name: effectiveName, persistenceUnitName: effectivePersistence });
+    pairs.push({ name: effectiveName, persistenceUnitName: effectivePersistence });
   }
   if (
     propertyName && propertyPersistence &&
     (propertyName !== effectiveName || propertyPersistence !== effectivePersistence)
   ) {
-    candidates.push({ name: propertyName, persistenceUnitName: propertyPersistence });
+    pairs.push({ name: propertyName, persistenceUnitName: propertyPersistence });
   }
-  return candidates;
+  return pairs;
+}
+
+function collectFormatterSpecCandidates(
+  quantityOptions: QuantityFieldFormatOptions | undefined,
+  value: FieldValue,
+): FormattingSpecArgs[] {
+  return collectFieldQuantityPairs({
+    overrideName: quantityOptions?.kindOfQuantity,
+    overridePersistence: quantityOptions?.persistenceUnit,
+    propertyName: value.kindOfQuantityFullName,
+    propertyPersistence: value.persistenceUnitFullName,
+  });
 }
 
 async function getFormatterSpec(
@@ -266,41 +273,22 @@ export async function formatFieldValueAsync(
   }
 }
 
-// Looks up an already-warmed FormatterSpec for `value` from `provider`. Tries the effective
-// override pair first (per-dimension `override ?? property`), then the property-side pair when
-// it differs — matching the async path so a missing FormatSet entry falls back cleanly to the
-// property's own KoQ instead of dropping to raw output.
+// Looks up an already-warmed FormatterSpec for `value` from `provider`. Consumes the shared
+// `collectFieldQuantityPairs` helper so the sync path enumerates identical candidates to the
+// async formatter, and drops to the raw string when nothing matches.
 function lookupSyncSpec(
   quantityOptions: QuantityFieldFormatOptions | undefined,
   value: FieldValue,
   provider: FormattingSpecProvider,
 ): FormatterSpec | undefined {
-  const propertyName = value.kindOfQuantityFullName;
-  // Coordinate values are BIS geometry (meters); treat `Units.LENGTH.M` as the implicit
-  // persistence unit so a `kindOfQuantity` override on a coordinate property with no KoQ still
-  // resolves.
-  const coordinateImplicitPersistence = value.type === "coordinate" ? Units.LENGTH.M : undefined;
-  const propertyPersistence = value.persistenceUnitFullName ?? coordinateImplicitPersistence;
-  const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
-  const effectivePersistence = quantityOptions?.persistenceUnit ?? propertyPersistence;
-
-  if (effectiveName && effectivePersistence) {
-    const spec = provider.getSpecsByNameAndUnit({
-      name: effectiveName,
-      persistenceUnitName: effectivePersistence,
-    })?.formatterSpec;
-    if (spec) {
-      return spec;
-    }
-  }
-  if (
-    propertyName && propertyPersistence &&
-    (propertyName !== effectiveName || propertyPersistence !== effectivePersistence)
-  ) {
-    const spec = provider.getSpecsByNameAndUnit({
-      name: propertyName,
-      persistenceUnitName: propertyPersistence,
-    })?.formatterSpec;
+  const pairs = collectFieldQuantityPairs({
+    overrideName: quantityOptions?.kindOfQuantity,
+    overridePersistence: quantityOptions?.persistenceUnit,
+    propertyName: value.kindOfQuantityFullName,
+    propertyPersistence: value.persistenceUnitFullName,
+  });
+  for (const pair of pairs) {
+    const spec = provider.getSpecsByNameAndUnit(pair)?.formatterSpec;
     if (spec) {
       return spec;
     }

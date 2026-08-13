@@ -9,7 +9,7 @@ import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { createUnitsProvider, FormatsProvider, FormattingSpecArgs, Units, UnitsProvider } from "@itwin/core-quantity";
+import { createUnitsProvider, FormatsProvider, FormattingSpecArgs, UnitsProvider } from "@itwin/core-quantity";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -540,6 +540,13 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Proper
 // overrides differ from the property's own KoQ, we emit both the override pair and the
 // property-side pair so pre-warmed provider caches cover the runtime fallback path — if the
 // override name isn't in the active FormatsProvider the formatter falls back to the property.
+//
+// A property with no KindOfQuantity contributes no property-side pair. In particular coordinate
+// properties (Point2d/Point3d) that carry no KoQ produce no requirement unless the caller has
+// declared **both** `kindOfQuantity` and `persistenceUnit` in `formatOptions.quantity` — Core
+// does not synthesize a persistence unit on the property's behalf. See
+// `docs/bis/guide/other-topics/units.md` for the BIS meters convention that callers are
+// expected to encode explicitly (typically via `Units.LENGTH.M`).
 function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
   const quantityOptions = field.formatOptions?.quantity;
 
@@ -555,27 +562,19 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
 
   const koq = ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
   const propertyName = koq?.fullName;
-  // Coordinate properties (Point2d/Point3d) always persist in meters, even when the property
-  // itself carries no KindOfQuantity. Reflect that implicit persistence unit so pre-warm covers
-  // a `kindOfQuantity` override against `Units.LENGTH.M`.
-  const coordinateImplicitPersistence = propertyType === "coordinate" ? Units.LENGTH.M : undefined;
-  const propertyPersistenceUnitName = koq?.persistenceUnit?.fullName ?? coordinateImplicitPersistence;
-
-  // Effective pair: override wins per-dimension, otherwise property KoQ.
+  const propertyPersistence = koq?.persistenceUnit?.fullName;
   const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
-  const effectivePersistenceUnitName = quantityOptions?.persistenceUnit ?? propertyPersistenceUnitName;
+  const effectivePersistence = quantityOptions?.persistenceUnit ?? propertyPersistence;
 
   const results: FormattingSpecArgs[] = [];
-  if (effectiveName && effectivePersistenceUnitName) {
-    results.push({ name: effectiveName, persistenceUnitName: effectivePersistenceUnitName });
+  if (effectiveName && effectivePersistence) {
+    results.push({ name: effectiveName, persistenceUnitName: effectivePersistence });
   }
-  // Property-side fallback, only if it differs from the effective pair. The formatter will try
-  // this if the effective pair fails to resolve in the FormatsProvider.
   if (
-    propertyName && propertyPersistenceUnitName &&
-    (propertyName !== effectiveName || propertyPersistenceUnitName !== effectivePersistenceUnitName)
+    propertyName && propertyPersistence &&
+    (propertyName !== effectiveName || propertyPersistence !== effectivePersistence)
   ) {
-    results.push({ name: propertyName, persistenceUnitName: propertyPersistenceUnitName });
+    results.push({ name: propertyName, persistenceUnitName: propertyPersistence });
   }
   return results;
 }
