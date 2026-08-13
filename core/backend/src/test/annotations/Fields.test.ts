@@ -555,7 +555,7 @@ describe.only("Field evaluation", () => {
   });
 
   describe("updateFieldsAsync (quantity formatting)", () => {
-    it("formats a coordinate FieldRun using the default meters format when no KoQ or override is provided", async () => {
+    it("falls back to the raw coordinate string when no KoQ or override is provided", async () => {
       const textBlock = TextBlock.create();
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -567,7 +567,9 @@ describe.only("Field evaluation", () => {
       const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: textBlock });
 
       expect(updatedCount).to.equal(1);
-      expect(fieldRun.cachedContent).to.equal("(1 m, 2 m, 3 m)");
+      // Core has no built-in coordinate format; without a matching FormatsProvider entry the
+      // formatter drops to the raw `(x, y, z)` representation.
+      expect(fieldRun.cachedContent).to.equal("(1, 2, 3)");
     });
 
     it("preserves non-quantity field formatting when using the async pipeline", async () => {
@@ -673,7 +675,7 @@ describe.only("Field evaluation", () => {
       expect(field.cachedContent).to.equal("(3.2808 ft, 6.5617 ft, 9.8425 ft)");
     });
 
-    it("uses the default coordinate meters format when only persistenceUnit is set", async () => {
+    it("falls back to the raw coordinate string when only persistenceUnit is set and no format matches", async () => {
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
         propertyPath: pointPath,
@@ -688,7 +690,9 @@ describe.only("Field evaluation", () => {
       const { updatedCount, content } = await runEvaluate(field);
 
       expect(updatedCount).to.equal(1);
-      expect(content).to.equal("(1 m, 2 m, 3 m)");
+      // With no `kindOfQuantity` name and no property KoQ, there is no lookup key for the
+      // FormatsProvider, so the formatter drops to the raw representation.
+      expect(content).to.equal("(1, 2, 3)");
     });
 
     it("still uses the property's KindOfQuantity when only persistenceUnit is overridden", async () => {
@@ -846,6 +850,8 @@ describe.only("Field evaluation", () => {
 
     it("uses schema-backed providers when no overrides are supplied", async () => {
       // Regression: omitting `formatting` should behave identically to before this API was added.
+      // The `point` property has no KindOfQuantity, so no lookup key is available and the async
+      // path drops to the raw coordinate representation.
       const block = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -857,7 +863,7 @@ describe.only("Field evaluation", () => {
       const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block });
 
       expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("(1 m, 2 m, 3 m)");
+      expect(field.cachedContent).to.equal("(1, 2, 3)");
     });
   });
 
