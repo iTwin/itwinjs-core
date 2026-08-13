@@ -635,7 +635,7 @@ describe.only("Field evaluation", () => {
       const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
         iModel: imodel,
         block,
-        formatting: { formatsProvider: stubProvider },
+        formatsProvider: stubProvider,
       });
 
       expect(updatedCount).to.equal(1);
@@ -667,7 +667,7 @@ describe.only("Field evaluation", () => {
       const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
         iModel: imodel,
         block,
-        formatting: { formatsProvider: stubProvider },
+        formatsProvider: stubProvider,
       });
 
       expect(updatedCount).to.equal(1);
@@ -722,7 +722,7 @@ describe.only("Field evaluation", () => {
       const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
         iModel: imodel,
         block,
-        formatting: { formatsProvider: stubProvider },
+        formatsProvider: stubProvider,
       });
 
       expect(updatedCount).to.equal(1);
@@ -757,7 +757,7 @@ describe.only("Field evaluation", () => {
       const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
         iModel: imodel,
         block,
-        formatting: { formatsProvider: stubProvider },
+        formatsProvider: stubProvider,
       });
 
       expect(updatedCount).to.equal(1);
@@ -813,7 +813,7 @@ describe.only("Field evaluation", () => {
       const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
         iModel: imodel,
         block,
-        formatting: { formatsProvider: stubProvider },
+        formatsProvider: stubProvider,
       });
 
       expect(updated).to.equal(1);
@@ -841,7 +841,7 @@ describe.only("Field evaluation", () => {
       const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
         iModel: imodel,
         block,
-        formatting: { formatsProvider: stubProvider },
+        formatsProvider: stubProvider,
       });
 
       expect(updated).to.equal(1);
