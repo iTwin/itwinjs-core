@@ -3781,9 +3781,7 @@ export interface FieldRunProps extends TextBlockComponentProps {
 export interface FieldValue {
     kindOfQuantityFullName?: string;
     persistenceUnitFullName?: string;
-    // (undocumented)
     type: FieldPropertyType;
-    // (undocumented)
     value: FieldPrimitiveValue;
 }
 
