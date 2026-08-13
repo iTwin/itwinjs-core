@@ -7,8 +7,6 @@ description: Split large, state-sharing backend test monoliths into isolated per
 
 Use this skill when a test file has grown into a monolith whose tests share and mutate the same iModels, creating ordering dependencies. It covers how to split it safely, how to prove you did not regress runtime, and the repo-specific traps that waste the most time.
 
-Derived from the `core/backend/src/test/imodel/IModel.test.ts` refactor (3728 lines, 80 tests, 5 shared mutable `SnapshotDb` instances → 8 per-area files plus one shared fixtures module).
-
 ## When this applies
 
 Look for these smells:
@@ -22,10 +20,10 @@ Look for these smells:
 
 Do not give every test its own copy — that is correct but slow. Do not share one mutable iModel — that is fast but fragile. Split by **whether the test mutates**:
 
-| Test kind | Fixture | Lifetime |
-| --- | --- | --- |
-| Read-only | One shared read-only handle per file | Opened in `before`, closed in `after` |
-| Mutating | Its own fresh writable copy | Created in the test, closed by tracker in `afterEach` |
+| Test kind | Fixture                              | Lifetime                                              |
+| --------- | ------------------------------------ | ----------------------------------------------------- |
+| Read-only | One shared read-only handle per file | Opened in `before`, closed in `after`                 |
+| Mutating  | Its own fresh writable copy          | Created in the test, closed by tracker in `afterEach` |
 
 A read-only handle is safe to share precisely because nothing can mutate it. This keeps the common case cheap while making mutation leaks impossible.
 
@@ -35,8 +33,13 @@ There is no "open a seed read-only" primitive that also isolates you — opening
 
 ```ts
 // in before()
-testBimReadonly = await openReadonlySeedCopy("elements-test.bim", "test.bim", { importTestBim: true });
-compatibilityReadonly = await openReadonlySeedCopy("elements-CompatibilityTestSeed.bim", "CompatibilityTestSeed.bim");
+testBimReadonly = await openReadonlySeedCopy("elements-test.bim", "test.bim", {
+  importTestBim: true,
+});
+compatibilityReadonly = await openReadonlySeedCopy(
+  "elements-CompatibilityTestSeed.bim",
+  "CompatibilityTestSeed.bim",
+);
 ```
 
 ### Tracking mutable iModels
@@ -44,12 +47,18 @@ compatibilityReadonly = await openReadonlySeedCopy("elements-CompatibilityTestSe
 Every writable copy goes through the tracker so teardown is guaranteed even when a test throws.
 
 ```ts
-const { trackMutableIModel, closeTrackedIModels } = createMutableIModelTracker();
+const { trackMutableIModel, closeTrackedIModels } =
+  createMutableIModelTracker();
 
 afterEach(() => closeTrackedIModels()); // idempotent — safe to also call from after()
 
 it("should insert a DisplayStyle", () => {
-  const imodel = trackMutableIModel(createIModelFromSeed("views-insert-display-style.bim", "CompatibilityTestSeed.bim"));
+  const imodel = trackMutableIModel(
+    createIModelFromSeed(
+      "views-insert-display-style.bim",
+      "CompatibilityTestSeed.bim",
+    ),
+  );
   // ...
 });
 ```
@@ -58,21 +67,21 @@ Type the tracker to `IModelDb`, not `SnapshotDb`, so it also accepts `Standalone
 
 ## Keep canonical helpers in exactly one place
 
-Every shared fixture helper belongs in a single `*TestFixtures.ts` next to the tests. Reviewers on this repo push back hard on duplication here — the same boilerplate appearing in 4-6 files defeats the point of having the module.
+Every shared fixture helper belongs in a single `itwinjs-core\core\backend\src\test\imodel\IModelTestFixtures.ts` next to the tests. Reviewers on this repo push back hard on duplication here — the same boilerplate appearing in 4-6 files defeats the point of having the module.
 
 Helpers proven useful in the reference refactor:
 
-| Helper | Purpose |
-| --- | --- |
-| `createIModelFromSeed(target, seed)` | The single **sync** creation path for a writable copy |
-| `importTestBim(db)` | Composable **async** schema import: `await importTestBim(createIModelFromSeed(...))` |
-| `openReadonlySeedCopy(target, seed, opts?)` | Canonical shared read-only fixture (copy, close, reopen) |
-| `closeIfOpen(...dbs)` | Teardown guarding `undefined` and already-closed handles |
-| `createMutableIModelTracker()` | Returns `{ trackMutableIModel, closeTrackedIModels }` |
+| Helper                                      | Purpose                                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `createIModelFromSeed(target, seed)`        | The single **sync** creation path for a writable copy                                |
+| `importTestBim(db)`                         | Composable **async** schema import: `await importTestBim(createIModelFromSeed(...))` |
+| `openReadonlySeedCopy(target, seed, opts?)` | Canonical shared read-only fixture (copy, close, reopen)                             |
+| `closeIfOpen(...dbs)`                       | Teardown guarding `undefined` and already-closed handles                             |
+| `createMutableIModelTracker()`              | Returns `{ trackMutableIModel, closeTrackedIModels }`                                |
 
 Two design rules that came directly out of review:
 
-- **Prefer composition over a boolean flag** when the variants differ by an async step. Merging a sync creator and an async creator behind `{ importTestBim?: boolean }` forces *every* call site async, including the many that are genuinely synchronous. A separate `importTestBim(db)` keeps sync tests sync and makes the schema import visible at the call site.
+- **Prefer composition over a boolean flag** when the variants differ by an async step. Merging a sync creator and an async creator behind `{ importTestBim?: boolean }` forces _every_ call site async, including the many that are genuinely synchronous. A separate `importTestBim(db)` keeps sync tests sync and makes the schema import visible at the call site.
 - **Name helpers so the mechanism is obvious.** `track` → `trackMutableIModel`, `closeTracked` → `closeTrackedIModels`. These names appear at dozens of call sites and are the main thing a newcomer reads.
 
 Before adding a helper, check it is actually reachable. An exported-but-uncalled helper is dead code that reviewers will flag, and deleting it is usually right — but confirm the intended caller is not simply using a subtly different behavior (for example, sharing the seed asset directly versus an isolated copy).
@@ -82,13 +91,14 @@ Before adding a helper, check it is actually reachable. An exported-but-uncalled
 A helper that converts a rejection into a value must rethrow anything unexpected, or a real bug reports as a useless assertion message.
 
 ```ts
-export async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
+export async function getIModelError<T>(
+  promise: Promise<T>,
+): Promise<IModelError | undefined> {
   try {
     await promise;
     return undefined;
   } catch (err) {
-    if (err instanceof IModelError)
-      return err;
+    if (err instanceof IModelError) return err;
     throw err; // a TypeError here is a real bug — keep its message and stack
   }
 }
@@ -98,7 +108,7 @@ Returning `undefined` for both "resolved" and "threw the wrong type" collapses t
 
 ## Determinism
 
-Replace `Math.random()` selection with a deterministic stride so failures reproduce. But check what the randomness was incidentally covering first — sampling *with replacement* passes duplicate entries, which may be the only coverage of duplicate-input handling. Preserve that intentionally rather than dropping it: keep the deterministic subset and add a deliberate duplicate entry.
+Replace `Math.random()` selection with a deterministic stride so failures reproduce. But check what the randomness was incidentally covering first — sampling _with replacement_ passes duplicate entries, which may be the only coverage of duplicate-input handling. Preserve that intentionally rather than dropping it: keep the deterministic subset and add a deliberate duplicate entry.
 
 Rename the test once selection is deterministic; leaving "random" in the name is misleading.
 
