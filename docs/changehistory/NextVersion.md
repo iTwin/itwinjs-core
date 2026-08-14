@@ -129,6 +129,8 @@ const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
 
 `evaluateFieldsAsync` mutates the in-memory `TextBlock`; **it does not persist**. Callers that want the formatted output to survive the session must assign the updated block back to the owning element (for example via `TextAnnotation2d.setAnnotation` / `TextAnnotation3d.setAnnotation`) and call `element.update()` inside a transaction.
 
+An injected `formatsProvider` / `unitsProvider` applies **block-wide** — every `"quantity"` and `"coordinate"` field in `block` is resolved through it regardless of the field's `formatOptions.quantity.formatSet`. This intentionally differs from the [synchronous path](#opting-in-to-synchronous-formatting) below, where routing is per-field and only fields whose `formatSet` matches a registration format through a provider. A block that mixes tagged and untagged fields will render different strings on the two paths when a caller registers a sync provider under one `formatSet` while passing a distinct block-wide provider to `evaluateFieldsAsync`; callers needing per-field routing on the async path must slice their block and call `evaluateFieldsAsync` once per provider.
+
 #### Opting in to synchronous formatting
 
 The synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks render `"quantity"` and `"coordinate"` fields as their raw string representation **unless** the host registers a pre-warmed [FormattingSpecProvider]($core-quantity) keyed by [FormatSet]($core-quantity) [Id64String]($bentley). Sync formatting only fires for fields whose `formatOptions.quantity.formatSet` matches a registered id.
