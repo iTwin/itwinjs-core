@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
   Placement3dProps, QueryRowFormat, RelatedElementProps, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d, Range2d, Range3d } from "@itwin/core-geometry";
-import { _nativeDb, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, ECSqlStatement, IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory, SpatialViewDefinition } from "../../core-backend";
+import { _nativeDb, CategorySelector, ChannelControl, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, ECSqlStatement, GeometricElement3d, IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory, SpatialViewDefinition, StandaloneDb } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { EntityClass, RelationshipClass } from "@itwin/ecschema-metadata";
@@ -1075,8 +1075,24 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.isUndefined(noPlacement.placement);
     const noPlacementElement = imodel.elements.getElement<PhysicalObject>(noPlacementId, PhysicalObject);
     assert.isUndefined(noPlacementElement.toJSON().placement);
-    noPlacementElement.placement.origin.x = 10;
-    assert.deepEqual(noPlacementElement.toJSON().placement?.origin, { x: 10, y: 0, z: 0 });
+    const writableImodel = StandaloneDb.openFile(imodelPath, OpenMode.ReadWrite);
+    writableImodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    withEditTxn(writableImodel, (txn) => txn.updateElement(noPlacementElement.toJSON()));
+    writableImodel.close();
+
+    imodel.close();
+    imodel = SnapshotDb.openFile(imodelPath);
+    const reloadedNoPlacement = imodel.elements.getElement<PhysicalObject>(noPlacementId, PhysicalObject);
+    assert.isUndefined(reloadedNoPlacement.toJSON().placement);
+    reloadedNoPlacement.placement.origin.x = 10;
+    assert.deepEqual(reloadedNoPlacement.toJSON().placement?.origin, { x: 10, y: 0, z: 0 });
+    assert.isUndefined(imodel.elements.getElementProps<GeometricElementProps>({ id: noPlacementId }).placement);
+    const spatialIndexCount = imodel.withPreparedStatement("SELECT COUNT(*) FROM bis.SpatialIndex WHERE ECInstanceId=?", (stmt) => {
+      stmt.bindId(1, noPlacementId);
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      return stmt.getValue(0).getInteger();
+    });
+    assert.equal(spatialIndexCount, 0);
 
     const originOnly = imodel.elements.getElementProps<GeometricElementProps>({ id: originOnlyId });
     assert.deepEqual(originOnly.placement?.origin, [10, 20, 30]);
@@ -1085,6 +1101,31 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.deepEqual(originOnlyElement.toJSON().placement?.origin, { x: 10, y: 20, z: 30 });
 
     imodel.close();
+  });
+
+  it("Preserves a placement returned by 3d geometry deserialization", () => {
+    const placement = {
+      origin: [10, 20, 30],
+      angles: { yaw: 0, pitch: 0, roll: 0 },
+      bbox: { low: [-1, -2, -3], high: [1, 2, 3] },
+    };
+    const nativeDb = {
+      patchJsonProperties: (json: string) => json,
+      convertOrUpdateGeometrySource: () => ({ geom: [], placement }),
+    };
+    const row = {
+      classFullName: GeometricElement3d.classFullName,
+      id: "0x1",
+      model: { id: "0x1" },
+      codeValue: "",
+      codeSpec: { id: "0x0" },
+      codeScope: { id: "0x0" },
+      category: { id: "0x2" },
+      geometryStream: new Uint8Array([1]),
+    };
+
+    const props = GeometricElement3d.deserialize({ row, iModel: { [_nativeDb]: nativeDb } as any });
+    assert.deepEqual(props.placement, placement);
   });
 
   it("Roundtrip updating properties to null", async () => {
