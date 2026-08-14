@@ -14,7 +14,7 @@ import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
 import { LookAndMoveTool, PanViewTool, RotateViewTool } from "../tools/ViewTool";
-import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
+import { BentleyStatus, DbResult, IModelStatus, Logger } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -343,5 +343,143 @@ describe("Undo/redo edit command cleanup", () => {
     selectedViewSpy.mockRestore();
     activeToolSpy.mockRestore();
     outputMessageSpy.mockRestore();
+  });
+});
+
+describe("callOnCleanup edit command cleanup", () => {
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("uses setPrimitiveTool path to cleanup primitive and finish edit command without notification", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const primitiveCleanup = vi.fn(async () => { });
+    (toolAdmin as any)._primitiveTool = { onCleanup: primitiveCleanup };
+
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(primitiveCleanup).toHaveBeenCalledOnce();
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(finishCommand.mock.invocationCallOrder[0]).toBeLessThan(primitiveCleanup.mock.invocationCallOrder[0]);
+    expect((toolAdmin as any)._primitiveTool).toBeUndefined();
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+  });
+
+  it("finishes edit command directly when no primitive tool is active", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._primitiveTool = undefined;
+
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const setPrimitiveToolSpy = vi.spyOn(toolAdmin, "setPrimitiveTool");
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(setPrimitiveToolSpy).not.toHaveBeenCalled();
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+  });
+
+  it("logs and suppresses notification when edit command finish throws during no-primitive cleanup", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._primitiveTool = undefined;
+
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const logSpy = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledOnce();
+  });
+
+  it("observes rejected edit command when view cleanup also throws", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._viewTool = { onCleanup: vi.fn(async () => { throw new Error("view cleanup failed"); }) };
+
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const logSpy = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(logSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("clears stale primitive tool when primitive cleanup throws", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._primitiveTool = {
+      onCleanup: vi.fn(async () => { throw new Error("cleanup failed"); }),
+    };
+
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const logSpy = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect((toolAdmin as any)._primitiveTool).toBeUndefined();
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(logSpy).toHaveBeenCalledOnce();
+  });
+
+  it("does not overwrite a replacement primitive tool after delayed cleanup", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    let releaseCleanup: (() => void) | undefined;
+    const cleanupReleased = new Promise<void>((resolve) => releaseCleanup = resolve);
+    const oldTool = { onCleanup: vi.fn(async () => cleanupReleased) };
+    const replacementTool = { onCleanup: vi.fn(async () => { }) };
+    (toolAdmin as any)._primitiveTool = oldTool;
+
+    const transition = toolAdmin.setPrimitiveTool(undefined);
+    await Promise.resolve();
+    (toolAdmin as any)._primitiveTool = replacementTool;
+
+    releaseCleanup?.();
+    await transition;
+
+    expect((toolAdmin as any)._primitiveTool).toBe(replacementTool);
+  });
+
+  it("installs replacement primitive tool after cleaning up old tool", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const oldTool = { onCleanup: vi.fn(async () => { }) };
+    const replacementTool = { onCleanup: vi.fn(async () => { }) };
+    (toolAdmin as any)._primitiveTool = oldTool;
+
+    await toolAdmin.setPrimitiveTool(replacementTool as any);
+
+    expect(oldTool.onCleanup).toHaveBeenCalledOnce();
+    expect((toolAdmin as any)._primitiveTool).toBe(replacementTool);
   });
 });

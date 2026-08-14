@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Improved dihedralAngleSummary docs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
