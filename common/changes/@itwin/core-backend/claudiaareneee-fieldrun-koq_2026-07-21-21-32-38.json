@@ -1,9 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Add quantity formatting for FieldRun values in text annotations via `ElementDrivesTextAnnotation.evaluateFieldsAsync`. Format is resolved in priority order: inline `FormatProps` override, KoQ name looked up via the active `FormatsProvider`, the ECProperty's own `KindOfQuantity`, then a meters fallback for `\"coordinate\"`. The synchronous `evaluateFields` and txn field-update callbacks continue to use `value.toString()` for back-compat.",
-      "type": "none",
-      "packageName": "@itwin/core-backend"
+      "comment": "Add quantity formatting for FieldRun values in text annotations. `ElementDrivesTextAnnotation.evaluateFieldsAsync` runs the full pipeline against an injected `FormatsProvider` / `UnitsProvider`; `collectFieldFormattingRequirements` reports the `(KindOfQuantity, persistenceUnit)` pairs a host must pre-warm. The synchronous `evaluateFields` and txn field-update callbacks continue to render raw unless the host registers a `FormattingSpecProvider` for the field's `formatSet` via `registerFieldFormattingProvider` (matching `unregisterFieldFormattingProvider` on iModel close is caller-owned).",
     }
   ],
   "packageName": "@itwin/core-backend",

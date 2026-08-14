@@ -11,7 +11,10 @@ publish: false
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
     - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
-    - [FormatSet-backed synchronous formatting](#formatset-backed-synchronous-formatting)
+      - [Configuring a FieldRun](#configuring-a-fieldrun)
+      - [Format resolution](#format-resolution)
+      - [Async evaluation](#async-evaluation)
+      - [Opting in to synchronous formatting](#opting-in-to-synchronous-formatting)
   - [@itwin/core-common](#itwincore-common-1)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-frontend](#itwincore-frontend)
@@ -67,7 +70,13 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 
 ### Quantity formatting for text annotation fields
 
-[FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value can now be rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation. Field-level formatting is configured via a new [QuantityFieldFormatOptions]($common) block on [FieldFormatOptions]($common):
+[FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value can now be rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation.
+
+Formatting stays on the backend (text layout is a backend concern) and is available via two entry points: an **async** entry point that runs the full pipeline on demand, and an opt-in **synchronous** entry point that a host can register a pre-warmed provider for so field values format inside the `TxnManager` update callbacks.
+
+#### Configuring a FieldRun
+
+Field-level formatting is configured via a new [QuantityFieldFormatOptions]($common) block on [FieldFormatOptions]($common):
 
 ```typescript
 const fieldRun = FieldRun.create({
@@ -75,43 +84,54 @@ const fieldRun = FieldRun.create({
   propertyPath: { propertyName: "length" },
   formatOptions: {
     quantity: {
-      // Look up a specific KindOfQuantity via the active FormatsProvider, overriding
-      // the property's own KoQ.
+      // Look up a specific KindOfQuantity via the active FormatsProvider,
+      // overriding the property's own KoQ.
       kindOfQuantity: "AecUnits.LENGTH",
+      // Optionally scope resolution to a specific registered FormatSet on
+      // the synchronous path (see below).
+      formatSet: myFormatSetId,
     },
   },
 });
 ```
 
-A format is resolved in this priority order:
+`kindOfQuantity` and `persistenceUnit` are **independent** overrides: setting one falls through to the property side for the other. This lets a caller pin the presentation (via `kindOfQuantity`) while still reading the persistence unit from the EC property, or vice versa.
 
-1. `formatOptions.quantity.kindOfQuantity` — a full KindOfQuantity name looked up via the active [FormatsProvider]($core-quantity).
-2. The property's own [KindOfQuantity]($ecschema-metadata).
+#### Format resolution
 
-If neither resolves in the active provider, `"quantity"` and `"coordinate"` fields fall back to their raw string representation. Core does not carry a built-in coordinate format: coordinate presentation is application policy and belongs to the FormatsProvider / FormatSet supplied by the host. Coordinate values whose EC property has no KindOfQuantity now require the caller to declare **both** `kindOfQuantity` and `persistenceUnit` in `formatOptions.quantity` for an override to take effect — Core no longer synthesizes a persistence unit from the [BIS geometry meters convention](../bis/guide/other-topics/units.md). Callers that want that convention should pass `Units.LENGTH.M` (from `@itwin/core-quantity`) explicitly.
+For each `"quantity"` or `"coordinate"` field the formatter looks up a [FormatterSpec]($core-quantity) by (KindOfQuantity name, persistence unit name) pair, in this order:
 
-Because [FormatterSpec]($core-quantity) creation is asynchronous, quantity formatting is only applied when a field is evaluated through the new async entry point [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend):
+1. **Effective override pair.** `formatOptions.quantity.kindOfQuantity ?? propertyKindOfQuantity` for the name, `formatOptions.quantity.persistenceUnit ?? propertyPersistenceUnit` for the unit.
+2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped when identical to the effective pair.
+
+The first pair whose format-props lookup **and** persistence-unit lookup both succeed in the active provider wins. If none succeeds, `"quantity"` and `"coordinate"` fields fall back to their raw string representation (`value.toString()` for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
+
+Core does not carry a built-in coordinate format: coordinate presentation is application policy and belongs to the FormatsProvider / FormatSet supplied by the host. Coordinate values whose EC property has no KindOfQuantity require the caller to declare **both** `kindOfQuantity` and `persistenceUnit` in `formatOptions.quantity` for an override to take effect — Core does not synthesize a persistence unit from the [BIS geometry meters convention](../bis/guide/other-topics/units.md). Callers that want that convention should pass `Units.LENGTH.M` (from `@itwin/core-quantity`) explicitly.
+
+#### Async evaluation
+
+Because [FormatterSpec]($core-quantity) creation is asynchronous, the primary entry point is [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend). It updates the [FieldRun.cachedContent]($common) of every field in the supplied [TextBlock]($common) in memory:
 
 ```typescript
 const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel, block });
 ```
 
-Applications that own a [FormatsProvider]($core-quantity) (for example a FormatSet-backed provider from Drawing Production) can route formatting through it by supplying it directly on the args:
+By default the formatter uses a [SchemaFormatsProvider]($core-quantity) built from the iModel's schema context. Applications that own a [FormatsProvider]($core-quantity) — for example a FormatSet-backed provider — can route formatting through it by supplying it as a sibling of `iModel` / `block`:
 
 ```typescript
 const numUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
   iModel,
   block,
-  formatsProvider: myFormatsProvider, // e.g. Drawing Production's FormatSet-backed provider
+  formatsProvider: myFormatsProvider,
   // unitsProvider omitted -> defaults to the iModel's schema-backed units provider
 });
 ```
 
-The existing synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks continue to render `"quantity"` and `"coordinate"` fields as their raw string representation for backward compatibility. Applications that want formatted quantity output for text annotations should migrate their evaluation calls to the async variant.
+`evaluateFieldsAsync` mutates the in-memory `TextBlock`; **it does not persist**. Callers that want the formatted output to survive the session must assign the updated block back to the owning element (for example via `TextAnnotation2d.setAnnotation` / `TextAnnotation3d.setAnnotation`) and call `element.update()` inside a transaction.
 
-### FormatSet-backed synchronous formatting
+#### Opting in to synchronous formatting
 
-Hosts that need formatted quantity output from the synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and `TxnManager` field-update paths can register a pre-warmed [FormattingSpecProvider]($core-quantity) keyed by FormatSet [Id64String]($bentley):
+The synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update callbacks render `"quantity"` and `"coordinate"` fields as their raw string representation **unless** the host registers a pre-warmed [FormattingSpecProvider]($core-quantity) keyed by [FormatSet]($core-quantity) [Id64String]($bentley). Sync formatting only fires for fields whose `formatOptions.quantity.formatSet` matches a registered id.
 
 ```typescript
 iModel.onBeforeClose.addOnce(() => {
@@ -120,7 +140,9 @@ iModel.onBeforeClose.addOnce(() => {
 ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: formatSetId, provider });
 ```
 
-Registrations are **process-wide** — Core does not scope them to any [IModelDb]($backend), and never sweeps entries automatically. Hosts own the lifetime contract: register when the iModel that provides the FormatSet opens, and call [ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]($backend) when it closes. Failing to unregister leaves a stale entry that a subsequent iModel carrying the same FormatSet id may silently consume.
+Hosts can pre-compute the required `(KindOfQuantity, persistenceUnit)` pairs for a given `TextBlock` via [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) and warm their provider's cache before insert / update so the txn callback finds every spec it needs.
+
+Registrations are **process-wide** — Core does not scope them to any [IModelDb]($backend), and never sweeps entries automatically. Hosts own the lifetime contract: register when the iModel that provides the FormatSet opens, and call [ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]($backend) when it closes. Failing to unregister leaves a stale entry that a subsequent iModel carrying the same FormatSet id may silently consume. Registering a provider does **not** reformat existing annotations — hosts that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly.
 
 ## @itwin/core-common
 
