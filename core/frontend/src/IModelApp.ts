@@ -365,7 +365,10 @@ export class IModelApp {
 
   /**
    * Replaces the formats provider and optionally changes the active unit system as part of the same reload.
-   * Resolves after the [[QuantityFormatter]] has finished reloading its formatting and parsing specifications.
+   * Resolves after the [[QuantityFormatter]] has finished reloading its formatting and parsing specifications. Individual incompatible
+   * provider entries may be omitted from the registry and logged as warnings; they do not cause this Promise to reject.
+   * If another call is made before this reload queue drains, the newer call wins and this Promise rejects. The Promise also rejects if the
+   * application shuts down before the reload completes.
    * @beta
    */
   public static async setFormatsProvider(provider: FormatsProvider, options?: SetFormatsProviderOptions): Promise<void> {

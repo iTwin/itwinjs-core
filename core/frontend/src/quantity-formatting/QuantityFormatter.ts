@@ -511,6 +511,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   private _pendingReload: ReloadIntent | undefined;
   private _deferredSystemChangedEmit: FormattingUnitSystemChangedArgs | undefined;
   private _reloadWaiters = new Set<ReloadWaiter>();
+  private _isDisposed = false;
+  private readonly _disposedError = new Error("QuantityFormatter was disposed before the reload completed.");
 
   private _removeFormatsProviderListener?: () => void;
   /**
@@ -531,30 +533,39 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   }
 
   public [Symbol.dispose](): void {
+    if (this._isDisposed)
+      return;
+
+    this._isDisposed = true;
+    this._isReady = false;
+    this._reloadInFlight = false;
+    this._pendingReload = undefined;
+    this._deferredSystemChangedEmit = undefined;
     if (this._removeFormatsProviderListener) {
       this._removeFormatsProviderListener();
       this._removeFormatsProviderListener = undefined;
     }
-    this._rejectReloadWaiters(new Error("QuantityFormatter was disposed before the reload completed."));
+    this._rejectReloadWaiters(this._disposedError);
   }
 
   /** Runs an action that schedules a reload and waits for the reload queue to drain.
+   * The most recent call wins. If another call is made before this reload queue drains, this call is rejected.
    * @internal
    */
   public async runAndWaitForReload(action: () => void): Promise<void> {
+    if (this._isDisposed)
+      throw this._disposedError;
+
     let waiter!: ReloadWaiter;
     const reload = new Promise<void>((resolve, reject) => {
       waiter = { resolve, reject };
-      this._reloadWaiters.add(waiter);
     });
 
-    try {
-      action();
-    } catch (err) {
-      this._reloadWaiters.delete(waiter);
-      throw err;
-    }
+    action();
 
+    // A newer explicitly awaited request supersedes any older request waiting for the queue.
+    this._rejectReloadWaiters(new Error("QuantityFormatter reload was superseded by a newer request."));
+    this._reloadWaiters.add(waiter);
     await reload;
   }
 
@@ -573,6 +584,9 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * @internal
    */
   protected async scheduleReload(intent: ReloadIntent): Promise<void> {
+    if (this._isDisposed)
+      return;
+
     if (this._reloadInFlight) {
       // A reload is already running — queue this one (latest-wins)
       this._pendingReload = intent;
@@ -585,9 +599,22 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
     try {
       await this._executeReload(intent);
+      if (this._isDisposed) {
+        this._reloadInFlight = false;
+        this._pendingReload = undefined;
+        this._deferredSystemChangedEmit = undefined;
+        return;
+      }
     } catch (err) {
-      Logger.logError(`${FrontendLoggerCategory.Package}.QuantityFormatter`, BentleyError.getErrorMessage(err));
+      if (!this._isDisposed)
+        Logger.logError(`${FrontendLoggerCategory.Package}.QuantityFormatter`, BentleyError.getErrorMessage(err));
       this._reloadInFlight = false;
+      if (this._isDisposed) {
+        this._pendingReload = undefined;
+        this._deferredSystemChangedEmit = undefined;
+        this._rejectReloadWaiters(this._disposedError);
+        return;
+      }
       // If there's a pending reload, still try to run it
       if (this._pendingReload) {
         const next = this._pendingReload;
@@ -613,6 +640,12 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
     // Queue is drained — finalize
     await this.finalizeReload();
+    if (this._isDisposed) {
+      this._reloadInFlight = false;
+      this._pendingReload = undefined;
+      this._deferredSystemChangedEmit = undefined;
+      return;
+    }
 
     // A new reload may have been queued during the async finalizeReload window
     if (this._pendingReload) {
@@ -674,16 +707,23 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * @internal
    */
   private async finalizeReload(): Promise<void> {
+    if (this._isDisposed)
+      return;
+
     // Phase 1: Let providers register async work
     const collector = new FormattingReadyCollector();
     this.onBeforeFormattingReady.raiseEvent(collector);
     await collector.awaitAll();
+    if (this._isDisposed)
+      return;
 
     // Phase 2: Signal ready to consumers
     this._isReady = true;
     this._hasEverBeenReady = true;
     this._resolveInitialized();
     this.onFormattingReady.emit();
+    if (this._isDisposed)
+      return;
 
     // Phase 3: Emit deferred unit-system-changed if the winning reload set one.
     // This fires after isReady === true so listeners can safely use the formatter.
@@ -985,6 +1025,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       return;
     }
 
+    if (this._isDisposed)
+      return;
     this.onUnitsProviderChanged.emit();
   }
 
@@ -1033,6 +1075,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
     unitSystemKey && (this._activeUnitSystem = unitSystemKey);
     await this.scheduleReload({ scope: "activeSystem", emitSystemChanged: fireUnitSystemChanged });
+    if (this._isDisposed)
+      return;
     IModelApp.toolAdmin && startDefaultTool && await IModelApp.toolAdmin.startDefaultTool();
   }
 
@@ -1049,6 +1093,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
     this._activeUnitSystem = systemType;
     await this.scheduleReload({ scope: "activeSystem", emitSystemChanged: true });
+    if (this._isDisposed)
+      return;
     // allow settings provider to store the change
     await this._unitFormattingSettingsProvider?.storeUnitSystemSetting({ system: systemType });
     if (IModelApp.toolAdmin && restartActiveTool)

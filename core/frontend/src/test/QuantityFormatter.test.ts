@@ -763,6 +763,63 @@ describe("Quantity formatter", async () => {
       }
     });
 
+    it("resolves when incompatible provider entries are omitted from the registry", async () => {
+      const appQuantityFormatter = IModelApp.quantityFormatter;
+      const name = "TestKoQ.INCOMPATIBLE_BEARING";
+      const registeredFormat: FormatDefinition = {
+        type: "Decimal",
+        precision: 2,
+        formatTraits: ["showUnitLabel"],
+        uomSeparator: "",
+        composite: {
+          includeZero: true,
+          spacer: "",
+          units: [{ name: "Units.HORIZONTAL_DIR_ARC_DEG", label: "°" }],
+        },
+      };
+      const providerFormat: FormatDefinition = {
+        type: "Bearing",
+        precision: 2,
+        revolutionUnit: "Units.REVOLUTION",
+        formatTraits: ["showUnitLabel"],
+        uomSeparator: "",
+        composite: {
+          includeZero: true,
+          spacer: "",
+          units: [{ name: "Units.ARC_DEG", label: "°" }],
+        },
+      };
+      const provider = {
+        onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
+        async getFormat(formatName: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
+          return formatName === name ? providerFormat : undefined;
+        },
+      };
+      const originalGetConversion = appQuantityFormatter.unitsProvider.getConversion.bind(appQuantityFormatter.unitsProvider);
+
+      await appQuantityFormatter.addFormattingSpecsToRegistry({
+        name,
+        persistenceUnitName: "Units.HORIZONTAL_DIR_RAD",
+        formatProps: registeredFormat,
+        system: "metric",
+      });
+      expect(appQuantityFormatter.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.HORIZONTAL_DIR_RAD", system: "metric" })).toBeDefined();
+
+      appQuantityFormatter.unitsProvider.getConversion = async (fromUnit, toUnit) => {
+        if (fromUnit.phenomenon !== toUnit.phenomenon)
+          throw new Error("Source and target units do not belong to same phenomenon");
+        return originalGetConversion(fromUnit, toUnit);
+      };
+
+      try {
+        await expect(IModelApp.setFormatsProvider(provider)).resolves.toBeUndefined();
+        expect(appQuantityFormatter.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.HORIZONTAL_DIR_RAD", system: "metric" })).toBeUndefined();
+      } finally {
+        appQuantityFormatter.unitsProvider.getConversion = originalGetConversion;
+        await IModelApp.setFormatsProvider(new QuantityTypeFormatsProvider());
+      }
+    });
+
     it("should wait for provider-triggered reloads queued during formatting readiness", async () => {
       const appQuantityFormatter = IModelApp.quantityFormatter;
       const originalUnitSystem = appQuantityFormatter.activeUnitSystem;
@@ -1017,6 +1074,87 @@ describe("Reload queue and onFormattingReady", () => {
     expect(readyIndices.length).toBeGreaterThanOrEqual(1);
     // The system-changed event must fire after the last formattingReady
     expect(changedIndices[0]).toBeGreaterThan(readyIndices[readyIndices.length - 1]);
+  });
+
+  it("latest runAndWaitForReload request supersedes the previous request", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    let releaseFirstLoad!: () => void;
+    const firstLoad = new Promise<void>((resolve) => { releaseFirstLoad = resolve; });
+    let firstLoadStarted!: () => void;
+    const firstLoadStartedPromise = new Promise<void>((resolve) => { firstLoadStarted = resolve; });
+    const originalLoad = (qf as any).loadFormatAndParsingMapsForSystem.bind(qf);
+    let loadCount = 0;
+    (qf as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
+      if (++loadCount === 1) {
+        firstLoadStarted();
+        await firstLoad;
+      }
+      return originalLoad(...args);
+    };
+
+    let firstSet!: Promise<void>;
+    let secondSet!: Promise<void>;
+    try {
+      const firstRequest = qf.runAndWaitForReload(() => {
+        firstSet = qf.setActiveUnitSystem("metric");
+      });
+      await firstLoadStartedPromise;
+
+      const secondRequest = qf.runAndWaitForReload(() => {
+        secondSet = qf.setActiveUnitSystem("imperial");
+      });
+
+      await expect(firstRequest).rejects.toThrow("superseded");
+      releaseFirstLoad();
+      await expect(secondRequest).resolves.toBeUndefined();
+      await firstSet;
+      await secondSet;
+      expect(qf.activeUnitSystem).toBe("imperial");
+    } finally {
+      releaseFirstLoad();
+      (qf as any).loadFormatAndParsingMapsForSystem = originalLoad;
+      qf[Symbol.dispose]();
+    }
+  });
+
+  it("rejects a waiting reload when disposed and suppresses completion events", async () => {
+    const qf = new QuantityFormatter();
+    await qf.onInitialized();
+
+    let releaseLoad!: () => void;
+    const load = new Promise<void>((resolve) => { releaseLoad = resolve; });
+    let loadStarted!: () => void;
+    const loadStartedPromise = new Promise<void>((resolve) => { loadStarted = resolve; });
+    const originalLoad = (qf as any).loadFormatAndParsingMapsForSystem.bind(qf);
+    (qf as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
+      loadStarted();
+      await load;
+      return originalLoad(...args);
+    };
+
+    const readySpy = vi.fn();
+    const removeReadyListener = qf.onFormattingReady.addListener(readySpy);
+    let setActiveSystem!: Promise<void>;
+    try {
+      const reload = qf.runAndWaitForReload(() => {
+        setActiveSystem = qf.setActiveUnitSystem("metric");
+      });
+      await loadStartedPromise;
+
+      qf[Symbol.dispose]();
+      await expect(reload).rejects.toThrow("disposed");
+      releaseLoad();
+      await setActiveSystem;
+      expect(qf.isReady).toBe(false);
+      expect(readySpy).not.toHaveBeenCalled();
+    } finally {
+      releaseLoad();
+      removeReadyListener();
+      (qf as any).loadFormatAndParsingMapsForSystem = originalLoad;
+      qf[Symbol.dispose]();
+    }
   });
 
   describe("Composite-keyed spec registry", () => {
