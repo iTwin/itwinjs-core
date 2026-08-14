@@ -4,6 +4,8 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [@itwin/build-tools](#itwinbuild-tools)
+    - [`mocha-junit-reporter` is now an optional peer dependency](#mocha-junit-reporter-is-now-an-optional-peer-dependency)
   - [@itwin/core-common](#itwincore-common)
     - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
   - [@itwin/core-backend](#itwincore-backend)
@@ -80,3 +82,11 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 ### Simplifying filleted line strings
 
 The [CurveFactory.createFilletsInLineString]($core-geometry) options bundle [CreateFilletsInLineStringOptions]($core-geometry) has a new optional property `CreateFilletsInLineStringOptions.simplifyPath` defaulting to `false`. When set to `true`, the output [Path]($core-geometry) is simplified by removing small segments less than the `CreateFilletsInLineStringOptions.closureTolerance` in length, and by merging adjacent arcs where possible. This is particularly helpful in cleaning up an output `Path` containing fillets that entirely consume an input line string edge (or nearly so).
+
+## @itwin/build-tools
+
+### `mocha-junit-reporter` is now an optional peer dependency
+
+`@itwin/build-tools` now declares `mocha` and `mocha-junit-reporter` as optional peer dependencies. Consumers that use the public `@itwin/build-tools/mocha-reporter` entry point must declare both packages in their own development dependencies.
+
+Consumers that do not use the reporter no longer install the reporter's Mocha integration through `@itwin/build-tools`, avoiding its transitive test-tool dependencies in downstream audits. The reporter remains available and its runtime behavior is unchanged for consumers that declare the required packages.

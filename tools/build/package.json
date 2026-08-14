@@ -35,7 +35,6 @@
     "cpx2": "^8.0.0",
     "cross-spawn": "^7.0.5",
     "fs-extra": "^8.1.0",
-    "mocha-junit-reporter": "^2.0.2",
     "rimraf": "^6.0.1",
     "tree-kill": "^1.2.2",
     "typedoc": "^0.28.19",
@@ -45,10 +44,14 @@
     "yargs": "^17.4.0"
   },
   "peerDependencies": {
-    "mocha": "^11.1.0"
+    "mocha": "^11.1.0",
+    "mocha-junit-reporter": "^2.0.2"
   },
   "peerDependenciesMeta": {
     "mocha": {
+      "optional": true
+    },
+    "mocha-junit-reporter": {
       "optional": true
     }
   },
@@ -56,6 +59,7 @@
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/node": "~20.17.0",
     "eslint": "^9.31.0",
-    "mocha": "^11.1.0"
+    "mocha": "^11.1.0",
+    "mocha-junit-reporter": "^2.0.2"
   }
 }

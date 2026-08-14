@@ -67,6 +67,7 @@
     "eslint": "^9.31.0",
     "glob": "^13.0.6",
     "internal-tools": "workspace:*",
+    "mocha-junit-reporter": "^2.0.2",
     "npm-run-all2": "^7.0.2",
     "null-loader": "^4.0.1",
     "path-browserify": "^1.0.1",

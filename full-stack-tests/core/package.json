@@ -93,6 +93,8 @@
     "glob": "^13.0.6",
     "https-browserify": "^1.0.0",
     "internal-tools": "workspace:*",
+    "mocha": "^11.1.0",
+    "mocha-junit-reporter": "^2.0.2",
     "mkdirp": "^1.0.4",
     "nock": "^12.0.3",
     "npm-run-all2": "^7.0.2",

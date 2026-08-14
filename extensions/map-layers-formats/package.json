@@ -67,6 +67,7 @@
     "internal-tools": "workspace:*",
     "jsdom": "^26.0.0",
     "mocha": "^11.1.0",
+    "mocha-junit-reporter": "^2.0.2",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "sinon": "^17.0.2",

@@ -102,6 +102,7 @@
     "eslint-config-prettier": "^9.1.2",
     "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
+    "mocha-junit-reporter": "^2.0.2",
     "prettier": "^3.2.5",
     "rimraf": "^6.0.1",
     "sinon": "^17.0.2",

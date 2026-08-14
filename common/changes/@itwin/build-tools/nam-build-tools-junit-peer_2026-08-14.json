@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Made mocha-junit-reporter an optional peer dependency of @itwin/build-tools so consumers that do not use the public mocha reporter do not install its Mocha dependency closure.",
+      "type": "none",
+      "packageName": "@itwin/build-tools"
+    }
+  ],
+  "packageName": "@itwin/build-tools",
+  "email": "50554904+hl662@users.noreply.github.com"
+}

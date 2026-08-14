@@ -71,6 +71,7 @@
     "internal-tools": "workspace:*",
     "jsdom": "^26.0.0",
     "mocha": "^11.1.0",
+    "mocha-junit-reporter": "^2.0.2",
     "prettier": "^3.2.5",
     "rimraf": "^6.0.1",
     "sanitize-filename": "^1.6.3",
