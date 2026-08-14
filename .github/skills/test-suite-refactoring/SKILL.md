@@ -124,9 +124,11 @@ Splitting a suite multiplies iModel copies, so measure first or you cannot defen
 
 ```powershell
 # from core/backend — run 3x before and 3x after
-npx mocha "lib/cjs/test/imodel/IModel*.test.js" --no-config --require source-map-support/register `
-  --timeout 999999 --reporter json 1> baseline-run-1.json
+rushx test "lib/cjs/test/imodel/IModel*.test.js" --no-config --require source-map-support/register `
+  --timeout 999999 --reporter json --reporter-option output=baseline-run-1.json
 ```
+
+Write the JSON with `--reporter-option output=<file>`, **not** `1> file.json`. `rushx` prints its own banner (`Rush Multi-Project Build Tool ...`, the echoed command) to stdout, so redirecting stdout produces a file that is not valid JSON.
 
 Read `stats.duration` from each run and compare medians. Expect a modest increase from added isolation; treat more than 20% as needing justification. The reference refactor landed at roughly +10% (20.2s to 22.2s) for 80 tests.
 
@@ -134,15 +136,16 @@ Read `stats.duration` from each run and compare medians. Expect a modest increas
 
 ```powershell
 # from core/backend
-npx eslint "src/test/imodel/IModel*.test.ts" "src/test/imodel/IModelTestFixtures.ts"
-npm run -s build:cjs
-npx mocha "lib/cjs/test/imodel/IModel*.test.js" --no-config --require source-map-support/register --timeout 999999
+rushx lint          # lints all of ./src/**/*.ts — rushx lint-fix to auto-fix
+rushx build:cjs     # tsc --outDir lib/cjs
+rushx test "lib/cjs/test/imodel/IModel*.test.js" --no-config --require source-map-support/register --timeout 999999
 ```
 
 Confirm the **test count is unchanged** after a pure split. A drop means a test was lost in the move.
 
 ## Gotchas that cost the most time
 
+- **`rushx` only runs `package.json` scripts, not arbitrary binaries.** `rushx eslint ...` fails with *"the command is not defined in the package.json file for this project"*. It does forward extra arguments to the underlying script, which is why `rushx test <spec> --reporter json` works — it becomes `mocha <spec> --reporter json`. There is no script that lints a subset, so `rushx lint` always covers the whole package.
 - **Tests run against compiled output.** Mocha runs `lib/cjs/test/...`, not `src`. Always build before running or you are testing stale code.
 - **Run mocha sequentially.** Parallel runs contend on the backend profile lock.
 - **`tsc` emits on type errors by default.** Tests can pass while the build reports errors, which masks stale-dependency problems. Do not treat a green test run as proof the build is clean.

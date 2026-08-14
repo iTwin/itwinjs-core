@@ -105,7 +105,7 @@ After resolving, always run `rush update` to regenerate the lock file.
 - Accepting master's version numbers in release branches
 - Forgetting to run `rush update` after editing package.json
 
-## API Signature Files (common/api/*.api.md)
+## API Signature Files (common/api/\*.api.md)
 
 **Always regenerate. Never manually edit.**
 
@@ -164,6 +164,7 @@ On backport branches targeting `release/X.X.x` **after** the `X.X.0` release, `N
    ---
    publish: false
    ---
+
    # NextVersion
    ```
 2. **Move relevant entries to `X.X.0.md`** — extract only the changelog entries that correspond to the change being backported (ignore unrelated master content like new features). Place them under the appropriate section in `docs/changehistory/X.X.0.md`.
@@ -187,7 +188,6 @@ Example: If one branch adds Electron support and another adds Presentation chang
 ### Verification
 
 ```bash
-npx markdownlint docs/changehistory/NextVersion.md
 rush docs  # Ensure documentation builds
 ```
 
@@ -203,6 +203,7 @@ rush docs  # Ensure documentation builds
 CI workflows and configuration files can diverge significantly between major release branches.
 
 Common conflicting files:
+
 - `.github/workflows/extract-api.yaml` — node version, action versions
 - `.github/mergify.yml` — backport target branches
 - `.github/workflows/*.yaml` — CI pipeline changes
@@ -216,6 +217,7 @@ Common conflicting files:
 Rare in backports but possible when the same code area was modified on both branches.
 
 **Resolution:**
+
 - Understand the intent of the backported change
 - Apply the functional change to the release branch's version of the code
 - Do not blindly accept incoming — the release branch may have different surrounding context
@@ -235,28 +237,28 @@ deleted in HEAD and modified in origin/master.
 
 1. Identify exactly what master changed — do not read the whole file:
 
-    ```bash
-    base=$(git merge-base HEAD MERGE_HEAD)
-    git log --oneline $base..MERGE_HEAD -- <deleted-file>
-    git show <commit> -- <deleted-file>
-    ```
+   ```bash
+   base=$(git merge-base HEAD MERGE_HEAD)
+   git log --oneline $base..MERGE_HEAD -- <deleted-file>
+   git show <commit> -- <deleted-file>
+   ```
 
 2. Classify the incoming change and port it:
 
-    | Incoming change | Action |
-    | --- | --- |
-    | New test(s) added | Port into the file that now owns that feature area |
-    | Existing test modified | Apply the same edit to the migrated copy |
-    | Test removed or disabled | Remove/disable the migrated copy |
+   | Incoming change          | Action                                             |
+   | ------------------------ | -------------------------------------------------- |
+   | New test(s) added        | Port into the file that now owns that feature area |
+   | Existing test modified   | Apply the same edit to the migrated copy           |
+   | Test removed or disabled | Remove/disable the migrated copy                   |
 
 3. Port faithfully, then adapt to the new file's conventions (shared fixtures, teardown helpers, tracker). Keep the assertions identical — only the fixture plumbing should change.
 
 4. Resolve the deletion and stage the port together:
 
-    ```bash
-    git rm <deleted-file>
-    git add <file-that-received-the-port>
-    ```
+   ```bash
+   git rm <deleted-file>
+   git add <file-that-received-the-port>
+   ```
 
 5. Verify before committing. **Run the tests, not just the build** — a ported test that compiles can still fail on a stale dependency.
 
@@ -289,6 +291,7 @@ Sometimes Mergify cannot cherry-pick cleanly because multiple related changes ne
 **Example:** [PR #9007](https://github.com/iTwin/itwinjs-core/pull/9007) — combined 3 separate PRs into one backport due to dependency conflicts
 
 When combining:
+
 - List all original PR numbers in the PR description
 - Ensure all changes are compatible with each other on the release branch
 - Sometimes backport-specific edits are needed beyond the original PRs
@@ -298,30 +301,30 @@ When combining:
 1. **Identify conflict type:** Run `git status` to see which files need resolution
 
 2. **Apply strategy:**
-    - **Lock file:** `rush update` → stage → commit
-    - **pnpm-config.json:** Edit manually → `rush update` → stage both files → commit
-    - **package.json:** Edit manually → `rush update` → stage both files → commit
-    - **API files (common/api/):** `rush build` → `rush extract-api` → stage → commit
-    - **Rush change files:** Keep both / generate fresh → stage → commit
-    - **NextVersion.md:** Check if `X.X.0.md` exists → Scenario A (keep empty, move to `X.X.0.md`) or B (merge both) → stage → commit
-    - **CI/config files:** Manual edit favoring release branch → stage → commit
-    - **Modify/delete (file deleted on one side):** Port the incoming change to its new home → stage → **stop for review** (see [Review Gate](#review-gate-modifydelete-conflicts-only))
+   - **Lock file:** `rush update` → stage → commit
+   - **pnpm-config.json:** Edit manually → `rush update` → stage both files → commit
+   - **package.json:** Edit manually → `rush update` → stage both files → commit
+   - **API files (common/api/):** `rush build` → `rush extract-api` → stage → commit
+   - **Rush change files:** Keep both / generate fresh → stage → commit
+   - **NextVersion.md:** Check if `X.X.0.md` exists → Scenario A (keep empty, move to `X.X.0.md`) or B (merge both) → stage → commit
+   - **CI/config files:** Manual edit favoring release branch → stage → commit
+   - **Modify/delete (file deleted on one side):** Port the incoming change to its new home → stage → **stop for review** (see [Review Gate](#review-gate-modifydelete-conflicts-only))
 
 3. **Check for residual conflict markers:**
 
-    ```bash
-    grep -r "<<<<<<< " . --include="*.ts" --include="*.json" --include="*.md" --include="*.yaml" --include="*.yml"
-    ```
+   ```bash
+   grep -r "<<<<<<< " . --include="*.ts" --include="*.json" --include="*.md" --include="*.yaml" --include="*.yml"
+   ```
 
 4. **Verify:** Run `rush build` and ensure CI passes
 
 5. **Commit** — for every conflict type except modify/delete, commit directly using the messages below. If a **modify/delete** conflict was resolved, stop for review first (see [Review Gate](#review-gate-modifydelete-conflicts-only)).
-    - Lock files: `"resolve pnpm-lock conflicts"`
-    - pnpm-config.json: `"resolve pnpm-config.json conflicts in backport"`
-    - Package.json: `"resolve package.json conflicts in backport"`
-    - API files: `"regenerate api files after backport"`
-    - Documentation: `"merge NextVersion.md from both branches"`
-    - Multiple files: `"resolve conflicts"`
+   - Lock files: `"resolve pnpm-lock conflicts"`
+   - pnpm-config.json: `"resolve pnpm-config.json conflicts in backport"`
+   - Package.json: `"resolve package.json conflicts in backport"`
+   - API files: `"regenerate api files after backport"`
+   - Documentation: `"merge NextVersion.md from both branches"`
+   - Multiple files: `"resolve conflicts"`
 
 ## Review Gate: Modify/Delete Conflicts Only
 
@@ -361,16 +364,16 @@ rush update
 
 ## Quick Reference
 
-| File Type | Path | Resolution | Key Points |
-| --- | --- | --- | --- |
-| Lock file | `common/config/rush/pnpm-lock.yaml` | `rush update` | Never manually edit |
-| pnpm-config | `common/config/rush/pnpm-config.json` | Manual edit + `rush update` | Keep release entries, add new. See `cve-remediation` skill for structure |
-| package.json | `<package>/package.json` | Manual edit + `rush update` | Keep release versions, add new deps only |
-| API signatures | `common/api/*.api.md` | `rush build` + `rush extract-api` | Never manually edit |
-| Rush change files | `common/changes/@itwin/*/` | Keep both or regenerate | Usually unique filenames, rarely conflict |
-| NextVersion.md | `docs/changehistory/NextVersion.md` | See scenarios A/B | If `X.X.0.md` exists: keep empty, move entries to `X.X.0.md`. Otherwise: merge both. |
-| Refactored-away file | any (modify/delete) | Port incoming change to its new home, then `git rm` | Never re-delete blindly; **stop for review before committing**; check for accompanying dependency bumps |
-| CI/config | `.github/workflows/*.yaml` | Manual edit | Favor release branch config |
+| File Type            | Path                                  | Resolution                                          | Key Points                                                                                              |
+| -------------------- | ------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Lock file            | `common/config/rush/pnpm-lock.yaml`   | `rush update`                                       | Never manually edit                                                                                     |
+| pnpm-config          | `common/config/rush/pnpm-config.json` | Manual edit + `rush update`                         | Keep release entries, add new. See `cve-remediation` skill for structure                                |
+| package.json         | `<package>/package.json`              | Manual edit + `rush update`                         | Keep release versions, add new deps only                                                                |
+| API signatures       | `common/api/*.api.md`                 | `rush build` + `rush extract-api`                   | Never manually edit                                                                                     |
+| Rush change files    | `common/changes/@itwin/*/`            | Keep both or regenerate                             | Usually unique filenames, rarely conflict                                                               |
+| NextVersion.md       | `docs/changehistory/NextVersion.md`   | See scenarios A/B                                   | If `X.X.0.md` exists: keep empty, move entries to `X.X.0.md`. Otherwise: merge both.                    |
+| Refactored-away file | any (modify/delete)                   | Port incoming change to its new home, then `git rm` | Never re-delete blindly; **stop for review before committing**; check for accompanying dependency bumps |
+| CI/config            | `.github/workflows/*.yaml`            | Manual edit                                         | Favor release branch config                                                                             |
 
 ## For Automated Agents
 
