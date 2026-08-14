@@ -5,14 +5,14 @@
 
 import { assert, expect } from "chai";
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, IModelDb, IModelHost, IModelJsFs, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
 import { EOL } from "os";
-import { ChangesetType, Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { ChangesetType, Code, ColorDef, GeometricElement2dProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 const storageType = "azure";
 interface TinySchemaRef {
@@ -1315,6 +1315,170 @@ describe("Schema synchronization", function (this: Suite) {
       b.close();
     });
     HubMock.shutdown();
+  });
+
+  it("retries schema data deletion through upgradeSchemas", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-3" });
+    const iTwinId = Guid.createValue();
+    const accessToken = "schema retry token";
+
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel-retry.bim");
+    SnapshotDb.createEmpty(version0, { rootSubject: { name: "schema retry" } }).close();
+    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId, version0, iModelName: "schema retry" });
+    const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
+    const b1 = await BriefcaseDb.open(bcProps);
+
+    try {
+      SchemaSync.setTestCache(b1, "schemaRetry");
+      await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+      await b1.pushChanges({ accessToken, description: "enable schema sync" });
+
+      await importSchema(b1, {
+        name: "TestDeletion",
+        alias: "td",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe1",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "p0", type: "string" }],
+        }],
+      });
+      await b1.pushChanges({ accessToken, description: "initial schema" });
+
+      const additiveSchema = IModelTestUtils.prepareOutputFile("schemaSync", "retry-additive.ecschema.xml");
+      IModelJsFs.writeFileSync(additiveSchema, tinySchemaToXml({
+        name: "TestDeletion",
+        alias: "td",
+        ver: "01.00.01",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe1",
+          baseClass: "bis:GeometricElement2d",
+          props: [
+            { kind: "primitive", name: "p0", type: "string" },
+            { kind: "primitive", name: "p1", type: "string" },
+          ],
+        }],
+      }));
+      await b1.importSchemas([additiveSchema]);
+      assert.deepEqual(queryPropNames(b1, "TestDeletion:Pipe1"), ["p0", "p1"]);
+
+      await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+      const codeProps = Code.createEmpty();
+      codeProps.value = "DrawingModel";
+      const [, drawingModelId] = withEditTxn(b1, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+      const drawingCategoryId = withEditTxn(b1, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "RetryCategory", new SubCategoryAppearance()));
+      await b1.locks.acquireLocks({ shared: drawingModelId });
+      const elementId = withEditTxn(b1, (txn) => txn.insertElement({
+        classFullName: "TestDeletion:Pipe1",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        p0: "keep",
+        p1: "delete",
+      } as GeometricElement2dProps));
+      assert.isDefined(b1.elements.getElementProps(elementId));
+      await b1.pushChanges({ accessToken, description: "insert data" });
+
+      const deletionSchema = IModelTestUtils.prepareOutputFile("schemaSync", "retry-deletion.ecschema.xml");
+      IModelJsFs.writeFileSync(deletionSchema, tinySchemaToXml({
+        name: "TestDeletion",
+        alias: "td",
+        ver: "01.00.02",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe1",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "p0", type: "string" }],
+        }],
+      }));
+
+      let caughtError: unknown;
+      try {
+        await b1.importSchemas([deletionSchema]);
+      } catch (err) {
+        caughtError = err;
+      }
+      assert.isDefined(caughtError, "Importing a schema that deletes data should fail");
+      assert.isTrue(SchemaSync.requiresUpgrade(caughtError));
+      assert.equal((caughtError as { errorNumber?: number }).errorNumber, DbResult.BE_SQLITE_ERROR_DataDeletionRequired);
+
+      await b1.upgradeSchemas([deletionSchema], { accessToken, description: "delete schema data" });
+      assert.deepEqual(queryPropNames(b1, "TestDeletion:Pipe1"), ["p0"]);
+      assert.equal((b1.elements.getElementProps(elementId) as any).p0, "keep");
+      assert.isFalse(b1.txns.hasLocalChanges, "upgradeSchemas pushes the schema change");
+    } finally {
+      b1.close();
+    }
+  });
+
+  it("requiresUpgrade returns false for unrelated errors", () => {
+    assert.isFalse(SchemaSync.requiresUpgrade(new Error("invalid schema")));
+    assert.isFalse(SchemaSync.requiresUpgrade({ errorNumber: DbResult.BE_SQLITE_ERROR }));
+  });
+
+  it("enables schema sync for an existing iModel with schemas and data #extended", async () => {
+    const iTwinId = Guid.createValue();
+    const accessToken = "schema enable token";
+
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel-enable.bim");
+    SnapshotDb.createEmpty(version0, { rootSubject: { name: "schema enable" } }).close();
+    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId, version0, iModelName: "schema enable" });
+    const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
+    const b1 = await BriefcaseDb.open(bcProps);
+
+    try {
+      await importSchema(b1, {
+        name: "TestExisting",
+        alias: "te",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe1",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "p0", type: "string" }],
+        }],
+      });
+      await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
+      const codeProps = Code.createEmpty();
+      codeProps.value = "DrawingModel";
+      const [, drawingModelId] = withEditTxn(b1, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
+      const drawingCategoryId = withEditTxn(b1, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "ExistingCategory", new SubCategoryAppearance()));
+      await b1.locks.acquireLocks({ shared: drawingModelId });
+      const elementId = withEditTxn(b1, (txn) => txn.insertElement({
+        classFullName: "TestExisting:Pipe1",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        p0: "existing data",
+      } as GeometricElement2dProps));
+      await b1.pushChanges({ accessToken, description: "existing schema and data" });
+
+      const originalUserToken = AzuriteTest.userToken;
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      try {
+        const containerProps = await SchemaSync.enableForIModel({
+          iModel: b1,
+          label: "SchemaSync existing data",
+          description: "SchemaSync test with existing schemas and data",
+        });
+        assert.isTrue(SchemaSync.isEnabled(b1));
+        assert.equal(SchemaSync.queryContainerProps(b1)?.containerId, containerProps.containerId);
+        assert.equal((b1.elements.getElementProps(elementId) as any).p0, "existing data");
+        assert.isFalse(b1.txns.hasLocalChanges, "enableForIModel pushes the initialization changeset");
+      } finally {
+        AzuriteTest.userToken = originalUserToken;
+      }
+    } finally {
+      b1.close();
+    }
   });
 
   it("revert timeline changes", async () => {
