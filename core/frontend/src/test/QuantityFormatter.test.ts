@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { assert as bAssert } from "@itwin/core-bentley";
+import { assert as bAssert, BeEvent } from "@itwin/core-bentley";
 import { isCustomFormattedNumberParams, PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
-import { FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
+import { FormatsChangedArgs, FormatterSpec, FormattingReadyCollector, ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { createQuantityDescription } from "../properties/FormattedQuantityDescription";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
@@ -707,6 +707,39 @@ describe("Quantity formatter", async () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith({ formatsChanged: "all" });
+    });
+
+    it("should set the optional unit system in the same formats provider reload", async () => {
+      const appQuantityFormatter = IModelApp.quantityFormatter;
+      const originalUnitSystem = appQuantityFormatter.activeUnitSystem;
+      const provider = {
+        onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
+        async getFormat(): Promise<undefined> { return undefined; },
+      };
+      const formatsChangedSpy = vi.fn();
+      const readySpy = vi.fn();
+      const removeFormatsChangedListener = IModelApp.formatsProvider.onFormatsChanged.addListener(formatsChangedSpy);
+      const removeReadyListener = appQuantityFormatter.onFormattingReady.addListener(readySpy);
+
+      try {
+        await IModelApp.setFormatsProvider(provider, { unitSystem: "metric" });
+        expect(appQuantityFormatter.activeUnitSystem).toBe("metric");
+        expect(formatsChangedSpy).toHaveBeenCalledTimes(1);
+        expect(formatsChangedSpy).toHaveBeenCalledWith({ formatsChanged: "all", impliedUnitSystem: "metric" });
+        expect(readySpy).toHaveBeenCalledTimes(1);
+
+        formatsChangedSpy.mockClear();
+        readySpy.mockClear();
+        await IModelApp.setFormatsProvider(provider);
+        expect(appQuantityFormatter.activeUnitSystem).toBe("metric");
+        expect(formatsChangedSpy).toHaveBeenCalledTimes(1);
+        expect(formatsChangedSpy).toHaveBeenCalledWith({ formatsChanged: "all" });
+        expect(readySpy).toHaveBeenCalledTimes(1);
+      } finally {
+        removeFormatsChangedListener();
+        removeReadyListener();
+        await IModelApp.setFormatsProvider(new QuantityTypeFormatsProvider(), { unitSystem: originalUnitSystem });
+      }
     });
 
     it("should raise formatsChanged event when underlying formatsProvider raises formatsChanged event", async () => {

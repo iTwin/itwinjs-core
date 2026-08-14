@@ -372,12 +372,25 @@ export class FormatsProviderManager implements FormatsProvider {
   public get formatsProvider(): FormatsProvider { return this; }
 
   public set formatsProvider(formatsProvider: FormatsProvider) {
+    this.setFormatsProvider(formatsProvider);
+  }
+
+  /**
+   * Replaces the underlying formats provider and raises an event indicating that all formats changed.
+   * @param formatsProvider The formats provider to use for subsequent format lookups.
+   * @param impliedUnitSystem The unit system implied by the replacement provider, if any. It is forwarded as `FormatsChangedArgs.impliedUnitSystem`.
+   * @internal
+   */
+  public setFormatsProvider(formatsProvider: FormatsProvider, impliedUnitSystem?: UnitSystemKey): void {
     this._removeProviderListener?.();
     this._formatsProvider = formatsProvider;
     this._removeProviderListener = this._formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {
       this.onFormatsChanged.raiseEvent(args);
     });
-    this.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
+    const args: FormatsChangedArgs = { formatsChanged: "all" };
+    if (impliedUnitSystem !== undefined)
+      args.impliedUnitSystem = impliedUnitSystem;
+    this.onFormatsChanged.raiseEvent(args);
   }
 }
 

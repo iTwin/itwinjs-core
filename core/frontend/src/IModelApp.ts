@@ -17,7 +17,7 @@ import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, expectDefined, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { FormatsProvider } from "@itwin/core-quantity";
+import { FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -161,6 +161,14 @@ export interface IModelAppOptions {
    * @beta
    */
   incrementalSchemaLoading?: "enabled" | "disabled";
+}
+
+/** Options for [[IModelApp.setFormatsProvider]].
+ * @beta
+ */
+export interface SetFormatsProviderOptions {
+  /** The unit system implied by the formats provider. If omitted, the active unit system remains unchanged. */
+  readonly unitSystem?: UnitSystemKey;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -352,6 +360,30 @@ export class IModelApp {
   public static get formatsProvider(): FormatsProvider { return this._formatsProviderManager; }
   public static set formatsProvider(provider: FormatsProvider) {
     this._formatsProviderManager.formatsProvider = provider;
+  }
+
+  /**
+   * Replaces the formats provider and optionally changes the active unit system as part of the same reload.
+   * Resolves after the [[QuantityFormatter]] has finished reloading its formatting and parsing specifications.
+   * @beta
+   */
+  public static async setFormatsProvider(provider: FormatsProvider, options?: SetFormatsProviderOptions): Promise<void> {
+    const quantityFormatter = this.quantityFormatter;
+    if (!quantityFormatter.isReady) {
+      this._formatsProviderManager.setFormatsProvider(provider, options?.unitSystem);
+      await quantityFormatter.whenInitialized;
+      return;
+    }
+
+    let removeReadyListener: (() => void) | undefined;
+    const ready = new Promise<void>((resolve) => {
+      removeReadyListener = quantityFormatter.onFormattingReady.addListener(() => {
+        removeReadyListener?.();
+        resolve();
+      });
+    });
+    this._formatsProviderManager.setFormatsProvider(provider, options?.unitSystem);
+    await ready;
   }
 
   /** @alpha */
