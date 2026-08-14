@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
-import { DbResult, GuidString } from "@itwin/core-bentley";
+import { DbConflictCause, DbConflictResolution, DbOpcode, DbResult, GuidString } from "@itwin/core-bentley";
 import { ChangesetFileProps } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as chai from "chai";
@@ -165,7 +165,114 @@ describe("dgn_Domain merge conflict", () => {
     }
   });
 
-  it("resolves the conflict when the TypeScript handler defers to the default handler", async () => {
+  it("skips the duplicate local dgn_Domain insert while rebasing local txns", async () => {
+    const { iModelId } = await createTimelineWithDuplicateDomainRows("DgnDomainRebase");
+    const accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
+
+    const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: { first: true }, noLock: true });
+    try {
+      b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      // b2 imports the same domain locally and keeps the txn pending, so pulling has to merge the
+      // two incoming inserts and then replay a local txn that inserts the very same
+      // `dgn_Domain` row over the already merged one.
+      await withEditTxn(b2, "Domain schema upgrade", async () => {
+        await FunctionalSchema.importSchema(b2);
+      });
+      expect(b2.txns.hasPendingTxns).to.be.true;
+
+      await b2.pullChanges({ accessToken });
+
+      expect(b2.changeset.index).to.equal(2);
+      expect(queryDomains(b2).filter((name) => name === "Functional")).to.have.lengthOf(1);
+    } finally {
+      b2.close();
+    }
+  });
+
+  describe("conflict handler guards", () => {
+    let b2: BriefcaseDb;
+
+    before(async () => {
+      const { iModelId } = await createTimelineWithDuplicateDomainRows("DgnDomainHandlerGuards");
+      const accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
+      b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: { first: true }, noLock: true });
+    });
+    after(() => b2?.close());
+
+    /** A conflict as native code would report it, with just enough behavior for the handlers. */
+    function makeConflictArgs(overrides: { tableName: string, cause: DbConflictCause, opcode: DbOpcode, indirect?: boolean }) {
+      return {
+        indirect: false,
+        columnCount: 3,
+        changesetFile: "test.changeset",
+        txn: { id: "0x1", type: "Schema", descr: "Domain schema upgrade" },
+        getForeignKeyConflicts: () => 0,
+        dump: () => { },
+        setLastError: () => { },
+        getPrimaryKeyColumns: () => [1, 0, 0],
+        getColumnNames: () => ["Name", "Version", "Description"],
+        getValueType: () => undefined,
+        getValueBinary: () => undefined,
+        getValueId: () => undefined,
+        getValueText: () => undefined,
+        getValueInteger: () => undefined,
+        getValueDouble: () => undefined,
+        isValueNull: () => undefined,
+        ...overrides,
+      } as any;
+    }
+
+    const onMergeConflict = (args: any): DbConflictResolution | undefined => (b2 as any).onChangesetConflict(args);
+    const onRebaseConflict = (args: any): DbConflictResolution => (b2.txns as any)._onRebaseLocalTxnConflict(args);
+
+    it("keeps the incoming row for a duplicate dgn_Domain insert while merging", () => {
+      const args = makeConflictArgs({ tableName: "dgn_Domain", cause: DbConflictCause.Conflict, opcode: DbOpcode.Insert });
+      expect(onMergeConflict(args)).to.equal(DbConflictResolution.Replace);
+    });
+
+    it("skips a duplicate dgn_Domain insert while rebasing", () => {
+      const args = makeConflictArgs({ tableName: "dgn_Domain", cause: DbConflictCause.Conflict, opcode: DbOpcode.Insert });
+      expect(onRebaseConflict(args)).to.equal(DbConflictResolution.Skip);
+    });
+
+    // A `Data` conflict means an UPDATE or DELETE whose "before" values do not match the row in
+    // the briefcase, i.e. the two rows really do differ. Resolving those automatically would
+    // silently discard a genuine change, so they must keep the pre-existing behavior.
+    for (const opcode of [DbOpcode.Update, DbOpcode.Delete]) {
+      it(`does not swallow a dgn_Domain ${DbOpcode[opcode]} whose before values differ while merging`, () => {
+        let lastError: string | undefined;
+        const args = makeConflictArgs({ tableName: "dgn_Domain", cause: DbConflictCause.Data, opcode });
+        args.setLastError = (message: string) => lastError = message;
+
+        // With a local change pending, a mismatched UPDATE/DELETE must still abort the merge
+        // rather than be resolved as a benign duplicate domain registration.
+        const pending = sinon.stub(b2.txns, "hasPendingTxns").get(() => true);
+        try {
+          expect(onMergeConflict(args)).to.equal(DbConflictResolution.Abort);
+          expect(lastError).to.not.be.undefined;
+        } finally {
+          pending.restore();
+        }
+      });
+
+      it(`does not swallow a dgn_Domain ${DbOpcode[opcode]} whose before values differ while rebasing`, () => {
+        const args = makeConflictArgs({ tableName: "dgn_Domain", cause: DbConflictCause.Data, opcode });
+        // The local change wins, as it does for every other non-`ec_` table.
+        expect(onRebaseConflict(args)).to.equal(DbConflictResolution.Replace);
+      });
+    }
+
+    it("does not resolve conflicts on other tables", () => {
+      const args = makeConflictArgs({ tableName: "bis_Element", cause: DbConflictCause.Conflict, opcode: DbOpcode.Insert });
+      expect(onRebaseConflict(args)).to.equal(DbConflictResolution.Abort);
+    });
+  });
+
+  // TODO: unskip once a `@bentley/imodeljs-native` version containing iTwin/imodel-native#1548 is
+  // pinned in core/backend/package.json. The default handler lives in the addon, so this case
+  // cannot pass against 5.13.9.
+  it.skip("resolves the conflict when the TypeScript handler defers to the default handler", async () => {
     const { iModelId } = await createTimelineWithDuplicateDomainRows("DgnDomainNativeHandler");
     const accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
 

@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
@@ -3993,9 +3993,12 @@ export class BriefcaseDb extends IModelDb {
 
     // `dgn_Domain` holds one bookkeeping row per BIS domain present in the briefcase. The row is
     // created automatically as soon as the domain's schema is imported, so merging a changeset
-    // that registers a domain conflicts with the row that was just created locally. Both rows
-    // describe the same domain and the incoming one is authoritative, so this is never fatal.
-    if (args.tableName === "dgn_Domain" && (args.cause === DbConflictCause.Conflict || args.cause === DbConflictCause.Data)) {
+    // that registers a domain inserts a row that was just created locally. Both rows describe the
+    // same domain and the incoming one is authoritative, so this duplicate insert is never fatal.
+    // Only a primary key collision on an insert is benign - an update or delete whose "before"
+    // values do not match (`DbConflictCause.Data`) describes a real divergence and must not be
+    // silently discarded here.
+    if (args.tableName === "dgn_Domain" && args.cause === DbConflictCause.Conflict && args.opcode === DbOpcode.Insert) {
       Logger.logWarning(category, `${interpretConflictCause(args.cause)} conflict on dgn_Domain - resolved by replacing the existing row with the incoming row`);
       args.dump();
       return DbConflictResolution.Replace;

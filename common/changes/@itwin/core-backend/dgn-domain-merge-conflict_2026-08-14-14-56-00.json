@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Resolve benign dgn_Domain conflicts by keeping the incoming row instead of aborting, so pulling several domain-upgrade changesets in a single pullChanges no longer fails with 'PRIMARY KEY INSERT CONFLICT - rejecting this changeset'.",
+      "comment": "Resolve benign duplicate dgn_Domain inserts by keeping the incoming row instead of aborting, so pulling several domain-upgrade changesets in a single pullChanges no longer fails with 'PRIMARY KEY INSERT CONFLICT - rejecting this changeset'.",
       "type": "none"
     }
   ],
