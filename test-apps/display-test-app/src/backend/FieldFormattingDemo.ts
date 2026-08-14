@@ -294,6 +294,7 @@ export class FieldFormattingDemoProvider implements FormattingSpecProvider {
 }
 
 let currentDemo: FieldFormattingDemoProvider | undefined;
+let currentDemoCloseUnsubscribe: (() => void) | undefined;
 
 /** Returns the currently-registered demo provider, if any. */
 export function getFieldFormattingDemo(): FieldFormattingDemoProvider | undefined {
@@ -305,8 +306,18 @@ export function getFieldFormattingDemo(): FieldFormattingDemoProvider | undefine
  * `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID` format through the demo
  * provider on both the sync and async paths. Toggled by the `dta text demo <on|off>`
  * keyin.
+ *
+ * Follows the canonical lifetime pattern documented on
+ * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend): the
+ * registration is torn down automatically when `iModel` closes (via
+ * [IModelDb.onBeforeClose]($backend)) so a subsequent iModel carrying the same FormatSet id
+ * cannot silently pick up this provider.
  */
 export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void> {
+  // Re-entrancy: tear down any prior registration and its onBeforeClose subscription first
+  // so we never leak a listener if the keyin is invoked twice or across iModels.
+  disableFieldFormattingDemo();
+
   const provider = new FieldFormattingDemoProvider(iModel);
   await provider.preloadSeeds();
   ElementDrivesTextAnnotation.registerFieldFormattingProvider({
@@ -314,10 +325,18 @@ export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void>
     provider,
   });
   currentDemo = provider;
+  currentDemoCloseUnsubscribe = iModel.onBeforeClose.addOnce(() => disableFieldFormattingDemo());
 }
 
-/** Unregisters the demo provider previously registered via [[enableFieldFormattingDemo]]. */
+/** Unregisters the demo provider previously registered via [[enableFieldFormattingDemo]]
+ * and detaches the [IModelDb.onBeforeClose]($backend) listener that would otherwise fire it.
+ * Safe to call when no demo is registered.
+ */
 export function disableFieldFormattingDemo(): void {
+  if (currentDemoCloseUnsubscribe) {
+    currentDemoCloseUnsubscribe();
+    currentDemoCloseUnsubscribe = undefined;
+  }
   ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(DEMO_FORMAT_SET_ID);
   currentDemo = undefined;
 }
