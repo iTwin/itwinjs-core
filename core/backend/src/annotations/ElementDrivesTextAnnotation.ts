@@ -329,6 +329,14 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * unregister leaves a stale entry in the process-wide registry that a subsequent iModel
    * carrying the same FormatSet id may silently consume.
    *
+   * Symmetrically, unregistering (or never registering) a provider that saved-annotation
+   * `cachedContent` depends on causes the next source-element update to overwrite the
+   * previously-formatted content with the raw string representation — see
+   * [[unregisterFieldFormattingProvider]] for details. Hosts that need formatted output to
+   * survive across a temporary provider gap should re-register before the next txn commit,
+   * or explicitly re-evaluate the affected [TextBlock]($common)s via [[evaluateFieldsAsync]]
+   * once a provider is available again.
+   *
    * The canonical pattern uses [IModelDb.onBeforeClose]($backend):
    *
    * ```ts
@@ -358,6 +366,20 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * [IModelDb.onBeforeClose]($backend) listener installed alongside the corresponding
    * [[registerFieldFormattingProvider]] call). See [[registerFieldFormattingProvider]] for the
    * lifetime contract and the canonical pattern.
+   *
+   * ### Effect on saved `cachedContent`
+   *
+   * Unregistering does **not** clear or reformat any [FieldRun.cachedContent]($common) that
+   * was already persisted while the provider was registered. However, once unregistered, any
+   * subsequent source-element update that fires a `TxnManager` field-update callback will
+   * re-run [[evaluateFields]] for the affected annotations and, finding no provider for the
+   * field's [QuantityFieldFormatOptions.formatSet]($common), will overwrite `cachedContent`
+   * with the raw string representation. Previously-formatted output is silently lost on the
+   * next update. This is the accepted trade-off for keeping `cachedContent` in sync with the
+   * current property value; hosts that need formatted output across a provider gap should
+   * either keep the provider registered for the lifetime of the annotations that depend on
+   * it, or re-register and explicitly re-evaluate the affected blocks via
+   * [[evaluateFieldsAsync]] before the next source-element edit.
    * @beta
    */
   public static unregisterFieldFormattingProvider(formatSet: Id64String): void {
