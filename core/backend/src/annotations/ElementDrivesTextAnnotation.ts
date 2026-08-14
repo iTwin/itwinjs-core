@@ -105,6 +105,12 @@ export interface EvaluateFieldsArgs {
  * implementations derived from [[iModel]]'s schema context. Hosts that own a
  * [FormattingSpecProvider]($core-quantity) backed by an adopted FormatSet supply their own
  * providers here to route FieldRun formatting through them.
+ *
+ * The injected providers apply **block-wide** — every `"quantity"` and `"coordinate"` field
+ * in [[block]] is resolved through them, regardless of its
+ * [QuantityFieldFormatOptions.formatSet]($common). See
+ * [[ElementDrivesTextAnnotation.evaluateFieldsAsync]] for the full contract and how this
+ * differs from the per-field routing on the sync path.
  * @beta
  */
 export interface EvaluateFieldsAsyncArgs extends EvaluateFieldsArgs {
@@ -264,6 +270,22 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * Supply [[EvaluateFieldsAsyncArgs.formatsProvider]] / [[EvaluateFieldsAsyncArgs.unitsProvider]]
    * to route formatting through an application-owned provider (e.g. a FormatSet-backed
    * [FormattingSpecProvider]($core-quantity)).
+   *
+   * ### Provider scope
+   *
+   * The injected `formatsProvider` / `unitsProvider` are applied **block-wide**: every
+   * `"quantity"` and `"coordinate"` field in `block` is resolved through them, regardless of
+   * that field's [QuantityFieldFormatOptions.formatSet]($common). This intentionally differs
+   * from [[evaluateFields]] and the `TxnManager` field-update callback path, which are
+   * *per-field* — they consult the process-wide registry populated by
+   * [[registerFieldFormattingProvider]] and only format fields whose `formatSet` matches a
+   * registration.
+   *
+   * As a result, a text block that mixes `formatSet`-tagged and untagged fields renders
+   * different strings on the two paths when a caller registers a sync provider under one
+   * `formatSet` while also passing a distinct block-wide provider to
+   * `evaluateFieldsAsync`. Callers that need per-field routing on the async path must slice
+   * their [TextBlock]($common) and call `evaluateFieldsAsync` once per provider.
    *
    * For each `"quantity"` or `"coordinate"` field the format is resolved in this priority
    * order (see [QuantityFieldFormatOptions]($common) for the full contract):

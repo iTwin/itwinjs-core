@@ -238,23 +238,30 @@ function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
 
 // Applies a pre-resolved FormatterSpec to a quantity or coordinate FieldValue and wraps the
 // result with prefix/suffix/case. Shared by both the async and sync spec-based paths.
+//
+// `formatMagnitude` is the entry point actually used to render each scalar. The sync path
+// passes a closure that routes through `FormattingSpecProvider.formatQuantity(magnitude, spec)`
+// so caller-side hooks (caching, telemetry, per-call KoQ substitution) are honored. The async
+// path has no `FormattingSpecProvider` — it constructs a fresh `FormatterSpec` from the
+// injected `FormatsProvider`/`UnitsProvider` — so it falls back to `spec.applyFormatting`.
 function applySpecToFieldValue(
   value: FieldValue,
   options: FieldFormatOptions | undefined,
   spec: FormatterSpec,
+  formatMagnitude: (magnitude: number) => string = (m) => spec.applyFormatting(m),
 ): string | undefined {
   let formatted: string | undefined;
   if (value.type === "quantity") {
     if (typeof value.value !== "number") {
       return formatFieldValue(value, options);
     }
-    formatted = spec.applyFormatting(value.value);
+    formatted = formatMagnitude(value.value);
   } else {
     const magnitudes = getCoordinateMagnitudes(value.value);
     if (!magnitudes) {
       return formatFieldValue(value, options);
     }
-    formatted = `(${magnitudes.map((m) => spec.applyFormatting(m)).join(", ")})`;
+    formatted = `(${magnitudes.map((m) => formatMagnitude(m)).join(", ")})`;
   }
   return formatString(formatted, options);
 }
@@ -325,6 +332,15 @@ function lookupSyncSpec(
  * are expected to look up the provider from `options?.quantity?.formatSet` before calling this
  * function, and fall back to [[formatFieldValue]] themselves when the lookup misses.
  *
+ * Each scalar is rendered through
+ * [FormattingSpecProvider.formatQuantity]($core-quantity) — not
+ * [FormatterSpec.applyFormatting]($core-quantity) directly — so provider-side hooks (caching,
+ * telemetry, per-call KoQ substitution) are honored. The async
+ * [[formatFieldValueAsync]] path does not have a `FormattingSpecProvider` (it builds a fresh
+ * [FormatterSpec]($core-quantity) from an injected `FormatsProvider`/`UnitsProvider`), so it
+ * renders via [FormatterSpec.applyFormatting]($core-quantity) directly; provider-side hooks
+ * do not apply on that path.
+ *
  * For other [[FieldPropertyType]]s, or when a quantity/coordinate field cannot be resolved to a
  * [FormatterSpec]($core-quantity) via `provider`, falls back to [[formatFieldValue]].
  * @internal
@@ -343,5 +359,5 @@ export function formatFieldValueWithSpecProvider(
     return formatFieldValue(value, options);
   }
 
-  return applySpecToFieldValue(value, options, spec);
+  return applySpecToFieldValue(value, options, spec, (m) => provider.formatQuantity(m, spec));
 }
