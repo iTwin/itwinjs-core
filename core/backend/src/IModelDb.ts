@@ -3991,6 +3991,16 @@ export class BriefcaseDb extends IModelDb {
       }
     };
 
+    // `dgn_Domain` holds one bookkeeping row per BIS domain present in the briefcase. The row is
+    // created automatically as soon as the domain's schema is imported, so merging a changeset
+    // that registers a domain conflicts with the row that was just created locally. Both rows
+    // describe the same domain and the incoming one is authoritative, so this is never fatal.
+    if (args.tableName === "dgn_Domain" && (args.cause === DbConflictCause.Conflict || args.cause === DbConflictCause.Data)) {
+      Logger.logWarning(category, `${interpretConflictCause(args.cause)} conflict on dgn_Domain - resolved by replacing the existing row with the incoming row`);
+      args.dump();
+      return DbConflictResolution.Replace;
+    }
+
     if (args.cause === DbConflictCause.Data && !args.indirect) {
       /*
       * From SQLite Docs CHANGESET_DATA as the second argument

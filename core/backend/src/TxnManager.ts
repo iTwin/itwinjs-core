@@ -1077,6 +1077,14 @@ export class TxnManager {
     }
 
     // Default conflict resolution for which custom handler is never called.
+    // A local txn that imported a domain replays a change to `dgn_Domain` for a domain the
+    // just-merged changesets already registered. Both rows describe the same domain, so the
+    // merged row wins and the local change is dropped.
+    if (args.tableName === "dgn_Domain" && (args.cause === "Conflict" || args.cause === "Data")) {
+      Logger.logInfo(BackendLoggerCategory.IModelDb, "dgn_Domain conflict during rebase. Keeping the merged row and skipping the local change.", getChangeMetaData());
+      return DbConflictResolution.Skip;
+    }
+
     if (args.cause === "Data" && !args.indirect) {
       if (args.tableName === "be_Prop") {
         if (args.getValueText(0, "Old") === "ec_Db" && args.getValueText(1, "Old") === "localDbInfo") {
