@@ -287,10 +287,10 @@ export interface SchemaImportOptions<T = any> {
   data?: T
 }
 
-/** Arguments for [[BriefcaseDb.importSchemasWithDataTransform]].
+/** Arguments for [[BriefcaseDb.upgradeSchemas]] and [[BriefcaseDb.upgradeSchemaStrings]].
  * @alpha
  */
-export interface ImportSchemasWithDataTransformArgs extends PushChangesArgs {
+export interface UpgradeSchemasArgs extends PushChangesArgs {
   /**
    * An [[ECSchemaXmlContext]] to use instead of building a default one.
    * @internal
@@ -1522,8 +1522,8 @@ export abstract class IModelDb extends IModel {
           nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         } catch (err: any) {
           this.abandonSchemaChanges();
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === err.errorNumber)
-            throw new IModelError(err.errorNumber, `${err.message} - this schema change moves data. Use BriefcaseDb.importSchemasWithDataTransform, which takes the exclusive lock and pushes the result.`);
+          if (SchemaSync.requiresUpgrade(err))
+            throw new IModelError(err.errorNumber, `${err.message} - this schema change needs the upgrade path. Use BriefcaseDb.upgradeSchemas, which takes the exclusive schema lock and pushes the result.`);
 
           throw new IModelError(err.errorNumber, err.message);
         }
@@ -4380,44 +4380,53 @@ export class BriefcaseDb extends IModelDb {
     BriefcaseManager.deleteRebaseFolders(this);
   }
 
-  /** Import schemas whose changes move existing data. [[importSchemas]] rejects those on an iModel with
-   * SchemaSync enabled, because every briefcase has to agree on where that data ends up.
+  /** Import schemas that [[importSchemas]] refuses, under the exclusive schema lock.
    *
-   * Takes the exclusive schema lock, pulls to the tip, imports, then pushes the changeset and uploads the
-   * sync db before releasing either lock. The result cannot be kept local.
-   * @note The briefcase must have no local changes. Acquiring the exclusive lock fails while anyone else
-   * holds a lock, so no other briefcase can be sitting on unpushed changes either.
+   * The upgrade tier of the two-tier surface. [[importSchemas]] is the update tier: it takes a shared
+   * lock, never moves or destroys data, and leaves the result local for the caller to push. This one
+   * takes the exclusive schema lock, allows the import to move and destroy data, and pushes before it
+   * returns. Use it when [[importSchemas]] rejects with a status [[SchemaSync.requiresUpgrade]]
+   * recognizes.
+   *
+   * Takes the exclusive schema lock, pulls to the tip, imports, then pushes the changeset and uploads
+   * the sync db before releasing either lock. With schema sync enabled the result cannot be kept
+   * local: the sync db is rebuilt from this briefcase, so a caller who abandoned instead of pushing
+   * would leave every other briefcase taking its layout decisions from a file that never existed.
+   * @note The briefcase must have no local changes. Acquiring the exclusive lock fails while anyone
+   * else holds a lock, so no other briefcase can be sitting on unpushed changes either.
+   * @see [[BriefcaseDb.upgradeSchemas]] (static) for the profile and domain schemas the software
+   * supplies, which follows the same protocol at a different scope.
    * @alpha
    */
-  public async importSchemasWithDataTransform(schemaFileNames: LocalFileName[], arg: ImportSchemasWithDataTransformArgs): Promise<void> {
-    return this.importWithDataTransformInternal(
+  public async upgradeSchemas(schemaFileNames: LocalFileName[], arg: UpgradeSchemasArgs): Promise<void> {
+    return this.upgradeSchemasInternal(
       schemaFileNames,
       arg,
       (schemas, importOptions) => this[_nativeDb].importSchemas(schemas, importOptions),
     );
   }
 
-  /** The [[importSchemaStrings]] counterpart of [[importSchemasWithDataTransform]].
+  /** The [[importSchemaStrings]] counterpart of [[upgradeSchemas]].
    * @alpha
    */
-  public async importSchemaStringsWithDataTransform(serializedXmlSchemas: string[], arg: ImportSchemasWithDataTransformArgs): Promise<void> {
-    return this.importWithDataTransformInternal(
+  public async upgradeSchemaStrings(serializedXmlSchemas: string[], arg: UpgradeSchemasArgs): Promise<void> {
+    return this.upgradeSchemasInternal(
       serializedXmlSchemas,
       arg,
       (schemas, importOptions) => this[_nativeDb].importXmlSchemas(schemas, importOptions),
     );
   }
 
-  private async importWithDataTransformInternal<T extends LocalFileName[] | string[]>(
+  private async upgradeSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
-    arg: ImportSchemasWithDataTransformArgs,
+    arg: UpgradeSchemasArgs,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
     if (schemas.length === 0)
       return;
 
     if (this[_nativeDb].hasUnsavedChanges() || this.txns.hasLocalChanges)
-      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot import schemas with a data transform while there are local changes");
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot upgrade schemas while there are local changes");
 
     await this.acquireSchemaLock();
     await this.pullChanges({ accessToken: arg.accessToken });
@@ -4428,7 +4437,7 @@ export class BriefcaseDb extends IModelDb {
       return;
     }
 
-    await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema data transform" }, async (syncAccess) => {
+    await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema upgrade" }, async (syncAccess) => {
       this.saveSchemaChanges();
       try {
         nativeImportOp(schemas, {

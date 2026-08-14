@@ -1223,7 +1223,7 @@ describe("Schema synchronization", function (this: Suite) {
     };
     await assertThrowsAsyncContaining(
       async () => importSchema(b1, test1WithWideStruct),
-      "Use BriefcaseDb.importSchemasWithDataTransform");
+      "Use BriefcaseDb.upgradeSchemas");
 
     // B2 imports additively and holds on to the shared lock by not pushing, which blocks the transform.
     await importSchema(b2, {
@@ -1247,15 +1247,15 @@ describe("Schema synchronization", function (this: Suite) {
       }],
     });
     await assertThrowsAsync(
-      async () => b1.importSchemaStringsWithDataTransform([tinySchemaToXml(test1WithWideStruct)], { description: "schema with 30 props in test1:Pipe1" }),
+      async () => b1.upgradeSchemaStrings([tinySchemaToXml(test1WithWideStruct)], { description: "schema with 30 props in test1:Pipe1" }),
       "shared lock is held");
 
     await b2.pushChanges({ description: "schema with 10 props in test2:Pipe1" });
 
     // With the shared lock gone the transform runs, and it pushes its own changeset.
     await b1.pullChanges();
-    await b1.importSchemaStringsWithDataTransform([tinySchemaToXml(test1WithWideStruct)], { description: "schema with 30 props in test1:Pipe1" });
-    assert.isFalse(b1.txns.hasLocalChanges, "importSchemaStringsWithDataTransform pushes what it imported");
+    await b1.upgradeSchemaStrings([tinySchemaToXml(test1WithWideStruct)], { description: "schema with 30 props in test1:Pipe1" });
+    assert.isFalse(b1.txns.hasLocalChanges, "upgradeSchemaStrings pushes what it imported");
 
     await b3.pullChanges();
     await importSchema(b3, {

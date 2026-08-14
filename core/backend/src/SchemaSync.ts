@@ -134,6 +134,30 @@ export namespace SchemaSync {
     }
   }
 
+  /** Whether a failed [[IModelDb.importSchemas]] can be retried through the upgrade path.
+   *
+   * The update tier refuses two kinds of change: one that has to move data between columns, and one
+   * that destroys instances or property values. They arrive as different statuses because they are
+   * different changes, but they mean one thing to a caller - this needs
+   * [[BriefcaseDb.upgradeSchemas]], which takes the exclusive schema lock.
+   *
+   * The retry is the app's decision, not the platform's: taking that lock disturbs everyone else, so
+   * only the app knows whether to do it now, schedule it, or tell the user.
+   * ```ts
+   * try {
+   *   await db.importSchemas(files);
+   * } catch (e) {
+   *   if (!SchemaSync.requiresUpgrade(e)) throw e;
+   *   await db.upgradeSchemas(files, { description: "..." });
+   * }
+   * ```
+   */
+  export function requiresUpgrade(error: unknown): boolean {
+    const errorNumber = (error as { errorNumber?: number } | undefined)?.errorNumber;
+    return errorNumber === DbResult.BE_SQLITE_ERROR_DataTransformRequired
+      || errorNumber === DbResult.BE_SQLITE_ERROR_DataDeletionRequired;
+  }
+
   /** Arguments for [[createContainerForIModel]]. */
   export interface CreateContainerForIModelArgs {
     iModel: IModelDb;
@@ -200,6 +224,33 @@ export namespace SchemaSync {
     } finally {
       iModel[_implicitTxn].abandonChanges();
     }
+  }
+
+  /** Arguments for [[enableForIModel]]. */
+  export interface EnableForIModelArgs {
+    iModel: IModelDb;
+    /** An existing container to use. When omitted one is created for this iModel. */
+    containerProps?: CloudSqlite.ContainerProps;
+    /** Replace the container already recorded on this iModel instead of failing. */
+    overrideContainer?: boolean;
+    label?: string;
+    description?: string;
+  }
+
+  /** Turn schema sync on for an iModel: create the container if needed, record it, and seed it.
+   *
+   * The single call callers should use. [[createContainerForIModel]] and [[initializeForIModel]] have
+   * to happen in this order, and an iModel left between the two is one that names a container nothing
+   * has seeded.
+   * @returns the container props recorded on the iModel.
+   * @note Takes the exclusive schema lock and pushes, same protocol as [[BriefcaseDb.upgradeSchemas]] -
+   * every operation that changes how a file is governed uses it.
+   */
+  export async function enableForIModel(arg: EnableForIModelArgs): Promise<CloudSqlite.ContainerProps> {
+    const containerProps = arg.containerProps
+      ?? await createContainerForIModel({ iModel: arg.iModel, label: arg.label, description: arg.description });
+    await initializeForIModel({ iModel: arg.iModel, containerProps, overrideContainer: arg.overrideContainer });
+    return containerProps;
   }
 
   /** Arguments for [[CloudAccess.createNewContainer]]. */
