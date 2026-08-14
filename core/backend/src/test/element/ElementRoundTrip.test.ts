@@ -1087,6 +1087,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     reloadedNoPlacement.placement.origin.x = 10;
     assert.deepEqual(reloadedNoPlacement.toJSON().placement?.origin, { x: 10, y: 0, z: 0 });
     assert.isUndefined(imodel.elements.getElementProps<GeometricElementProps>({ id: noPlacementId }).placement);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const spatialIndexCount = imodel.withPreparedStatement("SELECT COUNT(*) FROM bis.SpatialIndex WHERE ECInstanceId=?", (stmt) => {
       stmt.bindId(1, noPlacementId);
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
