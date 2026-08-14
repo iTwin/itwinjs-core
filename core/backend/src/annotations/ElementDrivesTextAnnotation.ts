@@ -267,11 +267,15 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *
    * For each `"quantity"` or `"coordinate"` field the format is resolved in this priority
    * order (see [QuantityFieldFormatOptions]($common) for the full contract):
-   *   1. [QuantityFieldFormatOptions.kindOfQuantity]($common) — looked up via the active [FormatsProvider]($core-quantity).
-   *   2. The property's own [KindOfQuantity]($ecschema-metadata).
-   *   3. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
+   *   1. Effective override pair — [QuantityFieldFormatOptions.kindOfQuantity]($common) paired
+   *      with [QuantityFieldFormatOptions.persistenceUnit]($common), each independently falling
+   *      through to the property side when unset, looked up via the active
+   *      [FormatsProvider]($core-quantity).
+   *   2. The property-side pair — the property's own [KindOfQuantity]($ecschema-metadata) and
+   *      its persistence unit; skipped when identical to the effective pair.
    *
-   * If none yields a usable format, the raw value is rendered via `toString()`.
+   * If neither pair resolves, the field falls back to its raw representation (`toString()`
+   * for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
    * @returns the number of fields whose display strings were modified.
    * @beta
    */
