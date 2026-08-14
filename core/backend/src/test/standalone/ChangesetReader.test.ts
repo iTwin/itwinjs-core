@@ -3189,10 +3189,10 @@ describe("ChangesetReader — openFile + openGroup", () => {
       assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Model", "CodeSpec",
         "CodeScope", "FederationGuid", "$meta", "Category", "LastMod",
         "BinProp", "GuidArrProp"].sort())
-      assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ['BinProp',
+      assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ['BBoxHigh', 'BBoxLow', 'BinProp',
         'Category.Id', 'CodeScope.Id', 'CodeSpec.Id', 'CodeValue',
         'ECClassId', 'ECInstanceId', 'FederationGuid', 'GeometryStream', 'GuidArrProp',
-        'JsonProperties', 'LastMod', 'Model.Id', 'Parent', 'Pt3dProp',
+        'JsonProperties', 'LastMod', 'Model.Id', 'Origin', 'Parent', 'Pt3dProp', 'Rotation',
         'TypeDefinition', 'UserLabel'].sort());
     }
 
