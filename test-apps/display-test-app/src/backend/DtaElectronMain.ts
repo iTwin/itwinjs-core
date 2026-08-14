@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
+import { promises as fs } from "fs";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
@@ -81,6 +82,16 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async disableFieldFormattingDemo(iModelKey: string): Promise<void> {
     return disableFieldFormattingDemoForIModel(iModelKey);
+  }
+
+  public async readTextFile(filePath: string): Promise<string> {
+    return fs.readFile(path.resolve(filePath), "utf8");
+  }
+
+  public async writeTextFile(filePath: string, contents: string): Promise<void> {
+    const resolved = path.resolve(filePath);
+    await fs.mkdir(path.dirname(resolved), { recursive: true });
+    await fs.writeFile(resolved, contents, "utf8");
   }
 }
 
