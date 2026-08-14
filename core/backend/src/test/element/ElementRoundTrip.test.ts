@@ -1073,10 +1073,16 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     const noPlacement = imodel.elements.getElementProps<GeometricElementProps>({ id: noPlacementId });
     assert.isUndefined(noPlacement.placement);
+    const noPlacementElement = imodel.elements.getElement<PhysicalObject>(noPlacementId, PhysicalObject);
+    assert.isUndefined(noPlacementElement.toJSON().placement);
+    noPlacementElement.placement.origin.x = 10;
+    assert.deepEqual(noPlacementElement.toJSON().placement?.origin, { x: 10, y: 0, z: 0 });
 
     const originOnly = imodel.elements.getElementProps<GeometricElementProps>({ id: originOnlyId });
     assert.deepEqual(originOnly.placement?.origin, [10, 20, 30]);
     assert.isDefined(originOnly.placement);
+    const originOnlyElement = imodel.elements.getElement<PhysicalObject>(originOnlyId, PhysicalObject);
+    assert.deepEqual(originOnlyElement.toJSON().placement?.origin, { x: 10, y: 20, z: 30 });
 
     imodel.close();
   });
