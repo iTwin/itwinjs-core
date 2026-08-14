@@ -14,17 +14,26 @@
  *   1. `dta text demo on` registers [[FieldFormattingDemoProvider]]. `dta text demo off`
  *      unregisters.
  *   2. Fields whose `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID`
- *      (`"0xDEMO"`) format through the demo provider. When enabled:
+ *      (`"0xDEMO"`) format through the demo provider on the sync (txn callback) path. When
+ *      enabled:
  *      - `TextImpl.insertText` / `updateText` call [[FieldFormattingDemoProvider.prepareForBlock]]
  *        before writing the annotation, so the [FormatterSpec]($core-quantity)s required by
  *        any [FieldRun]($common)s in the block are hot before the txn commits.
  *      - The provider is registered against the iModel via
  *        [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), so the txn
- *        callback path that recomputes field content synchronously routes through the provider.
+ *        callback path that recomputes field content synchronously routes tagged fields
+ *        through the provider.
  *      - `Backend.generateTextAnnotationGeometry` passes the same underlying
  *        [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity) to
- *        [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend), so the async pathway
- *        used to render dynamic geometry produces the same output as the sync one.
+ *        [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) so the async pathway
+ *        used to render dynamic geometry also uses the demo formats.
+ *
+ * The two paths do **not** produce identical output for arbitrary blocks: the sync path is
+ * `formatSet`-scoped and only formats fields tagged with `DEMO_FORMAT_SET_ID`, while the
+ * async path applies the injected providers block-wide (see
+ * [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) JSDoc). A block that mixes
+ * tagged and untagged fields will diverge; a block whose fields are all tagged
+ * (the typical DTA authoring flow) sees the same demo output on both paths.
  *
  * This is intentionally minimal - it exists to exercise the new pathways from DTA, not to
  * be a production-quality implementation.

@@ -1055,6 +1055,74 @@ describe("Field evaluation", () => {
       expect(field.cachedContent).to.equal("(1000 mm, 2000 mm, 3000 mm)");
     });
 
+    it("routes quantity formatting through provider.formatQuantity, not spec.applyFormatting", () => {
+      // Regression: the sync path must honor the FormattingSpecProvider contract by rendering
+      // magnitudes via `provider.formatQuantity(magnitude, spec)`, so caller-side hooks
+      // (caching, telemetry, per-call substitution) apply. Directly calling
+      // `spec.applyFormatting` would bypass those hooks silently.
+      const fakeSpec = { applyFormatting: (m: number) => `SPEC:${m}` } as unknown as FormatterSpec;
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        formatSet: PRIMARY_FORMAT_SET,
+        provider: {
+          onFormattingReady: new BeUnorderedUiEvent(),
+          getSpecsByNameAndUnit(args) {
+            if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
+              return { formatterSpec: fakeSpec } as FormattingSpecEntry;
+            }
+            return undefined;
+          },
+          formatQuantity: (m) => `PROVIDER:${m}`,
+        },
+      });
+
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("PROVIDER:2.5");
+    });
+
+    it("routes coordinate formatting through provider.formatQuantity for each component", () => {
+      // Regression: same as above but for coordinate values — every component of the point
+      // should render via `provider.formatQuantity`, not `spec.applyFormatting`.
+      const fakeSpec = { applyFormatting: (m: number) => `SPEC:${m}` } as unknown as FormatterSpec;
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        formatSet: PRIMARY_FORMAT_SET,
+        provider: {
+          onFormattingReady: new BeUnorderedUiEvent(),
+          getSpecsByNameAndUnit(args) {
+            if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
+              return { formatterSpec: fakeSpec } as FormattingSpecEntry;
+            }
+            return undefined;
+          },
+          formatQuantity: (m) => `PROVIDER:${m}`,
+        },
+      });
+
+      const textBlock = TextBlock.create();
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "point" },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "Fields.LENGTH", persistenceUnit: "Units.M" } },
+        cachedContent: "old",
+      });
+      textBlock.appendRun(field);
+
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("(PROVIDER:1, PROVIDER:2, PROVIDER:3)");
+    });
+
     it("falls back to raw string when the registered provider does not supply a spec", () => {
       // Provider recognizes no (name, unit) combinations.
       ElementDrivesTextAnnotation.registerFieldFormattingProvider({
@@ -1151,6 +1219,70 @@ describe("Field evaluation", () => {
 
       ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(PRIMARY_FORMAT_SET);
       expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(PRIMARY_FORMAT_SET)).to.be.undefined;
+    });
+
+    it("diverges from evaluateFieldsAsync for a mixed tagged/untagged block (sync is per-field; async is block-wide)", async () => {
+      // Regression pinning the intentional sync/async divergence. Sync is per-field via the
+      // formatSet registry: only fields tagged with a registered formatSet format through a
+      // provider. Async is block-wide: an injected FormatsProvider applies to every
+      // quantity/coordinate field in the block regardless of formatSet. Same TextBlock, same
+      // fields, different rendered strings on the two paths. See the "Provider scope" note on
+      // `ElementDrivesTextAnnotation.evaluateFieldsAsync`.
+      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        formatSet: PRIMARY_FORMAT_SET,
+        provider: makeStubProvider({ format: (m) => `SYNC:${m * 1000}mm` }),
+      });
+
+      const block = TextBlock.create();
+      const taggedField = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
+        cachedContent: "old",
+      });
+      const untaggedField = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        // No formatOptions.quantity.formatSet -> sync registry lookup misses.
+        cachedContent: "old",
+      });
+      block.appendRun(taggedField);
+      block.appendRun(untaggedField);
+
+      const syncUpdated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+
+      expect(syncUpdated).to.equal(2);
+      // Tagged field routed through the sync provider; untagged fell back to raw toString().
+      expect(taggedField.cachedContent).to.equal("SYNC:2500mm");
+      expect(untaggedField.cachedContent).to.equal("2.5");
+
+      // Async path: same block, same fields, but a block-wide FormatsProvider that formats
+      // `Fields.LENGTH` will apply to BOTH fields regardless of formatSet tagging.
+      const asyncFormat: FormatProps = {
+        composite: { includeZero: true, units: [{ label: "cm(async)", name: "Units.CM" }] },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 0,
+        type: "Decimal",
+        uomSeparator: " ",
+      };
+      const asyncProvider: FormatsProvider = {
+        onFormatsChanged: new BeEvent(),
+        async getFormat(name) {
+          return name === "Fields.LENGTH" ? asyncFormat : undefined;
+        },
+      };
+
+      const asyncUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
+        iModel: imodel,
+        block,
+        formatsProvider: asyncProvider,
+      });
+
+      expect(asyncUpdated).to.equal(2);
+      // 2.5 m -> 250 cm via the injected block-wide provider; both fields formatted the
+      // same way, because async ignores per-field formatSet routing.
+      expect(taggedField.cachedContent).to.equal("250.0 cm(async)");
+      expect(untaggedField.cachedContent).to.equal("250.0 cm(async)");
     });
 
     it("routes each field to the FormatSet-scoped provider identified by formatOptions.quantity.formatSet", () => {

@@ -202,10 +202,18 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     const demo = getFieldFormattingDemo();
     if (demo) {
-      // Keep the async pipeline consistent with the sync (txn callback) pipeline: use the
-      // demo provider's own FormatsProvider/UnitsProvider so both produce identical output.
-      // Preload the specs so `formatQuantity` calls that happen implicitly through the async
-      // formatter can use them if the async path decides to consult the cache.
+      // NOTE: `evaluateFieldsAsync` applies the injected providers **block-wide** — the demo
+      // provider ends up formatting every quantity/coordinate field in `textBlock`, not just
+      // the ones whose `formatOptions.quantity.formatSet === DEMO_FORMAT_SET_ID`. This is by
+      // design (see `ElementDrivesTextAnnotation.evaluateFieldsAsync` JSDoc) and intentionally
+      // differs from the sync/txn callback path, which is per-field via the registry keyed on
+      // `formatSet`. A block that mixes tagged and untagged fields will therefore render
+      // different strings on the two paths — sync formats only tagged fields, async formats
+      // all of them via the demo provider.
+      //
+      // Prewarming is still worthwhile here: (a) the sync txn-callback path invoked by
+      // `insertText` / `updateText` needs the same specs, and (b) if a future demo
+      // `formatQuantity` implementation consulted the `_specs` cache it would already be hot.
       await demo.prepareForBlock(iModel, textBlock);
       await ElementDrivesTextAnnotation.evaluateFieldsAsync({
         block: textBlock,
