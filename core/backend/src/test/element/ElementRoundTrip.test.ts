@@ -1041,6 +1041,46 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     testBox({ originX: 2, baseOriginX: 4 }, 2);
   });
 
+  it("Does not deserialize an absent placement, but preserves an origin without a bbox", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_placement_without_bbox.bim");
+    let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
+    const { noPlacementId, originOnlyId } = withEditTxn(imodel, (txn) => {
+      const modelId = PhysicalModel.insert(txn, IModelDb.rootSubjectId, "model");
+      const categoryId = SpatialCategory.insert(txn, IModelDb.dictionaryId, "model", {});
+      const baseProps: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        code: Code.createEmpty(),
+        model: modelId,
+        category: categoryId,
+      };
+
+      const originOnlyProps: PhysicalElementProps = {
+        ...baseProps,
+        placement: {
+          origin: { x: 10, y: 20, z: 30 },
+          angles: { yaw: 0, pitch: 0, roll: 0 },
+        },
+      };
+
+      return {
+        noPlacementId: txn.insertElement(baseProps),
+        originOnlyId: txn.insertElement(originOnlyProps),
+      };
+    });
+
+    imodel.close();
+    imodel = SnapshotDb.openFile(imodelPath);
+
+    const noPlacement = imodel.elements.getElementProps<GeometricElementProps>({ id: noPlacementId });
+    assert.isUndefined(noPlacement.placement);
+
+    const originOnly = imodel.elements.getElementProps<GeometricElementProps>({ id: originOnlyId });
+    assert.deepEqual(originOnly.placement?.origin, [10, 20, 30]);
+    assert.isDefined(originOnly.placement);
+
+    imodel.close();
+  });
+
   it("Roundtrip updating properties to null", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_properties_null_update.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);

@@ -844,28 +844,33 @@ export abstract class GeometricElement3d extends GeometricElement {
     const instance = props.row;
     elProps.category = instance.category.id;
 
-    const origin = instance.origin ? [instance.origin.x, instance.origin.y, instance.origin.z] : [0, 0, 0];
     let bbox: LowAndHighXYZProps | undefined;
-    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && instance.bBoxHigh !== null && "bBoxLow" in instance && instance.bBoxLow !== undefined && instance.bBoxLow !== null) {
       bbox = {
         low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
       }
     }
 
-    elProps.placement = {
-      origin,
-      angles: YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON(),
-      bbox
-    };
+    if (instance.origin !== undefined && instance.origin !== null) {
+      elProps.placement = {
+        origin: [instance.origin.x, instance.origin.y, instance.origin.z],
+        angles: YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON(),
+        bbox
+      };
+    }
 
     if (instance.geometryStream) {
-      elProps.geom = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
+      const source = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
         is2d: false,
         geom: instance.geometryStream as Uint8Array,
         placement: elProps.placement,
         categoryId: elProps.category
-      }, "GeometryStreamProps", props.options?.element ?? {}).geom as GeometryStreamProps;
+      }, "GeometryStreamProps", props.options?.element ?? {});
+      elProps.geom = source.geom as GeometryStreamProps;
+      if (source.placement) {
+        elProps.placement = source.placement as Placement3dProps;
+      }
     }
 
     if (instance.typeDefinition) {
@@ -1004,19 +1009,20 @@ export abstract class GeometricElement2d extends GeometricElement {
     const elProps = super.deserialize(props) as GeometricElement2dProps;
     const instance = props.row;
     elProps.category = instance.category.id;
-    const origin = instance.origin ? [instance.origin.x, instance.origin.y] : [0, 0];
     let bbox: LowAndHighXYZProps | undefined;
-    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && instance.bBoxHigh !== null && "bBoxLow" in instance && instance.bBoxLow !== undefined && instance.bBoxLow !== null) {
       bbox = {
         low: [instance.bBoxLow.x, instance.bBoxLow.y],
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y],
       }
     }
-    elProps.placement = {
-      origin,
-      angle: instance.rotation,
-      bbox,
-    };
+    if (instance.origin !== undefined && instance.origin !== null) {
+      elProps.placement = {
+        origin: [instance.origin.x, instance.origin.y],
+        angle: instance.rotation,
+        bbox,
+      };
+    }
 
     if (instance.geometryStream) {
       const source = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
