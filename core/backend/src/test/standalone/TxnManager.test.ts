@@ -7,13 +7,13 @@ import { assert, expect } from "chai";
 import { BeDuration, BeEvent, Guid, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, TxnEntityMetadata, UpgradeOptions,
+  Code, ColorByName, DomainOptions, EntityIdAndClassId, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, TxnEntityMetadata, UpgradeOptions,
 } from "@itwin/core-common";
 import {
   _nativeDb,
   ChangeInstanceKey,
   ChannelControl,
-  EditTxn, IModelDb, IModelJsFs, PhysicalModel, PhysicalPartition, RebaseHandler, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntities, TxnChangedEntity, TxnManager, withEditTxn,
+  DocumentListModel, Drawing, EditTxn, IModelDb, IModelJsFs, PhysicalModel, PhysicalPartition, RebaseHandler, SectionDrawing, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntities, TxnChangedEntity, TxnManager, withEditTxn,
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
@@ -455,8 +455,11 @@ describe("TxnManager", () => {
       const entities = changes[iterName];
 
       const dest = this[propName];
-      for (const entity of entities)
+      for (const entity of entities) {
+        expect(entity.metadata.classFullName).not.to.equal("");
+        expect(entity.metadata.is(entity.metadata.classFullName)).to.be.true;
         dest.push({ id: entity.id, classId: entity.classId });
+      }
     }
 
     public expectNumValidations(expected: number) {
@@ -668,6 +671,41 @@ describe("TxnManager", () => {
     assert.equal(byId.get(IModel.getDefaultSubCategoryId(categoryId))?.metadata.classFullName, "BisCore:SubCategory");
   });
 
+  it("handles changed classes when a base class is also changed", async () => {
+    const metadata = new Map<string, TxnEntityMetadata>();
+    const removeListener = imodel.txns.onElementsChanged.addListener((changes) => {
+      for (const change of changes.inserts)
+        metadata.set(change.metadata.classFullName, change.metadata);
+    });
+
+    const documentListModelId = withEditTxn(imodel, "document-list-model", (editTxn) => DocumentListModel.insert(editTxn, IModel.rootSubjectId, "Documents"));
+    try {
+      await withEditTxn(imodel, "elements-event-base-class-metadata", async (editTxn) => {
+        editTxn.insertElement({
+          classFullName: SectionDrawing.classFullName,
+          model: documentListModelId,
+          code: Drawing.createCode(imodel, documentListModelId, "DerivedDrawing"),
+        });
+        editTxn.insertElement({
+          classFullName: Drawing.classFullName,
+          model: documentListModelId,
+          code: Drawing.createCode(imodel, documentListModelId, "BaseDrawing"),
+        });
+        editTxn.saveChanges("derived and base drawings");
+      });
+    } finally {
+      removeListener();
+    }
+
+    const sectionDrawingMetadata = metadata.get("BisCore:SectionDrawing");
+    const drawingMetadata = metadata.get("BisCore:Drawing");
+    assert.isDefined(sectionDrawingMetadata);
+    assert.isDefined(drawingMetadata);
+    assert.isTrue(sectionDrawingMetadata!.is("BisCore:Drawing"));
+    assert.isTrue(sectionDrawingMetadata!.is("BisCore:Document"));
+    assert.isTrue(drawingMetadata!.is("BisCore:Document"));
+  });
+
   it("dispatches events when models change", async () => {
     await withEditTxn(imodel, "models-events", async (editTxn) => {
       const existingModelId = props.model;
@@ -869,10 +907,13 @@ describe("TxnManager", () => {
 
   it("dispatches events in batches", async () => {
     await withEditTxn(imodel, "batch-events", async (editTxn) => {
-      function entityCount(entities: EntityIdAndClassIdIterable): number {
+      function entityCount(entities: TxnChangedEntities["inserts"]): number {
         let count = 0;
-        for (const _entity of entities)
+        for (const entity of entities) {
+          expect(entity.metadata.classFullName).to.equal("TestBim:TestPhysicalObject");
+          expect(entity.metadata.is("BisCore:Element")).to.be.true;
           ++count;
+        }
 
         return count;
       }

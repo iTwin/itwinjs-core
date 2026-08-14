@@ -193,7 +193,7 @@ class ChangedEntitiesProc {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
-  private populateMetadata(db: BriefcaseDb, classIds: Id64Array): { backend: TxnEntityMetadata[]; frontend: NotifyEntitiesChangedMetadata[] } {
+  private populateMetadata(db: BriefcaseDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
     // Ensure metadata for all class Ids is loaded. Loading metadata for a derived class loads metadata for all of its superclasses.
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classIdsToLoad = classIds.filter((x) => undefined === db.classMetaDataRegistry.findByClassId(x));
@@ -217,14 +217,11 @@ class ChangedEntitiesProc {
       nameToIndex.set(meta?.ecclass ?? "", nameToIndex.size);
     }
 
-    const frontendMetadata: NotifyEntitiesChangedMetadata[] = [];
-    const backendMetadata: TxnEntityMetadataImpl[] = [];
+    const metadata: NotifyEntitiesChangedMetadata[] = [];
 
     function addMetadata(name: string, index: number): void {
       const bases: number[] = [];
-      frontendMetadata[index] = { name, bases };
-      const metadata = new TxnEntityMetadataImpl(name);
-      backendMetadata[index] = metadata;
+      metadata[index] = { name, bases };
 
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       const meta = db.tryGetMetaData(name);
@@ -241,7 +238,6 @@ class ChangedEntitiesProc {
         }
 
         bases.push(baseClassIndex);
-        metadata.addBaseClass(backendMetadata[baseClassIndex]);
       }
     }
 
@@ -254,7 +250,24 @@ class ChangedEntitiesProc {
       addMetadata(name, index);
     }
 
-    return { backend: backendMetadata, frontend: frontendMetadata };
+    return metadata;
+  }
+
+  private createBackendMetadata(frontendMetadata: NotifyEntitiesChangedMetadata[]): TxnEntityMetadataImpl[] {
+    const backendMetadata = frontendMetadata.map(({ name }) => new TxnEntityMetadataImpl(name));
+    for (let index = 0; index < frontendMetadata.length; index++) {
+      const frontend = frontendMetadata[index];
+      const backend = backendMetadata[index];
+      assert(undefined !== frontend && undefined !== backend);
+
+      for (const baseClassIndex of frontend.bases) {
+        const baseClass = backendMetadata[baseClassIndex];
+        assert(undefined !== baseClass);
+        backend.addBaseClass(baseClass);
+      }
+    }
+
+    return backendMetadata;
   }
 
   private sendEvent(iModel: BriefcaseDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
@@ -262,22 +275,25 @@ class ChangedEntitiesProc {
       return;
 
     const classIds = this._classIds.toArray();
-    const metadata = this.populateMetadata(iModel, classIds);
+    const frontendMetadata = this.populateMetadata(iModel, classIds);
 
-    // Notify backend listeners.
-    const txnEntities: TxnChangedEntities = {
-      inserts: this._inserted.iterable(classIds, metadata.backend),
-      deletes: this._deleted.iterable(classIds, metadata.backend),
-      updates: this._updated.iterable(classIds, metadata.backend),
-    };
-    evt.raiseEvent(txnEntities);
+    // Notify backend listeners. Avoid constructing the backend metadata graph when there are no listeners.
+    if (evt.numberOfListeners > 0) {
+      const backendMetadata = this.createBackendMetadata(frontendMetadata);
+      const txnEntities: TxnChangedEntities = {
+        inserts: this._inserted.iterable(classIds, backendMetadata),
+        deletes: this._deleted.iterable(classIds, backendMetadata),
+        updates: this._updated.iterable(classIds, backendMetadata),
+      };
+      evt.raiseEvent(txnEntities);
+    }
 
     // Notify frontend listeners.
     const entities: NotifyEntitiesChangedArgs = {
       insertedMeta: [],
       updatedMeta: [],
       deletedMeta: [],
-      meta: metadata.frontend,
+      meta: frontendMetadata,
     };
 
     this._inserted.addToChangedEntities(entities, "inserted");
