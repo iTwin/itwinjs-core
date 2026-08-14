@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-tiles",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-tiles"
+}
