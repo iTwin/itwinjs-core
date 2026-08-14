@@ -583,8 +583,9 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
  * formatted through the standard iTwin.js quantity pipeline.
  *
  * Intended for an app-supplied [FormattingSpecProvider]($core-quantity) to pre-warm its cache
- * before an annotation is inserted, updated, or re-evaluated. Fields carrying an inline
- * [QuantityFieldFormatOptions.format]($common) override are excluded — they need no lookup.
+ * before an annotation is inserted, updated, or re-evaluated. Fields whose target property has
+ * no [KindOfQuantity]($ecschema-metadata) (and no `kindOfQuantity` / `persistenceUnit`
+ * override) are omitted — they need no provider lookup.
  * @internal
  */
 export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel: IModelDb): FormattingSpecArgs[] {
