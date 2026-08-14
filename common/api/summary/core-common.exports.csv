@@ -1031,6 +1031,7 @@ public;class;Tween
 public;type;TweenCallback
 public;class;Tweens
 public;enum;TxnAction
+public;interface;TxnEntityMetadata
 internal;interface;TxnNotifications
 alpha;interface;TxnProps
 alpha;type;TxnType

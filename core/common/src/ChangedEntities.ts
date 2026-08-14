@@ -19,6 +19,20 @@ export interface EntityIdAndClassId {
   classId: Id64String;
 }
 
+/** Metadata describing the ECClass of an entity changed by a transaction.
+ * @public
+ * @extensions
+ */
+export interface TxnEntityMetadata {
+  /** The class's name in "Schema:Class" format. */
+  readonly classFullName: string;
+
+  /** Returns `true` if this class is or is derived from the specified class.
+   * @note Class names are compared case-sensitively.
+   */
+  is(baseClassFullName: string): boolean;
+}
+
 /** JSON representation of the set of [Element]($backend)s or [Model]($backend)s that were changed by a [Txn]($docs/learning/InteractiveEditing.md).
  * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
  * @see [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend).

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Expose ECClass metadata on backend transaction change events and document the distinct backend and frontend change-event payloads.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

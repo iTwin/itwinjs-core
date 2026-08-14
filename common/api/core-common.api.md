@@ -11329,6 +11329,12 @@ export enum TxnAction {
     Reverse = 3
 }
 
+// @public
+export interface TxnEntityMetadata {
+    readonly classFullName: string;
+    is(baseClassFullName: string): boolean;
+}
+
 // @internal
 export interface TxnNotifications {
     // (undocumented)

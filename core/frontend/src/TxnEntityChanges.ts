@@ -7,21 +7,8 @@
  */
 
 import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
-import { NotifyEntitiesChangedArgs } from "@itwin/core-common";
-
-/** Describes the BIS class of a [[TxnEntityChange]].
- * @public
- * @extensions
- */
-export interface TxnEntityMetadata {
-  /** The class's name in "Schema:Class" format. */
-  readonly classFullName: string;
-
-  /** Returns true if this class is or is derived from the specified class.
-   * @note Class names are compared case-sensitively.
-   */
-  is(baseClassFullName: string): boolean;
-}
+import { NotifyEntitiesChangedArgs, TxnEntityMetadata } from "@itwin/core-common";
+export type { TxnEntityMetadata } from "@itwin/core-common";
 
 /** The type of operation that produced a [[TxnEntityChange]].
  * @public
@@ -75,6 +62,7 @@ export interface TxnEntityChangesFilterOptions {
 
 /** Describes a set of elements or models that were modified as part of a transaction in a [[BriefcaseConnection]],
  * serving as the payload for the [[BriefcaseTxns.onElementsChanged]] and [[BriefcaseTxns.onModelsChanged]] events.
+ * This is the frontend counterpart to [TxnChangedEntities]($backend), but the two event payloads are different: this frontend type exposes class metadata through [[TxnEntityChange.metadata]] and supports [[filter]], while the backend type exposes metadata directly on each changed entity.
  * The [[inserted]], [[deleted]], and [[updated]] compressed Id sets can be awkward to work with.
  * It can be more convenient to iterate over the individual [[TxnEntityChange]]s, especially if you wish to [[filter]] out some
  * changes.

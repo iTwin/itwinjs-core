@@ -330,6 +330,7 @@ import { TileVersionInfo } from '@itwin/core-common';
 import { Transform } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
+import { TxnEntityMetadata } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
@@ -12319,11 +12320,7 @@ export interface TxnEntityChangesFilterOptions {
 // @public
 export type TxnEntityChangeType = "inserted" | "deleted" | "updated";
 
-// @public
-export interface TxnEntityMetadata {
-    readonly classFullName: string;
-    is(baseClassFullName: string): boolean;
-}
+export { TxnEntityMetadata }
 
 // @public
 export type TxnEntityMetadataCriterion = (metadata: TxnEntityMetadata) => boolean;

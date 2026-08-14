@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Use the shared transaction entity metadata contract from @itwin/core-common.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

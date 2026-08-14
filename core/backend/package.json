@@ -29,6 +29,7 @@
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "mocha",
     "test:debug": "mocha --inspect-brk",
+    "benchmark:txn-changes": "node scripts/txnChangedEntitiesBenchmark.mjs",
     "ios:bundle:tests": "TESTS_GLOB=./lib/esm/**/*.test.js vite build --mode development --config ../../tools/internal/ios/ios.vite.config.mts",
     "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets && cpx \"./src/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
     "ios:build:tests": "npm run -s build && npm run -s ios:bundle:tests && npm run -s ios:copy:assets",

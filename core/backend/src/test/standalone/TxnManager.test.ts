@@ -7,13 +7,13 @@ import { assert, expect } from "chai";
 import { BeDuration, BeEvent, Guid, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, TxnEntityMetadata, UpgradeOptions,
 } from "@itwin/core-common";
 import {
   _nativeDb,
   ChangeInstanceKey,
   ChannelControl,
-  EditTxn, IModelDb, IModelJsFs, PhysicalModel, PhysicalPartition, RebaseHandler, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntities, TxnManager, withEditTxn,
+  EditTxn, IModelDb, IModelJsFs, PhysicalModel, PhysicalPartition, RebaseHandler, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntities, TxnChangedEntity, TxnManager, withEditTxn,
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
@@ -456,7 +456,7 @@ describe("TxnManager", () => {
 
       const dest = this[propName];
       for (const entity of entities)
-        dest.push({ ...entity });
+        dest.push({ id: entity.id, classId: entity.classId });
     }
 
     public expectNumValidations(expected: number) {
@@ -615,6 +615,57 @@ describe("TxnManager", () => {
         });
       });
     });
+  });
+
+  it("includes class metadata in elements changed events", async () => {
+    const metadata: TxnEntityMetadata[] = [];
+    const removeListener = imodel.txns.onElementsChanged.addListener((changes) => {
+      for (const change of changes.inserts)
+        metadata.push(change.metadata);
+    });
+
+    try {
+      await withEditTxn(imodel, "elements-event-metadata", async (editTxn) => {
+        editTxn.insertElement(props);
+        editTxn.insertElement(props);
+        editTxn.saveChanges("2 inserts");
+      });
+    } finally {
+      removeListener();
+    }
+
+    assert.lengthOf(metadata, 2);
+    assert.strictEqual(metadata[0], metadata[1], "metadata should be shared by entities of the same class");
+    assert.equal(metadata[0].classFullName, "TestBim:TestPhysicalObject");
+    assert.isTrue(metadata[0].is("TestBim:TestPhysicalObject"));
+    assert.isTrue(metadata[0].is("BisCore:PhysicalElement"));
+    assert.isTrue(metadata[0].is("BisCore:Element"));
+    assert.isFalse(metadata[0].is("BisCore:Model"));
+  });
+
+  it("maps metadata to each changed class", async () => {
+    const changes: TxnChangedEntity[] = [];
+    const removeListener = imodel.txns.onElementsChanged.addListener((event) => {
+      for (const change of event.inserts)
+        changes.push({ ...change });
+    });
+
+    let physicalObjectId = "";
+    let categoryId = "";
+    try {
+      await withEditTxn(imodel, "elements-event-class-metadata", async (editTxn) => {
+        physicalObjectId = editTxn.insertElement(props);
+        categoryId = insertSpatialCategory(editTxn, IModel.dictionaryId, Guid.createValue(), new SubCategoryAppearance({ color: ColorByName.green }));
+        editTxn.saveChanges("multiple changed classes");
+      });
+    } finally {
+      removeListener();
+    }
+
+    const byId = new Map(changes.map((change) => [change.id, change]));
+    assert.equal(byId.get(physicalObjectId)?.metadata.classFullName, "TestBim:TestPhysicalObject");
+    assert.equal(byId.get(categoryId)?.metadata.classFullName, "BisCore:SpatialCategory");
+    assert.equal(byId.get(IModel.getDefaultSubCategoryId(categoryId))?.metadata.classFullName, "BisCore:SubCategory");
   });
 
   it("dispatches events when models change", async () => {

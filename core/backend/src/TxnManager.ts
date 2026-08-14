@@ -10,7 +10,7 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "@itwin/core-common";
+import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassId, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnEntityMetadata, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb } from "./IModelDb";
 import { Element } from "./Element";
@@ -42,17 +42,31 @@ export interface ValidationError {
   message?: string;
 }
 
+/** Describes an entity changed by a transaction, including its ECClass metadata.
+ * @public @preview
+ */
+export interface TxnChangedEntity extends EntityIdAndClassId {
+  /** Metadata describing the entity's ECClass. */
+  readonly metadata: TxnEntityMetadata;
+}
+
+/** An iterable collection of [[TxnChangedEntity]]s.
+ * For efficiency, the iterator returns the same [[TxnChangedEntity]] object on each iteration. Copy the entity if you intend to retain a reference to it.
+ * @public @preview
+ */
+export type TxnChangedEntityIterable = Iterable<Readonly<TxnChangedEntity>>;
+
 /** Describes a set of [[Element]]s or [[Model]]s that changed as part of a transaction.
  * @see [[TxnManager.onElementsChanged]] and [[TxnManager.onModelsChanged]].
  * @public @preview
  */
 export interface TxnChangedEntities {
   /** The entities that were inserted by the transaction. */
-  readonly inserts: EntityIdAndClassIdIterable;
+  readonly inserts: TxnChangedEntityIterable;
   /** The entities that were deleted by the transaction. */
-  readonly deletes: EntityIdAndClassIdIterable;
+  readonly deletes: TxnChangedEntityIterable;
   /** The entities that were modified by the transaction, including any [[Element]]s for which one of their [[ElementAspect]]s was changed. */
-  readonly updates: EntityIdAndClassIdIterable;
+  readonly updates: TxnChangedEntityIterable;
 }
 
 /** Arguments supplied to [[TxnManager.queryLocalChanges]].
@@ -85,6 +99,23 @@ export function setMaxEntitiesPerEvent(max: number): number {
   const prevMax = ChangedEntitiesProc.maxPerEvent;
   ChangedEntitiesProc.maxPerEvent = max;
   return prevMax;
+}
+
+class TxnEntityMetadataImpl implements TxnEntityMetadata {
+  public readonly classFullName: string;
+  private readonly _baseClasses: TxnEntityMetadataImpl[] = [];
+
+  public constructor(classFullName: string) {
+    this.classFullName = classFullName;
+  }
+
+  public addBaseClass(baseClass: TxnEntityMetadataImpl): void {
+    this._baseClasses.push(baseClass);
+  }
+
+  public is(baseClassFullName: string): boolean {
+    return this.classFullName === baseClassFullName || this._baseClasses.some((baseClass) => baseClass.is(baseClassFullName));
+  }
 }
 
 /** Maintains an ordered array of entity Ids and a parallel array containing the index of the corresponding entity's class Id. */
@@ -125,12 +156,14 @@ class ChangedEntitiesArray {
     entities[`${type}Meta`] = this._classIndices;
   }
 
-  public iterable(classIds: Id64Array): EntityIdAndClassIdIterable {
+  public iterable(classIds: Id64Array, metadata: TxnEntityMetadata[]): TxnChangedEntityIterable {
     function* iterator(entityIds: ReadonlyArray<Id64String>, classIndices: number[]) {
-      const entity = { id: "", classId: "" };
+      const entity = { id: "", classId: "", metadata: metadata[0] };
       for (let i = 0; i < entityIds.length; i++) {
+        const classIndex = classIndices[i];
         entity.id = entityIds[i];
-        entity.classId = classIds[classIndices[i]];
+        entity.classId = classIds[classIndex];
+        entity.metadata = metadata[classIndex];
         yield entity;
       }
     }
@@ -160,7 +193,7 @@ class ChangedEntitiesProc {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
-  private populateMetadata(db: BriefcaseDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
+  private populateMetadata(db: BriefcaseDb, classIds: Id64Array): { backend: TxnEntityMetadata[]; frontend: NotifyEntitiesChangedMetadata[] } {
     // Ensure metadata for all class Ids is loaded. Loading metadata for a derived class loads metadata for all of its superclasses.
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classIdsToLoad = classIds.filter((x) => undefined === db.classMetaDataRegistry.findByClassId(x));
@@ -184,11 +217,14 @@ class ChangedEntitiesProc {
       nameToIndex.set(meta?.ecclass ?? "", nameToIndex.size);
     }
 
-    const result: NotifyEntitiesChangedMetadata[] = [];
+    const frontendMetadata: NotifyEntitiesChangedMetadata[] = [];
+    const backendMetadata: TxnEntityMetadataImpl[] = [];
 
     function addMetadata(name: string, index: number): void {
       const bases: number[] = [];
-      result[index] = { name, bases };
+      frontendMetadata[index] = { name, bases };
+      const metadata = new TxnEntityMetadataImpl(name);
+      backendMetadata[index] = metadata;
 
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       const meta = db.tryGetMetaData(name);
@@ -205,6 +241,7 @@ class ChangedEntitiesProc {
         }
 
         bases.push(baseClassIndex);
+        metadata.addBaseClass(backendMetadata[baseClassIndex]);
       }
     }
 
@@ -217,7 +254,7 @@ class ChangedEntitiesProc {
       addMetadata(name, index);
     }
 
-    return result;
+    return { backend: backendMetadata, frontend: frontendMetadata };
   }
 
   private sendEvent(iModel: BriefcaseDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
@@ -225,12 +262,13 @@ class ChangedEntitiesProc {
       return;
 
     const classIds = this._classIds.toArray();
+    const metadata = this.populateMetadata(iModel, classIds);
 
     // Notify backend listeners.
     const txnEntities: TxnChangedEntities = {
-      inserts: this._inserted.iterable(classIds),
-      deletes: this._deleted.iterable(classIds),
-      updates: this._updated.iterable(classIds),
+      inserts: this._inserted.iterable(classIds, metadata.backend),
+      deletes: this._deleted.iterable(classIds, metadata.backend),
+      updates: this._updated.iterable(classIds, metadata.backend),
     };
     evt.raiseEvent(txnEntities);
 
@@ -239,7 +277,7 @@ class ChangedEntitiesProc {
       insertedMeta: [],
       updatedMeta: [],
       deletedMeta: [],
-      meta: this.populateMetadata(iModel, classIds),
+      meta: metadata.frontend,
     };
 
     this._inserted.addToChangedEntities(entities, "inserted");
@@ -1189,12 +1227,28 @@ export class TxnManager {
 
   /** Called after validation completes from [[IModelDb.saveChanges]].
    * The argument to the event holds the list of elements that were inserted, updated, and deleted.
+   * Each changed entity includes its `id`, `classId`, and [[TxnChangedEntity.metadata]]. Use `metadata.classFullName` for an exact class match or `metadata.is` to match a class or one of its subclasses.
+   * @example
+   * ```ts
+   * iModel.txns.onElementsChanged.addListener((changes) => {
+   *   for (const change of changes.inserts) {
+   *     if (change.metadata.classFullName === "MySchema:MyElement")
+   *       invalidateCache();
+   *   }
+   *
+   *   for (const change of changes.updates) {
+   *     if (change.metadata.is("BisCore:GeometricElement"))
+   *       invalidateGeometryCache(change.id);
+   *   }
+   * });
+   * ```
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
   public readonly onElementsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
 
   /** Called after validation completes from [[IModelDb.saveChanges]].
    * The argument to the event holds the list of models that were inserted, updated, and deleted.
+   * Each changed model includes its `id`, `classId`, and [[TxnChangedEntity.metadata]]. Use `metadata.classFullName` for an exact class match or `metadata.is` to match a class or one of its subclasses.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
   public readonly onModelsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();

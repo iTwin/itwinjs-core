@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Expose the shared transaction entity metadata contract used by backend and frontend transaction change events.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
