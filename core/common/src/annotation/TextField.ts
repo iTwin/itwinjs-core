@@ -20,8 +20,12 @@ import { Id64String } from "@itwin/core-bentley";
  *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
  *  - "string": a value convertible to a string.
  * @note "quantity" and "coordinate" fields are formatted through the iTwin.js quantity pipeline
- * only on the async formatting path (e.g. [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend));
- * the sync path falls back to a plain string representation. Formatting for "boolean", "int-enum",
+ * on the async [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path, and on the
+ * synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) / `TxnManager` field-update
+ * paths only when the host has registered a [FormattingSpecProvider]($core-quantity) for the
+ * field's [QuantityFieldFormatOptions.formatSet]($common) via
+ * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend); otherwise the sync
+ * path falls back to a plain string representation. Formatting for "boolean", "int-enum",
  * and "string-enum" is not yet implemented; those values are converted to and formatted as "string".
  * @beta
  */
@@ -88,22 +92,36 @@ export interface DateTimeFieldFormatOptions {
 /** As part of a [[FieldFormatOptions]], specifies how to format [[FieldPropertyType]]
  * `"quantity"` or `"coordinate"` values.
  *
- * At runtime, a format is resolved in this priority order:
- *  1. [[kindOfQuantity]] — looked up via the active [FormatsProvider]($core-quantity).
- *  2. The property's own [KindOfQuantity]($ecschema-metadata).
- *  3. For `"coordinate"` only, a built-in default backed by `Units.LENGTH`.
+ * [[kindOfQuantity]] and [[persistenceUnit]] are **independent** overrides: setting one
+ * falls through to the property side for the other. At runtime the formatter tries the
+ * (KindOfQuantity name, persistence unit name) pairs in this order:
  *
- * If none yields a usable format, the raw value is rendered via `toString()`.
+ *  1. **Effective override pair.** `kindOfQuantity ?? propertyKindOfQuantity` paired with
+ *     `persistenceUnit ?? propertyPersistenceUnit`, looked up via the active
+ *     [FormatsProvider]($core-quantity).
+ *  2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped
+ *     when identical to the effective pair.
+ *
+ * The first pair whose format-props and persistence-unit lookups both succeed wins. If
+ * neither resolves, `"quantity"` and `"coordinate"` fields fall back to the raw value
+ * representation (`toString()` for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
+ * Core does not synthesize a coordinate format; coordinate presentation is application
+ * policy and belongs to the [FormatsProvider]($core-quantity) supplied by the host.
  * @beta
  */
 export interface QuantityFieldFormatOptions {
   /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) used as the source unit when
-   * constructing a [FormatterSpec]($core-quantity). Defaults to the persistence unit of the
-   * property's [KindOfQuantity]($ecschema-metadata).
+   * constructing a [FormatterSpec]($core-quantity). Independent of [[kindOfQuantity]]; when
+   * unset the formatter falls back to the persistence unit of the property's
+   * [KindOfQuantity]($ecschema-metadata). Coordinate values whose EC property has no
+   * KindOfQuantity require this to be set explicitly (e.g. `Units.LENGTH.M` for BIS geometry)
+   * for an override to take effect.
    */
   persistenceUnit?: string;
   /** Full name of a [KindOfQuantity]($ecschema-metadata) (e.g. `"AecUnits.LENGTH"`) to look up
    * via the active [FormatsProvider]($core-quantity), overriding the property's own KoQ.
+   * Independent of [[persistenceUnit]]; when unset the formatter falls back to the property's
+   * [KindOfQuantity]($ecschema-metadata).
    */
   kindOfQuantity?: string;
   /** [Id64String]($bentley) of a persisted FormatSet element that selects which registered
