@@ -414,6 +414,11 @@ type ReloadIntent =
   | { scope: "formatsChanged"; args: FormatsChangedArgs }
   | { scope: "activeSystem"; emitSystemChanged?: boolean };
 
+interface ReloadWaiter {
+  resolve: () => void;
+  reject: (reason?: unknown) => void;
+}
+
 /** The QuantityFormatter class provides methods for formatting and parsing quantities. There are a set of standard quantity types
  * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
  * by frontend tools. The QuantityFormatter also allows the default formats to be overriden.
@@ -505,6 +510,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   private _reloadInFlight = false;
   private _pendingReload: ReloadIntent | undefined;
   private _deferredSystemChangedEmit: FormattingUnitSystemChangedArgs | undefined;
+  private _reloadWaiters = new Set<ReloadWaiter>();
 
   private _removeFormatsProviderListener?: () => void;
   /**
@@ -529,6 +535,27 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       this._removeFormatsProviderListener();
       this._removeFormatsProviderListener = undefined;
     }
+    this._rejectReloadWaiters(new Error("QuantityFormatter was disposed before the reload completed."));
+  }
+
+  /** Runs an action that schedules a reload and waits for the reload queue to drain.
+   * @internal
+   */
+  public async runAndWaitForReload(action: () => void): Promise<void> {
+    let waiter!: ReloadWaiter;
+    const reload = new Promise<void>((resolve, reject) => {
+      waiter = { resolve, reject };
+      this._reloadWaiters.add(waiter);
+    });
+
+    try {
+      action();
+    } catch (err) {
+      this._reloadWaiters.delete(waiter);
+      throw err;
+    }
+
+    await reload;
   }
 
   /** Schedule an async reload. If no reload is in flight, runs immediately. If a reload is
@@ -537,7 +564,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    *
    * **Await semantics:** When a reload is already in flight, the returned promise resolves
    * immediately *without* the requested reload having run. Callers that need to know when
-   * the reload has actually completed should listen for `onFormattingReady` instead.
+   * an explicitly triggered reload has actually completed should use [[runAndWaitForReload]].
    *
    * Reload intents:
    * - `"full"` — rebuild entire registry + re-register provider listener (onInitialized, setUnitsProvider)
@@ -572,6 +599,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
         Logger.logWarning(`${FrontendLoggerCategory.Package}.QuantityFormatter`, "Reload failed — restoring previous ready state. Cached specs may be stale.");
         this._isReady = true;
       }
+      this._rejectReloadWaiters(err);
       return;
     }
 
@@ -595,6 +623,21 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     }
 
     this._reloadInFlight = false;
+    this._resolveReloadWaiters();
+  }
+
+  private _resolveReloadWaiters(): void {
+    const waiters = [...this._reloadWaiters];
+    this._reloadWaiters.clear();
+    for (const waiter of waiters)
+      waiter.resolve();
+  }
+
+  private _rejectReloadWaiters(error: unknown): void {
+    const waiters = [...this._reloadWaiters];
+    this._reloadWaiters.clear();
+    for (const waiter of waiters)
+      waiter.reject(error);
   }
 
   /** Execute the reload work for a given intent. All reload logic is centralized here.

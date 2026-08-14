@@ -369,22 +369,9 @@ export class IModelApp {
    * @beta
    */
   public static async setFormatsProvider(provider: FormatsProvider, options?: SetFormatsProviderOptions): Promise<void> {
-    const quantityFormatter = this.quantityFormatter;
-    if (!quantityFormatter.isReady) {
+    await this.quantityFormatter.runAndWaitForReload(() => {
       this._formatsProviderManager.setFormatsProvider(provider, options?.unitSystem);
-      await quantityFormatter.whenInitialized;
-      return;
-    }
-
-    let removeReadyListener: (() => void) | undefined;
-    const ready = new Promise<void>((resolve) => {
-      removeReadyListener = quantityFormatter.onFormattingReady.addListener(() => {
-        removeReadyListener?.();
-        resolve();
-      });
     });
-    this._formatsProviderManager.setFormatsProvider(provider, options?.unitSystem);
-    await ready;
   }
 
   /** @alpha */

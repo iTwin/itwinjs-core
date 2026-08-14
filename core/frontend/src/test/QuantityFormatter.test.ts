@@ -742,6 +742,45 @@ describe("Quantity formatter", async () => {
       }
     });
 
+    it("should reject when the formats provider reload fails", async () => {
+      const appQuantityFormatter = IModelApp.quantityFormatter;
+      const originalLoad = (appQuantityFormatter as any).loadFormatAndParsingMapsForSystem;
+      const initialReadyListeners = appQuantityFormatter.onFormattingReady.numberOfListeners;
+      const provider = {
+        onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
+        async getFormat(): Promise<undefined> { return undefined; },
+      };
+      (appQuantityFormatter as any).loadFormatAndParsingMapsForSystem = async () => {
+        throw new Error("simulated provider reload failure");
+      };
+
+      try {
+        await expect(IModelApp.setFormatsProvider(provider)).rejects.toThrow("simulated provider reload failure");
+        expect(appQuantityFormatter.onFormattingReady.numberOfListeners).toBe(initialReadyListeners);
+      } finally {
+        (appQuantityFormatter as any).loadFormatAndParsingMapsForSystem = originalLoad;
+        await IModelApp.setFormatsProvider(new QuantityTypeFormatsProvider());
+      }
+    });
+
+    it("should wait for provider-triggered reloads queued during formatting readiness", async () => {
+      const appQuantityFormatter = IModelApp.quantityFormatter;
+      const originalUnitSystem = appQuantityFormatter.activeUnitSystem;
+      const nextUnitSystem = originalUnitSystem === "metric" ? "imperial" : "metric";
+      const provider = new QuantityTypeFormatsProvider();
+      const readySpy = vi.fn();
+      const removeReadyListener = appQuantityFormatter.onFormattingReady.addListener(readySpy);
+
+      try {
+        await IModelApp.setFormatsProvider(provider, { unitSystem: nextUnitSystem });
+        expect(readySpy).toHaveBeenCalledTimes(2);
+      } finally {
+        removeReadyListener();
+        await IModelApp.setFormatsProvider(new QuantityTypeFormatsProvider(), { unitSystem: originalUnitSystem });
+        provider[Symbol.dispose]();
+      }
+    });
+
     it("should raise formatsChanged event when underlying formatsProvider raises formatsChanged event", async () => {
 
       const testProvider = new QuantityTypeFormatsProvider();

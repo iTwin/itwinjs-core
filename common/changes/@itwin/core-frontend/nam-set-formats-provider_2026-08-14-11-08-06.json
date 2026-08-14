@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add an asynchronous formats provider setter that can synchronize the active unit system in one reload.",
+      "comment": "Add an asynchronous formats provider setter that can synchronize the active unit system and await the resulting formatting reload.",
       "type": "none"
     }
   ],
