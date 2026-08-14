@@ -79,7 +79,7 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
   return elemId;
 }
 
-describe.only("updateField", () => {
+describe("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -299,7 +299,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   await iModel.importSchemaStrings([fieldsSchemaXml]);
 }
 
-describe.only("Field evaluation", () => {
+describe("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
