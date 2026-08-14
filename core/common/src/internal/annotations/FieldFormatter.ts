@@ -97,7 +97,11 @@ function formatDateTime(v: FieldPrimitiveValue, o?: DateTimeFieldFormatOptions):
   return undefined;
 }
 
-// ###TODO replace this with actual quantity coordinate formatting.
+// Raw coordinate fallback used when the 2-pair (KoQ, unit) resolution in
+// `collectFormatterSpecCandidates` / `lookupSyncSpec` misses. Renders a coordinate as
+// `(x, y[, z])` with no unit labels. Core deliberately does not carry a built-in coordinate
+// format — presentation is a `FormatsProvider` / FormatSet concern; see
+// `docs/changehistory/NextVersion.md` and `QuantityFieldFormatOptions`.
 function formatPointBasic(v: FieldPrimitiveValue): string | undefined {
   if (typeof v === "object" && "x" in v && "y" in v) {
     const parts = [v.x, v.y];

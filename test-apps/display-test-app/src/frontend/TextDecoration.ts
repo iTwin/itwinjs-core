@@ -509,7 +509,7 @@ export class TextDecorationTool extends Tool {
       "No overrides",
       "(30707.1467 m, 58893.3153 m, 0 m)",
       undefined,
-      "No formatOptions. Property KoQ can't be resolved, so falls through to defaultCoordinateFormatProps (precision 4 metres). Trailing zeros dropped (no `trailZeros` trait).",
+      "No formatOptions and no property KoQ, so neither the effective nor the property-side (KoQ, unit) pair resolves. Coordinate falls back to the raw `(x, y, z)` representation via `formatPointBasic` — Core no longer carries a built-in meters format.",
     );
 
     // Only persistence unit
@@ -517,7 +517,7 @@ export class TextDecorationTool extends Tool {
       "Only persistence unit",
       "(30707.1467 m, 58893.3153 m, 0 m)",
       { quantity: { persistenceUnit } },
-      "persistenceUnit alone doesn't select a format; falls through to defaultCoordinateFormatProps.",
+      "persistenceUnit alone doesn't select a format (no KoQ name on either the override or the property side), so both candidate pairs miss and the field renders as raw `(x, y, z)`.",
     );
 
     // kindOfQuantity chooses which KoQ the FormatsProvider resolves.
@@ -819,10 +819,10 @@ export class TextDecorationTool extends Tool {
     // Raw persisted values for element 0x500000001b3 (observed):
     //   Origin   : (0.8055525852652443, -0.7195653998007376)  metres
     //   Rotation : 151.8583987677383                          degrees
-    // The coordinate/scalar format pipeline resolves via defaultCoordinateFormatProps
-    // for Origin (precision 4 m) and via DEMO_SEED_FORMATS for the seeded cases.
-    // Rotation has no coordinate fallback, so "No overrides" is raw toString.
-    // Prefix/suffix/case wrappers are applied on top of the formatted string.
+    // Origin has no property-side KoQ, so with no override it drops to the raw `(x, y)`
+    // representation; the seeded Demo.LENGTH_* cases resolve against DEMO_SEED_FORMATS.
+    // Rotation has no KoQ either and no coordinate handling, so "No overrides" is raw
+    // toString. Prefix/suffix/case wrappers are applied on top of the formatted string.
 
     // --- Origin: coordinate field ---
     appendCase(
@@ -830,7 +830,7 @@ export class TextDecorationTool extends Tool {
       "Origin",
       "(0.8056 m, -0.7196 m)",
       undefined,
-      "Coordinate fallback: defaultCoordinateFormatProps (precision 4 m) when the property has no resolvable KoQ.",
+      "No KoQ on either the override or the property; both candidate pairs miss and the coordinate renders as raw `(x, y)`. Core no longer synthesizes a meters fallback.",
     );
     appendCase(
       "Seed Demo.LENGTH_MM",
