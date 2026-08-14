@@ -94,4 +94,10 @@ export interface DtaIpcInterface {
    * [[enableFieldFormattingDemo]] for the specified iModel.
    */
   disableFieldFormattingDemo(iModelKey: string): Promise<void>;
+
+  /** Reads a UTF-8 text file from the local filesystem. Intended for DTA dev-loop keyins only. */
+  readTextFile(filePath: string): Promise<string>;
+
+  /** Writes `contents` as a UTF-8 text file to the local filesystem. Intended for DTA dev-loop keyins only. */
+  writeTextFile(filePath: string, contents: string): Promise<void>;
 }
