@@ -693,8 +693,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       electron:
-        specifier: ^42.0.0
-        version: 42.0.0
+        specifier: ^42.9.0
+        version: 42.9.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -1743,8 +1743,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       electron:
-        specifier: ^42.0.0
-        version: 42.0.0
+        specifier: ^42.9.0
+        version: 42.9.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -2439,7 +2439,7 @@ importers:
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
         specifier: ^0.22.2
-        version: 0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@42.0.0)
+        version: 0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@42.9.0)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
@@ -2474,8 +2474,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.3.10)
       electron:
-        specifier: ^42.0.0
-        version: 42.0.0
+        specifier: ^42.9.0
+        version: 42.9.0
       fs-extra:
         specifier: ^8.1.0
         version: 8.1.0
@@ -2929,8 +2929,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/express-server
       electron:
-        specifier: ^42.0.0
-        version: 42.0.0
+        specifier: ^42.9.0
+        version: 42.9.0
       express:
         specifier: ^4.22.1
         version: 4.22.1
@@ -3553,7 +3553,7 @@ importers:
         version: link:../../core/quantity
       '@itwin/electron-authorization':
         specifier: ^0.22.2
-        version: 0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@42.0.0)
+        version: 0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@42.9.0)
       '@itwin/frontend-tiles':
         specifier: workspace:*
         version: link:../../extensions/frontend-tiles
@@ -3628,8 +3628,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       electron:
-        specifier: ^42.0.0
-        version: 42.0.0
+        specifier: ^42.9.0
+        version: 42.9.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -3752,7 +3752,7 @@ importers:
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
         specifier: ^0.22.2
-        version: 0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@42.0.0)
+        version: 0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@42.9.0)
       '@itwin/frontend-devtools':
         specifier: workspace:*
         version: link:../../core/frontend-devtools
@@ -3845,8 +3845,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       electron:
-        specifier: ^42.0.0
-        version: 42.0.0
+        specifier: ^42.9.0
+        version: 42.9.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -4254,8 +4254,8 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       electron:
-        specifier: ^42.0.0
-        version: 42.0.0
+        specifier: ^42.9.0
+        version: 42.9.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -4849,6 +4849,10 @@ packages:
   '@discoveryjs/json-ext@0.5.7':
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
     engines: {node: '>=10.0.0'}
+
+  '@electron-internal/extract-zip@1.0.5':
+    resolution: {integrity: sha512-+bqFCP98pLI0Tt0XQo1TmlXtwjWchISndDOxCkEcIuUgXWpBnLyRI+2DU+mesvnMMX6L1XDqYNA0lXNDHd/yiA==}
+    engines: {node: '>=22.12.0'}
 
   '@electron/get@3.1.0':
     resolution: {integrity: sha512-F+nKc0xW+kVbBRhFzaMgPy3KwmuNTYX1fx6+FxxoSnNgwYX6LD7AKBTWkU0MQ6IBoe7dz069CNkR673sPAgkCQ==}
@@ -6021,9 +6025,6 @@ packages:
   '@types/yargs@17.0.19':
     resolution: {integrity: sha512-cAx3qamwaYX9R0fzOIZAlFpo4A+1uBVCxqpKz9D26uTF4srRXaGTTsikQmaotCtNdbhzyUH7ft6p9ktz9s6UNQ==}
 
-  '@types/yauzl@2.10.3':
-    resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
-
   '@typescript-eslint/eslint-plugin@8.67.0':
     resolution: {integrity: sha512-Un7Heoyj65NREbKAyIrFxeM143NZpExWmy1Nep4DLeQOeLlTeumPjoNKnBrU5D5moWXbPJgRa5Uwcdu0faVNGQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -6618,9 +6619,6 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  buffer-crc32@0.2.13:
-    resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
-
   buffer-equal-constant-time@1.0.1:
     resolution: {integrity: sha512-zRpUiDwd/xk6ADqPMATG8vc9VPrkck7T07OIx0gnjmJAnHnTVXNQG3vfvWNuiZIkwu9KrKdA1iJKfsfTVxE6NA==}
 
@@ -7145,8 +7143,8 @@ packages:
   electron-to-chromium@1.5.406:
     resolution: {integrity: sha512-hWH5ORBi3d0IipnMh7BN5GDTaAmrSSSWmznwt2zltdiRNEWoEQyTwF0FFSBxzHO7hLSRT6loQu3IQGV0wg/Tvg==}
 
-  electron@42.0.0:
-    resolution: {integrity: sha512-in5jnW/Ywy3Rh3FPr4MR80exPEkywKYAmDJRZ/gIKlr8VXEi3zXgiAZbf0Si7KRccHTF2y8euVMRz7M6HqTjMA==}
+  electron@42.9.0:
+    resolution: {integrity: sha512-xyKfPbHP43Jx22Z1hItLR4KB5h3/avb5BIX4xaQZ6uPPRY4cQxuHnRVrKCGbSsMa/9zd0bBT4TAVNVuVjYcYtw==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -7521,11 +7519,6 @@ packages:
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
-  extract-zip@2.0.1:
-    resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
-    engines: {node: '>= 10.17.0'}
-    hasBin: true
-
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -7565,9 +7558,6 @@ packages:
 
   fastq@1.20.1:
     resolution: {integrity: sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw==}
-
-  fd-slicer@1.1.0:
-    resolution: {integrity: sha512-cE1qsB/VwyQozZ+q1dGxR8LBYNZeofhEdUNGSMbQD3Gw2lAzX9Zb3uIU6Ebc/Fmyjo9AWWfnn0AUCHqtevs/8g==}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -9248,9 +9238,6 @@ packages:
   pathval@1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
 
-  pend@1.2.0:
-    resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
-
   performance-now@2.1.0:
     resolution: {integrity: sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==}
 
@@ -10788,9 +10775,6 @@ packages:
     resolution: {integrity: sha512-2rAgRKu54VsHkqI0/tYkmluGXHD4KW7yZoycuqDQ15QOTnc2VVfy0nN/1eMhnQLO00A+dwtK20xuCnc1YGeUyg==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=23}
 
-  yauzl@2.10.0:
-    resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
-
   yn@3.1.1:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
     engines: {node: '>=6'}
@@ -11285,6 +11269,8 @@ snapshots:
 
   '@discoveryjs/json-ext@0.5.7': {}
 
+  '@electron-internal/extract-zip@1.0.5': {}
+
   '@electron/get@3.1.0':
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
@@ -11531,12 +11517,12 @@ snapshots:
 
   '@itwin/core-bentley@5.12.2': {}
 
-  '@itwin/electron-authorization@0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@42.0.0)':
+  '@itwin/electron-authorization@0.22.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@42.9.0)':
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@openid/appauth': 1.3.2
-      electron: 42.0.0
+      electron: 42.9.0
       electron-store: 8.2.0
       username: 7.0.0
     transitivePeerDependencies:
@@ -12458,11 +12444,6 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  '@types/yauzl@2.10.3':
-    dependencies:
-      '@types/node': 20.17.0
-    optional: true
-
   '@typescript-eslint/eslint-plugin@8.67.0(@typescript-eslint/parser@8.67.0(eslint@9.31.0)(typescript@5.6.2))(eslint@9.31.0)(typescript@5.6.2)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -13280,8 +13261,6 @@ snapshots:
       node-releases: 2.0.53
       update-browserslist-db: 1.3.1(browserslist@4.28.8)
 
-  buffer-crc32@0.2.13: {}
-
   buffer-equal-constant-time@1.0.1: {}
 
   buffer-from@1.1.2: {}
@@ -13815,11 +13794,11 @@ snapshots:
 
   electron-to-chromium@1.5.406: {}
 
-  electron@42.0.0:
+  electron@42.9.0:
     dependencies:
+      '@electron-internal/extract-zip': 1.0.5
       '@electron/get': 3.1.0
       '@types/node': 24.13.3
-      extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
 
@@ -14388,16 +14367,6 @@ snapshots:
 
   extend@3.0.2: {}
 
-  extract-zip@2.0.1:
-    dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
-      get-stream: 5.2.0
-      yauzl: 2.10.0
-    optionalDependencies:
-      '@types/yauzl': 2.10.3
-    transitivePeerDependencies:
-      - supports-color
-
   fast-deep-equal@3.1.3: {}
 
   fast-glob@3.3.3:
@@ -14443,10 +14412,6 @@ snapshots:
   fastq@1.20.1:
     dependencies:
       reusify: 1.1.0
-
-  fd-slicer@1.1.0:
-    dependencies:
-      pend: 1.2.0
 
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
@@ -16250,8 +16215,6 @@ snapshots:
 
   pathval@1.1.1: {}
 
-  pend@1.2.0: {}
-
   performance-now@2.1.0: {}
 
   pg-connection-string@2.14.0: {}
@@ -17973,11 +17936,6 @@ snapshots:
       string-width: 8.2.2
       y18n: 5.0.8
       yargs-parser: 22.0.0
-
-  yauzl@2.10.0:
-    dependencies:
-      buffer-crc32: 0.2.13
-      fd-slicer: 1.1.0
 
   yn@3.1.1: {}
 
