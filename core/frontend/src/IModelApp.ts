@@ -355,6 +355,7 @@ export class IModelApp {
 
   /** The [[FormatsProvider]] for this session.
    * @param provider The provider to use for formatting quantities.
+   * @note Prefer [[IModelApp.setFormatsProvider]] when replacing the provider; assigning this property starts an asynchronous reload without returning a promise.
    * @beta
    */
   public static get formatsProvider(): FormatsProvider { return this._formatsProviderManager; }
