@@ -5,128 +5,20 @@
 
 import { assert, expect } from "chai";
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, IModelDb, IModelHost, IModelJsFs, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 import { AzuriteTest } from "./AzuriteTest";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
-import { EOL } from "os";
-import { ChangesetType, Code, ColorDef, GeometricElement2dProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { ChangesetType, Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
-const storageType = "azure";
-interface TinySchemaRef {
-  name: string;
-  ver: string;
-  alias: string;
-  comment?: string;
-}
-interface TinyProp {
-  kind: "primitive" | "struct";
-  name: string;
-  comment?: string;
-}
-interface TinyPrimitiveProp extends TinyProp {
-  kind: "primitive";
-  type: "string" | "int" | "double" | "long";
-}
-interface TinyStructProp extends TinyProp {
-  kind: "struct";
-  type: string;
-}
-interface TinyClass {
-  type: "entity" | "struct";
-  name: string;
-  baseClass?: string;
-  props?: (TinyPrimitiveProp | TinyStructProp)[];
-  comment?: string;
-}
-interface TinySchema extends TinySchemaRef {
-  refs?: TinySchemaRef[];
-  classes?: TinyClass[];
-}
-const tinySchemaToXml = (s: TinySchema) => {
-  const xml: string[] = [];
-  const pad = (i: number) => "".padEnd(i * 4, " ");
-  xml.push(`<?xml version="1.0" encoding="UTF-8"?>`);
-  xml.push(`<ECSchema schemaName="${s.name}" alias="${s.alias}" version="${s.ver}" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">`);
-  xml.push(...s.refs ? s.refs.map((v) => `${pad(1)}<ECSchemaReference name="${v.name}" version="${v.ver}" alias="${v.alias}"/>`) : []);
-  for (const c of s.classes ?? []) {
-    const classType = c.type === "entity" ? "ECEntityClass" : "ECStructClass";
-    xml.push(`${pad(1)}<${classType} typeName="${c.name}">`);
-    if (c.baseClass) {
-      xml.push(`${pad(2)}<BaseClass>${c.baseClass}</BaseClass>`);
-    }
-    for (const p of c.props ?? []) {
-      if (p.kind === "primitive") {
-        const prop = p;
-        xml.push(`${pad(2)}<ECProperty propertyName="${prop.name}" typeName="${prop.type}" />`);
-      } else {
-        const prop = p;
-        xml.push(`${pad(2)}<ECStructProperty propertyName="${prop.name}" typeName="${prop.type}" />`);
-      }
-    }
-    xml.push(`${pad(1)}</${classType}>`);
-  }
-  xml.push(`</ECSchema>`);
-  return xml.join(EOL);
-};
-const queryPropNames = (b: BriefcaseDb, classFullName: string) => {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return Object.getOwnPropertyNames(b.getMetaData(classFullName).properties);
-  } catch { return []; }
-};
-const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: ChangesetType, description: string) => {
-  const cs = await HubMock.getLatestChangeset({ iModelId: b.iModelId });
-  expect(cs.changesType).is.eq(changesetType);
-  expect(cs.description).is.eq(description);
-};
-const importSchema = async (b: BriefcaseDb, s: TinySchema) => {
-  await b.importSchemaStrings([tinySchemaToXml(s)]);
-};
-const queryProfileVer = (db: BriefcaseDb) => {
-  return db.withPreparedSqliteStatement("SELECT StrData FROM be_Prop WHERE Namespace='ec_Db' and Name='SchemaVersion'", (stmt: SqliteStatement) => {
-    if (stmt.step() === DbResult.BE_SQLITE_ROW)
-      return stmt.getValue(0).getString();
-    return "";
-  });
-};
-const querySchemaSyncDataVer = (b: BriefcaseDb) => {
-  const js = b.queryFilePropertyString({ namespace: "ec_Db", name: "localDbInfo" });
-  if (js) {
-    return JSON.parse(js).dataVer;
-  }
-};
-async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
-  try {
-    await test();
-  } catch (e) {
-    if (e instanceof Error && msg) {
-      assert.equal(e.message, msg);
-    }
-    return;
-  }
-  throw new Error(`Failed to throw error with message: "${msg}"`);
-};
-async function assertThrowsAsyncContaining<T>(test: () => Promise<T>, msg: string) {
-  try {
-    await test();
-  } catch (e) {
-    if (e instanceof Error) {
-      expect(e.message).to.contain(msg);
-    }
-    return;
-  }
-  throw new Error(`Failed to throw error containing: "${msg}"`);
-};
-async function initializeContainer(containerProps: { containerId: string, isPublic?: boolean, baseUri: string }) {
-  await AzuriteTest.Sqlite.createAzContainer(containerProps);
-  const accessToken = await CloudSqlite.requestToken({ ...containerProps });
-  await SchemaSync.CloudAccess.initializeDb({ ...containerProps, accessToken, storageType });
-  return { ...containerProps, accessToken, storageType } as const;
-};
-
+import {
+  assertChangesetTypeAndDescr, assertThrowsAsync, assertThrowsAsyncContaining, createTestIModel, enableSchemaSync, importTinySchema as importSchema,
+  initializeContainer, insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase, queryProfileVer, queryPropNames,
+  querySchemaSyncDataVer, readElementProp, TestElementProps, TinyPrimitiveProp, TinySchema, tinySchemaToXml, TinyStructProp,
+} from "./SchemaSyncTestUtils";
 describe("Schema synchronization", function (this: Suite) {
   this.timeout(0);
 
@@ -489,6 +381,10 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.shutdown();
   });
 
+  // This iModel starts on ECDb profile 4.0.0.1, which cannot read EC 3.2 schemas until the profile
+  // is upgraded, so every schema here is authored at 3.1.
+  const importSchemaEc31 = async (b: BriefcaseDb, s: TinySchema) => importSchema(b, { ...s, ecXmlVersion: "3.1" });
+
   it("test schema sync with profile and domain schema upgrade (from 4.0.0.1)", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
@@ -523,7 +419,7 @@ describe("Schema synchronization", function (this: Suite) {
     // 1. B1 import a new schema
     // 2. B1 push it changes
     // 3. B1 enable schema sync (require schema lock + push changeset)
-    await importSchema(b1, {
+    await importSchemaEc31(b1, {
       name: "Test1",
       alias: "ts1",
       ver: "01.00.00",
@@ -544,7 +440,7 @@ describe("Schema synchronization", function (this: Suite) {
     // should fail as there are pending changeset.
     await assertThrowsAsync(
       async () => SchemaSync.initializeForIModel({ iModel: b1, containerProps }),
-      "Enabling SchemaSync for iModel failed. There are unsaved or un-pushed local changes.");
+      "Cannot enable SchemaSync while there are local changes");
 
     // push changes and then retry.
     await b1.pushChanges({ description: "schema changes" });
@@ -592,12 +488,12 @@ describe("Schema synchronization", function (this: Suite) {
     expect(b1LatestProfileVersion.sub1).equals(latestProfileVersion.sub1);
     expect(b1LatestProfileVersion.sub2).equals(latestProfileVersion.sub2);
 
-    assert.equal(querySchemaSyncDataVer(b1), "0x3", "profile & domain schema upgrade should change dataVer from 0x1 -> 0x3");
+    assert.equal(querySchemaSyncDataVer(b1), "0x3", "profile & domain schema upgrade should change dataVer from 0x1 to 0x3");
     await assertChangesetTypeAndDescr(b1, ChangesetType.SchemaSync, "Upgraded domain schemas");
     // upgradeSchema() also push changes.
     assert.isFalse(b1.txns.hasLocalChanges);
     assert.isTrue(b1[_nativeDb].schemaSyncEnabled());
-    await importSchema(b1, {
+    await importSchemaEc31(b1, {
       name: "Test1",
       alias: "ts1",
       ver: "01.00.01",
@@ -613,11 +509,11 @@ describe("Schema synchronization", function (this: Suite) {
       }],
     });
     assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1"]);
-    assert.equal(querySchemaSyncDataVer(b1), "0x4", "Test1 schema update should change it from 0x3 -> 0x4");
+    assert.equal(querySchemaSyncDataVer(b1), "0x4", "Test1 schema update should change it from 0x3 to 0x4");
     await b1.pushChanges({ description: "b1 adds Test1.p1" });
 
     // 6. B2 import new schema but should fail as it does not see SchemaSync enable so it attempt acquire schema lock
-    await assertThrowsAsync(async () => importSchema(b2, {
+    await assertThrowsAsync(async () => importSchemaEc31(b2, {
       name: "Test2",
       alias: "ts2",
       ver: "01.00.00",
@@ -637,7 +533,7 @@ describe("Schema synchronization", function (this: Suite) {
     await b2.pullChanges();
     assert.isTrue(b2[_nativeDb].schemaSyncEnabled());
     assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0", "p1"]);
-    await importSchema(b2, {
+    await importSchemaEc31(b2, {
       name: "Test2",
       alias: "ts2",
       ver: "01.00.00",
@@ -655,7 +551,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.deepEqual(queryPropNames(b2, "Test2:Pipe1"), ["p0"]);
 
     // B2 add new property p2 to Test1 schema
-    await importSchema(b2, {
+    await importSchemaEc31(b2, {
       name: "Test1",
       alias: "ts1",
       ver: "01.00.02",
@@ -700,7 +596,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.deepEqual(queryPropNames(b3, "Test2:Pipe1"), ["p0"]);
 
     // B3 add new properties to Test1 & Test2 schema.
-    await importSchema(b3, {
+    await importSchemaEc31(b3, {
       name: "Test1",
       alias: "ts1",
       ver: "01.00.03",
@@ -717,7 +613,7 @@ describe("Schema synchronization", function (this: Suite) {
         ],
       }],
     });
-    await importSchema(b3, {
+    await importSchemaEc31(b3, {
       name: "Test2",
       alias: "ts2",
       ver: "01.00.01",
@@ -872,7 +768,7 @@ describe("Schema synchronization", function (this: Suite) {
     // should fail as there are pending changeset.
     await assertThrowsAsync(
       async () => SchemaSync.initializeForIModel({ iModel: b1, containerProps }),
-      "Enabling SchemaSync for iModel failed. There are unsaved or un-pushed local changes.");
+      "Cannot enable SchemaSync while there are local changes");
 
     // push changes and then retry.
     await b1.pushChanges({ description: "schema changes" });
@@ -913,7 +809,7 @@ describe("Schema synchronization", function (this: Suite) {
     // 5. B1 modify schema add new property but do not push to hub. But it will be push to SchemaSync container.
     await BriefcaseDb.upgradeSchemas(b1Props);
     b1 = await BriefcaseDb.open(b1Props);
-    assert.equal(querySchemaSyncDataVer(b1), "0x3", "profile & domain schema upgrade should change dataVer from 0x1 -> 0x3");
+    assert.equal(querySchemaSyncDataVer(b1), "0x3", "profile & domain schema upgrade should change dataVer from 0x1 to 0x3");
     await assertChangesetTypeAndDescr(b1, ChangesetType.SchemaSync, "Upgraded domain schemas");
     // upgradeSchema() also push changes.
     assert.isFalse(b1.txns.hasLocalChanges);
@@ -934,7 +830,7 @@ describe("Schema synchronization", function (this: Suite) {
       }],
     });
     assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1"]);
-    assert.equal(querySchemaSyncDataVer(b1), "0x4", "Test1 schema update should change it from 0x3 -> 0x4");
+    assert.equal(querySchemaSyncDataVer(b1), "0x4", "Test1 schema update should change it from 0x3 to 0x4");
     await b1.pushChanges({ description: "b1 adds Test1.p1" });
 
     // 6. B2 import new schema but should fail as it does not see SchemaSync enable so it attempt acquire schema lock
@@ -1317,42 +1213,78 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.shutdown();
   });
 
-  it("retries schema data deletion through upgradeSchemas", async () => {
-    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-3" });
-    const iTwinId = Guid.createValue();
-    const accessToken = "schema retry token";
+  const structAndPipeSchema = (structMemberCount: number, ver: string): TinySchema => ({
+    name: "TestRetry",
+    alias: "tr",
+    ver,
+    refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+    classes: [{
+      type: "struct",
+      name: "Struct1",
+      props: Array.from({ length: structMemberCount }, (_, i): TinyPrimitiveProp => ({ kind: "primitive", name: `p${i}`, type: "string" })),
+    }, {
+      type: "entity",
+      name: "Pipe1",
+      baseClass: "bis:GeometricElement2d",
+      props: [
+        { kind: "primitive", name: "name", type: "string" },
+        { kind: "struct", name: "s0", type: "Struct1" },
+        { kind: "struct", name: "s1", type: "Struct1" },
+      ],
+    }],
+  });
 
-    HubMock.startup("test", KnownTestLocations.outputDir);
-    const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel-retry.bim");
-    SnapshotDb.createEmpty(version0, { rootSubject: { name: "schema retry" } }).close();
-    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId, version0, iModelName: "schema retry" });
-    const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
-    const b1 = await BriefcaseDb.open(bcProps);
+  it("routes a data transform to upgradeSchemas and keeps the data", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-3" });
+    const accessToken = "schema retry token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema retry", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "schemaRetry" });
 
     try {
-      SchemaSync.setTestCache(b1, "schemaRetry");
-      await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
-      await b1.pushChanges({ accessToken, description: "enable schema sync" });
+      await enableSchemaSync(b1, containerProps);
+      await importSchema(b1, structAndPipeSchema(11, "01.00.00"));
+      await b1.pushChanges({ accessToken, description: "initial schema" });
 
-      await importSchema(b1, {
+      const place = await insertDrawingModelAndCategory(b1, "Retry");
+      const elementId = await insertGeometricElement2d(b1, { ...place, classFullName: "TestRetry:Pipe1", props: { name: "keep" } });
+      await b1.pushChanges({ accessToken, description: "insert data" });
+
+      // Widening the struct reshuffles the shared columns, which the update path refuses.
+      const widened = tinySchemaToXml(structAndPipeSchema(31, "01.00.01"));
+      let caughtError: unknown;
+      try {
+        await b1.importSchemaStrings([widened]);
+      } catch (err) {
+        caughtError = err;
+      }
+      assert.isDefined(caughtError, "importing a schema that moves data should fail");
+      assert.isTrue(SchemaSync.requiresUpgrade(caughtError), "the C++ status did not survive the addon boundary");
+      assert.equal((caughtError as { errorNumber?: number }).errorNumber, DbResult.BE_SQLITE_ERROR_DataTransformRequired);
+
+      await b1.upgradeSchemaStrings([widened], { accessToken, description: "widen the struct" });
+      assert.include(queryPropNames(b1, "TestRetry:Struct1"), "p30");
+      assert.equal(readElementProp(b1, elementId, "name"), "keep");
+      assert.isFalse(b1.txns.hasLocalChanges, "upgradeSchemaStrings pushes the schema change");
+    } finally {
+      b1.close();
+    }
+  });
+
+  it("deletes a property through upgradeSchemas and keeps the rest of the data", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-4" });
+    const accessToken = "schema deletion token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema deletion", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "schemaDeletion" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      // Dropping a property is a major EC change, so the read version has to go up, and on an iModel
+      // only a dynamic schema may raise its read version. Connectors mark their schemas this way.
+      const twoProps: TinySchema = {
         name: "TestDeletion",
         alias: "td",
         ver: "01.00.00",
-        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
-        classes: [{
-          type: "entity",
-          name: "Pipe1",
-          baseClass: "bis:GeometricElement2d",
-          props: [{ kind: "primitive", name: "p0", type: "string" }],
-        }],
-      });
-      await b1.pushChanges({ accessToken, description: "initial schema" });
-
-      const additiveSchema = IModelTestUtils.prepareOutputFile("schemaSync", "retry-additive.ecschema.xml");
-      IModelJsFs.writeFileSync(additiveSchema, tinySchemaToXml({
-        name: "TestDeletion",
-        alias: "td",
-        ver: "01.00.01",
+        dynamic: true,
         refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
         classes: [{
           type: "entity",
@@ -1363,55 +1295,30 @@ describe("Schema synchronization", function (this: Suite) {
             { kind: "primitive", name: "p1", type: "string" },
           ],
         }],
-      }));
-      await b1.importSchemas([additiveSchema]);
-      assert.deepEqual(queryPropNames(b1, "TestDeletion:Pipe1"), ["p0", "p1"]);
+      };
+      await importSchema(b1, twoProps);
+      await b1.pushChanges({ accessToken, description: "initial schema" });
 
-      await b1.locks.acquireLocks({ shared: IModel.dictionaryId });
-      const codeProps = Code.createEmpty();
-      codeProps.value = "DrawingModel";
-      const [, drawingModelId] = withEditTxn(b1, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
-      const drawingCategoryId = withEditTxn(b1, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "RetryCategory", new SubCategoryAppearance()));
-      await b1.locks.acquireLocks({ shared: drawingModelId });
-      const elementId = withEditTxn(b1, (txn) => txn.insertElement({
-        classFullName: "TestDeletion:Pipe1",
-        model: drawingModelId,
-        category: drawingCategoryId,
-        code: Code.createEmpty(),
-        p0: "keep",
-        p1: "delete",
-      } as GeometricElement2dProps));
-      assert.isDefined(b1.elements.getElementProps(elementId));
+      const place = await insertDrawingModelAndCategory(b1, "Deletion");
+      const elementId = await insertGeometricElement2d(b1, { ...place, classFullName: "TestDeletion:Pipe1", props: { p0: "keep", p1: "delete" } });
       await b1.pushChanges({ accessToken, description: "insert data" });
 
-      const deletionSchema = IModelTestUtils.prepareOutputFile("schemaSync", "retry-deletion.ecschema.xml");
-      IModelJsFs.writeFileSync(deletionSchema, tinySchemaToXml({
-        name: "TestDeletion",
-        alias: "td",
-        ver: "01.00.02",
-        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
-        classes: [{
-          type: "entity",
-          name: "Pipe1",
-          baseClass: "bis:GeometricElement2d",
-          props: [{ kind: "primitive", name: "p0", type: "string" }],
-        }],
-      }));
-
+      const oneProp: TinySchema = { ...twoProps, ver: "02.00.00", classes: [{ ...twoProps.classes![0], props: [{ kind: "primitive", name: "p0", type: "string" }] }] };
       let caughtError: unknown;
       try {
-        await b1.importSchemas([deletionSchema]);
+        await importSchema(b1, oneProp);
       } catch (err) {
         caughtError = err;
       }
-      assert.isDefined(caughtError, "Importing a schema that deletes data should fail");
-      assert.isTrue(SchemaSync.requiresUpgrade(caughtError));
+      assert.isDefined(caughtError, "importing a schema that drops a property should fail");
+      assert.isTrue(SchemaSync.requiresUpgrade(caughtError), "the C++ status did not survive the addon boundary");
       assert.equal((caughtError as { errorNumber?: number }).errorNumber, DbResult.BE_SQLITE_ERROR_DataDeletionRequired);
 
-      await b1.upgradeSchemas([deletionSchema], { accessToken, description: "delete schema data" });
+      await b1.upgradeSchemaStrings([tinySchemaToXml(oneProp)], { accessToken, description: "drop p1" });
       assert.deepEqual(queryPropNames(b1, "TestDeletion:Pipe1"), ["p0"]);
-      assert.equal((b1.elements.getElementProps(elementId) as any).p0, "keep");
-      assert.isFalse(b1.txns.hasLocalChanges, "upgradeSchemas pushes the schema change");
+      assert.equal(readElementProp(b1, elementId, "p0"), "keep");
+      assert.isUndefined(readElementProp(b1, elementId, "p1"), "p1 should be gone");
+      assert.isFalse(b1.txns.hasLocalChanges, "upgradeSchemaStrings pushes the schema change");
     } finally {
       b1.close();
     }
@@ -1452,13 +1359,14 @@ describe("Schema synchronization", function (this: Suite) {
       const [, drawingModelId] = withEditTxn(b1, (txn) => IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, codeProps, true));
       const drawingCategoryId = withEditTxn(b1, (txn) => DrawingCategory.insert(txn, IModel.dictionaryId, "ExistingCategory", new SubCategoryAppearance()));
       await b1.locks.acquireLocks({ shared: drawingModelId });
-      const elementId = withEditTxn(b1, (txn) => txn.insertElement({
+      const elementProps: TestElementProps = {
         classFullName: "TestExisting:Pipe1",
         model: drawingModelId,
         category: drawingCategoryId,
         code: Code.createEmpty(),
         p0: "existing data",
-      } as GeometricElement2dProps));
+      };
+      const elementId = withEditTxn(b1, (txn) => txn.insertElement(elementProps));
       await b1.pushChanges({ accessToken, description: "existing schema and data" });
 
       const originalUserToken = AzuriteTest.userToken;
@@ -1471,7 +1379,7 @@ describe("Schema synchronization", function (this: Suite) {
         });
         assert.isTrue(SchemaSync.isEnabled(b1));
         assert.equal(SchemaSync.queryContainerProps(b1)?.containerId, containerProps.containerId);
-        assert.equal((b1.elements.getElementProps(elementId) as any).p0, "existing data");
+        assert.equal(readElementProp(b1, elementId, "p0"), "existing data");
         assert.isFalse(b1.txns.hasLocalChanges, "enableForIModel pushes the initialization changeset");
       } finally {
         AzuriteTest.userToken = originalUserToken;
