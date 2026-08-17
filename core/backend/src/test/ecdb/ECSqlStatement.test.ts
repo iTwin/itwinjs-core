@@ -3648,8 +3648,9 @@ describe("ECSqlStatement", () => {
       // A parenthesized *unqualified* name is a value expression here, not an IS (ClassName) type predicate:
       // `S2` is a property, so `S1 IS (S2)` is the null-safe value comparison `S1 IS S2` and matches the same
       // 2 rows. The type-predicate form is taken only for a *qualified* class name (e.g. `ts.Foo`), an ONLY/ALL
-      // prefix, or a comma-separated class list, as in the `ECClassId IS (ts.Foo)` regression check below; when a
-      // name is both a class and a property, the property (value-expression) reading wins.
+      // prefix, or a comma-separated class list, as in the `ECClassId IS (ts.Foo)` regression check below. A
+      // qualified name that does not resolve to a class is also a value expression; when a qualified name is both
+      // a valid class and a valid property path, the type-predicate (class) reading takes precedence.
       assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS (S2)"), 2);
       // Parameter operand, bound to a value and to NULL (null-safe either way).
       assert.equal(await queryCount(ecdb, "SELECT ECInstanceId FROM ts.Foo WHERE S1 IS ?", new QueryBinder().bindString(1, "a")), 3);
