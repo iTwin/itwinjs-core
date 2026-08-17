@@ -222,6 +222,50 @@ describe("InteractiveRebase", () => {
     chai.expect(() => updateConflict.acceptTheirs(interactive, ["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
   });
 
+  it("identifies conflicting properties by their name in the element props", async () => {
+    const code = (value: string) => new Code({ spec: IModel.dictionaryId, scope: IModel.dictionaryId, value });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement({ id, code: code("Initial") });
+    });
+    await briefcase1.pushChanges({ description: "Set initial code" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement({ id, code: code("User1Code") });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement({ id, code: code("User2Code") });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0] as UpdateRebaseConflict;
+    chai.expect(conflict.kind).to.equal("Update");
+    chai.expect(conflict.conflictingProperties).to.include("code.value");
+    chai.expect(conflict.original.code.value).to.equal("Initial");
+    chai.expect(conflict.ours.code.value).to.equal("User2Code");
+    chai.expect(conflict.theirs.code.value).to.equal("User1Code");
+
+    conflict.acceptTheirs(interactive, ["code.value"]);
+    chai.expect(briefcase2.elements.getElementProps(id).code.value).to.equal("User1Code");
+
+    conflict.acceptOurs(interactive, ["code.value"]);
+    chai.expect(briefcase2.elements.getElementProps(id).code.value).to.equal("User2Code");
+
+    // Neither the name under which the property is stored, nor a non-conflicting property, is accepted.
+    chai.expect(() => conflict.acceptTheirs(interactive, ["codeValue"])).to.throw(`Property codeValue is not a conflicting property for instance ${id}`);
+    chai.expect(() => conflict.acceptTheirs(interactive, ["code.spec"])).to.throw(`Property code.spec is not a conflicting property for instance ${id}`);
+  });
+
   it("can present a conflict where we delete something the upstream modified", async () => {
     await withEditTxn(briefcase1, async (txn) => {
       txn.updateElement<SomeGraphicalElementProps>({
@@ -494,10 +538,9 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours.code.scope).not.to.be.undefined;
     chai.expect(conflict.ours.code.spec).not.to.be.undefined;
     chai.expect(conflict.ours.code.value).not.to.be.undefined;
-    // TODO
-    // chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
-    // chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
-    // chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
     chai.expect(conflict.original?.code.scope).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.scope);
     chai.expect(conflict.original?.code.spec).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec);
@@ -591,10 +634,9 @@ describe("InteractiveRebase", () => {
 
     // The conflict should correctly identify which unique constraint was violated.
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
-    // TODO
-    // chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
-    // chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
-    // chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
 
     // The conflicting row should include the changed codeValue property

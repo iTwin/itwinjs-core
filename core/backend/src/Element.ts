@@ -221,6 +221,17 @@ export class Element extends Entity {
     { propertyName: "lastMod", source: "Class" },
   ];
 
+  /** @inheritdoc @beta */
+  protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
+    "codeValue": "code.value",
+    "codeSpec": "code.spec",
+    "codeSpec.id": "code.spec",
+    "codeScope": "code.scope",
+    "codeScope.id": "code.scope",
+    "model": "model",
+    "model.id": "model",
+  };
+
   /**
    * Element deserializes 'codeValue', 'codeSpec', 'codeScope', 'model', 'parent', and 'federationGuid'.
    * @inheritdoc
@@ -833,6 +844,19 @@ export abstract class GeometricElement3d extends GeometricElement {
     { propertyName: "typeDefinition", source: "Class" }
   ];
 
+  /** @inheritdoc @beta */
+  protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
+    "category": "category",
+    "category.id": "category",
+    "geometryStream": "geom",
+    "origin": "placement.origin",
+    "yaw": "placement.angles.yaw",
+    "pitch": "placement.angles.pitch",
+    "roll": "placement.angles.roll",
+    "bBoxLow": "placement.bbox.low",
+    "bBoxHigh": "placement.bbox.high",
+  };
+
   /**
    * GeometricElement3d deserializes 'category', 'geometryStream', 'origin', 'yaw', 'pitch', 'roll',
    * 'bBoxLow', 'bBoxHigh', and 'typeDefinition'.
@@ -993,6 +1017,17 @@ export abstract class GeometricElement2d extends GeometricElement {
     { propertyName: "bBoxHigh", source: "Class" },
     { propertyName: "typeDefinition", source: "Class" }
   ];
+
+  /** @inheritdoc @beta */
+  protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
+    "category": "category",
+    "category.id": "category",
+    "geometryStream": "geom",
+    "origin": "placement.origin",
+    "rotation": "placement.angle",
+    "bBoxLow": "placement.bbox.low",
+    "bBoxHigh": "placement.bbox.high",
+  };
 
   /**
    * GeometricElement2d deserialize 'category', 'geometryStream', 'origin', 'rotation',
@@ -2159,6 +2194,13 @@ export class GeometryPart extends DefinitionElement {
     { propertyName: "bBoxLow", source: "Class" },
     { propertyName: "bBoxHigh", source: "Class" },
   ];
+
+  /** @inheritdoc @beta */
+  protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
+    "geometryStream": "geom",
+    "bBoxLow": "bbox.low",
+    "bBoxHigh": "bbox.high",
+  };
 
   /**
    * GeometryPart deserializes 'geometryStream', 'bBoxHigh', and 'bBoxLow'.

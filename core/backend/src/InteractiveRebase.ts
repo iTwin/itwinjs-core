@@ -9,7 +9,7 @@
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { EditTxn } from "./EditTxn";
 import { assert, DbConflictResolution, DbResult, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
-import { IModelError, TxnProps } from "@itwin/core-common";
+import { ElementProps, IModelError, TxnProps } from "@itwin/core-common";
 import { _nativeDb } from "./internal/Symbols";
 import { RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -53,7 +53,9 @@ export interface RebaseConflict {
 }
 
 /**
- * The properties involved in a rebase conflict.
+ * The properties involved in a rebase conflict, in the same form as the [EntityProps]($common) produced by
+ * [Entity.deserialize]($backend). Properties are therefore identified by access strings like `code.value`,
+ * not by the names under which they are stored (`codeValue`).
  */
 export interface RebaseConflictProperties {
   [propertyName: string]: any;
@@ -99,6 +101,8 @@ export interface UpdateRebaseConflict extends RebaseConflict {
    * Specifically, these are the properties where the "original" value is different from "their" value,
    * meaning that the value has changed from when we originally modified it. A property is reported
    * as a conflict even if both "theirs" and "ours" are the same.
+   *
+   * Each entry is an access string into {@link original}, {@link theirs}, and {@link ours}, e.g. `code.value`.
    */
   conflictingProperties: string[];
 
@@ -153,7 +157,8 @@ export interface TheirUpdateOurDeleteRebaseConflict extends RebaseConflict {
   theirs: RebaseConflictProperties;
 
   /**
-   * The properties that were modified by the incoming (their) changes.
+   * The properties that were modified by the incoming (their) changes, as access strings into
+   * {@link original} and {@link theirs}, e.g. `code.value`.
    */
   updatedProperties: string[];
 }
@@ -184,7 +189,8 @@ export interface TheirDeleteOurUpdateRebaseConflict extends RebaseConflict {
   ours: RebaseConflictProperties;
 
   /**
-   * The properties that were modified by the local (our) changes.
+   * The properties that were modified by the local (our) changes, as access strings into
+   * {@link original} and {@link ours}, e.g. `code.value`.
    */
   updatedProperties: string[];
 }
@@ -209,6 +215,8 @@ export interface InsertRebaseConflict extends RebaseConflict {
   /**
    * The properties that are different (in conflict) between the incoming (their) changes and the local (our) changes.
    * This may be empty if identical instances were inserted by both the incoming and local changes.
+   *
+   * Each entry is an access string into {@link theirs} and {@link ours}, e.g. `code.value`.
    */
   conflictingProperties: string[];
 
@@ -237,7 +245,8 @@ export interface InsertRebaseConflict extends RebaseConflict {
 
 export interface UniqueConstraintViolation {
   /**
-   * The properties that are part of the UNIQUE constraint that is violated.
+   * The properties that are part of the UNIQUE constraint that is violated, as access strings into
+   * {@link conflictingRow}, e.g. `code.value`.
    */
   uniqueConstraintProperties: string[];
 
@@ -815,6 +824,70 @@ function pickProperties(props: RebaseConflictProperties, keys: string[] | undefi
   return result;
 }
 
+/** Reads the value identified by a (possibly dotted) access string, e.g. `code.value`. */
+function getPropertyValue(props: RebaseConflictProperties, accessString: string): any {
+  let value: any = props;
+  for (const token of accessString.split(".")) {
+    if (value === undefined || value === null)
+      return undefined;
+    value = value[token];
+  }
+  return value;
+}
+
+/** Writes the value identified by a (possibly dotted) access string, shallow-copying each object along the
+ * way so that objects shared with the conflict's own snapshots are never mutated.
+ */
+function setPropertyValue(props: RebaseConflictProperties, accessString: string, value: any): void {
+  const tokens = accessString.split(".");
+  let target = props;
+  for (const token of tokens.slice(0, -1)) {
+    target[token] = { ...target[token] };
+    target = target[token];
+  }
+  target[tokens[tokens.length - 1]] = value;
+}
+
+/** Appends the properties reported by native, translated from ECSql instance access strings (e.g. `codeSpec.id`)
+ * to the access strings by which the same values are identified in the deserialized props (e.g. `code.spec`).
+ * Several instance properties can map onto a single props property, so duplicates are discarded.
+ */
+function addPropsAccessStrings(target: string[], classDef: typeof Element, instanceAccessStrings: string[]): void {
+  for (const instanceAccessString of instanceAccessStrings) {
+    const propsAccessString = classDef.toPropsAccessString(instanceAccessString);
+    if (!target.includes(propsAccessString))
+      target.push(propsAccessString);
+  }
+}
+
+/** Resolves a conflict by writing the values of `properties` (props access strings, defaulting to all of the
+ * conflict's conflicting properties) taken from `source` onto the instance, leaving its other properties as
+ * they are. The values are round-tripped through [[Entity.serialize]], which is what knows how a props value
+ * is represented in an ECSql instance (e.g. props `placement.origin` `[x, y]` is instance `origin` `{x, y}`).
+ */
+function applyResolution(rebase: InteractiveRebase, conflict: { id: Id64String, classFullName: string, ours: RebaseConflictProperties, conflictingProperties: string[] }, source: RebaseConflictProperties, properties?: string[]): void {
+  const accepted = properties && properties.length > 0 ? properties : conflict.conflictingProperties;
+
+  const resolved: RebaseConflictProperties = { ...conflict.ours };
+  for (const prop of accepted) {
+    if (accepted !== conflict.conflictingProperties && !conflict.conflictingProperties.includes(prop)) {
+      InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${conflict.id}`);
+    }
+    setPropertyValue(resolved, prop, getPropertyValue(source, prop));
+  }
+
+  const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
+  const instance = classDef.serialize(resolved as ElementProps, rebase.iModel);
+
+  const updateProps: RebaseConflictProperties = { id: conflict.id, classFullName: conflict.classFullName };
+  for (const prop of accepted) {
+    const instanceAccessString = classDef.toInstanceAccessString(prop);
+    setPropertyValue(updateProps, instanceAccessString, getPropertyValue(instance, instanceAccessString));
+  }
+
+  rebase.applyConflictResolution(updateProps);
+}
+
 class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   public readonly kind: "Update" = "Update";
 
@@ -860,9 +933,9 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.conflictingProperties.push(...conflictingProperties);
-
     const classDef = interactive.iModel.getJsClass<typeof Element>(original.classFullName);
+
+    addPropsAccessStrings(instanceConflict.conflictingProperties, classDef, conflictingProperties);
 
     instanceConflict.original = classDef.deserialize({
       row: original,
@@ -884,33 +957,10 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   }
 
   public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
-    if (!properties || properties.length === 0)
-      properties = this.conflictingProperties;
-
-    const updateProps: RebaseConflictProperties = { id: this.id, classFullName: this.classFullName };
-    for (const prop of properties) {
-      if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
-        InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
-      }
-      updateProps[prop] = this.ours[prop];
-    }
-
-    rebase.applyConflictResolution(updateProps);
+    applyResolution(rebase, this, this.ours, properties);
   }
-
   public acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void {
-    if (!properties || properties.length === 0)
-      properties = this.conflictingProperties;
-
-    const updateProps: RebaseConflictProperties = { id: this.id, classFullName: this.classFullName };
-    for (const prop of properties) {
-      if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
-        InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
-      }
-      updateProps[prop] = this.theirs[prop];
-    }
-
-    rebase.applyConflictResolution(updateProps);
+    applyResolution(rebase, this, this.theirs, properties);
   }
 }
 
@@ -953,9 +1003,9 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.updatedProperties.push(...updatedProperties);
-
     const classDef = interactive.iModel.getJsClass<typeof Element>(original.classFullName);
+
+    addPropsAccessStrings(instanceConflict.updatedProperties, classDef, updatedProperties);
 
     instanceConflict.original = classDef.deserialize({
       row: original,
@@ -1011,9 +1061,9 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.updatedProperties.push(...conflictingProperties);
-
     const classDef = interactive.iModel.getJsClass<typeof Element>(original.classFullName);
+
+    addPropsAccessStrings(instanceConflict.updatedProperties, classDef, conflictingProperties);
 
     instanceConflict.original = classDef.deserialize({
       row: original,
@@ -1075,9 +1125,17 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.conflictingProperties.push(...computeChangedProperties(ours, theirs));
-    Object.assign(instanceConflict.theirs, theirs);
-    Object.assign(instanceConflict.ours, ours);
+    const classDef = rebase.iModel.getJsClass<typeof Element>(ours.classFullName);
+
+    addPropsAccessStrings(instanceConflict.conflictingProperties, classDef, computeChangedProperties(ours, theirs));
+    instanceConflict.theirs = classDef.deserialize({
+      row: theirs,
+      iModel: rebase.iModel
+    });
+    instanceConflict.ours = classDef.deserialize({
+      row: ours,
+      iModel: rebase.iModel
+    });
 
     instanceConflict.acceptOurs(rebase);
   }
@@ -1088,33 +1146,11 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
   }
 
   public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
-    if (!properties || properties.length === 0)
-      properties = this.conflictingProperties;
-
-    const updateProps: RebaseConflictProperties = { id: this.id, classFullName: this.classFullName };
-    for (const prop of properties) {
-      if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
-        InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
-      }
-      updateProps[prop] = this.ours[prop];
-    }
-
-    rebase.applyConflictResolution(updateProps);
+    applyResolution(rebase, this, this.ours, properties);
   }
 
   public acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void {
-    if (!properties || properties.length === 0)
-      properties = this.conflictingProperties;
-
-    const updateProps: RebaseConflictProperties = { id: this.id, classFullName: this.classFullName };
-    for (const prop of properties) {
-      if (properties !== this.conflictingProperties && !this.conflictingProperties.includes(prop)) {
-        InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${this.id}`);
-      }
-      updateProps[prop] = this.theirs[prop];
-    }
-
-    rebase.applyConflictResolution(updateProps);
+    applyResolution(rebase, this, this.theirs, properties);
   }
 }
 
@@ -1193,12 +1229,15 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
       return;
     }
 
+    const uniqueConstraintProperties: string[] = [];
+    addPropsAccessStrings(uniqueConstraintProperties, classDef, detail.uniqueConstraintProperties);
+
     const isSameIndex = (other: UniqueConstraintViolation) =>
-      other.uniqueConstraintProperties.length === detail.uniqueConstraintProperties.length &&
-      other.uniqueConstraintProperties.every((prop, i) => prop === detail.uniqueConstraintProperties[i]);
+      other.uniqueConstraintProperties.length === uniqueConstraintProperties.length &&
+      other.uniqueConstraintProperties.every((prop, i) => prop === uniqueConstraintProperties[i]);
     if (!instanceConflict.uniqueConstraintViolations.some(isSameIndex)) {
       instanceConflict.uniqueConstraintViolations.push({
-        uniqueConstraintProperties: detail.uniqueConstraintProperties,
+        uniqueConstraintProperties,
         conflictingRow: classDef.deserialize({
           row: detail.conflictingRow ?? {},
           iModel: interactive.iModel

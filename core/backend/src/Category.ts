@@ -43,6 +43,11 @@ export class SubCategory extends DefinitionElement {
     { propertyName: "properties", source: "Class" },
   ];
 
+  /** @inheritdoc @beta */
+  protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
+    "properties": "appearance",
+  };
+
   /**
    * SubCategory deserializes 'description' and 'properties'.
    * @inheritdoc

@@ -120,6 +120,12 @@ export class Model extends Entity {
     { propertyName: "lastMod", source: "Class" },
   ];
 
+  /** @inheritdoc @beta */
+  protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
+    "parentModel": "parentModel",
+    "parentModel.id": "parentModel",
+  };
+
   /**
    * Model deserializes 'isPrivate', and 'isTemplate', and sets the proper parentModel.
    * @inheritdoc

@@ -452,6 +452,17 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     { propertyName: "isCameraOn", source: "Class" },
   ];
 
+  /** @inheritdoc @beta */
+  protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
+    "isCameraOn": "cameraOn",
+    "eyePoint": "camera.eye",
+    "focusDistance": "camera.focusDist",
+    "lensAngle": "camera.lens",
+    "yaw": "angles.yaw",
+    "pitch": "angles.pitch",
+    "roll": "angles.roll",
+  };
+
   /**
    * ViewDefinition3d deserializes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
    * 'origin', 'extents', and 'isCameraOn'.
@@ -799,6 +810,12 @@ export class ViewDefinition2d extends ViewDefinition {
     { propertyName: "extents", source: "Class" },
     { propertyName: "rotationAngle", source: "Class" },
   ];
+
+  /** @inheritdoc @beta */
+  protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
+    "extents": "delta",
+    "rotationAngle": "angle",
+  };
 
   /**
    * ViewDefinition2d deserializes 'baseModel', 'origin', 'extents', and 'rotationAngle'.

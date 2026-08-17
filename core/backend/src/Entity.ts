@@ -119,6 +119,13 @@ export class Entity {
     { propertyName: "jsonProperties", source: "Class" }
   ];
 
+  /** For each access string by which a value is identified in an ECSql instance of this class (e.g. `codeSpec.id`),
+   * the access string identifying the same value in the props produced by [[deserialize]] (e.g. `code.spec`).
+   * Classes whose [[deserialize]] relocates a value **MUST** declare it here; anything not declared is assumed
+   * to be identically named in both representations.
+   * @beta */
+  protected static readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {};
+
   /** Get the list of properties that are custom handled by this class and its superclasses.
    * @internal */
   private static getCustomHandledProperties(): readonly CustomHandledProperty[] {
@@ -131,6 +138,39 @@ export class Entity {
       ...superClass.getCustomHandledProperties(),
       ...this._customHandledProps,
     ];
+  }
+
+  /** Maps each ECSql instance access string declared by this class or its superclasses to the corresponding
+   * access string in the props produced by [[deserialize]].
+   */
+  private static getPropsAccessStrings(): Map<string, string> {
+    const map = this.name === "Entity"
+      ? new Map<string, string>()
+      : (Object.getPrototypeOf(this) as typeof Entity).getPropsAccessStrings();
+
+    for (const [instanceAccessString, propsAccessString] of Object.entries(this._propsAccessStrings)) {
+      map.set(instanceAccessString, propsAccessString);
+    }
+    return map;
+  }
+
+  /** Translate the access string by which a value is identified in an ECSql instance of this class (e.g. `codeSpec.id`)
+   * into the access string identifying the same value in the props produced by [[deserialize]] (e.g. `code.spec`).
+   * Access strings that [[deserialize]] leaves unchanged are returned as-is.
+   * @internal */
+  public static toPropsAccessString(instanceAccessString: string): string {
+    return this.getPropsAccessStrings().get(instanceAccessString) ?? instanceAccessString;
+  }
+
+  /** The inverse of [[toPropsAccessString]]: translate a props access string (e.g. `code.spec`) into the access
+   * string identifying the same value in an ECSql instance of this class (e.g. `codeSpec.id`).
+   * @internal */
+  public static toInstanceAccessString(propsAccessString: string): string {
+    for (const [instanceAccessString, mapped] of this.getPropsAccessStrings()) {
+      if (mapped === propsAccessString)
+        return instanceAccessString;
+    }
+    return propsAccessString;
   }
 
   /** Converts an ECSqlRow of an Entity to an EntityProps. This is used to deserialize an Entity from the database.
@@ -293,7 +333,7 @@ export class Entity {
       throw new Error(`Cannot get metadata for ${this.classFullName}`);
     }
   }
-  
+
   /** @internal */
   public static get protectedOperations(): string[] { return []; }
 
