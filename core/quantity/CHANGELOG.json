@@ -2,6 +2,30 @@
   "name": "@itwin/core-quantity",
   "entries": [
     {
+      "version": "5.12.2",
+      "tag": "@itwin/core-quantity_v5.12.2",
+      "date": "Mon, 10 Aug 2026 20:38:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.12.1",
+      "tag": "@itwin/core-quantity_v5.12.1",
+      "date": "Mon, 10 Aug 2026 19:07:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.12.0",
+      "tag": "@itwin/core-quantity_v5.12.0",
+      "date": "Mon, 03 Aug 2026 12:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bearing/Azimuth formatting and parsing now only apply the north-measured conversion when the persistence unit's phenomenon is `Units.ANGLE`. `Units.HORIZONTAL_DIRECTION` values are already true azimuths and are left unconverted."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.11.3",
       "tag": "@itwin/core-quantity_v5.11.3",
       "date": "Wed, 15 Jul 2026 19:40:44 GMT",

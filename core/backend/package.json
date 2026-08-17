@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "5.13.0-dev.3",
+  "version": "5.13.0-dev.13",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "module": "lib/esm/core-backend.js",
@@ -29,9 +29,9 @@
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "mocha",
     "test:debug": "mocha --inspect-brk",
-    "ios:webpack:tests": "TESTS_GLOB=./lib/esm/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",
+    "ios:bundle:tests": "TESTS_GLOB=./lib/esm/**/*.test.js vite build --mode development --config ../../tools/internal/ios/ios.vite.config.mts",
     "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets && cpx \"./src/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
-    "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets",
+    "ios:build:tests": "npm run -s build && npm run -s ios:bundle:tests && npm run -s ios:copy:assets",
     "ios:build:core-test-runner": "cd ../../tools/internal/ios/core-test-runner && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme core-test-runner -arch arm64 -sdk iphonesimulator -configuration Debug",
     "ios:tests:simulator": "node scripts/runUnitTestsIosSimulator.mjs",
     "ios:all": "npm run ios:build:tests && npm run ios:build:core-test-runner && npm run ios:tests:simulator"
@@ -99,18 +99,16 @@
     "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
     "node-simctl": "~7.6.1",
-    "null-loader": "^4.0.1",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "sinon": "^17.0.2",
-    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
     "marked": "^14.1.3",
     "sql-formatter": "^15.4.6",
-    "webpack": "^5.97.1"
+    "vite": "^6.4.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "5.13.3",
+    "@bentley/imodeljs-native": "5.13.9",
     "@itwin/object-storage-azure": "^3.0.4",
     "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.6",

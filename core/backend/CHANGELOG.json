@@ -2,6 +2,66 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.12.2",
+      "tag": "@itwin/core-backend_v5.12.2",
+      "date": "Mon, 10 Aug 2026 20:38:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.12.1",
+      "tag": "@itwin/core-backend_v5.12.1",
+      "date": "Mon, 10 Aug 2026 19:07:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix: Workspace.getWorkspaceDb to reuse a pre-supplied accessToken instead of always requesting a new one"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.12.0",
+      "tag": "@itwin/core-backend_v5.12.0",
+      "date": "Mon, 03 Aug 2026 12:25:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add internal applyChangeset (and test-support startChangeTracking/executeDdl/createChangeset) API to SQLiteDb."
+          },
+          {
+            "comment": "Unskipped previously mark flaky test"
+          },
+          {
+            "comment": "Stopped using deprecated QueryRowFormat.UseJsPropertyNames in IModelDb ECSQL queries."
+          },
+          {
+            "comment": "Fixed queryEntityIds and ViewStore selector queries throwing on undefined/null binding values."
+          },
+          {
+            "comment": "Add preserveExtends option to getResolvedSettingDef"
+          },
+          {
+            "comment": "Use a documented GetResolvedSettingDefOptions interface for getResolvedSettingDef options"
+          },
+          {
+            "comment": "Added IpcHost.invoke and makeIpcProxy for backend-to-frontend IPC calls."
+          },
+          {
+            "comment": "Add filtering support to SchemaView and improve performance."
+          },
+          {
+            "comment": "Added caching behaviour to ChangesetReader api"
+          },
+          {
+            "comment": "Changed error codes for \"createQueryReader\" and \"withQueryReader\" api and made error messages consistent across the native node add-on apis for the case of db being closed"
+          },
+          {
+            "comment": "Restore ECSQL statement caching in the synchronous withQueryReader path: ECSqlRowExecutor now reuses a prepared statement from the owning db's statement cache instead of re-compiling the ECSQL on every call, fixing a per-element performance regression."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.11.3",
       "tag": "@itwin/core-backend_v5.11.3",
       "date": "Wed, 15 Jul 2026 19:40:44 GMT",
