@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import { Suite } from "mocha";
-import { BriefcaseDb, IModelDb, IModelHost, SchemaSync } from "@itwin/core-backend";
+import { BriefcaseDb, IModelDb, IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { DbResult } from "@itwin/core-bentley";
@@ -801,8 +801,9 @@ describe("Schema synchronization data", function (this: Suite) {
     }
   });
 
-  // Changing a primitive type requires the data-moving upgrade path; the failed additive import must leave the original element untouched.
-  it("refuses a property type change through the update path and preserves data through upgradeSchemas #extended", async () => {
+  // A shared column carries no type, so a primitive type change moves no data and the update path takes it. Existing values are
+  // reinterpreted under the new type on read: a numeric string comes back as its number, anything else comes back as zero.
+  it("takes a property type change through the update path and reinterprets existing values #extended", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-11" });
     const accessToken = "sync data 11 token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync data 11", accessToken });
@@ -838,8 +839,12 @@ describe("Schema synchronization data", function (this: Suite) {
         classFullName: "SchemaSyncDataTypeChange:DataElement",
         props: { stableText: "keep this", changingValue: "42" },
       });
+      const wordElementId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "SchemaSyncDataTypeChange:DataElement",
+        props: { stableText: "keep this too", changingValue: "not a number" },
+      });
       await b1.pushChanges({ accessToken, description: "insert type change data" });
-      const before = await takeElementCensus(b1, ["SchemaSyncDataTypeChange:DataElement"]);
 
       const schemaV2: TinySchema = {
         ...schemaV1,
@@ -849,26 +854,15 @@ describe("Schema synchronization data", function (this: Suite) {
           { kind: "primitive", name: "changingValue", type: "int" },
         ] }],
       };
-      let caughtError: unknown;
-      try {
-        await importTinySchema(b1, schemaV2);
-      } catch (error) {
-        caughtError = error;
-      }
-      assert.isDefined(caughtError, "changing a property type must require the upgrade path");
-      assert.isTrue(SchemaSync.requiresUpgrade(caughtError));
-      assert.equal((caughtError as { errorNumber?: number }).errorNumber, DbResult.BE_SQLITE_ERROR_DataTransformRequired);
-      assert.equal(readElementProp(b1, elementId, "stableText"), "keep this");
-      assert.equal(readElementProp(b1, elementId, "changingValue"), "42");
-      const afterRefusedImport = await takeElementCensus(b1, ["SchemaSyncDataTypeChange:DataElement"]);
-      expectCensusPreserved(before, afterRefusedImport, "after refusing the type change");
+      await importTinySchema(b1, schemaV2);
+      await b1.pushChanges({ accessToken, description: "change property type" });
 
-      await b1.upgradeSchemaStrings([tinySchemaToXml(schemaV2)], { accessToken, description: "change property type" });
-      const afterUpgrade = await takeElementCensus(b1, ["SchemaSyncDataTypeChange:DataElement"]);
-      expectCensusPreserved(before, afterUpgrade, "after upgrading the property type", { removedProperties: ["changingValue"] });
+      assert.deepEqual(queryPropNames(b1, "SchemaSyncDataTypeChange:DataElement"), ["stableText", "changingValue"]);
       assert.equal(readElementProp(b1, elementId, "stableText"), "keep this");
-      assert.equal(readElementProp(b1, elementId, "changingValue"), 42);
-      assert.equal(queryPropNames(b1, "SchemaSyncDataTypeChange:DataElement").includes("changingValue"), true);
+      assert.strictEqual(readElementProp(b1, elementId, "changingValue"), 42);
+      assert.equal(readElementProp(b1, wordElementId, "stableText"), "keep this too");
+      assert.strictEqual(readElementProp(b1, wordElementId, "changingValue"), 0,
+        "a value the new type cannot represent reads as zero rather than failing or staying put");
     } finally {
       b1?.close();
     }

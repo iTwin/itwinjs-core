@@ -197,7 +197,7 @@ export async function createTestIModel(args: { iModelName: string, accessToken?:
 
 export interface OpenTestBriefcaseArgs extends TestIModel {
   accessToken: AccessToken;
-  /** Every briefcase needs its own CloudSqlite cache, or they share the sync db's local copy. */
+  /** Every briefcase needs its own CloudSqlite cache, or they share the sync db's local copy. Ignored for a readonly briefcase, which cannot store it. */
   cacheName?: string;
   readonly?: boolean;
   /** Defaults to true. Inserting into the dictionary model or a new partition needs the shared channel. */
@@ -210,7 +210,7 @@ export async function openTestBriefcase(args: OpenTestBriefcaseArgs): Promise<Br
   const b = args.readonly
     ? await BriefcaseDb.open({ fileName: props.fileName, readonly: true })
     : await BriefcaseDb.open(props);
-  if (args.cacheName)
+  if (args.cacheName && !args.readonly)
     SchemaSync.setTestCache(b, args.cacheName);
   if (!args.readonly && (args.allowSharedChannel ?? true))
     b.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -220,7 +220,7 @@ export async function openTestBriefcase(args: OpenTestBriefcaseArgs): Promise<Br
 /** Reopen a briefcase that is already downloaded, without going back to the hub. */
 export async function reopenTestBriefcase(fileName: string, args?: { cacheName?: string, readonly?: boolean, allowSharedChannel?: boolean }): Promise<BriefcaseDb> {
   const b = await BriefcaseDb.open({ fileName, readonly: args?.readonly });
-  if (args?.cacheName)
+  if (args?.cacheName && !args.readonly)
     SchemaSync.setTestCache(b, args.cacheName);
   if (!args?.readonly && (args?.allowSharedChannel ?? true))
     b.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -347,7 +347,7 @@ export const expectCacheTablesIdentical = (a: IModelDb, b: IModelDb, context: st
 export const expectPhysicalSchemaIdentical = (a: IModelDb, b: IModelDb, context: string): void => {
   const read = (db: IModelDb) => {
     const objects: string[] = [];
-    db.withPreparedSqliteStatement("SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name", (stmt: SqliteStatement) => {
+    db.withPreparedSqliteStatement("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_stat%' ORDER BY type,name", (stmt: SqliteStatement) => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW)
         objects.push(serializeSqliteRow(stmt));
     });

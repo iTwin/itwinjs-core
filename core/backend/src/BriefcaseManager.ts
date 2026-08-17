@@ -855,8 +855,14 @@ export class BriefcaseManager {
         SchemaSync.updateDbSchema(db);
         // pullAndApply rebase changes and might remove redundant changes in local briefcase
         // this mean hasPendingTxns was true before but now after pullAndApply it might be false
-        if (!db[_nativeDb].hasPendingTxns())
+        if (!db[_nativeDb].hasPendingTxns()) {
+          // There is nothing left to push, so the locks this briefcase took for the dropped changes have to go
+          // back the same way the other exits from push release them. Otherwise it keeps the shared schema lock
+          // and no one else can take the exclusive one.
+          if (!arg.retainLocks)
+            await db.locks[_releaseAllLocks]();
           return;
+        }
 
         await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {

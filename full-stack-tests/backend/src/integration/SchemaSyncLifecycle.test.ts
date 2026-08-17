@@ -167,8 +167,8 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
     }
   });
 
-  // An own-table class gives the property a dedicated column, so its deletion takes the property-mapping branch instead of nulling a shared column first.
-  it("deleting an empty dedicated property the update path refuses #extended", async () => {
+  // Deleting a property takes the property-mapping branch rather than the class branch, and holding no data does not spare it the upgrade path.
+  it("deleting an empty property the update path refuses #extended", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-11" });
     const accessToken = "sync life dedicated property token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life dedicated property", accessToken });
@@ -185,18 +185,12 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
         dynamic: true,
         refs: [
           { name: "BisCore", ver: "01.00.00", alias: "bis" },
-          { name: "ECDbMap", ver: "02.00.00", alias: "ecdbmap" },
         ],
         classes: [{
           type: "entity",
           name: "DedicatedClass",
           baseClass: "bis:GeometricElement2d",
           props: [{ kind: "primitive", name: "dedicatedValue", type: "string" }],
-          rawXml: [`<ECCustomAttributes>
-    <ClassMap xmlns="ECDbMap.02.00.00">
-        <MapStrategy>OwnTable</MapStrategy>
-    </ClassMap>
-</ECCustomAttributes>`],
         }],
       };
       await importTinySchema(b1, schemaV1);
@@ -214,19 +208,19 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
       } catch (error) {
         caughtError = error;
       }
-      assert.isDefined(caughtError, "deleting the empty dedicated property should report the upgrade requirement");
+      assert.isDefined(caughtError, "deleting the empty property should report the upgrade requirement");
       assert.isTrue(SchemaSync.requiresUpgrade(caughtError));
       assert.equal((caughtError as { errorNumber?: number }).errorNumber, DbResult.BE_SQLITE_ERROR_DataDeletionRequired);
 
-      await b1.upgradeSchemaStrings([tinySchemaToXml(schemaV2)], { accessToken, description: "remove dedicated property" });
+      await b1.upgradeSchemaStrings([tinySchemaToXml(schemaV2)], { accessToken, description: "remove empty property" });
       await b2.pullChanges({ accessToken });
       b3 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife11b3" });
       for (const briefcase of [b1, b2, b3])
         assert.deepEqual(queryPropNames(briefcase, "SchemaSyncDedicatedProperty:DedicatedClass"), []);
-      expectMetadataTablesIdentical(b1, b2, "after dedicated property deletion", { a: "b1", b: "b2" });
-      expectMetadataTablesIdentical(b1, b3, "after dedicated property deletion", { a: "b1", b: "b3" });
-      expectPhysicalSchemaIdentical(b1, b2, "after dedicated property deletion");
-      expectPhysicalSchemaIdentical(b1, b3, "after dedicated property deletion");
+      expectMetadataTablesIdentical(b1, b2, "after empty property deletion", { a: "b1", b: "b2" });
+      expectMetadataTablesIdentical(b1, b3, "after empty property deletion", { a: "b1", b: "b3" });
+      expectPhysicalSchemaIdentical(b1, b2, "after empty property deletion");
+      expectPhysicalSchemaIdentical(b1, b3, "after empty property deletion");
     } finally {
       b1.close();
       b2.close();
@@ -366,7 +360,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
         }, {
           type: "struct",
           name: "UnusedStruct",
-          rawXml: [`<ECProperty propertyName="quantity" typeName="double" kindOfQuantity="UnusedQuantity" category="UnusedCategory"/>`],
+          rawXml: `<ECProperty propertyName="quantity" typeName="double" kindOfQuantity="UnusedQuantity" category="UnusedCategory"/>`,
         }],
       };
       await importTinySchema(b1, schemaWithMetadata);
@@ -389,7 +383,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
         ...schemaWithMetadata,
         ver: "02.00.00",
         rawXml: [],
-        classes: [schemaWithMetadata.classes![0], { ...schemaWithMetadata.classes![1], rawXml: [] }],
+        classes: [schemaWithMetadata.classes![0], { ...schemaWithMetadata.classes![1], rawXml: undefined }],
       };
       await importTinySchema(b1, schemaWithoutMetadata);
       await b1.pushChanges({ accessToken, description: "remove quantity metadata" });
@@ -791,8 +785,9 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
         classes: [{ ...newerSchema.classes![0], props: [newerSchema.classes![0].props![0]] }],
       };
       await importTinySchema(b2, olderSchema);
-      assert.equal(b1.querySchemaVersion("SchemaSyncStaleImport"), "01.00.01");
-      assert.equal(b2.querySchemaVersion("SchemaSyncStaleImport"), "01.00.01");
+      // querySchemaVersion answers semver, not the padded ECXml form.
+      assert.equal(b1.querySchemaVersion("SchemaSyncStaleImport"), "1.0.1");
+      assert.equal(b2.querySchemaVersion("SchemaSyncStaleImport"), "1.0.1");
       assert.deepEqual(queryPropNames(b1, "SchemaSyncStaleImport:VersionedClass"), ["first", "second"]);
       assert.deepEqual(queryPropNames(b2, "SchemaSyncStaleImport:VersionedClass"), ["first", "second"]);
       assert.equal(readElementProp(b1, elementId, "second"), "second survives");
@@ -912,7 +907,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
       });
       await b1.pushChanges({ accessToken, description: "checkpoint overflow data" });
       const changeset = await HubMock.getLatestChangeset({ iModelId });
-      checkpoint = await SnapshotDb.openCheckpoint({ accessToken, iTwinId, iModelId, changeset });
+      checkpoint = await SnapshotDb.openCheckpoint({ iTwinId, iModelId, changeset });
       const checkpointFileName = checkpoint.pathName;
       const dataVersionBefore = queryDataVersion(checkpoint);
       const modificationTimeBefore = statSync(checkpointFileName).mtimeMs;

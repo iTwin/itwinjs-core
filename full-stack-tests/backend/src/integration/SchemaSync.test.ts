@@ -64,16 +64,6 @@ describe("Schema synchronization", function (this: Suite) {
     return ids;
   };
 
-  const queryTablesLike = (db: IModelDb, pattern: string): string[] => {
-    const tables: string[] = [];
-    db.withPreparedSqliteStatement("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?", (stmt) => {
-      stmt.bindString(1, pattern);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW)
-        tables.push(stmt.getValue(0).getString());
-    });
-    return tables;
-  };
-
   const querySchemaId = (db: IModelDb, schemaName: string): string => db.withPreparedSqliteStatement("SELECT Id FROM ec_Schema WHERE Name=?", (stmt) => {
     stmt.bindString(1, schemaName);
     assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW, `${schemaName} is missing from ec_Schema`);
@@ -2019,10 +2009,11 @@ describe("Schema synchronization", function (this: Suite) {
           props: [{ kind: "primitive", name: "targetValue", type: "string" }],
         }],
         rawXml: [`<ECRelationshipClass typeName="SourceTargets" strength="referencing" strengthDirection="forward" modifier="Sealed">
-    <Source multiplicity="(0..*)" roleLabel="source" polymorphic="false">
+    <BaseClass>bis:ElementRefersToElements</BaseClass>
+    <Source multiplicity="(0..*)" roleLabel="source" polymorphic="true" abstractConstraint="bis:GeometricElement2d">
         <Class class="SourceElement"/>
     </Source>
-    <Target multiplicity="(0..*)" roleLabel="target" polymorphic="false">
+    <Target multiplicity="(0..*)" roleLabel="target" polymorphic="true" abstractConstraint="bis:GeometricElement2d">
         <Class class="TargetElement"/>
     </Target>
 </ECRelationshipClass>`],
@@ -2050,9 +2041,10 @@ describe("Schema synchronization", function (this: Suite) {
 
       assert.isTrue(SchemaSync.isEnabled(b1));
       assert.include(readOverflowElementIds(b1), sourceId, "the existing source element has no overflow row after enable");
-      const linkTables = queryTablesLike(b1, "%SourceTargets%");
-      assert.isNotEmpty(linkTables, "the existing relationship link table was not preserved");
-      assert.isAbove(linkTables.reduce((count, table) => count + readTableRows(b1, table).length, 0), 0, "the existing link row was not preserved");
+      // A BisCore-derived relationship maps into bis_ElementRefersToElements rather than a table of its own.
+      const linkRows = await b1.createQueryReader("SELECT ECInstanceId FROM FrontDoorExistingShapes.SourceTargets").toArray();
+      assert.lengthOf(linkRows, 1, "the existing link-table row was not preserved");
+      assert.isNotEmpty(readTableRows(b1, "bis_ElementRefersToElements"), "the link table lost its rows");
       assert.equal(readElementProp(b1, sourceId, "stable"), "source");
       assert.equal(readElementProp(b1, sourceId, "overflow39"), "value-39");
       assert.equal(readElementProp(b1, targetId, "targetValue"), "target");
@@ -2384,8 +2376,6 @@ describe("Schema synchronization", function (this: Suite) {
       const firstElementId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorRevertSkip:Pipe", props: { p0: "retained" } });
       await b1.pushChanges({ accessToken, description: "front door 12 first data" });
 
-      const indexBeforeTheSecondRound = b1.changeset.index;
-
       // A schema change and a data change that depends on it.
       await importSchema(b1, {
         ...schemaV1,
@@ -2397,13 +2387,14 @@ describe("Schema synchronization", function (this: Suite) {
       });
       const secondElementId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorRevertSkip:Pipe", props: { p0: "kept", p1: "reverted" } });
       await b1.pushChanges({ accessToken, description: "front door 12 schema and data" });
+      const indexOfTheSecondRound = b1.changeset.index!;
 
       const dataVerBeforeRevert = querySchemaSyncDataVer(b1);
       assert.deepEqual(queryPropNames(b1, "FrontDoorRevertSkip:Pipe"), ["p0", "p1"]);
 
       // No skipSchemaChanges and no description, so the default request is "revert everything" and
       // the auto-generated description reports what actually happened.
-      await b1.revertAndPushChanges({ toIndex: indexBeforeTheSecondRound!, accessToken });
+      await b1.revertAndPushChanges({ toIndex: indexOfTheSecondRound, accessToken });
 
       const latest = await HubMock.getLatestChangeset({ iModelId });
       expect(latest.description).to.contain("schema changes skipped",

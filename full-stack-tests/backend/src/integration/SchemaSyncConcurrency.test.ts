@@ -143,6 +143,7 @@ const sharedPoolSchema = (name: string, alias: string, className: string, proper
 });
 
 interface MappedPropertyColumn {
+  className: string;
   propertyName: string;
   tableName: string;
   columnName: string;
@@ -152,19 +153,21 @@ const queryMappedPropertyColumns = (briefcase: BriefcaseDb, propertyNames: strin
   const mapped: MappedPropertyColumn[] = [];
   const placeholders = propertyNames.map(() => "?").join(",");
   briefcase.withPreparedSqliteStatement(`
-    SELECT p.Name, t.Name, c.Name
+    SELECT cl.Name, p.Name, t.Name, c.Name
     FROM ec_PropertyMap pm
     JOIN ec_PropertyPath pp ON pp.Id=pm.PropertyPathId
     JOIN ec_Property p ON p.Id=pp.RootPropertyId
+    JOIN ec_Class cl ON cl.Id=pm.ClassId
     JOIN ec_Column c ON c.Id=pm.ColumnId
     JOIN ec_Table t ON t.Id=c.TableId
     WHERE p.Name IN (${placeholders})`, (stmt) => {
     propertyNames.forEach((propertyName, index) => stmt.bindString(index + 1, propertyName));
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       mapped.push({
-        propertyName: stmt.getValue(0).getString(),
-        tableName: stmt.getValue(1).getString(),
-        columnName: stmt.getValue(2).getString(),
+        className: stmt.getValue(0).getString(),
+        propertyName: stmt.getValue(1).getString(),
+        tableName: stmt.getValue(2).getString(),
+        columnName: stmt.getValue(3).getString(),
       });
     }
   });
@@ -611,8 +614,11 @@ describe("Schema synchronization concurrency", function (this: Suite) {
 
         const mapped = queryMappedPropertyColumns(briefcase, propertyNames);
         assert.equal(mapped.length, propertyNames.length, `not every shared pool property has a column in b${index + 1}`);
-        const physicalColumns = mapped.map((property) => `${property.tableName}.${property.columnName}`);
-        assert.equal(new Set(physicalColumns).size, physicalColumns.length, `two shared pool properties use one column in b${index + 1}`);
+        // Sibling classes reuse each other's shared columns by design - a row belongs to one class. Two properties of the same class may not.
+        for (const className of new Set(mapped.map((property) => property.className))) {
+          const columnsOfClass = mapped.filter((property) => property.className === className).map((property) => `${property.tableName}.${property.columnName}`);
+          assert.equal(new Set(columnsOfClass).size, columnsOfClass.length, `two properties of ${className} use one column in b${index + 1}`);
+        }
         assert.sameMembers(mapped.map((property) => property.propertyName), propertyNames);
       }
       expectMetadataTablesIdentical(briefcases[0], briefcases[1], "after three shared pool imports", { a: "b1", b: "b2" });
@@ -675,7 +681,8 @@ describe("Schema synchronization concurrency", function (this: Suite) {
 
   for (const pushOrder of pushOrders) {
     const orderName = pushOrder.map((index) => index + 1).join("");
-    // The selected briefcase rebuilds through the exclusive upgrade path while the other two retain local additive imports, changing who owns the sync-db authority at each order position.
+    // The selected briefcase rebuilds through the exclusive upgrade path, changing who owns the sync-db authority at each order position.
+    // An additive import holds a shared lock it cannot release while its changes are unpushed, so the upgrade only gets through once the other two have pushed.
     it(`three briefcases converge for mixed upgrade push order ${orderName} #extended`, async () => {
       const { briefcases, accessTokens } = await createBriefcases({
         containerId: `sync-conc-7-${orderName}`,
@@ -693,22 +700,29 @@ describe("Schema synchronization concurrency", function (this: Suite) {
               await importTinySchema(briefcase, schema);
           }));
 
-          // The upgrade must acquire the exclusive lock while the additive schema transactions remain local.
-          for (const [index, briefcase] of briefcases.entries()) {
-            if (index !== upgradeIndex)
-              await briefcase.locks.releaseAllLocks();
-          }
+          const runUpgrade = async () => {
+            // upgradeSchemaStrings takes the exclusive lock before it pulls, and the hub refuses that lock to a briefcase behind the tip.
+            await briefcases[upgradeIndex].pullChanges({ accessToken: accessTokens[upgradeIndex] });
+            await briefcases[upgradeIndex].upgradeSchemaStrings([tinySchemaToXml(schema)], {
+              accessToken: accessTokens[upgradeIndex],
+              description: `upgrade cumulative schema round ${round} from b${upgradeIndex + 1}`,
+            });
+          };
 
+          let pendingAdditiveImports = briefcases.length - 1;
           for (const briefcaseIndex of pushOrder) {
             if (briefcaseIndex === upgradeIndex) {
-              await briefcases[briefcaseIndex].upgradeSchemaStrings([tinySchemaToXml(schema)], {
-                accessToken: accessTokens[briefcaseIndex],
-                description: `upgrade cumulative schema round ${round} from b${briefcaseIndex + 1}`,
-              });
+              if (pendingAdditiveImports === 0)
+                await runUpgrade();
+              else
+                await assertThrowsAsyncContaining(runUpgrade, "shared lock is held");
             } else {
               await pushChangesWithPull(briefcases[briefcaseIndex], accessTokens[briefcaseIndex], `push cumulative schema round ${round} from b${briefcaseIndex + 1}`);
+              --pendingAdditiveImports;
             }
           }
+          if (pushOrder[pushOrder.length - 1] !== upgradeIndex)
+            await runUpgrade();
           for (let index = 0; index < briefcases.length; ++index)
             await briefcases[index].pullChanges({ accessToken: accessTokens[index] });
 
