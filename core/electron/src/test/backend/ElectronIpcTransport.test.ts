@@ -4,30 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import { BeDuration } from "@itwin/core-bentley";
 import { IpcListener, IpcSocket } from "@itwin/core-common";
 import { ElectronRpcProtocol } from "../../common/ElectronRpcProtocol";
 import { FrontendIpcTransport } from "../../common/ElectronIpcTransport";
 import type { TestSuite } from "./ElectronBackendTests";
 
 const OBJECTS_CHANNEL = "itwin.rpc.objects";
-
-class TestFrontendIpcTransport extends FrontendIpcTransport {
-  private _completion?: Promise<void>;
-
-  protected override async handleComplete(id: string) {
-    this._completion = super.handleComplete(id);
-    // Keep the rejected promise observable through waitForCompletion without making it unhandled.
-    await this._completion.catch(() => undefined);
-  }
-
-  public async waitForCompletion() {
-    const completion = this._completion;
-    if (!completion)
-      throw new Error("The transport did not complete the response.");
-
-    await completion;
-  }
-}
 
 export const electronIpcTransportTestSuite: TestSuite = {
   title: "ElectronIpcTransport tests.",
@@ -52,8 +35,10 @@ async function testLateResponseAfterShutdown() {
         listeners.delete(channel);
     },
   };
-  const protocol = { ipcSocket: socket, requests: new Map() } as unknown as ElectronRpcProtocol;
-  const transport = new TestFrontendIpcTransport(protocol);
+  // A real ElectronRpcProtocol would register itself as the module-wide transport singleton. The
+  // transport only reads these two members, so a stub of exactly that surface keeps the test isolated.
+  const protocol: Pick<ElectronRpcProtocol, "ipcSocket" | "requests"> = { ipcSocket: socket, requests: new Map() };
+  new FrontendIpcTransport(protocol as ElectronRpcProtocol);
   const objectsListener = listeners.get(OBJECTS_CHANNEL);
   if (!objectsListener)
     throw new Error(`No listener registered for ${OBJECTS_CHANNEL}`);
@@ -65,9 +50,19 @@ async function testLateResponseAfterShutdown() {
     rawResult: undefined,
     status: 0,
   };
-  objectsListener(undefined as any, response);
 
-  // The request map is empty, as it is after ElectronApp.shutdown() disposes requests.
-  assert.isUndefined(protocol.requests.get(response.id));
-  await transport.waitForCompletion();
+  // The transport dispatches the response without awaiting it, so a failure surfaces as an unhandled
+  // rejection rather than propagating out of the listener.
+  const rejections: unknown[] = [];
+  const onUnhandledRejection = (reason: unknown) => rejections.push(reason);
+  process.on("unhandledRejection", onUnhandledRejection);
+  try {
+    // The request map is empty, as it is after ElectronApp.shutdown() disposes requests.
+    objectsListener(new Event("ipc"), response);
+    await BeDuration.wait(1); // give Node a turn to report an unhandled rejection
+  } finally {
+    process.off("unhandledRejection", onUnhandledRejection);
+  }
+
+  assert.deepEqual(rejections, []);
 }

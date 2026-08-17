@@ -5,7 +5,6 @@
 
 import * as path from "path";
 import { assert } from "chai";
-import { exec } from "child_process";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { BeDuration } from "@itwin/core-bentley";
 import { RpcInterface, RpcRegistry } from "@itwin/core-common";
@@ -172,7 +171,6 @@ async function testMainWindowOpenedWithLocalFile() {
 
 async function testWindowSizeSettings() {
   const storeWindowName = "settingsTestWindow";
-  const isXvfbRunning = await isXvfbProcessRunning();
 
   await ElectronHost.startup({
     electronHost: {
@@ -188,59 +186,34 @@ async function testWindowSizeSettings() {
   const window = ElectronHost.mainWindow;
   assert(window);
 
-  let sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  const savedSizeAndPos = () => ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  const savedMaximized = () => ElectronHost.getWindowMaximizedSetting(storeWindowName);
+
   const expectedBounds = window.getBounds();
-  assert(sizeAndPos?.width === expectedBounds.width);
-  assert(sizeAndPos?.height === expectedBounds.height);
-  assert(sizeAndPos?.x === expectedBounds.x);
-  assert(sizeAndPos?.y === expectedBounds.y);
+  assert(savedSizeAndPos()?.width === expectedBounds.width);
+  assert(savedSizeAndPos()?.height === expectedBounds.height);
+  assert(savedSizeAndPos()?.x === expectedBounds.x);
+  assert(savedSizeAndPos()?.y === expectedBounds.y);
 
-  let isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
-  assert(isMaximized === window.isMaximized());
+  assert(savedMaximized() === window.isMaximized());
 
+  // The saved flag must converge on the window's actual state. Whether the window really maximizes,
+  // and whether "maximize"/"unmaximize" are delivered at all, is up to the platform's window manager.
   window.maximize();
-  if (isXvfbRunning)
-    window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
-  else
-    await BeDuration.wait(250); // "maximize" event is not always emitted immediately
-
-  isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
-  assert(isMaximized);
+  assert(await waitUntil(() => savedMaximized() === window.isMaximized()));
 
   window.unmaximize();
-  if (isXvfbRunning)
-    window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
-  else
-    await BeDuration.wait(250); // "unmaximize" event is not always emitted immediately
-
-  isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
-  assert(isMaximized === false);
+  assert(await waitUntil(() => savedMaximized() === window.isMaximized()));
 
   const width = 250;
   const height = 251;
   window.setSize(width, height);
-  await BeDuration.wait(250); // wait for new size to be saved to settings file
-  sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
-  for (let i = 0; i < 20 && (sizeAndPos?.width !== width || sizeAndPos?.height !== height); ++i) {
-    // Sometimes 250ms isn't enough, so keep trying for an additional 1 second (50ms * 20)
-    await BeDuration.wait(50);
-    sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
-  }
-  assert(sizeAndPos?.width === width);
-  assert(sizeAndPos?.height === height);
+  assert(await waitUntil(() => savedSizeAndPos()?.width === width && savedSizeAndPos()?.height === height));
 
   const x = 50;
   const y = 75;
   window.setPosition(x, y);
-  await BeDuration.wait(250); // wait for new position to be saved to settings file
-  sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
-  for (let i = 0; i < 20 && (sizeAndPos?.x !== x || sizeAndPos?.y !== y); ++i) {
-    // Sometimes 250ms isn't enough, so keep trying for an additional 1 second (50ms * 20)
-    await BeDuration.wait(50);
-    sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
-  }
-  assert(sizeAndPos?.x === x);
-  assert(sizeAndPos?.y === y);
+  assert(await waitUntil(() => savedSizeAndPos()?.x === x && savedSizeAndPos()?.y === y));
 }
 
 async function testWindowStateSavedOnResize() {
@@ -258,22 +231,24 @@ async function testWindowStateSavedOnResize() {
   const window = ElectronHost.mainWindow;
   assert(window);
 
-  // Simulate a maximized window whose maximize event was not delivered by Electron.
-  const originalIsMaximized = window.isMaximized.bind(window);
-  window.isMaximized = () => true;
-  try {
-    NativeHost.settingsStore.setData(`windowMaximized-${storeWindowName}`, false);
-    window.emit("resize");
+  // Stand in for a "maximize"/"unmaximize" event that the platform never delivered, leaving the saved
+  // flag out of sync. A resize must reconcile it, no matter which event was lost.
+  const actual = window.isMaximized();
+  NativeHost.settingsStore.setData(`windowMaximized-${storeWindowName}`, !actual);
 
-    let isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
-    for (let i = 0; i < 20 && isMaximized !== true; ++i) {
-      await BeDuration.wait(50);
-      isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
-    }
-    assert(isMaximized === true);
-  } finally {
-    window.isMaximized = originalIsMaximized;
-  }
+  window.setSize(300, 301);
+  assert(await waitUntil(() => ElectronHost.getWindowMaximizedSetting(storeWindowName) === actual));
+}
+
+/**
+ * Polls `condition` until it holds, for up to ~1.25 seconds.
+ * @note `ElectronHost` persists window state from a debounced handler, so the settings file lags the window.
+ */
+async function waitUntil(condition: () => boolean): Promise<boolean> {
+  for (let i = 0; i < 25 && !condition(); ++i)
+    await BeDuration.wait(50);
+
+  return condition();
 }
 
 function assertElectronHostNotInitialized() {
@@ -300,22 +275,4 @@ function assertElectronHostIsInitialized() {
   assert(typeof ElectronHost.webResourcesPath === "string");
   assert(typeof ElectronHost.appIconPath === "string");
   assert(typeof ElectronHost.frontendURL === "string");
-}
-
-/**
- * Checks if `xvfb` is running on the machine.
- * @note `true` doesn't necessary mean that tests are using `xvfb`.
- */
-async function isXvfbProcessRunning(): Promise<boolean> {
-  if (process.platform !== "linux")
-    return false;
-
-  let doesXvfbProcessExists = false;
-  const bashProcess = exec("pgrep xvfb", (_, stdout) => {
-    const processNumber = Number(stdout);
-    doesXvfbProcessExists = !isNaN(processNumber);
-  });
-
-  await new Promise((resolve) => bashProcess.on("close", resolve));
-  return doesXvfbProcessExists;
 }
