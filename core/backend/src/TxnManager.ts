@@ -1033,7 +1033,7 @@ export class TxnManager {
     });
 
     const dbPath = BriefcaseManager.createAndGetTxnChangedInstancePath(this._iModel, id);
-    using store = RebaseInstanceStore.createNew(dbPath);
+    using store = RebaseInstanceStore.createNew(dbPath, this._iModel);
     while (reader.step()) {
       store.appendChange(reader);
     }

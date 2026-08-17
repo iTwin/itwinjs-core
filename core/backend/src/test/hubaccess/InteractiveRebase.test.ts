@@ -113,7 +113,7 @@ describe("InteractiveRebase", () => {
 
     await briefcase1.pushChanges({ description: "User1" });
 
-    // Pull changes into briefcase2, which will create a conflict on the element.
+    // Pull changes into briefcase2
     using interactive = await briefcase2.pullChangesInteractive();
     chai.expect(interactive).to.not.be.undefined;
     if (!interactive) return;
@@ -158,11 +158,8 @@ describe("InteractiveRebase", () => {
     chai.expect(updateConflict.id).to.equal(id);
     chai.expect(updateConflict.kind).to.equal("Update");
 
-    // This property is not conflicting, and it is undefined in some cases, but it should
-    // still be present in all three sets of properties.
-    chai.expect(updateConflict.original).has.property("userLabel");
+    // This property is not conflicting, but it should still be present in instances where it has a value.
     chai.expect(updateConflict.ours).has.property("userLabel");
-    chai.expect(updateConflict.theirs).has.property("userLabel");
 
     // Only the properties with actual conflicts should be found in conflictingProperties.
     chai.expect(updateConflict.conflictingProperties.length).to.equal(3);
@@ -171,13 +168,17 @@ describe("InteractiveRebase", () => {
     chai.expect(updateConflict.conflictingProperties).to.include("lastMod");
 
     // All of the reported values should be correct.
-    chai.expect(updateConflict.original["somePoint"]).to.deep.equal({ x: 1.23, y: 4.56 });
-    chai.expect(updateConflict.ours["somePoint"]).to.deep.equal({ x: 3.0, y: 4.0 });
-    chai.expect(updateConflict.theirs["somePoint"]).to.deep.equal({ x: 1.0, y: 2.0 });
+    chai.expect(updateConflict.original.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
+    chai.expect(updateConflict.ours.somePoint).to.deep.equal({ x: 3.0, y: 4.0 });
+    chai.expect(updateConflict.theirs.somePoint).to.deep.equal({ x: 1.0, y: 2.0 });
 
-    chai.expect(updateConflict.original["foo"]).to.equal("Original");
-    chai.expect(updateConflict.ours["foo"]).to.equal("User2");
-    chai.expect(updateConflict.theirs["foo"]).to.equal("User1");
+    chai.expect(updateConflict.original.foo).to.equal("Original");
+    chai.expect(updateConflict.ours.foo).to.equal("User2");
+    chai.expect(updateConflict.theirs.foo).to.equal("User1");
+
+    chai.expect(updateConflict.original.userLabel).to.be.undefined;
+    chai.expect(updateConflict.ours.userLabel).to.equal("Wat");
+    chai.expect(updateConflict.theirs.userLabel).to.be.undefined;
 
     // Initially, "our" values are selected.
     const valuesInitial = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
@@ -254,15 +255,11 @@ describe("InteractiveRebase", () => {
     chai.expect(deleteConflict.updatedProperties).to.include("foo");
     chai.expect(deleteConflict.updatedProperties).to.include("lastMod");
 
-    // UserLabel was not modified, and has no value, but it should still be included.
-    chai.expect(deleteConflict.original).to.have.property("userLabel");
-    chai.expect(deleteConflict.theirs).to.have.property("userLabel");
-
     // The original and their values should both be correctly captured.
-    chai.expect(deleteConflict.original["foo"]).to.equal("Original");
-    chai.expect(deleteConflict.original["somePoint"]).to.deep.equal({ x: 1.23, y: 4.56 });
-    chai.expect(deleteConflict.theirs["foo"]).to.equal("User1");
-    chai.expect(deleteConflict.theirs["somePoint"]).to.deep.equal({ x: 1.0, y: 2.0 });
+    chai.expect(deleteConflict.original.foo).to.equal("Original");
+    chai.expect(deleteConflict.original.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
+    chai.expect(deleteConflict.theirs.foo).to.equal("User1");
+    chai.expect(deleteConflict.theirs.somePoint).to.deep.equal({ x: 1.0, y: 2.0 });
   });
 
   it("can present a conflict where we modify something the upstream deleted", async () => {
@@ -298,9 +295,9 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.updatedProperties).to.include("lastMod");
 
     // The original and their values should both be correctly captured.
-    chai.expect(conflict.original["foo"]).to.equal("Original");
-    chai.expect(conflict.original["somePoint"]).to.deep.equal({ x: 1.23, y: 4.56 });
-    chai.expect(conflict.ours["foo"]).to.equal("User2");
+    chai.expect(conflict.original.foo).to.equal("Original");
+    chai.expect(conflict.original.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
+    chai.expect(conflict.ours.foo).to.equal("User2");
     chai.expect(conflict.ours["somePoint"]).to.deep.equal({ x: 3.0, y: 4.0 });
   });
 

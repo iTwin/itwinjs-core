@@ -5,11 +5,14 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { DbResult, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, OpenMode } from "@itwin/core-bentley";
 import { Base64EncodedString } from "@itwin/core-common";
-import { ChangeInstance, ChangeSource } from "../ChangesetReaderTypes";
+import { ChangeInstance, ChangeMeta, ChangeSource } from "../ChangesetReaderTypes";
+import type { ECSqlRow } from "../Entity";
 import { SQLiteDb } from "../SQLiteDb";
+import type { AnyDb } from "../SqliteChangesetReader";
 import { SqliteStatement } from "../SqliteStatement";
+import { _nativeDb } from "./Symbols";
 
 /** The old (pre-local-change) and new (post-local-change) snapshots of a single EC instance, as
  * captured by [[RebaseInstanceStore]].
@@ -19,6 +22,25 @@ export interface RebaseInstanceChange {
   instanceKey: string;
   old?: ChangeInstance;
   new?: ChangeInstance;
+}
+
+/** Extends {@link ChangeMeta} with the JS-cased property names actually present in the raw changeset
+ * row(s) merged into this snapshot - i.e. the columns our local Txn's Update actually touched, as
+ * opposed to the full row that [[RebaseInstanceStore]]'s `seedBaselineIfNeeded` fills in for merging
+ * convenience. Absent for Insert/Delete, whose raw rows always carry every column already.
+ */
+interface RebaseChangeMeta extends ChangeMeta {
+  changedProperties?: string[];
+}
+
+/** The JS-cased names of the properties that were part of the actual changeset Update captured for
+ * `change` (across however many tables it spans), or `undefined` for an Insert/Delete (whose raw rows
+ * always carry every column already, so there's nothing to narrow down).
+ * @internal
+ */
+export function getChangedProperties(change: RebaseInstanceChange): string[] | undefined {
+  return (change.new?.$meta as RebaseChangeMeta | undefined)?.changedProperties
+    ?? (change.old?.$meta as RebaseChangeMeta | undefined)?.changedProperties;
 }
 
 const tableName = "[InstanceChanges]";
@@ -37,14 +59,20 @@ const tableName = "[InstanceChanges]";
 export class RebaseInstanceStore implements Disposable {
   private readonly _db = new SQLiteDb();
   private readonly _writable: boolean;
+  /** The db that changes are being captured from. Only set (and needed) on stores created via [[createNew]],
+   * to seed an update's instance snapshots with their unchanged properties (see [[merge]]). */
+  private readonly _sourceDb?: AnyDb;
 
-  private constructor(writable: boolean) {
+  private constructor(writable: boolean, sourceDb?: AnyDb) {
     this._writable = writable;
+    this._sourceDb = sourceDb;
   }
 
-  /** Creates a new, empty store at `path`, overwriting any existing file. Used while capturing a Txn's changes. */
-  public static createNew(path: string): RebaseInstanceStore {
-    const store = new RebaseInstanceStore(true);
+  /** Creates a new, empty store at `path`, overwriting any existing file. Used while capturing a Txn's changes.
+   * `db` is the db those changes are being captured from.
+   */
+  public static createNew(path: string, db: AnyDb): RebaseInstanceStore {
+    const store = new RebaseInstanceStore(true, db);
     store._db.createDb(path, undefined, { skipFileCheck: true, rawSQLite: true });
     store._db.executeSQL(`CREATE TABLE ${tableName} ([instanceKey] TEXT PRIMARY KEY, [old] TEXT, [new] TEXT)`);
     return store;
@@ -92,8 +120,8 @@ export class RebaseInstanceStore implements Disposable {
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       yield {
         instanceKey: stmt.getValueString(0),
-        old: stmt.isValueNull(1) ? undefined : JSON.parse(stmt.getValueString(1), Base64EncodedString.reviver) as ChangeInstance,
-        new: stmt.isValueNull(2) ? undefined : JSON.parse(stmt.getValueString(2), Base64EncodedString.reviver) as ChangeInstance,
+        old: stmt.isValueNull(1) ? undefined : JSON.parse(stmt.getValueString(1), RebaseInstanceStore.reviveJson) as ChangeInstance,
+        new: stmt.isValueNull(2) ? undefined : JSON.parse(stmt.getValueString(2), RebaseInstanceStore.reviveJson) as ChangeInstance,
       };
     }
   }
@@ -107,8 +135,38 @@ export class RebaseInstanceStore implements Disposable {
 
   private merge(column: "old" | "new", instance: ChangeInstance): void {
     const key = instance.$meta.instanceKey.toLowerCase();
+    const isUpdate = instance.$meta.op === "Updated";
+    if (isUpdate)
+      this.seedBaselineIfNeeded(instance, key);
+
     const existing = this.readColumn(column, key);
-    this.write(column, key, existing ? RebaseInstanceStore.combine(existing, instance) : instance);
+    const merged = existing ? RebaseInstanceStore.combine(existing, instance) : instance;
+    if (isUpdate) {
+      // `instance`'s own keys are exactly the columns this raw changeset row actually carried, unlike
+      // the baseline-seeded properties that seedBaselineIfNeeded fills the rest of `merged` in with.
+      const priorTouched = (existing?.$meta as RebaseChangeMeta | undefined)?.changedProperties ?? [];
+      const touchedNow = Object.keys(instance).filter((prop) => prop !== "$meta");
+      (merged.$meta as RebaseChangeMeta).changedProperties = [...new Set([...priorTouched, ...touchedNow])];
+    }
+    this.write(column, key, merged);
+  }
+
+  /** Unlike inserts and deletes - which always carry every column - a changeset update only carries the
+   * columns that actually changed. The first time we see a given instance, seed its old *and* new
+   * snapshot with the instance's complete current row, so that merging in just the columns a changeset
+   * update actually carries - from however many tables the instance spans - still leaves a complete
+   * instance once every table's contribution has been merged in. Later tables' merges then only ever
+   * overlay their own changed columns on top, so an already-corrected column is never clobbered by a
+   * stale baseline value from a table that hasn't merged yet.
+   */
+  private seedBaselineIfNeeded(instance: ChangeInstance, key: string): void {
+    if (this.readColumn("old", key) !== undefined || this.readColumn("new", key) !== undefined)
+      return;
+
+    assert(undefined !== this._sourceDb, "appendChange requires a store created via createNew");
+    const baseline = this._sourceDb[_nativeDb].readInstance({ id: instance.id, classFullName: instance.classFullName }, { useJsNames: true }) as ECSqlRow;
+    this.write("old", key, { ...baseline, $meta: { ...instance.$meta, stage: "Old", tables: [], changeIndexes: [], changeFetchedPropNames: [] } });
+    this.write("new", key, { ...baseline, $meta: { ...instance.$meta, stage: "New", tables: [], changeIndexes: [], changeFetchedPropNames: [] } });
   }
 
   private readColumn(column: "old" | "new", key: string): ChangeInstance | undefined {
@@ -117,18 +175,14 @@ export class RebaseInstanceStore implements Disposable {
       (stmt: SqliteStatement) => {
         stmt.bindString(1, key);
         if (stmt.step() === DbResult.BE_SQLITE_ROW && !stmt.isValueNull(0))
-          return JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ChangeInstance;
+          return JSON.parse(stmt.getValueString(0), RebaseInstanceStore.reviveJson) as ChangeInstance;
         return undefined;
       },
     );
   }
 
   private write(column: "old" | "new", key: string, instance: ChangeInstance): void {
-    const json = JSON.stringify(instance, (name: string, value: any) => {
-      // The native layer unhelpfully represents nulls as `undefined`. So turn them back into nulls for the JSON.
-      if (value === undefined) return null;
-      else return Base64EncodedString.replacer(name, value);
-    });
+    const json = JSON.stringify(instance, RebaseInstanceStore.replaceJson);
     this._db.withPreparedSqliteStatement(
       `INSERT INTO ${tableName} ([instanceKey], [${column}]) VALUES (?, ?) ON CONFLICT ([instanceKey]) DO UPDATE SET [${column}] = [excluded].[${column}]`,
       (stmt: SqliteStatement) => {
@@ -150,5 +204,17 @@ export class RebaseInstanceStore implements Disposable {
     lhs.$meta.changeIndexes = [...lhs.$meta.changeIndexes, ...rhs.$meta.changeIndexes];
     lhs.$meta.changeFetchedPropNames = [...new Set([...lhs.$meta.changeFetchedPropNames, ...rhs.$meta.changeFetchedPropNames])];
     return lhs;
+  }
+
+  private static replaceJson(name: string, value: any) {
+    // The native layer unhelpfully represents nulls as `undefined`. So turn them back into nulls for the JSON.
+    //if (value === undefined) return null;
+    return Base64EncodedString.replacer(name, value);
+  }
+
+  private static reviveJson(name: string, value: any) {
+    // Turn nulls back into undefineds to match the native layer.
+    //if (value === null) return undefined;
+    return Base64EncodedString.reviver(name, value);
   }
 }

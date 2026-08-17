@@ -6,14 +6,15 @@
  * @module iModels
  */
 
-import { BriefcaseDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { EditTxn } from "./EditTxn";
 import { assert, DbConflictResolution, DbResult, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
 import { IModelError, TxnProps } from "@itwin/core-common";
 import { _nativeDb } from "./internal/Symbols";
 import { RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
+import { getChangedProperties, RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
+import { Element } from "./Element";
 
 /** Errors originating from the server-based implementation of the [LockControl]($backend) interface.
  * @beta
@@ -322,6 +323,13 @@ export class InteractiveRebase {
   }
 
   /**
+   * Gets the iModel being rebased.
+   */
+  public get iModel(): IModelDb {
+    return this._db;
+  }
+
+  /**
    * Gets the local Txns that are being rebased.
    */
   public get txns(): ReadonlyArray<Readonly<TxnProps>> {
@@ -512,7 +520,7 @@ export class InteractiveRebase {
       const { $meta: _newMeta, ...newProps } = change.new;
       if (change.old) {
         const { $meta: _oldMeta, ...oldProps } = change.old;
-        this.applyInteractiveUpdate(oldProps, newProps);
+        this.applyInteractiveUpdate(oldProps, newProps, getChangedProperties(change));
       } else {
         this.applyInteractiveInsert(newProps);
       }
@@ -522,10 +530,17 @@ export class InteractiveRebase {
     }
   }
 
-  private applyInteractiveUpdate(oldProps: RebaseConflictProperties, newProps: RebaseConflictProperties): void {
+  private applyInteractiveUpdate(oldProps: RebaseConflictProperties, newProps: RebaseConflictProperties, changedProperties: string[] | undefined): void {
     const nativeDb = this._db[_nativeDb];
-    const result = this.applyOrRecordConstraintConflict(newProps, false, () =>
-      nativeDb.updateInstance(newProps, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { updated: boolean, conflictingProperties: string[] });
+    const expectedOldValues = pickProperties(withoutIdentityProperties(oldProps), changedProperties);
+    // Native always applies `updateInstance` incrementally (properties omitted from the write are left
+    // as-is), so restricting the write to just the touched properties avoids clobbering any upstream
+    // change to a property our local change never touched.
+    const propsToWrite = changedProperties === undefined
+      ? newProps
+      : { id: newProps.id, classFullName: newProps.classFullName, ...pickProperties(newProps, changedProperties) };
+    const result = this.applyOrRecordConstraintConflict(propsToWrite, false, () =>
+      nativeDb.updateInstance(propsToWrite, { useJsNames: true, expectedOldValues }) as { updated: boolean, conflictingProperties: string[] });
     if (result === undefined) {
       // A constraint conflict occurred and was already recorded.
       return;
@@ -534,9 +549,12 @@ export class InteractiveRebase {
       return;
     }
 
-    if (result.conflictingProperties.length === 0) {
+    // Native reports `conflictingProperties` populated with every checked property when the row itself no
+    // longer exists, so existence (not `conflictingProperties.length`) is what distinguishes the two cases.
+    const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
+    if (theirs === undefined) {
       // The incoming changes deleted the instance that our local change updated. Their delete stands.
-      TheirDeleteOurUpdateRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, newProps);
+      TheirDeleteOurUpdateRebaseConflictImpl.handleInteractive(this, this._conflicts, oldProps, newProps, result.conflictingProperties);
       return;
     }
 
@@ -544,9 +562,8 @@ export class InteractiveRebase {
     // longer matches our captured baseline, meaning the incoming changes also modified it. Accept "ours"
     // by default (matching the native changeset-conflict model), but report the conflict so the caller
     // may later accept "theirs".
-    const theirs = this.readCurrentInstance(oldProps.id, oldProps.classFullName);
-    UpdateRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, theirs, newProps, result.conflictingProperties);
-    this.applyOrRecordConstraintConflict(newProps, false, () => nativeDb.updateInstance(newProps, { useJsNames: true }));
+    UpdateRebaseConflictImpl.handleInteractive(this, this._conflicts, oldProps, theirs, newProps, result.conflictingProperties);
+    this.applyOrRecordConstraintConflict(propsToWrite, false, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
   }
 
   private applyInteractiveDelete(oldProps: RebaseConflictProperties): void {
@@ -554,17 +571,23 @@ export class InteractiveRebase {
     const key = { id: oldProps.id, classFullName: oldProps.classFullName };
     const result = this.applyOrRecordConstraintConflict(oldProps, false, () =>
       nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { deleted: boolean, conflictingProperties: string[] });
-    if (result === undefined || result.deleted || result.conflictingProperties.length === 0) {
-      // Either a constraint conflict was already recorded, we deleted it, or the incoming changes
-      // already deleted it - nothing more to do.
+    if (result === undefined || result.deleted) {
+      // Either a constraint conflict was already recorded, or we deleted it - nothing more to do.
+      return;
+    }
+
+    // Native reports `conflictingProperties` populated with every checked property when the row itself no
+    // longer exists, so existence (not `conflictingProperties.length`) is what distinguishes the two cases.
+    const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
+    if (theirs === undefined) {
+      // The incoming changes already deleted it - nothing more to do.
       return;
     }
 
     // The row still exists but no longer matches our captured baseline (result.conflictingProperties),
     // meaning the incoming changes modified it. Report the conflict, but proceed with the delete (matching
     // the native changeset-conflict model for a Deleted opcode with a "Data" conflict cause).
-    const theirs = this.readCurrentInstance(oldProps.id, oldProps.classFullName);
-    TheirUpdateOurDeleteRebaseConflictImpl.handleInteractive(this._conflicts, oldProps, theirs, result.conflictingProperties);
+    TheirUpdateOurDeleteRebaseConflictImpl.handleInteractive(this, this._conflicts, oldProps, theirs, result.conflictingProperties);
     nativeDb.deleteInstance(key, { useJsNames: true });
   }
 
@@ -616,7 +639,7 @@ export class InteractiveRebase {
   }
 
   private readCurrentInstance(id: Id64String, classFullName: string): RebaseConflictProperties {
-    return this._db[_nativeDb].readInstance({ id, classFullName }, { useJsNames: true, includeNulls: true }) as RebaseConflictProperties;
+    return this._db[_nativeDb].readInstance({ id, classFullName }, { useJsNames: true }) as RebaseConflictProperties;
   }
 
   private tryReadCurrentInstance(id: Id64String, classFullName: string): RebaseConflictProperties | undefined {
@@ -769,6 +792,22 @@ function withoutIdentityProperties(props: RebaseConflictProperties): RebaseConfl
   return rest;
 }
 
+/** Restricts `props` down to just `keys` (a plain key filter - no value comparison), or returns `props`
+ * unchanged when `keys` is `undefined` (nothing to narrow down, e.g. an Insert/Delete's raw changeset
+ * row already carries every column).
+ */
+function pickProperties(props: RebaseConflictProperties, keys: string[] | undefined): RebaseConflictProperties {
+  if (keys === undefined)
+    return props;
+
+  const result: RebaseConflictProperties = {};
+  for (const key of keys) {
+    if (key in props)
+      result[key] = props[key];
+  }
+  return result;
+}
+
 class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   public readonly kind: "Update" = "Update";
 
@@ -790,6 +829,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
     }
 
     instanceConflict.conflictingProperties.push(...ecConflict.dataConflictProperties);
+
     Object.assign(instanceConflict.original, ecConflict.original);
     Object.assign(instanceConflict.theirs, ecConflict.theirs);
     Object.assign(instanceConflict.ours, ecConflict.ours);
@@ -804,7 +844,7 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
    * `handle`'s `DbConflictResolution.Replace`. `conflictingProperties` is the native-reported list of
    * `original`'s properties whose current db value no longer matches (see `InstanceWriter::Update`).
    */
-  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
+  public static handleInteractive(interactive: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
     const instanceId = original.id;
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "Update") as UpdateRebaseConflict | undefined;
@@ -814,9 +854,21 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
     }
 
     instanceConflict.conflictingProperties.push(...conflictingProperties);
-    Object.assign(instanceConflict.original, original);
-    Object.assign(instanceConflict.theirs, theirs);
-    Object.assign(instanceConflict.ours, ours);
+
+    const classDef = interactive.iModel.getJsClass<typeof Element>(original.classFullName);
+
+    instanceConflict.original = classDef.deserialize({
+      row: original,
+      iModel: interactive.iModel
+    });
+    instanceConflict.theirs = classDef.deserialize({
+      row: theirs,
+      iModel: interactive.iModel
+    });
+    instanceConflict.ours = classDef.deserialize({
+      row: ours,
+      iModel: interactive.iModel
+    });
   }
 
   public constructor(id: Id64String, classFullName: string) {
@@ -885,7 +937,7 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
    * instead of the native changeset-conflict callback. `updatedProperties` is the native-reported list
    * of `original`'s properties whose current db value no longer matches (see `InstanceWriter::Delete`).
    */
-  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
+  public static handleInteractive(interactive: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
     const instanceId = original.id;
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
@@ -895,8 +947,17 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
     }
 
     instanceConflict.updatedProperties.push(...updatedProperties);
-    Object.assign(instanceConflict.original, original);
-    Object.assign(instanceConflict.theirs, theirs);
+
+    const classDef = interactive.iModel.getJsClass<typeof Element>(original.classFullName);
+
+    instanceConflict.original = classDef.deserialize({
+      row: original,
+      iModel: interactive.iModel
+    });
+    instanceConflict.theirs = classDef.deserialize({
+      row: theirs,
+      iModel: interactive.iModel
+    });
   }
 
   public constructor(id: Id64String, classFullName: string) {
@@ -934,7 +995,7 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
   /** JS-driven equivalent of [[handle]], used for "Data" txns reinstated via [[RebaseInstanceStore]]
    * instead of the native changeset-conflict callback.
    */
-  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties, ours: RebaseConflictProperties): void {
+  public static handleInteractive(interactive: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
     const instanceId = original.id;
 
     let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "TheirDeleteOurUpdate") as TheirDeleteOurUpdateRebaseConflict | undefined;
@@ -943,9 +1004,18 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
       conflicts.push(instanceConflict);
     }
 
-    instanceConflict.updatedProperties.push(...computeChangedProperties(original, ours));
-    Object.assign(instanceConflict.original, original);
-    Object.assign(instanceConflict.ours, ours);
+    instanceConflict.updatedProperties.push(...conflictingProperties);
+
+    const classDef = interactive.iModel.getJsClass<typeof Element>(original.classFullName);
+
+    instanceConflict.original = classDef.deserialize({
+      row: original,
+      iModel: interactive.iModel
+    });
+    instanceConflict.ours = classDef.deserialize({
+      row: ours,
+      iModel: interactive.iModel
+    });
   }
 
   public constructor(id: Id64String, classFullName: string) {
