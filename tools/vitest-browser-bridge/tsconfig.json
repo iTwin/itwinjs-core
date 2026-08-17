@@ -1,0 +1,16 @@
+{
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "./lib/cjs",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "rootDir": "./src"
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/test/**/*",
+    "src/electron-provider-esm.ts"
+  ]
+}
