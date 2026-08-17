@@ -287,22 +287,24 @@ async function testWindowStateSavedOnResize() {
   const window = ElectronHost.mainWindow;
   assert(window);
 
-  // Simulate a maximized window whose maximize event was not delivered by Electron.
-  const originalIsMaximized = window.isMaximized.bind(window);
-  window.isMaximized = () => true;
-  try {
-    NativeHost.settingsStore.setData(`windowMaximized-${storeWindowName}`, false);
-    window.emit("resize");
+  // Stand in for a "maximize"/"unmaximize" event that the platform never delivered, leaving the saved
+  // flag out of sync. A resize must reconcile it, no matter which event was lost.
+  const actual = window.isMaximized();
+  NativeHost.settingsStore.setData(`windowMaximized-${storeWindowName}`, !actual);
 
-    let isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
-    for (let i = 0; i < 20 && isMaximized !== true; ++i) {
-      await BeDuration.wait(50);
-      isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
-    }
-    assert(isMaximized === true);
-  } finally {
-    window.isMaximized = originalIsMaximized;
-  }
+  window.setSize(300, 301);
+  assert(await waitUntil(() => ElectronHost.getWindowMaximizedSetting(storeWindowName) === actual));
+}
+
+/**
+ * Polls `condition` until it holds, for up to ~1.25 seconds.
+ * @note `ElectronHost` persists window state from a debounced handler, so the settings file lags the window.
+ */
+async function waitUntil(condition: () => boolean): Promise<boolean> {
+  for (let i = 0; i < 25 && !condition(); ++i)
+    await BeDuration.wait(50);
+
+  return condition();
 }
 
 function assertElectronHostNotInitialized() {
