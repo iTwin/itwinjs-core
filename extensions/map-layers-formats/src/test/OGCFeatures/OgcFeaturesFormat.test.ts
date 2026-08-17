@@ -42,8 +42,8 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
   const getAuthorization = (init?: RequestInit): string | null =>
     init?.headers instanceof Headers ? init.headers.get("Authorization") : null;
 
-  const createSource = () => {
-    const source = MapLayerSource.fromJSON({ name: "test", url: sourceUrl, formatId: OgcApiFeaturesMapLayerFormat.formatId });
+  const createSource = (url = sourceUrl) => {
+    const source = MapLayerSource.fromJSON({ name: "test", url, formatId: OgcApiFeaturesMapLayerFormat.formatId });
     expect(source).to.not.be.undefined;
     source!.userName = "user1";
     source!.password = "pass1";
@@ -58,6 +58,43 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
   afterEach(() => {
     sandbox.restore();
+  });
+
+  it("reports InvalidCredentials when the landing request is challenged before returning JSON", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    stubFetch({}, { [sourceUrl]: 401 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(fetchCalls.length).to.equals(1);
+    expect(getAuthorization(fetchCalls[0].init)).to.not.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidCredentials);
+  });
+
+  it("reports UntrustedOrigin when the landing request is redirected and rejected by an untrusted origin", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    stubFetch(
+      {},
+      { [sourceUrl]: 403 },
+      { [sourceUrl]: "https://evil.example.net/landing" },
+    );
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(getAuthorization(fetchCalls[0].init)).to.not.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.UntrustedOrigin);
+  });
+
+  it("withholds credentials from an opaque landing URL and reports UntrustedOrigin when challenged", async () => {
+    registry.restrictCredentialsToTrustedOrigins = true;
+    const opaqueSourceUrl = "myapp://maps/landing";
+    stubFetch({}, { [opaqueSourceUrl]: 401 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource(opaqueSourceUrl) });
+
+    expect(fetchCalls.length).to.equals(1);
+    expect(getAuthorization(fetchCalls[0].init)).to.be.null;
+    expect(validation.status).to.equals(MapLayerSourceStatus.UntrustedOrigin);
   });
 
   it("withholds basic-auth credentials from a cross-origin advertised collections link when restriction is enabled", async () => {

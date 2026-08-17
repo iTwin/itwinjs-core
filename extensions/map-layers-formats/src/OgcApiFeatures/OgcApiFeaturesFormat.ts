@@ -28,9 +28,33 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         headers,
       };
 
+      // Classify HTTP failures before parsing JSON, using the final response URL to enforce origin trust after redirects.
+      const classifyResponseFailure = (httpResponse: Response, requestedUrl: string): MapLayerSourceValidation | undefined => {
+        if (httpResponse.ok)
+          return undefined;
+
+        if (httpResponse.status === 401 || httpResponse.status === 403) {
+          const challengedUrl = httpResponse.url || requestedUrl;
+          if (!IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(challengedUrl, source.url))
+            return { status: MapLayerSourceStatus.UntrustedOrigin };
+
+          return { status: (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth };
+        }
+
+        return { status: MapLayerSourceStatus.InvalidUrl };
+      };
+
       let url = appendQueryParams(source.url, source.savedQueryParams);
       url = appendQueryParams(url, source.unsavedQueryParams);
-      let response = await fetch(url, opts);
+      const allowLandingCredentials = IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(url, source.url);
+      if (headers && allowLandingCredentials)
+        IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url, source.url);
+
+      let response = await fetch(url, allowLandingCredentials ? opts : { method: "GET" });
+      const landingFailure = classifyResponseFailure(response, url);
+      if (landingFailure)
+        return landingFailure;
+
       let json = await response.json();
       if (!json) {
         return { status };
@@ -91,19 +115,9 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
           IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(collectionsUrl, source.url);
 
         response = await fetch(collectionsUrl, allowCreds ? opts : { method: "GET" });
-        if (!response.ok) {
-          // Some servers reject unauthenticated requests with 403 (Forbidden) instead of a 401 challenge.
-          if (response.status === 401 || response.status === 403) {
-            // fetch follows redirects transparently, so the rejection may come from a different origin than
-            // the one classified above, and the Authorization header is stripped across a cross-origin
-            // redirect. Recompute the permission for the URL that actually rejected us.
-            const challengedUrl = response.url || collectionsUrl;
-            if (!IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(challengedUrl, source.url))
-              return { status: MapLayerSourceStatus.UntrustedOrigin };
-            return { status: (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth };
-          }
-          return { status: MapLayerSourceStatus.InvalidUrl };
-        }
+        const collectionsFailure = classifyResponseFailure(response, collectionsUrl);
+        if (collectionsFailure)
+          return collectionsFailure;
 
         json = await response.json();
         if (Array.isArray(json.collections)) {
