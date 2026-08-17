@@ -151,6 +151,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 
 /tools                                            @aruniverse @wgoehrig
 /tools/ecschema2ts                                @naveedkhan8067
+/tools/vitest-browser-bridge                      @hl662 @aruniverse @wgoehrig
 
 # These are at the end to override all previous reviews
 
