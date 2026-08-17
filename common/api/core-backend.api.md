@@ -64,6 +64,7 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
+import { DefinitionSetProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
 import { DisplayStyle3dSettings } from '@itwin/core-common';
 import { DisplayStyle3dSettingsProps } from '@itwin/core-common';
@@ -128,6 +129,7 @@ import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryParams } from '@itwin/core-common';
 import { GeometryPartProps } from '@itwin/core-common';
 import { GeometryStreamProps } from '@itwin/core-common';
+import { GetSchemaViewArgs } from '@itwin/ecschema-metadata';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -2069,8 +2071,19 @@ export class DefinitionPartition extends InformationPartitionElement {
 
 // @public @preview
 export abstract class DefinitionSet extends DefinitionElement {
+    protected constructor(props: DefinitionSetProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): DefinitionSetProps;
+    // @beta
+    rank?: Rank;
+    // @beta
+    static serialize(props: DefinitionSetProps, iModel: IModelDb): ECSqlRow;
+    // (undocumented)
+    toJSON(): DefinitionSetProps;
 }
 
 // @beta
@@ -2726,6 +2739,7 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
 // @beta
 export interface EditableWorkspaceDb extends WorkspaceDb {
     addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    // @deprecated
     addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
     addString(rscName: WorkspaceResourceName, val: string): void;
     get cloudProps(): WorkspaceDbCloudProps | undefined;
@@ -2734,9 +2748,11 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
     // @internal
     getBlobWriter(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
     removeBlob(rscName: WorkspaceResourceName): void;
+    // @deprecated
     removeFile(rscName: WorkspaceResourceName): void;
     removeString(rscName: WorkspaceResourceName): void;
     updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    // @deprecated
     updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
     updateManifest(manifest: WorkspaceDbManifest): void;
     updateSettingsResource(settings: SettingsContainer, rscName?: string): void;
@@ -4093,7 +4109,7 @@ export abstract class IModelDb extends IModel {
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
-    // @internal
+    // @beta
     getIndirectTxn(): EditTxn;
     // @internal
     getInstanceArgs(instanceId?: Id64String, baseClassName?: string, federationGuid?: GuidString, code?: CodeProps): IModelJsNative.ResolveInstanceKeyArgs;
@@ -4104,7 +4120,7 @@ export abstract class IModelDb extends IModel {
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
     // @beta
-    getSchemaView(): Promise<SchemaView>;
+    getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView>;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
@@ -4266,6 +4282,8 @@ export namespace IModelDb {
         insertAspect(aspectProps: ElementAspectProps): Id64String;
         // @deprecated
         insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
+        // @beta
+        queryAspects(options: QueryAspectOptions): AsyncIterableIterator<ElementAspect>;
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
@@ -4335,6 +4353,8 @@ export namespace IModelDb {
     // @preview
     export class Views {
         // @internal
+        [_close](): void;
+        // @internal
         constructor(_iModel: IModelDb);
         // @beta (undocumented)
         accessViewStore(args: {
@@ -4353,7 +4373,7 @@ export namespace IModelDb {
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
         // @deprecated
         setDefaultViewId(viewId: Id64String): void;
-        // @beta (undocumented)
+        // @beta
         get viewStore(): ViewStore.CloudAccess;
         set viewStore(viewStore: ViewStore.CloudAccess);
     }
@@ -5902,6 +5922,15 @@ export interface PushChangesArgs extends TokenArg {
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
     retainLocks?: true;
+}
+
+// @beta
+export interface QueryAspectOptions {
+    aspectClassFullName?: string;
+    elementIds: Id64Arg;
+    excludedAspectClassFullNames?: ReadonlySet<string>;
+    groupByOwner?: boolean;
+    usePrimaryConn?: boolean;
 }
 
 // @beta
@@ -7796,7 +7825,6 @@ export class V2CheckpointManager {
         dbName: string;
         container: CloudSqlite.CloudContainer | undefined;
     }>;
-    // (undocumented)
     static cleanup(): void;
     // (undocumented)
     static readonly cloudCacheName = "Checkpoints";
@@ -8508,6 +8536,7 @@ export interface WorkspaceDb {
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     // @internal
     getBlobReader(rscName: WorkspaceResourceName): SQLiteDb.BlobIO;
+    // @deprecated
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResourceName): string | undefined;
     readonly isOpen: boolean;

@@ -78,6 +78,8 @@ internal;function;compareRange1dLexicalLowHigh
 internal;class;Complex
 public;class;Cone
 public;class;ConsolidateAdjacentCurvePrimitivesOptions
+deprecated;class;ConsolidateAdjacentCurvePrimitivesOptions
+public;interface;ConsolidateAdjacentPrimitivesOptions
 public;class;Constant
 alpha;class;ConstrainedCurve2d
 public;class;ConstructCurveBetweenCurves

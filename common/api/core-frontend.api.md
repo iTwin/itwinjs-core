@@ -135,6 +135,7 @@ import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GeometrySummaryRequestProps } from '@itwin/core-common';
+import { GetSchemaViewArgs } from '@itwin/ecschema-metadata';
 import { GlobeMode } from '@itwin/core-common';
 import { Gradient } from '@itwin/core-common';
 import { GraphicParams } from '@itwin/core-common';
@@ -2398,7 +2399,7 @@ export class CurrentInputState {
     // (undocumented)
     get isShiftDown(): boolean;
     // (undocumented)
-    isStartDrag(button: BeButton): boolean;
+    isStartDrag(button: BeButton, motionEventTime?: number): boolean;
     // (undocumented)
     lastButton: BeButton;
     // (undocumented)
@@ -2410,7 +2411,7 @@ export class CurrentInputState {
     // (undocumented)
     lastWheelEvent?: BeWheelEvent;
     // (undocumented)
-    onButtonDown(button: BeButton): void;
+    onButtonDown(button: BeButton, eventTime?: number): void;
     // (undocumented)
     onButtonUp(button: BeButton): void;
     // (undocumented)
@@ -5209,7 +5210,7 @@ export abstract class IModelConnection extends IModel {
     // @deprecated
     getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
     // @beta
-    getSchemaView(): Promise<SchemaView>;
+    getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
     // @internal
@@ -9650,6 +9651,8 @@ export class ScreenViewport extends Viewport {
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
     // @internal (undocumented)
     mousePosFromEvent(ev: MouseEvent): XAndY;
+    // @internal (undocumented)
+    protected onSceneVisibilityChanged(): void;
     // @internal
     onViewManagerAdd(): void;
     // @internal
@@ -11977,6 +11980,8 @@ export class ToolAdmin {
     gridLock: boolean;
     get idleTool(): InteractiveTool;
     set idleTool(idleTool: InteractiveTool);
+    protected isCtrlKeyShortcut(keyEvent: KeyboardEvent): boolean;
+    protected isFocusValidForShortcuts(): boolean;
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
@@ -12033,6 +12038,7 @@ export class ToolAdmin {
     setPrimitiveTool(newTool?: PrimitiveTool): Promise<void>;
     // @internal (undocumented)
     setViewTool(newTool?: ViewTool): Promise<void>;
+    protected shouldPreventCtrlDefault(keyEvent: KeyboardEvent): boolean;
     simulateMotionEvent(): void;
     startDefaultTool(): Promise<void>;
     // @internal (undocumented)
@@ -13239,6 +13245,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     protected updateRenderToScreen(): void;
     // @internal (undocumented)
     validateViewportScenes(): void;
+    // @internal (undocumented)
+    waitForSelectedViewportChange(): Promise<void>;
     // (undocumented)
     get walkCursor(): string;
     // (undocumented)
@@ -13568,6 +13576,8 @@ export abstract class Viewport implements Disposable, TileUser {
     readonly onResized: BeEvent<(vp: Viewport) => void>;
     // @beta
     readonly onSceneInvalidated: BeEvent<(vp: Viewport) => void>;
+    // @internal
+    protected onSceneVisibilityChanged(): void;
     readonly onViewChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onViewedCategoriesPerModelChanged: BeEvent<(vp: Viewport) => void>;

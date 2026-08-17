@@ -15,7 +15,7 @@ import {
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
   FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
@@ -71,7 +71,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, SchemaContext, SchemaJsonLocater, SchemaView } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -169,6 +169,23 @@ export interface ChangeElementModelProps {
   id: Id64String;
   /** The Id of the target model. The element becomes a root element (no parent) in this model. */
   modelId: Id64String;
+}
+
+/** Options for streaming the aspects owned by a set of elements.
+ * @see [[IModelDb.Elements.queryAspects]]
+ * @beta
+ */
+export interface QueryAspectOptions {
+  /** The elements whose aspects to return. Duplicate Ids are ignored. */
+  elementIds: Id64Arg;
+  /** Return only instances of this aspect class or its subclasses. */
+  aspectClassFullName?: string;
+  /** Omit instances of these exact aspect classes. Subclasses are not automatically omitted. */
+  excludedAspectClassFullNames?: ReadonlySet<string>;
+  /** If true, order the results so that aspects owned by the same element are contiguous. */
+  groupByOwner?: boolean;
+  /** If true, run the query on the primary connection so that uncommitted changes in an edit transaction are visible. */
+  usePrimaryConn?: boolean;
 }
 
 /** Options supplied to [[IModelDb.clearCaches]].
@@ -475,7 +492,9 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  private _schemasPromise?: Promise<SchemaView>;
+  // Created lazily on the first getSchemaView call. Owns the SchemaView's lifetime and does all its
+  // data access through the SchemaViewDataProvider implemented below.
+  private _schemaViewManager?: SchemaViewManager;
   /** @deprecated in 5.0.0 - might be removed in next major version. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -500,12 +519,16 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public [_activeTxn]: EditTxn | undefined;
 
-  /** Returns the active [[EditTxn]] if one is current, otherwise the implicit transaction.
-   * Use this inside element and relationship callbacks that may be invoked either during an explicit transaction or
-   * during indirect change processing.
-   * @note This method is a temporary workaround until [[OnElementArg]] (and related callback arg types) are updated
-   * to carry the transaction directly in a future PR.
-   * @internal
+  /** Returns the transaction to use for additional edits from an element, model, or aspect callback.
+   * In callbacks whose arguments provide an [[IModelDb]] but no transaction, obtain this transaction through
+   * `arg.iModel.getIndirectTxn()` and pass it to APIs that accept an [[EditTxn]].
+   *
+   * If an explicit transaction is active, this returns that transaction. Otherwise, it returns the implicit transaction
+   * used by legacy write paths. Callbacks that receive an `indirectEditTxn` argument should use that transaction directly.
+   *
+   * @note The operation that invoked the callback owns the transaction. Callback implementations must not invoke transaction
+   * lifecycle methods such as [[EditTxn.start]], [[EditTxn.end]], [[EditTxn.saveChanges]], [[EditTxn.abandonChanges]], or [[EditTxn.onClose]].
+   * @beta
    */
   public getIndirectTxn(): EditTxn {
     return this[_activeTxn] ?? this[_implicitTxn];
@@ -700,6 +723,7 @@ export abstract class IModelDb extends IModel {
 
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
+    this.views[_close]();
     this.locks[_close]();
     this._locks = undefined;
     this._codeService?.close();
@@ -1186,11 +1210,7 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
-      if (this._schemasPromise) {
-        const old = this._schemasPromise;
-        this._schemasPromise = undefined;
-        old.then((view) => view.markOutdated()).catch(() => { });
-      }
+      this._schemaViewManager?.reset();
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1758,54 +1778,78 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Get the schema view for this iModel. The view is built lazily on
-   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
-   * the ConcurrentQuery thread pool. Subsequent calls return the cached view. Multiple
-   * concurrent callers share a single in-flight build.
+   * first call by fetching compact binary schema data through
+   * the ConcurrentQuery thread pool.
    *
    * The returned `SchemaView` is a lightweight, read-only, synchronous API for
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
    * It is the recommended default for runtime read-only metadata access and is significantly
    * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
    * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
+   *
+   * Every call shares one accumulating view instance and concurrent calls are serialized, so a
+   * caller never observes a partially loaded view. The instance is discarded by [[clearCaches]],
+   * for example after a schema import; the next call builds a new one. See
+   * [GetSchemaViewArgs]($ecschema-metadata) for the arguments.
    * @beta
    */
-  public async getSchemaView(): Promise<SchemaView> {
-    if (this._schemasPromise) {
-      const ctx = await this._schemasPromise;
-      if (!ctx.isOutdated)
-        return ctx;
-    }
-    // Capture the in-flight promise locally so the rejection handler only clears
-    // `_schemasPromise` if it still points at this build. A concurrent invalidation +
-    // re-fetch could otherwise replace the field before our hydrate fails, and a naive
-    // `_schemasPromise = undefined` would clobber that newer reference.
-    const inflight = this._hydrateSchemas();
-    this._schemasPromise = inflight;
-    inflight.catch(() => {
-      if (this._schemasPromise === inflight)
-        this._schemasPromise = undefined;
-    });
-    return inflight;
+  public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
+    this._schemaViewManager ??= new SchemaViewManager(this._createSchemaViewDataProvider());
+    return this._schemaViewManager.getSchemaView(args);
   }
 
-  private async _hydrateSchemas(): Promise<SchemaView> {
-    // PRAGMA returns exactly one row with format, formatVersion, data (binary), schemaToken.
-    // Important: only call reader.next() once - do NOT use `for await` on PRAGMA results.
-    // ConcurrentQuery wraps regular ECSQL in LIMIT/OFFSET for pagination but skips this for
-    // PRAGMAs. If the serialized result exceeds the memory threshold, the response is marked
-    // "Partial", and a `for await` loop would re-issue the same PRAGMA forever since PRAGMAs
-    // don't support OFFSET-based pagination.
-    // This implementation uses the non-pinned version of the pragma other than frontend - because backend
-    // is always strictly coupled with the native code.
-    const reader = this.createQueryReader("PRAGMA schema_view");
+  /** The [SchemaViewDataProvider]($ecschema-metadata) backing this iModel's [[getSchemaView]]: the
+   * transport-specific half of schema-view loading. The backend always uses the latest blob version
+   * since it is strictly coupled with native code.
+   */
+  private _createSchemaViewDataProvider(): SchemaViewDataProvider {
+    return {
+      fetchFullBlob: async () => this._fetchSchemaBlob("PRAGMA schema_view"),
+      // Names are ECNames, so a comma can never occur in one. Native re-validates each token as an
+      // ECName and fails the pragma on an unknown name.
+      fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${schemaNames.join(",")}')`),
+      fetchManifest: async () => {
+        const schemaRows: SchemaManifestSchemaRow[] = [];
+        const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
+        for await (const row of this.createQueryReader(schemaSql)) {
+          // ECInstanceId arrives as a hex Id64String. `ec_` metadata rowids carry no briefcase
+          // prefix, so the local id is the full value.
+          schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
+        }
+
+        const referenceRows: SchemaManifestReferenceRow[] = [];
+        const referenceSql = "SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences";
+        for await (const row of this.createQueryReader(referenceSql))
+          referenceRows.push({ sourceECInstanceId: Id64.getLocalId(row[0]), targetECInstanceId: Id64.getLocalId(row[1]) });
+
+        return SchemaManifest.fromRows(schemaRows, referenceRows);
+      },
+      fetchSchemaToken: async () => {
+        const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
+        const result = await reader.next();
+        if (result.done)
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned no rows");
+        return result.value.sha3_256 as string;
+      },
+    };
+  }
+
+  /** Fetch one schema-view blob (full or fragment). Both `PRAGMA schema_view` and
+   * `PRAGMA schema_view_fragment` return a single row with the same columns. */
+  private async _fetchSchemaBlob(pragma: string): Promise<SchemaViewBlob> {
+    // Only call reader.next() once - do NOT use `for await` on PRAGMA results. ConcurrentQuery wraps
+    // regular ECSQL in LIMIT/OFFSET for pagination but skips this for PRAGMAs; if the serialized result
+    // exceeds the memory threshold the response is marked "Partial", and a `for await` loop would
+    // re-issue the same PRAGMA forever since PRAGMAs don't support OFFSET-based pagination.
+    const reader = this.createQueryReader(pragma);
     const result = await reader.next();
     if (result.done)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned no rows");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned no rows`);
     const data = result.value.data as Uint8Array | undefined;
     const token = result.value.schemaToken as string | undefined;
     if (data === undefined || data === null)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA schema_view returned null data column");
-    return SchemaView.fromBinary(data, token ?? "");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned null data column`);
+    return { data, schemaToken: token ?? "" };
   }
 
   /** Get the linkTableRelationships for this IModel */
@@ -2674,7 +2718,7 @@ export namespace IModelDb {
      * @param props The data for the new model.
      * @returns The newly inserted model's Id.
      * @throws [[IModelError]] if insertion fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.insertModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.insertModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertModel(props: ModelProps): Id64String {
       return this._iModel[_implicitTxn].insertModel(props);
@@ -2683,7 +2727,7 @@ export namespace IModelDb {
     /** Update an existing model.
      * @param props the properties of the model to change
      * @throws [[IModelError]] if update fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateModel(props: UpdateModelOptions): void {
       this._iModel[_implicitTxn].updateModel(props);
@@ -2695,7 +2739,7 @@ export namespace IModelDb {
      * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($core-bentley) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws [[IModelError]] if the update fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateGeometryGuid instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateGeometryGuid instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
@@ -2705,7 +2749,7 @@ export namespace IModelDb {
     /** Delete one or more existing models.
      * @param ids The Ids of the models to be deleted
      * @throws [[IModelError]] if deletion fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteModel(ids: Id64Arg): void {
       this._iModel[_implicitTxn].deleteModel(ids);
@@ -2947,7 +2991,7 @@ export namespace IModelDb {
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
      * if you intend to continue working with it. That will ensure its values reflect the persistent state.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.insertElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.insertElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       return this._iModel[_implicitTxn].insertElement(elProps, options);
@@ -2963,7 +3007,7 @@ export namespace IModelDb {
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
      * @throws [[ITwinError]] if update fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       this._iModel[_implicitTxn].updateElement(elProps);
@@ -2973,7 +3017,7 @@ export namespace IModelDb {
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[ITwinError]]
      * @see deleteDefinitionElements
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteElement(ids: Id64Arg): void {
       this._iModel[_implicitTxn].deleteElement(ids);
@@ -2985,7 +3029,7 @@ export namespace IModelDb {
      * @param deleteOptions Options for the delete operation.
      * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
      * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-15. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.1.9 - might be removed in next major version. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @beta
      */
     public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
@@ -3000,7 +3044,7 @@ export namespace IModelDb {
      * DefinitionElements rather than calling this method separately for each one. Ids that are not valid DefinitionElements will be ignored.
      * @returns An IdSet of the DefinitionElements that are used and were therefore not deleted.
      * @see deleteElement
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
       return this._iModel[_implicitTxn].deleteDefinitionElements(definitionElementIds);
@@ -3113,21 +3157,31 @@ export namespace IModelDb {
 
     private static classMap = new Map<string, string>();
 
+    private getAspectPropsFromInstanceQuery(rawInstance: unknown): ElementAspectProps {
+      const parsedRow: unknown = typeof rawInstance === "string" ? JSON.parse(rawInstance, Base64EncodedString.reviver) : rawInstance;
+      if (!JsonUtils.isObject(parsedRow))
+        throw new IModelError(IModelStatus.BadRequest, "Expected an ElementAspect instance query to return an object");
+
+      const row: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(parsedRow)) {
+        const ecPropertyName = key.length === 0 ? key : key[0].toUpperCase() + key.substring(1);
+        row[ECJsNames.toJsName(ecPropertyName)] = value;
+      }
+
+      const className = row.className;
+      if (typeof className !== "string")
+        throw new IModelError(IModelStatus.BadRequest, "Expected an ElementAspect instance query to return a className");
+
+      row.classFullName = className.replace(".", ":"); // add in property required by EntityProps
+      delete row.className; // clear property from SELECT $ that we don't want in the final instance
+      return row as unknown as ElementAspectProps;
+    }
+
     private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
       return this._iModel.withQueryReader(sql, (reader) => {
         const aspects: ElementAspect[] = [];
         for (const queryRow of reader) {
-          const row: object = {};
-          const rawInstance = queryRow[0];
-          const parsedRow = typeof rawInstance === "string" ? JSON.parse(rawInstance) : rawInstance;
-          // eslint-disable-next-line guard-for-in
-          for (const key in parsedRow) {
-            const jsName = ECJsNames.toJsName(key[0].toUpperCase() + key.substring(1));
-            Object.defineProperty(row, jsName, { enumerable: true, configurable: true, writable: true, value: parsedRow[key] });
-          }
-          const aspectProps: ElementAspectProps = row as any;
-          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
-          (aspectProps as any).className = undefined; // clear property from SELECT $ that we don't want in the final instance
+          const aspectProps = this.getAspectPropsFromInstanceQuery(queryRow[0]);
           if ((undefined === excludedClassFullNames) || !excludedClassFullNames.has(aspectProps.classFullName))
             aspects.push(this._iModel.constructEntity<ElementAspect>(aspectProps));
         }
@@ -3194,13 +3248,67 @@ export namespace IModelDb {
       return aspects;
     }
 
+    /** Stream the [[ElementAspect]] instances owned by a set of elements.
+     *
+     * Use this method instead of calling [[getAspects]] repeatedly when reading aspects for multiple elements or when the result may be large. The query reads all requested owners together and yields each aspect without buffering the complete result set. For a single element with a small result, [[getAspects]] provides a simpler synchronous API.
+     *
+     * The order is unspecified unless [[QueryAspectOptions.groupByOwner]] is true.
+     * @param options Defines the element Ids, class filters, result ordering, and query connection.
+     * @returns An async iterator over the matching aspects.
+     * @beta
+     */
+    public async *queryAspects(options: QueryAspectOptions): AsyncIterableIterator<ElementAspect> {
+      const elementIds = Id64.toIdSet(options.elementIds);
+      if (elementIds.size === 0)
+        return;
+
+      const params = new QueryBinder().bindIdSet("elementIds", elementIds);
+      const classFilter = options.aspectClassFullName === undefined ? "" : `AND aspect.ECClassId IN (
+        SELECT SourceECInstanceId FROM meta.ClassHasAllBaseClasses
+        WHERE TargetECInstanceId=ec_classid(:aspectClassFullName)
+      )`;
+      if (options.aspectClassFullName !== undefined)
+        params.bindString("aspectClassFullName", options.aspectClassFullName.replace(".", ":"));
+
+      const excludedClassIds: string[] = [];
+      let excludedClassIndex = 0;
+      for (const classFullName of options.excludedAspectClassFullNames ?? []) {
+        const parameterName = `excludedAspectClass${excludedClassIndex++}`;
+        excludedClassIds.push(`ec_classid(:${parameterName})`);
+        params.bindString(parameterName, classFullName.replace(".", ":"));
+      }
+      const excludedClassFilter = excludedClassIds.length === 0 ? "" : `AND aspect.ECClassId NOT IN (
+        SELECT ECInstanceId FROM meta.ECClassDef WHERE ECInstanceId IN (${excludedClassIds.join(",")})
+      )`;
+      const orderBy = options.groupByOwner
+        ? "ORDER BY OwnerId, AspectKind, ECClassId, ECInstanceId"
+        : "";
+      const sql = `WITH OwnerIds AS (SELECT id FROM IdSet(:elementIds))
+        SELECT $ FROM (
+          SELECT aspect.ECInstanceId, aspect.ECClassId, aspect.Element.Id AS OwnerId, 0 AS AspectKind
+          FROM OwnerIds owners
+          CROSS JOIN Bis.ElementMultiAspect aspect ON aspect.Element.Id=owners.id
+          WHERE TRUE ${classFilter} ${excludedClassFilter}
+          UNION ALL
+          SELECT aspect.ECInstanceId, aspect.ECClassId, aspect.Element.Id AS OwnerId, 1 AS AspectKind
+          FROM OwnerIds owners
+          CROSS JOIN Bis.ElementUniqueAspect aspect ON aspect.Element.Id=owners.id
+          WHERE TRUE ${classFilter} ${excludedClassFilter}
+        ) ${orderBy}
+        OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`;
+
+      const reader = this._iModel.createQueryReader(sql, params, { usePrimaryConn: options.usePrimaryConn });
+      for await (const queryRow of reader)
+        yield this._iModel.constructEntity<ElementAspect>(this.getAspectPropsFromInstanceQuery(queryRow[0]));
+    }
+
     /** Insert a new ElementAspect into the iModel.
      * @param aspectProps The properties of the new ElementAspect.
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      * @returns the id of the newly inserted aspect.
      * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
      *       use [EntityReference]($common) for that instead.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.insertAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.insertAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
       return this._iModel[_implicitTxn].insertAspect(aspectProps);
@@ -3209,7 +3317,7 @@ export namespace IModelDb {
     /** Update an exist ElementAspect within the iModel.
      * @param aspectProps The properties to use to update the ElementAspect.
      * @throws [[IModelError]] if unable to update the ElementAspect.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
       this._iModel[_implicitTxn].updateAspect(aspectProps);
@@ -3218,7 +3326,7 @@ export namespace IModelDb {
     /** Delete one or more ElementAspects from this iModel.
      * @param aspectInstanceIds The set of instance Ids of the ElementAspect(s) to be deleted
      * @throws [[IModelError]] if unable to delete the ElementAspect.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
       this._iModel[_implicitTxn].deleteAspect(aspectInstanceIds);
@@ -3228,7 +3336,7 @@ export namespace IModelDb {
      * @param props The properties specifying the element to reparent and its new parent.
      * @throws [[ITwinError]] if the operation fails.
      * @beta
-     * @deprecated in 5.11.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementParent instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.11.0 - might be removed in next major version. Use EditTxn.changeElementParent instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public changeElementParent(props: ChangeElementParentProps): void {
       this._iModel[_implicitTxn].changeElementParent(props);
@@ -3238,7 +3346,7 @@ export namespace IModelDb {
      * @param props The properties specifying the element to move and its new model.
      * @throws [[ITwinError]] if the operation fails.
      * @beta
-     * @deprecated in 5.11.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.11.0 - might be removed in next major version. Use EditTxn.changeElementModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public changeElementModel(props: ChangeElementModelProps): void {
       this._iModel[_implicitTxn].changeElementModel(props);
@@ -3255,14 +3363,26 @@ export namespace IModelDb {
     private _viewStore?: ViewStore.CloudAccess;
     public get hasViewStore(): boolean { return undefined !== this._viewStore; }
 
-    /** @beta */
+    /** The [[ViewStore.CloudAccess]] for this iModel.
+     * @note The iModel owns its ViewStore (whether assigned via this setter or created by [[accessViewStore]]): it is closed when the iModel is closed.
+     * @beta
+     */
     public get viewStore(): ViewStore.CloudAccess {
       if (undefined === this._viewStore)
         throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
       return this._viewStore;
     }
     public set viewStore(viewStore: ViewStore.CloudAccess) {
+      if (this._viewStore !== undefined && this._viewStore !== viewStore)
+        this._viewStore.close();
       this._viewStore = viewStore;
+    }
+    /** Close the ViewStore for this iModel, if one is open. Called when the iModel is closed.
+     * @internal
+     */
+    public [_close]() {
+      this._viewStore?.close();
+      this._viewStore = undefined;
     }
     /** @beta */
     public async accessViewStore(args: { props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
@@ -3286,7 +3406,7 @@ export namespace IModelDb {
     }
 
     /**
-     * @beta @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @beta @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
       this._iModel[_implicitTxn].saveDefaultViewStore(arg);

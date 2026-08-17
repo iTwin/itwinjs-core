@@ -1,6 +1,29 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 15 Jul 2026 19:42:09 GMT and should not be manually modified.
+This log was last generated on Mon, 17 Aug 2026 11:31:13 GMT and should not be manually modified.
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Added an internal QueryBinder helper to support restoring legacy binding-skip semantics in downstream packages.
+- Added support for backend-to-frontend Ipc invoke calls (IpcHost.invoke/IpcApp.handle).
 
 ## 5.11.3
 Wed, 15 Jul 2026 19:40:44 GMT

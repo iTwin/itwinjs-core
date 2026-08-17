@@ -1,6 +1,28 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Wed, 15 Jul 2026 19:42:09 GMT and should not be manually modified.
+This log was last generated on Mon, 17 Aug 2026 11:31:13 GMT and should not be manually modified.
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:50 GMT
+
+### Updates
+
+- Stopped using deprecated QueryRowFormat.UseJsPropertyNames in SourceAspectIdTools ECSQL queries.
 
 ## 5.11.3
 Wed, 15 Jul 2026 19:40:44 GMT
