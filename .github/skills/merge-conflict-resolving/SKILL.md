@@ -1,15 +1,24 @@
 ---
 name: merge-conflict-resolving
-description: You resolve merge conflicts in code repositories, ensuring that the final merged code is functional and free of errors, and adheres to our code quality standards.
+description: You resolve merge conflicts in code repositories, ensuring that the final merged code is functional and free of errors, and adheres to our code quality standards. Covers Mergify backport cherry-picks, routine feature-branch merges from master, and modify/delete conflicts where a branch has deleted, split, or renamed a file that master still changes.
 ---
 
 # Merge Conflict Resolution
 
-Resolve merge conflicts in backport PRs from Mergify. Mergify uses **cherry-pick** (not merge) to create backport branches with the pattern `mergify/bp/release/X.X.x/pr-NNNN`. When cherry-pick fails, Mergify comments with the conflict details and the branch must be fixed locally.
+Resolve merge conflicts in this repository. Two situations produce them, and they need **different recovery commands** — identify which one you are in before touching anything:
+
+| Situation | How it arises | Recovery | Start here |
+| --- | --- | --- | --- |
+| **Backport** | Mergify **cherry-picks** a merged PR onto `release/X.X.x` | `git cherry-pick --continue` / `--abort` | [How Mergify backports work](#how-mergify-backports-work) |
+| **Feature branch** | Your branch **merges** `master` to stay current | `git merge --abort` | [Modify/delete conflicts](#modifydelete-conflicts-on-refactored-away-files) |
+
+The bulk of this skill is organized by **file type** (lock files, `pnpm-config.json`, API reports, changelogs, CI config) and applies to both. Where a file-type strategy says *"keep the release branch side,"* that rule is backport-specific.
+
+The highest-risk case is a **modify/delete conflict**: your branch deleted, split, or renamed a file that master then modified. Git offers "delete it" as a resolution, and taking it silently discards the incoming work with a clean build and green tests. That case has its own [workflow](#modifydelete-conflicts-on-refactored-away-files) and a mandatory [review gate](#review-gate-modifydelete-conflicts-only).
 
 **Prerequisite:** This skill references the `cve-remediation` skill for understanding `pnpm-config.json` structure (globalOverrides, ignoreCves). Load that skill when resolving conflicts in security-related backports.
 
-## How Mergify Backports Work
+## How Mergify backports work
 
 1. A PR merges to `master`
 2. Mergify cherry-picks the commit(s) onto a new branch: `mergify/bp/release/X.X.x/pr-NNNN`
