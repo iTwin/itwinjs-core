@@ -272,6 +272,16 @@ export interface ForeignKeyConstraintRebaseConflict extends RebaseConflict {
   numberOfConflictingRows: number;
 }
 
+/** The `conflictDetail` that native attaches to the error thrown by `insertInstance`/`updateInstance` when the
+ * write failed with a UNIQUE constraint violation. SQLite only reports the first index it found to be violated,
+ * so a single failed write describes at most one constraint.
+ */
+interface UniqueConstraintConflictDetail {
+  kind: "UniqueConstraint";
+  uniqueConstraintProperties: string[];
+  conflictingRow?: RebaseConflictProperties;
+}
+
 export interface TxnRebaseGroup {
   txns: TxnProps[];
 }
@@ -606,9 +616,9 @@ export class InteractiveRebase {
    * identifies the instance that `apply` was attempting to write. When `isInsert`, a UNIQUE/PRIMARYKEY
    * failure is first checked against whether it's an id collision with an existing row (an
    * [[InsertRebaseConflict]], which also retries the write via `acceptOurs`) before falling back to a
-   * generic [[UniqueConstraintRebaseConflict]]; for updates/deletes the row already exists by
-   * definition, so id-collision detection doesn't apply and the write is not retried (it would just
-   * fail again).
+   * [[UniqueConstraintRebaseConflict]] built from the error's [[UniqueConstraintConflictDetail]]; for
+   * updates/deletes the row already exists by definition, so id-collision detection doesn't apply and
+   * the write is not retried (it would just fail again).
    */
   private applyOrRecordConstraintConflict<T>(props: RebaseConflictProperties, isInsert: boolean, apply: () => T): T | undefined {
     try {
@@ -628,11 +638,8 @@ export class InteractiveRebase {
         // Both local and incoming changes wrote an instance with the same id.
         InsertRebaseConflictImpl.handleInteractive(this, this._conflicts, props, theirs);
       } else {
-        // Some other UNIQUE index (not the primary key) was violated. Native does not yet expose which
-        // index/columns or which row conflicted for direct instance writes (see
-        // interactive-rebase-instance-conflict-native-spec.md, "Change 2"), so this is reported without
-        // that detail.
-        UniqueConstraintRebaseConflictImpl.handleInteractive(this._conflicts, undefined, props);
+        // Some other UNIQUE index (not the primary key) was violated.
+        UniqueConstraintRebaseConflictImpl.handleInteractive(this._conflicts, undefined, props, err.conflictDetail as UniqueConstraintConflictDetail | undefined);
       }
       return undefined;
     }
@@ -1152,15 +1159,11 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
   }
 
   /** JS-driven equivalent of [[handle]], used for "Data" txns reinstated via [[RebaseInstanceStore]]
-   * instead of the native changeset-conflict callback.
-   *
-   * Unlike `handle`, this cannot populate `uniqueConstraintViolations` with per-index/per-column
-   * detail: the native `insertInstance`/`updateInstance` methods only report that a UNIQUE
-   * constraint was violated (via the thrown error's `errorNumber`), not which index or row it
-   * collided with (see interactive-rebase-instance-conflict-native-spec.md, "Change 2"). A single
-   * violation entry with empty detail is recorded so the conflict is still surfaced to the caller.
+   * instead of the native changeset-conflict callback. `detail` is the [[UniqueConstraintConflictDetail]]
+   * carried by the exception that native threw for this write; it describes a single violated index, so
+   * repeated failures for the same instance accumulate into `uniqueConstraintViolations`.
    */
-  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties): void {
+  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, detail?: UniqueConstraintConflictDetail): void {
     const instanceId = ours.id ?? original?.id;
     const classFullName = ours.classFullName ?? original?.classFullName;
 
@@ -1178,8 +1181,23 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
       Object.assign(instanceConflict.original, original);
     }
 
-    if (instanceConflict.uniqueConstraintViolations.length === 0) {
-      instanceConflict.uniqueConstraintViolations.push({ uniqueConstraintProperties: [], conflictingRow: {} });
+    if (detail === undefined) {
+      // Native could not map the violated index back to EC properties. Still surface the conflict.
+      if (instanceConflict.uniqueConstraintViolations.length === 0) {
+        instanceConflict.uniqueConstraintViolations.push({ uniqueConstraintProperties: [], conflictingRow: {} });
+      }
+      return;
+    }
+
+    const violation = {
+      uniqueConstraintProperties: detail.uniqueConstraintProperties,
+      conflictingRow: detail.conflictingRow ?? {},
+    };
+    const isSameIndex = (other: UniqueConstraintViolation) =>
+      other.uniqueConstraintProperties.length === violation.uniqueConstraintProperties.length &&
+      other.uniqueConstraintProperties.every((prop, i) => prop === violation.uniqueConstraintProperties[i]);
+    if (!instanceConflict.uniqueConstraintViolations.some(isSameIndex)) {
+      instanceConflict.uniqueConstraintViolations.push(violation);
     }
   }
 
