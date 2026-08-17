@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./lib/esm",
+    "module": "ES2022",
+    "moduleResolution": "node"
+  },
+  "exclude": [
+    "src/test/**/*",
+    "src/electron-provider-cjs.ts"
+  ]
+}

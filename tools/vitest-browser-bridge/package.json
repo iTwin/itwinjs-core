@@ -1,0 +1,70 @@
+{
+  "name": "@itwin/vitest-browser-bridge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internal Vitest BrowserProvider and callback transport for Electron renderer tests",
+  "typesVersions": {
+    "*": {
+      "electron-provider": ["lib/cjs/electron-provider-cjs.d.ts"],
+      "callbacks/protocol": ["lib/cjs/callbacks/protocol.d.ts"],
+      "callbacks/backend": ["lib/cjs/callbacks/backend.d.ts"],
+      "callbacks/browser": ["lib/cjs/callbacks/browser.d.ts"],
+      "callbacks/electron": ["lib/cjs/callbacks/electron.d.ts"]
+    }
+  },
+  "exports": {
+    "./electron-provider": {
+      "types": "./lib/cjs/electron-provider-cjs.d.ts",
+      "import": "./lib/esm/electron-provider-esm.js",
+      "require": "./lib/cjs/electron-provider-cjs.js"
+    },
+    "./callbacks/protocol": {
+      "types": "./lib/cjs/callbacks/protocol.d.ts",
+      "import": "./lib/esm/callbacks/protocol.js",
+      "require": "./lib/cjs/callbacks/protocol.js"
+    },
+    "./callbacks/backend": {
+      "types": "./lib/cjs/callbacks/backend.d.ts",
+      "import": "./lib/esm/callbacks/backend.js",
+      "require": "./lib/cjs/callbacks/backend.js"
+    },
+    "./callbacks/browser": {
+      "types": "./lib/cjs/callbacks/browser.d.ts",
+      "import": "./lib/esm/callbacks/browser.js",
+      "require": "./lib/cjs/callbacks/browser.js"
+    },
+    "./callbacks/electron": {
+      "types": "./lib/cjs/callbacks/electron.d.ts",
+      "import": "./lib/esm/callbacks/electron.js",
+      "require": "./lib/cjs/callbacks/electron.js"
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "tools/vitest-browser-bridge"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node -e \"require('node:fs').writeFileSync('lib/esm/package.json', JSON.stringify({ type: 'module' }) + '\\n')\"",
+    "build:test-fixtures": "tsc -p tsconfig.test-fixtures.json",
+    "clean": "rimraf lib test-results",
+    "cover": "",
+    "docs": "",
+    "lint": "eslint \"./src/**/*.ts\"",
+    "test": "vitest run --config src/test/vitest.config.mts",
+    "test:electron-provider": "tsc -p tsconfig.test-fixtures.json && rimraf test-results && vitest run --config src/test/vitest.electron-provider.config.mts --reporter=default --reporter=junit --outputFile=test-results/electron-provider.junit.xml && node -e \"const fs=require('node:fs'); const p='test-results/electron-provider.junit.xml'; if (!fs.existsSync(p) || !fs.readFileSync(p, 'utf8').includes('<testsuites')) process.exit(1)\""
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "^6.0.0",
+    "@opentelemetry/api": "1.0.4",
+    "@types/node": "~20.17.0",
+    "@vitest/browser": "^4.1.10",
+    "electron": "^43.0.0",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1",
+    "typescript": "~5.6.2",
+    "vitest": "^4.1.10"
+  }
+}
