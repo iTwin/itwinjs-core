@@ -71,7 +71,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
       // Leader line geometry
       const leaderLinePoints: Point3d[] = [];
-
+      const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledBlockTextHeight;
       let leaderStartPoint = leader.startPoint;
       if (leaderStyle.leader.showTargetPoint && leaderStyle.leader.targetPointOffsetFactor !== 0) {
         const offset = leaderStyle.leader.targetPointOffsetFactor * scaledBlockTextHeight;
@@ -84,9 +84,17 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
         if (!firstSegmentEnd)
           firstSegmentEnd = attachmentPoint;
 
+
+        // Offset the target-point marker away from the start point along the first leader segment.
+        // Clamp the added distance so negative values resolve to 0 and large values cannot overshoot the first vertex.
+        // When terminators are hidden, use the text height as a conservative guard distance; otherwise use the terminator width.
+        const firstSegmentLength = leader.startPoint.distance(firstSegmentEnd);
+        const clampDistance = leaderStyle.leader.showTerminators ? terminatorWidth : scaledBlockTextHeight;
+        const maxOffset = Math.max(0, firstSegmentLength - clampDistance);
+        const clampedOffset = Math.min(Math.max(offset, 0), maxOffset);
         const leaderDirection = Vector3d.createStartEnd(leader.startPoint, firstSegmentEnd).normalize();
         if (leaderDirection)
-          leaderStartPoint = leader.startPoint.plusScaled(leaderDirection, offset);
+          leaderStartPoint = leader.startPoint.plusScaled(leaderDirection, clampedOffset);
       }
       leaderLinePoints.push(leaderStartPoint)
 
@@ -102,7 +110,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
       const terminatorDirection = Vector3d.createStartEnd(
         leaderLinePoints[0], leaderLinePoints[1]
       ).normalize();
-      const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledBlockTextHeight;
+
       // Truncate the first segment of the leader lines to account for the arrowhead size when closedArrow (hollow triangle) terminatorShape is used.
       if (leaderStyle.leader.showTerminators && leaderStyle.leader.terminatorShape === "closedArrow") {
         if (terminatorDirection)

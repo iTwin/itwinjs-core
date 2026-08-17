@@ -391,6 +391,37 @@ describe("LeaderGeometry", () => {
         expect(offsetDistance).to.be.closeTo(offsetFactor * textHeight, 0.01);
       });
 
+      it("should clamp oversized target-point offsets to the first leader segment", () => {
+        const leader: TextAnnotationLeader = {
+          startPoint: Point3d.create(10, 0, 0),
+          intermediatePoints: [Point3d.create(20, 0, 0)],
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showLeaders: true, showTargetPoint: true, showTerminators: false, targetPointOffsetFactor: 100 } },
+        };
+
+        const result = appendLeadersToBuilder(builder, [leader], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+
+        const leaderLine = builder.geometries[0] as LineString3d;
+        const offsetDistance = leaderLine.points[0].distance(leader.startPoint);
+        expect(offsetDistance).to.be.at.most(leader.startPoint.distance(leader.intermediatePoints![0]));
+      });
+
+      it("should treat negative target-point offsets as zero", () => {
+        const leader: TextAnnotationLeader = {
+          startPoint: Point3d.create(10, 0, 0),
+          intermediatePoints: [Point3d.create(20, 0, 0)],
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showLeaders: true, showTargetPoint: true, showTerminators: false, targetPointOffsetFactor: -2 } },
+        };
+
+        const result = appendLeadersToBuilder(builder, [leader], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+
+        const leaderLine = builder.geometries[0] as LineString3d;
+        expect(leaderLine.points[0].isAlmostEqual(leader.startPoint)).to.be.true;
+      });
+
       it("should draw the target point graphic at the original start point regardless of the offset", () => {
         const offsetFactor = 2;
         const leader: TextAnnotationLeader = {
