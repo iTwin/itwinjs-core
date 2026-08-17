@@ -549,7 +549,7 @@ export class InteractiveRebase {
     const propsToWrite = changedProperties === undefined
       ? newProps
       : { id: newProps.id, classFullName: newProps.classFullName, ...pickProperties(newProps, changedProperties) };
-    const result = this.applyOrRecordConstraintConflict(propsToWrite, false, () =>
+    const result = this.applyOrRecordConstraintConflict(propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, false, () =>
       nativeDb.updateInstance(propsToWrite, { useJsNames: true, expectedOldValues }) as { updated: boolean, conflictingProperties: string[] });
     if (result === undefined) {
       // A constraint conflict occurred and was already recorded.
@@ -573,13 +573,13 @@ export class InteractiveRebase {
     // by default (matching the native changeset-conflict model), but report the conflict so the caller
     // may later accept "theirs".
     UpdateRebaseConflictImpl.handleInteractive(this, this._conflicts, oldProps, theirs, newProps, result.conflictingProperties);
-    this.applyOrRecordConstraintConflict(propsToWrite, false, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
+    this.applyOrRecordConstraintConflict(propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, false, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
   }
 
   private applyInteractiveDelete(oldProps: RebaseConflictProperties): void {
     const nativeDb = this._db[_nativeDb];
     const key = { id: oldProps.id, classFullName: oldProps.classFullName };
-    const result = this.applyOrRecordConstraintConflict(oldProps, false, () =>
+    const result = this.applyOrRecordConstraintConflict(oldProps.id, oldProps.classFullName, oldProps, undefined, false, () =>
       nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { deleted: boolean, conflictingProperties: string[] });
     if (result === undefined || result.deleted) {
       // Either a constraint conflict was already recorded, or we deleted it - nothing more to do.
@@ -603,7 +603,7 @@ export class InteractiveRebase {
 
   private applyInteractiveInsert(newProps: RebaseConflictProperties): void {
     const nativeDb = this._db[_nativeDb];
-    this.applyOrRecordConstraintConflict(newProps, true, () => {
+    this.applyOrRecordConstraintConflict(newProps.id, newProps.classFullName, undefined, newProps, true, () => {
       const id = nativeDb.insertInstance(newProps, { forceUseId: true, useJsNames: true });
       if (!Id64.isValidId64(id)) {
         throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${newProps.id}`);
@@ -620,7 +620,7 @@ export class InteractiveRebase {
    * updates/deletes the row already exists by definition, so id-collision detection doesn't apply and
    * the write is not retried (it would just fail again).
    */
-  private applyOrRecordConstraintConflict<T>(props: RebaseConflictProperties, isInsert: boolean, apply: () => T): T | undefined {
+  private applyOrRecordConstraintConflict<T>(id: Id64String, classFullName: string, oldProps: RebaseConflictProperties | undefined, newProps: RebaseConflictProperties | undefined, isInsert: boolean, apply: () => T): T | undefined {
     try {
       return apply();
     } catch (err: any) {
@@ -633,13 +633,13 @@ export class InteractiveRebase {
         throw err;
       }
 
-      const theirs = isInsert ? this.tryReadCurrentInstance(props.id, props.classFullName) : undefined;
+      const theirs = isInsert ? this.tryReadCurrentInstance(id, classFullName) : undefined;
       if (theirs !== undefined) {
         // Both local and incoming changes wrote an instance with the same id.
-        InsertRebaseConflictImpl.handleInteractive(this, this._conflicts, props, theirs);
+        InsertRebaseConflictImpl.handleInteractive(this, this._conflicts, newProps!, theirs);
       } else {
         // Some other UNIQUE index (not the primary key) was violated.
-        UniqueConstraintRebaseConflictImpl.handleInteractive(this._conflicts, undefined, props, err.conflictDetail as UniqueConstraintConflictDetail | undefined);
+        UniqueConstraintRebaseConflictImpl.handleInteractive(this, this._conflicts, oldProps, newProps!, err.conflictDetail as UniqueConstraintConflictDetail | undefined);
       }
       return undefined;
     }
@@ -1124,7 +1124,6 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
   public readonly id: Id64String;
   public readonly classFullName: string;
   public readonly original: RebaseConflictProperties | undefined = undefined;
-  public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
   public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
 
@@ -1163,7 +1162,7 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
    * carried by the exception that native threw for this write; it describes a single violated index, so
    * repeated failures for the same instance accumulate into `uniqueConstraintViolations`.
    */
-  public static handleInteractive(conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, detail?: UniqueConstraintConflictDetail): void {
+  public static handleInteractive(interactive: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, detail?: UniqueConstraintConflictDetail): void {
     const instanceId = ours.id ?? original?.id;
     const classFullName = ours.classFullName ?? original?.classFullName;
 
@@ -1173,13 +1172,18 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
       conflicts.push(instanceConflict);
     }
 
-    Object.assign(instanceConflict.ours, ours);
-    if (original) {
-      if (instanceConflict.original === undefined) {
-        instanceConflict.original = {};
-      }
-      Object.assign(instanceConflict.original, original);
+    const classDef = interactive.iModel.getJsClass<typeof Element>(ours.classFullName);
+
+    if (original !== undefined) {
+      instanceConflict.original = classDef.deserialize({
+        row: original,
+        iModel: interactive.iModel
+      });
     }
+    instanceConflict.ours = classDef.deserialize({
+      row: ours,
+      iModel: interactive.iModel
+    });
 
     if (detail === undefined) {
       // Native could not map the violated index back to EC properties. Still surface the conflict.
@@ -1189,15 +1193,17 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
       return;
     }
 
-    const violation = {
-      uniqueConstraintProperties: detail.uniqueConstraintProperties,
-      conflictingRow: detail.conflictingRow ?? {},
-    };
     const isSameIndex = (other: UniqueConstraintViolation) =>
-      other.uniqueConstraintProperties.length === violation.uniqueConstraintProperties.length &&
-      other.uniqueConstraintProperties.every((prop, i) => prop === violation.uniqueConstraintProperties[i]);
+      other.uniqueConstraintProperties.length === detail.uniqueConstraintProperties.length &&
+      other.uniqueConstraintProperties.every((prop, i) => prop === detail.uniqueConstraintProperties[i]);
     if (!instanceConflict.uniqueConstraintViolations.some(isSameIndex)) {
-      instanceConflict.uniqueConstraintViolations.push(violation);
+      instanceConflict.uniqueConstraintViolations.push({
+        uniqueConstraintProperties: detail.uniqueConstraintProperties,
+        conflictingRow: classDef.deserialize({
+          row: detail.conflictingRow ?? {},
+          iModel: interactive.iModel
+        }),
+      });
     }
   }
 
