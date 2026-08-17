@@ -1,0 +1,13 @@
+{
+  "checkLeaks": true,
+  "timeout": 60000,
+  "spec": [
+    "lib/cjs/test/backend/RunElectronBackendTests.js"
+  ],
+  "reporter": [
+    "node_modules/@itwin/build-tools/mocha-reporter"
+  ],
+  "reporterOptions": [
+    "mochaFile=lib/test/backend_junit_results.xml"
+  ]
+}

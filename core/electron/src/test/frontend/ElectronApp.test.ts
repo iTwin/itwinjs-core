@@ -3,33 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterEach, describe, expect, it } from "vitest";
+import { assert } from "chai";
 import { EmptyLocalization, RpcInterface, RpcRegistry } from "@itwin/core-common";
 import { IModelApp, NativeApp } from "@itwin/core-frontend";
 import { ElectronApp } from "../../ElectronFrontend";
 
 describe("ElectronApp tests.", () => {
-  afterEach(async () => {
-    if (ElectronApp.isValid)
-      await ElectronApp.shutdown();
-  });
-
   it("Should start and shutdown.", async () => {
-    expect(ElectronApp.isValid).toBe(false);
-    expect(NativeApp.isValid).toBe(false);
-    expect(IModelApp.initialized).toBe(false);
+    assert(!ElectronApp.isValid);
+    assert(!NativeApp.isValid);
+    assert(!IModelApp.initialized);
 
     await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() } });
 
-    expect(ElectronApp.isValid).toBe(true);
-    expect(NativeApp.isValid).toBe(true);
-    expect(IModelApp.initialized).toBe(true);
+    assert(ElectronApp.isValid);
+    assert(NativeApp.isValid);
+    assert(IModelApp.initialized);
 
     await ElectronApp.shutdown();
 
-    expect(ElectronApp.isValid).toBe(false);
-    expect(NativeApp.isValid).toBe(false);
-    expect(IModelApp.initialized).toBe(false);
+    assert(!ElectronApp.isValid);
+    assert(!NativeApp.isValid);
+    assert(!IModelApp.initialized);
   });
 
   it("Should initialize and terminate provided RPC interfaces.", async () => {
@@ -44,9 +39,9 @@ describe("ElectronApp tests.", () => {
         localization: new EmptyLocalization(),
       },
     });
-    expect(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName)).toBe(true);
+    assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
 
     await ElectronApp.shutdown();
-    expect(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName)).toBe(false);
+    assert(!RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
   });
 });

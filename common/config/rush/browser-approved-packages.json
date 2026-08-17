@@ -359,6 +359,10 @@
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/vitest-browser-bridge",
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+    },
+    {
       "name": "@itwin/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
     },

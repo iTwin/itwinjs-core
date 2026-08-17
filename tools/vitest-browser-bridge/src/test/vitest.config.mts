@@ -3,9 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { contextBridge } from "electron";
+import { defineConfig } from "vitest/config";
 
-contextBridge.exposeInMainWorld("__electronProviderUserPreload", {
-  loaded: true,
-  processType: process.type,
+export default defineConfig({
+  test: {
+    dir: "src/test",
+    include: ["**/*.test.ts"],
+    exclude: ["electron-provider-smoke.test.ts"],
+  },
 });

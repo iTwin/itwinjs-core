@@ -312,8 +312,8 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/vitest-certa-bridge",
-      "projectFolder": "tools/vitest-certa-bridge",
+      "packageName": "@itwin/vitest-browser-bridge",
+      "projectFolder": "tools/vitest-browser-bridge",
       "reviewCategory": "tools",
       "shouldPublish": false
     },
