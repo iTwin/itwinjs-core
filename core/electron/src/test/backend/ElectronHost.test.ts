@@ -47,6 +47,10 @@ export const electronHostTestSuite: TestSuite = {
       title: "Should save main window size, position and maximized flag.",
       func: testWindowSizeSettings,
     },
+    {
+      title: "Should save the maximized state on resize when maximize events are missed.",
+      func: testWindowStateSavedOnResize,
+    },
   ],
 };
 
@@ -237,6 +241,39 @@ async function testWindowSizeSettings() {
   }
   assert(sizeAndPos?.x === x);
   assert(sizeAndPos?.y === y);
+}
+
+async function testWindowStateSavedOnResize() {
+  const storeWindowName = "settingsTestWindowResize";
+
+  await ElectronHost.startup({
+    electronHost: {
+      webResourcesPath: path.join(__dirname, "..", "assets"),
+    },
+  });
+
+  NativeHost.settingsStore.removeData(`windowMaximized-${storeWindowName}`);
+  await ElectronHost.openMainWindow({ storeWindowName });
+
+  const window = ElectronHost.mainWindow;
+  assert(window);
+
+  // Simulate a maximized window whose maximize event was not delivered by Electron.
+  const originalIsMaximized = window.isMaximized.bind(window);
+  window.isMaximized = () => true;
+  try {
+    NativeHost.settingsStore.setData(`windowMaximized-${storeWindowName}`, false);
+    window.emit("resize");
+
+    let isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
+    for (let i = 0; i < 20 && isMaximized !== true; ++i) {
+      await BeDuration.wait(50);
+      isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
+    }
+    assert(isMaximized === true);
+  } finally {
+    window.isMaximized = originalIsMaximized;
+  }
 }
 
 function assertElectronHostNotInitialized() {
