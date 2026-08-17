@@ -171,6 +171,29 @@ export const DEMO_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
     decimalSeparator: ".",
     composite: { units: [{ label: "[θ]rad", name: "Units.RAD" }] },
   },
+  // Slope seeds — persistence unit is Units.M_PER_M (SI slope ratio). Two variants:
+  //   * SLOPE_M_PER_M: pass-through decimal (0.05 -> 0.0500 [/]m/m).
+  //   * SLOPE_HORIZONTAL_PER_VERTICAL: inverted to Units.HORIZONTAL_PER_VERTICAL so 0.05 m/m renders as ~20
+  //     ("1:20" convention rendered as a decimal magnitude with the [⁄]:1 label).
+  // Units.PERCENT belongs to the PERCENTAGE phenomenon, not SLOPE, so a percent-style
+  // seed would need a Ratio format or cross-phenomenon conversion (out of scope for the
+  // demo). Use SLOPE_M_PER_M as the canonical ratio presentation.
+  "Demo.SLOPE_M_PER_M": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[/]m/m", name: "Units.M_PER_M" }] },
+  },
+  "Demo.SLOPE_HORIZONTAL_PER_VERTICAL": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 2,
+    type: "Decimal",
+    uomSeparator: "",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[\u2044]:1", name: "Units.HORIZONTAL_PER_VERTICAL" }] },
+  },
 };
 
 /** Persistence unit each seed in [[DEMO_SEED_FORMATS]] expects to be compiled against.
@@ -185,6 +208,8 @@ const DEMO_SEED_PERSISTENCE_UNITS: { readonly [name: string]: string } = {
   "Demo.ANGLE_DEG_FROM_DEG": "Units.ARC_DEG",
   "Demo.ANGLE_DEG_FROM_RAD": "Units.RAD",
   "Demo.ANGLE_RAD": "Units.RAD",
+  "Demo.SLOPE_M_PER_M": "Units.M_PER_M",
+  "Demo.SLOPE_HORIZONTAL_PER_VERTICAL": "Units.M_PER_M",
 };
 
 /** [FormatsProvider]($core-quantity) wrapper that overlays [[DEMO_SEED_FORMATS]] on top of an
