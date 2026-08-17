@@ -3233,17 +3233,12 @@ describe("ChangesetReader — openFile + openGroup", () => {
       assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
       assert.deepEqual(Object.keys(elemNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "propFilter", "rowOptions", "changeFetchedPropNames", "instanceKey", "isIndirectChange"].sort());
       assert.equal(elemNew!.$meta.isIndirectChange, false);
-      assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Origin",
-        "Rotation", "BBoxLow", "BBoxHigh", "Pt3dProp", "BinProp", "GuidArrProp", "$meta", "LastMod"].sort());
+      assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Pt3dProp", "BinProp", "GuidArrProp", "$meta", "LastMod"].sort());
       assert.deepEqual(elemNew!.Pt3dProp, { X: 1, Y: 9.9, Z: 7.7 });
       assert.deepEqual(elemNew!.BinProp, new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd]));
       assert.deepEqual(elemNew!.GuidArrProp, ["ffffffff-0000-1111-2222-333344445555"]);
-      assert.deepEqual(elemNew!.Origin, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.BBoxLow, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.BBoxHigh, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.Rotation, 0);
       expect(elemNew!.LastMod).to.exist;
-      assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
+      assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ['BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Pt3dProp'].sort());
 
       assert.equal(elemOld!.$meta.op, "Updated");
       assert.equal(elemOld!.$meta.stage, "Old");
@@ -3257,7 +3252,7 @@ describe("ChangesetReader — openFile + openGroup", () => {
       ]);
       assert.equal(elemOld!.$meta.isIndirectChange, false);
       expect(elemOld!.LastMod).to.exist;
-      assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
+      assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ['BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Pt3dProp'].sort());
     }
 
     // === openGroup: insert + update as a single stream becomes just insert ===
@@ -3276,10 +3271,6 @@ describe("ChangesetReader — openFile + openGroup", () => {
       assert.deepEqual(elemNew!.Pt3dProp, { X: 1, Y: 9.9, Z: 7.7 });
       assert.deepEqual(elemNew!.BinProp, new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd]));
       assert.deepEqual(elemNew!.GuidArrProp, ["ffffffff-0000-1111-2222-333344445555"]);
-      assert.deepEqual(elemNew!.Origin, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.BBoxLow, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.BBoxHigh, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.Rotation, 0);
       expect(elemNew!.LastMod).to.exist;
       expect(elemNew!.Category).to.exist;
       expect(elemNew!.CodeScope).to.exist;
@@ -3296,7 +3287,7 @@ describe("ChangesetReader — openFile + openGroup", () => {
       assert.deepEqual(elemNew!.$meta.rowOptions, { abbreviateBlobs: false });
       assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Model", "CodeSpec",
         "CodeScope", "FederationGuid", "$meta", "Category", "LastMod",
-        "BinProp", "GuidArrProp", "Origin", "Rotation", "BBoxLow", "BBoxHigh", "Pt3dProp"].sort());
+        "BinProp", "GuidArrProp", "Pt3dProp"].sort());
       assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ['BBoxHigh', 'BBoxLow',
         'BinProp', 'Category.Id', 'CodeScope.Id', 'CodeSpec.Id',
         'CodeValue', 'ECClassId', 'ECInstanceId', 'FederationGuid', 'GeometryStream',
@@ -3498,17 +3489,12 @@ describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       assert.equal(elemNew!.$meta.stage, "New");
       assert.equal(elemNew!.$meta.propFilter, PropertyFilter.All);
       assert.deepEqual(Object.keys(elemNew!.$meta).sort(), ["op", "tables", "changeIndexes", "stage", "propFilter", "rowOptions", "changeFetchedPropNames", "instanceKey", "isIndirectChange"].sort());
-      assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Origin",
-        "Rotation", "BBoxLow", "BBoxHigh", "Pt3dProp", "BinProp", "GuidArrProp", "$meta", "LastMod"].sort());
+      assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Pt3dProp", "BinProp", "GuidArrProp", "$meta", "LastMod"].sort());
       assert.deepEqual(elemNew!.Pt3dProp, { X: 1, Y: 9.9, Z: 7.7 });
       assert.deepEqual(elemNew!.BinProp, new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd]));
       assert.deepEqual(elemNew!.GuidArrProp, ["ffffffff-0000-1111-2222-333344445555"]);
-      assert.deepEqual(elemNew!.Origin, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.BBoxLow, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.BBoxHigh, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.Rotation, 0);
       expect(elemNew!.LastMod).to.exist;
-      assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
+      assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ['BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Pt3dProp'].sort());
       assert.equal(elemNew!.$meta.isIndirectChange, false);
 
       assert.equal(elemOld!.$meta.op, "Updated");
@@ -3523,7 +3509,7 @@ describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       ]);
       expect(elemOld!.LastMod).to.exist;
       assert.equal(elemOld!.$meta.isIndirectChange, false);
-      assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ['BBoxHigh', 'BBoxLow', 'BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Origin', 'Pt3dProp', 'Rotation'].sort());
+      assert.deepEqual(elemOld!.$meta.changeFetchedPropNames.sort(), ['BinProp', 'ECInstanceId', 'GuidArrProp', 'LastMod', 'Pt3dProp'].sort());
     }
 
     // === openLocalChanges: insert + update as a single stream so becomes insert ===
@@ -3542,10 +3528,6 @@ describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       assert.deepEqual(elemNew!.Pt3dProp, { X: 1, Y: 9.9, Z: 7.7 });
       assert.deepEqual(elemNew!.BinProp, new Uint8Array([0xaa, 0xbb, 0xcc, 0xdd]));
       assert.deepEqual(elemNew!.GuidArrProp, ["ffffffff-0000-1111-2222-333344445555"]);
-      assert.deepEqual(elemNew!.Origin, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.BBoxLow, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.BBoxHigh, { X: 0, Y: 0 });
-      assert.deepEqual(elemNew!.Rotation, 0);
       expect(elemNew!.LastMod).to.exist;
       expect(elemNew!.Category).to.exist;
       expect(elemNew!.CodeScope).to.exist;
@@ -3562,7 +3544,7 @@ describe("ChangesetReader — openLocalChanges + openInmemoryChanges", () => {
       assert.deepEqual(elemNew!.$meta.rowOptions, { abbreviateBlobs: false });
       assert.deepEqual(Object.keys(elemNew!).sort(), ["ECInstanceId", "ECClassId", "Model", "CodeSpec",
         "CodeScope", "FederationGuid", "$meta", "Category", "LastMod",
-        "BinProp", "GuidArrProp", "Origin", "Rotation", "BBoxLow", "BBoxHigh", "Pt3dProp"].sort());
+        "BinProp", "GuidArrProp", "Pt3dProp"].sort());
       assert.deepEqual(elemNew!.$meta.changeFetchedPropNames.sort(), ['BBoxHigh', 'BBoxLow',
         'BinProp', 'Category.Id', 'CodeScope.Id', 'CodeSpec.Id',
         'CodeValue', 'ECClassId', 'ECInstanceId', 'FederationGuid', 'GeometryStream',
