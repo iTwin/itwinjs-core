@@ -97,7 +97,7 @@ The default is `false`, preserving the existing behavior; while disabled, each r
 
 Both properties on [MapLayerFormatRegistry]($frontend) are `@beta`, as are the accompanying additions used to report blocked requests: the [MapLayerImageryProviderStatus]($frontend) and [MapLayerSourceStatus]($frontend) members `UntrustedOrigin`, and [MapLayerImageryProvider.blockedOrigins]($frontend).
 
-Because `fetch` follows redirects transparently, a request can deliver credentials to an origin other than the one it targeted. While the restriction is enabled, every request that carries credentials is therefore issued with `redirect: "error"`: a redirected credentialed request fails instead of reaching the destination. Applications whose trusted map servers redirect credentialed requests should list the redirect destination in `trustedCredentialsOrigins`.
+Because `fetch` follows redirects transparently, a request can deliver browser credentials to an origin other than the one it targeted. While the restriction is enabled, SSO requests that include browser credentials are therefore issued with `redirect: "error"`: every redirect fails before its destination can be evaluated, including same-origin and allowlisted redirects. Applications whose trusted map servers redirect these requests should configure the layer or request to use the final endpoint directly and trust that origin, or disable the restriction if redirects are required. This redirect policy does not apply to caller-supplied Authorization headers or API tokens.
 
 See [Map-layer security](../learning/frontend/MapLayersAndBasemaps.md#map-layer-security) for the full behavior, including redirect handling and how to react to blocked origins.
 
