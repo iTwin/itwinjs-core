@@ -15,9 +15,11 @@ import * as path from "path";
 import { ChangesetType, Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import {
-  assertChangesetTypeAndDescr, assertThrowsAsync, assertThrowsAsyncContaining, createTestIModel, enableSchemaSync, importTinySchema as importSchema,
-  initializeContainer, insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase, queryProfileVer, queryPropNames,
-  querySchemaSyncDataVer, readElementProp, TestElementProps, TinyPrimitiveProp, TinySchema, tinySchemaToXml, TinyStructProp,
+  assertChangesetTypeAndDescr, assertThrowsAsync, assertThrowsAsyncContaining, createTestIModel, enableSchemaSync, expectCacheTablesIdentical,
+  expectCensusPreserved, expectMetadataTablesIdentical, expectNoForeignKeyViolations, expectPhysicalSchemaIdentical,
+  importTinySchema as importSchema, initializeContainer, insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase,
+  queryProfileVer, queryPropNames, querySchemaSyncDataVer, readElementProp, readTableRows, takeElementCensus, TestElementProps,
+  TinyPrimitiveProp, TinySchema, tinySchemaToXml, TinyStructProp,
 } from "./SchemaSyncTestUtils";
 describe("Schema synchronization", function (this: Suite) {
   this.timeout(0);
@@ -46,6 +48,48 @@ describe("Schema synchronization", function (this: Suite) {
   };
 
   const imodelJsCoreDirname = path.join(__dirname, `../../../../..`);
+
+  const readOverflowElementIds = (db: IModelDb): string[] => {
+    let tableExists = false;
+    db.withPreparedSqliteStatement("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (stmt) => {
+      stmt.bindString(1, "bis_GeometricElement2d_Overflow");
+      tableExists = stmt.step() === DbResult.BE_SQLITE_ROW;
+    });
+    assert.isTrue(tableExists, "BisCore's GeometricElement2d overflow table is missing");
+    const ids: string[] = [];
+    db.withPreparedSqliteStatement("SELECT ElementId FROM bis_GeometricElement2d_Overflow", (stmt) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW)
+        ids.push(stmt.getValue(0).getId());
+    });
+    return ids;
+  };
+
+  const queryTablesLike = (db: IModelDb, pattern: string): string[] => {
+    const tables: string[] = [];
+    db.withPreparedSqliteStatement("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?", (stmt) => {
+      stmt.bindString(1, pattern);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW)
+        tables.push(stmt.getValue(0).getString());
+    });
+    return tables;
+  };
+
+  const querySchemaId = (db: IModelDb, schemaName: string): string => db.withPreparedSqliteStatement("SELECT Id FROM ec_Schema WHERE Name=?", (stmt) => {
+    stmt.bindString(1, schemaName);
+    assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW, `${schemaName} is missing from ec_Schema`);
+    return stmt.getValue(0).getId();
+  });
+
+  const pushAfterPull = async (briefcase: BriefcaseDb, accessToken: AccessToken, description: string): Promise<void> => {
+    try {
+      await briefcase.pushChanges({ accessToken, description });
+    } catch (error) {
+      if (!(error instanceof Error) || !error.message.includes("pull is required"))
+        throw error;
+      await briefcase.pullChanges({ accessToken });
+      await briefcase.pushChanges({ accessToken, description });
+    }
+  };
 
   it("multi user workflow", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
@@ -147,6 +191,93 @@ describe("Schema synchronization", function (this: Suite) {
 
     HubMock.shutdown();
   });
+
+  // The third briefcase only derives its tables from ec_, while data is inserted between the two schema changes.
+  // That combination exercises the pull materialization path and makes physical-schema agreement observable.
+  it("multi user workflow with a pull-only briefcase and interleaved data #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-1" });
+    const accessToken1 = "schema front door 1 user 1";
+    const accessToken2 = "schema front door 1 user 2";
+    const accessToken3 = "schema front door 1 user 3";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 1", accessToken: accessToken1 });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken1, cacheName: "schemaFrontDoor1b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken2, cacheName: "schemaFrontDoor1b2" });
+    const b3 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken3, cacheName: "schemaFrontDoor1b3" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      await b2.pullChanges({ accessToken: accessToken2 });
+      await b3.pullChanges({ accessToken: accessToken3 });
+
+      const schemaV1: TinySchema = {
+        name: "FrontDoorWorkflow",
+        alias: "fdw",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe",
+          baseClass: "bis:GeometricElement2d",
+          props: [
+            { kind: "primitive", name: "p0", type: "string" },
+            { kind: "primitive", name: "p1", type: "string" },
+          ],
+        }],
+      };
+      await importSchema(b1, schemaV1);
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door initial schema" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+      await b3.pullChanges({ accessToken: accessToken3 });
+
+      const place = await insertDrawingModelAndCategory(b1, "FrontDoorWorkflow");
+      const elementId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "FrontDoorWorkflow:Pipe",
+        props: { p0: "before second schema", p1: "preserve" },
+      });
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door interleaved data" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+      await b3.pullChanges({ accessToken: accessToken3 });
+
+      const schemaV2: TinySchema = {
+        ...schemaV1,
+        ver: "01.00.01",
+        classes: [{ ...schemaV1.classes![0], props: [
+          ...schemaV1.classes![0].props!,
+          { kind: "primitive", name: "p2", type: "string" },
+          { kind: "primitive", name: "p3", type: "string" },
+        ] }],
+      };
+      await importSchema(b2, schemaV2);
+      await pushAfterPull(b2, accessToken2, "front door second schema");
+      await b1.pullChanges({ accessToken: accessToken1 });
+      await b3.pullChanges({ accessToken: accessToken3 });
+
+      const className = "FrontDoorWorkflow:Pipe";
+      for (const [index, briefcase] of [b1, b2, b3].entries()) {
+        assert.deepEqual(queryPropNames(briefcase, className), ["p0", "p1", "p2", "p3"]);
+        assert.equal(readElementProp(briefcase, elementId, "p0"), "before second schema", `p0 changed in b${index + 1}`);
+        assert.equal(readElementProp(briefcase, elementId, "p1"), "preserve", `p1 changed in b${index + 1}`);
+        expectNoForeignKeyViolations(briefcase, `front door b${index + 1}`);
+      }
+
+      const census1 = await takeElementCensus(b1, [className]);
+      const census2 = await takeElementCensus(b2, [className]);
+      const census3 = await takeElementCensus(b3, [className]);
+      expectCensusPreserved(census1, census2, "between b1 and b2 after the pulling briefcase materialized the schema");
+      expectCensusPreserved(census1, census3, "between b1 and b3 after the pulling briefcase materialized the schema");
+      expectMetadataTablesIdentical(b1, b2, "front door metadata b1/b2", { a: "b1", b: "b2" });
+      expectMetadataTablesIdentical(b1, b3, "front door metadata b1/b3", { a: "b1", b: "b3" });
+      expectCacheTablesIdentical(b1, b2, "front door cache b1/b2", { a: "b1", b: "b2" });
+      expectCacheTablesIdentical(b1, b3, "front door cache b1/b3", { a: "b1", b: "b3" });
+      expectPhysicalSchemaIdentical(b1, b2, "front door physical schema b1/b2");
+      expectPhysicalSchemaIdentical(b1, b3, "front door physical schema b1/b3");
+    } finally {
+      b3.close();
+      b2.close();
+      b1.close();
+    }
+  });
   it("import same schema from different briefcase", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
     const iTwinId = Guid.createValue();
@@ -234,6 +365,87 @@ describe("Schema synchronization", function (this: Suite) {
     b3.close();
 
     HubMock.shutdown();
+  });
+
+  // Both domain schemas share a referenced schema, so the sync database must preserve one reference row and id.
+  // Importing different closures on the two briefcases exercises reference reconciliation rather than duplicate import.
+  it("import different schemas that share a reference #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-2" });
+    const accessToken1 = "schema front door 2 user 1";
+    const accessToken2 = "schema front door 2 user 2";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 2", accessToken: accessToken1 });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken1, cacheName: "schemaFrontDoor2b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken2, cacheName: "schemaFrontDoor2b2" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      const commonSchema: TinySchema = {
+        name: "FrontDoorCommon",
+        alias: "common",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "BaseElement",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "commonValue", type: "string" }],
+        }],
+      };
+      await importSchema(b1, commonSchema);
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door common schema" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      const schemaA: TinySchema = {
+        name: "FrontDoorSchemaA",
+        alias: "fda",
+        ver: "01.00.00",
+        refs: [
+          { name: "BisCore", ver: "01.00.00", alias: "bis" },
+          { name: "FrontDoorCommon", ver: "01.00.00", alias: "common" },
+        ],
+        classes: [{
+          type: "entity",
+          name: "ElementA",
+          baseClass: "common:BaseElement",
+          props: [{ kind: "primitive", name: "fromA", type: "string" }],
+        }],
+      };
+      const schemaB: TinySchema = {
+        name: "FrontDoorSchemaB",
+        alias: "fdb",
+        ver: "01.00.00",
+        refs: [
+          { name: "BisCore", ver: "01.00.00", alias: "bis" },
+          { name: "FrontDoorCommon", ver: "01.00.00", alias: "common" },
+        ],
+        classes: [{
+          type: "entity",
+          name: "ElementB",
+          baseClass: "common:BaseElement",
+          props: [{ kind: "primitive", name: "fromB", type: "string" }],
+        }],
+      };
+      await Promise.all([importSchema(b1, schemaA), importSchema(b2, schemaB)]);
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door schema A" });
+      await pushAfterPull(b2, accessToken2, "front door schema B");
+      await b1.pullChanges({ accessToken: accessToken1 });
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      assert.equal(querySchemaId(b1, "FrontDoorCommon"), querySchemaId(b2, "FrontDoorCommon"), "the shared reference received different ids");
+      assert.deepEqual(queryPropNames(b1, "FrontDoorSchemaA:ElementA"), ["fromA"]);
+      assert.deepEqual(queryPropNames(b1, "FrontDoorSchemaB:ElementB"), ["fromB"]);
+      assert.deepEqual(queryPropNames(b2, "FrontDoorSchemaA:ElementA"), ["fromA"]);
+      assert.deepEqual(queryPropNames(b2, "FrontDoorSchemaB:ElementB"), ["fromB"]);
+      expectMetadataTablesIdentical(b1, b2, "after different schemas with a shared reference", { a: "b1", b: "b2" });
+      expectPhysicalSchemaIdentical(b1, b2, "after different schemas with a shared reference");
+      expectNoForeignKeyViolations(b1, "shared reference b1");
+      expectNoForeignKeyViolations(b2, "shared reference b2");
+    } finally {
+      b2.close();
+      b1.close();
+    }
   });
   it("override schema sync container", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
@@ -379,6 +591,60 @@ describe("Schema synchronization", function (this: Suite) {
       b.close();
     });
     HubMock.shutdown();
+  });
+
+  // The override must leave a briefcase with committed local work governed by its original container.
+  // Silently reseeding a new authority would make that unpushed schema change unrecoverable.
+  it("refuses to override schema sync with unpushed local changes #extended", async () => {
+    const firstContainer = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-3a" });
+    const secondContainer = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-3b" });
+    const accessToken1 = "schema front door 3 user 1";
+    const accessToken2 = "schema front door 3 user 2";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 3", accessToken: accessToken1 });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken1, cacheName: "schemaFrontDoor3b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken2, cacheName: "schemaFrontDoor3b2" });
+
+    try {
+      await enableSchemaSync(b1, firstContainer);
+      await b2.pullChanges({ accessToken: accessToken2 });
+      const schemaV1: TinySchema = {
+        name: "FrontDoorOverride",
+        alias: "fdo",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "p0", type: "string" }],
+        }],
+      };
+      await importSchema(b1, schemaV1);
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door override initial schema" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      await importSchema(b2, {
+        ...schemaV1,
+        ver: "01.00.01",
+        classes: [{ ...schemaV1.classes![0], props: [
+          ...schemaV1.classes![0].props!,
+          { kind: "primitive", name: "unpushed", type: "string" },
+        ] }],
+      });
+      assert.isTrue(b2.txns.hasLocalChanges);
+      assert.equal(SchemaSync.queryContainerProps(b2)?.containerId, firstContainer.containerId);
+
+      await assertThrowsAsync(
+        async () => SchemaSync.initializeForIModel({ iModel: b2, containerProps: secondContainer, overrideContainer: true }),
+        "Cannot enable SchemaSync while there are local changes",
+      );
+      assert.equal(SchemaSync.queryContainerProps(b2)?.containerId, firstContainer.containerId, "the override changed the local authority");
+      assert.isTrue(b2.txns.hasLocalChanges, "the unpushed schema change was discarded");
+      await b2.discardChanges();
+    } finally {
+      b2.close();
+      b1.close();
+    }
   });
 
   // This iModel starts on ECDb profile 4.0.0.1, which cannot read EC 3.2 schemas until the profile
@@ -713,6 +979,74 @@ describe("Schema synchronization", function (this: Suite) {
     });
     HubMock.shutdown();
   });
+  // B2 remains on the old profile and replays the profile/domain upgrade changesets from the timeline.
+  // Its bis_* tables therefore have to be reconciled by replay, with the same data as the in-place upgrader.
+  it("replays a profile upgrade on a second briefcase from 4.0.0.1 #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-4" });
+    const accessToken1 = "schema front door 4 user 1";
+    const accessToken2 = "schema front door 4 user 2";
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4001.bim") }, OpenMode.ReadWrite);
+    const version0 = testFile.getFilePath();
+    testFile.closeFile();
+    const iTwinId = Guid.createValue();
+    const iModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, version0, iModelName: "schema front door 4" });
+    const b1Props = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken: accessToken1 });
+    let b1 = await BriefcaseDb.open(b1Props);
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken2, cacheName: "schemaFrontDoor4b2" });
+    SchemaSync.setTestCache(b1, "schemaFrontDoor4b1");
+
+    try {
+      const schemaV1: TinySchema = {
+        name: "FrontDoorProfile401",
+        alias: "fdp",
+        ver: "01.00.00",
+        ecXmlVersion: "3.1",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "p0", type: "string" }],
+        }],
+      };
+      await importSchemaEc31(b1, schemaV1);
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door 4 initial schema" });
+      await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      const place = await insertDrawingModelAndCategory(b1, "FrontDoorProfile401");
+      const elementId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorProfile401:Pipe", props: { p0: "profile data" } });
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door 4 data" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+      const beforeB1 = await takeElementCensus(b1, ["FrontDoorProfile401:Pipe"]);
+      const beforeB2 = await takeElementCensus(b2, ["FrontDoorProfile401:Pipe"]);
+
+      b1.close();
+      await BriefcaseDb.upgradeSchemas(b1Props);
+      b1 = await BriefcaseDb.open(b1Props);
+      SchemaSync.setTestCache(b1, "schemaFrontDoor4b1");
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      const afterB1 = await takeElementCensus(b1, ["FrontDoorProfile401:Pipe"]);
+      const afterB2 = await takeElementCensus(b2, ["FrontDoorProfile401:Pipe"]);
+      expectCensusPreserved(beforeB1, afterB1, "after the in-place profile upgrade");
+      expectCensusPreserved(beforeB2, afterB2, "after replaying the profile upgrade");
+      assert.equal(readElementProp(b1, elementId, "p0"), "profile data");
+      assert.equal(readElementProp(b2, elementId, "p0"), "profile data");
+      assert.equal(queryProfileVer(b1), queryProfileVer(b2), "the replaying briefcase kept the old BisCore profile");
+      assert.deepEqual(queryPropNames(b1, "FrontDoorProfile401:Pipe"), ["p0"]);
+      assert.deepEqual(queryPropNames(b2, "FrontDoorProfile401:Pipe"), ["p0"]);
+      expectMetadataTablesIdentical(b1, b2, "after replaying the 4.0.0.1 profile upgrade", { a: "in-place", b: "replay" });
+      expectCacheTablesIdentical(b1, b2, "after replaying the 4.0.0.1 profile upgrade", { a: "in-place", b: "replay" });
+      expectPhysicalSchemaIdentical(b1, b2, "after replaying the 4.0.0.1 profile upgrade");
+      expectNoForeignKeyViolations(b1, "4.0.0.1 profile upgrade in-place");
+      expectNoForeignKeyViolations(b2, "4.0.0.1 profile upgrade replay");
+    } finally {
+      b2.close();
+      b1.close();
+    }
+  });
   it("test schema sync with profile and domain schema upgrade (from 4.0.0.3)", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
@@ -1036,6 +1370,78 @@ describe("Schema synchronization", function (this: Suite) {
     });
     HubMock.shutdown();
   });
+  // B2 is downloaded only after the profile and domain upgrade, so it replays the complete history from the timeline.
+  // Comparing it with the in-place upgrader covers the fresh-briefcase path that never held the old profile.
+  it("downloads a fresh briefcase after a profile upgrade from 4.0.0.3 #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-5" });
+    const accessToken = "schema front door 5 user 1";
+    const freshAccessToken = "schema front door 5 user 2";
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4003.bim") }, OpenMode.ReadWrite);
+    const version0 = testFile.getFilePath();
+    testFile.closeFile();
+    const iTwinId = Guid.createValue();
+    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId, version0, iModelName: "schema front door 5" });
+    const b1Props = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
+    let b1 = await BriefcaseDb.open(b1Props);
+    SchemaSync.setTestCache(b1, "schemaFrontDoor5b1");
+    let b2: BriefcaseDb | undefined;
+
+    try {
+      const schemaV1: TinySchema = {
+        name: "FrontDoorProfile403",
+        alias: "fdf",
+        ver: "01.00.00",
+        ecXmlVersion: "3.1",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "p0", type: "string" }],
+        }],
+      };
+      await importSchemaEc31(b1, schemaV1);
+      await b1.pushChanges({ accessToken, description: "front door 5 initial schema" });
+      await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+      const place = await insertDrawingModelAndCategory(b1, "FrontDoorProfile403");
+      const elementId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorProfile403:Pipe", props: { p0: "fresh data" } });
+      await b1.pushChanges({ accessToken, description: "front door 5 data" });
+      const before = await takeElementCensus(b1, ["FrontDoorProfile403:Pipe"]);
+
+      b1.close();
+      await BriefcaseDb.upgradeSchemas(b1Props);
+      b1 = await BriefcaseDb.open(b1Props);
+      SchemaSync.setTestCache(b1, "schemaFrontDoor5b1");
+      await importSchemaEc31(b1, {
+        ...schemaV1,
+        ver: "01.00.01",
+        classes: [{ ...schemaV1.classes![0], props: [
+          ...schemaV1.classes![0].props!,
+          { kind: "primitive", name: "p1", type: "string" },
+        ] }],
+      });
+      await b1.pushChanges({ accessToken, description: "front door 5 domain upgrade" });
+
+      b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken: freshAccessToken, cacheName: "schemaFrontDoor5b2" });
+      const after = await takeElementCensus(b2, ["FrontDoorProfile403:Pipe"]);
+      expectCensusPreserved(before, after, "after a fresh briefcase replays the profile upgrade");
+      assert.equal(readElementProp(b1, elementId, "p0"), "fresh data");
+      assert.equal(readElementProp(b2, elementId, "p0"), "fresh data");
+      assert.deepEqual(queryPropNames(b1, "FrontDoorProfile403:Pipe"), ["p0", "p1"]);
+      assert.deepEqual(queryPropNames(b2, "FrontDoorProfile403:Pipe"), ["p0", "p1"]);
+      assert.equal(queryProfileVer(b1), queryProfileVer(b2), "the fresh briefcase has a different profile version");
+      assert.equal(querySchemaSyncDataVer(b1), querySchemaSyncDataVer(b2));
+      expectMetadataTablesIdentical(b1, b2, "after a fresh 4.0.0.3 briefcase download", { a: "upgraded", b: "fresh" });
+      expectCacheTablesIdentical(b1, b2, "after a fresh 4.0.0.3 briefcase download", { a: "upgraded", b: "fresh" });
+      expectPhysicalSchemaIdentical(b1, b2, "after a fresh 4.0.0.3 briefcase download");
+      expectNoForeignKeyViolations(b1, "4.0.0.3 upgraded briefcase");
+      expectNoForeignKeyViolations(b2, "4.0.0.3 fresh briefcase");
+    } finally {
+      b2?.close();
+      b1.close();
+    }
+  });
   it("import schema acquire schema lock when need to transform data", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
     const iTwinId = Guid.createValue();
@@ -1213,6 +1619,89 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.shutdown();
   });
 
+  // A deletion reports a different upgrade status from a transform, yet its upgrade still needs the exclusive schema lock.
+  // Keep that lock occupied with an additive import so the deletion path cannot accidentally bypass acquisition.
+  it("import schema acquire schema lock when need to delete data #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-6" });
+    const accessToken1 = "schema front door 6 user 1";
+    const accessToken2 = "schema front door 6 user 2";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 6", accessToken: accessToken1 });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken1, cacheName: "schemaFrontDoor6b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken2, cacheName: "schemaFrontDoor6b2" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      const schemaV1: TinySchema = {
+        name: "FrontDoorDeletionLock",
+        alias: "fdl",
+        ver: "01.00.00",
+        dynamic: true,
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe",
+          baseClass: "bis:GeometricElement2d",
+          props: [
+            { kind: "primitive", name: "keep", type: "string" },
+            { kind: "primitive", name: "remove", type: "string" },
+          ],
+        }],
+      };
+      await importSchema(b1, schemaV1);
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door 6 initial schema" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+      const place = await insertDrawingModelAndCategory(b1, "FrontDoorDeletionLock");
+      const elementId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "FrontDoorDeletionLock:Pipe",
+        props: { keep: "preserve", remove: "delete" },
+      });
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door 6 data" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      const schemaWithoutProperty: TinySchema = {
+        ...schemaV1,
+        ver: "02.00.00",
+        classes: [{ ...schemaV1.classes![0], props: [{ kind: "primitive", name: "keep", type: "string" }] }],
+      };
+      let caughtError: unknown;
+      try {
+        await importSchema(b1, schemaWithoutProperty);
+      } catch (error) {
+        caughtError = error;
+      }
+      assert.isDefined(caughtError, "the deleting import should require an upgrade");
+      assert.isTrue(SchemaSync.requiresUpgrade(caughtError));
+      assert.equal((caughtError as { errorNumber?: number }).errorNumber, DbResult.BE_SQLITE_ERROR_DataDeletionRequired);
+
+      await importSchema(b2, {
+        name: "FrontDoorDeletionLockOther",
+        alias: "fdlo",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Other",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "value", type: "string" }],
+        }],
+      });
+      await assertThrowsAsyncContaining(
+        async () => b1.upgradeSchemaStrings([tinySchemaToXml(schemaWithoutProperty)], { accessToken: accessToken1, description: "delete property while locked" }),
+        "shared lock is held",
+      );
+      await b2.pushChanges({ accessToken: accessToken2, description: "front door 6 additive schema" });
+      await b1.pullChanges({ accessToken: accessToken1 });
+      await b1.upgradeSchemaStrings([tinySchemaToXml(schemaWithoutProperty)], { accessToken: accessToken1, description: "front door 6 delete property" });
+      assert.equal(readElementProp(b1, elementId, "keep"), "preserve");
+      assert.isUndefined(readElementProp(b1, elementId, "remove"));
+      assert.deepEqual(queryPropNames(b1, "FrontDoorDeletionLock:Pipe"), ["keep"]);
+    } finally {
+      b2.close();
+      b1.close();
+    }
+  });
+
   const structAndPipeSchema = (structMemberCount: number, ver: string): TinySchema => ({
     name: "TestRetry",
     alias: "tr",
@@ -1270,6 +1759,55 @@ describe("Schema synchronization", function (this: Suite) {
     }
   });
 
+  // Widening the struct also moves the element's mapped properties into BisCore's overflow table.
+  // The census alone can miss a row that becomes invisible through the EC join, so inspect overflow directly.
+  it("routes a data transform with overflow rows to upgradeSchemas #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-7" });
+    const accessToken = "schema front door 7 token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 7", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "schemaFrontDoor7b1" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      const initial = structAndPipeSchema(11, "01.00.00");
+      await importSchema(b1, initial);
+      await b1.pushChanges({ accessToken, description: "front door 7 initial schema" });
+      const place = await insertDrawingModelAndCategory(b1, "FrontDoorTransformOverflow");
+      const elementId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "TestRetry:Pipe1",
+        props: { name: "overflow-preserved" },
+      });
+      await b1.pushChanges({ accessToken, description: "front door 7 data" });
+      const before = await takeElementCensus(b1, ["TestRetry:Pipe1"]);
+      const widenedSchema = structAndPipeSchema(31, "01.00.01");
+      widenedSchema.classes![1].props!.push(...Array.from({ length: 40 }, (_, index): TinyPrimitiveProp => ({
+        kind: "primitive",
+        name: `overflow${index}`,
+        type: "string",
+      })));
+      const widened = tinySchemaToXml(widenedSchema);
+
+      let caughtError: unknown;
+      try {
+        await b1.importSchemaStrings([widened]);
+      } catch (error) {
+        caughtError = error;
+      }
+      assert.isDefined(caughtError, "the overflow transform should require an upgrade");
+      assert.isTrue(SchemaSync.requiresUpgrade(caughtError));
+      assert.equal((caughtError as { errorNumber?: number }).errorNumber, DbResult.BE_SQLITE_ERROR_DataTransformRequired);
+      await b1.upgradeSchemaStrings([widened], { accessToken, description: "front door 7 widen into overflow" });
+
+      const overflowIds = readOverflowElementIds(b1);
+      assert.include(overflowIds, elementId, "the transformed element has no BisCore overflow row");
+      expectCensusPreserved(before, await takeElementCensus(b1, ["TestRetry:Pipe1"]), "after transforming into overflow");
+      assert.equal(readElementProp(b1, elementId, "name"), "overflow-preserved");
+      assert.isFalse(b1.txns.hasLocalChanges);
+    } finally {
+      b1.close();
+    }
+  });
   it("deletes a property through upgradeSchemas and keeps the rest of the data", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-4" });
     const accessToken = "schema deletion token";
@@ -1324,9 +1862,70 @@ describe("Schema synchronization", function (this: Suite) {
     }
   });
 
+  // The empty class is still data-bearing by map strategy, even with no instances, while its sibling has data.
+  // Upgrade must remove only the empty class and preserve the sibling's rows.
+  it("deletes an empty class through upgradeSchemas and keeps a sibling's data #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-8" });
+    const accessToken = "schema front door 8 token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 8", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "schemaFrontDoor8b1" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      const schemaV1: TinySchema = {
+        name: "FrontDoorClassDeletion",
+        alias: "fdc",
+        ver: "01.00.00",
+        dynamic: true,
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Kept",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "value", type: "string" }],
+        }, {
+          type: "entity",
+          name: "Empty",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "unused", type: "string" }],
+        }],
+      };
+      await importSchema(b1, schemaV1);
+      await b1.pushChanges({ accessToken, description: "front door 8 initial schema" });
+      const place = await insertDrawingModelAndCategory(b1, "FrontDoorClassDeletion");
+      const keptId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorClassDeletion:Kept", props: { value: "keep" } });
+      await b1.pushChanges({ accessToken, description: "front door 8 sibling data" });
+      const before = await takeElementCensus(b1, ["FrontDoorClassDeletion:Kept"]);
+      const withoutEmpty: TinySchema = { ...schemaV1, ver: "02.00.00", classes: [schemaV1.classes![0]] };
+
+      let caughtError: unknown;
+      try {
+        await importSchema(b1, withoutEmpty);
+      } catch (error) {
+        caughtError = error;
+      }
+      assert.isDefined(caughtError, "deleting the empty class should require an upgrade");
+      assert.isTrue(SchemaSync.requiresUpgrade(caughtError));
+      assert.equal((caughtError as { errorNumber?: number }).errorNumber, DbResult.BE_SQLITE_ERROR_DataDeletionRequired);
+      await b1.upgradeSchemaStrings([tinySchemaToXml(withoutEmpty)], { accessToken, description: "front door 8 delete empty class" });
+
+      expectCensusPreserved(before, await takeElementCensus(b1, ["FrontDoorClassDeletion:Kept"]), "after deleting the empty class");
+      assert.equal(readElementProp(b1, keptId, "value"), "keep");
+      assert.deepEqual(queryPropNames(b1, "FrontDoorClassDeletion:Kept"), ["value"]);
+      assert.deepEqual(queryPropNames(b1, "FrontDoorClassDeletion:Empty"), []);
+    } finally {
+      b1.close();
+    }
+  });
   it("requiresUpgrade returns false for unrelated errors", () => {
     assert.isFalse(SchemaSync.requiresUpgrade(new Error("invalid schema")));
     assert.isFalse(SchemaSync.requiresUpgrade({ errorNumber: DbResult.BE_SQLITE_ERROR }));
+  });
+
+  // Profile upgrades use this status, while SchemaSync.requiresUpgrade is deliberately limited to data moves and deletions.
+  // Keep the profile-upgrade status out of that set so callers do not take the wrong upgrade path.
+  it("requiresUpgrade returns false for SchemaUpgradeRequired #extended", () => {
+    assert.isFalse(SchemaSync.requiresUpgrade({ errorNumber: DbResult.BE_SQLITE_ERROR_SchemaUpgradeRequired }));
   });
 
   it("enables schema sync for an existing iModel with schemas and data #extended", async () => {
@@ -1384,6 +1983,81 @@ describe("Schema synchronization", function (this: Suite) {
       } finally {
         AzuriteTest.userToken = originalUserToken;
       }
+    } finally {
+      b1.close();
+    }
+  });
+
+  // Enabling an existing file must mirror both physical-only shapes: link-table rows and BisCore overflow rows.
+  // These are absent from the briefcase's EC metadata until initialization rebuilds the sync view.
+  it("enables an existing iModel with a link table and overflow rows #extended", async () => {
+    const accessToken = "schema front door 10 token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 10", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "schemaFrontDoor10b1" });
+
+    try {
+      const sourceProperties: { [name: string]: any } = { stable: "source" };
+      for (let index = 0; index < 40; ++index)
+        sourceProperties[`overflow${index}`] = `value-${index}`;
+      const schema: TinySchema = {
+        name: "FrontDoorExistingShapes",
+        alias: "fes",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "SourceElement",
+          baseClass: "bis:GeometricElement2d",
+          props: [
+            { kind: "primitive", name: "stable", type: "string" },
+            ...Array.from({ length: 40 }, (_, index): TinyPrimitiveProp => ({ kind: "primitive", name: `overflow${index}`, type: "string" })),
+          ],
+        }, {
+          type: "entity",
+          name: "TargetElement",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "targetValue", type: "string" }],
+        }],
+        rawXml: [`<ECRelationshipClass typeName="SourceTargets" strength="referencing" strengthDirection="forward" modifier="Sealed">
+    <Source multiplicity="(0..*)" roleLabel="source" polymorphic="false">
+        <Class class="SourceElement"/>
+    </Source>
+    <Target multiplicity="(0..*)" roleLabel="target" polymorphic="false">
+        <Class class="TargetElement"/>
+    </Target>
+</ECRelationshipClass>`],
+      };
+      await importSchema(b1, schema);
+      await b1.pushChanges({ accessToken, description: "front door 10 existing schema" });
+      const place = await insertDrawingModelAndCategory(b1, "FrontDoorExistingShapes");
+      const sourceId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorExistingShapes:SourceElement", props: sourceProperties });
+      const targetId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorExistingShapes:TargetElement", props: { targetValue: "target" } });
+      const relationshipId = withEditTxn(b1, (txn) => txn.insertRelationship({
+        classFullName: "FrontDoorExistingShapes:SourceTargets",
+        sourceId,
+        targetId,
+      }));
+      assert.isNotEmpty(relationshipId);
+      await b1.pushChanges({ accessToken, description: "front door 10 existing physical data" });
+
+      const originalUserToken = AzuriteTest.userToken;
+      AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
+      try {
+        await SchemaSync.enableForIModel({ iModel: b1, label: "SchemaSync existing physical shapes" });
+      } finally {
+        AzuriteTest.userToken = originalUserToken;
+      }
+
+      assert.isTrue(SchemaSync.isEnabled(b1));
+      assert.include(readOverflowElementIds(b1), sourceId, "the existing source element has no overflow row after enable");
+      const linkTables = queryTablesLike(b1, "%SourceTargets%");
+      assert.isNotEmpty(linkTables, "the existing relationship link table was not preserved");
+      assert.isAbove(linkTables.reduce((count, table) => count + readTableRows(b1, table).length, 0), 0, "the existing link row was not preserved");
+      assert.equal(readElementProp(b1, sourceId, "stable"), "source");
+      assert.equal(readElementProp(b1, sourceId, "overflow39"), "value-39");
+      assert.equal(readElementProp(b1, targetId, "targetValue"), "target");
+      expectNoForeignKeyViolations(b1, "existing physical shapes after enable");
+      assert.isFalse(b1.txns.hasLocalChanges);
     } finally {
       b1.close();
     }
@@ -1610,5 +2284,139 @@ describe("Schema synchronization", function (this: Suite) {
     b2.close();
     b3.close();
     HubMock.shutdown();
+  });
+
+  // Revert is forced to skip schema rows on a sync-enabled file, so the watching briefcase must see the
+  // same retained schema and the reverted data after it pulls the new timeline changeset.
+  it("reverts a schema changeset with a watching briefcase #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-11" });
+    const accessToken1 = "schema front door 11 user 1";
+    const accessToken2 = "schema front door 11 user 2";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 11", accessToken: accessToken1 });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken1, cacheName: "schemaFrontDoor11b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken2, cacheName: "schemaFrontDoor11b2" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      await b2.pullChanges({ accessToken: accessToken2 });
+      const schemaV1: TinySchema = {
+        name: "FrontDoorRevert",
+        alias: "fdr",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "p0", type: "string" }],
+        }],
+      };
+      await importSchema(b1, schemaV1);
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door 11 initial schema" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+      const place = await insertDrawingModelAndCategory(b1, "FrontDoorRevert");
+      const firstElementId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorRevert:Pipe", props: { p0: "retained" } });
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door 11 first data" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      const schemaV2: TinySchema = {
+        ...schemaV1,
+        ver: "01.00.01",
+        classes: [{ ...schemaV1.classes![0], props: [
+          ...schemaV1.classes![0].props!,
+          { kind: "primitive", name: "p1", type: "string" },
+        ] }],
+      };
+      await importSchema(b1, schemaV2);
+      const secondElementId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorRevert:Pipe", props: { p0: "reverted", p1: "reverted" } });
+      await b1.pushChanges({ accessToken: accessToken1, description: "front door 11 schema and second data" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+      assert.deepEqual(queryPropNames(b2, "FrontDoorRevert:Pipe"), ["p0", "p1"]);
+      assert.equal(readElementProp(b2, secondElementId, "p1"), "reverted");
+
+      const latestIndex = b1.changeset.index!;
+      await b1.revertAndPushChanges({ toIndex: latestIndex, accessToken: accessToken1, description: "front door 11 revert schema changeset" });
+      await b2.pullChanges({ accessToken: accessToken2 });
+
+      for (const briefcase of [b1, b2]) {
+        assert.deepEqual(queryPropNames(briefcase, "FrontDoorRevert:Pipe"), ["p0", "p1"]);
+        assert.equal(readElementProp(briefcase, firstElementId, "p0"), "retained");
+        assert.isUndefined(readElementProp(briefcase, secondElementId, "p1"));
+        expectNoForeignKeyViolations(briefcase, "after reverting the schema changeset");
+      }
+      expectMetadataTablesIdentical(b1, b2, "after the watching briefcase pulled the revert", { a: "reverter", b: "watcher" });
+      expectCacheTablesIdentical(b1, b2, "after the watching briefcase pulled the revert", { a: "reverter", b: "watcher" });
+      expectPhysicalSchemaIdentical(b1, b2, "after the watching briefcase pulled the revert");
+    } finally {
+      b2.close();
+      b1.close();
+    }
+  });
+
+  // A revert on a schema-sync-enabled iModel is downgraded to data only: revertAndPushChanges forces
+  // skipSchemaChanges on regardless of what the caller asked for, and RevertChangesArgs types the
+  // flag as `true | undefined` so a caller cannot even ask for the other behaviour. Nothing rewinds
+  // the sync db, which is why the schema half has to stay put - the briefcase would otherwise end up
+  // behind an authority that still describes the schema it just dropped.
+  it("a revert on a schema sync iModel keeps the schema and leaves the sync db alone #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-12" });
+    const accessToken = "schema front door 12 user";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 12", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "schemaFrontDoor12b1" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      const schemaV1: TinySchema = {
+        name: "FrontDoorRevertSkip",
+        alias: "fdrs",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe",
+          baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "p0", type: "string" }],
+        }],
+      };
+      await importSchema(b1, schemaV1);
+      await b1.pushChanges({ accessToken, description: "front door 12 initial schema" });
+      const place = await insertDrawingModelAndCategory(b1, "FrontDoorRevertSkip");
+      const firstElementId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorRevertSkip:Pipe", props: { p0: "retained" } });
+      await b1.pushChanges({ accessToken, description: "front door 12 first data" });
+
+      const indexBeforeTheSecondRound = b1.changeset.index;
+
+      // A schema change and a data change that depends on it.
+      await importSchema(b1, {
+        ...schemaV1,
+        ver: "01.00.01",
+        classes: [{ ...schemaV1.classes![0], props: [
+          { kind: "primitive", name: "p0", type: "string" },
+          { kind: "primitive", name: "p1", type: "string" },
+        ] }],
+      });
+      const secondElementId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorRevertSkip:Pipe", props: { p0: "kept", p1: "reverted" } });
+      await b1.pushChanges({ accessToken, description: "front door 12 schema and data" });
+
+      const dataVerBeforeRevert = querySchemaSyncDataVer(b1);
+      assert.deepEqual(queryPropNames(b1, "FrontDoorRevertSkip:Pipe"), ["p0", "p1"]);
+
+      // No skipSchemaChanges and no description, so the default request is "revert everything" and
+      // the auto-generated description reports what actually happened.
+      await b1.revertAndPushChanges({ toIndex: indexBeforeTheSecondRound!, accessToken });
+
+      const latest = await HubMock.getLatestChangeset({ iModelId });
+      expect(latest.description).to.contain("schema changes skipped",
+        "the revert did not report skipping the schema half, so the override may have stopped happening");
+
+      assert.deepEqual(queryPropNames(b1, "FrontDoorRevertSkip:Pipe"), ["p0", "p1"],
+        "the schema was reverted, which would leave the briefcase behind a sync db that still describes p1");
+      assert.equal(readElementProp(b1, firstElementId, "p0"), "retained");
+      assert.isUndefined(readElementProp(b1, secondElementId, "p0"), "the data half of the revert did not happen");
+      assert.equal(querySchemaSyncDataVer(b1), dataVerBeforeRevert, "the revert moved the schema sync data version");
+      expectNoForeignKeyViolations(b1, "after a revert that skipped the schema half");
+    } finally {
+      b1.close();
+    }
   });
 });
