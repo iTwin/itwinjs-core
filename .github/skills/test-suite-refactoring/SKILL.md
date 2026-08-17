@@ -145,7 +145,7 @@ Confirm the **test count is unchanged** after a pure split. A drop means a test 
 
 ## Gotchas that cost the most time
 
-- **`rushx` only runs `package.json` scripts, not arbitrary binaries.** `rushx eslint ...` fails with *"the command is not defined in the package.json file for this project"*. It does forward extra arguments to the underlying script, which is why `rushx test <spec> --reporter json` works — it becomes `mocha <spec> --reporter json`. There is no script that lints a subset, so `rushx lint` always covers the whole package.
+- **`rushx` only runs `package.json` scripts, not arbitrary binaries.** `rushx eslint ...` fails with _"the command is not defined in the package.json file for this project"_. It does forward extra arguments to the underlying script, which is why `rushx test <spec> --reporter json` works — it becomes `mocha <spec> --reporter json`. There is no script that lints a subset, so `rushx lint` always covers the whole package.
 - **Tests run against compiled output.** Mocha runs `lib/cjs/test/...`, not `src`. Always build before running or you are testing stale code.
 - **Run mocha sequentially.** Parallel runs contend on the backend profile lock.
 - **`tsc` emits on type errors by default.** Tests can pass while the build reports errors, which masks stale-dependency problems. Do not treat a green test run as proof the build is clean.
@@ -155,7 +155,7 @@ Confirm the **test count is unchanged** after a pure split. A drop means a test 
 
 ## Change management
 
-A pure test refactor touches no shipped API, so it needs **no** `rush change` file and **no** `rush extract-api`. If the refactor pulls in a dependency manifest change (such as a native addon bump arriving via merge), that does require the Rush update flow and a regenerated lock file.
+A pure test refactor touches no shipped API, so it needs **no** `rush extract-api`. However, `rush change` is still required. For pure testing related PRs, the change comment should be left blank. If the refactor pulls in a dependency manifest change (such as a native addon bump arriving via merge), that does require the Rush update flow and a regenerated lock file.
 
 ## Related skills
 
