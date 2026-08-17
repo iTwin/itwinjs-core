@@ -44,6 +44,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       const params = new QueryBinder();
       params.bindIdSet(1, ["0x32"]);
       const optionBuilder = new QueryOptionsBuilder();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
       const readerCallback = async (readerObj: ECSqlReader) => {
         const rows = await readerObj.toArray();
@@ -72,6 +73,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       const params = new QueryBinder();
       params.bindIdSet(1, ["0x32"]);
       const optionBuilder = new QueryOptionsBuilder();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
       const readerCallback = async (readerObj: ECSqlReader) => {
         const rows = await readerObj.toArray();
@@ -88,7 +90,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       await readerCallback(reader);
     });
 
-    it("bindIdSet not working with integer Ids", async () => {
+    it("bindIdSet throws on invalid integer Ids", () => {
       using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
         `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -98,20 +100,7 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
       assert.isTrue(ecdb.isOpen);
       ecdb.saveChanges();
       const params = new QueryBinder();
-      params.bindIdSet(1, ["50"]);
-      const optionBuilder = new QueryOptionsBuilder();
-      optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-      const readerCallback = async (readerObj: ECSqlReader) => {
-        const rows = await readerObj.toArray();
-        assert.equal(rows.length, 0);
-      }
-      const syncreaderCallback = (syncReader: ECSqlSyncReader) => {
-        const rows = syncReader.toArray();
-        assert.equal(rows.length, 0);
-      }
-      ecdb.withQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", syncreaderCallback, params, optionBuilder.getOptions());
-      const reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
-      await readerCallback(reader);
+      expect(() => params.bindIdSet(1, ["50"])).to.throw(/is not a valid Id64String/);
     });
 
     it("ecsql reader simple using query reader", async () => {
@@ -416,7 +405,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });
@@ -567,7 +558,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT * FROM meta.ECSchemaDef LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT * FROM meta.ECSchemaDef", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });
@@ -720,7 +713,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });
@@ -874,7 +869,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });
@@ -1016,7 +1013,9 @@ describe("QueryReaders - createQueryReader() and withQueryReader() api tests", (
           }
           assert.equal(rowCount, 5);
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC LIMIT 5", syncReaderCallback, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames });
         await readerCallback(reader);
       });

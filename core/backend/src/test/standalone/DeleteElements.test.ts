@@ -86,6 +86,37 @@ describe("deleteElements (native bulk delete API)", () => {
       assertExists(id, `[${label}] ${id} should have been retained`);
 
     txn.abandonChanges();
+
+    // Verify that the same test case produces the same result when using the deprecated iModelDb.elements.deleteElements API, to ensure that the deprecation does not cause any regressions.
+    executeTestCaseDeprecated(label, idsToDelete, deleted, retained, expectedFailed);
+  };
+
+  const executeTestCaseDeprecated = (label: string, idsToDelete: Id64Array, deleted: Id64Array, retained: Id64Array, expectedFailed: Id64Array = []) => {
+    const previousEnforcement = EditTxn.implicitWriteEnforcement;
+    EditTxn.implicitWriteEnforcement = "allow";
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const resultStatus: BulkDeleteElementsResult = iModelDb.elements.deleteElements(idsToDelete);
+
+      if (expectedFailed.length === 0)
+        assert.equal(resultStatus.status, BulkDeleteElementsStatus.Success);
+      else
+        assert.equal(resultStatus.status, (expectedFailed.length === idsToDelete.length) ? BulkDeleteElementsStatus.DeletionFailed : BulkDeleteElementsStatus.PartialSuccess);
+
+      assert.sameMembers(Array.from(resultStatus.failedIds), expectedFailed, `[${label}] failed set mismatch`);
+
+      for (const id of deleted)
+        assertDeleted(id, `[${label}] ${id} should have been deleted`);
+
+      for (const id of retained)
+        assertExists(id, `[${label}] ${id} should have been retained`);
+    } finally {
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      iModelDb.abandonChanges();
+      EditTxn.implicitWriteEnforcement = previousEnforcement;
+    }
   };
 
   /**
@@ -126,6 +157,35 @@ describe("deleteElements (native bulk delete API)", () => {
         [parentA],
         [parentA, childA1, grandchildA1, childA2, grandchildA2, childA3],
         [parentB, childB1, childB2, standalone, childS1]);
+    });
+
+    it("Second call to deleteElement fails if a read cursor on a temp table is open", () => {
+      // Create a temp table on the same SQLite connection that the native bulk-delete will use to simulate a shared temp table lock
+      iModelDb.withSqliteStatement("CREATE TABLE IF NOT EXISTS temp.temp_table (x INTEGER)", (s) => s.step());
+      iModelDb.withSqliteStatement("INSERT INTO temp.temp_table VALUES (1)", (s) => s.step());
+
+      const lockStmt = iModelDb.prepareSqliteStatement("SELECT x FROM temp.temp_table");
+      assert.equal(lockStmt.step(), DbResult.BE_SQLITE_ROW);
+
+      const el1 = insertElement();
+      const el2 = insertElement();
+
+      const result1 = txn.deleteElements([el1]);
+      const result2 = txn.deleteElements([el2]);
+
+      for (const result of [result1, result2]) {
+        assert.equal(result.failedIds.size, 0);
+        assert.equal(result.status, BulkDeleteElementsStatus.Success, "deleteElements call must succeed");
+        assert.equal(result.sqlDeleteStatus, DbResult.BE_SQLITE_OK);
+      }
+
+      // Would have been the case if "DROP TABLE IF EXISTS..." was used (bug)
+      assert.notEqual(result2.status, BulkDeleteElementsStatus.DeletionFailed);
+      assert.notEqual(result2.sqlDeleteStatus, DbResult.BE_SQLITE_LOCKED);
+
+      lockStmt[Symbol.dispose](); // release the simulated read-lock
+
+      txn.abandonChanges();
     });
 
     it("explicitly delete the whole tree", () => {

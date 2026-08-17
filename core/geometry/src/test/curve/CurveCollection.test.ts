@@ -6,6 +6,7 @@
 import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
@@ -19,18 +20,20 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
-import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../../curve/RegionOps";
+import { ConsolidateAdjacentPrimitivesOptions, RegionOps } from "../../curve/RegionOps";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { Sample } from "../GeometrySamples";
 
 const consolidateAdjacentPath = "./src/test/data/curve/";
 
@@ -79,9 +82,8 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
   if (path3) {
     const length3 = path3.sumLengths();
     ck.testCoordinate(length1, length3, "length of clone(transform), transformInPlace");
-    const path5 = collection.cloneTransformed(scaleTransform)!;
+    const path5 = collection.cloneTransformed(scaleTransform);
     path5.sumLengths();
-
   }
 
   ck.testCoordinate(length0 * scaleFactor, length1, "scaled length");
@@ -274,6 +276,31 @@ describe("CurveCollection", () => {
     }
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("IsInPlane", () => {
+    const ck = new Checker();
+    const arcXY = Arc3d.createXY(Point3d.createZero(), 1, AngleSweep.createStartEndDegrees(90, -90));
+    const lineXY = LineSegment3d.createXYXY(0, -1, 0, 1);
+    const loopXY = Loop.create(arcXY, lineXY);
+
+    const emptyCollection = BagOfCurves.create();
+    const inPlaneCollection = loopXY.clone();
+    const inPlaneCollectionWithEmptyChild = ParityRegion.create(loopXY.clone(), Loop.create());
+    const inPlaneCollectionWithEmptyChild2 = UnionRegion.create(inPlaneCollectionWithEmptyChild.clone(), Loop.create());
+    const outOfPlanePlanarCollection = inPlaneCollection.cloneTransformed(Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1, -1, -1), Angle.createDegrees(37))));
+    const nonPlanarCollection = Path.create(lineXY.clone(), LineSegment3d.createXYZXYZ(0, 1, 0, 1, 1, 1));
+
+    const xyPlane = Plane3dByOriginAndUnitNormal.createXYPlane();
+
+    ck.testFalse(emptyCollection.isInPlane(xyPlane), "empty collection is not in any plane");
+    ck.testTrue(inPlaneCollection.isInPlane(xyPlane), "in-plane collection is in xy plane");
+    ck.testTrue(inPlaneCollectionWithEmptyChild.isInPlane(xyPlane), "in-plane collection with empty child is in xy plane");
+    ck.testTrue(inPlaneCollectionWithEmptyChild2.isInPlane(xyPlane), "in-plane collection with empty grandchild is in xy plane");
+    ck.testFalse(outOfPlanePlanarCollection.isInPlane(xyPlane), "out-of-plane planar collection is not in xy plane");
+    ck.testFalse(nonPlanarCollection.isInPlane(xyPlane), "non-planar collection is not in any plane");
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 describe("ConsolidateAdjacentPrimitives", () => {
@@ -342,11 +369,9 @@ describe("ConsolidateAdjacentPrimitives", () => {
     markLimits(allGeometry, chain1.collectCurvePrimitives(), 0.01, 0.03, 0.01, x0, y0);
     x0 += 20.0;
     for (const optionBits of [0, 1, 2, 3]) {
-      const options = new ConsolidateAdjacentCurvePrimitivesOptions();
+      const options: ConsolidateAdjacentPrimitivesOptions = { consolidateLinearGeometry: false, consolidateCompatibleArcs: false };
       let dx = 0;
       let dy = 0;
-      options.consolidateLinearGeometry = false;
-      options.consolidateCompatibleArcs = false;
       if ((optionBits & 0x01) !== 0) {
         dx = 10;
         options.consolidateLinearGeometry = true;
@@ -453,18 +478,14 @@ describe("ConsolidateAdjacentPrimitives", () => {
         ck.testExactNumber(6, loop0.children[0].packedPoints.length, "...with minimal point count");
 
     const loop1 = loop.clone();
-    const options1 = new ConsolidateAdjacentCurvePrimitivesOptions();
-    options1.consolidateLoopSeam = true;
-    RegionOps.consolidateAdjacentPrimitives(loop1, options1);
+    RegionOps.consolidateAdjacentPrimitives(loop1, { consolidateLoopSeam: true });
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, x0 += 3);
     if (ck.testExactNumber(1, loop1.children.length, "consolidated all children into one..."))
       if (ck.testType(loop1.children[0], LineString3d, "...cyclic linestring..."))
         ck.testExactNumber(5, loop1.children[0].packedPoints.length, "...with minimal point count");
 
     const loop2 = loop.clone();
-    const options2 = new ConsolidateAdjacentCurvePrimitivesOptions();
-    options2.disableLinearCompression = true;
-    RegionOps.consolidateAdjacentPrimitives(loop2, options2);
+    RegionOps.consolidateAdjacentPrimitives(loop2, { disableLinearCompression: true });
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, x0 += 3);
     if (ck.testExactNumber(1, loop2.children.length, "consolidated all children into one..."))
       if (ck.testType(loop2.children[0], LineString3d, "...linestring..."))

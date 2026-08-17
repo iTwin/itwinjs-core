@@ -164,3 +164,14 @@ export function omit<T extends object, K extends readonly (keyof T)[]>(t: T, key
 export type RequireAtLeastOne<T> = {
   [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
 }[keyof T];
+
+/** Extracts the union of all value types from the properties of `T`.
+ * @beta
+ */
+export type ValueOf<T> = T[keyof T];
+
+/** Extracts the union of all nested value types from a two-level object `T`.
+ * Intended for generated lookup objects whose first level groups literal values into sections.
+ * @beta
+ */
+export type NestedValueOf<T> = ValueOf<{ [K in keyof T]: ValueOf<T[K]> }>;

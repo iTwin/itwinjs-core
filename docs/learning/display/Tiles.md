@@ -5,11 +5,11 @@ The [iTwin.js display system](./index.md) is responsible for visualizing vast am
 The display system can aggregate different types of tiles from a broad variety of sources, including:
 
 - iModels, in the form of [tiles produced by the iTwin.js backend](./TileFormat.md);
-- Reality meshes and point clouds in standard [3d tile formats](https://github.com/CesiumGS/3d-tiles) such as those produced by [Bentley ContextCapture](https://www.bentley.com/en/products/product-line/reality-modeling-software/contextcapture);
+- Reality meshes and point clouds in standard [3d tile formats](https://github.com/CesiumGS/3d-tiles) such as those produced by [iTwin Capture Modeler](https://www.bentley.com/software/itwin-capture-modeler/);
 - Point clouds in [OrbitGT](https://orbitgt.com/) format;
 - Map imagery from a wide variety of sources including [Bing](https://www.microsoft.com/en-us/maps) and [MapBox](https://www.mapbox.com/);
 - 3d world-wide terrain meshes from [Cesium ION](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/);
-- World-wide building meshes supplied by [OpenStreetMap](https://osmbuildings.org/);
+- OpenStreetMap-derived world-wide building meshes served via [Cesium ION](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/);
 - 3d tiles of any format supplied by an application via [TiledGraphicsProvider](./TiledGraphicsProvider.md)s;
 
 Cesium's [3d tiles reference card](https://github.com/CesiumGS/3d-tiles/blob/main/3d-tiles-reference-card.pdf) provides a good overview of general concepts, along with some details specific to the standard 3d tile formats.
@@ -45,11 +45,10 @@ The graphics for all tiles selected for display are added to the scene graph. Th
 
 ## Tile loading
 
-A tile typically comes into existence with no graphics - its graphics are only loaded when (if) the tile is selected for display during scene creation. The [TileAdmin]($frontend) maintains a queue of tile content requests. At any given time, a maximum of N content requests may be "in flight"; the rest reside on a priority queue. The precise maximum depends on the application configuration; for web apps, it defaults to 10 to account for limitations of HTTP/1.1; for desktop and mobile apps, it is based on the hardware concurrency of the client device. Pending requests are removed from the queue upon cancellation - e.g., if the viewing frustum changes such that the tile's graphics are no longer required for display in any viewport.
+A tile typically comes into existence with no graphics - its graphics are only loaded when (if) the tile is selected for display during scene creation. The [TileAdmin]($frontend) maintains a queue of tile content requests. At any given time, a maximum of N content requests may be "in flight"; the rest reside on a priority queue. For tile content requests, the precise maximum depends on the transport mechanism and application configuration. HTTP-based requests use per-channel concurrency limits consistent with HTTP/1.1 connection constraints. IPC-based requests use concurrency determined by the backend worker configuration. Separately, requests for tile tree metadata are throttled by `maxActiveTileTreePropsRequests`, which defaults to 10. Pending requests are removed from the queue upon cancellation - e.g., if the viewing frustum changes such that the tile's graphics are no longer required for display in any viewport.
 
 ## Resource management
 
 Tile graphics consume graphics memory, and the tiles themselves consume JavaScript heap memory. Tiles are routinely discarded after a configurable period of disuse, along with their WebGL resources and all of their descendants. Entire tile trees are likewise discarded after a (usually longer) period of disuse.
 
 Each tile keeps track of the total amount of memory it has requested from WebGL. [TileAdmin.gpuMemoryLimit]($frontend) can be configured to impose limits on the amount of graphics memory consumed; if the total amount of memory consumed by tiles exceeds this limit, the graphics of the least-recently-used tiles are discarded until the limit has been satisfied. The tiles themselves are not discarded; nor are the graphics of any tile that is currently selected for display in any viewport. This limit requires careful balancing: a limit too low may cause excessive repeated requests for the same tile content, while a limit too high risks exceeding the client's available graphics memory, typically resulting in context loss.
-

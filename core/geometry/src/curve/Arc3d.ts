@@ -782,7 +782,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Gauss point quadrature count for evaluating curve length. (The number of intervals is adjusted to the arc sweep).
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use correct spelling quadratureGaussCount.
+   * @deprecated in 5.0 - might be removed in next major version. Use correct spelling quadratureGaussCount.
    */
   public static readonly quadratureGuassCount = 5;
   /** Gauss point quadrature count for evaluating curve length. (The number of intervals is adjusted to the arc sweep). */
@@ -1129,7 +1129,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Returns a (high accuracy) range of the curve between fractional positions.
-   * * Default implementation returns teh range of the curve from clonePartialCurve.
+   * * Default implementation returns the range of the curve from clonePartialCurve.
    */
   public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     const sweep = AngleSweep.createStartEndRadians(

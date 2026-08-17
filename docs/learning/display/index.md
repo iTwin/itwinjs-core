@@ -28,6 +28,7 @@ This documentation concerns itself primarily with the frontend portion of the di
 - [Multi-sample anti-aliasing](./MSAA.md)
 - [Wiremesh display](./Wiremesh.md)
 - [Contour lines](./ContourDisplay.md)
+- [Map layers, basemaps, and Azure Maps](../frontend/MapLayersAndBasemaps.md)
 
 ## Configuration
 

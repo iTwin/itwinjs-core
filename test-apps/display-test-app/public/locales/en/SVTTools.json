@@ -157,6 +157,9 @@
     "SetEditorToolSettings": {
       "keyin": "dta editor settings"
     },
+    "ReproJaggedCurves": {
+      "keyin": "dta repro jagged curves"
+    },
     "SyncViewports": {
       "keyin": "dta viewport sync"
     },
@@ -202,6 +205,9 @@
     },
     "CreateSectionDrawing": {
       "keyin": "dta create section drawing"
+    },
+    "InvokeFrontendIpc": {
+      "keyin": "dta invoke frontend ipc"
     },
     "ToggleSecondaryIModel": {
       "keyin": "dta imodel attach"

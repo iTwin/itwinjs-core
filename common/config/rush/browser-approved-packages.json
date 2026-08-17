@@ -340,7 +340,7 @@
     },
     {
       "name": "@itwin/presentation-shared",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@itwin/reality-data-client",
@@ -355,14 +355,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@itwin/vitest-certa-bridge",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@itwin/vitest-browser-bridge",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
-    },
-    {
       "name": "@itwin/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -372,7 +364,7 @@
     },
     {
       "name": "@loaders.gl/draco",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "@microsoft/api-extractor",
@@ -399,12 +391,12 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@vitest/browser",
-      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
+      "name": "@vitest/browser-playwright",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "@vitest/coverage-v8",
-      "allowedCategories": [ "common", "frontend", "integration-testing" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "@xmldom/xmldom",
@@ -548,11 +540,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "electron",
@@ -608,7 +600,7 @@
     },
     {
       "name": "flatbuffers",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "flatbush",
@@ -624,7 +616,7 @@
     },
     {
       "name": "fuse.js",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "get-system-fonts",
@@ -648,11 +640,11 @@
     },
     {
       "name": "i18next",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "i18next-browser-languagedetector",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "i18next-http-backend",
@@ -672,7 +664,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "jsdom",
@@ -701,6 +693,10 @@
     {
       "name": "lodash",
       "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "magic-string",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "marked",
@@ -784,7 +780,7 @@
     },
     {
       "name": "playwright",
-      "allowedCategories": [ "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "prettier",
@@ -900,7 +896,7 @@
     },
     {
       "name": "tsx",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "tty-browserify",
@@ -940,7 +936,7 @@
     },
     {
       "name": "vite",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "internal" ]
     },
     {
       "name": "vite-multiple-assets",
@@ -960,7 +956,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "webpack",
@@ -972,7 +968,7 @@
     },
     {
       "name": "wms-capabilities",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "ws",

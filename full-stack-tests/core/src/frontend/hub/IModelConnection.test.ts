@@ -17,6 +17,7 @@ import { Format, FormatterSpec } from "@itwin/core-quantity";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   for await (const row of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rows.push(row.toRow());
   }

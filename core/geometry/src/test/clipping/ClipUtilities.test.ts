@@ -37,6 +37,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 
 describe("ParityRegionSweep", () => {
   it("TriangleClip", () => {
@@ -529,7 +530,9 @@ describe("ClipAnyCurve", () => {
       // clipVector
       0.5555555555555556, 0.5833333333333333, 0.5357142857142857, 0.5833333333333333,
       // clipVectorWithHole
-      0.1786327949540818, 0.0430571022043431, 0.02489402023563518, 0.07513444358617222,
+      0.1786327949540818, 0.7722082634517999,
+      0.0430571022043431, 0.9088833053807199,
+      0.02489402023563518, 0.13629513183625738, 0.7142857142857142, 0.961721543938411
     ];
     const expectedFractions1 = [
       // singleClipper
@@ -549,7 +552,9 @@ describe("ClipAnyCurve", () => {
       // clipVector
       0.7207592200561265, 0.7932652990377571, 0.6377288021625364, 0.9248655564138277,
       // clipVectorWithHole
-      0.8213672050459182, 1, 0.9751059797643649, 0.9248655564138277,
+      0.22779173654820006, 0.8213672050459182,
+      0.13962038997193676, 1,
+      0.03827845606158895, 0.3214285714285714, 0.8816532678934014, 0.9751059797643649
     ];
     let callIndex = 0;
     const runAndVisualizeOne = (bspline: BSplineCurve3d, clipper: Clipper, ranges: Range3d[]) => {
@@ -642,7 +647,7 @@ describe("ClipAnyCurve", () => {
     const clipShape2 = ClipShape.createShape(polygon2, -30, 30)!;
     const clipVector = ClipVector.createCapture([clipShape0, clipShape1, clipShape2]);
     const clipShape3 = ClipShape.createShape(polygon0, -30, 30, Transform.createIdentity(), true)!;
-    const polygon4 = [Point3d.create(-100, 160), Point3d.create(300, 160), Point3d.create(300, -50), Point3d.create(-100, -50)];
+    const polygon4 = [Point3d.create(-100, 160), Point3d.create(320, 160), Point3d.create(320, -50), Point3d.create(-100, -50)];
     const range4 = Range3d.createArray(polygon4);
     const clipShape4 = ClipShape.createShape(polygon4, -30, 30)!;
     const clipVectorWithHole = ClipVector.createCapture([clipShape3, clipShape4]);
@@ -679,11 +684,11 @@ describe("ClipAnyCurve", () => {
       0.8746118727712179,
       0.42986277031034126, 0.9051880421477267,
       // clipVectorWithHole
-      0, 0.9063909545607753,
-      0, 0.8713099637310674,
-      0, 0.8518678593406092,
-      0, 0.8217829453052364,
-      0, 0.8661785565858812,
+      0.5486137660826138, 0.9063909545607753,
+      0.6258066710702493, 0.8713099637310674,
+      0.6493064570114558, 0.8518678593406092,
+      0.6778744151946616, 0.8217829453052364,
+      0.6329634037249435, 0.8661785565858812,
     ];
     const expectedFractions1 = [
       // singleClipper
@@ -717,11 +722,11 @@ describe("ClipAnyCurve", () => {
       1,
       0.4739664113956614, 1,
       // clipVectorWithHole
-      0.585437453506292, 1,
-      0.6661155498156492, 1,
-      0.6932005350653767, 1,
-      0.732585172490807, 1,
-      0.674080028207841, 1,
+      0.585437453506292, 0.9424761079548543,
+      0.6661155498156492, 0.9095257911295114,
+      0.6932005350653767, 0.8937819694337779,
+      0.732585172490807, 0.8746118727712179,
+      0.674080028207841, 0.9051880421477267
     ];
     let callIndex = 0;
     const runAndVisualizeOne = (spiral: TransitionSpiral3d, clipper: Clipper, ranges: Range3d[]) => {
@@ -767,6 +772,58 @@ describe("ClipAnyCurve", () => {
     runAndVisualizeAll(clipVectorWithHole, [range0, range4]);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "ClipSpiral");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("clipRegionWithHole", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const innerLoopPoints = [Point3d.create(5, 5), Point3d.create(8, 2), Point3d.create(8, 8)];
+    const outerLoopPoints = [Point3d.createZero(), Point3d.create(10), Point3d.create(10, 10), Point3d.create(0, 10)];
+    const innerLoop = Loop.createPolygon(innerLoopPoints);
+    const outerLoop = Loop.createPolygon(outerLoopPoints);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [outerLoop, innerLoop]);
+
+    const outerClip = ClipShape.createShape(outerLoopPoints, -30, 30)!;
+    const innerClip = ClipShape.createShape(innerLoopPoints, -30, 30, undefined, true)!;
+    const clipWithHole = ClipVector.createCapture([innerClip, outerClip]);
+
+    const curve = InterpolationCurve3d.create({
+      fitPoints: [
+        Point3d.create(-2, 12),
+        Point3d.create(8, 5),
+        Point3d.create(-2, -2),
+        Point3d.create(2, 5)
+      ],
+      isChordLenKnots: 1,
+      closed: true
+    })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve);
+
+    const curveClips = ClipUtilities.clipAnyCurve(curve, clipWithHole);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [outerLoop, innerLoop], 15);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveClips, 15);
+
+    if (ck.testExactNumber(3, curveClips.length, "have 3 curve clips")) {
+      if (ck.testArrayType(curveClips, BSplineCurve3d, "curve clips are B-spline curves")) {
+        const clipParams = [
+          [0.16732192869277906, 0.24728497679578676],
+          [0.3549483851924725, 0.4349114332954802],
+          [0.70301310958801, 0.8992202524002493]
+        ];
+        curveClips.sort((a: BSplineCurve3d, b: BSplineCurve3d) => { // sort by start knot
+          const aKnot0 = a.spanFractionToKnot(0, 0);
+          const bKnot0 = b.spanFractionToKnot(0, 0);
+          return Geometry.isSameFraction(aKnot0, bKnot0) ? 0 : aKnot0 < bKnot0 ? -1 : 1;
+        });
+        for (let i = 0; i < curveClips.length; i++) {
+          ck.testFraction(curveClips[i].spanFractionToKnot(0, 0), clipParams[i][0], `curve clip ${i} start knot fraction as expected`);
+          ck.testFraction(curveClips[i].spanFractionToKnot(curveClips[i].numSpan - 1, 1), clipParams[i][1], `curve clip ${i} end knot fraction as expected`);
+        }
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "clipRegionWithHole");
     expect(ck.getNumErrors()).toBe(0);
   });
   it("ClipPath", () => {

@@ -17,13 +17,47 @@ import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
 import { ParityRegion } from "../ParityRegion";
-import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../RegionOps";
+import { RegionOps } from "../RegionOps";
 import { RegionGroupMember, RegionGroupOpType } from "../RegionOpsClassificationSweeps";
 
 /** @packageDocumentation
  * @module Curve
  */
 
+/**
+ * Options bundle for [[PlanarSubdivision.createLoopInFace]] and [[PlanarSubdivision.createLoopOrParityRegionInFace]].
+ * @internal
+ */
+export interface CreateRegionInFaceOptions {
+  /**
+   * Optional callback invoked on each `edge` before its `curve` is added to `loop`.
+   * * Note that if a [[ParityRegion]] is being constructed, `curve` and `loop` may subsequently be reversed.
+   */
+  announceEdge?: (edge: HalfEdge, curve: CurvePrimitive, loop: Loop) => void;
+  /**
+   * Whether to consolidate adjacent curves in an output [[Loop]]. Default value is `false`.
+   * * If `announce` is defined, no compression is performed, as edges and curves would no longer be in 1-1 correspondence.
+   */
+  compress?: boolean;
+  /** Absolute xy-distance for confirming a returned Loop is closed. Default value is [[Geometry.smallMetricDistance]]. */
+  closureTol?: number;
+  /**
+   * Mask preset on bridge edges. Default value is `HalfEdgeMask.BRIDGE_EDGE`.
+   * * This mask is used to distinguish a split-washer type face, which can result in a [[ParityRegion]].
+   */
+  bridgeMask?: HalfEdgeMask;
+  /** Mask to use for visiting edges when creating a [[ParityRegion]] from a split-washer type face. Default value is `HalfEdgeMask.VISITED`. */
+  visitMask?: HalfEdgeMask;
+  /**
+   * Optional z-coordinate for the result region.
+   * * If undefined, graph z-coordinates are used, but this may result in a non-planar region if the graph is not planar!
+   */
+  z?: number;
+}
+
+/**
+ * @internal
+ */
 class MapCurvePrimitiveToCurveLocationDetailPairArray {
   public primitiveToPair = new Map<CurvePrimitive, CurveLocationDetailPair[]>();
   // index assigned to this primitive (for debugging)
@@ -104,6 +138,7 @@ export class PlanarSubdivision {
     primitives: CurvePrimitive[],
     allPairs: CurveLocationDetailPair[],
     mergeTolerance: number = Geometry.smallMetricDistance,
+    radianTolerance: number = Geometry.smallAngleRadians,
   ): HalfEdgeGraph {
     // map from key CurvePrimitive to CurveLocationDetailPair
     const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();
@@ -152,7 +187,7 @@ export class PlanarSubdivision {
       this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0, mergeTolerance);
     }
     // every edge got its sortAngle defined by addHalfEdge
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0, mergeTolerance);
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0, mergeTolerance, radianTolerance);
     return graph;
   }
 
@@ -214,17 +249,15 @@ export class PlanarSubdivision {
   /**
    * Based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative,
    * or sliver loops.
-   * @param zeroAreaTolerance absolute area tolerance for sliver face detection
+   * @param areaTol absolute area tolerance for sliver face detection
    * @param isSliverFace whether the loop is known a priori (e.g., via topology) to have zero area
    * @returns the area (forced to zero if within tolerance)
    */
-  public static collectSignedLoop(
-    loop: Loop, outLoops: SignedLoops, zeroAreaTolerance: number = 1.0e-10, isSliverFace?: boolean,
-  ): number {
+  public static collectSignedLoop(loop: Loop, outLoops: SignedLoops, areaTol: number = 1.0e-10, isSliverFace?: boolean): number {
     let area = isSliverFace ? 0.0 : RegionOps.computeXYArea(loop);
     if (area === undefined)
       area = 0;
-    if (Math.abs(area) < zeroAreaTolerance)
+    if (Math.abs(area) < areaTol)
       area = 0.0;
     (loop as any).computedAreaInPlanarSubdivision = area;
     if (area > 0)
@@ -265,7 +298,7 @@ export class PlanarSubdivision {
    * @param options bundle of options.
    * @returns the Loop, or `undefined` if it is not closed within xy-tolerance.
    */
-  public static createLoopInFace(face: HalfEdge | HalfEdge[], options?: PlanarSubdivision.CreateRegionInFaceOptions): Loop | undefined {
+  public static createLoopInFace(face: HalfEdge | HalfEdge[], options?: CreateRegionInFaceOptions): Loop | undefined {
     const consolidate = options?.announceEdge ? false : options?.compress ?? false; // can't compress if announcing
     const loop = Loop.create();
     const addEdgeCurve = (edge: HalfEdge): void => {
@@ -280,9 +313,7 @@ export class PlanarSubdivision {
     else
       face.announceEdgesInFace(addEdgeCurve);
     if (consolidate) {
-      const consolidateOptions = new ConsolidateAdjacentCurvePrimitivesOptions();
-      consolidateOptions.consolidateLoopSeam = true;
-      RegionOps.consolidateAdjacentPrimitives(loop, consolidateOptions);
+      RegionOps.consolidateAdjacentPrimitives(loop, { consolidateLoopSeam: true });
     }
     if (loop.isPhysicallyClosedCurve(options?.closureTol, true))
       return loop;
@@ -296,7 +327,7 @@ export class PlanarSubdivision {
    * @param options bundle of options.
    * @returns the Loop or ParityRegion, or `undefined` if one could not be computed.
    */
-  public static createLoopOrParityRegionInFace(face: HalfEdge, options?: PlanarSubdivision.CreateRegionInFaceOptions): Loop | ParityRegion | undefined {
+  public static createLoopOrParityRegionInFace(face: HalfEdge, options?: CreateRegionInFaceOptions): Loop | ParityRegion | undefined {
     let region: AnyRegion | undefined;
     const visitMask = options?.visitMask ?? HalfEdgeMask.VISITED;
     const bridgeMask = options?.bridgeMask ?? HalfEdgeMask.BRIDGE_EDGE;
@@ -357,7 +388,7 @@ export class PlanarSubdivision {
     }
     return e1;
   }
-  public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, zeroAreaTolerance: number = 1.0e-10): SignedLoops[] {
+  public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, closureTol: number = Geometry.smallMetricDistance, areaTol: number = 1.0e-10): SignedLoops[] {
     const q = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, undefined);
     const result: SignedLoops[] = [];
     const edgeMap = new Map<HalfEdge, LoopCurveLoopCurve>();
@@ -381,47 +412,14 @@ export class PlanarSubdivision {
             }
           }
         };
-        const loop = this.createLoopInFace(faceSeed, { announceEdge });
+        const loop = this.createLoopInFace(faceSeed, { announceEdge, closureTol });
         if (loop)
-          this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance, isNullFace);
+          this.collectSignedLoop(loop, componentAreas, areaTol, isNullFace);
       }
       componentAreas.edges = edges;
       result.push(componentAreas);
       edgeMap.clear();
     }
     return result;
-  }
-}
-
-/**
- * @internal
-*/
-export namespace PlanarSubdivision {
-  /** Options bundle for [[PlanarSubdivision.createLoopInFace]] and [[PlanarSubdivision.createLoopOrParityRegionInFace]]. */
-  export interface CreateRegionInFaceOptions {
-    /**
-     * Optional callback invoked on each `edge` before its `curve` is added to `loop`.
-     * * Note that if a [[ParityRegion]] is being constructed, `curve` and `loop` may subsequently be reversed.
-     */
-    announceEdge?: (edge: HalfEdge, curve: CurvePrimitive, loop: Loop) => void;
-    /**
-     * Whether to consolidate adjacent curves in an output [[Loop]]. Default value is `false`.
-     * * If `announce` is defined, no compression is performed, as edges and curves would no longer be in 1-1 correspondence.
-     */
-    compress?: boolean;
-    /** Absolute xy-distance for confirming a returned Loop is closed. Default value is [[Geometry.smallMetricDistance]]. */
-    closureTol?: number;
-    /**
-     * Mask preset on bridge edges. Default value is `HalfEdgeMask.BRIDGE_EDGE`.
-     * * This mask is used to distinguish a split-washer type face, which can result in a [[ParityRegion]].
-     */
-    bridgeMask?: HalfEdgeMask;
-    /** Mask to use for visiting edges when creating a [[ParityRegion]] from a split-washer type face. Default value is `HalfEdgeMask.VISITED`. */
-    visitMask?: HalfEdgeMask;
-    /**
-     * Optional z-coordinate for the result region.
-     * * If undefined, graph z-coordinates are used, but this may result in a non-planar region if the graph is not planar!
-     */
-    z?: number;
   }
 }

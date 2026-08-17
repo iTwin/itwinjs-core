@@ -30,6 +30,7 @@ describe("Settings", () => {
   const app1: SettingGroupSchema = {
     description: "",
     schemaPrefix: "app1",
+    title: "App 1",
     settingDefs: {
       sub1: {
         type: "string",
@@ -320,6 +321,7 @@ describe("Settings", () => {
       const group: SettingGroupSchema = {
         description: "",
         schemaPrefix,
+        title: schemaPrefix,
         settingDefs: {
           array: {
             type: "array",

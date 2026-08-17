@@ -22,7 +22,7 @@ beta;interface;FormatDefinition
 beta;interface;FormatProps
 beta;interface;FormatsChangedArgs
 beta;class;FormatSpecHandle
-internal;interface;FormatSpecHandleArgs
+beta;interface;FormatSpecHandleArgs
 beta;interface;FormatsProvider
 internal;const;formatStringRgx
 beta;class;Formatter
@@ -38,9 +38,11 @@ beta;function;formatTypeToString
 deprecated;function;formatTypeToString
 beta;interface;FormatUnitSpec
 beta;enum;FractionalPrecision
+beta;function;getDefaultPersistenceUnit
 internal;function;getItemNamesFromFormatString
 beta;function;getTraitString
 beta;const;isCustomFormatProps
+beta;function;isUnitName
 beta;interface;MutableFormatsProvider
 beta;function;parseDecimalPrecision
 internal;function;parseDefinition
@@ -57,6 +59,8 @@ beta;function;parseRatioType
 beta;class;ParserSpec
 beta;function;parseScientificType
 beta;function;parseShowSignOption
+beta;const;Phenomena
+beta;type;PhenomenonName
 beta;interface;PotentialParseUnit
 beta;class;Quantity
 internal;class;QuantityConstants
@@ -89,10 +93,15 @@ internal;class;UnitConversion
 internal;class;UnitConversionGraph
 beta;enum;UnitConversionInvert
 beta;interface;UnitConversionProps
+beta;const;UnitConversions
 internal;interface;UnitConversionSource
 beta;interface;UnitConversionSpec
 internal;class;UnitDefinitionResolver
 alpha;interface;UnitExtraData
+beta;type;UnitName
 beta;interface;UnitProps
+beta;const;Units
 beta;interface;UnitsProvider
 beta;type;UnitSystemKey
+beta;type;UnitSystemName
+beta;const;UnitSystems

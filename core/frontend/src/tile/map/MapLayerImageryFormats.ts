@@ -10,7 +10,6 @@ import { IModelConnection } from "../../IModelConnection";
 import {
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
-  AzureMapsLayerImageryProvider,
   BingMapsImageryLayerProvider,
   ImageryMapLayerTreeReference,
   MapBoxLayerImageryProvider,
@@ -20,6 +19,7 @@ import {
   MapLayerSourceStatus,
   MapLayerSourceValidation,
   MapLayerTileTreeReference,
+  MapLayerUntrustedOriginError,
   TileUrlImageryProvider,
   ValidateSourceArgs,
   WmsCapabilities,
@@ -110,6 +110,11 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 
       return { status: MapLayerSourceStatus.Valid, subLayers };
     } catch (err: any) {
+      if (err instanceof MapLayerUntrustedOriginError) {
+        let blockedOrigin: string | undefined;
+        try { blockedOrigin = new URL(err.url).origin; } catch { /* non-hierarchical URL */ }
+        return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
+      }
       let status = MapLayerSourceStatus.InvalidUrl;
       if (err?.status === 401) {
         status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
@@ -184,6 +189,11 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 
       return { status: MapLayerSourceStatus.Valid, subLayers };
     } catch (err: any) {
+      if (err instanceof MapLayerUntrustedOriginError) {
+        let blockedOrigin: string | undefined;
+        try { blockedOrigin = new URL(err.url).origin; } catch { /* non-hierarchical URL */ }
+        return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
+      }
       let status = MapLayerSourceStatus.InvalidUrl;
       if (err?.status === 401) {
         status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
@@ -219,16 +229,11 @@ class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-class AzureMapsMapLayerFormat extends ImageryMapLayerFormat {
-  public static override formatId = "AzureMaps";
-  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
-    return new AzureMapsLayerImageryProvider(settings);
-  }
-}
+/** @deprecated in 5.11.0 - will not be removed until after 2027-07-03. Bing Maps imagery is deprecated. For basemap imagery providers, see `@itwin/map-layers-formats`. */
 class BingMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "BingMaps";
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return new BingMapsImageryLayerProvider(settings);
   }
 }
@@ -245,4 +250,5 @@ class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
 }
 
 /** @internal */
-export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];
+// eslint-disable-next-line @typescript-eslint/no-deprecated -- BingMapsMapLayerFormat is deprecated but must remain registered for legacy persisted styles.
+export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];

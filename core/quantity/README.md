@@ -4,6 +4,23 @@ The __@itwin/core-quantity__ package contains classes for quantity formatting an
 
 Also check the [iTwin.js learning documentation](https://www.itwinjs.org/learning/quantity) explaining quantity formatting and its basic concepts.
 
+## Example
+
+```ts
+import { getDefaultPersistenceUnit, Phenomena, UnitConversions, Units } from "@itwin/core-quantity";
+
+const persistenceUnit = getDefaultPersistenceUnit(Phenomena.LENGTH);
+const feet = UnitConversions.convert(
+  persistenceUnit,
+  Units.LENGTH.FT,
+  1,
+);
+```
+
+UnitConversions provides synchronous conversion helpers for the canonical unit set generated from `@bentley/units-schema`.
+`getDefaultPersistenceUnit(...)` returns the package default persistence unit for a supported phenomenon.
+`Phenomena.LENGTH_RATIO` is intentionally not supported by that helper yet because the bundled built-in unit set does not currently provide an agreed default for that phenomenon.
+
 ## Contributing
 
 When adding new APIs or updating documentation for this package, review if [QuantityFormatting.md](https://github.com/iTwin/itwinjs-core/blob/master/docs/learning/frontend/QuantityFormatting.md) or the [core-quantity learning page](https://github.com/iTwin/itwinjs-core/blob/master/docs/learning/quantity/index.md) needs to be updated as well. When adding or editing code examples, it's encouraged to keep the examples consistent between this file and the linked file above.

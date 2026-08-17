@@ -306,6 +306,7 @@ namespace Snippets {
           elementId,
           onGeometry: (info: ElementGeometryInfo) => {
             const it = new ElementGeometry.Iterator(info);
+            it.requestWorldCoordinates();
             for (const entry of it) {
               if (ElementGeometry.isGeometryQueryEntry(entry.value)) {
                 if (options && options.exportJSON) {

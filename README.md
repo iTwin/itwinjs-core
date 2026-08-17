@@ -64,6 +64,12 @@ The following instructions will quickly set the repo up for you to edit the sour
 
 ​For more information, please refer to our [Contributing Guide](./CONTRIBUTING.md), which provides detailed instructions on source code editing workflows, debugging tests, contribution standards, FAQs, and guidelines for posting questions.​
 
+## Interactive Testing and Feature Development
+
+This repository includes [display-test-app](./test-apps/display-test-app/README.md) (DTA), a desktop-style test application built as part of the monorepo. It is the easiest way to exercise iTwin.js APIs directly against the source code in this repository. For example, it can be used to reproduce a bug, demonstrate a feature gap, or test a local change. Because it runs against the code in your working tree (not a published release), it is often a better vehicle for reproductions than online sandboxes, and as an Electron app it can also exercise desktop-only workflows such as editing.
+
+After completing the [Developer Quick Start](#developer-quick-start) above (which builds display-test-app along with everything else), see the display-test-app README's [Getting Started](./test-apps/display-test-app/README.md#getting-started) and [Using display-test-app](./test-apps/display-test-app/README.md#using-display-test-app) sections for how to run it and open an iModel. Adding a **key-in** is a convenient, self-contained way to invoke whatever iTwin.js API you want to test; see [Adding a key-in](./test-apps/display-test-app/README.md#adding-a-key-in) for a step-by-step guide with a skeletal example. If you use an AI coding agent, the repository also provides a [DTA repro agent](./.github/agents/dta-repro.agent.md) that specializes in scaffolding minimal reproductions in display-test-app.
+
 ## Licensing
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](./LICENSE.md) for license terms and full copyright notice.

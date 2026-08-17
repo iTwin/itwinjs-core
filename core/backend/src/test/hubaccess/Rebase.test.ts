@@ -14,6 +14,7 @@ import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { EditTxn } from "../../EditTxn";
 import { TestUtils } from "../TestUtils";
+import { semanticRebaseExtendedDescribe } from "./SemanticRebaseTestUtils";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
 import * as path from "path";
 import { LineSegment3d, Point3d } from "@itwin/core-geometry";
@@ -235,7 +236,8 @@ const removePropertyRecursive = (obj: any, prop: string) => {
 };
 
 for (const enableSemanticRebase of [false, true]) {
-  describe(`rebase changes & stashing api (useSemanticRebase=${enableSemanticRebase})`, function (this: Suite) {
+  const rebaseDescribe = enableSemanticRebase ? semanticRebaseExtendedDescribe : describe;
+  rebaseDescribe(`rebase changes & stashing api (useSemanticRebase=${enableSemanticRebase})`, function (this: Suite) {
     let testIModel: TestIModel;
     before(async () => {
       await TestUtils.shutdownBackend();

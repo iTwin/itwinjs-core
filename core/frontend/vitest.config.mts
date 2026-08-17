@@ -1,4 +1,5 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
+import { playwright } from '@vitest/browser-playwright';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { createRequire } from 'module';
 import path from 'path';
@@ -31,7 +32,7 @@ export default defineConfig({
     setupFiles: "./src/test/setupTests.ts",
     // include: ["**/<insert-file-name-here>.test.ts"],
     browser: {
-      provider: "playwright",
+      provider: playwright(),
       enabled: true,
       instances: [
         { browser: "chromium" }
@@ -91,5 +92,8 @@ export default defineConfig({
   optimizeDeps: {
     include: includePackages,
     force: true,
+    esbuildOptions: {
+      target: "es2022",
+    },
   },
 })

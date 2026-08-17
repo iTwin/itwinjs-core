@@ -11,6 +11,7 @@ import { QuantityError, QuantityStatus } from "../Exception";
 import { FormatterSpec } from "./FormatterSpec";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, RatioType, ScientificType, ShowSignOption } from "./FormatEnums";
 import { applyConversion, Quantity } from "../Quantity";
+import { Phenomena } from "../generated/Units.generated";
 
 /**  rounding additive
  * @internal
@@ -519,8 +520,9 @@ export class Formatter {
       return {magnitude};
 
     const revolution = this.getRevolution(spec);
-    magnitude = this.normalizeAngle(magnitude, revolution);
     const quarterRevolution = revolution / 4;
+
+    magnitude = this.normalizeToAzimuth(magnitude, spec.persistenceUnit.phenomenon, revolution);
 
     if (type === FormatType.Bearing) {
       let quadrant = 0;
@@ -605,6 +607,19 @@ export class Formatter {
       magnitude += revolution;
 
     return magnitude;
+  }
+
+  /**
+   * Converts a raw magnitude to a normalized azimuth (0 to revolution, measured clockwise from north), based on
+   * the phenomenon it was persisted under. Raw math angles (`ANGLE` phenomenon) need the north-measured conversion;
+   * true azimuths (`HORIZONTAL_DIRECTION`) don't. Not a unit conversion, so it's applied here, not via `convertTo`.
+   * @internal
+   */
+  public static normalizeToAzimuth(magnitude: number, phenomenon: string, revolution: number): number {
+    if (phenomenon === Phenomena.ANGLE)
+      magnitude = revolution / 4 - magnitude;
+
+    return this.normalizeAngle(magnitude, revolution);
   }
 
   private static getRevolution(spec: FormatterSpec): number {

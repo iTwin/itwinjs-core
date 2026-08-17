@@ -109,7 +109,8 @@
     "Angle": "Angle",
     "Length": "Length",
     "UnableToParseAngle": "Unable to parse angle value",
-    "UnableToParseLength": "Unable to parse length value"
+    "UnableToParseLength": "Unable to parse length value",
+    "UnableToParseValue": "Unable to parse value"
   },
   "Notices": {
     "PoweredBy": "Powered by"

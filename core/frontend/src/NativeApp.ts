@@ -118,9 +118,7 @@ export class NativeApp {
     NativeApp.hookBrowserConnectivityEvents();
 
     // initialize current online state.
-    if (window.navigator.onLine) {
-      await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
-    }
+    await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
   }
 
   /** @internal */
@@ -204,7 +202,7 @@ export class NativeApp {
       storage = new Storage(await this.nativeAppIpc.storageMgrOpen(name));
       this._storages.set(storage.id, storage);
     }
-    
+
     return storage;
   }
 

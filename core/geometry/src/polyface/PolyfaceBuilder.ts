@@ -1254,7 +1254,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Apply stroke counts to curve primitives.
    * * Recursively visit all children of data.
    * * At each primitive, invoke `computeStrokeCountForOptions` method with options from the builder.
-   * @deprecated in 4.8.0 - will not be removed until after 2026-06-13. This method does nothing and is unneeded.
+   * @deprecated in 4.8.0 - might be removed in next major version. This method does nothing and is unneeded.
    */
   public applyStrokeCountsToCurvePrimitives(data: AnyCurve | GeometryQuery): void {
     const options = this._options;
@@ -1366,7 +1366,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const stroke0 = section0.getStrokes();
     const sweepVector = surface.cloneSweepVector();
     const sweepTransform = Transform.createTranslation(sweepVector);
-    const stroke1 = stroke0.cloneTransformed(sweepTransform) as AnyCurve;
+    const stroke1 = stroke0.cloneTransformed(sweepTransform);
     const numVEdge = this._options.applyMaxEdgeLength(1, sweepVector.magnitude());
     this.addBetweenStrokeSetsWithRuledNormals(stroke0, stroke1, numVEdge);
     if (surface.capped && contour.isAnyRegionType) {

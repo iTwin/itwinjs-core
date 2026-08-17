@@ -1,6 +1,6 @@
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { Id64, Id64String, ITwinError } from "@itwin/core-bentley";
-import { CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps } from "@itwin/core-common";
+import { Code, CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps } from "@itwin/core-common";
 
 /* @internal */
 export interface CachedElement {
@@ -18,7 +18,9 @@ export class ElementLRUCache {
   private _cacheByCode = new Map<Id64String, Id64String>();
   private _cacheByFederationGuid = new Map<string, Id64String>();
 
-  private static makeCodeKey(code: CodeProps): string {
+  private static makeCodeKey(code: CodeProps): string | undefined {
+    if (Code.isEmpty(code))
+      return undefined;
     const keys = [code.scope, code.spec];
     if (code.value !== undefined) {
       keys.push(code.value);
@@ -33,7 +35,8 @@ export class ElementLRUCache {
       if (id)
         return this._elementCache.get(id);
     } else if (key.code) {
-      const id = this._cacheByCode.get(ElementLRUCache.makeCodeKey(key.code));
+      const codeKey = ElementLRUCache.makeCodeKey(key.code);
+      const id = codeKey !== undefined ? this._cacheByCode.get(codeKey) : undefined;
       if (id)
         return this._elementCache.get(id);
     } else {
@@ -61,7 +64,9 @@ export class ElementLRUCache {
     if (cachedElement) {
       if (cachedElement.elProps.id)
         this._elementCache.delete(cachedElement.elProps.id);
-      this._cacheByCode.delete(ElementLRUCache.makeCodeKey(cachedElement.elProps.code));
+      const codeKeyToDelete = ElementLRUCache.makeCodeKey(cachedElement.elProps.code);
+      if (codeKeyToDelete !== undefined)
+        this._cacheByCode.delete(codeKeyToDelete);
       if (cachedElement.elProps.federationGuid)
         this._cacheByFederationGuid.delete(cachedElement.elProps.federationGuid);
       return true;
@@ -109,7 +114,9 @@ export class ElementLRUCache {
       this._cacheByFederationGuid.set(el.elProps.federationGuid, el.elProps.id);
     }
 
-    this._cacheByCode.set(ElementLRUCache.makeCodeKey(el.elProps.code), el.elProps.id);
+    const codeKey = ElementLRUCache.makeCodeKey(el.elProps.code);
+    if (codeKey !== undefined)
+      this._cacheByCode.set(codeKey, el.elProps.id);
     if (this._elementCache.size > this.capacity) {
       const oldestKey = this._elementCache.keys().next().value as Id64String;
       const oldestElement = this._elementCache.get(oldestKey);
@@ -207,7 +214,9 @@ export class InstanceKeyLRUCache {
     if (!result.id || !Id64.isValidId64(result.id))
       ITwinError.throwError<ITwinError>({ message: "Invalid InstanceKey result", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
 
-    const cacheArgs: CachedArgs = InstanceKeyLRUCache.makeCachedArgs(key);
+    const cacheArgs = InstanceKeyLRUCache.makeCachedArgs(key);
+    if (!cacheArgs)
+      return this;
     cacheArgs.id = cacheArgs.id ? cacheArgs.id : result.id;
     const existingArgs = this._resultToArgsCache.get(result.id);
     if (existingArgs) {
@@ -224,12 +233,14 @@ export class InstanceKeyLRUCache {
     if (this._resultToArgsCache.size > this.capacity) {
       const oldestKey = this._resultToArgsCache.keys().next().value as Id64String;
       const oldestArgs = this._resultToArgsCache.get(oldestKey);
-      this.deleteCachedArgs({id: oldestArgs?.id,code: oldestArgs?.code, federationGuid: oldestArgs?.federationGuid});
+      this.deleteCachedArgs({ id: oldestArgs?.id, code: oldestArgs?.code, federationGuid: oldestArgs?.federationGuid });
     }
     return this;
   }
   public get(key: IModelJsNative.ResolveInstanceKeyArgs): IModelJsNative.ResolveInstanceKeyResult | undefined {
     const args = InstanceKeyLRUCache.makeCachedArgs(key);
+    if (!args)
+      return undefined;
     const cachedResult = this._argsToResultCache.get(args);
     if (cachedResult) {
       // Pop the cached result to the end of the cache to mark it as recently used
@@ -252,27 +263,34 @@ export class InstanceKeyLRUCache {
   }
   public delete(key: IModelJsNative.ResolveInstanceKeyArgs): boolean {
     const cacheArgs = InstanceKeyLRUCache.makeCachedArgs(key);
+    if (!cacheArgs)
+      return false;
     return this.deleteCachedArgs(cacheArgs);
   }
   private deleteCachedArgs(key: CachedArgs): boolean {
     const result = this._argsToResultCache.get(key);
     if (result) {
       const argsToDelete = this._resultToArgsCache.get(result.id);
-      this._argsToResultCache.delete({id: argsToDelete?.id, code: argsToDelete?.code, federationGuid: argsToDelete?.federationGuid});
+      this._argsToResultCache.delete({ id: argsToDelete?.id, code: argsToDelete?.code, federationGuid: argsToDelete?.federationGuid });
       this._resultToArgsCache.delete(result.id);
       return true;
     }
     return false;
   }
-  private static makeCachedArgs(args: IModelJsNative.ResolveInstanceKeyArgs): CachedArgs {
+  private static makeCachedArgs(args: IModelJsNative.ResolveInstanceKeyArgs): CachedArgs | undefined {
     if (!args.partialKey && !args.code && !args.federationGuid)
       ITwinError.throwError<ITwinError>({ message: "ResolveInstanceKeyArgs must have a partialKey, code, or federationGuid", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
 
-    return {
+    const cacheArgs: CachedArgs = {
       id: args.partialKey?.id,
       code: args.code ? InstanceKeyLRUCache.makeCodeKey(args.code) : undefined,
       federationGuid: args.federationGuid,
     };
+
+    if (!cacheArgs.id && !cacheArgs.code && !cacheArgs.federationGuid)
+      return undefined;
+
+    return cacheArgs;
   }
   private static combineCachedArgs(originalArgs: CachedArgs, newArgs: CachedArgs): CachedArgs {
     if (!originalArgs.id && !originalArgs.code && !originalArgs.federationGuid && !newArgs.id && !newArgs.code && !newArgs.federationGuid)
@@ -284,7 +302,10 @@ export class InstanceKeyLRUCache {
       federationGuid: newArgs.federationGuid ? newArgs.federationGuid : originalArgs.federationGuid,
     };
   }
-  private static makeCodeKey(code: CodeProps): string {
+  private static makeCodeKey(code: CodeProps): string | undefined {
+    if (Code.isEmpty(code))
+      return undefined;
+
     const keys = [code.scope, code.spec];
     if (code.value !== undefined) {
       keys.push(code.value);

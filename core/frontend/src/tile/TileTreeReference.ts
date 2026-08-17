@@ -266,7 +266,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    */
   public get planarClipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
 
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div.

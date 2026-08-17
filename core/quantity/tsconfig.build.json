@@ -1,0 +1,8 @@
+{
+  // The default package tsconfig includes src/test/**. Those tests now import
+  // ../../scripts/generatedModuleBuilders.ts to verify the checked-in artifacts,
+  // which would otherwise pull scripts/ into the emitted lib/ tree during build.
+  // Excluding tests here keeps runtime/package emit scoped to source files only.
+  "extends": "./tsconfig.json",
+  "exclude": ["./src/test/**"]
+}

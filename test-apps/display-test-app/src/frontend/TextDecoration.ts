@@ -18,6 +18,7 @@ import {
   Placement2dProps,
   Run,
   TabRun,
+  TargetPointShape,
   TerminatorShape,
   TextAnnotation,
   TextAnnotationAnchor,
@@ -697,21 +698,48 @@ export class TextDecorationTool extends Tool {
             if (command === "start") editor.setLeaderStartPoint(editor.leaders[latestLeaderIndex], Number(value));
             else if (command === "keypoint") {
               const curveIndex = inArgs[2];
-              const fraction = inArgs[3]
+              const fraction = inArgs[3];
               editor.setLeaderKeyPoint(editor.leaders[latestLeaderIndex], Number(curveIndex), Number(fraction));
-            }
-            else if (command === "nearest") editor.setLeaderNearest(editor.leaders[latestLeaderIndex]);
+            } else if (command === "nearest") editor.setLeaderNearest(editor.leaders[latestLeaderIndex]);
             else if (command === "textpoint") {
               const position = inArgs[2] as LeaderTextPointOptions;
               editor.setLeaderTextPoint(editor.leaders[latestLeaderIndex], position);
-
             } else if (command === "terminatorShape") {
               const shape = inArgs[2] as TerminatorShape;
               const leaderStyle: TextLeaderStyleProps = editor.documentStyle.leader ?? {};
               leaderStyle.terminatorShape = shape;
               editor.documentStyle.leader = leaderStyle;
-            }
-            else throw new Error("Expected start, keypoint, nearest, textpoint");
+            } else if (command === "showTargetPoint") {
+              const showTargetPoint = inArgs[2] === "true";
+              editor.leaders[latestLeaderIndex].styleOverrides = {
+                ...editor.leaders[latestLeaderIndex].styleOverrides,
+                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, showTargetPoint },
+              };
+            } else if (command === "targetPointShape") {
+              const shape = inArgs[2] as TargetPointShape;
+              editor.leaders[latestLeaderIndex].styleOverrides = {
+                ...editor.leaders[latestLeaderIndex].styleOverrides,
+                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, targetPointShape: shape },
+              };
+            } else if (command === "showLeaders") {
+              const showLeaders = inArgs[2] === "true";
+              editor.leaders[latestLeaderIndex].styleOverrides = {
+                ...editor.leaders[latestLeaderIndex].styleOverrides,
+                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, showLeaders },
+              };
+            } else if (command === "showTerminators") {
+              const showTerminators = inArgs[2] === "true";
+              editor.leaders[latestLeaderIndex].styleOverrides = {
+                ...editor.leaders[latestLeaderIndex].styleOverrides,
+                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, showTerminators },
+              };
+            } else if (command === "targetPointOffsetFactor") {
+              const targetPointOffsetFactor = Number(inArgs[2]);
+              editor.leaders[latestLeaderIndex].styleOverrides = {
+                ...editor.leaders[latestLeaderIndex].styleOverrides,
+                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, targetPointOffsetFactor },
+              };
+            } else throw new Error("Expected start, keypoint, nearest, textpoint, terminatorShape, showTargetPoint, targetPointShape, showLeaders, showTerminators, targetPointOffsetFactor");
           } else {
             throw new Error("No leaders created. Use dta text leader new.");
           }

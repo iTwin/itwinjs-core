@@ -54,11 +54,53 @@ describe("ITwin Workspace", () => {
       delete: async () => { },
       queryScope: async () => ({ iTwinId }),
       queryMetadata: async () => ({ containerType: "settings", label: "settings" }),
-      queryContainersMetadata: async () => containerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId })),
+      queryContainersMetadata: async () => containerIds.map((containerId) => ({ containerId, containerType: "settings", label: containerId, iTwinId })),
       updateJson: async () => { },
       requestToken: async ({ containerId }) => ({
         token: "",
         scope: { iTwinId },
+        provider: "azure" as const,
+        expiration: new Date(Date.now() + 3600000),
+        metadata: { containerType: "settings", label: containerId },
+        baseUri: "",
+      }),
+    };
+  }
+
+  /** Creates a mock service that returns containers from both the child iTwin and its account iTwin. */
+  function createAccountSettingsContainerService(
+    childITwinId: string,
+    accountITwinId: string,
+    childContainerIds: string[],
+    accountContainerIds: string[],
+  ): BlobContainer.ContainerService {
+    return {
+      create: async () => ({ baseUri: "", containerId: childContainerIds[0], provider: "azure" as const }),
+      delete: async () => { },
+      queryScope: async () => ({ iTwinId: childITwinId }),
+      queryMetadata: async () => ({ containerType: "settings", label: "settings" }),
+      queryContainersMetadata: async (_userToken, args): Promise<BlobContainer.MetadataResponse[]> => {
+        expect(args.includeParentITwins).to.deep.equal({ filter: "accountOnly" });
+        const results: BlobContainer.MetadataResponse[] = childContainerIds.map((containerId) => ({
+          containerId,
+          containerType: "settings",
+          label: containerId,
+          iTwinId: childITwinId,
+          accountITwinId,
+        }));
+        results.push(...accountContainerIds.map((containerId) => ({
+          containerId,
+          containerType: "settings",
+          label: containerId,
+          iTwinId: accountITwinId,
+          accountITwinId,
+        })));
+        return results;
+      },
+      updateJson: async () => { },
+      requestToken: async ({ containerId }) => ({
+        token: "",
+        scope: { iTwinId: childITwinId },
         provider: "azure" as const,
         expiration: new Date(Date.now() + 3600000),
         metadata: { containerType: "settings", label: containerId },
@@ -275,5 +317,100 @@ describe("ITwin Workspace", () => {
 
     await expect(IModelHost.deleteSettingDictionary(iTwinId, "x")).to.be.rejectedWith("delete failed");
     expect(close.calledOnce).to.be.true;
+  });
+
+  it("loads account iTwin settings at organization priority", async () => {
+    const childITwinId = Guid.createValue();
+    const accountITwinId = Guid.createValue();
+
+    createLocalSettingsDb("child-settings", {
+      "app/childOnly": "from-child",
+      "app/shared": "child-wins",
+    });
+    createLocalSettingsDb("account-settings", {
+      "app/accountOnly": "from-account",
+      "app/shared": "account-loses",
+    });
+
+    BlobContainer.service = createAccountSettingsContainerService(childITwinId, accountITwinId, ["child-settings"], ["account-settings"]);
+    await IModelHost.startup(opts);
+
+    const workspace = await IModelHost.getITwinWorkspace(childITwinId);
+    // Child iTwin setting is present.
+    expect(workspace.settings.getString("app/childOnly")).to.equal("from-child");
+    // Account iTwin setting is present (loaded at organization priority).
+    expect(workspace.settings.getString("app/accountOnly")).to.equal("from-account");
+    // Child iTwin setting overrides account iTwin setting for the same key.
+    expect(workspace.settings.getString("app/shared")).to.equal("child-wins");
+    workspace.close();
+  });
+
+  it("when the iTwin is its own account iTwin, its container loads at organization priority", async () => {
+    // Edge case: the requested iTwin IS the account iTwin (e.g. a root/tenant iTwin with no parent).
+    // The service returns one container where iTwinId === accountITwinId === requestedITwinId.
+    // getITwinSettingsSources should succeed and assign SettingsPriority.organization because
+    // `container.accountITwinId === ownerITwinId` is true.
+    const iTwinId = Guid.createValue();
+
+    createLocalSettingsDb("self-account-settings", {
+      "app/rootSetting": "root-value",
+    });
+
+    // Pass the same id for both child and account — the service returns a single container
+    // with iTwinId === accountITwinId === iTwinId.
+    BlobContainer.service = createAccountSettingsContainerService(iTwinId, iTwinId, ["self-account-settings"], []);
+    await IModelHost.startup(opts);
+
+    const workspace = await IModelHost.getITwinWorkspace(iTwinId);
+    try {
+      expect(workspace.settings.getString("app/rootSetting")).to.equal("root-value");
+      // The container's accountITwinId equals its ownerITwinId, so it loads at organization priority.
+      expect(workspace.settings.dictionaries).to.have.lengthOf(1);
+      expect(workspace.settings.dictionaries[0].props.priority).to.equal(SettingsPriority.organization);
+    } finally {
+      workspace.close();
+    }
+  });
+
+  it("fails if multiple settings containers exist for the same account iTwin", async () => {
+    const childITwinId = Guid.createValue();
+    const accountITwinId = Guid.createValue();
+
+    BlobContainer.service = createAccountSettingsContainerService(childITwinId, accountITwinId, ["child-settings"], ["account-a", "account-b"]);
+    await IModelHost.startup(opts);
+
+    await expect(IModelHost.getITwinWorkspace(childITwinId)).to.be.rejectedWith("Multiple iTwin settings containers were found");
+  });
+
+  it("throws missing-container-itwinid if the service returns a container without an iTwinId", async () => {
+    // Simulates an older BlobContainer service version that does not populate iTwinId
+    // in queryContainersMetadata results. getITwinSettingsSources requires iTwinId to
+    // decide which SettingsPriority to assign each container, so it must throw.
+    const iTwinId = Guid.createValue();
+
+    const service: BlobContainer.ContainerService = {
+      create: async () => ({ baseUri: "", containerId: "no-itwinid-container", provider: "azure" as const }),
+      delete: async () => { },
+      queryScope: async () => ({ iTwinId }),
+      queryMetadata: async () => ({ containerType: "settings", label: "settings" }),
+      queryContainersMetadata: async () => [
+        // iTwinId intentionally omitted — simulates a service that predates the iTwinId field
+        { containerId: "no-itwinid-container", containerType: "settings", label: "no-itwinid-container" },
+      ],
+      updateJson: async () => { },
+      requestToken: async ({ containerId }) => ({
+        token: "",
+        scope: { iTwinId },
+        provider: "azure" as const,
+        expiration: new Date(Date.now() + 3600000),
+        metadata: { containerType: "settings", label: containerId },
+        baseUri: "",
+      }),
+    };
+
+    BlobContainer.service = service;
+    await IModelHost.startup(opts);
+
+    await expect(IModelHost.getITwinWorkspace(iTwinId)).to.be.rejectedWith("has no iTwinId");
   });
 });

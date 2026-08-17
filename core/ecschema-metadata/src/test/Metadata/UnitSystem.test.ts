@@ -44,7 +44,7 @@ describe("UnitSystem tests", () => {
     assert.isDefined(schema);
     const unitSystem = await schema.getItem("testUnitSystem", UnitSystem);
     assert.isDefined(unitSystem);
-    expect(unitSystem!.fullName).eq("TestSchema.testUnitSystem");
+    expect(unitSystem.fullName).eq("TestSchema.testUnitSystem");
   });
 
   describe("type safety checks", () => {

@@ -78,6 +78,8 @@ internal;function;compareRange1dLexicalLowHigh
 internal;class;Complex
 public;class;Cone
 public;class;ConsolidateAdjacentCurvePrimitivesOptions
+deprecated;class;ConsolidateAdjacentCurvePrimitivesOptions
+public;interface;ConsolidateAdjacentPrimitivesOptions
 public;class;Constant
 alpha;class;ConstrainedCurve2d
 public;class;ConstructCurveBetweenCurves
@@ -93,6 +95,7 @@ public;class;CurveCollection
 public;type;CurveCollectionType
 public;class;CurveCurve
 public;enum;CurveCurveApproachType
+public;interface;CurveCurveOptions
 public;enum;CurveExtendMode
 public;class;CurveExtendOptions
 public;class;CurveFactory
@@ -261,7 +264,9 @@ internal;class;RegionMomentsXY
 public;class;RegionOps
 public;class;ReusableObjectCache
 public;class;RotationalSweep
+public;class;RotationalSweepConstructiveFrameOptions
 public;class;RuledSweep
+public;interface;ScaledToleranceOptions
 public;interface;SectionSequenceWithPlanes
 public;class;Segment1d
 public;namespace;SerializationHelpers
@@ -269,6 +274,7 @@ public;interface;SignedLoops
 public;class;SmallSystem
 public;class;SmoothTransformBetweenFrusta
 public;class;SolidPrimitive
+public;class;SolidPrimitiveConstructiveFrameOptions
 public;type;SolidPrimitiveType
 public;class;SortableEdge
 public;type;SortableEdgeCluster

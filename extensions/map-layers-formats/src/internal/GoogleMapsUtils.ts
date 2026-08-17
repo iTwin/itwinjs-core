@@ -6,7 +6,7 @@
 import { ImageMapLayerProps, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat.js";
-import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors } from "../map-layers-formats.js";
+import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors } from "../GoogleMaps/GoogleMapsSession.js";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";

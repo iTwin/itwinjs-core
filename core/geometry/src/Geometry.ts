@@ -209,7 +209,7 @@ export type AngleSweepProps =
 /**
 * Interface for method with a clone operation.
 * @public
-* @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Use ICloneable.
+* @deprecated in 4.4.0 - might be removed in next major version. Use ICloneable.
 */
 export interface Cloneable<T> {
   /** Required method to return a deep clone. */
@@ -284,7 +284,7 @@ export class Geometry {
   public static readonly largeCoordinateResult = 1.0e13;
   /**
    * Numeric value that may considered infinite for metric coordinates.
-   * @deprecated in 4.9.0 - will not be removed until after 2026-06-13. Use [[largeCoordinateResult]].
+   * @deprecated in 4.9.0 - might be removed in next major version. Use [[largeCoordinateResult]].
    * * This coordinate should be used only as a placeholder indicating "at infinity" -- computing actual
    * points at this coordinate invites numerical problems.
    */
@@ -295,7 +295,7 @@ export class Geometry {
   }
   /**
    * Test if the absolute value of x is at least [[largeCoordinateResult]].
-   * @deprecated in 4.9.0 - will not be removed until after 2026-06-13. Use [[isLargeCoordinateResult]].
+   * @deprecated in 4.9.0 - might be removed in next major version. Use [[isLargeCoordinateResult]].
    */
   public static isHugeCoordinate(x: number): boolean {
     return Geometry.isLargeCoordinateResult(x);
@@ -588,6 +588,8 @@ export class Geometry {
    * Toleranced equality test.
    * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal.
+   * @see [[isSameFraction]], [[isSameCoordinate]], etc., which have more appropriate default absolute tolerances for
+   * inputs known to be fractions and distances/coordinates.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
@@ -1226,6 +1228,13 @@ export class Geometry {
     return Geometry.conditionalDivideFraction(fTarget - f0, f1 - f0);
   }
   /**
+   * Return `true` if `a` is a finite number.
+   * @param a value to test
+   */
+  public static isNumber(a: any): a is number {
+    return Number.isFinite(a);
+  }
+  /**
    * Return `true` if `json` is an array with at least `minEntries` entries and all entries are numbers (including
    * those beyond minEntries).
    */
@@ -1416,7 +1425,7 @@ export class Geometry {
   /**
    * Clone an array whose members have type `T`, which implements the clone method.
    * * If the clone method returns `undefined`, then `undefined` is forced into the cloned array.
-   * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Use cloneArray.
+   * @deprecated in 4.4.0 - might be removed in next major version. Use cloneArray.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {

@@ -218,7 +218,7 @@ export class RenderMaterialElement extends DefinitionElement {
   public static insert(txn: EditTxn, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
   /**
    * Insert a new RenderMaterial into a model.
-   * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use RenderMaterialElement.insert(txn, ...) instead.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use RenderMaterialElement.insert(txn, ...) instead.
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {

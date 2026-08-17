@@ -334,9 +334,10 @@ export class ClipVector implements Clipper {
     return true;
   }
   /**
-   * Determines whether the given points fall inside or outside this set of ClipShapes. If any set is defined
-   * by masking planes, checks the mask planes only, provided that ignoreMasks is false. Otherwise, checks the
-   * _clipPlanes member.
+   * Determines whether the given points fall inside or outside this set of ClipPrimitives.
+   * @param points the points to test.
+   * @param ignoreMasks if false (default), the containment test for each masked ClipShape primitive is inverted.
+   * If true, no inversion is performed.
    */
   public classifyPointContainment(points: Point3d[], ignoreMasks: boolean = false): ClipPlaneContainment {
     let currentContainment = ClipPlaneContainment.Ambiguous;

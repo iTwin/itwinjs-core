@@ -49,6 +49,7 @@ export interface DtaStringConfiguration {
   iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share, and by iModel download
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined
+  azureMapsKey?: string; // default undefined
   googleMapsKey?: string; // default undefined
   cesiumIonKey?: string; // default undefined
   logLevel?: string; // default undefined
@@ -59,6 +60,8 @@ export interface DtaStringConfiguration {
   oidcScope?: string; // default is undefined, used for auth setup
   oidcRedirectUri?: string; // default is undefined, used for auth setup
   frontendTilesUrlTemplate?: string; // if set, specifies url for @itwin/frontend-tiles to obtain tile trees for spatial views.  See README.md
+  authServerAllowlist?: string; // default is undefined; comma-separated list of servers for which Chromium may perform integrated authentication (Kerberos/NTLM SSO), e.g. "*.example.com". Electron only.
+  mapLayerTrustedCredentialsOrigins?: string; // default is undefined; comma-separated list of exact origins (scheme + host + port, e.g. "https://maps.corp.example.com") trusted to receive map-layer credentials. When set, enables MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins.
 }
 
 export interface DtaNumberConfiguration {
@@ -103,6 +106,8 @@ export const getConfig = (): DtaConfiguration => {
   configuration.viewName = process.env.IMJS_STANDALONE_VIEWNAME; // optional
   configuration.startupMacro = process.env.IMJS_STARTUP_MACRO;
   configuration.frontendTilesUrlTemplate = process.env.IMJS_FRONTEND_TILES_URL_TEMPLATE;
+  configuration.authServerAllowlist = process.env.IMJS_AUTH_SERVER_ALLOWLIST;
+  configuration.mapLayerTrustedCredentialsOrigins = process.env.IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS;
 
   if (undefined !== process.env.IMJS_DISABLE_DIAGNOSTICS)
     configuration.enableDiagnostics = false;
@@ -154,6 +159,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_BING_MAPS_KEY)
     configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
+
+  if (undefined !== process.env.IMJS_AZURE_MAPS_KEY)
+    configuration.azureMapsKey = process.env.IMJS_AZURE_MAPS_KEY;
 
   if (undefined !== process.env.IMJS_GOOGLE_MAPS_KEY)
     configuration.googleMapsKey = process.env.IMJS_GOOGLE_MAPS_KEY;

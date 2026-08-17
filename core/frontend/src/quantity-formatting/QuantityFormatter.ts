@@ -342,11 +342,11 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     ["AecUnits.LENGTH", QuantityType.LengthEngineering]
   ]);
 
-  public async getFormat(name: string, _system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
+  public async getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     const quantityType = this._kindOfQuantityMap.get(name);
     if (!quantityType) return undefined;
 
-    return IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+    return IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType, system);
   }
 }
 
@@ -850,13 +850,19 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
 
   /** Rebuild all system entries for a single KoQ name in the registry. */
   private async _rebuildRegistryForName(name: string, unitMap: Map<string, Map<UnitSystemKey, FormattingSpecEntry>>): Promise<void> {
-    let anySystemHadFormat = false;
     for (const system of QuantityFormatter._allUnitSystems) {
       const formatProps = await IModelApp.formatsProvider.getFormat(name, system);
       if (formatProps) {
-        anySystemHadFormat = true;
-        for (const [persistenceUnitName] of unitMap.entries()) {
-          await this.addFormattingSpecsToRegistry({ name, persistenceUnitName, formatProps, system });
+        for (const [persistenceUnitName, systemMap] of unitMap.entries()) {
+          try {
+            await this.addFormattingSpecsToRegistry({ name, persistenceUnitName, formatProps, system });
+          } catch (err) {
+            systemMap.delete(system);
+            Logger.logWarning(
+              `${FrontendLoggerCategory.Package}.QuantityFormatter`,
+              `Unable to rebuild format ${name} for persistence unit ${persistenceUnitName} and system ${system}: ${BentleyError.getErrorMessage(err)}`,
+            );
+          }
         }
       } else {
         // Remove stale entries for this system
@@ -865,9 +871,14 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
         }
       }
     }
-    if (!anySystemHadFormat) {
-      this._formatSpecsRegistry.delete(name);
+
+    // Remove persistence units that no longer have a valid entry in any system.
+    for (const [persistenceUnitName, systemMap] of unitMap.entries()) {
+      if (systemMap.size === 0)
+        unitMap.delete(persistenceUnitName);
     }
+    if (unitMap.size === 0)
+      this._formatSpecsRegistry.delete(name);
   }
 
   /** Return a map that serves as a registry of all standard and custom quantity types. */
@@ -1347,14 +1358,17 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   /**
    * @beta
    * Returns a map of [[FormattingSpecEntry]] keyed by persistence unit for a given name, typically a KindOfQuantity full name.
+   * @param name - The KoQ name to look up.
+   * @param options - Optional lookup options. When `options.system` is omitted, the active unit system is used.
    */
-  public getSpecsByName(name: string): ReadonlyMap<string, FormattingSpecEntry> | undefined {
+  public getSpecsByName(name: string, options?: { system?: UnitSystemKey }): ReadonlyMap<string, FormattingSpecEntry> | undefined {
+    const effectiveSystem = options?.system ?? this._activeUnitSystem;
     const unitMap = this._formatSpecsRegistry.get(name);
     if (!unitMap) return undefined;
-    // Return active-system projection
+    // Return projection for the effective system
     const result = new Map<string, FormattingSpecEntry>();
     for (const [persistenceUnit, systemMap] of unitMap) {
-      const entry = systemMap.get(this._activeUnitSystem);
+      const entry = systemMap.get(effectiveSystem);
       if (entry) result.set(persistenceUnit, entry);
     }
     return result.size > 0 ? result : undefined;

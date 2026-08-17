@@ -131,7 +131,7 @@ describe("DefinitionParser tests", () => {
 
   function testInvalidToken(definition: string) {
     it(`invalid definition ${definition} throws`, async () => {
-      expect(() => [...parseDefinition(definition)]).toThrowError();
+      expect(() => [...parseDefinition(definition)]).toThrow();
     });
   }
 

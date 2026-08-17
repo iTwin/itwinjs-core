@@ -62,6 +62,8 @@ This gives them the same first class *reporting* functionality as with Elements.
 ElementAspects are often used when the same set of properties needs to be stored for Elements that live in different parts of the class hierarchy.
 However, if the data is more ad-hoc, then Element `JsonProperties` are probably more appropriate.
 
+If you are deciding whether information should live on a reusable type or on an `ElementAspect`, a good rule of thumb is that `ElementAspect`s are for data owned by one Element, while [`TypeDefinitionElement`s](./type-definitions.md) are for values meant to be reused across many Elements.
+
 ---
 | Next: [Properties: Guidelines](./properties-guidelines.md)
 |:---

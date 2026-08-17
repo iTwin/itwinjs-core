@@ -9,7 +9,7 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, ServerError } from "@
 import { IModelApp } from "../../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
-  FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
+  escapeHtml, FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
   MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../../../tile/internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
@@ -224,8 +224,12 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
     const metadata = await this.getServiceJson();
 
-    if (metadata?.content === undefined)
+    if (metadata?.content === undefined) {
+      // By returning (i.e., not throwing), we ensure the tile tree gets created and the current provider is preserved to report status.
+      if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin)
+        return;
       throw new ServerError(IModelStatus.ValidationFailed, "");
+    }
 
     const json = metadata.content;
     if (json?.error?.code === ArcGisErrorCode.TokenRequired
@@ -318,11 +322,11 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   }
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.arcGisLogoCard) {
       cards.dataset.arcGisLogoCard = "true";
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText }));
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", noticeLines: [this._copyrightText] }));
     }
   }
 
@@ -370,7 +374,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     if (json && Array.isArray(json.results)) {
       for (const result of json.results) {
         if (result.attributes !== undefined && result.attributes[result.displayFieldName] !== undefined) {
-          const thisString = `${result.displayFieldName}: ${result.attributes[result.displayFieldName]}`;
+          const thisString = `${escapeHtml(String(result.displayFieldName))}: ${escapeHtml(String(result.attributes[result.displayFieldName]))}`;
           if (!stringSet.has(thisString)) {
             strings.push(thisString);
             stringSet.add(thisString);

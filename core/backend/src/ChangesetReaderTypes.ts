@@ -39,7 +39,7 @@ export interface RowFormatOptions {
    */
   abbreviateBlobs?: boolean;
   /**
-   * When `true`, `ECClassId` and `RelECClassId` values are converted from hex strings
+   * When `true`, all classId values are converted from hex strings
    * to fully-qualified class names (e.g. `"BisCore.DrawingModel"`).
    */
   classIdsToClassNames?: boolean;
@@ -47,6 +47,7 @@ export interface RowFormatOptions {
    * When `true`, all property keys and struct sub-keys are returned in camelCase
    * (e.g. `id`, `className`, `lastMod`). Navigation property sub-keys use
    * `{ id, relClassName }` instead of `{ Id, RelECClassId }`.
+   * @deprecated We should stick to ECProperty names as is instead.
    */
   useJsName?: boolean;
 }

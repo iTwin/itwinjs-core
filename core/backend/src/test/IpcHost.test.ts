@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { BentleyError, IModelStatus } from "@itwin/core-bentley";
-import { IpcInvokeReturn, IpcSocketBackend } from "@itwin/core-common";
+import { BentleyError, IModelStatus, ITwinError } from "@itwin/core-bentley";
+import { IpcInvokeReturn, IpcSocketBackend, serializeIpcError } from "@itwin/core-common";
 import { IpcHandler, IpcHost } from "../IpcHost";
 
 interface MockIpcInterface {
@@ -12,11 +12,17 @@ interface MockIpcInterface {
   throwBentleyErrorWithFunctionMetaData: () => never;
   throwBentleyErrorWithObjectMetaData: () => never;
   throwNestedBentleyErrorWithFunctionMetaData: () => never;
+  throwBentleyErrorWithNestedBentleyErrorMetaData: () => never;
   throwErrorWithFunctionProperty: () => never;
   throwErrorWithSymbolProperty: () => never;
   throwErrorWithDateProperty: () => never;
   throwErrorWithClassInstanceProperty: () => never;
   throwErrorWithMixedArray: () => never;
+  throwErrorWithNestedArrayProperty: () => never;
+  throwBentleyErrorWithMapMetaData: () => never;
+  throwBentleyErrorWithCollidingMapMetaData: () => never;
+  throwBentleyErrorWithSetMetaData: () => never;
+  throwErrorWithSelfReferencingArray: () => never;
 }
 
 class OuterError extends Error {
@@ -66,6 +72,11 @@ class MockIpcHandler extends IpcHandler implements MockIpcInterface {
     throw outer;
   }
 
+  public throwBentleyErrorWithNestedBentleyErrorMetaData(): never {
+    const inner = new BentleyError(IModelStatus.BadArg, "inner-bentley-in-metadata", { detail: "inner-value" });
+    throw new BentleyError(IModelStatus.BadArg, "bentley-nested-bentley-meta", { nested: inner });
+  }
+
   public throwErrorWithFunctionProperty(): never {
     const err = new Error("fn-prop") as any;
     err.retry = () => {};
@@ -96,6 +107,33 @@ class MockIpcHandler extends IpcHandler implements MockIpcInterface {
     throw err;
   }
 
+  public throwErrorWithNestedArrayProperty(): never {
+    const err = new Error("nested-array") as any;
+    err.matrix = [[1, 2], [3, 4]];
+    throw err;
+  }
+
+  public throwBentleyErrorWithMapMetaData(): never {
+    throw new BentleyError(IModelStatus.BadArg, "bentley-map-meta", new Map([["detail", "map-value"]]));
+  }
+
+  public throwBentleyErrorWithCollidingMapMetaData(): never {
+    // Numeric key `1` and string key `"1"` stringify to the same "1", so they'd collide without disambiguation.
+    throw new BentleyError(IModelStatus.BadArg, "bentley-colliding-map-meta", new Map<number | string, string>([[1, "num-one"], ["1", "str-one"]]));
+  }
+
+  public throwBentleyErrorWithSetMetaData(): never {
+    throw new BentleyError(IModelStatus.BadArg, "bentley-set-meta", new Set(["tag1", "tag2"]));
+  }
+
+  public throwErrorWithSelfReferencingArray(): never {
+    const err = new Error("self-referencing-array") as any;
+    const arr: any[] = [];
+    arr.push(arr); // array that contains itself
+    err.items = arr;
+    throw err;
+  }
+
   #privateFunction(): void { }
 }
 
@@ -111,6 +149,11 @@ describe("IpcHost", () => {
     };
 
     await IpcHost.startup({ ipcHost: { socket } });
+  });
+
+  afterEach(() => {
+    (IpcHost as any)._nextInvokeId = 0;
+    (IpcHost as any)._pendingInvokes.clear();
   });
 
   describe("IpcHandler", () => {
@@ -260,6 +303,233 @@ describe("IpcHost", () => {
       expect(error.items[2]).to.deep.equal(new Date("2024-01-01")); // Date: preserved
       expect(error.items[3]).to.be.undefined;                // class instance: dropped (→ undefined)
       expect(error.items[4].message).to.equal("array-error"); // Error: recursed
+    });
+
+    it("should preserve nested arrays (array-of-arrays)", async () => {
+      const ipcReturn = await handler(undefined, "throwErrorWithNestedArrayProperty");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("nested-array");
+      expect(error.matrix).to.deep.equal([[1, 2], [3, 4]]);
+    });
+
+    it("should not infinitely recurse on a self-referencing array", async () => {
+      const ipcReturn = await handler(undefined, "throwErrorWithSelfReferencingArray");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("self-referencing-array");
+      expect(error.items[0]).to.be.undefined; // cycle detected: dropped rather than recursing forever
+    });
+
+    it("should normalize Map-valued loggingMetadata to a JSON-safe plain object (survives every transport)", async () => {
+      const ipcReturn = await handler(undefined, "throwBentleyErrorWithMapMetaData");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("bentley-map-meta");
+      expect(error.loggingMetadata).to.deep.equal({ detail: "map-value" });
+    });
+
+    it("should disambiguate Map-valued loggingMetadata keys that stringify to the same value", async () => {
+      const ipcReturn = await handler(undefined, "throwBentleyErrorWithCollidingMapMetaData");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("bentley-colliding-map-meta");
+      expect(error.loggingMetadata).to.deep.equal({ "1": "num-one", "1#1": "str-one" });
+    });
+
+    it("should preserve iTwinErrorId/loggingMetadata of a BentleyError nested inside loggingMetadata", async () => {
+      const ipcReturn = await handler(undefined, "throwBentleyErrorWithNestedBentleyErrorMetaData");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("bentley-nested-bentley-meta");
+      const nested = error.loggingMetadata.nested;
+      expect(nested.message).to.equal("inner-bentley-in-metadata");
+      expect(nested.iTwinErrorId).to.deep.equal({ scope: BentleyError.iTwinErrorScope, key: nested.iTwinErrorId.key });
+      expect(nested.loggingMetadata).to.deep.equal({ detail: "inner-value" });
+    });
+
+    it("should normalize Set-valued loggingMetadata to a JSON-safe array (survives every transport)", async () => {
+      const ipcReturn = await handler(undefined, "throwBentleyErrorWithSetMetaData");
+      const error = ipcReturn.error as any;
+      expect(error.message).to.equal("bentley-set-meta");
+      expect(error.loggingMetadata).to.deep.equal(["tag1", "tag2"]);
+    });
+  });
+
+  describe("IpcHost.invoke", () => {
+    /** Simulates the frontend: captures per-request listeners and provides a `respond` helper by call index. */
+    function mockFrontend() {
+      const listeners = new Map<string, (event: any, result: any) => void>();
+      socket.addListener.callsFake((ch: string, fn: (event: any, result: any) => void) => {
+        listeners.set(ch, fn);
+        return () => listeners.delete(ch);
+      });
+
+      return {
+        listeners,
+        responseChannel: (callIndex: number) => socket.send.getCall(callIndex).args[1] as string,
+        respond: (callIndex: number, result: unknown) => {
+          const responseChannel = socket.send.getCall(callIndex).args[1] as string;
+          const listener = listeners.get(responseChannel);
+          if (!listener)
+            throw new Error(`No listener found for response channel ${responseChannel}`);
+          listener(undefined, result);
+        },
+      };
+    }
+
+    it("should resolve with the frontend's response", async () => {
+      const frontend = mockFrontend();
+      const promise = IpcHost.invoke("ch", "a", "b");
+      frontend.respond(0, "hello");
+      expect(await promise).to.equal("hello");
+      // the pending-invoke entry must be removed so the map does not grow unboundedly
+      expect((IpcHost as any)._pendingInvokes.size).to.equal(0);
+    });
+
+    it("should route concurrent invokes to the correct caller", async () => {
+      const frontend = mockFrontend();
+      const p1 = IpcHost.invoke("ch");
+      const p2 = IpcHost.invoke("ch");
+
+      // respond out of order
+      frontend.respond(1, "second");
+      frontend.respond(0, "first");
+
+      expect(await p1).to.equal("first");
+      expect(await p2).to.equal("second");
+    });
+
+    it("should remove the response listener after a response", async () => {
+      const frontend = mockFrontend();
+      const promise = IpcHost.invoke("ch");
+      const responseChannel = frontend.responseChannel(0);
+      expect(frontend.listeners.has(responseChannel)).to.be.true;
+
+      frontend.respond(0, "done");
+      await promise;
+      expect(frontend.listeners.has(responseChannel)).to.be.false;
+    });
+
+    it("should reject pending invokes when IpcHost is shut down", async () => {
+      const frontend = mockFrontend();
+      const promise = IpcHost.invoke("ch");
+      const responseChannel = frontend.responseChannel(0);
+      // attach handler immediately so the rejection is observed (and not "unhandled")
+      const caught = promise.then(() => undefined, (e: Error) => e);
+
+      await IpcHost.shutdown();
+
+      const err = await caught;
+      expect(err).to.be.instanceOf(Error);
+      expect((err as Error).message).to.contain("shut down");
+      // the listener must be cleaned up so it does not leak past shutdown
+      expect(frontend.listeners.has(responseChannel)).to.be.false;
+    });
+
+    it("should reject all pending invokes when IpcHost is shut down with 2+ concurrent invokes, removing all listeners", async () => {
+      const frontend = mockFrontend();
+      const p1 = IpcHost.invoke("ch1");
+      const p2 = IpcHost.invoke("ch2");
+      const responseChannel1 = frontend.responseChannel(0);
+      const responseChannel2 = frontend.responseChannel(1);
+      // attach handlers immediately so the rejections are observed (and not "unhandled")
+      const caught1 = p1.then(() => undefined, (e: Error) => e);
+      const caught2 = p2.then(() => undefined, (e: Error) => e);
+      expect((IpcHost as any)._pendingInvokes.size).to.equal(2);
+
+      await IpcHost.shutdown();
+
+      const err1 = await caught1;
+      const err2 = await caught2;
+      expect(err1).to.be.instanceOf(Error);
+      expect((err1 as Error).message).to.contain("shut down");
+      expect(err2).to.be.instanceOf(Error);
+      expect((err2 as Error).message).to.contain("shut down");
+      expect(frontend.listeners.has(responseChannel1)).to.be.false;
+      expect(frontend.listeners.has(responseChannel2)).to.be.false;
+      expect((IpcHost as any)._pendingInvokes.size).to.equal(0);
+    });
+
+    it("should reject and clean up the listener/pending-invoke entry when `send` throws synchronously", async () => {
+      const frontend = mockFrontend();
+      socket.send.throws(new Error("send failed"));
+      const promise = IpcHost.invoke("ch");
+
+      let caught: any;
+      try {
+        await promise;
+        expect.fail("invoke should have rejected");
+      } catch (err) {
+        caught = err;
+      }
+      expect(caught).to.be.instanceOf(Error);
+      expect(caught.message).to.equal("send failed");
+      // the listener and _pendingInvokes entry must not leak when `send` throws synchronously
+      expect(frontend.listeners.size).to.equal(0);
+      expect((IpcHost as any)._pendingInvokes.size).to.equal(0);
+    });
+
+    it("should rethrow a frontend-thrown BentleyError from makeIpcProxy preserving ITwinError identity and metadata", async () => {
+      const frontend = mockFrontend();
+      const proxy = IpcHost.makeIpcProxy<{ doIt: () => Promise<void> }>("ch");
+      const promise = proxy.doIt();
+
+      // simulate the frontend handler serializing a thrown BentleyError into the invoke-response envelope
+      const thrown = new BentleyError(IModelStatus.NotFound, "boom", () => ({ detail: 42 }));
+      thrown.name = "MyFrontendError";
+      const serialized = serializeIpcError(thrown, true);
+      frontend.respond(0, serialized);
+
+      let caught: any;
+      try {
+        await promise;
+        expect.fail("proxy call should have rejected");
+      } catch (err) {
+        caught = err;
+      }
+      // Following the ITwinError paradigm, the backend rebuilds a plain Error (no cross-process class identity)
+      // that callers identify via ITwinError.isError / BentleyError.isError rather than instanceof.
+      expect(ITwinError.isError(caught, BentleyError.iTwinErrorScope, "MyFrontendError")).to.be.true;
+      expect(caught.name).to.equal("MyFrontendError");
+      expect(BentleyError.isError(caught, IModelStatus.NotFound)).to.be.true;
+      expect(caught.message).to.equal("boom");
+      expect(caught.loggingMetadata).to.deep.equal({ detail: 42 });
+    });
+
+    it("should not let a non-string thrown `message` field overwrite the 'unknown error' guard in rebuildIpcError", async () => {
+      const frontend = mockFrontend();
+      const proxy = IpcHost.makeIpcProxy<{ doIt: () => Promise<void> }>("ch");
+      const promise = proxy.doIt();
+
+      // simulate a thrown non-Error value with a non-string `message` field (e.g. `throw { message: 123 }`)
+      const serialized = serializeIpcError({ message: 123 }, true);
+      frontend.respond(0, serialized);
+
+      let caught: any;
+      try {
+        await promise;
+        expect.fail("proxy call should have rejected");
+      } catch (err) {
+        caught = err;
+      }
+      expect(caught).to.be.instanceOf(Error);
+      expect(caught.message).to.equal("unknown error");
+    });
+
+    it("should rethrow a plain Error from makeIpcProxy when the frontend threw a non-BentleyError", async () => {
+      const frontend = mockFrontend();
+      const proxy = IpcHost.makeIpcProxy<{ doIt: () => Promise<void> }>("ch");
+      const promise = proxy.doIt();
+
+      const serialized = serializeIpcError(new Error("plain failure"), true);
+      frontend.respond(0, serialized);
+
+      let caught: any;
+      try {
+        await promise;
+        expect.fail("proxy call should have rejected");
+      } catch (err) {
+        caught = err;
+      }
+      expect(caught).to.be.instanceOf(Error);
+      expect(BentleyError.isError(caught)).to.be.false;
+      expect(caught.message).to.equal("plain failure");
     });
   });
 });

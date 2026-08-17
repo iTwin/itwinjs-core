@@ -135,7 +135,7 @@ The key unified selection APIs are defined in [@itwin/presentation-frontend]($pr
 For each type of component described in [selection handling section](#selection-handling), the `@itwin/presentation-component` package delivers a set of React-based helper APIs:
 
 - Tree
-  - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($components-react) that can be passed straight to [ControlledTree]($components-react) component as an [ControlledTreeProps.eventsHandler]($components-react) prop and takes care of syncing selection between the tree and unified selection storage.
+  - [UnifiedSelectionTreeEventHandler]($presentation-components) can be passed straight to [ControlledTree]($components-react) component as an [ControlledTreeProps.eventsHandler]($components-react) prop and takes care of syncing selection between the tree and unified selection storage.
 
 - Table
   - `usePresentationTableWithUnifiedSelection` (`@itwin/presentation-components`) hook registers a unified selection listener and causes the Table to be re-rendered with the new `KeySet` whenever the selection changes.

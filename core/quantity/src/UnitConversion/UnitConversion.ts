@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { almostEqual } from "../Quantity";
+import { almostEqual } from "../internal/UnitConversionMath";
 
 /**
  * Structural interface satisfied by any object that carries a numerator/denominator

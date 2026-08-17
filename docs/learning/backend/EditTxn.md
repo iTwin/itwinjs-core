@@ -8,7 +8,7 @@ If you already know the existing write APIs and just need to keep shipping, do t
 2. Replace deprecated write calls with txn-first overloads.
 3. Use `txn.saveChanges(...)` only when you want an intermediate commit and keep writing in the same transaction scope.
 4. If you are using direct `EditTxn` (not [withEditTxn]($backend)), use `txn.end("save")` to finish, or `txn.end("abandon")` to discard pending edits.
-5. In dependency callbacks, use the callback argument's `indirectEditTxn` instead of creating a new transaction.
+5. In callbacks, reuse the transaction associated with the operation: use the callback argument's `indirectEditTxn` when provided; otherwise use `arg.iModel.getIndirectTxn()`.
 
 ## Old API to new API mapping
 
@@ -85,7 +85,7 @@ Recommended follow-up:
 - Transaction is not active: start the transaction (`txn.start()`) before writing, or use [withEditTxn]($backend).
 - Another transaction is active: only one explicit transaction can be active per iModel at a time.
 - Unsaved changes exist before `start()`: in practice this usually means legacy implicit-write APIs have already produced pending changes on the iModel; save or abandon those changes before starting a new explicit transaction.
-- In indirect dependency callbacks, a new transaction is created instead of reusing the callback transaction: use the callback argument's `indirectEditTxn`.
+- A callback creates a new transaction instead of reusing the transaction associated with the operation: use the callback argument's `indirectEditTxn` when provided; otherwise use `arg.iModel.getIndirectTxn()`.
 
 ## implicitWriteEnforcement
 
@@ -97,9 +97,19 @@ Recommended follow-up:
 
 `log` can be noisy in applications that have not started migration, because each implicit write path emits an error log.
 
-## Indirect change callbacks
+## Editing from callbacks
 
-During indirect dependency processing callbacks (for example relationship callbacks), use the callback argument's `indirectEditTxn` to access the active transaction for that scope.
+Callbacks that make additional database changes must reuse the transaction associated with the operation that invoked them. Do not create or start another transaction inside a callback.
+
+Dependency callbacks that provide `indirectEditTxn` should use that property directly. Element, model, and aspect callbacks provide an [IModelDb]($backend) but no transaction. When one of those callbacks calls an API that requires an [EditTxn]($backend), obtain it through [IModelDb.getIndirectTxn]($backend):
+
+```ts
+[[include:EditTxn.ElementCallback]]
+```
+
+`getIndirectTxn()` returns the active explicit transaction when one exists. Otherwise, it returns the implicit transaction used by legacy write paths, whose writes remain subject to [EditTxn.implicitWriteEnforcement]($backend).
+
+The operation that invoked the callback owns the transaction. The callback must not start, end, save, abandon, or otherwise manage the transaction lifecycle.
 
 ## Examples
 
@@ -177,6 +187,7 @@ This pattern helps keep an editing session coherent by ensuring one active comma
 
 - [EditTxn]($backend)
 - [withEditTxn]($backend)
+- [IModelDb.getIndirectTxn]($backend)
 - [OnDependencyArg]($backend)
 - [OnElementDependencyArg]($backend)
 - [IModelHostOptions.implicitWriteEnforcement]($backend)

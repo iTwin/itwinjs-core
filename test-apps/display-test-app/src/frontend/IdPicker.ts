@@ -204,6 +204,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     const elemIds = `(${Array.from(selectedElems).join(",")})`;
     const ecsql = `SELECT DISTINCT ${elementType}.Id FROM bis.GeometricElement${is2d ? "2d" : "3d"} WHERE ECInstanceId IN ${elemIds}`;
     const rows = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const queryRow of this._vp.view.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(queryRow.toRow());
     }
@@ -257,6 +258,7 @@ export class CategoryPicker extends IdPicker {
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
     const rows: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for await (const queryRow of view.iModel.createQueryReader(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(queryRow.toRow());
     }

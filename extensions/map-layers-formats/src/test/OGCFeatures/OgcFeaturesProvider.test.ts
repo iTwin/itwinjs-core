@@ -11,10 +11,11 @@ import sinon from "sinon";
 import { DefaultOgcSymbology, OgcApiFeaturesProvider } from "../../OgcApiFeatures/OgcApiFeaturesProvider.js";
 import { CountriesDataset } from "./CountriesDataset.js";
 
-function stubFetchMetadata(sandbox: sinon.SinonSandbox, urlContent: { [url: string]: string }  ) {
+function stubFetchMetadata(sandbox: sinon.SinonSandbox, urlContent: { [url: string]: string }, responseUrlByUrl?: { [url: string]: string }) {
 
-  return sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchMetadata").callsFake(async function _(url: unknown): Promise<any> {
-    return Promise.resolve(JSON.parse(urlContent[url as string]));
+  return sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchMetadata").callsFake(async function _(url: unknown): Promise<{ json: any; responseUrl: string }> {
+    const responseUrl = responseUrlByUrl?.[url as string] ?? (url as string);
+    return Promise.resolve({ json: JSON.parse(urlContent[url as string]), responseUrl });
   });
 }
 
@@ -408,6 +409,72 @@ describe("OgcApiFeaturesProvider", () => {
     const sampleDataUrl = `data:image/png;base64,${base64Png}`;
     const imageSource: ImageSource = (provider as any).createImageSourceFromDataURL(sampleDataUrl, ImageSourceFormat.Png);
     expect(imageSource.data).to.eql(base64StringToUint8Array(base64Png));
+  });
+
+  it("resolves collection-page links against the redirected response URL", async () => {
+    // Simulate: settings URL redirects to a different origin, and the collection document
+    // advertises relative paths for items and queryables.
+    const redirectedBase = "http://redirect.example.com/collections/public.countries";
+    const resolvedItemsUrl = "http://redirect.example.com/collections/public.countries/items";
+    const resolvedQueryablesUrl = "http://redirect.example.com/collections/public.countries/queryables";
+    const relativeCollection = {
+      ...CountriesDataset.collection,
+      links: CountriesDataset.collection.links.map((l: any) => ({
+        ...l,
+        href: new URL(l.href).pathname, // convert every href to a relative path
+      })),
+    };
+
+    const urlContent: { [key: string]: string } = {
+      [CountriesDataset.collectionUrl]: JSON.stringify(relativeCollection),
+      [resolvedQueryablesUrl]: JSON.stringify(CountriesDataset.queryables),
+    };
+    const responseUrlByUrl: { [key: string]: string } = {
+      [CountriesDataset.collectionUrl]: redirectedBase,
+    };
+    stubFetchMetadata(sandbox, urlContent, responseUrlByUrl);
+    sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
+      return false;
+    });
+
+    const settings = getTestSettings(CountriesDataset.collectionUrl, undefined);
+    const provider = new OgcApiFeaturesProvider(settings);
+    await provider.initialize();
+
+    expect((provider as any)._itemsUrl).to.equal(resolvedItemsUrl);
+    expect((provider as any)._queryables).to.not.be.undefined;
+  });
+
+  it("resolves relative pagination next links against the response URL", async () => {
+    stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
+
+    const itemsBase = "http://paginated.example.com/collections/public.countries/items";
+    const relativeNextLink = "?limit=1&offset=21&f=geojson";
+    const firstPage = {
+      ...CountriesDataset.singleItem,
+      links: [
+        ...CountriesDataset.singleItem.links.filter((l: any) => l.rel !== "next"),
+        { rel: "next", type: "application/geo+json", href: relativeNextLink },
+      ],
+    };
+
+    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number) {
+      const isNextPage = url.includes("offset=21");
+      return ({
+        url: isNextPage ? `${itemsBase}?limit=1&offset=21&f=geojson` : itemsBase,
+        json: async () => (isNextPage ? undefined : firstPage),
+        status: 200,
+      } as unknown) as Response;
+    });
+
+    const settings = getTestSettings(CountriesDataset.collectionUrl, undefined);
+    const provider = new OgcApiFeaturesProvider(settings);
+    await provider.initialize();
+
+    expect(tileRequestStub.getCalls().length).to.equal(2);
+    // The second call must use an absolute URL resolved from itemsBase + relativeNextLink
+    const expectedNextUrl = new URL(relativeNextLink, itemsBase).toString();
+    expect(tileRequestStub.getCall(1).args[0]).to.equal(expectedNextUrl);
   });
 
 });

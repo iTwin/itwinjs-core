@@ -238,6 +238,7 @@ export abstract class ECSqlReaderBase {
     }
     const formattedRow = {};
     for (const prop of this._props) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const propName = this._rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = this.getRowInternal()[prop.index];
       if (typeof val !== "undefined" && val !== null) {

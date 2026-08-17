@@ -243,6 +243,7 @@ function getRowFormat(rowFormat: ECDbTestRowFormat): QueryRowFormat {
     case ECDbTestRowFormat.ECSqlIndexes:
       return QueryRowFormat.UseECSqlPropertyIndexes;
     case ECDbTestRowFormat.JsNames:
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return QueryRowFormat.UseJsPropertyNames;
     default:
       return QueryRowFormat.UseECSqlPropertyNames;
@@ -432,11 +433,11 @@ async function runECSqlReaderTest(test: ECDbTestProps, dataset: TestDataset): Pr
     assert.fail("Test does not have an ECSql statement");
   }
 
-  const params = buildQueryBinder(test);
   const queryOptions = buildReaderQueryOptions(test);
 
   let reader: ECSqlReader;
   try {
+    const params = buildQueryBinder(test);
     reader = imodel.createQueryReader(test.sql, params, queryOptions);
   } catch (error: any) {
     if (test.errorDuringPrepare)
@@ -458,10 +459,10 @@ async function runECSqlSyncReaderTest(test: ECDbTestProps, dataset: TestDataset)
     assert.fail("Test does not have an ECSql statement");
   }
 
-  const params = buildQueryBinder(test);
   const queryOptions = buildReaderQueryOptions(test);
 
   try {
+    const params = buildQueryBinder(test);
     imodel.withQueryReader(test.sql, reader => {
       runAssertionsOnSyncReader(test, reader, "ECSqlSyncReader");
     }, params, queryOptions);

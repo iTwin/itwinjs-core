@@ -10,7 +10,7 @@ Much of the iTwin.js frontend package is designed to communicate with a backend 
 
 Many services in the iTwin.js frontend package display information from sources other than an iModel. If you wish to open a viewport to show just that type of information, use a blank IModelConnection. For example:
 
-- reality meshes (e.g. ContextCapture models)
+- reality meshes (e.g. iTwin Capture Modeler models)
 - point clouds
 - background maps
 - terrain data

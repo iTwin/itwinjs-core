@@ -2,6 +2,7 @@
   "$schema": "../../assets/Settings/Base.Schema.json",
   "description": "the settings for test application 1",
   "schemaPrefix": "testApp",
+  "title": "Test App",
   "settingDefs": {
     "list/multiSelectModifier": {
       "type": "string",

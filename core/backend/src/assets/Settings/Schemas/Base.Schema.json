@@ -19,11 +19,15 @@
     },
     "schemaPrefix": {
       "type": "string",
-      "description": "The unique prefix of the schema."
+      "description": "The stable unique prefix of the schema."
+    },
+    "title": {
+      "type": "string",
+      "description": "A user-facing title for the schema."
     },
     "description": {
       "type": "string",
-      "description": "A description of the schema."
+      "description": "A description of the schema, for example as help text accompanying the title."
     },
     "order": {
       "type": "integer",

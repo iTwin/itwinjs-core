@@ -1,0 +1,104 @@
+{
+  "$schema": "ecschema-localization-v1",
+  "name": "TestBuilding",
+  "version": "01.XX.XX",
+  "locale": "es",
+  "label": "Esquema de Prueba de Edificios",
+  "description": "Un esquema de prueba para elementos de edificios",
+  "items": {
+    "Building": {
+      "label": "Edificio",
+      "description": "Una estructura física de edificio",
+      "members": {
+        "Height": {
+          "label": "Altura",
+          "description": "La altura del edificio en metros"
+        },
+        "FloorCount": {
+          "label": "Número de Pisos",
+          "description": "El número de pisos en el edificio"
+        },
+        "Name": {
+          "label": "Nombre",
+          "description": "El nombre del edificio"
+        }
+      }
+    },
+    "Wall": {
+      "label": "Pared",
+      "description": "Un componente vertical del edificio",
+      "members": {
+        "Thickness": {
+          "label": "Espesor",
+          "description": "El espesor de la pared en metros"
+        },
+        "Material": {
+          "label": "Material",
+          "description": "El material de la pared"
+        }
+      }
+    },
+    "Address": {
+      "label": "Dirección",
+      "description": "Una estructura de dirección postal"
+    },
+    "BuildingMetadata": {
+      "label": "Metadatos del Edificio",
+      "description": "Atributo personalizado para metadatos del edificio"
+    },
+    "BuildingHasRooms": {
+      "label": "Edificio Tiene Habitaciones",
+      "description": "Relación entre edificio y habitaciones"
+    },
+    "ISpatialElement": {
+      "label": "Elemento Espacial",
+      "description": "Mixin para elementos espaciales"
+    },
+    "BuildingType": {
+      "label": "Tipo de Edificio",
+      "description": "Tipos de edificios",
+      "members": {
+        "Residential": {
+          "label": "Residencial",
+          "description": "Un edificio residencial"
+        },
+        "Commercial": {
+          "label": "Comercial",
+          "description": "Un edificio comercial"
+        },
+        "Industrial": {
+          "label": "Industrial",
+          "description": "Un edificio industrial"
+        }
+      }
+    },
+    "SpatialCategory": {
+      "label": "Categoría Espacial",
+      "description": "Categoría para propiedades espaciales"
+    },
+    "LENGTH_KOQ": {
+      "label": "Longitud KOQ",
+      "description": "Tipo de cantidad para longitud"
+    },
+    "M": {
+      "label": "Metro",
+      "description": "Unidad de metro"
+    },
+    "METRIC": {
+      "label": "Métrico",
+      "description": "Sistema de unidades métricas"
+    },
+    "LENGTH": {
+      "label": "Longitud",
+      "description": "Fenómeno de longitud"
+    },
+    "PI": {
+      "label": "Pi",
+      "description": "Constante matemática Pi"
+    },
+    "DefaultReal": {
+      "label": "Formato Real Predeterminado",
+      "description": "Formato predeterminado para números reales"
+    }
+  }
+}

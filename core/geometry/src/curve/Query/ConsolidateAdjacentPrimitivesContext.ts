@@ -19,19 +19,29 @@ import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { ParityRegion } from "../ParityRegion";
 import { Path } from "../Path";
-import { ConsolidateAdjacentCurvePrimitivesOptions } from "../RegionOps";
+import { ConsolidateAdjacentPrimitivesOptions } from "../RegionOps";
 import { UnionRegion } from "../UnionRegion";
 
 /**
- * * Implementation class for ConsolidateAdjacentCurvePrimitives.
+ * Implementation class for ConsolidateAdjacentCurvePrimitives.
  *
  * @internal
  */
 export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandler {
-  private _options: ConsolidateAdjacentCurvePrimitivesOptions;
-  public constructor(options?: ConsolidateAdjacentCurvePrimitivesOptions) {
+  private _consolidateLinearGeometry: boolean;
+  private _consolidateCompatibleArcs: boolean;
+  private _consolidateLoopSeam: boolean;
+  private _disableLinearCompression: boolean;
+  private _duplicatePointTolerance: number;
+  private _colinearPointTolerance: number;
+  public constructor(options?: ConsolidateAdjacentPrimitivesOptions) {
     super();
-    this._options = options ? options : new ConsolidateAdjacentCurvePrimitivesOptions();
+    this._consolidateLinearGeometry = options?.consolidateLinearGeometry ?? true;
+    this._consolidateCompatibleArcs = options?.consolidateCompatibleArcs ?? true;
+    this._consolidateLoopSeam = options?.consolidateLoopSeam ?? false;
+    this._disableLinearCompression = options?.disableLinearCompression ?? false;
+    this._duplicatePointTolerance = options?.duplicatePointTolerance ?? Geometry.smallMetricDistance;
+    this._colinearPointTolerance = options?.colinearPointTolerance ?? Geometry.smallMetricDistance;
   }
   /** look for adjacent compatible primitives in a path or loop. */
   public handleCurveChain(g: CurveChain): void {
@@ -43,7 +53,7 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
     // numAccept is the number of children accepted (contiguously at front of children)
     for (let i0 = 0; i0 < numOriginal;) {
       const basePrimitive = g.children[i0];
-      if (this._options.consolidateLinearGeometry && (basePrimitive instanceof LineSegment3d || basePrimitive instanceof LineString3d)) {
+      if (this._consolidateLinearGeometry && (basePrimitive instanceof LineSegment3d || basePrimitive instanceof LineString3d)) {
         points.length = 0;
         let i1 = i0;
         // on exit, i1 is beyond the block of linear primitives  . ..
@@ -63,15 +73,15 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
         }
         if (points.length <= 1) {
           g.children[numAccept++] = basePrimitive;
-        } else if (this._options.disableLinearCompression) {
+        } else if (this._disableLinearCompression) {
           const pointsDeduped = PolylineOps.compressShortEdges(points, Geometry.smallFloatingPoint); // remove only exact duplicate interior points
           g.children[numAccept++] = LineString3d.createPoints(pointsDeduped);
         } else { // compress points
-          const compressedPointsA = PolylineOps.compressShortEdges(points, this._options.duplicatePointTolerance);
-          const compressedPointsB = PolylineOps.compressByChordError(compressedPointsA, this._options.colinearPointTolerance, true);
-          if (i0 === 0 && i1 === numOriginal && this._options.consolidateLoopSeam) {
+          const compressedPointsA = PolylineOps.compressShortEdges(points, this._duplicatePointTolerance);
+          const compressedPointsB = PolylineOps.compressByChordError(compressedPointsA, this._colinearPointTolerance, true);
+          if (i0 === 0 && i1 === numOriginal && this._consolidateLoopSeam) {
             // points is the entire curve: if the curve is physically closed and end segments are colinear, re/move the seam
-            PolylineCompressionContext.compressColinearWrapInPlace(compressedPointsB, this._options.duplicatePointTolerance, this._options.colinearPointTolerance);
+            PolylineCompressionContext.compressColinearWrapInPlace(compressedPointsB, this._duplicatePointTolerance, this._colinearPointTolerance);
           }
           if (compressedPointsB.length < 2) {
             // Collapsed to a point?  Make a single point linestring
@@ -83,14 +93,14 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           }
         }
         i0 = i1;
-      } else if (this._options.consolidateCompatibleArcs && basePrimitive instanceof Arc3d) {
+      } else if (this._consolidateCompatibleArcs && basePrimitive instanceof Arc3d) {
         // subsume subsequent arcs into basePrimitive.
         // always accept base primitive.
         for (; ++i0 < g.children.length;) {
           const nextPrimitive = g.children[i0];
           if (!(nextPrimitive instanceof Arc3d))
             break;
-          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive, false, this._options.duplicatePointTolerance))
+          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive, false, this._duplicatePointTolerance))
             break;
         }
         // i0 has already advanced
@@ -108,19 +118,19 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
   }
   public override handleLoop(g: Loop): any {
     this.handleCurveChain(g);
-    if (g.children.length > 1 && this._options.consolidateLoopSeam) {
+    if (g.children.length > 1 && this._consolidateLoopSeam) {
       const lastChild = g.children[g.children.length - 1];
       const firstChild = g.children[0];
       if ((lastChild instanceof LineSegment3d || lastChild instanceof LineString3d) && (firstChild instanceof LineSegment3d || firstChild instanceof LineString3d)) {
-        if (this._options.consolidateLinearGeometry && !this._options.disableLinearCompression) {
+        if (this._consolidateLinearGeometry && !this._disableLinearCompression) {
           const lastPoints = lastChild.points;
           lastPoints.pop(); // the original start point survives as an interior point in the new first primitive
           g.children[0] = LineString3d.createPoints([...lastPoints, ...firstChild.points]);
           g.children.pop();
         }
       } else if (lastChild instanceof Arc3d && firstChild instanceof Arc3d) {
-        if (this._options.consolidateCompatibleArcs) {
-          if (CurveFactory.appendToArcInPlace(lastChild, firstChild, false, this._options.duplicatePointTolerance)) {
+        if (this._consolidateCompatibleArcs) {
+          if (CurveFactory.appendToArcInPlace(lastChild, firstChild, false, this._duplicatePointTolerance)) {
             g.children[0] = lastChild;
             g.children.pop();
           }

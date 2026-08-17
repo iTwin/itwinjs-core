@@ -19,6 +19,20 @@ export interface EntityIdAndClassId {
   classId: Id64String;
 }
 
+/** Metadata describing the ECClass of an entity changed by a transaction.
+ * @public
+ * @extensions
+ */
+export interface TxnEntityMetadata {
+  /** The class's name in "Schema:Class" format. */
+  readonly classFullName: string;
+
+  /** Returns `true` if this class is or is derived from the specified class.
+   * @note Class names are compared case-sensitively.
+   */
+  is(baseClassFullName: string): boolean;
+}
+
 /** JSON representation of the set of [Element]($backend)s or [Model]($backend)s that were changed by a [Txn]($docs/learning/InteractiveEditing.md).
  * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
  * @see [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend).
@@ -34,7 +48,8 @@ export interface ChangedEntities {
   updated?: CompressedId64Set;
 }
 
-/** A collection of [[EntityIdAndClassId]]s, as used by [TxnChangedEntities]($backend).
+/** A collection of [[EntityIdAndClassId]]s containing only entity and ECClass Ids.
+ * Backend transaction change events use a richer iterable that also exposes ECClass metadata.
  * For efficiency, the iterator supplied by this iterable returns **the same `EntityIdAndClassId` object** on each iteration. Therefore the objects must be copied if you
  * intend to store references to them. For example, to populate an array from the iterable:
  * ```ts

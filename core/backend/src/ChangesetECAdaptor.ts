@@ -7,7 +7,7 @@
  */
 import { DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
-import { Base64EncodedString } from "@itwin/core-common";
+import { Base64EncodedString, QueryBinder } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
 import { _nativeDb } from "./internal/Symbols";
 
@@ -354,7 +354,7 @@ class ECDbMap {
 /**
  * Record meta data for the change.
  * @beta
- * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use [ChangeMeta]($backend) with [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangeMeta]($backend) with [ChangesetReader]($backend) instead.
  * */
 export interface ChangeMetaData {
   /** list of tables making up this EC change */
@@ -374,7 +374,7 @@ export interface ChangeMetaData {
 /**
  * Represent EC change derived from low level sqlite change
  * @beta
- * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use [ChangeInstance]($backend) with [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangeInstance]($backend) with [ChangesetReader]($backend) instead.
  */
 export interface ChangedECInstance {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -388,7 +388,7 @@ export interface ChangedECInstance {
 /**
  * Helper function to convert between JS DateTime & SQLite JulianDay values.
  * @beta
- * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. The DateTime namespace is deprecated and will be removed in a future release.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. The DateTime namespace is deprecated and will be removed in a future release.
  * */
 namespace DateTime {
   /**
@@ -416,7 +416,7 @@ namespace DateTime {
 /**
  * Represents a cache for unifying EC changes.
  * @beta
- * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use [ChangeCache]($backend) with [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangeCache]($backend) with [ChangesetReader]($backend) instead.
  */
 export interface ECChangeUnifierCache extends Disposable {
   /**
@@ -447,7 +447,7 @@ export interface ECChangeUnifierCache extends Disposable {
 }
 /**
  * @beta
- * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use [ChangeUnifierCache.createInMemoryCache]($backend) / [ChangeUnifierCache.createSqliteBackedCache]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangeUnifierCache.createInMemoryCache]($backend) / [ChangeUnifierCache.createSqliteBackedCache]($backend) instead.
 */
 export namespace ECChangeUnifierCache {
   /**
@@ -657,7 +657,7 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
  * Partial changes is per table and a single instance can
  * span multiple tables.
  * @beta
- * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use [PartialChangeUnifier]($backend) with [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [PartialChangeUnifier]($backend) with [ChangesetReader]($backend) instead.
  */
 export class PartialECChangeUnifier implements Disposable {
   private _readonly = false;
@@ -716,13 +716,10 @@ export class PartialECChangeUnifier implements Disposable {
    * @returns `true` if `rhsClassId` is an instance of `lhsClassId`, `false` otherwise.
    */
   private instanceOf(rhsClassId: Id64String, lhsClassId: Id64String): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this._db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
-      stmt.bindId(1, rhsClassId);
-      stmt.bindId(2, lhsClassId);
-      stmt.step();
-      return stmt.getValue(0).getInteger() === 1;
-    });
+    return this._db.withQueryReader("SELECT ec_instanceof(?,?)", (reader) => {
+      reader.step();
+      return reader.current[0] === 1;
+    }, new QueryBinder().bindId(1, rhsClassId).bindId(2, lhsClassId));
   }
 
   /**
@@ -825,7 +822,7 @@ export class PartialECChangeUnifier implements Disposable {
  * it is per table while a single instance can span multiple table.
  * @note PrimitiveArray and StructArray are not supported types.
  * @beta
- * @deprecated in 5.1.9 - will not be removed until after 2027-05-04. Use [ChangesetReader]($backend) instead.
+ * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use [ChangesetReader]($backend) instead.
  *
 */
 export class ChangesetECAdaptor implements Disposable {
@@ -954,9 +951,11 @@ export class ChangesetECAdaptor implements Disposable {
   private static setValue(targetObj: any, accessString: string, value: any): void {
     let cursor = targetObj;
     const propPath = accessString.split(".");
+    // Validate every segment before mutating anything so a dangerous segment later in the path
+    // cannot leave partially written data behind.
     propPath.forEach((propertyName) => {
-      if (propertyName === "__proto__")
-        throw new Error("access string cannot container __proto__");
+      if (ChangesetECAdaptor.isUnsafePropertyName(propertyName))
+        throw new Error(`access string cannot contain ${propertyName}`);
     });
 
     const leafProp = propPath.splice(-1).shift();
@@ -964,11 +963,20 @@ export class ChangesetECAdaptor implements Disposable {
       throw new Error("not access string was specified.");
 
     for (const elem of propPath) {
-      if (typeof cursor[elem] === "undefined")
+      // Only follow own properties. Inherited members must never be traversed or mutated.
+      if (!Object.prototype.hasOwnProperty.call(cursor, elem) || typeof cursor[elem] === "undefined")
         cursor[elem] = {};
       cursor = cursor[elem];
     }
     cursor[leafProp] = value;
+  }
+
+  /**
+   * Determine if a property path segment could be used to reach the prototype chain.
+   * @param propertyName single segment of an access string.
+   */
+  private static isUnsafePropertyName(propertyName: string): boolean {
+    return propertyName === "__proto__" || propertyName === "constructor" || propertyName === "prototype";
   }
 
   /**

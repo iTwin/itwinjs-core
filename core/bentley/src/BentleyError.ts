@@ -349,7 +349,7 @@ export enum GeoServiceStatus {
   VerticalDatumConvertError = GEOSERVICESTATUS_BASE + 4,
   CSMapError = GEOSERVICESTATUS_BASE + 5,
   /**
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. This status is never returned.
+   * @deprecated in 5.0 - might be removed in next major version. This status is never returned.
    */
   Pending = GEOSERVICESTATUS_BASE + 6,
 }
@@ -573,6 +573,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
       case DbResult.BE_SQLITE_IOERR_DELETE_NOENT: return "BE_SQLITE_IOERR_DELETE_NOENT";
 
       case DbResult.BE_SQLITE_ERROR_DataTransformRequired: return "Schema update require to transform data";
+      case DbResult.BE_SQLITE_ERROR_DataDeletionRequired: return "Schema update would destroy existing data";
       case DbResult.BE_SQLITE_ERROR_FileExists: return "File Exists";
       case DbResult.BE_SQLITE_ERROR_AlreadyOpen: return "Already Open";
       case DbResult.BE_SQLITE_ERROR_NoPropertyTable: return "No Property Table";

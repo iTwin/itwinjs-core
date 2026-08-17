@@ -23,8 +23,7 @@ import { Transform } from "./Transform";
 /**
  * A bilinear patch is a surface defined by its 4 corner points.
  * * The corner points do not have to be coplanar, but if they are, the quadrilateral should be convex to avoid a self-intersecting surface.
- * ```
- * equation
+ * ```equation
  * \begin{matrix}
  * v\text{-direction}\\
  * \uparrow\\

@@ -325,7 +325,7 @@ export abstract class IndexedXYZCollection {
   }
   /** Adjust index into range by modulo with the length. */
   public cyclicIndex(i: number): number {
-    return (i % this.length);
+    return Geometry.modulo(i, this.length);
   }
   /** Return the range of the points. */
   public getRange(transform?: Transform, result?: Range3d): Range3d {

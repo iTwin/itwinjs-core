@@ -54,6 +54,7 @@ import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
 import type { ObjectReference } from '@itwin/object-storage-core/lib/common';
 import { OpenMode } from '@itwin/core-bentley';
 import { OrderedId64Iterable } from '@itwin/core-bentley';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
@@ -874,6 +875,8 @@ export enum BriefcaseIdValue {
     Illegal = 4294967295,
     LastValid = 16777205,
     Max = 16777216,
+    // @internal
+    SchemaSyncElementReserved = 16777206,
     Unassigned = 0
 }
 
@@ -2087,6 +2090,12 @@ export interface CreateIModelProps extends IModelProps {
     readonly thumbnail?: ThumbnailProps;
 }
 
+// @internal
+export function createIpcDispatcher(impl: object, channelName: string, includeStack: boolean | (() => boolean)): (funcName: string, ...args: any[]) => Promise<IpcInvokeReturn>;
+
+// @internal
+export function createIpcProxy<K>(call: (methodName: string, ...args: any[]) => Promise<any>): PickAsyncMethods<K>;
+
 // @public
 export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
@@ -2190,6 +2199,7 @@ export interface DbCloudContainerInfo {
     readonly containerId: string;
     readonly dbName?: string;
     readonly description?: string;
+    readonly includePrerelease?: boolean;
     readonly isPublic?: boolean;
     readonly storageType: "azure" | "google";
     readonly version?: string;
@@ -2199,6 +2209,7 @@ export interface DbCloudContainerInfo {
 // @internal (undocumented)
 export interface DbQueryConfig {
     autoShutdownWhenIdleForSeconds?: number;
+    // @deprecated (undocumented)
     doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
@@ -2288,31 +2299,19 @@ export enum DbResponseKind {
 
 // @internal (undocumented)
 export enum DbResponseStatus {
-    // (undocumented)
-    Cancel = 2,/* query ran to completion. */
-    // (undocumented)
-    Done = 1,/*  Requested by user.*/
-    // (undocumented)
-    Error = 100,/*  query was running but ran out of quota.*/
-    // (undocumented)
-    Error_BlobIO_OpenFailed = 105,/*  query time quota expired while it was in queue.*/
-    // (undocumented)
-    Error_BlobIO_OutOfRange = 106,/*  could not submit the query as queue was full.*/
-    // (undocumented)
-    Error_ECSql_BindingFailed = 104,/*  Shutdown is in progress. */
-    // (undocumented)
-    Error_ECSql_PreparedFailed = 101,/*  generic error*/
-    // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,/*  ecsql prepared failed*/
-    // (undocumented)
-    Error_ECSql_StepFailed = 102,/*  ecsql step failed*/
-    // (undocumented)
-    Partial = 3,/*  ecsql failed to serialized row to json.*/
-    // (undocumented)
-    QueueFull = 5,/*  ecsql binding failed.*/
-    // (undocumented)
-    ShuttingDown = 6,/*  class or property or instance specified was not found or property as not of type blob.*/
-    // (undocumented)
+    Cancel = 2,
+    Done = 1,
+    Error = 100,
+    Error_BlobIO_OpenFailed = 105,
+    Error_BlobIO_OutOfRange = 106,
+    Error_ECSql_BindingFailed = 104,
+    Error_ECSql_PreparedFailed = 101,
+    Error_ECSql_RowToJsonFailed = 103,
+    Error_ECSql_StepFailed = 102,
+    NotOpen = 7,
+    Partial = 3,
+    QueueFull = 5,
+    ShuttingDown = 6,
     Timeout = 4
 }
 
@@ -2382,6 +2381,12 @@ export const defaultTileOptions: TileOptions;
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
     isPrivate?: boolean;
+}
+
+// @beta
+export interface DefinitionSetProps extends DefinitionElementProps {
+    // (undocumented)
+    rank?: Rank;
 }
 
 // @public
@@ -3023,6 +3028,18 @@ export interface ElementAspectProps extends EntityProps {
 }
 
 // @beta
+export namespace ElementError {
+    const scope = "itwin-Element";
+    export function isError(error: unknown, key?: Key): error is ITwinError;
+    export type Key =
+    /** The element's model type does not match the expected model type for the operation */
+    "model-type-mismatch" |
+    /** Invalid arguments were provided to an element operation */
+    "invalid-arguments";
+    export function throwError(key: Key, message: string): never;
+}
+
+// @beta
 export namespace ElementGeometry {
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[], worldToLocal?: Transform): boolean;
     export class Builder {
@@ -3266,6 +3283,31 @@ export interface ElementProps extends EntityProps {
     model: Id64String;
     parent?: RelatedElementProps;
     userLabel?: string;
+}
+
+// @beta
+export interface ElementReservationError extends ITwinError {
+    readonly federationGuid?: GuidString;
+}
+
+// @beta (undocumented)
+export namespace ElementReservationError {
+    const scope = "itwin-ElementReservation";
+    export function isError(error: unknown, key?: Key): error is ElementReservationError;
+    export type Key =
+    /** A proposed or inserted reservation is invalid: e.g. a malformed federationGuid, an invalid code, an unknown class, or a missing federationGuid. */
+    "invalid-reservation" |
+    /** The requested reservation conflicts with an existing reservation (a different class or code). */
+    "reservation-conflict" |
+    /** No reservation exists for the element being inserted; it must be reserved first. */
+    "reservation-not-found" |
+    /** The element cannot be inserted because the SchemaSync container has un-pushed local changes. */
+    "container-has-local-changes" |
+    /** The pool of element ids available for reservations has been exhausted. */
+    "id-sequence-exhausted" |
+    /** The persisted reservation bookkeeping data is corrupt. */
+    "corrupt-reservation-data";
+    export function throwError<T extends ElementReservationError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 
 // @public
@@ -4460,7 +4502,10 @@ export function getMarkerText(marker: ListMarker, num: number): string;
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
 // @internal
-export const getPullChangesIpcChannel: (iModelId: string) => string;
+export const getPullChangesIpcChannel: (key: string) => string;
+
+// @internal
+export const getPushChangesIpcChannel: (key: string) => string;
 
 // @internal (undocumented)
 export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;
@@ -5591,6 +5636,7 @@ export interface IpcAppFunctions {
     abandonChanges: (key: string) => Promise<void>;
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelPullChangesRequest: (key: string) => Promise<void>;
+    cancelPushChangesRequest: (key: string) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
     getRedoString: (key: string) => Promise<string>;
@@ -5606,7 +5652,7 @@ export interface IpcAppFunctions {
     openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
-    pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
+    pushChanges: (key: string, description: string, options?: PushChangesOptions) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
@@ -5804,7 +5850,7 @@ export namespace ITwinSettingsError {
     scope = "itwin-settings";
     export function isError(error: unknown, key?: Key): error is ITwinSettingsError;
     // (undocumented)
-    export type Key = "failed-to-obtain-container-token" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
+    export type Key = "failed-to-obtain-container-token" | "missing-container-itwinid" | "multiple-itwin-settings-containers" | "no-cloud-container" | "blob-service-unavailable" | "invalid-priority" | "unknown-setting";
     export function throwError<T extends ITwinSettingsError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 
@@ -7619,6 +7665,13 @@ export interface PullChangesOptions {
     reportProgress?: boolean;
 }
 
+// @internal
+export interface PushChangesOptions {
+    downloadProgressInterval?: number;
+    enableCancellation?: boolean;
+    reportDownloadProgress?: boolean;
+}
+
 // @public
 export class QParams2d {
     clone(out?: QParams2d): QParams2d;
@@ -7829,6 +7882,8 @@ export class QueryBinder {
     bindString(indexOrName: string | number, val: string): this;
     bindStruct(indexOrName: string | number, val: object): this;
     static from(args: any[] | object | undefined): QueryBinder;
+    // @internal
+    static fromSkippingNullish(args: any[] | object | undefined): QueryBinder;
     // (undocumented)
     serialize(): object;
 }
@@ -7922,6 +7977,7 @@ export interface QueryQuota {
 export enum QueryRowFormat {
     UseECSqlPropertyIndexes = 1,
     UseECSqlPropertyNames = 0,
+    // @deprecated
     UseJsPropertyNames = 2
 }
 
@@ -8044,6 +8100,9 @@ export class RealityModelDisplaySettings {
     readonly pointCloud: PointCloudDisplaySettings;
     toJSON(): RealityModelDisplayProps | undefined;
 }
+
+// @internal
+export function rebuildIpcError(err: any, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): Error;
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
@@ -9558,6 +9617,9 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
     protocolVersion?: number;
 }
 
+// @internal
+export function serializeIpcError(err: unknown, includeStack: boolean): IpcInvokeReturn;
+
 // @beta
 export namespace ServerBasedLocksError {
     const scope = "itwin-ServerBasedLocks";
@@ -10182,6 +10244,12 @@ export interface TabRunProps extends TextBlockComponentProps {
 }
 
 // @beta
+export type TargetPointShape = typeof targetPointShapes[number];
+
+// @beta
+export const targetPointShapes: readonly ["cross", "plus", "circle", "square", "rectangle"];
+
+// @beta
 export type TerminatorShape = typeof terminatorShapes[number];
 
 // @beta
@@ -10428,6 +10496,11 @@ export type TextJustification = "left" | "center" | "right";
 export interface TextLeaderStyleProps {
     color?: TextStyleColor | "inherit";
     elbowLength?: number;
+    showLeaders?: boolean;
+    showTargetPoint?: boolean;
+    showTerminators?: boolean;
+    targetPointOffsetFactor?: number;
+    targetPointShape?: TargetPointShape;
     terminatorHeightFactor?: number;
     terminatorShape?: TerminatorShape;
     terminatorWidthFactor?: number;
@@ -11305,6 +11378,12 @@ export enum TxnAction {
     Reverse = 3
 }
 
+// @public
+export interface TxnEntityMetadata {
+    readonly classFullName: string;
+    is(baseClassFullName: string): boolean;
+}
+
 // @internal
 export interface TxnNotifications {
     // (undocumented)
@@ -11422,6 +11501,9 @@ export enum TypeOfChange {
 
 // @public
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
+
+// @internal
+export function unwrapIpcInvokeReturn<T = unknown>(retVal: IpcInvokeReturn, typedErrorClass?: new (errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData) => Error): T;
 
 // @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;

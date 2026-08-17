@@ -37,6 +37,17 @@ function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
 }
 
+const maxFileExtensionLength = 255 - 40 - 1; // Reserve space for the SHA-1 hash and "." in the generated filename.
+
+function isSafeFileExtension(fileExt: string): boolean {
+  const invalidChars = "<>:\"/\\|?*";
+  return fileExt.length <= maxFileExtensionLength
+    && Buffer.byteLength(fileExt, "utf8") <= maxFileExtensionLength
+    && !fileExt.endsWith(" ")
+    && !fileExt.endsWith(".")
+    && !Array.from(fileExt).some((char) => invalidChars.includes(char) || char.charCodeAt(0) < 0x20);
+}
+
 /** file extension for local WorkspaceDbs */
 export const workspaceDbFileExt = "itwin-workspace";
 
@@ -198,7 +209,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
 
     // since resource names can contain illegal characters, path separators, etc., we make the local file name from its hash, in hex.
     let localFileName = join(this._container.filesDir, createHash("sha1").update(this.dbFileName).update(rscName).digest("hex"));
-    if (info.fileExt !== "") // since some applications may expect to see the extension, append it here if it was supplied.
+    if (info.fileExt !== "" && isSafeFileExtension(info.fileExt)) // since some applications may expect to see the extension, append it here if it was supplied.
       localFileName = `${localFileName}.${info.fileExt}`;
     return { localFileName, info };
   }
@@ -379,8 +390,12 @@ class WorkspaceImpl implements Workspace {
   public async getWorkspaceDb(props: WorkspaceDbCloudProps): Promise<WorkspaceDb> {
     let container: WorkspaceContainer | undefined = this.findContainer(props.containerId);
     if (undefined === container) {
-      const accessToken = (props.baseUri === "" || props.isPublic) ? "" : await CloudSqlite.requestToken({ accessLevel: "read", ...props });
-      container = new WorkspaceContainerImpl(this, { ...props, accessToken });
+      if (props.accessToken) {
+        container = new WorkspaceContainerImpl(this, { ...props, accessToken: props.accessToken });
+      } else {
+        const accessToken = (props.baseUri === "" || props.isPublic) ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
+        container = new WorkspaceContainerImpl(this, { ...props, accessToken });
+      }
     }
     return container.getWorkspaceDb(props);
   }
@@ -561,15 +576,7 @@ class EditorImpl implements WorkspaceEditor {
   }
 }
 
-interface EditCloudContainer extends WorkspaceCloudContainer {
-  writeLockHeldBy?: string;  // added by acquireWriteLock
-}
-
 class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWorkspaceContainer {
-  public override get cloudContainer(): EditCloudContainer | undefined {
-    return super.cloudContainer;
-  }
-
   public get cloudProps(): WorkspaceContainerProps | undefined {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
@@ -610,20 +617,18 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
   public acquireWriteLock(user: string): void {
     if (this.cloudContainer) {
       this.cloudContainer.acquireWriteLock(user);
-      this.cloudContainer.writeLockHeldBy = user;
+      CloudSqlite.addHiddenProperty(this.cloudContainer, "writeLockHeldBy", user);
     }
   }
   public releaseWriteLock() {
-    if (this.cloudContainer) {
-      this.cloudContainer.releaseWriteLock();
-      this.cloudContainer.writeLockHeldBy = undefined;
-    }
+    if (this.cloudContainer)
+      CloudSqlite.releaseWriteLock(this.cloudContainer);
   }
 
   public abandonChanges() {
     if (this.cloudContainer) {
       this.cloudContainer.abandonChanges();
-      this.cloudContainer.writeLockHeldBy = undefined;
+      CloudSqlite.addHiddenProperty(this.cloudContainer, "writeLockHeldBy", undefined);
     }
   }
 
@@ -712,9 +717,10 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   public override close() {
     if (this.isOpen) {
       // whenever we close an EditableDb, update the name of the last editor in the manifest
-      const lastEditedBy = (this._container.cloudContainer as any)?.writeLockHeldBy;
+      const cloudContainer = this.container.cloudContainer;
+      const lastEditedBy = cloudContainer === undefined ? undefined : CloudSqlite.getWriteLockHeldBy(cloudContainer);
       if (lastEditedBy !== undefined)
-        this.updateManifest({ ...this.manifest, lastEditedBy });
+        this.updateManifest({ ...this.manifest, lastEditedBy, lastEditedAt: new Date().toISOString() });
 
       // make sure all changes were saved before we close
       this.sqliteDb.saveChanges();
@@ -785,6 +791,8 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
     fileExt = fileExt ?? extname(localFileName);
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
+    if (!isSafeFileExtension(fileExt))
+      WorkspaceError.throwError("invalid-name", { message: "file extension is not valid for generated file names" });
     this.sqliteDb[_nativeDb].embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
   }
   public updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void {
