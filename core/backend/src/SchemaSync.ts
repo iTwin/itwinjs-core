@@ -151,6 +151,7 @@ export namespace SchemaSync {
    *   await db.upgradeSchemas(files, { description: "..." });
    * }
    * ```
+   * @alpha
    */
   export function requiresUpgrade(error: unknown): boolean {
     const errorNumber = (error as { errorNumber?: number } | undefined)?.errorNumber;

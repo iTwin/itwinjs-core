@@ -1465,31 +1465,39 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Refuse a schema import this briefcase is in no state to run. Shared by [[importSchemas]] and
+   * [[BriefcaseDb.upgradeSchemas]], which reach the native importer by different routes.
+   * @internal
+   */
+  protected assertCanImportSchemas(): void {
+    if (!this.isBriefcaseDb())
+      return;
+
+    if (this.txns.rebaser.isRebasing) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+    }
+    if (this.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
+    }
+
+    // Additional checks when semantic rebase is enabled
+    if (IModelHost.useSemanticRebase) {
+      if (this[_nativeDb].hasUnsavedChanges()) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
+      }
+      if (SchemaSync.isEnabled(this)) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
+      }
+    }
+  }
+
   /** Shared implementation for importing schemas from file or string. */
   protected async importSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
-    // BriefcaseDb-specific validation checks
-    if (this.isBriefcaseDb()) {
-      if (this.txns.rebaser.isRebasing) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
-      }
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
-      }
-
-      // Additional checks when semantic rebase is enabled
-      if (IModelHost.useSemanticRebase) {
-        if (this[_nativeDb].hasUnsavedChanges()) {
-          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
-        }
-        if (SchemaSync.isEnabled(this)) {
-          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
-        }
-      }
-    }
+    this.assertCanImportSchemas();
 
     if (options?.channelUpgrade) {
       const channelUpgrade = options.channelUpgrade;
@@ -3879,6 +3887,22 @@ export class BriefcaseDb extends IModelDb {
     // - push changes
     // - release schema lock
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
+
+    // With schema sync the upgrade rebuilds the sync db from this briefcase, which discards rows no
+    // briefcase holds yet. That is only sound under the exclusive schema lock: it cannot be acquired
+    // while anyone else holds a lock, so nobody can be sitting on an unpushed import whose rows are
+    // about to go. Take it up front rather than only when a data transform turns out to be needed.
+    if (SchemaSync.isEnabled(briefcase)) {
+      try {
+        await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+        await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
+        await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
+      } finally {
+        await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
+      }
+      return;
+    }
+
     try {
       await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
     } catch (error: any) {
@@ -4424,6 +4448,8 @@ export class BriefcaseDb extends IModelDb {
   ): Promise<void> {
     if (schemas.length === 0)
       return;
+
+    this.assertCanImportSchemas();
 
     if (this[_nativeDb].hasUnsavedChanges() || this.txns.hasLocalChanges)
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot upgrade schemas while there are local changes");
