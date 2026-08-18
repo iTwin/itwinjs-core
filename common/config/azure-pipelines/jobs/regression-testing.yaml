@@ -17,8 +17,10 @@ schedules:
 jobs:
   - job:
     variables:
-      - name: linux_pool
+      - name: linuxX64_pool
         value: "imodelNative-Debian12"
+      - name: linuxARM64_pool
+        value: "Platform-Debian12-ARM"
       - name: mac_pool
         value: iModelTechMacArm
       - name: win_pool
@@ -31,31 +33,42 @@ jobs:
           platform: Windows_NT
           name: $(win_pool)
           node_version: 20.x
+          cacheEnabled: 1
         "Linux_Node_20":
           OS: ubuntu-latest
           platform: Linux
-          name: $(linux_pool)
+          name: $(linuxX64_pool)
           node_version: 20.x
+          cacheEnabled: 1
         "MacOS_Node_20":
           OS: macOS-latest
           platform: Darwin
           name: $(mac_pool)
           node_version: 20.x
+          cacheEnabled: 1
         "Windows_Node_22":
           OS: windows-latest
           platform: Windows_NT
           name: $(win_pool)
           node_version: 22.x
+          cacheEnabled: 1
         "Linux_Node_22":
           OS: ubuntu-latest
           platform: Linux
-          name: $(linux_pool)
+          name: $(linuxX64_pool)
           node_version: 22.x
+          cacheEnabled: 1
         "MacOS_Node_22":
           OS: macOS-latest
           platform: Darwin
           name: $(mac_pool)
           node_version: 22.x
+          cacheEnabled: 1
+        "LinuxArm64_Node_22":
+          platform: Linux
+          name: $(linuxARM64_pool)
+          node_version: 22.x
+          cacheEnabled: 0
       maxParallel: 3
 
     pool:
@@ -73,3 +86,4 @@ jobs:
       - template: ../templates/core-build.yaml
         parameters:
           nodeVersion: $(node_version)
+          rushBuildCacheEnabled: $(cacheEnabled)
