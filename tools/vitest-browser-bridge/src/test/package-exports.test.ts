@@ -4,24 +4,33 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "node:fs";
+import { createRequire } from "node:module";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const packageRoot = process.cwd();
+const require = createRequire(import.meta.url);
 
 describe("package boundaries", () => {
-  it("exposes only the provider and narrow callback subpaths", () => {
+  it("exposes only consumer-facing provider and callback subpaths", () => {
     const packageJson = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")) as {
       exports: Record<string, unknown>;
     };
-    expect(Object.keys(packageJson.exports)).toEqual([
+    expect(new Set(Object.keys(packageJson.exports))).toEqual(new Set([
       "./electron-provider",
-      "./callbacks/protocol",
       "./callbacks/backend",
       "./callbacks/browser",
-      "./callbacks/electron",
-    ]);
+    ]));
     expect(packageJson.exports["."]).toBeUndefined();
+  });
+
+  it("loads every built consumer entry through both package conditions", async () => {
+    expect(require("@itwin/vitest-browser-bridge/electron-provider").electron).toBeTypeOf("function");
+    expect((await import("@itwin/vitest-browser-bridge/electron-provider")).electron).toBeTypeOf("function");
+    expect(require("@itwin/vitest-browser-bridge/callbacks/backend").registerBackendCallback).toBeTypeOf("function");
+    expect((await import("@itwin/vitest-browser-bridge/callbacks/backend")).registerBackendCallback).toBeTypeOf("function");
+    expect(require("@itwin/vitest-browser-bridge/callbacks/browser").invokeBackendCallback).toBeTypeOf("function");
+    expect((await import("@itwin/vitest-browser-bridge/callbacks/browser")).invokeBackendCallback).toBeTypeOf("function");
   });
 
   it("keeps the browser callback module free of Electron imports", () => {

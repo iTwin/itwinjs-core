@@ -16,6 +16,10 @@ interface FakeEvent {
   readonly sender: { readonly id: number };
 }
 
+interface FakeEvent {
+  readonly sender: { readonly id: number };
+}
+
 class FakeIpcMain {
   public handler?: (event: FakeEvent, payload: unknown) => Promise<unknown>;
   public handledChannels: string[] = [];
