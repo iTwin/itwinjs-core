@@ -225,11 +225,7 @@ export class Element extends Entity {
   protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
     "codeValue": "code.value",
     "codeSpec": "code.spec",
-    "codeSpec.id": "code.spec",
     "codeScope": "code.scope",
-    "codeScope.id": "code.scope",
-    "model": "model",
-    "model.id": "model",
   };
 
   /**
@@ -846,8 +842,6 @@ export abstract class GeometricElement3d extends GeometricElement {
 
   /** @inheritdoc @beta */
   protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
-    "category": "category",
-    "category.id": "category",
     "geometryStream": "geom",
     "origin": "placement.origin",
     "yaw": "placement.angles.yaw",
@@ -1020,8 +1014,6 @@ export abstract class GeometricElement2d extends GeometricElement {
 
   /** @inheritdoc @beta */
   protected static override readonly _propsAccessStrings: { readonly [instanceAccessString: string]: string } = {
-    "category": "category",
-    "category.id": "category",
     "geometryStream": "geom",
     "origin": "placement.origin",
     "rotation": "placement.angle",

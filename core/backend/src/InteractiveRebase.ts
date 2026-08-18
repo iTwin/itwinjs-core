@@ -309,13 +309,6 @@ export class InteractiveRebase {
     this._db = db;
     this._txns = txns;
     this._groups = this._txns.map(txn => ({ txns: [txn] }));
-
-    if (this._groups.length > 0) {
-      db.txns.rebaser.addConflictHandler({
-        id: INTERACTIVE_REBASE_CONFLICT_HANDLER_ID,
-        handler: this.handleRebaseConflict.bind(this),
-      });
-    }
   }
 
   public [Symbol.dispose](): void {
@@ -470,14 +463,9 @@ export class InteractiveRebase {
 
     this._conflicts = [];
 
-    // Only "Data" txns are reinstated by reading back RebaseInstanceStore and applying instance
-    // patches with JS-driven conflict detection. Other txn types (Schema, Ddl, ...) still go
-    // through the native changeset-apply mechanism and its conflict callback (handleRebaseConflict).
-    if (group.txns[0].type === "Data") {
-      this.reinstateDataTxn(group.txns[0]);
-    } else {
-      nativeDb.pullMergeRebaseReinstateTxn();
-    }
+    // TODO: refuse to do an interactive rebase for anything other than Data txns.
+    assert(group.txns[0].type === "Data", "Interactive rebase only supports Data txns");
+    this.reinstateDataTxn(group.txns[0]);
 
     return this._currentGroupIndex < this._groups.length - 1;
   }
@@ -721,56 +709,6 @@ export class InteractiveRebase {
     this._currentGroupIndex = -1;
   }
 
-  private handleRebaseConflict(conflict: RebaseChangesetConflictArgs): DbConflictResolution | undefined {
-    if (conflict.opcode === "Deleted") {
-      if (conflict.cause === "NotFound") {
-        // Our txn is trying to delete a row that has already been deleted by the new upstream changesets.
-        // We can safely ignore this.
-        return DbConflictResolution.Skip;
-      } else if (conflict.cause === "Data") {
-        // Our txn is trying to delete a row that has been modified by the new upstream changesets.
-        // Proceed with the delete but report the conflicting update.
-        return TheirUpdateOurDeleteRebaseConflictImpl.handle(this._conflicts, conflict);
-      }
-      assert(false, `Conflicts during a Deleted change should only have NotFound or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
-    } else if (conflict.opcode === "Inserted") {
-      if (conflict.cause === "Constraint") {
-        // Because this change was valid when it was created, and the schema has not changed,
-        // this can _only_ be a UNIQUE constraint violation.
-        // We must SKIP, because REPLACE is not allowed. But report the new column values for conflict resolution.
-        return UniqueConstraintRebaseConflictImpl.handle(this._conflicts, conflict);
-      } else if (conflict.cause === "Conflict") {
-        // The primary key already exists, which means local and upstream both inserted this instance.
-        return InsertRebaseConflictImpl.handle(this, this._conflicts, conflict);
-      }
-      assert(false, `Conflicts during an Inserted change should only have Constraint or Conflict as the conflict cause. Unexpected cause: ${conflict.cause}`);
-    } else if (conflict.opcode === "Updated") {
-      if (conflict.cause === "NotFound") {
-        // Our txn is trying to update a row that has been deleted by the new upstream changesets.
-        // Let the delete stand, but report the conflict.
-        return TheirDeleteOurUpdateRebaseConflictImpl.handle(this._conflicts, conflict);
-      } else if (conflict.cause === "Constraint") {
-        // Because this change was valid when it was created, and the schema has not changed,
-        // this can _only_ be a UNIQUE constraint violation.
-        // We must SKIP - REPLACE is not allowed. But report the new column values for conflict resolution.
-        return UniqueConstraintRebaseConflictImpl.handle(this._conflicts, conflict);
-      } else if (conflict.cause === "Data") {
-        // Our txn is changing the values in an existing row, and the new upstream changesets
-        // have also changed one or more values in that row.
-        return UpdateRebaseConflictImpl.handle(this._conflicts, conflict);
-      }
-      assert(false, `Conflicts during an Updated change should only have NotFound, Constraint, or Data as the conflict cause. Unexpected cause: ${conflict.cause}`);
-    } else if (conflict.opcode === undefined) {
-      if (conflict.cause === "ForeignKey") {
-        // TODO
-        return DbConflictResolution.Skip;
-      }
-      assert(false, `Conflicts without an opcode should only have ForeignKey as the conflict cause. Unexpected cause: ${conflict.cause}`);
-    }
-
-    return undefined;
-  }
-
   // List of local txns to be rebased
   // Grouping of those txns
   // Current txn/group being rebased
@@ -898,27 +836,6 @@ class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
   public readonly ours: RebaseConflictProperties = {};
   public readonly conflictingProperties: string[] = [];
 
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
-    const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.original.id;
-
-    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Update") as UpdateRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new UpdateRebaseConflictImpl(instanceId, ecConflict.original.classFullName);
-      conflicts.push(instanceConflict);
-    }
-
-    instanceConflict.conflictingProperties.push(...ecConflict.dataConflictProperties);
-
-    Object.assign(instanceConflict.original, ecConflict.original);
-    Object.assign(instanceConflict.theirs, ecConflict.theirs);
-    Object.assign(instanceConflict.ours, ecConflict.ours);
-
-    // Always accept "our" changes at this stage. That minimizes the chances of further
-    // conflicts in subsequent txns.
-    return DbConflictResolution.Replace;
-  }
-
   /** JS-driven equivalent of [[handle]], used for "Data" txns reinstated via [[RebaseInstanceStore]]
    * instead of the native changeset-conflict callback. Also accepts "ours" immediately, mirroring
    * `handle`'s `DbConflictResolution.Replace`. `conflictingProperties` is the native-reported list of
@@ -973,23 +890,6 @@ class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteReba
   public readonly theirs: RebaseConflictProperties = {};
   public readonly updatedProperties: string[] = [];
 
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
-    const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.original.id;
-
-    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new TheirUpdateOurDeleteRebaseConflictImpl(instanceId, ecConflict.original.classFullName);
-      conflicts.push(instanceConflict);
-    }
-
-    instanceConflict.updatedProperties.push(...ecConflict.dataConflictProperties);
-    Object.assign(instanceConflict.original, ecConflict.original);
-    Object.assign(instanceConflict.theirs, ecConflict.theirs);
-
-    return DbConflictResolution.Replace;
-  }
-
   /** JS-driven equivalent of [[handle]], used for "Data" txns reinstated via [[RebaseInstanceStore]]
    * instead of the native changeset-conflict callback. `updatedProperties` is the native-reported list
    * of `original`'s properties whose current db value no longer matches (see `InstanceWriter::Delete`).
@@ -1032,23 +932,6 @@ class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateReba
   public readonly ours: RebaseConflictProperties = {};
   public readonly updatedProperties: string[] = [];
 
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
-    const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.original.id;
-
-    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "TheirDeleteOurUpdate") as TheirDeleteOurUpdateRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new TheirDeleteOurUpdateRebaseConflictImpl(instanceId, ecConflict.original.classFullName);
-      conflicts.push(instanceConflict);
-    }
-
-    instanceConflict.updatedProperties.push(...ecConflict.dataConflictProperties);
-    Object.assign(instanceConflict.original, ecConflict.original);
-    Object.assign(instanceConflict.ours, ecConflict.ours);
-
-    return DbConflictResolution.Skip;
-  }
-
   /** JS-driven equivalent of [[handle]], used for "Data" txns reinstated via [[RebaseInstanceStore]]
    * instead of the native changeset-conflict callback.
    */
@@ -1089,28 +972,6 @@ class InsertRebaseConflictImpl implements InsertRebaseConflict {
   public readonly theirs: RebaseConflictProperties = {};
   public readonly ours: RebaseConflictProperties = {};
   public readonly conflictingProperties: string[] = [];
-
-  public static handle(interactive: InteractiveRebase, conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
-    const ecConflict = conflict.ecConflict;
-    const instanceId = ecConflict.ours.id;
-
-    let instanceConflict = conflicts.find(conflict => conflict.id === instanceId && conflict.kind === "Insert") as InsertRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new InsertRebaseConflictImpl(instanceId, ecConflict.ours.classFullName);
-      conflicts.push(instanceConflict);
-    }
-
-    instanceConflict.conflictingProperties.push(...ecConflict.dataConflictProperties);
-    Object.assign(instanceConflict.theirs, ecConflict.theirs);
-    Object.assign(instanceConflict.ours, ecConflict.ours);
-
-    // We skip here because Replace means "delete the existing row and insert the new one."
-    // That, in turn, will trigger any CASCADE DELETEs on that row, which means we won't be
-    // notified of any potential conflicts in those related tables. So we apply Ours
-    // manually via Update instead.
-    instanceConflict.acceptOurs(interactive);
-    return DbConflictResolution.Skip;
-  }
 
   /** JS-driven equivalent of [[handle]], used for "Data" txns reinstated via [[RebaseInstanceStore]]
    * instead of the native changeset-conflict callback. Also accepts "ours" immediately, mirroring
@@ -1162,36 +1023,6 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
   public readonly original: RebaseConflictProperties | undefined = undefined;
   public readonly ours: RebaseConflictProperties = {};
   public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
-
-  public static handle(conflicts: RebaseConflict[], conflict: RebaseChangesetConflictArgs): DbConflictResolution {
-    const ecConflict = conflict.ecConflict;
-
-    const instanceId = ecConflict.ours.id ?? ecConflict.original.id;
-    const classFullName = ecConflict.ours.classFullName ?? ecConflict.original.classFullName;
-
-    let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "UniqueConstraint") as UniqueConstraintRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new UniqueConstraintRebaseConflictImpl(instanceId, classFullName);
-      conflicts.push(instanceConflict);
-    }
-
-    for (const prop of Object.keys(ecConflict.ours)) {
-      instanceConflict.ours[prop] = ecConflict.ours[prop];
-    }
-
-    if (ecConflict.original) {
-      if (instanceConflict.original === undefined) {
-        instanceConflict.original = {};
-      }
-      for (const prop of Object.keys(ecConflict.original)) {
-        instanceConflict.original[prop] = ecConflict.original[prop];
-      }
-    }
-
-    instanceConflict.uniqueConstraintViolations = ecConflict.uniqueConstraintViolations;
-
-    return DbConflictResolution.Skip;
-  }
 
   /** JS-driven equivalent of [[handle]], used for "Data" txns reinstated via [[RebaseInstanceStore]]
    * instead of the native changeset-conflict callback. `detail` is the [[UniqueConstraintConflictDetail]]
