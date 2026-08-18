@@ -26,8 +26,7 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DeepReadonlyObject } from '@itwin/core-bentley';
 import { DeepRequiredObject } from '@itwin/core-bentley';
-import { FormatsProviderSync } from '@itwin/core-quantity';
-import { FormattingSpecArgs } from '@itwin/core-quantity';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { FormattingSpecProvider } from '@itwin/core-quantity';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
@@ -76,7 +75,7 @@ import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UintArray } from '@itwin/core-bentley';
-import { UnitsProviderSync } from '@itwin/core-quantity';
+import { UnitsProvider } from '@itwin/core-quantity';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import type { Writable } from 'stream';
@@ -1501,14 +1500,6 @@ export interface CodeSpecProperties {
     // (undocumented)
     version?: string;
 }
-
-// @internal
-export function collectFieldQuantityPairs(args: {
-    overrideName?: string;
-    overridePersistence?: string;
-    propertyName?: string;
-    propertyPersistence?: string;
-}): FormattingSpecArgs[];
 
 // @public
 export const ColorByName: {
@@ -3707,9 +3698,9 @@ export interface FieldFormatOptions {
 }
 
 // @internal
-export interface FieldFormatterContextSync {
-    formatsProvider: FormatsProviderSync;
-    unitsProvider: UnitsProviderSync;
+export interface FieldFormatterContext {
+    formatsProvider: FormatsProvider;
+    unitsProvider: UnitsProvider;
 }
 
 // @internal
@@ -3857,14 +3848,11 @@ export enum FontType {
     TrueType = 1
 }
 
-// @internal
+// @internal (undocumented)
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
 
 // @internal
-export function formatFieldValueSync(value: FieldValue, options: FieldFormatOptions | undefined, args: {
-    provider?: FormattingSpecProvider;
-    context?: FieldFormatterContextSync;
-}): string | undefined;
+export function formatFieldValueAsync(value: FieldValue, options: FieldFormatOptions | undefined, context: FieldFormatterContext): Promise<string | undefined>;
 
 // @internal
 export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FormattingSpecProvider): string | undefined;
@@ -5814,7 +5802,7 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
-// @internal
+// @internal (undocumented)
 export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
 
 // @internal

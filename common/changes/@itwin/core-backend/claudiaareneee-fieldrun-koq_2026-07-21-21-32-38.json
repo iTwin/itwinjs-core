@@ -1,9 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Add quantity formatting for FieldRun values in text annotations. `ElementDrivesTextAnnotation.evaluateFields` and the txn field-update callbacks format `\"quantity\"` and `\"coordinate\"` fields synchronously, resolving formats from a `FormattingSpecProvider` registered for the field's `formatSet` via `registerFieldFormattingProvider`, then from the iModel's schema, then raw. Because `FormatterSpec` construction is asynchronous, specs are built ahead of time: `prepareFieldFormatting` builds, warms, and registers a provider for a `FormatSet` in one call, `createFieldFormattingSpecProvider` builds one over a host-supplied `FormatsProvider`, and `collectFieldFormattingRequirements` reports the `(KindOfQuantity, persistenceUnit)` pairs a block needs. Registrations are process-wide; a matching `unregisterFieldFormattingProvider` on iModel close is caller-owned.",
-      "type": "none",
-      "packageName": "@itwin/core-backend"
+      "comment": "Add quantity formatting for FieldRun values in text annotations. `ElementDrivesTextAnnotation.evaluateFieldsAsync` runs the full pipeline against an injected `FormatsProvider` / `UnitsProvider`; `collectFieldFormattingRequirements` reports the `(KindOfQuantity, persistenceUnit)` pairs a host must pre-warm. The synchronous `evaluateFields` and txn field-update callbacks continue to render raw unless the host registers a `FormattingSpecProvider` for the field's `formatSet` via `registerFieldFormattingProvider` (matching `unregisterFieldFormattingProvider` on iModel close is caller-owned).",
     }
   ],
   "packageName": "@itwin/core-backend",

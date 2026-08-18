@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider, UnitsProviderSync } from "../Interfaces";
+import { UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
 import { QuantityLoggerCategory } from "../QuantityLoggerCategory";
 import { Format } from "./Format";
 import { FormatType } from "./FormatEnums";
@@ -164,97 +164,6 @@ export class FormatterSpec {
     return conversions;
   }
 
-  /** Synchronous counterpart to [[getRatioUnitConversions]]. */
-  private static getRatioUnitConversionsSync(units: ReadonlyArray<[UnitProps, string | undefined]>, unitsProvider: UnitsProviderSync, persistenceUnit: UnitProps): UnitConversionSpec[] {
-    const conversions: UnitConversionSpec[] = [];
-
-    const [numeratorUnit, numeratorLabel] = units[0];
-    const [denominatorUnit, denominatorLabel] = units[1];
-
-    // Compute ratio scale: how many numerator units per denominator unit (e.g., IN:FT = 12)
-    const denominatorToNumerator = unitsProvider.getConversionSync(denominatorUnit, numeratorUnit);
-    if (denominatorToNumerator.error) {
-      Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${denominatorUnit.name}" to "${numeratorUnit.name}" could not be resolved.`);
-    }
-    const displayRatioScale = denominatorToNumerator.factor;
-
-    // Avoid double-scaling: if persistence unit already encodes the display ratio, use factor 1.
-    const persistenceName = persistenceUnit.name.toUpperCase();
-    const numName = numeratorUnit.name.toUpperCase().split(".").pop() ?? "";
-    const denName = denominatorUnit.name.toUpperCase().split(".").pop() ?? "";
-    const persistenceTokens = persistenceName.split(/[._]/);
-    const isPersistenceMatchingRatio = persistenceTokens.includes(numName) && persistenceTokens.includes(denName);
-    const ratioScaleFactor = isPersistenceMatchingRatio ? 1.0 : displayRatioScale;
-
-    conversions.push({
-      name: `${numeratorUnit.name}_per_${denominatorUnit.name}`,
-      label: "",
-      system: numeratorUnit.system,
-      conversion: { factor: ratioScaleFactor, offset: 0.0 },
-    });
-    conversions.push({
-      name: numeratorUnit.name,
-      label: numeratorLabel?.length ? numeratorLabel : numeratorUnit.label,
-      system: numeratorUnit.system,
-      conversion: { factor: 1.0, offset: 0.0 },
-    });
-    conversions.push({
-      name: denominatorUnit.name,
-      label: denominatorLabel?.length ? denominatorLabel : denominatorUnit.label,
-      system: denominatorUnit.system,
-      conversion: { factor: 1.0, offset: 0.0 },
-    });
-
-    return conversions;
-  }
-
-  /** Synchronous counterpart to [[getUnitConversions]]. See [[createSync]]. */
-  public static getUnitConversionsSync(format: Format, unitsProvider: UnitsProviderSync, inputUnit?: UnitProps): UnitConversionSpec[] {
-    const conversions: UnitConversionSpec[] = [];
-    let persistenceUnit = inputUnit;
-    if (!persistenceUnit) {
-      if (format.units) {
-        const [props] = format.units[0];
-        persistenceUnit = props;
-      } else {
-        throw new Error("Formatter Spec needs persistence unit to be specified");
-      }
-    }
-
-    // Handle 2-unit composite for ratio formats (scale factors)
-    if (format.type === FormatType.Ratio && format.units && format.units.length === 2) {
-      return FormatterSpec.getRatioUnitConversionsSync(format.units, unitsProvider, persistenceUnit);
-    }
-
-    if (format.units) {
-      let convertFromUnit = inputUnit;
-      for (const unit of format.units) {
-        let unitConversion: UnitConversionProps;
-        if (convertFromUnit) {
-          unitConversion = unitsProvider.getConversionSync(convertFromUnit, unit[0]);
-          if (unitConversion.error) {
-            Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${convertFromUnit.name}" to "${unit[0].name}" could not be resolved.`);
-          }
-        } else {
-          unitConversion = { factor: 1.0, offset: 0.0 };
-        }
-        const unitLabel = (unit[1] && unit[1].length > 0) ? unit[1] : unit[0].label;
-        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion, system: unit[0].system }) as UnitConversionSpec;
-
-        conversions.push(spec);
-        convertFromUnit = unit[0];
-      }
-    } else {
-      // if format is only numeric and a input unit is defined set spec to use the input unit as the format unit
-      if (inputUnit) {
-        const spec: UnitConversionSpec = { name: inputUnit.name, label: inputUnit.label, system: inputUnit.system, conversion: { factor: 1.0, offset: 0.0 } };
-        conversions.push(spec);
-      }
-    }
-
-    return conversions;
-  }
-
   /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
    * async calls to lookup unit definitions.
@@ -282,41 +191,6 @@ export class FormatterSpec {
     if (format.revolutionUnit !== undefined) {
       if (inputUnit !== undefined) {
         revolutionConversion = await unitsProvider.getConversion(format.revolutionUnit, inputUnit);
-        if (revolutionConversion.error) {
-          Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${format.revolutionUnit.name}" to "${inputUnit.name}" could not be resolved.`);
-        }
-      } else {
-        revolutionConversion = { factor: 1.0, offset: 0.0 };
-      }
-    }
-
-    return new FormatterSpec(name, format, conversions, inputUnit, azimuthBaseConversion, revolutionConversion);
-  }
-
-  /** Synchronous counterpart to [[create]]. Requires a [[UnitsProviderSync]] whose backing
-   * data is already loaded; implementations throw when a lookup cannot be satisfied
-   * synchronously, and callers should treat a throw as "cannot construct synchronously".
-   *  @param name     The name of a format specification.
-   *  @param unitsProvider Synchronous units provider used to look up unit definitions and conversions.
-   *  @param inputUnit The unit of the value to be formatted (often the persistence unit).
-   */
-  public static createSync(name: string, format: Format, unitsProvider: UnitsProviderSync, inputUnit?: UnitProps): FormatterSpec {
-    const conversions: UnitConversionSpec[] = FormatterSpec.getUnitConversionsSync(format, unitsProvider, inputUnit);
-    let azimuthBaseConversion: UnitConversionProps | undefined;
-    if (format.azimuthBaseUnit !== undefined) {
-      if (inputUnit !== undefined) {
-        azimuthBaseConversion = unitsProvider.getConversionSync(format.azimuthBaseUnit, inputUnit);
-        if (azimuthBaseConversion.error) {
-          Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${format.azimuthBaseUnit.name}" to "${inputUnit.name}" could not be resolved.`);
-        }
-      } else {
-        azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
-      }
-    }
-    let revolutionConversion: UnitConversionProps | undefined;
-    if (format.revolutionUnit !== undefined) {
-      if (inputUnit !== undefined) {
-        revolutionConversion = unitsProvider.getConversionSync(format.revolutionUnit, inputUnit);
         if (revolutionConversion.error) {
           Logger.logWarning(QuantityLoggerCategory.Formatting, `Unit conversion from "${format.revolutionUnit.name}" to "${inputUnit.name}" could not be resolved.`);
         }

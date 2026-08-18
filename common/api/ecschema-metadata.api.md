@@ -11,7 +11,6 @@ import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
-import { FormatsProviderSync } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
@@ -2234,12 +2233,11 @@ export interface SchemaData {
 }
 
 // @beta
-export class SchemaFormatsProvider implements FormatsProvider, FormatsProviderSync {
+export class SchemaFormatsProvider implements FormatsProvider {
     constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey);
     // (undocumented)
     get context(): SchemaContext;
     getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
-    getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)

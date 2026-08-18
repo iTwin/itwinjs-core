@@ -24,7 +24,6 @@ beta;interface;FormatsChangedArgs
 beta;class;FormatSpecHandle
 beta;interface;FormatSpecHandleArgs
 beta;interface;FormatsProvider
-beta;interface;FormatsProviderSync
 internal;const;formatStringRgx
 beta;class;Formatter
 beta;class;FormatterSpec
@@ -103,7 +102,6 @@ beta;type;UnitName
 beta;interface;UnitProps
 beta;const;Units
 beta;interface;UnitsProvider
-beta;interface;UnitsProviderSync
 beta;type;UnitSystemKey
 beta;type;UnitSystemName
 beta;const;UnitSystems

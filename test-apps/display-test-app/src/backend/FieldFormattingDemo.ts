@@ -23,14 +23,17 @@
  *        [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), so the txn
  *        callback path that recomputes field content synchronously routes tagged fields
  *        through the provider.
- *      - `Backend.generateTextAnnotationGeometry` calls the same
- *        [[FieldFormattingDemoProvider.prepareForBlock]] before
- *        [ElementDrivesTextAnnotation.evaluateFields]($backend), so the dynamic-geometry
- *        pathway renders with the demo formats too.
+ *      - `Backend.generateTextAnnotationGeometry` passes the same underlying
+ *        [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity) to
+ *        [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) so the async pathway
+ *        used to render dynamic geometry also uses the demo formats.
  *
- * Formatting is `formatSet`-scoped everywhere: only fields tagged with `DEMO_FORMAT_SET_ID`
- * route through the demo provider. Untagged fields format through the iModel's schema-backed
- * formats.
+ * The two paths do **not** produce identical output for arbitrary blocks: the sync path is
+ * `formatSet`-scoped and only formats fields tagged with `DEMO_FORMAT_SET_ID`, while the
+ * async path applies the injected providers block-wide (see
+ * [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) JSDoc). A block that mixes
+ * tagged and untagged fields will diverge; a block whose fields are all tagged
+ * (the typical DTA authoring flow) sees the same demo output on both paths.
  *
  * This is intentionally minimal - it exists to exercise the new pathways from DTA, not to
  * be a production-quality implementation.

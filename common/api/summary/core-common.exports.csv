@@ -138,7 +138,6 @@ public;type;CodeScopeProps
 public;namespace;CodeScopeSpec
 public;class;CodeSpec
 public;interface;CodeSpecProperties
-internal;function;collectFieldQuantityPairs
 public;const;ColorByName
 public;class;ColorDef
 public;type;ColorDefProps
@@ -327,7 +326,7 @@ public;class;FeatureTable
 internal;class;FeatureTableHeader
 beta;type;FieldCase
 beta;interface;FieldFormatOptions
-internal;interface;FieldFormatterContextSync
+internal;interface;FieldFormatterContext
 internal;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath
@@ -350,7 +349,7 @@ deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;function;formatFieldValue
-internal;function;formatFieldValueSync
+internal;function;formatFieldValueAsync
 internal;function;formatFieldValueWithSpecProvider
 internal;interface;FormDataCommon
 beta;class;FractionRun

@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { UnitProps, UnitsProvider, UnitsProviderSync } from "./Interfaces";
+import type { UnitProps, UnitsProvider } from "./Interfaces";
 import type { SerializedUnitSchema } from "./SerializedUnitSchema";
 import { BadUnit } from "./Unit";
-import { QuantityError, QuantityStatus } from "./Exception";
 import { getBasicUnitConversion } from "./internal/BasicUnitConversionData";
-import { _testResetResolvedBasicUnitsDataCache, getResolvedBasicUnitsDataSync, resolveBasicUnitsData } from "./internal/BasicUnitsResolvedStateCache";
+import { _testResetResolvedBasicUnitsDataCache, resolveBasicUnitsData } from "./internal/BasicUnitsResolvedStateCache";
 
 async function resolveState() {
   return resolveBasicUnitsData(async () => {
@@ -39,21 +38,7 @@ export function _testResetUnitsCache(): void {
  * @see createUnitsProvider for layering schema-defined units on top of basic BIS units.
  * @beta
  */
-export class BasicUnitsProvider implements UnitsProvider, UnitsProviderSync {
-
-  /** Loads and indexes the bundled units schema so the synchronous `*Sync` methods can resolve
-   * without awaiting. Safe to call multiple times; concurrent callers share one load.
-   */
-  public static async warmup(): Promise<void> {
-    await resolveState();
-  }
-
-  /** Returns true once [[warmup]] (or any async provider call) has completed, meaning the
-   * synchronous `*Sync` methods can resolve.
-   */
-  public static get isWarmedUp(): boolean {
-    return undefined !== getResolvedBasicUnitsDataSync();
-  }
+export class BasicUnitsProvider implements UnitsProvider {
 
   // ── UnitsProvider implementation ─────────────────────────────────────
 
@@ -115,34 +100,6 @@ export class BasicUnitsProvider implements UnitsProvider, UnitsProviderSync {
    */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps) {
     const state = await resolveState();
-    return getBasicUnitConversion(state, fromUnit, toUnit);
-  }
-
-  // ── UnitsProviderSync implementation ─────────────────────────────────
-  // These require the module-level state to be resolved first — call [[warmup]] (or any async
-  // provider method) once beforehand. They throw when the state is not yet loaded so callers
-  // can distinguish "not warmed up" from "unit not found".
-
-  /** Synchronous counterpart to [[findUnitByName]]. Requires a prior [[warmup]].
-   * @throws QuantityError when the bundled units schema has not been loaded yet.
-   */
-  public findUnitByNameSync(unitName: string): UnitProps {
-    const state = getResolvedBasicUnitsDataSync();
-    if (!state)
-      throw new QuantityError(QuantityStatus.InvalidJson, "BasicUnitsProvider: call warmup() before using synchronous lookups.");
-
-    const entry = state.nameMap.get(unitName);
-    return entry ? entry.props : new BadUnit();
-  }
-
-  /** Synchronous counterpart to [[getConversion]]. Requires a prior [[warmup]].
-   * @throws QuantityError when the bundled units schema has not been loaded yet.
-   */
-  public getConversionSync(fromUnit: UnitProps, toUnit: UnitProps) {
-    const state = getResolvedBasicUnitsDataSync();
-    if (!state)
-      throw new QuantityError(QuantityStatus.InvalidJson, "BasicUnitsProvider: call warmup() before using synchronous lookups.");
-
     return getBasicUnitConversion(state, fromUnit, toUnit);
   }
 }

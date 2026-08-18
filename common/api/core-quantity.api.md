@@ -187,15 +187,11 @@ export class BasicUnit implements UnitProps {
 }
 
 // @beta
-export class BasicUnitsProvider implements UnitsProvider, UnitsProviderSync {
+export class BasicUnitsProvider implements UnitsProvider {
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
-    findUnitByNameSync(unitName: string): UnitProps;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
-    getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
-    static get isWarmedUp(): boolean;
-    static warmup(): Promise<void>;
 }
 
 // @beta
@@ -277,7 +273,6 @@ export class Format extends BaseFormat {
     // (undocumented)
     static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
-    static createFromJSONSync(name: string, unitsProvider: UnitsProviderSync, formatProps: FormatProps): Format;
     // (undocumented)
     get customProps(): any;
     // (undocumented)
@@ -285,7 +280,6 @@ export class Format extends BaseFormat {
     // (undocumented)
     fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): void;
     fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
-    fromJSONSync(unitsProvider: UnitsProviderSync, jsonObj: FormatProps): void;
     // (undocumented)
     get hasUnits(): boolean;
     // (undocumented)
@@ -372,11 +366,6 @@ export interface FormatsProvider {
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
-// @beta
-export interface FormatsProviderSync {
-    getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
-}
-
 // @internal
 export const formatStringRgx: RegExp;
 
@@ -398,13 +387,11 @@ export class FormatterSpec {
     // (undocumented)
     protected _conversions: UnitConversionSpec[];
     static create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec>;
-    static createSync(name: string, format: Format, unitsProvider: UnitsProviderSync, inputUnit?: UnitProps): FormatterSpec;
     // (undocumented)
     get format(): Format;
     // (undocumented)
     protected _format: Format;
     static getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]>;
-    static getUnitConversionsSync(format: Format, unitsProvider: UnitsProviderSync, inputUnit?: UnitProps): UnitConversionSpec[];
     // (undocumented)
     get name(): string;
     // (undocumented)
@@ -1796,12 +1783,6 @@ export interface UnitsProvider {
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
-}
-
-// @beta
-export interface UnitsProviderSync {
-    findUnitByNameSync(unitName: string): UnitProps;
-    getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
 }
 
 // @beta

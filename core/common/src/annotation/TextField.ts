@@ -19,12 +19,13 @@ import { Id64String } from "@itwin/core-bentley";
  *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string": a value convertible to a string.
- * @note `"quantity"` and `"coordinate"` fields format through the iTwin.js quantity pipeline.
- * A field first consults the [FormattingSpecProvider]($core-quantity) registered for its
- * [[QuantityFieldFormatOptions.formatSet]] via
- * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend). If none is
- * registered, or it has no matching spec, formatting falls back to the iModel's schema-backed
- * formats, and finally to the raw string representation.
+ * @note `"quantity"` and `"coordinate"` fields format through the iTwin.js quantity pipeline
+ * on the async [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path. The sync path
+ * ([ElementDrivesTextAnnotation.evaluateFields]($backend) / `TxnManager` field-update
+ * callbacks) formats them only when a [FormattingSpecProvider]($core-quantity) is registered
+ * for the field's [[QuantityFieldFormatOptions.formatSet]] via
+ * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend); otherwise it falls
+ * back to the raw string representation.
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
@@ -121,10 +122,12 @@ export interface QuantityFieldFormatOptions {
    */
   kindOfQuantity?: string;
   /** [Id64String]($bentley) of a persisted FormatSet element that routes this field to a
-   * registered [FormattingSpecProvider]($core-quantity). Consulted by
+   * registered synchronous [FormattingSpecProvider]($core-quantity). Consulted by
    * [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update
-   * callback path via [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend).
-   * Fields with no matching registration fall back to the iModel's schema-backed formats.
+   * callback path via [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend);
+   * fields with no matching registration render as raw strings on the sync path. Ignored on
+   * the async [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path, where the
+   * injected [FormatsProvider]($core-quantity) applies block-wide.
    */
   formatSet?: Id64String;
 }
