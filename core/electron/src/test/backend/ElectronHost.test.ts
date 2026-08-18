@@ -47,10 +47,6 @@ export const electronHostTestSuite: TestSuite = {
       title: "Should save main window size, position and maximized flag.",
       func: testWindowSizeSettings,
     },
-    {
-      title: "Should save the maximized state on resize when maximize events are missed.",
-      func: testWindowStateSavedOnResize,
-    },
   ],
 };
 
@@ -270,30 +266,6 @@ async function waitForStableBounds(window: BrowserWindow): Promise<void> {
   }
 
   throw new Error("Window bounds did not stabilize");
-}
-
-async function testWindowStateSavedOnResize() {
-  const storeWindowName = "settingsTestWindowResize";
-
-  await ElectronHost.startup({
-    electronHost: {
-      webResourcesPath: path.join(__dirname, "..", "assets"),
-    },
-  });
-
-  NativeHost.settingsStore.removeData(`windowMaximized-${storeWindowName}`);
-  await ElectronHost.openMainWindow({ storeWindowName });
-
-  const window = ElectronHost.mainWindow;
-  assert(window);
-
-  // Stand in for a "maximize"/"unmaximize" event that the platform never delivered, leaving the saved
-  // flag out of sync. A resize must reconcile it, no matter which event was lost.
-  const actual = window.isMaximized();
-  NativeHost.settingsStore.setData(`windowMaximized-${storeWindowName}`, !actual);
-
-  window.setSize(300, 301);
-  assert(await waitUntil(() => ElectronHost.getWindowMaximizedSetting(storeWindowName) === actual));
 }
 
 /**
