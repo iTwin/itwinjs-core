@@ -28,16 +28,6 @@ import { EditTxn } from "../EditTxn";
  */
 const fieldFormattingProviders = new Map<Id64String, FormattingSpecProvider>();
 
-/** Returns the registered [FormattingSpecProvider]($core-quantity) for a field's
- * [QuantityFieldFormatOptions.formatSet]($common), or `undefined` when the field has no
- * `formatSet` or no registration matches.
- *
- * TODO: get rid of this what's the point
- */
-function getFieldFormattingProvider(formatSet: string | undefined): FormattingSpecProvider | undefined {
-  return formatSet ? fieldFormattingProviders.get(formatSet) : undefined;
-}
-
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
  * host one text block for each cell in the table, in which case it might use the combination of row and column
@@ -151,7 +141,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     if (haveFields) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
-      updateAllFields(annotationElementId, txn, getFieldFormattingProvider);
+      updateAllFields(annotationElementId, txn, fieldFormattingProviders);
     }
 
     const staleRelationships = new Set<Id64String>();
@@ -189,12 +179,12 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** @internal */
   public static override onRootChangedArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, false, getFieldFormattingProvider);
+    updateElementFields(arg.props, arg.indirectEditTxn, false, fieldFormattingProviders);
   }
 
   /** @internal */
   public static override onDeletedDependencyArg(arg: OnDependencyArg): void {
-    updateElementFields(arg.props, arg.indirectEditTxn, true, getFieldFormattingProvider);
+    updateElementFields(arg.props, arg.indirectEditTxn, true, fieldFormattingProviders);
   }
 
   /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.
@@ -232,7 +222,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @throws Error if evaluation of any field fails.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
-    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, getFieldFormattingProvider))
+    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, fieldFormattingProviders))
   }
 
   /** Async counterpart to [[evaluateFields]] that formats `"quantity"` and `"coordinate"`

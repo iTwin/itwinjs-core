@@ -64,15 +64,15 @@ export interface UpdateFieldsContext {
 
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Sync lookup used by [[updateField]] to route `"quantity"` and `"coordinate"` values
+  /** Sync registry used by [[updateField]] to route `"quantity"` and `"coordinate"` values
    * through a [FormattingSpecProvider]($core-quantity) registered under the field's
-   * [QuantityFieldFormatOptions.formatSet]($common). Returning `undefined` (or an absent
-   * lookup) leaves the field on the raw-string fallback via [[formatFieldValue]].
+   * [QuantityFieldFormatOptions.formatSet]($common). A missing entry (or an absent map)
+   * leaves the field on the raw-string fallback via [[formatFieldValue]].
    *
-   * [[updateFieldAsync]] deliberately ignores this lookup — the async path formats through
-   * the injected [[FieldFormatterContext]] instead.
+   * [[updateFieldAsync]] deliberately ignores this map — the async path formats through the
+   * injected [[FieldFormatterContext]] instead.
    */
-  readonly getFormattingSpecProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined;
+  readonly formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>;
 }
 
 // Resolves the property a field points at into a [[FieldValue]] — primitive value plus, for
@@ -338,12 +338,12 @@ export function createUpdateContext(
   hostElementId: string | undefined,
   iModel: IModelDb,
   deleted: boolean,
-  getFormattingSpecProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined,
+  formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>,
 ): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
-    getFormattingSpecProvider,
+    formattingSpecProviders,
   };
 }
 
@@ -381,7 +381,8 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 
   let newContent: string | undefined;
   if (undefined !== propValue) {
-    const provider = context.getFormattingSpecProvider?.(field.formatOptions?.quantity?.formatSet);
+    const formatSet = field.formatOptions?.quantity?.formatSet;
+    const provider = formatSet ? context.formattingSpecProviders?.get(formatSet) : undefined;
     newContent = provider
       ? formatFieldValueWithSpecProvider(propValue, field.formatOptions, provider)
       : formatFieldValue(propValue, field.formatOptions);
@@ -399,7 +400,7 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 /** Async counterpart to [[updateField]] that routes `"quantity"` and `"coordinate"` values
  * through [[formatFieldValueAsync]] and the injected `formatter`. Returns true iff
  * cachedContent changed.
- * @note `context.getFormattingSpecProvider` is deliberately ignored — the sync per-field
+ * @note `context.formattingSpecProviders` is deliberately ignored — the sync per-field
  * provider registry does not apply on the async path; use `formatter` to inject app-owned
  * formatting.
  */
@@ -456,12 +457,12 @@ export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFie
   return numUpdated;
 }
 
-function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, getProvider: ((formatSet: string | undefined) => FormattingSpecProvider | undefined) | undefined): void {
+function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, formattingSpecProviders: ReadonlyMap<Id64String, FormattingSpecProvider> | undefined): void {
   const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(sourceId, iModel, deleted, getProvider);
+      const context = createUpdateContext(sourceId, iModel, deleted, formattingSpecProviders);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {
@@ -483,16 +484,16 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
  * change (`deleted=false`) or delete (`deleted=true`). Invoked from
  * [[ElementDrivesTextAnnotation.onRootChangedArg]] / `onDeletedDependencyArg`.
  */
-export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, getProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined): void {
-  doUpdateFields(txn, props.targetId, props.sourceId, deleted, getProvider);
+export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>): void {
+  doUpdateFields(txn, props.targetId, props.sourceId, deleted, formattingSpecProviders);
 }
 
 /** Re-evaluates every field of the given annotation element against its current property
  * values. Invoked from [[ElementDrivesTextAnnotation.updateFieldDependencies]] when
  * establishing / refreshing relationships.
  */
-export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, getProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined): void {
-  doUpdateFields(txn, annotationElementId, undefined, false, getProvider);
+export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>): void {
+  doUpdateFields(txn, annotationElementId, undefined, false, formattingSpecProviders);
 }
 
 /** Resolves a [FieldRun]($common)'s target to its terminal [Property]($ecschema-metadata)
