@@ -178,7 +178,6 @@ export class ElectronHost {
 
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
-      saveMaximized(mainWindow.isMaximized());
 
       const debouncedSaveWindowState = debounce(() => saveWindowState());
       mainWindow.on("resize", () => debouncedSaveWindowState());
