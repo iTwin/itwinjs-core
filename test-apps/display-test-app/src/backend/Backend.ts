@@ -23,7 +23,7 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 import { FormatSet } from "@itwin/ecschema-metadata";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
-import { getFieldFormattingDemo } from "./FieldFormattingDemo";
+import { prepareFieldFormattingDemoFor } from "./FieldFormattingDemo";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -200,30 +200,11 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
 
-    const demo = getFieldFormattingDemo();
-    if (demo) {
-      // NOTE: `evaluateFieldsAsync` applies the injected providers **block-wide** — the demo
-      // provider ends up formatting every quantity/coordinate field in `textBlock`, not just
-      // the ones whose `formatOptions.quantity.formatSet === DEMO_FORMAT_SET_ID`. This is by
-      // design (see `ElementDrivesTextAnnotation.evaluateFieldsAsync` JSDoc) and intentionally
-      // differs from the sync/txn callback path, which is per-field via the registry keyed on
-      // `formatSet`. A block that mixes tagged and untagged fields will therefore render
-      // different strings on the two paths — sync formats only tagged fields, async formats
-      // all of them via the demo provider.
-      //
-      // Prewarming is still worthwhile here: (a) the sync txn-callback path invoked by
-      // `insertText` / `updateText` needs the same specs, and (b) if a future demo
-      // `formatQuantity` implementation consulted the `_specs` cache it would already be hot.
-      await demo.prepareForBlock(iModel, textBlock);
-      await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        block: textBlock,
-        iModel,
-        formatsProvider: demo.formatsProvider,
-        unitsProvider: demo.unitsProvider,
-      });
-    } else {
-      await ElementDrivesTextAnnotation.evaluateFieldsAsync({ block: textBlock, iModel });
-    }
+    // Dynamic geometry is generated for a block that may not be persisted yet, so warm the
+    // demo provider for exactly this block before evaluating. Evaluation itself is synchronous
+    // and shares one code path with the txn callback, so both render identical strings.
+    await prepareFieldFormattingDemoFor(iModel, textBlock);
+    ElementDrivesTextAnnotation.evaluateFields({ block: textBlock, iModel });
 
     let scaleFactor = 1;
     if (modelId) {

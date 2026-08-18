@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { Format, FormatsProvider, FormatterSpec, FormattingSpecArgs, FormattingSpecProvider, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { FormatterSpec, FormattingSpecArgs, FormattingSpecProvider } from "@itwin/core-quantity";
 import { DateTimeFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 
 /** A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -20,10 +20,9 @@ export interface FieldValue {
    * the primitive scalar the [FieldRun]($common)'s propertyPath ultimately resolved to.
    */
   value: FieldPrimitiveValue;
-  /** How [[value]] should be formatted; drives the per-type branch in [[formatFieldValue]] /
-   * [[formatFieldValueAsync]]. `"quantity"` and `"coordinate"` route through the KoQ / units
-   * pipeline on [[formatFieldValueAsync]] and [[formatFieldValueWithSpecProvider]]; the
-   * synchronous [[formatFieldValue]] fallback stringifies them.
+  /** How [[value]] should be formatted; drives the per-type branch in [[formatFieldValue]].
+   * `"quantity"` and `"coordinate"` route through the KoQ / units pipeline on
+   * [[formatFieldValueWithSpecProvider]]; the [[formatFieldValue]] fallback stringifies them.
    */
   type: FieldPropertyType;
   /** Property-side [KindOfQuantity]($ecschema-metadata) full name (e.g. `"AecUnits.LENGTH"`),
@@ -101,8 +100,7 @@ function formatDateTime(v: FieldPrimitiveValue, o?: DateTimeFieldFormatOptions):
 }
 
 /** Raw coordinate fallback rendered as `(x, y[, z])` with no unit labels, used when the
- * (KoQ, persistence unit) pair resolution in `collectFormatterSpecCandidates` /
- * `lookupSyncSpec` misses. Core deliberately does not carry a built-in coordinate format —
+ * (KoQ, persistence unit) pair resolution in `lookupSyncSpec` misses. Core deliberately does not carry a built-in coordinate format —
  * presentation is a [FormatsProvider]($core-quantity) / FormatSet concern; see
  * [[QuantityFieldFormatOptions]] for the priority contract.
  */
@@ -122,8 +120,8 @@ function formatPointBasic(v: FieldPrimitiveValue): string | undefined {
 
 /** Formats `value` through the per-type entry in the built-in formatter table (see [[formatters]]),
  * wrapping the result with prefix/suffix/case. Quantity/coordinate values fall through to their
- * raw string representation on this path — use [[formatFieldValueAsync]] or
- * [[formatFieldValueWithSpecProvider]] for the KoQ / units pipeline.
+ * raw string representation on this path — use [[formatFieldValueWithSpecProvider]] for the
+ * KoQ / units pipeline.
  * @internal
  */
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined {
@@ -138,31 +136,15 @@ export function isKnownFieldPropertyType(type: string): type is FieldPropertyTyp
   return type in formatters;
 }
 
-/** Runtime context for [[formatFieldValueAsync]]. Supplies the units/formats providers used
- * to resolve a [Format]($core-quantity) for `"quantity"` and `"coordinate"` fields.
- * @internal
- */
-export interface FieldFormatterContext {
-  /** Resolves [UnitProps]($core-quantity) by full name — used to translate persistence and
-   * presentation unit names when [FormatterSpec.create]($core-quantity) builds a spec.
-   */
-  unitsProvider: UnitsProvider;
-  /** Resolves a [FormatProps]($core-quantity) by [KindOfQuantity]($ecschema-metadata) full
-   * name. Callers plug in a FormatSet-backed provider here to route formatting through their
-   * own presentation choices.
-   */
-  formatsProvider: FormatsProvider;
-}
-
 /** Builds the ordered list of (KoQ name, persistence unit) pairs — expressed as
  * [FormattingSpecArgs]($core-quantity) — that a quantity/coordinate FieldValue should be
  * formatted through. See [[QuantityFieldFormatOptions]] for the priority contract; a
  * candidate is emitted only when both name and persistence unit are defined, so a coordinate
  * property with no [KindOfQuantity]($ecschema-metadata) contributes no property-side pair.
  *
- * Shared by the async (`collectFormatterSpecCandidates`) and sync (`lookupSyncSpec`) formatter
- * paths and by `computeFieldFormattingRequirement` in `core-backend`'s `fields.ts` (via
- * `cross-package.ts`) so pre-warm enumerates the same candidates the runtime iterates.
+ * Shared by the runtime formatter path (`lookupSyncSpec`) and by
+ * `computeFieldFormattingRequirement` in `core-backend`'s `fields.ts` (via `cross-package.ts`),
+ * so pre-warm enumerates exactly the candidates the runtime iterates.
  * @internal
  */
 export function collectFieldQuantityPairs(args: {
@@ -188,52 +170,6 @@ export function collectFieldQuantityPairs(args: {
   return pairs;
 }
 
-function collectFormatterSpecCandidates(
-  quantityOptions: QuantityFieldFormatOptions | undefined,
-  value: FieldValue,
-): FormattingSpecArgs[] {
-  return collectFieldQuantityPairs({
-    overrideName: quantityOptions?.kindOfQuantity,
-    overridePersistence: quantityOptions?.persistenceUnit,
-    propertyName: value.kindOfQuantityFullName,
-    propertyPersistence: value.persistenceUnitFullName,
-  });
-}
-
-/** Async resolution of a [FormatterSpec]($core-quantity) for a quantity/coordinate FieldValue.
- * Walks the candidates from [[collectFormatterSpecCandidates]] in priority order and returns
- * the first for which **both** `formatsProvider.getFormat(name)` and
- * `unitsProvider.findUnitByName(persistenceUnit)` resolve — either alone is insufficient. A
- * candidate that misses on either side is skipped; returns `undefined` when no candidate
- * satisfies both.
- */
-async function getFormatterSpec(
-  quantityOptions: QuantityFieldFormatOptions | undefined,
-  value: FieldValue,
-  context: FieldFormatterContext,
-): Promise<FormatterSpec | undefined> {
-  for (const candidate of collectFormatterSpecCandidates(quantityOptions, value)) {
-    const formatProps = await context.formatsProvider.getFormat(candidate.name);
-    if (!formatProps) {
-      continue;
-    }
-
-    let persistenceUnit: UnitProps | undefined;
-    try {
-      persistenceUnit = await context.unitsProvider.findUnitByName(candidate.persistenceUnitName);
-    } catch {
-      // Try the next candidate.
-    }
-    if (!persistenceUnit) {
-      continue;
-    }
-
-    const format = await Format.createFromJSON("fieldFormat", context.unitsProvider, formatProps);
-    return FormatterSpec.create("fieldFormat", format, context.unitsProvider, persistenceUnit);
-  }
-  return undefined;
-}
-
 function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
   if (typeof v !== "object" || !("x" in v) || !("y" in v)) {
     return undefined;
@@ -246,21 +182,17 @@ function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
   return parts;
 }
 
-/** Applies a pre-resolved [FormatterSpec]($core-quantity) to a quantity or coordinate
- * [[FieldValue]] and wraps the result with prefix/suffix/case. Shared by the async and sync
- * spec-based paths.
+/** Renders a quantity or coordinate [[FieldValue]] with `formatMagnitude` and wraps the result
+ * with prefix/suffix/case. Coordinates render each component and join them as `(x, y[, z])`.
  *
- * `formatMagnitude` renders each scalar. The sync path passes a closure that routes through
- * [FormattingSpecProvider.formatQuantity]($core-quantity) so caller-side hooks (caching,
- * telemetry, per-call KoQ substitution) are honored. The async path — which builds a fresh
- * [FormatterSpec]($core-quantity) from the injected `FormatsProvider` / `UnitsProvider` and
- * has no [FormattingSpecProvider]($core-quantity) — falls back to `spec.applyFormatting`.
+ * Callers route `formatMagnitude` through [FormattingSpecProvider.formatQuantity]($core-quantity)
+ * rather than [FormatterSpec.applyFormatting]($core-quantity) directly, so provider-side hooks
+ * (caching, telemetry, per-call KoQ substitution) are honored.
  */
 function applySpecToFieldValue(
   value: FieldValue,
   options: FieldFormatOptions | undefined,
-  spec: FormatterSpec,
-  formatMagnitude: (magnitude: number) => string = (m) => spec.applyFormatting(m),
+  formatMagnitude: (magnitude: number) => string,
 ): string | undefined {
   let formatted: string | undefined;
   if (value.type === "quantity") {
@@ -278,92 +210,65 @@ function applySpecToFieldValue(
   return formatString(formatted, options);
 }
 
-/** Async counterpart to [[formatFieldValue]] that formats `"quantity"` and `"coordinate"`
- * values through the standard iTwin.js quantity formatting pipeline. Falls back to
- * [[formatFieldValue]] for other [[FieldPropertyType]]s or when no
- * [FormatterSpec]($core-quantity) can be resolved.
- * @internal
- */
-export async function formatFieldValueAsync(
-  value: FieldValue,
-  options: FieldFormatOptions | undefined,
-  context: FieldFormatterContext,
-): Promise<string | undefined> {
-  if (value.type !== "quantity" && value.type !== "coordinate") {
-    return formatFieldValue(value, options);
-  }
-
-  let spec: FormatterSpec | undefined;
-  try {
-    spec = await getFormatterSpec(options?.quantity, value, context);
-  } catch {
-    return formatFieldValue(value, options);
-  }
-
-  if (!spec) {
-    return formatFieldValue(value, options);
-  }
-
-  try {
-    return applySpecToFieldValue(value, options, spec);
-  } catch {
-    return formatFieldValue(value, options);
-  }
-}
-
-/** Looks up an already-warmed [FormatterSpec]($core-quantity) for `value` from `provider`.
- * Consumes the shared [[collectFieldQuantityPairs]] helper so the sync path enumerates
- * identical candidates to the async formatter; returns `undefined` when no candidate matches
- * (caller drops to the raw string).
+/** Looks up an already-warmed [FormatterSpec]($core-quantity) for `value` from `provider`,
+ * walking the shared [[collectFieldQuantityPairs]] candidates in priority order so that
+ * evaluation consults exactly the requirements pre-warm produced.
+ *
+ * Returns the candidates alongside the spec so the caller can report a genuine shortfall: a
+ * miss on the first candidate is not a failure if a later one resolves.
  */
 function lookupSyncSpec(
   quantityOptions: QuantityFieldFormatOptions | undefined,
   value: FieldValue,
   provider: FormattingSpecProvider,
-): FormatterSpec | undefined {
-  const pairs = collectFieldQuantityPairs({
+): { spec?: FormatterSpec, candidates: FormattingSpecArgs[] } {
+  const candidates = collectFieldQuantityPairs({
     overrideName: quantityOptions?.kindOfQuantity,
     overridePersistence: quantityOptions?.persistenceUnit,
     propertyName: value.kindOfQuantityFullName,
     propertyPersistence: value.persistenceUnitFullName,
   });
-  for (const pair of pairs) {
-    const spec = provider.getSpecsByNameAndUnit(pair)?.formatterSpec;
+  for (const candidate of candidates) {
+    const spec = provider.getSpecsByNameAndUnit(candidate)?.formatterSpec;
     if (spec) {
-      return spec;
+      return { spec, candidates };
     }
   }
-  return undefined;
+  return { candidates };
 }
 
-/** Synchronous counterpart to [[formatFieldValueAsync]] that formats `"quantity"` and
- * `"coordinate"` values via a caller-supplied [FormattingSpecProvider]($core-quantity).
- * Intended for the txn callback path, where the async pipeline cannot be awaited but the app
- * has pre-built the required specs.
+/** Formats `"quantity"` and `"coordinate"` values via a caller-supplied
+ * [FormattingSpecProvider]($core-quantity) whose [FormatterSpec]($core-quantity)s were resolved
+ * ahead of time. This is what keeps field evaluation synchronous on the txn-callback path,
+ * which cannot await.
  *
- * Callers whose provider registry is keyed by [QuantityFieldFormatOptions.formatSet]($common)
- * are expected to look up the provider from `options?.quantity?.formatSet` before calling
- * this function, and fall back to [[formatFieldValue]] themselves when the lookup misses.
+ * Callers routing by [QuantityFieldFormatOptions.formatSet]($common) are expected to select the
+ * matching provider before calling this function.
  *
  * Falls back to [[formatFieldValue]] for other [[FieldPropertyType]]s or when no
- * [FormatterSpec]($core-quantity) matches. See [[applySpecToFieldValue]] for why the sync
- * path routes each scalar through [FormattingSpecProvider.formatQuantity]($core-quantity)
- * while async uses [FormatterSpec.applyFormatting]($core-quantity) directly.
+ * [FormatterSpec]($core-quantity) matches. `onUnresolved` is invoked in that latter case — and
+ * only when the value actually had candidates to try — so the caller can record a pre-warm
+ * shortfall. A field whose property carries no [KindOfQuantity]($ecschema-metadata) yields no
+ * candidates and is therefore not reported: it is unformattable by design, not under-warmed.
  * @internal
  */
 export function formatFieldValueWithSpecProvider(
   value: FieldValue,
   options: FieldFormatOptions | undefined,
   provider: FormattingSpecProvider,
+  onUnresolved?: (candidates: FormattingSpecArgs[]) => void,
 ): string | undefined {
   if (value.type !== "quantity" && value.type !== "coordinate") {
     return formatFieldValue(value, options);
   }
 
-  const spec = lookupSyncSpec(options?.quantity, value, provider);
+  const { spec, candidates } = lookupSyncSpec(options?.quantity, value, provider);
   if (!spec) {
+    if (candidates.length > 0) {
+      onUnresolved?.(candidates);
+    }
     return formatFieldValue(value, options);
   }
 
-  return applySpecToFieldValue(value, options, spec, (m) => provider.formatQuantity(m, spec));
+  return applySpecToFieldValue(value, options, (m) => provider.formatQuantity(m, spec));
 }
