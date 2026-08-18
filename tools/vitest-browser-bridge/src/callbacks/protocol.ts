@@ -3,66 +3,27 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-/** The only method accepted by the test-only callback transport.
- * @internal
- */
-export const CALLBACK_METHOD = "vitest.invokeCallback" as const;
-
 /** The IPC channel used by the Electron callback transport.
  * @internal
  */
 export const CALLBACK_CHANNEL = "vitest-browser-bridge:callback" as const;
 
-/** The context-isolated global exposed by the generated Electron preload.
+/** The context-isolated global exposed by the Electron bridge preload.
  * @internal
  */
 export const CALLBACK_BRIDGE_GLOBAL = "__vitestCallbackBridge" as const;
 
-/** A callback invocation before the per-session token is added by the Electron preload.
+/** A named callback request sent over the privileged Electron transport.
  * @internal
  */
-export interface CallbackInvocation {
-  readonly method: typeof CALLBACK_METHOD;
+export interface CallbackRequest {
   readonly name: string;
   readonly args: readonly unknown[];
 }
 
-/** A callback invocation sent over the privileged Electron transport.
- * @internal
- */
-export interface CallbackRequest extends CallbackInvocation {
-  readonly token: string;
-}
-
-/** A successful callback response.
- * @internal
- */
-export interface CallbackSuccessResponse {
-  readonly ok: true;
-  readonly value: unknown;
-}
-
-/** A serialized callback error.
- * @internal
- */
-export interface SerializedCallbackError {
-  readonly name: string;
-  readonly message: string;
-  readonly stack?: string;
-}
-
-/** A failed callback response.
- * @internal
- */
-export interface CallbackFailureResponse {
-  readonly ok: false;
-  readonly error: SerializedCallbackError;
-}
-
-/** The response returned by the backend callback transport.
- * @internal
- */
-export type CallbackResponse = CallbackSuccessResponse | CallbackFailureResponse;
+export type CallbackResponse =
+  | { readonly ok: true; readonly value: unknown }
+  | { readonly ok: false; readonly error: { readonly message: string; readonly stack?: string } };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -76,109 +37,51 @@ export function assertCallbackName(name: unknown): asserts name is string {
     throw new Error("Callback name must be a non-empty string.");
 }
 
-/** Validate a callback argument payload.
+/** Validate a transport payload at the Electron main-process boundary.
  * @internal
  */
-export function assertCallbackArguments(args: unknown): asserts args is readonly unknown[] {
-  if (!Array.isArray(args))
-    throw new Error("Callback arguments must be an array.");
-}
-
-/** Create a browser-side callback invocation after validating its method, name, and payload.
- * @internal
- */
-export function createCallbackInvocation(name: string, args: readonly unknown[]): CallbackInvocation {
-  assertCallbackName(name);
-  assertCallbackArguments(args);
-  return {
-    method: CALLBACK_METHOD,
-    name,
-    args: [...args],
-  };
-}
-
-/** Create the token-bearing request used by the Electron main process.
- * @internal
- */
-export function createCallbackRequest(token: string, invocation: CallbackInvocation): CallbackRequest {
-  if (typeof token !== "string" || token.length === 0)
-    throw new Error("Callback token must be a non-empty string.");
-  return {
-    ...invocation,
-    token,
-  };
-}
-
-/** Validate a transport payload and its per-run token in one place.
- * @internal
- */
-export function parseCallbackRequest(payload: unknown, expectedToken: string): CallbackRequest {
-  if (typeof expectedToken !== "string" || expectedToken.length === 0)
-    throw new Error("Expected callback token must be a non-empty string.");
+export function parseCallbackRequest(payload: unknown): CallbackRequest {
   if (!isRecord(payload))
     throw new Error("Invalid callback payload.");
-  if (payload.method !== CALLBACK_METHOD)
-    throw new Error(`Invalid callback method: ${String(payload.method)}.`);
-  if (payload.token !== expectedToken)
-    throw new Error("Invalid callback token.");
 
   assertCallbackName(payload.name);
-  assertCallbackArguments(payload.args);
+  if (!Array.isArray(payload.args))
+    throw new Error("Callback arguments must be an array.");
+
   return {
-    method: CALLBACK_METHOD,
-    token: expectedToken,
     name: payload.name,
-    args: [...payload.args],
+    args: payload.args,
   };
 }
 
-/** Convert an arbitrary thrown value into a structured-clone-safe error.
+/** Convert a backend result into an explicit response so expected callback failures do not become
+ * noisy unhandled Electron IPC errors.
  * @internal
  */
-export function serializeCallbackError(reason: unknown): SerializedCallbackError {
-  if (reason instanceof Error) {
+export async function captureCallbackResponse(callback: () => Promise<unknown>): Promise<CallbackResponse> {
+  try {
+    return { ok: true, value: await callback() };
+  } catch (reason) {
+    const error = reason instanceof Error ? reason : new Error(String(reason));
     return {
-      name: reason.name,
-      message: reason.message,
-      ...(reason.stack === undefined ? {} : { stack: reason.stack }),
+      ok: false,
+      error: {
+        message: error.message,
+        ...(error.stack === undefined ? {} : { stack: error.stack }),
+      },
     };
   }
-
-  return {
-    name: "Error",
-    message: String(reason),
-  };
 }
 
-/** Create a successful transport response.
+/** Unwrap a callback response in the renderer.
  * @internal
  */
-export function callbackSucceeded(value: unknown): CallbackSuccessResponse {
-  return { ok: true, value };
-}
-
-/** Create a failed transport response.
- * @internal
- */
-export function callbackFailed(reason: unknown): CallbackFailureResponse {
-  return { ok: false, error: serializeCallbackError(reason) };
-}
-
-/** Validate and unwrap a response received by browser-side test code.
- * @internal
- */
-export function unwrapCallbackResponse(response: unknown): unknown {
-  if (!isRecord(response) || typeof response.ok !== "boolean")
-    throw new Error("Invalid callback response.");
-  if (response.ok) {
+export function unwrapCallbackResponse(response: CallbackResponse): unknown {
+  if (response.ok)
     return response.value;
-  }
 
-  const error = isRecord(response.error) ? response.error : undefined;
-  const thrown = new Error(typeof error?.message === "string" ? error.message : "Backend callback failed.");
-  if (typeof error?.name === "string")
-    thrown.name = error.name;
-  if (typeof error?.stack === "string")
-    thrown.stack = error.stack;
-  throw thrown;
+  const error = new Error(response.error.message);
+  if (response.error.stack !== undefined)
+    error.stack = response.error.stack;
+  throw error;
 }

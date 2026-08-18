@@ -1,3 +1,7 @@
-const sessionId = process.env.VITEST_BROWSER_BRIDGE_SESSION_ID || "unknown";
-console.log(`[vitest-browser-bridge:${sessionId}] ready`);
+const configuration = JSON.parse(process.env.VITEST_BROWSER_BRIDGE_SESSION);
+process.send?.({ type: "ready", sessionId: configuration.sessionId });
+process.on("message", (message) => {
+  if (message && message.type === "shutdown")
+    process.exit(0);
+});
 setInterval(() => {}, 1_000);
