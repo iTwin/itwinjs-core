@@ -200,7 +200,7 @@ jobs:
         "LinuxARM64_Node_24":
           platform: Linux
           name: $(linuxARM64_pool)
-          cacheEnabled: 0
+          cacheEnabled: 1
         "MacOS_Node_24":
           platform: Darwin
           name: $(mac_pool)

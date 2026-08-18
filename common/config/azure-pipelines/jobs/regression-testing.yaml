@@ -68,7 +68,7 @@ jobs:
           platform: Linux
           name: $(linuxARM64_pool)
           node_version: 22.x
-          cacheEnabled: 0
+          cacheEnabled: 1
       maxParallel: 3
 
     pool:
