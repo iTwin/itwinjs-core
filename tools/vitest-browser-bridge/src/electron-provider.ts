@@ -9,8 +9,8 @@ import {
   type ElectronProviderOptions,
 } from "./electron/provider.js";
 
-// Electron launches the CommonJS main-process entry. The ESM provider is loaded by Vitest,
-// but the child process must not depend on Electron's ESM entrypoint handling.
+// The public provider is ESM-only. Its child entry remains an internal CommonJS artifact so
+// existing CommonJS backend initialization modules can be loaded without migration wrappers.
 const sessionEntryPath = fileURLToPath(new URL("../cjs/electron/provider-session.js", import.meta.url));
 
 /** Create the Electron BrowserProvider option for a Vitest 4 configuration.
