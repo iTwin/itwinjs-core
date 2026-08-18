@@ -1,5 +1,8 @@
 # @itwin/vitest-browser-bridge
 
+> [!WARNING]
+> This package is under active development. Its APIs and behavior may change without notice.
+
 Internal Vitest BrowserProvider infrastructure for running renderer tests in a real Electron browser runtime. The package is not a test runner and does not expose a package-root entrypoint.
 
 The provider and browser callback exports are ESM-only. The backend callback export also supports `require` because existing backend initialization modules compile to CommonJS. CommonJS Electron session and preload files are private process-boundary artifacts, not a second public package surface.
