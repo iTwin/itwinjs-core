@@ -110,9 +110,10 @@ export type {
   TxnEntityChangeType,
   TxnEntityChanges,
   TxnEntityChangesFilterOptions,
-  TxnEntityMetadata,
   TxnEntityMetadataCriterion,
 } from "./TxnEntityChanges";
+/** @deprecated in 5.13.0. Use [TxnEntityMetadata]($common) from @itwin/core-common instead. */
+export type { TxnEntityMetadata } from "./TxnEntityChanges";
 export {
   type TileTreeDiscloser, DisclosedTileTreeSet,
   type ReadGltfGraphicsArgs, type GltfGraphic, type GltfTemplate, readGltfGraphics, readGltfTemplate, readGltf,

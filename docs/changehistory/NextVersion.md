@@ -6,8 +6,8 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-common](#itwincore-common)
     - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
-  - [@itwin/core-backend](#itwincore-backend)
     - [Class metadata in transaction change events](#class-metadata-in-transaction-change-events)
+  - [@itwin/core-backend](#itwincore-backend)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
@@ -27,13 +27,13 @@ publish: false
 
 **Note:** `bindIdSet` still expects entries typed as `Id64String`. Callers binding ids from untyped or nullable query data (for example a nullable column via [ECSqlReader]($common)) should filter out non-string/`null`/`undefined` values before calling `bindIdSet`, as such entries remain outside the documented contract and are not guaranteed to produce this descriptive error.
 
-## @itwin/core-backend
-
 ### Class metadata in transaction change events
 
-[TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend) now expose [TxnChangedEntity.metadata]($backend) for each changed entity. Use `metadata.classFullName` to match an exact ECClass or `metadata.is("Schema:BaseClass")` to include derived classes without resolving class Ids asynchronously.
+The shared [TxnEntityMetadata]($common) contract is now exported from `@itwin/core-common` and used by both transaction event APIs. [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend) expose [TxnChangedEntity.metadata]($backend) for each changed entity. Use `metadata.classFullName` to match an exact ECClass or `metadata.is("Schema:BaseClass")` to include derived classes without resolving class Ids asynchronously.
 
 The frontend [BriefcaseTxns]($frontend) events continue to supply [TxnEntityChanges]($frontend), which has its own metadata and filtering API. The backend and frontend payloads describe the same transaction activity but are different types and should be documented and used separately.
+
+## @itwin/core-backend
 
 ### Edit from element, model, and aspect callbacks
 

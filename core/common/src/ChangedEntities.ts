@@ -48,7 +48,8 @@ export interface ChangedEntities {
   updated?: CompressedId64Set;
 }
 
-/** A collection of [[EntityIdAndClassId]]s, as used by [TxnChangedEntities]($backend).
+/** A collection of [[EntityIdAndClassId]]s containing only entity and ECClass Ids.
+ * Backend transaction change events use a richer iterable that also exposes ECClass metadata.
  * For efficiency, the iterator supplied by this iterable returns **the same `EntityIdAndClassId` object** on each iteration. Therefore the objects must be copied if you
  * intend to store references to them. For example, to populate an array from the iterable:
  * ```ts
