@@ -96,16 +96,16 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
         if (leaderDirection)
           leaderStartPoint = leader.startPoint.plusScaled(leaderDirection, clampedOffset);
       }
-      leaderLinePoints.push(leaderStartPoint)
+      leaderLinePoints.push(leaderStartPoint);
 
       leader.intermediatePoints?.forEach((point) => {
         leaderLinePoints.push(point);
       });
 
       if (elbowPoint)
-        leaderLinePoints.push(elbowPoint)
+        leaderLinePoints.push(elbowPoint);
 
-      leaderLinePoints.push(attachmentPoint)
+      leaderLinePoints.push(attachmentPoint);
 
       const terminatorDirection = Vector3d.createStartEnd(
         leaderLinePoints[0], leaderLinePoints[1]
