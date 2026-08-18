@@ -86,6 +86,22 @@ function exitProviderProcess(exitCode: number): void {
   app.exit(exitCode);
 }
 
+function sendToProvider(message: ProviderSessionMessage): void {
+  try {
+    process.send?.(message, () => {});
+  } catch {
+    // The provider may already have disconnected while Electron was shutting down.
+  }
+}
+
+function exitProviderProcess(exitCode: number): void {
+  process.disconnect?.();
+  app.exit(exitCode);
+  // Electron can leave its native process alive after app.exit(); session teardown has already
+  // released the window, IPC handler, and preload registration, so terminate the main process.
+  process.kill(process.pid, "SIGTERM");
+}
+
 /** Run one provider-owned Electron main process. This function never collects or executes tests.
  * @internal
  */
