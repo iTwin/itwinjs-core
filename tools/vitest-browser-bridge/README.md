@@ -4,7 +4,7 @@ Internal Vitest BrowserProvider infrastructure for running renderer tests in a r
 
 ## Vitest 4 provider
 
-Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, secure `BrowserWindow`, optional main-process initialization, preload composition, and teardown.
+Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, secure `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
 
 ```ts
 import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
@@ -28,7 +28,7 @@ export default defineConfig({
 
 The provider implements Vitest 4's `BrowserProvider` interface directly. It does not collect tests, rewrite imports, install globals, use `require.cache`, implement custom sharding or resource monitoring, or aggregate results. Parallel sessions are disabled until concurrent-session behavior has dedicated coverage.
 
-The provider creates a `BrowserWindow` with `contextIsolation: true`, `nodeIntegration: false`, and `nodeIntegrationInSubFrames: true` so Vitest's tester iframe receives the preload without gaining Node integration. It navigates the window to the exact session URL supplied by Vitest.
+The provider creates a `BrowserWindow` with `contextIsolation: true`, `nodeIntegration: false`, and `nodeIntegrationInSubFrames: true` so Vitest's tester iframe receives the consumer preload without gaining Node integration. A package-owned bridge preload is registered separately with Electron's session, so the bridge does not generate or impose a module format on the consumer preload. The provider navigates the window to the exact session URL supplied by Vitest.
 
 This foundation intentionally does not implement Vitest browser automation commands such as locators, screenshots, keyboard, or mouse input. Tests that need those APIs should use an appropriate provider until an Electron command adapter is designed and tested.
 
@@ -36,12 +36,10 @@ This foundation intentionally does not implement Vitest browser automation comma
 
 The callback surfaces are deliberately separate so browser-only code does not import Electron:
 
-- `@itwin/vitest-browser-bridge/callbacks/protocol` contains validation and transport response types with no platform imports.
 - `@itwin/vitest-browser-bridge/callbacks/backend` registers narrow test callbacks in the Electron main process and clears them during teardown.
 - `@itwin/vitest-browser-bridge/callbacks/browser` invokes the preload-exposed callback bridge without importing Electron.
-- `@itwin/vitest-browser-bridge/callbacks/electron` composes the consumer preload and installs the token-validated Electron IPC handler.
 
-The callback request contains an explicit method, callback name, argument array, and a random token generated for each provider session. Unknown callbacks, malformed payloads, wrong tokens, synchronous throws, and asynchronous rejections become structured failures. The transport is a test hook and is not a production RPC surface.
+The IPC handler accepts requests only from the provider-owned `WebContents`. Unknown callbacks, malformed payloads, synchronous throws, and asynchronous rejections become explicit callback failures without surfacing as unhandled Electron IPC errors. Callback names remain dynamically typed for compatibility with Certa's established test-hook contract; transported arguments and results remain `unknown` at the process boundary. The transport is a test hook and is not a production RPC surface.
 
 ```ts
 // Electron main-process backend init module
@@ -54,7 +52,7 @@ registerBackendCallback("example:add", (a: number, b: number) => a + b);
 // Renderer test
 import { invokeBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/browser";
 
-const result = await invokeBackendCallback("example:add", [2, 5]);
+const result = await invokeBackendCallback("example:add", 2, 5);
 ```
 
-The package exports only `./electron-provider`, `./callbacks/protocol`, `./callbacks/backend`, `./callbacks/browser`, and `./callbacks/electron`. There is intentionally no broad package-root export.
+The package exports only `./electron-provider`, `./callbacks/backend`, and `./callbacks/browser`. Transport and Electron integration modules remain private implementation details, and there is intentionally no broad package-root export.

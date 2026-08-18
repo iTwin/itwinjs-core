@@ -5,15 +5,15 @@
 
 import { type ChildProcess, spawn } from "node:child_process";
 import * as fs from "node:fs";
+import { createRequire } from "node:module";
 import * as os from "node:os";
 import * as path from "node:path";
-import { createRequire } from "node:module";
-import type { BrowserProvider, BrowserProviderOption, TestProject } from "vitest/node";
-
-interface ElectronSession {
-  readonly child: ChildProcess;
-  readonly cacheDir: string;
-}
+import type { BrowserProvider, BrowserProviderOption, TestProject } from "vitest/node" with { "resolution-mode": "import" };
+import {
+  isProviderSessionMessage,
+  type ProviderSessionConfiguration,
+  SESSION_CONFIGURATION_ENV,
+} from "./session-protocol.js";
 
 /** Options for the Electron BrowserProvider.
  * @internal
@@ -29,14 +29,15 @@ export interface ElectronProviderOptions {
   readonly electronArgs?: readonly string[];
   /** Additional environment variables passed to the Electron main process. */
   readonly env?: NodeJS.ProcessEnv;
-  /** Time to wait for the provider session to print its ready marker. */
+  /** Time to wait for the provider session to report that its window is ready. */
   readonly startupTimeout?: number;
-  /** Time to wait for an Electron process to terminate during provider teardown. */
+  /** Time to wait for graceful Electron process termination before escalating. */
   readonly closeTimeout?: number;
 }
 
 const DEFAULT_STARTUP_TIMEOUT = 30_000;
 const DEFAULT_CLOSE_TIMEOUT = 5_000;
+const FORCE_KILL_TIMEOUT = 1_000;
 
 function cleanupCacheDir(cacheDir: string): void {
   try {
@@ -48,6 +49,10 @@ function cleanupCacheDir(cacheDir: string): void {
 
 function safeSessionId(sessionId: string): string {
   return sessionId.replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
+function hasExited(child: ChildProcess): boolean {
+  return child.exitCode !== null || child.signalCode !== null;
 }
 
 function signalChildProcess(child: ChildProcess, signal: NodeJS.Signals): void {
@@ -67,28 +72,19 @@ function signalChildProcess(child: ChildProcess, signal: NodeJS.Signals): void {
   }
 }
 
-async function waitForExit(child: ChildProcess, timeoutMs: number): Promise<void> {
-  if (child.exitCode !== null || child.signalCode !== null)
-    return Promise.resolve();
+async function waitForExit(child: ChildProcess, timeoutMs: number): Promise<boolean> {
+  if (hasExited(child))
+    return true;
 
-  return new Promise<void>((resolve) => {
-    let settled = false;
-
-    const finish = () => {
-      if (settled)
-        return;
-      settled = true;
-      if (killTimer !== undefined)
-        clearTimeout(killTimer);
-      if (giveUpTimer !== undefined)
-        clearTimeout(giveUpTimer);
-      resolve();
+  return new Promise<boolean>((resolve) => {
+    const finish = (exited: boolean) => {
+      clearTimeout(timeout);
+      child.off("exit", onExit);
+      resolve(exited);
     };
-
-    const killTimer = setTimeout(() => signalChildProcess(child, "SIGKILL"), timeoutMs);
-    const giveUpTimer = setTimeout(finish, timeoutMs + 1_000);
-    child.once("exit", finish);
-    giveUpTimer.unref();
+    const onExit = () => finish(true);
+    const timeout = setTimeout(() => finish(false), timeoutMs);
+    child.once("exit", onExit);
   });
 }
 
@@ -104,14 +100,11 @@ function resolveElectronBinary(projectRoot: string, options: ElectronProviderOpt
 }
 
 async function waitForReady(child: ChildProcess, sessionId: string, url: string, timeoutMs: number): Promise<void> {
-  const marker = `[vitest-browser-bridge:${sessionId}] ready`;
   return new Promise<void>((resolve, reject) => {
     let settled = false;
-    let output = "";
 
     const cleanup = () => {
-      child.stdout?.off("data", onStdout);
-      child.stderr?.off("data", onStderr);
+      child.off("message", onMessage);
       child.off("error", onError);
       child.off("exit", onExit);
       clearTimeout(timeout);
@@ -130,14 +123,14 @@ async function waitForReady(child: ChildProcess, sessionId: string, url: string,
       cleanup();
       reject(error);
     };
-    const onStdout = (chunk: Buffer) => {
-      const text = chunk.toString();
-      output += text;
-      process.stdout.write(text);
-      if (output.includes(marker))
+    const onMessage = (message: unknown) => {
+      if (!isProviderSessionMessage(message) || message.sessionId !== sessionId)
+        return;
+      if (message.type === "ready")
         settleResolve();
+      else
+        settleReject(new Error(`Electron provider session ${sessionId} failed: ${message.message}`));
     };
-    const onStderr = (chunk: Buffer) => process.stderr.write(chunk);
     const onError = (error: Error) => settleReject(error);
     const onExit = (code: number | null, signal: NodeJS.Signals | null) => settleReject(new Error(
       `Electron provider session ${sessionId} exited before ready: code=${code ?? "none"}, signal=${signal ?? "none"}`,
@@ -146,12 +139,84 @@ async function waitForReady(child: ChildProcess, sessionId: string, url: string,
     const timeout = setTimeout(() => settleReject(new Error(
       `Timed out after ${timeoutMs}ms waiting for Electron provider session ${sessionId} to load ${url}`,
     )), timeoutMs);
-    timeout.unref();
-    child.stdout?.on("data", onStdout);
-    child.stderr?.on("data", onStderr);
+    child.on("message", onMessage);
     child.once("error", onError);
     child.once("exit", onExit);
   });
+}
+
+class ElectronSession {
+  private readonly _child: ChildProcess;
+  private _closePromise: Promise<void> | undefined;
+  private _ready = false;
+
+  public constructor(
+    projectRoot: string,
+    sessionEntryPath: string,
+    configuration: ProviderSessionConfiguration,
+    options: ElectronProviderOptions,
+    private readonly _closeTimeout: number,
+  ) {
+    const environment: NodeJS.ProcessEnv = {
+      ...process.env,
+      ...options.env,
+      [SESSION_CONFIGURATION_ENV]: JSON.stringify(configuration),
+    };
+
+    this._child = spawn(
+      resolveElectronBinary(projectRoot, options),
+      [...(options.electronArgs ?? []), sessionEntryPath],
+      {
+        cwd: projectRoot,
+        env: environment,
+        stdio: ["ignore", "inherit", "inherit", "ipc"],
+        detached: process.platform !== "win32",
+      },
+    );
+    this._child.on("error", (error) => {
+      if (this._ready)
+        console.error(`Electron provider session ${configuration.sessionId} process error:`, error);
+    });
+    this._child.once("exit", () => cleanupCacheDir(configuration.cacheDir));
+  }
+
+  public async start(configuration: ProviderSessionConfiguration, timeoutMs: number): Promise<void> {
+    await waitForReady(this._child, configuration.sessionId, configuration.url, timeoutMs);
+    this._ready = true;
+  }
+
+  public async close(): Promise<void> {
+    this._closePromise ??= this._close();
+    await this._closePromise;
+  }
+
+  private async _close(): Promise<void> {
+    if (hasExited(this._child))
+      return;
+
+    try {
+      if (this._child.connected) {
+        this._child.send({ type: "shutdown" }, (error) => {
+          if (error !== null && !hasExited(this._child))
+            signalChildProcess(this._child, "SIGTERM");
+        });
+      } else
+        signalChildProcess(this._child, "SIGTERM");
+    } catch {
+      signalChildProcess(this._child, "SIGTERM");
+    }
+
+    if (await waitForExit(this._child, this._closeTimeout))
+      return;
+
+    signalChildProcess(this._child, "SIGTERM");
+    if (await waitForExit(this._child, FORCE_KILL_TIMEOUT))
+      return;
+
+    signalChildProcess(this._child, "SIGKILL");
+    if (!await waitForExit(this._child, FORCE_KILL_TIMEOUT))
+      throw new Error(`Electron provider process ${this._child.pid ?? "unknown"} did not exit after SIGKILL.`);
+  }
 }
 
 /** A Vitest 4 BrowserProvider that owns only Electron process and window lifecycle.
@@ -161,8 +226,10 @@ export class ElectronBrowserProvider implements BrowserProvider {
   public readonly name = "electron";
   public readonly supportsParallelism = false;
 
-  private readonly _sessions = new Map<string, ElectronSession>();
-  private _closing = false;
+  private _session: ElectronSession | undefined;
+  private _closed = false;
+  private _closePromise: Promise<void> | undefined;
+  private _lifecycle: Promise<void> = Promise.resolve();
 
   public constructor(
     private readonly _project: TestProject,
@@ -176,69 +243,78 @@ export class ElectronBrowserProvider implements BrowserProvider {
   }
 
   public async openPage(sessionId: string, url: string, { parallel }: { parallel: boolean }): Promise<void> {
-    if (this._closing)
-      throw new Error("The Electron BrowserProvider is already closed.");
     if (parallel)
       throw new Error("The Electron BrowserProvider does not support parallel sessions.");
 
-    const existing = this._sessions.get(sessionId);
-    if (existing !== undefined) {
-      await this._terminateSession(sessionId, existing);
-    }
+    return this._enqueue(async () => {
+      if (this._closed)
+        throw new Error("The Electron BrowserProvider is already closed.");
 
-    const projectRoot = this._project.config.root;
-    const electronBinary = resolveElectronBinary(projectRoot, this._options);
-    const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), `vitest-browser-bridge-${safeSessionId(sessionId)}-`));
-    const environment: NodeJS.ProcessEnv = {
-      ...process.env,
-      ...this._options.env,
-    };
-    environment.VITEST_BROWSER_BRIDGE_URL = url;
-    environment.VITEST_BROWSER_BRIDGE_SESSION_ID = sessionId;
-    environment.VITEST_BROWSER_BRIDGE_CACHE_DIR = cacheDir;
-    environment.VITEST_BROWSER_BRIDGE_HEADLESS = String(this._project.config.browser.headless !== false);
-    if (this._options.backendInitModule !== undefined)
-      environment.VITEST_BROWSER_BRIDGE_BACKEND_INIT = this._options.backendInitModule;
-    if (this._options.preloadModule !== undefined)
-      environment.VITEST_BROWSER_BRIDGE_PRELOAD = this._options.preloadModule;
+      const previousSession = this._session;
+      this._session = undefined;
+      await previousSession?.close();
+      if (this._closed)
+        throw new Error("The Electron BrowserProvider is already closed.");
 
-    const child = spawn(electronBinary, [...(this._options.electronArgs ?? []), this._sessionEntryPath], {
-      cwd: projectRoot,
-      env: environment,
-      stdio: ["ignore", "pipe", "pipe"],
-      detached: process.platform !== "win32",
+      const projectRoot = this._project.config.root;
+      const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), `vitest-browser-bridge-${safeSessionId(sessionId)}-`));
+      const configuration: ProviderSessionConfiguration = {
+        url,
+        sessionId,
+        cacheDir,
+        headless: this._project.config.browser.headless !== false,
+        ...(this._options.backendInitModule === undefined ? {} : { backendInitModule: this._options.backendInitModule }),
+        ...(this._options.preloadModule === undefined ? {} : { preloadModule: this._options.preloadModule }),
+      };
+
+      let session: ElectronSession;
+      try {
+        session = new ElectronSession(
+          projectRoot,
+          this._sessionEntryPath,
+          configuration,
+          this._options,
+          this._options.closeTimeout ?? DEFAULT_CLOSE_TIMEOUT,
+        );
+      } catch (error) {
+        cleanupCacheDir(cacheDir);
+        throw error;
+      }
+      this._session = session;
+
+      try {
+        await session.start(configuration, this._options.startupTimeout ?? DEFAULT_STARTUP_TIMEOUT);
+      } catch (error) {
+        if (this._session === session)
+          this._session = undefined;
+        try {
+          await session.close();
+        } catch (cleanupError) {
+          console.error(`Failed to terminate Electron provider session ${sessionId}:`, cleanupError);
+        }
+        throw error;
+      }
     });
-    const session: ElectronSession = { child, cacheDir };
-    this._sessions.set(sessionId, session);
-    child.once("exit", () => {
-      if (this._sessions.get(sessionId) === session)
-        this._sessions.delete(sessionId);
-      cleanupCacheDir(cacheDir);
-    });
-
-    try {
-      await waitForReady(child, sessionId, url, this._options.startupTimeout ?? DEFAULT_STARTUP_TIMEOUT);
-    } catch (error) {
-      await this._terminateSession(sessionId, session);
-      throw error;
-    }
   }
 
   public async close(): Promise<void> {
-    if (this._closing)
-      return;
-    this._closing = true;
-    await Promise.all([...this._sessions.entries()].map(async ([sessionId, session]) => this._terminateSession(sessionId, session)));
-    this._sessions.clear();
+    if (this._closePromise === undefined) {
+      this._closed = true;
+      const activeClose = this._session?.close();
+      void activeClose?.catch(() => {});
+      this._closePromise = this._enqueue(async () => {
+        const session = this._session;
+        this._session = undefined;
+        await (activeClose ?? session?.close());
+      });
+    }
+    await this._closePromise;
   }
 
-  private async _terminateSession(sessionId: string, session: ElectronSession): Promise<void> {
-    if (this._sessions.get(sessionId) === session)
-      this._sessions.delete(sessionId);
-    if (session.child.exitCode === null && session.child.signalCode === null)
-      signalChildProcess(session.child, "SIGTERM");
-    await waitForExit(session.child, this._options.closeTimeout ?? DEFAULT_CLOSE_TIMEOUT);
-    cleanupCacheDir(session.cacheDir);
+  private async _enqueue<Return>(operation: () => Promise<Return>): Promise<Return> {
+    const result = this._lifecycle.then(operation, operation);
+    this._lifecycle = result.then(() => undefined, () => undefined);
+    return result;
   }
 }
 
