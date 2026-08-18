@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
-import { FormatProps, FormatsProvider, FormatterSpec, FormattingSpecEntry, FormattingSpecProvider } from "@itwin/core-quantity";
+import { FormatProps, FormatsProvider, FormatterSpec, FormattingSpecEntry, FormattingSpecProvider, BasicUnitsProvider } from "@itwin/core-quantity";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
@@ -960,6 +960,12 @@ describe("Field evaluation", () => {
   });
 
   describe("registerFieldFormattingProvider (sync path)", () => {
+    // Ensure the schema-backed sync fallback is deterministic: the bundled units cache must
+    // be warm before the sync path can construct specs on demand.
+    before(async () => {
+      await BasicUnitsProvider.warmup();
+    });
+
     // Every sync-path registration is scoped to a specific FormatSet id; there is no default
     // registration. Tests use these two ids: PRIMARY is the "normal" FormatSet under test, and
     // SECONDARY exercises multi-FormatSet behavior.
@@ -1123,8 +1129,9 @@ describe("Field evaluation", () => {
       expect(field.cachedContent).to.equal("(PROVIDER:1, PROVIDER:2, PROVIDER:3)");
     });
 
-    it("falls back to raw string when the registered provider does not supply a spec", () => {
-      // Provider recognizes no (name, unit) combinations.
+    it("falls back to the schema default when the registered provider does not supply a spec", () => {
+      // Provider recognizes no (name, unit) combinations, so the sync chain falls through to
+      // the schema-backed default (the property's KindOfQuantity presentation format).
       ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         formatSet: PRIMARY_FORMAT_SET,
         provider: {
@@ -1146,11 +1153,12 @@ describe("Field evaluation", () => {
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
 
       expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2.5");
+      expect(field.cachedContent).to.equal("2.5 m");
     });
 
-    it("preserves prior behavior when no provider is registered", () => {
-      // (Sanity check: no provider registered -> raw string formatting as before.)
+    it("formats via the schema-backed default when no provider is registered", () => {
+      // No provider registered -> the sync path constructs a spec from the property's
+      // KindOfQuantity (Fields.LENGTH) via the schema-backed sync fallback.
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -1162,7 +1170,7 @@ describe("Field evaluation", () => {
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
 
       expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2.5");
+      expect(field.cachedContent).to.equal("2.5 m");
     });
 
     it("preserves prior coordinate behavior when no provider is registered", () => {
@@ -1182,9 +1190,10 @@ describe("Field evaluation", () => {
       expect(field.cachedContent).to.equal("(1, 2, 3)");
     });
 
-    it("preserves prior behavior on the txn callback path when no provider is registered", () => {
-      // Txn-callback back-compat: doUpdateFields must produce toString()-style output for
-      // callers who never adopt registerFieldFormattingProvider.
+    it("formats via the schema-backed default on the txn callback path when no provider is registered", () => {
+      // Txn-callback path: doUpdateFields now routes through the same unified sync chain, so
+      // a property with a KindOfQuantity formats via the schema default even for callers who
+      // never adopt registerFieldFormattingProvider.
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         styleOverrides: { font: { name: "Karla" } },
@@ -1210,7 +1219,7 @@ describe("Field evaluation", () => {
         }
       }
       expect(reloadedField).to.not.be.undefined;
-      expect(reloadedField!.cachedContent).to.equal("2.5");
+      expect(reloadedField!.cachedContent).to.equal("2.5 m");
     });
 
     it("unregisters a FormatSet registration via unregisterFieldFormattingProvider", () => {
@@ -1252,9 +1261,10 @@ describe("Field evaluation", () => {
       const syncUpdated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(syncUpdated).to.equal(2);
-      // Tagged field routed through the sync provider; untagged fell back to raw toString().
+      // Tagged field routed through the sync provider; untagged fell back to the
+      // schema-backed default (Fields.LENGTH presentation format).
       expect(taggedField.cachedContent).to.equal("SYNC:2500mm");
-      expect(untaggedField.cachedContent).to.equal("2.5");
+      expect(untaggedField.cachedContent).to.equal("2.5 m");
 
       // Async path: same block, same fields, but a block-wide FormatsProvider that formats
       // `Fields.LENGTH` will apply to BOTH fields regardless of formatSet tagging.
@@ -1316,9 +1326,9 @@ describe("Field evaluation", () => {
       expect(secondaryField.cachedContent).to.equal("250 cm");
     });
 
-    it("falls back to raw string when a field's formatSet is unset", () => {
+    it("falls back to the schema default when a field's formatSet is unset", () => {
       // With only a FormatSet-scoped provider registered, a field that omits formatSet cannot
-      // match any registration and falls through to the raw string path.
+      // match any registration and falls through to the schema-backed default.
       ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         formatSet: PRIMARY_FORMAT_SET,
         provider: makeStubProvider(),
@@ -1335,11 +1345,11 @@ describe("Field evaluation", () => {
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2.5");
+      expect(field.cachedContent).to.equal("2.5 m");
     });
 
-    it("falls back to raw string when a field's formatSet does not match any registration", () => {
-      // Register under PRIMARY; the field targets SECONDARY -> no match -> raw string.
+    it("falls back to the schema default when a field's formatSet does not match any registration", () => {
+      // Register under PRIMARY; the field targets SECONDARY -> no match -> schema default.
       ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         formatSet: PRIMARY_FORMAT_SET,
         provider: makeStubProvider(),
@@ -1357,7 +1367,7 @@ describe("Field evaluation", () => {
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2.5");
+      expect(field.cachedContent).to.equal("2.5 m");
     });
 
     it("unregisters a FormatSet-scoped registration without affecting others", () => {
@@ -1467,21 +1477,21 @@ describe("Field evaluation", () => {
       // affected blocks explicitly. Documented on
       // ElementDrivesTextAnnotation.registerFieldFormattingProvider.
       const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
-      // No provider registered yet -> insert persists the raw fallback.
+      // No provider registered yet -> insert persists the schema-backed default.
       const annotationElementId = insertAnnotationWithLengthField(sourceId);
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5 m");
 
       ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
 
       // Registration alone must not touch persisted content.
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5 m");
     });
 
-    it("Regresses persisted cachedContent to raw when the provider is unregistered before a source update", () => {
+    it("Regresses persisted cachedContent to the schema default when the provider is unregistered before a source update", () => {
       // Contract: once a provider is unregistered, the next txn callback rewrites
-      // cachedContent through the raw fallback, overwriting a previously-formatted value.
-      // This is the accepted trade-off for keeping cachedContent in sync with the current
-      // property value — hosts that need formatted output to survive across a provider gap
+      // cachedContent through the remaining chain — now the schema-backed default rather than
+      // the raw string, which softens the former "silent downgrade to toString()" behavior.
+      // Hosts that need FormatSet-specific output to survive across a provider gap
       // must keep the provider registered for the lifetime of the annotations that depend on
       // it. Documented on ElementDrivesTextAnnotation.unregisterFieldFormattingProvider
       // (`### Effect on saved cachedContent`).
@@ -1500,8 +1510,8 @@ describe("Field evaluation", () => {
         txn.saveChanges("source update after unregister");
       });
 
-      // Previously-formatted "2500 mm" is overwritten by the raw fallback.
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("3.5");
+      // Previously-formatted "2500 mm" is overwritten by the schema-backed default.
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("3.5 m");
     });
 
     it("EvaluateFieldsAsync mutates the in-memory TextBlock but does not persist to the element on its own", async () => {
@@ -1512,7 +1522,7 @@ describe("Field evaluation", () => {
       const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
       const annotationElementId = insertAnnotationWithLengthField(sourceId);
       const persistedBefore = readFieldCachedContentById(annotationElementId);
-      expect(persistedBefore).to.equal("2.5");
+      expect(persistedBefore).to.equal("2.5 m");
 
       const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
       const annotation = reloaded.getAnnotation()!;
