@@ -8,20 +8,19 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
-import { FormattingSpecArgs, FormattingSpecProvider, UnitSystemKey } from "@itwin/core-quantity";
-import { ECVersion, FormatSet, FormatSetFormatsProvider, SchemaFormatsProvider } from "@itwin/ecschema-metadata";
+import { FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
+import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
-import { collectFieldFormattingRequirements, createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
+import { collectFieldFormattingRequirements, createFieldFormatterContext, createUpdateContext, updateAllFields, updateElementFields, updateFields, updateFieldsAsync } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
-import { createFieldFormattingSpecProvider, FieldFormattingSpecProvider } from "./FieldFormattingSpecProvider";
 
 /** Process-wide registry of pre-warmed [FormattingSpecProvider]($core-quantity)s keyed by
  * FormatSet [Id64String]($bentley). Populated by [[registerFieldFormattingProvider]] and
- * consulted when recomputing [FieldRun.cachedContent]($common).
+ * consulted by the sync `updateField*` paths only; async [[evaluateFieldsAsync]] ignores it.
  *
  * Not scoped to any [IModelDb]($backend) and never swept automatically — hosts must call
  * [[unregisterFieldFormattingProvider]] on iModel close to avoid a later iModel picking up a
@@ -76,28 +75,24 @@ export interface EvaluateFieldsArgs {
   iModel: IModelDb;
 }
 
-/** Arguments supplied to [[ElementDrivesTextAnnotation.prepareFieldFormatting]].
+/** Arguments supplied to [[ElementDrivesTextAnnotation.evaluateFieldsAsync]].
+ *
+ * The injected providers apply **block-wide** — every `"quantity"` and `"coordinate"` field
+ * in [[block]] is resolved through them, regardless of its
+ * [QuantityFieldFormatOptions.formatSet]($common). See
+ * [[ElementDrivesTextAnnotation.evaluateFieldsAsync]] for the full contract and how this
+ * differs from the per-field routing on the sync path.
  * @beta
  */
-export interface PrepareFieldFormattingArgs extends EvaluateFieldsArgs {
-  /** [Id64String]($bentley) of the FormatSet element under which the prepared provider is
-   * registered. Only [FieldRun]($common)s whose
-   * [QuantityFieldFormatOptions.formatSet]($common) equals this id format through it.
+export interface EvaluateFieldsAsyncArgs extends EvaluateFieldsArgs {
+  /** Resolves a [FormatProps]($core-quantity) by KindOfQuantity name. Defaults to a
+   * [SchemaFormatsProvider]($ecschema-metadata) built from [[iModel]].
    */
-  formatSet: Id64String;
-  /** The FormatSet definition whose formats take precedence over the KindOfQuantity
-   * presentation formats defined in [[iModel]]'s schemas. Names the FormatSet does not define
-   * fall back to those schema formats. When omitted, formats resolve from the schemas alone.
-   *
-   * Ignored when a provider is already registered under [[formatSet]] — call
-   * [[ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]] first to adopt a
-   * different FormatSet.
+  formatsProvider?: FormatsProvider;
+  /** Resolves [UnitProps]($core-quantity) (e.g. a value's persistence unit). Defaults to a
+   * [SchemaUnitProvider]($ecschema-metadata)-backed implementation built from [[iModel]].
    */
-  formatSetDefinition?: FormatSet;
-  /** Unit system used when resolving formats from [[iModel]]'s schemas. Defaults to
-   * [[formatSetDefinition]]'s `unitSystem`, or `"metric"` when neither is supplied.
-   */
-  unitSystem?: UnitSystemKey;
+  unitsProvider?: UnitsProvider;
 }
 
 /** A relationship in which the source element hosts one or more properties that are displayed by a target [[ITextAnnotation]] element.
@@ -207,10 +202,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    */
   public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
 
-  /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
-   * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
-   * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
-   */
+  /** @see the deprecated overload for a full description. */
   public static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;
   public static updateFieldDependencies(arg1: EditTxn | Id64String, arg2: Id64String | IModelDb): void {
     if (arg1 instanceof EditTxn) {
@@ -222,16 +214,46 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common)
-   * synchronously. `"quantity"` and `"coordinate"` fields resolve in order: a
+   * synchronously. `"quantity"` and `"coordinate"` fields are formatted via any
    * [FormattingSpecProvider]($core-quantity) registered under their `formatSet` (see
-   * [[prepareFieldFormatting]] and [[registerFieldFormattingProvider]]), then the presentation
-   * format of the target property's [KindOfQuantity]($ecschema-metadata) as defined in
-   * `args.iModel`'s schemas, then the raw string representation.
+   * [[registerFieldFormattingProvider]]); everything else falls back to the raw string. Use
+   * [[evaluateFieldsAsync]] when you need schema-backed fallback formatting.
    * @returns the number of fields whose display strings were modified.
    * @throws Error if evaluation of any field fails.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
     return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, fieldFormattingProviders))
+  }
+
+  /** Async counterpart to [[evaluateFields]] that formats `"quantity"` and `"coordinate"`
+   * [FieldRun]($common)s through the standard iTwin.js quantity pipeline. Non-quantity fields
+   * are formatted identically to [[evaluateFields]].
+   *
+   * [[EvaluateFieldsAsyncArgs.formatsProvider]] / [[EvaluateFieldsAsyncArgs.unitsProvider]]
+   * default to schema-backed implementations built from `args.iModel`; supply them to route
+   * formatting through an application-owned provider (e.g. a FormatSet-backed
+   * [FormattingSpecProvider]($core-quantity)).
+   *
+   * The injected providers apply **block-wide** — every `"quantity"` and `"coordinate"` field
+   * in `block` is resolved through them regardless of its
+   * [QuantityFieldFormatOptions.formatSet]($common). This intentionally differs from the
+   * *per-field* sync path ([[evaluateFields]] + `TxnManager` field-update callbacks), which
+   * only formats fields whose `formatSet` matches a [[registerFieldFormattingProvider]]
+   * registration. Callers that need per-field routing on the async path must slice their
+   * [TextBlock]($common) and call `evaluateFieldsAsync` once per provider.
+   *
+   * See [QuantityFieldFormatOptions]($common) for the format-resolution priority; a field that
+   * resolves no format falls back to its raw string representation.
+   * @returns the number of fields whose display strings were modified.
+   * @beta
+   */
+  public static async evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number> {
+    const context = createUpdateContext(undefined, args.iModel, false, undefined);
+    const formatter = createFieldFormatterContext(args.iModel, {
+      formatsProvider: args.formatsProvider,
+      unitsProvider: args.unitsProvider,
+    });
+    return updateFieldsAsync(args.block, context, formatter);
   }
 
   /** Returns the deduplicated [FormattingSpecArgs]($core-quantity) needed to format every
@@ -247,58 +269,15 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     return collectFieldFormattingRequirements(args.block, args.iModel);
   }
 
-  /** Prepares synchronous quantity formatting for the [FieldRun]($common)s in `args.block`.
-   *
-   * [FormatterSpec]($core-quantity) construction is asynchronous, but the `TxnManager`-driven
-   * field-update callbacks that recompute [FieldRun.cachedContent]($common) are synchronous.
-   * This method bridges the two: it discovers what `args.block` needs (see
-   * [[collectFieldFormattingRequirements]]), builds those specs asynchronously, and registers
-   * the resulting [[FieldFormattingSpecProvider]] under `args.formatSet` so the synchronous
-   * path can serve them.
-   *
-   * Call it before inserting or updating the annotation that hosts `args.block`. Repeated calls
-   * reuse and extend the provider already registered under `args.formatSet`, so it is safe — and
-   * expected — to call once per insert or update as new fields appear.
-   *
-   * Fields whose specs were not prepared are not errors: they fall through to the iModel's
-   * KindOfQuantity presentation format, and then to their raw string representation.
-   *
-   * Registrations are **process-wide**; see [[registerFieldFormattingProvider]] for the
-   * lifetime contract and the canonical [IModelDb.onBeforeClose]($backend) cleanup pattern.
-   * @returns the provider registered under `args.formatSet`.
-   * @beta
-   */
-  public static async prepareFieldFormatting(args: PrepareFieldFormattingArgs): Promise<FieldFormattingSpecProvider> {
-    const existing = fieldFormattingProviders.get(args.formatSet);
-    if (existing instanceof FieldFormattingSpecProvider) {
-      await existing.warmForBlock(args.block);
-      return existing;
-    }
-
-    const unitSystem = args.unitSystem ?? args.formatSetDefinition?.unitSystem ?? "metric";
-    const schemaFormats = new SchemaFormatsProvider(args.iModel.schemaContext, unitSystem);
-    const formatsProvider = args.formatSetDefinition
-      ? new FormatSetFormatsProvider({ formatSet: args.formatSetDefinition, fallbackProvider: schemaFormats })
-      : schemaFormats;
-
-    const provider = createFieldFormattingSpecProvider({ iModel: args.iModel, formatsProvider, unitSystem });
-    await provider.warmForBlock(args.block);
-    this.registerFieldFormattingProvider({ formatSet: args.formatSet, provider });
-    return provider;
-  }
-
   /** Registers a synchronous [FormattingSpecProvider]($core-quantity) under `formatSet`. Once
    * registered, [[evaluateFields]] and the `TxnManager`-driven field-update callback path
    * format `"quantity"` and `"coordinate"` [FieldRun]($common)s whose
    * [QuantityFieldFormatOptions.formatSet]($common) equals `formatSet` through this provider.
-   * Fields with no matching registration — and fields whose spec the provider does not have —
-   * fall back to the presentation format of their property's
-   * [KindOfQuantity]($ecschema-metadata), and then to the raw string. Providers should be
-   * pre-warmed with [[collectFieldFormattingRequirements]]. Each registration replaces any
-   * prior one for the same `formatSet`.
-   *
-   * Most applications should call [[prepareFieldFormatting]] instead, which builds, warms, and
-   * registers a [[FieldFormattingSpecProvider]] in one step.
+   * Fields with no matching registration render as raw strings — the sync path cannot consult
+   * the iModel's [SchemaFormatsProvider]($ecschema-metadata); use [[evaluateFieldsAsync]] for
+   * that fallback. Providers should be pre-warmed with [[collectFieldFormattingRequirements]];
+   * missing specs also fall back to the raw string. Each registration replaces any prior one
+   * for the same `formatSet`.
    *
    * Registrations are **process-wide** and not scoped to any [IModelDb]($backend), so two
    * iModels carrying the same FormatSet [Id64String]($bentley) will share whichever provider
@@ -333,11 +312,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *
    * Unregistering does **not** clear or reformat any [FieldRun.cachedContent]($common) already
    * persisted while the provider was registered. However, the next source-element update that
-   * fires a `TxnManager` field-update callback re-evaluates the field and — finding no provider
-   * — falls back to the presentation format of its property's
-   * [KindOfQuantity]($ecschema-metadata), or to the raw string when the property has none.
-   * Hosts that need FormatSet-specific output to survive a provider gap should keep the
-   * provider registered for the lifetime of the annotations that depend on it.
+   * fires a `TxnManager` field-update callback will re-run [[evaluateFields]] and — finding no
+   * provider — overwrite `cachedContent` with the raw string representation. Hosts that need
+   * formatted output to survive a provider gap should keep the provider registered for the
+   * lifetime of the annotations that depend on it, or re-register and explicitly re-evaluate
+   * via [[evaluateFieldsAsync]] before the next source-element edit.
    * @beta
    */
   public static unregisterFieldFormattingProvider(formatSet: Id64String): void {
