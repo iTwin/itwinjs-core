@@ -6,10 +6,8 @@
 import {
   BaselineShift,
   ColorDef,
-  FieldCase,
   FieldFormatOptions,
   FieldRun,
-  FieldUnitSystem,
   FractionRun,
   LeaderTextPointOptions,
   LineBreakRun,
@@ -36,7 +34,7 @@ import {
   TextRun,
   TextStyleSettingsProps,
 } from "@itwin/core-common";
-import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority,  readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
+import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -293,24 +291,19 @@ class TextEditor implements Decorator {
 
     const rpcProps = this._iModel.getRpcProps();
 
-    try {
-      const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
-        rpcProps,
-        this.annotationProps,
-        Id64.isValid(this.defaultTextStyleId) ? this.defaultTextStyleId : Id64.invalid,
-        this.categoryId,
-        this.modelId,
-        this.placementProps,
-        this.debugAnchorPointAndRange,
-        { annotation: 100, annotationLabels: 110 }
-      );
+    const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
+      rpcProps,
+      this.annotationProps,
+      Id64.isValid(this.defaultTextStyleId) ? this.defaultTextStyleId : Id64.invalid,
+      this.categoryId,
+      this.modelId,
+      this.placementProps,
+      this.debugAnchorPointAndRange,
+      { annotation: 100, annotationLabels: 110 }
+    );
 
-      const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
-      this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
-    } catch (err) {
-      console.error("Error generating text annotation graphics:", err, "\nAnnotation props:", this.annotationProps, "\nPlacement props:", this.placementProps, "\nCategory ID:", this.categoryId, "\nModel ID:", this.modelId);
-      throw (err);
-    }
+    const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
+    this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
 
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
@@ -330,616 +323,7 @@ export class TextDecorationTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return undefined; }
 
-  private static readonly _helpEntries: ReadonlyArray<readonly [string, string]> = [
-    ["help", "Print this help message."],
-    ["clear", "Reset the editor and remove the decoration."],
-    ["init [category]", "Initialize the editor. Uses the first category in the view if omitted."],
-    ["center", "Set the annotation origin to the view center."],
-    ["rotation <deg>", "Set annotation rotation in degrees."],
-    ["offset <x> <y>", "Set annotation offset."],
-    ["anchor <left|center|right|top|middle|bottom>", "Set the horizontal or vertical anchor."],
-    ["font <name>", "Set the font for subsequent runs."],
-    ["text <content>", "Append a text run."],
-    ["fraction <numerator> <denominator>", "Append a stacked fraction run."],
-    ["field e=<elementId> p=<schema:class:property>", "Append a field run. Accepts optional format-option args below."],
-    ["  f=<formatOptionsJson>", "Full FieldFormatOptions JSON blob (other args are merged on top)."],
-    ["  pre=<str>", "Prefix inserted before the formatted value."],
-    ["  suf=<str>", "Suffix inserted after the formatted value."],
-    ["  case=<upper|lower|as-is>", "Case transform applied to the formatted value."],
-    ["  us=<metric|imperial|usCustomary|usSurvey>", "Unit system used when resolving a format from the property's KindOfQuantity."],
-    ["  koq=<schema.koq>", "Full name of a KindOfQuantity to look up via the FormatsProvider (overrides the property's own KoQ)."],
-    ["  fp=<formatPropsJson>", "Inline FormatProps override (highest priority; ignores us/koq)."],
-    ["break", "Append a line break."],
-    ["tab [spaces]", "Append a tab run with an optional tab interval."],
-    ["paragraph", "Append a new paragraph."],
-    ["list <enumerator> <terminator> <case> [index]", "Append a list to the paragraph at [index]. Use \"none\" to omit a value."],
-    ["list-item [index]", "Append an item to the list at [index]."],
-    ["color <colorString>", "Set run color (e.g. red, #ff0000)."],
-    ["docheight <n>", "Set document text height."],
-    ["textheight <n>", "Set text height for subsequent runs."],
-    ["widthfactor <n>", "Set document width factor."],
-    ["width <n>", "Set the document width (for word wrap)."],
-    ["justify <left|center|right>", "Set document justification."],
-    ["indent <n>", "Set indentation of the current paragraph."],
-    ["spacing <n>", "Set document line spacing factor."],
-    ["bold", "Toggle bold for subsequent runs."],
-    ["italic", "Toggle italic for subsequent runs."],
-    ["underline", "Toggle underline for subsequent runs."],
-    ["fractionscale <n>", "Set stacked-fraction scale."],
-    ["fractiontype <horizontal|diagonal>", "Set stacked-fraction type."],
-    ["subscriptscale <n>", "Set subscript scale."],
-    ["superscriptscale <n>", "Set superscript scale."],
-    ["shift <none|superscript|subscript>", "Set baseline shift for subsequent runs."],
-    ["margin <left|right|top|bottom|all|horizontal|vertical> <n>", "Set document margins."],
-    ["frame <shape|fillColor|borderColor|borderWeight> <value>", "Configure the frame style."],
-    ["leader new", "Append a new leader."],
-    ["leader start <angleDeg>", "Set the start point of the latest leader."],
-    ["leader keypoint <curveIndex> <fraction>", "Attach the latest leader to a curve key point."],
-    ["leader nearest", "Attach the latest leader to the nearest point."],
-    ["leader textpoint <position>", "Attach the latest leader to a text point."],
-    ["leader terminatorShape <shape>", "Set the leader terminator shape."],
-    ["debug", "Toggle drawing of the anchor point and range."],
-    ["log", "Log the current annotation to the console."],
-    ["json [propsJson]", "Set the text block from JSON, or log the current text block if omitted."],
-    ["insertstyle <name>", "Insert a new text style using the current run/document style."],
-    ["updatestyle <name>", "Update an existing text style using the current run/document style."],
-    ["deletestyle <name>", "Delete a text style by name."],
-    ["applystyle <styleId>", "Apply the given default text style id and clear overrides."],
-    ["insert", "Insert the current annotation into the iModel (2d views only)."],
-    ["update <annotationId>", "Update the given annotation element with the current state."],
-    ["delete <annotationId>", "Delete the given annotation element."],
-    ["scale <factor>", "Set the annotation scale factor for the current model."],
-    ["formatmode <default|demo|demo-throw>", "Toggle the DP-style FormattingSpecProvider integration for the current iModel."],
-  ];
-
-  private static printHelp(): void {
-    const width = TextDecorationTool._helpEntries.reduce((max, [usage]) => Math.max(max, usage.length), 0);
-    const lines = TextDecorationTool._helpEntries.map(([usage, desc]) => `  ${usage.padEnd(width)}  ${desc}`);
-    const message = `dta text <command> [args]\n\nCommands:\n${lines.join("\n")}`;
-    // eslint-disable-next-line no-console
-    console.log(message);
-    // Throw an error to display the message in viewer.
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "See console for details"));
-  }
-
-   // TODO: Remove before merging, just for convenience while testing.
-  private async testText() {
-    const vp = IModelApp.viewManager.selectedView;
-    if (!vp) {
-      return;
-    }
-
-    const tabSize = 0.025;
-
-    // Setup
-    await this.parseAndRun("init", "0x20000000398");
-    await this.parseAndRun("applystyle", "0x50000000001");
-    await this.parseAndRun("font", "Arimo");
-    await this.parseAndRun("center");
-
-    const expectField = (title: string, expected: string, formatOptions?: FieldFormatOptions, note?: string) => {
-      const expectedColor = ColorDef.fromString("#ff5959").toJSON();
-      const actualColor = ColorDef.fromString("#156715").toJSON();
-      const defaultColor = ColorDef.fromString("black").toJSON();
-
-      // Label
-      editor.appendBreak();
-      editor.runStyle.color = defaultColor;
-      editor.runStyle.isBold = true;
-      editor.appendText(title);
-      editor.runStyle.isBold = false;
-      editor.appendBreak();
-
-      // Expected value
-      editor.appendText("Expected: ");
-      editor.runStyle.color = expectedColor;
-      editor.appendTab(tabSize);
-      editor.appendText(expected);
-      editor.runStyle.color = defaultColor;
-
-      // Actual field
-      const fieldProps = {
-        elementId: "0x20000001f05",
-        schemaName: "BuildingSpatial",
-        className: "Building",
-        propertyName: "Origin",
-        formatOptions,
-      };
-      editor.appendBreak();
-      editor.appendText("Actual: ");
-      editor.runStyle.color = actualColor;
-      editor.appendTab(tabSize);
-      editor.appendField(fieldProps);
-      editor.runStyle.color = defaultColor;
-
-      // Comment
-      if (note) {
-        editor.appendBreak();
-        editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
-        editor.runStyle.isItalic = true;
-        editor.appendText(note);
-        editor.runStyle.isItalic = false;
-        editor.runStyle.color = defaultColor;
-      }
-
-      editor.appendBreak();
-      editor.appendText(JSON.stringify({ formatOptions: formatOptions ?? null }));
-
-      editor.appendBreak();
-      editor.appendText(" ");
-    };
-
-    // Raw (persistence) coordinate values for ParkingRow.Origin used as a reference below:
-    //   x = 30707.1467 m, y = 58893.3153 m, z = 0 m
-    // Actual displayed values depend on whether the demo FormattingSpecProvider (see
-    // `FieldFormattingDemo.ts`) is registered against the current iModel:
-    //   * demo provider NOT registered  -> raw JS toString fallback (see "Raw" below).
-    //   * demo provider registered      -> uses the property's own KoQ + `SchemaFormatsProvider`
-    //                                      for lookups.
-    //
-    // The "Expected" strings that describe deterministic conversions via seed-supplied FormatProps
-    // are exact; the ones that depend on the property's KoQ are annotated because their exact
-    // form depends on how ParkingRow.Origin's KoQ resolves in the FormatsProvider.
-
-    editor.appendBreak();
-    editor.runStyle.isBold = true;
-    editor.appendText("Quantity formatting cases — exercised by both the txn callback path and evaluateFields/evaluateFieldsAsync");
-    editor.runStyle.isBold = false;
-    editor.appendBreak();
-    editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
-    editor.runStyle.isItalic = true;
-    editor.appendText("Sync path (formatFieldValueWithSpecProvider):");
-    editor.appendBreak();
-    editor.appendText("  • ElementDrivesTextAnnotation.evaluateFields — the public sync API.");
-    editor.appendBreak();
-    editor.appendText("  • TxnManager callback — fires when a source element changes or is deleted.");
-    editor.appendBreak();
-    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `dta text demo on`.");
-    editor.appendBreak();
-    editor.appendText("Async path (formatFieldValueAsync):");
-    editor.appendBreak();
-    editor.appendText("  • ElementDrivesTextAnnotation.evaluateFieldsAsync — how DTA populates the fields shown here.");
-    editor.appendBreak();
-    editor.appendText("When a provider is registered, both paths produce identical output; without one, the sync path falls back to toString().");
-    editor.runStyle.isItalic = false;
-    editor.runStyle.color = ColorDef.fromString("black").toJSON();
-    editor.appendBreak();
-
-    // const persistenceUnit = "Units.M";
-    const persistenceUnit = undefined;
-
-    // No formatOptions at all — cleanest test of the demo provider on both paths.
-    expectField(
-      "No overrides",
-      "(30707.1467 m, 58893.3153 m, 0 m)",
-      undefined,
-      "No formatOptions and no property KoQ, so neither the effective nor the property-side (KoQ, unit) pair resolves. Coordinate falls back to the raw `(x, y, z)` representation via `formatPointBasic` — Core no longer carries a built-in meters format.",
-    );
-
-    // Only persistence unit
-    expectField(
-      "Only persistence unit",
-      "(30707.1467 m, 58893.3153 m, 0 m)",
-      { quantity: { persistenceUnit } },
-      "persistenceUnit alone doesn't select a format (no KoQ name on either the override or the property side), so both candidate pairs miss and the field renders as raw `(x, y, z)`.",
-    );
-
-    // kindOfQuantity chooses which KoQ the FormatsProvider resolves.
-    expectField(
-      "KoQ override (LENGTH_SHORT)",
-      "(30707146.7 [*]mm, 58893315.3 [*]mm, 0 [*]mm)",
-      { quantity: { kindOfQuantity: "AecUnits.LENGTH_SHORT", persistenceUnit } },
-      "kindOfQuantity= overrides the property's own KoQ. DEMO_SEED_FORMATS supplies an [*]mm-marked stand-in so this works even without the AecUnits schema loaded.",
-    );
-
-    // Post-format wrappers — no quantity override, so wraps whatever the active pathway produces.
-    expectField(
-      "Prefix/suffix wrappers",
-      "L=(30707.1467 m, 58893.3153 m, 0 m) (actual)",
-      { prefix: "L=", suffix: " (actual)", quantity: { persistenceUnit } },
-      "prefix/suffix wrap the ENTIRE formatted coordinate string (not each magnitude).",
-    );
-
-    // Post-format upper-case transform — no quantity override.
-    expectField(
-      "Case upper",
-      "(30707.1467 M, 58893.3153 M, 0 M)",
-      { case: "upper", quantity: { persistenceUnit } },
-      "case=upper is applied after formatting.",
-    );
-
-    // Seed-backed kindOfQuantity: no schema KoQ required. The demo provider's DEMO_SEED_FORMATS
-    // table supplies the FormatProps directly, so these work on the sync path even when the
-    // property's own KoQ is unresolvable.
-    expectField(
-      "Seed Demo.LENGTH_M",
-      "(30707.1467 [#]m, 58893.3153 [#]m, 0 [#]m)",
-      { quantity: { kindOfQuantity: "Demo.LENGTH_M", persistenceUnit } },
-      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_M'] — decimal metres, 4 dp. [#] marker confirms the demo seed applied.",
-    );
-
-    expectField(
-      "Seed Demo.LENGTH_MM",
-      "(30707146.7 [*]mm, 58893315.3 [*]mm, 0 [*]mm)",
-      { quantity: { kindOfQuantity: "Demo.LENGTH_MM", persistenceUnit } },
-      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_MM'] — decimal mm, 3 dp. Trailing digits reflect actual m->mm conversion. [*] marker confirms the demo seed applied.",
-    );
-
-    expectField(
-      "Seed Demo.LENGTH_FT",
-      "(100745.232 [~]ft, 193219.5384 [~]ft, 0 [~]ft)",
-      { quantity: { kindOfQuantity: "Demo.LENGTH_FT", persistenceUnit } },
-      "Uses DEMO_SEED_FORMATS['Demo.LENGTH_FT'] — decimal ft, 4 dp. Trailing digits reflect actual m->ft conversion. [~] marker confirms the demo seed applied.",
-    );
-
-    await editor.update();
-  }
-
-  // TODO: Remove before merging, just for convenience while testing.
-  // Tests scalar quantity field formatting against Building.footprintArea.
-  private async testFootprintArea() {
-    const vp = IModelApp.viewManager.selectedView;
-    if (!vp) {
-      return;
-    }
-
-    const tabSize = 0.025;
-
-    // Setup
-    await this.parseAndRun("init", "0x20000000398");
-    await this.parseAndRun("applystyle", "0x50000000001");
-    await this.parseAndRun("font", "Arimo");
-    await this.parseAndRun("center");
-
-    const expectField = (title: string, expected: string, formatOptions?: FieldFormatOptions, note?: string) => {
-      const expectedColor = ColorDef.fromString("#ff5959").toJSON();
-      const actualColor = ColorDef.fromString("#156715").toJSON();
-      const defaultColor = ColorDef.fromString("black").toJSON();
-
-      // Label
-      editor.appendBreak();
-      editor.runStyle.color = defaultColor;
-      editor.runStyle.isBold = true;
-      editor.appendText(title);
-      editor.runStyle.isBold = false;
-      editor.appendBreak();
-
-      // Expected value
-      editor.appendText("Expected: ");
-      editor.runStyle.color = expectedColor;
-      editor.appendTab(tabSize);
-      editor.appendText(expected);
-      editor.runStyle.color = defaultColor;
-
-      // Actual field
-      const fieldProps = {
-        elementId: "0x20000001f05",
-        schemaName: "BuildingSpatial",
-        className: "Building",
-        propertyName: "FootprintArea",
-        formatOptions,
-      };
-      editor.appendBreak();
-      editor.appendText("Actual: ");
-      editor.runStyle.color = actualColor;
-      editor.appendTab(tabSize);
-      editor.appendField(fieldProps);
-      editor.runStyle.color = defaultColor;
-
-      // Comment
-      if (note) {
-        editor.appendBreak();
-        editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
-        editor.runStyle.isItalic = true;
-        editor.appendText(note);
-        editor.runStyle.isItalic = false;
-        editor.runStyle.color = defaultColor;
-      }
-
-      editor.appendBreak();
-      editor.appendText(JSON.stringify({ formatOptions: formatOptions ?? null }));
-
-      editor.appendBreak();
-      editor.appendText(" ");
-    };
-
-    // Raw (persistence) value for Building.footprintArea used as reference below:
-    //   6395.894993427551 m²  (persistence unit: Units.SQ_M)
-    // Conversions:
-    //   m²  -> mm² : x 1,000,000  ->  6,395,894,993.427551
-    //   m²  -> ft² : / 0.09290304 ->  68,844.84074393637
-    // Notes:
-    //   * FootprintArea is a scalar quantity field, so the output is a single formatted
-    //     magnitude (no parenthesised coordinate tuple like the Origin test).
-    //   * DEMO_SEED_FORMATS now contains `Demo.AREA_*` seeds (see FieldFormattingDemo.ts)
-    //     which are preloaded against `Units.SQ_M`, so `kindOfQuantity: "Demo.AREA_*"`
-    //     resolves on the sync path even without any schema KoQ. The sync no-format
-    //     fallback for a scalar quantity with no resolvable KoQ is still a raw
-    //     `.toString()` (no length-style coordinate fallback applies).
-
-    editor.appendBreak();
-    editor.runStyle.isBold = true;
-    editor.appendText("Quantity formatting cases — exercised by both the txn callback path and evaluateFields/evaluateFieldsAsync");
-    editor.runStyle.isBold = false;
-    editor.appendBreak();
-    editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
-    editor.runStyle.isItalic = true;
-    editor.appendText("Sync path (formatFieldValueWithSpecProvider):");
-    editor.appendBreak();
-    editor.appendText("  • ElementDrivesTextAnnotation.evaluateFields — the public sync API.");
-    editor.appendBreak();
-    editor.appendText("  • TxnManager callback — fires when a source element changes or is deleted.");
-    editor.appendBreak();
-    editor.appendText("  • Both consult the per-iModel FormattingSpecProvider registered via `dta text demo on`.");
-    editor.appendBreak();
-    editor.appendText("Async path (formatFieldValueAsync):");
-    editor.appendBreak();
-    editor.appendText("  • ElementDrivesTextAnnotation.evaluateFieldsAsync — how DTA populates the fields shown here.");
-    editor.appendBreak();
-    editor.appendText("When a provider is registered, both paths produce identical output; without one, the sync path falls back to toString().");
-    editor.runStyle.isItalic = false;
-    editor.runStyle.color = ColorDef.fromString("black").toJSON();
-    editor.appendBreak();
-
-    // const persistenceUnit = "Units.SQ_M";
-    const persistenceUnit = undefined;
-
-    // No formatOptions at all — no coordinate fallback for scalar quantity, so falls
-    // through to the raw `.toString()` formatter.
-    expectField(
-      "No overrides",
-      "6395.895 m²",
-      undefined,
-      "No formatOptions. Property KoQ can't be resolved and there is no scalar-quantity fallback format, so the raw JS toString is emitted (no unit label).",
-    );
-
-    // Only persistence unit — persistenceUnit alone doesn't select a format.
-    expectField(
-      "Only persistence unit",
-      "6395.895 m²",
-      { quantity: { persistenceUnit } },
-      "persistenceUnit alone doesn't select a format; no scalar-quantity fallback, so raw toString is emitted.",
-    );
-
-    // Post-format wrappers — no quantity override, wraps whatever the sync path produced.
-    expectField(
-      "Prefix/suffix wrappers",
-      "A=6395.895 m² (actual)",
-      { prefix: "A=", suffix: " (actual)", quantity: { persistenceUnit } },
-      "prefix/suffix wrap the ENTIRE formatted string — here just the raw toString value.",
-    );
-
-    // Post-format upper-case transform. Upper-casing pure digits/dot is a no-op.
-    expectField(
-      "Case upper",
-      "6395.895 M²",
-      { case: "upper", quantity: { persistenceUnit } },
-      "case=upper applied after formatting; digits are unaffected.",
-    );
-
-    // Seed-backed kindOfQuantity: no schema KoQ required. The demo provider's DEMO_SEED_FORMATS
-    // table supplies the FormatProps directly, so these work on the sync path even when the
-    // property's own KoQ is unresolvable.
-    expectField(
-      "Seed Demo.AREA_M2",
-      "6395.895 [$]m²",
-      { quantity: { kindOfQuantity: "Demo.AREA_M2", persistenceUnit } },
-      "Uses DEMO_SEED_FORMATS['Demo.AREA_M2'] — decimal m², 4 dp. Trailing zero dropped (6395.8950 -> 6395.895). [$] marker confirms the demo seed applied.",
-    );
-
-    expectField(
-      "Seed Demo.AREA_MM2",
-      "6395894993.43 [%]mm²",
-      { quantity: { kindOfQuantity: "Demo.AREA_MM2", persistenceUnit } },
-      "Uses DEMO_SEED_FORMATS['Demo.AREA_MM2'] — decimal mm², 2 dp. Verifies m² -> mm² conversion (x 1,000,000). [%] marker confirms the demo seed applied.",
-    );
-
-    expectField(
-      "Seed Demo.AREA_FT2",
-      "68844.8407 [&]ft²",
-      { quantity: { kindOfQuantity: "Demo.AREA_FT2", persistenceUnit } },
-      "Uses DEMO_SEED_FORMATS['Demo.AREA_FT2'] — decimal ft², 4 dp. Verifies m² -> ft² conversion (/ 0.09290304). [&] marker confirms the demo seed applied.",
-    );
-
-    await editor.update();
-  }
-
-  // TODO: Remove before merging, just for convenience while testing.
-  // Tests both a coordinate field (Origin) and a scalar quantity field (Rotation)
-  // on a single BisCore.DrawingGraphic in one pass.
-  private async testDrawingGraphic(elementId: string = "0x500000001b3") {
-    const vp = IModelApp.viewManager.selectedView;
-    if (!vp) {
-      return;
-    }
-
-    const tabSize = 0.025;
-
-    // Setup — mirrors testText / testFootprintArea. Adjust the model / style ids to
-    // match a 2d drawing model in the iModel under test.
-    await this.parseAndRun("init", "0x20000000398");
-    await this.parseAndRun("applystyle", "0x50000000001");
-    await this.parseAndRun("font", "Arimo");
-    await this.parseAndRun("center");
-
-    const appendCase = (
-      title: string,
-      propertyName: "Origin" | "Rotation",
-      expected: string,
-      formatOptions?: FieldFormatOptions,
-      note?: string,
-    ) => {
-      const labelColor = ColorDef.fromString("black").toJSON();
-      const expectedColor = ColorDef.fromString("#ff5959").toJSON();
-      const actualColor = ColorDef.fromString("#156715").toJSON();
-
-      editor.appendBreak();
-      editor.runStyle.color = labelColor;
-      editor.runStyle.isBold = true;
-      editor.appendText(`${title} — ${propertyName}`);
-      editor.runStyle.isBold = false;
-      editor.appendBreak();
-
-      editor.appendText("Expected: ");
-      editor.runStyle.color = expectedColor;
-      editor.appendTab(tabSize);
-      editor.appendText(expected);
-      editor.runStyle.color = labelColor;
-      editor.appendBreak();
-
-      editor.appendText("Actual: ");
-      editor.runStyle.color = actualColor;
-      editor.appendTab(tabSize);
-      editor.appendField({
-        elementId,
-        schemaName: "BisCore",
-        className: "DrawingGraphic",
-        propertyName,
-        formatOptions,
-      });
-      editor.runStyle.color = labelColor;
-
-      if (note) {
-        editor.appendBreak();
-        editor.runStyle.color = ColorDef.fromString("#888888").toJSON();
-        editor.runStyle.isItalic = true;
-        editor.appendText(note);
-        editor.runStyle.isItalic = false;
-        editor.runStyle.color = labelColor;
-      }
-
-      editor.appendBreak();
-      editor.appendText(JSON.stringify({ propertyName, formatOptions: formatOptions ?? null }));
-      editor.appendBreak();
-      editor.appendText(" ");
-    };
-
-    editor.appendBreak();
-    editor.runStyle.isBold = true;
-    editor.appendText(`BisCore.DrawingGraphic ${elementId} — Origin (coordinate) + Rotation (scalar quantity)`);
-    editor.runStyle.isBold = false;
-    editor.appendBreak();
-
-    // Raw persisted values for element 0x500000001b3 (observed):
-    //   Origin   : (0.8055525852652443, -0.7195653998007376)  metres
-    //   Rotation : 151.8583987677383                          degrees
-    // Origin has no property-side KoQ, so with no override it drops to the raw `(x, y)`
-    // representation; the seeded Demo.LENGTH_* cases resolve against DEMO_SEED_FORMATS.
-    // Rotation has no KoQ either and no coordinate handling, so "No overrides" is raw
-    // toString. Prefix/suffix/case wrappers are applied on top of the formatted string.
-
-    // --- Origin: coordinate field ---
-    appendCase(
-      "No overrides",
-      "Origin",
-      "(0.8056 m, -0.7196 m)",
-      undefined,
-      "No KoQ on either the override or the property; both candidate pairs miss and the coordinate renders as raw `(x, y)`. Core no longer synthesizes a meters fallback.",
-    );
-    appendCase(
-      "Seed Demo.LENGTH_MM",
-      "Origin",
-      "(805.6 [*]mm, -719.6 [*]mm)",
-      { quantity: { kindOfQuantity: "Demo.LENGTH_MM" } },
-      "Convert Origin (persisted metres) to mm via demo seed. [*] marker confirms the demo seed applied.",
-    );
-    appendCase(
-      "Seed Demo.LENGTH_FT",
-      "Origin",
-      "(2.643 [~]ft, -2.361 [~]ft)",
-      { quantity: { kindOfQuantity: "Demo.LENGTH_FT" } },
-      "Convert Origin (persisted metres) to ft via demo seed. [~] marker confirms the demo seed applied.",
-    );
-
-    // --- Rotation: scalar angle ---
-    appendCase(
-      "No overrides",
-      "Rotation",
-      "151.8583987677383",
-      undefined,
-      "Scalar quantity with no coordinate fallback: raw toString when the property KoQ is unresolvable.",
-    );
-    appendCase(
-      "Seed Demo.ANGLE_DEG_FROM_DEG",
-      "Rotation",
-      "151.858[°d]°",
-      { quantity: { kindOfQuantity: "Demo.ANGLE_DEG_FROM_DEG", persistenceUnit: "Units.ARC_DEG" } },
-      "Use when Rotation is stored in degrees. No unit conversion. [°d] marker confirms the demo seed applied.",
-    );
-    appendCase(
-      "Seed Demo.ANGLE_DEG_FROM_RAD",
-      "Rotation",
-      "8700.845[°r]°",
-      { quantity: { kindOfQuantity: "Demo.ANGLE_DEG_FROM_RAD", persistenceUnit: "Units.RAD" } },
-      "Use when Rotation is stored in radians. Converts rad -> deg for display. [°r] marker confirms the demo seed applied. (Rotation is actually stored in degrees here, so 151.858 gets treated as radians -> 8700.845°.)",
-    );
-    appendCase(
-      "Seed Demo.ANGLE_RAD",
-      "Rotation",
-      "151.8584 [θ]rad",
-      { quantity: { kindOfQuantity: "Demo.ANGLE_RAD", persistenceUnit: "Units.RAD" } },
-      "Pass-through radians (persistence = RAD). [θ] marker confirms the demo seed applied.",
-    );
-    appendCase(
-      "Prefix/suffix wrappers",
-      "Rotation",
-      "θ=151.8583987677383 (deg)",
-      { prefix: "θ=", suffix: " (deg)" },
-      "prefix/suffix wrap whatever the underlying formatter produced.",
-    );
-    appendCase(
-      "Case upper",
-      "Rotation",
-      "151.8583987677383",
-      { case: "upper" },
-      "case=upper applied after formatting; digits are unaffected.",
-    );
-
-    await editor.update();
-  }
-
-  // TODO: Remove before merging, just for convenience while testing.
-  private async testTextFromJson(json: string) {
-    await this.parseAndRun("init", "0x20000000398");
-    await this.parseAndRun("applystyle", "0x50000000001");
-    await this.parseAndRun("font", "Arimo");
-    await this.parseAndRun("center");
-    await this.parseAndRun("json", json);
-  }
-
   public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
-    const cmd = inArgs[0].toLowerCase();
-
-    // TODO: Remove before merging, just for convenience while testing.
-    if (cmd === "test") {
-      await this.testText();
-      return true;
-    }
-
-    // TODO: Remove before merging, just for convenience while testing.
-    if (cmd === "testarea") {
-      await this.testFootprintArea();
-      return true;
-    }
-
-    // TODO: Remove before merging, just for convenience while testing.
-    if (cmd === "testdrawinggraphic") {
-      const elementId = inArgs[1];
-      await this.testDrawingGraphic(elementId);
-      return true;
-    }
-
-    // TODO: Remove before merging, just for convenience while testing.
-    if (cmd === "testjson") {
-      await this.testTextFromJson(inArgs[1]);
-      return true;
-    }
-
-    if (cmd === "help") {
-      TextDecorationTool.printHelp();
-      return true;
-    }
-
     const vp = IModelApp.viewManager.selectedView;
     if (!vp) {
       return false;
@@ -949,6 +333,7 @@ export class TextDecorationTool extends Tool {
       editor.modelId = vp.view.baseModelId;
     }
 
+    const cmd = inArgs[0].toLowerCase();
     const arg = inArgs[1];
 
     switch (cmd) {
@@ -998,31 +383,12 @@ export class TextDecorationTool extends Tool {
           throw new Error("Expected e=elementId p=schema:class:propertyName");
         }
         const formatString = fieldArgs.get("f");
-        const formatOptions: FieldFormatOptions = formatString ? JSON.parse(formatString) : {};
-
-        const prefix = fieldArgs.get("pre");
-        if (prefix !== undefined) formatOptions.prefix = prefix;
-        const suffix = fieldArgs.get("suf");
-        if (suffix !== undefined) formatOptions.suffix = suffix;
-        const caseOpt = fieldArgs.get("case");
-        if (caseOpt !== undefined) formatOptions.case = caseOpt as FieldCase;
-
-        const unitSystem = fieldArgs.get("us");
-        const formatSetKey = fieldArgs.get("koq");
-        const inlineFormat = fieldArgs.get("fp");
-        if (unitSystem !== undefined || formatSetKey !== undefined || inlineFormat !== undefined) {
-          formatOptions.quantity = { ...(formatOptions.quantity ?? {}) };
-          if (unitSystem !== undefined) formatOptions.quantity.unitSystem = unitSystem as FieldUnitSystem;
-          if (formatSetKey !== undefined) formatOptions.quantity.formatSetKey = formatSetKey;
-          if (inlineFormat !== undefined) formatOptions.quantity.format = JSON.parse(inlineFormat);
-        }
-
         editor.appendField({
           elementId,
           schemaName: propertyParts[0],
           className: propertyParts[1],
           propertyName: propertyParts[2],
-          formatOptions: Object.keys(formatOptions).length > 0 ? formatOptions : undefined,
+          formatOptions: formatString ? JSON.parse(formatString) : undefined,
         });
         break;
       }
@@ -1304,15 +670,6 @@ export class TextDecorationTool extends Tool {
 
         break;
       }
-      case "formatmode": {
-        if (arg !== "default" && arg !== "demo" && arg !== "demo-throw") {
-          throw new Error("Expected default, demo, or demo-throw");
-        }
-        await dtaIpc.setFieldFormattingMode(vp.iModel.key, arg);
-        // eslint-disable-next-line no-console
-        console.log(`Field formatting mode set to '${arg}' for iModel ${vp.iModel.key}`);
-        return true;
-      }
       case "list": { // args are enumerator, terminator, case, index
 
         let enumerator = inArgs[1];
@@ -1391,16 +748,13 @@ export class TextDecorationTool extends Tool {
         break;
 
       case "json": {
-
-        const rawProps = inArgs[1]?.replaceAll("'", "\"")?.replaceAll("\\'", "'"); // Remove escape characters for easier copy/paste into command line.
-        const props = rawProps && (JSON.parse(rawProps) as TextBlockProps);
+        const props = inArgs[1] && (JSON.parse(inArgs[1].replaceAll("'", "\"")) as TextBlockProps);
 
         if (props) {
           editor.setTextBlock(props);
         } else {
-          const textBlockJsonString = JSON.stringify(editor.annotationProps.textBlock).replaceAll("'", "\\'").replaceAll("\"", "'");
           // eslint-disable-next-line no-console
-          console.log(textBlockJsonString);
+          console.log(JSON.stringify(editor.annotationProps.textBlock).replaceAll("\"", "'"));
         }
 
         break;

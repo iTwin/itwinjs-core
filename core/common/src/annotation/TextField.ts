@@ -20,12 +20,10 @@ import { Id64String } from "@itwin/core-bentley";
  *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string": a value convertible to a string.
  * @note `"quantity"` and `"coordinate"` fields format through the iTwin.js quantity pipeline
- * on the async [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path. The sync path
- * ([ElementDrivesTextAnnotation.evaluateFields]($backend) / `TxnManager` field-update
- * callbacks) formats them only when a [FormattingSpecProvider]($core-quantity) is registered
- * for the field's [[QuantityFieldFormatOptions.formatSet]] via
- * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend); otherwise it falls
- * back to the raw string representation.
+ * only when a [FieldFormattingSpecProvider]($backend) has been registered for the iModel via
+ * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) and pre-warmed with
+ * the field's requirements. Otherwise — and for a requirement that was never warmed — they
+ * fall back to the raw string representation.
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
@@ -101,10 +99,10 @@ export interface DateTimeFieldFormatOptions {
  *  2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped
  *     when identical to the effective pair.
  *
- * The first pair whose format-props and persistence-unit lookups both succeed wins; if
- * neither resolves, the field falls back to `toString()` for `"quantity"` or a `(x, y[, z])`
- * tuple for `"coordinate"`. Core does not synthesize a coordinate format — coordinate
- * presentation is [FormatsProvider]($core-quantity) territory.
+ * The first pair with a pre-warmed [FormatterSpec]($core-quantity) wins; if neither resolves,
+ * the field falls back to `toString()` for `"quantity"` or a `(x, y[, z])` tuple for
+ * `"coordinate"`. Core does not synthesize a coordinate format — coordinate presentation is
+ * [FormatsProvider]($core-quantity) territory.
  * @beta
  */
 export interface QuantityFieldFormatOptions {
@@ -121,13 +119,14 @@ export interface QuantityFieldFormatOptions {
    * the interface JSDoc for the full resolution priority.
    */
   kindOfQuantity?: string;
-  /** [Id64String]($bentley) of a persisted FormatSet element that routes this field to a
-   * registered synchronous [FormattingSpecProvider]($core-quantity). Consulted by
-   * [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update
-   * callback path via [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend);
-   * fields with no matching registration render as raw strings on the sync path. Ignored on
-   * the async [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path, where the
-   * injected [FormatsProvider]($core-quantity) applies block-wide.
+  /** [Id64String]($bentley) of a persisted FormatSet element whose formats take precedence for
+   * this field, letting one iModel mix presentations (e.g. metric and imperial callouts).
+   *
+   * Resolved against the FormatSets supplied to
+   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend). A FormatSet with no
+   * entry for the field's [KindOfQuantity]($ecschema-metadata) — and a field naming a FormatSet
+   * that was never supplied — falls through to the iModel's schema presentation format rather
+   * than to the raw string.
    */
   formatSet?: Id64String;
 }

@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
-import { FormatProps, FormatsProvider, FormatterSpec, FormattingSpecEntry, FormattingSpecProvider } from "@itwin/core-quantity";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, formatFieldValueWithSpecProvider, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
+import { FormatDefinition, FormatterSpec, FormattingSpecEntry, FormattingSpecProvider } from "@itwin/core-quantity";
+import { FormatSet } from "@itwin/ecschema-metadata";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
-import { BeEvent, BeUnorderedUiEvent, DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
+import { BeUnorderedUiEvent, DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
+import { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
@@ -299,6 +301,22 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   await iModel.importSchemaStrings([fieldsSchemaXml]);
 }
 
+/** Builds a decimal [FormatDefinition] rendering a magnitude in `unitName` with `unitLabel`. */
+function decimalFormat(unitName: string, unitLabel: string, precision = 4): FormatDefinition {
+  return {
+    composite: { includeZero: true, units: [{ label: unitLabel, name: unitName }] },
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision,
+    type: "Decimal",
+    uomSeparator: " ",
+  };
+}
+
+/** Wraps a KindOfQuantity -> format map in a metric [FormatSet]. */
+function toFormatSet(formats: Record<string, FormatDefinition> = {}): FormatSet {
+  return { name: "TestSet", label: "Test Set", unitSystem: "metric", formats };
+}
+
 describe("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
@@ -554,7 +572,22 @@ describe("Field evaluation", () => {
     });
   });
 
-  describe("updateFieldsAsync (quantity formatting)", () => {
+  describe("evaluateFields (quantity formatting)", () => {
+    // Registers a provider for `imodel` whose adopted FormatSet is `formats`, pre-warmed with
+    // exactly what `block`'s fields require. Mirrors the documented collect -> warm -> evaluate
+    // workflow: the app supplies FormatSets at registration time and evaluation is synchronous.
+    async function register(block: TextBlock, formats: Record<string, FormatDefinition> = {}): Promise<FieldFormattingSpecProvider> {
+      return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        iModel: imodel,
+        formatSet: toFormatSet(formats),
+        requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
+      });
+    }
+
+    afterEach(() => {
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+    });
+
     it("falls back to the raw coordinate string when no KoQ or override is provided", async () => {
       const textBlock = TextBlock.create();
       const fieldRun = FieldRun.create({
@@ -564,15 +597,16 @@ describe("Field evaluation", () => {
       });
       textBlock.appendRun(fieldRun);
 
-      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: textBlock });
+      await register(textBlock);
+      const updatedCount = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
 
       expect(updatedCount).to.equal(1);
-      // Core has no built-in coordinate format; without a matching FormatsProvider entry the
-      // formatter drops to the raw `(x, y, z)` representation.
+      // Core has no built-in coordinate format; the property has no KoQ so nothing pre-warms and
+      // the formatter drops to the raw `(x, y, z)` representation.
       expect(fieldRun.cachedContent).to.equal("(1, 2, 3)");
     });
 
-    it("preserves non-quantity field formatting when using the async pipeline", async () => {
+    it("preserves non-quantity field formatting", async () => {
       const textBlock = TextBlock.create();
       const stringField = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -582,7 +616,8 @@ describe("Field evaluation", () => {
       });
       textBlock.appendRun(stringField);
 
-      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: textBlock });
+      await register(textBlock);
+      const updatedCount = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
 
       expect(updatedCount).to.equal(1);
       expect(stringField.cachedContent).to.equal("[a]");
@@ -594,30 +629,15 @@ describe("Field evaluation", () => {
     const doublesPath: FieldPropertyPath = { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] };
     const pointPath: FieldPropertyPath = { propertyName: "point" };
 
-    async function runEvaluate(field: FieldRun): Promise<{ updatedCount: number, content: string }> {
+    async function runEvaluate(field: FieldRun, formats: Record<string, FormatDefinition> = {}): Promise<{ updatedCount: number, content: string }> {
       const textBlock = TextBlock.create();
       textBlock.appendRun(field);
-      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: textBlock });
+      await register(textBlock, formats);
+      const updatedCount = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
       return { updatedCount, content: field.cachedContent };
     }
 
-    function decimalFormat(unitName: string, unitLabel: string, precision = 4): FormatProps {
-      return {
-        composite: { includeZero: true, units: [{ label: unitLabel, name: unitName }] },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision,
-        type: "Decimal",
-        uomSeparator: " ",
-      };
-    }
-
     it("converts persistence meters to millimeters using a kindOfQuantity override", async () => {
-      const stubProvider: FormatsProvider = {
-        onFormatsChanged: new BeEvent(),
-        async getFormat(name) {
-          return name === "MyKoq.LengthMm" ? decimalFormat("Units.MM", "mm", 2) : undefined;
-        },
-      };
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
         propertyPath: doublesPath,
@@ -630,26 +650,14 @@ describe("Field evaluation", () => {
         cachedContent: "old",
       });
 
-      const block = TextBlock.create();
-      block.appendRun(field);
-      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        iModel: imodel,
-        block,
-        formatsProvider: stubProvider,
-      });
+      const { updatedCount, content } = await runEvaluate(field, { "MyKoq.LengthMm": decimalFormat("Units.MM", "mm", 2) });
 
       expect(updatedCount).to.equal(1);
       // doubles[0] === 1 m -> 1000 mm
-      expect(field.cachedContent).to.equal("1000 mm");
+      expect(content).to.equal("1000 mm");
     });
 
     it("formats coordinate values through a kindOfQuantity override", async () => {
-      const stubProvider: FormatsProvider = {
-        onFormatsChanged: new BeEvent(),
-        async getFormat(name) {
-          return name === "MyKoq.LengthFt" ? decimalFormat("Units.FT", "ft", 4) : undefined;
-        },
-      };
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
         propertyPath: pointPath,
@@ -662,17 +670,11 @@ describe("Field evaluation", () => {
         cachedContent: "old",
       });
 
-      const block = TextBlock.create();
-      block.appendRun(field);
-      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        iModel: imodel,
-        block,
-        formatsProvider: stubProvider,
-      });
+      const { updatedCount, content } = await runEvaluate(field, { "MyKoq.LengthFt": decimalFormat("Units.FT", "ft", 4) });
 
       expect(updatedCount).to.equal(1);
       // point = (1, 2, 3) m -> (3.2808 ft, 6.5617 ft, 9.8425 ft)
-      expect(field.cachedContent).to.equal("(3.2808 ft, 6.5617 ft, 9.8425 ft)");
+      expect(content).to.equal("(3.2808 ft, 6.5617 ft, 9.8425 ft)");
     });
 
     it("falls back to the raw coordinate string when only persistenceUnit is set and no format matches", async () => {
@@ -690,22 +692,14 @@ describe("Field evaluation", () => {
       const { updatedCount, content } = await runEvaluate(field);
 
       expect(updatedCount).to.equal(1);
-      // With no `kindOfQuantity` name and no property KoQ, there is no lookup key for the
-      // FormatsProvider, so the formatter drops to the raw representation.
+      // With no `kindOfQuantity` name and no property KoQ, there is no lookup key, so the
+      // formatter drops to the raw representation.
       expect(content).to.equal("(1, 2, 3)");
     });
 
     it("still uses the property's KindOfQuantity when only persistenceUnit is overridden", async () => {
       // Regression: setting `formatOptions.quantity.persistenceUnit` alone must not suppress the
-      // property's own KindOfQuantity — the two overrides are independent. Under the previous
-      // logic, providing `persistenceUnit` cleared `kindOfQuantityFullName` on the FieldValue,
-      // so the FormatsProvider was never consulted and the field rendered as a raw number.
-      const stubProvider: FormatsProvider = {
-        onFormatsChanged: new BeEvent(),
-        async getFormat(name) {
-          return name === "Fields.LENGTH" ? decimalFormat("Units.MM", "mm", 2) : undefined;
-        },
-      };
+      // property's own KindOfQuantity — the two overrides are independent.
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
         propertyPath: { propertyName: "lengthProp" },
@@ -717,30 +711,18 @@ describe("Field evaluation", () => {
         cachedContent: "old",
       });
 
-      const block = TextBlock.create();
-      block.appendRun(field);
-      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        iModel: imodel,
-        block,
-        formatsProvider: stubProvider,
-      });
+      const { updatedCount, content } = await runEvaluate(field, { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) });
 
       expect(updatedCount).to.equal(1);
       // lengthProp = 2.5 m persisted; property KoQ Fields.LENGTH still drives format lookup;
-      // stub returns a mm format; converted to 2500 mm.
-      expect(field.cachedContent).to.equal("2500 mm");
+      // the adopted FormatSet's mm format converts to 2500 mm.
+      expect(content).to.equal("2500 mm");
     });
 
-    it("falls back to the property's KindOfQuantity when the override KoQ isn't in the FormatsProvider", async () => {
-      // The caller pins a preferred FormatSet KoQ (Missing.KOQ) but the active provider only
-      // knows about the property's KoQ (Fields.LENGTH). The formatter should use the
-      // property-side pair rather than dropping to raw output.
-      const stubProvider: FormatsProvider = {
-        onFormatsChanged: new BeEvent(),
-        async getFormat(name) {
-          return name === "Fields.LENGTH" ? decimalFormat("Units.MM", "mm", 2) : undefined;
-        },
-      };
+    it("falls back to the property's KindOfQuantity when the override KoQ isn't in the FormatSet", async () => {
+      // The caller pins a preferred KoQ (Missing.KOQ) but the adopted FormatSet only knows about
+      // the property's KoQ (Fields.LENGTH). The formatter should use the property-side pair
+      // rather than dropping to raw output.
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
         propertyPath: { propertyName: "lengthProp" },
@@ -752,16 +734,10 @@ describe("Field evaluation", () => {
         cachedContent: "old",
       });
 
-      const block = TextBlock.create();
-      block.appendRun(field);
-      const updatedCount = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        iModel: imodel,
-        block,
-        formatsProvider: stubProvider,
-      });
+      const { updatedCount, content } = await runEvaluate(field, { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) });
 
       expect(updatedCount).to.equal(1);
-      expect(field.cachedContent).to.equal("2500 mm");
+      expect(content).to.equal("2500 mm");
     });
 
     it("marks the field invalid when a quantity property value is missing", async () => {
@@ -784,23 +760,21 @@ describe("Field evaluation", () => {
     });
   });
 
-  describe("evaluateFieldsAsync (injected providers)", () => {
-    it("uses an application-supplied FormatsProvider to resolve KoQ formats", async () => {
-      const inlineFormat: FormatProps = {
-        composite: { includeZero: true, units: [{ label: "mm", name: "Units.MM" }] },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 2,
-        type: "Decimal",
-        uomSeparator: " ",
-      };
-      let lookups = 0;
-      const stubProvider: FormatsProvider = {
-        onFormatsChanged: new BeEvent(),
-        async getFormat(name) {
-          lookups += 1;
-          return name === "Fields.LENGTH" ? inlineFormat : undefined;
-        },
-      };
+  describe("evaluateFields (adopted FormatSet)", () => {
+    async function register(block: TextBlock, formats: Record<string, FormatDefinition> = {}): Promise<FieldFormattingSpecProvider> {
+      return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        iModel: imodel,
+        formatSet: toFormatSet(formats),
+        requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
+      });
+    }
+
+    afterEach(() => {
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+    });
+
+    it("resolves KoQ formats from the adopted FormatSet", async () => {
+      const inlineFormat = decimalFormat("Units.MM", "mm", 2);
 
       const block = TextBlock.create();
       const field = FieldRun.create({
@@ -810,60 +784,50 @@ describe("Field evaluation", () => {
       });
       block.appendRun(field);
 
-      const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        iModel: imodel,
-        block,
-        formatsProvider: stubProvider,
-      });
+      await register(block, { "Fields.LENGTH": inlineFormat });
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(updated).to.equal(1);
-      // lengthProp = 2.5 m -> 2500 mm via the injected provider.
+      // lengthProp = 2.5 m -> 2500 mm via the adopted FormatSet.
       expect(field.cachedContent).to.equal("2500 mm");
-      expect(lookups).to.equal(1);
     });
 
-    it("falls back to raw formatting when an injected FormatsProvider returns undefined and no other source resolves", async () => {
-      const stubProvider: FormatsProvider = {
-        onFormatsChanged: new BeEvent(),
-        async getFormat() { return undefined; },
-      };
-
+    it("falls back to raw formatting when the adopted FormatSet has no entry and no KoQ resolves", async () => {
       const block = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        // outerStruct.innerStruct.doubles[0] has no KoQ, so with the injected provider returning
-        // undefined and no override, formatting must fall back to raw string.
+        // outerStruct.innerStruct.doubles[0] has no KoQ, so with an empty FormatSet and no
+        // override, formatting must fall back to raw string.
         propertyPath: { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] },
         cachedContent: "old",
       });
       block.appendRun(field);
 
-      const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        iModel: imodel,
-        block,
-        formatsProvider: stubProvider,
-      });
+      await register(block);
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(updated).to.equal(1);
       expect(field.cachedContent).to.equal("1");
     });
 
-    it("uses schema-backed providers when no overrides are supplied", async () => {
-      // Regression: omitting `formatting` should behave identically to before this API was added.
-      // The `point` property has no KindOfQuantity, so no lookup key is available and the async
-      // path drops to the raw coordinate representation.
+    it("falls back to the iModel's schema formats when the FormatSet has no entry", async () => {
+      // Register a provider whose adopted FormatSet is empty. The `lengthProp` property carries
+      // a KindOfQuantity (Fields.LENGTH), so the schema's own presentation format drives the
+      // result rather than the raw string.
       const block = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "point" },
+        propertyPath: { propertyName: "lengthProp" },
         cachedContent: "old",
       });
       block.appendRun(field);
 
-      const updated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block });
+      await register(block);
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("(1, 2, 3)");
+      // Fields.LENGTH declares presentationUnits f:DefaultRealU(4)[u:M]; 2.5 m formats as "2.5 m".
+      expect(field.cachedContent).to.equal("2.5 m");
     });
   });
 
@@ -960,41 +924,29 @@ describe("Field evaluation", () => {
   });
 
   describe("registerFieldFormattingProvider (sync path)", () => {
-    // Every sync-path registration is scoped to a specific FormatSet id; there is no default
-    // registration. Tests use these two ids: PRIMARY is the "normal" FormatSet under test, and
-    // SECONDARY exercises multi-FormatSet behavior.
+    // Ids referenced by fields via formatOptions.quantity.formatSet and supplied per-field
+    // through the `formatSets` array at registration time. PRIMARY is the "normal" FormatSet
+    // under test; SECONDARY exercises multi-FormatSet routing.
     const PRIMARY_FORMAT_SET = "0x111";
     const SECONDARY_FORMAT_SET = "0x222";
 
-    // A minimal FormattingSpecProvider stub that recognizes a single (name, persistenceUnit)
-    // combination and returns a fake FormatterSpec whose `applyFormatting` is what actually
-    // renders magnitudes on the sync formatting path.
-    function makeStubProvider(opts?: {
-      onLookup?: (args: { name: string; persistenceUnitName: string }) => void;
-      format?: (magnitude: number) => string;
-    }): FormattingSpecProvider {
-      const format = opts?.format ?? ((m: number) => `${m * 1000} mm`);
-      const fakeSpec = { applyFormatting: (m: number) => format(m) } as unknown as FormatterSpec;
-      return {
-        onFormattingReady: new BeUnorderedUiEvent(),
-        getSpecsByNameAndUnit(args) {
-          opts?.onLookup?.(args);
-          if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
-            return { formatterSpec: fakeSpec } as FormattingSpecEntry;
-          }
-          return undefined;
-        },
-        formatQuantity(magnitude, spec) {
-          return spec.applyFormatting(magnitude);
-        },
-      };
+    // Registers a provider for `imodel` with the given per-field FormatSets, pre-warmed for the
+    // single (Fields.LENGTH, Units.M) requirement the length-field tests use.
+    async function registerSets(formatSets: ReadonlyArray<{ id: Id64String, formats: Record<string, FormatDefinition> }>): Promise<FieldFormattingSpecProvider> {
+      return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        iModel: imodel,
+        formatSets: formatSets.map(({ id, formats }) => ({ id, formatSet: toFormatSet(formats) })),
+        requirements: [{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }],
+      });
+    }
+
+    // A mm FormatSet: 2.5 m -> "2500 mm".
+    function mmSet(): Record<string, FormatDefinition> {
+      return { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) };
     }
 
     afterEach(() => {
-      // Unregister the FormatSet-scoped registrations used by tests in this block, so leftover
-      // providers don't leak into later cases.
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(PRIMARY_FORMAT_SET);
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(SECONDARY_FORMAT_SET);
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
       // Clean up any TextAnnotation3d elements produced below so we don't leak state
       // (and their ElementDrivesTextAnnotation relationships) into later describe
       // blocks that assert on relationship counts.
@@ -1008,12 +960,8 @@ describe("Field evaluation", () => {
         withEditTxn(imodel, (txn) => { for (const id of ids) txn.deleteElement(id); });
     });
 
-    it("routes evaluateFields quantity formatting through a registered provider", () => {
-      let lookups = 0;
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        formatSet: PRIMARY_FORMAT_SET,
-        provider: makeStubProvider({ onLookup: () => { lookups += 1; } }),
-      });
+    it("routes evaluateFields quantity formatting through a registered provider", async () => {
+      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
@@ -1027,22 +975,21 @@ describe("Field evaluation", () => {
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
 
       expect(updated).to.equal(1);
-      // lengthProp = 2.5 m -> stub renders as 2500 mm.
+      // lengthProp = 2.5 m -> 2500 mm.
       expect(field.cachedContent).to.equal("2500 mm");
-      expect(lookups).to.equal(1);
     });
 
-    it("routes evaluateFields coordinate formatting through the provider when a spec is available", () => {
-      // Register a provider whose (Fields.LENGTH, Units.M) spec formats magnitudes in millimeters.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        formatSet: PRIMARY_FORMAT_SET,
-        provider: makeStubProvider({ format: (m) => `${Math.round(m * 1000)} mm` }),
+    it("routes evaluateFields coordinate formatting through the provider when a spec is available", async () => {
+      await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        iModel: imodel,
+        formatSets: [{ id: PRIMARY_FORMAT_SET, formatSet: toFormatSet({ "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }) }],
+        requirements: [{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }],
       });
 
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        // point is a Point3d without a KoQ; supply overrides to route it through our stub.
+        // point is a Point3d without a KoQ; supply overrides to route it through the FormatSet.
         propertyPath: { propertyName: "point" },
         formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "Fields.LENGTH", persistenceUnit: "Units.M" } },
         cachedContent: "old",
@@ -1052,6 +999,7 @@ describe("Field evaluation", () => {
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
 
       expect(updated).to.equal(1);
+      // (1, 2, 3) m -> (1000 mm, 2000 mm, 3000 mm).
       expect(field.cachedContent).to.equal("(1000 mm, 2000 mm, 3000 mm)");
     });
 
@@ -1059,98 +1007,100 @@ describe("Field evaluation", () => {
       // Regression: the sync path must honor the FormattingSpecProvider contract by rendering
       // magnitudes via `provider.formatQuantity(magnitude, spec)`, so caller-side hooks
       // (caching, telemetry, per-call substitution) apply. Directly calling
-      // `spec.applyFormatting` would bypass those hooks silently.
+      // `spec.applyFormatting` would bypass those hooks silently. Exercised directly against the
+      // internal helper with a hand-rolled provider so the two entry points differ observably.
       const fakeSpec = { applyFormatting: (m: number) => `SPEC:${m}` } as unknown as FormatterSpec;
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        formatSet: PRIMARY_FORMAT_SET,
-        provider: {
-          onFormattingReady: new BeUnorderedUiEvent(),
-          getSpecsByNameAndUnit(args) {
-            if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
-              return { formatterSpec: fakeSpec } as FormattingSpecEntry;
-            }
-            return undefined;
-          },
-          formatQuantity: (m) => `PROVIDER:${m}`,
+      const provider: FormattingSpecProvider = {
+        onFormattingReady: new BeUnorderedUiEvent(),
+        getSpecsByNameAndUnit(args) {
+          if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
+            return { formatterSpec: fakeSpec } as FormattingSpecEntry;
+          }
+          return undefined;
         },
-      });
+        formatQuantity: (m) => `PROVIDER:${m}`,
+      };
 
-      const textBlock = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
-        cachedContent: "old",
-      });
-      textBlock.appendRun(field);
+      const value: FieldValue = { value: 2.5, type: "quantity", kindOfQuantityFullName: "Fields.LENGTH", persistenceUnitFullName: "Units.M" };
+      const result = formatFieldValueWithSpecProvider(value, undefined, provider);
 
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
-
-      expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("PROVIDER:2.5");
+      expect(result).to.equal("PROVIDER:2.5");
     });
 
     it("routes coordinate formatting through provider.formatQuantity for each component", () => {
-      // Regression: same as above but for coordinate values — every component of the point
-      // should render via `provider.formatQuantity`, not `spec.applyFormatting`.
+      // Same as above but for coordinate values — every component should render via
+      // `provider.formatQuantity`, not `spec.applyFormatting`.
       const fakeSpec = { applyFormatting: (m: number) => `SPEC:${m}` } as unknown as FormatterSpec;
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        formatSet: PRIMARY_FORMAT_SET,
-        provider: {
-          onFormattingReady: new BeUnorderedUiEvent(),
-          getSpecsByNameAndUnit(args) {
-            if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
-              return { formatterSpec: fakeSpec } as FormattingSpecEntry;
-            }
-            return undefined;
-          },
-          formatQuantity: (m) => `PROVIDER:${m}`,
+      const provider: FormattingSpecProvider = {
+        onFormattingReady: new BeUnorderedUiEvent(),
+        getSpecsByNameAndUnit(args) {
+          if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
+            return { formatterSpec: fakeSpec } as FormattingSpecEntry;
+          }
+          return undefined;
         },
-      });
+        formatQuantity: (m) => `PROVIDER:${m}`,
+      };
 
-      const textBlock = TextBlock.create();
+      const value: FieldValue = { value: { x: 1, y: 2, z: 3 }, type: "coordinate", kindOfQuantityFullName: "Fields.LENGTH", persistenceUnitFullName: "Units.M" };
+      const result = formatFieldValueWithSpecProvider(value, undefined, provider);
+
+      expect(result).to.equal("(PROVIDER:1, PROVIDER:2, PROVIDER:3)");
+    });
+
+    it("falls back to the raw string when neither the FormatSet nor the schema resolves a format", async () => {
+      // A genuine raw fallback: the point property has no KoQ, and the override KoQ resolves in
+      // neither the (empty) FormatSet nor the iModel's schemas. The field drops to its raw
+      // representation and the shortfall is recorded as a miss.
+      const block = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "point" },
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "Fields.LENGTH", persistenceUnit: "Units.M" } },
+        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "Missing.KOQ", persistenceUnit: "Units.M" } },
         cachedContent: "old",
       });
-      textBlock.appendRun(field);
+      block.appendRun(field);
 
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
-
-      expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("(PROVIDER:1, PROVIDER:2, PROVIDER:3)");
-    });
-
-    it("falls back to raw string when the registered provider does not supply a spec", () => {
-      // Provider recognizes no (name, unit) combinations.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        formatSet: PRIMARY_FORMAT_SET,
-        provider: {
-          onFormattingReady: new BeUnorderedUiEvent(),
-          getSpecsByNameAndUnit: () => undefined,
-          formatQuantity: (m: number) => `${m}`,
-        },
+      const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        iModel: imodel,
+        formatSets: [{ id: PRIMARY_FORMAT_SET, formatSet: toFormatSet({}) }],
+        requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
       });
 
-      const textBlock = TextBlock.create();
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("(1, 2, 3)");
+      expect(Array.from(provider.misses).some((m) => m.name === "Missing.KOQ" && m.persistenceUnitName === "Units.M")).to.be.true;
+    });
+
+    it("falls through to the schema format when a field's FormatSet lacks an entry for its KoQ", async () => {
+      // A field naming a FormatSet whose formats lack its KindOfQuantity still resolves the
+      // schema presentation format rather than dropping to the raw string.
+      const block = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
+        formatOptions: { quantity: { formatSet: SECONDARY_FORMAT_SET } },
         cachedContent: "old",
       });
-      textBlock.appendRun(field);
+      block.appendRun(field);
 
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
+      await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        iModel: imodel,
+        formatSets: [{ id: SECONDARY_FORMAT_SET, formatSet: toFormatSet({}) }],
+        requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
+      });
+
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2.5");
+      // Fields.LENGTH schema presentation: 2.5 m -> "2.5 m".
+      expect(field.cachedContent).to.equal("2.5 m");
     });
 
     it("preserves prior behavior when no provider is registered", () => {
-      // (Sanity check: no provider registered -> raw string formatting as before.)
+      // Sanity check: no provider registered -> raw string formatting as before.
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -1166,8 +1116,6 @@ describe("Field evaluation", () => {
     });
 
     it("preserves prior coordinate behavior when no provider is registered", () => {
-      // Coordinate back-compat: with no provider registered the sync path routes through
-      // formatFieldValue -> formatPointBasic, matching pre-KoQ behavior.
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -1183,8 +1131,6 @@ describe("Field evaluation", () => {
     });
 
     it("preserves prior behavior on the txn callback path when no provider is registered", () => {
-      // Txn-callback back-compat: doUpdateFields must produce toString()-style output for
-      // callers who never adopt registerFieldFormattingProvider.
       const textBlock = TextBlock.create();
       const field = FieldRun.create({
         styleOverrides: { font: { name: "Karla" } },
@@ -1213,85 +1159,21 @@ describe("Field evaluation", () => {
       expect(reloadedField!.cachedContent).to.equal("2.5");
     });
 
-    it("unregisters a FormatSet registration via unregisterFieldFormattingProvider", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(PRIMARY_FORMAT_SET)).to.not.be.undefined;
+    it("registers and unregisters the provider for an iModel", async () => {
+      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.not.be.undefined;
 
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(PRIMARY_FORMAT_SET);
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(PRIMARY_FORMAT_SET)).to.be.undefined;
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.be.undefined;
     });
 
-    it("diverges from evaluateFieldsAsync for a mixed tagged/untagged block (sync is per-field; async is block-wide)", async () => {
-      // Regression pinning the intentional sync/async divergence. Sync is per-field via the
-      // formatSet registry: only fields tagged with a registered formatSet format through a
-      // provider. Async is block-wide: an injected FormatsProvider applies to every
-      // quantity/coordinate field in the block regardless of formatSet. Same TextBlock, same
-      // fields, different rendered strings on the two paths. See the "Provider scope" note on
-      // `ElementDrivesTextAnnotation.evaluateFieldsAsync`.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        formatSet: PRIMARY_FORMAT_SET,
-        provider: makeStubProvider({ format: (m) => `SYNC:${m * 1000}mm` }),
-      });
-
-      const block = TextBlock.create();
-      const taggedField = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
-        cachedContent: "old",
-      });
-      const untaggedField = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        // No formatOptions.quantity.formatSet -> sync registry lookup misses.
-        cachedContent: "old",
-      });
-      block.appendRun(taggedField);
-      block.appendRun(untaggedField);
-
-      const syncUpdated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-      expect(syncUpdated).to.equal(2);
-      // Tagged field routed through the sync provider; untagged fell back to raw toString().
-      expect(taggedField.cachedContent).to.equal("SYNC:2500mm");
-      expect(untaggedField.cachedContent).to.equal("2.5");
-
-      // Async path: same block, same fields, but a block-wide FormatsProvider that formats
-      // `Fields.LENGTH` will apply to BOTH fields regardless of formatSet tagging.
-      const asyncFormat: FormatProps = {
-        composite: { includeZero: true, units: [{ label: "cm(async)", name: "Units.CM" }] },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 0,
-        type: "Decimal",
-        uomSeparator: " ",
-      };
-      const asyncProvider: FormatsProvider = {
-        onFormatsChanged: new BeEvent(),
-        async getFormat(name) {
-          return name === "Fields.LENGTH" ? asyncFormat : undefined;
-        },
-      };
-
-      const asyncUpdated = await ElementDrivesTextAnnotation.evaluateFieldsAsync({
-        iModel: imodel,
-        block,
-        formatsProvider: asyncProvider,
-      });
-
-      expect(asyncUpdated).to.equal(2);
-      // 2.5 m -> 250 cm via the injected block-wide provider; both fields formatted the
-      // same way, because async ignores per-field formatSet routing.
-      expect(taggedField.cachedContent).to.equal("250.0 cm(async)");
-      expect(untaggedField.cachedContent).to.equal("250.0 cm(async)");
-    });
-
-    it("routes each field to the FormatSet-scoped provider identified by formatOptions.quantity.formatSet", () => {
-      // Register two providers under distinct FormatSet ids and confirm each field picks the
-      // one that matches its formatOptions.quantity.formatSet.
-      const mmProvider = makeStubProvider({ format: (m) => `${m * 1000} mm` });
-      const cmProvider = makeStubProvider({ format: (m) => `${m * 100} cm` });
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: mmProvider });
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: SECONDARY_FORMAT_SET, provider: cmProvider });
+    it("routes each field to the FormatSet identified by formatOptions.quantity.formatSet", async () => {
+      // Supply two FormatSets under distinct ids and confirm each field picks the one that
+      // matches its formatOptions.quantity.formatSet.
+      await registerSets([
+        { id: PRIMARY_FORMAT_SET, formats: { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) } },
+        { id: SECONDARY_FORMAT_SET, formats: { "Fields.LENGTH": decimalFormat("Units.CM", "cm", 2) } },
+      ]);
 
       const block = TextBlock.create();
       const primaryField = FieldRun.create({
@@ -1316,12 +1198,12 @@ describe("Field evaluation", () => {
       expect(secondaryField.cachedContent).to.equal("250 cm");
     });
 
-    it("falls back to raw string when a field's formatSet is unset", () => {
-      // With only a FormatSet-scoped provider registered, a field that omits formatSet cannot
-      // match any registration and falls through to the raw string path.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        formatSet: PRIMARY_FORMAT_SET,
-        provider: makeStubProvider(),
+    it("falls through to the adopted FormatSet when a field's formatSet is unset", async () => {
+      // A field with no formatSet routes to the adopted (default) FormatSet rather than raw.
+      await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        iModel: imodel,
+        formatSet: toFormatSet({ "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }),
+        requirements: [{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }],
       });
 
       const block = TextBlock.create();
@@ -1335,76 +1217,46 @@ describe("Field evaluation", () => {
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2.5");
+      expect(field.cachedContent).to.equal("2500 mm");
     });
 
-    it("falls back to raw string when a field's formatSet does not match any registration", () => {
-      // Register under PRIMARY; the field targets SECONDARY -> no match -> raw string.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        formatSet: PRIMARY_FORMAT_SET,
-        provider: makeStubProvider(),
-      });
-
+    it("records a miss when a field's requirement was never pre-warmed, then formats after warmUp", async () => {
       const block = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: SECONDARY_FORMAT_SET } },
         cachedContent: "old",
       });
       block.appendRun(field);
 
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+      // requirements: [] skips the sweep, so nothing is pre-warmed.
+      const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+        iModel: imodel,
+        formatSet: toFormatSet({ "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }),
+        requirements: [],
+      });
 
+      let updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
       expect(updated).to.equal(1);
+      // No spec pre-warmed -> raw fallback, and a miss recorded.
       expect(field.cachedContent).to.equal("2.5");
+      const misses = Array.from(provider.misses);
+      expect(misses.some((m) => m.name === "Fields.LENGTH" && m.persistenceUnitName === "Units.M")).to.be.true;
+
+      // Warm the missing requirement and re-evaluate; it now formats.
+      await provider.warmUp([{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }]);
+      updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+      expect(updated).to.equal(1);
+      expect(field.cachedContent).to.equal("2500 mm");
     });
 
-    it("unregisters a FormatSet-scoped registration without affecting others", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: SECONDARY_FORMAT_SET, provider: makeStubProvider() });
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(PRIMARY_FORMAT_SET)).to.not.be.undefined;
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(SECONDARY_FORMAT_SET)).to.not.be.undefined;
+    it("collectIModelFieldFormattingRequirements sweeps dependency-tracked annotations in the iModel", () => {
+      const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
+      insertAnnotationWithLengthField(sourceId);
 
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(SECONDARY_FORMAT_SET);
+      const reqs = ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements(imodel);
 
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(PRIMARY_FORMAT_SET)).to.not.be.undefined;
-      expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(SECONDARY_FORMAT_SET)).to.be.undefined;
-    });
-
-    it("routes txn-driven field updates through the registered provider", () => {
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
-
-      const textBlock = TextBlock.create();
-      const field = FieldRun.create({
-        styleOverrides: { font: { name: "Karla" } },
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
-        cachedContent: "old",
-      });
-      textBlock.appendRun(field);
-
-      // Insert the annotation and let updateFieldDependencies fire, which triggers the sync
-      // txn callback path (doUpdateFields -> updateFields -> updateField using the registered
-      // provider).
-      const annotationElementId = insertAnnotationElement(textBlock);
-      withEditTxn(imodel, (txn) => {
-        ElementDrivesTextAnnotation.updateFieldDependencies(txn, annotationElementId);
-      });
-
-      const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
-      const reloadedBlock = reloaded.getAnnotation()?.textBlock;
-      expect(reloadedBlock).to.not.be.undefined;
-      let reloadedField: FieldRun | undefined;
-      for (const { child } of traverseTextBlockComponent(reloadedBlock!)) {
-        if (child.type === "field") {
-          reloadedField = child;
-          break;
-        }
-      }
-      expect(reloadedField).to.not.be.undefined;
-      expect(reloadedField!.cachedContent).to.equal("2500 mm");
+      expect(reqs.some((r) => r.name === "Fields.LENGTH" && r.persistenceUnitName === "Units.M")).to.be.true;
     });
 
     function readFieldCachedContentById(annotationElementId: Id64String): string | undefined {
@@ -1436,13 +1288,18 @@ describe("Field evaluation", () => {
       return annotationElementId;
     }
 
-    // TODO: WIP tests
-    it("Formats persisted cachedContent when the source element is later updated", () => {
-      // Update-path counterpart to "routes txn-driven field updates through the registered
-      // provider" above (which only covers the insert path). Confirms the txn callback fired
-      // via onRootChangedArg also routes through the resolver, not just the initial
-      // updateFieldDependencies call.
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
+    it("routes txn-driven field updates through the registered provider", async () => {
+      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+
+      const annotationElementId = insertAnnotationWithLengthField(sourceElementId);
+
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
+    });
+
+    it("Formats persisted cachedContent when the source element is later updated", async () => {
+      // Update-path counterpart to the insert path above. Confirms the txn callback fired via
+      // onRootChangedArg also routes through the registered provider.
+      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
       const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
       const annotationElementId = insertAnnotationWithLengthField(sourceId);
@@ -1459,39 +1316,30 @@ describe("Field evaluation", () => {
       expect(readFieldCachedContentById(annotationElementId)).to.equal("4250 mm");
     });
 
-    it("Does not re-format existing annotations when a provider is registered after save", () => {
+    it("Does not re-format existing annotations when a provider is registered after save", async () => {
       // Contract: registering a provider does not walk existing annotations. Persisted
-      // cachedContent stays at whatever the previous save produced until the next source
-      // update, or an explicit evaluateFields[Async] + save by the caller. Hosts that need to
-      // refresh already-persisted content after a FormatSet swap must re-evaluate the
-      // affected blocks explicitly. Documented on
-      // ElementDrivesTextAnnotation.registerFieldFormattingProvider.
+      // cachedContent stays at whatever the previous save produced until the next source update.
       const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
       // No provider registered yet -> insert persists the raw fallback.
       const annotationElementId = insertAnnotationWithLengthField(sourceId);
       expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
 
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
+      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
       // Registration alone must not touch persisted content.
       expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
     });
 
-    it("Regresses persisted cachedContent to raw when the provider is unregistered before a source update", () => {
-      // Contract: once a provider is unregistered, the next txn callback rewrites
-      // cachedContent through the raw fallback, overwriting a previously-formatted value.
-      // This is the accepted trade-off for keeping cachedContent in sync with the current
-      // property value — hosts that need formatted output to survive across a provider gap
-      // must keep the provider registered for the lifetime of the annotations that depend on
-      // it. Documented on ElementDrivesTextAnnotation.unregisterFieldFormattingProvider
-      // (`### Effect on saved cachedContent`).
-      ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: PRIMARY_FORMAT_SET, provider: makeStubProvider() });
+    it("Regresses persisted cachedContent to raw when the provider is unregistered before a source update", async () => {
+      // Contract: once a provider is unregistered, the next txn callback rewrites cachedContent
+      // through the raw fallback, overwriting a previously-formatted value.
+      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
 
       const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
       const annotationElementId = insertAnnotationWithLengthField(sourceId);
       expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
 
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(PRIMARY_FORMAT_SET);
+      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
 
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.lengthProp = 3.5;
@@ -1504,25 +1352,22 @@ describe("Field evaluation", () => {
       expect(readFieldCachedContentById(annotationElementId)).to.equal("3.5");
     });
 
-    it("EvaluateFieldsAsync mutates the in-memory TextBlock but does not persist to the element on its own", async () => {
-      // Contract: evaluateFieldsAsync formats in place and returns a count. Persistence is
-      // the caller's responsibility (setAnnotation + element.update inside an EditTxn).
-      // Documented on ElementDrivesTextAnnotation.evaluateFieldsAsync and the
-      // "Quantity formatting for text annotation fields" NextVersion section.
+    it("evaluateFields mutates the in-memory TextBlock but does not persist to the element on its own", async () => {
+      // Contract: evaluateFields formats in place and returns a count. Persistence is the
+      // caller's responsibility (setAnnotation + element.update inside an EditTxn).
       const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
       const annotationElementId = insertAnnotationWithLengthField(sourceId);
       const persistedBefore = readFieldCachedContentById(annotationElementId);
       expect(persistedBefore).to.equal("2.5");
 
+      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+
       const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
       const annotation = reloaded.getAnnotation()!;
       const inMemoryBlock = annotation.textBlock;
 
-      // Whatever the async path resolves to (formatted, raw fallback, or unchanged), the
-      // persisted disk copy must be untouched — nothing between evaluateFieldsAsync and disk
-      // called `update`. Uses the default schema-backed FormatsProvider derived from
-      // args.iModel; the assertion only depends on the "no persistence" side of the contract.
-      await ElementDrivesTextAnnotation.evaluateFieldsAsync({ iModel: imodel, block: inMemoryBlock });
+      // Evaluating in memory must not touch the persisted disk copy — nothing called `update`.
+      ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: inMemoryBlock });
 
       expect(readFieldCachedContentById(annotationElementId)).to.equal(persistedBefore);
     });
