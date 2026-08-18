@@ -5,27 +5,20 @@
 
 import {
   CALLBACK_BRIDGE_GLOBAL,
-  type CallbackInvocation,
+  type CallbackRequest,
   type CallbackResponse,
-  createCallbackInvocation,
   unwrapCallbackResponse,
 } from "./protocol.js";
 
-/** The transport exposed by the Electron preload in the renderer global scope.
- * @internal
- */
-export interface BrowserCallbackTransport {
-  invoke(invocation: CallbackInvocation): Promise<CallbackResponse>;
+interface BrowserCallbackTransport {
+  invoke(request: CallbackRequest): Promise<CallbackResponse>;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-/** Find and validate the context-isolated callback transport without importing Electron.
- * @internal
- */
-export function getBrowserCallbackTransport(scope: object = globalThis): BrowserCallbackTransport {
+function getBrowserCallbackTransport(scope: object = globalThis): BrowserCallbackTransport {
   const candidate = (scope as Record<string, unknown>)[CALLBACK_BRIDGE_GLOBAL];
   if (!isRecord(candidate) || typeof candidate.invoke !== "function")
     throw new Error(`The ${CALLBACK_BRIDGE_GLOBAL} preload bridge is not available.`);
@@ -35,11 +28,13 @@ export function getBrowserCallbackTransport(scope: object = globalThis): Browser
   };
 }
 
-/** Invoke a named backend callback from a renderer test.
+/** Invoke a legacy-style named callback in the Electron main process.
+ *
+ * Certa established this as a dynamic test-hook boundary: the runtime callback name does not
+ * carry argument or result types between processes. This bridge preserves that contract while
+ * keeping transported values `unknown` rather than allowing Certa's `any` to spread into callers.
  * @internal
  */
-export async function invokeBackendCallback(name: string, args: readonly unknown[] = [], transport?: BrowserCallbackTransport): Promise<unknown> {
-  const invocation = createCallbackInvocation(name, args);
-  const response = await (transport ?? getBrowserCallbackTransport()).invoke(invocation);
-  return unwrapCallbackResponse(response);
+export async function invokeBackendCallback(name: string, ...args: unknown[]): Promise<unknown> {
+  return unwrapCallbackResponse(await getBrowserCallbackTransport().invoke({ name, args }));
 }

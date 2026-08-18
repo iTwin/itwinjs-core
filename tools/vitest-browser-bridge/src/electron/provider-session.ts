@@ -3,67 +3,41 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { app, BrowserWindow, type BrowserWindowConstructorOptions, ipcMain } from "electron";
-import * as crypto from "node:crypto";
-import * as fs from "node:fs";
+import {
+  app,
+  BrowserWindow,
+  type BrowserWindowConstructorOptions,
+  ipcMain,
+  session,
+  type Session,
+} from "electron";
 import * as path from "node:path";
 import { clearBackendCallbacks } from "../callbacks/backend.js";
+import { installElectronCallbackHandler } from "../callbacks/electron.js";
 import {
-  composeElectronPreloadSource,
-  installElectronCallbackHandler,
-} from "../callbacks/electron.js";
-
-interface ProviderSessionEnvironment {
-  readonly url: string;
-  readonly sessionId: string;
-  readonly cacheDir?: string;
-  readonly backendInitModule?: string;
-  readonly preloadModule?: string;
-  readonly headless: boolean;
-}
+  isSessionShutdownMessage,
+  parseProviderSessionConfiguration,
+  type ProviderSessionConfiguration,
+  type ProviderSessionMessage,
+  SESSION_CONFIGURATION_ENV,
+} from "./session-protocol.js";
 
 /** Create the security-sensitive BrowserWindow options used by every provider session.
  * @internal
  */
-export function createProviderWindowOptions(preload: string, headless: boolean): BrowserWindowConstructorOptions {
+export function createProviderWindowOptions(preload: string | undefined, headless: boolean): BrowserWindowConstructorOptions {
   return {
     show: !headless,
     webPreferences: {
-      preload,
+      ...(preload === undefined ? {} : { preload }),
       contextIsolation: true,
       nodeIntegration: false,
-      // Vitest runs the tester in a same-origin iframe. The preload is needed in that iframe,
-      // while node integration remains disabled in both the top frame and its subframes.
+      // Vitest runs the tester in a same-origin iframe. The consumer preload is needed in that
+      // iframe, while node integration remains disabled in both page worlds.
       nodeIntegrationInSubFrames: true,
       sandbox: false,
     },
   };
-}
-
-function readEnvironment(environment: NodeJS.ProcessEnv = process.env): ProviderSessionEnvironment {
-  const url = environment.VITEST_BROWSER_BRIDGE_URL;
-  if (typeof url !== "string" || url.length === 0)
-    throw new Error("Missing VITEST_BROWSER_BRIDGE_URL.");
-
-  return {
-    url,
-    sessionId: environment.VITEST_BROWSER_BRIDGE_SESSION_ID ?? `pid-${process.pid}`,
-    cacheDir: environment.VITEST_BROWSER_BRIDGE_CACHE_DIR,
-    backendInitModule: environment.VITEST_BROWSER_BRIDGE_BACKEND_INIT,
-    preloadModule: environment.VITEST_BROWSER_BRIDGE_PRELOAD,
-    headless: environment.VITEST_BROWSER_BRIDGE_HEADLESS !== "false",
-  };
-}
-
-function writePreloadFile(environment: ProviderSessionEnvironment, token: string): string {
-  const directory = environment.cacheDir ?? path.join(process.cwd(), ".vitest-browser-bridge");
-  fs.mkdirSync(directory, { recursive: true });
-  const preloadPath = path.join(directory, `preload-${environment.sessionId}.cjs`);
-  fs.writeFileSync(preloadPath, composeElectronPreloadSource({
-    token,
-    userPreloadModule: environment.preloadModule,
-  }), "utf8");
-  return preloadPath;
 }
 
 async function loadBackendInit(modulePath: string | undefined): Promise<void> {
@@ -82,21 +56,32 @@ async function loadBackendInit(modulePath: string | undefined): Promise<void> {
     await Promise.resolve(initializer);
 }
 
+function sendToProvider(message: ProviderSessionMessage): void {
+  try {
+    process.send?.(message, () => {});
+  } catch {
+    // The provider may already have disconnected while Electron was shutting down.
+  }
+}
+
+function exitProviderProcess(exitCode: number): void {
+  process.disconnect?.();
+  app.exit(exitCode);
+  // Electron can leave its native process alive after app.exit(); session teardown has already
+  // released the window, IPC handler, and preload registration, so terminate the main process.
+  process.kill(process.pid, "SIGTERM");
+}
+
 /** Run one provider-owned Electron main process. This function never collects or executes tests.
  * @internal
  */
-export async function runProviderSession(environment = readEnvironment()): Promise<void> {
-  const token = crypto.randomUUID();
-  if (environment.cacheDir !== undefined)
-    app.setPath("userData", path.join(environment.cacheDir, "electron-user-data"));
+export async function runProviderSession(environment: ProviderSessionConfiguration): Promise<number> {
+  app.setPath("userData", path.join(environment.cacheDir, "electron-user-data"));
 
-  await app.whenReady();
-  clearBackendCallbacks();
-  await loadBackendInit(environment.backendInitModule);
-
-  const disposeCallbacks = installElectronCallbackHandler(ipcMain, token);
-  const preload = writePreloadFile(environment, token);
-  const window = new BrowserWindow(createProviderWindowOptions(preload, environment.headless));
+  let browserSession: Session | undefined;
+  let bridgePreloadId: string | undefined;
+  let disposeCallbacks: (() => void) | undefined;
+  let window: BrowserWindow | undefined;
   let exitCode = 0;
   let settled = false;
   let resolveShutdown: (() => void) | undefined;
@@ -109,50 +94,81 @@ export async function runProviderSession(environment = readEnvironment()): Promi
     resolveShutdown?.();
   };
   const onSignal = () => finish(0);
+  const onProviderMessage = (message: unknown) => {
+    if (isSessionShutdownMessage(message))
+      finish(0);
+  };
   const onWindowClosed = () => finish(exitCode);
   const onRenderGone = (_event: Electron.Event, details: Electron.RenderProcessGoneDetails) => {
     console.error(`[vitest-browser-bridge:${environment.sessionId}] renderer exited: ${details.reason}`);
     finish(1);
   };
 
-  process.once("SIGTERM", onSignal);
-  process.once("SIGINT", onSignal);
-  window.once("closed", onWindowClosed);
-  window.webContents.once("render-process-gone", onRenderGone);
-
   try {
+    await app.whenReady();
+    clearBackendCallbacks();
+    await loadBackendInit(environment.backendInitModule);
+
+    browserSession = session.defaultSession;
+    bridgePreloadId = browserSession.registerPreloadScript({
+      type: "frame",
+      filePath: path.join(__dirname, "bridge-preload.js"),
+    });
+
+    window = new BrowserWindow(createProviderWindowOptions(environment.preloadModule, environment.headless));
+    disposeCallbacks = installElectronCallbackHandler(ipcMain, window.webContents.id);
+
+    process.once("SIGTERM", onSignal);
+    process.once("SIGINT", onSignal);
+    process.on("message", onProviderMessage);
+    window.once("closed", onWindowClosed);
+    window.webContents.once("render-process-gone", onRenderGone);
+
     await window.loadURL(environment.url);
-    console.log(`[vitest-browser-bridge:${environment.sessionId}] ready`);
+    sendToProvider({ type: "ready", sessionId: environment.sessionId });
     await new Promise<void>((resolve) => {
       resolveShutdown = resolve;
       if (settled)
         resolve();
     });
+    return exitCode;
   } finally {
     process.off("SIGTERM", onSignal);
     process.off("SIGINT", onSignal);
-    disposeCallbacks();
-    if (!window.isDestroyed())
-      window.destroy();
-    clearBackendCallbacks();
-    if (app.isReady())
-      app.exit(exitCode);
-    try {
-      fs.rmSync(preload, { force: true });
-    } catch {
-      // The cache directory is already owned by the provider for best-effort cleanup.
+    process.off("message", onProviderMessage);
+    disposeCallbacks?.();
+    if (window !== undefined) {
+      window.off("closed", onWindowClosed);
+      window.webContents.off("render-process-gone", onRenderGone);
+      if (!window.isDestroyed())
+        window.destroy();
     }
+    if (browserSession !== undefined && bridgePreloadId !== undefined)
+      browserSession.unregisterPreloadScript(bridgePreloadId);
+    clearBackendCallbacks();
   }
+}
 
-  if (exitCode !== 0)
-    throw new Error(`Electron provider session ${environment.sessionId} exited with code ${exitCode}.`);
+async function startProviderSession(): Promise<void> {
+  let environment: ProviderSessionConfiguration | undefined;
+  try {
+    environment = parseProviderSessionConfiguration(process.env[SESSION_CONFIGURATION_ENV]);
+    const exitCode = await runProviderSession(environment);
+    exitProviderProcess(exitCode);
+  } catch (error) {
+    if (environment !== undefined) {
+      sendToProvider({
+        type: "failure",
+        sessionId: environment.sessionId,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+    console.error("Electron provider session failed:", error);
+    exitProviderProcess(1);
+  }
 }
 
 // Electron evaluates the application entry with `require.main` set to its own bootstrap module,
 // so process.type is the reliable distinction from Node-side unit-test imports.
-if (process.type === "browser") {
-  runProviderSession().catch((error: unknown) => {
-    console.error("Electron provider session failed:", error);
-    app.exit(1);
-  });
-}
+if (process.type === "browser")
+  void startProviderSession();

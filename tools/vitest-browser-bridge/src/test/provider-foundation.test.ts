@@ -6,11 +6,11 @@
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
 import type { TestProject } from "vitest/node";
-import { composeElectronPreloadSource } from "../callbacks/electron.js";
 import { createElectronBrowserProviderOption, ElectronBrowserProvider } from "../electron/provider.js";
 import { createProviderWindowOptions } from "../electron/provider-session.js";
 
 const packageRoot = process.cwd();
+const failureFixture = path.join(packageRoot, "src/test/fixtures/failure-and-wait.cjs");
 const readyFixture = path.join(packageRoot, "src/test/fixtures/ready-and-wait.cjs");
 const fakeProject = {
   config: {
@@ -29,23 +29,15 @@ function createProvider(electronArgs: string[]): ElectronBrowserProvider {
 }
 
 describe("Electron provider foundation", () => {
-  it("uses secure BrowserWindow settings and propagates the Vitest iframe preload", () => {
-    const options = createProviderWindowOptions("/tmp/provider-preload.cjs", true);
+  it("uses secure BrowserWindow settings and propagates the consumer preload to Vitest's iframe", () => {
+    const options = createProviderWindowOptions("/tmp/consumer-preload.cjs", true);
     expect(options.show).toBe(false);
     expect(options.webPreferences).toMatchObject({
+      preload: "/tmp/consumer-preload.cjs",
       contextIsolation: true,
       nodeIntegration: false,
       nodeIntegrationInSubFrames: true,
     });
-  });
-
-  it("composes a consumer preload before the callback bridge", () => {
-    const source = composeElectronPreloadSource({
-      token: "session-token",
-      userPreloadModule: "/tmp/consumer-preload.cjs",
-    });
-    expect(source.indexOf("consumer-preload.cjs")).toBeLessThan(source.indexOf("contextBridge.exposeInMainWorld"));
-    expect(source).toContain("session-token");
   });
 
   it("creates a Vitest 4 provider with parallelism disabled", () => {
@@ -65,6 +57,13 @@ describe("Electron provider foundation", () => {
     }, path.join(packageRoot, "does-not-need-to-exist.js"));
     await expect(provider.openPage("early-exit", "http://127.0.0.1:1", { parallel: false }))
       .rejects.toThrow(/exited before ready/);
+    await provider.close();
+  });
+
+  it("handles an IPC disconnect while cleaning up a failed session", async () => {
+    const provider = createProvider([failureFixture]);
+    await expect(provider.openPage("startup-failure", "http://127.0.0.1:1", { parallel: false }))
+      .rejects.toThrow("fixture startup failure");
     await provider.close();
   });
 
