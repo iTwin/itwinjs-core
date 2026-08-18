@@ -7,20 +7,19 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   clearBackendCallbacks,
   dispatchBackendCallback,
-  getRegisteredBackendCallbackNames,
   registerBackendCallback,
 } from "../callbacks/backend.js";
-import {
-  createCallbackInvocation,
-  createCallbackRequest,
-} from "../callbacks/protocol.js";
 import { installElectronCallbackHandler } from "../callbacks/electron.js";
 
+interface FakeEvent {
+  readonly sender: { readonly id: number };
+}
+
 class FakeIpcMain {
-  public handler?: (event: unknown, payload: unknown) => Promise<unknown>;
+  public handler?: (event: FakeEvent, payload: unknown) => Promise<unknown>;
   public removedChannels: string[] = [];
 
-  public handle(_channel: string, listener: (event: unknown, payload: unknown) => Promise<unknown>): void {
+  public handle(_channel: string, listener: (event: FakeEvent, payload: unknown) => Promise<unknown>): void {
     this.handler = listener;
   }
 
@@ -30,26 +29,20 @@ class FakeIpcMain {
   }
 }
 
+const eventFrom = (id: number): FakeEvent => ({ sender: { id } });
+const request = (name: string, args: readonly unknown[]) => ({ name, args });
+
 describe("callback transport", () => {
   beforeEach(() => clearBackendCallbacks());
 
-  it("validates the method, name, payload, and per-run token", async () => {
+  it("validates callback names and argument payloads", async () => {
     registerBackendCallback("add", (a: number, b: number) => a + b);
-    const validRequest = createCallbackRequest("run-token", createCallbackInvocation("add", [2, 5]));
 
-    await expect(dispatchBackendCallback(validRequest, "run-token")).resolves.toEqual({ ok: true, value: 7 });
-    await expect(dispatchBackendCallback({ ...validRequest, method: "other" }, "run-token")).resolves.toMatchObject({
-      ok: false,
-      error: { message: "Invalid callback method: other." },
-    });
-    await expect(dispatchBackendCallback({ ...validRequest, args: "not-an-array" }, "run-token")).resolves.toMatchObject({
-      ok: false,
-      error: { message: "Callback arguments must be an array." },
-    });
-    await expect(dispatchBackendCallback({ ...validRequest, token: "other-token" }, "run-token")).resolves.toMatchObject({
-      ok: false,
-      error: { message: "Invalid callback token." },
-    });
+    await expect(dispatchBackendCallback(request("add", [2, 5]))).resolves.toEqual({ ok: true, value: 7 });
+    await expect(dispatchBackendCallback({ name: "add", args: "not-an-array" }))
+      .resolves.toMatchObject({ ok: false, error: { message: "Callback arguments must be an array." } });
+    await expect(dispatchBackendCallback(request("", [])))
+      .resolves.toMatchObject({ ok: false, error: { message: "Callback name must be a non-empty string." } });
   });
 
   it("serializes synchronous throws and asynchronous rejections", async () => {
@@ -60,26 +53,26 @@ describe("callback transport", () => {
       throw new Error("async failure");
     });
 
-    await expect(dispatchBackendCallback(createCallbackRequest("token", createCallbackInvocation("syncFailure", [])), "token"))
-      .resolves.toMatchObject({ ok: false, error: { message: "sync failure", name: "Error" } });
-    await expect(dispatchBackendCallback(createCallbackRequest("token", createCallbackInvocation("asyncFailure", [])), "token"))
-      .resolves.toMatchObject({ ok: false, error: { message: "async failure", name: "Error" } });
+    await expect(dispatchBackendCallback(request("syncFailure", [])))
+      .resolves.toMatchObject({ ok: false, error: { message: "sync failure" } });
+    await expect(dispatchBackendCallback(request("asyncFailure", [])))
+      .resolves.toMatchObject({ ok: false, error: { message: "async failure" } });
   });
 
-  it("clears callbacks and removes the IPC handler during teardown", async () => {
+  it("accepts only the provider-owned WebContents and removes its handler", async () => {
     const ipcMain = new FakeIpcMain();
     registerBackendCallback("echo", (value: string) => value);
-    const dispose = installElectronCallbackHandler(ipcMain, "token");
+    const dispose = installElectronCallbackHandler(ipcMain, 42);
     const handler = ipcMain.handler;
 
-    await expect(handler?.({}, createCallbackRequest("token", createCallbackInvocation("echo", ["before teardown"]))))
-      .resolves.toEqual({ ok: true, value: "before teardown" });
-    dispose();
-    dispose();
+    await expect(handler?.(eventFrom(42), request("echo", ["from provider"])))
+      .resolves.toEqual({ ok: true, value: "from provider" });
+    await expect(handler?.(eventFrom(7), request("echo", ["from another window"])))
+      .rejects.toThrow("unexpected Electron WebContents");
 
+    dispose();
+    dispose();
     expect(ipcMain.removedChannels).toEqual(["vitest-browser-bridge:callback"]);
-    expect(getRegisteredBackendCallbackNames()).toEqual([]);
-    await expect(handler?.({}, createCallbackRequest("token", createCallbackInvocation("echo", ["after teardown"]))))
-      .resolves.toMatchObject({ ok: false, error: { message: 'Unknown backend callback "echo".' } });
+    expect(ipcMain.handler).toBeUndefined();
   });
 });
