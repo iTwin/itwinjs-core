@@ -1993,7 +1993,18 @@ export interface CreateSheetViewDefinitionArgs {
 }
 
 // @beta
-export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number, isArrow?: boolean): boolean;
+export function createTerminatorGeometry(args: CreateTerminatorGeometryArgs): boolean;
+
+// @beta
+export interface CreateTerminatorGeometryArgs {
+    builder: ElementGeometry.Builder;
+    dir: Vector3d;
+    isArrow?: boolean;
+    params: GeometryParams;
+    point: Point3d;
+    textHeight: number;
+    textStyleSettings: TextStyleSettings;
+}
 
 // @beta
 export interface CustomHandledProperty {

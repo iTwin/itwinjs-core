@@ -121,13 +121,13 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
       if (leaderStyle.leader.terminatorShape !== "none" && leaderStyle.leader.showTerminators) {
         // Terminator geometry
         if (!terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
-        result = result && createTerminatorGeometry(builder, leaderStartPoint, terminatorDirection, params, leaderStyle, scaledBlockTextHeight);
+        result = result && createTerminatorGeometry({ builder, point: leaderStartPoint, dir: terminatorDirection, params, textStyleSettings: leaderStyle, textHeight: scaledBlockTextHeight });
 
       }
     }
 
     if (leaderStyle.leader.showTargetPoint) {
-      result = result && createTerminatorGeometry(builder, leader.startPoint, Vector3d.unitX(), params, leaderStyle, scaledBlockTextHeight, false);
+      result = result && createTerminatorGeometry({ builder, point: leader.startPoint, dir: Vector3d.unitX(), params, textStyleSettings: leaderStyle, textHeight: scaledBlockTextHeight, isArrow: false });
     }
 
   }
@@ -135,17 +135,35 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 }
 
 /**
+ * Arguments supplied to [[createTerminatorGeometry]].
+ * @beta
+ */
+export interface CreateTerminatorGeometryArgs {
+  /** The geometry builder to append the terminator geometry to. */
+  builder: ElementGeometry.Builder;
+  /** The point at which the terminator is placed - typically the start or end of a leader line. */
+  point: Point3d;
+  /** The direction vector of the leader line. */
+  dir: Vector3d;
+  /** The geometry parameters to use for the terminator. */
+  params: GeometryParams;
+  /** The text style settings describing the terminator's shape and dimensions. */
+  textStyleSettings: TextStyleSettings;
+  /** The height of the text block, used to scale the terminator's dimensions. */
+  textHeight: number;
+  /** If `true` (the default), the leader's terminator shape is used; otherwise the target-point shape is used. */
+  isArrow?: boolean;
+}
+
+/**
  * Creates the geometry for a terminator at the end of a leader line.
- * @param builder The geometry builder to append the terminator geometry to.
- * @param point The starting point of the leader line.
- * @param dir The direction vector of the leader line.
- * @param params The geometry parameters to use for the terminator.
- * @param textStyleSettings The text style settings to use for the terminator.
- * @param textHeight The height of the text block.
+ * @param args Describes the terminator geometry to create. See [[CreateTerminatorGeometryArgs]].
  * @returns True if the geometry was successfully created, false otherwise.
  * @beta
  */
-export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number, isArrow = true): boolean {
+export function createTerminatorGeometry(args: CreateTerminatorGeometryArgs): boolean {
+  const { builder, point, dir, params, textStyleSettings, textHeight } = args;
+  const isArrow = args.isArrow ?? true;
 
   let result = true;
   const termY = dir.unitCrossProduct(Vector3d.unitZ());
