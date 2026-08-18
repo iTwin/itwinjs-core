@@ -18,6 +18,7 @@ import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
+import { BeUnorderedUiEvent } from '@itwin/core-bentley';
 import { BinaryImageSource } from '@itwin/core-common';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseConnectionProps } from '@itwin/core-common';
@@ -114,8 +115,11 @@ import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
+import { FormatSet } from '@itwin/ecschema-metadata';
 import { FormatsProvider } from '@itwin/core-quantity';
+import { FormatterSpec } from '@itwin/core-quantity';
 import { FormattingSpecArgs } from '@itwin/core-quantity';
+import { FormattingSpecEntry } from '@itwin/core-quantity';
 import { FormattingSpecProvider } from '@itwin/core-quantity';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
@@ -306,6 +310,7 @@ import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
 import { TypeDefinitionElementProps } from '@itwin/core-common';
 import { UnitsProvider } from '@itwin/core-quantity';
+import { UnitSystemKey } from '@itwin/core-quantity';
 import { UpgradeOptions } from '@itwin/core-common';
 import { UrlLinkProps } from '@itwin/core-common';
 import { Vector3d } from '@itwin/core-geometry';
@@ -1950,6 +1955,17 @@ export interface CreateChangeSummaryArgs extends TokenArg {
     range: ChangesetRange;
 }
 
+// @beta
+export function createFieldFormattingSpecProvider(args: CreateFieldFormattingSpecProviderArgs): FieldFormattingSpecProvider;
+
+// @beta
+export interface CreateFieldFormattingSpecProviderArgs {
+    formatsProvider?: FormatsProvider;
+    iModel: IModelDb;
+    unitsProvider?: UnitsProvider;
+    unitSystem?: UnitSystemKey;
+}
+
 // @alpha
 export interface CreateFontFileFromRscBlobArgs {
     blob: Uint8Array;
@@ -3006,13 +3022,13 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static get className(): string;
     static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[];
     static evaluateFields(args: EvaluateFieldsArgs): number;
-    static evaluateFieldsAsync(args: EvaluateFieldsAsyncArgs): Promise<number>;
     static getFieldFormattingProvider(formatSet: Id64String): FormattingSpecProvider | undefined;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
+    static prepareFieldFormatting(args: PrepareFieldFormattingArgs): Promise<FieldFormattingSpecProvider>;
     static registerFieldFormattingProvider(args: {
         formatSet: Id64String;
         provider: FormattingSpecProvider;
@@ -3303,12 +3319,6 @@ export interface EvaluateFieldsArgs {
     iModel: IModelDb;
 }
 
-// @beta
-export interface EvaluateFieldsAsyncArgs extends EvaluateFieldsArgs {
-    formatsProvider?: FormatsProvider;
-    unitsProvider?: UnitsProvider;
-}
-
 // @public
 export namespace ExportGraphics {
     export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean;
@@ -3571,6 +3581,20 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @beta
+export class FieldFormattingSpecProvider implements FormattingSpecProvider {
+    // @internal
+    constructor(iModel: IModelDb, formatsProvider: FormatsProvider, unitsProvider: UnitsProvider);
+    clear(): void;
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    readonly formatsProvider: FormatsProvider;
+    getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
+    readonly onFormattingReady: BeUnorderedUiEvent<void>;
+    readonly unitsProvider: UnitsProvider;
+    warm(requirements: Iterable<FormattingSpecArgs>): Promise<number>;
+    warmForBlock(block: TextBlock): Promise<number>;
 }
 
 // @public @deprecated
@@ -5855,6 +5879,13 @@ export interface PreImportContext<T = any> {
     data?: T;
     iModel: IModelDb;
     schemaData: LocalFileName[] | string[];
+}
+
+// @beta
+export interface PrepareFieldFormattingArgs extends EvaluateFieldsArgs {
+    formatSet: Id64String;
+    formatSetDefinition?: FormatSet;
+    unitSystem?: UnitSystemKey;
 }
 
 // @internal

@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./annotations/ElementDrivesTextAnnotation";
+export * from "./annotations/FieldFormattingSpecProvider";
 export * from "./annotations/FrameGeometry";
 export * from "./annotations/LeaderGeometry";
 export * from "./annotations/TextAnnotationElement";
