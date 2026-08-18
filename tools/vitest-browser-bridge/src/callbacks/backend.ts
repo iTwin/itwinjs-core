@@ -32,6 +32,10 @@ function getState(): BackendCallbackState {
 }
 
 /** Register one explicitly named test callback in the current backend process.
+ *
+ * This intentionally retains Certa's dynamic, name-based callback model for migration
+ * compatibility. Argument types help the registration site, but are erased at the process
+ * boundary because a runtime callback name cannot establish their types for the renderer.
  * @internal
  */
 export function registerBackendCallback<Arguments extends readonly unknown[]>(name: string, callback: (...args: Arguments) => unknown): void {
