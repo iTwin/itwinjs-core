@@ -4,61 +4,35 @@
 *--------------------------------------------------------------------------------------------*/
 
 /*
- * Demonstrates a Drawing-Production-style integration of an app-owned
- * [FormattingSpecProvider]($core-quantity) with the FieldRun formatting pathways
- * exposed by `@itwin/core-backend`.
+ * Demonstrates a Drawing-Production-style integration of an app-owned [FormatSet]($ecschema-metadata)
+ * with the FieldRun formatting pathway exposed by `@itwin/core-backend`.
  *
  * The keyin `dta text demo <on|off>` toggles this integration for the current iModel
  * (see `TextDecoration.ts` and the `enable`/`disableFieldFormattingDemo` IPC methods on
  * [[DtaIpcInterface]]):
- *   1. `dta text demo on` registers [[FieldFormattingDemoProvider]]. `dta text demo off`
- *      unregisters.
- *   2. Fields whose `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID`
- *      (`"0xDEMO"`) format through the demo provider on the sync (txn callback) path. When
- *      enabled:
- *      - `TextImpl.insertText` / `updateText` call [[FieldFormattingDemoProvider.prepareForBlock]]
- *        before writing the annotation, so the [FormatterSpec]($core-quantity)s required by
- *        any [FieldRun]($common)s in the block are hot before the txn commits.
- *      - The provider is registered against the iModel via
- *        [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), so the txn
- *        callback path that recomputes field content synchronously routes tagged fields
- *        through the provider.
- *      - `Backend.generateTextAnnotationGeometry` passes the same underlying
- *        [FormatsProvider]($core-quantity) and [UnitsProvider]($core-quantity) to
- *        [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) so the async pathway
- *        used to render dynamic geometry also uses the demo formats.
+ *   1. `dta text demo on` adopts [[DEMO_FORMAT_SET]] for the iModel via
+ *      [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), which
+ *      asynchronously pre-warms a [FormatterSpec]($core-quantity) for every
+ *      [FieldRun]($common) requirement it can find. `dta text demo off` unregisters.
+ *   2. Thereafter every `"quantity"` / `"coordinate"` FieldRun in the iModel formats through
+ *      the demo formats **synchronously**, including on the txn-callback path that recomputes
+ *      cached content when a source element changes.
+ *   3. `TextImpl.insertText` / `updateText` and `Backend.generateTextAnnotationGeometry` warm
+ *      the provider for the block they are about to handle, so fields authored in this session
+ *      are hot before the txn commits.
  *
- * The two paths do **not** produce identical output for arbitrary blocks: the sync path is
- * `formatSet`-scoped and only formats fields tagged with `DEMO_FORMAT_SET_ID`, while the
- * async path applies the injected providers block-wide (see
- * [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) JSDoc). A block that mixes
- * tagged and untagged fields will diverge; a block whose fields are all tagged
- * (the typical DTA authoring flow) sees the same demo output on both paths.
+ * Because there is a single, synchronous evaluation path, all three entry points render
+ * identical strings for a given block.
  *
- * This is intentionally minimal - it exists to exercise the new pathways from DTA, not to
- * be a production-quality implementation.
+ * This is intentionally minimal - it exists to exercise the pathway from DTA, not to be a
+ * production-quality implementation.
  */
 
-import { ElementDrivesTextAnnotation, IModelDb } from "@itwin/core-backend";
+import { ElementDrivesTextAnnotation, FieldFormattingSpecProvider, IModelDb } from "@itwin/core-backend";
 import { TextBlock } from "@itwin/core-common";
-import { createUnitsProvider, Format, FormatProps, FormatsProvider, FormatterSpec, FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParserSpec, UnitsProvider } from "@itwin/core-quantity";
-import { BeEvent, BeUnorderedUiEvent, Id64String } from "@itwin/core-bentley";
-import { SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { FormatProps, FormattingSpecArgs } from "@itwin/core-quantity";
+import { FormatSet } from "@itwin/ecschema-metadata";
 
-/** [Id64String]($bentley) used by the DTA demo to register its provider. Fields whose
- * `formatOptions.quantity.formatSet` equals this id route through the demo provider (when
- * enabled via [[enableFieldFormattingDemo]]).
- */
-export const DEMO_FORMAT_SET_ID: Id64String = "0xDEMO";
-
-/** A small set of pre-canned length [FormatProps]($core-quantity) that the demo provider
- * seeds itself with. They are keyed by names in the `Demo.*` namespace so they don't collide
- * with real KoQs and are usable as `kindOfQuantity` overrides from an authoring flow (e.g.
- * `dta text field '{...formatOptions: {quantity: {kindOfQuantity: "Demo.LENGTH_MM", persistenceUnit: "Units.M"}}}'`).
- *
- * Each seed prefixes its unit label with a distinct emoji so you can visually confirm which
- * seed formatted the value at a glance.
- */
 export const DEMO_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
   "Demo.LENGTH_M": {
     formatTraits: ["keepSingleZero", "showUnitLabel"],
@@ -198,7 +172,7 @@ export const DEMO_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
 
 /** Persistence unit each seed in [[DEMO_SEED_FORMATS]] expects to be compiled against.
  * Seeds not listed here default to the `defaultPersistenceUnitName` passed to
- * [[FieldFormattingDemoProvider.preloadSeeds]] (`Units.M`). Required for any seed whose
+ * [[demoSeedRequirements]] (`Units.M`). Required for any seed whose
  * composite unit belongs to a phenomenon other than LENGTH.
  */
 const DEMO_SEED_PERSISTENCE_UNITS: { readonly [name: string]: string } = {
@@ -212,153 +186,68 @@ const DEMO_SEED_PERSISTENCE_UNITS: { readonly [name: string]: string } = {
   "Demo.SLOPE_HORIZONTAL_PER_VERTICAL": "Units.M_PER_M",
 };
 
-/** [FormatsProvider]($core-quantity) wrapper that overlays [[DEMO_SEED_FORMATS]] on top of an
- * underlying (schema-backed) provider. The seed table wins so `Demo.*` keys resolve without
- * requiring a schema, and marker-tagged formats consistently show up in DTA even when the
- * iModel has no matching KoQ.
+/** The [FormatSet]($ecschema-metadata) adopted by the demo. Registering it makes every
+ * `Demo.*` key above resolvable as a `kindOfQuantity` override, and overrides any real KoQ
+ * that shares a name (see `AecUnits.LENGTH_SHORT`). Keys the set does not define fall through
+ * to the iModel's own schema formats.
  */
-class DemoOverlayFormatsProvider implements FormatsProvider {
-  public readonly onFormatsChanged = new BeEvent<(args: { formatsChanged: string[] | "all" }) => void>();
+export const DEMO_FORMAT_SET: FormatSet = {
+  name: "dta-field-formatting-demo",
+  label: "DTA Field Formatting Demo",
+  unitSystem: "metric",
+  formats: DEMO_SEED_FORMATS,
+};
 
-  public constructor(private readonly _inner: FormatsProvider) {}
-
-  public async getFormat(name: string): Promise<FormatProps | undefined> {
-    if (DEMO_SEED_FORMATS[name]) {
-      return DEMO_SEED_FORMATS[name];
-    }
-    return this._inner.getFormat(name);
-  }
+/** Every [[DEMO_FORMAT_SET]] entry paired with the persistence unit it must be compiled
+ * against, so the demo formats are usable as `kindOfQuantity` overrides even for properties
+ * the iModel has never seen.
+ */
+function demoSeedRequirements(defaultPersistenceUnitName: string = "Units.M"): FormattingSpecArgs[] {
+  return Object.keys(DEMO_SEED_FORMATS).map((name) => ({
+    name,
+    persistenceUnitName: DEMO_SEED_PERSISTENCE_UNITS[name] ?? defaultPersistenceUnitName,
+  }));
 }
 
-/** Minimal `FormattingSpecProvider` implementation that lazily prepares specs on demand
- * from an underlying [FormatsProvider]($core-quantity) / [UnitsProvider]($core-quantity).
- *
- * If the underlying `FormatsProvider` cannot resolve a requested name, the provider falls
- * back to the [[DEMO_SEED_FORMATS]] table so testing scenarios work even when the iModel's
- * schema context has no matching KoQ.
- */
-export class FieldFormattingDemoProvider implements FormattingSpecProvider {
-  public readonly onFormattingReady = new BeUnorderedUiEvent<void>();
-  public readonly formatsProvider: FormatsProvider;
-  public readonly unitsProvider: UnitsProvider;
-  private readonly _specs = new Map<string, FormattingSpecEntry>();
-
-  public constructor(iModel: IModelDb) {
-    this.formatsProvider = new DemoOverlayFormatsProvider(new SchemaFormatsProvider(iModel.schemaContext, "metric"));
-    this.unitsProvider = createUnitsProvider({ primary: new SchemaUnitProvider(iModel.schemaContext) });
-  }
-
-  private static keyOf(args: { name: string; persistenceUnitName: string }): string {
-    return `${args.name}|${args.persistenceUnitName}`;
-  }
-
-  /** Populate specs required by the [FieldRun]($common)s in `block` so that subsequent
-   * [[getSpecsByNameAndUnit]] calls (from the sync txn callback path) hit the cache.
-   */
-  public async prepareForBlock(iModel: IModelDb, block: TextBlock): Promise<void> {
-    const requirements = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block });
-    await this.prepareForRequirements(requirements);
-  }
-
-  /** Preload every entry in [[DEMO_SEED_FORMATS]] against the given persistence unit
-   * (`Units.M` by default). Called automatically when the demo provider is registered.
-   * Seeds whose composite unit belongs to a non-LENGTH phenomenon use the persistence
-   * unit declared in [[DEMO_SEED_PERSISTENCE_UNITS]] instead of `defaultPersistenceUnitName`.
-   */
-  public async preloadSeeds(defaultPersistenceUnitName: string = "Units.M"): Promise<void> {
-    const requirements: FormattingSpecArgs[] = Object.keys(DEMO_SEED_FORMATS).map((name) => ({
-      name,
-      persistenceUnitName: DEMO_SEED_PERSISTENCE_UNITS[name] ?? defaultPersistenceUnitName,
-    }));
-    await this.prepareForRequirements(requirements);
-  }
-
-  public async prepareForRequirements(requirements: FormattingSpecArgs[]): Promise<void> {
-    const added: string[] = [];
-    for (const req of requirements) {
-      const key = FieldFormattingDemoProvider.keyOf(req);
-      if (this._specs.has(key)) {
-        continue;
-      }
-      const entry = await this.buildEntry(req);
-      if (entry) {
-        this._specs.set(key, entry);
-        added.push(key);
-      }
-    }
-    if (added.length > 0) {
-      this.onFormattingReady.raiseEvent();
-    }
-  }
-
-  private async buildEntry(req: FormattingSpecArgs): Promise<FormattingSpecEntry | undefined> {
-    // 1. Try the underlying (schema-backed) FormatsProvider.
-    let formatProps: FormatProps | undefined = await this.formatsProvider.getFormat(req.name);
-
-    // 2. Fall back to the seed table so demo-only keys (Demo.*) resolve without a schema.
-    if (!formatProps) {
-      formatProps = DEMO_SEED_FORMATS[req.name];
-    }
-
-    if (!formatProps) {
-      return undefined;
-    }
-
-    const format = await Format.createFromJSON("dtaField", this.unitsProvider, formatProps);
-
-    let persistenceUnit;
-    try {
-      persistenceUnit = await this.unitsProvider.findUnitByName(req.persistenceUnitName);
-    } catch {
-      return undefined;
-    }
-
-    const formatterSpec = await FormatterSpec.create("dtaField", format, this.unitsProvider, persistenceUnit);
-    const parserSpec = await ParserSpec.create(format, this.unitsProvider, persistenceUnit);
-    return { formatterSpec, parserSpec };
-  }
-
-  public getSpecsByNameAndUnit(args: { name: string; persistenceUnitName: string }): FormattingSpecEntry | undefined {
-    return this._specs.get(FieldFormattingDemoProvider.keyOf(args));
-  }
-
-  public formatQuantity(magnitude: number, spec: FormatterSpec): string {
-    return spec.applyFormatting(magnitude);
-  }
-}
-
-let currentDemo: FieldFormattingDemoProvider | undefined;
+let currentDemo: FieldFormattingSpecProvider | undefined;
+let currentDemoIModel: IModelDb | undefined;
 let currentDemoCloseUnsubscribe: (() => void) | undefined;
 
-/** Returns the currently-registered demo provider, if any. */
-export function getFieldFormattingDemo(): FieldFormattingDemoProvider | undefined {
+/** Returns the provider registered by [[enableFieldFormattingDemo]], if any. */
+export function getFieldFormattingDemo(): FieldFormattingSpecProvider | undefined {
   return currentDemo;
 }
 
-/** Registers a fresh [[FieldFormattingDemoProvider]] under [[DEMO_FORMAT_SET_ID]] for
- * `iModel`, so `"quantity"` and `"coordinate"` fields whose
- * `formatOptions.quantity.formatSet` equals `DEMO_FORMAT_SET_ID` format through the demo
- * provider on both the sync and async paths. Toggled by the `dta text demo <on|off>`
- * keyin.
+/** Warms the demo provider for the [FieldRun]($common)s in `block`, so the synchronous
+ * evaluation that follows finds every spec it needs in cache. A no-op when the demo is off.
+ */
+export async function prepareFieldFormattingDemoFor(iModel: IModelDb, block: TextBlock): Promise<void> {
+  if (!currentDemo)
+    return;
+
+  await currentDemo.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }));
+}
+
+/** Adopts [[DEMO_FORMAT_SET]] for `iModel`, pre-warming both the demo seeds and every field
+ * requirement already persisted in the iModel. Toggled by the `dta text demo <on|off>` keyin.
  *
- * Follows the canonical lifetime pattern documented on
- * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend): the
- * registration is torn down automatically when `iModel` closes (via
- * [IModelDb.onBeforeClose]($backend)) so a subsequent iModel carrying the same FormatSet id
- * cannot silently pick up this provider.
+ * The registration is torn down automatically when `iModel` closes (via
+ * [IModelDb.onBeforeClose]($backend)) so it cannot outlive the briefcase it was warmed against.
  */
 export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void> {
   // Re-entrancy: tear down any prior registration and its onBeforeClose subscription first
   // so we never leak a listener if the keyin is invoked twice or across iModels.
   disableFieldFormattingDemo();
 
-  const provider = new FieldFormattingDemoProvider(iModel);
-  await provider.preloadSeeds();
-  ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-    formatSet: DEMO_FORMAT_SET_ID,
-    provider,
+  currentDemo = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+    iModel,
+    formatSet: DEMO_FORMAT_SET,
+    requirements: [
+      ...demoSeedRequirements(),
+      ...ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements(iModel),
+    ],
   });
-  currentDemo = provider;
+  currentDemoIModel = iModel;
   currentDemoCloseUnsubscribe = iModel.onBeforeClose.addOnce(() => disableFieldFormattingDemo());
 }
 
@@ -371,6 +260,9 @@ export function disableFieldFormattingDemo(): void {
     currentDemoCloseUnsubscribe();
     currentDemoCloseUnsubscribe = undefined;
   }
-  ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(DEMO_FORMAT_SET_ID);
+  if (currentDemoIModel) {
+    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(currentDemoIModel);
+    currentDemoIModel = undefined;
+  }
   currentDemo = undefined;
 }

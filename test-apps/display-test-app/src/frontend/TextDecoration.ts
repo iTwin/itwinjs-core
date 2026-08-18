@@ -342,7 +342,7 @@ export class TextDecorationTool extends Tool {
     ["debug", "Toggle drawing of the anchor point and range."],
     ["delete <annotationId>", "Delete the given annotation element."],
     ["deletestyle <name>", "Delete a text style by name."],
-    ["demo <on|off>", "Register/unregister the DTA FieldFormattingDemoProvider under DEMO_FORMAT_SET_ID for the current iModel."],
+    ["demo <on|off>", "Adopt/unadopt the DTA demo FormatSet for the current iModel."],
     ["docheight <n>", "Set document text height."],
     ["export <path>", "Write the current text block to <path> as JSON."],
     ["field <fieldPropsJson>", "Append a field run. JSON with elementId, schemaName, className, propertyName, and optional formatOptions. Use single quotes instead of double quotes in the JSON."],
@@ -762,7 +762,7 @@ export class TextDecorationTool extends Tool {
           throw new Error("Expected on or off");
         }
         // eslint-disable-next-line no-console
-        console.log(`FieldFormattingDemoProvider ${arg === "off" ? "unregistered" : "registered"} for iModel ${vp.iModel.key}`);
+        console.log(`DTA demo FormatSet ${arg === "off" ? "unregistered" : "registered"} for iModel ${vp.iModel.key}`);
         return true;
       }
       case "list": { // args are enumerator, terminator, case, index

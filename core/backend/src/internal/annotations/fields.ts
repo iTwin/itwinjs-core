@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { collectFieldQuantityPairs, FieldFormatterContext, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { collectFieldQuantityPairs, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
-import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { createUnitsProvider, FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
+import { ElementDrivesTextAnnotation, isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { FormattingSpecArgs } from "@itwin/core-quantity";
+import type { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -64,15 +65,14 @@ export interface UpdateFieldsContext {
 
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Sync registry used by [[updateField]] to route `"quantity"` and `"coordinate"` values
-   * through a [FormattingSpecProvider]($core-quantity) registered under the field's
-   * [QuantityFieldFormatOptions.formatSet]($common). A missing entry (or an absent map)
-   * leaves the field on the raw-string fallback via [[formatFieldValue]].
-   *
-   * [[updateFieldAsync]] deliberately ignores this map — the async path formats through the
-   * injected [[FieldFormatterContext]] instead.
+  /** Resolves `"quantity"` and `"coordinate"` values through pre-warmed
+   * [FormatterSpec]($core-quantity)s. [[updateField]] narrows this to the bucket matching the
+   * field's [QuantityFieldFormatOptions.formatSet]($common); a requirement that was never
+   * pre-warmed — or an absent provider entirely — leaves the field on the raw-string fallback
+   * via [[formatFieldValue]] and is recorded in
+   * [FieldFormattingSpecProvider.misses]($backend).
    */
-  readonly formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>;
+  readonly formattingSpecProvider?: FieldFormattingSpecProvider;
 }
 
 // Resolves the property a field points at into a [[FieldValue]] — primitive value plus, for
@@ -338,29 +338,12 @@ export function createUpdateContext(
   hostElementId: string | undefined,
   iModel: IModelDb,
   deleted: boolean,
-  formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>,
+  formattingSpecProvider?: FieldFormattingSpecProvider,
 ): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
-    formattingSpecProviders,
-  };
-}
-
-/** Builds a [[FieldFormatterContext]] backed by `iModel`'s schema context. The default
- * [FormatsProvider]($core-quantity) is locked to the `"metric"` unit system; callers needing a
- * different system (or app-owned formatting) must supply their own `formatsProvider`.
- * @internal
- */
-export function createFieldFormatterContext(
-  iModel: IModelDb,
-  overrides?: { formatsProvider?: FormatsProvider; unitsProvider?: UnitsProvider },
-): FieldFormatterContext {
-  const unitsProvider = overrides?.unitsProvider ?? createUnitsProvider({ primary: new SchemaUnitProvider(iModel.schemaContext) });
-  const formatsProvider = overrides?.formatsProvider ?? new SchemaFormatsProvider(iModel.schemaContext, "metric");
-  return {
-    unitsProvider,
-    formatsProvider,
+    formattingSpecProvider,
   };
 }
 
@@ -381,42 +364,18 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 
   let newContent: string | undefined;
   if (undefined !== propValue) {
-    const formatSet = field.formatOptions?.quantity?.formatSet;
-    const provider = formatSet ? context.formattingSpecProviders?.get(formatSet) : undefined;
-    newContent = provider
-      ? formatFieldValueWithSpecProvider(propValue, field.formatOptions, provider)
-      : formatFieldValue(propValue, field.formatOptions);
-  }
-
-  newContent = newContent ?? FieldRun.invalidContentIndicator;
-  if (newContent === field.cachedContent) {
-    return false;
-  }
-
-  field.setCachedContent(newContent);
-  return true;
-}
-
-/** Async counterpart to [[updateField]] that routes `"quantity"` and `"coordinate"` values
- * through [[formatFieldValueAsync]] and the injected `formatter`. Returns true iff
- * cachedContent changed.
- * @note `context.formattingSpecProviders` is deliberately ignored — the sync per-field
- * provider registry does not apply on the async path; use `formatter` to inject app-owned
- * formatting.
- */
-export async function updateFieldAsync(field: FieldRun, context: UpdateFieldsContext, formatter: FieldFormatterContext): Promise<boolean> {
-  if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
-    return false;
-  }
-
-  let newContent: string | undefined;
-  try {
-    const propValue = context.getProperty(field);
-    if (undefined !== propValue) {
-      newContent = await formatFieldValueAsync(propValue, field.formatOptions, formatter);
+    const specProvider = context.formattingSpecProvider;
+    if (specProvider) {
+      const formatSet = field.formatOptions?.quantity?.formatSet;
+      newContent = formatFieldValueWithSpecProvider(
+        propValue,
+        field.formatOptions,
+        specProvider.getProviderFor(formatSet),
+        (candidates) => specProvider.recordMisses(candidates, formatSet),
+      );
+    } else {
+      newContent = formatFieldValue(propValue, field.formatOptions);
     }
-  } catch (err) {
-    Logger.logError(BackendLoggerCategory.IModelDb, err);
   }
 
   newContent = newContent ?? FieldRun.invalidContentIndicator;
@@ -427,6 +386,7 @@ export async function updateFieldAsync(field: FieldRun, context: UpdateFieldsCon
   field.setCachedContent(newContent);
   return true;
 }
+
 
 /** Re-evaluates every [FieldRun]($common) in `textBlock` synchronously and returns the number
  * whose cached display string changed. Fields targeting an element other than
@@ -443,26 +403,12 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
-/** Async counterpart to [[updateFields]]. See [[updateFieldAsync]] for how `"quantity"` and
- * `"coordinate"` values route through `formatter`.
- */
-export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFieldsContext, formatter: FieldFormatterContext): Promise<number> {
-  let numUpdated = 0;
-  for (const { child } of traverseTextBlockComponent(textBlock)) {
-    if (child.type === "field" && await updateFieldAsync(child, context, formatter)) {
-      ++numUpdated;
-    }
-  }
-
-  return numUpdated;
-}
-
-function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, formattingSpecProviders: ReadonlyMap<Id64String, FormattingSpecProvider> | undefined): void {
+function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean, formattingSpecProvider: FieldFormattingSpecProvider | undefined): void {
   const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(sourceId, iModel, deleted, formattingSpecProviders);
+      const context = createUpdateContext(sourceId, iModel, deleted, formattingSpecProvider);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {
@@ -484,16 +430,16 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
  * change (`deleted=false`) or delete (`deleted=true`). Invoked from
  * [[ElementDrivesTextAnnotation.onRootChangedArg]] / `onDeletedDependencyArg`.
  */
-export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>): void {
-  doUpdateFields(txn, props.targetId, props.sourceId, deleted, formattingSpecProviders);
+export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, formattingSpecProvider?: FieldFormattingSpecProvider): void {
+  doUpdateFields(txn, props.targetId, props.sourceId, deleted, formattingSpecProvider);
 }
 
 /** Re-evaluates every field of the given annotation element against its current property
  * values. Invoked from [[ElementDrivesTextAnnotation.updateFieldDependencies]] when
  * establishing / refreshing relationships.
  */
-export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>): void {
-  doUpdateFields(txn, annotationElementId, undefined, false, formattingSpecProviders);
+export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, formattingSpecProvider?: FieldFormattingSpecProvider): void {
+  doUpdateFields(txn, annotationElementId, undefined, false, formattingSpecProvider);
 }
 
 /** Resolves a [FieldRun]($common)'s target to its terminal [Property]($ecschema-metadata)
@@ -591,6 +537,11 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
  */
 export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel: IModelDb): FormattingSpecArgs[] {
   const seen = new Map<string, FormattingSpecArgs>();
+  collectInto(seen, textBlock, iModel);
+  return Array.from(seen.values());
+}
+
+function collectInto(seen: Map<string, FormattingSpecArgs>, textBlock: TextBlock, iModel: IModelDb): void {
   for (const { child } of traverseTextBlockComponent(textBlock)) {
     if (child.type !== "field") {
       continue;
@@ -602,5 +553,41 @@ export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel:
       }
     }
   }
+}
+
+/** Aggregates the formatting requirements of every dependency-tracked annotation in `iModel` —
+ * i.e. every target of a `BisCore.ElementDrivesTextAnnotation` relationship. Used to pre-warm a
+ * [[FieldFormattingSpecProvider]] at registration time so the synchronous evaluation paths find
+ * a cache hit. See [[ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements]].
+ * @internal
+ */
+export function collectIModelFieldFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[] {
+  const seen = new Map<string, FormattingSpecArgs>();
+  if (!ElementDrivesTextAnnotation.isSupportedForIModel(iModel)) {
+    return [];
+  }
+
+  const annotationIds: Id64String[] = [];
+  iModel.withQueryReader("SELECT DISTINCT TargetECInstanceId FROM BisCore.ElementDrivesTextAnnotation", (reader) => {
+    for (const row of reader) {
+      annotationIds.push(row[0]);
+    }
+  });
+
+  for (const annotationId of annotationIds) {
+    try {
+      const element = iModel.elements.tryGetElement(annotationId);
+      if (!element || !isITextAnnotation(element)) {
+        continue;
+      }
+      for (const block of element.getTextBlocks()) {
+        collectInto(seen, block.textBlock, iModel);
+      }
+    } catch (err) {
+      // One unreadable annotation must not abort the sweep.
+      Logger.logError(BackendLoggerCategory.IModelDb, err);
+    }
+  }
+
   return Array.from(seen.values());
 }

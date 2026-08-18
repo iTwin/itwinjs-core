@@ -1,7 +1,9 @@
 {
   "changes": [
     {
-      "comment": "Add quantity formatting for FieldRun values in text annotations. `FieldRun.formatOptions.quantity` (`kindOfQuantity`, `persistenceUnit`, `formatSet`) drives resolution: the effective (override, override-or-property) pair is tried first, then the property-side pair; if neither resolves, `\"quantity\"` and `\"coordinate\"` fall back to raw string. Formatting is available via `ElementDrivesTextAnnotation.evaluateFieldsAsync`; the synchronous `evaluateFields` and txn field-update callbacks format only when the host has registered a pre-warmed `FormattingSpecProvider` for the field's `formatSet`.",
+      "packageName": "@itwin/core-common",
+      "comment": "Add `QuantityFieldFormatOptions` to `FieldFormatOptions`, letting a `FieldRun` override the `KindOfQuantity` and persistence unit used to format its value, and name the `FormatSet` that resolves it.",
+      "type": "none"
     }
   ],
   "packageName": "@itwin/core-common",

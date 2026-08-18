@@ -82,15 +82,14 @@ export interface DtaIpcInterface {
   setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
 
   /**
-   * Registers the DTA `FieldFormattingDemoProvider` for the specified iModel under
-   * `FieldFormattingDemo.DEMO_FORMAT_SET_ID`, so `"quantity"` / `"coordinate"` FieldRuns
-   * whose `formatOptions.quantity.formatSet` matches route through the demo provider on
-   * both the sync and async paths.
+   * Adopts the DTA demo `FormatSet` for the specified iModel, so every `"quantity"` /
+   * `"coordinate"` FieldRun formats through the demo formats. Resolves once the provider has
+   * finished pre-warming, after which all field evaluation is synchronous.
    */
   enableFieldFormattingDemo(iModelKey: string): Promise<void>;
 
   /**
-   * Unregisters the DTA `FieldFormattingDemoProvider` previously registered via
+   * Unregisters the DTA demo `FormatSet` previously registered via
    * [[enableFieldFormattingDemo]] for the specified iModel.
    */
   disableFieldFormattingDemo(iModelKey: string): Promise<void>;

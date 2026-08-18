@@ -250,7 +250,6 @@ internal;function;isValid
 internal;function;makeInvalid
 internal;function;typeFromClass
 beta;interface;EvaluateFieldsArgs
-beta;interface;EvaluateFieldsAsyncArgs
 public;namespace;ExportGraphics
 public;type;ExportGraphicsFunction
 public;interface;ExportGraphicsInfo
@@ -280,6 +279,8 @@ beta;class;ExternalSourceGroup
 beta;class;ExternalSourceGroupGroupsSources
 beta;class;ExternalSourceIsInRepository
 beta;class;ExternalSourceOwnsAttachments
+beta;class;FieldFormattingSpecProvider
+beta;interface;FieldFormattingSpecProviderArgs
 public;class;FileNameResolver
 deprecated;class;FileNameResolver
 internal;type;FindFontId
@@ -676,6 +677,7 @@ preview;class;TxnManager
 alpha;type;TxnMode
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
+beta;interface;UnresolvedFieldFormat
 public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
 public;class;UrlLink
