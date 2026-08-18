@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Use the shared transaction entity metadata contract from @itwin/core-common.",
+      "comment": "Deprecate the existing @itwin/core-frontend TxnEntityMetadata export; use TxnEntityMetadata from @itwin/core-common instead. Frontend TxnEntityChange.metadata uses the shared contract.",
       "type": "none"
     }
   ],

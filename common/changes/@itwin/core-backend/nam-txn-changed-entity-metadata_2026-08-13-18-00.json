@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Expose ECClass metadata on backend transaction change events and document the distinct backend and frontend change-event payloads.",
+      "comment": "Add TxnChangedEntity.metadata to TxnManager.onElementsChanged and TxnManager.onModelsChanged, and document how backend TxnChangedEntities differs from frontend TxnEntityChanges.",
       "type": "none"
     }
   ],

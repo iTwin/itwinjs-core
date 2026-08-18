@@ -45,7 +45,6 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 
   /** Event raised after Txn validation or changeset application to indicate the set of changed elements.
    * Each [[TxnEntityChange]] exposes its class through `metadata.classFullName`. Use [[TxnEntityChanges.filter]] with `metadata.is` to match a class or one of its subclasses.
-   * This frontend payload is different from the backend [TxnChangedEntities]($backend) payload, even though both events describe the same transaction changes.
    * @example
    * ```ts
    * iModel.txns.onElementsChanged.addListener((changes) => {
@@ -59,7 +58,6 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 
   /** Event raised after Txn validation or changeset application to indicate the set of changed models.
    * Each [[TxnEntityChange]] exposes its class through `metadata.classFullName`. Use [[TxnEntityChanges.filter]] with `metadata.is` to match a class or one of its subclasses.
-   * This frontend payload is different from the backend [TxnChangedEntities]($backend) payload, even though both events describe the same transaction changes.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
   public readonly onModelsChanged = new BeEvent<(changes: TxnEntityChanges) => void>();
