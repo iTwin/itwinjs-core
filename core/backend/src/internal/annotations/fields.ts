@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldFormatterContext, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { collectFieldQuantityPairs, FieldFormatterContext, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -534,18 +534,18 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Proper
   return ecProp;
 }
 
-// Returns the FormattingSpecArgs entries the given field may consult at formatting time. In the
-// simple case that's a single (KoQ, persistence unit) pair. When `formatOptions.quantity`
-// overrides differ from the property's own KoQ, we emit both the override pair and the
-// property-side pair so pre-warmed provider caches cover the runtime fallback path — if the
-// override name isn't in the active FormatsProvider the formatter falls back to the property.
+// Returns the FormattingSpecArgs entries the given field may consult at formatting time.
+// Delegates to `collectFieldQuantityPairs` (`@itwin/core-common` internal) so pre-warm
+// enumerates the same (KoQ, persistence unit) candidates the runtime formatters iterate —
+// override pair, then property-side pair when it differs. Fields whose EC property is not
+// `"quantity"` or `"coordinate"` produce no requirement.
 //
-// A property with no KindOfQuantity contributes no property-side pair. In particular coordinate
-// properties (Point2d/Point3d) that carry no KoQ produce no requirement unless the caller has
-// declared **both** `kindOfQuantity` and `persistenceUnit` in `formatOptions.quantity` — Core
-// does not synthesize a persistence unit on the property's behalf. See
-// `docs/bis/guide/other-topics/units.md` for the BIS meters convention that callers are
-// expected to encode explicitly (typically via `Units.LENGTH.M`).
+// A property with no KindOfQuantity contributes no property-side pair. In particular
+// coordinate properties (Point2d/Point3d) that carry no KoQ produce no requirement unless the
+// caller has declared **both** `kindOfQuantity` and `persistenceUnit` in
+// `formatOptions.quantity` — Core does not synthesize a persistence unit on the property's
+// behalf. See `docs/bis/guide/other-topics/units.md` for the BIS meters convention that
+// callers are expected to encode explicitly (typically via `Units.LENGTH.M`).
 function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
   const quantityOptions = field.formatOptions?.quantity;
 
@@ -560,22 +560,12 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
   }
 
   const koq = ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
-  const propertyName = koq?.fullName;
-  const propertyPersistence = koq?.persistenceUnit?.fullName;
-  const effectiveName = quantityOptions?.kindOfQuantity ?? propertyName;
-  const effectivePersistence = quantityOptions?.persistenceUnit ?? propertyPersistence;
-
-  const results: FormattingSpecArgs[] = [];
-  if (effectiveName && effectivePersistence) {
-    results.push({ name: effectiveName, persistenceUnitName: effectivePersistence });
-  }
-  if (
-    propertyName && propertyPersistence &&
-    (propertyName !== effectiveName || propertyPersistence !== effectivePersistence)
-  ) {
-    results.push({ name: propertyName, persistenceUnitName: propertyPersistence });
-  }
-  return results;
+  return collectFieldQuantityPairs({
+    overrideName: quantityOptions?.kindOfQuantity,
+    overridePersistence: quantityOptions?.persistenceUnit,
+    propertyName: koq?.fullName,
+    propertyPersistence: koq?.persistenceUnit?.fullName,
+  });
 }
 
 /** Walks the [FieldRun]($common)s in `textBlock` and returns a deduplicated list of the

@@ -145,24 +145,35 @@ export interface FieldFormatterContext {
   formatsProvider: FormatsProvider;
 }
 
-// Builds the ordered list of (KoQ name, persistence unit) pairs — expressed as
-// [FormattingSpecArgs]($core-quantity) — that a quantity/coordinate FieldValue should be
-// formatted through, in order of preference:
-//   1. The **effective override pair** — per-dimension `override ?? property`. When only one of
-//      `kindOfQuantity` / `persistenceUnit` is overridden, the other still comes from the
-//      property.
-//   2. The **property-side pair** on its own, if it differs from #1. This is the "the override
-//      didn't resolve; fall back to what's on the EC value" path — it lets callers pin a
-//      preferred FormatSet KoQ without losing rendering when that FormatSet isn't loaded.
-// A candidate is only emitted when both its name and persistence unit are defined. Core makes
-// no assumption about coordinate persistence: a coordinate property without a KindOfQuantity
-// contributes no property-side pair, so a caller who wants to format such a value must supply
-// **both** `kindOfQuantity` and `persistenceUnit` in `formatOptions.quantity`.
-//
-// See `docs/bis/guide/other-topics/units.md` for the BIS convention that coordinate geometry is
-// persisted in meters — but Core no longer encodes that convention: callers targeting bare
-// `Point2d`/`Point3d` properties should pass `persistenceUnit: Units.LENGTH.M` explicitly.
-function collectFieldQuantityPairs(args: {
+/** Builds the ordered list of (KoQ name, persistence unit) pairs — expressed as
+ * [FormattingSpecArgs]($core-quantity) — that a quantity/coordinate FieldValue should be
+ * formatted through, in order of preference:
+ *   1. The **effective override pair** — per-dimension `override ?? property`. When only one
+ *      of `kindOfQuantity` / `persistenceUnit` is overridden, the other still comes from the
+ *      property.
+ *   2. The **property-side pair** on its own, if it differs from #1. This is the "the
+ *      override didn't resolve; fall back to what's on the EC value" path — it lets callers
+ *      pin a preferred FormatSet KoQ without losing rendering when that FormatSet isn't
+ *      loaded.
+ *
+ * A candidate is only emitted when both its name and persistence unit are defined. Core
+ * makes no assumption about coordinate persistence: a coordinate property without a
+ * KindOfQuantity contributes no property-side pair, so a caller who wants to format such a
+ * value must supply **both** `kindOfQuantity` and `persistenceUnit` in
+ * `formatOptions.quantity`.
+ *
+ * See `docs/bis/guide/other-topics/units.md` for the BIS convention that coordinate geometry
+ * is persisted in meters — but Core no longer encodes that convention: callers targeting
+ * bare `Point2d`/`Point3d` properties should pass `persistenceUnit: Units.LENGTH.M`
+ * explicitly.
+ *
+ * Shared by the async (`collectFormatterSpecCandidates`) and sync (`lookupSyncSpec`)
+ * formatter paths in this file, and by `computeFieldFormattingRequirement` in
+ * `core-backend`'s `fields.ts` (via `cross-package.ts`) so pre-warm enumerates the same
+ * candidates the runtime formatters iterate.
+ * @internal
+ */
+export function collectFieldQuantityPairs(args: {
   overrideName?: string;
   overridePersistence?: string;
   propertyName?: string;
