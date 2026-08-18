@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { collectFieldQuantityPairs, FieldFormatterContext, FieldFormatterContextSync, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValueAsync, formatFieldValueSync, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { collectFieldQuantityPairs, FieldFormatterContextSync, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValueSync, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, BentleyError, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { BasicUnitsProvider, createUnitsProvider, FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
+import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { BasicUnitsProvider, FormattingSpecArgs, FormattingSpecProvider } from "@itwin/core-quantity";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -68,9 +68,6 @@ export interface UpdateFieldsContext {
    * through a [FormattingSpecProvider]($core-quantity) registered under the field's
    * [QuantityFieldFormatOptions.formatSet]($common). A missing entry (or an absent map)
    * falls back to [[syncFormatterContext]] and then to the raw-string fallback.
-   *
-   * [[updateFieldAsync]] deliberately ignores this map — the async path formats through the
-   * injected [[FieldFormatterContext]] instead.
    */
   readonly formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>;
 
@@ -363,31 +360,15 @@ export function createUpdateContext(
 }
 
 /** Builds a [[FieldFormatterContextSync]] backed by `iModel`'s schema context for formats and
- * the bundled BIS units for units/conversions. Like [[createFieldFormatterContext]], the
- * formats provider is locked to the `"metric"` unit system.
+ * the bundled BIS units for units/conversions. The formats provider is locked to the
+ * `"metric"` unit system; app-owned formatting is injected through a
+ * [FormattingSpecProvider]($core-quantity) registered for the field's `formatSet` instead.
  * @internal
  */
 export function createFieldFormatterContextSync(iModel: IModelDb): FieldFormatterContextSync {
   return {
     unitsProvider: new BasicUnitsProvider(),
     formatsProvider: new SchemaFormatsProvider(iModel.schemaContext, "metric"),
-  };
-}
-
-/** Builds a [[FieldFormatterContext]] backed by `iModel`'s schema context. The default
- * [FormatsProvider]($core-quantity) is locked to the `"metric"` unit system; callers needing a
- * different system (or app-owned formatting) must supply their own `formatsProvider`.
- * @internal
- */
-export function createFieldFormatterContext(
-  iModel: IModelDb,
-  overrides?: { formatsProvider?: FormatsProvider; unitsProvider?: UnitsProvider },
-): FieldFormatterContext {
-  const unitsProvider = overrides?.unitsProvider ?? createUnitsProvider({ primary: new SchemaUnitProvider(iModel.schemaContext) });
-  const formatsProvider = overrides?.formatsProvider ?? new SchemaFormatsProvider(iModel.schemaContext, "metric");
-  return {
-    unitsProvider,
-    formatsProvider,
   };
 }
 
@@ -423,37 +404,6 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   return true;
 }
 
-/** Async counterpart to [[updateField]] that routes `"quantity"` and `"coordinate"` values
- * through [[formatFieldValueAsync]] and the injected `formatter`. Returns true iff
- * cachedContent changed.
- * @note `context.formattingSpecProviders` is deliberately ignored — the sync per-field
- * provider registry does not apply on the async path; use `formatter` to inject app-owned
- * formatting.
- */
-export async function updateFieldAsync(field: FieldRun, context: UpdateFieldsContext, formatter: FieldFormatterContext): Promise<boolean> {
-  if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
-    return false;
-  }
-
-  let newContent: string | undefined;
-  try {
-    const propValue = context.getProperty(field);
-    if (undefined !== propValue) {
-      newContent = await formatFieldValueAsync(propValue, field.formatOptions, formatter);
-    }
-  } catch (err) {
-    Logger.logError(BackendLoggerCategory.IModelDb, err);
-  }
-
-  newContent = newContent ?? FieldRun.invalidContentIndicator;
-  if (newContent === field.cachedContent) {
-    return false;
-  }
-
-  field.setCachedContent(newContent);
-  return true;
-}
-
 /** Re-evaluates every [FieldRun]($common) in `textBlock` synchronously and returns the number
  * whose cached display string changed. Fields targeting an element other than
  * `context.hostElementId` (when set) are skipped.
@@ -462,20 +412,6 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   let numUpdated = 0;
   for (const { child } of traverseTextBlockComponent(textBlock)) {
     if (child.type === "field" && updateField(child, context)) {
-      ++numUpdated;
-    }
-  }
-
-  return numUpdated;
-}
-
-/** Async counterpart to [[updateFields]]. See [[updateFieldAsync]] for how `"quantity"` and
- * `"coordinate"` values route through `formatter`.
- */
-export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFieldsContext, formatter: FieldFormatterContext): Promise<number> {
-  let numUpdated = 0;
-  for (const { child } of traverseTextBlockComponent(textBlock)) {
-    if (child.type === "field" && await updateFieldAsync(child, context, formatter)) {
       ++numUpdated;
     }
   }
