@@ -14,37 +14,36 @@ import { Id64String } from "@itwin/core-bentley";
  * The following types are currently recognized:
  *  - "quantity": an often-unitized scalar value like a distance or area, formatted using a quantity [Format]($core-quantity).
  *  - "coordinate": a 2- or 3-dimensional point, with each component formatted as a "quantity".
- *  - "boolean": a true or false value.
+ *  - "boolean": a true or false value; currently converted via `toString()` (localized formatting not yet implemented).
  *  - "datetime": an ECMAScript [Date](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date).
- *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
- *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
+ *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
+ *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata); currently converted via `toString()` (display-label lookup not yet implemented).
  *  - "string": a value convertible to a string.
- * @note "quantity" and "coordinate" fields are formatted through the iTwin.js quantity pipeline
- * on the async [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path, and on the
- * synchronous [ElementDrivesTextAnnotation.evaluateFields]($backend) / `TxnManager` field-update
- * paths only when the host has registered a [FormattingSpecProvider]($core-quantity) for the
- * field's [QuantityFieldFormatOptions.formatSet]($common) via
- * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend); otherwise the sync
- * path falls back to a plain string representation. Formatting for "boolean", "int-enum",
- * and "string-enum" is not yet implemented; those values are converted to and formatted as "string".
+ * @note `"quantity"` and `"coordinate"` fields format through the iTwin.js quantity pipeline
+ * on the async [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path. The sync path
+ * ([ElementDrivesTextAnnotation.evaluateFields]($backend) / `TxnManager` field-update
+ * callbacks) formats them only when a [FormattingSpecProvider]($core-quantity) is registered
+ * for the field's [[QuantityFieldFormatOptions.formatSet]] via
+ * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend); otherwise it falls
+ * back to the raw string representation.
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
 
 /** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
  * of a [[FieldRun]].
-   * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
-   * a primitive property.
-   * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
-   * Some examples:
-   * ```
-   * | Access String | propertyName | accessors |
-   * | ------------- | ------------ | --------- |
-   * | name          | "name"       | undefined |
-   * | spouse.name   | "spouse"     | [name]    |
-   * | colors[2]     | "colors"     | [2]       |
-   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] |
-   * ```
+ * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
+ * a primitive property.
+ * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
+ * Some examples:
+ * ```
+ * | Access String | propertyName | accessors |
+ * | ------------- | ------------ | --------- |
+ * | name          | "name"       | undefined |
+ * | spouse.name   | "spouse"     | [name]    |
+ * | colors[2]     | "colors"     | [2]       |
+ * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] |
+ * ```
  * @beta
  */
 export interface FieldPropertyPath {
@@ -102,37 +101,33 @@ export interface DateTimeFieldFormatOptions {
  *  2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped
  *     when identical to the effective pair.
  *
- * The first pair whose format-props and persistence-unit lookups both succeed wins. If
- * neither resolves, `"quantity"` and `"coordinate"` fields fall back to the raw value
- * representation (`toString()` for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
- * Core does not synthesize a coordinate format; coordinate presentation is application
- * policy and belongs to the [FormatsProvider]($core-quantity) supplied by the host.
+ * The first pair whose format-props and persistence-unit lookups both succeed wins; if
+ * neither resolves, the field falls back to `toString()` for `"quantity"` or a `(x, y[, z])`
+ * tuple for `"coordinate"`. Core does not synthesize a coordinate format — coordinate
+ * presentation is [FormatsProvider]($core-quantity) territory.
  * @beta
  */
 export interface QuantityFieldFormatOptions {
-  /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) used as the source unit when
-   * constructing a [FormatterSpec]($core-quantity). Independent of [[kindOfQuantity]]; when
-   * unset the formatter falls back to the persistence unit of the property's
-   * [KindOfQuantity]($ecschema-metadata). Coordinate values whose EC property has no
-   * KindOfQuantity require this to be set explicitly (e.g. `Units.LENGTH.M` for BIS geometry)
-   * for an override to take effect.
+  /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) used as the persistence unit
+   * when constructing a [FormatterSpec]($core-quantity); overrides the property's persistence
+   * unit. Coordinate values whose EC property has no [KindOfQuantity]($ecschema-metadata)
+   * require this to be set explicitly (e.g. `Units.LENGTH.M` for BIS geometry — see
+   * `docs/bis/guide/other-topics/units.md`) for an override to take effect. See the interface
+   * JSDoc for the full resolution priority.
    */
   persistenceUnit?: string;
   /** Full name of a [KindOfQuantity]($ecschema-metadata) (e.g. `"AecUnits.LENGTH"`) to look up
-   * via the active [FormatsProvider]($core-quantity), overriding the property's own KoQ.
-   * Independent of [[persistenceUnit]]; when unset the formatter falls back to the property's
-   * [KindOfQuantity]($ecschema-metadata).
+   * via the active [FormatsProvider]($core-quantity), overriding the property's own KoQ. See
+   * the interface JSDoc for the full resolution priority.
    */
   kindOfQuantity?: string;
-  /** [Id64String]($bentley) of a persisted FormatSet element that selects which registered
-   * synchronous [FormattingSpecProvider]($core-quantity) formats this field. The txn callback
-   * path and [ElementDrivesTextAnnotation.evaluateFields]($backend) look up the provider
-   * registered under this FormatSet id via
-   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend). If `formatSet` is
-   * unset or no provider is registered under it, the field renders as its raw string
-   * representation on the sync path; on the async
-   * [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path the iModel's
-   * [SchemaFormatsProvider]($ecschema-metadata) is consulted instead.
+  /** [Id64String]($bentley) of a persisted FormatSet element that routes this field to a
+   * registered synchronous [FormattingSpecProvider]($core-quantity). Consulted by
+   * [ElementDrivesTextAnnotation.evaluateFields]($backend) and the `TxnManager` field-update
+   * callback path via [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend);
+   * fields with no matching registration render as raw strings on the sync path. Ignored on
+   * the async [ElementDrivesTextAnnotation.evaluateFieldsAsync]($backend) path, where the
+   * injected [FormatsProvider]($core-quantity) applies block-wide.
    */
   formatSet?: Id64String;
 }
