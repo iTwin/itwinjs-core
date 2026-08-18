@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { collectFieldQuantityPairs, FieldFormatterContext, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueAsync, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { collectFieldQuantityPairs, FieldFormatterContext, FieldFormatterContextSync, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValueAsync, formatFieldValueSync, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
-import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
+import { assert, BentleyError, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, SchemaFormatsProvider, SchemaUnitProvider, StructArrayProperty } from "@itwin/ecschema-metadata";
-import { createUnitsProvider, FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
+import { BasicUnitsProvider, createUnitsProvider, FormatsProvider, FormattingSpecArgs, FormattingSpecProvider, UnitsProvider } from "@itwin/core-quantity";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
@@ -67,12 +67,20 @@ export interface UpdateFieldsContext {
   /** Sync registry used by [[updateField]] to route `"quantity"` and `"coordinate"` values
    * through a [FormattingSpecProvider]($core-quantity) registered under the field's
    * [QuantityFieldFormatOptions.formatSet]($common). A missing entry (or an absent map)
-   * leaves the field on the raw-string fallback via [[formatFieldValue]].
+   * falls back to [[syncFormatterContext]] and then to the raw-string fallback.
    *
    * [[updateFieldAsync]] deliberately ignores this map — the async path formats through the
    * injected [[FieldFormatterContext]] instead.
    */
   readonly formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>;
+
+  /** Schema-backed synchronous fallback consulted by [[updateField]] when no registered
+   * provider resolves a spec: formats are resolved from the iModel's schemas via
+   * [SchemaFormatsProvider.getFormatSync]($ecschema-metadata), and units/conversions from the
+   * warmed-up [BasicUnitsProvider]($core-quantity). When the units cache is not yet warm the
+   * lookup throws internally and the field falls to the raw string for this evaluation.
+   */
+  readonly syncFormatterContext?: FieldFormatterContextSync;
 }
 
 // Resolves the property a field points at into a [[FieldValue]] — primitive value plus, for
@@ -340,10 +348,29 @@ export function createUpdateContext(
   deleted: boolean,
   formattingSpecProviders?: ReadonlyMap<Id64String, FormattingSpecProvider>,
 ): UpdateFieldsContext {
+  // Fire-and-forget: warms the bundled units cache so the schema-backed sync fallback can
+  // resolve on subsequent evaluations. The first txn after process start may render raw.
+  if (!BasicUnitsProvider.isWarmedUp) {
+    void BasicUnitsProvider.warmup().catch((err) => Logger.logError(BackendLoggerCategory.IModelDb, BentleyError.getErrorMessage(err)));
+  }
+
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
     formattingSpecProviders,
+    syncFormatterContext: createFieldFormatterContextSync(iModel),
+  };
+}
+
+/** Builds a [[FieldFormatterContextSync]] backed by `iModel`'s schema context for formats and
+ * the bundled BIS units for units/conversions. Like [[createFieldFormatterContext]], the
+ * formats provider is locked to the `"metric"` unit system.
+ * @internal
+ */
+export function createFieldFormatterContextSync(iModel: IModelDb): FieldFormatterContextSync {
+  return {
+    unitsProvider: new BasicUnitsProvider(),
+    formatsProvider: new SchemaFormatsProvider(iModel.schemaContext, "metric"),
   };
 }
 
@@ -383,9 +410,8 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   if (undefined !== propValue) {
     const formatSet = field.formatOptions?.quantity?.formatSet;
     const provider = formatSet ? context.formattingSpecProviders?.get(formatSet) : undefined;
-    newContent = provider
-      ? formatFieldValueWithSpecProvider(propValue, field.formatOptions, provider)
-      : formatFieldValue(propValue, field.formatOptions);
+    // Unified sync chain: registered provider spec → schema-backed sync construction → raw.
+    newContent = formatFieldValueSync(propValue, field.formatOptions, { provider, context: context.syncFormatterContext });
   }
 
   newContent = newContent ?? FieldRun.invalidContentIndicator;

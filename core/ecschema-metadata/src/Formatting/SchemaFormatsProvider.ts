@@ -13,8 +13,8 @@ import { Format } from "../Metadata/Format";
 import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { KindOfQuantity } from "../Metadata/KindOfQuantity";
-import { getFormatProps } from "../Metadata/OverrideFormat";
-import { FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { getFormatProps, OverrideFormat } from "../Metadata/OverrideFormat";
+import { FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, FormatsProviderSync, UnitSystemKey } from "@itwin/core-quantity";
 import { Unit } from "../Metadata/Unit";
 import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { Schema } from "../Metadata/Schema";
@@ -22,9 +22,11 @@ import { UnitSystem } from "../Metadata/UnitSystem";
 const loggerCategory = "SchemaFormatsProvider";
 /**
  * Provides default formats and kind of quantities from a given SchemaContext or SchemaLocater.
+ * Also implements the synchronous [FormatsProviderSync]($quantity) contract: the `*Sync` methods
+ * resolve only from schemas the context can load synchronously and return `undefined` otherwise.
  * @beta
  */
-export class SchemaFormatsProvider implements FormatsProvider {
+export class SchemaFormatsProvider implements FormatsProvider, FormatsProviderSync {
   private _context: SchemaContext;
   private _unitSystem?: UnitSystemKey;
   private _formatsRetrieved: Set<string> = new Set();
@@ -171,6 +173,119 @@ export class SchemaFormatsProvider implements FormatsProvider {
       return format.toJSON(true);
     }
     return this.getKindOfQuantityFormatFromSchema(itemKey, system);
+  }
+
+  /** Resolves a presentation-format entry synchronously. `OverrideFormat`s are plain objects
+   * (already resolved); lazy-loaded formats are looked up through the schema context.
+   */
+  private resolvePresentationFormatSync(entry: KindOfQuantity["presentationFormats"][number]): Format | OverrideFormat | undefined {
+    if (entry instanceof OverrideFormat)
+      return entry;
+    return this._context.getSchemaItemSync(entry, Format);
+  }
+
+  private resolveUnitSync(key: SchemaItemKey): Unit | InvertedUnit | undefined {
+    const item = this._context.getSchemaItemSync(key);
+    if (item && (Unit.isUnit(item) || InvertedUnit.isInvertedUnit(item)))
+      return item;
+    return undefined;
+  }
+
+  private getKindOfQuantityFormatFromSchemaSync(itemKey: SchemaItemKey, systemOverride?: UnitSystemKey): FormatDefinition | undefined {
+    let kindOfQuantity: KindOfQuantity | undefined;
+    try {
+      kindOfQuantity = this._context.getSchemaItemSync(itemKey, KindOfQuantity);
+    } catch {
+      Logger.logError(loggerCategory, `Failed to find KindOfQuantity ${itemKey.fullName}`);
+      return undefined;
+    }
+
+    if (!kindOfQuantity) {
+      return undefined;
+    }
+
+    // If a unit system is provided, find the first presentation format that matches it.
+    const effectiveSystem = systemOverride ?? this._unitSystem;
+    if (effectiveSystem) {
+      const unitSystemMatchers = getUnitSystemGroupMatchers(effectiveSystem);
+      const presentationFormats = kindOfQuantity.presentationFormats;
+      for (const matcher of unitSystemMatchers) {
+        for (const lazyFormat of presentationFormats) {
+          const format = this.resolvePresentationFormatSync(lazyFormat);
+          const unitRef = format?.units && format.units[0][0];
+          if (!format || !unitRef) {
+            continue;
+          }
+          const unit = this.resolveUnitSync(unitRef);
+          const currentUnitSystem = unit?.unitSystem ? this._context.getSchemaItemSync(unit.unitSystem, UnitSystem) : undefined;
+          if (currentUnitSystem && matcher(currentUnitSystem)) {
+            this._formatsRetrieved.add(itemKey.fullName);
+            const props = getFormatProps(format);
+            return this.convertToFormatDefinition(props, kindOfQuantity);
+          }
+        }
+      }
+
+      // If no matching presentation format was found, fall back to persistence unit format
+      // only if it matches the requested unit system.
+      const persistenceUnit = kindOfQuantity.persistenceUnit ? this.resolveUnitSync(kindOfQuantity.persistenceUnit) : undefined;
+      const persistenceUnitSystem = persistenceUnit?.unitSystem ? this._context.getSchemaItemSync(persistenceUnit.unitSystem, UnitSystem) : undefined;
+      if (persistenceUnit && persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
+        this._formatsRetrieved.add(itemKey.fullName);
+        const props = getPersistenceUnitFormatProps(persistenceUnit);
+        return this.convertToFormatDefinition(props, kindOfQuantity);
+      }
+    }
+
+    // If no unit system was provided, or no matching format was found, use the default presentation format.
+    // Unit conversion from persistence unit to presentation unit will be handled by FormatterSpec.
+    const defaultFormat = kindOfQuantity.defaultPresentationFormat;
+    if (defaultFormat) {
+      const resolved = this.resolvePresentationFormatSync(defaultFormat);
+      if (resolved) {
+        this._formatsRetrieved.add(itemKey.fullName);
+        return this.convertToFormatDefinition(getFormatProps(resolved), kindOfQuantity);
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Synchronous counterpart to [[getFormat]], implementing [FormatsProviderSync]($quantity).
+   * Resolves only from schemas the context can load synchronously; returns `undefined` when
+   * the schema, item, or any referenced unit cannot be resolved without asynchronous work.
+   * @param name The full name of the Format or KindOfQuantity.
+   */
+  public getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined {
+    const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
+    const schemaKey = new SchemaKey(schemaName);
+    let schema: Schema | undefined;
+    try {
+      schema = this._context.getSchemaSync(schemaKey);
+    } catch {
+      Logger.logError(loggerCategory, `Failed to find schema ${schemaName}`);
+      return undefined;
+    }
+    if (!schema) {
+      return undefined;
+    }
+    const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
+
+    if (schema.name === "Formats") {
+      let format: Format | undefined;
+      try {
+        format = this._context.getSchemaItemSync(itemKey, Format);
+      } catch {
+        Logger.logError(loggerCategory, `Failed to find Format ${itemKey.fullName}`);
+        return undefined;
+      }
+      if (!format) {
+        return undefined;
+      }
+      return format.toJSON(true);
+    }
+    return this.getKindOfQuantityFormatFromSchemaSync(itemKey, system);
   }
 }
 

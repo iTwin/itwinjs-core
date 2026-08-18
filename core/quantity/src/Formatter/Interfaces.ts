@@ -223,6 +223,18 @@ export interface FormatsProvider {
   onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
+/** Synchronous counterpart to [[FormatsProvider]]. Implementations resolve entirely from
+ * already-loaded state and return `undefined` when the format cannot be resolved without
+ * asynchronous work (e.g. the backing schema is not yet loaded).
+ * @beta
+ */
+export interface FormatsProviderSync {
+  /** Synchronous counterpart to [[FormatsProvider.getFormat]].
+   * @param name The full name of the Format or KindOfQuantity.
+   */
+  getFormatSync(name: string, system?: UnitSystemKey): FormatDefinition | undefined;
+}
+
 /** This interface is implemented by a class that would provide and allow creating formats for use in formatting quantities.
  * @beta
  */

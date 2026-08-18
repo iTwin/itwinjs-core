@@ -120,6 +120,23 @@ export interface UnitsProvider {
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
 }
 
+/** Synchronous counterpart to [[UnitsProvider]], limited to the lookups required to construct
+ * a [[FormatterSpec]] synchronously (see [[FormatterSpec.createSync]]). Implementations must
+ * resolve entirely from already-loaded state; when the backing data is not yet available they
+ * should throw (callers treat a throw as "cannot resolve synchronously" and fall back).
+ * @beta
+ */
+export interface UnitsProviderSync {
+  /** Synchronous counterpart to [[UnitsProvider.findUnitByName]]. Returns an invalid
+   * `UnitProps` (`isValid === false`) when the unit cannot be found.
+   */
+  findUnitByNameSync(unitName: string): UnitProps;
+  /** Synchronous counterpart to [[UnitsProvider.getConversion]]. On failure, implementations
+   * MUST return `{ factor: 1.0, offset: 0.0, error: true }` or throw.
+   */
+  getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
+}
+
 /**
  * Identifies a user-facing unit system preference group.
  *

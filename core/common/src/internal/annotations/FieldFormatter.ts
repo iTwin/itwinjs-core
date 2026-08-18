@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { Format, FormatsProvider, FormatterSpec, FormattingSpecArgs, FormattingSpecProvider, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { Format, FormatsProvider, FormatsProviderSync, FormatterSpec, FormattingSpecArgs, FormattingSpecProvider, UnitProps, UnitsProvider, UnitsProviderSync } from "@itwin/core-quantity";
 import { DateTimeFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 
 /** A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -154,6 +154,19 @@ export interface FieldFormatterContext {
   formatsProvider: FormatsProvider;
 }
 
+/** Synchronous counterpart to [[FieldFormatterContext]], consumed by [[formatFieldValueSync]].
+ * Both providers must resolve from already-loaded state (e.g. a warmed-up
+ * [BasicUnitsProvider]($core-quantity) and a [SchemaFormatsProvider]($ecschema-metadata) over
+ * a synchronous schema locater).
+ * @internal
+ */
+export interface FieldFormatterContextSync {
+  /** Synchronous resolver for [UnitProps]($core-quantity) and unit conversions. */
+  unitsProvider: UnitsProviderSync;
+  /** Synchronous resolver of [FormatProps]($core-quantity) by KindOfQuantity full name. */
+  formatsProvider: FormatsProviderSync;
+}
+
 /** Builds the ordered list of (KoQ name, persistence unit) pairs — expressed as
  * [FormattingSpecArgs]($core-quantity) — that a quantity/coordinate FieldValue should be
  * formatted through. See [[QuantityFieldFormatOptions]] for the priority contract; a
@@ -230,6 +243,47 @@ async function getFormatterSpec(
 
     const format = await Format.createFromJSON("fieldFormat", context.unitsProvider, formatProps);
     return FormatterSpec.create("fieldFormat", format, context.unitsProvider, persistenceUnit);
+  }
+  return undefined;
+}
+
+/** Synchronous counterpart to [[getFormatterSpec]]: constructs a [FormatterSpec]($core-quantity)
+ * on demand from the sync providers. A candidate is skipped when the format, persistence unit,
+ * or any referenced unit cannot be resolved synchronously (including when the sync units
+ * provider is not yet warmed up).
+ */
+function getFormatterSpecSync(
+  quantityOptions: QuantityFieldFormatOptions | undefined,
+  value: FieldValue,
+  context: FieldFormatterContextSync,
+): FormatterSpec | undefined {
+  for (const candidate of collectFormatterSpecCandidates(quantityOptions, value)) {
+    let formatProps;
+    try {
+      formatProps = context.formatsProvider.getFormatSync(candidate.name);
+    } catch {
+      continue;
+    }
+    if (!formatProps) {
+      continue;
+    }
+
+    let persistenceUnit: UnitProps | undefined;
+    try {
+      persistenceUnit = context.unitsProvider.findUnitByNameSync(candidate.persistenceUnitName);
+    } catch {
+      // Try the next candidate.
+    }
+    if (!persistenceUnit?.isValid) {
+      continue;
+    }
+
+    try {
+      const format = Format.createFromJSONSync("fieldFormat", context.unitsProvider, formatProps);
+      return FormatterSpec.createSync("fieldFormat", format, context.unitsProvider, persistenceUnit);
+    } catch {
+      // Try the next candidate.
+    }
   }
   return undefined;
 }
@@ -356,14 +410,51 @@ export function formatFieldValueWithSpecProvider(
   options: FieldFormatOptions | undefined,
   provider: FormattingSpecProvider,
 ): string | undefined {
+  return formatFieldValueSync(value, options, { provider });
+}
+
+/** Unified synchronous formatter for `"quantity"` and `"coordinate"` values. Resolution chain:
+ *
+ * 1. **Pre-warmed provider** — when `args.provider` is supplied, an already-warmed
+ *    [FormatterSpec]($core-quantity) is looked up via [[lookupSyncSpec]] and each scalar is
+ *    rendered through [FormattingSpecProvider.formatQuantity]($core-quantity) so caller-side
+ *    hooks are honored.
+ * 2. **Sync on-demand construction** — when `args.context` is supplied and step 1 misses, a
+ *    spec is constructed synchronously from the schema-backed sync providers (see
+ *    [[getFormatterSpecSync]]). This is the schema-default fallback: fields whose EC property
+ *    carries a KindOfQuantity format even when no app provider is registered.
+ * 3. **Raw fallback** — [[formatFieldValue]] (`value.toString()` / `(x, y[, z])`).
+ *
+ * Intended for the txn callback path, where the async pipeline cannot be awaited.
+ * @internal
+ */
+export function formatFieldValueSync(
+  value: FieldValue,
+  options: FieldFormatOptions | undefined,
+  args: { provider?: FormattingSpecProvider, context?: FieldFormatterContextSync },
+): string | undefined {
   if (value.type !== "quantity" && value.type !== "coordinate") {
     return formatFieldValue(value, options);
   }
 
-  const spec = lookupSyncSpec(options?.quantity, value, provider);
-  if (!spec) {
-    return formatFieldValue(value, options);
+  if (args.provider) {
+    const spec = lookupSyncSpec(options?.quantity, value, args.provider);
+    if (spec) {
+      const provider = args.provider;
+      return applySpecToFieldValue(value, options, spec, (m) => provider.formatQuantity(m, spec));
+    }
   }
 
-  return applySpecToFieldValue(value, options, spec, (m) => provider.formatQuantity(m, spec));
+  if (args.context) {
+    const spec = getFormatterSpecSync(options?.quantity, value, args.context);
+    if (spec) {
+      try {
+        return applySpecToFieldValue(value, options, spec);
+      } catch {
+        // Fall through to the raw fallback.
+      }
+    }
+  }
+
+  return formatFieldValue(value, options);
 }
