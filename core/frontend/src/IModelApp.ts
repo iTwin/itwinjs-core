@@ -364,11 +364,11 @@ export class IModelApp {
   }
 
   /**
-   * Replaces the formats provider and optionally changes the active unit system as part of the same reload.
-   * Resolves after the [[QuantityFormatter]] has finished reloading its formatting and parsing specifications. Individual incompatible
-   * provider entries may be omitted from the registry and logged as warnings; they do not cause this Promise to reject.
-   * If another call is made before this reload queue drains, the newer call wins and this Promise rejects. The Promise also rejects if the
-   * application shuts down before the reload completes.
+   * Replaces the formats provider and optionally changes the active unit system.
+   * Resolves after the formatter has rebuilt its formatting and parsing caches.
+   * Incompatible provider entries are logged and skipped, so they do not reject this Promise.
+   * If a later setFormatsProvider call supersedes this request, this Promise rejects.
+   * It also rejects if the application shuts down first.
    * @beta
    */
   public static async setFormatsProvider(provider: FormatsProvider, options?: SetFormatsProviderOptions): Promise<void> {
