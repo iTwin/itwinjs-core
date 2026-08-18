@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { electronHostTestSuite } from "./ElectronHost.test";
+import { electronIpcTransportTestSuite } from "./ElectronIpcTransport.test";
 
 export enum TestResult {
   Success = 0,
@@ -21,4 +22,5 @@ export interface TestSuite {
 
 export const testSuites: TestSuite[] = [
   electronHostTestSuite,
+  electronIpcTransportTestSuite,
 ];
