@@ -790,19 +790,43 @@ export abstract class GeometricElement extends Element {
  */
 export abstract class GeometricElement3d extends GeometricElement {
   public static override get className(): string { return "GeometricElement3d"; }
-  public placement: Placement3d;
+  private _placement: Placement3d;
+  // Snapshot the default placement so nested mutations remain serializable without serializing an untouched absent placement.
+  private readonly _initialPlacement: Placement3d;
+  private _hasPlacement: boolean;
   public typeDefinition?: TypeDefinition;
 
   protected constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.placement = Placement3d.fromJSON(props.placement);
+    this._placement = Placement3d.fromJSON(props.placement);
+    this._initialPlacement = Placement3d.fromJSON(props.placement);
+    this._hasPlacement = props.placement !== undefined;
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
+  public get placement(): Placement3d { return this._placement; }
+  public set placement(value: Placement3d) {
+    this._placement = value;
+    this._hasPlacement = true;
+  }
+
   public override toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
-    val.placement = this.placement;
+    const placementChanged = this._placement.origin.x !== this._initialPlacement.origin.x
+      || this._placement.origin.y !== this._initialPlacement.origin.y
+      || this._placement.origin.z !== this._initialPlacement.origin.z
+      || this._placement.angles.yaw.radians !== this._initialPlacement.angles.yaw.radians
+      || this._placement.angles.pitch.radians !== this._initialPlacement.angles.pitch.radians
+      || this._placement.angles.roll.radians !== this._initialPlacement.angles.roll.radians
+      || this._placement.bbox.low.x !== this._initialPlacement.bbox.low.x
+      || this._placement.bbox.low.y !== this._initialPlacement.bbox.low.y
+      || this._placement.bbox.low.z !== this._initialPlacement.bbox.low.z
+      || this._placement.bbox.high.x !== this._initialPlacement.bbox.high.x
+      || this._placement.bbox.high.y !== this._initialPlacement.bbox.high.y
+      || this._placement.bbox.high.z !== this._initialPlacement.bbox.high.z;
+    if (this._hasPlacement || placementChanged)
+      val.placement = this._placement;
     if (undefined !== this.typeDefinition)
       val.typeDefinition = this.typeDefinition;
 
@@ -844,28 +868,33 @@ export abstract class GeometricElement3d extends GeometricElement {
     const instance = props.row;
     elProps.category = instance.category.id;
 
-    const origin = instance.origin ? [instance.origin.x, instance.origin.y, instance.origin.z] : [0, 0, 0];
     let bbox: LowAndHighXYZProps | undefined;
-    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && instance.bBoxHigh !== null && "bBoxLow" in instance && instance.bBoxLow !== undefined && instance.bBoxLow !== null) {
       bbox = {
         low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
       }
     }
 
-    elProps.placement = {
-      origin,
-      angles: YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON(),
-      bbox
-    };
+    if (instance.origin !== undefined && instance.origin !== null) {
+      elProps.placement = {
+        origin: [instance.origin.x, instance.origin.y, instance.origin.z],
+        angles: YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON(),
+        bbox
+      };
+    }
 
     if (instance.geometryStream) {
-      elProps.geom = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
+      const source = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
         is2d: false,
         geom: instance.geometryStream as Uint8Array,
         placement: elProps.placement,
         categoryId: elProps.category
-      }, "GeometryStreamProps", props.options?.element ?? {}).geom as GeometryStreamProps;
+      }, "GeometryStreamProps", props.options?.element ?? {});
+      elProps.geom = source.geom as GeometryStreamProps;
+      if (source.placement) {
+        elProps.placement = source.placement as Placement3dProps;
+      }
     }
 
     if (instance.typeDefinition) {
@@ -959,19 +988,38 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
  */
 export abstract class GeometricElement2d extends GeometricElement {
   public static override get className(): string { return "GeometricElement2d"; }
-  public placement: Placement2d;
+  private _placement: Placement2d;
+  // Snapshot the default placement so nested mutations remain serializable without serializing an untouched absent placement.
+  private readonly _initialPlacement: Placement2d;
+  private _hasPlacement: boolean;
   public typeDefinition?: TypeDefinition;
 
   protected constructor(props: GeometricElement2dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.placement = Placement2d.fromJSON(props.placement);
+    this._placement = Placement2d.fromJSON(props.placement);
+    this._initialPlacement = Placement2d.fromJSON(props.placement);
+    this._hasPlacement = props.placement !== undefined;
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
+  public get placement(): Placement2d { return this._placement; }
+  public set placement(value: Placement2d) {
+    this._placement = value;
+    this._hasPlacement = true;
+  }
+
   public override toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
-    val.placement = this.placement;
+    const placementChanged = this._placement.origin.x !== this._initialPlacement.origin.x
+      || this._placement.origin.y !== this._initialPlacement.origin.y
+      || this._placement.angle.radians !== this._initialPlacement.angle.radians
+      || this._placement.bbox.low.x !== this._initialPlacement.bbox.low.x
+      || this._placement.bbox.low.y !== this._initialPlacement.bbox.low.y
+      || this._placement.bbox.high.x !== this._initialPlacement.bbox.high.x
+      || this._placement.bbox.high.y !== this._initialPlacement.bbox.high.y;
+    if (this._hasPlacement || placementChanged)
+      val.placement = this._placement;
     if (undefined !== this.typeDefinition)
       val.typeDefinition = this.typeDefinition;
 
@@ -1004,19 +1052,20 @@ export abstract class GeometricElement2d extends GeometricElement {
     const elProps = super.deserialize(props) as GeometricElement2dProps;
     const instance = props.row;
     elProps.category = instance.category.id;
-    const origin = instance.origin ? [instance.origin.x, instance.origin.y] : [0, 0];
     let bbox: LowAndHighXYZProps | undefined;
-    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && instance.bBoxHigh !== null && "bBoxLow" in instance && instance.bBoxLow !== undefined && instance.bBoxLow !== null) {
       bbox = {
         low: [instance.bBoxLow.x, instance.bBoxLow.y],
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y],
       }
     }
-    elProps.placement = {
-      origin,
-      angle: instance.rotation,
-      bbox,
-    };
+    if (instance.origin !== undefined && instance.origin !== null) {
+      elProps.placement = {
+        origin: [instance.origin.x, instance.origin.y],
+        angle: instance.rotation,
+        bbox,
+      };
+    }
 
     if (instance.geometryStream) {
       const source = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
