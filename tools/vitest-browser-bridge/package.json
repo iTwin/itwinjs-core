@@ -3,28 +3,28 @@
   "version": "0.0.0",
   "private": true,
   "description": "Internal Vitest BrowserProvider and callback transport for Electron renderer tests",
-  "typesVersions": {
-    "*": {
-      "electron-provider": ["lib/cjs/electron-provider-cjs.d.ts"],
-      "callbacks/backend": ["lib/cjs/callbacks/backend.d.ts"],
-      "callbacks/browser": ["lib/cjs/callbacks/browser.d.ts"]
-    }
-  },
   "exports": {
     "./electron-provider": {
-      "types": "./lib/cjs/electron-provider-cjs.d.ts",
-      "import": "./lib/esm/electron-provider-esm.js",
-      "require": "./lib/cjs/electron-provider-cjs.js"
+      "import": {
+        "types": "./lib/esm/electron-provider.d.ts",
+        "default": "./lib/esm/electron-provider.js"
+      }
     },
     "./callbacks/backend": {
-      "types": "./lib/cjs/callbacks/backend.d.ts",
-      "import": "./lib/esm/callbacks/backend.js",
-      "require": "./lib/cjs/callbacks/backend.js"
+      "import": {
+        "types": "./lib/esm/callbacks/backend.d.ts",
+        "default": "./lib/esm/callbacks/backend.js"
+      },
+      "require": {
+        "types": "./lib/cjs/callbacks/backend.d.ts",
+        "default": "./lib/cjs/callbacks/backend.js"
+      }
     },
     "./callbacks/browser": {
-      "types": "./lib/cjs/callbacks/browser.d.ts",
-      "import": "./lib/esm/callbacks/browser.js",
-      "require": "./lib/cjs/callbacks/browser.js"
+      "import": {
+        "types": "./lib/esm/callbacks/browser.d.ts",
+        "default": "./lib/esm/callbacks/browser.js"
+      }
     }
   },
   "license": "MIT",
@@ -35,7 +35,6 @@
   },
   "scripts": {
     "build": "rimraf lib && tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node -e \"require('node:fs').writeFileSync('lib/esm/package.json', JSON.stringify({ type: 'module' }) + '\\n')\"",
-    "build:test-fixtures": "tsc -p tsconfig.test-fixtures.json",
     "clean": "rimraf lib test-results",
     "cover": "npm run -s test",
     "docs": "",
@@ -43,9 +42,7 @@
     "test": "npm run -s build && npm run -s test:unit && npm run -s test:electron-provider:built",
     "test:unit": "vitest run --config src/test/vitest.config.mts",
     "test:electron-provider": "npm run -s build && npm run -s test:electron-provider:built",
-    "test:electron-provider:built": "npm run -s build:test-fixtures && rimraf test-results && npm run -s test:electron-provider:esm && npm run -s test:electron-provider:cjs && node -e \"const fs=require('node:fs'); for (const p of ['test-results/electron-provider-esm.junit.xml','test-results/electron-provider-cjs.junit.xml']) if (!fs.existsSync(p) || !fs.readFileSync(p, 'utf8').includes('<testsuites')) process.exit(1)\"",
-    "test:electron-provider:esm": "vitest run --config src/test/vitest.electron-provider.config.mts --reporter=default --reporter=junit --outputFile=test-results/electron-provider-esm.junit.xml",
-    "test:electron-provider:cjs": "vitest run --config src/test/vitest.electron-provider-cjs.config.mts --reporter=default --reporter=junit --outputFile=test-results/electron-provider-cjs.junit.xml"
+    "test:electron-provider:built": "rimraf test-results && vitest run --config src/test/vitest.electron-provider.config.mts --reporter=default --reporter=junit --outputFile=test-results/electron-provider.junit.xml && node -e \"const fs=require('node:fs'); const p='test-results/electron-provider.junit.xml'; if (!fs.existsSync(p) || !fs.readFileSync(p, 'utf8').includes('<testsuites')) process.exit(1)\""
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
