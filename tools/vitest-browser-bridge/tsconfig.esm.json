@@ -5,9 +5,11 @@
     "module": "ES2022",
     "moduleResolution": "node"
   },
+  "include": [
+    "src/**/*.ts"
+  ],
   "exclude": [
     "src/test/**/*",
-    "src/electron-provider-cjs.ts",
     "src/callbacks/electron.ts",
     "src/electron/bridge-preload.ts",
     "src/electron/provider-session.ts"

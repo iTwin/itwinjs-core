@@ -7,10 +7,9 @@
     "rootDir": "./src"
   },
   "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "src/test/**/*",
-    "src/electron-provider-esm.ts"
+    "src/callbacks/backend.ts",
+    "src/electron/bridge-preload.ts",
+    "src/electron/provider-session.ts",
+    "src/test/fixtures/**/*.ts"
   ]
 }
