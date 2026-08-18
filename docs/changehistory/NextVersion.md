@@ -10,13 +10,11 @@ publish: false
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
-    - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
-      - [Configuring a FieldRun](#configuring-a-fieldrun)
-      - [Format resolution](#format-resolution)
-      - [Evaluating fields](#evaluating-fields)
-      - [Routing fields through an application-owned FormatSet](#routing-fields-through-an-application-owned-formatset)
+    - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
   - [@itwin/core-common](#itwincore-common-1)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
+  - [@itwin/core-electron](#itwincore-electron)
+    - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Invalidate decorations when element visibility changes](#invalidate-decorations-when-element-visibility-changes)
   - [@itwin/core-geometry](#itwincore-geometry)
@@ -68,102 +66,36 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 
 [[include:CoreBackend.IModelDb.QueryAspects]]
 
-### Quantity formatting for text annotation fields
+### ECSQL `IS` / `IS NOT` operator now works between two operands
 
-[FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value can now be rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation.
+The ECSQL `IS` and `IS NOT` operators can now be used between two operands — for example `prop1 IS [NOT] prop2`, where each operand may be any value expression: a property, the `NULL` literal, a constant, a parameter, a function call, an arithmetic expression, etc. These map to SQLite's **null-safe** comparison operators, so `NULL IS NULL` is `TRUE` and `1 IS NULL` is `FALSE`, unlike `=`/`<>` which treat a `NULL` operand as _unknown_.
 
-Formatting stays on the backend (text layout is a backend concern) and is available via two entry points: an **async** entry point that runs the full pipeline on demand, and an opt-in **synchronous** entry point that a host can register a pre-warmed provider for so field values format inside the `TxnManager` update callbacks.
+Previously `IS` / `IS NOT` only supported the right-hand operands `NULL`, the boolean literals `TRUE`/`FALSE`/`UNKNOWN`, and the [ECClass type predicate](../learning/ECSqlReference/ECClassFilter.md) (`IS (ClassName)`). Those forms still take precedence — a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized **qualified** class name such as `(bis.Element)` (optionally with an `ONLY`/`ALL` prefix or a comma-separated list), keeps its original meaning. A parenthesized *unqualified* name such as `(prop2)` is instead read as a value expression, so `prop1 IS (prop2)` is a null-safe comparison. A parenthesized *qualified* name that does not resolve to a known ECClass — for example `(alias.prop)` or `(ts.Status.Active)` — is also treated as a null-safe value expression instead of failing with a "class not found" error; when a qualified name is both a valid class and a valid property path, the type-predicate (class) reading takes precedence.
 
-#### Configuring a FieldRun
+For multi-column operands (such as `Point2d`/`Point3d` and navigation properties) the comparison is expanded column-wise, consistent with `=` and `<>`: `IS` joins the per-column comparisons with `AND`, and `IS NOT` joins them with `OR`.
 
-Field-level formatting is configured via a new [QuantityFieldFormatOptions]($common) block on [FieldFormatOptions]($common):
+**Example** — find elements whose code value differs from their user label, or from a value extracted from JSON, treating `NULL` as a comparable value:
 
-```typescript
-const fieldRun = FieldRun.create({
-  propertyHost: { elementId, schemaName: "MyDomain", className: "Widget" },
-  propertyPath: { propertyName: "length" },
-  formatOptions: {
-    quantity: {
-      // Look up a specific KindOfQuantity via the active FormatsProvider,
-      // overriding the property's own KoQ.
-      kindOfQuantity: "AecUnits.LENGTH",
-      // Optionally scope resolution to a specific registered FormatSet on
-      // the synchronous path (see below).
-      formatSet: myFormatSetId,
-    },
-  },
-});
+```sql
+SELECT * FROM bis.Element WHERE CodeValue IS NOT UserLabel
+SELECT * FROM bis.Element WHERE CodeValue IS json_extract(JsonProperties, '$.code')
 ```
 
-`kindOfQuantity` and `persistenceUnit` are **independent** overrides: setting one falls through to the property side for the other. This lets a caller pin the presentation (via `kindOfQuantity`) while still reading the persistence unit from the EC property, or vice versa.
-
-#### Format resolution
-
-For each `"quantity"` or `"coordinate"` field the formatter looks up a [FormatterSpec]($core-quantity) by (KindOfQuantity name, persistence unit name) pair, in this order:
-
-1. **Effective override pair.** `formatOptions.quantity.kindOfQuantity ?? propertyKindOfQuantity` for the name, `formatOptions.quantity.persistenceUnit ?? propertyPersistenceUnit` for the unit.
-2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped when identical to the effective pair.
-
-The first pair whose format-props lookup **and** persistence-unit lookup both succeed in the active provider wins. If none succeeds, `"quantity"` and `"coordinate"` fields fall back to their raw string representation (`value.toString()` for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
-
-Core does not carry a built-in coordinate format: coordinate presentation is application policy and belongs to the FormatsProvider / FormatSet supplied by the host. Coordinate values whose EC property has no KindOfQuantity require the caller to declare **both** `kindOfQuantity` and `persistenceUnit` in `formatOptions.quantity` for an override to take effect — Core does not synthesize a persistence unit from the [BIS geometry meters convention](../bis/guide/other-topics/units.md). Callers that want that convention should pass `Units.LENGTH.M` (from `@itwin/core-quantity`) explicitly.
-
-#### Evaluating fields
-
-[ElementDrivesTextAnnotation.evaluateFields]($backend) updates the [FieldRun.cachedContent]($common) of every field in the supplied [TextBlock]($common), in memory:
-
-```typescript
-const numUpdated = ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
-```
-
-Evaluation is **synchronous**, so it can run inside the `TxnManager` field-update callbacks that keep annotations current as their source elements change. `evaluateFields` mutates the in-memory `TextBlock`; **it does not persist**. Callers that want the formatted output to survive the session must assign the updated block back to the owning element (for example via `TextAnnotation2d.setAnnotation` / `TextAnnotation3d.setAnnotation`) and call `element.update()` inside a transaction.
-
-By default a field resolves its format from the iModel's schema — the presentation format of the property's `KindOfQuantity`.
-
-#### Routing fields through an application-owned FormatSet
-
-[FormatterSpec]($core-quantity) construction is asynchronous, so applications that own their formats build the specs **ahead of time** and register the resulting [FormattingSpecProvider]($core-quantity) against a [FormatSet]($core-quantity) [Id64String]($bentley). Fields whose `formatOptions.quantity.formatSet` matches a registered id then format through that provider; everything else falls back to the schema.
-
-[ElementDrivesTextAnnotation.prepareFieldFormatting]($backend) does this in one step — it builds a provider over the supplied FormatSet (chained to the iModel's [SchemaFormatsProvider]($ecschema-metadata) for anything the FormatSet doesn't define), warms every spec the block needs, and registers it:
-
-```typescript
-await ElementDrivesTextAnnotation.prepareFieldFormatting({
-  iModel,
-  block,
-  formatSet: formatSetId,
-  formatSetDefinition: myFormatSet,
-});
-
-const numUpdated = ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
-```
-
-Applications that already own a [FormatsProvider]($core-quantity) can build the provider directly with [createFieldFormattingSpecProvider]($backend) and warm it themselves:
-
-```typescript
-const provider = createFieldFormattingSpecProvider({ iModel, formatsProvider: myFormatsProvider });
-await provider.warmForBlock(block);
-ElementDrivesTextAnnotation.registerFieldFormattingProvider({ formatSet: formatSetId, provider });
-```
-
-[ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) exposes the underlying `(KindOfQuantity, persistenceUnit)` pairs for a `TextBlock`, for hosts that warm a provider of their own design.
-
-Because warming is asynchronous and evaluation is not, a spec that was never warmed simply isn't found: the field falls back to the schema-backed format, then to raw. Re-warm (or call `prepareFieldFormatting` again) whenever a block gains fields the provider has not seen.
-
-Registrations are **process-wide** — Core does not scope them to any [IModelDb]($backend), and never sweeps entries automatically. Hosts own the lifetime contract: register when the iModel that provides the FormatSet opens, and call [ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]($backend) when it closes. Failing to unregister leaves a stale entry that a subsequent iModel carrying the same FormatSet id may silently consume.
-
-```typescript
-iModel.onBeforeClose.addOnce(() => {
-  ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(formatSetId);
-});
-```
-
-Registering a provider does **not** reformat existing annotations — hosts that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly. Symmetrically, unregistering a provider that saved annotations depend on causes the next source-element edit to re-render their `cachedContent` through the schema-backed format instead.
+See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--is-not-operator-null-safe-comparison) for more details.
 
 ## @itwin/core-common
 
 ### Rank support for DefinitionSet
 
 [BisCore:DefinitionSet]($docs/bis/domains/BisCore.ecschema.md) (the base class of [DefinitionContainer]($backend) and [DefinitionGroup]($backend)) has a `Rank` property, but the iTwin.js API had no counterpart for it - `Rank` was only exposed for [Category]($backend)/[SubCategory]($backend). The new `@beta` [DefinitionSetProps.rank]($common) property (and the corresponding [DefinitionSet.rank]($backend) member) close that gap, using the same [Rank]($common) enum already used by `CategoryProps.rank`. `rank` is persisted when inserting or updating a `DefinitionContainer` or `DefinitionGroup`, and is read back correctly through [IModelDb.Elements.getElementProps]($backend) and [DefinitionSet.toJSON]($backend).
+
+## @itwin/core-electron
+
+### Late RPC responses are ignored during shutdown
+
+`ElectronApp.shutdown()` disposes any in-flight RPC requests. A response for one of those requests could still arrive from the backend afterwards, and the frontend transport would then dereference the missing request and throw, surfacing as an unhandled rejection while the application was tearing down. Such a response is now ignored instead.
+
+Applications that shut down while requests are outstanding no longer need to filter these errors out of their shutdown paths.
 
 ## @itwin/core-frontend
 
