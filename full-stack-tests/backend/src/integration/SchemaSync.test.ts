@@ -1713,6 +1713,11 @@ describe("Schema synchronization", function (this: Suite) {
     }],
   });
 
+  // Struct members are what the widening actually reshuffles across the shared columns, so a test
+  // that only fills the entity's own properties never puts a value in a column that moves.
+  const structValue = (label: string, memberCount: number): { [member: string]: string } =>
+    Object.fromEntries(Array.from({ length: memberCount }, (_, i) => [`p${i}`, `${label}-p${i}`]));
+
   it("routes a data transform to upgradeSchemas and keeps the data", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-3" });
     const accessToken = "schema retry token";
@@ -1725,8 +1730,17 @@ describe("Schema synchronization", function (this: Suite) {
       await b1.pushChanges({ accessToken, description: "initial schema" });
 
       const place = await insertDrawingModelAndCategory(b1, "Retry");
-      const elementId = await insertGeometricElement2d(b1, { ...place, classFullName: "TestRetry:Pipe1", props: { name: "keep" } });
+      const elementId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "TestRetry:Pipe1",
+        props: { name: "keep", s0: structValue("s0", 11), s1: structValue("s1", 11) },
+      });
       await b1.pushChanges({ accessToken, description: "insert data" });
+
+      // Without this the struct members could read as undefined all along and the census below would
+      // compare nothing, which is the shape of a test that passes while proving nothing.
+      assert.equal(readElementProp(b1, elementId, "s0")?.p0, "s0-p0", "the struct members were never stored");
+      const before = await takeElementCensus(b1, ["TestRetry:Pipe1"]);
 
       // Widening the struct reshuffles the shared columns, which the update path refuses.
       const widened = tinySchemaToXml(structAndPipeSchema(31, "01.00.01"));
@@ -1743,6 +1757,9 @@ describe("Schema synchronization", function (this: Suite) {
       await b1.upgradeSchemaStrings([widened], { accessToken, description: "widen the struct" });
       assert.include(queryPropNames(b1, "TestRetry:Struct1"), "p30");
       assert.equal(readElementProp(b1, elementId, "name"), "keep");
+      assert.equal(readElementProp(b1, elementId, "s0")?.p10, "s0-p10", "s0 lost its members when the columns moved");
+      assert.equal(readElementProp(b1, elementId, "s1")?.p10, "s1-p10", "s1 lost its members when the columns moved");
+      expectCensusPreserved(before, await takeElementCensus(b1, ["TestRetry:Pipe1"]), "after widening the struct");
       assert.isFalse(b1.txns.hasLocalChanges, "upgradeSchemaStrings pushes the schema change");
     } finally {
       b1.close();
@@ -1766,9 +1783,10 @@ describe("Schema synchronization", function (this: Suite) {
       const elementId = await insertGeometricElement2d(b1, {
         ...place,
         classFullName: "TestRetry:Pipe1",
-        props: { name: "overflow-preserved" },
+        props: { name: "overflow-preserved", s0: structValue("of0", 11), s1: structValue("of1", 11) },
       });
       await b1.pushChanges({ accessToken, description: "front door 7 data" });
+      assert.equal(readElementProp(b1, elementId, "s0")?.p0, "of0-p0", "the struct members were never stored");
       const before = await takeElementCensus(b1, ["TestRetry:Pipe1"]);
       const widenedSchema = structAndPipeSchema(31, "01.00.01");
       widenedSchema.classes![1].props!.push(...Array.from({ length: 40 }, (_, index): TinyPrimitiveProp => ({
@@ -1793,6 +1811,8 @@ describe("Schema synchronization", function (this: Suite) {
       assert.include(overflowIds, elementId, "the transformed element has no BisCore overflow row");
       expectCensusPreserved(before, await takeElementCensus(b1, ["TestRetry:Pipe1"]), "after transforming into overflow");
       assert.equal(readElementProp(b1, elementId, "name"), "overflow-preserved");
+      assert.equal(readElementProp(b1, elementId, "s0")?.p10, "of0-p10", "s0 lost its members on the way into overflow");
+      assert.equal(readElementProp(b1, elementId, "s1")?.p10, "of1-p10", "s1 lost its members on the way into overflow");
       assert.isFalse(b1.txns.hasLocalChanges);
     } finally {
       b1.close();

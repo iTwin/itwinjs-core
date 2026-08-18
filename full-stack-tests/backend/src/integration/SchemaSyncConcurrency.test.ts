@@ -14,7 +14,7 @@ import { AzuriteTest } from "./AzuriteTest";
 import {
   assertThrowsAsyncContaining, createTestIModel, enableSchemaSync, expectCacheTablesIdentical, expectCensusPreserved, expectMetadataTablesIdentical,
   expectNoForeignKeyViolations, expectPhysicalSchemaIdentical, importTinySchema, initializeContainer, insertDrawingModelAndCategory,
-  insertGeometricElement2d, listMetadataTables, openTestBriefcase, queryPropNames, readTableRows, takeElementCensus, TinyPrimitiveProp, TinySchema,
+  insertGeometricElement2d, listMetadataTables, openTestBriefcase, queryPropNames, readElementProp, readTableRows, takeElementCensus, TinyPrimitiveProp, TinySchema,
   tinySchemaToXml, TinyStructProp,
 } from "./SchemaSyncTestUtils";
 
@@ -500,6 +500,58 @@ describe("Schema synchronization concurrency", function (this: Suite) {
         description: "widen concurrent transform schema",
       });
       assert.include(queryPropNames(b1, "ConcurrentTransform:Struct1"), "p30");
+    } finally {
+      closeBriefcases(briefcases);
+    }
+  });
+
+  // The exclusive lock keeps anyone else from holding local changes while the upgrade runs. It says
+  // nothing about the briefcase that pulls afterwards, which has to apply the transform's data-table
+  // updates from the changeset and rebuild its own columns from ec_ rather than from DDL.
+  it("a briefcase that pulls a data transform upgrade keeps its data", async () => {
+    const { briefcases, accessTokens } = await createBriefcases({
+      containerId: "sync-conc-8",
+      iModelName: "sync-conc-pull-transform",
+      briefcaseCount: 2,
+      cachePrefix: "syncConc8",
+    });
+    const [b1, b2] = briefcases;
+    const className = "ConcurrentTransform:Pipe1";
+    const structValue = (label: string): { [member: string]: string } =>
+      Object.fromEntries(Array.from({ length: 11 }, (_, i) => [`p${i}`, `${label}-p${i}`]));
+
+    try {
+      await importTinySchema(b1, structAndPipeSchema(11, "01.00.00"));
+      await b1.pushChanges({ accessToken: accessTokens[0], description: "pull transform schema" });
+
+      const place = await insertDrawingModelAndCategory(b1, "PullTransform");
+      const elementId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: className,
+        props: { name: "survives-the-pull", s0: structValue("s0"), s1: structValue("s1") },
+      });
+      await b1.pushChanges({ accessToken: accessTokens[0], description: "pull transform data" });
+
+      await b2.pullChanges({ accessToken: accessTokens[1] });
+      assert.equal(readElementProp(b2, elementId, "s0")?.p0, "s0-p0", "b2 never received the struct members");
+      const beforeB2 = await takeElementCensus(b2, [className]);
+
+      await b1.upgradeSchemaStrings([tinySchemaToXml(structAndPipeSchema(31, "01.00.01"))], {
+        accessToken: accessTokens[0],
+        description: "widen the struct for the pulling briefcase",
+      });
+
+      await b2.pullChanges({ accessToken: accessTokens[1] });
+      assert.include(queryPropNames(b2, "ConcurrentTransform:Struct1"), "p30", "b2 did not receive the widened struct");
+      assert.equal(readElementProp(b2, elementId, "name"), "survives-the-pull");
+      assert.equal(readElementProp(b2, elementId, "s0")?.p10, "s0-p10", "b2 lost s0 when it applied the transform");
+      assert.equal(readElementProp(b2, elementId, "s1")?.p10, "s1-p10", "b2 lost s1 when it applied the transform");
+      expectCensusPreserved(beforeB2, await takeElementCensus(b2, [className]), "in the briefcase that pulled the transform");
+
+      expectCensusPreserved(await takeElementCensus(b1, [className]), await takeElementCensus(b2, [className]), "between the upgrader and the puller");
+      expectPhysicalSchemaIdentical(b1, b2, "after the pulled transform");
+      expectMetadataTablesIdentical(b1, b2, "after the pulled transform", { a: "b1", b: "b2" });
+      expectNoForeignKeyViolations(b2, "after pulling a transform upgrade");
     } finally {
       closeBriefcases(briefcases);
     }
