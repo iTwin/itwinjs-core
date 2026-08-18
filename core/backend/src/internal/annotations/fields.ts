@@ -64,16 +64,19 @@ export interface UpdateFieldsContext {
 
   getProperty(field: FieldRun): FieldValue | undefined;
 
-  /** Optional lookup used to select a synchronous [FormattingSpecProvider]($core-quantity) per
-   * [FieldRun]($common), keyed by [QuantityFieldFormatOptions.formatSet]($common). When
-   * present, [[updateField]] formats `"quantity"` and `"coordinate"` values via
-   * [[formatFieldValueWithSpecProvider]]; when absent (or when the lookup has no match for the
-   * field's `formatSet`) it falls back to `toString()`.
+  /** Sync lookup used by [[updateField]] to route `"quantity"` and `"coordinate"` values
+   * through a [FormattingSpecProvider]($core-quantity) registered under the field's
+   * [QuantityFieldFormatOptions.formatSet]($common). Returning `undefined` (or an absent
+   * lookup) leaves the field on the raw-string fallback via [[formatFieldValue]].
+   *
+   * [[updateFieldAsync]] deliberately ignores this lookup — the async path formats through
+   * the injected [[FieldFormatterContext]] instead.
    */
   readonly getFormattingSpecProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined;
 }
 
-// Resolve the raw primitive value of the property that a field points to.
+// Resolves the property a field points at into a [[FieldValue]] — primitive value plus, for
+// `"quantity"` / `"coordinate"` types, the property-side KoQ and persistence unit.
 function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | undefined {
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
@@ -234,11 +237,9 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     return undefined;
   }
 
-  // Capture the KindOfQuantity and persistence unit **as defined by the ECProperty**. Any
-  // `formatOptions.quantity.kindOfQuantity` / `.persistenceUnit` overrides are consulted at
-  // formatting time so we can fall back to the property values if the override doesn't resolve
-  // in the active FormatsProvider. JSON-in-string values have no reliable KoQ association, so
-  // skip the property lookup for them.
+  // Property-side KoQ + persistence unit only. Overrides in `formatOptions.quantity` are
+  // merged at formatting time (see `collectFieldQuantityPairs`) so these serve as the fallback
+  // when the override doesn't resolve. JSON-in-string values have no reliable KoQ, so skip.
   let kindOfQuantityFullName: string | undefined;
   let persistenceUnitFullName: string | undefined;
   if (propertyType === "quantity" || propertyType === "coordinate") {
@@ -246,8 +247,6 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     kindOfQuantityFullName = koq?.fullName;
     persistenceUnitFullName = koq?.persistenceUnit?.fullName;
   }
-
-
 
   return { value: curValue.primitive, type: propertyType, kindOfQuantityFullName, persistenceUnitFullName };
 }
@@ -348,8 +347,9 @@ export function createUpdateContext(
   };
 }
 
-/** Builds a [[FieldFormatterContext]] backed by an iModel's schema context. Either provider may
- * be overridden to plug in an app's [FormattingSpecProvider]($core-quantity) (e.g. FormatSet-backed).
+/** Builds a [[FieldFormatterContext]] backed by `iModel`'s schema context. The default
+ * [FormatsProvider]($core-quantity) is locked to the `"metric"` unit system; callers needing a
+ * different system (or app-owned formatting) must supply their own `formatsProvider`.
  * @internal
  */
 export function createFieldFormatterContext(
@@ -364,7 +364,9 @@ export function createFieldFormatterContext(
   };
 }
 
-// Recompute the display value of a single field, return false if it couldn't be evaluated.
+/** Recomputes a single field's cached display string synchronously. Returns true iff
+ * cachedContent changed.
+ */
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
   if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
     return false;
@@ -394,8 +396,13 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   return true;
 }
 
-// Async counterpart to updateField. Uses formatFieldValueAsync so "quantity" and "coordinate"
-// fields render through the real quantity formatting pipeline.
+/** Async counterpart to [[updateField]] that routes `"quantity"` and `"coordinate"` values
+ * through [[formatFieldValueAsync]] and the injected `formatter`. Returns true iff
+ * cachedContent changed.
+ * @note `context.getFormattingSpecProvider` is deliberately ignored — the sync per-field
+ * provider registry does not apply on the async path; use `formatter` to inject app-owned
+ * formatting.
+ */
 export async function updateFieldAsync(field: FieldRun, context: UpdateFieldsContext, formatter: FieldFormatterContext): Promise<boolean> {
   if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
     return false;
@@ -420,8 +427,10 @@ export async function updateFieldAsync(field: FieldRun, context: UpdateFieldsCon
   return true;
 }
 
-// Re-evaluates the display strings for all fields that target the element specified by `context` and returns the number
-// of fields whose display strings changed as a result.
+/** Re-evaluates every [FieldRun]($common) in `textBlock` synchronously and returns the number
+ * whose cached display string changed. Fields targeting an element other than
+ * `context.hostElementId` (when set) are skipped.
+ */
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
   let numUpdated = 0;
   for (const { child } of traverseTextBlockComponent(textBlock)) {
@@ -433,7 +442,9 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
-// Async counterpart to updateFields.
+/** Async counterpart to [[updateFields]]. See [[updateFieldAsync]] for how `"quantity"` and
+ * `"coordinate"` values route through `formatter`.
+ */
 export async function updateFieldsAsync(textBlock: TextBlock, context: UpdateFieldsContext, formatter: FieldFormatterContext): Promise<number> {
   let numUpdated = 0;
   for (const { child } of traverseTextBlockComponent(textBlock)) {
@@ -468,19 +479,27 @@ function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64St
   }
 }
 
-// Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
+/** Re-evaluates the fields of the `props.targetId` annotation in response to a source-element
+ * change (`deleted=false`) or delete (`deleted=true`). Invoked from
+ * [[ElementDrivesTextAnnotation.onRootChangedArg]] / `onDeletedDependencyArg`.
+ */
 export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean, getProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined): void {
   doUpdateFields(txn, props.targetId, props.sourceId, deleted, getProvider);
 }
 
+/** Re-evaluates every field of the given annotation element against its current property
+ * values. Invoked from [[ElementDrivesTextAnnotation.updateFieldDependencies]] when
+ * establishing / refreshing relationships.
+ */
 export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, getProvider?: (formatSet: string | undefined) => FormattingSpecProvider | undefined): void {
   doUpdateFields(txn, annotationElementId, undefined, false, getProvider);
 }
 
-// Resolves a FieldRun's target down to its terminal EC Property using schema metadata only
-// (no ECSQL, no element values). Returns undefined when the path cannot be followed in the
-// schema — notably when it dives into a JSON-in-string leaf, since such paths have no reliable
-// ECProperty/KoQ association.
+/** Resolves a [FieldRun]($common)'s target to its terminal [Property]($ecschema-metadata)
+ * using schema metadata only (no ECSQL, no element values). Returns `undefined` when the path
+ * cannot be followed — notably when it dives into a JSON-in-string leaf, since such paths
+ * have no reliable ECProperty/KoQ association.
+ */
 function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Property | undefined {
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
@@ -534,18 +553,13 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Proper
   return ecProp;
 }
 
-// Returns the FormattingSpecArgs entries the given field may consult at formatting time.
-// Delegates to `collectFieldQuantityPairs` (`@itwin/core-common` internal) so pre-warm
-// enumerates the same (KoQ, persistence unit) candidates the runtime formatters iterate —
-// override pair, then property-side pair when it differs. Fields whose EC property is not
-// `"quantity"` or `"coordinate"` produce no requirement.
-//
-// A property with no KindOfQuantity contributes no property-side pair. In particular
-// coordinate properties (Point2d/Point3d) that carry no KoQ produce no requirement unless the
-// caller has declared **both** `kindOfQuantity` and `persistenceUnit` in
-// `formatOptions.quantity` — Core does not synthesize a persistence unit on the property's
-// behalf. See `docs/bis/guide/other-topics/units.md` for the BIS meters convention that
-// callers are expected to encode explicitly (typically via `Units.LENGTH.M`).
+/** Returns the [FormattingSpecArgs]($core-quantity) entries the field may consult at
+ * formatting time; empty when the EC property is not `"quantity"` / `"coordinate"` or no
+ * (KoQ, persistenceUnit) pair can be assembled from the property plus `formatOptions.quantity`
+ * overrides. Delegates to `collectFieldQuantityPairs` (`@itwin/core-common` internal) so
+ * pre-warm enumerates the same candidates the runtime iterates. See
+ * [[QuantityFieldFormatOptions]] for the priority contract and the coordinate/no-KoQ caveat.
+ */
 function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
   const quantityOptions = field.formatOptions?.quantity;
 
@@ -568,14 +582,10 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
   });
 }
 
-/** Walks the [FieldRun]($common)s in `textBlock` and returns a deduplicated list of the
- * [FormattingSpecArgs]($core-quantity) their `"quantity"` and `"coordinate"` values need to be
- * formatted through the standard iTwin.js quantity pipeline.
- *
- * Intended for an app-supplied [FormattingSpecProvider]($core-quantity) to pre-warm its cache
- * before an annotation is inserted, updated, or re-evaluated. Fields whose target property has
- * no [KindOfQuantity]($ecschema-metadata) (and no `kindOfQuantity` / `persistenceUnit`
- * override) are omitted — they need no provider lookup.
+/** Walks `textBlock` and returns the deduplicated [FormattingSpecArgs]($core-quantity) needed
+ * to format its `"quantity"` and `"coordinate"` [FieldRun]($common)s. See
+ * [[ElementDrivesTextAnnotation.collectFieldFormattingRequirements]] for the public contract
+ * and the pre-warm workflow.
  * @internal
  */
 export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel: IModelDb): FormattingSpecArgs[] {
