@@ -3566,6 +3566,7 @@ export class FormatsProviderManager implements FormatsProvider {
     getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    restoreProviderChange(change: FormatsProviderChange): boolean;
     setFormatsProvider(formatsProvider: FormatsProvider, impliedUnitSystem?: UnitSystemKey): void;
 }
 

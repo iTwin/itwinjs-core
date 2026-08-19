@@ -362,7 +362,6 @@ type FormatsProviderManagerListener = (event: FormatsProviderManagerEvent) => vo
 interface FormatsProviderManagerState {
   listeners: Set<FormatsProviderManagerListener>;
   pendingFormatsProviderChange?: FormatsProviderChange;
-  restoreProvider: (provider: FormatsProvider) => void;
   notifyingPublicEvent: boolean;
 }
 
@@ -371,7 +370,7 @@ const formatsProviderManagerStates = new WeakMap<object, FormatsProviderManagerS
 function getFormatsProviderManagerState(manager: object): FormatsProviderManagerState {
   let state = formatsProviderManagerStates.get(manager);
   if (!state) {
-    state = { listeners: new Set(), restoreProvider: () => undefined, notifyingPublicEvent: false };
+    state = { listeners: new Set(), notifyingPublicEvent: false };
     formatsProviderManagerStates.set(manager, state);
   }
   return state;
@@ -387,8 +386,6 @@ export class FormatsProviderManager implements FormatsProvider {
   private _removeProviderListener?: () => void;
 
   constructor(private _formatsProvider: FormatsProvider) {
-    const state = getFormatsProviderManagerState(this);
-    state.restoreProvider = (provider) => this._setUnderlyingProvider(provider);
     this._setUnderlyingProvider(_formatsProvider);
   }
 
@@ -424,6 +421,20 @@ export class FormatsProviderManager implements FormatsProvider {
     if (impliedUnitSystem !== undefined)
       args.impliedUnitSystem = impliedUnitSystem;
     notifyFormatsProviderManagerListeners(this, { args, provider: formatsProvider, providerChange });
+  }
+
+  /**
+   * Restores a failed provider change without raising another formats-changed event.
+   * @internal
+   */
+  public restoreProviderChange(change: FormatsProviderChange): boolean {
+    const state = getFormatsProviderManagerState(this);
+    if (state.pendingFormatsProviderChange !== change)
+      return false;
+
+    state.pendingFormatsProviderChange = undefined;
+    this._setUnderlyingProvider(change.baseProvider);
+    return true;
   }
 
   private _setUnderlyingProvider(provider: FormatsProvider): void {
@@ -474,16 +485,6 @@ function applyFormatsProviderChange(manager: FormatsProviderManager, change: For
     return false;
 
   state.pendingFormatsProviderChange = undefined;
-  return true;
-}
-
-function restoreFormatsProviderChange(manager: FormatsProviderManager, change: FormatsProviderChange): boolean {
-  const state = getFormatsProviderManagerState(manager);
-  if (state.pendingFormatsProviderChange !== change)
-    return false;
-
-  state.pendingFormatsProviderChange = undefined;
-  state.restoreProvider(change.baseProvider);
   return true;
 }
 
@@ -691,7 +692,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     } catch (error) {
       this._restoreFormattingState(snapshot);
       if (intent.scope === "formatsChanged" && intent.providerChange && this._ownsFormatsProviderTransactions)
-        restoreFormatsProviderChange(IModelApp.formatsProvider as FormatsProviderManager, intent.providerChange);
+        (IModelApp.formatsProvider as FormatsProviderManager).restoreProviderChange(intent.providerChange);
       throw error;
     }
   }
