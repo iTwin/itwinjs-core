@@ -63,10 +63,6 @@ function safeSessionId(sessionId: string): string {
   return sessionId.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
-function hasExited(child: ChildProcess): boolean {
-  return child.exitCode !== null || child.signalCode !== null;
-}
-
 function signalChildProcess(child: ChildProcess, signal: NodeJS.Signals): void {
   if (child.pid !== undefined && process.platform !== "win32") {
     try {
@@ -230,57 +226,116 @@ class ElectronSession {
 
 class ElectronSession {
   private readonly _child: ChildProcess;
+  private readonly _termination: Promise<ProcessTermination>;
   private _closePromise: Promise<void> | undefined;
-  private _ready = false;
+  private _terminated = false;
 
   public constructor(
     projectRoot: string,
     sessionEntryPath: string,
-    configuration: ProviderSessionConfiguration,
-    options: ElectronProviderOptions,
-    private readonly _closeTimeout: number,
+    private readonly _configuration: ProviderSessionConfiguration,
+    private readonly _processOptions: ElectronProcessOptions,
   ) {
-    const environment: NodeJS.ProcessEnv = {
-      ...process.env,
-      ...options.env,
-      [SESSION_CONFIGURATION_ENV]: JSON.stringify(configuration),
-    };
-
     this._child = spawn(
-      resolveElectronBinary(projectRoot, options),
-      [...(options.electronArgs ?? []), sessionEntryPath],
+      resolveElectronBinary(projectRoot, _processOptions.electronBinary),
+      [...(_processOptions.electronArgs ?? []), sessionEntryPath],
       {
         cwd: projectRoot,
-        env: environment,
+        env: {
+          ...process.env,
+          [SESSION_CONFIGURATION_ENV]: JSON.stringify(_configuration),
+        },
         stdio: ["ignore", "inherit", "inherit", "ipc"],
         detached: process.platform !== "win32",
       },
     );
-    this._child.on("error", (error) => {
-      if (this._ready)
-        console.error(`Electron provider session ${configuration.sessionId} process error:`, error);
+
+    this._termination = new Promise<ProcessTermination>((resolve) => {
+      let processError: Error | undefined;
+      this._child.once("error", (error) => processError = error);
+      this._child.once("close", (code, signal) => {
+        this._terminated = true;
+        cleanupCacheDir(_configuration.cacheDir);
+        resolve([code, signal, processError]);
+      });
     });
-    this._child.once("exit", () => cleanupCacheDir(configuration.cacheDir));
   }
 
-  public async start(configuration: ProviderSessionConfiguration, timeoutMs: number): Promise<void> {
-    await waitForReady(this._child, configuration.sessionId, configuration.url, timeoutMs);
-    this._ready = true;
+  public async start(timeoutMs: number): Promise<void> {
+    let resolveReady: (() => void) | undefined;
+    let rejectReady: ((error: Error) => void) | undefined;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const ready = new Promise<void>((resolve, reject) => {
+      resolveReady = resolve;
+      rejectReady = reject;
+    });
+    const onMessage = (message: unknown) => {
+      if (!isProviderSessionMessage(message) || message.sessionId !== this._configuration.sessionId)
+        return;
+      if (message.type === "ready")
+        resolveReady?.();
+      else
+        rejectReady?.(new Error(`Electron provider session ${this._configuration.sessionId} failed: ${message.message}`));
+    };
+
+    this._child.on("message", onMessage);
+    try {
+      await Promise.race([
+        ready,
+        this._termination.then(([code, signal, processError]): never => {
+          if (processError !== undefined)
+            throw new Error(`Electron provider session ${this._configuration.sessionId} failed before ready: ${processError.message}`, { cause: processError });
+          throw new Error(`Electron provider session ${this._configuration.sessionId} exited before ready: code=${code ?? "none"}, signal=${signal ?? "none"}`);
+        }),
+        new Promise<never>((_resolve, reject) => {
+          timeout = setTimeout(() => reject(new Error(
+            `Timed out after ${timeoutMs}ms waiting for Electron provider session ${this._configuration.sessionId} to load ${this._configuration.url}`,
+          )), timeoutMs);
+        }),
+      ]);
+    } finally {
+      this._child.off("message", onMessage);
+      if (timeout !== undefined)
+        clearTimeout(timeout);
+    }
   }
 
   public async close(): Promise<void> {
     this._closePromise ??= this._close();
-    await this._closePromise;
+    try {
+      await this._closePromise;
+    } catch (error) {
+      this._closePromise = undefined;
+      throw error;
+    }
+  }
+
+  private async _waitForTermination(timeoutMs: number): Promise<boolean> {
+    if (this._terminated)
+      return true;
+
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        this._termination.then(() => true),
+        new Promise<boolean>((resolve) => {
+          timeout = setTimeout(() => resolve(false), timeoutMs);
+        }),
+      ]);
+    } finally {
+      if (timeout !== undefined)
+        clearTimeout(timeout);
+    }
   }
 
   private async _close(): Promise<void> {
-    if (hasExited(this._child))
+    if (this._terminated)
       return;
 
     try {
       if (this._child.connected) {
         this._child.send({ type: "shutdown" }, (error) => {
-          if (error !== null && !hasExited(this._child))
+          if (error !== null && !this._terminated)
             signalChildProcess(this._child, "SIGTERM");
         });
       } else
@@ -289,15 +344,15 @@ class ElectronSession {
       signalChildProcess(this._child, "SIGTERM");
     }
 
-    if (await waitForExit(this._child, this._closeTimeout))
+    if (await this._waitForTermination(this._processOptions.closeTimeout ?? DEFAULT_CLOSE_TIMEOUT))
       return;
 
     signalChildProcess(this._child, "SIGTERM");
-    if (await waitForExit(this._child, FORCE_KILL_TIMEOUT))
+    if (await this._waitForTermination(FORCE_KILL_TIMEOUT))
       return;
 
     signalChildProcess(this._child, "SIGKILL");
-    if (!await waitForExit(this._child, FORCE_KILL_TIMEOUT))
+    if (!await this._waitForTermination(FORCE_KILL_TIMEOUT))
       throw new Error(`Electron provider process ${this._child.pid ?? "unknown"} did not exit after SIGKILL.`);
   }
 }
