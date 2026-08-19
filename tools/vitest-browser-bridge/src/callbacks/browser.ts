@@ -27,11 +27,7 @@ function getBrowserCallbackBridge(): BrowserCallbackBridge {
   return candidate;
 }
 
-/** Invoke a legacy-style named callback in the Electron main process.
- *
- * Certa established this as a dynamic test-hook boundary: the runtime callback name does not
- * carry argument or result types between processes. This bridge preserves that contract while
- * keeping transported values `unknown` rather than allowing Certa's `any` to spread into callers.
+/** Invoke a named callback in the Electron main process.
  * @internal
  */
 export async function invokeBackendCallback(name: string, ...args: unknown[]): Promise<unknown> {
