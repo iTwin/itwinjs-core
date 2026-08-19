@@ -1,10 +1,20 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    "incremental": false,
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@itwin/vitest-browser-bridge/electron-provider": ["src/electron-provider.ts"],
+      "@itwin/vitest-browser-bridge/callbacks/backend": ["src/callbacks/backend.ts"],
+      "@itwin/vitest-browser-bridge/callbacks/browser": ["src/callbacks/browser.ts"]
+    }
   },
   "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": []
+    "src/**/*.ts",
+    "src/**/*.mts"
+  ]
 }

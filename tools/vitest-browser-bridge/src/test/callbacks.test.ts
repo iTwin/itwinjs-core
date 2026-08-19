@@ -10,6 +10,7 @@ import {
   registerBackendCallback,
 } from "../callbacks/backend.js";
 import { installElectronCallbackHandler } from "../callbacks/electron.js";
+import { unwrapCallbackResponse } from "../callbacks/protocol.js";
 
 interface FakeEvent {
   readonly sender: { readonly id: number };
@@ -17,9 +18,11 @@ interface FakeEvent {
 
 class FakeIpcMain {
   public handler?: (event: FakeEvent, payload: unknown) => Promise<unknown>;
+  public handledChannels: string[] = [];
   public removedChannels: string[] = [];
 
-  public handle(_channel: string, listener: (event: FakeEvent, payload: unknown) => Promise<unknown>): void {
+  public handle(channel: string, listener: (event: FakeEvent, payload: unknown) => Promise<unknown>): void {
+    this.handledChannels.push(channel);
     this.handler = listener;
   }
 
@@ -45,18 +48,28 @@ describe("callback transport", () => {
       .resolves.toMatchObject({ ok: false, error: { message: "Callback name must be a non-empty string." } });
   });
 
-  it("serializes synchronous throws and asynchronous rejections", async () => {
+  it("serializes every thrown value into an explicit failure response", async () => {
     registerBackendCallback("syncFailure", () => {
       throw new Error("sync failure");
     });
     registerBackendCallback("asyncFailure", async () => {
       throw new Error("async failure");
     });
+    registerBackendCallback("nullPrototypeFailure", () => {
+      throw Object.create(null);
+    });
 
     await expect(dispatchBackendCallback(request("syncFailure", [])))
       .resolves.toMatchObject({ ok: false, error: { message: "sync failure" } });
     await expect(dispatchBackendCallback(request("asyncFailure", [])))
       .resolves.toMatchObject({ ok: false, error: { message: "async failure" } });
+    await expect(dispatchBackendCallback(request("nullPrototypeFailure", [])))
+      .resolves.toEqual({ ok: false, error: { message: "Unknown callback error." } });
+  });
+
+  it("rejects malformed callback responses at the renderer boundary", () => {
+    expect(() => unwrapCallbackResponse({ ok: true })).toThrow("Invalid callback response");
+    expect(() => unwrapCallbackResponse({ ok: false, error: {} })).toThrow("Invalid callback response");
   });
 
   it("accepts only the provider-owned WebContents and removes its handler", async () => {
@@ -72,6 +85,7 @@ describe("callback transport", () => {
 
     dispose();
     dispose();
+    expect(ipcMain.handledChannels).toEqual(["vitest-browser-bridge:callback"]);
     expect(ipcMain.removedChannels).toEqual(["vitest-browser-bridge:callback"]);
     expect(ipcMain.handler).toBeUndefined();
   });

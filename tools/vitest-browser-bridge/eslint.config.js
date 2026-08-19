@@ -3,7 +3,7 @@ const eslintBaseConfig = require("../../common/config/eslint/eslint.config.base"
 
 module.exports = [
   {
-    files: ["**/*.ts"],
+    files: ["**/*.{ts,mts}"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
     languageOptions: {
       ...iTwinPlugin.configs.iTwinjsRecommendedConfig.languageOptions,
@@ -14,7 +14,7 @@ module.exports = [
     },
   },
   {
-    files: ["**/*.ts"],
+    files: ["**/*.{ts,mts}"],
     rules: {
       "@typescript-eslint/no-misused-promises": "off",
       "@typescript-eslint/no-require-imports": "off",

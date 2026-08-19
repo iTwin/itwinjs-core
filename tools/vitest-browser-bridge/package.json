@@ -35,25 +35,36 @@
   },
   "scripts": {
     "build": "rimraf lib && tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node -e \"require('node:fs').writeFileSync('lib/esm/package.json', JSON.stringify({ type: 'module' }) + '\\n')\"",
-    "clean": "rimraf lib test-results",
+    "clean": "rimraf lib",
     "cover": "npm run -s test",
     "docs": "",
-    "lint": "eslint \"./src/**/*.ts\"",
+    "lint": "tsc -p tsconfig.eslint.json && eslint \"./src/**/*.{ts,mts}\"",
     "test": "npm run -s build && npm run -s test:unit && npm run -s test:electron-provider:built",
     "test:unit": "vitest run --config src/test/vitest.config.mts",
     "test:electron-provider": "npm run -s build && npm run -s test:electron-provider:built",
-    "test:electron-provider:built": "rimraf test-results && vitest run --config src/test/vitest.electron-provider.config.mts --reporter=default --reporter=junit --outputFile=test-results/electron-provider.junit.xml && node -e \"const fs=require('node:fs'); const p='test-results/electron-provider.junit.xml'; if (!fs.existsSync(p) || !fs.readFileSync(p, 'utf8').includes('<testsuites')) process.exit(1)\""
+    "test:electron-provider:built": "vitest run --config src/test/vitest.electron-provider.config.mts"
+  },
+  "dependencies": {
+    "@vitest/browser": "^4.1.10"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
     "@opentelemetry/api": "1.0.4",
     "@types/node": "~20.17.0",
-    "@vitest/browser": "^4.1.10",
     "electron": "^43.0.0",
     "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
     "vitest": "^4.1.10"
+  },
+  "peerDependencies": {
+    "electron": ">=35.0.0 <44.0.0",
+    "vitest": "^4.1.10"
+  },
+  "peerDependenciesMeta": {
+    "electron": {
+      "optional": true
+    }
   }
 }
