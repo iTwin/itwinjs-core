@@ -81,7 +81,7 @@ describe("callback transport", () => {
     await expect(handler?.(eventFrom(42), request("echo", ["from provider"])))
       .resolves.toEqual({ ok: true, value: "from provider" });
     await expect(handler?.(eventFrom(7), request("echo", ["from another window"])))
-      .rejects.toThrow("unexpected Electron WebContents");
+      .rejects.toThrow("unexpected Electron browser window");
 
     dispose();
     dispose();

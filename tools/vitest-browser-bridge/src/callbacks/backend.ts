@@ -19,6 +19,7 @@ interface BackendCallbackState {
   readonly callbacks: Map<string, BackendCallback>;
 }
 
+// User code may register through ESM while the provider dispatches through CJS.
 const CALLBACKS_SYMBOL = Symbol.for("@itwin/vitest-browser-bridge/backend-callbacks");
 
 function getState(): BackendCallbackState {
@@ -31,10 +32,6 @@ function getState(): BackendCallbackState {
 }
 
 /** Register one explicitly named test callback in the current backend process.
- *
- * This intentionally retains Certa's dynamic, name-based callback model for migration
- * compatibility. Argument types help the registration site, but are erased at the process
- * boundary because a runtime callback name cannot establish their types for the renderer.
  * @internal
  */
 export function registerBackendCallback<Arguments extends readonly unknown[]>(name: string, callback: (...args: Arguments) => unknown): void {

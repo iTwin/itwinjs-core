@@ -18,17 +18,17 @@ interface IpcMainCallbackHost {
   removeHandler(channel: string): void;
 }
 
-/** Install the callback handler for one provider-owned WebContents.
+/** Install the callback handler for the provider-owned browser window.
  * @internal
  */
 export function installElectronCallbackHandler(
   ipcMain: IpcMainCallbackHost,
-  expectedWebContentsId: number,
+  expectedSenderId: number,
 ): () => void {
   let disposed = false;
   ipcMain.handle(CALLBACK_CHANNEL, async (event, payload) => {
-    if (event.sender.id !== expectedWebContentsId)
-      throw new Error("Callback request came from an unexpected Electron WebContents.");
+    if (event.sender.id !== expectedSenderId)
+      throw new Error("Callback request came from an unexpected Electron browser window.");
     return dispatchBackendCallback(payload);
   });
 
