@@ -71,6 +71,7 @@ function exitProviderProcess(exitCode: number): void {
  * @internal
  */
 export async function runProviderSession(environment: ProviderSessionConfiguration): Promise<number> {
+  // Isolate Electron profile state in the provider-created per-session temporary directory.
   app.setPath("userData", path.join(environment.cacheDir, "electron-user-data"));
 
   let browserSession: Session | undefined;
