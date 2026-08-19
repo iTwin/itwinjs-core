@@ -249,57 +249,29 @@ export class HitDetail {
   public get path(): HitPath | undefined { return this._props.path; }
 
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
-  public constructor(props: HitDetailProps);
+  public constructor(props: HitDetailProps) {
+    // Ignore an empty path.
+    const path = props.path?.sectionDrawingAttachment || props.path?.viewAttachment ? props.path : undefined;
 
-  /** @deprecated in 4.1 - might be removed in next major version. Use the overload that takes a [[HitDetailProps]]. */
-  public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
-
-  /** @internal */
-  public constructor(arg0: Point3d | HitDetailProps, viewport?: ScreenViewport, hitSource?: HitSource, hitPoint?: Point3d, sourceId?: string, priority?: HitPriority, distXY?: number, distFraction?: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
-    if (arg0 instanceof Point3d) {
-      assert(undefined !== viewport && undefined !== hitSource && undefined !== hitPoint && undefined !== sourceId);
-      assert(undefined !== priority && undefined !== distXY && undefined !== distFraction);
-
-      this._props = {
-        testPoint: arg0,
-        viewport,
-        hitSource,
-        hitPoint,
-        sourceId,
-        priority,
-        distXY,
-        distFraction,
-        subCategoryId,
-        geometryClass,
-        modelId,
-        sourceIModel,
-        tileId,
-        isClassifier,
-      };
-    } else {
-      // Ignore an empty path.
-      const path = arg0.path?.sectionDrawingAttachment || arg0.path?.viewAttachment ? arg0.path : undefined;
-
-      // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
-      this._props = {
-        testPoint: arg0.testPoint,
-        viewport: arg0.viewport,
-        hitSource: arg0.hitSource,
-        hitPoint: arg0.hitPoint,
-        sourceId: arg0.sourceId,
-        priority: arg0.priority,
-        distXY: arg0.distXY,
-        distFraction: arg0.distFraction,
-        subCategoryId: arg0.subCategoryId,
-        geometryClass: arg0.geometryClass,
-        modelId: arg0.modelId,
-        sourceIModel: arg0.sourceIModel,
-        transformFromSourceIModel: arg0.transformFromSourceIModel,
-        tileId: arg0.tileId,
-        isClassifier: arg0.isClassifier,
-        path,
-      };
-    }
+    // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
+    this._props = {
+      testPoint: props.testPoint,
+      viewport: props.viewport,
+      hitSource: props.hitSource,
+      hitPoint: props.hitPoint,
+      sourceId: props.sourceId,
+      priority: props.priority,
+      distXY: props.distXY,
+      distFraction: props.distFraction,
+      subCategoryId: props.subCategoryId,
+      geometryClass: props.geometryClass,
+      modelId: props.modelId,
+      sourceIModel: props.sourceIModel,
+      transformFromSourceIModel: props.transformFromSourceIModel,
+      tileId: props.tileId,
+      isClassifier: props.isClassifier,
+      path,
+    };
   }
 
   /** Get the type of HitDetail.
