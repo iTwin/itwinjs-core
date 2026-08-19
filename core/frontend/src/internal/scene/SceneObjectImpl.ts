@@ -39,6 +39,6 @@ class IModelSceneObjectImpl implements IModelSceneObject {
   }
 }
 
-export function iModelSceneObjectFromViewState(view: ViewState): IModelSceneObject {
+export function iModelSceneObjectFromView(view: ViewState): IModelSceneObject {
   return new IModelSceneObjectImpl(view);
 }

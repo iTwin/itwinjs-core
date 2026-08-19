@@ -69,6 +69,8 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
+import { ViewportScene } from "./scene/ViewportScene";
+import { viewportSceneFromView } from "./internal/scene/ViewportSceneImpl";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -364,6 +366,8 @@ export abstract class Viewport implements Disposable, TileUser {
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
    */
   private _view!: ViewState;
+  /** Initialized and re-initialized at the same time as _view. */
+  private _scene!: ViewportScene;
   /** A function executed by `setView()` when `this._view` changes. */
   private readonly _detachFromView: VoidFunction[] = [];
   private readonly _detachFromDisplayStyle: VoidFunction[] = [];
@@ -1198,6 +1202,7 @@ export abstract class Viewport implements Disposable, TileUser {
       this._mapTiledGraphicsProvider.setView(view);
     this.detachFromView();
     this._view = view;
+    this._scene = viewportSceneFromView(view);
     this.attachToView();
   }
 
@@ -1471,6 +1476,10 @@ export abstract class Viewport implements Disposable, TileUser {
   /** The ViewState for this Viewport */
   public get view(): ViewState {
     return this._view;
+  }
+
+  public get scene(): ViewportScene {
+    return this._scene;
   }
 
   /** @internal */
