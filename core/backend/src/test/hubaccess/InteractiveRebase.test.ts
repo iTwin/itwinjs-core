@@ -491,6 +491,10 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
     chai.expect(conflict.ours.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
+
+    const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(newId);
+    chai.expect(localElement.federationGuid).not.to.equal(guid);
+    chai.expect(localElement.federationGuid).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
   });
 
   it("can present a conflict where a locally-updated row triggers a unique constraint violation", async () => {
@@ -548,6 +552,9 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours.code.scope).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.scope);
     chai.expect(conflict.ours.code.spec).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec);
     chai.expect(conflict.ours.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
+
+    const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(localElement.code.value).to.equal("SomeValue (Conflict)");
   });
 
   it("can present a conflict where a partial update of a code triggers a unique constraint violation", async () => {

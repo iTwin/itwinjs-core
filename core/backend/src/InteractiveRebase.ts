@@ -8,10 +8,10 @@
 
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { EditTxn } from "./EditTxn";
-import { assert, DbConflictResolution, DbResult, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
+import { assert, DbResult, Guid, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
 import { ElementProps, IModelError, TxnProps } from "@itwin/core-common";
+import { SchemaView, SchemaViewPrimitiveType } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
-import { RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { getChangedProperties, RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
 import { Element } from "./Element";
@@ -296,17 +296,20 @@ export interface TxnRebaseGroup {
 }
 
 const INTERACTIVE_REBASE_CONFLICT_HANDLER_ID = "InteractiveRebaseConflictHandler";
+const MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS = 10;
 
 export class InteractiveRebase {
   private _db: BriefcaseDb;
+  private _schemaView: SchemaView;
   private _editTxn: EditTxn | undefined;
   private _txns: TxnProps[];
   private _groups: TxnRebaseGroup[];
   private _currentGroupIndex: number = -1;
   private _conflicts: RebaseConflict[] = [];
 
-  constructor(db: BriefcaseDb, txns: TxnProps[]) {
+  constructor(db: BriefcaseDb, txns: TxnProps[], schemaView: SchemaView) {
     this._db = db;
+    this._schemaView = schemaView;
     this._txns = txns;
     this._groups = this._txns.map(txn => ({ txns: [txn] }));
   }
@@ -614,7 +617,7 @@ export class InteractiveRebase {
    * [[UniqueConstraintConflictDetail]]; for updates/deletes the row already exists by definition, so
    * id-collision detection doesn't apply and the write is not retried (it would just fail again).
    */
-  private applyOrRecordConstraintConflict<T>(id: Id64String, classFullName: string, oldProps: RebaseConflictProperties | undefined, newProps: RebaseConflictProperties | undefined, apply: () => T): T | undefined {
+  private applyOrRecordConstraintConflict<T>(id: Id64String, classFullName: string, oldProps: RebaseConflictProperties | undefined, newProps: RebaseConflictProperties | undefined, apply: () => T, attempt: number = 0): T | undefined {
     // PRINCIPLE: The application of "our" change must succeed in the end, because that increases the chances
     // that future changes and txns apply successfully. Explicit interactive resolution can restore "their" changes
     // if desired.
@@ -661,7 +664,7 @@ export class InteractiveRebase {
         InsertRebaseConflictImpl.record(this, this._conflicts, newProps!, theirs);
 
         // Attempt to apply "our" change to the existing row, which may trigger further conflicts (e.g. UNIQUE constraint violations).
-        this.applyOrRecordConstraintConflict(id, classFullName, theirs, newProps, () => this._db[_nativeDb].updateInstance(newProps!, { useJsNames: true }));
+        this.applyOrRecordConstraintConflict(id, classFullName, theirs, newProps, () => this._db[_nativeDb].updateInstance(newProps!, { useJsNames: true }), attempt + 1);
       } else {
         // Some other UNIQUE index (not the primary key) was violated.
         const conflictDetail = err.conflictDetail as UniqueConstraintConflictDetail | undefined;
@@ -669,7 +672,9 @@ export class InteractiveRebase {
 
         // Fix this UNIQUE constraint violation by changing the value of one of the properties involved in the constraint until we
         // find a value that doesn't collide.
-        const fixedProps = this.fixUniqueConstraintViolation(newProps!, conflictDetail?.uniqueConstraintProperties);
+        const fixedProps = attempt < MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS
+          ? this.fixUniqueConstraintViolation(newProps!, conflictDetail?.uniqueConstraintProperties, attempt)
+          : undefined;
 
         // Apply the updated row, which may trigger further conflicts (e.g. UNIQUE constraint violations).
         if (fixedProps !== undefined) {
@@ -677,16 +682,44 @@ export class InteractiveRebase {
             if (oldProps === undefined) {
               this._db[_nativeDb].insertInstance(fixedProps, { forceUseId: true, useJsNames: true });
             } else {
-              this._db[_nativeDb].updateInstance(newProps!, { useJsNames: true });
+              this._db[_nativeDb].updateInstance(fixedProps, { useJsNames: true });
             }
-          });
+          }, attempt + 1);
         }
       }
       return undefined;
     }
   }
 
-  private fixUniqueConstraintViolation(_props: RebaseConflictProperties, _uniqueConstraintProperties: string[] | undefined): RebaseConflictProperties | undefined {
+  private fixUniqueConstraintViolation(props: RebaseConflictProperties, uniqueConstraintProperties: string[] | undefined, attempt: number): RebaseConflictProperties | undefined {
+    if (uniqueConstraintProperties === undefined || uniqueConstraintProperties.length === 0)
+      return undefined;
+
+    const classFullName = props.classFullName;
+    if (typeof classFullName !== "string")
+      return undefined;
+
+    const fixedProps = { ...props };
+    for (const accessString of uniqueConstraintProperties) {
+      const property = resolveSchemaViewProperty(this._schemaView, classFullName, accessString);
+      if (property === undefined || property.isArray() || property.isNavigation() || !property.isPrimitive())
+        continue;
+
+      const currentValue = getPropertyValue(props, accessString);
+      let replacement: string | undefined;
+      if (property.primitiveType === SchemaViewPrimitiveType.Binary && property.extendedTypeName === "BeGuid") {
+        replacement = Guid.createValue();
+      } else if (property.primitiveType === SchemaViewPrimitiveType.String && typeof currentValue === "string" && currentValue.length > 0) {
+        const baseValue = currentValue.replace(/\(Conflict(?:-\d+)?\)$/, "").trimEnd();
+        replacement = `${baseValue}${attempt === 0 ? " (Conflict)" : ` (Conflict-${attempt})`}`;
+      }
+
+      if (replacement !== undefined) {
+        setPropertyValue(fixedProps, accessString, replacement);
+        return fixedProps;
+      }
+    }
+
     return undefined;
   }
 
@@ -819,6 +852,26 @@ function getPropertyValue(props: RebaseConflictProperties, accessString: string)
     value = value[token];
   }
   return value;
+}
+
+function resolveSchemaViewProperty(schemaView: SchemaView, classFullName: string, accessString: string): SchemaView.Property | undefined {
+  let classDef: SchemaView.Class | undefined = schemaView.findClass(classFullName);
+  if (classDef === undefined)
+    return undefined;
+
+  const tokens = accessString.split(".");
+  for (let index = 0; index < tokens.length; index++) {
+    const property: SchemaView.Property | undefined = classDef.getProperty(tokens[index]);
+    if (property === undefined)
+      return undefined;
+
+    if (index === tokens.length - 1 || !property.isStruct())
+      return property;
+
+    classDef = property.structClass;
+  }
+
+  return undefined;
 }
 
 /** Writes the value identified by a (possibly dotted) access string, shallow-copying each object along the

@@ -648,10 +648,11 @@ export class BriefcaseManager {
 
     db.txns.rebaser.notifyApplyIncomingChangesEnd(changesets);
 
+    const schemaView = await db.getSchemaView();
     const reversedTxns = nativeDb.pullMergeRebaseBegin();
     const reversedTxnProps = reversedTxns.map((_) => db.txns.getTxnProps(_)).filter((_): _ is TxnProps => _ !== undefined);
 
-    return new InteractiveRebase(db, reversedTxnProps);
+    return new InteractiveRebase(db, reversedTxnProps, schemaView);
 
     // if (rebaseChangesets.length > 0) {
     //   db.txns.rebaser.addConflictHandler({
