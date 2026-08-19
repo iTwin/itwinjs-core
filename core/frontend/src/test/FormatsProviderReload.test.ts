@@ -194,15 +194,15 @@ describe("Formats provider reload invariants", () => {
 
     const loadStarted = deferred<void>();
     const releaseLoad = deferred<void>();
-    const originalBuild = (quantityFormatter as any)._buildFormatAndParsingMapsForSystem.bind(quantityFormatter);
+    const originalLoad = (quantityFormatter as any).loadFormatAndParsingMapsForSystem.bind(quantityFormatter);
     let shouldBlock = true;
-    (quantityFormatter as any)._buildFormatAndParsingMapsForSystem = async function (...args: any[]) {
+    (quantityFormatter as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
       if (shouldBlock) {
         shouldBlock = false;
         loadStarted.resolve();
         await releaseLoad.promise;
       }
-      return originalBuild(...args);
+      return originalLoad(...args);
     };
 
     const provider = createFormatsProvider(async (formatName) => formatName === name ? providerFormat : undefined);
@@ -220,7 +220,7 @@ describe("Formats provider reload invariants", () => {
       expect(quantityFormatter.getSpecsByNameAndUnit({ name, persistenceUnitName: "Units.M", system: "metric" })?.formatterSpec.format.precision).toBe(5);
     } finally {
       releaseLoad.resolve();
-      (quantityFormatter as any)._buildFormatAndParsingMapsForSystem = originalBuild;
+      (quantityFormatter as any).loadFormatAndParsingMapsForSystem = originalLoad;
       await IModelApp.setFormatsProvider(new QuantityTypeFormatsProvider(), { unitSystem: originalUnitSystem });
     }
   });
@@ -482,9 +482,9 @@ describe("Formats provider reload invariants", () => {
     const firstLoad = new Promise<void>((resolve) => { releaseFirstLoad = resolve; });
     let firstLoadStarted!: () => void;
     const firstLoadStartedPromise = new Promise<void>((resolve) => { firstLoadStarted = resolve; });
-    const originalLoad = (qf as any)._buildFormatAndParsingMapsForSystem.bind(qf);
+    const originalLoad = (qf as any).loadFormatAndParsingMapsForSystem.bind(qf);
     let loadCount = 0;
-    (qf as any)._buildFormatAndParsingMapsForSystem = async function (...args: any[]) {
+    (qf as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
       if (++loadCount === 1) {
         firstLoadStarted();
         await firstLoad;
@@ -512,7 +512,7 @@ describe("Formats provider reload invariants", () => {
       expect(qf.activeUnitSystem).toBe("imperial");
     } finally {
       releaseFirstLoad();
-      (qf as any)._buildFormatAndParsingMapsForSystem = originalLoad;
+      (qf as any).loadFormatAndParsingMapsForSystem = originalLoad;
       qf[Symbol.dispose]();
     }
   });
@@ -525,8 +525,8 @@ describe("Formats provider reload invariants", () => {
     const load = new Promise<void>((resolve) => { releaseLoad = resolve; });
     let loadStarted!: () => void;
     const loadStartedPromise = new Promise<void>((resolve) => { loadStarted = resolve; });
-    const originalLoad = (qf as any)._buildFormatAndParsingMapsForSystem.bind(qf);
-    (qf as any)._buildFormatAndParsingMapsForSystem = async function (...args: any[]) {
+    const originalLoad = (qf as any).loadFormatAndParsingMapsForSystem.bind(qf);
+    (qf as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
       loadStarted();
       await load;
       return originalLoad(...args);
@@ -550,7 +550,7 @@ describe("Formats provider reload invariants", () => {
     } finally {
       releaseLoad();
       removeReadyListener();
-      (qf as any)._buildFormatAndParsingMapsForSystem = originalLoad;
+      (qf as any).loadFormatAndParsingMapsForSystem = originalLoad;
       qf[Symbol.dispose]();
     }
   });

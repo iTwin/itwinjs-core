@@ -45,8 +45,6 @@ interface ReloadCaller {
   reject: (reason?: unknown) => void;
 }
 
-type ProviderReloadIntent = Extract<ReloadIntent, { scope: "formatsChanged" }> & { providerChange: FormatsProviderChange };
-
 /**
  * Serializes formatting reloads, keeps the newest pending request, and resolves or rejects callers waiting for formatting to become ready.
  * @internal
@@ -54,7 +52,7 @@ type ProviderReloadIntent = Extract<ReloadIntent, { scope: "formatsChanged" }> &
 export class FormatsProviderReloadCoordinator {
   private _reloadInFlight = false;
   private _pendingReload: ReloadIntent | undefined;
-  private _pendingProviderReload: ProviderReloadIntent | undefined;
+  private _pendingProviderReload: ReloadIntent | undefined;
   private _reloadCaller: ReloadCaller | undefined;
   private _isDisposed = false;
 
@@ -171,7 +169,7 @@ export class FormatsProviderReloadCoordinator {
   }
 
   private _queuePendingReload(intent: ReloadIntent): void {
-    if (this._isProviderReload(intent))
+    if (intent.scope === "formatsChanged" && intent.providerChange)
       this._pendingProviderReload = intent;
     else
       this._pendingReload = intent;
@@ -200,10 +198,6 @@ export class FormatsProviderReloadCoordinator {
     const nextReload = this._pendingReload;
     this._pendingReload = undefined;
     return nextReload;
-  }
-
-  private _isProviderReload(intent: ReloadIntent): intent is ProviderReloadIntent {
-    return intent.scope === "formatsChanged" && intent.providerChange !== undefined;
   }
 
   /** Resolves the caller after the reload queue finishes successfully. */

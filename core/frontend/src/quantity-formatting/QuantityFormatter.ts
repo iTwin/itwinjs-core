@@ -364,7 +364,6 @@ interface FormatsProviderManagerEvent {
  */
 export class FormatsProviderManager implements FormatsProvider {
   public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
-  /** @internal */
   public onFormatsChangedInternal = new BeEvent<(event: FormatsProviderManagerEvent) => void>();
   private _removeProviderListener?: () => void;
   private _formatsProviderChange?: FormatsProviderChange;
@@ -456,16 +455,11 @@ export class FormatsProviderManager implements FormatsProvider {
 
 type FormatSpecsRegistry = Map<string, Map<string, Map<UnitSystemKey, FormattingSpecEntry>>>;
 
-interface FormattingSpecMaps {
+interface FormattingStateSnapshot {
+  formatSpecsRegistry: FormatSpecsRegistry;
   activeFormatSpecsByType: Map<QuantityTypeKey, FormatterSpec>;
   activeParserSpecsByType: Map<QuantityTypeKey, ParserSpec>;
-}
-
-interface FormattingStateCandidate extends FormattingSpecMaps {
-  formatSpecsRegistry: FormatSpecsRegistry;
   activeUnitSystem: UnitSystemKey;
-  requestedUnitSystem?: UnitSystemKey;
-  deferredSystemChanged?: FormattingUnitSystemChangedArgs;
 }
 
 /** The QuantityFormatter class provides methods for formatting and parsing quantities. There are a set of standard quantity types
@@ -562,6 +556,8 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   private readonly _disposedError = new Error("QuantityFormatter was disposed before the reload completed.");
   private readonly _reloadCoordinator: FormatsProviderReloadCoordinator;
   private _removeFormatsProviderListener?: () => void;
+  private _activeFormatSpecsTarget?: Map<QuantityTypeKey, FormatterSpec>;
+  private _activeParserSpecsTarget?: Map<QuantityTypeKey, ParserSpec>;
   /**
    * constructor
    * @param showMetricOrUnitSystem - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. To explicitly
@@ -639,28 +635,21 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * @internal
    */
   private async _executeReload(intent: ReloadIntent): Promise<void> {
+    const snapshot = this._captureFormattingState();
     try {
-      let candidate: FormattingStateCandidate;
       switch (intent.scope) {
         case "full":
-          candidate = await this._reloadCore();
+          await this._reloadCore();
           break;
         case "formatsChanged":
-          candidate = await this._buildFormatsChangedCandidate(intent);
+          await this._executeFormatsChangedReload(intent);
           break;
         case "activeSystem":
-          candidate = await this._buildActiveSystemCandidate(intent);
+          await this._executeActiveSystemReload(intent);
           break;
       }
-
-      if (intent.scope === "formatsChanged" && intent.providerChange && this._ownsFormatsProviderTransactions) {
-        const manager = IModelApp.formatsProvider as FormatsProviderManager;
-        if (!manager.applyFormatsProviderChange(intent.providerChange))
-          throw new ReloadSupersededError();
-      }
-
-      this._commitFormattingState(candidate);
     } catch (error) {
+      this._restoreFormattingState(snapshot);
       if (intent.scope === "formatsChanged" && intent.providerChange && this._ownsFormatsProviderTransactions)
         (IModelApp.formatsProvider as FormatsProviderManager).restoreProviderChange(intent.providerChange);
       if (intent.scope === "activeSystem" && this._requestedUnitSystem === intent.system)
@@ -669,52 +658,79 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     }
   }
 
-  private async _buildFormatsChangedCandidate(intent: Extract<ReloadIntent, { scope: "formatsChanged" }>): Promise<FormattingStateCandidate> {
+  private async _executeFormatsChangedReload(intent: Extract<ReloadIntent, { scope: "formatsChanged" }>): Promise<void> {
     const manager = IModelApp.formatsProvider as FormatsProviderManager;
     if (this._ownsFormatsProviderTransactions && !manager.isCurrentFormatsProviderReload(intent.provider, intent.providerChange))
       throw new ReloadSupersededError();
 
     const nextRegistry = this._cloneFormatSpecsRegistry(this._formatSpecsRegistry);
     await this._rebuildRegistryFromProvider(intent.args, intent.provider, nextRegistry);
-    const nextSpecs = await this._buildFormatAndParsingMapsForSystem(intent.targetUnitSystem);
-    const deferredSystemChanged = intent.args.impliedUnitSystem && intent.targetUnitSystem !== this._activeUnitSystem
-      ? { system: intent.targetUnitSystem }
-      : undefined;
-    const requestedUnitSystem = intent.args.impliedUnitSystem && this._requestedUnitSystem === this._activeUnitSystem
-      ? intent.targetUnitSystem
-      : undefined;
 
-    return {
-      formatSpecsRegistry: nextRegistry,
-      ...nextSpecs,
-      activeUnitSystem: intent.targetUnitSystem,
-      requestedUnitSystem,
-      deferredSystemChanged,
-    };
+    const previousSystem = this._activeUnitSystem;
+    const nextFormatSpecs = new Map<QuantityTypeKey, FormatterSpec>();
+    const nextParserSpecs = new Map<QuantityTypeKey, ParserSpec>();
+    this._activeFormatSpecsTarget = nextFormatSpecs;
+    this._activeParserSpecsTarget = nextParserSpecs;
+    try {
+      await this.loadFormatAndParsingMapsForSystem(intent.targetUnitSystem);
+    } finally {
+      this._activeFormatSpecsTarget = undefined;
+      this._activeParserSpecsTarget = undefined;
+    }
+
+    this._formatSpecsRegistry = nextRegistry;
+    this._activeFormatSpecsByType = nextFormatSpecs;
+    this._activeParserSpecsByType = nextParserSpecs;
+    this._activeUnitSystem = intent.targetUnitSystem;
+
+    if (intent.providerChange && this._ownsFormatsProviderTransactions && !manager.applyFormatsProviderChange(intent.providerChange))
+      throw new ReloadSupersededError();
+
+    if (intent.args.impliedUnitSystem && this._requestedUnitSystem === previousSystem)
+      this._requestedUnitSystem = intent.targetUnitSystem;
+    if (intent.args.impliedUnitSystem && intent.targetUnitSystem !== previousSystem)
+      this._deferredSystemChangedEmit = { system: intent.targetUnitSystem };
   }
 
-  private async _buildActiveSystemCandidate(intent: Extract<ReloadIntent, { scope: "activeSystem" }>): Promise<FormattingStateCandidate> {
-    const nextSpecs = await this._buildFormatAndParsingMapsForSystem(intent.system);
-    return {
-      formatSpecsRegistry: this._formatSpecsRegistry,
-      ...nextSpecs,
-      activeUnitSystem: intent.system,
-      deferredSystemChanged: intent.emitSystemChanged ? { system: intent.system } : undefined,
-    };
-  }
+  private async _executeActiveSystemReload(intent: Extract<ReloadIntent, { scope: "activeSystem" }>): Promise<void> {
+    const nextFormatSpecs = new Map<QuantityTypeKey, FormatterSpec>();
+    const nextParserSpecs = new Map<QuantityTypeKey, ParserSpec>();
+    this._activeFormatSpecsTarget = nextFormatSpecs;
+    this._activeParserSpecsTarget = nextParserSpecs;
+    try {
+      await this.loadFormatAndParsingMapsForSystem(intent.system);
+    } finally {
+      this._activeFormatSpecsTarget = undefined;
+      this._activeParserSpecsTarget = undefined;
+    }
 
-  private _commitFormattingState(candidate: FormattingStateCandidate): void {
-    this._formatSpecsRegistry = candidate.formatSpecsRegistry;
-    this._activeFormatSpecsByType = candidate.activeFormatSpecsByType;
-    this._activeParserSpecsByType = candidate.activeParserSpecsByType;
-    this._activeUnitSystem = candidate.activeUnitSystem;
-    if (candidate.requestedUnitSystem !== undefined)
-      this._requestedUnitSystem = candidate.requestedUnitSystem;
-    this._deferredSystemChangedEmit = candidate.deferredSystemChanged;
+    this._activeFormatSpecsByType = nextFormatSpecs;
+    this._activeParserSpecsByType = nextParserSpecs;
+    this._activeUnitSystem = intent.system;
+    if (intent.emitSystemChanged)
+      this._deferredSystemChangedEmit = { system: intent.system };
   }
 
   private get _ownsFormatsProviderTransactions(): boolean {
     return IModelApp.quantityFormatter === this;
+  }
+
+  private _captureFormattingState(): FormattingStateSnapshot {
+    return {
+      formatSpecsRegistry: this._cloneFormatSpecsRegistry(this._formatSpecsRegistry),
+      activeFormatSpecsByType: new Map(this._activeFormatSpecsByType),
+      activeParserSpecsByType: new Map(this._activeParserSpecsByType),
+      activeUnitSystem: this._activeUnitSystem,
+    };
+  }
+
+  private _restoreFormattingState(snapshot: FormattingStateSnapshot): void {
+    this._activeFormatSpecsTarget = undefined;
+    this._activeParserSpecsTarget = undefined;
+    this._formatSpecsRegistry = snapshot.formatSpecsRegistry;
+    this._activeFormatSpecsByType = snapshot.activeFormatSpecsByType;
+    this._activeParserSpecsByType = snapshot.activeParserSpecsByType;
+    this._activeUnitSystem = snapshot.activeUnitSystem;
   }
 
   private _cloneFormatSpecsRegistry(source: FormatSpecsRegistry): FormatSpecsRegistry {
@@ -826,23 +842,15 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
    * @internal public for unit test usage
    */
   protected async loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void> {
-    const specs = await this._buildFormatAndParsingMapsForSystem(systemType ?? this._activeUnitSystem);
-    this._activeFormatSpecsByType = specs.activeFormatSpecsByType;
-    this._activeParserSpecsByType = specs.activeParserSpecsByType;
-  }
+    const systemKey = (undefined !== systemType) ? systemType : this._activeUnitSystem;
+    const formatPropsByType = new Map<QuantityTypeDefinition, FormatProps>();
 
-  private async _buildFormatAndParsingMapsForSystem(systemKey: UnitSystemKey): Promise<FormattingSpecMaps> {
-    const activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
-    const activeParserSpecsByType = new Map<QuantityTypeKey, ParserSpec>();
+    // load cache for every registered QuantityType
+    for (const [_, entry] of this.quantityTypesRegistry)
+      formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntryAndSystem(entry, systemKey));
 
-    for (const entry of this.quantityTypesRegistry.values()) {
-      const formatProps = this.getFormatPropsByQuantityTypeEntryAndSystem(entry, systemKey);
-      const specs = await this._createFormatAndParserSpecs(entry, formatProps);
-      activeFormatSpecsByType.set(entry.key, specs.formatterSpec);
-      activeParserSpecsByType.set(entry.key, specs.parserSpec);
-    }
-
-    return { activeFormatSpecsByType, activeParserSpecsByType };
+    for (const [entry, formatProps] of formatPropsByType)
+      await this.loadFormatAndParserSpec(entry, formatProps);
   }
 
   private getFormatPropsByQuantityTypeEntryAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
@@ -855,16 +863,11 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     return quantityEntry.getDefaultFormatPropsBySystem(requestedSystem);
   }
 
-  private async _createFormatAndParserSpecs(quantityTypeDefinition: QuantityTypeDefinition, formatProps: FormatProps): Promise<{ formatterSpec: FormatterSpec; parserSpec: ParserSpec }> {
+  private async loadFormatAndParserSpec(quantityTypeDefinition: QuantityTypeDefinition, formatProps: FormatProps) {
     const formatterSpec = await quantityTypeDefinition.generateFormatterSpec(formatProps, this.unitsProvider);
     const parserSpec = await quantityTypeDefinition.generateParserSpec(formatProps, this.unitsProvider, this.alternateUnitLabelsProvider);
-    return { formatterSpec, parserSpec };
-  }
-
-  private async loadFormatAndParserSpec(quantityTypeDefinition: QuantityTypeDefinition, formatProps: FormatProps) {
-    const specs = await this._createFormatAndParserSpecs(quantityTypeDefinition, formatProps);
-    this._activeFormatSpecsByType.set(quantityTypeDefinition.key, specs.formatterSpec);
-    this._activeParserSpecsByType.set(quantityTypeDefinition.key, specs.parserSpec);
+    (this._activeFormatSpecsTarget ?? this._activeFormatSpecsByType).set(quantityTypeDefinition.key, formatterSpec);
+    (this._activeParserSpecsTarget ?? this._activeParserSpecsByType).set(quantityTypeDefinition.key, parserSpec);
   }
 
   // repopulate formatSpec and parserSpec entries using only default format
@@ -955,26 +958,22 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
   /** Core reload logic — does all async I/O and cache rebuilding without events or state management.
    * @internal
    */
-  private async _reloadCore(): Promise<FormattingStateCandidate> {
+  private async _reloadCore(): Promise<void> {
     await this.initializeQuantityTypesRegistry();
 
-    const nextRegistry = this._cloneFormatSpecsRegistry(this._formatSpecsRegistry);
     const initialKoQs = [["DefaultToolsUnits.LENGTH", "Units.M"], ["DefaultToolsUnits.ANGLE", "Units.RAD"], ["DefaultToolsUnits.AREA", "Units.SQ_M"], ["DefaultToolsUnits.VOLUME", "Units.CUB_M"], ["DefaultToolsUnits.LENGTH_COORDINATE", "Units.M"], ["CivilUnits.STATION", "Units.M"], ["CivilUnits.LENGTH", "Units.M"], ["AecUnits.LENGTH", "Units.M"]];
     for (const entry of initialKoQs) {
       for (const system of QuantityFormatter._allUnitSystems) {
         try {
-          await this._addFormattingSpecsToRegistry({ name: entry[0], persistenceUnitName: entry[1], system }, nextRegistry);
+          await this.addFormattingSpecsToRegistry({ name: entry[0], persistenceUnitName: entry[1], system });
         } catch (err: any) {
           Logger.logWarning(`${FrontendLoggerCategory.Package}.QuantityFormatter`, err.toString());
         }
       }
     }
 
-    return {
-      formatSpecsRegistry: nextRegistry,
-      ...(await this._buildFormatAndParsingMapsForSystem(this._activeUnitSystem)),
-      activeUnitSystem: this._activeUnitSystem,
-    };
+    // initialize default format and parsing specs
+    await this.loadFormatAndParsingMapsForSystem();
   }
 
   /** Rebuild the formatting specs registry from a provider based on changed args.

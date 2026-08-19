@@ -1027,17 +1027,17 @@ describe("Failed reload recovery (Issue 5)", () => {
     await qf.onInitialized();
     expect(qf.isReady).toBe(true);
 
-    // Spy on the candidate builder to force it to throw
-    const originalLoad = (qf as any)._buildFormatAndParsingMapsForSystem.bind(qf);
+    // Spy on the format/parser map loader to force it to throw
+    const originalLoad = (qf as any).loadFormatAndParsingMapsForSystem.bind(qf);
     let shouldThrow = true;
-    (qf as any)._buildFormatAndParsingMapsForSystem = async function (...args: any[]) {
+    (qf as any).loadFormatAndParsingMapsForSystem = async function (...args: any[]) {
       if (shouldThrow) {
         throw new Error("simulated reload failure");
       }
       return originalLoad(...args);
     };
 
-    // setActiveUnitSystem triggers scheduleReload → calls the candidate builder
+    // setActiveUnitSystem triggers scheduleReload → calls the format/parser map loader
     await qf.setActiveUnitSystem("metric");
 
     // After failure: isReady and the committed active system should remain usable.
@@ -1053,8 +1053,8 @@ describe("Failed reload recovery (Issue 5)", () => {
 
   it("isReady stays false if first init fails (was never ready)", async () => {
     const qf = new QuantityFormatter();
-    // Override the candidate builder before onInitialized
-    (qf as any)._buildFormatAndParsingMapsForSystem = async function () {
+    // Override the format/parser map loader before onInitialized
+    (qf as any).loadFormatAndParsingMapsForSystem = async function () {
       throw new Error("simulated first load failure");
     };
 
