@@ -4770,6 +4770,7 @@ export interface IntegrityCheckOptions {
         checkDataSchema?: boolean;
         checkSchemaLoad?: boolean;
         checkMissingChildRows?: boolean;
+        checkDivergedPropMaps?: boolean;
     };
 }
 
