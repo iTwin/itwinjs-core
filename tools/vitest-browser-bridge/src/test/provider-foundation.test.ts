@@ -51,6 +51,7 @@ describe("Electron provider foundation", () => {
 
   it("reports an Electron process that exits before the session is ready", async () => {
     const provider = new ElectronBrowserProvider(fakeProject, {
+      electronBinary: process.execPath,
       electronArgs: ["--version"],
       startupTimeout: 2_000,
       closeTimeout: 2_000,
