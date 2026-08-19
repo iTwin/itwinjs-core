@@ -83,6 +83,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
     expect(getAuthorization(fetchCalls[0].init)).to.not.be.null;
     expect(validation.status).to.equals(MapLayerSourceStatus.UntrustedOrigin);
+    expect(validation.blockedOrigin).to.equal("https://evil.example.net");
   });
 
   it("withholds credentials from an opaque landing URL and reports UntrustedOrigin when challenged", async () => {
@@ -128,6 +129,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
     expect(getAuthorization(fetchCalls[1].init)).to.be.null;
     expect(validation.status).to.equals(MapLayerSourceStatus.UntrustedOrigin);
+    expect(validation.blockedOrigin).to.equal("https://third-party.example.org");
   });
 
   it("reports UntrustedOrigin when the credential-less cross-origin collections fetch is rejected with 403", async () => {
@@ -141,6 +143,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
     expect(getAuthorization(fetchCalls[1].init)).to.be.null;
     expect(validation.status).to.equals(MapLayerSourceStatus.UntrustedOrigin);
+    expect(validation.blockedOrigin).to.equal("https://third-party.example.org");
   });
 
   it("attaches basic-auth credentials to a whitelisted cross-origin collections link", async () => {
@@ -186,6 +189,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     // cross-origin redirect: the challenge comes from an origin that must not receive them.
     expect(getAuthorization(fetchCalls[1].init)).to.not.be.null;
     expect(validation.status).to.equals(MapLayerSourceStatus.UntrustedOrigin);
+    expect(validation.blockedOrigin).to.equal("https://evil.example.net");
   });
 
   it("does not report UntrustedOrigin when an anonymous collections fetch is redirected to a trusted origin", async () => {

@@ -35,8 +35,11 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
 
         if (httpResponse.status === 401 || httpResponse.status === 403) {
           const challengedUrl = httpResponse.url || requestedUrl;
-          if (!IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(challengedUrl, source.url))
-            return { status: MapLayerSourceStatus.UntrustedOrigin };
+          if (!IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(challengedUrl, source.url)) {
+            let blockedOrigin: string | undefined;
+            try { blockedOrigin = new URL(challengedUrl).origin; } catch { /* non-hierarchical URL */ }
+            return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
+          }
 
           return { status: (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth };
         }

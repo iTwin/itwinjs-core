@@ -109,6 +109,12 @@ export interface MapLayerSourceValidation {
 
   /** @beta */
   authInfo?: MapLayerAuthenticationInfo;
+
+  /** The origin of the URL that triggered an `UntrustedOrigin` validation failure, if known. Applications
+   * can use this to whitelist the correct origin in [[MapLayerFormatRegistry.trustedCredentialsOrigins]].
+   * @beta
+   */
+  blockedOrigin?: string;
 }
 
 /**

@@ -191,8 +191,11 @@ export class ArcGisUtilities {
     try {
       metadata = await this.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams(), ignoreCache});
     } catch (err) {
-      if (err instanceof MapLayerUntrustedOriginError)
-        return { status: MapLayerSourceStatus.UntrustedOrigin };
+      if (err instanceof MapLayerUntrustedOriginError) {
+        let blockedOrigin: string | undefined;
+        try { blockedOrigin = new URL(err.url).origin; } catch { /* non-hierarchical URL */ }
+        return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
+      }
       throw err;
     }
     const json = metadata?.content;
