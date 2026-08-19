@@ -253,7 +253,7 @@ class ChangedEntitiesProc {
     return metadata;
   }
 
-  private createBackendMetadata(frontendMetadata: NotifyEntitiesChangedMetadata[]): TxnEntityMetadataImpl[] {
+  private populateBackendMetadata(frontendMetadata: NotifyEntitiesChangedMetadata[]): TxnEntityMetadataImpl[] {
     const backendMetadata = frontendMetadata.map(({ name }) => new TxnEntityMetadataImpl(name));
     for (let index = 0; index < frontendMetadata.length; index++) {
       const frontend = frontendMetadata[index];
@@ -279,7 +279,7 @@ class ChangedEntitiesProc {
 
     // Notify backend listeners. Avoid constructing the backend metadata graph when there are no listeners.
     if (evt.numberOfListeners > 0) {
-      const backendMetadata = this.createBackendMetadata(frontendMetadata);
+      const backendMetadata = this.populateBackendMetadata(frontendMetadata);
       const txnEntities: TxnChangedEntities = {
         inserts: this._inserted.iterable(classIds, backendMetadata),
         deletes: this._deleted.iterable(classIds, backendMetadata),

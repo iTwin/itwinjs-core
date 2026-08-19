@@ -24,7 +24,7 @@ Every [BriefcaseDb]($backend) has a [TxnManager]($backend) associated that is us
 
 The backend and frontend change events describe the same transaction activity, but their payload types are different:
 
-- [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend) supply [TxnChangedEntities]($backend). Iterate `inserts`, `deletes`, or `updates`; each changed entity has an `id`, a `classId`, and `metadata`. Use `metadata.classFullName` for an exact class match or `metadata.is("Schema:BaseClass")` to include derived classes.
+- [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend) supply [TxnChangedEntities]($backend). Use `metadata.classFullName` for an exact class match or `metadata.is("Schema:BaseClass")` to include derived classes; the backend payload does not provide the frontend `filter` method.
 - [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend) supply [TxnEntityChanges]($frontend). Each iterated change has `metadata.classFullName`, and [TxnEntityChanges.filter]($frontend) can filter by class metadata and change type.
 
 Do not assume that the frontend `TxnEntityChanges` filtering API is available on the backend `TxnChangedEntities` payload; consult the event's package-specific documentation for the corresponding usage.

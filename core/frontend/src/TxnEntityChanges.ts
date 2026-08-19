@@ -61,12 +61,9 @@ export interface TxnEntityChangesFilterOptions {
   includeTypes?: TxnEntityChangeType[];
 }
 
-/** Describes a set of elements or models that were modified as part of a transaction in a [[BriefcaseConnection]],
- * serving as the payload for the [[BriefcaseTxns.onElementsChanged]] and [[BriefcaseTxns.onModelsChanged]] events.
- * This is the frontend counterpart to [TxnChangedEntities]($backend), but the two event payloads are different: this frontend type exposes class metadata through [[TxnEntityChange.metadata]] and supports [[filter]], while the backend type exposes metadata directly on each changed entity.
- * The [[inserted]], [[deleted]], and [[updated]] compressed Id sets can be awkward to work with.
- * It can be more convenient to iterate over the individual [[TxnEntityChange]]s, especially if you wish to [[filter]] out some
- * changes.
+/** The frontend transaction-change payload for [[BriefcaseTxns.onElementsChanged]] and [[BriefcaseTxns.onModelsChanged]].
+ * Iterate [[TxnEntityChange]]s to inspect their `id`, `type`, and [[TxnEntityChange.metadata]], or use [[filter]] to select by change type or class hierarchy.
+ * The compressed `inserted`, `deleted`, and `updated` sets remain available for bulk operations. Unlike backend [[TxnChangedEntities]], this payload exposes per-change `type` and metadata.
  * @public
  * @extensions
  */
