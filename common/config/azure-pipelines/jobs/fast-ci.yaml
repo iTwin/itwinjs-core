@@ -12,8 +12,10 @@ variables:
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
   - name: win_pool
     value: "imodelNative-Win11-VS2022"
-  - name: linux_pool
+  - name: linuxX64_pool
     value: "imodelNative-Debian12"
+  - name: linuxARM64_pool
+    value: "Platform-Debian12-ARM"
   - name: mac_pool
     value: "iModelTechMacArm"
   - name: BUILD_URL
@@ -190,9 +192,12 @@ jobs:
         "Windows_Node_24":
           platform: Windows_NT
           name: $(win_pool)
-        "Linux_Node_24":
+        "LinuxX64_Node_24":
           platform: Linux
-          name: $(linux_pool)
+          name: $(linuxX64_pool)
+        "LinuxARM64_Node_24":
+          platform: Linux
+          name: $(linuxARM64_pool)
         "MacOS_Node_24":
           platform: Darwin
           name: $(mac_pool)
