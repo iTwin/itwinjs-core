@@ -16,26 +16,26 @@ class IModelSceneObjectImpl implements IModelSceneObject {
   public readonly [_implementationProhibited] = undefined;
   public readonly kind = "iModel";
 
-  private readonly _view: ViewState;
+  readonly #view: ViewState;
 
   public constructor(view: ViewState) {
-    this._view = view;
+    this.#view = view;
   }
 
   public get iModel(): IModelConnection {
-    return this._view.iModel;
+    return this.#view.iModel;
   }
 
   public get isLoadingComplete(): boolean {
-    return this._view.areAllTileTreesLoaded;
+    return this.#view.areAllTileTreesLoaded;
   }
 
   public draw(context: SceneContext): void {
-    this._view.createScene(context);
+    this.#view.createScene(context);
   }
 
   public decorate(context: DecorateContext): void {
-    context.addFromDecorator(this._view);
+    context.addFromDecorator(this.#view);
   }
 }
 
