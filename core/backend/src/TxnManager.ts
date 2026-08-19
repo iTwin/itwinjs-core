@@ -158,12 +158,18 @@ class ChangedEntitiesArray {
 
   public iterable(classIds: Id64Array, metadata: TxnEntityMetadata[]): TxnChangedEntityIterable {
     function* iterator(entityIds: ReadonlyArray<Id64String>, classIndices: number[]) {
-      const entity = { id: "", classId: "", metadata: metadata[0] };
+      let entity: { id: Id64String; classId: Id64String; metadata: TxnEntityMetadata } | undefined;
       for (let i = 0; i < entityIds.length; i++) {
         const classIndex = classIndices[i];
+        const entityMetadata = metadata[classIndex];
+        assert(undefined !== entityMetadata);
+        if (undefined === entityMetadata)
+          continue;
+
+        entity ??= { id: "", classId: "", metadata: entityMetadata };
         entity.id = entityIds[i];
         entity.classId = classIds[classIndex];
-        entity.metadata = metadata[classIndex];
+        entity.metadata = entityMetadata;
         yield entity;
       }
     }
