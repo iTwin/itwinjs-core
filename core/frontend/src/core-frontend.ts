@@ -103,7 +103,13 @@ export * from "./render/RenderTarget";
 export * from "./render/Scene";
 export * from "./render/ScreenSpaceEffectBuilder";
 export * from "./render/VisibleFeature";
+export * from "./scene/SceneContent";
+export * from "./scene/SceneObject";
+export * from "./scene/ScenePresentation";
+export * from "./scene/SceneVolume";
+export * from "./scene/ViewportScene";
 export * from "./internal/render/webgl/IModelFrameLifecycle";
+
 export type {
   TxnEntityChange,
   TxnEntityChangeIterable,
@@ -113,6 +119,7 @@ export type {
   TxnEntityMetadata,
   TxnEntityMetadataCriterion,
 } from "./TxnEntityChanges";
+
 export {
   type TileTreeDiscloser, DisclosedTileTreeSet,
   type ReadGltfGraphicsArgs, type GltfGraphic, type GltfTemplate, readGltfGraphics, readGltfTemplate, readGltf,
@@ -150,7 +157,8 @@ export {
   ImageryMapLayerFormat,
   MapLayerFormat, type ValidateSourceArgs, type MapLayerFormatType, type MapLayerSourceValidation, type MapLayerOptions, MapLayerFormatRegistry,
   type MapLayerTokenEndpoint, type MapLayerAuthenticationInfo, type MapLayerAccessToken, type MapLayerAccessTokenParams, type MapLayerAccessClient,
-  type MapFeatureInfoOptions, MapFeatureInfoRecord, type MapFeatureInfo, type MapLayerFeatureInfo, type MapSubLayerFeatureInfo, type MapLayerFeature, type MapLayerFeatureGeometry, type MapLayerFeatureAttribute, MapLayerFeatureRecord,
+  type MapFeatureInfoOptions, MapFeatureInfoRecord, type MapFeatureInfo, type MapLayerFeatureInfo, type MapSubLayerFeatureInfo, type MapLayerFeature, type MapLayerFeatureGeometry,
+  type MapLayerFeatureAttribute, MapLayerFeatureRecord,
   MapCartoRectangle,
   ImageryMapLayerTreeReference,
   EllipsoidTerrainProvider,
@@ -159,6 +167,7 @@ export {
   type TerrainMeshProviderOptions, type RequestMeshDataArgs, type ReadMeshArgs, TerrainMeshProvider,
   type TerrainProvider, TerrainProviderRegistry,
 } from "./tile/internal";
+
 export * from "./tools/AccuDrawTool";
 export * from "./tools/AccuDrawViewportUI";
 export * from "./tools/ClipViewTool";
