@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "test: apply schema changeset that contains orphan ec_CustomAttribute rows",
+      "type": "none",
+      "packageName": "@itwin/core-backend"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "khanaffan@users.noreply.github.com"
+}
