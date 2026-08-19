@@ -6,13 +6,13 @@ import * as path from "path";
 import { promises as fs } from "fs";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
+import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface, FieldFormattingMiss } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
 import { Placement2dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
-import { deleteText, deleteTextStyle, disableFieldFormattingDemoForIModel, enableFieldFormattingDemoForIModel, getText, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
+import { clearFieldFormattingDemoMissesForIModel, deleteText, deleteTextStyle, disableFieldFormattingDemoForIModel, enableFieldFormattingDemoForIModel, getFieldFormattingDemoMissesForIModel, getText, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -82,6 +82,14 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async disableFieldFormattingDemo(iModelKey: string): Promise<void> {
     return disableFieldFormattingDemoForIModel(iModelKey);
+  }
+
+  public async getFieldFormattingDemoMisses(iModelKey: string): Promise<FieldFormattingMiss[]> {
+    return getFieldFormattingDemoMissesForIModel(iModelKey);
+  }
+
+  public async clearFieldFormattingDemoMisses(iModelKey: string): Promise<void> {
+    return clearFieldFormattingDemoMissesForIModel(iModelKey);
   }
 
   public async readTextFile(filePath: string): Promise<string> {

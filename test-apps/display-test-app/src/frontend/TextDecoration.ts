@@ -342,7 +342,8 @@ export class TextDecorationTool extends Tool {
     ["debug", "Toggle drawing of the anchor point and range."],
     ["delete <annotationId>", "Delete the given annotation element."],
     ["deletestyle <name>", "Delete a text style by name."],
-    ["demo <on|off>", "Adopt/unadopt the DTA demo FormatSet for the current iModel."],
+    ["demo <on|off>", "Adopt/unadopt the DTA demo FormatSets for the current iModel."],
+    ["misses [clear]", "List field formats the demo provider was asked for but never pre-warmed, or clear them."],
     ["docheight <n>", "Set document text height."],
     ["export <path>", "Write the current text block to <path> as JSON."],
     ["field <fieldPropsJson>", "Append a field run. JSON with elementId, schemaName, className, propertyName, and optional formatOptions. Use single quotes instead of double quotes in the JSON."],
@@ -763,6 +764,27 @@ export class TextDecorationTool extends Tool {
         }
         // eslint-disable-next-line no-console
         console.log(`DTA demo FormatSet ${arg === "off" ? "unregistered" : "registered"} for iModel ${vp.iModel.key}`);
+        return true;
+      }
+      case "misses": {
+        if (arg === "clear") {
+          await dtaIpc.clearFieldFormattingDemoMisses(vp.iModel.key);
+          // eslint-disable-next-line no-console
+          console.log("Cleared demo formatting misses.");
+          return true;
+        }
+
+        const misses = await dtaIpc.getFieldFormattingDemoMisses(vp.iModel.key);
+        if (misses.length === 0) {
+          // eslint-disable-next-line no-console
+          console.log("No demo formatting misses. Any raw-string field failed to resolve rather than going unwarmed.");
+        } else {
+          // eslint-disable-next-line no-console
+          console.log(`${misses.length} demo formatting miss(es) - these fields were never pre-warmed:`);
+          // eslint-disable-next-line no-console
+          console.table(misses);
+        }
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${misses.length} formatting miss(es); see console.`));
         return true;
       }
       case "list": { // args are enumerator, terminator, case, index
