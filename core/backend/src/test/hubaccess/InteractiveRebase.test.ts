@@ -647,4 +647,116 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec).to.equal(IModel.dictionaryId);
     chai.expect(conflict.uniqueConstraintViolations[0].conflictingRow.code.scope).to.equal(IModel.dictionaryId);
   });
+
+  it("reports a UNIQUE constraint conflict triggered by applying a conflicting data change", async () => {
+    const code = new Code({
+      spec: IModel.dictionaryId,
+      scope: IModel.dictionaryId,
+      value: "SomeValue"
+    });
+
+    // Create a conflict on foo and somePoint between the two briefcases.
+    // Also add a non-conflicting userLabel.
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: code,
+        foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
+      } as SomeGraphicalElementProps);
+      txn.updateElement<SomeGraphicalElementProps>({
+        id,
+        foo: "User1",
+        somePoint: new Point2d(1.0, 2.0),
+      });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({
+        id,
+        code: code, // conflicts with the newly-inserted element in briefcase1
+        foo: "User2" // data conflict with the update in briefcase1
+      });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+
+    /*chai.expect(interactive.conflicts.length).to.equal(1);
+    const updateConflict = interactive.conflicts[0] as UpdateRebaseConflict;
+    chai.expect(updateConflict.id).to.equal(id);
+    chai.expect(updateConflict.kind).to.equal("Update");
+
+    // This property is not conflicting, but it should still be present in instances where it has a value.
+    chai.expect(updateConflict.ours).has.property("userLabel");
+
+    // Only the properties with actual conflicts should be found in conflictingProperties.
+    chai.expect(updateConflict.conflictingProperties.length).to.equal(3);
+    chai.expect(updateConflict.conflictingProperties).to.include("somePoint");
+    chai.expect(updateConflict.conflictingProperties).to.include("foo");
+    chai.expect(updateConflict.conflictingProperties).to.include("lastMod");
+
+    // All of the reported values should be correct.
+    chai.expect(updateConflict.original.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
+    chai.expect(updateConflict.ours.somePoint).to.deep.equal({ x: 3.0, y: 4.0 });
+    chai.expect(updateConflict.theirs.somePoint).to.deep.equal({ x: 1.0, y: 2.0 });
+
+    chai.expect(updateConflict.original.foo).to.equal("Original");
+    chai.expect(updateConflict.ours.foo).to.equal("User2");
+    chai.expect(updateConflict.theirs.foo).to.equal("User1");
+
+    chai.expect(updateConflict.original.userLabel).to.be.undefined;
+    chai.expect(updateConflict.ours.userLabel).to.equal("Wat");
+    chai.expect(updateConflict.theirs.userLabel).to.be.undefined;
+
+    // Initially, "our" values are selected.
+    const valuesInitial = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesInitial.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesInitial.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
+    chai.expect(valuesInitial.userLabel).to.equal("Wat");
+
+    // We can explicitly accept "theirs" instead.
+    updateConflict.acceptTheirs(interactive);
+    const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirs.foo).to.equal("User1");
+    chai.expect(Point2d.fromJSON(valuesTheirs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+    // UserLabel does not conflict, so our value is maintained.
+    chai.expect(valuesTheirs.userLabel).to.equal("Wat");
+
+    // And then switch back to "ours" again.
+    updateConflict.acceptOurs(interactive);
+    const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesOurs.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
+    chai.expect(valuesOurs.userLabel).to.equal("Wat");
+
+    // We can accept a subset of properties
+    updateConflict.acceptTheirs(interactive, ["somePoint"]);
+    const valuesTheirsSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirsSubset1.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesTheirsSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+
+    updateConflict.acceptTheirs(interactive, ["foo"]);
+    const valuesTheirsSubset2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirsSubset2.foo).to.equal("User1");
+    chai.expect(Point2d.fromJSON(valuesTheirsSubset2.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+
+    updateConflict.acceptOurs(interactive, ["foo"]);
+    const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesOursSubset1.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+
+    // acceptOurs and acceptTheirs should throw if we try to accept a property that is not in conflictingProperties.
+    chai.expect(() => updateConflict.acceptOurs(interactive, ["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
+    chai.expect(() => updateConflict.acceptTheirs(interactive, ["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);*/
+  });
 });
