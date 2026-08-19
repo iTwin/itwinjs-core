@@ -583,6 +583,13 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
     expect(opts.headers).toBeUndefined();
   });
 
+  it("fails closed when an opaque/custom-protocol WMS source is challenged after withholding basic credentials", async () => {
+    const opaqueUrl = "myapp://tiles/wms?request=GetCapabilities&service=WMS";
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+
+    await expect(WmsUtilities.fetchXml(opaqueUrl, { user: "user", password: "pwd" })).rejects.toBeInstanceOf(MapLayerUntrustedOriginError);
+  });
+
   it("retries with SSO credentials for any origin when restriction is disabled (legacy default)", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
     fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValueOnce(new Response("<xml/>", { status: 200 }));
@@ -689,6 +696,56 @@ describe("WMS/WMTS source validation and provider initialization origin restrict
 
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
     expect(provider.blockedOrigins).toEqual(["https://init-wms.example.net"]);
+  });
+
+  it("WMS validation reports UntrustedOrigin for an opaque/custom-protocol source", async () => {
+    const source = MapLayerSource.fromJSON({ name: "Opaque WMS", formatId: "WMS", url: "myapp://tiles/wms" });
+    if (!source)
+      expect.fail("Could not create source");
+
+    source.userName = "user";
+    source.password = "pwd";
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+
+    const validation = await IModelApp.mapLayerFormatRegistry.validateSource({ source, ignoreCache: true });
+    expect(validation.status).toEqual(MapLayerSourceStatus.UntrustedOrigin);
+  });
+
+  it("WMS provider initialization reports UntrustedOrigin for an opaque/custom-protocol source", async () => {
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "Test", url: "myapp://tiles/wms" });
+    settings.setCredentials("user", "pwd");
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+
+    const provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["myapp://tiles/wms?request=GetCapabilities&service=WMS"]);
+  });
+
+  it("WMTS validation reports UntrustedOrigin for an opaque/custom-protocol source", async () => {
+    const source = MapLayerSource.fromJSON({ name: "Opaque WMTS", formatId: "WMTS", url: "myapp://tiles/wmts" });
+    if (!source)
+      expect.fail("Could not create source");
+
+    source.userName = "user";
+    source.password = "pwd";
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+
+    const validation = await IModelApp.mapLayerFormatRegistry.validateSource({ source, ignoreCache: true });
+    expect(validation.status).toEqual(MapLayerSourceStatus.UntrustedOrigin);
+  });
+
+  it("WMTS provider initialization reports UntrustedOrigin for an opaque/custom-protocol source", async () => {
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMTS", name: "Test", url: "myapp://tiles/wmts" });
+    settings.setCredentials("user", "pwd");
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+
+    const provider = new (await import("../../../internal/tile/map/ImageryProviders/WmtsMapLayerImageryProvider")).WmtsMapLayerImageryProvider(settings);
+    await provider.initialize();
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.UntrustedOrigin);
+    expect(provider.blockedOrigins).toEqual(["myapp://tiles/wmts?request=GetCapabilities&service=WMTS"]);
   });
 });
 

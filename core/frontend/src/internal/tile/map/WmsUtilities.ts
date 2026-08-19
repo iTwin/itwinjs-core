@@ -39,6 +39,9 @@ export class WmsUtilities {
     }
 
     let response = await fetch(url, { method: "GET", headers });
+    if (!headers && credentials && credentials.user && credentials.password && (response.status === 401 || response.status === 403)) {
+      throw new MapLayerUntrustedOriginError(url);
+    }
     if (!credentials && response.status === 401 && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
       // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
       const challengedUrl = response.url || url;
