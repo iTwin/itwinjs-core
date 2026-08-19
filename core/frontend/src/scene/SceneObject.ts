@@ -24,7 +24,7 @@ export interface IModelSceneObject {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
 
-  readonly kind: "imodel";
+  readonly kind: "iModel";
   readonly isLoadingComplete: boolean;
 
   draw(context: SceneContext): void;
