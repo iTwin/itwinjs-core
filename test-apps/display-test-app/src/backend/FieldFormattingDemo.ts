@@ -351,7 +351,6 @@ export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void>
 
   currentDemo = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
     iModel,
-    formatSet: DEMO_FORMAT_SET,
     // Both sets are addressable so a field can name either one; the adopted set is listed too
     // so that naming it explicitly is meaningful rather than an unresolved id.
     formatSets: [
