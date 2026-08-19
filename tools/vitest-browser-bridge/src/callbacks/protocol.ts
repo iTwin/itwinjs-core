@@ -25,6 +25,19 @@ export type CallbackResponse =
   | { readonly ok: true; readonly value: unknown }
   | { readonly ok: false; readonly error: { readonly message: string; readonly stack?: string } };
 
+function serializeCallbackError(reason: unknown): { readonly message: string; readonly stack?: string } {
+  try {
+    if (!isRecord(reason))
+      return { message: String(reason) };
+    return {
+      message: typeof reason.message === "string" ? reason.message : "Unknown callback error.",
+      ...(typeof reason.stack === "string" ? { stack: reason.stack } : {}),
+    };
+  } catch {
+    return { message: "Unknown callback error." };
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -62,26 +75,30 @@ export async function captureCallbackResponse(callback: () => Promise<unknown>):
   try {
     return { ok: true, value: await callback() };
   } catch (reason) {
-    const error = reason instanceof Error ? reason : new Error(String(reason));
-    return {
-      ok: false,
-      error: {
-        message: error.message,
-        ...(error.stack === undefined ? {} : { stack: error.stack }),
-      },
-    };
+    return { ok: false, error: serializeCallbackError(reason) };
   }
 }
 
-/** Unwrap a callback response in the renderer.
+/** Unwrap and validate a callback response in the renderer.
  * @internal
  */
-export function unwrapCallbackResponse(response: CallbackResponse): unknown {
-  if (response.ok)
+export function unwrapCallbackResponse(response: unknown): unknown {
+  if (!isRecord(response) || typeof response.ok !== "boolean")
+    throw new Error("Invalid callback response from the Electron main process.");
+  if (response.ok) {
+    if (!("value" in response))
+      throw new Error("Invalid callback response from the Electron main process.");
     return response.value;
+  }
 
-  const error = new Error(response.error.message);
-  if (response.error.stack !== undefined)
-    error.stack = response.error.stack;
+  const responseError = response.error;
+  if (!isRecord(responseError)
+    || typeof responseError.message !== "string"
+    || (responseError.stack !== undefined && typeof responseError.stack !== "string"))
+    throw new Error("Invalid callback response from the Electron main process.");
+
+  const error = new Error(responseError.message);
+  if (typeof responseError.stack === "string")
+    error.stack = responseError.stack;
   throw error;
 }

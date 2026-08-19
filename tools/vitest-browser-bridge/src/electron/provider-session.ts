@@ -46,14 +46,7 @@ async function loadBackendInit(modulePath: string | undefined): Promise<void> {
 
   // Backend init modules are compiled by the consuming package and intentionally run in the
   // Electron main process, not in the Vitest renderer and not through a production RPC layer.
-  const loaded = require(modulePath) as unknown;
-  const initializer = typeof loaded === "object" && loaded !== null && "default" in loaded
-    ? (loaded as { default?: unknown }).default
-    : loaded;
-  if (typeof initializer === "function")
-    await initializer();
-  else if (initializer !== undefined && initializer !== null && typeof (initializer as PromiseLike<unknown>).then === "function")
-    await Promise.resolve(initializer);
+  await require(modulePath);
 }
 
 function sendToProvider(message: ProviderSessionMessage): void {
@@ -65,11 +58,13 @@ function sendToProvider(message: ProviderSessionMessage): void {
 }
 
 function exitProviderProcess(exitCode: number): void {
-  process.disconnect?.();
+  if (!process.connected) {
+    // runProviderSession completed cleanup, and no parent remains to terminate Electron's helpers.
+    process.kill(process.platform === "win32" ? process.pid : -process.pid, "SIGKILL");
+    return;
+  }
+  process.disconnect();
   app.exit(exitCode);
-  // Electron can leave its native process alive after app.exit(); session teardown has already
-  // released the window, IPC handler, and preload registration, so terminate the main process.
-  process.kill(process.pid, "SIGTERM");
 }
 
 /** Run one provider-owned Electron main process. This function never collects or executes tests.
@@ -84,16 +79,24 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
   let window: BrowserWindow | undefined;
   let exitCode = 0;
   let settled = false;
-  let resolveShutdown: (() => void) | undefined;
+  let resolveShutdown: () => void;
+  const shutdown = new Promise<void>((resolve) => {
+    resolveShutdown = resolve;
+  });
+  const completesBeforeShutdown = async (work: Promise<unknown>): Promise<boolean> => Promise.race([
+    work.then(() => true),
+    shutdown.then(() => false),
+  ]);
 
   const finish = (code: number) => {
     if (settled)
       return;
     exitCode = code;
     settled = true;
-    resolveShutdown?.();
+    resolveShutdown();
   };
   const onSignal = () => finish(0);
+  const onProviderDisconnect = () => finish(0);
   const onProviderMessage = (message: unknown) => {
     if (isSessionShutdownMessage(message))
       finish(0);
@@ -104,10 +107,20 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
     finish(1);
   };
 
+  process.once("SIGTERM", onSignal);
+  process.once("SIGINT", onSignal);
+  process.once("disconnect", onProviderDisconnect);
+  process.on("message", onProviderMessage);
+  if (!process.connected)
+    finish(0);
+
   try {
-    await app.whenReady();
+    if (!await completesBeforeShutdown(app.whenReady()))
+      return exitCode;
+
     clearBackendCallbacks();
-    await loadBackendInit(environment.backendInitModule);
+    if (!await completesBeforeShutdown(loadBackendInit(environment.backendInitModule)))
+      return exitCode;
 
     browserSession = session.defaultSession;
     bridgePreloadId = browserSession.registerPreloadScript({
@@ -117,24 +130,19 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
 
     window = new BrowserWindow(createProviderWindowOptions(environment.preloadModule, environment.headless));
     disposeCallbacks = installElectronCallbackHandler(ipcMain, window.webContents.id);
-
-    process.once("SIGTERM", onSignal);
-    process.once("SIGINT", onSignal);
-    process.on("message", onProviderMessage);
     window.once("closed", onWindowClosed);
     window.webContents.once("render-process-gone", onRenderGone);
 
-    await window.loadURL(environment.url);
+    if (!await completesBeforeShutdown(window.loadURL(environment.url)))
+      return exitCode;
+
     sendToProvider({ type: "ready", sessionId: environment.sessionId });
-    await new Promise<void>((resolve) => {
-      resolveShutdown = resolve;
-      if (settled)
-        resolve();
-    });
+    await shutdown;
     return exitCode;
   } finally {
     process.off("SIGTERM", onSignal);
     process.off("SIGINT", onSignal);
+    process.off("disconnect", onProviderDisconnect);
     process.off("message", onProviderMessage);
     disposeCallbacks?.();
     if (window !== undefined) {
