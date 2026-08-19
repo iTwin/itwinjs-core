@@ -542,8 +542,9 @@ export abstract class MapLayerImageryProvider {
         // Removed the previous headers and make sure "include" credentials is set
         opts.headers = undefined;
         opts.credentials = "include";
-        // A Negotiate/NTLM handshake is a same-URL 401 round-trip, never a redirect flow, so "error" is safe here.
-        opts.redirect = "error";
+        // A Negotiate/NTLM handshake is normally a same-URL 401 round-trip, but in legacy mode we preserve
+        // the previous behavior and allow the browser to follow redirects after the authenticated retry.
+        opts.redirect = IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined;
         this.logUntrustedOriginUse(challengedUrl);
 
         // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)

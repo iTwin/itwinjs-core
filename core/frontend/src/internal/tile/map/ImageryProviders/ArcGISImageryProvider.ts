@@ -132,7 +132,11 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         if (this.isSsoAllowed(challengedUrl)) {
           // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
           this.logUntrustedOriginUse(challengedUrl);
-          response = await fetch(challengedUrl, {...options, credentials: "include", redirect: "error" });
+          response = await fetch(challengedUrl, {
+            ...options,
+            credentials: "include",
+            redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
+          });
           if (response.status === 200) {
             this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
           }

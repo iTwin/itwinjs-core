@@ -592,6 +592,20 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("keeps following redirects on the SSO retry in legacy mode", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
+    const finalUrl = "https://redirect.example.net/wms?request=GetCapabilities&service=WMS";
+    fetchMock.mockResolvedValueOnce(redirectedTo(ntlmChallengeResponse(), finalUrl)).mockResolvedValueOnce(new Response("<xml/>", { status: 200 }));
+
+    const xml = await WmsUtilities.fetchXml(wmsUrl);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const retryOpts = fetchMock.mock.calls[1][1] as RequestInit;
+    expect(retryOpts.credentials).toEqual("include");
+    expect(retryOpts.redirect).toBeUndefined();
+    expect(xml).toEqual("<xml/>");
+  });
+
   it("logs the discovery warning once per origin when restriction is disabled (legacy default)", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
     const logWarning = vi.spyOn(Logger, "logWarning");

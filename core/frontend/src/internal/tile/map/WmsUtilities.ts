@@ -48,7 +48,11 @@ export class WmsUtilities {
       IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(challengedUrl);
 
       // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication).
-      response = await fetch(challengedUrl, { method: "GET", credentials: "include", redirect: "error" });
+      response = await fetch(challengedUrl, {
+        method: "GET",
+        credentials: "include",
+        redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
+      });
     }
 
     if (response.status !== 200)

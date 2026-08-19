@@ -316,7 +316,11 @@ export class ArcGisUtilities {
         IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(challengedUrl);
 
         // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
-        response = await fetch(challengedUrl, {method: "GET", credentials: "include", redirect: "error" });
+        response = await fetch(challengedUrl, {
+          method: "GET",
+          credentials: "include",
+          redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
+        });
       }
 
       // Append security token when corresponding error code is returned by ArcGIS service
