@@ -571,6 +571,18 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
     expect(xml).toEqual("<xml/>");
   });
 
+  it("withholds basic-auth credentials for opaque/custom-protocol URLs when origin restriction is enabled", async () => {
+    const opaqueUrl = "myapp://tiles/wms?request=GetCapabilities&service=WMS";
+    fetchMock.mockResolvedValueOnce(new Response("<xml/>", { status: 200 }));
+
+    const xml = await WmsUtilities.fetchXml(opaqueUrl, { user: "user", password: "pwd" });
+
+    expect(xml).toEqual("<xml/>");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const opts = fetchMock.mock.calls[0][1] as RequestInit;
+    expect(opts.headers).toBeUndefined();
+  });
+
   it("retries with SSO credentials for any origin when restriction is disabled (legacy default)", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = false;
     fetchMock.mockResolvedValueOnce(ntlmChallengeResponse()).mockResolvedValueOnce(new Response("<xml/>", { status: 200 }));

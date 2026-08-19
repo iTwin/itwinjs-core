@@ -27,8 +27,15 @@ export class WmsUtilities {
 
     let headers: Headers|undefined;
     if (credentials && credentials.user && credentials.password) {
-      headers = new Headers();
-      setBasicAuthorization(headers, credentials);
+      // Basic credentials are considered settings-derived credentials for this source. When the registry is
+      // enforcing trusted origins, the source URL itself is the only implicitly trusted origin for basic auth;
+      // opaque/custom-protocol URLs have no network origin and must therefore be treated as untrusted.
+      const allowBasicAuth = !IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins
+        || IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(url, url);
+      if (allowBasicAuth) {
+        headers = new Headers();
+        setBasicAuthorization(headers, credentials);
+      }
     }
 
     let response = await fetch(url, { method: "GET", headers });
