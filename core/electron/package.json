@@ -4,7 +4,7 @@
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s webpack:test && npm run -s copy:test-assets",
+    "build": "npm run -s build:cjs && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
@@ -14,9 +14,8 @@
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "",
     "test:integration": "npm run test:integration:backend && npm run test:integration:frontend",
-    "test:integration:backend": "mocha --config src/test/backend/.mocharc.json",
-    "test:integration:frontend": "certa -r electron --config src/test/frontend/utils/certa.json",
-    "webpack:test": "webpack --config ./src/test/frontend/utils/webpack.config.js 1>&2",
+    "test:integration:backend": "vitest run --config vitest.backend.config.mts",
+    "test:integration:frontend": "vitest run --config vitest.frontend.config.mts",
     "cover": ""
   },
   "repository": {
@@ -42,26 +41,20 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/certa": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
-    "@types/chai": "4.3.1",
-    "@types/mocha": "^10.0.6",
+    "@itwin/vitest-browser-bridge": "workspace:*",
     "@types/node": "~20.17.0",
-    "chai": "^4.3.10",
+    "@vitest/browser": "^4.1.10",
     "cpx2": "^8.0.0",
     "electron": "^43.0.0",
     "eslint": "^9.31.0",
-    "glob": "^13.0.6",
-    "mocha": "^11.1.0",
     "rimraf": "^6.0.1",
-    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
-    "webpack": "^5.97.1",
-    "webpack-cli": "^5.0.1"
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@openid/appauth": "^1.3.2",

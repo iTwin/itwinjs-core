@@ -650,9 +650,6 @@ importers:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../backend
@@ -668,18 +665,15 @@ importers:
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.10
+      '@itwin/vitest-browser-bridge':
+        specifier: workspace:*
+        version: link:../../tools/vitest-browser-bridge
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
-      chai:
-        specifier: ^4.3.10
-        version: 4.5.0
+      '@vitest/browser':
+        specifier: ^4.1.10
+        version: 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.10)
       cpx2:
         specifier: ^8.0.0
         version: 8.0.2
@@ -689,27 +683,15 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      glob:
-        specifier: ^13.0.6
-        version: 13.0.6
-      mocha:
-        specifier: ^11.1.0
-        version: 11.7.6
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.108.4)
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
-      webpack:
-        specifier: ^5.97.1
-        version: 5.108.4(webpack-cli@5.1.4)
-      webpack-cli:
-        specifier: ^5.0.1
-        version: 5.1.4(webpack@5.108.4)
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
 
   ../../core/express-server:
     dependencies:

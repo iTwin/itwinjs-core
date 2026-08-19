@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { assert } from "chai";
+import { ok as assert } from "node:assert/strict";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { BeDuration } from "@itwin/core-bentley";
 import { RpcInterface, RpcRegistry } from "@itwin/core-common";
