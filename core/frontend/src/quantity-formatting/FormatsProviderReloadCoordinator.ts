@@ -9,7 +9,7 @@ import { FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-
 export interface FormatsProviderChange {
   readonly baseProvider: FormatsProvider;
   readonly replacementProvider: FormatsProvider;
-  readonly targetUnitSystem: UnitSystemKey;
+  readonly impliedUnitSystem?: UnitSystemKey;
 }
 
 /** @internal */
@@ -32,7 +32,7 @@ export type ReloadIntent =
   }
   | { scope: "activeSystem"; system: UnitSystemKey; emitSystemChanged?: boolean };
 
-export interface ReloadCoordinatorHost {
+interface ReloadCoordinatorHost {
   isDisposed(): boolean;
   startReload(): void;
   executeReload(intent: ReloadIntent): Promise<void>;
@@ -45,6 +45,8 @@ interface ReloadCaller {
   reject: (reason?: unknown) => void;
 }
 
+type ProviderReloadIntent = Extract<ReloadIntent, { scope: "formatsChanged" }> & { providerChange: FormatsProviderChange };
+
 /**
  * Serializes formatting reloads, keeps the newest pending request, and resolves or rejects callers waiting for formatting to become ready.
  * @internal
@@ -52,7 +54,8 @@ interface ReloadCaller {
 export class FormatsProviderReloadCoordinator {
   private _reloadInFlight = false;
   private _pendingReload: ReloadIntent | undefined;
-  private _reloadCallers = new Set<ReloadCaller>();
+  private _pendingProviderReload: ProviderReloadIntent | undefined;
+  private _reloadCaller: ReloadCaller | undefined;
   private _isDisposed = false;
 
   public constructor(private readonly _host: ReloadCoordinatorHost, private readonly _disposedError: Error) {}
@@ -63,7 +66,8 @@ export class FormatsProviderReloadCoordinator {
 
     this._isDisposed = true;
     this._pendingReload = undefined;
-    this._rejectReloadCallers(this._disposedError);
+    this._pendingProviderReload = undefined;
+    this._rejectReloadCaller(this._disposedError);
   }
 
   /**
@@ -80,15 +84,14 @@ export class FormatsProviderReloadCoordinator {
       caller = { resolve, reject };
     });
 
-    // Register the caller before invoking the action. The action raises provider events synchronously,
-    // and an event listener can start a second awaited request.
-    this._rejectReloadCallers(new ReloadSupersededError());
-    this._reloadCallers.add(caller);
+    this._rejectReloadCaller(new ReloadSupersededError());
+    this._reloadCaller = caller;
 
     try {
       action();
     } catch (error) {
-      this._reloadCallers.delete(caller);
+      if (this._reloadCaller === caller)
+        this._reloadCaller = undefined;
       throw error;
     }
 
@@ -96,47 +99,82 @@ export class FormatsProviderReloadCoordinator {
   }
 
   /**
-   * Schedules a reload and keeps only the newest pending reload while another is running.
+   * Schedules a reload and keeps the newest pending reload while another is running.
+   * Provider replacement reloads are retained separately because the manager has already changed the active provider and the transaction must not be discarded by an unrelated reload.
    * If a reload is already running, this method returns immediately; use [[runAndWaitForReload]] when the caller must wait for completion.
    * @internal
    */
   public async scheduleReload(intent: ReloadIntent): Promise<void> {
-    if (this._isDisposed || this._host.isDisposed())
+    if (this._isDisposed || this._host.isDisposed()) {
+      this._rejectReloadCaller(this._disposedError);
       return;
+    }
 
     if (this._reloadInFlight) {
-      this._pendingReload = intent;
+      this._queuePendingReload(intent);
       return;
     }
 
     this._reloadInFlight = true;
-    this._host.startReload();
-    let continueWithPending = true;
-    let nextReload: ReloadIntent | undefined;
-
-    try {
-      await this._host.executeReload(intent);
-      if (this._stopAfterDisposal())
-        return;
-
-      nextReload = this._takePendingReload();
-      if (!nextReload) {
-        continueWithPending = false;
-        await this._host.finalizeReload();
+    let current: ReloadIntent | undefined = intent;
+    while (current) {
+      try {
+        this._host.startReload();
+        await this._host.executeReload(current);
+      } catch (error) {
         if (this._stopAfterDisposal())
           return;
 
-        nextReload = this._takePendingReload();
+        if (!(error instanceof ReloadSupersededError))
+          this._host.handleReloadFailure(error);
+
+        current = this._takePendingReload();
+        if (current)
+          continue;
+
+        this._reloadInFlight = false;
+        this._rejectReloadCaller(error);
+        return;
       }
-    } catch (error) {
-      return this._handleReloadFailure(error, continueWithPending);
+
+      if (this._stopAfterDisposal())
+        return;
+
+      current = this._takePendingReload();
+      if (current)
+        continue;
+
+      try {
+        await this._host.finalizeReload();
+      } catch (error) {
+        if (this._stopAfterDisposal())
+          return;
+
+        this._host.handleReloadFailure(error);
+        current = this._takePendingReload();
+        if (current)
+          continue;
+
+        this._reloadInFlight = false;
+        this._rejectReloadCaller(error);
+        return;
+      }
+
+      if (this._stopAfterDisposal())
+        return;
+
+      current = this._takePendingReload();
     }
 
-    if (nextReload)
-      return this.scheduleReload(nextReload);
-
     this._reloadInFlight = false;
-    this._resolveReloadCallers();
+    this._resolveReloadCaller();
+  }
+
+  private _queuePendingReload(intent: ReloadIntent): void {
+    if (this._isProviderReload(intent))
+      this._pendingProviderReload = intent;
+    else
+      this._pendingReload = intent;
   }
 
   /** Stops reload processing when this coordinator or its host is disposed. */
@@ -146,51 +184,39 @@ export class FormatsProviderReloadCoordinator {
 
     this._reloadInFlight = false;
     this._pendingReload = undefined;
+    this._pendingProviderReload = undefined;
+    this._rejectReloadCaller(this._disposedError);
     return true;
   }
 
-  /** Removes the newest pending reload and marks the current reload complete before starting it. */
+  /** Removes the newest pending reload, retaining provider transactions ahead of unrelated reloads. */
   private _takePendingReload(): ReloadIntent | undefined {
-    const next = this._pendingReload;
-    if (next) {
-      this._pendingReload = undefined;
-      this._reloadInFlight = false;
-    }
-    return next;
-  }
-
-  /** Handles a reload failure and, when appropriate, starts the newest pending reload. */
-  private _handleReloadFailure(error: unknown, continueWithPending: boolean): Promise<void> | void {
-    this._reloadInFlight = false;
-    if (this._isDisposed || this._host.isDisposed()) {
-      this._pendingReload = undefined;
-      this._rejectReloadCallers(this._disposedError);
-      return;
+    if (this._pendingProviderReload) {
+      const providerReload = this._pendingProviderReload;
+      this._pendingProviderReload = undefined;
+      return providerReload;
     }
 
-    if (!continueWithPending || !(error instanceof ReloadSupersededError))
-      this._host.handleReloadFailure(error);
-
-    const next = continueWithPending ? this._takePendingReload() : undefined;
-    if (next)
-      return this.scheduleReload(next);
-
-    this._rejectReloadCallers(error);
+    const nextReload = this._pendingReload;
+    this._pendingReload = undefined;
+    return nextReload;
   }
 
-  /** Resolves all callers after the reload queue finishes successfully. */
-  private _resolveReloadCallers(): void {
-    const callers = [...this._reloadCallers];
-    this._reloadCallers.clear();
-    for (const caller of callers)
-      caller.resolve();
+  private _isProviderReload(intent: ReloadIntent): intent is ProviderReloadIntent {
+    return intent.scope === "formatsChanged" && intent.providerChange !== undefined;
   }
 
-  /** Rejects all callers when the reload queue fails or is superseded. */
-  private _rejectReloadCallers(error: unknown): void {
-    const callers = [...this._reloadCallers];
-    this._reloadCallers.clear();
-    for (const caller of callers)
-      caller.reject(error);
+  /** Resolves the caller after the reload queue finishes successfully. */
+  private _resolveReloadCaller(): void {
+    const caller = this._reloadCaller;
+    this._reloadCaller = undefined;
+    caller?.resolve();
+  }
+
+  /** Rejects the caller when the reload queue fails or is superseded. */
+  private _rejectReloadCaller(error: unknown): void {
+    const caller = this._reloadCaller;
+    this._reloadCaller = undefined;
+    caller?.reject(error);
   }
 }

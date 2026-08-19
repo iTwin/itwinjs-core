@@ -3560,12 +3560,18 @@ export function formatAnimationBranchId(modelId: Id64String, branchId: number): 
 export class FormatsProviderManager implements FormatsProvider {
     constructor(_formatsProvider: FormatsProvider);
     // (undocumented)
+    applyFormatsProviderChange(change: FormatsProviderChange): boolean;
+    // (undocumented)
     get formatsProvider(): FormatsProvider;
     set formatsProvider(formatsProvider: FormatsProvider);
     // (undocumented)
     getFormat(name: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined>;
     // (undocumented)
+    isCurrentFormatsProviderReload(provider: FormatsProvider, change?: FormatsProviderChange): boolean;
+    // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    // (undocumented)
+    onFormatsChangedInternal: BeEvent<(event: FormatsProviderManagerEvent) => void>;
     restoreProviderChange(change: FormatsProviderChange): boolean;
     setFormatsProvider(formatsProvider: FormatsProvider, impliedUnitSystem?: UnitSystemKey): void;
 }
