@@ -6,26 +6,25 @@
 import {
   CALLBACK_BRIDGE_GLOBAL,
   type CallbackRequest,
-  type CallbackResponse,
   unwrapCallbackResponse,
 } from "./protocol.js";
 
-interface BrowserCallbackTransport {
-  invoke(request: CallbackRequest): Promise<CallbackResponse>;
+interface BrowserCallbackBridge {
+  invoke(request: CallbackRequest): unknown;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+function isBrowserCallbackBridge(value: unknown): value is BrowserCallbackBridge {
+  return typeof value === "object"
+    && value !== null
+    && "invoke" in value
+    && typeof value.invoke === "function";
 }
 
-function getBrowserCallbackTransport(scope: object = globalThis): BrowserCallbackTransport {
-  const candidate = (scope as Record<string, unknown>)[CALLBACK_BRIDGE_GLOBAL];
-  if (!isRecord(candidate) || typeof candidate.invoke !== "function")
+function getBrowserCallbackBridge(): BrowserCallbackBridge {
+  const candidate = (globalThis as Record<string, unknown>)[CALLBACK_BRIDGE_GLOBAL];
+  if (!isBrowserCallbackBridge(candidate))
     throw new Error(`The ${CALLBACK_BRIDGE_GLOBAL} preload bridge is not available.`);
-
-  return {
-    invoke: candidate.invoke.bind(candidate) as BrowserCallbackTransport["invoke"],
-  };
+  return candidate;
 }
 
 /** Invoke a legacy-style named callback in the Electron main process.
@@ -36,5 +35,6 @@ function getBrowserCallbackTransport(scope: object = globalThis): BrowserCallbac
  * @internal
  */
 export async function invokeBackendCallback(name: string, ...args: unknown[]): Promise<unknown> {
-  return unwrapCallbackResponse(await getBrowserCallbackTransport().invoke({ name, args }));
+  const response: unknown = await getBrowserCallbackBridge().invoke({ name, args });
+  return unwrapCallbackResponse(response);
 }

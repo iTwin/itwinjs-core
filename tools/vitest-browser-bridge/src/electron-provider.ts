@@ -16,7 +16,9 @@ const sessionEntryPath = fileURLToPath(new URL("../cjs/electron/provider-session
 /** Create the Electron BrowserProvider option for a Vitest 4 configuration.
  * @internal
  */
-export function electron(options: ElectronProviderOptions = {}) {
+export function electron(
+  options: ElectronProviderOptions = {},
+): ReturnType<typeof createElectronBrowserProviderOption> {
   return createElectronBrowserProviderOption(options, sessionEntryPath);
 }
 

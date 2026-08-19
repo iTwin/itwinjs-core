@@ -4339,6 +4339,10 @@ importers:
         version: 5.6.3
 
   ../../tools/vitest-browser-bridge:
+    dependencies:
+      '@vitest/browser':
+        specifier: ^4.1.10
+        version: 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.10)
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -4352,9 +4356,6 @@ importers:
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
-      '@vitest/browser':
-        specifier: ^4.1.10
-        version: 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.10)
       electron:
         specifier: ^43.0.0
         version: 43.1.1

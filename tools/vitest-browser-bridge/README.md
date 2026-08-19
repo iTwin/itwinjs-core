@@ -9,7 +9,7 @@ The provider and browser callback exports are ESM-only. The backend callback exp
 
 ## Vitest 4 provider
 
-Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, secure `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
+The consuming project must provide Vitest `^4.1.10` and an Electron version in the supported `>=35 <44` range. This package temporarily pins `@opentelemetry/api` 1.0.4 so its Vitest types resolve to the same peer instance as `@vitest/browser` in the current Rush graph; remove that pin when the repository aligns on Vitest's `^1.9.0` optional peer. Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, secure `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
 
 ```ts
 import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
@@ -31,7 +31,9 @@ export default defineConfig({
 });
 ```
 
-The provider implements Vitest 4's `BrowserProvider` interface directly. It does not collect tests, rewrite imports, install globals, use `require.cache`, implement custom sharding or resource monitoring, or aggregate results. Parallel sessions are disabled until concurrent-session behavior has dedicated coverage.
+The provider is registered through Vitest's `defineBrowserProvider` factory and conforms to its `BrowserProvider` contract. It does not collect tests, rewrite imports, install globals, use `require.cache`, implement custom sharding or resource monitoring, or aggregate results. Parallel sessions are disabled until concurrent-session behavior has dedicated coverage.
+
+The optional backend initialization module is loaded once for its module-evaluation side effects; exported functions are not invoked as implicit initializers.
 
 The provider creates a `BrowserWindow` with `contextIsolation: true`, `nodeIntegration: false`, and `nodeIntegrationInSubFrames: true` so Vitest's tester iframe receives the consumer preload without gaining Node integration. A package-owned bridge preload is registered separately with Electron's session, so the bridge does not generate or impose a module format on the consumer preload. The provider navigates the window to the exact session URL supplied by Vitest.
 
