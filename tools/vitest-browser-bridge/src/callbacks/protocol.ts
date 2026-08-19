@@ -89,6 +89,7 @@ export function unwrapCallbackResponse(response: unknown): unknown {
     if (!("value" in response))
       throw new Error("Invalid callback response from the Electron main process.");
     return response.value;
+  }
 
   const responseError = response.error;
   if (!isRecord(responseError)
