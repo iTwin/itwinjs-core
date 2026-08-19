@@ -12,7 +12,7 @@ import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
 import { Placement2dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
-import { deleteText, deleteTextStyle, disableFieldFormattingDemoForIModel, enableFieldFormattingDemoForIModel, getText, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
+import { deleteText, deleteTextStyle, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -68,20 +68,8 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
     return deleteText(iModelKey, elementId);
   }
 
-  public async getText(iModelKey: string, elementId: Id64String): Promise<{ annotationProps: TextAnnotationProps, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String } | undefined> {
-    return getText(iModelKey, elementId);
-  }
-
   public async setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void> {
     return setScaleFactor(iModelKey, modelId, scaleFactor);
-  }
-
-  public async enableFieldFormattingDemo(iModelKey: string): Promise<void> {
-    return enableFieldFormattingDemoForIModel(iModelKey);
-  }
-
-  public async disableFieldFormattingDemo(iModelKey: string): Promise<void> {
-    return disableFieldFormattingDemoForIModel(iModelKey);
   }
 }
 

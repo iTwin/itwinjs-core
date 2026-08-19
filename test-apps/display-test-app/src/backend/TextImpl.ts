@@ -1,7 +1,8 @@
 import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault, withEditTxn } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { disableFieldFormattingDemo, enableFieldFormattingDemo, prepareFieldFormattingDemoFor } from "./FieldFormattingDemo";
+import { FieldFormattingMiss } from "../common/DtaIpcInterface";
+import { clearFieldFormattingDemoMisses, disableFieldFormattingDemo, enableFieldFormattingDemo, getFieldFormattingDemoMisses, prepareFieldFormattingDemoFor } from "./FieldFormattingDemo";
 
 /**
  * Inserts a new text style into the iModel.
@@ -138,6 +139,16 @@ export async function enableFieldFormattingDemoForIModel(iModelKey: string): Pro
 /** Unregisters the DTA demo FormatSet. */
 export async function disableFieldFormattingDemoForIModel(_iModelKey: string): Promise<void> {
   disableFieldFormattingDemo();
+}
+
+/** Reports demo-provider requirements that evaluation asked for but that were never warmed. */
+export async function getFieldFormattingDemoMissesForIModel(_iModelKey: string): Promise<FieldFormattingMiss[]> {
+  return getFieldFormattingDemoMisses().map(({ name, persistenceUnitName, system, formatSet }) => ({ name, persistenceUnitName, system, formatSet }));
+}
+
+/** Discards the demo provider's accumulated misses. */
+export async function clearFieldFormattingDemoMissesForIModel(_iModelKey: string): Promise<void> {
+  clearFieldFormattingDemoMisses();
 }
 
 /**
