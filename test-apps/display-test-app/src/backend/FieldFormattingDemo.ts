@@ -24,11 +24,35 @@
  * Because there is a single, synchronous evaluation path, all three entry points render
  * identical strings for a given block.
  *
+ * ## Two FormatSets
+ *
+ * Two sets are registered so that per-field FormatSet routing is exercisable:
+ *
+ *   * [[DEMO_FORMAT_SET]] (id [[DEMO_FORMAT_SET_ID]]) is **adopted** for the iModel, so it
+ *     applies to every field that names no FormatSet of its own. It is also registered as an
+ *     addressable set, so a field may name it explicitly.
+ *   * [[DEMO_ALT_FORMAT_SET]] (id [[DEMO_ALT_FORMAT_SET_ID]]) is addressable only. It
+ *     deliberately **redefines a few** of the adopted set's keys and **omits the rest**, so a
+ *     field naming it demonstrates all three legs of the resolution chain:
+ *     alt set -> adopted set -> the iModel's schema formats.
+ *
+ * See [[DEMO_ALT_SEED_FORMATS]] for which keys overlap and which do not.
+ *
+ * NOTE: the unit system used to pick a *schema* presentation format is provider-wide (taken
+ * from the adopted set), not per-bucket. `DEMO_ALT_FORMAT_SET.unitSystem` therefore governs
+ * only the formats the alt set itself defines; a field that falls all the way through to the
+ * schema still resolves against the adopted set's `"metric"`.
+ *
+ * `dta text misses` reports requirements that evaluation asked for but that were never
+ * pre-warmed, which is what distinguishes "this format did not resolve" from "this format was
+ * never warmed" when a field renders as a raw string.
+ *
  * This is intentionally minimal - it exists to exercise the pathway from DTA, not to be a
  * production-quality implementation.
  */
 
-import { ElementDrivesTextAnnotation, FieldFormattingSpecProvider, IModelDb } from "@itwin/core-backend";
+import { ElementDrivesTextAnnotation, FieldFormattingSpecProvider, IModelDb, UnresolvedFieldFormat } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
 import { TextBlock } from "@itwin/core-common";
 import { FormatProps, FormattingSpecArgs } from "@itwin/core-quantity";
 import { FormatSet } from "@itwin/ecschema-metadata";
@@ -170,10 +194,69 @@ export const DEMO_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
   },
 };
 
-/** Persistence unit each seed in [[DEMO_SEED_FORMATS]] expects to be compiled against.
+/** Formats defined by [[DEMO_ALT_FORMAT_SET]], the *addressable* set a [FieldRun]($common)
+ * opts into via [QuantityFieldFormatOptions.formatSet]($common).
+ *
+ * The overlap with [[DEMO_SEED_FORMATS]] is deliberate, so one fixture can exercise every leg
+ * of the resolution chain:
+ *
+ *   * **Redefined** (`Demo.LENGTH_M`, `Demo.AREA_M2`, `Demo.ANGLE_DEG_FROM_DEG`,
+ *     `Demo.SLOPE_M_PER_M`) - present in both sets. A field naming this set renders the `[alt]`
+ *     variant; the same field without it renders the adopted variant.
+ *   * **Alt-only** (`Demo.ALT_ONLY_LENGTH`) - resolvable *only* when the field names this set.
+ *     Naming it otherwise falls through to the schema, and then to the raw string.
+ *   * **Omitted** (every other `Demo.*` key) - a field naming this set still resolves them,
+ *     because this set falls back to the adopted set. Proves the fallthrough is live.
+ */
+export const DEMO_ALT_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
+  // Redefinitions of adopted keys — same name, visibly different presentation.
+  "Demo.LENGTH_M": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 3,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[alt]ft", name: "Units.FT" }] },
+  },
+  "Demo.AREA_M2": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 3,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[alt]ft²", name: "Units.SQ_FT" }] },
+  },
+  "Demo.ANGLE_DEG_FROM_DEG": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 1,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[alt]deg", name: "Units.ARC_DEG" }] },
+  },
+  "Demo.SLOPE_M_PER_M": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 2,
+    type: "Decimal",
+    uomSeparator: "",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[alt]:1", name: "Units.HORIZONTAL_PER_VERTICAL" }] },
+  },
+  // Defined only here. A field must name DEMO_ALT_FORMAT_SET_ID to resolve it.
+  "Demo.ALT_ONLY_LENGTH": {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 2,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: { units: [{ label: "[alt-only]in", name: "Units.IN" }] },
+  },
+};
+
+/** Persistence unit each seed expects to be compiled against, across both demo FormatSets.
  * Seeds not listed here default to the `defaultPersistenceUnitName` passed to
- * [[demoSeedRequirements]] (`Units.M`). Required for any seed whose
- * composite unit belongs to a phenomenon other than LENGTH.
+ * [[demoSeedRequirements]] (`Units.M`). Required for any seed whose composite unit belongs to
+ * a phenomenon other than LENGTH.
  */
 const DEMO_SEED_PERSISTENCE_UNITS: { readonly [name: string]: string } = {
   "Demo.AREA_M2": "Units.SQ_M",
@@ -186,7 +269,20 @@ const DEMO_SEED_PERSISTENCE_UNITS: { readonly [name: string]: string } = {
   "Demo.SLOPE_HORIZONTAL_PER_VERTICAL": "Units.M_PER_M",
 };
 
-/** The [FormatSet]($ecschema-metadata) adopted by the demo. Registering it makes every
+/** [Id64String]($bentley) under which [[DEMO_FORMAT_SET]] is registered as an *addressable*
+ * set, so a [FieldRun]($common) may name it explicitly via
+ * [QuantityFieldFormatOptions.formatSet]($common). Naming it is equivalent to naming nothing,
+ * since the same set is also adopted for the iModel.
+ */
+export const DEMO_FORMAT_SET_ID: Id64String = "0xd01";
+
+/** [Id64String]($bentley) under which [[DEMO_ALT_FORMAT_SET]] is registered. A
+ * [FieldRun]($common) must name this via [QuantityFieldFormatOptions.formatSet]($common) to
+ * resolve against the alternate presentations.
+ */
+export const DEMO_ALT_FORMAT_SET_ID: Id64String = "0xd02";
+
+/** The [FormatSet]($ecschema-metadata) **adopted** by the demo. Registering it makes every
  * `Demo.*` key above resolvable as a `kindOfQuantity` override, and overrides any real KoQ
  * that shares a name (see `AecUnits.LENGTH_SHORT`). Keys the set does not define fall through
  * to the iModel's own schema formats.
@@ -198,12 +294,26 @@ export const DEMO_FORMAT_SET: FormatSet = {
   formats: DEMO_SEED_FORMATS,
 };
 
-/** Every [[DEMO_FORMAT_SET]] entry paired with the persistence unit it must be compiled
- * against, so the demo formats are usable as `kindOfQuantity` overrides even for properties
- * the iModel has never seen.
+/** The alternate [FormatSet]($ecschema-metadata), addressable per-field via
+ * [[DEMO_ALT_FORMAT_SET_ID]]. Not adopted, so it applies only to fields that name it.
+ */
+export const DEMO_ALT_FORMAT_SET: FormatSet = {
+  name: "dta-field-formatting-demo-alt",
+  label: "DTA Field Formatting Demo (alternate)",
+  unitSystem: "imperial",
+  formats: DEMO_ALT_SEED_FORMATS,
+};
+
+/** Every key defined by either demo FormatSet, paired with the persistence unit it must be
+ * compiled against, so the demo formats are usable as `kindOfQuantity` overrides even for
+ * properties the iModel has never seen.
+ *
+ * Warming the union matters because [FieldFormattingSpecProvider.warmUp]($backend) warms every
+ * bucket with every requirement: an alt-only key must be warmed for the alt bucket to hold it.
  */
 function demoSeedRequirements(defaultPersistenceUnitName: string = "Units.M"): FormattingSpecArgs[] {
-  return Object.keys(DEMO_SEED_FORMATS).map((name) => ({
+  const names = new Set([...Object.keys(DEMO_SEED_FORMATS), ...Object.keys(DEMO_ALT_SEED_FORMATS)]);
+  return Array.from(names, (name) => ({
     name,
     persistenceUnitName: DEMO_SEED_PERSISTENCE_UNITS[name] ?? defaultPersistenceUnitName,
   }));
@@ -242,6 +352,12 @@ export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void>
   currentDemo = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
     iModel,
     formatSet: DEMO_FORMAT_SET,
+    // Both sets are addressable so a field can name either one; the adopted set is listed too
+    // so that naming it explicitly is meaningful rather than an unresolved id.
+    formatSets: [
+      { id: DEMO_FORMAT_SET_ID, formatSet: DEMO_FORMAT_SET },
+      { id: DEMO_ALT_FORMAT_SET_ID, formatSet: DEMO_ALT_FORMAT_SET },
+    ],
     requirements: [
       ...demoSeedRequirements(),
       ...ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements(iModel),
@@ -249,6 +365,22 @@ export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void>
   });
   currentDemoIModel = iModel;
   currentDemoCloseUnsubscribe = iModel.onBeforeClose.addOnce(() => disableFieldFormattingDemo());
+}
+
+/** Returns the requirements the demo provider was asked for during evaluation but had never
+ * pre-warmed. A field that renders as a raw string is listed here only if nothing was warmed
+ * for it; a field that *was* warmed but whose format or unit failed to resolve is not. That
+ * distinction is what makes a raw fallback diagnosable. Surfaced by `dta text misses`.
+ */
+export function getFieldFormattingDemoMisses(): UnresolvedFieldFormat[] {
+  return currentDemo?.misses ?? [];
+}
+
+/** Discards the accumulated [[getFieldFormattingDemoMisses]], so the next evaluation reports
+ * only fresh shortfalls. Surfaced by `dta text misses clear`.
+ */
+export function clearFieldFormattingDemoMisses(): void {
+  currentDemo?.clearMisses();
 }
 
 /** Unregisters the demo provider previously registered via [[enableFieldFormattingDemo]]
