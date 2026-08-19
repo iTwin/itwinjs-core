@@ -16,3 +16,8 @@ registerBackendCallback("provider:mainProcessInfo", () => ({
   electronVersion: process.versions.electron,
   processType: process.type,
 }));
+
+// Backend init modules are evaluated for side effects; an exported function is not an initializer.
+export default function cleanup(): never {
+  throw new Error("The backend init module export must not be invoked.");
+}

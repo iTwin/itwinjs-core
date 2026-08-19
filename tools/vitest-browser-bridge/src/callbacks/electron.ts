@@ -12,10 +12,8 @@ interface IpcMainCallbackEvent {
   };
 }
 
-/** The small part of Electron's ipcMain API required by the test-only callback handler.
- * @internal
- */
-export interface IpcMainCallbackHost {
+/** The small part of Electron's ipcMain API required by the test-only callback handler. */
+interface IpcMainCallbackHost {
   handle(channel: string, listener: (event: IpcMainCallbackEvent, payload: unknown) => Promise<unknown>): void;
   removeHandler(channel: string): void;
 }
@@ -26,10 +24,9 @@ export interface IpcMainCallbackHost {
 export function installElectronCallbackHandler(
   ipcMain: IpcMainCallbackHost,
   expectedWebContentsId: number,
-  channel = CALLBACK_CHANNEL,
 ): () => void {
   let disposed = false;
-  ipcMain.handle(channel, async (event, payload) => {
+  ipcMain.handle(CALLBACK_CHANNEL, async (event, payload) => {
     if (event.sender.id !== expectedWebContentsId)
       throw new Error("Callback request came from an unexpected Electron WebContents.");
     return dispatchBackendCallback(payload);
@@ -39,6 +36,6 @@ export function installElectronCallbackHandler(
     if (disposed)
       return;
     disposed = true;
-    ipcMain.removeHandler(channel);
+    ipcMain.removeHandler(CALLBACK_CHANNEL);
   };
 }
