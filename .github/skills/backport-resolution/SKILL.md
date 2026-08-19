@@ -200,11 +200,11 @@ When combining:
 
 1. **Identify conflict type:** Run `git status` to see which files need resolution
 
-2. **Apply strategy:**
-   - **pnpm-config.json:** Edit manually → `rush update` → stage both files → commit
-   - **package.json:** Edit manually → `rush update` → stage both files → commit
-   - **NextVersion.md:** Check if `X.X.0.md` exists → Scenario A (keep empty, move to `X.X.0.md`) or B (merge both) → stage → commit
-   - **CI/config files:** Manual edit favoring release branch → stage → commit
+2. **Apply strategy** (stage each resolved file with `git add`; the operation is completed once in step 5, not per file):
+   - **pnpm-config.json:** Edit manually → `rush update` → stage both files
+   - **package.json:** Edit manually → `rush update` → stage both files
+   - **NextVersion.md:** Check if `X.X.0.md` exists → Scenario A (keep empty, move to `X.X.0.md`) or B (merge both) → stage
+   - **CI/config files:** Manual edit favoring release branch → stage
    - **Lock file, API files, rush change files, modify/delete:** See the `merge-conflict-resolving` skill
 
 3. **Check for residual conflict markers:**
@@ -215,7 +215,20 @@ When combining:
 
 4. **Verify:** Run `rush build` and ensure CI passes
 
-5. **Commit** — for every conflict type except modify/delete, commit directly using the messages below. If a **modify/delete** conflict was resolved, stop for review first (see the review gate in the `merge-conflict-resolving` skill).
+5. **Finish the resolution** — the command depends on the operation `git status` reports:
+
+   - **Active cherry-pick** (the normal Mergify backport case): stage the resolved files and continue — do **not** create a separate commit first, or the continue step becomes empty or duplicates the change:
+
+     ```bash
+     git add <resolved files>
+     git cherry-pick --continue   # reuses the original commit message
+     ```
+
+   - **Merge with the target branch** (`git merge origin/release/X.X.x`): stage and commit normally, using the messages below.
+
+   If a **modify/delete** conflict was resolved, stop for review before this step (see the review gate in the `merge-conflict-resolving` skill).
+
+   Commit messages (for merge commits, or when amending the cherry-picked commit):
    - Lock files: `"resolve pnpm-lock conflicts"`
    - pnpm-config.json: `"resolve pnpm-config.json conflicts in backport"`
    - Package.json: `"resolve package.json conflicts in backport"`
@@ -223,12 +236,25 @@ When combining:
    - Documentation: `"merge NextVersion.md from both branches"`
    - Multiple files: `"resolve conflicts"`
 
-6. **Continue the cherry-pick and push:**
+6. **Push the backport branch:**
 
    ```bash
-   git cherry-pick --continue
    git push
    ```
+
+## Completion Criteria
+
+The backport is ready for review only when every box is checked:
+
+- [ ] `git status` reports no unmerged paths and no cherry-pick still in progress
+- [ ] `grep -r "<<<<<<< " .` returns nothing
+- [ ] The release branch's own versions, overrides, and CI config survived — only the backported change was added
+- [ ] `rush update` was run if `pnpm-config.json` or any `package.json` was edited, and the regenerated lock file is staged
+- [ ] `rush build` succeeds and `rush extract-api` shows only expected API changes
+- [ ] Changelog entries landed in the right file: `X.X.0.md` if that release shipped, otherwise `NextVersion.md`
+- [ ] `rush docs` succeeds if any changelog file was touched
+- [ ] Every modify/delete resolution was summarized and explicitly approved by the user
+- [ ] The branch is pushed and the backport PR references the original PR number(s)
 
 ## Rollback
 
@@ -261,6 +287,7 @@ rush update
 
 - **Check target branch first** — Strategy differs for `master` vs `release/X.X.x`; this skill applies only to release branch targets
 - **Mergify uses cherry-pick** — Recovery is `git cherry-pick --continue`, not merge
+- **Do not `git commit` during an active cherry-pick** — Stage the resolved files and run `git cherry-pick --continue`; a manual commit first leaves the continue step empty or duplicated
 - **Keep the release branch side** — Anything in a conflict hunk that is not part of the change being backported stays as the release branch has it
 - **Parse structured data** — Extract version fields from package.json programmatically
 - **Check whether `X.X.0.md` exists** before resolving `NextVersion.md`

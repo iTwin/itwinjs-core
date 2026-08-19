@@ -67,7 +67,7 @@ Type the tracker to `IModelDb`, not `SnapshotDb`, so it also accepts `Standalone
 
 ## Keep canonical helpers in exactly one place
 
-Every shared fixture helper belongs in a single `itwinjs-core\core\backend\src\test\imodel\IModelTestFixtures.ts` next to the tests. Reviewers on this repo push back hard on duplication here — the same boilerplate appearing in 4-6 files defeats the point of having the module.
+Every shared fixture helper belongs in a single `core/backend/src/test/imodel/IModelTestFixtures.ts` next to the tests. Reviewers on this repo push back hard on duplication here — the same boilerplate appearing in 4-6 files defeats the point of having the module.
 
 Helpers proven useful in the reference refactor:
 

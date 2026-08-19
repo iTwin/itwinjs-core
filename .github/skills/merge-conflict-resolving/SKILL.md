@@ -108,7 +108,7 @@ deleted in HEAD and modified in origin/master.
 
 ### Workflow
 
-1. Identify exactly what master changed — do not read the whole file:
+1. Identify exactly what master changed — do not read the whole file. Use the ref for the operation in progress (`MERGE_HEAD` for a merge, `CHERRY_PICK_HEAD` for a cherry-pick, `REBASE_HEAD` for a rebase):
 
    ```bash
    base=$(git merge-base HEAD MERGE_HEAD)
@@ -116,15 +116,19 @@ deleted in HEAD and modified in origin/master.
    git show <commit> -- <deleted-file>
    ```
 
-2. Classify the incoming change and port it:
+2. Classify the incoming change **by what kind of file it is**, then port it:
 
-   | Incoming change          | Action                                             |
-   | ------------------------ | -------------------------------------------------- |
-   | New test(s) added        | Port into the file that now owns that feature area |
-   | Existing test modified   | Apply the same edit to the migrated copy           |
-   | Test removed or disabled | Remove/disable the migrated copy                   |
+   | File kind                          | Incoming change            | Action                                                                                                    |
+   | ---------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------- |
+   | Source (`*.ts`)                    | New code added             | Port into the module that now owns that responsibility; keep the exported names the incoming code expects |
+   | Source (`*.ts`)                    | Existing code modified     | Apply the same edit to the migrated implementation                                                        |
+   | Source (`*.ts`)                    | Code removed               | Remove the migrated copy                                                                                  |
+   | Public API surface                 | Any of the above           | Re-run `rush extract-api` — a moved export changes `common/api/*.api.md`                                  |
+   | Docs / changelog                   | Entry added or edited      | Port the entry into the file that replaced it (see NextVersion.md guidance above)                          |
+   | Config / CI                        | Setting changed            | Apply the setting to the file that now carries it; do not assume the old key name survived the split       |
+   | Test                               | Added, modified, removed   | Port into the test file that now owns that feature area — see the `test-suite-refactoring` skill           |
 
-3. Port faithfully, then adapt to the new file's conventions (shared fixtures, teardown helpers, tracker). Keep the assertions identical — only the fixture plumbing should change.
+3. Port faithfully, then adapt to the new file's conventions. Keep the **behavior** identical — only the surrounding plumbing (imports, helper names, module layout) should change. For ported **tests** specifically, keep the assertions identical and change only the fixture plumbing (shared fixtures, teardown helpers, tracker).
 
 4. Resolve the deletion and stage the port together:
 
@@ -133,15 +137,15 @@ deleted in HEAD and modified in origin/master.
    git add <file-that-received-the-port>
    ```
 
-5. Verify before committing. **Run the tests, not just the build** — a ported test that compiles can still fail on a stale dependency.
+5. Verify before committing. **Run the tests, not just the build** — a ported test that compiles can still fail on a stale dependency. If exported API moved, also run `rush extract-api` and inspect the regenerated report.
 
-6. Stop and summarize the port for the user before committing — see [Review Gate](#review-gate-modifydelete-conflicts-only). This is the one conflict type that requires review: the whole point is that work could have been silently dropped, and nothing in a green build would reveal it.
+6. Stop and summarize the port for the user before finishing the operation — see [Review Gate](#review-gate-modifydelete-conflicts-only). This is the one conflict type that requires review: the whole point is that work could have been silently dropped, and nothing in a green build would reveal it.
 
-7. Once approved, write a merge commit message that records where the change went, so the next person does not think it was dropped.
+7. Once approved, finish the operation (`git commit` for a merge, `git cherry-pick --continue` for a cherry-pick, `git rebase --continue` for a rebase) and record in the message where the change went, so the next person does not think it was dropped.
 
 ### Incoming changes often carry dependency bumps
 
-A ported test may depend on a native addon or package version bumped in the same master commit. The symptom is a **confusing assertion failure rather than a dependency error** — for example `expected undefined to equal 2`, because the older BisCore schema lacks a property the new test expects.
+A ported test or module may depend on a native addon or package version bumped in the same master commit. The symptom is a **confusing assertion failure rather than a dependency error** — for example `expected undefined to equal 2`, because the older BisCore schema lacks a property the new test expects.
 
 Check the manifest against what is installed, then run the Rush update flow:
 
@@ -178,41 +182,69 @@ rush build --to @itwin/core-backend
 
 4. **Verify:** Run `rush build` and ensure CI passes
 
-5. **Commit** — for every conflict type except modify/delete, commit directly using the messages below. If a **modify/delete** conflict was resolved, stop for review first (see [Review Gate](#review-gate-modifydelete-conflicts-only)).
+5. **Finish the operation** — for every conflict type except modify/delete, complete it directly. If a **modify/delete** conflict was resolved, stop for review first (see [Review Gate](#review-gate-modifydelete-conflicts-only)).
+   - **Merge:** `git commit` using the messages below
+   - **Cherry-pick / rebase:** `git add` the resolved files, then `git cherry-pick --continue` / `git rebase --continue`. Do **not** create a separate `git commit` first — the continue step would then be empty or duplicate the change
+
+   Commit messages:
    - Lock files: `"resolve pnpm-lock conflicts"`
    - API files: `"regenerate api files after merge"`
    - Documentation: `"merge NextVersion.md from both branches"`
    - Multiple files: `"resolve conflicts"`
 
+## Completion Criteria
+
+The resolution is done only when every box is checked:
+
+- [ ] `git status` reports no unmerged paths and no operation still in progress
+- [ ] `grep -r "<<<<<<< " .` returns nothing
+- [ ] `rush build` succeeds
+- [ ] Tests pass for every package touched by the resolution
+- [ ] `rush extract-api` produces no unexpected `common/api/*.api.md` changes
+- [ ] `rush docs` succeeds if any file under `docs/` was resolved
+- [ ] Every modify/delete resolution was summarized and explicitly approved by the user
+- [ ] The final commit message records where any ported work went
+
 ## Review Gate: Modify/Delete Conflicts Only
 
-**When a conflict is modify/delete — the file was deleted on one side and modified on the other — stop and ask the user to review before committing.** Every other conflict type can be committed directly once verification passes.
+**When a conflict is modify/delete — the file was deleted on one side and modified on the other — stop and ask the user to review before finishing the operation.** Every other conflict type can be completed directly once verification passes.
 
 This case alone gets a gate because its worst failure mode is **invisible**: the incoming change is silently dropped, and the result still builds and passes tests. A green verification run proves the code you kept is correct — it proves nothing about the code you discarded. For content conflicts both sides remain visible in the diff, so a reviewer can see what happened; for modify/delete, the discarded work leaves no trace.
 
 Present a summary and wait for explicit approval:
 
+- **Which operation is in progress** — merge, cherry-pick (including a Mergify backport), or rebase; this determines the abort and finish commands below
 - **What was deleted, and by which side**
 - **What the incoming side changed** — the specific commits and what they added or modified
 - **Where each change was ported** — the new file and location that now owns it
 - **What was dropped, if anything** — call this out explicitly, even when dropping was clearly correct
 - **Verification evidence** — build, lint, and test results, including test counts before and after
 
-Keep the resolution staged but uncommitted while waiting. The tree stays inspectable, `git diff --cached` shows exactly what will land, and `git merge --abort` is still available if the user rejects it.
+Keep the resolution staged but unfinished while waiting. The tree stays inspectable, `git diff --cached` shows exactly what will land, and the abort for the operation in progress is still available:
 
-Only after approval, create the commit and record in the message where the ported work went, so the next person does not think it was lost.
+| Operation in progress | Abort | Finish after approval |
+| --- | --- | --- |
+| Merge | `git merge --abort` | `git commit` |
+| Cherry-pick (backports) | `git cherry-pick --abort` | `git cherry-pick --continue` |
+| Rebase | `git rebase --abort` | `git rebase --continue` |
 
-**Exception:** if the user has already stated they want the merge committed without review, honor that. Otherwise, ask — including when the resolution looks trivial. A one-file deletion that quietly discarded a new test looks exactly like a one-file deletion that discarded nothing.
+Never offer `git merge --abort` during a cherry-pick or rebase — it does not apply to that state. Confirm with `git status`, which names the operation in progress.
+
+Only after approval, finish the operation and record in the message where the ported work went, so the next person does not think it was lost.
+
+**Exception:** if the user has already stated they want the resolution completed without review, honor that. Otherwise, ask — including when the resolution looks trivial. A one-file deletion that quietly discarded a new test looks exactly like a one-file deletion that discarded nothing.
 
 ## Rollback
 
 If resolution goes wrong:
 
 ```bash
-# Abort an in-progress merge
+# Abort the operation in progress (check `git status` for which one)
 git merge --abort
+git rebase --abort
+git cherry-pick --abort
 
-# Or reset to the last good state (before the merge)
+# Or reset to the last good state (before the operation)
 git reset --hard ORIG_HEAD
 git clean -fd
 
@@ -240,4 +272,5 @@ rush update
 - **Always check for conflict markers** — `grep -r "<<<<<<< " .` before committing
 - **Verify after resolution** — Run `rush build`, `rush extract-api`, and check `git diff`
 - **Never commit without testing** — Ensure no syntax errors or breaking changes
+- **Match the command to the operation** — `git status` names it; abort with `git merge --abort`, `git cherry-pick --abort`, or `git rebase --abort`, and finish with `git commit`, `git cherry-pick --continue`, or `git rebase --continue` accordingly
 - **Never commit a modify/delete resolution without user approval** — Stage it, summarize what was ported and what was dropped, then wait. Tests cannot detect discarded work. All other conflict types can be committed directly once verification passes
