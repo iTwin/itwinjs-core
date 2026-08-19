@@ -95,11 +95,13 @@ function sendToProvider(message: ProviderSessionMessage): void {
 }
 
 function exitProviderProcess(exitCode: number): void {
-  process.disconnect?.();
+  if (!process.connected) {
+    // runProviderSession completed cleanup, and no parent remains to terminate Electron's helpers.
+    process.kill(process.platform === "win32" ? process.pid : -process.pid, "SIGKILL");
+    return;
+  }
+  process.disconnect();
   app.exit(exitCode);
-  // Electron can leave its native process alive after app.exit(); session teardown has already
-  // released the window, IPC handler, and preload registration, so terminate the main process.
-  process.kill(process.pid, "SIGTERM");
 }
 
 /** Run one provider-owned Electron main process. This function never collects or executes tests.
