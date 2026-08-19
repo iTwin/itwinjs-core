@@ -10,12 +10,7 @@ import { FormatDefinition, FormatsChangedArgs, FormatsProvider } from "@itwin/co
 import { IModelApp } from "../IModelApp";
 import { QuantityFormatter, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
 
-interface Deferred<T> {
-  promise: Promise<T>;
-  resolve: (value: T | PromiseLike<T>) => void;
-}
-
-function deferred<T>(): Deferred<T> {
+function deferred<T>() {
   let resolve!: (value: T | PromiseLike<T>) => void;
   const promise = new Promise<T>((res) => { resolve = res; });
   return { promise, resolve };
