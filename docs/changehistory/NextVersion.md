@@ -35,7 +35,7 @@ The shared [TxnEntityMetadata]($common) contract is now exported from `@itwin/co
 
 The frontend [BriefcaseTxns]($frontend) events continue to supply [TxnEntityChanges]($frontend), which has its own metadata and filtering API. The backend and frontend payloads describe the same transaction activity but are different types and should be documented and used separately.
 
-The existing [TxnEntityMetadata]($frontend) export from `@itwin/core-frontend` is deprecated; import [TxnEntityMetadata]($common) from `@itwin/core-common` instead.
+The existing `TxnEntityMetadata` export from `@itwin/core-frontend` is deprecated; import [TxnEntityMetadata]($common) from `@itwin/core-common` instead.
 
 ## @itwin/core-backend
 
