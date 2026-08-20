@@ -805,8 +805,9 @@ export class TextDecorationTool extends Tool {
         editor.appendListItem(index);
         break;
       }
-      case "leader": {
+      case "leader":
         const command = inArgs[1];
+        const value = inArgs[2];
         if (command === "new") {
           editor.setLeaderProps();
         } else {
@@ -860,12 +861,9 @@ export class TextDecorationTool extends Tool {
           } else {
             throw new Error("No leaders created. Use dta text leader new.");
           }
-          default:
-            throw new Error("Expected start, keypoint, nearest, textpoint");
+
         }
         break;
-      }
-
       case "json": {
 
         const rawProps = inArgs[1]?.replaceAll("'", "\"")?.replaceAll("\\'", "'"); // Remove escape characters for easier copy/paste into command line.
