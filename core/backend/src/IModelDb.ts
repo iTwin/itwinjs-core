@@ -55,7 +55,7 @@ import { SchemaSync } from "./SchemaSync";
 import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
-import { TxnManager } from "./TxnManager";
+import { TxnIdString, TxnManager } from "./TxnManager";
 import { BulkDeleteElementsArgs, BulkDeleteElementsResult, EditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
@@ -1522,20 +1522,40 @@ export abstract class IModelDb extends IModel {
       if (this[_nativeDb].getITwinId() !== Guid.empty)
         await this.locks.acquireLocks({ shared: IModel.repositoryModelId });
 
-      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
-        const schemaSyncDbUri = syncAccess.getUri();
-        this.saveSchemaChanges();
+      // Adopting the sync db's rows commits as it goes - attaching and detaching the sync db both
+      // commit - so abandoning unsaved changes cannot undo it. Anything that fails after that point,
+      // and the container upload during lock release is the one to worry about, has to put the
+      // briefcase back. Left alone, the next pushChanges would publish ec_ rows carrying ids the sync
+      // db has no record of, and the sync db would hand those same ids to somebody else.
+      let txnBeforeAdopt: TxnIdString | undefined;
+      try {
+        await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+          const schemaSyncDbUri = syncAccess.getUri();
+          this.saveSchemaChanges();
+          // After saveSchemaChanges, so rolling back cannot reach the caller's own work.
+          if (this.isBriefcaseDb())
+            txnBeforeAdopt = this.txns.getCurrentTxnId();
 
-        try {
-          nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-        } catch (err: any) {
-          this.abandonSchemaChanges();
-          if (SchemaSync.requiresUpgrade(err))
-            throw new IModelError(err.errorNumber, `${err.message} - this schema change needs the upgrade path. Use BriefcaseDb.upgradeSchemas, which takes the exclusive schema lock and pushes the result.`);
+          try {
+            nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+          } catch (err: any) {
+            if (SchemaSync.requiresUpgrade(err))
+              throw new IModelError(err.errorNumber, `${err.message} - this schema change needs the upgrade path. Use BriefcaseDb.upgradeSchemas, which takes the exclusive schema lock and pushes the result.`);
 
-          throw new IModelError(err.errorNumber, err.message);
+            throw new IModelError(err.errorNumber, err.message);
+          }
+        });
+      } catch (err: any) {
+        this.abandonSchemaChanges();
+        if (this.isBriefcaseDb() && undefined !== txnBeforeAdopt && this.txns.getCurrentTxnId() !== txnBeforeAdopt) {
+          // cancelTo reverses and makes non-reinstatable, so the rows cannot come back through undo
+          // either. It does not reverse DDL - a table or column the adopt created stays behind, with
+          // no ec_ row describing it. That is the state a briefcase already tolerates, and the next
+          // successful import finds the table up to date and carries on.
+          this.txns.cancelTo(txnBeforeAdopt);
         }
-      });
+        throw err;
+      }
     } else {
       const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
         schemaLockHeld: true,

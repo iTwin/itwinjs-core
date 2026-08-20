@@ -5,6 +5,7 @@
 
 import { statSync } from "fs";
 import { assert } from "chai";
+import * as sinon from "sinon";
 import { Suite } from "mocha";
 import { BriefcaseDb, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
@@ -404,6 +405,260 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
       b1.close();
       b2.close();
       b3?.close();
+    }
+  });
+
+  // A KindOfQuantity, ECEnumeration or PropertyCategory is referenced from ec_Property by a nullable
+  // foreign key declared ON DELETE CASCADE, so SchemaWriter clears every reference before it deletes
+  // the row - otherwise the cascade takes the whole ECProperty, its property map and its data.
+  //
+  // A briefcase applying the resulting changeset does not get that ordering. TxnManager's
+  // ApplySchemaChangesInOrder deliberately applies effective deletes ahead of updates so that an
+  // invert cannot violate a unique constraint, which puts the ec_KindOfQuantity delete before the
+  // ec_Property update that clears the pointer. Foreign key actions are live for a schema changeset
+  // that leaves ec_cache_ alone, so the cascade fires on the pulling briefcase and the update that
+  // follows is a NotFound conflict, which the ec_ conflict rules skip. The property is gone on b2
+  // and still there on b1.
+  //
+  // Nothing about this is specific to schema sync - the same changeset from an ordinary iModel does
+  // the same thing - which is why the test drives it through the upgrade path, where SchemaWriter
+  // runs against the briefcase directly and b1 is unambiguously correct.
+  //
+  // SKIPPED, not fixed: the agreed fix is an ECDb profile upgrade moving these three foreign keys
+  // from ON DELETE CASCADE to ON DELETE SET NULL, so that merge and rebase - which differ in whether
+  // foreign key actions run at all - both end up with a nulled cell instead of a deleted property.
+  // Unskip that as part of that profile change; it is the acceptance test for it.
+  // Story on the backlog tracking the issue: itwinjs-backlog#2333
+  it.skip("a referenced KindOfQuantity deletion must not drop the property in another schema", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-16" });
+    const accessToken = "sync life referenced koq token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life referenced koq", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife16b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife16b2" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+
+      // The KindOfQuantity lives here...
+      const quantitySchema: TinySchema = {
+        name: "SyncLifeQuantities",
+        alias: "slq",
+        ver: "01.00.00",
+        dynamic: true,
+        refs: [
+          { name: "Units", ver: "01.00.08", alias: "u" },
+          { name: "Formats", ver: "01.00.00", alias: "f" },
+        ],
+        rawXml: [
+          `<KindOfQuantity typeName="SharedLength" persistenceUnit="u:M" presentationUnits="f:DefaultReal(2)[u:M]" relativeError="0.001"/>`,
+        ],
+      };
+      // ...and the property that uses it lives in a schema that references it, so it is outside the
+      // reference closure the importing briefcase adopts.
+      const consumerSchema: TinySchema = {
+        name: "SyncLifeQuantityConsumer",
+        alias: "slqc",
+        ver: "01.00.00",
+        dynamic: true,
+        refs: [
+          { name: "BisCore", ver: "01.00.00", alias: "bis" },
+          { name: "SyncLifeQuantities", ver: "01.00.00", alias: "slq" },
+        ],
+        classes: [{
+          type: "entity",
+          name: "MeasuredThing",
+          baseClass: "bis:GeometricElement2d",
+          rawXml: `        <ECProperty propertyName="length" typeName="double" kindOfQuantity="slq:SharedLength"/>`,
+        }],
+      };
+      await importTinySchema(b1, quantitySchema);
+      await importTinySchema(b1, consumerSchema);
+      await b1.pushChanges({ accessToken, description: "quantity schema and its consumer" });
+      await b2.pullChanges({ accessToken });
+
+      const place = await insertDrawingModelAndCategory(b1, "SyncLifeReferencedKoq");
+      const measuredId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "SyncLifeQuantityConsumer:MeasuredThing",
+        props: { length: 12.5 },
+      });
+      await b1.pushChanges({ accessToken, description: "a measured element" });
+      await b2.pullChanges({ accessToken });
+      assert.equal(readElementProp(b2, measuredId, "length"), 12.5, "the pulling briefcase should start with the property");
+
+      // Deleted through the upgrade path, where SchemaWriter runs against the briefcase itself and
+      // clears the reference before dropping the row, so b1 is correct by construction.
+      const quantitySchemaWithoutKoq: TinySchema = { ...quantitySchema, ver: "02.00.00", rawXml: [] };
+      await b1.upgradeSchemaStrings([tinySchemaToXml(quantitySchemaWithoutKoq)], { accessToken, description: "remove the shared KindOfQuantity" });
+      assert.equal(countMetadataItemRows(b1, "ec_KindOfQuantity", "SharedLength"), 0, "the KindOfQuantity should be gone on the importer");
+      assert.equal(readElementProp(b1, measuredId, "length"), 12.5, "the importer should keep the property and its value");
+
+      // b2 applies that changeset, and this is where it goes wrong today.
+      await b2.pullChanges({ accessToken });
+      assert.equal(countMetadataItemRows(b2, "ec_KindOfQuantity", "SharedLength"), 0, "the KindOfQuantity should be gone on the puller");
+      assert.deepEqual(queryPropNames(b2, "SyncLifeQuantityConsumer:MeasuredThing"), queryPropNames(b1, "SyncLifeQuantityConsumer:MeasuredThing"),
+        "the pulling briefcase lost a property the changeset only meant to clear the KindOfQuantity of");
+      assert.equal(readElementProp(b2, measuredId, "length"), 12.5, "the pulling briefcase lost the property value");
+      expectMetadataTablesIdentical(b1, b2, "after deleting a KindOfQuantity referenced from another schema", { a: "b1", b: "b2" });
+      expectNoForeignKeyViolations(b2, "after deleting a KindOfQuantity referenced from another schema");
+    } finally {
+      b1.close();
+      b2.close();
+    }
+  });
+
+  // The adopt half of a sync import commits before the container is uploaded, and the upload only
+  // happens when the write lock is released - after importSchemas' own work is done. Everything in
+  // that window has to leave the briefcase as it was. Losing the caller's data would be bad; keeping
+  // half an import is worse, because pushing it publishes ec_ ids the sync db has no record of and
+  // the sync db then hands the same ids to somebody else.
+  //
+  // Injecting the failure through SchemaSync.withLockedAccess rather than by killing the lease: the
+  // real lease is clamped to a minimum of one hour native-side and cannot be shortened for a test.
+  // What matters is the shape - the native import succeeded and committed, and then something after
+  // it threw. Note this injection leaves the rows in the sync db, which is the harmless direction: a
+  // briefcase that rolled back more than it had to converges on the next import, whereas a briefcase
+  // that kept rows the sync db never recorded corrupts the timeline when it pushes.
+  const failAfterTheImportCommits = (): void => {
+    const realWithLockedAccess = SchemaSync.withLockedAccess;
+    sinon.stub(SchemaSync, "withLockedAccess").callsFake(async (iModel, args, operation) => {
+      await realWithLockedAccess(iModel, args, operation);
+      throw new Error("simulated failure after the sync db import committed");
+    });
+  };
+
+  it("a schema import that fails after committing keeps the local changes and drops the schema", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-17" });
+    const accessToken = "sync life rollback token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life rollback", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife17b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife17b2" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      await importTinySchema(b1, lifecycleSchema);
+      await b1.pushChanges({ accessToken, description: "base schema" });
+
+      const place = await insertDrawingModelAndCategory(b1, "SyncLifeRollback");
+      const keptId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "SchemaSyncLifecycle:KeptClass",
+        props: { userLabel: "written before the failed import" },
+      });
+      await b1.pushChanges({ accessToken, description: "data before the failed import" });
+
+      // Local work that is still pending when the import is attempted. It is committed by
+      // importSchemas before the adopt runs, so the rollback must stop short of it.
+      const pendingId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "SchemaSyncLifecycle:KeptClass",
+        props: { userLabel: "pending when the import failed" },
+      });
+
+      const rollbackSchema: TinySchema = {
+        name: "SchemaSyncRollback",
+        alias: "ssr",
+        ver: "01.00.00",
+        dynamic: true,
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{ type: "entity", name: "NeverArrives", baseClass: "bis:GeometricElement2d", props: [{ kind: "primitive", name: "value", type: "string" }] }],
+      };
+
+      failAfterTheImportCommits();
+      await assertThrowsAsync(async () => importTinySchema(b1, rollbackSchema));
+      sinon.restore();
+
+      // Nothing of the failed import survives.
+      assert.equal(countMetadataItemRows(b1, "ec_Schema", "SchemaSyncRollback"), 0, "the failed import left its schema behind");
+      assert.equal(countMetadataItemRows(b1, "ec_Class", "NeverArrives"), 0, "the failed import left its class behind");
+
+      // Both the pushed and the pending local work are untouched.
+      assert.equal(readElementProp(b1, keptId, "userLabel"), "written before the failed import");
+      assert.equal(readElementProp(b1, pendingId, "userLabel"), "pending when the import failed", "the rollback reached past the import into the caller's own work");
+
+      // And what gets pushed carries only the data, so the timeline never learns about the schema.
+      await b1.pushChanges({ accessToken, description: "data that outlived the failed import" });
+      await b2.pullChanges({ accessToken });
+      assert.equal(countMetadataItemRows(b2, "ec_Schema", "SchemaSyncRollback"), 0, "the failed import reached the timeline");
+      assert.equal(readElementProp(b2, pendingId, "userLabel"), "pending when the import failed");
+      expectMetadataTablesIdentical(b1, b2, "after a failed import was rolled back", { a: "b1", b: "b2" });
+      expectNoForeignKeyViolations(b1, "after a failed import was rolled back");
+
+      // The briefcase is still usable for the next import, and it agrees with the sync db afterwards.
+      await importTinySchema(b1, rollbackSchema);
+      assert.equal(countMetadataItemRows(b1, "ec_Schema", "SchemaSyncRollback"), 1, "the briefcase could not import again after the rollback");
+      await b1.pushChanges({ accessToken, description: "the retried import" });
+      await b2.pullChanges({ accessToken });
+      expectMetadataTablesIdentical(b1, b2, "after retrying the import that had failed", { a: "b1", b: "b2" });
+      expectPhysicalSchemaIdentical(b1, b2, "after retrying the import that had failed");
+    } finally {
+      sinon.restore();
+      b1.close();
+      b2.close();
+    }
+  });
+
+  // The advanced variant: a schema import that already succeeded and has not been pushed yet, when a
+  // second one fails. The first one's rows are in the sync db, so they have to stay; only the second
+  // one's may go. This is what makes the rollback a cancelTo back to a remembered point rather than
+  // "undo the schema txns".
+  it("a failed import keeps an earlier unpushed import that already reached the sync db #extended", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-18" });
+    const accessToken = "sync life rollback stacked token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life rollback stacked", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife18b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife18b2" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+
+      const firstSchema: TinySchema = {
+        name: "SchemaSyncStackedFirst",
+        alias: "sssf",
+        ver: "01.00.00",
+        dynamic: true,
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{ type: "entity", name: "Survivor", baseClass: "bis:GeometricElement2d", props: [{ kind: "primitive", name: "value", type: "string" }] }],
+      };
+      const secondSchema: TinySchema = {
+        name: "SchemaSyncStackedSecond",
+        alias: "ssss",
+        ver: "01.00.00",
+        dynamic: true,
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{ type: "entity", name: "Casualty", baseClass: "bis:GeometricElement2d", props: [{ kind: "primitive", name: "value", type: "string" }] }],
+      };
+
+      // Succeeds and stays unpushed - its rows are in the sync db, so the briefcase must keep them.
+      await importTinySchema(b1, firstSchema);
+      assert.isTrue(b1.txns.hasLocalChanges, "the first import should be sitting unpushed");
+
+      failAfterTheImportCommits();
+      await assertThrowsAsync(async () => importTinySchema(b1, secondSchema));
+      sinon.restore();
+
+      assert.equal(countMetadataItemRows(b1, "ec_Schema", "SchemaSyncStackedFirst"), 1, "the rollback reached past the failed import into the earlier one");
+      assert.equal(countMetadataItemRows(b1, "ec_Class", "Survivor"), 1, "the rollback took the earlier import's class");
+      assert.equal(countMetadataItemRows(b1, "ec_Schema", "SchemaSyncStackedSecond"), 0, "the failed import left its schema behind");
+
+      // The surviving import is still whole enough to use and to push.
+      const place = await insertDrawingModelAndCategory(b1, "SyncLifeStacked");
+      const survivorId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "SchemaSyncStackedFirst:Survivor",
+        props: { value: "the first import still works" },
+      });
+      await b1.pushChanges({ accessToken, description: "the surviving import and its data" });
+      await b2.pullChanges({ accessToken });
+      assert.equal(readElementProp(b2, survivorId, "value"), "the first import still works");
+      assert.equal(countMetadataItemRows(b2, "ec_Schema", "SchemaSyncStackedSecond"), 0, "the failed import reached the timeline");
+      expectMetadataTablesIdentical(b1, b2, "after a failed import on top of an unpushed one", { a: "b1", b: "b2" });
+      expectPhysicalSchemaIdentical(b1, b2, "after a failed import on top of an unpushed one");
+      expectNoForeignKeyViolations(b1, "after a failed import on top of an unpushed one");
+    } finally {
+      sinon.restore();
+      b1.close();
+      b2.close();
     }
   });
 

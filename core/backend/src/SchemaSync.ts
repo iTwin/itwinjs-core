@@ -10,7 +10,7 @@
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
-import { ChangeSetStatus, DbResult, OpenMode } from "@itwin/core-bentley";
+import { BentleyError, ChangeSetStatus, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import type { BlobContainer } from "./BlobContainerService";
@@ -19,7 +19,20 @@ import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 
 /** @internal */
 export namespace SchemaSync {
-  const lockParams: CloudSqlite.ObtainLockParams = { retryDelayMs: 1000, nRetries: 30 };
+  /** How long a briefcase waits for another briefcase's schema import to finish before giving up.
+   *
+   * `nRetries` alone does not bound the wait: when the count runs out `CloudSqlite.withLockedDb` asks
+   * `onFailure` what to do, and anything other than "stop" restarts the whole cycle. Without an
+   * `onFailure` the caller waits forever with no way to give up, so this supplies one.
+   */
+  const lockParams: CloudSqlite.ObtainLockParams = {
+    retryDelayMs: 6000,
+    nRetries: 10,
+    onFailure: async (lockedBy: string, expires: string) => {
+      Logger.logInfo("SchemaSync", `schema sync container is held by ${lockedBy} until ${expires}; giving up`);
+      return "stop";
+    },
+  };
 
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
   export class SchemaSyncDb extends VersionedSqliteDb {
@@ -78,8 +91,18 @@ export namespace SchemaSync {
   function readLocalSyncProps(arg: IModelOrFileName) {
     return readFromIModel(arg, (nativeDb) => {
       const propsString = nativeDb.queryFileProperty(syncProperty, true) as string | undefined;
+      let containerProps: CloudSqlite.ContainerProps | undefined;
+      if (propsString !== undefined) {
+        try {
+          containerProps = JSON.parse(propsString) as CloudSqlite.ContainerProps;
+        } catch (e) {
+          // Deliberately not swallowed into `undefined`: that would read as "schema sync was never
+          // enabled" and let this briefcase import schemas on its own.
+          throw new IModelError(DbResult.BE_SQLITE_CORRUPT, `iModel names a SchemaSyncDb container but the property cannot be read: ${BentleyError.getErrorMessage(e)}`);
+        }
+      }
       return {
-        containerProps: propsString ? JSON.parse(propsString) as CloudSqlite.ContainerProps : undefined,
+        containerProps,
         testCacheName: nativeDb.queryLocalValue(testSyncCachePropKey),
       };
     });
