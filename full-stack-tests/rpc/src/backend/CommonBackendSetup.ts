@@ -12,7 +12,7 @@ import { rpcInterfaces } from "../common/TestRpcInterface";
 import { resetOp8Initializer, TestRpcImpl2 } from "./TestRpcImpl";
 import { join } from "path";
 
-export async function commonSetup(): Promise<void> {
+export async function commonSetup(registerBackendCallback: RegisterBackendCallback = registerCertaBackendCallback): Promise<void> {
   RpcConfiguration.developmentMode = true;
 
   const cacheDir = join(__dirname, ".cache");

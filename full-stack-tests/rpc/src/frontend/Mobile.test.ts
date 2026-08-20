@@ -5,7 +5,7 @@
 import { ProcessDetector } from "@itwin/core-bentley";
 import { assert } from "chai";
 import { MobileTestInterface } from "../common/TestRpcInterface";
-import { currentEnvironment } from "./_Setup.test";
+import { currentEnvironment } from "./testSetup";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("Mobile", () => {

@@ -356,7 +356,7 @@
     },
     {
       "name": "@itwin/vitest-browser-bridge",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -396,7 +396,7 @@
     },
     {
       "name": "@vitest/browser",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@vitest/browser-playwright",
@@ -964,7 +964,7 @@
     },
     {
       "name": "vitest",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "webpack",
