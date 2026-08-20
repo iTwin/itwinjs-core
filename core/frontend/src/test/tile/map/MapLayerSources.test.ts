@@ -62,6 +62,8 @@ describe("MapLayerSources", () => {
     sampleSource!.userName = "testUser";
     sampleSource!.password = "testPassword";
     sampleSource!.unsavedQueryParams = {unsavedParam : "unsavedParamValue"};
+    sampleSource!.savedHeaders = {savedHeader : "savedHeaderValue"};
+    sampleSource!.unsavedHeaders = {"api-key" : "secretApiKey"};
 
     expect(sampleSource).toBeDefined();
     if (!sampleSource)
@@ -85,10 +87,41 @@ describe("MapLayerSources", () => {
     expect(sampleSource.password).toEqual(settings.password);
     expect(JSON.stringify(sampleSource.savedQueryParams)).toEqual(JSON.stringify(settings.savedQueryParams));
     expect(JSON.stringify(sampleSource.unsavedQueryParams)).toEqual(JSON.stringify(settings.unsavedQueryParams));
+    expect(JSON.stringify(sampleSource.savedHeaders)).toEqual(JSON.stringify(settings.savedHeaders));
+    expect(JSON.stringify(sampleSource.unsavedHeaders)).toEqual(JSON.stringify(settings.unsavedHeaders));
+    expect(settings.collectHeaders()).toEqual({ savedHeader: "savedHeaderValue", "api-key": "secretApiKey" });
     expect(settings.subLayers).toBeDefined();
     expect(settings.subLayers.length).toEqual(subLayers.length);
     expect(settings.subLayers[0].name).toEqual(subLayers[0].name);
     expect(settings.subLayers[0].name).toEqual(subLayers[0].name);
+  });
+
+  it("should collect headers merging unsaved over saved", async () => {
+    const sampleSource = MapLayerSource.fromJSON(sampleSourceJson);
+    expect(sampleSource).toBeDefined();
+    if (!sampleSource)
+      return;
+
+    expect(sampleSource.collectHeaders()).toEqual({});
+
+    sampleSource.savedHeaders = { shared: "saved", onlySaved: "savedValue" };
+    sampleSource.unsavedHeaders = { shared: "unsaved", onlyUnsaved: "unsavedValue" };
+    expect(sampleSource.collectHeaders()).toEqual({ shared: "unsaved", onlySaved: "savedValue", onlyUnsaved: "unsavedValue" });
+  });
+
+  it("should only persist savedHeaders in MapLayerSourceProps", async () => {
+    const sampleSource = MapLayerSource.fromJSON({ ...sampleSourceJson, headers: { persisted: "value" } });
+    expect(sampleSource).toBeDefined();
+    if (!sampleSource)
+      return;
+
+    expect(sampleSource.savedHeaders).toEqual({ persisted: "value" });
+
+    // Unsaved headers (e.g. API keys) must never be persisted.
+    sampleSource.unsavedHeaders = { "api-key": "secretApiKey" };
+    const sourceProps = sampleSource.toJSON();
+    expect(sourceProps.headers).toEqual({ persisted: "value" });
+    expect(JSON.stringify(sourceProps)).not.toContain("secretApiKey");
   });
 
   it("should create MapLayerSourceProps from MapLayerSource", async () => {

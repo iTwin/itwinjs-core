@@ -38,6 +38,7 @@ import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
 import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
+import { AttachMapLayerWithHeadersTool } from "./MapLayerHeadersTool";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
@@ -370,6 +371,7 @@ export class DisplayTestApp {
       ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
       AttachCustomRealityDataTool,
+      AttachMapLayerWithHeadersTool,
       ChangeGridSettingsTool,
       ClearModelTransformsTool,
       CloneViewportTool,

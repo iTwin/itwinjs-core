@@ -5151,6 +5151,10 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     accessKey?: MapLayerKey;
     formatId: string;
+    // @beta
+    headers?: {
+        [key: string]: string;
+    };
     // @internal (undocumented)
     modelId?: never;
     // @beta
@@ -5174,6 +5178,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // @internal (undocumented)
     protected cloneProps(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerProps;
     // @beta
+    collectHeaders(): {
+        [key: string]: string;
+    };
+    // @beta
     collectQueryParams(): {
         [key: string]: string;
     };
@@ -5192,6 +5200,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // @beta
     readonly properties?: MapLayerProviderProperties;
     // @beta
+    savedHeaders?: {
+        [key: string]: string;
+    };
+    // @beta
     savedQueryParams?: {
         [key: string]: string;
     };
@@ -5203,6 +5215,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
     toJSON(): ImageMapLayerProps;
+    // @beta
+    unsavedHeaders?: {
+        [key: string]: string;
+    };
     // @beta
     unsavedQueryParams?: {
         [key: string]: string;

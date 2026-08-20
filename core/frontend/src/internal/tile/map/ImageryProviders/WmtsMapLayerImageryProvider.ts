@@ -39,7 +39,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   public override async initialize(): Promise<void> {
     try {
-      this._capabilities = await WmtsCapabilities.create(this._baseUrl);
+      this._capabilities = await WmtsCapabilities.create(this._baseUrl, undefined, undefined, undefined, this._settings.collectHeaders());
       this.initPreferredTileMatrixSet();
       this.initPreferredStyle();
       this.initDisplayedLayer();

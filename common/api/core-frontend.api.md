@@ -1281,6 +1281,10 @@ export interface ArcGisGetServiceJsonArgs {
     // (undocumented)
     formatId: string;
     // (undocumented)
+    headers?: {
+        [key: string]: string;
+    };
+    // (undocumented)
     ignoreCache?: boolean;
     // (undocumented)
     password?: string;
@@ -6220,6 +6224,8 @@ export abstract class MapLayerImageryProvider {
     // @internal (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
     // @internal
+    protected setRequestHeaders(headers: Headers): void;
+    // @internal
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
@@ -6286,6 +6292,10 @@ export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
     // @beta
+    collectHeaders(): {
+        [key: string]: string;
+    };
+    // @beta
     collectQueryParams(): {
         [key: string]: string;
     };
@@ -6300,6 +6310,10 @@ export class MapLayerSource {
     // (undocumented)
     password?: string;
     // @beta
+    savedHeaders?: {
+        [key: string]: string;
+    };
+    // @beta
     savedQueryParams?: {
         [key: string]: string;
     };
@@ -6311,6 +6325,10 @@ export class MapLayerSource {
     toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined;
     // (undocumented)
     transparentBackground?: boolean;
+    // @beta
+    unsavedHeaders?: {
+        [key: string]: string;
+    };
     // @beta
     unsavedQueryParams?: {
         [key: string]: string;
@@ -6327,6 +6345,10 @@ export class MapLayerSource {
 export interface MapLayerSourceProps {
     baseMap?: boolean;
     formatId?: string;
+    // @beta
+    headers?: {
+        [key: string]: string;
+    };
     name: string;
     // @beta
     queryParams?: {
@@ -9904,6 +9926,11 @@ export function setBasicAuthorization(headers: Headers, credentials: RequestBasi
 
 // @internal (undocumented)
 export function setBasicAuthorization(headers: Headers, user: string, password: string): void;
+
+// @internal
+export function setRequestHeaders(headers: Headers, customHeaders?: {
+    [key: string]: string;
+}): void;
 
 // @internal
 export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void;
@@ -14320,7 +14347,9 @@ export class WindowAreaTool extends ViewTool {
 
 // @internal (undocumented)
 export class WmsUtilities {
-    static fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string>;
+    static fetchXml(url: string, credentials?: RequestBasicCredentials, customHeaders?: {
+        [key: string]: string;
+    }): Promise<string>;
     // (undocumented)
     static getBaseUrl(url: string): string;
 }

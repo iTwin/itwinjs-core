@@ -282,7 +282,10 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     tmpUrl.searchParams.append("outSR", "3857");
     tmpUrl.searchParams.append("returnExtentOnly", "true");
     tmpUrl.searchParams.append("f", arcgisFeatureFormats.json);
-    const cached = ArcGisFeatureProvider._extentCache.get(tmpUrl.toString());
+    // The cache is keyed by URL only, so a header-authenticated request must not share cached extents with a
+    // differently-authenticated request; skip the cache entirely when custom headers are present.
+    const hasHeaders = Object.keys(this._settings.collectHeaders()).length > 0;
+    const cached = hasHeaders ? undefined : ArcGisFeatureProvider._extentCache.get(tmpUrl.toString());
     if (cached) {
       extentJson = cached;
     } else {
@@ -293,7 +296,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       const response = await this.fetch(tmpUrl, opts);
 
       extentJson = await response.json();
-      ArcGisFeatureProvider._extentCache.set(tmpUrl.toString(), extentJson);
+      if (!hasHeaders)
+        ArcGisFeatureProvider._extentCache.set(tmpUrl.toString(), extentJson);
     }
     return (extentJson ? extentJson.extent : undefined);
   }
@@ -319,7 +323,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       metadata = await ArcGisUtilities.getServiceJson({
         url: url.toString(), formatId: this._settings.formatId,
         userName: this._settings.userName, password: this._settings.password,
-        queryParams: this._settings.collectQueryParams(), requireToken: this._accessTokenRequired});
+        queryParams: this._settings.collectQueryParams(), headers: this._settings.collectHeaders(),
+        requireToken: this._accessTokenRequired});
     } catch {
 
     }

@@ -6,7 +6,7 @@ import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
 import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
-import { headersIncludeAuthMethod } from "../../../request/utils";
+import { headersIncludeAuthMethod, setRequestHeaders } from "../../../request/utils";
 
 /** @packageDocumentation
  * @module Tiles
@@ -55,6 +55,7 @@ export interface ArcGisGetServiceJsonArgs  {
   userName?: string;
   password?: string;
   queryParams?: {[key: string]: string};
+  headers?: {[key: string]: string};
   ignoreCache?: boolean;
   requireToken?: boolean;
 }
@@ -187,7 +188,7 @@ export class ArcGisUtilities {
   */
   public static async validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation> {
     const {source, ignoreCache, capabilitiesFilter} = args;
-    const metadata = await this.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams(), ignoreCache});
+    const metadata = await this.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams(), headers: source.collectHeaders(), ignoreCache});
     const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -262,8 +263,11 @@ export class ArcGisUtilities {
    */
 
   public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
-    const {url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
-    if (!ignoreCache) {
+    const {url, formatId, userName, password, queryParams, headers, ignoreCache, requireToken} = args;
+    const hasHeaders = headers !== undefined && Object.keys(headers).length > 0;
+    // Skip cache lookup when custom headers are present: the cache is keyed by URL only, so a header-authenticated
+    // request must not be served a response cached from a different (e.g. unauthenticated) request.
+    if (!ignoreCache && !hasHeaders) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)
         return cached;
@@ -284,6 +288,16 @@ export class ArcGisUtilities {
       return tmpUrl;
     };
 
+    const createFetchOptions = (base?: RequestInit): RequestInit => {
+      const opts: RequestInit = { method: "GET", ...base };
+      if (hasHeaders) {
+        const requestHeaders = new Headers();
+        setRequestHeaders(requestHeaders, headers);
+        opts.headers = requestHeaders;
+      }
+      return opts;
+    };
+
     let accessTokenRequired = false;
     try {
       let tmpUrl = createUrlObj();
@@ -296,10 +310,10 @@ export class ArcGisUtilities {
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
         }
       }
-      let response = await fetch(tmpUrl, { method: "GET" });
+      let response = await fetch(tmpUrl, createFetchOptions());
       if (response.status === 401 && !requireToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
         // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(tmpUrl, {method: "GET", credentials: "include" });
+        response = await fetch(tmpUrl, createFetchOptions({ credentials: "include" }));
       }
 
       // Append security token when corresponding error code is returned by ArcGIS service
@@ -312,15 +326,17 @@ export class ArcGisUtilities {
         if (accessClient) {
           tmpUrl = createUrlObj();
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
-          response = await fetch(tmpUrl.toString(), { method: "GET" });
+          response = await fetch(tmpUrl.toString(), createFetchOptions());
           errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
       }
 
       const json = await response.json();
       const info = {content: json, accessTokenRequired};
-      // Cache the response only if it doesn't contain any error.
-      ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? info : undefined));
+      // Cache the response only if it doesn't contain any error, and never when authenticated via
+      // custom headers (the cache is keyed by URL only, so protected data must not be cached).
+      if (!hasHeaders)
+        ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? info : undefined));
       return info;  // Always return json, even though it contains an error code.
 
     } catch {

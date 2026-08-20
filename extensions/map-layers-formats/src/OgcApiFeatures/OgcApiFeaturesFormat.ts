@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { appendQueryParams, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
+import { appendQueryParams, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, setRequestHeaders, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
@@ -22,6 +22,11 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       if (userName && password) {
         headers = new Headers();
         setBasicAuthorization(headers, userName, password);
+      }
+      const customHeaders = source.collectHeaders();
+      if (Object.keys(customHeaders).length > 0) {
+        headers ??= new Headers();
+        setRequestHeaders(headers, customHeaders);
       }
       const opts: RequestInit = {
         method: "GET",

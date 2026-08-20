@@ -59,6 +59,12 @@ export interface MapLayerSourceProps {
    * @beta
   */
   queryParams?: { [key: string]: string };
+
+  /** List of HTTP headers that will get added to the requests made for this source, persisted as part of the JSON representation.
+   * @note Sensitive information such as API keys should be provided at runtime via [[MapLayerSource.unsavedHeaders]] to ensure it is never persisted.
+   * @beta
+  */
+  headers?: { [key: string]: string };
 }
 
 /** A source for map layers. These may be catalogued for convenient use by users or applications.
@@ -83,20 +89,32 @@ export class MapLayerSource {
   */
   public unsavedQueryParams?: { [key: string]: string };
 
-  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, savedQueryParams?: { [key: string]: string}) {
+  /** List of HTTP headers that will get added to the requests made for this source and persisted as part of the JSON representation.
+   * @note Sensitive information such as API keys should be provided in [[unsavedHeaders]] to ensure it is never persisted.
+   * @beta
+  */
+  public savedHeaders?: { [key: string]: string };
+
+  /** List of HTTP headers that will get added to the requests made for this source that should *not* be persisted as part of the JSON representation.
+   * @beta
+  */
+  public unsavedHeaders?: { [key: string]: string };
+
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, savedQueryParams?: { [key: string]: string}, savedHeaders?: { [key: string]: string}) {
     this.formatId = formatId;
     this.name = name;
     this.url = url;
     this.baseMap = baseMap;
     this.transparentBackground = transparentBackground;
     this.savedQueryParams = savedQueryParams;
+    this.savedHeaders = savedHeaders;
   }
 
   public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
     if (json === undefined)
       return undefined;
 
-    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground, json.queryParams);
+    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground, json.queryParams, json.headers);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
@@ -118,7 +136,7 @@ export class MapLayerSource {
     return undefined;
   }
   public toJSON(): Omit<MapLayerSourceProps, "formatId"> & {formatId: string}  {
-    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground, queryParams: this.savedQueryParams };
+    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground, queryParams: this.savedQueryParams, headers: this.savedHeaders };
   }
 
   public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
@@ -134,6 +152,14 @@ export class MapLayerSource {
 
     if (this.unsavedQueryParams) {
       layerSettings.unsavedQueryParams = {...this.unsavedQueryParams};
+    }
+
+    if (this.savedHeaders) {
+      layerSettings.savedHeaders = {...this.savedHeaders};
+    }
+
+    if (this.unsavedHeaders) {
+      layerSettings.unsavedHeaders = {...this.unsavedHeaders};
     }
     return layerSettings;
   }
@@ -153,6 +179,19 @@ export class MapLayerSource {
     if (this.unsavedQueryParams)
       queryParams = {...queryParams, ...this.unsavedQueryParams};
     return queryParams;
+  }
+
+  /** Collect all HTTP headers, merging [[unsavedHeaders]] over [[savedHeaders]].
+ * @beta
+ */
+  public collectHeaders() {
+    let headers: {[key: string]: string} = {};
+
+    if (this.savedHeaders)
+      headers = {...this.savedHeaders};
+    if (this.unsavedHeaders)
+      headers = {...headers, ...this.unsavedHeaders};
+    return headers;
   }
 
 }
