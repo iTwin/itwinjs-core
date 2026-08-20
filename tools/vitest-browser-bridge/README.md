@@ -9,7 +9,7 @@ The provider and browser callback exports are ESM-only. The backend and HTTP cal
 
 ## Vitest 4 provider
 
-The consuming project must provide Vitest `^4.1.10` and an Electron version in the supported `>=35 <44` range. This package temporarily pins `@opentelemetry/api` 1.0.4 so its Vitest types resolve to the same peer instance as `@vitest/browser` in the current Rush graph; remove that pin when the repository aligns on Vitest's `^1.9.0` optional peer. Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, secure `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
+The consuming project must provide Vitest `^4.1.10` and an Electron version in the supported `>=35 <44` range. Vitest owns test collection, execution, `describe`/`it`/`expect`/`vi`, mocks, assertions, and reporting. The provider owns only the Electron process, secure `BrowserWindow`, optional main-process initialization, bridge and consumer preload registration, and teardown.
 
 ```ts
 import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
