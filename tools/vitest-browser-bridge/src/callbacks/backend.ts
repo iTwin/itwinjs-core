@@ -41,6 +41,11 @@ export function registerBackendCallback<Arguments extends readonly unknown[]>(na
   getState().callbacks.set(name, callback);
 }
 
+/** The callback registrar shape shared by bridge transports and legacy test backends.
+ * @internal
+ */
+export type BackendCallbackRegistrar = (name: string, callback: (...args: any[]) => any) => void;
+
 /** Remove every callback during provider-session teardown.
  * @internal
  */

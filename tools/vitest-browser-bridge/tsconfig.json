@@ -8,6 +8,7 @@
   },
   "include": [
     "src/callbacks/backend.ts",
+    "src/callbacks/http.ts",
     "src/electron/bridge-preload.ts",
     "src/electron/provider-session.ts",
     "src/test/fixtures/**/*.ts"

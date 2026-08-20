@@ -12,10 +12,10 @@ import { rpcInterfaces } from "../common/TestRpcInterface";
 import { resetOp8Initializer, TestRpcImpl2 } from "./TestRpcImpl";
 import { join } from "path";
 
-export async function commonSetup(registerBackendCallback: RegisterBackendCallback = registerCertaBackendCallback): Promise<void> {
+export async function commonSetup(registerBackendCallback: BackendCallbackRegistrar): Promise<void> {
   RpcConfiguration.developmentMode = true;
 
-  const cacheDir = join(__dirname, ".cache");
+  const cacheDir = process.env.VITEST_BACKEND_CACHE_DIR ?? join(__dirname, ".cache");
   // Start the backend
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost: { cacheDir } });
