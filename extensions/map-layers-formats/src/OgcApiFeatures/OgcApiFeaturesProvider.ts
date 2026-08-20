@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { base64StringToUint8Array, expectDefined, IModelStatus, Logger } from "@itwin/core-bentley";
+import { base64StringToUint8Array, BentleyError, expectDefined, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
 import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
@@ -156,7 +156,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       throw new Error(msg);
     };
     let collectionMetadata: any;
-    let collectionResponseUrl: string;
+    let collectionResponseUrl: string = this._settings.url;
     const { json: initialJson, responseUrl: initialResponseUrl } = await this.fetchMetadata(this._settings.url);
     let json = initialJson;
     if (json?.type === "FeatureCollection") {
@@ -225,11 +225,11 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     if (Array.isArray(collectionMetadata?.links)) {
       // Items links (Mandatory)
       const itemsLink = collectionMetadata.links.find((link: any)=> link.rel.includes("items") && link.type === "application/geo+json");
-      itemsHref = new URL(itemsLink.href, collectionResponseUrl!).toString();
+      itemsHref = new URL(itemsLink.href, collectionResponseUrl).toString();
 
       // Queryables link (Optional)
       const queryablesLink = collectionMetadata.links.find((link: any)=> link.rel.includes("queryables") && link.type === "application/schema+json");
-      queryablesHref = queryablesLink ? new URL(queryablesLink.href, collectionResponseUrl!).toString() : undefined;
+      queryablesHref = queryablesLink ? new URL(queryablesLink.href, collectionResponseUrl).toString() : undefined;
 
     }
 
@@ -484,13 +484,13 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       if (this._drawDebugInfo)
         this.drawTileDebugInfo(row, column, zoomLevel, ctx);
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
+      Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${BentleyError.getErrorMessage(e)}`);
     }
 
     try {
       return this.createImageSourceFromDataURL(canvas.toDataURL("image/png"), ImageSourceFormat.Png);
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);
+      Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${BentleyError.getErrorMessage(e)}`);
     }
 
     return undefined;
