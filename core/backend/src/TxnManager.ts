@@ -102,19 +102,12 @@ export function setMaxEntitiesPerEvent(max: number): number {
 }
 
 class TxnEntityMetadataImpl implements TxnEntityMetadata {
-  public readonly classFullName: string;
-  private readonly _baseClasses: TxnEntityMetadataImpl[] = [];
+  public readonly baseClasses: TxnEntityMetadataImpl[] = [];
 
-  public constructor(classFullName: string) {
-    this.classFullName = classFullName;
-  }
-
-  public addBaseClass(baseClass: TxnEntityMetadataImpl): void {
-    this._baseClasses.push(baseClass);
-  }
+  public constructor(public readonly classFullName: string) {}
 
   public is(baseClassFullName: string): boolean {
-    return this.classFullName === baseClassFullName || this._baseClasses.some((baseClass) => baseClass.is(baseClassFullName));
+    return this.classFullName === baseClassFullName || this.baseClasses.some((baseClass) => baseClass.is(baseClassFullName));
   }
 }
 
@@ -163,8 +156,6 @@ class ChangedEntitiesArray {
         const classIndex = classIndices[i];
         const entityMetadata = metadata[classIndex];
         assert(undefined !== entityMetadata);
-        if (undefined === entityMetadata)
-          continue;
 
         entity ??= { id: "", classId: "", metadata: entityMetadata };
         entity.id = entityIds[i];
@@ -269,7 +260,7 @@ class ChangedEntitiesProc {
       for (const baseClassIndex of frontend.bases) {
         const baseClass = backendMetadata[baseClassIndex];
         assert(undefined !== baseClass);
-        backend.addBaseClass(baseClass);
+        backend.baseClasses.push(baseClass);
       }
     }
 

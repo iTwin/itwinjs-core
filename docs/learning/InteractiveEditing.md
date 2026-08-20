@@ -27,8 +27,6 @@ The backend and frontend change events describe the same transaction activity, b
 - [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend) supply [TxnChangedEntities]($backend). Use `metadata.classFullName` for an exact class match or `metadata.is("Schema:BaseClass")` to include derived classes; the backend payload does not provide the frontend `filter` method.
 - [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend) supply [TxnEntityChanges]($frontend). Each iterated change has `metadata.classFullName`, and [TxnEntityChanges.filter]($frontend) can filter by class metadata and change type.
 
-Do not assume that the frontend `TxnEntityChanges` filtering API is available on the backend `TxnChangedEntities` payload; consult the event's package-specific documentation for the corresponding usage.
-
 ## Pushing Changesets to IModelHub
 
 Txns hold local changes to a single briefcase. When users are ready to send the result of all their local changes to IModelHub, the local Txns must be merged together to form a Changeset. Changesets hold the *net changes* made during the session. As above, if an element is added in one Txn and then deleted in a subsequent Txn, the result is no change in the Changeset.

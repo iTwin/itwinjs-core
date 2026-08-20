@@ -8,8 +8,6 @@
 
 import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import { NotifyEntitiesChangedArgs, TxnEntityMetadata } from "@itwin/core-common";
-/** @deprecated in 5.13.0. Use [TxnEntityMetadata]($common) from @itwin/core-common instead. */
-export type { TxnEntityMetadata } from "@itwin/core-common";
 
 /** The type of operation that produced a [[TxnEntityChange]].
  * @public
