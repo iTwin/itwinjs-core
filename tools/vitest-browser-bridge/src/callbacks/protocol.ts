@@ -13,7 +13,7 @@ export const CALLBACK_CHANNEL = "vitest-browser-bridge:callback" as const;
  */
 export const CALLBACK_BRIDGE_GLOBAL = "__vitestCallbackBridge" as const;
 
-/** A named callback request sent over the privileged Electron transport.
+/** A named callback request sent over a privileged browser-to-backend transport.
  * @internal
  */
 export interface CallbackRequest {
@@ -50,7 +50,7 @@ export function assertCallbackName(name: unknown): asserts name is string {
     throw new Error("Callback name must be a non-empty string.");
 }
 
-/** Validate a transport payload at the Electron main-process boundary.
+/** Validate a transport payload at the backend boundary.
  * @internal
  */
 export function parseCallbackRequest(payload: unknown): CallbackRequest {
@@ -68,7 +68,7 @@ export function parseCallbackRequest(payload: unknown): CallbackRequest {
 }
 
 /** Convert a backend result into an explicit response so expected callback failures do not become
- * noisy unhandled Electron IPC errors.
+ * noisy transport errors.
  * @internal
  */
 export async function captureCallbackResponse(callback: () => Promise<unknown>): Promise<CallbackResponse> {
@@ -82,12 +82,12 @@ export async function captureCallbackResponse(callback: () => Promise<unknown>):
 /** Unwrap and validate a callback response in the renderer.
  * @internal
  */
-export function unwrapCallbackResponse(response: unknown): unknown {
+export function unwrapCallbackResponse(response: unknown, source = "backend callback transport"): unknown {
   if (!isRecord(response) || typeof response.ok !== "boolean")
-    throw new Error("Invalid callback response from the Electron main process.");
+    throw new Error(`Invalid callback response from the ${source}.`);
   if (response.ok) {
     if (!("value" in response))
-      throw new Error("Invalid callback response from the Electron main process.");
+      throw new Error(`Invalid callback response from the ${source}.`);
     return response.value;
   }
 
@@ -95,7 +95,7 @@ export function unwrapCallbackResponse(response: unknown): unknown {
   if (!isRecord(responseError)
     || typeof responseError.message !== "string"
     || (responseError.stack !== undefined && typeof responseError.stack !== "string"))
-    throw new Error("Invalid callback response from the Electron main process.");
+    throw new Error(`Invalid callback response from the ${source}.`);
 
   const error = new Error(responseError.message);
   if (typeof responseError.stack === "string")
