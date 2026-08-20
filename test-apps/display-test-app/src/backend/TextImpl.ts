@@ -1,6 +1,8 @@
 import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault, withEditTxn } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { FieldFormattingMiss } from "../common/DtaIpcInterface";
+import { clearFieldFormattingDemoMisses, disableFieldFormattingDemo, enableFieldFormattingDemo, getFieldFormattingDemoMisses, prepareFieldFormattingDemoFor } from "./FieldFormattingDemo";
 
 /**
  * Inserts a new text style into the iModel.
@@ -72,6 +74,10 @@ export async function deleteTextStyle(iModelKey: string, name: string): Promise<
 export async function insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<Id64String> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
+  if (textAnnotationProps) {
+    await prepareFieldFormattingDemoFor(iModel, TextAnnotation.fromJSON(textAnnotationProps).textBlock);
+  }
+
   const annotation2d = TextAnnotation2d.create(
     iModel,
     {
@@ -102,6 +108,12 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 
   const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
+  // Acquire locks and warm the formatting provider *before* mutating the in-memory element, so
+  // a failure here leaves the cached element untouched rather than dirty-but-unwritten.
+  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
+  if (textAnnotationProps)
+    await prepareFieldFormattingDemoFor(iModel, TextAnnotation.fromJSON(textAnnotationProps).textBlock);
+
   if (categoryId)
     text.category = categoryId;
 
@@ -115,8 +127,28 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
     text.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId);
   }
 
-  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
   withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
+}
+
+/** Adopts the DTA demo FormatSet for the specified iModel. */
+export async function enableFieldFormattingDemoForIModel(iModelKey: string): Promise<void> {
+  const iModel = BriefcaseDb.findByKey(iModelKey);
+  await enableFieldFormattingDemo(iModel);
+}
+
+/** Unregisters the DTA demo FormatSet. */
+export async function disableFieldFormattingDemoForIModel(_iModelKey: string): Promise<void> {
+  disableFieldFormattingDemo();
+}
+
+/** Reports demo-provider requirements that evaluation asked for but that were never warmed. */
+export async function getFieldFormattingDemoMissesForIModel(_iModelKey: string): Promise<FieldFormattingMiss[]> {
+  return getFieldFormattingDemoMisses().map(({ name, persistenceUnitName, system, formatSet }) => ({ name, persistenceUnitName, system, formatSet }));
+}
+
+/** Discards the demo provider's accumulated misses. */
+export async function clearFieldFormattingDemoMissesForIModel(_iModelKey: string): Promise<void> {
+  clearFieldFormattingDemoMisses();
 }
 
 /**
@@ -132,6 +164,28 @@ export async function deleteText(iModelKey: string, elementId: Id64String): Prom
 
   await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
   withEditTxn(iModel, "Deleted text annotation", (txn) => text.delete(txn));
+}
+
+/**
+ * Retrieves the TextAnnotationProps, category id, model id, placement, and default text style id for an existing text annotation element.
+ * @param iModelKey - Key to identify the iModel.
+ * @param elementId - Id of the annotation element to read.
+ * @returns The annotation's props, category id, model id, placement, and default text style id, or `undefined` if the element has no annotation set.
+ */
+export async function getText(iModelKey: string, elementId: Id64String): Promise<{ annotationProps: TextAnnotationProps, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String } | undefined> {
+  const iModel = BriefcaseDb.findByKey(iModelKey);
+  const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
+  const annotation = text.getAnnotation();
+  if (!annotation) {
+    return undefined;
+  }
+  return {
+    annotationProps: annotation.toJSON(),
+    categoryId: text.category,
+    modelId: text.model,
+    placement: text.placement,
+    defaultTextStyleId: text.defaultTextStyle?.id ?? Id64.invalid,
+  };
 }
 
 /**

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add quantity formatting for FieldRun values in text annotations. Applications adopt a `FormatSet` for an iModel via `ElementDrivesTextAnnotation.registerFieldFormattingProvider`, which asynchronously pre-warms the `FormatterSpec`s that fields require; `evaluateFields` and the txn field-update callbacks then format `\"quantity\"` and `\"coordinate\"` fields synchronously. `collectFieldFormattingRequirements` and `collectIModelFieldFormattingRequirements` report the `(KindOfQuantity, persistenceUnit)` pairs to warm, and unresolved pairs are reported on the provider's `misses`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "claudiaareneee@users.noreply.github.com"
+}

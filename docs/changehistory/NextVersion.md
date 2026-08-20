@@ -11,7 +11,12 @@ publish: false
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
     - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
-  - [@itwin/core-common](#itwincore-common)
+    - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
+      - [Configuring a FieldRun](#configuring-a-fieldrun)
+      - [Format resolution](#format-resolution)
+      - [Adopting a FormatSet](#adopting-a-formatset)
+      - [Evaluating fields](#evaluating-fields)
+  - [@itwin/core-common](#itwincore-common-1)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-electron](#itwincore-electron)
     - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
@@ -82,6 +87,105 @@ SELECT * FROM bis.Element WHERE CodeValue IS json_extract(JsonProperties, '$.cod
 ```
 
 See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--is-not-operator-null-safe-comparison) for more details.
+
+### Quantity formatting for text annotation fields
+
+[FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value can now be rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation.
+
+Formatting stays on the backend (text layout is a backend concern). Field evaluation itself is **synchronous**, because it has to run inside the `TxnManager` update callbacks that recompute cached content when a source element changes. Everything asynchronous — resolving formats, loading units, building [FormatterSpec]($core-quantity)s — happens once, up front, when an application adopts a [FormatSet]($ecschema-metadata) for an iModel.
+
+#### Configuring a FieldRun
+
+Field-level formatting is configured via a new [QuantityFieldFormatOptions]($common) block on [FieldFormatOptions]($common):
+
+```typescript
+const fieldRun = FieldRun.create({
+  propertyHost: { elementId, schemaName: "MyDomain", className: "Widget" },
+  propertyPath: { propertyName: "length" },
+  formatOptions: {
+    quantity: {
+      // Look up a specific KindOfQuantity via the active FormatsProvider,
+      // overriding the property's own KoQ.
+      kindOfQuantity: "AecUnits.LENGTH",
+      // Optionally scope resolution to a specific registered FormatSet on
+      // the synchronous path (see below).
+      formatSet: myFormatSetId,
+    },
+  },
+});
+```
+
+`kindOfQuantity` and `persistenceUnit` are **independent** overrides: setting one falls through to the property side for the other. This lets a caller pin the presentation (via `kindOfQuantity`) while still reading the persistence unit from the EC property, or vice versa.
+
+#### Format resolution
+
+For each `"quantity"` or `"coordinate"` field the formatter looks up a [FormatterSpec]($core-quantity) by (KindOfQuantity name, persistence unit name) pair, in this order:
+
+1. **Effective override pair.** `formatOptions.quantity.kindOfQuantity ?? propertyKindOfQuantity` for the name, `formatOptions.quantity.persistenceUnit ?? propertyPersistenceUnit` for the unit.
+2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped when identical to the effective pair.
+
+The first pair whose format-props lookup **and** persistence-unit lookup both succeed in the active provider wins. If none succeeds, `"quantity"` and `"coordinate"` fields fall back to their raw string representation (`value.toString()` for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
+
+Core does not carry a built-in coordinate format: coordinate presentation is application policy and belongs to the FormatsProvider / FormatSet supplied by the host. Coordinate values whose EC property has no KindOfQuantity require the caller to declare **both** `kindOfQuantity` and `persistenceUnit` in `formatOptions.quantity` for an override to take effect — Core does not synthesize a persistence unit from the [BIS geometry meters convention](../bis/guide/other-topics/units.md). Callers that want that convention should pass `Units.LENGTH.M` (from `@itwin/core-quantity`) explicitly.
+
+#### Adopting a FormatSet
+
+Register the FormatSet your application has adopted for an iModel. Registration is asynchronous: it pre-warms a [FormatterSpec]($core-quantity) for every field requirement it can find, so that subsequent evaluation needs no `await`.
+
+```typescript
+const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel, formatSet });
+iModel.onBeforeClose.addOnce(() => ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel));
+```
+
+By default this sweeps the iModel for every dependency-tracked annotation and warms what they need. Applications that know their requirements — or that want to skip the sweep on a large iModel — can pass them explicitly, using [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) for an in-memory block or [ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements]($backend) for the persisted ones:
+
+```typescript
+await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+  iModel,
+  formatSet,
+  requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }),
+});
+```
+
+A block authored later in the session may need a spec the initial warm-up never saw. Warm it before writing the annotation:
+
+```typescript
+await provider.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }));
+```
+
+Most applications adopt exactly one FormatSet per iModel. To mix presentations within a single iModel — imperial callouts on an otherwise metric drawing, say — supply additional FormatSets keyed by [Id64String]($bentley) and have individual fields name one via `formatOptions.quantity.formatSet`:
+
+```typescript
+await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+  iModel,
+  formatSet,                                      // applies to every field that names no other
+  formatSets: [{ id: imperialFormatSetId, formatSet: imperialFormatSet }],
+});
+```
+
+The `unitSystem` used to pick a KindOfQuantity's presentation format when its schema offers several defaults to the adopted FormatSet's own [FormatSet.unitSystem]($ecschema-metadata), or `"metric"` when no FormatSet is adopted. Override it with `unitSystem` on the same arguments.
+
+Registrations are keyed by [IModelDb]($backend) and are **process-wide** — Core never sweeps them automatically, so unregister when the iModel closes. Registering a provider does **not** reformat existing annotations; applications that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly. Symmetrically, unregistering a provider that saved annotations depend on causes the next source-element edit to overwrite their formatted `cachedContent` with the raw string representation.
+
+#### Evaluating fields
+
+[ElementDrivesTextAnnotation.evaluateFields]($backend) updates the [FieldRun.cachedContent]($common) of every field in the supplied [TextBlock]($common) and returns the number it changed:
+
+```typescript
+const numUpdated = ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
+```
+
+It mutates the in-memory `TextBlock`; **it does not persist**. Callers that want the formatted output to survive the session must assign the updated block back to the owning element (for example via `TextAnnotation2d.setAnnotation` / `TextAnnotation3d.setAnnotation`) and call `element.update()` inside a transaction. The same evaluation runs automatically from the `TxnManager` field-update callbacks when a source element changes, which is why it cannot be asynchronous.
+
+If a field needs a spec that was never warmed, it renders as its raw string representation and the shortfall is recorded on the provider. Applications can detect this, warm the gap, and re-evaluate:
+
+```typescript
+if (provider.misses.length > 0) {
+  await provider.warmUp(provider.misses);
+  provider.clearMisses();
+  ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
+}
+```
 
 ## @itwin/core-common
 

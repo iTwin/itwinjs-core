@@ -34,15 +34,14 @@ import {
   TextRun,
   TextStyleSettingsProps,
 } from "@itwin/core-common";
-import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
+import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority,  readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { dtaIpc } from "./App";
-import { parseArgs } from "@itwin/frontend-devtools";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
-// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint, subscriptscale, superscriptscale, insertstyle, updatestyle, deletestyle, applystyle
+// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint, subscriptscale, superscriptscale, insertstyle, updatestyle, deletestyle, applystyle, docheight, textheight, formatmode
 
 class TextEditor implements Decorator {
   // Geometry properties
@@ -90,7 +89,7 @@ class TextEditor implements Decorator {
     return {
       origin: this.origin,
       angle: 0,
-    }
+    };
   }
 
   private pathToLastChild(): (Run | Paragraph | List)[] {
@@ -188,9 +187,11 @@ class TextEditor implements Decorator {
   }
 
   public appendTab(spaces?: number): void {
-    this.appendRunToLastChild(TabRun.create({
-      styleOverrides: { ... this.runStyle, tabInterval: spaces },
-    }));
+    this.appendRunToLastChild(
+      TabRun.create({
+        styleOverrides: { tabInterval: spaces },
+      }),
+    );
   }
 
   public appendBreak(): void {
@@ -228,7 +229,7 @@ class TextEditor implements Decorator {
     };
 
     this.runStyle.indentation = indentation;
-  };
+  }
 
   public setDocumentWidth(width: number): void {
     this.textBlock.width = width;
@@ -248,7 +249,7 @@ class TextEditor implements Decorator {
   }
 
   public setLeaderProps() {
-    this.leaders?.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachment: { mode: "Nearest" } });
+    this.leaders.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachment: { mode: "Nearest" } });
   }
 
   public setLeaderStartPoint(leader: TextAnnotationLeader, angle: number) {
@@ -291,19 +292,25 @@ class TextEditor implements Decorator {
 
     const rpcProps = this._iModel.getRpcProps();
 
-    const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
-      rpcProps,
-      this.annotationProps,
-      Id64.isValid(this.defaultTextStyleId) ? this.defaultTextStyleId : Id64.invalid,
-      this.categoryId,
-      this.modelId,
-      this.placementProps,
-      this.debugAnchorPointAndRange,
-      { annotation: 100, annotationLabels: 110 }
-    );
+    try {
+      const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
+        rpcProps,
+        this.annotationProps,
+        Id64.isValid(this.defaultTextStyleId) ? this.defaultTextStyleId : Id64.invalid,
+        this.categoryId,
+        this.modelId,
+        this.placementProps,
+        this.debugAnchorPointAndRange,
+        { annotation: 100, annotationLabels: 110 }
+      );
 
-    const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
-    this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
+      const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
+      this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("Error generating text annotation graphics:", err, "\nAnnotation props:", this.annotationProps, "\nPlacement props:", this.placementProps, "\nCategory ID:", this.categoryId, "\nModel ID:", this.modelId);
+      throw err;
+    }
 
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
@@ -323,7 +330,82 @@ export class TextDecorationTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return undefined; }
 
+  private static readonly _helpEntries: ReadonlyArray<readonly [string, string]> = [
+    ["help", "Print this help message."],
+    ["init [category] [defaultTextStyleId]", "Initialize the editor. Uses the first category in the view if omitted. **REQUIRED** before any other commands. The defaultTextStyleId is optional. Text will be centered in the view."],
+    ["clear", "Reset the editor and remove the decoration."],
+    ["anchor <left|center|right|top|middle|bottom>", "Set the horizontal or vertical anchor."],
+    ["applystyle <styleId>", "Apply the given default text style id and clear overrides."],
+    ["bold", "Toggle bold for subsequent runs."],
+    ["break", "Append a line break."],
+    ["center", "Set the annotation origin to the view center."],
+    ["color <colorString>", "Set run color (e.g. red, #ff0000)."],
+    ["debug", "Toggle drawing of the anchor point and range."],
+    ["delete <annotationId>", "Delete the given annotation element."],
+    ["deletestyle <name>", "Delete a text style by name."],
+    ["demo <on|off>", "Adopt/unadopt the DTA demo FormatSets for the current iModel."],
+    ["misses [clear]", "List field formats the demo provider was asked for but never pre-warmed, or clear them."],
+    ["docheight <n>", "Set document text height."],
+    ["export <path>", "Write the current text block to <path> as JSON."],
+    ["field <fieldPropsJson>", "Append a field run. JSON with elementId, schemaName, className, propertyName, and optional formatOptions. Use single quotes instead of double quotes in the JSON."],
+    ["font <name>", "Set the font for subsequent runs."],
+    ["fraction <numerator> <denominator>", "Append a stacked fraction run."],
+    ["fractionscale <n>", "Set stacked-fraction scale."],
+    ["fractiontype <horizontal|diagonal>", "Set stacked-fraction type."],
+    ["frame <shape|fillColor|borderColor|borderWeight> <value>", "Configure the frame style."],
+    ["import <path>", "Load a text block from a JSON file at <path> and set it as the current block."],
+    ["indent <n>", "Set indentation of the current paragraph."],
+    ["insert", "Insert the current annotation into the iModel (2d views only)."],
+    ["insertstyle <name>", "Insert a new text style using the current run/document style."],
+    ["italic", "Toggle italic for subsequent runs."],
+    ["json [propsJson]", "Set the text block from JSON, or log the current text block if omitted."],
+    ["justify <left|center|right>", "Set document justification."],
+    ["leader keypoint <curveIndex> <fraction>", "Attach the latest leader to a curve key point."],
+    ["leader nearest", "Attach the latest leader to the nearest point."],
+    ["leader new", "Append a new leader."],
+    ["leader start <angleDeg>", "Set the start point of the latest leader."],
+    ["leader terminatorShape <shape>", "Set the leader terminator shape."],
+    ["leader textpoint <position>", "Attach the latest leader to a text point."],
+    ["list <enumerator> <terminator> <case> [index]", "Append a list to the paragraph at [index]. Use \"none\" to omit a value."],
+    ["list-item [index]", "Append an item to the list at [index]."],
+    ["log", "Log the current annotation to the console."],
+    ["margin <left|right|top|bottom|all|horizontal|vertical> <n>", "Set document margins."],
+    ["offset <x> <y>", "Set annotation offset."],
+    ["paragraph", "Append a new paragraph."],
+    ["rotation <deg>", "Set annotation rotation in degrees."],
+    ["scale <factor>", "Set the annotation scale factor for the current model."],
+    ["shift <none|superscript|subscript>", "Set baseline shift for subsequent runs."],
+    ["spacing <n>", "Set document line spacing factor."],
+    ["subscriptscale <n>", "Set subscript scale."],
+    ["superscriptscale <n>", "Set superscript scale."],
+    ["tab [spaces]", "Append a tab run with an optional tab interval."],
+    ["text <content>", "Append a text run."],
+    ["textheight <n>", "Set text height for subsequent runs."],
+    ["underline", "Toggle underline for subsequent runs."],
+    ["update <annotationId>", "Update the given annotation element with the current state."],
+    ["updatestyle <name>", "Update an existing text style using the current run/document style."],
+    ["width <n>", "Set the document width (for word wrap)."],
+    ["widthfactor <n>", "Set document width factor."],
+  ];
+
+  private static printHelp(): void {
+    const width = TextDecorationTool._helpEntries.reduce((max, [usage]) => Math.max(max, usage.length), 0);
+    const lines = TextDecorationTool._helpEntries.map(([usage, desc]) => `  ${usage.padEnd(width)}  ${desc}`);
+    const message = `dta text <command> [args]\n\nCommands:\n${lines.join("\n")}`;
+    // eslint-disable-next-line no-console
+    console.log(message);
+    // Throw an error to display the message in viewer.
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "See console for details"));
+  }
+
   public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
+    const cmd = inArgs[0].toLowerCase();
+
+    if (cmd === "help") {
+      TextDecorationTool.printHelp();
+      return true;
+    }
+
     const vp = IModelApp.viewManager.selectedView;
     if (!vp) {
       return false;
@@ -333,22 +415,27 @@ export class TextDecorationTool extends Tool {
       editor.modelId = vp.view.baseModelId;
     }
 
-    const cmd = inArgs[0].toLowerCase();
     const arg = inArgs[1];
 
     switch (cmd) {
       case "clear":
         editor.clear();
         return true;
-      case "init":
+      case "init": {
         // Use the first category if the user doesn't specify one. This is just a convenience.
-        const category = arg ?? vp.view.categorySelector.categories.values().next().value;
+        const category = inArgs[1] ?? vp.view.categorySelector.categories.values().next().value;
         if (undefined === category || category === "") {
           throw new Error("No category provided.");
         }
 
         editor.init(vp.iModel, category);
+        editor.origin = vp.view.getCenter();
+        const defaultStyleId = inArgs[2];
+        if (defaultStyleId) {
+          editor.defaultTextStyleId = defaultStyleId;
+        }
         break;
+      }
       case "center":
         editor.origin = vp.view.getCenter();
         break;
@@ -376,29 +463,27 @@ export class TextDecorationTool extends Tool {
         editor.appendFraction(inArgs[1], inArgs[2]);
         break;
       case "field": {
-        const fieldArgs = parseArgs(inArgs.slice(1));
-        const elementId = fieldArgs.get("e");
-        const propertyParts = fieldArgs.get("p")?.split(":");
-        if (!elementId || propertyParts?.length !== 3) {
-          throw new Error("Expected e=elementId p=schema:class:propertyName");
+        if (!arg) {
+          throw new Error("Expected JSON blob with elementId, schemaName, className, propertyName, and optional formatOptions");
         }
-        const formatString = fieldArgs.get("f");
-        editor.appendField({
-          elementId,
-          schemaName: propertyParts[0],
-          className: propertyParts[1],
-          propertyName: propertyParts[2],
-          formatOptions: formatString ? JSON.parse(formatString) : undefined,
-        });
+        const fieldProps = JSON.parse(arg.replaceAll("'", "\"")) as {
+          elementId: string,
+          schemaName: string,
+          className: string,
+          propertyName: string,
+          formatOptions?: FieldFormatOptions,
+        };
+        editor.appendField(fieldProps);
         break;
       }
       case "break":
         editor.appendBreak();
         break;
-      case "tab":
+      case "tab": {
         const spaces = inArgs[1] ? parseFloat(inArgs[1]) : undefined;
         editor.appendTab(spaces);
         break;
+      }
       case "paragraph":
         editor.appendParagraph();
         break;
@@ -469,7 +554,7 @@ export class TextDecorationTool extends Tool {
         }
         editor.runStyle.subScriptScale = subScale;
         break;
-      };
+      }
       case "superscriptscale": {
         const superScale = Number.parseFloat(arg);
         if (isNaN(superScale)) {
@@ -670,6 +755,39 @@ export class TextDecorationTool extends Tool {
 
         break;
       }
+      case "demo": {
+        if (arg === "off") {
+          await dtaIpc.disableFieldFormattingDemo(vp.iModel.key);
+        } else if (arg === "on") {
+          await dtaIpc.enableFieldFormattingDemo(vp.iModel.key);
+        } else {
+          throw new Error("Expected on or off");
+        }
+        // eslint-disable-next-line no-console
+        console.log(`DTA demo FormatSet ${arg === "off" ? "unregistered" : "registered"} for iModel ${vp.iModel.key}`);
+        return true;
+      }
+      case "misses": {
+        if (arg === "clear") {
+          await dtaIpc.clearFieldFormattingDemoMisses(vp.iModel.key);
+          // eslint-disable-next-line no-console
+          console.log("Cleared demo formatting misses.");
+          return true;
+        }
+
+        const misses = await dtaIpc.getFieldFormattingDemoMisses(vp.iModel.key);
+        if (misses.length === 0) {
+          // eslint-disable-next-line no-console
+          console.log("No demo formatting misses. Any raw-string field failed to resolve rather than going unwarmed.");
+        } else {
+          // eslint-disable-next-line no-console
+          console.log(`${misses.length} demo formatting miss(es) - these fields were never pre-warmed:`);
+          // eslint-disable-next-line no-console
+          console.table(misses);
+        }
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${misses.length} formatting miss(es); see console.`));
+        return true;
+      }
       case "list": { // args are enumerator, terminator, case, index
 
         let enumerator = inArgs[1];
@@ -746,17 +864,42 @@ export class TextDecorationTool extends Tool {
 
         }
         break;
-
       case "json": {
-        const props = inArgs[1] && (JSON.parse(inArgs[1].replaceAll("'", "\"")) as TextBlockProps);
+
+        const rawProps = inArgs[1]?.replaceAll("'", "\"")?.replaceAll("\\'", "'"); // Remove escape characters for easier copy/paste into command line.
+        const props = rawProps && (JSON.parse(rawProps) as TextBlockProps);
 
         if (props) {
           editor.setTextBlock(props);
         } else {
+          const textBlockJsonString = JSON.stringify(editor.annotationProps.textBlock).replaceAll("'", "\\'").replaceAll("\"", "'");
           // eslint-disable-next-line no-console
-          console.log(JSON.stringify(editor.annotationProps.textBlock).replaceAll("\"", "'"));
+          console.log(editor.annotationProps.textBlock);
+          // eslint-disable-next-line no-console
+          console.log(textBlockJsonString);
         }
 
+        break;
+      }
+
+      case "import": {
+        if (!arg) {
+          throw new Error("Expected a file path to a JSON file containing TextBlockProps");
+        }
+        const contents = await dtaIpc.readTextFile(arg);
+        const props = JSON.parse(contents) as TextBlockProps;
+        editor.setTextBlock(props);
+        break;
+      }
+
+      case "export": {
+        if (!arg) {
+          throw new Error("Expected a file path to write the current TextBlock JSON to");
+        }
+        const contents = `${JSON.stringify(editor.annotationProps.textBlock, undefined, 2)}\n`;
+        await dtaIpc.writeTextFile(arg, contents);
+        // eslint-disable-next-line no-console
+        console.log(`Wrote text block to ${arg}`);
         break;
       }
       default:

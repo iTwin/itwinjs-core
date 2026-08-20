@@ -4,12 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { formatFieldValue as fmtFldVal } from "../../internal/annotations/FieldFormatter";
+import { BeEvent, BeUnorderedUiEvent } from "@itwin/core-bentley";
+import {
+  BasicUnitsProvider, Format, FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, FormatterSpec, FormattingSpecEntry,
+  FormattingSpecProvider, ParserSpec, Units,
+} from "@itwin/core-quantity";
+import { collectFieldQuantityPairs, FieldValue, formatFieldValue as fmtFldVal, formatFieldValueWithSpecProvider } from "../../internal/annotations/FieldFormatter";
 import type { FieldFormatOptions, FieldPrimitiveValue, FieldPropertyType } from "../../core-common";
 
 function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
   return fmtFldVal({ value, type }, options);
 }
+
+//cspell:ignore WUZZY Freitag Jumat Juni петак
 
 describe("Field formatting", () => {
   describe("string", () => {
@@ -194,5 +201,252 @@ describe("Field formatting", () => {
       expect(formatFieldValue({ x: 1, y: 2, z: 3 }, "coordinate", undefined)).to.equal("(1, 2, 3)");
     });
   })
+});
+
+describe("Spec-provider field formatting", () => {
+  // A fake FormatsProvider used to exercise the property-KoQ / kindOfQuantity-override resolution paths
+  // without requiring an EC SchemaContext in these unit tests.
+  function createFakeFormatsProvider(map: Record<string, FormatDefinition>): FormatsProvider {
+    return {
+      getFormat: async (name: string) => map[name],
+      onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
+    };
+  }
+
+  /** Mirrors what `FieldFormattingSpecProvider` does in `core-backend`: resolve every candidate
+   * a value/options pair can produce, ahead of time, so that formatting itself is synchronous.
+   * Candidates that resolve no format or no persistence unit are simply absent from the cache,
+   * which is what drives the raw-string fallbacks asserted below.
+   */
+  async function warmProvider(
+    formats: Record<string, FormatDefinition>,
+    value: FieldValue,
+    options?: FieldFormatOptions,
+  ): Promise<FormattingSpecProvider> {
+    const formatsProvider = createFakeFormatsProvider(formats);
+    const unitsProvider = new BasicUnitsProvider();
+    const specs = new Map<string, FormattingSpecEntry>();
+
+    const candidates = collectFieldQuantityPairs({
+      overrideName: options?.quantity?.kindOfQuantity,
+      overridePersistence: options?.quantity?.persistenceUnit,
+      propertyName: value.kindOfQuantityFullName,
+      propertyPersistence: value.persistenceUnitFullName,
+    });
+
+    for (const candidate of candidates) {
+      const formatProps = await formatsProvider.getFormat(candidate.name);
+      if (!formatProps) {
+        continue;
+      }
+
+      let persistenceUnit;
+      try {
+        persistenceUnit = await unitsProvider.findUnitByName(candidate.persistenceUnitName);
+      } catch {
+        continue;
+      }
+      if (!persistenceUnit?.isValid) {
+        continue;
+      }
+
+      const candidateFormat = await Format.createFromJSON("fieldFormat", unitsProvider, formatProps);
+      specs.set(`${candidate.name}|${candidate.persistenceUnitName}`, {
+        formatterSpec: await FormatterSpec.create("fieldFormat", candidateFormat, unitsProvider, persistenceUnit),
+        parserSpec: await ParserSpec.create(candidateFormat, unitsProvider, persistenceUnit),
+      });
+    }
+
+    return {
+      getSpecsByNameAndUnit: (args) => specs.get(`${args.name}|${args.persistenceUnitName}`),
+      formatQuantity: (magnitude, spec) => spec.applyFormatting(magnitude),
+      onFormattingReady: new BeUnorderedUiEvent<void>(),
+    };
+  }
+
+  /** Warms a provider for exactly this value/options pair, then formats synchronously. */
+  async function format(
+    value: FieldValue,
+    options?: FieldFormatOptions,
+    formats: Record<string, FormatDefinition> = {},
+  ): Promise<string | undefined> {
+    return formatFieldValueWithSpecProvider(value, options, await warmProvider(formats, value, options));
+  }
+
+  const feetInchesFormat: FormatProps = {
+    composite: {
+      includeZero: true,
+      spacer: "-",
+      units: [{ label: "'", name: "Units.FT" }, { label: "\"", name: "Units.IN" }],
+    },
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 8,
+    type: "Fractional",
+    uomSeparator: "",
+  };
+
+  const metersFormat: FormatProps = {
+    composite: { includeZero: true, units: [{ label: "m", name: "Units.M" }] },
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+  };
+
+  describe("quantity", () => {
+    it("resolves format from the property's KindOfQuantity via the FormatsProvider", async () => {
+      const value: FieldValue = {
+        value: 2,
+        type: "quantity",
+        kindOfQuantityFullName: "AecUnits.LENGTH",
+        persistenceUnitFullName: "Units.M",
+      };
+      const result = await format(value, undefined, { "AecUnits.LENGTH": metersFormat });
+      expect(result).toBe("2 m");
+    });
+
+    it("resolves format via a kindOfQuantity override, taking precedence over KoQ", async () => {
+      const value: FieldValue = {
+        value: 1,
+        type: "quantity",
+        kindOfQuantityFullName: "AecUnits.LENGTH",
+        persistenceUnitFullName: "Units.M",
+      };
+      const result = await format(
+        value,
+        { quantity: { kindOfQuantity: "MySet.LENGTH_FT" } },
+        { "AecUnits.LENGTH": metersFormat, "MySet.LENGTH_FT": feetInchesFormat },
+      );
+      expect(result).toBe("3'-3 3/8\"");
+    });
+
+    it("applies prefix, suffix, and case around the formatted magnitude", async () => {
+      const value: FieldValue = {
+        value: 1,
+        type: "quantity",
+        kindOfQuantityFullName: "AecUnits.LENGTH",
+        persistenceUnitFullName: "Units.M",
+      };
+      const result = await format(
+        value,
+        { prefix: "Length: ", suffix: "!", case: "upper" },
+        { "AecUnits.LENGTH": metersFormat },
+      );
+      expect(result).toBe("Length: 1 M!");
+    });
+
+    it("falls back to the sync formatter when no format source is available", async () => {
+      const value: FieldValue = { value: 42, type: "quantity" };
+      const result = await format(value);
+      expect(result).toBe("42");
+    });
+
+    it("falls back to raw when a format resolves but no persistence unit is known", async () => {
+      // Regression: previously the formatter used the composite's presentation unit as a
+      // stand-in persistence unit. That could either mis-convert or silently render raw
+      // magnitudes with a presentation label. The correct behavior is to bail out and let the
+      // caller render the raw value.
+      const value: FieldValue = {
+        value: 2,
+        type: "quantity",
+        kindOfQuantityFullName: "AecUnits.LENGTH",
+        // persistenceUnitFullName intentionally omitted.
+      };
+      const result = await format(value, undefined, { "AecUnits.LENGTH": metersFormat });
+      expect(result).toBe("2");
+    });
+
+    it("falls back to the property's KindOfQuantity when the override KoQ is missing from the provider", async () => {
+      // Caller pinned "MySet.LENGTH_FT" but the active provider only knows the property KoQ.
+      // The formatter should try the override, fail, then fall back to the property pair.
+      const value: FieldValue = {
+        value: 1,
+        type: "quantity",
+        kindOfQuantityFullName: "AecUnits.LENGTH",
+        persistenceUnitFullName: "Units.M",
+      };
+      const result = await format(
+        value,
+        { quantity: { kindOfQuantity: "MySet.LENGTH_FT" } },
+        // Note: "MySet.LENGTH_FT" is intentionally absent.
+        { "AecUnits.LENGTH": metersFormat },
+      );
+      expect(result).toBe("1 m");
+    });
+
+    it("delegates non-quantity, non-coordinate types to the sync formatter", async () => {
+      const result = await format({ value: "hello", type: "string" }, { prefix: "<", suffix: ">" });
+      expect(result).toBe("<hello>");
+    });
+  });
+
+  describe("coordinate", () => {
+    it("formats Point2d via the FormatsProvider using kindOfQuantity", async () => {
+      const result = await format(
+        { value: { x: 1, y: 2 }, type: "coordinate", persistenceUnitFullName: "Units.M" },
+        { quantity: { kindOfQuantity: "AecUnits.LENGTH" } },
+        { "AecUnits.LENGTH": metersFormat },
+      );
+      expect(result).toBe("(1 m, 2 m)");
+    });
+
+    it("formats Point3d via the FormatsProvider using kindOfQuantity", async () => {
+      const result = await format(
+        { value: { x: 1, y: 2, z: 3 }, type: "coordinate", persistenceUnitFullName: "Units.M" },
+        { quantity: { kindOfQuantity: "AecUnits.LENGTH" } },
+        { "AecUnits.LENGTH": metersFormat },
+      );
+      expect(result).toBe("(1 m, 2 m, 3 m)");
+    });
+
+    it("falls back to the raw coordinate string when no KoQ or override is provided", async () => {
+      // Core has no built-in coordinate format: presentation is app policy and belongs to the
+      // FormatsProvider. When nothing resolves, formatting drops to `formatFieldValue`.
+      const result = await format({ value: { x: 1.5, y: 2 }, type: "coordinate" });
+      expect(result).toBe("(1.5, 2)");
+    });
+
+    it("applies a kindOfQuantity override on a coordinate value only when the caller also supplies a persistenceUnit", async () => {
+      // Coordinate properties (Point2d/Point3d) that carry no KindOfQuantity produce no
+      // `persistenceUnitFullName` on the FieldValue. The formatter no longer synthesizes a
+      // meters persistence unit on the caller's behalf — an override `kindOfQuantity` without
+      // an explicit `persistenceUnit` falls back to the raw coordinate. Callers that want the
+      // BIS geometry meters convention (docs/bis/guide/other-topics/units.md) must pass it
+      // explicitly, typically via `Units.LENGTH.M`.
+      const feetFormat: FormatProps = {
+        composite: { includeZero: true, units: [{ label: "ft", name: "Units.FT" }] },
+        formatTraits: ["keepSingleZero", "showUnitLabel"],
+        precision: 2,
+        type: "Decimal",
+        uomSeparator: " ",
+      };
+      const formats = { "MySet.LENGTH_FT": feetFormat };
+
+      // Without an explicit persistenceUnit: raw coordinate, no override applied.
+      const rawResult = await format(
+        { value: { x: 1, y: 2, z: 3 }, type: "coordinate" },
+        { quantity: { kindOfQuantity: "MySet.LENGTH_FT" } },
+        formats,
+      );
+      expect(rawResult).toBe("(1, 2, 3)");
+
+      // With an explicit persistenceUnit: override resolves.
+      const overrideResult = await format(
+        { value: { x: 1, y: 2, z: 3 }, type: "coordinate" },
+        { quantity: { kindOfQuantity: "MySet.LENGTH_FT", persistenceUnit: Units.LENGTH.M } },
+        formats,
+      );
+      expect(overrideResult).toBe("(3.28 ft, 6.56 ft, 9.84 ft)");
+    });
+
+    it("applies prefix/suffix/case around the joined coordinate", async () => {
+      const result = await format(
+        { value: { x: 1, y: 2 }, type: "coordinate", persistenceUnitFullName: "Units.M", kindOfQuantityFullName: "AecUnits.LENGTH" },
+        { prefix: "at ", case: "upper" },
+        { "AecUnits.LENGTH": metersFormat },
+      );
+      expect(result).toBe("at (1 M, 2 M)");
+    });
+  });
 });
 
