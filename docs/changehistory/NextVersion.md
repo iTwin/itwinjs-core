@@ -17,6 +17,7 @@ publish: false
     - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Invalidate decorations when element visibility changes](#invalidate-decorations-when-element-visibility-changes)
+    - [OPC point clouds without a vertical datum are now placed using orthometric heights](#opc-point-clouds-without-a-vertical-datum-are-now-placed-using-orthometric-heights)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
 
@@ -102,6 +103,10 @@ Applications that shut down while requests are outstanding no longer need to fil
 ### Invalidate decorations when element visibility changes
 
 [ViewportDecorator]($frontend)s often produce decoration graphics associated with elements in the scene. Such graphics should be updated if the visibility of the associated element changes. For example, a measurement tool might draw a label near a pipe indicating its length. The label should disappear if the user hides the pipe. To facilitate this, all cached decorations (produced and reused when [ViewportDecorator.useCachedDecorations]($frontend) is `true`) are now recreated in response to potential changes to the visibility of elements in a viewport, including modification of the sets of always- and never-drawn elements, displayed categories and subcategories, and feature symbology overrides.
+
+### OPC point clouds without a vertical datum are now placed using orthometric heights
+
+OPC point clouds whose CRS defines no vertical datum were displayed too high or low by the local geoid-ellipsoid separation, because their heights (conventionally orthometric) were treated as ellipsoidal. Such heights are now interpreted as orthometric. If you previously applied a manual vertical offset to compensate for this fact, you may need to remove it.
 
 ## @itwin/core-geometry
 
