@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
-import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { type RegisterBackendCallback, registerCertaBackendCallback } from "./CallbackRegistrar";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelHost } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcConfiguration } from "@itwin/core-common";
@@ -12,7 +12,7 @@ import { rpcInterfaces } from "../common/TestRpcInterface";
 import { resetOp8Initializer, TestRpcImpl2 } from "./TestRpcImpl";
 import { join } from "path";
 
-export async function commonSetup(): Promise<void> {
+export async function commonSetup(registerBackendCallback: RegisterBackendCallback = registerCertaBackendCallback): Promise<void> {
   RpcConfiguration.developmentMode = true;
 
   const cacheDir = join(__dirname, ".cache");

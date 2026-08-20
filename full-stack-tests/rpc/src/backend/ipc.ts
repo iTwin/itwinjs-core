@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { type RegisterBackendCallback, registerCertaBackendCallback } from "./CallbackRegistrar";
 import { IpcHost } from "@itwin/core-backend";
 import { BentleyError, ITwinError } from "@itwin/core-bentley";
 import { IpcWebSocketBackend, iTwinChannel } from "@itwin/core-common";
@@ -25,22 +25,22 @@ function describeRebuiltError(error: any) {
 }
 
 function orderTest(socket: { handle(channel: string, listener: (event: any, ...args: any[]) => Promise<any>): void }) {
-  socket.handle("a", async (_event: Event, methodName: string, ..._args: any[]) => {
+  socket.handle("itwin.rpc-test-a", async (_event: Event, methodName: string, ..._args: any[]) => {
     return [methodName, "a"];
   });
 
-  socket.handle("b", async (_event: Event, methodName: string, ..._args: any[]) => {
+  socket.handle("itwin.rpc-test-b", async (_event: Event, methodName: string, ..._args: any[]) => {
     return new Promise((resolve) => {
       setTimeout(() => resolve([methodName, "b"]), 1000);
     });
   });
 
-  socket.handle("c", async (_event: Event, methodName: string, ..._args: any[]) => {
+  socket.handle("itwin.rpc-test-c", async (_event: Event, methodName: string, ..._args: any[]) => {
     return [methodName, "c"];
   });
 }
 
-export function setupIpcTestElectron() {
+export function setupIpcTestElectron(registerBackendCallback: RegisterBackendCallback = registerCertaBackendCallback) {
   orderTest(require("electron").ipcMain); // eslint-disable-line @typescript-eslint/no-require-imports
 
   // Return immediately and deliver result on responseChannel to avoid deadlocks
@@ -61,7 +61,11 @@ export function setupIpcTestElectron() {
   });
 }
 
-export async function setupIpcTest(before = async () => { }, socketOverride?: IpcWebSocketBackend) {
+export async function setupIpcTest(
+  before = async () => { },
+  socketOverride?: IpcWebSocketBackend,
+  registerBackendCallback: RegisterBackendCallback = registerCertaBackendCallback,
+) {
   let socket: IpcWebSocketBackend;
   let ready: () => void;
   const started = new Promise<void>((resolve) => ready = resolve);
