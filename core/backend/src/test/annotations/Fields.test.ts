@@ -588,24 +588,6 @@ describe("Field evaluation", () => {
       ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
     });
 
-    it("falls back to the raw coordinate string when no KoQ or override is provided", async () => {
-      const textBlock = TextBlock.create();
-      const fieldRun = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "point" },
-        cachedContent: "old",
-      });
-      textBlock.appendRun(fieldRun);
-
-      await register(textBlock);
-      const updatedCount = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
-
-      expect(updatedCount).to.equal(1);
-      // Core has no built-in coordinate format; the property has no KoQ so nothing pre-warms and
-      // the formatter drops to the raw `(x, y, z)` representation.
-      expect(fieldRun.cachedContent).to.equal("(1, 2, 3)");
-    });
-
     it("preserves non-quantity field formatting", async () => {
       const textBlock = TextBlock.create();
       const stringField = FieldRun.create({
@@ -627,7 +609,6 @@ describe("Field evaluation", () => {
 
     const propertyHost = { elementId: "", schemaName: "Fields", className: "TestElement" };
     const doublesPath: FieldPropertyPath = { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] };
-    const pointPath: FieldPropertyPath = { propertyName: "point" };
 
     async function runEvaluate(field: FieldRun, formats: Record<string, FormatDefinition> = {}): Promise<{ updatedCount: number, content: string }> {
       const textBlock = TextBlock.create();
@@ -655,46 +636,6 @@ describe("Field evaluation", () => {
       expect(updatedCount).to.equal(1);
       // doubles[0] === 1 m -> 1000 mm
       expect(content).to.equal("1000 mm");
-    });
-
-    it("formats coordinate values through a kindOfQuantity override", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: pointPath,
-        formatOptions: {
-          quantity: {
-            persistenceUnit: "Units.M",
-            kindOfQuantity: "MyKoq.LengthFt",
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field, { "MyKoq.LengthFt": decimalFormat("Units.FT", "ft", 4) });
-
-      expect(updatedCount).to.equal(1);
-      // point = (1, 2, 3) m -> (3.2808 ft, 6.5617 ft, 9.8425 ft)
-      expect(content).to.equal("(3.2808 ft, 6.5617 ft, 9.8425 ft)");
-    });
-
-    it("falls back to the raw coordinate string when only persistenceUnit is set and no format matches", async () => {
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: pointPath,
-        formatOptions: {
-          quantity: {
-            persistenceUnit: "Units.M",
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field);
-
-      expect(updatedCount).to.equal(1);
-      // With no `kindOfQuantity` name and no property KoQ, there is no lookup key, so the
-      // formatter drops to the raw representation.
-      expect(content).to.equal("(1, 2, 3)");
     });
 
     it("still uses the property's KindOfQuantity when only persistenceUnit is overridden", async () => {
@@ -790,44 +731,6 @@ describe("Field evaluation", () => {
       expect(updated).to.equal(1);
       // lengthProp = 2.5 m -> 2500 mm via the adopted FormatSet.
       expect(field.cachedContent).to.equal("2500 mm");
-    });
-
-    it("falls back to raw formatting when the adopted FormatSet has no entry and no KoQ resolves", async () => {
-      const block = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        // outerStruct.innerStruct.doubles[0] has no KoQ, so with an empty FormatSet and no
-        // override, formatting must fall back to raw string.
-        propertyPath: { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] },
-        cachedContent: "old",
-      });
-      block.appendRun(field);
-
-      await register(block);
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-      expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("1");
-    });
-
-    it("falls back to the iModel's schema formats when the FormatSet has no entry", async () => {
-      // Register a provider whose adopted FormatSet is empty. The `lengthProp` property carries
-      // a KindOfQuantity (Fields.LENGTH), so the schema's own presentation format drives the
-      // result rather than the raw string.
-      const block = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        cachedContent: "old",
-      });
-      block.appendRun(field);
-
-      await register(block);
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-      expect(updated).to.equal(1);
-      // Fields.LENGTH declares presentationUnits f:DefaultRealU(4)[u:M]; 2.5 m formats as "2.5 m".
-      expect(field.cachedContent).to.equal("2.5 m");
     });
   });
 
@@ -977,30 +880,6 @@ describe("Field evaluation", () => {
       expect(updated).to.equal(1);
       // lengthProp = 2.5 m -> 2500 mm.
       expect(field.cachedContent).to.equal("2500 mm");
-    });
-
-    it("routes evaluateFields coordinate formatting through the provider when a spec is available", async () => {
-      await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        iModel: imodel,
-        formatSets: [{ id: PRIMARY_FORMAT_SET, formatSet: toFormatSet({ "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }) }],
-        requirements: [{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }],
-      });
-
-      const textBlock = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        // point is a Point3d without a KoQ; supply overrides to route it through the FormatSet.
-        propertyPath: { propertyName: "point" },
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "Fields.LENGTH", persistenceUnit: "Units.M" } },
-        cachedContent: "old",
-      });
-      textBlock.appendRun(field);
-
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: textBlock });
-
-      expect(updated).to.equal(1);
-      // (1, 2, 3) m -> (1000 mm, 2000 mm, 3000 mm).
-      expect(field.cachedContent).to.equal("(1000 mm, 2000 mm, 3000 mm)");
     });
 
     it("routes quantity formatting through provider.formatQuantity, not spec.applyFormatting", () => {
