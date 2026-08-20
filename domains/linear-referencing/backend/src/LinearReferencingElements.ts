@@ -6,9 +6,9 @@
  * @module LinearReferencing
  */
 
-import { assert, DbResult, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, EditTxn, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
-import { Code, ElementProps, GeometricElement3dProps, IModelError, PhysicalElementProps, RelatedElement } from "@itwin/core-common";
+import { assert, Id64String } from "@itwin/core-bentley";
+import { EditTxn, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
+import { Code, ElementProps, GeometricElement3dProps, IModelError, PhysicalElementProps, QueryBinder, RelatedElement } from "@itwin/core-common";
 import {
   ComparisonOption, LinearLocationReference, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationAspectProps,
   LinearlyReferencedAtLocationProps, LinearlyReferencedFromToLocationAspectProps, LinearlyReferencedFromToLocationProps,
@@ -691,12 +691,10 @@ export class LinearlyLocated {
 
   private static queryFirstLinearLocationAspectId(iModel: IModelDb, linearlyLocatedElementId: Id64String, className: string): Id64String | undefined {
     let aspectId: Id64String | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement(`SELECT ECInstanceId FROM LinearReferencing.${className} WHERE Element.Id=? LIMIT 1`, (stmt: ECSqlStatement) => {
-      stmt.bindId(1, linearlyLocatedElementId);
-      if (stmt.step() === DbResult.BE_SQLITE_ROW)
-        aspectId = stmt.getValue(0).getId();
-    });
+    iModel.withQueryReader(`SELECT ECInstanceId FROM LinearReferencing.${className} WHERE Element.Id=? LIMIT 1`, (reader) => {
+      if (reader.step())
+        aspectId = reader.current[0];
+    }, new QueryBinder().bindId(1, linearlyLocatedElementId));
 
     return aspectId;
   }
@@ -823,15 +821,9 @@ export class LinearlyLocated {
    */
   public static getLinearElementId(iModel: IModelDb, linearlyLocatedElementId: Id64String): Id64String | undefined {
     let linearElementId: Id64String | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement("SELECT TargetECInstanceId FROM LinearReferencing.ILinearlyLocatedAlongILinearElement WHERE SourceECInstanceId = ?", (stmt: ECSqlStatement) => {
-      stmt.bindId(1, linearlyLocatedElementId);
-
-      if (DbResult.BE_SQLITE_ROW === stmt.step())
-        linearElementId = stmt.getValue(0).getId();
-      else
-        linearElementId = undefined;
-    });
+    iModel.withQueryReader("SELECT TargetECInstanceId FROM LinearReferencing.ILinearlyLocatedAlongILinearElement WHERE SourceECInstanceId = ?", (reader) => {
+      linearElementId = reader.step() ? reader.current[0] : undefined;
+    }, new QueryBinder().bindId(1, linearlyLocatedElementId));
 
     return linearElementId;
   }
@@ -925,22 +917,19 @@ export class LinearElement {
     const ecsqlAndBindVals = ecSqlGen.generate(linearElementId);
 
     const linearLocationRefs: LinearLocationReference[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement(ecsqlAndBindVals[0], (stmt: ECSqlStatement) => {
-      stmt.bindValues(ecsqlAndBindVals[1]);
-
-      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+    iModel.withQueryReader(ecsqlAndBindVals[0], (reader) => {
+      for (const row of reader) {
         const linearLocationRef: LinearLocationReference = {
-          linearlyLocatedId: stmt.getValue(0).getId(),
-          linearlyLocatedClassFullName: stmt.getValue(1).getString(),
-          startDistanceAlong: stmt.getValue(2).getDouble(),
-          stopDistanceAlong: stmt.getValue(3).getDouble(),
-          locationAspectId: stmt.getValue(4).getId(),
+          linearlyLocatedId: row[0],
+          linearlyLocatedClassFullName: row[1],
+          startDistanceAlong: row[2],
+          stopDistanceAlong: row[3],
+          locationAspectId: row[4],
         };
 
         linearLocationRefs.push(linearLocationRef);
       }
-    });
+    }, QueryBinder.from(ecsqlAndBindVals[1]));
 
     return linearLocationRefs;
   }

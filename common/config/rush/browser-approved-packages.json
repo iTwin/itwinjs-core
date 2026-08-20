@@ -695,6 +695,10 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "magic-string",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "marked",
       "allowedCategories": [ "backend" ]
     },
@@ -936,7 +940,7 @@
     },
     {
       "name": "vite",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "frontend", "internal" ]
     },
     {
       "name": "vite-multiple-assets",

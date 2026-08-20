@@ -11,7 +11,7 @@ import * as fs from "node:fs";
 import * as https from "node:https";
 import * as path from "node:path";
 import { AccessToken, BentleyError, GetMetaDataFunction, Logger } from "@itwin/core-bentley";
-import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
+import { getSafeUrlForLogging, ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
 import { MobileHost } from "./MobileHost";
 
 const loggerCategory: string = "mobile.filehandler";
@@ -83,19 +83,6 @@ export class MobileFileHandler {
   }
 
   /**
-   * Make url safe for logging by removing sensitive information
-   * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
-   */
-  private static getSafeUrlForLogging(url: string): string {
-    const safeToLogDownloadUrl = new URL(url);
-    if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
-      safeToLogDownloadUrl.search = "...";
-    if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
-      safeToLogDownloadUrl.hash = "...";
-    return safeToLogDownloadUrl.toString();
-  }
-
-  /**
    * Check if sas url has expired
    * @param download sas url for download
    * @param futureSeconds should be valid in future for given seconds.
@@ -125,7 +112,7 @@ export class MobileFileHandler {
    */
   public async downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
-    const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(downloadUrl);
+    const safeToLogUrl = getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
 
     defined("downloadUrl", downloadUrl);
@@ -196,7 +183,7 @@ export class MobileFileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
   public async uploadFile(accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
-    const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(uploadUrlString);
+    const safeToLogUrl = getSafeUrlForLogging(uploadUrlString);
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     defined("uploadUrlString", uploadUrlString);
     defined("uploadFromPathname", uploadFromPathname);

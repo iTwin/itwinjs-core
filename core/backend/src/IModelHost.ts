@@ -25,6 +25,7 @@ import { CloudSqlite } from "./CloudSqlite";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { EditTxn } from "./EditTxn";
+import { V2CheckpointManager } from "./CheckpointManager";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
@@ -532,7 +533,7 @@ export class IModelHost {
   public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
-   * @deprecated in 4.10 - will not be removed until after 2026-06-13. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+   * @deprecated in 4.10 - might be removed in next major version. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
    */
   public static snapshotFileNameResolver?: FileNameResolver; // eslint-disable-line @typescript-eslint/no-deprecated
 
@@ -716,6 +717,8 @@ export class IModelHost {
     this._appWorkspace = undefined;
     this._settingsSchemas = undefined;
 
+    // safe to disconnect checkpoint containers here: open iModels were already closed by IModelDb's onBeforeShutdown listener above
+    V2CheckpointManager.cleanup();
     CloudSqlite.CloudCaches.destroy();
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
@@ -876,7 +879,7 @@ export class KnownLocations {
  * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
  * @see [[IModelHost.snapshotFileNameResolver]]
  * @public
- * @deprecated in 4.10 - will not be removed until after 2026-06-13. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+ * @deprecated in 4.10 - might be removed in next major version. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
  */
 export abstract class FileNameResolver {
   /** Resolve a file name from the specified key.

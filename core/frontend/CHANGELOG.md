@@ -1,6 +1,72 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 16 Jun 2026 13:00:23 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Aug 2026 15:47:07 GMT and should not be manually modified.
+
+## 5.12.4
+Tue, 18 Aug 2026 15:45:35 GMT
+
+_Version update only_
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Stopped using deprecated QueryRowFormat.UseJsPropertyNames in DrawingViewState, IModelConnection, and ViewCreator2d ECSQL queries.
+- Removed AccuDraw's manual bearing north-correction, now redundant since `@itwin/core-quantity` applies it automatically. Fixes a double-conversion bug in plane-fixed bearing mode.
+- Added IpcApp.handle and IpcHandler to support backend-to-frontend IPC calls.
+- Clarify/document/prove support for the KHR_mesh_primitive_restart glTF extension for line strip primitives.
+- Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pushChanges
+- Add filtering support to SchemaView and improve performance.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Add CesiumAccessClient interface to allow applications to plug in custom Cesium Ion authentication, with CesiumIonClient as the built-in fallback.
+- Stop clearing SubCategoriesCache on subcategory insert; reload instead
+- QuantityTypeFormatsProvider.getFormat now honors the requested UnitSystemKey instead of always using the active system, and QuantityFormatter.getSpecsByName accepts an optional options argument to query a non-active unit system.
+- ECSqlReader now returns no rows instead of throwing when an IModelConnection is closed before query iteration.
+- Deprecate legacy quantity description classes and add createQuantityDescription as the migration path for tool settings and other appui-based property flows, with guidance for the SurveyLengthDescription exception.
+- Move focus Home after installing LookAndMoveTool so keyboard navigation works through the existing focus handling.
+- NativeApp.startup now always reports the initial connectivity to the backend. Previously, if if `window.navigator.onLine` was false at startup, setConnectivity was never called, leaving the backend incorrectly assuming it was online.
+- Added `GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold` to configure the world-space coordinate magnitude (default 10km) beyond which graphics for elements modified during the scope use `rtcCenter` centering instead of absolute float32 positions, preventing precision artifacts like jagged curves for projects far from the coordinate system origin.
+- Fixed non-planar globe map tiles disappearing in narrow top-down views by using tile surface corners & max projected tile size to determine LOD.
+- Reality model tiles whose content is plain-text JSON glTF (a `.gltf` file) are now rendered, with their externally-referenced textures (e.g. `.webp` images) resolved against the tile's content URL. Previously such tiles were silently discarded, or rendered untextured/white.
+- Remove dormant internal Azure Maps imagery provider code from core frontend.
+- Deprecate Bing Maps imagery format and provider. `MapLayerOptions.BingMaps` is retained (non-deprecated) for elevation and location services.
+- Deprecate BingElevationProvider and BingLocationProvider; add ElevationProvider, GeoidProvider, and LocationProvider interfaces
 
 ## 5.10.3
 Tue, 16 Jun 2026 12:58:32 GMT

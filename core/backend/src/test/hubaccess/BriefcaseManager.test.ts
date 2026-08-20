@@ -78,7 +78,7 @@ describe("BriefcaseManager", async () => {
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2Dup);
       assert.fail("iModel2Dup failure should fail due to already being closed when iModel2 closed");
     } catch (err: any) {
-      assert.isTrue(err.message.includes("db is not open"), "iModel2Dup failure must be due to db not being open");
+      assert.isTrue(err.message.includes("db not open"), "iModel2Dup failure must be due to db not being open");
     }
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
   });

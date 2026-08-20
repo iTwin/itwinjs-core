@@ -8,9 +8,9 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DrawingProps, ElementAlignedBox3d,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DefinitionSetProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
-  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, RelatedElement, RenderSchedule,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, Rank, RelatedElement, RenderSchedule,
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
@@ -510,7 +510,7 @@ export class Element extends Entity {
    * * none of the element's outputs have been processed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
-   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use onBeforeOutputsHandledArg instead.
+   * @deprecated in 5.9.0 - might be removed in next major version. Use onBeforeOutputsHandledArg instead.
    */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
@@ -538,7 +538,7 @@ export class Element extends Entity {
    * This method is not called if none of the element's inputs were changed.
    * @see [[ElementDrivesElement]] for more on element dependency graphs.
    * @beta
-   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use onAllInputsHandledArg instead.
+   * @deprecated in 5.9.0 - might be removed in next major version. Use onAllInputsHandledArg instead.
    */
   protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
@@ -589,7 +589,7 @@ export class Element extends Entity {
   };
 
   /** Get the class metadata for this element.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Obtain a `SchemaView` via `iModel.getSchemaView()` and call `view.findClass(element.classFullName)` instead.
    *
    * @example
    * ```typescript
@@ -672,7 +672,7 @@ export class Element extends Entity {
   public insert(txn: EditTxn): Id64String;
   /**
    * Insert this Element into the iModel.
-   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Element.insert(txn) instead.
+   * @deprecated in 5.9.0 - might be removed in next major version. Use Element.insert(txn) instead.
    */
   public insert(): Id64String;
   public insert(txn?: EditTxn): Id64String {
@@ -686,7 +686,7 @@ export class Element extends Entity {
   public update(txn: EditTxn): void;
   /**
    * Update this Element in the iModel.
-   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Element.update(txn) instead.
+   * @deprecated in 5.9.0 - might be removed in next major version. Use Element.update(txn) instead.
    */
   public update(): void;
   public update(txn?: EditTxn): void {
@@ -700,7 +700,7 @@ export class Element extends Entity {
   public delete(txn: EditTxn): void;
   /**
    * Delete this Element from the iModel.
-   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Element.delete(txn) instead.
+   * @deprecated in 5.9.0 - might be removed in next major version. Use Element.delete(txn) instead.
    */
   public delete(): void;
   public delete(txn?: EditTxn): void {
@@ -790,19 +790,43 @@ export abstract class GeometricElement extends Element {
  */
 export abstract class GeometricElement3d extends GeometricElement {
   public static override get className(): string { return "GeometricElement3d"; }
-  public placement: Placement3d;
+  private _placement: Placement3d;
+  // Snapshot the default placement so nested mutations remain serializable without serializing an untouched absent placement.
+  private readonly _initialPlacement: Placement3d;
+  private _hasPlacement: boolean;
   public typeDefinition?: TypeDefinition;
 
   protected constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.placement = Placement3d.fromJSON(props.placement);
+    this._placement = Placement3d.fromJSON(props.placement);
+    this._initialPlacement = Placement3d.fromJSON(props.placement);
+    this._hasPlacement = props.placement !== undefined;
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
+  public get placement(): Placement3d { return this._placement; }
+  public set placement(value: Placement3d) {
+    this._placement = value;
+    this._hasPlacement = true;
+  }
+
   public override toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
-    val.placement = this.placement;
+    const placementChanged = this._placement.origin.x !== this._initialPlacement.origin.x
+      || this._placement.origin.y !== this._initialPlacement.origin.y
+      || this._placement.origin.z !== this._initialPlacement.origin.z
+      || this._placement.angles.yaw.radians !== this._initialPlacement.angles.yaw.radians
+      || this._placement.angles.pitch.radians !== this._initialPlacement.angles.pitch.radians
+      || this._placement.angles.roll.radians !== this._initialPlacement.angles.roll.radians
+      || this._placement.bbox.low.x !== this._initialPlacement.bbox.low.x
+      || this._placement.bbox.low.y !== this._initialPlacement.bbox.low.y
+      || this._placement.bbox.low.z !== this._initialPlacement.bbox.low.z
+      || this._placement.bbox.high.x !== this._initialPlacement.bbox.high.x
+      || this._placement.bbox.high.y !== this._initialPlacement.bbox.high.y
+      || this._placement.bbox.high.z !== this._initialPlacement.bbox.high.z;
+    if (this._hasPlacement || placementChanged)
+      val.placement = this._placement;
     if (undefined !== this.typeDefinition)
       val.typeDefinition = this.typeDefinition;
 
@@ -844,28 +868,33 @@ export abstract class GeometricElement3d extends GeometricElement {
     const instance = props.row;
     elProps.category = instance.category.id;
 
-    const origin = instance.origin ? [instance.origin.x, instance.origin.y, instance.origin.z] : [0, 0, 0];
     let bbox: LowAndHighXYZProps | undefined;
-    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && instance.bBoxHigh !== null && "bBoxLow" in instance && instance.bBoxLow !== undefined && instance.bBoxLow !== null) {
       bbox = {
         low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
       }
     }
 
-    elProps.placement = {
-      origin,
-      angles: YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON(),
-      bbox
-    };
+    if (instance.origin !== undefined && instance.origin !== null) {
+      elProps.placement = {
+        origin: [instance.origin.x, instance.origin.y, instance.origin.z],
+        angles: YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON(),
+        bbox
+      };
+    }
 
     if (instance.geometryStream) {
-      elProps.geom = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
+      const source = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
         is2d: false,
         geom: instance.geometryStream as Uint8Array,
         placement: elProps.placement,
         categoryId: elProps.category
-      }, "GeometryStreamProps", props.options?.element ?? {}).geom as GeometryStreamProps;
+      }, "GeometryStreamProps", props.options?.element ?? {});
+      elProps.geom = source.geom as GeometryStreamProps;
+      if (source.placement) {
+        elProps.placement = source.placement as Placement3dProps;
+      }
     }
 
     if (instance.typeDefinition) {
@@ -959,19 +988,38 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
  */
 export abstract class GeometricElement2d extends GeometricElement {
   public static override get className(): string { return "GeometricElement2d"; }
-  public placement: Placement2d;
+  private _placement: Placement2d;
+  // Snapshot the default placement so nested mutations remain serializable without serializing an untouched absent placement.
+  private readonly _initialPlacement: Placement2d;
+  private _hasPlacement: boolean;
   public typeDefinition?: TypeDefinition;
 
   protected constructor(props: GeometricElement2dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.placement = Placement2d.fromJSON(props.placement);
+    this._placement = Placement2d.fromJSON(props.placement);
+    this._initialPlacement = Placement2d.fromJSON(props.placement);
+    this._hasPlacement = props.placement !== undefined;
     if (props.typeDefinition)
       this.typeDefinition = TypeDefinition.fromJSON(props.typeDefinition);
   }
 
+  public get placement(): Placement2d { return this._placement; }
+  public set placement(value: Placement2d) {
+    this._placement = value;
+    this._hasPlacement = true;
+  }
+
   public override toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
-    val.placement = this.placement;
+    const placementChanged = this._placement.origin.x !== this._initialPlacement.origin.x
+      || this._placement.origin.y !== this._initialPlacement.origin.y
+      || this._placement.angle.radians !== this._initialPlacement.angle.radians
+      || this._placement.bbox.low.x !== this._initialPlacement.bbox.low.x
+      || this._placement.bbox.low.y !== this._initialPlacement.bbox.low.y
+      || this._placement.bbox.high.x !== this._initialPlacement.bbox.high.x
+      || this._placement.bbox.high.y !== this._initialPlacement.bbox.high.y;
+    if (this._hasPlacement || placementChanged)
+      val.placement = this._placement;
     if (undefined !== this.typeDefinition)
       val.typeDefinition = this.typeDefinition;
 
@@ -1004,19 +1052,20 @@ export abstract class GeometricElement2d extends GeometricElement {
     const elProps = super.deserialize(props) as GeometricElement2dProps;
     const instance = props.row;
     elProps.category = instance.category.id;
-    const origin = instance.origin ? [instance.origin.x, instance.origin.y] : [0, 0];
     let bbox: LowAndHighXYZProps | undefined;
-    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && instance.bBoxHigh !== null && "bBoxLow" in instance && instance.bBoxLow !== undefined && instance.bBoxLow !== null) {
       bbox = {
         low: [instance.bBoxLow.x, instance.bBoxLow.y],
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y],
       }
     }
-    elProps.placement = {
-      origin,
-      angle: instance.rotation,
-      bbox,
-    };
+    if (instance.origin !== undefined && instance.origin !== null) {
+      elProps.placement = {
+        origin: [instance.origin.x, instance.origin.y],
+        angle: instance.rotation,
+        bbox,
+      };
+    }
 
     if (instance.geometryStream) {
       const source = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
@@ -1285,7 +1334,7 @@ export class Subject extends InformationReferenceElement {
    */
   public static insert(txn: EditTxn, parentSubjectId: Id64String, name: string, description?: string): Id64String;
   /** Insert a Subject
-   * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Subject.insert(txn, ...) instead.
+   * @deprecated in 5.9.0 - might be removed in next major version. Use Subject.insert(txn, ...) instead.
    */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
@@ -1376,7 +1425,7 @@ export class Drawing extends Document {
    * @beta
    */
   public static insert(txn: EditTxn, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
-  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use Drawing.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - might be removed in next major version. Use Drawing.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];
@@ -1611,6 +1660,56 @@ export abstract class DefinitionElement extends InformationContentElement {
  */
 export abstract class DefinitionSet extends DefinitionElement {
   public static override get className(): string { return "DefinitionSet"; }
+  /** The Rank of a DefinitionSet indicates how it was created, who is aware of it and where it can be used.
+   * @beta
+   */
+  public rank?: Rank;
+
+  protected constructor(props: DefinitionSetProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.rank = props.rank;
+  }
+
+  /**
+   * DefinitionSet custom HandledProps include 'rank'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "rank", source: "Class" },
+  ];
+
+  /**
+   * DefinitionSet deserializes 'rank'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): DefinitionSetProps {
+    const elProps = super.deserialize(props) as DefinitionSetProps;
+    if (props.row.rank !== undefined)
+      elProps.rank = JsonUtils.asInt(props.row.rank);
+    return elProps;
+  }
+
+  /**
+   * DefinitionSet serializes 'rank'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: DefinitionSetProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (undefined !== props.rank) {
+      inst.rank = props.rank;
+    }
+    return inst;
+  }
+
+  public override toJSON(): DefinitionSetProps {
+    const val = super.toJSON() as DefinitionSetProps;
+    if (undefined !== this.rank)
+      val.rank = this.rank;
+    return val;
+  }
 }
 
 /** A DefinitionContainer exclusively owns a set of DefinitionElements contained within its sub-model (of type DefinitionModel).
@@ -1648,7 +1747,7 @@ export class DefinitionContainer extends DefinitionSet {
    * @beta
    */
   public static insert(txn: EditTxn, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
-  /** @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use DefinitionContainer.insert(txn, ...) instead. */
+  /** @deprecated in 5.9.0 - might be removed in next major version. Use DefinitionContainer.insert(txn, ...) instead. */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
   public static insert(txnOrDb: EditTxn | IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
     const txn = txnOrDb instanceof EditTxn ? txnOrDb : txnOrDb[_implicitTxn];

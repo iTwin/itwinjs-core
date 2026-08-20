@@ -923,6 +923,13 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
 // @internal (undocumented)
 export function getFormatProps(format: Format | OverrideFormat): FormatProps;
 
+// @beta
+export interface GetSchemaViewArgs {
+    // @internal
+    readonly forceReload?: boolean;
+    readonly schemas?: readonly string[];
+}
+
 // @public @preview
 export interface HasMixins {
     // (undocumented)
@@ -2504,6 +2511,54 @@ export interface SchemaLocaterOptions {
     readonly loadPartialSchemaOnly?: boolean;
 }
 
+// @internal
+export class SchemaManifest {
+    constructor(entries: readonly SchemaManifestEntry[]);
+    // (undocumented)
+    get entries(): readonly SchemaManifestEntry[];
+    findByName(name: string): SchemaManifestEntry | undefined;
+    static fromRows(schemaRows: readonly SchemaManifestSchemaRow[], referenceRows: readonly SchemaManifestReferenceRow[]): SchemaManifest;
+    getAvailableSchemaNames(): string[];
+    getSchemaClosure(requestedNames: Iterable<string>): string[];
+    get schemaCount(): number;
+    sortInDependencyOrder(schemaNames: Iterable<string>): string[];
+}
+
+// @internal
+export interface SchemaManifestEntry {
+    // (undocumented)
+    readonly minorVersion: number;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly readVersion: number;
+    readonly references: readonly SchemaManifestEntry[];
+    // (undocumented)
+    readonly writeVersion: number;
+}
+
+// @internal
+export interface SchemaManifestReferenceRow {
+    // (undocumented)
+    readonly sourceECInstanceId: number;
+    // (undocumented)
+    readonly targetECInstanceId: number;
+}
+
+// @internal
+export interface SchemaManifestSchemaRow {
+    // (undocumented)
+    readonly ecInstanceId: number;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly versionMajor: number;
+    // (undocumented)
+    readonly versionMinor: number;
+    // (undocumented)
+    readonly versionWrite: number;
+}
+
 // @public @preview
 export enum SchemaMatchType {
     // (undocumented)
@@ -2596,17 +2651,17 @@ export class SchemaView {
     // @internal (undocumented)
     readonly [_storage]: SchemaViewStorage;
     // @internal
-    constructor(data: SchemaViewData, schemaToken?: string);
+    constructor(data: SchemaViewData, schemaToken?: string, mergeContext?: SchemaViewMergeContext);
     // @internal (undocumented)
     buildDerivedClassMap(): ReadonlyMap<number, readonly number[]>;
     get classCount(): number;
+    // @internal
+    static createMergeable(schemaToken?: string): SchemaView;
     findClass(qualifiedName: string): SchemaView.Class | undefined;
     findEnumeration(qualifiedName: string): SchemaView.Enumeration | undefined;
     findKindOfQuantity(qualifiedName: string): SchemaView.KindOfQuantity | undefined;
     findPropertyCategory(qualifiedName: string): SchemaView.PropertyCategory | undefined;
     static fromBinary(blob: Uint8Array, schemaToken?: string): SchemaView;
-    // @internal
-    static fromBuilder(builder: SchemaViewBuilder, schemaToken?: string): SchemaView;
     getSchema(name: string): SchemaView.Schema | undefined;
     getSchemaByAlias(alias: string): SchemaView.Schema | undefined;
     getSchemas(): IterableIterator<SchemaView.Schema>;
@@ -2615,6 +2670,8 @@ export class SchemaView {
     get isOutdated(): boolean;
     // @internal
     markOutdated(): void;
+    // @internal
+    mergeFragment(blob: Uint8Array): void;
     // @internal (undocumented)
     resolveAllProperties(classIdx: number): readonly ResolvedPropertyRef[];
     // @internal (undocumented)
@@ -2907,6 +2964,12 @@ export namespace SchemaView {
 }
 
 // @internal
+export interface SchemaViewBlob {
+    readonly data: Uint8Array;
+    readonly schemaToken: string;
+}
+
+// @internal
 export class SchemaViewBuilder {
     addClass(data: ClassData): number;
     addClassMixin(classIdx: number): void;
@@ -2919,13 +2982,20 @@ export class SchemaViewBuilder {
     addPropertyRef(ref: PropertyRef): void;
     addRelConstraint(data: RelConstraintData): number;
     addSchema(data: SchemaData): number;
+    assembleData(): SchemaViewData;
     build(schemaToken?: string): SchemaView;
+    get classCount(): number;
     get classMixinCount(): number;
     get constraintClassRefCount(): number;
+    get enumerationCount(): number;
     get enumeratorCount(): number;
+    extendLookupMaps(): void;
     getString(sid: number): string;
     internString(value: string | undefined): number;
+    get koqCount(): number;
+    get propCategoryCount(): number;
     get propertyRefCount(): number;
+    get schemaCount(): number;
     updateClass(classIdx: number, data: ClassData): void;
     updateSchemaRanges(schemaIdx: number, ranges: {
         classRangeStart: number;
@@ -2981,8 +3051,45 @@ export interface SchemaViewData {
     readonly strings: readonly string[];
 }
 
+// @internal
+export interface SchemaViewDataProvider {
+    fetchFragmentBlob(schemaNames: readonly string[]): Promise<SchemaViewBlob>;
+    fetchFullBlob(): Promise<SchemaViewBlob>;
+    fetchManifest(): Promise<SchemaManifest>;
+    fetchSchemaToken(): Promise<string>;
+}
+
 // @beta
 export const schemaViewFormatVersion = 1;
+
+// @internal
+export class SchemaViewManager {
+    constructor(dataProvider: SchemaViewDataProvider);
+    getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView>;
+    invalidateIfChanged(): Promise<void>;
+    reset(): void;
+}
+
+// @internal
+export class SchemaViewMergeContext {
+    // (undocumented)
+    readonly builder: SchemaViewBuilder;
+    // (undocumented)
+    readonly catRowIdToIdx: Map<number, number>;
+    // (undocumented)
+    readonly classResolver: Map<string, number>;
+    // (undocumented)
+    readonly classRowIdToIdx: Map<number, number>;
+    // (undocumented)
+    readonly enumRowIdToIdx: Map<number, number>;
+    // (undocumented)
+    readonly koqRowIdToIdx: Map<number, number>;
+    mergeBlob(data: Uint8Array): void;
+    // (undocumented)
+    readonly schemaECIdToIdx: Map<number, number>;
+    // (undocumented)
+    readonly schemaNames: string[];
+}
 
 // @beta
 export enum SchemaViewPrimitiveType {

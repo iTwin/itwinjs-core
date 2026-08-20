@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Elements
  */
-import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { IModel } from "@itwin/core-common";
+import { assert, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { IModel, QueryBinder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { EditTxn } from "./EditTxn";
 import { DefinitionContainer, DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
@@ -37,12 +37,10 @@ function sortChildrenBeforeParents(iModel: IModelDb, ids: Id64Array): Array<Id64
 }
 
 function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return iModel.withPreparedStatement(`select count(*) from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
-    stmt.bindId(1, modelId);
-    stmt.step();
-    return stmt.getValue(0).getInteger() === 0;
-  });
+  return iModel.withQueryReader(`select count(*) from ${Element.classFullName} where Model.Id = ?`, (reader) => {
+    reader.step();
+    return reader.current[0] === 0;
+  }, new QueryBinder().bindId(1, modelId));
 }
 
 function isDefinitionModel(model: Model): boolean {
@@ -154,13 +152,11 @@ function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: Ele
   Logger.logTrace(loggerCategory, `${op} ${fmtModel(model)} ${scope ? scope.toString() : ""}`);
 
   if (logElements) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    iModel.withPreparedStatement(`select ecinstanceid from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
-      stmt.bindId(1, modelId);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        logElement(" - ", iModel, stmt.getValue(0).getId());
+    iModel.withQueryReader(`select ecinstanceid from ${Element.classFullName} where Model.Id = ?`, (reader) => {
+      for (const row of reader) {
+        logElement(" - ", iModel, row[0]);
       }
-    });
+    }, new QueryBinder().bindId(1, modelId));
   }
 }
 
@@ -231,14 +227,12 @@ export abstract class ElementTreeBottomUp {
   private _processSubModel(model: Model, parenScope: ElementTreeWalkerScope): void {
     const scope = new ElementTreeWalkerScope(parenScope, model);
     // Visit only the top-level parents. processElementTree will visit their children (bottom-up).
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    model.iModel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (stmt) => {
-      stmt.bindId(1, model.id);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const elementId = stmt.getValue(0).getId();
+    model.iModel.withQueryReader(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (reader) => {
+      for (const row of reader) {
+        const elementId = row[0];
         this.processElementTree(elementId, scope);
       }
-    });
+    }, new QueryBinder().bindId(1, model.id));
   }
 }
 
@@ -419,14 +413,12 @@ abstract class ElementTreeTopDown {
   private _processSubModel(subModel: Model, scope: ElementTreeWalkerScope) {
     const subModelScope = new ElementTreeWalkerScope(scope, subModel);
     // Visit only the top-level parents. processElementTree will recurse into their children.
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    this._iModel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (stmt) => {
-      stmt.bindId(1, subModel.id);
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const elementId = stmt.getValue(0).getId();
+    this._iModel.withQueryReader(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (reader) => {
+      for (const row of reader) {
+        const elementId = row[0];
         this.processElementTree(elementId, subModelScope);
       }
-    });
+    }, new QueryBinder().bindId(1, subModel.id));
   }
 
 }

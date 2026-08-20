@@ -19,7 +19,7 @@ import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
  * passed to [[IModelApp.startup]].
  * @public
  * @extensions
- * @deprecated in 5.11.0. Provide an [[ElevationProvider]] and [[GeoidProvider]] implementation via [[IModelAppOptions.geospatialProviders]].
+ * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. Provide an [[ElevationProvider]] and [[GeoidProvider]] implementation via [[IModelAppOptions.geospatialProviders]].
  * @note This class structurally satisfies both [[ElevationProvider]] and [[GeoidProvider]] but does not use an explicit
  * `implements` clause because api-extractor forbids `@public` classes from referencing `@beta` interfaces (ae-incompatible-release-tags).
  */
@@ -88,7 +88,7 @@ export class BingElevationProvider {
    * @internal
    */
   public async getGeodeticToSeaLevelOffset(carto: Cartographic): Promise<number>;
-  /** @deprecated in 5.11.0. Use the Cartographic overload instead.
+  /** @deprecated in 5.11.0 - will not be removed until after 2027-07-03. Use the Cartographic overload instead.
    * @internal
    */
   public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
@@ -110,7 +110,7 @@ export class BingElevationProvider {
   }
   /** Get the height (altitude) at a given iModel coordinate.  The height is geodetic (WGS84 ellipsoid)
    * If geodetic is true (the default) then height is returned in the Ellipsoidal WGS84 datum.  If geodetic is false then sea level height is returned using the Earth Gravitational Model 2008 (EGM2008 2.5').
-   * @deprecated in 5.11.0. Use [[ElevationProvider.getHeight]] via [[IModelApp.elevationProvider]] instead.
+   * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. Use [[ElevationProvider.getHeight]] via [[IModelApp.elevationProvider]] instead.
    * @public
    */
   public async getHeightValue(point: Point3d, iModel: IModelConnection, geodetic = true): Promise<number> {
@@ -118,7 +118,7 @@ export class BingElevationProvider {
   }
 
   /** Get the height (altitude) range for a given iModel project extents. The height values are  geodetic (WGS84 ellipsoid).
-   * @deprecated in 5.11.0. Use standalone [[getHeightRange]] function instead.
+   * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. Use standalone [[getHeightRange]] function instead.
    * @public
    */
   public async getHeightRange(iModel: IModelConnection) {
@@ -137,7 +137,7 @@ export class BingElevationProvider {
   }
 
   /** Get the average height (altitude) for a given iModel project extents.  The height values are geodetic (WGS84 ellipsoid).
-   * @deprecated in 5.11.0. Use standalone [[getHeightAverage]] function instead.
+   * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. Use standalone [[getHeightAverage]] function instead.
    * @public
    */
   public async getHeightAverage(iModel: IModelConnection) {

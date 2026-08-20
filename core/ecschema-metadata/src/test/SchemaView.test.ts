@@ -167,3 +167,33 @@ describe("SchemaView.fromBinary - malformed blobs", () => {
     expect(() => SchemaView.fromBinary(buf)).to.throw(/tag/i);
   });
 });
+
+describe("SchemaView husk merging", () => {
+  // These cover the pure-TS husk lifecycle contract (createMergeable / mergeFragment) without
+  // fabricating a full fragment blob - the writer-to-reader blob contract is exercised end to end
+  // in the backend tests (core/backend/.../SchemaViewFragmentLoading.test.ts). The empty minimal
+  // blob is enough to assert the husk's identity, emptiness, and guard behaviors.
+
+  it("createMergeable returns an empty, current view", () => {
+    const view = SchemaView.createMergeable("husk-token");
+    expect(view.schemaCount).to.equal(0);
+    expect(view.classCount).to.equal(0);
+    expect(view.isOutdated).to.be.false;
+    expect(view.schemaToken).to.equal("husk-token");
+  });
+
+  it("merges an (empty) fragment into the same instance without throwing", () => {
+    const view = SchemaView.createMergeable();
+    view.mergeFragment(makeMinimalBlob());
+    expect(view.schemaCount).to.equal(0);
+    // A second empty merge is also a no-op and must not throw.
+    view.mergeFragment(makeMinimalBlob());
+    expect(view.schemaCount).to.equal(0);
+  });
+
+  it("throws when merging into a non-mergeable (fromBinary) view", () => {
+    const view = SchemaView.fromBinary(makeMinimalBlob());
+    expect(() => view.mergeFragment(makeMinimalBlob())).to.throw(/not mergeable/i);
+  });
+});
+

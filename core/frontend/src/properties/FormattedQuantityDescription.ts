@@ -68,7 +68,7 @@ export function createQuantityDescription(props: CreateQuantityDescriptionProps)
 }
 
 /**
- * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
+ * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
  * @beta
  */
 export interface FormattedQuantityDescriptionArgs {
@@ -80,7 +80,7 @@ export interface FormattedQuantityDescriptionArgs {
 
 /**
  * Base Quantity Property Description
- * @deprecated in 5.11.0. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
+ * @deprecated in 5.11.0 - will not be removed until after 2027-07-03. This appui-based quantity description API is deprecated. Use [createQuantityDescription]($frontend) to build a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting callbacks backed by [IModelApp.quantityFormatter]($frontend).
  * @beta
  */
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {

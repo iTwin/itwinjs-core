@@ -212,6 +212,13 @@ export interface GltfMesh extends GltfChildOfRootProperty {
   /** For morph targets - currently unsupported. */
   weights?: number[];
   extensions?: GltfExtensions & {
+    /** The [EXT_mesh_primitive_restart](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_mesh_primitive_restart) extension
+     * describes groups of primitives that can be combined into a single draw call, using a "combined" index accessor containing primitive restart values
+     * to separate the individual primitives.
+     * It is superseded by [KHR_mesh_primitive_restart](https://github.com/KhronosGroup/glTF/pull/2569), which has no JSON payload at any level. A primitive's
+     * own indices accessor may contain restart values inline (the maximum value for the accessor's component type), with the extension declared in the
+     * asset's `extensionsUsed` and `extensionsRequired` arrays. See [[GltfReader.readPolylines]] for the handling of inline restart values.
+     */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_mesh_primitive_restart?: {
       primitiveGroups: Array<{

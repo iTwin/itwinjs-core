@@ -261,6 +261,7 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * @param localFileName - The name of a local file to be read.
    * @param fileExt - The extension to be appended to the generated fileName when this WorkspaceDb is extracted from the WorkspaceDb.
    * By default, the characters after the last "." in `localFileName` are used. Pass this argument to override that.
+   * @deprecated File resources are deprecated. Store the contents as a blob using [[addBlob]], or as a string using [[addString]].
    */
   addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
 
@@ -269,12 +270,14 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
    * @param rscName - The name of the file resource.
    * @param localFileName - The name of a local file to be read.
    * @throws If the file resource does not exist.
+   * @deprecated File resources are deprecated. Migrate existing file resources to blobs or strings. This method remains available for maintaining existing resources.
    */
   updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
 
   /**
    * Remove a file resource.
    * @param rscName - The name of the file resource to remove.
+   * @deprecated File resources are deprecated. This method remains available for removing existing file resources.
    */
   removeFile(rscName: WorkspaceResourceName): void;
 }

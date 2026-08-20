@@ -88,7 +88,7 @@ export enum PrimitiveTypeCode {
 
 /** A callback function to process properties of an Entity
  * @beta
- * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `PropertyHandler` from `@itwin/ecschema-metadata` instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use `PropertyHandler` from `@itwin/ecschema-metadata` instead.
  *
  * @example
  * ```typescript
@@ -108,7 +108,7 @@ export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** A custom attribute instance
  * @beta
- * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `CustomAttribute` interface from `@itwin/ecschema-metadata` instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use `CustomAttribute` interface from `@itwin/ecschema-metadata` instead.
  */
 export interface CustomAttribute {
   /** The class of the CustomAttribute */
@@ -121,7 +121,7 @@ type FactoryFunc = (jsonObj: any) => any;
 
 /**
  * @beta
- * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `@itwin/ecschema-metadata` instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use `@itwin/ecschema-metadata` instead.
  */
 export interface PropertyMetaDataProps {
   primitiveType?: number;
@@ -147,7 +147,7 @@ export interface PropertyMetaDataProps {
 
 /** Metadata for a property.
  * @beta
- * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the `Property` class from @itwin/ecschema-metadata` instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use the `Property` class from @itwin/ecschema-metadata` instead.
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export class PropertyMetaData implements PropertyMetaDataProps {
@@ -243,7 +243,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
 
 /**
  * @beta
- * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `@itwin/ecschema-metadata` instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use `@itwin/ecschema-metadata` instead.
  */
 export interface EntityMetaDataProps {
   classId: Id64String;
@@ -263,7 +263,7 @@ export interface EntityMetaDataProps {
 
 /** Metadata for an Entity.
  * @beta
- * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `EntityClass` class from `@itwin/ecschema-metadata` instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use `EntityClass` class from `@itwin/ecschema-metadata` instead.
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export class EntityMetaData implements EntityMetaDataProps {

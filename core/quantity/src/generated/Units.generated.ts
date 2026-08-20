@@ -454,7 +454,9 @@ export const Units = {
     PROBABILITY_PERCENT: "Units.PROBABILITY_PERCENT",
   },
   ROTATIONAL_SPRING_CONSTANT: {
+    KN_M_PER_DEG: "Units.KN_M_PER_DEG",
     KN_M_PER_RAD: "Units.KN_M_PER_RAD",
+    KPF_FT_PER_DEG: "Units.KPF_FT_PER_DEG",
     KPF_FT_PER_RAD: "Units.KPF_FT_PER_RAD",
     N_M_PER_DEG: "Units.N_M_PER_DEG",
     N_M_PER_RAD: "Units.N_M_PER_RAD",

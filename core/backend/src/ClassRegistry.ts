@@ -12,7 +12,7 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { EntityReferences } from "./EntityReferences";
-import * as assert from "assert";
+import { ok as assert } from "node:assert/strict";
 import { _nativeDb } from "./internal/Symbols";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
@@ -231,8 +231,7 @@ export class ClassRegistry {
         {
           value(this: typeof generatedClass, referenceIds: EntityReferenceSet) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
-            const superImpl = superclass.prototype["collectReferenceIds"];
-            superImpl.call(this, referenceIds);
+            superclass.prototype["collectReferenceIds"].call(this, referenceIds);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp.name]; // cast to any since subclass can have any extensions
               if (!relatedElem || !Id64.isValid(relatedElem.id))
@@ -336,7 +335,7 @@ export class ClassRegistry {
  * A cache that records the mapping between class names and class metadata.
  * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
  * @internal
- * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `getSchemaView()` from the `iModel` instead.
+ * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` from the `iModel` instead.
  *
  * @example
  * @

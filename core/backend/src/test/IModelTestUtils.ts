@@ -338,7 +338,7 @@ export class IModelTestUtils {
   /** Prepare for an output file by:
    * - Resolving the output file name under the known test output directory
    * - Making directories as necessary
-   * - Removing a previous copy of the output file
+   * - Removing a previous copy of the output file, along with -wal, -shm, and -journal files if they exist.
    * @param subDirName Sub-directory under known test output directory. Should match the name of the test file minus the .test.ts file extension.
    * @param fileName Name of output fille
    */
@@ -351,8 +351,13 @@ export class IModelTestUtils {
       IModelJsFs.mkdirSync(outputDir);
 
     const outputFile = path.join(outputDir, fileName);
-    if (IModelJsFs.existsSync(outputFile))
-      IModelJsFs.unlinkSync(outputFile);
+    // Remove the db and any SQLite sidecar files. A stale -wal left by a previous run would be
+    // replayed against the newly created db and reported as BE_SQLITE_CORRUPT.
+    for (const suffix of ["", "-wal", "-shm", "-journal"]) {
+      const file = `${outputFile}${suffix}`;
+      if (IModelJsFs.existsSync(file))
+        IModelJsFs.unlinkSync(file);
+    }
 
     return outputFile;
   }

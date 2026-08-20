@@ -1,6 +1,6 @@
 {
   "name": "@itwin/hypermodeling-frontend",
-  "version": "5.11.0-dev.14",
+  "version": "5.13.0-dev.14",
   "description": "iTwin.js hypermodeling package",
   "main": "lib/cjs/hypermodeling-frontend.js",
   "module": "lib/esm/hypermodeling-frontend.js",
@@ -58,7 +58,7 @@
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.5.0",
+    "glob": "^13.0.6",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",

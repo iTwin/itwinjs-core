@@ -95,7 +95,7 @@ export abstract class TerrainMeshProvider {
    */
   public abstract readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [addAttributions] instead. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
 
     /** Add attribution logo cards for the terrain data supplied by this provider to the [[Viewport]]'s logo div.

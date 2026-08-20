@@ -7,7 +7,7 @@
  */
 
 import { type ClassData, type EnumerationData, type EnumeratorData, type KoqData, type PropCategoryData, type PropertyDef, type PropertyRef, type RelConstraintData, type SchemaData, SchemaViewPrimitiveType } from "./SchemaViewInterfaces";
-import { parseSchemaViewBlob } from "./SchemaViewBinaryReader";
+import { parseSchemaViewBlob, SchemaViewMergeContext } from "./SchemaViewBinaryReader";
 import { ClassModifier, ClassType, PropertyKind, StrengthDirection, StrengthType } from "../ECObjects";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 
@@ -76,20 +76,26 @@ export class SchemaView {
   /** @internal */
   public readonly [_storage]: SchemaViewStorage;
 
-  private _schemaToken: string;
+  private readonly _schemaToken: string;
   private _outdated = false;
 
+  /** When present, this view is a *husk*: it retains the live builder and cross-reference maps, so
+   * `mergeFragment` can append further fragment blobs. Undefined for one-shot views from `fromBinary`. */
+  private readonly _mergeContext?: SchemaViewMergeContext;
+
   /** @internal */
-  constructor(data: SchemaViewData, schemaToken?: string) {
+  constructor(data: SchemaViewData, schemaToken?: string, mergeContext?: SchemaViewMergeContext) {
     this[_storage] = {
       ...data,
       transitiveBaseCache: new Map<number, ReadonlySet<number>>(),
       derivedClassMap: undefined,
     };
     this._schemaToken = schemaToken ?? "";
+    this._mergeContext = mergeContext;
   }
 
-  /** SHA3-256 content hash of the ec_ schema tables at the time this view was built.
+  /** Cache-invalidation token identifying the schemas this view was built from: a hash of every
+   * schema's name and version (see `PRAGMA checksum(schema_token)`), not of their full contents.
    * Empty string if not set (e.g., when built from a builder without a token).
    * @beta
    */
@@ -165,18 +171,39 @@ export class SchemaView {
 
   /** Parse a binary blob into a SchemaView. Synchronous.
    * @param blob - The binary blob from `PRAGMA schema_view`.
-   * @param schemaToken - Optional SHA3-256 content hash for cache invalidation.
+   * @param schemaToken - Optional cache-invalidation token (schema name+version hash; see `PRAGMA checksum(schema_token)`).
    * @beta
    */
   public static fromBinary(blob: Uint8Array, schemaToken?: string): SchemaView {
     return parseSchemaViewBlob(blob, schemaToken);
   }
 
-  /** Build from a pre-populated builder (used by the binary parser).
+  /** Create an empty, *mergeable* view (a "husk"). It contains no schemas until `mergeFragment` is
+   * called. Each merged fragment is appended into the same instance, so flyweights and cached
+   * cross-references obtained earlier stay valid - indices are append-only and never reordered.
+   * @note Fragments must be merged in dependency order: a fragment may only reference schemas from
+   * fragments already merged.
    * @internal
    */
-  public static fromBuilder(builder: SchemaViewBuilder, schemaToken?: string): SchemaView {
-    return builder.build(schemaToken);
+  public static createMergeable(schemaToken?: string): SchemaView {
+    const ctx = new SchemaViewMergeContext();
+    return new SchemaView(ctx.builder.assembleData(), schemaToken, ctx);
+  }
+
+  /** Merge one fragment blob into this view. Only valid on a view created via `createMergeable`.
+   * Synchronous. Any flyweight or cached index obtained before the call remains valid.
+   * @note If the merge throws (e.g. on a malformed blob), the view may be left partially extended
+   * and must be discarded by the host.
+   * @internal
+   */
+  public mergeFragment(blob: Uint8Array): void {
+    if (this._mergeContext === undefined)
+      throw new Error("SchemaView is not mergeable: create it via SchemaView.createMergeable to merge fragments.");
+    this._mergeContext.mergeBlob(blob);
+    // A new fragment can add subclasses to an already-present base class, so the derived-class map
+    // must be rebuilt. transitiveBaseCache stays valid: a class's ancestors are always merged
+    // before it (dependency order), so an append never adds an ancestor to an already-cached class.
+    this[_storage].derivedClassMap = undefined;
   }
 
   // --- Internal helpers used by view objects ---
@@ -1303,222 +1330,3 @@ export type IModelSchemaView = SchemaView & { readonly customAttributes: SchemaV
  * @beta
  */
 export type CompiledSchemaView = SchemaView & { readonly customAttributes: SchemaView.CustomAttributeProvider };
-
-// =====================================================================================
-// SchemaViewBuilder
-// =====================================================================================
-
-/** Builder for constructing an immutable `SchemaView`.
- *
- * Collects data during binary blob parsing, then freezes it into a view.
- * Handles string interning and property definition deduplication.
- *
- * Consumers should not use this directly - read views via `IModelDb.getSchemaView`
- * / `IModelConnection.getSchemaView` (or `SchemaView.fromBinary` if you have a raw blob).
- * @internal
- */
-export class SchemaViewBuilder {
-  private readonly _strings: string[] = [""]; // SID 0 = empty string
-  private readonly _lowerStrings: string[] = [""];
-  private readonly _stringMap = new Map<string, number>(); // original value -> SID
-
-  private readonly _schemas: SchemaData[] = [];
-  private readonly _classes: ClassData[] = [];
-  private readonly _classMixins: number[] = [];
-  private readonly _propDefs: PropertyDef[] = [];
-  private readonly _propertyRefs: PropertyRef[] = [];
-  private readonly _relConstraints: RelConstraintData[] = [];
-  private readonly _constraintClassRefs: number[] = [];
-  private readonly _enumerations: EnumerationData[] = [];
-  private readonly _enumerators: EnumeratorData[] = [];
-  private readonly _koqs: KoqData[] = [];
-  private readonly _propCategories: PropCategoryData[] = [];
-
-  // For PropertyDef dedup
-  private readonly _propDefMap = new Map<string, number>(); // signature string -> defIdx
-
-  /** Intern a string, returning its SID. Empty/undefined strings return 0.
-   * Interning is case-sensitive - "MyLabel" and "MYLABEL" get distinct SIDs.
-   * The `lowerStrings` array provides case-insensitive lookup without mutating display values.
-   */
-  public internString(value: string | undefined): number {
-    if (value === undefined || value === "") return 0;
-    const existing = this._stringMap.get(value);
-    if (existing !== undefined) return existing;
-    const sid = this._strings.length;
-    this._strings.push(value);
-    this._lowerStrings.push(value.toLowerCase());
-    this._stringMap.set(value, sid);
-    return sid;
-  }
-
-  /** Add a schema. Returns its index. */
-  public addSchema(data: SchemaData): number {
-    const idx = this._schemas.length;
-    this._schemas.push(data);
-    return idx;
-  }
-
-  /** Add a class. Returns its index. Must be called after the owning schema. */
-  public addClass(data: ClassData): number {
-    const idx = this._classes.length;
-    this._classes.push(data);
-    return idx;
-  }
-
-  /** Add a property definition with deduplication. Returns the def index (possibly existing). */
-  public addPropertyDef(data: PropertyDef): number {
-    const sig = this._propDefSignature(data);
-    const existing = this._propDefMap.get(sig);
-    if (existing !== undefined) return existing;
-
-    const idx = this._propDefs.length;
-    this._propDefs.push(data);
-    this._propDefMap.set(sig, idx);
-    return idx;
-  }
-
-  /** Append a property reference to the flat refs array. */
-  public addPropertyRef(ref: PropertyRef): void {
-    this._propertyRefs.push(ref);
-  }
-
-  /** Add an enumeration. Returns its index. */
-  public addEnumeration(data: EnumerationData): number {
-    const idx = this._enumerations.length;
-    this._enumerations.push(data);
-    return idx;
-  }
-
-  /** Append an enumerator to the flat enumerators array. */
-  public addEnumerator(data: EnumeratorData): void {
-    this._enumerators.push(data);
-  }
-
-  /** Add a KindOfQuantity. Returns its index. */
-  public addKoq(data: KoqData): number {
-    const idx = this._koqs.length;
-    this._koqs.push(data);
-    return idx;
-  }
-
-  /** Add a PropertyCategory. Returns its index. */
-  public addPropertyCategory(data: PropCategoryData): number {
-    const idx = this._propCategories.length;
-    this._propCategories.push(data);
-    return idx;
-  }
-
-  /** Add a relationship constraint. Returns its index. */
-  public addRelConstraint(data: RelConstraintData): number {
-    const idx = this._relConstraints.length;
-    this._relConstraints.push(data);
-    return idx;
-  }
-
-  /** Append a constraint class reference to the flat array. */
-  public addConstraintClassRef(classIdx: number): void {
-    this._constraintClassRefs.push(classIdx);
-  }
-
-  /** Append a mixin class reference to the flat array. */
-  public addClassMixin(classIdx: number): void {
-    this._classMixins.push(classIdx);
-  }
-
-  /** The current count of property refs (used to set ownPropStart on ClassData). */
-  public get propertyRefCount(): number { return this._propertyRefs.length; }
-
-  /** The current count of enumerators (used to set enumeratorStart on EnumerationData). */
-  public get enumeratorCount(): number { return this._enumerators.length; }
-
-  /** The current count of constraint class refs (used to set classRefStart). */
-  public get constraintClassRefCount(): number { return this._constraintClassRefs.length; }
-
-  /** The current count of class mixins (used to set mixinStartIdx). */
-  public get classMixinCount(): number { return this._classMixins.length; }
-
-  /** Get a string by SID. @internal */
-  public getString(sid: number): string { return this._strings[sid]; }
-
-  /** Replace class data at the given index (used during deferred cross-ref resolution). @internal */
-  public updateClass(classIdx: number, data: ClassData): void { this._classes[classIdx] = data; }
-
-  /** Update range fields on a schema (used after all items for a schema are collected). @internal */
-  public updateSchemaRanges(schemaIdx: number, ranges: { classRangeStart: number; classCount: number; enumRangeStart: number; enumCount: number; koqRangeStart: number; koqCount: number; catRangeStart: number; catCount: number }): void {
-    const s = this._schemas[schemaIdx];
-    this._schemas[schemaIdx] = { ...s, ...ranges };
-  }
-
-  /** Freeze all data and produce an immutable SchemaView. */
-  public build(schemaToken?: string): SchemaView {
-    const schemaByName = new Map<string, number>();
-    const schemaByAlias = new Map<string, number>();
-    const classByName = new Map<number, Map<string, number>>();
-    const enumByName = new Map<number, Map<string, number>>();
-    const koqByName = new Map<number, Map<string, number>>();
-    const catByName = new Map<number, Map<string, number>>();
-
-    // Build schema lookup maps
-    for (let i = 0; i < this._schemas.length; i++) {
-      const s = this._schemas[i];
-      schemaByName.set(this._lowerStrings[s.nameStringIdx], i);
-      if (s.aliasStringIdx !== 0)
-        schemaByAlias.set(this._lowerStrings[s.aliasStringIdx], i);
-
-      // Build class-by-name map for this schema
-      const classMap = new Map<string, number>();
-      for (let c = s.classRangeStart; c < s.classRangeStart + s.classCount; c++)
-        classMap.set(this._lowerStrings[this._classes[c].nameStringIdx], c);
-      classByName.set(i, classMap);
-
-      // Build enum-by-name map for this schema
-      const eMap = new Map<string, number>();
-      for (let e = s.enumRangeStart; e < s.enumRangeStart + s.enumCount; e++)
-        eMap.set(this._lowerStrings[this._enumerations[e].nameStringIdx], e);
-      enumByName.set(i, eMap);
-
-      // Build koq-by-name map for this schema
-      const kMap = new Map<string, number>();
-      for (let k = s.koqRangeStart; k < s.koqRangeStart + s.koqCount; k++)
-        kMap.set(this._lowerStrings[this._koqs[k].nameStringIdx], k);
-      koqByName.set(i, kMap);
-
-      // Build category-by-name map for this schema
-      const cMap = new Map<string, number>();
-      for (let p = s.catRangeStart; p < s.catRangeStart + s.catCount; p++)
-        cMap.set(this._lowerStrings[this._propCategories[p].nameStringIdx], p);
-      catByName.set(i, cMap);
-    }
-
-    return new SchemaView({
-      strings: this._strings,
-      lowerStrings: this._lowerStrings,
-      schemas: this._schemas,
-      classes: this._classes,
-      classMixins: this._classMixins,
-      propDefs: this._propDefs,
-      propertyRefs: this._propertyRefs,
-      relConstraints: this._relConstraints,
-      constraintClassRefs: this._constraintClassRefs,
-      enumerations: this._enumerations,
-      enumerators: this._enumerators,
-      koqs: this._koqs,
-      propCategories: this._propCategories,
-      schemaByName,
-      schemaByAlias,
-      classByName,
-      enumByName,
-      koqByName,
-      catByName,
-    }, schemaToken);
-  }
-
-  /** Produce a dedup signature for a PropertyDef. Label and priority are excluded because
-   * they are per-PropertyRef overrides, not part of the structural definition.
-   * Uses SIDs (not lowercase strings) for name/description so that case-preserving names
-   * stay distinct - matching the C++ writer's dedup behavior. */
-  private _propDefSignature(def: PropertyDef): string {
-    return `${def.nameStringIdx}|${def.kind}|${def.primitiveType}|${def.extTypeStringIdx}|${def.enumIdx}|${def.koqIdx}|${def.structClassIdx}|${def.navRelClassIdx}|${def.navDirection}|${def.categoryIdx}|${def.isReadOnly ? 1 : 0}|${def.isHidden ? 1 : 0}|${def.arrayMinOccurs}|${def.arrayMaxOccurs}|${def.descriptionStringIdx}`;
-  }
-}

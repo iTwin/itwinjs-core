@@ -4,205 +4,107 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [@itwin/core-common](#itwincore-common)
+    - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
+  - [@itwin/core-backend](#itwincore-backend)
+    - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
+    - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
+    - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
+    - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
+  - [@itwin/core-common](#itwincore-common)
+    - [Rank support for DefinitionSet](#rank-support-for-definitionset)
+  - [@itwin/core-electron](#itwincore-electron)
+    - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
   - [@itwin/core-frontend](#itwincore-frontend)
-    - [Pluggable Cesium Ion authentication via `CesiumAccessClient`](#pluggable-cesium-ion-authentication-via-cesiumaccessclient)
-    - [Configurable precision for graphical editing at high coordinates](#configurable-precision-for-graphical-editing-at-high-coordinates)
-    - [`IModelConnection.createQueryReader` now terminates gracefully if the connection is closed](#imodelconnectioncreatequeryreader-now-terminates-gracefully-if-the-connection-is-closed)
-    - [Reality model tiles with JSON glTF content now render](#reality-model-tiles-with-json-gltf-content-now-render)
-    - [Quantity property description classes deprecated](#quantity-property-description-classes-deprecated)
-    - [Bing Maps deprecation and new geospatial provider interfaces](#bing-maps-deprecation-and-new-geospatial-provider-interfaces)
+    - [Invalidate decorations when element visibility changes](#invalidate-decorations-when-element-visibility-changes)
   - [@itwin/core-geometry](#itwincore-geometry)
-    - [`CurveFactory.createFilletsInLineString` expanded options](#curve-factory-create-fillets-in-line-string-expanded-options)
-  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
-    - [Azure Maps basemap support is available through map-layers-formats](#azure-maps-basemap-support-is-available-through-map-layers-formats)
-  - [@itwin/build-tools](#itwinbuild-tools)
-    - [`mocha` is now an optional peer dependency](#mocha-is-now-an-optional-peer-dependency)
+    - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
+
+## @itwin/core-common
+
+### QueryBinder.bindIdSet now throws on invalid ids
+
+[QueryBinder.bindIdSet]($common) previously silently ignored string entries that are not valid [Id64String]($bentley)s (for example `"50"` or `""`) during id compression. It now throws a descriptive [ITwinError]($bentley) instead, identifiable via `ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments")`, so callers can catch and diagnose the invalid entry rather than having it silently dropped.
+
+**Note:** `bindIdSet` still expects entries typed as `Id64String`. Callers binding ids from untyped or nullable query data (for example a nullable column via [ECSqlReader]($common)) should filter out non-string/`null`/`undefined` values before calling `bindIdSet`, as such entries remain outside the documented contract and are not guaranteed to produce this descriptive error.
+
+## @itwin/core-backend
+
+### Edit from element, model, and aspect callbacks
+
+A new beta API, [IModelDb.getIndirectTxn]($backend), provides the [EditTxn]($backend) associated with an element, model, or aspect callback. Callbacks whose arguments provide an [IModelDb]($backend) but no transaction can use it to perform additional edits within the transaction that invoked the callback.
+
+```ts
+[[include:EditTxn.ElementCallback]]
+```
+
+The operation that invoked the callback owns the returned transaction. The callback must not start, end, save, abandon, or otherwise manage the transaction lifecycle. Callbacks that receive `indirectEditTxn` directly should continue using that property.
+
+### WorkspaceDb file resource APIs deprecated
+
+The [WorkspaceDb.getFile]($backend), [EditableWorkspaceDb.addFile]($backend), [EditableWorkspaceDb.updateFile]($backend), and [EditableWorkspaceDb.removeFile]($backend) APIs are deprecated. Store binary resources with [EditableWorkspaceDb.addBlob]($backend), or text resources with [EditableWorkspaceDb.addString]($backend), so applications can read their contents directly from the [WorkspaceDb]($backend).
+
+```ts
+// Before
+editableDb.addFile("equipment-data", localFileName);
+const extractedFileName = workspaceDb.getFile("equipment-data");
+
+// After
+editableDb.addBlob("equipment-data", fs.readFileSync(localFileName));
+const contents = workspaceDb.getBlob("equipment-data");
+```
+
+The deprecated methods remain functional so existing file resources can be read, replaced, migrated, or removed. If still using `addFile()`, new file extensions now reject characters that are invalid in cross-platform filenames, and existing resources with unsafe extension metadata use an extensionless generated cache filename.
+
+### Stream element aspects for multiple elements
+
+Use [IModelDb.Elements.queryAspects]($backend) to read the [ElementAspect]($backend) instances owned by a set of elements. The method queries all supplied element Ids together and returns an async iterator, so callers can process each aspect without buffering the complete result set.
+
+Use this method for batch processing, such as exporters and transformers, where calling [IModelDb.Elements.getAspects]($backend) once per element would issue many separate queries. Continue to use `getAspects` when reading a small result from one element and a synchronous array is more convenient.
+
+The options support the same polymorphic `aspectClassFullName` filter as `getAspects`, exact class exclusions, and owner-grouped results. Set `usePrimaryConn` when the query must include uncommitted aspects from an active edit transaction.
+
+[[include:CoreBackend.IModelDb.QueryAspects]]
+
+### ECSQL `IS` / `IS NOT` operator now works between two operands
+
+The ECSQL `IS` and `IS NOT` operators can now be used between two operands — for example `prop1 IS [NOT] prop2`, where each operand may be any value expression: a property, the `NULL` literal, a constant, a parameter, a function call, an arithmetic expression, etc. These map to SQLite's **null-safe** comparison operators, so `NULL IS NULL` is `TRUE` and `1 IS NULL` is `FALSE`, unlike `=`/`<>` which treat a `NULL` operand as _unknown_.
+
+Previously `IS` / `IS NOT` only supported the right-hand operands `NULL`, the boolean literals `TRUE`/`FALSE`/`UNKNOWN`, and the [ECClass type predicate](../learning/ECSqlReference/ECClassFilter.md) (`IS (ClassName)`). Those forms still take precedence — a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized **qualified** class name such as `(bis.Element)` (optionally with an `ONLY`/`ALL` prefix or a comma-separated list), keeps its original meaning. A parenthesized *unqualified* name such as `(prop2)` is instead read as a value expression, so `prop1 IS (prop2)` is a null-safe comparison. A parenthesized *qualified* name that does not resolve to a known ECClass — for example `(alias.prop)` or `(ts.Status.Active)` — is also treated as a null-safe value expression instead of failing with a "class not found" error; when a qualified name is both a valid class and a valid property path, the type-predicate (class) reading takes precedence.
+
+For multi-column operands (such as `Point2d`/`Point3d` and navigation properties) the comparison is expanded column-wise, consistent with `=` and `<>`: `IS` joins the per-column comparisons with `AND`, and `IS NOT` joins them with `OR`.
+
+**Example** — find elements whose code value differs from their user label, or from a value extracted from JSON, treating `NULL` as a comparable value:
+
+```sql
+SELECT * FROM bis.Element WHERE CodeValue IS NOT UserLabel
+SELECT * FROM bis.Element WHERE CodeValue IS json_extract(JsonProperties, '$.code')
+```
+
+See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--is-not-operator-null-safe-comparison) for more details.
+
+## @itwin/core-common
+
+### Rank support for DefinitionSet
+
+[BisCore:DefinitionSet]($docs/bis/domains/BisCore.ecschema.md) (the base class of [DefinitionContainer]($backend) and [DefinitionGroup]($backend)) has a `Rank` property, but the iTwin.js API had no counterpart for it - `Rank` was only exposed for [Category]($backend)/[SubCategory]($backend). The new `@beta` [DefinitionSetProps.rank]($common) property (and the corresponding [DefinitionSet.rank]($backend) member) close that gap, using the same [Rank]($common) enum already used by `CategoryProps.rank`. `rank` is persisted when inserting or updating a `DefinitionContainer` or `DefinitionGroup`, and is read back correctly through [IModelDb.Elements.getElementProps]($backend) and [DefinitionSet.toJSON]($backend).
+
+## @itwin/core-electron
+
+### Late RPC responses are ignored during shutdown
+
+`ElectronApp.shutdown()` disposes any in-flight RPC requests. A response for one of those requests could still arrive from the backend afterwards, and the frontend transport would then dereference the missing request and throw, surfacing as an unhandled rejection while the application was tearing down. Such a response is now ignored instead.
+
+Applications that shut down while requests are outstanding no longer need to filter these errors out of their shutdown paths.
 
 ## @itwin/core-frontend
 
-### Pluggable Cesium Ion authentication via `CesiumAccessClient`
+### Invalidate decorations when element visibility changes
 
-A new [CesiumAccessClient]($frontend) interface and [TileAdmin.Props.cesiumAccess]($frontend) option let apps plug in a custom Cesium asset resolver (such as the [iTwin Platform Cesium Curated Content API](https://developer.bentley.com/apis/cesium-curated-content/overview/)) without requiring a personal Cesium Ion subscription or adding a platform dependency to `@itwin/core-frontend`.
-
-Two authentication paths coexist:
-
-| Path | When to use | How to configure |
-|---|---|---|
-| `cesiumIonKey` (existing) | App has a direct Cesium Ion subscription | `tileAdmin: { cesiumIonKey: "my-key" }` |
-| `cesiumAccess` (new, `@beta`) | iTwin Platform proxy or any custom resolver | `tileAdmin: { cesiumAccess: new MyClient() }` |
-
-When both are supplied, `cesiumAccess` takes precedence. The new [TileAdmin.canAccessCesium]($frontend) getter returns `true` if either option is configured.
-
-```typescript
-import { GuidString } from "@itwin/core-bentley";
-import { CesiumAccessClient, CesiumAssetEndpoint } from "@itwin/core-frontend";
-
-// Example: implement CesiumAccessClient using the iTwin Platform Cesium Curated Content API.
-class ITPCesiumClient implements CesiumAccessClient {
-  constructor(private readonly getAccessToken: () => Promise<string>) {}
-
-  async getAssetEndpoint(assetId: string, _iTwinId?: GuidString): Promise<CesiumAssetEndpoint | undefined> {
-    const token = await this.getAccessToken();
-    const response = await fetch(`https://api.bentley.com/curated-content/cesium/${assetId}/tiles`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!response.ok)
-      return undefined; // asset cannot be accessed
-
-    const json = await response.json();
-    return {
-      accessToken: json.accessToken,
-      url: json.url,
-      expiresAt: json.expiresAt ? new Date(json.expiresAt) : undefined,
-    };
-  }
-}
-
-// Register at startup:
-await IModelApp.startup({
-  tileAdmin: {
-    cesiumAccess: new ITPCesiumClient(() => myAuthClient.getAccessToken()),
-  },
-});
-```
-
-### Configurable precision for graphical editing at high coordinates
-
-During a [GraphicalEditingScope]($frontend), graphics for modified elements that are georeferenced far from the coordinate system origin could exhibit float32 precision artifacts such as jagged curves. The new [GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold]($frontend) property sets the world-space coordinate magnitude (in meters) beyond which such graphics use `rtcCenter` centering to preserve precision, at a small performance cost. It defaults to 10 kilometers. Set it before making edits, as it is read once per model when that model's first element is modified.
-
-```ts
-const scope = await briefcase.enterEditingScope();
-scope.dynamicGraphicsAbsolutePositionThreshold = 50_000;
-```
-
-For framework code that does not directly enter the scope, configure the threshold from [GraphicalEditingScope.onEnter]($frontend), which runs before any edits:
-
-```ts
-GraphicalEditingScope.onEnter.addListener((scope) => {
-  scope.dynamicGraphicsAbsolutePositionThreshold = 50_000;
-});
-```
-
-This changes the default behavior for existing projects: previously dynamic editing graphics always used absolute positions, but elements now centered 10 km or more from the origin automatically switch to `rtcCenter` centering. Projects within 10 km are unaffected. To restore the prior behavior, set the threshold to `Number.POSITIVE_INFINITY`.
-
-### `IModelConnection.createQueryReader` now terminates gracefully if the connection is closed
-
-Previously, if an [IModelConnection]($frontend) was closed between the call to [IModelConnection.createQueryReader]($frontend) and the first iteration of its results, it ended up throwing during the underlying RPC call.
-
-The `IModelConnection.createQueryReader` executor now checks [IModelConnection.isOpen]($frontend) before attempting any RPC call. If the connection is already closed at the time of the first or any subsequent read, the reader terminates immediately with no rows. No error is thrown.
-
-Callers that previously relied on a thrown error to detect connection closure should check `imodel.isOpen` before or after iteration instead.
-
-**Example**
-
-```typescript
-const reader = imodel.createQueryReader("SELECT ECInstanceId FROM bis.Element");
-await imodel.close(); // connection closes before iteration
-const rows = await reader.toArray(); // used to throw, now returns an empty array
-```
-
-### Reality model tiles with JSON glTF content now render
-
-A 3D Tileset may reference its tile content as plain-text JSON glTF (`.gltf`) rather than binary glTF (`.glb`) or b3dm. Previously such tiles either rendered nothing (the JSON content was discarded because it has no binary magic number) or rendered untextured/white (externally-referenced images resolved against the tileset root instead of the tile's content URL).
-
-Reality tile content with no recognized binary magic number is now treated as glTF when the tile's content URL ends in `.gltf`, and externally-referenced resources resolve against the tile's own content URL so their textures load. No API or application changes are required.
-
-### Quantity property description classes deprecated
-
-The quantity property description classes [LengthDescription]($frontend), [SurveyLengthDescription]($frontend), [EngineeringLengthDescription]($frontend), [AngleDescription]($frontend), and their [FormattedQuantityDescription]($frontend) base class are now deprecated.
-
-These appui-based helpers were introduced when quantity formatting was driven by `QuantityType`, but new quantity formatting work should use `kindOfQuantityName`-based APIs instead.
-
-Most callers can migrate to [createQuantityDescription]($frontend), which builds a plain [PropertyDescription]($appui-abstract) with synchronous quantity formatting and parsing callbacks backed by [IModelApp.quantityFormatter]($frontend).
-
-`SurveyLengthDescription` is the notable exception: its legacy behavior selects survey-style display units in unit systems where survey and engineering length formats differ. Applications that need to preserve that behavior should provide the desired format through a dedicated [FormatsProvider]($quantity) such as [FormatSetFormatsProvider]($ecschema-metadata). For more information, see the quantity learning docs on [Quantity property descriptions](../quantity-formatting/usage/ParsingAndFormatting.md#quantity-property-descriptions), [Format Sets](../quantity-formatting/definitions/FormatSets.md), and [Providers](../quantity-formatting/usage/Providers.md).
-
-Existing uses of the deprecated classes continue to behave as before, and the classes will not be removed before a future major release.
-
-### Bing Maps deprecation and new geospatial provider interfaces
-
-[Bing Maps from Azure](https://azure.microsoft.com/en-us/products/bing-maps) will be retired and go offline in 2028. This release deprecates all Bing-dependent APIs in `@itwin/core-frontend` and introduces abstract provider interfaces so applications can migrate to alternative services.
-
-#### What's new
-
-New `@beta` interfaces decouple elevation, geoid, and location services from the Bing Maps implementation:
-
-- [ElevationProvider]($frontend) — terrain height lookup.
-- [GeoidProvider]($frontend) — geodetic-to-sea-level offset.
-- [LocationProvider]($frontend) — geocoding (query string to location).
-
-These can be supplied via the new `geospatialProviders` option on [IModelAppOptions]($frontend):
-
-```typescript
-await IModelApp.startup({
-  geospatialProviders: {
-    elevationProvider: myElevationProvider,
-    geoidProvider: myGeoidProvider,
-    locationProvider: myLocationProvider,
-  },
-});
-```
-
-If not supplied, [BingElevationProvider]($frontend) and [BingLocationProvider]($frontend) are used as defaults for backward compatibility. These Bing-backed defaults will be removed in a future major version; applications should migrate to a custom implementation before then.
-
-Standalone utility functions [getHeightRange]($frontend) and [getHeightAverage]($frontend) replace the convenience methods previously on `BingElevationProvider`.
-
-For new basemap imagery, prefer Azure Maps via `@itwin/map-layers-formats`.
-
-#### What's deprecated
-
-[MapLayerOptions.BingMaps]($frontend), [BingElevationProvider]($frontend), [BingLocationProvider]($frontend), and the Bing Maps imagery APIs (`BingMapsMapLayerFormat`, `BingMapsImageryLayerProvider`) are all deprecated. Existing persisted Bing-backed styles continue to load for compatibility, but new code should use Azure Maps or another provider.
-
-Migrate elevation and location by replacing direct construction with the `IModelApp` provider slots:
-
-```typescript
-// Before
-const provider = new BingElevationProvider();
-const height = await provider.getHeightValue(point, iModel);
-
-// After
-if (iModel.isGeoLocated) {
-  const carto = iModel.spatialToCartographicFromEcef(point);
-  const height = await IModelApp.elevationProvider.getHeight(carto);
-}
-```
+[ViewportDecorator]($frontend)s often produce decoration graphics associated with elements in the scene. Such graphics should be updated if the visibility of the associated element changes. For example, a measurement tool might draw a label near a pipe indicating its length. The label should disappear if the user hides the pipe. To facilitate this, all cached decorations (produced and reused when [ViewportDecorator.useCachedDecorations]($frontend) is `true`) are now recreated in response to potential changes to the visibility of elements in a viewport, including modification of the sets of always- and never-drawn elements, displayed categories and subcategories, and feature symbology overrides.
 
 ## @itwin/core-geometry
 
-### `CurveFactory.createFilletsInLineString` expanded options
+### Simplifying filleted line strings
 
-[CurveFactory.createFilletsInLineString]($core-geometry) has three new [CreateFilletsInLineStringOptions]($core-geometry) interface options to control the construction of the output `Path`, particularly with respect to the appearance of cusps in the output. A _cusp_ occurs when a fillet's radius is too large, and the arc consumes one or both adjacent line string edges. Cusps in the output of this method (especially large cusps) are generally considered to be undesirable.
-
-[CreateFilletsInLineStringOptions.closureTolerance]($core-geometry) is used when [CreateFilletsInLineStringOptions.filletClosure]($core-geometry) is `true` to determine whether the final input point is to be considered equal to the first input point. If these points have distance less than `closureTolerance`, the final point is ignored when the input polygon is filleted. The default value of this option is [Geometry.smallMetricDistance]($core-geometry), matching previous behavior.
-
-[CreateFilletsInLineStringOptions.cuspSegments]($core-geometry) is used when [CreateFilletsInLineStringOptions.allowCusp]($core-geometry) is `true` to insert a `LineSegment3d` in the output `Path` at each cusp. These extra `Path` children are retrograde line segments that bridge the gap formed by each cusp and thereby maintain the chain's continuity. To avoid these extra output segments, the caller can pass `cuspSegments = false` at the cost of chain discontinuity (if the gaps are small enough, they may be tolerated by chain processing downstream). The default value of this option is `true`, matching previous behavior.
-
-[CreateFilletsInLineStringOptions.cuspTolerance]($core-geometry) is used when [CreateFilletsInLineStringOptions.allowCusp]($core-geometry) is `true` to determine whether to suppress large cusps in the output. A cusp segment whose length exceeds `cuspTolerance` will be eliminated in the output `Path` by the removal of one or both of its constituent fillet arcs. The default value of this option is [Geometry.smallMetricDistance]($core-geometry), which is a slight deviation from previous default behavior. The new default behavior allows only miniscule cusps, whereas the old default behavior allowed cusps of any size. The old default behavior is considered to be a bug.
-
-## @itwin/map-layers-formats
-
-### Azure Maps basemap support is available through map-layers-formats
-
-`@itwin/map-layers-formats` now registers Azure Maps imagery support through `MapLayersFormats.initialize()` and exposes a beta `AzureMaps` helper for applying Azure Maps Street, Aerial, and Hybrid basemaps.
-
-Applications configure the Azure Maps key when initializing `@itwin/map-layers-formats` with `MapLayersFormats.initialize({ azureMapsOpts: { subscriptionKey: ... } })`. After initializing `@itwin/map-layers-formats`, code that wants Azure-specific basemap helpers can import `AzureMaps` from that package.
-
-## @itwin/build-tools
-
-### `mocha` is now an optional peer dependency
-
-`@itwin/build-tools` no longer declares `mocha` as a direct dependency. It is now an optional [peer dependency](https://nodejs.org/en/blog/npm/peer-dependencies), because the only part of the package that uses `mocha` is the `mocha-reporter` (`BentleyMochaReporter`), which always runs inside a consumer that is already executing `mocha`.
-
-This removes `mocha` — and its vulnerable transitive dependencies such as `serialize-javascript` and `diff` — from the *direct* dependency closure of `@itwin/build-tools`. Consumers that do not use the reporter (and therefore do not run `mocha`) no longer pull `mocha` in through `@itwin/build-tools`, so it stops surfacing in their audits under pnpm and yarn. Note that `@itwin/build-tools` still depends on `mocha-junit-reporter`, which declares a required peer dependency on `mocha`; package managers that auto-install required peers (such as npm v7+) may therefore still resolve `mocha` transitively.
-
-If you consume the reporter via `@itwin/build-tools/mocha-reporter`, declare `mocha` in your own package's `devDependencies` (most packages running mocha already do):
-
-```json
-{
-  "devDependencies": {
-    "mocha": "^11.1.0"
-  }
-}
-```
-
-Packages that do not use the `mocha-reporter` are unaffected, and the optional peer dependency itself produces no installation warnings when `mocha` is absent under pnpm and yarn.
+The [CurveFactory.createFilletsInLineString]($core-geometry) options bundle [CreateFilletsInLineStringOptions]($core-geometry) has a new optional property `CreateFilletsInLineStringOptions.simplifyPath` defaulting to `false`. When set to `true`, the output [Path]($core-geometry) is simplified by removing small segments less than the `CreateFilletsInLineStringOptions.closureTolerance` in length, and by merging adjacent arcs where possible. This is particularly helpful in cleaning up an output `Path` containing fillets that entirely consume an input line string edge (or nearly so).

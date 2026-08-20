@@ -21,11 +21,32 @@ import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
-import { CanvasDecoration } from "../core-frontend";
+import { CanvasDecoration, DecorationsCache } from "../core-frontend";
 
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterAll(async () => IModelApp.shutdown());
+
+  describe("subcategory reload category collection", () => {
+    it("includes per-model override categories outside the category selector", () => {
+      const viewport = {
+        view: {
+          categorySelector: {
+            categories: new Set(["0x1", "0x2"]),
+          },
+        },
+        perModelCategoryVisibility: {
+          *[Symbol.iterator]() {
+            yield { modelId: "0xa", categoryId: "0x3", visible: true };
+            yield { modelId: "0xb", categoryId: "0x2", visible: false };
+          },
+        },
+      };
+
+      const categoryIds = (Viewport.prototype as any).getSubCategoryReloadCategoryIds.call(viewport) as Set<string>;
+      expect([...categoryIds]).toEqual(["0x1", "0x2", "0x3"]);
+    });
+  });
 
   describe("constructor", () => {
     it("invokes initialize method", () => {
@@ -689,6 +710,16 @@ describe("Viewport", () => {
     });
   });
 
+  function createViewport(): ScreenViewport {
+    const state = SpatialViewState.createBlank(createBlankConnection(), { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
+    const parentDiv = document.createElement("div");
+    parentDiv.setAttribute("height", "1px");
+    parentDiv.setAttribute("width", "1px");
+    parentDiv.style.height = parentDiv.style.width = "1px";
+    document.body.appendChild(parentDiv);
+    return ScreenViewport.create(parentDiv, state);
+  }
+
   describe("Read Image To Canvas", () => {
 
     class PixelCanvasDecoration implements CanvasDecoration {
@@ -705,16 +736,6 @@ describe("Viewport", () => {
         context.addDecorationFromBuilder(builder);
         context.addCanvasDecoration(new PixelCanvasDecoration());
       }
-    }
-
-    function createViewport(): ScreenViewport {
-      const state = SpatialViewState.createBlank(createBlankConnection(), { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
-      const parentDiv = document.createElement("div");
-      parentDiv.setAttribute("height", "1px");
-      parentDiv.setAttribute("width", "1px");
-      parentDiv.style.height = parentDiv.style.width = "1px";
-      document.body.appendChild(parentDiv);
-      return ScreenViewport.create(parentDiv, state);
     }
 
     const activeDecorators: Decorator[] = [];
@@ -849,6 +870,92 @@ describe("Viewport", () => {
 
       IModelApp.viewManager.dropViewport(vp);
       IModelApp.viewManager.dropViewport(vp2);
+    });
+  });
+
+  describe("Cached decorations", () => {
+    let vp: ScreenViewport;
+    let dec: Decorator;
+
+    beforeAll(() => {
+      vp = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+
+      dec = {
+        useCachedDecorations: true as const,
+        decorate: (context: DecorateContext) => {
+          context.addHtmlDecoration(document.createElement("div"));
+        },
+      };
+
+      IModelApp.viewManager.addDecorator(dec);
+    });
+
+    afterAll(() => {
+      IModelApp.viewManager.dropViewport(vp);
+      IModelApp.viewManager.dropDecorator(dec);
+    });
+
+    function test(expectCacheClear: boolean, operation: () => void): void {
+      const isCacheEmpty = () => {
+        const cache = (vp as any)._decorationCache as DecorationsCache;
+        expect(cache.size).not.to.be.undefined;
+        return cache.size === 0;
+      }
+
+      // Ensure decorations are generated and cached.
+      vp.renderFrame();
+      expect(isCacheEmpty()).to.be.false;
+
+      // Ensure cache is cleared or preserved after operation is performed.
+      operation();
+      expect(isCacheEmpty()).to.equal(expectCacheClear);
+
+      // Ensure decorations are regenerated and cached.
+      vp.renderFrame();
+      expect(isCacheEmpty()).to.be.false;
+    }
+
+    it("are invalidated when always/never-drawn elements change", () => {
+      function makeIdSet(id: string): Set<string> {
+        return new Set<string>([id]);
+      }
+
+      test(false, () => {});
+
+      test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
+      // It doesn't check if the contents of the set match the previous contents.
+      test(true, () => vp.setNeverDrawn(makeIdSet("0x123")));
+      test(true, () => vp.clearNeverDrawn());
+      // No-op because never-drawn is already empty.
+      test(false, () => vp.clearNeverDrawn());
+
+      test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
+      // It doesn't check if the contents of the set match the previous contents.
+      test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123")));
+      test(true, () => vp.clearAlwaysDrawn());
+      // No-op because always-drawn is already empty
+      test(false, () => vp.clearAlwaysDrawn());
+
+      test(true, () => vp.setAlwaysDrawn(makeIdSet("0x123"), true));
+      expect(vp.isAlwaysDrawnExclusive).to.be.true;
+      test(true, () => vp.clearAlwaysDrawn());
+      expect(vp.isAlwaysDrawnExclusive).to.be.false;
+      test(false, () => vp.clearAlwaysDrawn());
+    });
+
+    it("are invalidated when symbology overrides change", () => {
+      test(true, () => vp.setFeatureOverrideProviderChanged());
+    });
+
+    it("are invalidated when excluded elements change", () => {
+      test(true, () => vp.displayStyle.settings.addExcludedElements("0x123"));
+      // It doesn't try to detect no-ops.
+      test(true, () => vp.displayStyle.settings.addExcludedElements("0x123"));
+      test(true, () => vp.displayStyle.settings.addExcludedElements("0x456"));
+      test(true, () => vp.displayStyle.settings.dropExcludedElements("0x456"));
+      test(true, () => vp.displayStyle.settings.clearExcludedElements());
+      test(true, () => vp.displayStyle.settings.clearExcludedElements());
     });
   });
 });

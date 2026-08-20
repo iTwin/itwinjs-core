@@ -31,9 +31,12 @@ export enum SchemaViewPrimitiveType {
   IGeometry = 0xa01,
 }
 
-// ClassType, ClassModifier and PropertyKind are shared EC vocabulary that now live in ECObjects,
-// alongside PrimitiveType and the other EC enums; imported here for this module's own type references.
+// ClassType, ClassModifier and PropertyKind are shared EC vocabulary that lives in ECObjects,
+// alongside PrimitiveType and the other EC enums, because the SchemaView read model and the
+// SchemaDocument authoring model both use them. Re-exported here so this module stays the one
+// import site for the SchemaView data shapes.
 // ClassModifier is an alias of ECClassModifier (same ec_Class.Modifier values) - see ECObjects.
+export { ClassModifier, ClassType, PropertyKind } from "../ECObjects";
 import { ClassModifier, ClassType, PropertyKind, StrengthDirection, StrengthType } from "../ECObjects";
 
 /** Internal storage for a schema. Schemas own contiguous ranges of classes, enums, KoQs, and categories.

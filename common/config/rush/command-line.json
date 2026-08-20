@@ -4,9 +4,9 @@
     {
       "name": "audit",
       "commandKind": "global",
-      "summary": "Runs npm audit for the entire monorepo",
-      "description": "Scans the entire monorepo for security vulnerabilities via npm audit",
-      "shellCommand": "node common/scripts/install-run-rush-pnpm.js audit --audit-level high"
+      "summary": "Runs pnpm audit for the entire monorepo",
+      "description": "Scans the entire monorepo for security vulnerabilities via pnpm audit",
+      "shellCommand": "npx -y pnpm@11.13.0 audit --audit-level high --dir common/temp"
     },
     {
       "name": "fix-copyrights",
@@ -14,6 +14,16 @@
       "summary": "Fixes whitespace-only changes caused by broken copyright linter",
       "description": "Manually runs the new copyright linter on all files changed between the current branch and master.",
       "shellCommand": "node common/scripts/copyright-linter.js --fix"
+    },
+    {
+      "name": "generate-artifacts",
+      "commandKind": "bulk",
+      "summary": "Runs package generators that produce checked-in artifacts",
+      "description": "Iterates through each package in the monorepo and runs the 'generate-artifacts' script for packages that produce checked-in generated artifacts.",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
     },
     {
       "name": "clean",
