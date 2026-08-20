@@ -658,6 +658,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     }
   }
 
+  /** Builds a provider replacement into temporary registry and spec maps, then commits them only after all async work succeeds. */
   private async _executeFormatsChangedReload(intent: Extract<ReloadIntent, { scope: "formatsChanged" }>): Promise<void> {
     const manager = IModelApp.formatsProvider as FormatsProviderManager;
     if (this._ownsFormatsProviderTransactions && !manager.isCurrentFormatsProviderReload(intent.provider, intent.providerChange))
@@ -692,6 +693,7 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       this._deferredSystemChangedEmit = { system: intent.targetUnitSystem };
   }
 
+  /** Builds active-system specs in temporary maps before replacing the currently active maps. */
   private async _executeActiveSystemReload(intent: Extract<ReloadIntent, { scope: "activeSystem" }>): Promise<void> {
     const nextFormatSpecs = new Map<QuantityTypeKey, FormatterSpec>();
     const nextParserSpecs = new Map<QuantityTypeKey, ParserSpec>();
@@ -711,10 +713,12 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
       this._deferredSystemChangedEmit = { system: intent.system };
   }
 
+  /** Only the global IModelApp.quantityFormatter owns the provider transaction; other formatters may observe the event but must not apply or roll it back. */
   private get _ownsFormatsProviderTransactions(): boolean {
     return IModelApp.quantityFormatter === this;
   }
 
+  /** Captures the last committed formatting state so a failed reload can restore usable caches. */
   private _captureFormattingState(): FormattingStateSnapshot {
     return {
       formatSpecsRegistry: this._cloneFormatSpecsRegistry(this._formatSpecsRegistry),
@@ -846,11 +850,13 @@ export class QuantityFormatter implements UnitsProvider, FormattingSpecProvider 
     const formatPropsByType = new Map<QuantityTypeDefinition, FormatProps>();
 
     // load cache for every registered QuantityType
-    for (const [_, entry] of this.quantityTypesRegistry)
+    for (const [_, entry] of this.quantityTypesRegistry) {
       formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntryAndSystem(entry, systemKey));
+    };
 
-    for (const [entry, formatProps] of formatPropsByType)
+    for (const [entry, formatProps] of formatPropsByType) {
       await this.loadFormatAndParserSpec(entry, formatProps);
+    }
   }
 
   private getFormatPropsByQuantityTypeEntryAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
