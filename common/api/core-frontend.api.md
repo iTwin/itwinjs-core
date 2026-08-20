@@ -6404,7 +6404,7 @@ export enum MapLayerSourceStatus {
 export interface MapLayerSourceValidation {
     // @beta (undocumented)
     authInfo?: MapLayerAuthenticationInfo;
-    // @beta (undocumented)
+    // @beta
     blockedOrigin?: string;
     // (undocumented)
     status: MapLayerSourceStatus;
