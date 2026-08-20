@@ -7,9 +7,9 @@
  */
 
 import { _implementationProhibited } from "../common/internal/Symbols";
-import { IModelSceneObject } from "./SceneObject";
+import { IModelSceneObject, SceneObject } from "./SceneObject";
 
-export interface SceneContent {
+export interface SceneContent extends Iterable<SceneObject> {
   readonly [_implementationProhibited]: unknown;
 
   readonly root: IModelSceneObject;

@@ -8,7 +8,7 @@
 
 import { _implementationProhibited } from "../../common/internal/Symbols";
 import { SceneContent } from "../../scene/SceneContent";
-import { IModelSceneObject } from "../../scene/SceneObject";
+import { IModelSceneObject, SceneObject } from "../../scene/SceneObject";
 import { ViewState } from "../../ViewState";
 import { iModelSceneObjectFromView } from "./SceneObjectImpl";
 
@@ -19,6 +19,11 @@ class SceneContentImpl implements SceneContent {
 
   public constructor(root: IModelSceneObject) {
     this.root = root;
+  }
+
+
+  public * [Symbol.iterator](): Iterator<SceneObject> {
+    yield this.root;
   }
 }
 

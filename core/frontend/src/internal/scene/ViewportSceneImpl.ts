@@ -8,6 +8,7 @@
 
 import { _implementationProhibited } from "../../common/internal/Symbols";
 import { SceneContent } from "../../scene/SceneContent";
+import { SceneObject } from "../../scene/SceneObject";
 import { ScenePresentation } from "../../scene/ScenePresentation";
 import { SceneVolume } from "../../scene/SceneVolume";
 import { ViewportScene } from "../../scene/ViewportScene";

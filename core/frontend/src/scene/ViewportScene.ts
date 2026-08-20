@@ -12,6 +12,7 @@ import { ScenePresentation } from "./ScenePresentation";
 import { SceneVolume } from "./SceneVolume";
 
 export interface ViewportScene {
+  /** @internal */
   readonly [_implementationProhibited]: unknown;
 
   readonly volume: SceneVolume;
