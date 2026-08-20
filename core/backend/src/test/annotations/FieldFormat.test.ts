@@ -32,8 +32,8 @@ import { withEditTxn } from "../../EditTxn";
  *
  * Most rows are twins of an earlier row rather than new behavior, so the bulk of the value here
  * is in the equivalence assertions -- they need no captured literals and fail loudly if a
- * fallback path changes. Literal expectations are layered on top for the canonical rows; see
- * EXPECTED below for how to capture the ones still outstanding.
+ * fallback path changes. Literal expectations are layered on top for every row; see EXPECTED
+ * below for how to recapture them.
  */
 
 // cspell: ignore koqs
@@ -290,8 +290,9 @@ const EQUIVALENCES: ReadonlyArray<{ readonly of: string, readonly to: string, re
 
 /**
  * Literal expectations, keyed by case id then phenomenon key, captured from a run against the
- * schema and FormatSets above. Any phenomenon omitted for a case is reported as a pending test
- * rather than silently skipped. Run with `FIELD_EXAMPLE_CAPTURE=1` to reprint this table after
+ * schema and FormatSets above. The table must cover every (case, phenomenon) pair -- the
+ * completeness guard below fails if any entry is missing, since `Fields.test.ts` no longer
+ * duplicates these rows. Run with `FIELD_EXAMPLE_CAPTURE=1` to reprint this table after
  * changing a seed value or a format.
  */
 const EXPECTED: Readonly<Record<string, Readonly<Record<string, string>>>> = {
@@ -619,11 +620,32 @@ describe("Field format resolution example", () => {
     }
   });
 
+  /**
+   * The literal table must stay complete. `Fields.test.ts` no longer duplicates the rows this
+   * file owns, so a missing EXPECTED entry would silently drop coverage -- a pending test is
+   * reported green. Fail loudly instead, unless we are capturing a fresh table.
+   */
+  it("has a literal expectation for every case and phenomenon", function () {
+    if (CAPTURE) {
+      this.skip();
+    }
+
+    const missing: string[] = [];
+    for (const testCase of CASES) {
+      for (const phenomenon of PHENOMENA) {
+        if (EXPECTED[testCase.id]?.[phenomenon.key] === undefined) {
+          missing.push(resultKey(testCase.id, phenomenon.key));
+        }
+      }
+    }
+
+    expect(missing, "EXPECTED is incomplete -- rerun with FIELD_EXAMPLE_CAPTURE=1 and paste the printed table into EXPECTED").to.deep.equal([]);
+  });
+
   describe("literal expectations", () => {
     for (const testCase of CASES) {
       const expectations = EXPECTED[testCase.id];
       const captured = PHENOMENA.filter((p) => expectations?.[p.key] !== undefined);
-      const outstanding = PHENOMENA.filter((p) => expectations?.[p.key] === undefined);
 
       if (captured.length > 0) {
         it(`case ${testCase.id}: ${testCase.title}`, () => {
@@ -632,11 +654,6 @@ describe("Field format resolution example", () => {
               .to.equal(expectations[phenomenon.key]);
           }
         });
-      }
-
-      if (outstanding.length > 0) {
-        // Pending: run with FIELD_EXAMPLE_CAPTURE=1 and paste the output into EXPECTED.
-        it(`case ${testCase.id}: ${testCase.title} [${outstanding.map((p) => p.key).join(", ")}]`);
       }
     }
   });
