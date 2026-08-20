@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IpcWebSocketFrontend } from "@itwin/core-common";
-import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { executeBackendCallback } from "./executeBackendCallback";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import { before } from "./testHooks";
+import { beforeAll } from "vitest";
 
 interface ElectronIpcApi {
   invoke(channel: string, ...args: any[]): Promise<any>;
@@ -20,7 +20,7 @@ function getElectronIpc(): ElectronIpcApi {
   return api;
 }
 
-function orderTest(it: Mocha.TestFunction, socketSource: () => { invoke(channel: string, ...args: any[]): Promise<any> }) {
+function orderTest(it: (name: string, callback: () => unknown) => unknown, socketSource: () => { invoke(channel: string, ...args: any[]): Promise<any> }) {
   async function onResponse(request: Promise<any>, responses: string[]) {
     const data = await request;
     responses.push(data[0]);
@@ -52,13 +52,13 @@ if (ProcessDetector.isElectronAppFrontend) {
   describe("IpcWebSocket", () => {
     let socket: IpcWebSocketFrontend;
 
-    before(async () => {
+    beforeAll(async () => {
       assert(await executeBackendCallback(BackendTestCallbacks.startIpcTest));
       socket = new IpcWebSocketFrontend();
     });
 
     it("should support send/receive", async () => {
-      return new Promise(async (resolve) => {
+      return new Promise<void>(async (resolve) => {
         socket.addListener("test", (_evt: Event, ...arg: any[]) => {
           assert.equal(arg[0], 4);
           assert.equal(arg[1], 5);
@@ -73,7 +73,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     it("should support invoke", async () => {
-      return new Promise(async (resolve) => {
+      return new Promise<void>(async (resolve) => {
         const invoked = await socket.invoke("testinvoke", "hi", 1, 2, 3);
         assert.equal(invoked[0], "hi");
         assert.equal(invoked[1], 1);

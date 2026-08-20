@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { executeBackendCallback } from "./executeBackendCallback";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, EmptyLocalization, RpcConfiguration } from "@itwin/core-common";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, LocalhostIpcApp } from "@itwin/core-frontend";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
@@ -57,20 +56,18 @@ function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) 
   config.attach(AttachedInterface);
 }
 
+export const configuredEnvironment = process.env.VITEST_RPC_ENVIRONMENT;
 export let currentEnvironment: string;
 
-export async function setupFrontend() {
+export async function setupFrontend(electronStartup?: () => Promise<void>) {
   currentEnvironment = await executeBackendCallback(BackendTestCallbacks.getEnvironment);
   switch (currentEnvironment) {
     case "http":
       return initializeCloud("http");
     case "electron":
-      await ElectronApp.startup({
-        iModelApp: {
-          rpcInterfaces,
-          localization: new EmptyLocalization(),
-        },
-      });
+      if (electronStartup === undefined)
+        throw new Error("Electron frontend startup was not provided.");
+      await electronStartup();
       return;
     case "websocket":
       let socketUrl = new URL(window.location.toString());

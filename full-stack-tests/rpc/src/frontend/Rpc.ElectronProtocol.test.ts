@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { executeBackendCallback } from "./executeBackendCallback";
 import { RpcProtocolEvent, RpcRequest } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { TestRpcInterface3 } from "../common/TestRpcInterface";
@@ -32,7 +32,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       const response = await client.op1(1);
       assert.equal(response, 1);
 
-      return new Promise((resolve, reject) => setTimeout(() => {
+      return new Promise<void>((resolve, reject) => setTimeout(() => {
         removeListener();
         (received === 1) ? resolve() : reject(new Error(`Received ${received} responses for 1 request`));
       }, 2000));

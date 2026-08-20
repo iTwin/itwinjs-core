@@ -11,9 +11,9 @@ import { defineConfig } from "vitest/config";
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  define: { "process.env.VITEST_RPC_ENVIRONMENT": JSON.stringify("electron") },
   resolve: {
     alias: {
-      "@itwin/certa/lib/utils/CallbackUtils": path.resolve(packageRoot, "src/frontend/vitestCallbackUtils.ts"),
       "@itwin/core-electron/lib/cjs/ElectronFrontend": path.resolve(packageRoot, "../../core/electron/src/ElectronFrontend.ts"),
       "@itwin/core-mobile/lib/cjs/MobileFrontend": path.resolve(packageRoot, "../../core/mobile/src/MobileFrontend.ts"),
     },
@@ -37,7 +37,7 @@ export default defineConfig({
   test: {
     dir: "src/frontend",
     include: ["**/*.test.ts"],
-    exclude: ["**/Mobile.test.ts", "**/Routing.test.ts", "**/Rpc.HttpProtocol.test.ts", "**/_Setup.test.ts"],
+    exclude: ["**/Mobile.test.ts", "**/Routing.test.ts", "**/security.test.ts"],
     setupFiles: [path.resolve(packageRoot, "src/frontend/vitest.setup.ts")],
     globals: true,
     testTimeout: 120000,

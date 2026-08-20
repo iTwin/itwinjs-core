@@ -2,7 +2,7 @@
   "name": "@itwin/vitest-browser-bridge",
   "version": "0.0.0",
   "private": true,
-  "description": "Internal Vitest BrowserProvider and callback transport for Electron renderer tests",
+  "description": "Internal Vitest BrowserProvider and callback transport for browser tests",
   "exports": {
     "./electron-provider": {
       "import": {
@@ -24,6 +24,16 @@
       "import": {
         "types": "./lib/esm/callbacks/browser.d.ts",
         "default": "./lib/esm/callbacks/browser.js"
+      }
+    },
+    "./callbacks/http": {
+      "import": {
+        "types": "./lib/esm/callbacks/http.d.ts",
+        "default": "./lib/esm/callbacks/http.js"
+      },
+      "require": {
+        "types": "./lib/cjs/callbacks/http.d.ts",
+        "default": "./lib/cjs/callbacks/http.js"
       }
     }
   },

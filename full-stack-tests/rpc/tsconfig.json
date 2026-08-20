@@ -2,10 +2,12 @@
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "outDir": "./lib",
+    "types": ["vitest/globals", "node"],
     "baseUrl": ".",
     "paths": {
       "@itwin/vitest-browser-bridge/callbacks/backend": ["../../tools/vitest-browser-bridge/lib/cjs/callbacks/backend.d.ts"],
-      "@itwin/vitest-browser-bridge/callbacks/browser": ["../../tools/vitest-browser-bridge/lib/esm/callbacks/browser.d.ts"]
+      "@itwin/vitest-browser-bridge/callbacks/browser": ["../../tools/vitest-browser-bridge/lib/esm/callbacks/browser.d.ts"],
+      "@itwin/vitest-browser-bridge/callbacks/http": ["../../tools/vitest-browser-bridge/lib/esm/callbacks/http.d.ts"]
     }
   },
   "include": [

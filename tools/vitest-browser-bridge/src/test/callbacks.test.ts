@@ -9,6 +9,7 @@ import {
   dispatchBackendCallback,
   registerBackendCallback,
 } from "../callbacks/backend.js";
+import { createHttpBackendCallbackInvoker } from "../callbacks/http.js";
 import { installElectronCallbackHandler } from "../callbacks/electron.js";
 import { unwrapCallbackResponse } from "../callbacks/protocol.js";
 
@@ -70,6 +71,33 @@ describe("callback transport", () => {
   it("rejects malformed callback responses at the renderer boundary", () => {
     expect(() => unwrapCallbackResponse({ ok: true })).toThrow("Invalid callback response");
     expect(() => unwrapCallbackResponse({ ok: false, error: {} })).toThrow("Invalid callback response");
+  });
+
+  it("invokes callbacks through an HTTP transport", async () => {
+    const invocations: RequestInit[] = [];
+    const invoke = createHttpBackendCallbackInvoker({
+      url: () => "http://localhost/callback",
+      fetch: async (url, init) => {
+        expect(url).toBe("http://localhost/callback");
+        invocations.push(init ?? {});
+        return new Response(JSON.stringify({ ok: true, value: 7 }));
+      },
+    });
+
+    await expect(invoke("add", 2, 5)).resolves.toBe(7);
+    expect(invocations).toEqual([{
+      method: "POST",
+      body: JSON.stringify({ name: "add", args: [2, 5] }),
+    }]);
+  });
+
+  it("unwraps callback failures through an HTTP transport", async () => {
+    const invoke = createHttpBackendCallbackInvoker({
+      url: "http://localhost/callback",
+      fetch: async () => new Response(JSON.stringify({ ok: false, error: { message: "failed" } }), { status: 500 }),
+    });
+
+    await expect(invoke("fail")).rejects.toThrow("failed");
   });
 
   it("accepts only the provider-owned WebContents and removes its handler", async () => {
