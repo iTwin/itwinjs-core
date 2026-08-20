@@ -437,10 +437,17 @@ importers:
         version: 5.6.3
 
   ../../core/ecschema-metadata:
+    dependencies:
+      sax:
+        specifier: ^1.6.0
+        version: 1.6.1
     devDependencies:
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
         version: 1.0.3
+      '@bentley/bis-core-schema':
+        specifier: ^1.0.15
+        version: 1.0.25
       '@bentley/bis-custom-attributes-schema':
         specifier: ^1.0.0
         version: 1.0.0
@@ -477,6 +484,9 @@ importers:
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
+      '@types/sax':
+        specifier: ^1.2.7
+        version: 1.2.7
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -5801,6 +5811,9 @@ packages:
 
   '@types/responselike@1.0.3':
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
+
+  '@types/sax@1.2.7':
+    resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
 
   '@types/semver@7.3.10':
     resolution: {integrity: sha512-zsv3fsC7S84NN6nPK06u79oWgrPVd0NvOyqgghV1haPaFcVxIrP4DLomRwGAXk0ui4HZA7mOcSFL98sMVW9viw==}
@@ -12116,6 +12129,10 @@ snapshots:
     dependencies:
       '@types/node': 20.17.58
 
+  '@types/sax@1.2.7':
+    dependencies:
+      '@types/node': 20.17.58
+
   '@types/semver@7.3.10': {}
 
   '@types/send@0.17.6':
@@ -12332,7 +12349,7 @@ snapshots:
       '@vitest/mocker': 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))
       playwright: 1.56.1
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -12348,7 +12365,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
       ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
@@ -12368,7 +12385,7 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
     optionalDependencies:
       '@vitest/browser': 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.10)
 
