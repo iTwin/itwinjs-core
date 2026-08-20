@@ -778,6 +778,8 @@ export class IModelApp {
       /** Lines composing the *notice* shown on the logo card, separated by line breaks and styled like [[notice]].
        * Strings are rendered as plain text — never parsed as HTML — making this the safe choice for untrusted
        * (e.g., server-provided) content such as copyright attributions; supply an `HTMLElement` for a line requiring markup.
+       * This option is intended for any caller — including applications and map-layer format extensions — that needs to
+       * display text it does not fully control; prefer it over [[notice]] unless you require raw HTML for your own trusted content.
        * Ignored if [[notice]] is defined.
        */
       noticeLines?: Array<string | HTMLElement>;
