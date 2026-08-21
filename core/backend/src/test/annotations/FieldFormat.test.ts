@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Code, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextBlock } from "@itwin/core-common";
-import { FormatDefinition } from "@itwin/core-quantity";
 import { FormatSet } from "@itwin/ecschema-metadata";
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -15,6 +14,7 @@ import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { decimalFormat, toFormatSet } from "../AnnotationTestUtils";
 import { withEditTxn } from "../../EditTxn";
 
 /**
@@ -111,20 +111,6 @@ class FieldExampleSchema extends Schema {
 // ---------------------------------------------------------------------------------------------
 // FormatSets
 // ---------------------------------------------------------------------------------------------
-
-function decimalFormat(unitName: string, unitLabel: string, precision = 4): FormatDefinition {
-  return {
-    composite: { includeZero: true, units: [{ label: unitLabel, name: unitName }] },
-    formatTraits: ["keepSingleZero", "showUnitLabel"],
-    precision,
-    type: "Decimal",
-    uomSeparator: " ",
-  };
-}
-
-function toFormatSet(name: string, formats: Record<string, FormatDefinition>): FormatSet {
-  return { name, label: name, unitSystem: "metric", formats };
-}
 
 type QuantityOptions = NonNullable<NonNullable<FieldRun["formatOptions"]>["quantity"]>;
 
