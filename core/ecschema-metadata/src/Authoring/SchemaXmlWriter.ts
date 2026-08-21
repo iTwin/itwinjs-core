@@ -7,13 +7,13 @@
  */
 
 import { formatTraitsToArray } from "@itwin/core-quantity";
-import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
+import { classModifierToString, containerTypeToString, ECClassModifier, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
 import { writeCustomAttributeXmlBody } from "./CustomAttributeConverter";
 import * as Authoring from "./SchemaDocument";
 import { parseMultiplicity } from "./SchemaDocument";
 import { ECName } from "../ECName";
 import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
-import { dialectForSpec, ECXmlDialect, synthesizeEnumeratorName } from "./SchemaXmlDialect";
+import { dialectForSpec, ECXmlDialect, formatLegacyCardinality, synthesizeEnumeratorName } from "./SchemaXmlDialect";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
@@ -21,9 +21,17 @@ import { SchemaIssueList } from "./SchemaIssues";
 const separatorPattern = /[.:]/;
 
 
-/** Serializes a {@link Authoring.SchemaDocument} to ECXML text. The document always models the latest spec;
- * the writer converts to the requested spec version at this boundary (currently only
- * {@link ECSpec.V3_2} - older specs are future work and a different writer subclass/branch).
+/** Serializes a {@link Authoring.SchemaDocument} to ECXML text, in any published spec version -
+ * 2.0, 3.0, 3.1 or 3.2. The document always models the latest spec; the writer converts at this
+ * boundary.
+ *
+ * Writing an older spec drops what that spec cannot express, and each drop is reported as a
+ * warning. 2.0 gives up the most: it has no enumerations, kinds of quantity, property categories,
+ * units or formats, and it cannot express a navigation property or a class modifier beyond
+ * abstract. Where the legacy custom attributes those constructs replaced are wanted in the output,
+ * run {@link convertToEC2CustomAttributes} over a copy of the document first - the writer never
+ * invents custom attributes on its own.
+ *
  * Problems that do not prevent producing output (an item reference whose schema is missing from
  * the reference list, a CA value too ambiguous to serialize) are reported as issues alongside
  * best-effort text; only an unsupported target spec yields no text at all.
@@ -55,18 +63,14 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
 
   /** Validates the target spec and constructs the emitter, or reports an unsupported spec and returns
    * `undefined`. Shared by the materializing and streaming entry points. */
-  private _prepare(document: Authoring.SchemaDocument, issues: SchemaIssueList, options?: SchemaWriteOptions): ECXml3Emitter | undefined {
+  private _prepare(document: Authoring.SchemaDocument, issues: SchemaIssueList, options?: SchemaWriteOptions): ECXmlEmitter | undefined {
     const spec = options?.spec ?? ECSpec.Latest;
     const dialect = dialectForSpec(spec);
     if (dialect === undefined) {
       issues.addError("SchemaXml-0001", `Unsupported target spec version "${spec as string}".`);
       return undefined;
     }
-    if (dialect.major === 2) {
-      issues.addError("SchemaXml-0001", `Writing ECXML 2.0 is not implemented yet. Its element vocabulary differs from 3.x and enumerations, kinds of quantity, and property categories have to be expressed as custom attributes.`);
-      return undefined;
-    }
-    return new ECXml3Emitter(document, issues, dialect);
+    return new ECXmlEmitter(document, issues, dialect);
   }
 }
 
@@ -170,8 +174,9 @@ function formatVersion(read: number, write: number, minor: number): string {
   return `${padVersionComponent(read)}.${padVersionComponent(write)}.${padVersionComponent(minor)}`;
 }
 
-/** Emits one document as ECXML 3.2. Created per write; holds the document and the issue list. */
-class ECXml3Emitter {
+/** Emits one document in the dialect it is given. Created per write; holds the document and the
+ * issue list. */
+class ECXmlEmitter {
   private readonly _document: Authoring.SchemaDocument;
   private readonly _issues: SchemaIssueList;
   private readonly _xml = new XmlStringBuilder();
@@ -221,8 +226,13 @@ class ECXml3Emitter {
       ["xmlns", this._dialect.namespace],
     ]);
 
-    for (const reference of doc.references)
+    for (const reference of doc.references) {
+      // Before 3.2 the Units and Formats schemas hold nothing a document of that version can point
+      // at, so native leaves the references out and a reader would fail to resolve them anyway.
+      if (!this._dialect.unitAndFormatReferences && (reference.name === "Units" || reference.name === "Formats"))
+        continue;
       this._emitSchemaReference(reference);
+    }
 
     this._emitCustomAttributes(doc.customAttributes);
 
@@ -276,9 +286,9 @@ class ECXml3Emitter {
     return `${qualifier}:${itemName}`;
   }
 
-  /** Resolves the `xmlns` of a custom attribute element: the full name (`Schema.RR.WW.mm`) of the
-   * schema defining the CA class, looked up from the reference list at emit time - the document
-   * itself never stores a version on a CA reference. */
+  /** Resolves the `xmlns` of a custom attribute element: the full name (`Schema.RR.WW.mm`, or the
+   * two-component `Schema.RR.mm` before 3.0) of the schema defining the CA class, looked up from the
+   * reference list at emit time - the document itself never stores a version on a CA reference. */
   private _customAttributeNamespace(className: string, location: string): { elementName: string, xmlns: string | undefined } {
     const separatorIndex = className.search(separatorPattern);
     if (separatorIndex < 0)
@@ -293,7 +303,7 @@ class ECXml3Emitter {
     for (const schemaReference of this._document.references) {
       const aliasMatches = schemaReference.alias !== null && schemaReference.alias.toLowerCase() === qualifierLower;
       if (schemaReference.name.toLowerCase() === qualifierLower || aliasMatches)
-        return { elementName, xmlns: `${schemaReference.name}.${formatVersion(schemaReference.readVersion, schemaReference.writeVersion, schemaReference.minorVersion)}` };
+        return { elementName, xmlns: `${schemaReference.name}.${this._formatNamespaceVersion(schemaReference.readVersion, schemaReference.writeVersion, schemaReference.minorVersion)}` };
     }
 
     this._issues.addWarning("SchemaXml-0005",
@@ -305,9 +315,16 @@ class ECXml3Emitter {
     return { elementName, xmlns: qualifier };
   }
 
+  /** The version inside a custom attribute instance's `xmlns`. 2.0 carries `RR.mm`. */
+  private _formatNamespaceVersion(read: number, write: number, minor: number): string {
+    return this._dialect.legacyCustomAttributeNamespace
+      ? `${padVersionComponent(read)}.${padVersionComponent(minor)}`
+      : formatVersion(read, write, minor);
+  }
+
   private _ownNamespace(): string {
     const doc = this._document;
-    return `${doc.name}.${formatVersion(doc.readVersion, doc.writeVersion, doc.minorVersion)}`;
+    return `${doc.name}.${this._formatNamespaceVersion(doc.readVersion, doc.writeVersion, doc.minorVersion)}`;
   }
 
   /** Emits an `<ECCustomAttributes>` container. `synthesized` carries spec-mandated CA instances the
@@ -349,22 +366,68 @@ class ECXml3Emitter {
     if (item.isMixin())
       return this._emitMixin(item);
     if (item.isStruct())
-      return this._emitClass("ECStructClass", item, []);
-    if (item.isCustomAttribute())
-      return this._emitClass("ECCustomAttributeClass", item, [["appliesTo", containerTypeToString(item.appliesTo)]]);
+      return this._emitClass(this._classElementName("ECStructClass"), item, []);
+    if (item.isCustomAttribute()) {
+      // 2.0 has no appliesTo on a class; native drops it and reads such a class as applying to anything.
+      const appliesTo: XmlAttribute[] = this._dialect.classElements === "typed" ? [["appliesTo", containerTypeToString(item.appliesTo)]] : [];
+      return this._emitClass(this._classElementName("ECCustomAttributeClass"), item, appliesTo);
+    }
     if (item.isRelationship())
       return this._emitRelationshipClass(item);
     switch (item.schemaItemType) {
-      case SchemaItemType.Enumeration: return this._emitEnumeration(item);
-      case SchemaItemType.KindOfQuantity: return this._emitKindOfQuantity(item);
-      case SchemaItemType.PropertyCategory: return this._emitPropertyCategory(item);
-      case SchemaItemType.UnitSystem: return this._emitSimpleItem("UnitSystem", item, []);
-      case SchemaItemType.Phenomenon: return this._emitSimpleItem("Phenomenon", item, [["definition", item.definition]]);
-      case SchemaItemType.Unit: return this._emitUnit(item);
-      case SchemaItemType.InvertedUnit: return this._emitInvertedUnit(item);
-      case SchemaItemType.Constant: return this._emitConstant(item);
-      case SchemaItemType.Format: return this._emitFormat(item);
+      case SchemaItemType.Enumeration:
+        return this._dialect.enumerationItems ? this._emitEnumeration(item) : this._dropItem(item, "enumerations");
+      case SchemaItemType.KindOfQuantity:
+        return this._dialect.kindOfQuantityItems ? this._emitKindOfQuantity(item) : this._dropItem(item, "kinds of quantity");
+      case SchemaItemType.PropertyCategory:
+        return this._dialect.propertyCategoryItems ? this._emitPropertyCategory(item) : this._dropItem(item, "property categories");
+      case SchemaItemType.UnitSystem:
+        return this._dialect.unitAndFormatItems ? this._emitSimpleItem("UnitSystem", item, []) : this._dropItem(item, "unit systems");
+      case SchemaItemType.Phenomenon:
+        return this._dialect.unitAndFormatItems ? this._emitSimpleItem("Phenomenon", item, [["definition", item.definition]]) : this._dropItem(item, "phenomena");
+      case SchemaItemType.Unit:
+        return this._dialect.unitAndFormatItems ? this._emitUnit(item) : this._dropItem(item, "units");
+      case SchemaItemType.InvertedUnit:
+        return this._dialect.unitAndFormatItems ? this._emitInvertedUnit(item) : this._dropItem(item, "inverted units");
+      case SchemaItemType.Constant:
+        return this._dialect.unitAndFormatItems ? this._emitConstant(item) : this._dropItem(item, "constants");
+      case SchemaItemType.Format:
+        return this._dialect.unitAndFormatItems ? this._emitFormat(item) : this._dropItem(item, "formats");
     }
+  }
+
+  /** Reports an item the target spec has no element for. The output stays readable, which is what a
+   * downgrade is for, but the item is gone - so it is never silent. */
+  private _dropItem(item: Authoring.SchemaItem, plural: string): void {
+    this._issues.addWarning("SchemaXml-0064",
+      `ECXML ${this._dialect.spec} has no ${plural}, so "${item.name}" was dropped.`,
+      { location: `${this._document.name}:${item.name}` });
+  }
+
+  /** 2.0 has one `ECClass` element carrying type flags where 3.x has three typed elements. */
+  private _classElementName(typedName: string): string {
+    return this._dialect.classElements === "typed" ? typedName : "ECClass";
+  }
+
+  /** The class kind attributes: `modifier` from 3.0, the `isStruct` / `isCustomAttributeClass` /
+   * `isDomainClass` flag triple at 2.0. The flags carry less than the modifier does - a sealed class
+   * is indistinguishable from a plain one - so the loss is reported. */
+  private _classKindAttributes(item: Authoring.AnyClass, kind: "entity" | "struct" | "customAttribute" | "relationship"): XmlAttribute[] {
+    if (this._dialect.classElements === "typed")
+      return [["modifier", item.modifier === undefined ? undefined : classModifierToString(item.modifier)]];
+
+    if (item.modifier === ECClassModifier.Sealed) {
+      this._issues.addWarning("SchemaXml-0065",
+        `ECXML ${this._dialect.spec} cannot express a sealed class, so the modifier of "${item.name}" was dropped.`,
+        { location: `${this._document.name}:${item.name}` });
+    }
+    const isStruct = kind === "struct";
+    const isCustomAttribute = kind === "customAttribute";
+    return [
+      ["isStruct", isStruct],
+      ["isCustomAttributeClass", isCustomAttribute],
+      ["isDomainClass", item.modifier !== ECClassModifier.Abstract && !isStruct && !isCustomAttribute],
+    ];
   }
 
   private _itemHeaderAttributes(item: Authoring.SchemaItem): XmlAttribute[] {
@@ -375,12 +438,9 @@ class ECXml3Emitter {
     ];
   }
 
-  private _modifierAttribute(item: Authoring.AnyClass): XmlAttribute {
-    return ["modifier", item.modifier === undefined ? undefined : classModifierToString(item.modifier)];
-  }
-
   private _emitEntityClass(item: Authoring.EntityClass): void {
-    this._xml.openElement("ECEntityClass", [...this._itemHeaderAttributes(item), this._modifierAttribute(item)]);
+    const elementName = this._classElementName("ECEntityClass");
+    this._xml.openElement(elementName, [...this._itemHeaderAttributes(item), ...this._classKindAttributes(item, "entity")]);
     // The entity base class comes first, then the applied mixins - the order ECXML mandates.
     if (item.baseClass !== undefined)
       this._xml.textElement("BaseClass", this._toXmlItemReference(item.baseClass, item.name));
@@ -388,12 +448,13 @@ class ECXml3Emitter {
       this._xml.textElement("BaseClass", this._toXmlItemReference(mixin, item.name));
     this._emitCustomAttributes(item.customAttributes, item.name);
     this._emitProperties(item);
-    this._xml.closeElement("ECEntityClass");
+    this._xml.closeElement(elementName);
   }
 
   private _emitMixin(item: Authoring.Mixin): void {
-    // ECXML 3.2 has no first-class mixin: it is an entity class carrying the IsMixin custom attribute.
-    this._xml.openElement("ECEntityClass", [...this._itemHeaderAttributes(item), this._modifierAttribute(item)]);
+    // No ECXML version has a first-class mixin: it is an entity class carrying the IsMixin custom attribute.
+    const elementName = this._classElementName("ECEntityClass");
+    this._xml.openElement(elementName, [...this._itemHeaderAttributes(item), ...this._classKindAttributes(item, "entity")]);
     if (item.baseClass !== undefined)
       this._xml.textElement("BaseClass", this._toXmlItemReference(item.baseClass, item.name));
     this._emitCustomAttributes(item.customAttributes, item.name, () => {
@@ -404,18 +465,19 @@ class ECXml3Emitter {
           { location: item.name });
       }
       const xmlns = coreCa !== undefined
-        ? `CoreCustomAttributes.${formatVersion(coreCa.readVersion, coreCa.writeVersion, coreCa.minorVersion)}`
-        : "CoreCustomAttributes.01.00.00";
+        ? `CoreCustomAttributes.${this._formatNamespaceVersion(coreCa.readVersion, coreCa.writeVersion, coreCa.minorVersion)}`
+        : `CoreCustomAttributes.${this._formatNamespaceVersion(1, 0, 0)}`;
       this._xml.openElement("IsMixin", [["xmlns", xmlns]]);
       this._xml.textElement("AppliesToEntityClass", this._toXmlItemReference(item.appliesTo, item.name));
       this._xml.closeElement("IsMixin");
     });
     this._emitProperties(item);
-    this._xml.closeElement("ECEntityClass");
+    this._xml.closeElement(elementName);
   }
 
   private _emitClass(elementName: string, item: Authoring.AnyClass, extraAttributes: XmlAttribute[]): void {
-    this._xml.openElement(elementName, [...this._itemHeaderAttributes(item), this._modifierAttribute(item), ...extraAttributes]);
+    const kind = item.isStruct() ? "struct" : "customAttribute";
+    this._xml.openElement(elementName, [...this._itemHeaderAttributes(item), ...this._classKindAttributes(item, kind), ...extraAttributes]);
     if (item.baseClass !== undefined)
       this._xml.textElement("BaseClass", this._toXmlItemReference(item.baseClass, item.name));
     this._emitCustomAttributes(item.customAttributes, item.name);
@@ -424,11 +486,14 @@ class ECXml3Emitter {
   }
 
   private _emitRelationshipClass(item: Authoring.RelationshipClass): void {
+    // ECXML 3.1+ requires the modifier attribute on relationship classes (it is optional elsewhere),
+    // so emit it unconditionally, falling back to the spec default when the document leaves it absent.
+    const kindAttributes: XmlAttribute[] = this._dialect.classElements === "typed"
+      ? [["modifier", classModifierToString(item.modifier ?? Authoring.SpecDefaults.classModifier)]]
+      : this._classKindAttributes(item, "relationship");
     this._xml.openElement("ECRelationshipClass", [
       ...this._itemHeaderAttributes(item),
-      // ECXML 3.1+ requires the modifier attribute on relationship classes (it is optional elsewhere),
-      // so emit it unconditionally, falling back to the spec default when the document leaves it absent.
-      ["modifier", classModifierToString(item.modifier ?? Authoring.SpecDefaults.classModifier)],
+      ...kindAttributes,
       ["strength", item.strength === undefined ? undefined : strengthToString(item.strength)],
       ["strengthDirection", item.strengthDirection === undefined ? undefined : strengthDirectionToString(item.strengthDirection)],
     ]);
@@ -463,22 +528,38 @@ class ECXml3Emitter {
   }
 
   private _commonPropertyAttributes(property: Authoring.AnyProperty, location: string): XmlAttribute[] {
+    // Property categories and priorities arrived in 3.1, the kindOfQuantity attribute in 3.0.
+    const categories = this._dialect.propertyCategoryItems;
     return [
       ["propertyName", property.name],
       ["displayLabel", property.label],
       ["description", property.description],
       ["readOnly", property.isReadOnly],
-      ["priority", property.priority],
-      ["category", property.category !== undefined ? this._toXmlItemReference(property.category, location) : undefined],
-      ["kindOfQuantity", property.kindOfQuantity !== undefined ? this._toXmlItemReference(property.kindOfQuantity, location) : undefined],
+      ["priority", categories ? property.priority : undefined],
+      ["category", categories && property.category !== undefined ? this._toXmlItemReference(property.category, location) : undefined],
+      ["kindOfQuantity", this._dialect.kindOfQuantityAttribute && property.kindOfQuantity !== undefined ? this._toXmlItemReference(property.kindOfQuantity, location) : undefined],
     ];
   }
 
   /** A property's `typeName` is a primitive keyword (emitted as-is) or an item reference (converted
    * to the alias-qualified XML form). The primitive keywords are a closed set, so the distinction
-   * is a lexical check. */
+   * is a lexical check.
+   *
+   * A spec without enumerations gets the enumeration's backing primitive instead, which is what
+   * native writes; the set of allowed values is lost with it. */
   private _propertyTypeName(typeName: string, location: string): string {
-    return parsePrimitiveType(typeName) !== undefined ? typeName : this._toXmlItemReference(typeName, location);
+    if (parsePrimitiveType(typeName) !== undefined)
+      return typeName;
+    if (!this._dialect.enumerationBackedProperties) {
+      const enumeration = this._document.resolveItemOfType(typeName, SchemaItemType.Enumeration);
+      if (enumeration !== undefined) {
+        this._issues.addWarning("SchemaXml-0066",
+          `ECXML ${this._dialect.spec} has no enumerations, so "${location}" was written as its backing ${enumeration.backingType} and its allowed values were dropped.`,
+          { location });
+        return enumeration.backingType;
+      }
+    }
+    return this._toXmlItemReference(typeName, location);
   }
 
   private _emitProperty(property: Authoring.AnyProperty, className: string): void {
@@ -488,19 +569,32 @@ class ECXml3Emitter {
     let elementName: string;
     let attributes: XmlAttribute[];
     if (property.isNavigation()) {
-      elementName = "ECNavigationProperty";
-      attributes = [
-        common[0],
-        ["relationshipName", this._toXmlItemReference(property.relationshipName, location)],
-        ["direction", strengthDirectionToString(property.direction)],
-        ...common.slice(1),
-      ];
+      if (this._dialect.navigationProperties) {
+        elementName = "ECNavigationProperty";
+        attributes = [
+          common[0],
+          ["relationshipName", this._toXmlItemReference(property.relationshipName, location)],
+          ["direction", strengthDirectionToString(property.direction)],
+          ...common.slice(1),
+        ];
+      } else {
+        // 2.0 has no navigation property. Native writes the backing long instead of dropping the
+        // property, so the instance data still has somewhere to live; the relationship is lost.
+        this._issues.addWarning("SchemaXml-0067",
+          `ECXML ${this._dialect.spec} has no navigation properties, so "${location}" was written as a long and its relationship was dropped.`,
+          { location });
+        elementName = "ECProperty";
+        attributes = [common[0], ["typeName", "long"], ...common.slice(1)];
+      }
     } else if (property.isStruct()) {
-      elementName = property.isArray() ? "ECStructArrayProperty" : "ECStructProperty";
+      const isLegacyStructArray = property.isArray() && !this._dialect.structArrayElement;
+      elementName = property.isArray() ? (this._dialect.structArrayElement ? "ECStructArrayProperty" : "ECArrayProperty") : "ECStructProperty";
       attributes = [
         common[0],
         ["typeName", this._toXmlItemReference(property.typeName, location)],
         ...common.slice(1),
+        // Before 3.0 a struct array is an ECArrayProperty flagged isStruct.
+        ["isStruct", isLegacyStructArray ? true : undefined],
         ...this._occursAttributes(property),
       ];
     } else {
@@ -544,9 +638,7 @@ class ECXml3Emitter {
     if (this._dialect.constraintBoundsAttribute === "multiplicity")
       return multiplicity;
     const bounds = parseMultiplicity(multiplicity);
-    if (bounds === undefined)
-      return multiplicity;
-    return `(${bounds.lowerLimit},${bounds.upperLimit ?? "N"})`;
+    return bounds === undefined ? multiplicity : formatLegacyCardinality(bounds);
   }
 
   private _emitEnumeration(item: Authoring.Enumeration): void {

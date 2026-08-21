@@ -16,12 +16,11 @@ import { ECSpec } from "./SchemaDocumentIO";
  * It is also the answer to the shape native ended up with, where the same decisions are ~32
  * conditionals spread through a shared writer and are correspondingly hard to follow.
  *
- * The 3.x versions are covered by this table alone. **ECXML 2.0 is not**: its element vocabulary
- * genuinely differs (one `ECClass` element with type flags rather than three typed elements) and it
- * expresses enumerations, kinds of quantity, and property categories as custom attributes, so it
- * needs its own reader and writer. `dialectV20` still exists, because the pieces 2.0 *does* share
- * are worth sharing, but the switches marked below as 2.0-only are what its dedicated
- * implementation acts on.
+ * All four versions are covered by this table. ECXML 2.0 needs the most switches - one `ECClass`
+ * element carrying type flags rather than three typed elements, no first-class enumerations, kinds
+ * of quantity, or property categories - but the walk and the emit are still one implementation each,
+ * reading the switches. Turning legacy custom attributes into the first-class items 2.0 lacks, and
+ * back, is a separate opt-in pass (`SchemaEC2Conversion`), not something a reader or writer does.
  * @internal
  */
 export interface ECXmlDialect {
@@ -38,11 +37,17 @@ export interface ECXmlDialect {
   readonly requiresThreeComponentVersion: boolean;
   /** How many components a version string is written with. */
   readonly versionComponents: 2 | 3;
+  /** Whether a missing or unparseable schema version is an error. Before 3.1 it is optional and
+   * published legacy schemas do omit it; native reads those as `01.00.00`. */
+  readonly requiresVersion: boolean;
 
   /** Attribute naming the schema's own alias on `ECSchema`. */
   readonly schemaAliasAttribute: "alias" | "nameSpacePrefix";
   /** Attribute naming a reference's alias on `ECSchemaReference`. */
   readonly referenceAliasAttribute: "alias" | "prefix";
+  /** Whether a missing schema alias falls back to the schema name rather than being reported. The
+   * `nameSpacePrefix` versions treat it as optional; 3.1 and later require it. */
+  readonly aliasDefaultsToSchemaName: boolean;
 
   /** Whether classes are three typed elements (`ECEntityClass` / `ECStructClass` /
    * `ECCustomAttributeClass`) or one `ECClass` carrying boolean type flags. 2.0 only. */
@@ -54,6 +59,11 @@ export interface ECXmlDialect {
   readonly navigationProperties: boolean;
   /** Casing of the primitive range attributes: 2.0 wrote `MinimumValue` / `MaximumValue`. */
   readonly rangeAttributes: "camelCase" | "PascalCase";
+  /** Whether a property may name an enumeration as its `typeName`. 2.0 has no enumerations, so the
+   * writer emits the enumeration's backing primitive instead and the allowed values are lost. */
+  readonly enumerationBackedProperties: boolean;
+  /** Whether a property carries the `kindOfQuantity` attribute. 3.0 and later. */
+  readonly kindOfQuantityAttribute: boolean;
 
   /** Relationship endpoint bounds: the attribute name and the spelling of an unbounded upper limit.
    * 2.0 and 3.0 write `cardinality="(0,N)"`; 3.1 and later write `multiplicity="(0..*)"`. */
@@ -83,6 +93,13 @@ export interface ECXmlDialect {
    * `UnitSystem`, `Format`) are serialized at all. 3.2 only; before that a KindOfQuantity refers to
    * the legacy `Units` and `Formats` schemas through FUS descriptor strings. */
   readonly unitAndFormatItems: boolean;
+  /** Whether references to the `Units` and `Formats` schemas are emitted. Before 3.2 those schemas
+   * have no items to point at, so native skips the references and so does this writer. */
+  readonly unitAndFormatReferences: boolean;
+
+  /** Whether a custom attribute instance's `xmlns` carries the two-component legacy version
+   * (`Schema.RR.mm`) rather than `Schema.RR.WW.mm`. 2.0 only. */
+  readonly legacyCustomAttributeNamespace: boolean;
 }
 
 const ECXML_NAMESPACE_BASE = "http://www.bentley.com/schemas/Bentley.ECXML";
@@ -95,12 +112,16 @@ export const dialectV32: ECXmlDialect = Object.freeze({
   namespace: `${ECXML_NAMESPACE_BASE}.3.2`,
   requiresThreeComponentVersion: true,
   versionComponents: 3,
+  requiresVersion: true,
   schemaAliasAttribute: "alias",
   referenceAliasAttribute: "alias",
+  aliasDefaultsToSchemaName: false,
   classElements: "typed",
   structArrayElement: true,
   navigationProperties: true,
   rangeAttributes: "camelCase",
+  enumerationBackedProperties: true,
+  kindOfQuantityAttribute: true,
   constraintBoundsAttribute: "multiplicity",
   strictMultiplicityGrammar: true,
   abstractConstraint: true,
@@ -110,6 +131,8 @@ export const dialectV32: ECXmlDialect = Object.freeze({
   kindOfQuantityItems: true,
   propertyCategoryItems: true,
   unitAndFormatItems: true,
+  unitAndFormatReferences: true,
+  legacyCustomAttributeNamespace: false,
 });
 
 /** ECXML 3.1 - 3.2 without explicit enumerator names, without the unit and format item kinds, and
@@ -126,6 +149,7 @@ export const dialectV31: ECXmlDialect = Object.freeze({
   enumeratorNames: false,
   enumerationStrictAttribute: "strict",
   unitAndFormatItems: false,
+  unitAndFormatReferences: false,
 });
 
 /** ECXML 3.0 - 3.1 with the pre-alias attribute names, the pre-multiplicity endpoint spelling, and
@@ -138,13 +162,16 @@ export const dialectV30: ECXmlDialect = Object.freeze({
   namespace: `${ECXML_NAMESPACE_BASE}.3.0`,
   schemaAliasAttribute: "nameSpacePrefix",
   referenceAliasAttribute: "prefix",
+  aliasDefaultsToSchemaName: true,
+  requiresVersion: false,
   constraintBoundsAttribute: "cardinality",
   abstractConstraint: false,
   propertyCategoryItems: false,
 });
 
-/** ECXML 2.0 - the legacy vocabulary. Handled by its own reader and writer; this entry supplies the
- * shared switches and identifies the namespace.
+/** ECXML 2.0 - the legacy vocabulary: one `ECClass` element carrying type flags, struct arrays as a
+ * flag on `ECArrayProperty`, no navigation properties, and no first-class enumerations, kinds of
+ * quantity, or property categories.
  * @internal */
 export const dialectV20: ECXmlDialect = Object.freeze({
   ...dialectV30,
@@ -155,8 +182,11 @@ export const dialectV20: ECXmlDialect = Object.freeze({
   structArrayElement: false,
   navigationProperties: false,
   rangeAttributes: "PascalCase",
+  enumerationBackedProperties: false,
+  kindOfQuantityAttribute: false,
   enumerationItems: false,
   kindOfQuantityItems: false,
+  legacyCustomAttributeNamespace: true,
 });
 
 /** Every dialect, newest first. @internal */
@@ -188,4 +218,39 @@ export const ECXML_NAMESPACE_PATTERN = /Bentley\.ECXML\.(\d+)\.(\d+)$/;
  * @internal */
 export function synthesizeEnumeratorName(enumerationName: string, value: string | number): string {
   return typeof value === "string" ? value : `${enumerationName}${value}`;
+}
+
+/** Reads the legacy `cardinality` spelling ECXML 2.0 and 3.0 use for relationship endpoint bounds
+ * into the `(lo..hi)` form the document stores. `N` and an omitted upper bound both mean unbounded.
+ *
+ * Native's parser is deliberately forgiving here, and this matches it: published legacy schemas
+ * carry `(0,N)`, `(5)`, `1`, `unbounded`, and worse. Anything it cannot make sense of comes back
+ * `undefined` and the caller keeps the source text for validation to report.
+ * @internal */
+export function parseLegacyCardinality(cardinality: string): string | undefined {
+  const text = cardinality.replace(/\s/g, "");
+  if (text.length === 0)
+    return undefined;
+  if (text === "1")
+    return "(1..1)";
+  if (/^(n|unbounded)$/i.test(text))
+    return "(0..*)";
+
+  if (text.startsWith("(")) {
+    const bounded = /^\((\d+)(?:[,.]+(\d+|[nN*]))?/.exec(text);
+    if (bounded === null)
+      return undefined;
+    const upper = bounded[2];
+    return `(${bounded[1]}..${upper === undefined || /^[nN*]$/.test(upper) ? "*" : upper})`;
+  }
+
+  const lowerOnly = /^(\d+)/.exec(text);
+  return lowerOnly === null ? undefined : `(0..${lowerOnly[1]})`;
+}
+
+/** Writes `(lo..hi)` back to the legacy `cardinality` spelling, which separates with a comma and
+ * spells unbounded `N`.
+ * @internal */
+export function formatLegacyCardinality(bounds: { lowerLimit: number, upperLimit?: number }): string {
+  return `(${bounds.lowerLimit},${bounds.upperLimit ?? "N"})`;
 }

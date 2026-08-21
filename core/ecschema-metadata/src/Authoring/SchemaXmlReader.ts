@@ -9,7 +9,8 @@
 import * as sax from "sax";
 import { parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption } from "@itwin/core-quantity";
 import {
-  parseClassModifier, parseCustomAttributeContainerType, parsePrimitiveType, parseStrength, parseStrengthDirection, PrimitiveType,
+  ECClassModifier, parseClassModifier, parseCustomAttributeContainerType, parsePrimitiveType, parseStrength, parseStrengthDirection,
+  PrimitiveType, SchemaItemType,
 } from "../ECObjects";
 import { ECName } from "../ECName";
 import { serializeCustomAttributeBody } from "./CustomAttributeConverter";
@@ -17,17 +18,23 @@ import * as Authoring from "./SchemaDocument";
 import {
   decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
 } from "./SchemaDocumentIO";
-import { dialectForNamespace, dialectV32, ECXmlDialect, synthesizeEnumeratorName } from "./SchemaXmlDialect";
+import { dialectForNamespace, dialectV32, ECXmlDialect, parseLegacyCardinality, synthesizeEnumeratorName } from "./SchemaXmlDialect";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
  * allocates a new RegExp on every evaluation, and this runs per reference. */
 const separatorPattern = /[.:]/;
 
-/** Reads {@link Authoring.SchemaDocument}s from ECXML text. Accepts any ECXML 3.x source (3.0 and 3.1 are
- * close subsets of 3.2) and records the source spec version on the document
- * ({@link Authoring.SchemaDocument.originalECXmlVersionMajor}); EC 2.0 is a substantially different format
- * and is rejected until a dedicated reader exists.
+/** Reads {@link Authoring.SchemaDocument}s from ECXML text. Accepts every published ECXML version -
+ * 2.0, 3.0, 3.1 and 3.2 - detecting which from the namespace and recording it on the document
+ * ({@link Authoring.SchemaDocument.originalECXmlVersionMajor}).
+ *
+ * Reading 2.0 performs the lossless structural upgrade only: the element vocabulary, the attribute
+ * renames, and `cardinality` to `multiplicity`. The legacy custom attributes 2.0 uses in place of
+ * enumerations, kinds of quantity, and property categories are read as ordinary custom attributes
+ * and stay that way. Turning them into first-class items is a separate opt-in pass
+ * ({@link convertEC2CustomAttributes}), because that conversion is lossy and a caller has to be
+ * able to decline it.
  *
  * The reader is as lenient as the validity-free document allows: it reports problems as issues and
  * keeps whatever it could extract, leaving semantic judgment to validation. Custom attribute
@@ -50,11 +57,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
       issues.addError("SchemaXml-0014", `The ECSchema element has a missing or unrecognized xmlns ("${root.attributes?.xmlns ?? ""}").`, { source: options?.source, line: root.line, column: root.column });
       return { issues };
     }
-    if (dialect.major === 2) {
-      issues.addError("SchemaXml-0015", `Reading ECXML 2.0 is not implemented yet. Its element vocabulary differs from 3.x (one ECClass element with type flags, no ECStructArrayProperty, no ECNavigationProperty) and it expresses enumerations, kinds of quantity, and property categories as custom attributes.`, { source: options?.source, line: root.line, column: root.column });
-      return { issues };
-    }
-    const walker = new ECXml3Walker(issues, options?.source, options?.schemaSet, dialect);
+    const walker = new ECXmlWalker(issues, options?.source, options?.schemaSet, dialect);
     return { document: walker.readSchema(root), issues };
   }
 
@@ -90,8 +93,8 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
         }
         name = attributes.schemaName;
         dialect = dialectForNamespace(attributes.xmlns) ?? dialectV32;
-        alias = attributes[dialect.schemaAliasAttribute];
-        version = parseVersionString(attributes.version);
+        alias = attributes[dialect.schemaAliasAttribute] ?? (dialect.aliasDefaultsToSchemaName ? name : undefined);
+        version = parseVersionString(attributes.version) ?? (dialect.requiresVersion ? undefined : { read: 1, write: 0, minor: 0 });
         return;
       }
       if (depth === 2) {
@@ -210,14 +213,24 @@ const ITEM_ELEMENT_NAMES = new Set([
   "kindofquantity", "propertycategory", "unitsystem", "phenomenon", "unit", "invertedunit", "constant", "format",
 ]);
 
-/** Walks a parsed element tree into a Authoring.SchemaDocument. Created per read. */
-class ECXml3Walker {
+/** The one class element ECXML 2.0 has in place of the three typed ones, plus the relationship
+ * element it shares with 3.x. */
+const LEGACY_CLASS_ELEMENT = "ecclass";
+
+/** Walks a parsed element tree into a Authoring.SchemaDocument. Created per read; the dialect it is
+ * given carries every difference between the spec versions. */
+class ECXmlWalker {
   private readonly _issues: SchemaIssueList;
   private readonly _source: string | undefined;
   private readonly _schemaSet: Authoring.SchemaSet | undefined;
   protected readonly _dialect: ECXmlDialect;
   /** Lowercased reference alias -> schema name, for normalizing alias-qualified references. */
   private readonly _aliasToSchemaName = new Map<string, string>();
+  /** Lowercased names of the classes this document declares as structs. ECXML 2.0 marks a struct
+   * array with `isStruct` on `ECArrayProperty`, but native ignores that flag and classifies from
+   * whether the `typeName` names a struct class - so this collects the answer before any property
+   * is read. Empty for 3.x, which has a dedicated element. */
+  private readonly _localStructClassNames = new Set<string>();
   private _documentInProgress?: Authoring.SchemaDocument;
 
   public constructor(issues: SchemaIssueList, source: string | undefined, schemaSet: Authoring.SchemaSet | undefined, dialect: ECXmlDialect) {
@@ -259,14 +272,19 @@ class ECXml3Walker {
     const specMajor = this._dialect.major;
     const specMinor = this._dialect.minor;
     const name = root.attributes.schemaName;
-    const alias = root.attributes[this._dialect.schemaAliasAttribute];
-    const version = parseVersionString(root.attributes.version);
+    let alias = root.attributes[this._dialect.schemaAliasAttribute];
+    const version = this._readSchemaVersion(root);
     if (name === undefined || version === undefined) {
       this._error("SchemaXml-0012", "The ECSchema element is missing its schemaName or a parseable version.", root);
       return undefined;
     }
-    if (alias === undefined)
-      this._error("SchemaXml-0016", `The schema "${name}" is missing the required ${this._dialect.schemaAliasAttribute} attribute.`, root);
+    if (alias === undefined) {
+      // Before 3.1 the alias is optional and defaults to the schema name.
+      if (this._dialect.aliasDefaultsToSchemaName)
+        alias = name;
+      else
+        this._error("SchemaXml-0016", `The schema "${name}" is missing the required ${this._dialect.schemaAliasAttribute} attribute.`, root);
+    }
 
     const document = new Authoring.SchemaDocument(name, alias ?? "", version.read, version.write, version.minor, {
       label: root.attributes.displayLabel,
@@ -291,6 +309,9 @@ class ECXml3Walker {
       }
     }
 
+    if (this._dialect.classElements === "flagged")
+      this._collectLegacyStructClassNames(root);
+
     for (const child of root.children) {
       const childName = child.name.toLowerCase();
       if (childName === "ecschemareference")
@@ -299,7 +320,7 @@ class ECXml3Walker {
         this.readCustomAttributes(child, document.customAttributes, document.name);
         continue;
       }
-      if (ITEM_ELEMENT_NAMES.has(childName)) {
+      if (ITEM_ELEMENT_NAMES.has(childName) || (childName === LEGACY_CLASS_ELEMENT && this._dialect.classElements === "flagged")) {
         this.readItem(child);
         continue;
       }
@@ -309,10 +330,28 @@ class ECXml3Walker {
     return document;
   }
 
+  private _collectLegacyStructClassNames(root: XmlElementNode): void {
+    for (const child of root.children) {
+      if (child.name.toLowerCase() === LEGACY_CLASS_ELEMENT && this.parseBooleanAttribute(child, "isStruct") === true && child.attributes.typeName !== undefined)
+        this._localStructClassNames.add(child.attributes.typeName.toLowerCase());
+    }
+  }
+
+  /** The schema's own version. Before 3.1 it is optional, and published legacy schemas do leave it
+   * out or misspell it, so the spec default is used and the source text reported. */
+  private _readSchemaVersion(root: XmlElementNode): { read: number, write: number, minor: number } | undefined {
+    const version = parseVersionString(root.attributes.version);
+    if (version !== undefined || this._dialect.requiresVersion)
+      return version;
+    this._warning("SchemaXml-0068", `The schema "${root.attributes.schemaName ?? ""}" has a missing or unparseable version ("${root.attributes.version ?? ""}"); it was read as 01.00.00.`, root);
+    return { read: 1, write: 0, minor: 0 };
+  }
+
   // ===== Item dispatch =====
 
   private readItem(node: XmlElementNode): void {
     switch (node.name.toLowerCase()) {
+      case LEGACY_CLASS_ELEMENT: return this.readLegacyClass(node);
       case "ecentityclass": return this.readEntityOrMixin(node);
       case "ecstructclass": return this.readStructClass(node);
       case "eccustomattributeclass": return this.readCustomAttributeClass(node);
@@ -329,6 +368,22 @@ class ECXml3Walker {
     }
   }
 
+  /** Reads the ECXML 2.0 `ECClass` element, whose kind is carried by boolean flags rather than by
+   * the element name. `isStruct` wins over `isCustomAttributeClass`, which wins over entity - the
+   * precedence native applies, and the reason a class flagged both is not ambiguous. */
+  private readLegacyClass(node: XmlElementNode): void {
+    const isStruct = this.parseBooleanAttribute(node, "isStruct") ?? false;
+    const isCustomAttribute = this.parseBooleanAttribute(node, "isCustomAttributeClass") ?? false;
+    if (isStruct) {
+      if (isCustomAttribute)
+        this._warning("SchemaXml-0062", `The class "${node.attributes.typeName ?? ""}" is flagged both isStruct and isCustomAttributeClass; it was read as a struct class.`, node);
+      return this.readStructClass(node);
+    }
+    if (isCustomAttribute)
+      return this.readCustomAttributeClass(node);
+    return this.readEntityOrMixin(node);
+  }
+
   private itemName(node: XmlElementNode): string | undefined {
     const name = node.attributes.typeName;
     if (name === undefined)
@@ -342,6 +397,11 @@ class ECXml3Walker {
 
   private classInit(node: XmlElementNode, baseClasses: Authoring.LocalOrFullName[]): Authoring.ClassInit {
     const init: Authoring.ClassInit = this.itemInit(node);
+    // ECXML 2.0 has no modifier attribute: a class is abstract when it claims to be none of the
+    // three kinds, sealed when isFinal says so, and plain otherwise. Native still honours an
+    // explicit modifier if one is present, so it is read afterwards and wins.
+    if (this._dialect.classElements === "flagged")
+      init.modifier = this.legacyClassModifier(node);
     const modifierText = node.attributes.modifier;
     if (modifierText !== undefined) {
       const modifier = parseClassModifier(modifierText);
@@ -352,6 +412,14 @@ class ECXml3Walker {
     }
     init.baseClass = baseClasses[0];
     return init;
+  }
+
+  private legacyClassModifier(node: XmlElementNode): ECClassModifier | undefined {
+    const flagCount = ["isStruct", "isCustomAttributeClass", "isDomainClass"]
+      .reduce((count, flag) => count + ((this.parseBooleanAttribute(node, flag) ?? flag === "isDomainClass") ? 1 : 0), 0);
+    if (flagCount === 0)
+      return ECClassModifier.Abstract;
+    return this.parseBooleanAttribute(node, "isFinal") === true ? ECClassModifier.Sealed : undefined;
   }
 
   private readBaseClassReferences(node: XmlElementNode): Authoring.LocalOrFullName[] {
@@ -410,7 +478,12 @@ class ECXml3Walker {
     let appliesTo = 0;
     const appliesToText = node.attributes.appliesTo;
     if (appliesToText === undefined) {
-      this._error("SchemaXml-0022", `The custom attribute class "${name}" is missing the required appliesTo attribute.`, node);
+      // 2.0 has no appliesTo on a custom attribute class; native reads such a class as applying to
+      // anything, which is the only interpretation that keeps its instances readable.
+      if (this._dialect.classElements === "flagged")
+        appliesTo = parseCustomAttributeContainerType("Any") ?? 0;
+      else
+        this._error("SchemaXml-0022", `The custom attribute class "${name}" is missing the required appliesTo attribute.`, node);
     } else {
       try {
         appliesTo = parseCustomAttributeContainerType(appliesToText) ?? 0;
@@ -453,12 +526,11 @@ class ECXml3Walker {
   }
 
   private readRelationshipConstraint(node: XmlElementNode, constraint: Authoring.RelationshipConstraint, className: string): void {
-    if (node.attributes.multiplicity !== undefined)
-      constraint.multiplicity = node.attributes.multiplicity;
+    this.readConstraintBounds(node, constraint, className);
     constraint.roleLabel = node.attributes.roleLabel;
     if (node.attributes.polymorphic !== undefined)
       constraint.polymorphic = this.parseBooleanAttribute(node, "polymorphic") ?? constraint.polymorphic;
-    if (node.attributes.abstractConstraint !== undefined)
+    if (this._dialect.abstractConstraint && node.attributes.abstractConstraint !== undefined)
       constraint.abstractConstraint = this.normalizeItemReference(node.attributes.abstractConstraint);
     for (const child of node.children) {
       const childName = child.name.toLowerCase();
@@ -472,6 +544,26 @@ class ECXml3Walker {
         this.readCustomAttributes(child, constraint.customAttributes, className);
       }
     }
+  }
+
+  /** Endpoint bounds under the spelling this version uses. Before 3.1 they are a legacy
+   * `cardinality="(0,N)"`, which is normalized to the `(0..*)` form the document stores; an
+   * unparseable one is kept verbatim so validation can report the source text. */
+  private readConstraintBounds(node: XmlElementNode, constraint: Authoring.RelationshipConstraint, className: string): void {
+    const text = node.attributes[this._dialect.constraintBoundsAttribute];
+    if (text === undefined)
+      return;
+    if (this._dialect.constraintBoundsAttribute === "multiplicity") {
+      constraint.multiplicity = text;
+      return;
+    }
+    const multiplicity = parseLegacyCardinality(text);
+    if (multiplicity === undefined) {
+      this._warning("SchemaXml-0063", `The constraint of "${className}" has an unparseable cardinality ("${text}"); it was kept as written.`, node);
+      constraint.multiplicity = text;
+      return;
+    }
+    constraint.multiplicity = multiplicity;
   }
 
   /** Reads the children shared by every class kind: properties and custom attributes.
@@ -523,6 +615,17 @@ class ECXml3Walker {
         break;
       }
       case "ecarrayproperty": {
+        // Before 3.2 a struct array is an ECArrayProperty carrying isStruct. Native ignores that
+        // flag and decides from whether typeName names a struct class, because published schemas
+        // get the flag wrong in both directions; the flag is the fallback when the type is not
+        // resolvable here.
+        if (!this._dialect.structArrayElement && this.namesStructClass(node.attributes.typeName)) {
+          const typeName = this.propertyTypeName(node, name, item.name);
+          if (typeName === undefined)
+            return;
+          property = item.createStructArray(name, typeName, { ...this.propertyInit(node), ...this.occursInit(node) });
+          break;
+        }
         const type = this.resolvePrimitivePropertyType(node, name, item.name);
         if (type === undefined)
           return;
@@ -563,6 +666,18 @@ class ECXml3Walker {
       this.readCustomAttributes(caContainer, property.customAttributes, `${item.name}.${name}`);
   }
 
+  /** Whether a legacy array property's `typeName` names a struct class: one this document declares,
+   * one a schema in the set declares, or - when neither can answer - what the `isStruct` flag on
+   * the element claimed. */
+  private namesStructClass(typeName: string | undefined): boolean {
+    if (typeName === undefined)
+      return false;
+    const normalized = this.normalizeItemReference(typeName);
+    if (normalized.search(separatorPattern) < 0)
+      return this._localStructClassNames.has(normalized.toLowerCase());
+    return this._document.resolveItemOfType(normalized, SchemaItemType.StructClass) !== undefined;
+  }
+
   /** A struct property's `typeName` is always a struct-class reference, so it is normalized to the
    * full schema-qualified form. */
   private propertyTypeName(node: XmlElementNode, propertyName: string, className: string): string | undefined {
@@ -599,11 +714,13 @@ class ECXml3Walker {
   }
 
   private primitivePropertyInit(node: XmlElementNode): Authoring.PrimitivePropertyInit {
+    // 2.0 spelled the range attributes with a leading capital.
+    const camelCase = this._dialect.rangeAttributes === "camelCase";
     return {
       ...this.propertyInit(node),
       extendedTypeName: node.attributes.extendedTypeName,
-      minValue: this.parseFloatAttribute(node, "minimumValue"),
-      maxValue: this.parseFloatAttribute(node, "maximumValue"),
+      minValue: this.parseFloatAttribute(node, camelCase ? "minimumValue" : "MinimumValue"),
+      maxValue: this.parseFloatAttribute(node, camelCase ? "maximumValue" : "MaximumValue"),
       minLength: this.parseIntAttribute(node, "minimumLength"),
       maxLength: this.parseIntAttribute(node, "maximumLength"),
     };

@@ -85,7 +85,7 @@ describe("writer spec dispatch", () => {
   const doc = new SchemaDocument("SpecTest", "st", 1, 0, 0);
 
   it("the XML writer rejects an unsupported target spec with an issue, producing no text", () => {
-    const result = new SchemaXmlWriter().writeDocument(doc, { spec: "2.0" as ECSpec });
+    const result = new SchemaXmlWriter().writeDocument(doc, { spec: "1.0" as ECSpec });
     expect(result.text).to.be.undefined;
     expect(result.issues.errors.map((e) => e.code)).to.deep.equal(["SchemaXml-0001"]);
   });

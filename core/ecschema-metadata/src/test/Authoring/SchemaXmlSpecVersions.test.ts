@@ -162,10 +162,18 @@ describe("ECXml spec downgrade", () => {
     expect(new SchemaXmlWriter().writeDocument(doc, { spec: ECSpec.V3_1 }).text).toContain(`strict="true"`);
   });
 
-  it("reports 2.0 as unimplemented rather than emitting something wrong", () => {
+  it("writes 2.0 with the legacy class flags in place of a modifier", () => {
+    const at20 = new SchemaXmlWriter().writeDocument(buildDocument(), { spec: ECSpec.V2_0 }).text!;
+    expect(at20).toContain(`<ECClass typeName="Widget" isStruct="false" isCustomAttributeClass="false" isDomainClass="true"`);
+    expect(at20).not.toContain("ECEntityClass");
+    expect(at20).not.toContain("modifier=");
+  });
+
+  it("reports each item kind 2.0 has no element for instead of dropping it silently", () => {
     const result = new SchemaXmlWriter().writeDocument(buildDocument(), { spec: ECSpec.V2_0 });
-    expect(result.text).toBeUndefined();
-    expect(result.issues.hasErrors).toBe(true);
+    expect(result.text).not.toContain("ECEnumeration");
+    expect([...result.issues].filter((i) => i.code === "SchemaXml-0064").map((i) => i.message))
+      .toEqual([`ECXML 2.0 has no enumerations, so "Status" was dropped.`]);
   });
 });
 

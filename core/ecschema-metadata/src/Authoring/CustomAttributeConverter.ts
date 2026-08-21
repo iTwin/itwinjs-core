@@ -176,14 +176,14 @@ function nodeToValue(node: CustomAttributeXmlNode, property: AnyProperty | undef
   if (property !== undefined && property.isPrimitive()) {
     const elementType = primitiveTypeOf(property);
     if (property.isArray())
-      return node.children.map((entry) => parseScalar(entry.text.trim(), elementType));
-    return parseScalar(node.text.trim(), elementType);
+      return node.children.map((entry) => parseScalar(entry.text, elementType));
+    return parseScalar(node.text, elementType);
   }
 
   // No declared property to go on - the class has drifted, or this is a navigation property, which
   // a custom attribute cannot carry. Read by shape so the value survives to be reported.
   if (node.children.length === 0)
-    return node.text.trim();
+    return node.text;
   return nodesToValues(node.children, undefined);
 }
 
@@ -201,11 +201,15 @@ function primitiveTypeOf(property: AnyProperty & { typeName: string }): Primitiv
 
 /** Converts XML text to a typed value per the declared primitive type. An unparseable number and
  * an unrecognized boolean keep their text: the document tolerates invalid data and validation is
- * where it gets reported. */
+ * where it gets reported.
+ *
+ * A string keeps its surrounding whitespace, which is part of the value - published schemas do
+ * carry an enumerator display string like `" Light Paving"`. The types that cannot hold whitespace
+ * are trimmed before parsing, so a value written across lines still reads. */
 function parseScalar(text: string, type: PrimitiveType | undefined): string | number | boolean {
   switch (type) {
     case PrimitiveType.Boolean: {
-      const lower = text.toLowerCase();
+      const lower = text.trim().toLowerCase();
       if (lower === "true" || lower === "1")
         return true;
       if (lower === "false" || lower === "0")
@@ -214,11 +218,11 @@ function parseScalar(text: string, type: PrimitiveType | undefined): string | nu
     }
     case PrimitiveType.Integer:
     case PrimitiveType.Long: {
-      const value = Number.parseInt(text, 10);
+      const value = Number.parseInt(text.trim(), 10);
       return Number.isNaN(value) ? text : value;
     }
     case PrimitiveType.Double: {
-      const value = Number.parseFloat(text);
+      const value = Number.parseFloat(text.trim());
       return Number.isNaN(value) ? text : value;
     }
     default:
@@ -356,7 +360,9 @@ function serializeNodes(nodes: ReadonlyArray<CustomAttributeXmlNode>, indent: nu
       lines.push(...serializeNodes(node.children, indent + 1));
       lines.push(`${pad}</${node.name}>`);
     } else {
-      lines.push(`${pad}<${node.name}>${escapeText(node.text.trim())}</${node.name}>`);
+      // The text is emitted as it is: whitespace inside a value belongs to the value, and the only
+      // whitespace this serializer adds is the indent in front of the element.
+      lines.push(`${pad}<${node.name}>${escapeText(node.text)}</${node.name}>`);
     }
   }
   return lines;

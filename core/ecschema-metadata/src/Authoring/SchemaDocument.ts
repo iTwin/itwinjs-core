@@ -391,6 +391,28 @@ export class SchemaDocument {
     return this.references.find((r) => namesEqual(r.name, name));
   }
 
+  /** Gives every reference that has no alias the referenced schema's own, taken from this
+   * document's {@link SchemaSet}, and returns how many were filled in. References that already have
+   * an alias are left alone, and so are those whose schema the set does not hold.
+   *
+   * ECJSON qualifies item references by schema name and carries no alias at all, so a document read
+   * from it cannot be written as ECXML, which requires one on every reference. Once the referenced
+   * schemas are in the set, each one's own alias is the sensible default - it is what native writes
+   * - and this applies it. Nothing else needs it: ECXML sources carry their aliases already. */
+  public fillMissingReferenceAliases(): number {
+    let filled = 0;
+    for (const reference of this.references) {
+      if (reference.alias !== null)
+        continue;
+      const alias = this._schemaSet.getSchema(reference.name)?.alias;
+      if (alias === undefined || alias.length === 0)
+        continue;
+      reference.alias = alias;
+      ++filled;
+    }
+    return filled;
+  }
+
   /** Returns the document a schema reference points at, looked up by name in this document's
    * {@link SchemaSet}, or `undefined` when the set does not hold it. The set holds one version per
    * name, so the reference's version components take no part in the lookup - a version mismatch

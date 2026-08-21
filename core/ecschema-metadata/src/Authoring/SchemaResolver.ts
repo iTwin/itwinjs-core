@@ -170,20 +170,7 @@ export class SchemaResolver {
    * The roots themselves are never looked up in the sources; they are taken as given. */
   public async resolve(roots: ReadonlyArray<SchemaDocumentHeader>, matchType: SchemaMatchType = SchemaMatchType.LatestWriteCompatible): Promise<SchemaResolution> {
     const issues = new SchemaIssueList();
-
-    // Gather the candidate pool, grouped by lowercased name.
-    const candidatesByName = new Map<string, SchemaCandidate[]>();
-    for (const source of this._sources) {
-      for (const candidate of await source.discoverCandidates(issues)) {
-        const key = candidate.header.name.toLowerCase();
-        const group = candidatesByName.get(key);
-        if (group === undefined)
-          candidatesByName.set(key, [candidate]);
-        else
-          group.push(candidate);
-      }
-    }
-
+    const candidatesByName = await this._gatherCandidates(issues);
     const nodes = new Map<string, ResolutionNode>(); // keyed by lowercased name
 
     // Seed the roots. Duplicate root names violate single-version-per-name immediately.
@@ -196,6 +183,59 @@ export class SchemaResolver {
       nodes.set(key, { name: root.name, header: root, isRoot: true, requestedBy: ["<request>"] });
     }
 
+    return this._walkClosure(nodes, candidatesByName, matchType, issues);
+  }
+
+  /** Resolves the reference closure of schemas named by `names`, taking every one of them from the
+   * sources. This is the form to use when the caller wants schemas loaded rather than supplied:
+   * asking an iModel or a directory for `["BisCore"]` yields BisCore plus everything it references,
+   * dependency-ordered and ready for {@link SchemaResolution.loadDocuments}.
+   *
+   * Each name is satisfied by the highest version any source offers, since a bare name carries no
+   * version to match against; from there `matchType` governs the references. A name no source
+   * offers is reported and the rest still resolve. */
+  public async resolveNames(names: ReadonlyArray<string>, matchType: SchemaMatchType = SchemaMatchType.LatestWriteCompatible): Promise<SchemaResolution> {
+    const issues = new SchemaIssueList();
+    const candidatesByName = await this._gatherCandidates(issues);
+    const nodes = new Map<string, ResolutionNode>();
+
+    for (const name of names) {
+      const key = name.toLowerCase();
+      const existing = nodes.get(key);
+      if (existing !== undefined) {
+        existing.requestedBy.push("<request>");
+        continue;
+      }
+      const selected = this._highestVersion(candidatesByName.get(key));
+      if (selected === undefined) {
+        nodes.set(key, { name, isRoot: false, requestedBy: ["<request>"] });
+        issues.addError("SchemaSources-0003", `Schema "${name}" was not found in any source.`);
+        continue;
+      }
+      nodes.set(key, { name: selected.header.name, header: selected.header, candidate: selected, isRoot: false, requestedBy: ["<request>"] });
+    }
+
+    return this._walkClosure(nodes, candidatesByName, matchType, issues);
+  }
+
+  /** Every candidate every source offers, grouped by lowercased schema name. */
+  private async _gatherCandidates(issues: SchemaIssueList): Promise<Map<string, SchemaCandidate[]>> {
+    const candidatesByName = new Map<string, SchemaCandidate[]>();
+    for (const source of this._sources) {
+      for (const candidate of await source.discoverCandidates(issues)) {
+        const key = candidate.header.name.toLowerCase();
+        const group = candidatesByName.get(key);
+        if (group === undefined)
+          candidatesByName.set(key, [candidate]);
+        else
+          group.push(candidate);
+      }
+    }
+    return candidatesByName;
+  }
+
+  /** Chases the references of every seeded node until the closure is complete, then orders it. */
+  private _walkClosure(nodes: Map<string, ResolutionNode>, candidatesByName: Map<string, SchemaCandidate[]>, matchType: SchemaMatchType, issues: SchemaIssueList): SchemaResolution {
     // Walk the reference closure breadth-first over headers. The queue is appended to inside the
     // loop; an array iterator re-reads `length` each step, so those appends are visited. Not
     // `shift()`, which would make the walk quadratic in the queue length.
@@ -240,6 +280,21 @@ export class SchemaResolver {
     }
 
     return new SchemaResolution(this._orderByDependencies(nodes, issues), issues);
+  }
+
+  /** The newest of a name's candidates, for a request that carries no version to match against. */
+  private _highestVersion(candidates: SchemaCandidate[] | undefined): SchemaCandidate | undefined {
+    let best: SchemaCandidate | undefined;
+    let bestKey: SchemaKey | undefined;
+    for (const candidate of candidates ?? []) {
+      const candidateKey = new SchemaKey(candidate.header.name,
+        new ECVersion(candidate.header.readVersion, candidate.header.writeVersion, candidate.header.minorVersion));
+      if (bestKey === undefined || candidateKey.compareByVersion(bestKey) > 0) {
+        best = candidate;
+        bestKey = candidateKey;
+      }
+    }
+    return best;
   }
 
   /** Picks the best candidate for a request: filter by match tolerance, then highest version wins. */

@@ -53,6 +53,7 @@ import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
 import { createServerBasedLocks } from "./internal/ServerBasedLocks";
+import { querySchemaManifest } from "./internal/SchemaManifestQuery";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
@@ -72,7 +73,7 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { IModelCustomAttributeProvider } from "./internal/SchemaViewCustomAttributeProvider";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, type IModelSchemaView, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, type IModelSchemaView, SchemaContext, SchemaJsonLocater, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -1817,22 +1818,7 @@ export abstract class IModelDb extends IModel {
       // Names are ECNames, so a comma can never occur in one. Native re-validates each token as an
       // ECName and fails the pragma on an unknown name.
       fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${schemaNames.join(",")}')`),
-      fetchManifest: async () => {
-        const schemaRows: SchemaManifestSchemaRow[] = [];
-        const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
-        for await (const row of this.createQueryReader(schemaSql)) {
-          // ECInstanceId arrives as a hex Id64String. `ec_` metadata rowids carry no briefcase
-          // prefix, so the local id is the full value.
-          schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
-        }
-
-        const referenceRows: SchemaManifestReferenceRow[] = [];
-        const referenceSql = "SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences";
-        for await (const row of this.createQueryReader(referenceSql))
-          referenceRows.push({ sourceECInstanceId: Id64.getLocalId(row[0]), targetECInstanceId: Id64.getLocalId(row[1]) });
-
-        return SchemaManifest.fromRows(schemaRows, referenceRows);
-      },
+      fetchManifest: async () => querySchemaManifest((ecsql) => this.createQueryReader(ecsql)),
       fetchSchemaToken: async () => {
         const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
         const result = await reader.next();

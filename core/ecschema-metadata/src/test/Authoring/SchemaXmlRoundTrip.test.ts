@@ -107,8 +107,8 @@ describe("SchemaXmlWriter / SchemaXmlReader", () => {
     expect(result.issues.errors[0].source).to.equal("broken.ecschema.xml");
   });
 
-  it("rejects a non-3.x namespace", async () => {
-    const xml = `<?xml version="1.0"?><ECSchema schemaName="Old" version="01.00" nameSpacePrefix="o" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.2.0"/>`;
+  it("rejects a namespace naming no known ECXML version", async () => {
+    const xml = `<?xml version="1.0"?><ECSchema schemaName="Old" version="01.00" nameSpacePrefix="o" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.1.0"/>`;
     const result = await new SchemaXmlReader().readDocument(xml);
     expect(result.document).to.be.undefined;
     expect(result.issues.hasErrors).to.be.true;

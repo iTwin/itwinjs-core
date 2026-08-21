@@ -28,6 +28,12 @@ import { CustomAttributeProps, CustomAttributeValues, SchemaDocument, SchemaSet 
  * legitimately upgrades or redefines one of these is never shadowed. Labels, descriptions, and
  * everything else that does not affect conversion are left out - these are shapes, not copies.
  * `StandardSchemas.test.ts` asserts they still match the published `@bentley/*-schema` packages.
+ *
+ * The two legacy EC2 schemas `EditorCustomAttributes` and `Bentley_Standard_CustomAttributes` are
+ * here for the same reason: {@link convertEC2CustomAttributes} has to read their attributes to turn
+ * them into first-class items, and a 2.0 file rarely arrives with its standard schemas alongside.
+ * Only the classes that conversion touches are defined, and those schemas are frozen, so there is
+ * nothing for a drift test to track.
  */
 
 let standardSchemas: SchemaSet | undefined;
@@ -40,6 +46,9 @@ export function getStandardSchemas(): SchemaSet {
     standardSchemas = new SchemaSet();
     buildCoreCustomAttributes(standardSchemas);
     buildECDbMap(standardSchemas);
+    buildEditorCustomAttributes(standardSchemas);
+    buildBentleyStandardCustomAttributes(standardSchemas);
+    buildUnitAttributes(standardSchemas);
   }
   return standardSchemas;
 }
@@ -161,6 +170,100 @@ function buildECDbMap(set: SchemaSet): SchemaDocument {
 
   doc.createCustomAttributeClass("QueryView", CustomAttributeContainerType.EntityClass)
     .createPrimitive("Query", PrimitiveType.String);
+
+  return doc;
+}
+
+/** `EditorCustomAttributes` - the EC2 schema whose attributes carried what EC3 promoted to
+ * enumerations, property categories, and priorities. Only what {@link convertEC2CustomAttributes}
+ * reads is defined. */
+function buildEditorCustomAttributes(set: SchemaSet): SchemaDocument {
+  const doc = set.createSchema("EditorCustomAttributes", "beca", 1, 0, 3);
+
+  const valueMap = doc.createStructClass("ValueMap");
+  valueMap.createPrimitive("DisplayString", PrimitiveType.String);
+  valueMap.createPrimitive("Value", PrimitiveType.Integer);
+
+  const standardValues = doc.createCustomAttributeClass("StandardValues", CustomAttributeContainerType.AnyProperty);
+  standardValues.createPrimitive("MustBeFromList", PrimitiveType.Boolean);
+  standardValues.createStructArray("ValueMap", "ValueMap");
+
+  const category = doc.createCustomAttributeClass("Category", CustomAttributeContainerType.AnyProperty);
+  category.createPrimitive("Standard", PrimitiveType.Integer);
+  category.createPrimitive("Name", PrimitiveType.String);
+  category.createPrimitive("DisplayLabel", PrimitiveType.String);
+  category.createPrimitive("Description", PrimitiveType.String);
+  category.createPrimitive("Priority", PrimitiveType.Integer);
+  category.createPrimitive("Expand", PrimitiveType.Boolean);
+
+  doc.createCustomAttributeClass("PropertyPriority", CustomAttributeContainerType.AnyProperty)
+    .createPrimitive("Priority", PrimitiveType.Integer);
+
+  const hideProperty = doc.createCustomAttributeClass("HideProperty", CustomAttributeContainerType.AnyProperty);
+  hideProperty.createPrimitive("If2D", PrimitiveType.Boolean);
+  hideProperty.createPrimitive("If3D", PrimitiveType.Boolean);
+  hideProperty.createPrimitive("If", PrimitiveType.String);
+
+  return doc;
+}
+
+/** `Bentley_Standard_CustomAttributes` - the EC2 schema whose attributes EC3 relocated to
+ * `CoreCustomAttributes`. Only what {@link convertEC2CustomAttributes} reads is defined. */
+function buildBentleyStandardCustomAttributes(set: SchemaSet): SchemaDocument {
+  const doc = set.createSchema("Bentley_Standard_CustomAttributes", "bsca", 1, 0, 14);
+
+  const displayOptions = doc.createCustomAttributeClass("DisplayOptions", CustomAttributeContainerType.Any);
+  displayOptions.createPrimitive("Hidden", PrimitiveType.Boolean);
+  displayOptions.createPrimitive("HideInstances", PrimitiveType.Boolean);
+  displayOptions.createPrimitive("HideRelated", PrimitiveType.Boolean);
+
+  const dateTimeInfo = doc.createCustomAttributeClass("DateTimeInfo", CustomAttributeContainerType.AnyProperty);
+  dateTimeInfo.createPrimitive("DateTimeKind", PrimitiveType.String);
+  dateTimeInfo.createPrimitive("DateTimeComponent", PrimitiveType.String);
+
+  doc.createCustomAttributeClass("ClassHasCurrentTimeStampProperty", CustomAttributeContainerType.EntityClass)
+    .createPrimitive("PropertyName", PrimitiveType.String);
+
+  const supplementalSchemaMetaData = doc.createCustomAttributeClass("SupplementalSchemaMetaData", CustomAttributeContainerType.Schema);
+  supplementalSchemaMetaData.createPrimitive("PrimarySchemaName", PrimitiveType.String);
+  supplementalSchemaMetaData.createPrimitive("PrimarySchemaMajorVersion", PrimitiveType.Integer);
+  supplementalSchemaMetaData.createPrimitive("PrimarySchemaMinorVersion", PrimitiveType.Integer);
+  supplementalSchemaMetaData.createPrimitive("Precedence", PrimitiveType.Integer);
+  supplementalSchemaMetaData.createPrimitive("Purpose", PrimitiveType.String);
+  supplementalSchemaMetaData.createPrimitive("IsUserSpecific", PrimitiveType.Boolean);
+
+  doc.createCustomAttributeClass("DynamicSchema", CustomAttributeContainerType.Schema);
+
+  return doc;
+}
+
+/** `Unit_Attributes` - the EC2 schema whose attributes carried what EC3 promoted to kinds of
+ * quantity. Only what {@link convertEC2CustomAttributes} reads is defined.
+ *
+ * `UnitSpecification` is declared both a struct class and a custom attribute class in the real
+ * schema, which EC2 allows and EC3 does not. It is the custom attribute class here, because that is
+ * what has to resolve for a property's attribute to be read. `UnitSpecifications.UnitSpecificationList`
+ * therefore names a class the struct-array lookup does not match, and its entries are read by shape
+ * instead - which loses nothing, since every field in them is a string. */
+function buildUnitAttributes(set: SchemaSet): SchemaDocument {
+  const doc = set.createSchema("Unit_Attributes", "units_attribs", 1, 0, 0);
+
+  const unitSpecification = doc.createCustomAttributeClass("UnitSpecification", CustomAttributeContainerType.AnyProperty);
+  unitSpecification.createPrimitive("DimensionName", PrimitiveType.String);
+  unitSpecification.createPrimitive("KindOfQuantityName", PrimitiveType.String);
+  unitSpecification.createPrimitive("UnitName", PrimitiveType.String);
+  unitSpecification.createPrimitiveArray("AllowableUnits", PrimitiveType.String);
+
+  const displayUnitSpecification = doc.createCustomAttributeClass("DisplayUnitSpecification", CustomAttributeContainerType.AnyProperty);
+  displayUnitSpecification.createPrimitive("DisplayFormatString", PrimitiveType.String);
+  displayUnitSpecification.createPrimitive("DisplayFormatKey", PrimitiveType.String);
+  displayUnitSpecification.createPrimitive("DisplayUnitName", PrimitiveType.String);
+
+  doc.createCustomAttributeClass("UnitSpecifications", CustomAttributeContainerType.Schema)
+    .createStructArray("UnitSpecificationList", "UnitSpecification");
+
+  for (const marker of ["IsUnitSystemSchema", "Mixed_UnitSystem", "SI_UnitSystem", "US_UnitSystem"])
+    doc.createCustomAttributeClass(marker, CustomAttributeContainerType.Schema);
 
   return doc;
 }

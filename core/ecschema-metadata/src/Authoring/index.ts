@@ -9,6 +9,7 @@ export * from "./SchemaComparison";
 export * from "./SchemaCopy";
 export * from "./SchemaDocument";
 export * from "./SchemaDocumentIO";
+export * from "./SchemaEC2Conversion";
 export * from "./SchemaIssues";
 export * from "./SchemaJsonReader";
 export * from "./SchemaJsonWriter";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Authoring, ECSpecVersion } from "@itwin/ecschema-metadata";
+import { Authoring, ECSpecVersion, SchemaItemType } from "@itwin/ecschema-metadata";
 import { IModelHost } from "../../IModelHost";
 import { SnapshotDb } from "../../IModelDb";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -123,5 +123,68 @@ describe("Native ECXML serialization cross-check", () => {
     if (report.length > 0)
       // eslint-disable-next-line no-console
       console.log(`3.1 vs 3.2 differences not yet accounted for:\n  ${report.join("\n  ")}`);
+  });
+
+  it("reads native's ECXML 2.0 output and writes 2.0 native can read back", async () => {
+    // Asking native for 2.0 routes through its own down converter, so this is the legacy vocabulary
+    // as native produces it: flagged ECClass elements, cardinality, struct arrays as a flag, and
+    // StandardValues in place of enumerations.
+    const checked: string[] = [];
+    for (const schema of await schemasInIModel()) {
+      const native20 = iModel.exportSchemaXmlString(schema.name, { readVersion: 2, writeVersion: 0 });
+      if (native20 === undefined)
+        continue;
+      assert.include(native20, "Bentley.ECXML.2.0", `native did not produce 2.0 for ${schema.name}`);
+
+      const read = await new Authoring.SchemaXmlReader().readDocument(native20, { source: `${schema.name} (native 2.0)` });
+      const errors = [...read.issues].filter((i) => i.severity === "error");
+      assert.deepEqual(errors.map((e) => e.message), [], `reading native 2.0 XML for ${schema.name}`);
+
+      const written = new Authoring.SchemaXmlWriter().writeDocument(read.document!, { spec: Authoring.ECSpec.V2_0 });
+      assert.isDefined(written.text, `writing ${schema.name} at 2.0`);
+      const reread = (await new Authoring.SchemaXmlReader().readDocument(written.text!)).document!;
+
+      const comparison = Authoring.compareSchemaDocuments(read.document!, reread);
+      const differences = unexpected(comparison.itemDifferences.flatMap((i) => i.differences).concat(comparison.schemaDifferences));
+      assert.deepEqual(differences.map((d) => d.path), [], `${schema.name} did not survive our own 2.0 round trip`);
+      checked.push(schema.name);
+    }
+    assert.isAtLeast(checked.length, 5, "expected the seed iModel to hold several schemas");
+  });
+
+  it("recovers from native's ECXML 2.0 output the enumerations native put into StandardValues", async () => {
+    // Native's 2.0 export turns an integer enumeration into an EditorCustomAttributes:StandardValues
+    // custom attribute. Our converter is the other half of that, so every enumeration it recovers
+    // has to match one native holds at 3.2 - same values, same display strings.
+    //
+    // The reverse does not hold: native only emits StandardValues where the enumeration is declared
+    // locally on a property with no base property, so a 3.2 enumeration can have no 2.0 counterpart
+    // to recover. That is native's downgrade being lossy, not ours.
+    const unmatched: string[] = [];
+    let recoveredCount = 0;
+    for (const schema of await schemasInIModel()) {
+      const native20 = iModel.exportSchemaXmlString(schema.name, { readVersion: 2, writeVersion: 0 });
+      const native32 = iModel.exportSchemaXmlString(schema.name, { readVersion: 3, writeVersion: 2 });
+      if (native20 === undefined || native32 === undefined || !native20.includes("StandardValues"))
+        continue;
+
+      const converted = (await new Authoring.SchemaXmlReader().readDocument(native20)).document!;
+      Authoring.convertEC2CustomAttributes(converted);
+      const at32 = (await new Authoring.SchemaXmlReader().readDocument(native32)).document!;
+
+      // The conversion names an enumeration after the class and property that carried the attribute,
+      // since 2.0 carries no name of its own, so identity is the value set.
+      const valuesOf = (document: Authoring.SchemaDocument) => [...document.getItemsOfType(SchemaItemType.Enumeration)]
+        .filter((e) => e.backingType === "int")
+        .map((e) => e.enumerators.map((enumerator) => `${enumerator.value}=${enumerator.label ?? ""}`).sort().join(","));
+      const expected = new Set(valuesOf(at32));
+      for (const recovered of valuesOf(converted)) {
+        ++recoveredCount;
+        if (!expected.has(recovered))
+          unmatched.push(`${schema.name}: ${recovered}`);
+      }
+    }
+    assert.deepEqual(unmatched, [], "a recovered enumeration does not match any native holds at 3.2");
+    assert.isAtLeast(recoveredCount, 3, "expected the seed iModel to hold enumerations native downgrades to StandardValues");
   });
 });
