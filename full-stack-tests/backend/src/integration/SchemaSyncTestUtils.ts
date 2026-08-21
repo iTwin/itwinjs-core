@@ -18,6 +18,28 @@ import { AzuriteTest } from "./AzuriteTest";
 export const schemaSyncStorageType = "azure";
 
 /* ------------------------------------------------------------------------------------------------
+ * Test tiers
+ * ---------------------------------------------------------------------------------------------- */
+
+/**
+ * The extended tier of the schema sync suites, gated on ITWIN_INCLUDE_SCHEMASYNC_EXTENDED_TESTS.
+ *
+ * Declare a test with `extendedIt` instead of `it` when it covers one more permutation of behaviour
+ * the core tier already covers. Set the variable to 1, true or yes to run them; unset, they report
+ * as pending. `it.skip` is resolved when the file loads, so a skipped test costs nothing - the
+ * surrounding hooks still run for the core tests sharing the block.
+ *
+ * The native half of the same split lives on gtest fixtures named *ExtendedTests and reads
+ * IMODEL_RUN_EXTENDED_TESTS.
+ */
+export const schemaSyncExtendedTestsEnabled = ((): boolean => {
+  const setting = process.env.ITWIN_INCLUDE_SCHEMASYNC_EXTENDED_TESTS?.trim().toLowerCase();
+  return setting === "1" || setting === "true" || setting === "yes";
+})();
+
+export const extendedIt = schemaSyncExtendedTestsEnabled ? it : it.skip;
+
+/* ------------------------------------------------------------------------------------------------
  * Schema authoring
  * ---------------------------------------------------------------------------------------------- */
 

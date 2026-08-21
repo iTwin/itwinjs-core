@@ -16,7 +16,7 @@ import { ChangesetType, Code, ColorDef, GeometryStreamProps, IModel, SubCategory
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import {
   assertChangesetTypeAndDescr, assertThrowsAsync, assertThrowsAsyncContaining, createTestIModel, enableSchemaSync, expectCacheTablesIdentical,
-  expectCensusPreserved, expectMetadataTablesIdentical, expectNoForeignKeyViolations, expectPhysicalSchemaIdentical,
+  expectCensusPreserved, expectMetadataTablesIdentical, expectNoForeignKeyViolations, expectPhysicalSchemaIdentical, extendedIt,
   importTinySchema as importSchema, initializeContainer, insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase,
   queryProfileVer, queryPropNames, querySchemaSyncDataVer, readElementProp, readTableRows, takeElementCensus, TestElementProps,
   TinyPrimitiveProp, TinySchema, tinySchemaToXml, TinyStructProp,
@@ -184,7 +184,7 @@ describe("Schema synchronization", function (this: Suite) {
 
   // The third briefcase only derives its tables from ec_, while data is inserted between the two schema changes.
   // That combination exercises the pull materialization path and makes physical-schema agreement observable.
-  it("multi user workflow with a pull-only briefcase and interleaved data #extended", async () => {
+  extendedIt("multi user workflow with a pull-only briefcase and interleaved data", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-1" });
     const accessToken1 = "schema front door 1 user 1";
     const accessToken2 = "schema front door 1 user 2";
@@ -359,7 +359,7 @@ describe("Schema synchronization", function (this: Suite) {
 
   // Both domain schemas share a referenced schema, so the sync database must preserve one reference row and id.
   // Importing different closures on the two briefcases exercises reference reconciliation rather than duplicate import.
-  it("import different schemas that share a reference #extended", async () => {
+  extendedIt("import different schemas that share a reference", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-2" });
     const accessToken1 = "schema front door 2 user 1";
     const accessToken2 = "schema front door 2 user 2";
@@ -585,7 +585,7 @@ describe("Schema synchronization", function (this: Suite) {
 
   // The override must leave a briefcase with committed local work governed by its original container.
   // Silently reseeding a new authority would make that unpushed schema change unrecoverable.
-  it("refuses to override schema sync with unpushed local changes #extended", async () => {
+  extendedIt("refuses to override schema sync with unpushed local changes", async () => {
     const firstContainer = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-3a" });
     const secondContainer = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-3b" });
     const accessToken1 = "schema front door 3 user 1";
@@ -971,7 +971,7 @@ describe("Schema synchronization", function (this: Suite) {
   });
   // B2 remains on the old profile and replays the profile/domain upgrade changesets from the timeline.
   // Its bis_* tables therefore have to be reconciled by replay, with the same data as the in-place upgrader.
-  it("replays a profile upgrade on a second briefcase from 4.0.0.1 #extended", async () => {
+  extendedIt("replays a profile upgrade on a second briefcase from 4.0.0.1", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-4" });
     const accessToken1 = "schema front door 4 user 1";
     const accessToken2 = "schema front door 4 user 2";
@@ -1362,7 +1362,7 @@ describe("Schema synchronization", function (this: Suite) {
   });
   // B2 is downloaded only after the profile and domain upgrade, so it replays the complete history from the timeline.
   // Comparing it with the in-place upgrader covers the fresh-briefcase path that never held the old profile.
-  it("downloads a fresh briefcase after a profile upgrade from 4.0.0.3 #extended", async () => {
+  extendedIt("downloads a fresh briefcase after a profile upgrade from 4.0.0.3", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-5" });
     const accessToken = "schema front door 5 user 1";
     const freshAccessToken = "schema front door 5 user 2";
@@ -1611,7 +1611,7 @@ describe("Schema synchronization", function (this: Suite) {
 
   // A deletion reports a different upgrade status from a transform, yet its upgrade still needs the exclusive schema lock.
   // Keep that lock occupied with an additive import so the deletion path cannot accidentally bypass acquisition.
-  it("import schema acquire schema lock when need to delete data #extended", async () => {
+  extendedIt("import schema acquire schema lock when need to delete data", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-6" });
     const accessToken1 = "schema front door 6 user 1";
     const accessToken2 = "schema front door 6 user 2";
@@ -1768,7 +1768,7 @@ describe("Schema synchronization", function (this: Suite) {
 
   // Widening the struct also moves the element's mapped properties into BisCore's overflow table.
   // The census alone can miss a row that becomes invisible through the EC join, so inspect overflow directly.
-  it("routes a data transform with overflow rows to upgradeSchemas #extended", async () => {
+  extendedIt("routes a data transform with overflow rows to upgradeSchemas", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-7" });
     const accessToken = "schema front door 7 token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 7", accessToken });
@@ -1874,7 +1874,7 @@ describe("Schema synchronization", function (this: Suite) {
 
   // The empty class is still data-bearing by map strategy, even with no instances, while its sibling has data.
   // Upgrade must remove only the empty class and preserve the sibling's rows.
-  it("deletes an empty class through upgradeSchemas and keeps a sibling's data #extended", async () => {
+  extendedIt("deletes an empty class through upgradeSchemas and keeps a sibling's data", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-8" });
     const accessToken = "schema front door 8 token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 8", accessToken });
@@ -1934,11 +1934,11 @@ describe("Schema synchronization", function (this: Suite) {
 
   // Profile upgrades use this status, while SchemaSync.requiresUpgrade is deliberately limited to data moves and deletions.
   // Keep the profile-upgrade status out of that set so callers do not take the wrong upgrade path.
-  it("requiresUpgrade returns false for SchemaUpgradeRequired #extended", () => {
+  extendedIt("requiresUpgrade returns false for SchemaUpgradeRequired", () => {
     assert.isFalse(SchemaSync.requiresUpgrade({ errorNumber: DbResult.BE_SQLITE_ERROR_SchemaUpgradeRequired }));
   });
 
-  it("enables schema sync for an existing iModel with schemas and data #extended", async () => {
+  extendedIt("enables schema sync for an existing iModel with schemas and data", async () => {
     const iTwinId = Guid.createValue();
     const accessToken = "schema enable token";
 
@@ -2000,7 +2000,7 @@ describe("Schema synchronization", function (this: Suite) {
 
   // Enabling an existing file must mirror both physical-only shapes: link-table rows and BisCore overflow rows.
   // These are absent from the briefcase's EC metadata until initialization rebuilds the sync view.
-  it("enables an existing iModel with a link table and overflow rows #extended", async () => {
+  extendedIt("enables an existing iModel with a link table and overflow rows", async () => {
     const accessToken = "schema front door 10 token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 10", accessToken });
     const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "schemaFrontDoor10b1" });
@@ -2300,7 +2300,7 @@ describe("Schema synchronization", function (this: Suite) {
 
   // Revert is forced to skip schema rows on a sync-enabled file, so the watching briefcase must see the
   // same retained schema and the reverted data after it pulls the new timeline changeset.
-  it("reverts a schema changeset with a watching briefcase #extended", async () => {
+  extendedIt("reverts a schema changeset with a watching briefcase", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-11" });
     const accessToken1 = "schema front door 11 user 1";
     const accessToken2 = "schema front door 11 user 2";
@@ -2370,7 +2370,7 @@ describe("Schema synchronization", function (this: Suite) {
   // flag as `true | undefined` so a caller cannot even ask for the other behaviour. Nothing rewinds
   // the sync db, which is why the schema half has to stay put - the briefcase would otherwise end up
   // behind an authority that still describes the schema it just dropped.
-  it("a revert on a schema sync iModel keeps the schema and leaves the sync db alone #extended", async () => {
+  extendedIt("a revert on a schema sync iModel keeps the schema and leaves the sync db alone", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-12" });
     const accessToken = "schema front door 12 user";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "schema front door 12", accessToken });

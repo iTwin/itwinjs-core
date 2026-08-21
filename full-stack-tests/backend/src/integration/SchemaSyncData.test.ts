@@ -11,7 +11,7 @@ import { withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { DbResult } from "@itwin/core-bentley";
 import {
   createTestIModel, enableSchemaSync, expectCacheTablesIdentical, expectCensusPreserved, expectMetadataTablesIdentical, expectNoForeignKeyViolations,
-  expectPhysicalSchemaIdentical, importTinySchema, initializeContainer, insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase,
+  expectPhysicalSchemaIdentical, extendedIt, importTinySchema, initializeContainer, insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase,
   queryPropNames, readElementProp, takeElementCensus,
   TinyPrimitiveProp, TinySchema, tinySchemaToXml,
 } from "./SchemaSyncTestUtils";
@@ -121,7 +121,7 @@ describe("Schema synchronization data", function (this: Suite) {
   });
 
   // Several schema/data rounds force each schema rebuild to consume the current ec_ rows, exposing defects that only appear after a later rebuild.
-  it("data survives several sequential schema changes with data between them #extended", async () => {
+  extendedIt("data survives several sequential schema changes with data between them", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-6" });
     const accessToken = "sync data 6 token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync data 6", accessToken });
@@ -263,7 +263,7 @@ describe("Schema synchronization data", function (this: Suite) {
   });
 
   // The late briefcase must materialize every historical schema change from the timeline, rather than relying on a table it rebuilt after each pull.
-  it("data survives on a fresh briefcase downloaded after all schema changes #extended", async () => {
+  extendedIt("data survives on a fresh briefcase downloaded after all schema changes", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-7" });
     const writerToken = "sync data 7 writer token";
     const readerToken = "sync data 7 reader token";
@@ -404,7 +404,7 @@ describe("Schema synchronization data", function (this: Suite) {
   });
 
   // A second spill must update an overflow table that already contains rows, and the puller rebuilds it only after applying the schema changeset.
-  it("data survives a second spill round on the briefcase that only pulls #extended", async () => {
+  extendedIt("data survives a second spill round on the briefcase that only pulls", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-8" });
     const writerToken = "sync data 8 writer token";
     const readerToken = "sync data 8 reader token";
@@ -560,7 +560,7 @@ describe("Schema synchronization data", function (this: Suite) {
   });
 
   // Link tables add a physical table and foreign keys instead of a navigation column, so populated endpoints exercise a different rebuild path.
-  it("data survives a link-table relationship added to populated classes #extended", async () => {
+  extendedIt("data survives a link-table relationship added to populated classes", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-9" });
     const writerToken = "sync data 9 writer token";
     const readerToken = "sync data 9 reader token";
@@ -657,7 +657,7 @@ describe("Schema synchronization data", function (this: Suite) {
     }
   });
 
-  it("data survives a mixin added to a populated class #extended", async () => {
+  extendedIt("data survives a mixin added to a populated class", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-5" });
     const accessToken = "sync data 5 token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync data 5", accessToken });
@@ -719,7 +719,7 @@ describe("Schema synchronization data", function (this: Suite) {
   });
 
   // A second mixin changes the declaration order in ec_ClassHasBaseClasses, so the existing mixin's ordinal and the populated class mapping must remain stable on both briefcases.
-  it("data survives a second mixin added to a class that already has one #extended", async () => {
+  extendedIt("data survives a second mixin added to a class that already has one", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-10" });
     const writerToken = "sync data 10 writer token";
     const readerToken = "sync data 10 reader token";
@@ -803,7 +803,7 @@ describe("Schema synchronization data", function (this: Suite) {
 
   // A shared column carries no type, so a primitive type change moves no data and the update path takes it. Existing values are
   // reinterpreted under the new type on read: a numeric string comes back as its number, anything else comes back as zero.
-  it("takes a property type change through the update path and reinterprets existing values #extended", async () => {
+  extendedIt("takes a property type change through the update path and reinterprets existing values", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-11" });
     const accessToken = "sync data 11 token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync data 11", accessToken });
@@ -869,7 +869,7 @@ describe("Schema synchronization data", function (this: Suite) {
   });
 
   // The update path accepts this widening because the old concrete class remains supported; the existing link-table instance must still read after the constraint metadata changes.
-  it("accepts a relationship constraint widening and preserves its existing instances #extended", async () => {
+  extendedIt("accepts a relationship constraint widening and preserves its existing instances", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-12" });
     const accessToken = "sync data 12 token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync data 12", accessToken });

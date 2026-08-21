@@ -13,7 +13,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 import { AzuriteTest } from "./AzuriteTest";
 import {
   assertThrowsAsyncContaining, createTestIModel, enableSchemaSync, expectCacheTablesIdentical, expectCensusPreserved, expectMetadataTablesIdentical,
-  expectNoForeignKeyViolations, expectPhysicalSchemaIdentical, importTinySchema, initializeContainer, insertDrawingModelAndCategory,
+  expectNoForeignKeyViolations, expectPhysicalSchemaIdentical, extendedIt, importTinySchema, initializeContainer, insertDrawingModelAndCategory,
   insertGeometricElement2d, listMetadataTables, openTestBriefcase, queryPropNames, readElementProp, readTableRows, takeElementCensus, TinyPrimitiveProp, TinySchema,
   tinySchemaToXml, TinyStructProp,
 } from "./SchemaSyncTestUtils";
@@ -224,7 +224,7 @@ describe("Schema synchronization concurrency", function (this: Suite) {
   });
 
   // This variant carries a committed local element transaction with each schema import, so the push rebase must preserve data from both sides.
-  it("two briefcases importing different schemas converge with committed unpushed element changes #extended", async () => {
+  extendedIt("two briefcases importing different schemas converge with committed unpushed element changes", async () => {
     const { briefcases, accessTokens } = await createBriefcases({
       containerId: "sync-conc-1-extended",
       iModelName: "sync-conc-different-schemas-with-data",
@@ -310,7 +310,7 @@ describe("Schema synchronization concurrency", function (this: Suite) {
   });
 
   // Several rebuilds make the timeline briefcase regenerate cache rows after a sequence of schema changes rather than one import.
-  it("a timeline briefcase agrees after several concurrent schema and data rounds #extended", async () => {
+  extendedIt("a timeline briefcase agrees after several concurrent schema and data rounds", async () => {
     const { briefcases, accessTokens } = await createBriefcases({
       containerId: "sync-conc-2-extended",
       iModelName: "sync-conc-timeline-several-rounds",
@@ -417,7 +417,7 @@ describe("Schema synchronization concurrency", function (this: Suite) {
   });
 
   // A third briefcase built only from the timeline checks deterministic cache ids across an importer, a pulling briefcase, and a late download.
-  it("the cache tables match across three briefcases using different schema routes #extended", async () => {
+  extendedIt("the cache tables match across three briefcases using different schema routes", async () => {
     const { briefcases, accessTokens } = await createBriefcases({
       containerId: "sync-conc-3-extended",
       iModelName: "sync-conc-cache-three-routes",
@@ -558,7 +558,7 @@ describe("Schema synchronization concurrency", function (this: Suite) {
   });
 
   // The update path requests a shared repository lock, so this records whether an exclusive schema lock still blocks it.
-  it("an update-path import is refused while another briefcase holds the exclusive schema lock #extended", async () => {
+  extendedIt("an update-path import is refused while another briefcase holds the exclusive schema lock", async () => {
     const { briefcases, accessTokens } = await createBriefcases({
       containerId: "sync-conc-4-extended",
       iModelName: "sync-conc-update-exclusive-lock",
@@ -634,7 +634,7 @@ describe("Schema synchronization concurrency", function (this: Suite) {
   });
 
   // Three independent allocations into BisCore's shared table expose a duplicate-column assignment that two concurrent imports could hide.
-  it("three additive imports converge while competing for one shared column pool #extended", async () => {
+  extendedIt("three additive imports converge while competing for one shared column pool", async () => {
     const { briefcases, accessTokens } = await createBriefcases({
       containerId: "sync-conc-5-extended",
       iModelName: "sync-conc-three-shared-pools",
@@ -687,7 +687,7 @@ describe("Schema synchronization concurrency", function (this: Suite) {
   ];
   for (const pushOrder of pushOrders) {
     const orderName = pushOrder.map((index) => index + 1).join("");
-    it(`three briefcases converge for push order ${orderName} #extended`, async () => {
+    extendedIt(`three briefcases converge for push order ${orderName}`, async () => {
       const { briefcases, accessTokens } = await createBriefcases({
         containerId: `sync-conc-6-${orderName}`,
         iModelName: `sync-conc-rounds-${orderName}`,
@@ -735,7 +735,7 @@ describe("Schema synchronization concurrency", function (this: Suite) {
     const orderName = pushOrder.map((index) => index + 1).join("");
     // The selected briefcase rebuilds through the exclusive upgrade path, changing who owns the sync-db authority at each order position.
     // An additive import holds a shared lock it cannot release while its changes are unpushed, so the upgrade only gets through once the other two have pushed.
-    it(`three briefcases converge for mixed upgrade push order ${orderName} #extended`, async () => {
+    extendedIt(`three briefcases converge for mixed upgrade push order ${orderName}`, async () => {
       const { briefcases, accessTokens } = await createBriefcases({
         containerId: `sync-conc-7-${orderName}`,
         iModelName: `sync-conc-upgrade-rounds-${orderName}`,

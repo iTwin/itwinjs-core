@@ -13,7 +13,7 @@ import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-ba
 import { DbResult } from "@itwin/core-bentley";
 import {
   assertThrowsAsync, assertThrowsAsyncContaining, countSyncDbItemRows, createTestIModel, enableSchemaSync, expectCensusPreserved,
-  expectMetadataTablesIdentical, expectNoForeignKeyViolations, expectPhysicalSchemaIdentical, importTinySchema, initializeContainer,
+  expectMetadataTablesIdentical, expectNoForeignKeyViolations, expectPhysicalSchemaIdentical, extendedIt, importTinySchema, initializeContainer,
   insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase, queryPropNames, querySchemaSyncDataVer, readElementProp,
   readSyncDbDataVer, reopenTestBriefcase, takeElementCensus, TinyClass, TinyProp, TinySchema, tinySchemaToXml,
 } from "./SchemaSyncTestUtils";
@@ -170,7 +170,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   });
 
   // Deleting a property takes the property-mapping branch rather than the class branch, and holding no data does not spare it the upgrade path.
-  it("deleting an empty property the update path refuses #extended", async () => {
+  extendedIt("deleting an empty property the update path refuses", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-11" });
     const accessToken = "sync life dedicated property token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life dedicated property", accessToken });
@@ -330,7 +330,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   });
 
   // KindOfQuantity metadata retains NO ACTION references to units and formats, while the category is another metadata-only row; deleting both exercises those foreign keys across pullers.
-  it("a KindOfQuantity and property category deletion reaches every briefcase #extended", async () => {
+  extendedIt("a KindOfQuantity and property category deletion reaches every briefcase", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-12" });
     const accessToken = "sync life quantity metadata token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life quantity metadata", accessToken });
@@ -603,7 +603,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   // second one fails. The first one's rows are in the sync db, so they have to stay; only the second
   // one's may go. This is what makes the rollback a cancelTo back to a remembered point rather than
   // "undo the schema txns".
-  it("a failed import keeps an earlier unpushed import that already reached the sync db #extended", async () => {
+  extendedIt("a failed import keeps an earlier unpushed import that already reached the sync db", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-18" });
     const accessToken = "sync life rollback stacked token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life rollback stacked", accessToken });
@@ -881,7 +881,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   });
 
   // Relationship instances live in a link table with foreign keys to both endpoint classes, so the retry must remove that table while preserving both endpoint censuses.
-  it("a relationship with instances follows the full deletion retry pattern #extended", async () => {
+  extendedIt("a relationship with instances follows the full deletion retry pattern", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-13" });
     const accessToken = "sync life relationship deletion token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life relationship deletion", accessToken });
@@ -1035,7 +1035,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   });
 
   // Opening after two schema changes forces a readonly reader to join the overflow table without being able to materialize or repair it.
-  it("a readonly briefcase reads an overflow class after several schema changes without writing #extended", async () => {
+  extendedIt("a readonly briefcase reads an overflow class after several schema changes without writing", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-14" });
     const accessToken = "sync life readonly overflow token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life readonly overflow", accessToken });
@@ -1160,7 +1160,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   });
 
   // The stale import now arrives from a second briefcase that already contains data under the newer schema, so both files must retain the newer property set and their elements.
-  it("a stale schema import from a second briefcase loses no properties #extended", async () => {
+  extendedIt("a stale schema import from a second briefcase loses no properties", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-15" });
     const accessToken = "sync life stale schema token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life stale schema", accessToken });
@@ -1222,7 +1222,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
     }
   });
 
-  it("enabling schema sync from a briefcase that is behind the tip is refused #extended", async () => {
+  extendedIt("enabling schema sync from a briefcase that is behind the tip is refused", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-5" });
     const accessToken = "sync life enable token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life enable", accessToken });
@@ -1262,7 +1262,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   });
 
   // This briefcase misses a committed data changeset before initialization, so the level check must report a pull requirement rather than the local-changes error used for schema edits.
-  it("enabling schema sync after a data-only gap is refused #extended", async () => {
+  extendedIt("enabling schema sync after a data-only gap is refused", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-16" });
     const accessToken = "sync life data gap token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life data gap", accessToken });
@@ -1286,7 +1286,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   });
 
   // A V1 checkpoint is a readonly copy of the schema-sync-enabled file; its metadata flags and overflow join must remain usable without any local write.
-  it("a schema-sync-enabled checkpoint stays readable and write-free #extended", async () => {
+  extendedIt("a schema-sync-enabled checkpoint stays readable and write-free", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-17" });
     const accessToken = "sync life checkpoint token";
     HubMock.startup("schema-sync-lifecycle-checkpoint", KnownTestLocations.outputDir, { createTipCheckpointOnPush: true });
