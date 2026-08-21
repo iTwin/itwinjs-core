@@ -544,7 +544,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   }
 
   /** @return true if provider is currently overriding the display of any elements. */
-  public isActive(vp: Viewport): boolean { return (undefined !== this.getNeverDrawnElements(vp) || undefined !== this.getAlwaysDrawnElements(vp) || undefined !== this.getOverriddenElements()); }
+  public isActive(vp: Viewport): boolean {
+    return undefined !== this._defaultAppearance || undefined !== this.getNeverDrawnElements(vp) || undefined !== this.getAlwaysDrawnElements(vp) || undefined !== this.getOverriddenElements();
+  }
 
   /** Serialize to JSON representation.
    * @see [[EmphasizeElements.fromJSON]]
