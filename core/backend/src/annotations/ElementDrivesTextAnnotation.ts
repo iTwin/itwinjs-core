@@ -247,6 +247,13 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * it so that [[evaluateFields]] and the `TxnManager` field-update callbacks can format
    * `"quantity"` and `"coordinate"` [FieldRun]($common)s synchronously.
    *
+   * **Call this when the iModel opens.** Field evaluation fires from `TxnManager` callbacks on
+   * any source-element edit, so a provider that is not yet registered when the first edit lands
+   * cannot participate in it — that field persists its raw string representation and is not
+   * revisited until the *next* edit to the same source (registering does not walk existing
+   * annotations). Registering up front, before the iModel is handed to editing code, is what
+   * makes formatting deterministic.
+   *
    * This is asynchronous because building [FormatterSpec]($core-quantity)s is: resolving
    * formats, units, and conversions all require `await`. Doing that work here — once, up front —
    * is what allows evaluation to stay synchronous afterwards.
@@ -256,9 +263,28 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * instead; pass an empty array to skip the sweep on a large iModel and warm incrementally via
    * [FieldFormattingSpecProvider.warmUp]($backend).
    *
-   * Each registration replaces any prior one for the same iModel. Registrations are
-   * **process-wide** and are not released when the iModel closes, so hosts must pair this with
-   * [[unregisterFieldFormattingProvider]]:
+   * One provider serves **all** of an iModel's FormatSets, so mixing presentations does not mean
+   * registering more than once. Supply the adopted FormatSet as `formatSet` and any additional
+   * per-field ones as `formatSets`, each keyed by the [Id64String]($bentley) that
+   * [FieldRun]($common)s name via [QuantityFieldFormatOptions.formatSet]($common). Fields select
+   * among them at evaluation time with no further registration:
+   *
+   * ```ts
+   * await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+   *   iModel,
+   *   formatSet: metricFormatSet,                                     // the iModel-wide default
+   *   formatSets: [{ id: imperialFormatSetId, formatSet: imperial }], // named per-field
+   * });
+   * ```
+   *
+   * Each registration replaces any prior one for the same iModel, and does so only after its
+   * pre-warm completes. Changing the adopted [FormatSet]($ecschema-metadata) is therefore a
+   * single call to this method — do **not** call [[unregisterFieldFormattingProvider]] first,
+   * which would leave the iModel with no provider for the duration of the `await` and expose
+   * any field evaluated in that window to the raw fallback described there.
+   *
+   * Registrations are **process-wide** and are not released when the iModel closes, so hosts
+   * must pair this with [[unregisterFieldFormattingProvider]]:
    *
    * ```ts
    * iModel.onBeforeClose.addOnce(() => {
@@ -289,9 +315,17 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * Unregistering does **not** clear or reformat any [FieldRun.cachedContent]($common) already
    * persisted while the provider was registered. However, the next source-element update that
    * fires a `TxnManager` field-update callback will re-run [[evaluateFields]] and — finding no
-   * provider — overwrite `cachedContent` with the raw string representation. Hosts that need
-   * formatted output to survive a provider gap should keep the provider registered for the
-   * lifetime of the annotations that depend on it.
+   * provider — overwrite `cachedContent` with the raw string representation.
+   *
+   * That fallback is abrupt by comparison with a *registered* provider, which degrades
+   * gracefully: a provider whose FormatSet lacks an entry for a field's
+   * [KindOfQuantity]($ecschema-metadata) still resolves that KoQ's own presentation format from
+   * the iModel's schemas, so the field renders as `"2.5 m"` rather than `"2.5"`. Having some
+   * provider registered is meaningfully better than having none.
+   *
+   * Hosts that need formatted output to survive should therefore keep a provider registered for
+   * the lifetime of the annotations that depend on it, and swap FormatSets by calling
+   * [[registerFieldFormattingProvider]] again rather than unregistering in between.
    * @beta
    */
   public static unregisterFieldFormattingProvider(iModel: IModelDb): void {

@@ -136,6 +136,12 @@ export interface FieldFormattingSpecProviderArgs {
  * [FieldRun]($common) quantity formats **synchronously** from a cache built ahead of time by
  * [[warmUp]].
  *
+ * One provider holds **every** FormatSet an iModel uses, not one per FormatSet: the adopted
+ * [[FieldFormattingSpecProviderArgs.formatSet]] plus any number of additional
+ * [[FieldFormattingSpecProviderArgs.formatSets]] keyed by [Id64String]($bentley). Each is warmed
+ * into its own bucket, and an individual [FieldRun]($common) selects one by naming its id in
+ * [QuantityFieldFormatOptions.formatSet]($common).
+ *
  * This is what lets the synchronous field-evaluation path — [ElementDrivesTextAnnotation.evaluateFields]($backend)
  * and the `TxnManager` field-update callbacks, neither of which can await — produce the same
  * output that asynchronous formatting would. All asynchronous work (resolving formats, units,
@@ -151,11 +157,15 @@ export interface FieldFormattingSpecProviderArgs {
  *     presentation format for [[FieldFormattingSpecProviderArgs.unitSystem]].
  *  4. The raw string representation, with the shortfall recorded in [[misses]].
  *
+ * Note that steps 1–3 are resolved during [[warmUp]], not at lookup time: a requirement that was
+ * never warmed falls straight to step 4, even though its KindOfQuantity would have resolved a
+ * schema format had it been warmed. This is why registration pre-warms by default.
+ *
  * Units resolve through the bundled BIS units first, falling back to the iModel's schema units
  * for schema-defined custom units.
  *
  * @see [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) to construct,
- * warm, and register one in a single call.
+ * warm, and register one in a single call — normally when the iModel opens.
  * @beta
  */
 export class FieldFormattingSpecProvider implements FormattingSpecProvider {
