@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextBlock } from "@itwin/core-common";
+import { Code, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextBlock } from "@itwin/core-common";
 import { FormatDefinition } from "@itwin/core-quantity";
 import { FormatSet } from "@itwin/ecschema-metadata";
 import { Id64String } from "@itwin/core-bentley";
@@ -18,52 +18,44 @@ import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesText
 import { withEditTxn } from "../../EditTxn";
 
 /**
- * The format-resolution example.
+ * How a [FieldRun]'s quantity format is resolved.
  *
- * Every row varies exactly three inputs on a [FieldRun]'s `formatOptions.quantity` --
- * `formatSet`, `kindOfQuantity`, and `persistenceUnit` -- and applies them to six properties
- * chosen so that three carry their own KindOfQuantity and three do not. That split is the
- * dominant axis: a failed override is silently rescued by the property-side candidate when the
- * property carries a KoQ, and only falls through to the raw string when it does not.
+ * Each test varies the three inputs on `formatOptions.quantity` -- `formatSet`,
+ * `kindOfQuantity`, and `persistenceUnit` -- and applies them to properties chosen so that some
+ * carry their own KindOfQuantity and some do not. That split is the dominant axis: a failed
+ * override is silently rescued by the property-side candidate when the property carries a KoQ,
+ * and only falls through to the raw string when it does not.
  *
- * Cases 1-7 omit `formatSet` entirely, 8-14 name the adopted set explicitly, 15-24 exercise
- * FormatSet routing against a second registered set, and 25 pairs a format with a persistence
- * unit from a different phenomenon.
+ * Formats resolve in this order, and the tests below walk it from the bottom up: the FormatSet a
+ * field names, then the FormatSet adopted for the iModel, then the schema's own presentation
+ * format for the property's KindOfQuantity, then the raw value.
  *
- * Most rows are twins of an earlier row rather than new behavior, so the bulk of the value here
- * is in the equivalence assertions -- they need no captured literals and fail loudly if a
- * fallback path changes. Literal expectations are layered on top for every row; see EXPECTED
- * below for how to recapture them.
+ * Each test registers the FormatSets it depends on inline, so what produced a given string is
+ * visible without cross-referencing a table.
  */
 
 // cspell: ignore koqs
-
-// TODO: might want to remove this when I'm closer to being finished
-/** Set `FIELD_EXAMPLE_CAPTURE=1` to print every rendered case as a paste-ready EXPECTED literal. */
-const CAPTURE = !!process.env.FIELD_EXAMPLE_CAPTURE;
 
 const ADOPTED_SET: Id64String = "0x111";
 const ALT_SET: Id64String = "0x222";
 /** Deliberately never registered, so `getProviderFor` falls back to the adopted bucket. */
 const UNREGISTERED_SET: Id64String = "0x999";
 
-const BAD_UNIT = "Units.NOT_A_UNIT";
-const MISSING_KOQ = "Example.DOES_NOT_EXIST";
-const ALT_ONLY_KOQ = "Example.ALT_ONLY_LENGTH";
-
 // ---------------------------------------------------------------------------------------------
 // Test schema
 // ---------------------------------------------------------------------------------------------
 
 /**
- * Three families of KindOfQuantity live here:
+ * Two families of KindOfQuantity live here:
  *
  *  - `*_PROP` are attached to properties. They give the property-side candidate something to
- *    resolve, and are deliberately absent from both FormatSets so case 1 exercises the schema.
- *  - `SCHEMA_*` are declared but never attached and never appear in a FormatSet. They are what
- *    cases 2/3/5 name to force the FormatSet -> SchemaFormatsProvider fallthrough.
- *  - Everything else the fields name (`Example.LENGTH`, `Example.AREA`, ...) exists only inside a
- *    FormatSet, never in the schema.
+ *    resolve, and are deliberately never defined by a FormatSet in any test below, so a field
+ *    that names nothing exercises the schema.
+ *  - `SCHEMA_*` are declared but never attached. Tests name them to force the
+ *    FormatSet -> SchemaFormatsProvider fallthrough.
+ *
+ * Anything else a field names (`Example.LENGTH`, `Example.AREA`, ...) is defined by the FormatSet
+ * that test registers, and exists nowhere in the schema.
  */
 const exampleSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="FieldExample" alias="fex" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
@@ -134,389 +126,11 @@ function toFormatSet(name: string, formats: Record<string, FormatDefinition>): F
   return { name, label: name, unitSystem: "metric", formats };
 }
 
-/**
- * The adopted set. Each phenomenon contributes two keys: one the alternate set also redefines
- * (`Example.<PHENOMENON>`) and one it omits (`Example.<PHENOMENON>_ALT_OMITS`). Cases distinguish
- * the two to separate "the alternate bucket answered" from "the alternate bucket fell through".
- */
-const ADOPTED_FORMATS: Record<string, FormatDefinition> = {
-  "Example.LENGTH": decimalFormat("Units.MM", "mm", 2),
-  "Example.LENGTH_ALT_OMITS": decimalFormat("Units.CM", "cm", 2),
-  "Example.AREA": decimalFormat("Units.SQ_M", "m2", 2),
-  "Example.AREA_ALT_OMITS": decimalFormat("Units.SQ_FT", "ft2", 2),
-  "Example.ANGLE": decimalFormat("Units.ARC_DEG", "deg", 2),
-  "Example.ANGLE_ALT_OMITS": decimalFormat("Units.RAD", "rad", 4),
-  "Example.SLOPE": decimalFormat("Units.M_PER_M", "m/m", 4),
-  "Example.SLOPE_ALT_OMITS": decimalFormat("Units.HORIZONTAL_PER_VERTICAL", ":1", 2),
-  "Example.RATIO": decimalFormat("Units.ONE", "ratio", 2),
-  "Example.RATIO_ALT_OMITS": decimalFormat("Units.ONE", "r", 4),
-};
-
-/**
- * The alternate set. It redefines a handful of adopted keys with an `[alt]` label, omits the
- * `*_ALT_OMITS` keys entirely so those fall through to the adopted set, and contributes one key
- * (`ALT_ONLY_KOQ`) that exists nowhere else.
- */
-const ALT_FORMATS: Record<string, FormatDefinition> = {
-  "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3),
-  "Example.AREA": decimalFormat("Units.SQ_FT", "[alt]ft2", 3),
-  "Example.ANGLE": decimalFormat("Units.ARC_DEG", "[alt]deg", 1),
-  "Example.SLOPE": decimalFormat("Units.HORIZONTAL_PER_VERTICAL", "[alt]:1", 2),
-  "Example.RATIO": decimalFormat("Units.ONE", "[alt]ratio", 1),
-  [ALT_ONLY_KOQ]: decimalFormat("Units.IN", "[alt-only]in", 2),
-};
-
-// ---------------------------------------------------------------------------------------------
-// Phenomena
-// ---------------------------------------------------------------------------------------------
-
-interface Phenomenon {
-  /** Stable key used in the expectation tables. */
-  readonly key: string;
-  readonly propertyPath: FieldPropertyPath;
-  readonly persistenceUnit: string;
-  /** Whether the property declares its own KindOfQuantity. The dominant axis of the example. */
-  readonly hasKoq: boolean;
-  /** A KoQ the adopted set defines and the alternate set does not. */
-  readonly koqAdoptedOnly: string;
-  /** A KoQ both sets define, the alternate overriding the adopted. */
-  readonly koqInBothSets: string;
-  /** A KoQ present in the schema but in neither FormatSet. */
-  readonly schemaKoq: string;
-  /** A KoQ whose format belongs to a different phenomenon than `persistenceUnit`. */
-  readonly crossPhenomenonKoq: string;
-}
-
-const PHENOMENA: readonly Phenomenon[] = [
-  {
-    key: "length", propertyPath: { propertyName: "lengthProp" }, persistenceUnit: "Units.M", hasKoq: true,
-    koqAdoptedOnly: "Example.LENGTH_ALT_OMITS", koqInBothSets: "Example.LENGTH",
-    schemaKoq: "FieldExample.SCHEMA_LENGTH", crossPhenomenonKoq: "Example.ANGLE",
-  },
-  {
-    key: "area", propertyPath: { propertyName: "areaProp" }, persistenceUnit: "Units.SQ_M", hasKoq: true,
-    koqAdoptedOnly: "Example.AREA_ALT_OMITS", koqInBothSets: "Example.AREA",
-    schemaKoq: "FieldExample.SCHEMA_AREA", crossPhenomenonKoq: "Example.LENGTH",
-  },
-  {
-    key: "slope", propertyPath: { propertyName: "slopeProp" }, persistenceUnit: "Units.M_PER_M", hasKoq: true,
-    koqAdoptedOnly: "Example.SLOPE_ALT_OMITS", koqInBothSets: "Example.SLOPE",
-    schemaKoq: "FieldExample.SCHEMA_SLOPE", crossPhenomenonKoq: "Example.LENGTH",
-  },
-  {
-    key: "angle", propertyPath: { propertyName: "angleProp" }, persistenceUnit: "Units.ARC_DEG", hasKoq: false,
-    koqAdoptedOnly: "Example.ANGLE_ALT_OMITS", koqInBothSets: "Example.ANGLE",
-    schemaKoq: "FieldExample.SCHEMA_ANGLE", crossPhenomenonKoq: "Example.LENGTH",
-  },
-  {
-    key: "dimensionless", propertyPath: { propertyName: "ratioProp" }, persistenceUnit: "Units.ONE", hasKoq: false,
-    koqAdoptedOnly: "Example.RATIO_ALT_OMITS", koqInBothSets: "Example.RATIO",
-    schemaKoq: "FieldExample.SCHEMA_RATIO", crossPhenomenonKoq: "Example.LENGTH",
-  },
-  {
-    key: "coordinate", propertyPath: { propertyName: "point" }, persistenceUnit: "Units.M", hasKoq: false,
-    koqAdoptedOnly: "Example.LENGTH_ALT_OMITS", koqInBothSets: "Example.LENGTH",
-    schemaKoq: "FieldExample.SCHEMA_LENGTH", crossPhenomenonKoq: "Example.ANGLE",
-  },
-];
-
-const KOQ_BEARING = PHENOMENA.filter((p) => p.hasKoq).map((p) => p.key);
-const KOQ_LESS = PHENOMENA.filter((p) => !p.hasKoq).map((p) => p.key);
-
-// ---------------------------------------------------------------------------------------------
-// Cases
-// ---------------------------------------------------------------------------------------------
-
 type QuantityOptions = NonNullable<NonNullable<FieldRun["formatOptions"]>["quantity"]>;
-
-interface Case {
-  readonly id: string;
-  readonly title: string;
-  /** `undefined` means the field carries no `formatOptions` at all. */
-  readonly options: (p: Phenomenon) => QuantityOptions | undefined;
-}
-
-const CASES: readonly Case[] = [
-  { id: "1", title: "no format options", options: () => undefined },
-
-  { id: "2", title: "schema KoQ + persistenceUnit, no formatSet named", options: (p) => ({ kindOfQuantity: p.schemaKoq, persistenceUnit: p.persistenceUnit }) },
-  { id: "3", title: "schema KoQ only, no persistenceUnit and no formatSet named", options: (p) => ({ kindOfQuantity: p.schemaKoq }) },
-  { id: "4", title: "persistenceUnit only, no formatSet named", options: (p) => ({ persistenceUnit: p.persistenceUnit }) },
-  { id: "5", title: "schema KoQ + bad persistenceUnit, no formatSet named", options: (p) => ({ kindOfQuantity: p.schemaKoq, persistenceUnit: BAD_UNIT }) },
-  { id: "6", title: "nonexistent KoQ + valid persistenceUnit, no formatSet named", options: (p) => ({ kindOfQuantity: MISSING_KOQ, persistenceUnit: p.persistenceUnit }) },
-  { id: "7", title: "nonexistent KoQ + bad persistenceUnit, no formatSet named", options: () => ({ kindOfQuantity: MISSING_KOQ, persistenceUnit: BAD_UNIT }) },
-
-  { id: "8", title: "adopted set + KoQ only, no persistenceUnit", options: (p) => ({ formatSet: ADOPTED_SET, kindOfQuantity: p.koqAdoptedOnly }) },
-  { id: "9", title: "adopted set + persistenceUnit only, no KoQ", options: (p) => ({ formatSet: ADOPTED_SET, persistenceUnit: p.persistenceUnit }) },
-  { id: "10", title: "adopted set + KoQ + persistenceUnit (happy path)", options: (p) => ({ formatSet: ADOPTED_SET, kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: p.persistenceUnit }) },
-  { id: "11", title: "adopted set + KoQ + bad persistenceUnit", options: (p) => ({ formatSet: ADOPTED_SET, kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: BAD_UNIT }) },
-  { id: "12", title: "adopted set + schema-only KoQ + persistenceUnit", options: (p) => ({ formatSet: ADOPTED_SET, kindOfQuantity: p.schemaKoq, persistenceUnit: p.persistenceUnit }) },
-  { id: "13", title: "adopted set + nonexistent KoQ + persistenceUnit", options: (p) => ({ formatSet: ADOPTED_SET, kindOfQuantity: MISSING_KOQ, persistenceUnit: p.persistenceUnit }) },
-  { id: "14", title: "adopted set + nonexistent KoQ + bad persistenceUnit", options: () => ({ formatSet: ADOPTED_SET, kindOfQuantity: MISSING_KOQ, persistenceUnit: BAD_UNIT }) },
-
-  { id: "15", title: "alternate set redefines the key", options: (p) => ({ formatSet: ALT_SET, kindOfQuantity: p.koqInBothSets, persistenceUnit: p.persistenceUnit }) },
-  { id: "16", title: "alternate set omits the key", options: (p) => ({ formatSet: ALT_SET, kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: p.persistenceUnit }) },
-  { id: "17", title: "key defined only in the alternate set, addressed correctly", options: (p) => ({ formatSet: ALT_SET, kindOfQuantity: ALT_ONLY_KOQ, persistenceUnit: p.persistenceUnit }) },
-  { id: "18", title: "same alt-only key without naming the alternate set", options: (p) => ({ kindOfQuantity: ALT_ONLY_KOQ, persistenceUnit: p.persistenceUnit }) },
-  { id: "19", title: "adopted-set key without naming any set", options: (p) => ({ kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: p.persistenceUnit }) },
-  { id: "20", title: "naming a FormatSet id that was never registered", options: (p) => ({ formatSet: UNREGISTERED_SET, kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: p.persistenceUnit }) },
-  { id: "21", title: "alternate set named, key exists only in the schema", options: (p) => ({ formatSet: ALT_SET, kindOfQuantity: p.schemaKoq, persistenceUnit: p.persistenceUnit }) },
-  { id: "22", title: "unregistered id + a key only the alternate set defines", options: (p) => ({ formatSet: UNREGISTERED_SET, kindOfQuantity: ALT_ONLY_KOQ, persistenceUnit: p.persistenceUnit }) },
-  { id: "23", title: "alternate set named with neither KoQ nor persistenceUnit", options: () => ({ formatSet: ALT_SET }) },
-  { id: "24", title: "alternate set named, adopted-only key, bad persistenceUnit", options: (p) => ({ formatSet: ALT_SET, kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: BAD_UNIT }) },
-
-  { id: "25", title: "cross-phenomenon pairing (format and persistence unit disagree)", options: (p) => ({ formatSet: ADOPTED_SET, kindOfQuantity: p.crossPhenomenonKoq, persistenceUnit: p.persistenceUnit }) },
-];
-
-/**
- * Rows that must render identically to an earlier row, and why. These carry the bulk of the
- * suite's value: they assert the fallback chain without depending on any captured literal, so
- * they keep working when formats or seed values change.
- */
-const EQUIVALENCES: ReadonlyArray<{ readonly of: string, readonly to: string, readonly why: string }> = [
-  { of: "2", to: "12", why: "naming the adopted set explicitly is a no-op, so the schema fallthrough is reached either way" },
-  { of: "4", to: "9", why: "with no KoQ to look up, naming a set changes nothing" },
-  { of: "5", to: "11", why: "the unit leg fails in both, so the property-side candidate decides" },
-  { of: "6", to: "13", why: "the format leg fails in both" },
-  { of: "7", to: "14", why: "both legs fail in both" },
-  { of: "16", to: "10", why: "the alternate set omits the key, so resolution falls through to the adopted set" },
-  { of: "19", to: "10", why: "the default bucket is the adopted set, so naming it explicitly is a no-op" },
-  { of: "20", to: "10", why: "an unregistered id silently falls back to the adopted bucket" },
-  { of: "21", to: "12", why: "the alternate bucket must walk alternate -> adopted -> schema" },
-  { of: "22", to: "18", why: "the unknown-id fallback is the adopted bucket, not a search of every bucket" },
-  { of: "23", to: "1", why: "a bare formatSet with nothing to look up is inert" },
-  { of: "24", to: "11", why: "the property-side rescue behaves the same while routed to a non-default bucket" },
-];
-
-/**
- * Literal expectations, keyed by case id then phenomenon key, captured from a run against the
- * schema and FormatSets above. The table must cover every (case, phenomenon) pair -- the
- * completeness guard below fails if any entry is missing, since `Fields.test.ts` no longer
- * duplicates these rows. Run with `FIELD_EXAMPLE_CAPTURE=1` to reprint this table after
- * changing a seed value or a format.
- */
-const EXPECTED: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  "1": { // no format options
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "2": { // schema KoQ + persistenceUnit, no formatSet named
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90.0 °",
-    dimensionless: "0.9 one",
-    coordinate: "(1.0 m, 2.0 m, 3.0 m)",
-  },
-  "3": { // schema KoQ only, no persistenceUnit and no formatSet named
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "4": { // persistenceUnit only, no formatSet named
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "5": { // schema KoQ + bad persistenceUnit, no formatSet named
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "6": { // nonexistent KoQ + valid persistenceUnit, no formatSet named
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "7": { // nonexistent KoQ + bad persistenceUnit, no formatSet named
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "8": { // adopted set + KoQ only, no persistenceUnit
-    length: "250 cm",
-    area: "1076.39 ft2",
-    slope: "100 :1",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "9": { // adopted set + persistenceUnit only, no KoQ
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "10": { // adopted set + KoQ + persistenceUnit (happy path)
-    length: "250 cm",
-    area: "1076.39 ft2",
-    slope: "100 :1",
-    angle: "1.5708 rad",
-    dimensionless: "0.9 r",
-    coordinate: "(100 cm, 200 cm, 300 cm)",
-  },
-  "11": { // adopted set + KoQ + bad persistenceUnit
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "12": { // adopted set + schema-only KoQ + persistenceUnit
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90.0 °",
-    dimensionless: "0.9 one",
-    coordinate: "(1.0 m, 2.0 m, 3.0 m)",
-  },
-  "13": { // adopted set + nonexistent KoQ + persistenceUnit
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "14": { // adopted set + nonexistent KoQ + bad persistenceUnit
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "15": { // alternate set redefines the key
-    length: "8.202 [alt]ft",
-    area: "1076.391 [alt]ft2",
-    slope: "100 [alt]:1",
-    angle: "90 [alt]deg",
-    dimensionless: "0.9 [alt]ratio",
-    coordinate: "(3.281 [alt]ft, 6.562 [alt]ft, 9.843 [alt]ft)",
-  },
-  "16": { // alternate set omits the key
-    length: "250 cm",
-    area: "1076.39 ft2",
-    slope: "100 :1",
-    angle: "1.5708 rad",
-    dimensionless: "0.9 r",
-    coordinate: "(100 cm, 200 cm, 300 cm)",
-  },
-  // NOTE: only `length` and `coordinate` convert; the other four are the cross-phenomenon
-  // bug below, applying an inch format to a non-length persistence unit.
-  "17": { // key defined only in the alternate set, addressed correctly
-    length: "98.43 [alt-only]in",
-    area: "100 [alt-only]in",
-    slope: "0.01 [alt-only]in",
-    angle: "90 [alt-only]in",
-    dimensionless: "0.9 [alt-only]in",
-    coordinate: "(39.37 [alt-only]in, 78.74 [alt-only]in, 118.11 [alt-only]in)",
-  },
-  "18": { // same alt-only key without naming the alternate set
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "19": { // adopted-set key without naming any set
-    length: "250 cm",
-    area: "1076.39 ft2",
-    slope: "100 :1",
-    angle: "1.5708 rad",
-    dimensionless: "0.9 r",
-    coordinate: "(100 cm, 200 cm, 300 cm)",
-  },
-  "20": { // naming a FormatSet id that was never registered
-    length: "250 cm",
-    area: "1076.39 ft2",
-    slope: "100 :1",
-    angle: "1.5708 rad",
-    dimensionless: "0.9 r",
-    coordinate: "(100 cm, 200 cm, 300 cm)",
-  },
-  "21": { // alternate set named, key exists only in the schema
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90.0 °",
-    dimensionless: "0.9 one",
-    coordinate: "(1.0 m, 2.0 m, 3.0 m)",
-  },
-  "22": { // unregistered id + a key only the alternate set defines
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "23": { // alternate set named with neither KoQ nor persistenceUnit
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  "24": { // alternate set named, adopted-only key, bad persistenceUnit
-    length: "2.5 m",
-    area: "100.0 m²",
-    slope: "0.01 m/m",
-    angle: "90",
-    dimensionless: "0.9",
-    coordinate: "(1, 2, 3)",
-  },
-  // KNOWN BUG: every magnitude below is unchanged from case 1 -- the value is relabelled,
-  // not converted. When FormatterSpec stops pushing the identity conversion on a
-  // phenomenon mismatch, these rows should fall back like any other failed override.
-  "25": { // cross-phenomenon pairing (format and persistence unit disagree)
-    length: "2.5 deg",
-    area: "100 mm",
-    slope: "0.01 mm",
-    angle: "90 mm",
-    dimensionless: "0.9 mm",
-    coordinate: "(1 deg, 2 deg, 3 deg)",
-  },
-};
-
-// ---------------------------------------------------------------------------------------------
-// Harness
-// ---------------------------------------------------------------------------------------------
-
-function resultKey(caseId: string, phenomenonKey: string): string {
-  return `${caseId}:${phenomenonKey}`;
-}
 
 describe("Field format resolution example", () => {
   let imodel: StandaloneDb;
   let elementId: Id64String;
-
-  /** Rendered content for every (case, phenomenon) pair. */
-  const rendered = new Map<string, string>();
 
   before(async () => {
     const iModelPath = IModelTestUtils.prepareOutputFile("FieldFormatExample", "test.bim");
@@ -548,56 +162,6 @@ describe("Field format resolution example", () => {
       };
       elementId = txn.insertElement(props);
     });
-
-    // One block holding every row, so a single collect -> warm -> evaluate pass covers every
-    // case and the warm-up sees the union of all requirements -- exactly as an app would.
-    const block = TextBlock.create();
-    const fields = new Map<string, FieldRun>();
-
-    for (const testCase of CASES) {
-      for (const phenomenon of PHENOMENA) {
-        const quantity = testCase.options(phenomenon);
-        const field = FieldRun.create({
-          propertyHost: { elementId, schemaName: "FieldExample", className: "ExampleElement" },
-          propertyPath: phenomenon.propertyPath,
-          formatOptions: quantity ? { quantity } : undefined,
-          cachedContent: "unevaluated",
-        });
-        block.appendRun(field);
-        fields.set(resultKey(testCase.id, phenomenon.key), field);
-      }
-    }
-
-    await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-      iModel: imodel,
-      formatSet: toFormatSet("Adopted", ADOPTED_FORMATS),
-      formatSets: [
-        { id: ADOPTED_SET, formatSet: toFormatSet("Adopted", ADOPTED_FORMATS) },
-        { id: ALT_SET, formatSet: toFormatSet("Alternate", ALT_FORMATS) },
-      ],
-      requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
-    });
-
-    ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-    for (const [key, field] of fields) {
-      rendered.set(key, field.cachedContent);
-    }
-
-    if (CAPTURE) {
-      const lines: string[] = ["const EXPECTED = {"];
-      for (const testCase of CASES) {
-        lines.push(`  "${testCase.id}": { // ${testCase.title}`);
-        for (const phenomenon of PHENOMENA) {
-          const value = rendered.get(resultKey(testCase.id, phenomenon.key)) ?? "";
-          lines.push(`    ${phenomenon.key}: ${JSON.stringify(value)},`);
-        }
-        lines.push("  },");
-      }
-      lines.push("};");
-      // eslint-disable-next-line no-console
-      console.log(lines.join("\n"));
-    }
   });
 
   after(() => {
@@ -605,127 +169,444 @@ describe("Field format resolution example", () => {
     imodel.close();
   });
 
-  function contentOf(caseId: string, phenomenonKey: string): string {
-    const value = rendered.get(resultKey(caseId, phenomenonKey));
-    expect(value, `no rendered content for case ${caseId} / ${phenomenonKey}`).not.to.be.undefined;
-    return value!;
+  /** Appends a field on `propertyName` of the seeded element, and hands it back so the test can
+   * read its content after [[render]].
+   */
+  function appendField(block: TextBlock, propertyName: string, quantity?: QuantityOptions): FieldRun {
+    const field = FieldRun.create({
+      propertyHost: { elementId, schemaName: "FieldExample", className: "ExampleElement" },
+      propertyPath: { propertyName },
+      formatOptions: quantity ? { quantity } : undefined,
+      cachedContent: "unevaluated",
+    });
+    block.appendRun(field);
+    return field;
   }
 
-  /** Every row of every case rendered to something. Guards the harness itself. */
-  it("renders every case against every phenomenon", () => {
-    expect(rendered.size).to.equal(CASES.length * PHENOMENA.length);
-    for (const [key, value] of rendered) {
-      expect(value, `case ${key} was never evaluated`).not.to.equal("unevaluated");
-      expect(value, `case ${key} rendered empty`).not.to.equal("");
-    }
-  });
-
-  /**
-   * The literal table must stay complete. `Fields.test.ts` no longer duplicates the rows this
-   * file owns, so a missing EXPECTED entry would silently drop coverage -- a pending test is
-   * reported green. Fail loudly instead, unless we are capturing a fresh table.
+  /** Registers a provider warmed for exactly `block`'s fields, then evaluates them in place --
+   * the same collect -> warm -> evaluate pass an app performs. Each call replaces the previous
+   * registration, so a test's FormatSets never leak into the next one.
    */
-  it("has a literal expectation for every case and phenomenon", function () {
-    if (CAPTURE) {
-      this.skip();
-    }
-
-    const missing: string[] = [];
-    for (const testCase of CASES) {
-      for (const phenomenon of PHENOMENA) {
-        if (EXPECTED[testCase.id]?.[phenomenon.key] === undefined) {
-          missing.push(resultKey(testCase.id, phenomenon.key));
-        }
-      }
-    }
-
-    expect(missing, "EXPECTED is incomplete -- rerun with FIELD_EXAMPLE_CAPTURE=1 and paste the printed table into EXPECTED").to.deep.equal([]);
-  });
-
-  describe("literal expectations", () => {
-    for (const testCase of CASES) {
-      const expectations = EXPECTED[testCase.id];
-      const captured = PHENOMENA.filter((p) => expectations?.[p.key] !== undefined);
-
-      if (captured.length > 0) {
-        it(`case ${testCase.id}: ${testCase.title}`, () => {
-          for (const phenomenon of captured) {
-            expect(contentOf(testCase.id, phenomenon.key), `case ${testCase.id} / ${phenomenon.key}`)
-              .to.equal(expectations[phenomenon.key]);
-          }
-        });
-      }
-    }
-  });
-
-  describe("equivalences", () => {
-    for (const { of, to, why } of EQUIVALENCES) {
-      it(`case ${of} renders identically to case ${to} -- ${why}`, () => {
-        for (const phenomenon of PHENOMENA) {
-          expect(contentOf(of, phenomenon.key), `case ${of} vs ${to} / ${phenomenon.key}`)
-            .to.equal(contentOf(to, phenomenon.key));
-        }
-      });
-    }
-  });
-
-  describe("distinctions", () => {
-    it("case 17 differs from case 18 -- identical options apart from formatSet, opposite outcomes", () => {
-      // 17 names the alternate set and resolves its alt-only key; 18 omits `formatSet`, so
-      // neither the adopted set nor the schema can supply that key.
-      const differing = PHENOMENA.filter((p) => contentOf("17", p.key) !== contentOf("18", p.key));
-      expect(differing.map((p) => p.key), "naming the alternate set made no difference anywhere").not.to.be.empty;
+  async function render(
+    block: TextBlock,
+    formatSets: { readonly adopted?: FormatSet, readonly byId?: ReadonlyArray<{ id: Id64String, formatSet: FormatSet }> } = {},
+  ): Promise<void> {
+    await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+      iModel: imodel,
+      formatSet: formatSets.adopted,
+      formatSets: formatSets.byId,
+      requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
     });
 
-    it("case 15 differs from case 10 -- the alternate set's override must win", () => {
-      for (const phenomenon of PHENOMENA) {
-        expect(contentOf("15", phenomenon.key), `case 15 / ${phenomenon.key} did not use the alternate format`)
-          .not.to.equal(contentOf("10", phenomenon.key));
-      }
-    });
+    ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+  }
+
+  it("renders a field with no format options from the property's own KindOfQuantity, and raw where it has none", async () => {
+    const block = TextBlock.create();
+    const length = appendField(block, "lengthProp");
+    const area = appendField(block, "areaProp");
+    const slope = appendField(block, "slopeProp");
+    const angle = appendField(block, "angleProp");
+    const ratio = appendField(block, "ratioProp");
+    const point = appendField(block, "point");
+
+    await render(block);
+
+    // lengthProp, areaProp and slopeProp each declare a KindOfQuantity, so with no FormatSet
+    // adopted the schema's own presentation format supplies the unit and precision.
+    expect(length.cachedContent).to.equal("2.5 m");
+    expect(area.cachedContent).to.equal("100.0 m²");
+    expect(slope.cachedContent).to.equal("0.01 m/m");
+
+    // angleProp, ratioProp and point declare none, and the field names none either, so there is
+    // nothing to resolve against and the persisted value is rendered as-is.
+    expect(angle.cachedContent).to.equal("90");
+    expect(ratio.cachedContent).to.equal("0.9");
+    expect(point.cachedContent).to.equal("(1, 2, 3)");
   });
 
-  describe("property KindOfQuantity is the dominant axis", () => {
-    it("case 3 resolves for KoQ-bearing properties and falls back for the rest", () => {
-      // With a format named but no persistence unit, the unit must come from the property side.
-      for (const key of KOQ_BEARING) {
-        expect(contentOf("3", key), `case 3 / ${key} should have bound the schema format`)
-          .to.equal(contentOf("12", key));
-      }
-      for (const key of KOQ_LESS) {
-        expect(contentOf("3", key), `case 3 / ${key} had nothing to bind against`)
-          .to.equal(contentOf("1", key));
-      }
-    });
+  it("resolves a schema-defined KindOfQuantity for every property when the field supplies both the format and the unit", async () => {
+    // The only row in this group that resolves anything the baseline did not. Naming a KoQ the
+    // schema declares but no FormatSet defines reaches the SchemaFormatsProvider, and because the
+    // field also names the persistence unit, the properties that carry no KoQ of their own
+    // resolve too -- both halves of the key came from the field.
+    const block = TextBlock.create();
+    const length = appendField(block, "lengthProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.M" });
+    const area = appendField(block, "areaProp", { kindOfQuantity: "FieldExample.SCHEMA_AREA", persistenceUnit: "Units.SQ_M" });
+    const slope = appendField(block, "slopeProp", { kindOfQuantity: "FieldExample.SCHEMA_SLOPE", persistenceUnit: "Units.M_PER_M" });
+    const angle = appendField(block, "angleProp", { kindOfQuantity: "FieldExample.SCHEMA_ANGLE", persistenceUnit: "Units.ARC_DEG" });
+    const ratio = appendField(block, "ratioProp", { kindOfQuantity: "FieldExample.SCHEMA_RATIO", persistenceUnit: "Units.ONE" });
+    const point = appendField(block, "point", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.M" });
 
-    it("case 7 falls back to the property's own format where one exists, and to raw where it does not", () => {
-      // Both legs of the override fail, so this is the most degenerate row: it must be
-      // indistinguishable from the baseline everywhere.
-      for (const phenomenon of PHENOMENA) {
-        expect(contentOf("7", phenomenon.key), `case 7 / ${phenomenon.key}`)
-          .to.equal(contentOf("1", phenomenon.key));
-      }
-    });
+    await render(block);
+
+    // The SCHEMA_* KoQs declare the same units as the properties do, at precision 2 rather than 4,
+    // so the KoQ-bearing properties look unchanged from the baseline.
+    expect(length.cachedContent).to.equal("2.5 m");
+    expect(area.cachedContent).to.equal("100.0 m²");
+    expect(slope.cachedContent).to.equal("0.01 m/m");
+
+    // These three are the ones that moved: raw in the baseline, formatted here.
+    expect(angle.cachedContent).to.equal("90.0 °");
+    expect(ratio.cachedContent).to.equal("0.9 one");
+    expect(point.cachedContent).to.equal("(1.0 m, 2.0 m, 3.0 m)");
   });
 
-  describe("cross-phenomenon pairing", () => {
+  it("ignores a KindOfQuantity named without a persistence unit unless the property supplies one", async () => {
+    // Same KoQs as above with the unit leg dropped. A format alone cannot be bound to a value --
+    // something has to say what unit the persisted number is in. The property's own KoQ answers
+    // that for the first three; nothing answers it for the rest.
+    const block = TextBlock.create();
+    const length = appendField(block, "lengthProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH" });
+    const area = appendField(block, "areaProp", { kindOfQuantity: "FieldExample.SCHEMA_AREA" });
+    const slope = appendField(block, "slopeProp", { kindOfQuantity: "FieldExample.SCHEMA_SLOPE" });
+    const angle = appendField(block, "angleProp", { kindOfQuantity: "FieldExample.SCHEMA_ANGLE" });
+    const ratio = appendField(block, "ratioProp", { kindOfQuantity: "FieldExample.SCHEMA_RATIO" });
+    const point = appendField(block, "point", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH" });
+
+    await render(block);
+
+    expect(length.cachedContent).to.equal("2.5 m");
+    expect(area.cachedContent).to.equal("100.0 m²");
+    expect(slope.cachedContent).to.equal("0.01 m/m");
+
+    // Back to raw, unlike the test above -- dropping the unit cost these three their formatting.
+    expect(angle.cachedContent).to.equal("90");
+    expect(ratio.cachedContent).to.equal("0.9");
+    expect(point.cachedContent).to.equal("(1, 2, 3)");
+  });
+
+  it("ignores a persistence unit named without a KindOfQuantity", async () => {
+    // The mirror image: a unit with no format to apply to it. Nothing names a format, so the
+    // property-side candidate is all that is left and the result is the baseline exactly.
+    const block = TextBlock.create();
+    const length = appendField(block, "lengthProp", { persistenceUnit: "Units.M" });
+    const area = appendField(block, "areaProp", { persistenceUnit: "Units.SQ_M" });
+    const slope = appendField(block, "slopeProp", { persistenceUnit: "Units.M_PER_M" });
+    const angle = appendField(block, "angleProp", { persistenceUnit: "Units.ARC_DEG" });
+    const ratio = appendField(block, "ratioProp", { persistenceUnit: "Units.ONE" });
+    const point = appendField(block, "point", { persistenceUnit: "Units.M" });
+
+    await render(block);
+
+    expect(length.cachedContent).to.equal("2.5 m");
+    expect(area.cachedContent).to.equal("100.0 m²");
+    expect(slope.cachedContent).to.equal("0.01 m/m");
+    expect(angle.cachedContent).to.equal("90");
+    expect(ratio.cachedContent).to.equal("0.9");
+    expect(point.cachedContent).to.equal("(1, 2, 3)");
+  });
+
+  it("falls back to the property's own format when the persistence unit does not exist", async () => {
+    // The format leg is fine and the unit leg is garbage. The override fails as a unit, and the
+    // property-side candidate silently rescues the properties that carry a KoQ.
+    const block = TextBlock.create();
+    const length = appendField(block, "lengthProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.NOT_A_UNIT" });
+    const area = appendField(block, "areaProp", { kindOfQuantity: "FieldExample.SCHEMA_AREA", persistenceUnit: "Units.NOT_A_UNIT" });
+    const slope = appendField(block, "slopeProp", { kindOfQuantity: "FieldExample.SCHEMA_SLOPE", persistenceUnit: "Units.NOT_A_UNIT" });
+    const angle = appendField(block, "angleProp", { kindOfQuantity: "FieldExample.SCHEMA_ANGLE", persistenceUnit: "Units.NOT_A_UNIT" });
+    const ratio = appendField(block, "ratioProp", { kindOfQuantity: "FieldExample.SCHEMA_RATIO", persistenceUnit: "Units.NOT_A_UNIT" });
+    const point = appendField(block, "point", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.NOT_A_UNIT" });
+
+    await render(block);
+
+    expect(length.cachedContent).to.equal("2.5 m");
+    expect(area.cachedContent).to.equal("100.0 m²");
+    expect(slope.cachedContent).to.equal("0.01 m/m");
+    expect(angle.cachedContent).to.equal("90");
+    expect(ratio.cachedContent).to.equal("0.9");
+    expect(point.cachedContent).to.equal("(1, 2, 3)");
+  });
+
+  it("falls back to the property's own format when the KindOfQuantity does not exist", async () => {
+    // The other leg fails this time -- a KoQ no FormatSet and no schema defines, paired with a
+    // perfectly good unit. Indistinguishable in output from the failed-unit case above.
+    const block = TextBlock.create();
+    const length = appendField(block, "lengthProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.M" });
+    const area = appendField(block, "areaProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.SQ_M" });
+    const slope = appendField(block, "slopeProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.M_PER_M" });
+    const angle = appendField(block, "angleProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.ARC_DEG" });
+    const ratio = appendField(block, "ratioProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.ONE" });
+    const point = appendField(block, "point", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.M" });
+
+    await render(block);
+
+    expect(length.cachedContent).to.equal("2.5 m");
+    expect(area.cachedContent).to.equal("100.0 m²");
+    expect(slope.cachedContent).to.equal("0.01 m/m");
+    expect(angle.cachedContent).to.equal("90");
+    expect(ratio.cachedContent).to.equal("0.9");
+    expect(point.cachedContent).to.equal("(1, 2, 3)");
+  });
+
+  it("renders exactly as if no format options were given when both legs of the override fail", async () => {
+    // The most degenerate row: nothing the field says can be resolved, so it must be
+    // indistinguishable from a field carrying no formatOptions at all. Asserted here against a
+    // baseline field rendered in the same pass rather than against captured literals, so the
+    // claim survives any change to the seed values or the schema's formats.
+    const block = TextBlock.create();
+    const bothLegsFail = { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.NOT_A_UNIT" };
+
+    const length = appendField(block, "lengthProp", bothLegsFail);
+    const area = appendField(block, "areaProp", bothLegsFail);
+    const slope = appendField(block, "slopeProp", bothLegsFail);
+    const angle = appendField(block, "angleProp", bothLegsFail);
+    const ratio = appendField(block, "ratioProp", bothLegsFail);
+    const point = appendField(block, "point", bothLegsFail);
+
+    const lengthBaseline = appendField(block, "lengthProp");
+    const areaBaseline = appendField(block, "areaProp");
+    const slopeBaseline = appendField(block, "slopeProp");
+    const angleBaseline = appendField(block, "angleProp");
+    const ratioBaseline = appendField(block, "ratioProp");
+    const pointBaseline = appendField(block, "point");
+
+    await render(block);
+
+    expect(length.cachedContent).to.equal(lengthBaseline.cachedContent);
+    expect(area.cachedContent).to.equal(areaBaseline.cachedContent);
+    expect(slope.cachedContent).to.equal(slopeBaseline.cachedContent);
+    expect(angle.cachedContent).to.equal(angleBaseline.cachedContent);
+    expect(ratio.cachedContent).to.equal(ratioBaseline.cachedContent);
+    expect(point.cachedContent).to.equal(pointBaseline.cachedContent);
+  });
+
+  it("prefers the adopted FormatSet's format over the property's own schema format", async () => {
+    // The happy path. Every field names a KoQ the adopted set defines and the unit its value is
+    // persisted in, so the FormatSet answers for all six -- including the three properties that
+    // carry no KoQ of their own, which the field has now supplied both halves of the key for.
+    const block = TextBlock.create();
+    const length = appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+    const area = appendField(block, "areaProp", { kindOfQuantity: "Example.AREA", persistenceUnit: "Units.SQ_M" });
+    const slope = appendField(block, "slopeProp", { kindOfQuantity: "Example.SLOPE", persistenceUnit: "Units.M_PER_M" });
+    const angle = appendField(block, "angleProp", { kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.ARC_DEG" });
+    const ratio = appendField(block, "ratioProp", { kindOfQuantity: "Example.RATIO", persistenceUnit: "Units.ONE" });
+    const point = appendField(block, "point", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+
+    await render(block, {
+      adopted: toFormatSet("Adopted", {
+        "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
+        "Example.AREA": decimalFormat("Units.SQ_FT", "ft2", 2),
+        "Example.SLOPE": decimalFormat("Units.HORIZONTAL_PER_VERTICAL", ":1", 2),
+        "Example.ANGLE": decimalFormat("Units.RAD", "rad", 4),
+        "Example.RATIO": decimalFormat("Units.ONE", "r", 4),
+      }),
+    });
+
+    // Each value is converted out of its persistence unit into the adopted format's unit -- the
+    // schema's own metre/square-metre/degree presentations no longer apply.
+    expect(length.cachedContent).to.equal("250 cm");
+    expect(area.cachedContent).to.equal("1076.39 ft2");
+    expect(slope.cachedContent).to.equal("100 :1");
+    expect(angle.cachedContent).to.equal("1.5708 rad");
+    expect(ratio.cachedContent).to.equal("0.9 r");
+    expect(point.cachedContent).to.equal("(100 cm, 200 cm, 300 cm)");
+  });
+
+  it("applies an adopted FormatSet format without a persistence unit only where the property declares one", async () => {
+    // Same adopted set, unit leg dropped. The property's KoQ supplies the missing half for the
+    // first three; the rest have nothing to convert from and stay raw. Note this is not the
+    // schema's *format* being used -- only its persistence unit, with the FormatSet's format.
+    const block = TextBlock.create();
+    const length = appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH" });
+    const area = appendField(block, "areaProp", { kindOfQuantity: "Example.AREA" });
+    const slope = appendField(block, "slopeProp", { kindOfQuantity: "Example.SLOPE" });
+    const angle = appendField(block, "angleProp", { kindOfQuantity: "Example.ANGLE" });
+    const ratio = appendField(block, "ratioProp", { kindOfQuantity: "Example.RATIO" });
+    const point = appendField(block, "point", { kindOfQuantity: "Example.LENGTH" });
+
+    await render(block, {
+      adopted: toFormatSet("Adopted", {
+        "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
+        "Example.AREA": decimalFormat("Units.SQ_FT", "ft2", 2),
+        "Example.SLOPE": decimalFormat("Units.HORIZONTAL_PER_VERTICAL", ":1", 2),
+        "Example.ANGLE": decimalFormat("Units.RAD", "rad", 4),
+        "Example.RATIO": decimalFormat("Units.ONE", "r", 4),
+      }),
+    });
+
+    expect(length.cachedContent).to.equal("250 cm");
+    expect(area.cachedContent).to.equal("1076.39 ft2");
+    expect(slope.cachedContent).to.equal("100 :1");
+
+    // Unchanged from the baseline: no persistence unit from either side.
+    expect(angle.cachedContent).to.equal("90");
+    expect(ratio.cachedContent).to.equal("0.9");
+    expect(point.cachedContent).to.equal("(1, 2, 3)");
+  });
+
+  it("routes to the adopted FormatSet whether the field names its id, names nothing, or names an id that was never registered", async () => {
+    // Three ways of addressing the default bucket, which must be indistinguishable: the adopted
+    // set is what a field gets when it asks for nothing, and an id absent from the registration
+    // falls back to it rather than failing or searching the other buckets. Asserted against each
+    // other rather than against literals so it cannot drift with the formats above.
+    const block = TextBlock.create();
+    const namesNothing = appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+    const namesAdopted = appendField(block, "lengthProp", { formatSet: ADOPTED_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+    const namesUnregistered = appendField(block, "lengthProp", { formatSet: UNREGISTERED_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+
+    // Repeated on a property with no KoQ of its own, where a routing failure would fall all the
+    // way to raw rather than being masked by the property-side format.
+    const koqLessNamesNothing = appendField(block, "angleProp", { kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.ARC_DEG" });
+    const koqLessNamesAdopted = appendField(block, "angleProp", { formatSet: ADOPTED_SET, kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.ARC_DEG" });
+    const koqLessNamesUnregistered = appendField(block, "angleProp", { formatSet: UNREGISTERED_SET, kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.ARC_DEG" });
+
+    const adopted = toFormatSet("Adopted", {
+      "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
+      "Example.ANGLE": decimalFormat("Units.RAD", "rad", 4),
+    });
+    await render(block, { adopted, byId: [{ id: ADOPTED_SET, formatSet: adopted }] });
+
+    expect(namesNothing.cachedContent).to.equal("250 cm");
+    expect(namesAdopted.cachedContent).to.equal(namesNothing.cachedContent);
+    expect(namesUnregistered.cachedContent).to.equal(namesNothing.cachedContent);
+
+    expect(koqLessNamesNothing.cachedContent).to.equal("1.5708 rad");
+    expect(koqLessNamesAdopted.cachedContent).to.equal(koqLessNamesNothing.cachedContent);
+    expect(koqLessNamesUnregistered.cachedContent).to.equal(koqLessNamesNothing.cachedContent);
+  });
+
+  it("uses an alternate FormatSet's format when the field names it, in preference to the adopted one", async () => {
+    // Mixing presentations within one iModel -- imperial callouts on an otherwise metric drawing.
+    // Both sets define every key here, so the alternate's redefinition is what must win.
+    const block = TextBlock.create();
+    const length = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+    const area = appendField(block, "areaProp", { formatSet: ALT_SET, kindOfQuantity: "Example.AREA", persistenceUnit: "Units.SQ_M" });
+    const slope = appendField(block, "slopeProp", { formatSet: ALT_SET, kindOfQuantity: "Example.SLOPE", persistenceUnit: "Units.M_PER_M" });
+    const angle = appendField(block, "angleProp", { formatSet: ALT_SET, kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.ARC_DEG" });
+    const ratio = appendField(block, "ratioProp", { formatSet: ALT_SET, kindOfQuantity: "Example.RATIO", persistenceUnit: "Units.ONE" });
+    const point = appendField(block, "point", { formatSet: ALT_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+
+    // The same field routed to the default bucket, to prove the alternate set actually displaced
+    // the adopted one rather than both happening to agree.
+    const adoptedLength = appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+
+    await render(block, {
+      adopted: toFormatSet("Adopted", {
+        "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
+        "Example.AREA": decimalFormat("Units.SQ_M", "m2", 2),
+        "Example.SLOPE": decimalFormat("Units.M_PER_M", "m/m", 4),
+        "Example.ANGLE": decimalFormat("Units.ARC_DEG", "deg", 2),
+        "Example.RATIO": decimalFormat("Units.ONE", "ratio", 2),
+      }),
+      byId: [{
+        id: ALT_SET, formatSet: toFormatSet("Alternate", {
+          "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3),
+          "Example.AREA": decimalFormat("Units.SQ_FT", "[alt]ft2", 3),
+          "Example.SLOPE": decimalFormat("Units.HORIZONTAL_PER_VERTICAL", "[alt]:1", 2),
+          "Example.ANGLE": decimalFormat("Units.ARC_DEG", "[alt]deg", 1),
+          "Example.RATIO": decimalFormat("Units.ONE", "[alt]ratio", 1),
+        }),
+      }],
+    });
+
+    expect(length.cachedContent).to.equal("8.202 [alt]ft");
+    expect(area.cachedContent).to.equal("1076.391 [alt]ft2");
+    expect(slope.cachedContent).to.equal("100 [alt]:1");
+    expect(angle.cachedContent).to.equal("90 [alt]deg");
+    expect(ratio.cachedContent).to.equal("0.9 [alt]ratio");
+    expect(point.cachedContent).to.equal("(3.281 [alt]ft, 6.562 [alt]ft, 9.843 [alt]ft)");
+
+    expect(adoptedLength.cachedContent).to.equal("250 cm");
+  });
+
+  it("falls through from the named alternate FormatSet to the adopted one when the alternate omits the key", async () => {
+    // The alternate set is a partial overlay, not a replacement: a field routed to it still sees
+    // every key the adopted set defines.
+    const block = TextBlock.create();
+    const redefined = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+    const omitted = appendField(block, "areaProp", { formatSet: ALT_SET, kindOfQuantity: "Example.AREA", persistenceUnit: "Units.SQ_M" });
+
+    await render(block, {
+      adopted: toFormatSet("Adopted", {
+        "Example.LENGTH": decimalFormat("Units.CM", "cm", 2),
+        "Example.AREA": decimalFormat("Units.SQ_FT", "ft2", 2),
+      }),
+      byId: [{
+        id: ALT_SET, formatSet: toFormatSet("Alternate", {
+          // Redefines the length key and says nothing about area.
+          "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3),
+        }),
+      }],
+    });
+
+    expect(redefined.cachedContent).to.equal("8.202 [alt]ft");
+    expect(omitted.cachedContent).to.equal("1076.39 ft2");
+  });
+
+  it("resolves a key only the alternate FormatSet defines only when the field names that set", async () => {
+    // The complement of the fallthrough above: the adopted bucket cannot see into the alternate
+    // one. An unregistered id lands on the adopted bucket, so it fails the same way naming
+    // nothing does -- the fallback is one specific bucket, not a search of every registered set.
+    const block = TextBlock.create();
+    const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.ALT_ONLY_LENGTH", persistenceUnit: "Units.M" });
+    const namesNothing = appendField(block, "lengthProp", { kindOfQuantity: "Example.ALT_ONLY_LENGTH", persistenceUnit: "Units.M" });
+    const namesUnregistered = appendField(block, "lengthProp", { formatSet: UNREGISTERED_SET, kindOfQuantity: "Example.ALT_ONLY_LENGTH", persistenceUnit: "Units.M" });
+
+    await render(block, {
+      adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
+      byId: [{
+        id: ALT_SET, formatSet: toFormatSet("Alternate", {
+          "Example.ALT_ONLY_LENGTH": decimalFormat("Units.IN", "[alt-only]in", 2),
+        }),
+      }],
+    });
+
+    expect(namesAlternate.cachedContent).to.equal("98.43 [alt-only]in");
+
+    // Neither the adopted set nor the schema defines this key, so the property's own KoQ decides.
+    expect(namesNothing.cachedContent).to.equal("2.5 m");
+    expect(namesUnregistered.cachedContent).to.equal(namesNothing.cachedContent);
+  });
+
+  it("reaches the schema from a named alternate FormatSet when neither set defines the key", async () => {
+    // The full chain in one field: alternate -> adopted -> SchemaFormatsProvider. Asserted on a
+    // property with no KoQ of its own, so a break anywhere in the chain shows up as a raw value
+    // rather than being masked by the property-side format.
+    const block = TextBlock.create();
+    const angle = appendField(block, "angleProp", { formatSet: ALT_SET, kindOfQuantity: "FieldExample.SCHEMA_ANGLE", persistenceUnit: "Units.ARC_DEG" });
+
+    await render(block, {
+      adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
+      byId: [{ id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) }],
+    });
+
+    expect(angle.cachedContent).to.equal("90.0 °");
+  });
+
+  it("does nothing when a field names a FormatSet but no KindOfQuantity and no persistence unit", async () => {
+    // A FormatSet is only ever reached through a KoQ key, so naming one on its own is inert.
+    const block = TextBlock.create();
+    const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET });
+    const noOptions = appendField(block, "lengthProp");
+
+    await render(block, {
+      adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
+      byId: [{ id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) }],
+    });
+
+    expect(namesAlternate.cachedContent).to.equal(noOptions.cachedContent);
+    expect(namesAlternate.cachedContent).to.equal("2.5 m");
+  });
+
+  it("relabels rather than converts when the format's unit and the persistence unit disagree", async () => {
     // KNOWN BUG: FormatterSpec.getUnitConversions logs a warning when the format's unit and the
     // persistence unit belong to different phenomena, but pushes the identity conversion anyway,
-    // so the magnitude is relabelled rather than converted or rejected. Once fixed, these rows
-    // should stop resolving and fall back like any other failed override.
-    it("case 25 relabels the magnitude instead of converting it", () => {
-      for (const phenomenon of PHENOMENA) {
-        const baseline = contentOf("1", phenomenon.key);
-        const crossed = contentOf("25", phenomenon.key);
+    // so the magnitude is relabelled rather than converted or rejected. Once fixed, this should
+    // stop resolving and fall back like any other failed override.
+    const block = TextBlock.create();
+    const crossed = appendField(block, "lengthProp", { kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.M" });
+    const baseline = appendField(block, "lengthProp");
 
-        // The digits are identical to the baseline; only the unit label changed. Stated this way
-        // the assertion needs no captured literal, so it keeps describing the bug precisely even
-        // if the seed values or formats change.
-        expect(numbersIn(crossed), `case 25 / ${phenomenon.key} converted the magnitude`)
-          .to.deep.equal(numbersIn(baseline));
-        expect(crossed, `case 25 / ${phenomenon.key} did not relabel`).not.to.equal(baseline);
-      }
+    await render(block, {
+      adopted: toFormatSet("Adopted", { "Example.ANGLE": decimalFormat("Units.ARC_DEG", "deg", 2) }),
     });
+
+    // 2.5 metres presented as 2.5 degrees. Stated as "same digits, different label" so the
+    // assertion keeps describing the bug precisely even if the seed value changes.
+    expect(baseline.cachedContent).to.equal("2.5 m");
+    expect(crossed.cachedContent).to.equal("2.5 deg");
+    expect(numbersIn(crossed.cachedContent)).to.deep.equal(numbersIn(baseline.cachedContent));
   });
 });
 
