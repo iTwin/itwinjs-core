@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
