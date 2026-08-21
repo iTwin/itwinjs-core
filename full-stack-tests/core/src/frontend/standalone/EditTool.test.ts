@@ -3,17 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
+import * as chaiAsPromisedModule from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
+import { resolveChaiPlugin } from "../testAssertions";
 
 const expect = chai.expect;
-const assert = chai.assert;
+const assert: typeof chai.assert = chai.assert;
 
+const chaiAsPromised = resolveChaiPlugin(chaiAsPromisedModule);
 chai.use(chaiAsPromised);
 
 let iModel: TestSnapshotConnection;

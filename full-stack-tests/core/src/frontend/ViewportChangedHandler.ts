@@ -103,6 +103,10 @@ export class ViewportChangedHandler {
     expect(this._vp.analysisFractionValid).to.equal(0 === (state & ViewportState.AnalysisFraction));
 
     this._vp.renderFrame();
+    // A scene rebuild can invalidate the time point again while processing a view change.
+    // Render one more frame before asserting all deferred validity flags.
+    if (!this._vp.sceneValid || !this._vp.renderPlanValid || !this._vp.controllerValid || !this._vp.timePointValid || !this._vp.analysisFractionValid)
+      this._vp.renderFrame();
 
     expect(this._vp.sceneValid).to.be.true;
     expect(this._vp.renderPlanValid).to.be.true;
