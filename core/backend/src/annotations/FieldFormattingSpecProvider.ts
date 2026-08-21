@@ -33,8 +33,10 @@ function specKey(args: FormattingSpecArgs): string {
 }
 
 /** Builds the [FormatterSpec]($core-quantity) / [ParserSpec]($core-quantity) pair for one
- * requirement, or `undefined` when either the format or the persistence unit fails to resolve.
- * Both must succeed — a format with no resolvable persistence unit cannot convert.
+ * requirement, or `undefined` when the format fails to resolve, the persistence unit fails to
+ * resolve, or the two cannot be converted between. All three must succeed — a format that cannot
+ * convert the persisted magnitude is not usable, so the caller falls back as it would for any
+ * other unresolved override.
  */
 async function buildSpecEntry(
   args: FormattingSpecArgs,
@@ -57,8 +59,20 @@ async function buildSpecEntry(
   }
 
   const format = await Format.createFromJSON("fieldFormat", unitsProvider, formatProps);
+  const formatterSpec = await FormatterSpec.create("fieldFormat", format, unitsProvider, persistenceUnit);
+
+  // Reject a format whose units belong to a different phenomenon than the persisted value.
+  // UnitsProvider.getConversion reports this by returning the identity conversion tagged
+  // `error: true`, and its contract requires callers to check that flag before applying the
+  // result. FormatterSpec.getUnitConversions only logs a warning and keeps the identity
+  // conversion, so without this check a length persisted in metres would render through an
+  // angle format as "2.5 deg" -- relabelled rather than converted.
+  if (formatterSpec.unitConversions.some((conversion) => conversion.conversion.error)) {
+    return undefined;
+  }
+
   return {
-    formatterSpec: await FormatterSpec.create("fieldFormat", format, unitsProvider, persistenceUnit),
+    formatterSpec,
     parserSpec: await ParserSpec.create(format, unitsProvider, persistenceUnit),
   };
 }
