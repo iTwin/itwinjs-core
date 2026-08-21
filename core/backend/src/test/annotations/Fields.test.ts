@@ -38,6 +38,7 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
     intProp: 100,
     point: { x: 1, y: 2, z: 3 },
     strings: ["a", "b", `"name": "c"`],
+    dateStrings: ["2025-08-28T13:45:30.123Z"],
     datetime: new Date("2025-08-28T13:45:30.123Z"),
     lengthProp: 2.5,
     intEnum: 1,
@@ -57,6 +58,11 @@ function insertTestElement(txn: EditTxn, model: Id64String, category: Id64String
       stringProp: "abc",
       ints: [10, 11, 12, 13],
       bool: true,
+      // Deliberately present-but-null, to pin that a JSON null resolves to no value rather than
+      // to a FieldValue the formatters would have to stringify.
+      nullProp: null,
+      lengthMeters: 2.5,
+      readings: [1.5, null, "text"],
       zoo: {
         address: {
           zipcode: 12345,
@@ -216,6 +222,7 @@ const fieldsSchemaXml = `
     <ECProperty propertyName="datetime" typeName="dateTime"/>
     <ECProperty propertyName="lengthProp" typeName="double" kindOfQuantity="LENGTH"/>
     <ECArrayProperty propertyName="strings" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="dateStrings" typeName="string" extendedTypeName="DateTime" minOccurs="0" maxOccurs="unbounded"/>
     <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
     <ECStructArrayProperty propertyName="outerStructs" typeName="OuterStruct" minOccurs="0" maxOccurs="unbounded"/>
     <ECProperty propertyName="intEnum" typeName="IntEnum"/>
@@ -258,6 +265,7 @@ interface TestElementProps extends PhysicalElementProps {
   point: XYAndZ;
   maybeNull?: number;
   strings: string[];
+  dateStrings: string[];
   datetime: Date;
   lengthProp: number;
   outerStruct: OuterStruct;
@@ -271,6 +279,7 @@ class TestElement extends PhysicalElement {
   declare public point: XYAndZ;
   declare public maybeNull?: number;
   declare public strings: string[];
+  declare public dateStrings: string[];
   declare public datetime: Date;
   declare public lengthProp: number;
   declare public outerStruct: OuterStruct;
@@ -343,7 +352,7 @@ describe("Field evaluation", () => {
     imodel.close();
   });
 
-  function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): FieldValue | undefined {
+  function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false, formatOptions?: FieldRun["formatOptions"]): FieldValue | undefined {
     if (typeof propertyHost === "string") {
       propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
     }
@@ -351,6 +360,7 @@ describe("Field evaluation", () => {
     const field = FieldRun.create({
       propertyPath,
       propertyHost,
+      formatOptions,
     });
 
     const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
@@ -492,6 +502,16 @@ describe("Field evaluation", () => {
       propertyHost.className = "GeometricElement3d";
       expect(getPropertyType(propertyHost, "LastMod")).to.equal("datetime");
       expect(getPropertyType(propertyHost, "FederationGuid")).to.equal("string");
+    });
+
+    it("deduces the type of an array leaf from the schema rather than from the value", () => {
+      // Regression: the type used to be inferred by sniffing `typeof value` whenever the
+      // terminal EC property was a String primitive reached through accessors. Since a String
+      // *array* property also reports isPrimitive(), legitimate array leaves took the
+      // JSON-in-string branch and lost their schema-declared extended type.
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      expect(getPropertyType(propertyHost, { propertyName: "strings", accessors: [0] })).to.equal("string");
+      expect(getPropertyType(propertyHost, { propertyName: "dateStrings", accessors: [0] })).to.equal("datetime");
     });
 
     it("returns undefined for non-primitive properties", () => {
@@ -734,6 +754,117 @@ describe("Field evaluation", () => {
     });
   });
 
+  describe("JSON-in-string properties", () => {
+    // `JsonProperties` is a plain String column; accessors index into the parsed JSON, so none
+    // of these paths have an EC property — and therefore no schema-side KindOfQuantity — behind
+    // the leaf.
+    function jsonPath(...accessors: Array<string | number>): FieldPropertyPath {
+      return { propertyName: "JsonProperties", accessors };
+    }
+
+    function evaluateJson(accessors: Array<string | number>, formatOptions?: FieldRun["formatOptions"]): FieldValue | undefined {
+      return evaluateField(jsonPath(...accessors), sourceElementId, false, formatOptions);
+    }
+
+    it("indexes into a deserialized JSON object", () => {
+      expect(evaluateJson(["stringProp"])?.value).to.equal("abc");
+      expect(evaluateJson(["bool"])?.value).to.equal(true);
+      expect(evaluateJson(["zoo", "address", "zipcode"])?.value).to.equal(12345);
+    });
+
+    it("indexes into a deserialized JSON array, including negative indices", () => {
+      expect(evaluateJson(["ints", 0])?.value).to.equal(10);
+      expect(evaluateJson(["ints", 3])?.value).to.equal(13);
+      expect(evaluateJson(["ints", -1])?.value).to.equal(13);
+      expect(evaluateJson(["zoo", "birds", 1, "sound"])?.value).to.equal("scree!");
+    });
+
+    it("returns undefined for a JSON null leaf rather than an unformattable value", () => {
+      // A JSON null is not a FieldPrimitiveValue. Producing one here used to yield a
+      // `{ value: null, type: "string" }` FieldValue whose formatter called `null.toString()`.
+      expect(evaluateJson(["nullProp"])).to.be.undefined;
+      expect(evaluateJson(["readings", 1])).to.be.undefined;
+    });
+
+    it("does not throw when a field resolves to a JSON null", () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: jsonPath("nullProp"),
+        cachedContent: "stale",
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      expect(() => updateField(fieldRun, context)).to.not.throw();
+      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    });
+
+    it("returns undefined for a missing key or an out-of-range index", () => {
+      expect(evaluateJson(["nope"])).to.be.undefined;
+      expect(evaluateJson(["zoo", "address", "street"])).to.be.undefined;
+      expect(evaluateJson(["ints", 4])).to.be.undefined;
+      expect(evaluateJson(["ints", -5])).to.be.undefined;
+    });
+
+    it("returns undefined when the path stops on a JSON object or array", () => {
+      expect(evaluateJson(["zoo"])).to.be.undefined;
+      expect(evaluateJson(["ints"])).to.be.undefined;
+    });
+
+    it("returns undefined when indexing past a JSON scalar", () => {
+      expect(evaluateJson(["stringProp", "more"])).to.be.undefined;
+      expect(evaluateJson(["bool", 0])).to.be.undefined;
+    });
+
+    it("keeps the raw string when the property is not indexed", () => {
+      const value = evaluateField({ propertyName: "JsonProperties" }, sourceElementId);
+      expect(value?.type).to.equal("string");
+      expect(value?.value).to.be.a("string").and.to.contain("stringProp");
+    });
+
+    it("types string and boolean leaves from the parsed JSON", () => {
+      expect(evaluateJson(["stringProp"])?.type).to.equal("string");
+      expect(evaluateJson(["bool"])?.type).to.equal("boolean");
+      expect(evaluateJson(["readings", 2])?.type).to.equal("string");
+    });
+
+    it("types a numeric leaf as a quantity", () => {
+      // JSON carries no units, so the field is expected to declare its own KoQ and persistence
+      // unit. An incomplete key isn't an error: it produces no format candidates and renders
+      // through the same raw fallback a string leaf would have used.
+      expect(evaluateJson(["lengthMeters"])?.type).to.equal("quantity");
+      expect(evaluateJson(["lengthMeters"], { quantity: { kindOfQuantity: "AecUnits.LENGTH" } })?.type).to.equal("quantity");
+      expect(evaluateJson(["lengthMeters"], { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } })?.type).to.equal("quantity");
+    });
+
+    it("carries no property-side KoQ for a numeric leaf", () => {
+      // There is no EC property behind a JSON leaf, so the only pair the formatter can build is
+      // the one the field supplies.
+      const value = evaluateJson(["lengthMeters"], { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } });
+      expect(value?.value).to.equal(2.5);
+      expect(value?.kindOfQuantityFullName).to.be.undefined;
+      expect(value?.persistenceUnitFullName).to.be.undefined;
+    });
+
+    it("renders a numeric leaf as its raw value when the field supplies an incomplete key", () => {
+      // The user-visible half of the contract: "quantity" with no resolvable (KoQ, unit) pair is
+      // indistinguishable from the plain string rendering, and records no pre-warm miss.
+      const provider: FormattingSpecProvider = {
+        onFormattingReady: new BeUnorderedUiEvent(),
+        getSpecsByNameAndUnit: () => undefined,
+        formatQuantity: (m) => `FORMATTED:${m}`,
+      };
+
+      let missed = false;
+      for (const quantity of [undefined, { kindOfQuantity: "AecUnits.LENGTH" }, { persistenceUnit: "Units.M" }]) {
+        const value = evaluateJson(["lengthMeters"], quantity ? { quantity } : undefined);
+        expect(value?.type).to.equal("quantity");
+        expect(formatFieldValueWithSpecProvider(value!, quantity ? { quantity } : undefined, provider, () => { missed = true; })).to.equal("2.5");
+      }
+
+      expect(missed, "an unformattable JSON leaf is not an under-warmed requirement").to.be.false;
+    });
+  });
+
   describe("collectFieldFormattingRequirements", () => {
     function makeField(propertyPath: FieldPropertyPath, formatOptions?: FieldRun["formatOptions"]): FieldRun {
       return FieldRun.create({
@@ -823,6 +954,29 @@ describe("Field evaluation", () => {
       const block = makeBlock();
       const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
       expect(reqs).to.have.length(0);
+    });
+
+    it("skips a JSON-in-string field whose quantity key is incomplete", () => {
+      // A JSON leaf has no property-side pair, so a half-specified key yields no requirement —
+      // matching the runtime, which falls through to the raw representation.
+      const block = makeBlock(
+        makeField({ propertyName: "JsonProperties", accessors: ["lengthMeters"] }),
+        makeField({ propertyName: "JsonProperties", accessors: ["lengthMeters"] }, { quantity: { kindOfQuantity: "AecUnits.LENGTH" } }),
+        makeField({ propertyName: "JsonProperties", accessors: ["lengthMeters"] }, { quantity: { persistenceUnit: "Units.M" } }),
+      );
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.have.length(0);
+    });
+
+    it("emits the field-supplied pair for a JSON-in-string field with both overrides", () => {
+      // The evaluation path types this leaf "quantity", so pre-warm has to cover it or the
+      // synchronous txn callback would persist a raw value.
+      const block = makeBlock(makeField(
+        { propertyName: "JsonProperties", accessors: ["lengthMeters"] },
+        { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } },
+      ));
+      const reqs = ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block });
+      expect(reqs).to.deep.equal([{ name: "AecUnits.LENGTH", persistenceUnitName: "Units.M" }]);
     });
   });
 
