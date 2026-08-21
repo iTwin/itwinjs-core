@@ -182,8 +182,8 @@ export class BaseFormat {
       if (undefined !== formatProps.ratioSeparator) { // optional; default is ":"
         if (typeof (formatProps.ratioSeparator) !== "string")
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
-        if (formatProps.ratioSeparator.length === 0)
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be a non-empty string.`);
+        if ([...formatProps.ratioSeparator.trim()].length !== 1)
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should contain exactly one non-whitespace character, optionally surrounded by whitespace.`);
         this._ratioSeparator = formatProps.ratioSeparator;
       } else {
         this._ratioSeparator = ":"; // Apply default
