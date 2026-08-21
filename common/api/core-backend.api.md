@@ -1993,7 +1993,18 @@ export interface CreateSheetViewDefinitionArgs {
 }
 
 // @beta
-export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number): boolean;
+export function createTerminatorGeometry(args: CreateTerminatorGeometryArgs): boolean;
+
+// @beta
+export interface CreateTerminatorGeometryArgs {
+    builder: ElementGeometry.Builder;
+    dir: Vector3d;
+    isArrow?: boolean;
+    params: GeometryParams;
+    point: Point3d;
+    textHeight: number;
+    textStyleSettings: TextStyleSettings;
+}
 
 // @beta
 export interface CustomHandledProperty {
@@ -3758,7 +3769,8 @@ export abstract class GeometricElement2d extends GeometricElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): GeometricElement2dProps;
     // (undocumented)
-    placement: Placement2d;
+    get placement(): Placement2d;
+    set placement(value: Placement2d);
     // @beta
     static serialize(props: GeometricElement2dProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
@@ -3786,7 +3798,8 @@ export abstract class GeometricElement3d extends GeometricElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): GeometricElement3dProps;
     // (undocumented)
-    placement: Placement3d;
+    get placement(): Placement3d;
+    set placement(value: Placement3d);
     // @beta
     static serialize(props: GeometricElement3dProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
@@ -7398,7 +7411,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.3";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
