@@ -347,6 +347,25 @@ describe("EmphasizeElements tests", () => {
     EmphasizeElements.clear(vp);
   });
 
+  it("applies default appearance with no elements emphasized", () => {
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
+    EmphasizeElements.clear(vp);
+
+    const emph = EmphasizeElements.getOrCreate(vp);
+    const deemphasized = FeatureAppearance.fromTransparency(0.5);
+    emph.defaultAppearance = deemphasized;
+
+    const ovrs = new FeatureSymbology.Overrides(vp);
+    emph.addFeatureOverrides(ovrs, vp);
+
+    // Nothing is in vp.alwaysDrawn, so every element should receive the default (de-emphasized) appearance.
+    const actual = ovrs.getFeatureAppearance(new Feature("0x123"), "0x456")!;
+    expect(actual).not.to.be.undefined;
+    expect(actual.equals(deemphasized)).to.be.true;
+
+    EmphasizeElements.clear(vp);
+  });
+
   it("Override to/from key", async () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
@@ -551,5 +570,25 @@ describe("EmphasizeElements tests", () => {
       emph.addFeatureOverrides(ovrs, vp);
       expect(ovrs.getFeatureAppearance(feature, "0x456")).to.be.undefined;
     });
+  });
+
+  it("fromJSON reports a change when only defaultAppearance differs", () => {
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
+    EmphasizeElements.clear(vp);
+    const emph = EmphasizeElements.getOrCreate(vp);
+
+    const appearance = FeatureAppearance.fromTransparency(0.5);
+    expect(emph.fromJSON({ defaultAppearance: appearance.toJSON() }, vp)).to.be.true;
+    expect(emph.defaultAppearance!.equals(appearance)).to.be.true;
+
+    // Applying the same appearance again is not a change.
+    expect(emph.fromJSON({ defaultAppearance: appearance.toJSON() }, vp)).to.be.false;
+
+    // A different appearance is a change.
+    const other = FeatureAppearance.fromTransparency(0.75);
+    expect(emph.fromJSON({ defaultAppearance: other.toJSON() }, vp)).to.be.true;
+    expect(emph.defaultAppearance!.equals(other)).to.be.true;
+
+    EmphasizeElements.clear(vp);
   });
 });

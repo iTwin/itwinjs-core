@@ -30,11 +30,12 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @see [[Viewport.addFeatureOverrideProvider]]
    */
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void {
+    // Apply regardless of whether there are any emphasized/overridden elements for independent de-emphasis...
+    if (undefined !== this._defaultAppearance)
+      overrides.setDefaultOverrides(this._defaultAppearance);
+
     const emphasizedElements = this.getEmphasizedElements(vp);
     if (undefined !== emphasizedElements) {
-      if (this._defaultAppearance !== undefined) {
-        overrides.setDefaultOverrides(this._defaultAppearance);
-      }
       const appearance = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
 
       // Avoid creating a new object per-element inside the loop
@@ -53,9 +54,6 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 
     const overriddenElements = this.getOverriddenElements();
     if (undefined !== overriddenElements) {
-      if (undefined !== this._defaultAppearance)
-        overrides.setDefaultOverrides(this._defaultAppearance);
-
       // Avoid creating a new object per-element inside the loop
       const args = { elementId: "", appearance: FeatureAppearance.defaults };
       for (const [key, ids] of overriddenElements) {
@@ -128,7 +126,10 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   }
 
   /** Establish a default appearance to apply to elements without overrides. If changing the default appearance
-   * without also calling overrideElements, an explicit refresh must be requested for the change to take effect.
+   * without also calling emphasizeElements/overrideElements, an explicit refresh must be requested for the change to take effect.
+   * @note Setting this to `undefined` to undo [[emphasizeElements]] or [[isolateElements]] leaves the always-drawn/isolated
+   * element IDs in place but invisible to [[getEmphasizedElements]], [[getEmphasizedIsolatedElements]], and [[clearEmphasizedElements]].
+   * Prefer [[clearEmphasizedElements]] or [[clearEmphasizedIsolatedElements]] to undo emphasis, which clear both together.
    * @see [[Viewport.setFeatureOverrideProviderChanged]]
    */
   public get defaultAppearance(): FeatureAppearance | undefined { return this._defaultAppearance; }
@@ -603,8 +604,12 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     if (undefined !== props.alwaysDrawnExclusiveEmphasized)
       this._emphasizeIsolated = new Set<string>(props.alwaysDrawnExclusiveEmphasized); // changed status determined by setAlwaysDrawnElements...
 
-    if (undefined !== props.defaultAppearance)
-      this.defaultAppearance = FeatureAppearance.fromJSON(props.defaultAppearance); // changed status determined by setAlwaysDrawnElements or overrideElements...
+    if (undefined !== props.defaultAppearance) {
+      const defaultAppearance = FeatureAppearance.fromJSON(props.defaultAppearance);
+      if (undefined === this._defaultAppearance || !this._defaultAppearance.equals(defaultAppearance))
+        changed = true;
+      this.defaultAppearance = defaultAppearance;
+    }
 
     if (props.unanimatedAppearance)
       this.unanimatedAppearance = FeatureAppearance.fromJSON(props.unanimatedAppearance);
