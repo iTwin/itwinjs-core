@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "",
+      "comment": "EmphasizeElements' default appearance applies even if no elements are emphasized.",
       "type": "none"
     }
   ],
