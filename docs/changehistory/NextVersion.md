@@ -132,12 +132,14 @@ The same rule applies to a field that indexes into a string property holding ser
 
 #### Adopting a FormatSet
 
-Register the FormatSet your application has adopted for an iModel. Registration is asynchronous: it pre-warms a [FormatterSpec]($core-quantity) for every field requirement it can find, so that subsequent evaluation needs no `await`.
+Register the FormatSet your application has adopted for an iModel, **when the iModel opens**. Registration is asynchronous: it pre-warms a [FormatterSpec]($core-quantity) for every field requirement it can find, so that subsequent evaluation needs no `await`.
 
 ```typescript
 const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel, formatSet });
 iModel.onBeforeClose.addOnce(() => ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel));
 ```
+
+Registering at open matters because field evaluation fires from `TxnManager` callbacks on any source-element edit. An edit that lands before registration completes formats without the provider and persists a raw string, and — since registering does not walk existing annotations — that field is not revisited until the next edit to the same source.
 
 By default this sweeps the iModel for every dependency-tracked annotation and warms what they need. Applications that know their requirements — or that want to skip the sweep on a large iModel — can pass them explicitly, using [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) for an in-memory block or [ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements]($backend) for the persisted ones:
 
@@ -165,9 +167,13 @@ await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
 });
 ```
 
+This is still a **single** registration. One `FieldFormattingSpecProvider` holds every FormatSet the iModel uses — each is warmed into its own bucket, and fields select among them at evaluation time. There is no need to register once per FormatSet, and no need to swap providers to change which presentation a given field gets.
+
 The `unitSystem` used to pick a KindOfQuantity's presentation format when its schema offers several defaults to the adopted FormatSet's own [FormatSet.unitSystem]($ecschema-metadata), or `"metric"` when no FormatSet is adopted. Override it with `unitSystem` on the same arguments.
 
 Registrations are keyed by [IModelDb]($backend) and are **process-wide** — Core never sweeps them automatically, so unregister when the iModel closes. Registering a provider does **not** reformat existing annotations; applications that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly. Symmetrically, unregistering a provider that saved annotations depend on causes the next source-element edit to overwrite their formatted `cachedContent` with the raw string representation.
+
+Keep a provider registered for as long as the annotations depending on it are editable. Note that this is only a concern when *no* provider is registered: a registered provider whose FormatSet lacks an entry for a field's KindOfQuantity still falls back to that KoQ's presentation format from the iModel's schemas, so the field renders as `"2.5 m"` rather than `"2.5"`. Changing the adopted FormatSet needs only a second `registerFieldFormattingProvider` call — each registration replaces the prior one after its pre-warm completes, so there is no window in which the iModel has no provider. Unregistering first would create one.
 
 #### Evaluating fields
 
