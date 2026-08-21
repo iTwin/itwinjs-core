@@ -7,14 +7,17 @@
  */
 
 import { _implementationProhibited } from "../common/internal/Symbols";
+import { HitDetail } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
 import { TileTreeReference } from "../tile/internal";
 import { DecorateContext, DynamicsContext, SceneContext } from "../ViewContext";
+import { ViewportDecorator } from "../Viewport";
 
 // Just using this temporarily to explicitly document the expected shape of all SceneObjects as that shape evolves.
 // Might keep it for convenient place to define default behavior and add new methods/properties without breaking API.
-export abstract class BaseSceneObject {
-  abstract get isLoadingComplete(): boolean;
+export abstract class BaseSceneObject implements ViewportDecorator {
+  abstract readonly kind: string;
+  abstract readonly isLoadingComplete: boolean;
 
   draw(_context: SceneContext): void { }
   decorate(_context: DecorateContext): void { }
@@ -22,6 +25,10 @@ export abstract class BaseSceneObject {
 
   getTileTreeReferences(): Iterable<TileTreeReference> {
     return [];
+  }
+
+  async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> {
+    return undefined;
   }
 }
 
