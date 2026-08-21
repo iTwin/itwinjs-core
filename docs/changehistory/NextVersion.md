@@ -110,6 +110,7 @@ Applications that shut down while requests are outstanding no longer need to fil
 ### OPC point clouds without a vertical datum are now placed using orthometric heights
 
 OPC point clouds whose CRS defines no vertical datum were displayed too high or low by the local geoid-ellipsoid separation, because their heights (conventionally orthometric, meaning measured against the geoid/mean sea level) were treated as ellipsoidal. Such heights are now interpreted as orthometric. If you previously applied a manual vertical offset to compensate for this fact, you may need to remove it.
+
 ### Map-layer security hardening
 
 #### Origin-restricted credentials (opt-in)
