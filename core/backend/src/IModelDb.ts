@@ -1523,10 +1523,11 @@ export abstract class IModelDb extends IModel {
         await this.locks.acquireLocks({ shared: IModel.repositoryModelId });
 
       // Adopting the sync db's rows commits as it goes - attaching and detaching the sync db both
-      // commit - so abandoning unsaved changes cannot undo it. Anything that fails after that point,
-      // and the container upload during lock release is the one to worry about, has to put the
-      // briefcase back. Left alone, the next pushChanges would publish ec_ rows carrying ids the sync
-      // db has no record of, and the sync db would hand those same ids to somebody else.
+      // commit, and SQLite allows neither inside a transaction - so abandoning unsaved changes cannot
+      // undo it. Anything that fails after that point, and the container upload during lock release is
+      // the one to worry about, has to put the briefcase back. Left alone, the next pushChanges would
+      // publish ec_ rows carrying ids the sync db has no record of, and the sync db would hand those
+      // same ids to somebody else.
       let txnBeforeAdopt: TxnIdString | undefined;
       try {
         await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
@@ -1548,11 +1549,15 @@ export abstract class IModelDb extends IModel {
       } catch (err: any) {
         this.abandonSchemaChanges();
         if (this.isBriefcaseDb() && undefined !== txnBeforeAdopt && this.txns.getCurrentTxnId() !== txnBeforeAdopt) {
-          // cancelTo reverses and makes non-reinstatable, so the rows cannot come back through undo
-          // either. It does not reverse DDL - a table or column the adopt created stays behind, with
-          // no ec_ row describing it. That is the state a briefcase already tolerates, and the next
-          // successful import finds the table up to date and carries on.
-          this.txns.cancelTo(txnBeforeAdopt);
+          // Saving the adopt's txn started a new undo session, because schema changes are kept out of the
+          // user's undo stack, so this reverses across that boundary. The changes themselves reverse like
+          // any other - a rebase does it to every local txn on every pull. It does not reverse DDL: a table
+          // or column the adopt created stays behind with no ec_ row describing it, which is the state a
+          // briefcase already tolerates, and the next successful import finds the table up to date and
+          // carries on. Cancel rather than reverse, so the rows cannot come back through undo either.
+          const status = this[_nativeDb].cancelTo(txnBeforeAdopt, true);
+          if (IModelStatus.Success !== status)
+            Logger.logError(loggerCategory, `Failed to roll back the adopted schema rows after a failed import: ${IModelStatus[status] ?? status}`);
         }
         throw err;
       }
