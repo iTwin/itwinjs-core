@@ -12,15 +12,19 @@ import {
   GeometricModelState, IModelApp, IModelConnection, RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
-import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
+import type { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
 import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/internal/webgl";
+import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive } from "@itwin/core-frontend/lib/cjs/internal/webgl";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
+
+// RenderOrder is a const enum and therefore has no runtime ESM export. Keep the test's
+// existing assertion value without changing the production package's internal export.
+const linearRenderOrder = 5;
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
 import { TILE_DATA_1_3 } from "./data/TileIO.data.1.3";
@@ -359,7 +363,7 @@ describe("TileIO (WebGL)", () => {
         expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.renderOrder).to.equal(RenderOrder.Linear);
+        expect(plinePrim.renderOrder).to.equal(linearRenderOrder);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         const plGeom = plinePrim.cachedGeometry as PolylineGeometry;
         expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
@@ -387,7 +391,7 @@ describe("TileIO (WebGL)", () => {
         expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.renderOrder).to.equal(RenderOrder.Linear);
+        expect(plinePrim.renderOrder).to.equal(linearRenderOrder);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         let plGeom = plinePrim.cachedGeometry as PolylineGeometry;
         expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
@@ -401,7 +405,7 @@ describe("TileIO (WebGL)", () => {
         expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.renderOrder).to.equal(RenderOrder.Linear);
+        expect(plinePrim.renderOrder).to.equal(linearRenderOrder);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         plGeom = plinePrim.cachedGeometry as PolylineGeometry;
         expect(plGeom.numIndices).to.equal(228); // 120 pre-tesselation...

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { EntityClass, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
@@ -9,7 +10,8 @@ import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { assert, expect } from "chai";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("Schema Locater Tests", () => {
+const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
+describeChrome("Schema Locater Tests", () => {
   let context = new SchemaContext();
   let imodel: IModelConnection;
 

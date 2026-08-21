@@ -6,10 +6,8 @@ import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions, IModelConnection, LocalhostIpcApp, NativeApp } from "@itwin/core-frontend";
-import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
+import type { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender";
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces } from "../common/RpcInterfaces";
@@ -130,11 +128,12 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
+      const { ElectronRendererAuthorization: electronRendererAuthorization } = await import("@itwin/electron-authorization/Renderer");
       const clientId = process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID;
       if (!clientId)
         throw new Error("missing IMJS_OIDC_ELECTRON_TEST_CLIENT_ID");
 
-      authorizationClient = new ElectronRendererAuthorization(
+      authorizationClient = new electronRendererAuthorization(
         { clientId },
       );
       IModelApp.authorizationClient = authorizationClient;
@@ -194,8 +193,23 @@ export class TestUtility {
     };
   }
 
+  private static _mockRender: typeof MockRender | undefined;
   public static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
-  private static createDefaultRenderSystem() { return new MockRender.System(); }
+
+  private static createDefaultRenderSystem(): MockRender.System {
+    if (this._mockRender === undefined)
+      throw new Error("MockRender must be loaded before creating a render system");
+    return new this._mockRender.System();
+  }
+
+  private static async loadMockRender(): Promise<typeof MockRender> {
+    if (this._mockRender === undefined) {
+      // Vitest aliases this internal CJS specifier to a deferred ESM compatibility module.
+      const mockRenderModule = await import("@itwin/core-frontend/lib/cjs/internal/render/MockRender");
+      this._mockRender = mockRenderModule.MockRender;
+    }
+    return this._mockRender;
+  }
 
   /** Helper around the different startup workflows for different app types.
    * If running in an Electron render process (via ProcessDetector.isElectronAppFrontend), the ElectronApp.startup is called.
@@ -206,8 +220,10 @@ export class TestUtility {
     this.trackOpenIModels();
     const iopts = { ...TestUtility.iModelAppOptions, ...opts };
     TestUtility.setupLogging();
-    if (mockRender)
+    if (mockRender) {
+      await this.loadMockRender();
       iopts.renderSys = this.systemFactory();
+    }
 
     if (ProcessDetector.isElectronAppFrontend) {
       // electron version of certa does not serve assets like worker scripts.
@@ -216,7 +232,8 @@ export class TestUtility {
       else
         iopts.tileAdmin = { decodeImdlInWorker: false };
 
-      return ElectronApp.startup({ iModelApp: iopts });
+      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend");
+      return electronApp.startup({ iModelApp: iopts });
     }
 
     if (enableWebEdit) {
@@ -238,8 +255,10 @@ export class TestUtility {
     this._expectedOpenIModels.clear();
     await this.cleanupOpenIModels();
 
-    if (ProcessDetector.isElectronAppFrontend)
-      return ElectronApp.shutdown();
+    if (ProcessDetector.isElectronAppFrontend) {
+      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend");
+      return electronApp.shutdown();
+    }
 
     return IModelApp.shutdown();
   }

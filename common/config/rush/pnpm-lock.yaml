@@ -2447,6 +2447,9 @@ importers:
       '@itwin/oidc-signin-tool':
         specifier: ^5.0.2
         version: 5.1.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+      '@itwin/vitest-browser-bridge':
+        specifier: workspace:*
+        version: link:../../tools/vitest-browser-bridge
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2468,6 +2471,9 @@ importers:
       '@types/sinon-chai':
         specifier: ^3.2.0
         version: 3.2.12
+      '@vitest/browser':
+        specifier: ^4.1.10
+        version: 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.10)
       assert:
         specifier: ^2.0.0
         version: 2.1.0
@@ -2534,6 +2540,9 @@ importers:
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
       webpack:
         specifier: ^5.97.1
         version: 5.108.4(webpack-cli@5.1.4)
