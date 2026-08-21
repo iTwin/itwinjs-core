@@ -1329,59 +1329,45 @@ describe("Field evaluation", () => {
       expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
     });
 
-    it("Formats persisted cachedContent when the source element is later updated", async () => {
-      // Update-path counterpart to the insert path above. Confirms the txn callback fired via
-      // onRootChangedArg also routes through the registered provider.
-      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
-
+    it("documents the provider-lifecycle contract for persisted cachedContent", async () => {
+      // Deliberately one narrative test rather than one per step: this is documentation of an
+      // accepted contract, not a bug under guard. The contract is that neither registering nor
+      // unregistering walks existing annotations, so persisted cachedContent changes only on the
+      // next source-element edit -- which formats, or de-formats, according to whatever happens
+      // to be registered at that moment.
       const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
-      const annotationElementId = insertAnnotationWithLengthField(sourceId);
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
 
-      // Mutate the source to fire the txn callback.
+      // 1. No provider registered: insert persists the raw fallback.
+      const annotationElementId = insertAnnotationWithLengthField(sourceId);
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
+
+      // 2. Registering is not retroactive; persisted content is untouched.
+      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
+
+      // 3. The next source edit fires the txn callback, which routes through the provider.
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.lengthProp = 4.25;
       withEditTxn(imodel, "source update", (txn) => {
         source.update(txn);
         txn.saveChanges("source update");
       });
-
       expect(readFieldCachedContentById(annotationElementId)).to.equal("4250 mm");
-    });
 
-    it("Does not re-format existing annotations when a provider is registered after save", async () => {
-      // Contract: registering a provider does not walk existing annotations. Persisted
-      // cachedContent stays at whatever the previous save produced until the next source update.
-      const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
-      // No provider registered yet -> insert persists the raw fallback.
-      const annotationElementId = insertAnnotationWithLengthField(sourceId);
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
-
-      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
-
-      // Registration alone must not touch persisted content.
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("2.5");
-    });
-
-    it("Regresses persisted cachedContent to raw when the provider is unregistered before a source update", async () => {
-      // Contract: once a provider is unregistered, the next txn callback rewrites cachedContent
-      // through the raw fallback, overwriting a previously-formatted value.
-      await registerSets([{ id: PRIMARY_FORMAT_SET, formats: mmSet() }]);
-
-      const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
-      const annotationElementId = insertAnnotationWithLengthField(sourceId);
-      expect(readFieldCachedContentById(annotationElementId)).to.equal("2500 mm");
-
+      // 4. Unregistering is likewise not retroactive...
       ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
+      expect(readFieldCachedContentById(annotationElementId)).to.equal("4250 mm");
 
-      const source = imodel.elements.getElement<TestElement>(sourceId);
-      source.lengthProp = 3.5;
+      // ...but the following edit finds no provider and overwrites the formatted value with the
+      // raw one. This downgrade is the accepted cost of a provider gap, and is why
+      // unregisterFieldFormattingProvider's docs tell hosts to swap FormatSets by re-registering
+      // rather than by unregistering first.
+      const reloadedSource = imodel.elements.getElement<TestElement>(sourceId);
+      reloadedSource.lengthProp = 3.5;
       withEditTxn(imodel, "source update after unregister", (txn) => {
-        source.update(txn);
+        reloadedSource.update(txn);
         txn.saveChanges("source update after unregister");
       });
-
-      // Previously-formatted "2500 mm" is overwritten by the raw fallback.
       expect(readFieldCachedContentById(annotationElementId)).to.equal("3.5");
     });
 
