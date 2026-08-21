@@ -10,8 +10,11 @@ publish: false
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
+    - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
   - [@itwin/core-common](#itwincore-common)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
+  - [@itwin/core-electron](#itwincore-electron)
+    - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Invalidate decorations when element visibility changes](#invalidate-decorations-when-element-visibility-changes)
   - [@itwin/core-geometry](#itwincore-geometry)
@@ -63,11 +66,36 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 
 [[include:CoreBackend.IModelDb.QueryAspects]]
 
+### ECSQL `IS` / `IS NOT` operator now works between two operands
+
+The ECSQL `IS` and `IS NOT` operators can now be used between two operands — for example `prop1 IS [NOT] prop2`, where each operand may be any value expression: a property, the `NULL` literal, a constant, a parameter, a function call, an arithmetic expression, etc. These map to SQLite's **null-safe** comparison operators, so `NULL IS NULL` is `TRUE` and `1 IS NULL` is `FALSE`, unlike `=`/`<>` which treat a `NULL` operand as _unknown_.
+
+Previously `IS` / `IS NOT` only supported the right-hand operands `NULL`, the boolean literals `TRUE`/`FALSE`/`UNKNOWN`, and the [ECClass type predicate](../learning/ECSqlReference/ECClassFilter.md) (`IS (ClassName)`). Those forms still take precedence — a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized **qualified** class name such as `(bis.Element)` (optionally with an `ONLY`/`ALL` prefix or a comma-separated list), keeps its original meaning. A parenthesized *unqualified* name such as `(prop2)` is instead read as a value expression, so `prop1 IS (prop2)` is a null-safe comparison. A parenthesized *qualified* name that does not resolve to a known ECClass — for example `(alias.prop)` or `(ts.Status.Active)` — is also treated as a null-safe value expression instead of failing with a "class not found" error; when a qualified name is both a valid class and a valid property path, the type-predicate (class) reading takes precedence.
+
+For multi-column operands (such as `Point2d`/`Point3d` and navigation properties) the comparison is expanded column-wise, consistent with `=` and `<>`: `IS` joins the per-column comparisons with `AND`, and `IS NOT` joins them with `OR`.
+
+**Example** — find elements whose code value differs from their user label, or from a value extracted from JSON, treating `NULL` as a comparable value:
+
+```sql
+SELECT * FROM bis.Element WHERE CodeValue IS NOT UserLabel
+SELECT * FROM bis.Element WHERE CodeValue IS json_extract(JsonProperties, '$.code')
+```
+
+See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--is-not-operator-null-safe-comparison) for more details.
+
 ## @itwin/core-common
 
 ### Rank support for DefinitionSet
 
 [BisCore:DefinitionSet]($docs/bis/domains/BisCore.ecschema.md) (the base class of [DefinitionContainer]($backend) and [DefinitionGroup]($backend)) has a `Rank` property, but the iTwin.js API had no counterpart for it - `Rank` was only exposed for [Category]($backend)/[SubCategory]($backend). The new `@beta` [DefinitionSetProps.rank]($common) property (and the corresponding [DefinitionSet.rank]($backend) member) close that gap, using the same [Rank]($common) enum already used by `CategoryProps.rank`. `rank` is persisted when inserting or updating a `DefinitionContainer` or `DefinitionGroup`, and is read back correctly through [IModelDb.Elements.getElementProps]($backend) and [DefinitionSet.toJSON]($backend).
+
+## @itwin/core-electron
+
+### Late RPC responses are ignored during shutdown
+
+`ElectronApp.shutdown()` disposes any in-flight RPC requests. A response for one of those requests could still arrive from the backend afterwards, and the frontend transport would then dereference the missing request and throw, surfacing as an unhandled rejection while the application was tearing down. Such a response is now ignored instead.
+
+Applications that shut down while requests are outstanding no longer need to filter these errors out of their shutdown paths.
 
 ## @itwin/core-frontend
 

@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
@@ -3073,7 +3073,7 @@ export namespace IModelDb {
      * @param deleteOptions Options for the delete operation.
      * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
      * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-15. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.1.9 - might be removed in next major version. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @beta
      */
     public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
@@ -4048,6 +4048,19 @@ export class BriefcaseDb extends IModelDb {
           return "foreign key";
       }
     };
+
+    // `dgn_Domain` holds one bookkeeping row per BIS domain present in the briefcase. The row is
+    // created automatically as soon as the domain's schema is imported, so merging a changeset
+    // that registers a domain inserts a row that was just created locally. Both rows describe the
+    // same domain and the incoming one is authoritative, so this duplicate insert is never fatal.
+    // Only a primary key collision on an insert is benign - an update or delete whose "before"
+    // values do not match (`DbConflictCause.Data`) describes a real divergence and must not be
+    // silently discarded here.
+    if (args.tableName === "dgn_Domain" && args.cause === DbConflictCause.Conflict && args.opcode === DbOpcode.Insert) {
+      Logger.logWarning(category, `${interpretConflictCause(args.cause)} conflict on dgn_Domain - resolved by replacing the existing row with the incoming row`);
+      args.dump();
+      return DbConflictResolution.Replace;
+    }
 
     if (args.cause === DbConflictCause.Data && !args.indirect) {
       /*

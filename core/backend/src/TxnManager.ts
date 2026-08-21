@@ -1076,8 +1076,19 @@ export class TxnManager {
       };
     }
 
-    // Default conflict resolution for which custom handler is never called. Where schema sync is in
-    // use, native has already resolved ec_ rows by comparing sync db versions before we get here.
+    // Default conflict resolution for which custom handler is never called.
+    // A local txn that imported a domain replays an insert to `dgn_Domain` for a domain the
+    // just-merged changesets already registered. Both rows describe the same domain, so the
+    // merged row wins and the local insert is dropped. Only a primary key collision on an insert
+    // is benign - an update or delete whose "before" values do not match (`Data`) describes a real
+    // divergence and is left to the handlers below.
+    if (args.tableName === "dgn_Domain" && args.cause === "Conflict" && args.opcode === "Inserted") {
+      Logger.logInfo(BackendLoggerCategory.IModelDb, "dgn_Domain insert conflict during rebase. Keeping the merged row and skipping the local change.", getChangeMetaData());
+      return DbConflictResolution.Skip;
+    }
+
+    // Where schema sync is in use, native has already resolved ec_ rows by comparing sync db
+    // versions before we get here.
     if (args.cause === "Data" && !args.indirect) {
       if (args.tableName.startsWith("ec_")) {
         return DbConflictResolution.Skip;
