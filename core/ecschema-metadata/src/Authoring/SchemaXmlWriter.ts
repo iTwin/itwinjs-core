@@ -10,15 +10,16 @@ import { formatTraitsToArray } from "@itwin/core-quantity";
 import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
 import { writeCustomAttributeXmlBody } from "./CustomAttributeConverter";
 import * as Authoring from "./SchemaDocument";
+import { parseMultiplicity } from "./SchemaDocument";
+import { ECName } from "../ECName";
 import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
+import { dialectForSpec, ECXmlDialect, synthesizeEnumeratorName } from "./SchemaXmlDialect";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
  * allocates a new RegExp on every evaluation, and this runs per reference. */
 const separatorPattern = /[.:]/;
 
-/** The ECXML namespace URI of the 3.2 spec. */
-const ECXML_3_2_NAMESPACE = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
 
 /** Serializes a {@link Authoring.SchemaDocument} to ECXML text. The document always models the latest spec;
  * the writer converts to the requested spec version at this boundary (currently only
@@ -54,13 +55,18 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
 
   /** Validates the target spec and constructs the emitter, or reports an unsupported spec and returns
    * `undefined`. Shared by the materializing and streaming entry points. */
-  private _prepare(document: Authoring.SchemaDocument, issues: SchemaIssueList, options?: SchemaWriteOptions): ECXml32Emitter | undefined {
+  private _prepare(document: Authoring.SchemaDocument, issues: SchemaIssueList, options?: SchemaWriteOptions): ECXml3Emitter | undefined {
     const spec = options?.spec ?? ECSpec.Latest;
-    if (spec !== ECSpec.V3_2) {
-      issues.addError("SchemaXml-0001", `Unsupported target spec version "${spec as string}" - the XML writer currently supports only 3.2.`);
+    const dialect = dialectForSpec(spec);
+    if (dialect === undefined) {
+      issues.addError("SchemaXml-0001", `Unsupported target spec version "${spec as string}".`);
       return undefined;
     }
-    return new ECXml32Emitter(document, issues);
+    if (dialect.major === 2) {
+      issues.addError("SchemaXml-0001", `Writing ECXML 2.0 is not implemented yet. Its element vocabulary differs from 3.x and enumerations, kinds of quantity, and property categories have to be expressed as custom attributes.`);
+      return undefined;
+    }
+    return new ECXml3Emitter(document, issues, dialect);
   }
 }
 
@@ -114,9 +120,12 @@ class XmlStringBuilder {
   /** Appends a block of pre-rendered XML lines (a custom attribute's raw body), indenting each line to
    * the current depth. The block is serialized at indent 0 with the same four-space step, so prefixing
    * the current indent preserves its internal nesting. Already escaped - lines are emitted verbatim. */
-  public rawBlock(text: string): void {
+  /** Appends pre-rendered XML, one entry per line, at the current depth. Entries are never split:
+   * an entry may contain newlines that belong to a text value, and indenting those would change the
+   * value. */
+  public rawLines(lines: ReadonlyArray<string>): void {
     const indent = this._indent();
-    for (const line of text.split("\n"))
+    for (const line of lines)
       this._lines.push(line.length > 0 ? `${indent}${line}` : line);
   }
 
@@ -162,14 +171,30 @@ function formatVersion(read: number, write: number, minor: number): string {
 }
 
 /** Emits one document as ECXML 3.2. Created per write; holds the document and the issue list. */
-class ECXml32Emitter {
+class ECXml3Emitter {
   private readonly _document: Authoring.SchemaDocument;
   private readonly _issues: SchemaIssueList;
   private readonly _xml = new XmlStringBuilder();
+  private readonly _dialect: ECXmlDialect;
 
-  public constructor(document: Authoring.SchemaDocument, issues: SchemaIssueList) {
+  public constructor(document: Authoring.SchemaDocument, issues: SchemaIssueList, dialect: ECXmlDialect) {
     this._document = document;
     this._issues = issues;
+    this._dialect = dialect;
+  }
+
+  /** A schema's own version. Before 3.2 it is written `RR.mm`, dropping the write component - which
+   * native's lenient parser reads back as read/0/minor, so a non-zero write component cannot be
+   * expressed and is reported rather than silently dropped. */
+  private _formatSchemaVersion(read: number, write: number, minor: number): string {
+    if (this._dialect.versionComponents === 3)
+      return formatVersion(read, write, minor);
+    if (write !== 0) {
+      this._issues.addWarning("SchemaXml-0060",
+        `ECXML ${this._dialect.spec} writes a two-component version, so the write component ${write} of "${this._document.name}" cannot be expressed and was dropped.`,
+        { location: this._document.name });
+    }
+    return `${padVersionComponent(read)}.${padVersionComponent(minor)}`;
   }
 
   public emit(): string {
@@ -189,11 +214,11 @@ class ECXml32Emitter {
     const doc = this._document;
     this._xml.openElement("ECSchema", [
       ["schemaName", doc.name],
-      ["alias", doc.alias],
-      ["version", formatVersion(doc.readVersion, doc.writeVersion, doc.minorVersion)],
+      [this._dialect.schemaAliasAttribute, doc.alias],
+      ["version", this._formatSchemaVersion(doc.readVersion, doc.writeVersion, doc.minorVersion)],
       ["displayLabel", doc.label],
       ["description", doc.description],
-      ["xmlns", ECXML_3_2_NAMESPACE],
+      ["xmlns", this._dialect.namespace],
     ]);
 
     for (const reference of doc.references)
@@ -215,8 +240,8 @@ class ECXml32Emitter {
     }
     this._xml.selfClosingElement("ECSchemaReference", [
       ["name", reference.name],
-      ["version", formatVersion(reference.readVersion, reference.writeVersion, reference.minorVersion)],
-      ["alias", reference.alias ?? undefined],
+      ["version", this._formatSchemaVersion(reference.readVersion, reference.writeVersion, reference.minorVersion)],
+      [this._dialect.referenceAliasAttribute, reference.alias ?? undefined],
     ]);
   }
 
@@ -272,8 +297,12 @@ class ECXml32Emitter {
     }
 
     this._issues.addWarning("SchemaXml-0005",
-      `The custom attribute class "${className}" does not match this schema or any schema in the reference list; emitting without an xmlns.`, { location });
-    return { elementName, xmlns: undefined };
+      `The custom attribute class "${className}" does not match this schema or any schema in the reference list; its qualifier is emitted without a version.`, { location });
+    // Emit the qualifier rather than nothing. Dropping the xmlns would leave a bare element name,
+    // which a reader binds to whatever schema it is reading - silently turning this into an
+    // instance of a different class. Keeping the qualifier without a version preserves which class
+    // was named; the reference list is what validation reports as missing.
+    return { elementName, xmlns: qualifier };
   }
 
   private _ownNamespace(): string {
@@ -300,7 +329,7 @@ class ECXml32Emitter {
         continue;
       }
       this._xml.openElement(elementName, attributes);
-      this._xml.rawBlock(body);
+      this._xml.rawLines(body);
       this._xml.closeElement(elementName);
     }
     this._xml.closeElement("ECCustomAttributes");
@@ -310,7 +339,7 @@ class ECXml32Emitter {
    * (emitted self-closing), or `undefined` when the values cannot be expressed in ECXML - a struct
    * array whose entry struct class no resolvable custom attribute class names - in which case the
    * attribute is dropped and an issue has been reported. */
-  private _customAttributeXmlBody(ca: Authoring.CustomAttribute, location: string): string | undefined {
+  private _customAttributeXmlBody(ca: Authoring.CustomAttribute, location: string): string[] | undefined {
     return writeCustomAttributeXmlBody(ca, this._issues, location);
   }
 
@@ -417,10 +446,10 @@ class ECXml32Emitter {
   private _emitRelationshipConstraint(elementName: string, constraint: Authoring.RelationshipConstraint, className: string): void {
     const location = `${this._document.name}:${className}`;
     this._xml.openElement(elementName, [
-      ["multiplicity", constraint.multiplicity],
+      [this._dialect.constraintBoundsAttribute, this._formatConstraintBounds(constraint.multiplicity)],
       ["roleLabel", constraint.roleLabel],
       ["polymorphic", constraint.polymorphic],
-      ["abstractConstraint", constraint.abstractConstraint !== undefined ? this._toXmlItemReference(constraint.abstractConstraint, location) : undefined],
+      ["abstractConstraint", this._dialect.abstractConstraint && constraint.abstractConstraint !== undefined ? this._toXmlItemReference(constraint.abstractConstraint, location) : undefined],
     ]);
     this._emitCustomAttributes(constraint.customAttributes, location);
     for (const constraintClass of constraint.constraintClasses)
@@ -481,8 +510,8 @@ class ECXml32Emitter {
         ["typeName", this._propertyTypeName(property.typeName, location)],
         ...common.slice(1),
         ["extendedTypeName", property.extendedTypeName],
-        ["minimumValue", property.minValue],
-        ["maximumValue", property.maxValue],
+        [this._dialect.rangeAttributes === "camelCase" ? "minimumValue" : "MinimumValue", property.minValue],
+        [this._dialect.rangeAttributes === "camelCase" ? "maximumValue" : "MaximumValue", property.maxValue],
         ["minimumLength", property.minLength],
         ["maximumLength", property.maxLength],
         ...this._occursAttributes(property),
@@ -509,19 +538,41 @@ class ECXml32Emitter {
     ];
   }
 
+  /** Endpoint bounds in the target's spelling. 2.0 and 3.0 write `cardinality="(0,N)"`, using `N`
+   * for unbounded and a comma separator; 3.1 and later write the `(lo..hi)` multiplicity form. */
+  private _formatConstraintBounds(multiplicity: string): string {
+    if (this._dialect.constraintBoundsAttribute === "multiplicity")
+      return multiplicity;
+    const bounds = parseMultiplicity(multiplicity);
+    if (bounds === undefined)
+      return multiplicity;
+    return `(${bounds.lowerLimit},${bounds.upperLimit ?? "N"})`;
+  }
+
   private _emitEnumeration(item: Authoring.Enumeration): void {
     this._xml.openElement("ECEnumeration", [
       ...this._itemHeaderAttributes(item),
       ["backingTypeName", item.backingType],
-      ["isStrict", item.isStrict],
+      [this._dialect.enumerationStrictAttribute, item.isStrict],
     ]);
     for (const enumerator of item.enumerators) {
       this._xml.selfClosingElement("ECEnumerator", [
-        ["name", enumerator.name],
+        // Before 3.2 an enumerator has no name attribute. The reader synthesizes the same name back
+        // from the value, so a name that matches what synthesis would produce round-trips; one that
+        // does not is a real loss and is reported.
+        ["name", this._dialect.enumeratorNames ? enumerator.name : undefined],
         ["value", enumerator.value],
         ["displayLabel", enumerator.label],
-        ["description", enumerator.description],
+        ["description", this._dialect.enumeratorNames ? enumerator.description : undefined],
       ]);
+      if (!this._dialect.enumeratorNames) {
+        const synthesized = ECName.encode(synthesizeEnumeratorName(item.name, enumerator.value)).name;
+        if (enumerator.name !== synthesized) {
+          this._issues.addWarning("SchemaXml-0061",
+            `ECXML ${this._dialect.spec} does not carry enumerator names, and "${enumerator.name}" differs from the "${synthesized}" a reader will derive from its value; the name was dropped.`,
+            { location: `${this._document.name}:${item.name}` });
+        }
+      }
     }
     this._xml.closeElement("ECEnumeration");
   }

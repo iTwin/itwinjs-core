@@ -362,8 +362,8 @@ export class NetworkSchema extends Schema {
     const inputDrivesOutput = schemaDocument.createRelationship("InputDrivesOutput", {
       baseClass: "BisCore:ElementDrivesElement",
       strength: StrengthType.Referencing,
-      source: { multiplicity: Authoring.Multiplicity.ZeroOne, roleLabel: "drives", polymorphic: true, constraintClasses: ["Node"] },
-      target: { multiplicity: Authoring.Multiplicity.ZeroMany, roleLabel: "is driven by", polymorphic: false, constraintClasses: ["Node"] },
+      source: { multiplicity: "(0..1)", roleLabel: "drives", polymorphic: true, constraintClasses: ["Node"] },
+      target: { multiplicity: "(0..*)", roleLabel: "is driven by", polymorphic: false, constraintClasses: ["Node"] },
     });
     inputDrivesOutput.createPrimitive("prop", PrimitiveType.Double);
 

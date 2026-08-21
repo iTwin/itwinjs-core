@@ -15,6 +15,9 @@ import { SchemaIssueList } from "./SchemaIssues";
  * @alpha
  */
 export enum ECSpec {
+  V2_0 = "2.0",
+  V3_0 = "3.0",
+  V3_1 = "3.1",
   V3_2 = "3.2",
   /** Deliberately aliases the newest member; it advances as the spec does. */
   // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
@@ -112,13 +115,17 @@ export async function* decodeSchemaText(text: SchemaText, abortSignal?: AbortSig
 export function parseVersionString(version: string | undefined): { read: number, write: number, minor: number } | undefined {
   if (version === undefined)
     return undefined;
-  const parts = version.split(".");
+  const parts = version.split(".").map((part) => parseInt(part, 10));
+  if (parts.some(isNaN))
+    return undefined;
+  // Before ECXML 3.2 a version is written `RR.mm`, which reads as read/0/minor - matching native's
+  // lenient `SchemaKey::ParseVersionString`. 3.2 requires all three, which its reader enforces
+  // separately; accepting two here keeps one parser for every version.
+  if (parts.length === 2)
+    return { read: parts[0], write: 0, minor: parts[1] };
   if (parts.length !== 3)
     return undefined;
-  const [read, write, minor] = parts.map((part) => parseInt(part, 10));
-  if (isNaN(read) || isNaN(write) || isNaN(minor))
-    return undefined;
-  return { read, write, minor };
+  return { read: parts[0], write: parts[1], minor: parts[2] };
 }
 
 /** Rewrites the item references embedded in a presentation format override string

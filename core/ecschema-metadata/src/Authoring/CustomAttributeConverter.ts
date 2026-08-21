@@ -54,9 +54,20 @@ export interface CustomAttributeXmlNode {
  * @alpha
  */
 export function serializeCustomAttributeBody(children: ReadonlyArray<CustomAttributeXmlNode>): XmlString | undefined {
+  return serializeCustomAttributeBodyLines(children)?.join("\n");
+}
+
+/** The same body as {@link serializeCustomAttributeBody}, kept as one entry per XML line rather than
+ * joined. A property value may itself contain newlines - an ECSQL string in `ECDbMap:QueryView`
+ * does - and those are part of the value, not line breaks in the markup. A writer that re-splits
+ * the joined form on newlines cannot tell the two apart and indents into the value, corrupting it a
+ * little more on every write. Handing the lines over keeps that distinction.
+ * @internal
+ */
+export function serializeCustomAttributeBodyLines(children: ReadonlyArray<CustomAttributeXmlNode>): string[] | undefined {
   if (children.length === 0)
     return undefined;
-  return serializeNodes(children, 0).join("\n");
+  return serializeNodes(children, 0);
 }
 
 /** Converts a custom attribute's unconverted ECXML body into its typed values, against its custom
@@ -113,19 +124,22 @@ export function readCustomAttributeValues(customAttribute: CustomAttribute, issu
  * drops it.
  * @internal
  */
-export function writeCustomAttributeXmlBody(customAttribute: CustomAttribute, issues: SchemaIssueList, location: string): XmlString | undefined {
+export function writeCustomAttributeXmlBody(customAttribute: CustomAttribute, issues: SchemaIssueList, location: string): string[] | undefined {
   const values = customAttribute.tryGetValues();
   if (values === undefined) {
     issues.addWarning("SchemaCA-0002",
       `The custom attribute "${customAttribute.className}" was copied verbatim: its custom attribute class is not in the schema set, so its values could not be validated.`,
       { location });
-    return customAttribute.rawXml ?? "";
+    // One entry, newlines and all: a verbatim body is already indented for the file it came from,
+    // and re-indenting it would change any value that spans lines.
+    const raw = customAttribute.rawXml;
+    return raw === undefined || raw.length === 0 ? [] : [raw];
   }
   const caClass = resolveCustomAttributeClass(customAttribute.document, customAttribute.className);
   const nodes = valuesToNodes(values, caClass, customAttribute.className, issues, location);
   if (nodes === undefined)
     return undefined;
-  return serializeNodes(nodes, 0).join("\n");
+  return serializeNodes(nodes, 0);
 }
 
 /** Resolves a custom attribute class name against a document: its own schema set first, then the

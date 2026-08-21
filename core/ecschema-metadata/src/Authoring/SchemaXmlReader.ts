@@ -11,11 +11,13 @@ import { parseFormatTrait, parseFormatType, parsePrecision, parseScientificType,
 import {
   parseClassModifier, parseCustomAttributeContainerType, parsePrimitiveType, parseStrength, parseStrengthDirection, PrimitiveType,
 } from "../ECObjects";
+import { ECName } from "../ECName";
 import { serializeCustomAttributeBody } from "./CustomAttributeConverter";
 import * as Authoring from "./SchemaDocument";
 import {
   decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
 } from "./SchemaDocumentIO";
+import { dialectForNamespace, dialectV32, ECXmlDialect, synthesizeEnumeratorName } from "./SchemaXmlDialect";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
@@ -41,7 +43,18 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
     const root = await parseElementTree(text, issues, options?.source, options?.abortSignal);
     if (root === undefined)
       return { issues };
-    const walker = new ECXml3Walker(issues, options?.source, options?.schemaSet);
+    // The file declares its own version, so the reader detects rather than asking the caller - who
+    // cannot know it before opening the file.
+    const dialect = dialectForNamespace(root.attributes?.xmlns);
+    if (dialect === undefined) {
+      issues.addError("SchemaXml-0014", `The ECSchema element has a missing or unrecognized xmlns ("${root.attributes?.xmlns ?? ""}").`, { source: options?.source, line: root.line, column: root.column });
+      return { issues };
+    }
+    if (dialect.major === 2) {
+      issues.addError("SchemaXml-0015", `Reading ECXML 2.0 is not implemented yet. Its element vocabulary differs from 3.x (one ECClass element with type flags, no ECStructArrayProperty, no ECNavigationProperty) and it expresses enumerations, kinds of quantity, and property categories as custom attributes.`, { source: options?.source, line: root.line, column: root.column });
+      return { issues };
+    }
+    const walker = new ECXml3Walker(issues, options?.source, options?.schemaSet, dialect);
     return { document: walker.readSchema(root), issues };
   }
 
@@ -56,6 +69,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
     let name: string | undefined;
     let version: { read: number, write: number, minor: number } | undefined;
     let alias: string | undefined;
+    let dialect: ECXmlDialect = dialectV32;
     const references: Authoring.SchemaReference[] = [];
 
     const stopSentinel = new Error("header complete");
@@ -75,13 +89,14 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
           throw stopSentinel;
         }
         name = attributes.schemaName;
-        alias = attributes.alias;
+        dialect = dialectForNamespace(attributes.xmlns) ?? dialectV32;
+        alias = attributes[dialect.schemaAliasAttribute];
         version = parseVersionString(attributes.version);
         return;
       }
       if (depth === 2) {
         if (tagName === "ecschemareference") {
-          const reference = readSchemaReferenceAttributes(attributes, issues, source);
+          const reference = readSchemaReferenceAttributes(attributes, issues, source, dialect);
           if (reference !== undefined)
             references.push(reference);
           return;
@@ -179,18 +194,15 @@ async function parseElementTree(text: SchemaText, issues: SchemaIssueList, sourc
   return root;
 }
 
-function readSchemaReferenceAttributes(attributes: { [name: string]: string }, issues: SchemaIssueList, source: string | undefined): Authoring.SchemaReference | undefined {
+function readSchemaReferenceAttributes(attributes: { [name: string]: string }, issues: SchemaIssueList, source: string | undefined, dialect: ECXmlDialect): Authoring.SchemaReference | undefined {
   const name = attributes.name;
   const version = parseVersionString(attributes.version);
   if (name === undefined || version === undefined) {
     issues.addError("SchemaXml-0013", "An ECSchemaReference is missing its name or a parseable version.", { source });
     return undefined;
   }
-  return { name, readVersion: version.read, writeVersion: version.write, minorVersion: version.minor, alias: attributes.alias ?? null };
+  return { name, readVersion: version.read, writeVersion: version.write, minorVersion: version.minor, alias: attributes[dialect.referenceAliasAttribute] ?? null };
 }
-
-/** The ECXML namespace pattern; the captured groups carry the spec version. */
-const ECXML_NAMESPACE_PATTERN = /Bentley\.ECXML\.(\d+)\.(\d+)$/;
 
 /** The item element names of ECXML 3.x, lowercase. */
 const ITEM_ELEMENT_NAMES = new Set([
@@ -203,14 +215,16 @@ class ECXml3Walker {
   private readonly _issues: SchemaIssueList;
   private readonly _source: string | undefined;
   private readonly _schemaSet: Authoring.SchemaSet | undefined;
+  protected readonly _dialect: ECXmlDialect;
   /** Lowercased reference alias -> schema name, for normalizing alias-qualified references. */
   private readonly _aliasToSchemaName = new Map<string, string>();
   private _documentInProgress?: Authoring.SchemaDocument;
 
-  public constructor(issues: SchemaIssueList, source: string | undefined, schemaSet: Authoring.SchemaSet | undefined) {
+  public constructor(issues: SchemaIssueList, source: string | undefined, schemaSet: Authoring.SchemaSet | undefined, dialect: ECXmlDialect) {
     this._issues = issues;
     this._source = source;
     this._schemaSet = schemaSet;
+    this._dialect = dialect;
   }
 
   /** Moves the freshly read document into the caller's schema set, or reports why it could not.
@@ -242,27 +256,17 @@ class ECXml3Walker {
       return undefined;
     }
 
-    const namespaceMatch = ECXML_NAMESPACE_PATTERN.exec(root.attributes.xmlns ?? "");
-    if (namespaceMatch === null) {
-      this._error("SchemaXml-0014", `The ECSchema element has a missing or unrecognized xmlns ("${root.attributes.xmlns ?? ""}").`, root);
-      return undefined;
-    }
-    const specMajor = parseInt(namespaceMatch[1], 10);
-    const specMinor = parseInt(namespaceMatch[2], 10);
-    if (specMajor !== 3) {
-      this._error("SchemaXml-0015", `Unsupported ECXML spec version ${specMajor}.${specMinor} - this reader handles 3.x.`, root);
-      return undefined;
-    }
-
+    const specMajor = this._dialect.major;
+    const specMinor = this._dialect.minor;
     const name = root.attributes.schemaName;
-    const alias = root.attributes.alias;
+    const alias = root.attributes[this._dialect.schemaAliasAttribute];
     const version = parseVersionString(root.attributes.version);
     if (name === undefined || version === undefined) {
       this._error("SchemaXml-0012", "The ECSchema element is missing its schemaName or a parseable version.", root);
       return undefined;
     }
     if (alias === undefined)
-      this._error("SchemaXml-0016", `The schema "${name}" is missing the required alias attribute.`, root);
+      this._error("SchemaXml-0016", `The schema "${name}" is missing the required ${this._dialect.schemaAliasAttribute} attribute.`, root);
 
     const document = new Authoring.SchemaDocument(name, alias ?? "", version.read, version.write, version.minor, {
       label: root.attributes.displayLabel,
@@ -279,7 +283,7 @@ class ECXml3Walker {
     for (const child of root.children) {
       if (child.name.toLowerCase() !== "ecschemareference")
         continue;
-      const reference = readSchemaReferenceAttributes(child.attributes, this._issues, this._source);
+      const reference = readSchemaReferenceAttributes(child.attributes, this._issues, this._source, this._dialect);
       if (reference !== undefined) {
         document.setSchemaReference(reference);
         if (reference.alias !== null)
@@ -631,24 +635,33 @@ class ECXml3Walker {
     }
     const item = this._document.createEnumeration(name, backingType, {
       ...this.itemInit(node),
-      isStrict: this.parseBooleanAttribute(node, "isStrict"),
+      isStrict: this.parseBooleanAttribute(node, this._dialect.enumerationStrictAttribute),
     });
     for (const child of node.children) {
       if (child.name.toLowerCase() !== "ecenumerator")
         continue;
-      const enumeratorName = child.attributes.name;
       const valueText = child.attributes.value;
-      if (enumeratorName === undefined || valueText === undefined) {
-        this._error("SchemaXml-0032", `An enumerator of "${name}" is missing its name or value; it was skipped.`, child);
+      if (valueText === undefined) {
+        this._error("SchemaXml-0032", `An enumerator of "${name}" is missing its value; it was skipped.`, child);
         continue;
       }
       let value: number | string = valueText;
       if (backingType === "int") {
         value = parseInt(valueText, 10);
         if (isNaN(value)) {
-          this._error("SchemaXml-0033", `The enumerator "${name}.${enumeratorName}" has a non-integer value "${valueText}" on an int enumeration; it was skipped.`, child);
+          this._error("SchemaXml-0033", `The enumerator "${name}.${valueText}" has a non-integer value on an int enumeration; it was skipped.`, child);
           continue;
         }
+      }
+      // Before 3.2 an enumerator carries no name; native synthesizes one and so must this, or the
+      // same enumeration read from two spec versions would not compare equal.
+      let enumeratorName = child.attributes.name;
+      if (enumeratorName === undefined) {
+        if (this._dialect.enumeratorNames) {
+          this._error("SchemaXml-0032", `An enumerator of "${name}" is missing its name; it was skipped.`, child);
+          continue;
+        }
+        enumeratorName = ECName.encode(synthesizeEnumeratorName(name, value)).name;
       }
       item.createEnumerator(enumeratorName, value, { label: child.attributes.displayLabel, description: child.attributes.description });
     }

@@ -64,12 +64,20 @@ describe("parseVersionString", () => {
     expect(parseVersionString("1.0.3")).to.deep.equal({ read: 1, write: 0, minor: 3 });
   });
 
-  it("returns undefined for anything but three dotted numbers", () => {
+  it("reads a two-component version as read/0/minor, the pre-3.2 form", () => {
+    // ECXML before 3.2 writes `RR.mm`. Native's lenient parser maps it to read/0/minor
+    // (`SchemaKey::ParseVersionString`), so `01.05` is 1.0.5 and not 1.5.0.
+    expect(parseVersionString("1.0")).to.deep.equal({ read: 1, write: 0, minor: 0 });
+    expect(parseVersionString("01.05")).to.deep.equal({ read: 1, write: 0, minor: 5 });
+  });
+
+  it("returns undefined for anything that is not two or three dotted numbers", () => {
     expect(parseVersionString(undefined)).to.be.undefined;
     expect(parseVersionString("")).to.be.undefined;
-    expect(parseVersionString("1.0")).to.be.undefined;
+    expect(parseVersionString("1")).to.be.undefined;
     expect(parseVersionString("1.0.0.0")).to.be.undefined;
     expect(parseVersionString("a.b.c")).to.be.undefined;
+    expect(parseVersionString("a.b")).to.be.undefined;
   });
 });
 
