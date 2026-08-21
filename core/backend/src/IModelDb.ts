@@ -4501,8 +4501,15 @@ export class BriefcaseDb extends IModelDb {
       return;
     }
 
+    // Both stores have to land or neither may. An upgrade rebuilds the sync db from this briefcase, so a
+    // sync db the timeline never learned about describes columns no briefcase has, and the next update
+    // import adopts a layout nobody can read. The container goes first because it is the one that can still
+    // be taken back: nothing else can touch it while this briefcase holds the exclusive schema lock, so a
+    // failed push is compensated by rolling the briefcase back and mirroring the pre-upgrade state up again.
+    let txnBeforeUpgrade: TxnIdString | undefined;
     await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema upgrade" }, async (syncAccess) => {
       this.saveSchemaChanges();
+      txnBeforeUpgrade = this.txns.getCurrentTxnId();
       try {
         nativeImportOp(schemas, {
           schemaLockHeld: true,
@@ -4515,9 +4522,40 @@ export class BriefcaseDb extends IModelDb {
       }
 
       this.clearCaches();
-      // The changeset goes first. If the sync db upload then fails, the sync db trails the timeline, which the
-      // next import repairs - the reverse would leave layout decisions no briefcase has.
+    });
+
+    try {
       await this.pushChanges(arg);
+    } catch (err: any) {
+      await this.restoreSyncDbAfterFailedUpgradePush(txnBeforeUpgrade);
+      throw err;
+    }
+  }
+
+  /** Undo an upgrade that reached the sync db but not the timeline: roll the briefcase back to `txnBeforeUpgrade`
+   * and mirror that state over the sync db, so the two agree on what the timeline holds.
+   *
+   * Skipped when the briefcase cannot be rolled back. The reversal is txn-based, so it does not undo DDL -
+   * an upgrade that dropped a table has nothing to put the reversed rows into. Leaving both stores at the
+   * upgraded state is then the better answer, because retrying the push still resolves it.
+   */
+  private async restoreSyncDbAfterFailedUpgradePush(txnBeforeUpgrade: TxnIdString | undefined): Promise<void> {
+    if (undefined === txnBeforeUpgrade || this.txns.getCurrentTxnId() === txnBeforeUpgrade)
+      return;
+
+    const status = this[_nativeDb].cancelTo(txnBeforeUpgrade, true);
+    if (IModelStatus.Success !== status) {
+      Logger.logError(loggerCategory, `An upgrade reached the sync db but not the timeline, and the briefcase could not be rolled back (${IModelStatus[status] ?? status}). Retry the push - the sync db and this briefcase agree, the timeline does not.`);
+      return;
+    }
+
+    this.clearCaches();
+    await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "restore schema sync db" }, async (syncAccess) => {
+      this[_nativeDb].schemaSyncOverwrite(syncAccess.getUri());
+      // schemaSyncOverwrite stamps the new data version on the briefcase too. Dropping it keeps the
+      // briefcase free of local changes so the caller can simply upgrade again; a briefcase whose stamp
+      // trails the sync db is the ordinary state of one that has not imported lately.
+      this.abandonSchemaChanges();
     });
   }
 

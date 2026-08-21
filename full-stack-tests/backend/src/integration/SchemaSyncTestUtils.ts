@@ -10,7 +10,7 @@ import {
 } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, GuidString, Id64String, OpenMode } from "@itwin/core-bentley";
 import { ChangesetType, Code, ElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
@@ -255,6 +255,33 @@ export const querySchemaSyncDataVer = (b: IModelDb): string | undefined => {
   const js = b.queryFilePropertyString({ namespace: "ec_Db", name: "localDbInfo" });
   return js ? JSON.parse(js).dataVer : undefined;
 };
+
+/** Read the sync db itself. Goes through the write lock because that is the only access the API offers;
+ * the db is opened readonly, so nothing is uploaded when the lock is released.
+ */
+export async function readSyncDb<T>(iModel: IModelDb, read: (syncDb: SchemaSync.SchemaSyncDb) => T): Promise<T> {
+  let result: T | undefined;
+  await SchemaSync.withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "read the sync db" }, async (access) => {
+    result = read(access.getCloudDb());
+  });
+  return result as T;
+}
+
+/** How many rows of `tableName` the sync db holds under `itemName` - the sync db side of [[countMetadataItemRows]]. */
+export async function countSyncDbItemRows(iModel: IModelDb, tableName: string, itemName: string): Promise<number> {
+  return readSyncDb(iModel, (syncDb) => syncDb.withSqliteStatement(`SELECT count(*) FROM [${tableName}] WHERE Name=?`, (stmt: SqliteStatement) => {
+    stmt.bindString(1, itemName);
+    assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+    return stmt.getValue(0).getInteger();
+  }));
+}
+
+/** The sync db's own data version - the number every schema changeset is stamped with. */
+export async function readSyncDbDataVer(iModel: IModelDb): Promise<string | undefined> {
+  return readSyncDb(iModel, (syncDb) => syncDb.withSqliteStatement("SELECT StrData FROM be_Prop WHERE Namespace='ec_Db' AND Name='syncDbInfo'", (stmt: SqliteStatement) => {
+    return stmt.step() === DbResult.BE_SQLITE_ROW ? JSON.parse(stmt.getValue(0).getString()).dataVer : undefined;
+  }));
+}
 
 export const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: ChangesetType, description: string): Promise<void> => {
   const cs = await HubMock.getLatestChangeset({ iModelId: b.iModelId });

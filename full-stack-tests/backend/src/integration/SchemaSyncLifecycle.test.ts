@@ -12,9 +12,10 @@ import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { DbResult } from "@itwin/core-bentley";
 import {
-  assertThrowsAsync, createTestIModel, enableSchemaSync, expectCensusPreserved, expectMetadataTablesIdentical, expectNoForeignKeyViolations,
-  expectPhysicalSchemaIdentical, importTinySchema, initializeContainer, insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase,
-  queryPropNames, readElementProp, reopenTestBriefcase, takeElementCensus, TinyClass, TinySchema, tinySchemaToXml,
+  assertThrowsAsync, assertThrowsAsyncContaining, countSyncDbItemRows, createTestIModel, enableSchemaSync, expectCensusPreserved,
+  expectMetadataTablesIdentical, expectNoForeignKeyViolations, expectPhysicalSchemaIdentical, importTinySchema, initializeContainer,
+  insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase, queryPropNames, querySchemaSyncDataVer, readElementProp,
+  readSyncDbDataVer, reopenTestBriefcase, takeElementCensus, TinyClass, TinyProp, TinySchema, tinySchemaToXml,
 } from "./SchemaSyncTestUtils";
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 import { AzuriteTest } from "./AzuriteTest";
@@ -655,6 +656,171 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
       expectMetadataTablesIdentical(b1, b2, "after a failed import on top of an unpushed one", { a: "b1", b: "b2" });
       expectPhysicalSchemaIdentical(b1, b2, "after a failed import on top of an unpushed one");
       expectNoForeignKeyViolations(b1, "after a failed import on top of an unpushed one");
+    } finally {
+      sinon.restore();
+      b1.close();
+      b2.close();
+    }
+  });
+
+  // The other half of the rollback: the failure happens while the container write lock is still held, so
+  // the sync db's rows were never uploaded. CloudSqlite.withWriteLock abandons the container's local
+  // changes when the locked operation throws, which reverts the cache to the last uploaded state - the
+  // ids this import took are handed out again to whoever asks next.
+  const failInsideTheContainerLock = (): void => {
+    const realWithLockedAccess = SchemaSync.withLockedAccess;
+    sinon.stub(SchemaSync, "withLockedAccess").callsFake(async (iModel, args, operation) => {
+      await realWithLockedAccess(iModel, args, async (access) => {
+        await operation(access);
+        throw new Error("simulated failure before the container write lock was released");
+      });
+    });
+  };
+
+  it("a schema import that fails before the container is uploaded takes the sync db back with it", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-19" });
+    const accessToken = "sync life container rollback token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life container rollback", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife19b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife19b2" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      await importTinySchema(b1, lifecycleSchema);
+      await b1.pushChanges({ accessToken, description: "base schema" });
+
+      const dataVerBeforeTheFailure = await readSyncDbDataVer(b1);
+      const localDataVerBeforeTheFailure = querySchemaSyncDataVer(b1);
+
+      const rollbackSchema: TinySchema = {
+        name: "SchemaSyncContainerRollback",
+        alias: "sscr",
+        ver: "01.00.00",
+        dynamic: true,
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{ type: "entity", name: "NeverUploaded", baseClass: "bis:GeometricElement2d", props: [{ kind: "primitive", name: "value", type: "string" }] }],
+      };
+
+      failInsideTheContainerLock();
+      await assertThrowsAsync(async () => importTinySchema(b1, rollbackSchema));
+      sinon.restore();
+
+      // The briefcase rolled its adopt back, as in the test above.
+      assert.equal(countMetadataItemRows(b1, "ec_Schema", "SchemaSyncContainerRollback"), 0, "the failed import left its schema behind");
+      assert.equal(querySchemaSyncDataVer(b1), localDataVerBeforeTheFailure, "the briefcase kept the data version stamp of the failed import");
+
+      // And so did the container: the rows the import wrote into the sync db are gone with them.
+      assert.equal(await countSyncDbItemRows(b1, "ec_Schema", "SchemaSyncContainerRollback"), 0, "the sync db kept the schema of the failed import");
+      assert.equal(await countSyncDbItemRows(b1, "ec_Class", "NeverUploaded"), 0, "the sync db kept the class of the failed import");
+      assert.equal(await readSyncDbDataVer(b1), dataVerBeforeTheFailure, "the sync db kept the data version of the failed import");
+
+      // A second briefcase sees the same container, so the ids are free for whoever imports next.
+      await b2.pullChanges({ accessToken });
+      await importTinySchema(b2, rollbackSchema);
+      await b2.pushChanges({ accessToken, description: "the import that got the ids instead" });
+      await b1.pullChanges({ accessToken });
+      assert.equal(countMetadataItemRows(b1, "ec_Schema", "SchemaSyncContainerRollback"), 1);
+      expectMetadataTablesIdentical(b1, b2, "after another briefcase imported what the failed one rolled back", { a: "b1", b: "b2" });
+      expectPhysicalSchemaIdentical(b1, b2, "after another briefcase imported what the failed one rolled back");
+      expectNoForeignKeyViolations(b1, "after another briefcase imported what the failed one rolled back");
+    } finally {
+      sinon.restore();
+      b1.close();
+      b2.close();
+    }
+  });
+
+  // An upgrade rebuilds the sync db from the briefcase, so the two have to land together: a sync db
+  // holding an upgrade the timeline never got describes columns no briefcase has. The container is
+  // uploaded first because it is the one that can still be taken back - if the push then fails, the
+  // briefcase rolls back and the pre-upgrade state is mirrored up again.
+  it("an upgrade whose push fails puts the sync db back where the timeline is", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-20" });
+    const accessToken = "sync life upgrade rollback token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life upgrade rollback", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife20b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLife20b2" });
+
+    const structProps = (count: number): TinyProp[] =>
+      Array.from({ length: count }, (_unused, i): TinyProp => ({ kind: "primitive", name: `p${i}`, type: "string" }));
+    const transformSchema = (structPropCount: number, ver: string): TinySchema => ({
+      name: "SchemaSyncUpgradeRollback",
+      alias: "ssur",
+      ver,
+      dynamic: true,
+      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+      classes: [
+        { type: "struct", name: "Wide", props: structProps(structPropCount) },
+        {
+          type: "entity", name: "Holder", baseClass: "bis:GeometricElement2d",
+          props: [{ kind: "primitive", name: "label", type: "string" }, { kind: "struct", name: "s0", type: "Wide" }],
+        },
+      ],
+    });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      await importTinySchema(b1, transformSchema(10, "01.00.00"));
+      await b1.pushChanges({ accessToken, description: "the schema the upgrade widens" });
+
+      const place = await insertDrawingModelAndCategory(b1, "SyncLifeUpgradeRollback");
+      const holderId = await insertGeometricElement2d(b1, {
+        ...place,
+        classFullName: "SchemaSyncUpgradeRollback:Holder",
+        props: { label: "written before the failed upgrade" },
+      });
+      await b1.pushChanges({ accessToken, description: "data before the failed upgrade" });
+
+      const dataVerBeforeTheFailure = await readSyncDbDataVer(b1);
+      const changesetBeforeTheFailure = b1.changeset.id;
+      const widened = transformSchema(30, "01.00.01");
+
+      // Widening the struct moves data between columns, so this only goes through the upgrade path.
+      await assertThrowsAsyncContaining(
+        async () => importTinySchema(b1, widened),
+        "Use BriefcaseDb.upgradeSchemas");
+
+      // Under the exclusive schema lock nothing can make the push fail but the transport, so that is
+      // what gets injected.
+      sinon.stub(b1, "pushChanges").rejects(new Error("simulated failure pushing the upgrade"));
+      await assertThrowsAsync(async () => b1.upgradeSchemaStrings([tinySchemaToXml(widened)], { accessToken, description: "the upgrade that could not be pushed" }));
+      sinon.restore();
+
+      // The briefcase is back at the timeline, with nothing local to get in the way of a retry.
+      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 0, "the briefcase kept the widened struct");
+      assert.isFalse(b1.txns.hasLocalChanges, "the rolled back upgrade left local changes behind");
+      assert.equal(b1.changeset.id, changesetBeforeTheFailure, "the failed upgrade reached the timeline");
+      assert.equal(readElementProp(b1, holderId, "label"), "written before the failed upgrade");
+
+      // And so is the sync db, which is the point: it had the upgrade in it when the push failed.
+      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 0, "the sync db kept the widened struct");
+      assert.notEqual(await readSyncDbDataVer(b1), dataVerBeforeTheFailure, "restoring the sync db should move its data version");
+
+      // A second briefcase importing additively gets a sync db that matches what it holds. The failed
+      // upgrade keeps its exclusive lock, same as a failed import does, so it has to be given up first.
+      await b1.locks.releaseAllLocks();
+      await b2.pullChanges({ accessToken });
+      await importTinySchema(b2, {
+        name: "SchemaSyncUpgradeBystander",
+        alias: "ssub",
+        ver: "01.00.00",
+        dynamic: true,
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{ type: "entity", name: "Bystander", baseClass: "bis:GeometricElement2d", props: [{ kind: "primitive", name: "value", type: "string" }] }],
+      });
+      await b2.pushChanges({ accessToken, description: "an additive import after the failed upgrade" });
+      await b1.pullChanges({ accessToken });
+      expectMetadataTablesIdentical(b1, b2, "after an import following the rolled back upgrade", { a: "b1", b: "b2" });
+
+      // The upgrade itself still works when retried.
+      await b1.upgradeSchemaStrings([tinySchemaToXml(widened)], { accessToken, description: "the retried upgrade" });
+      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 1, "the retried upgrade did not widen the struct");
+      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 1, "the retried upgrade did not reach the sync db");
+      await b2.pullChanges({ accessToken });
+      assert.equal(readElementProp(b2, holderId, "label"), "written before the failed upgrade");
+      expectMetadataTablesIdentical(b1, b2, "after retrying the upgrade", { a: "b1", b: "b2" });
+      expectPhysicalSchemaIdentical(b1, b2, "after retrying the upgrade");
+      expectNoForeignKeyViolations(b1, "after retrying the upgrade");
     } finally {
       sinon.restore();
       b1.close();
