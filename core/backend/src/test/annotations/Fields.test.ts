@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, formatFieldValueWithSpecProvider, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
 import { FormatDefinition, FormatterSpec, FormattingSpecEntry, FormattingSpecProvider } from "@itwin/core-quantity";
-import { FormatSet } from "@itwin/ecschema-metadata";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
@@ -18,6 +17,7 @@ import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, IModelElementCloneContext, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
+import { decimalFormat, toFormatSet } from "../AnnotationTestUtils";
 import { EditTxn, withEditTxn } from "../../EditTxn";
 
 function isIntlSupported(): boolean {
@@ -310,22 +310,6 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   await iModel.importSchemaStrings([fieldsSchemaXml]);
 }
 
-/** Builds a decimal [FormatDefinition] rendering a magnitude in `unitName` with `unitLabel`. */
-function decimalFormat(unitName: string, unitLabel: string, precision = 4): FormatDefinition {
-  return {
-    composite: { includeZero: true, units: [{ label: unitLabel, name: unitName }] },
-    formatTraits: ["keepSingleZero", "showUnitLabel"],
-    precision,
-    type: "Decimal",
-    uomSeparator: " ",
-  };
-}
-
-/** Wraps a KindOfQuantity -> format map in a metric [FormatSet]. */
-function toFormatSet(formats: Record<string, FormatDefinition> = {}): FormatSet {
-  return { name: "TestSet", label: "Test Set", unitSystem: "metric", formats };
-}
-
 describe("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
@@ -599,7 +583,7 @@ describe("Field evaluation", () => {
     async function register(block: TextBlock, formats: Record<string, FormatDefinition> = {}): Promise<FieldFormattingSpecProvider> {
       return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
-        formatSet: toFormatSet(formats),
+        formatSet: toFormatSet("TestSet", formats),
         requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
       });
     }
@@ -725,7 +709,7 @@ describe("Field evaluation", () => {
     async function register(block: TextBlock, formats: Record<string, FormatDefinition> = {}): Promise<FieldFormattingSpecProvider> {
       return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
-        formatSet: toFormatSet(formats),
+        formatSet: toFormatSet("TestSet", formats),
         requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
       });
     }
@@ -992,7 +976,7 @@ describe("Field evaluation", () => {
     async function registerSets(formatSets: ReadonlyArray<{ id: Id64String, formats: Record<string, FormatDefinition> }>): Promise<FieldFormattingSpecProvider> {
       return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
-        formatSets: formatSets.map(({ id, formats }) => ({ id, formatSet: toFormatSet(formats) })),
+        formatSets: formatSets.map(({ id, formats }) => ({ id, formatSet: toFormatSet("TestSet", formats) })),
         requirements: [{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }],
       });
     }
@@ -1097,7 +1081,7 @@ describe("Field evaluation", () => {
 
       const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
-        formatSets: [{ id: PRIMARY_FORMAT_SET, formatSet: toFormatSet({}) }],
+        formatSets: [{ id: PRIMARY_FORMAT_SET, formatSet: toFormatSet("Empty") }],
         requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
       });
 
@@ -1122,7 +1106,7 @@ describe("Field evaluation", () => {
 
       await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
-        formatSets: [{ id: SECONDARY_FORMAT_SET, formatSet: toFormatSet({}) }],
+        formatSets: [{ id: SECONDARY_FORMAT_SET, formatSet: toFormatSet("Empty") }],
         requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
       });
 
@@ -1236,7 +1220,7 @@ describe("Field evaluation", () => {
       // A field with no formatSet routes to the adopted (default) FormatSet rather than raw.
       await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
-        formatSet: toFormatSet({ "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }),
+        formatSet: toFormatSet("TestSet", { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }),
         requirements: [{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }],
       });
 
@@ -1266,7 +1250,7 @@ describe("Field evaluation", () => {
       // requirements: [] skips the sweep, so nothing is pre-warmed.
       const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
-        formatSet: toFormatSet({ "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }),
+        formatSet: toFormatSet("TestSet", { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }),
         requirements: [],
       });
 
