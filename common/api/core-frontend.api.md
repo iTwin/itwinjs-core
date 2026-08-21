@@ -5084,6 +5084,7 @@ export class IModelApp {
         iconSrc?: string | HTMLImageElement;
         iconWidth?: number;
         notice?: string | HTMLElement;
+        noticeLines?: Array<string | HTMLElement>;
     }): HTMLTableRowElement;
     static makeModalDiv(options: ModalOptions): ModalReturn;
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
@@ -6115,12 +6116,23 @@ export class MapLayerFormatRegistry {
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
     // @beta (undocumented)
     getAccessClient(formatId: string): MapLayerAccessClient | undefined;
+    // @internal
+    isCredentialsSharingAllowed(url: string, settingsUrl: string): boolean;
     // (undocumented)
     isRegistered(formatId: string): boolean;
+    // @internal
+    isSsoAllowed(url: string): boolean;
+    // @internal
+    logUntrustedOriginUse(url: string, settingsUrl?: string): void;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
+    // @beta
+    restrictCredentialsToTrustedOrigins: boolean;
     // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
+    // @beta
+    get trustedCredentialsOrigins(): ReadonlyArray<string>;
+    set trustedCredentialsOrigins(origins: ReadonlyArray<string>);
     // @beta (undocumented)
     validateSource(opts: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
     // (undocumented)
@@ -6140,10 +6152,15 @@ export abstract class MapLayerImageryProvider {
     protected appendCustomParams(url: string): string;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
+    get blockedOrigins(): ReadonlyArray<string>;
     get cartoRange(): MapCartoRectangle | undefined;
     set cartoRange(range: MapCartoRectangle | undefined);
+    // @internal
+    protected checkCredentialedRedirect(requestedUrl: string, response: Response): void;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // @internal
+    protected get credentialedRedirect(): RequestRedirect | undefined;
     // @internal (undocumented)
     decorate(_context: DecorateContext): void;
     // @internal
@@ -6190,16 +6207,24 @@ export abstract class MapLayerImageryProvider {
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
-    // @internal (undocumented)
-    protected _includeUserCredentials: boolean;
+    // @internal
+    protected includeUserCredentials(url: string): boolean;
     initialize(): Promise<void>;
+    // @internal
+    protected isCredentialsSharingAllowed(url: string): boolean;
+    // @internal
+    protected isSsoAllowed(url: string): boolean;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
+    // @internal
+    protected logUntrustedOriginUse(url: string): void;
     // @internal (undocumented)
     makeRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response>;
     // @internal (undocumented)
     makeTileRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response>;
     // @internal (undocumented)
     matchesMissingTile(tileData: Uint8Array): boolean;
+    // @internal
+    protected matchesSettingsUrlOrigin(url: string): boolean;
     // @internal (undocumented)
     get maximumScreenSize(): number;
     // (undocumented)
@@ -6216,7 +6241,10 @@ export abstract class MapLayerImageryProvider {
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // @internal
     protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus): void;
-    // (undocumented)
+    // @internal
+    protected recordSsoSucceeded(url: string): void;
+    // @internal
+    protected reportBlockedOrigin(url: string): void;
     resetStatus(): void;
     // @internal (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
@@ -6248,6 +6276,8 @@ export abstract class MapLayerImageryProvider {
 export enum MapLayerImageryProviderStatus {
     // (undocumented)
     RequireAuth = 1,
+    // @beta
+    UntrustedOrigin = 2,
     // (undocumented)
     Valid = 0
 }
@@ -6366,6 +6396,8 @@ export enum MapLayerSourceStatus {
     InvalidTileTree = 3,
     InvalidUrl = 4,
     RequireAuth = 5,
+    // @beta
+    UntrustedOrigin = 8,
     Valid = 0
 }
 
@@ -6373,6 +6405,8 @@ export enum MapLayerSourceStatus {
 export interface MapLayerSourceValidation {
     // @beta (undocumented)
     authInfo?: MapLayerAuthenticationInfo;
+    // @beta
+    blockedOrigin?: string;
     // (undocumented)
     status: MapLayerSourceStatus;
     // (undocumented)
