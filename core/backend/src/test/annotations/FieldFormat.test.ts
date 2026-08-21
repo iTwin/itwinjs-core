@@ -152,6 +152,9 @@ describe("Field format resolution example", () => {
         category,
         code: Code.createEmpty(),
         // Seed values chosen to convert cleanly, so a wrong conversion is obvious by inspection.
+        // Every test restates the properties it uses in a "Persisted on the element:" comment, so its
+        // expected strings can be checked without scrolling back here. Changing a value below
+        // means updating those comments too -- grep "Persisted on the element" to find them all.
         lengthProp: 2.5,          // m    -> 2500 mm, 250 cm, 8.202 ft
         areaProp: 100,            // m2   -> 1076.391 ft2
         slopeProp: 0.01,          // m/m  -> 100 :1
@@ -202,6 +205,8 @@ describe("Field format resolution example", () => {
   }
 
   it("renders a field with no format options from the property's own KindOfQuantity, and raw where it has none", async () => {
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const length = appendField(block, "lengthProp");
     const area = appendField(block, "areaProp");
@@ -230,6 +235,8 @@ describe("Field format resolution example", () => {
     // schema declares but no FormatSet defines reaches the SchemaFormatsProvider, and because the
     // field also names the persistence unit, the properties that carry no KoQ of their own
     // resolve too -- both halves of the key came from the field.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const length = appendField(block, "lengthProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.M" });
     const area = appendField(block, "areaProp", { kindOfQuantity: "FieldExample.SCHEMA_AREA", persistenceUnit: "Units.SQ_M" });
@@ -256,6 +263,8 @@ describe("Field format resolution example", () => {
     // Same KoQs as above with the unit leg dropped. A format alone cannot be bound to a value --
     // something has to say what unit the persisted number is in. The property's own KoQ answers
     // that for the first three; nothing answers it for the rest.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const length = appendField(block, "lengthProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH" });
     const area = appendField(block, "areaProp", { kindOfQuantity: "FieldExample.SCHEMA_AREA" });
@@ -279,6 +288,8 @@ describe("Field format resolution example", () => {
   it("ignores a persistence unit named without a KindOfQuantity", async () => {
     // The mirror image: a unit with no format to apply to it. Nothing names a format, so the
     // property-side candidate is all that is left and the result is the baseline exactly.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const length = appendField(block, "lengthProp", { persistenceUnit: "Units.M" });
     const area = appendField(block, "areaProp", { persistenceUnit: "Units.SQ_M" });
@@ -300,6 +311,8 @@ describe("Field format resolution example", () => {
   it("falls back to the property's own format when the persistence unit does not exist", async () => {
     // The format leg is fine and the unit leg is garbage. The override fails as a unit, and the
     // property-side candidate silently rescues the properties that carry a KoQ.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const length = appendField(block, "lengthProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.NOT_A_UNIT" });
     const area = appendField(block, "areaProp", { kindOfQuantity: "FieldExample.SCHEMA_AREA", persistenceUnit: "Units.NOT_A_UNIT" });
@@ -321,6 +334,8 @@ describe("Field format resolution example", () => {
   it("falls back to the property's own format when the KindOfQuantity does not exist", async () => {
     // The other leg fails this time -- a KoQ no FormatSet and no schema defines, paired with a
     // perfectly good unit. Indistinguishable in output from the failed-unit case above.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const length = appendField(block, "lengthProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.M" });
     const area = appendField(block, "areaProp", { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.SQ_M" });
@@ -344,6 +359,8 @@ describe("Field format resolution example", () => {
     // indistinguishable from a field carrying no formatOptions at all. Asserted here against a
     // baseline field rendered in the same pass rather than against captured literals, so the
     // claim survives any change to the seed values or the schema's formats.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const bothLegsFail = { kindOfQuantity: "Example.DOES_NOT_EXIST", persistenceUnit: "Units.NOT_A_UNIT" };
 
@@ -375,6 +392,8 @@ describe("Field format resolution example", () => {
     // The happy path. Every field names a KoQ the adopted set defines and the unit its value is
     // persisted in, so the FormatSet answers for all six -- including the three properties that
     // carry no KoQ of their own, which the field has now supplied both halves of the key for.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const length = appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
     const area = appendField(block, "areaProp", { kindOfQuantity: "Example.AREA", persistenceUnit: "Units.SQ_M" });
@@ -407,6 +426,8 @@ describe("Field format resolution example", () => {
     // Same adopted set, unit leg dropped. The property's KoQ supplies the missing half for the
     // first three; the rest have nothing to convert from and stay raw. Note this is not the
     // schema's *format* being used -- only its persistence unit, with the FormatSet's format.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const length = appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH" });
     const area = appendField(block, "areaProp", { kindOfQuantity: "Example.AREA" });
@@ -440,6 +461,7 @@ describe("Field format resolution example", () => {
     // set is what a field gets when it asks for nothing, and an id absent from the registration
     // falls back to it rather than failing or searching the other buckets. Asserted against each
     // other rather than against literals so it cannot drift with the formats above.
+    // Persisted on the element: lengthProp 2.5 m, angleProp 90°
     const block = TextBlock.create();
     const namesNothing = appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
     const namesAdopted = appendField(block, "lengthProp", { formatSet: ADOPTED_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
@@ -469,6 +491,8 @@ describe("Field format resolution example", () => {
   it("uses an alternate FormatSet's format when the field names it, in preference to the adopted one", async () => {
     // Mixing presentations within one iModel -- imperial callouts on an otherwise metric drawing.
     // Both sets define every key here, so the alternate's redefinition is what must win.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
+    // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
     const length = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
     const area = appendField(block, "areaProp", { formatSet: ALT_SET, kindOfQuantity: "Example.AREA", persistenceUnit: "Units.SQ_M" });
@@ -513,6 +537,7 @@ describe("Field format resolution example", () => {
   it("falls through from the named alternate FormatSet to the adopted one when the alternate omits the key", async () => {
     // The alternate set is a partial overlay, not a replacement: a field routed to it still sees
     // every key the adopted set defines.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m²
     const block = TextBlock.create();
     const redefined = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
     const omitted = appendField(block, "areaProp", { formatSet: ALT_SET, kindOfQuantity: "Example.AREA", persistenceUnit: "Units.SQ_M" });
@@ -538,6 +563,7 @@ describe("Field format resolution example", () => {
     // The complement of the fallthrough above: the adopted bucket cannot see into the alternate
     // one. An unregistered id lands on the adopted bucket, so it fails the same way naming
     // nothing does -- the fallback is one specific bucket, not a search of every registered set.
+    // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.ALT_ONLY_LENGTH", persistenceUnit: "Units.M" });
     const namesNothing = appendField(block, "lengthProp", { kindOfQuantity: "Example.ALT_ONLY_LENGTH", persistenceUnit: "Units.M" });
@@ -563,6 +589,7 @@ describe("Field format resolution example", () => {
     // The full chain in one field: alternate -> adopted -> SchemaFormatsProvider. Asserted on a
     // property with no KoQ of its own, so a break anywhere in the chain shows up as a raw value
     // rather than being masked by the property-side format.
+    // Persisted on the element: angleProp 90°
     const block = TextBlock.create();
     const angle = appendField(block, "angleProp", { formatSet: ALT_SET, kindOfQuantity: "FieldExample.SCHEMA_ANGLE", persistenceUnit: "Units.ARC_DEG" });
 
@@ -576,6 +603,7 @@ describe("Field format resolution example", () => {
 
   it("does nothing when a field names a FormatSet but no KindOfQuantity and no persistence unit", async () => {
     // A FormatSet is only ever reached through a KoQ key, so naming one on its own is inert.
+    // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET });
     const noOptions = appendField(block, "lengthProp");
@@ -594,6 +622,7 @@ describe("Field format resolution example", () => {
     // persistence unit belong to different phenomena, but pushes the identity conversion anyway,
     // so the magnitude is relabelled rather than converted or rejected. Once fixed, this should
     // stop resolving and fall back like any other failed override.
+    // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const crossed = appendField(block, "lengthProp", { kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.M" });
     const baseline = appendField(block, "lengthProp");
