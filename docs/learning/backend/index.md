@@ -24,6 +24,7 @@ These packages provide the following functions to support backend operations:
 - IModelDb
   - [Open an IModelDb](./IModelDb.md)
   - [Synchronizing with iModelHub](./IModelDbSync.md)
+  - [Concurrency Control — locks and multi-user editing](./ConcurrencyControl.md)
   - [Writing to an IModelDb](./IModelDbReadwrite.md)
   - [EditTxn transaction model and migration guidance](./EditTxn.md)
   - [iModel Transformation and Data Exchange](../transformer/index.md)
