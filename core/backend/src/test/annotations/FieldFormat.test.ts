@@ -258,7 +258,7 @@ const CASES: readonly Case[] = [
   { id: "16", title: "alternate set omits the key", options: (p) => ({ formatSet: ALT_SET, kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: p.persistenceUnit }) },
   { id: "17", title: "key defined only in the alternate set, addressed correctly", options: (p) => ({ formatSet: ALT_SET, kindOfQuantity: ALT_ONLY_KOQ, persistenceUnit: p.persistenceUnit }) },
   { id: "18", title: "same alt-only key without naming the alternate set", options: (p) => ({ kindOfQuantity: ALT_ONLY_KOQ, persistenceUnit: p.persistenceUnit }) },
-  { id: "19", title: "explicitly naming the adopted set", options: (p) => ({ formatSet: ADOPTED_SET, kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: p.persistenceUnit }) },
+  { id: "19", title: "adopted-set key without naming any set", options: (p) => ({ kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: p.persistenceUnit }) },
   { id: "20", title: "naming a FormatSet id that was never registered", options: (p) => ({ formatSet: UNREGISTERED_SET, kindOfQuantity: p.koqAdoptedOnly, persistenceUnit: p.persistenceUnit }) },
   { id: "21", title: "alternate set named, key exists only in the schema", options: (p) => ({ formatSet: ALT_SET, kindOfQuantity: p.schemaKoq, persistenceUnit: p.persistenceUnit }) },
   { id: "22", title: "unregistered id + a key only the alternate set defines", options: (p) => ({ formatSet: UNREGISTERED_SET, kindOfQuantity: ALT_ONLY_KOQ, persistenceUnit: p.persistenceUnit }) },
@@ -280,7 +280,7 @@ const EQUIVALENCES: ReadonlyArray<{ readonly of: string, readonly to: string, re
   { of: "6", to: "13", why: "the format leg fails in both" },
   { of: "7", to: "14", why: "both legs fail in both" },
   { of: "16", to: "10", why: "the alternate set omits the key, so resolution falls through to the adopted set" },
-  { of: "19", to: "10", why: "naming the adopted set is equivalent to naming nothing" },
+  { of: "19", to: "10", why: "the default bucket is the adopted set, so naming it explicitly is a no-op" },
   { of: "20", to: "10", why: "an unregistered id silently falls back to the adopted bucket" },
   { of: "21", to: "12", why: "the alternate bucket must walk alternate -> adopted -> schema" },
   { of: "22", to: "18", why: "the unknown-id fallback is the adopted bucket, not a search of every bucket" },
@@ -442,7 +442,7 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     dimensionless: "0.9",
     coordinate: "(1, 2, 3)",
   },
-  "19": { // explicitly naming the adopted set
+  "19": { // adopted-set key without naming any set
     length: "250 cm",
     area: "1076.39 ft2",
     slope: "100 :1",
