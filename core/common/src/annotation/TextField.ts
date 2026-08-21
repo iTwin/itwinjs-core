@@ -103,6 +103,12 @@ export interface DateTimeFieldFormatOptions {
  * the field falls back to `toString()` for `"quantity"` or a `(x, y[, z])` tuple for
  * `"coordinate"`. Core does not synthesize a coordinate format — coordinate presentation is
  * [FormatsProvider]($core-quantity) territory.
+ *
+ * **Values read out of a JSON-in-string property are a special case.** Such a leaf has no EC
+ * property behind it, so there is no property-side pair to fall through to and only
+ * [[kindOfQuantity]] and [[persistenceUnit]] can form a candidate. Declaring just one — or
+ * neither — is not an error: the field simply renders its raw value, exactly as it would have
+ * without a quantity type at all.
  * @beta
  */
 export interface QuantityFieldFormatOptions {

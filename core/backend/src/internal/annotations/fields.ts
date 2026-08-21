@@ -5,15 +5,21 @@
 
 import { collectFieldQuantityPairs, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
-import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { ElementDrivesTextAnnotation, isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType } from "@itwin/ecschema-metadata";
 import { FormattingSpecArgs } from "@itwin/core-quantity";
 import type { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
+
+/** The scalar leaves `JSON.parse` can produce. Deliberately excludes `null`: a JSON `null` is
+ * not a [FieldPrimitiveValue]($common), so a path terminating on one is unresolvable rather
+ * than a value to stringify.
+ */
+type JsonPrimitiveValue = string | number | boolean;
 
 // An intermediate value obtained while evaluating a FieldPropertyPath.
 type FieldValueType = {
@@ -23,6 +29,7 @@ type FieldValueType = {
   structArray?: never;
   deserializedJson?: never;
   deserializedArray?: never;
+  jsonPrimitive?: never;
 } | {
   primitive?: never;
   struct: FieldStructValue;
@@ -30,6 +37,7 @@ type FieldValueType = {
   structArray?: never;
   deserializedJson?: never;
   deserializedArray?: never;
+  jsonPrimitive?: never;
 } | {
   primitive?: never;
   struct?: never;
@@ -37,6 +45,7 @@ type FieldValueType = {
   structArray?: never;
   deserializedJson?: never;
   deserializedArray?: never;
+  jsonPrimitive?: never;
 } | {
   primitive?: never;
   struct?: never;
@@ -44,6 +53,7 @@ type FieldValueType = {
   structArray: FieldStructValue[];
   deserializedJson?: never;
   deserializedArray?: never;
+  jsonPrimitive?: never;
 } | {
   primitive?: never;
   struct?: never;
@@ -51,6 +61,7 @@ type FieldValueType = {
   structArray?: never;
   deserializedJson: FieldStructValue;
   deserializedArray?: never;
+  jsonPrimitive?: never;
 } | {
   primitive?: never;
   struct?: never;
@@ -58,6 +69,26 @@ type FieldValueType = {
   structArray?: never;
   deserializedJson?: never;
   deserializedArray: FieldStructValue[];
+  jsonPrimitive?: never;
+} | {
+  // A scalar read out of a deserialized JSON blob. Kept distinct from `primitive` because it
+  // has no EC property behind it: its type is inferred from the JSON value rather than from
+  // schema metadata, and it carries no KindOfQuantity.
+  primitive?: never;
+  struct?: never;
+  primitiveArray?: never;
+  structArray?: never;
+  deserializedJson?: never;
+  deserializedArray?: never;
+  jsonPrimitive: JsonPrimitiveValue;
+}
+
+/** A (property, containing class) pair identifying where a partially-walked
+ * [FieldPropertyPath]($common) currently sits in the EC schema.
+ */
+interface SchemaCursor {
+  readonly ecProp: Property;
+  readonly ecClass: AnyClass;
 }
 
 export interface UpdateFieldsContext {
@@ -84,14 +115,13 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     return undefined;
   }
 
-  let ecClass: AnyClass = schemaItem;
   const { propertyName, accessors } = field.propertyPath;
-  let ecProp = ecClass.getPropertySync(propertyName);
-  if (!ecProp) {
+  const rootProp = schemaItem.getPropertySync(propertyName);
+  if (!rootProp) {
     return undefined;
   }
 
-  const isAspect = ecClass.isSync("ElementAspect", "BisCore");
+  const isAspect = schemaItem.isSync("ElementAspect", "BisCore");
   const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=:elementId`;
   // `propertyName` may itself be a struct/array/point/navigation property, so its value can't be
   // decomposed into scalar sub-columns ahead of time. Query using the non-deprecated
@@ -103,68 +133,60 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
 
     const rawRootValue = reader.current[0];
-    if (undefined === rawRootValue) {
+    if (isNullish(rawRootValue)) {
       return undefined;
     }
 
-    ecProp = expectDefined(ecProp);
-    const rootValue = reshapePropertyValue(rawRootValue, ecProp, iModel);
-    if (ecProp.isArray()) {
-      return ecProp.isStruct() ? { structArray: rootValue } : { primitiveArray: rootValue };
-    }
-
-    if (ecProp.isStruct()) {
-      ecClass = ecProp.structClass;
-      return { struct: rootValue };
-    }
-
-    if (ecProp.isPrimitive()) {
-      if (ecProp.primitiveType === PrimitiveType.DateTime) {
+    const rootValue = reshapePropertyValue(rawRootValue, rootProp, iModel);
+    if (rootProp.isPrimitive() && !rootProp.isArray()) {
+      if (rootProp.primitiveType === PrimitiveType.DateTime) {
         return { primitive: new Date(rootValue) };
       }
 
       // If the property is a string holding serialized JSON and the field indexes into it, parse
       // and treat as a deserialized object/array. Without accessors, keep the raw string so the
       // field can display it directly.
-      if (ecProp.primitiveType === PrimitiveType.String && typeof rootValue === "string" && accessors && accessors.length > 0) {
+      if (rootProp.primitiveType === PrimitiveType.String && typeof rootValue === "string" && accessors && accessors.length > 0) {
         const deserialized = tryDeserializeJson(rootValue);
         if (deserialized) {
           return deserialized;
         }
       }
-
-      return {
-        primitive: rootValue,
-      };
     }
 
-    return undefined;
+    return classifyEcValue(rootProp, rootValue);
   }, new QueryBinder().bindId("elementId", host.elementId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
 
   if (undefined === curValue) {
     return undefined;
   }
 
+  let cursor = enterProperty(rootProp, schemaItem);
   if (accessors) {
     for (const accessor of accessors) {
-      if (undefined !== curValue.primitive) {
+      if (undefined !== curValue.primitive || undefined !== curValue.jsonPrimitive) {
         // Can't index into a primitive.
         return undefined;
       }
 
-      if (typeof accessor === "number") {
-        // Deserialized JSON array: index without consulting the EC schema.
-        if (curValue.deserializedArray) {
-          const arr = curValue.deserializedArray;
-          const idx = accessor < 0 ? arr.length + accessor : accessor;
-          const value: any = arr[idx];
-          if (undefined === value) {
-            return undefined;
-          }
-          curValue = classifyDeserializedValue(value);
-          continue;
+      if (curValue.deserializedJson || curValue.deserializedArray) {
+        // Inside a deserialized JSON blob there is no EC metadata to consult; index the raw
+        // value directly. The schema cursor deliberately stops advancing here.
+        const next = indexDeserializedJson(curValue, accessor);
+        if (!next) {
+          return undefined;
         }
 
+        curValue = next;
+        continue;
+      }
+
+      const advanced = advanceSchemaCursor(cursor, accessor);
+      if (!advanced) {
+        return undefined;
+      }
+
+      if (typeof accessor === "number") {
         const array: FieldPrimitiveValue[] | FieldStructValue[] | undefined = curValue.primitiveArray ?? curValue.structArray;
         if (!array) {
           return undefined;
@@ -172,68 +194,47 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
 
         const index: number = accessor < 0 ? (array.length + accessor) : accessor;
         const item: FieldPrimitiveValue | FieldStructValue = array[index];
-        if (undefined === item) {
+        if (isNullish(item)) {
           return undefined;
-        } else if (curValue.primitiveArray) {
-          curValue = { primitive: curValue.primitiveArray[index] };
-        } else {
-          assert(undefined !== curValue.structArray);
-          assert(ecProp instanceof StructArrayProperty);
-
-          ecClass = ecProp.structClass;
-          curValue = { struct: curValue.structArray[index] };
         }
+
+        // `advanced.ecProp` is still the array property (see advanceSchemaCursor), so the
+        // element's shape comes from the array kind rather than from classifyEcValue.
+        curValue = curValue.primitiveArray ? { primitive: item as FieldPrimitiveValue } : { struct: item as FieldStructValue };
       } else {
-        // Deserialized JSON object: index without consulting the EC schema.
-        if (curValue.deserializedJson) {
-          const value: any = curValue.deserializedJson[accessor];
-          if (undefined === value) {
-            return undefined;
-          }
-          curValue = classifyDeserializedValue(value);
-          continue;
-        }
-
         if (undefined === curValue.struct) {
           return undefined;
         }
 
         const item: any = curValue.struct[accessor];
-        if (undefined === item) {
+        if (isNullish(item)) {
           return undefined;
         }
 
-        ecProp = ecClass.getPropertySync(accessor);
-        if (!ecProp) {
+        const classified = classifyEcValue(advanced.ecProp, item);
+        if (!classified) {
           return undefined;
         }
 
-        if (ecProp.isArray()) {
-          curValue = ecProp.isStruct() ? { structArray: item } : { primitiveArray: item };
-        } else if (ecProp.isStruct()) {
-          ecClass = ecProp.structClass;
-          curValue = { struct: item };
-        } else if (ecProp.isPrimitive()) {
-          curValue = { primitive: item };
-        } else {
-          return undefined;
-        }
+        curValue = classified;
       }
+
+      cursor = advanced;
     }
   }
 
-  const isJsonPath = isJsonLeafPrimitive(curValue.primitive) && ecProp.isPrimitive() && ecProp.primitiveType === PrimitiveType.String && accessors && accessors.length > 0;
-  const propertyType = curValue.primitive !== undefined && !ecProp.isPrimitive()
-    ? undefined
-    : (isJsonPath
-      ? inferJsonPrimitiveType(curValue.primitive)
-      : determineFieldPropertyType(ecProp));
+  const { ecProp } = cursor;
+  const jsonLeaf = curValue.jsonPrimitive;
+  const propertyType = undefined !== jsonLeaf
+    ? inferJsonPrimitiveType(jsonLeaf)
+    : (undefined !== curValue.primitive && !ecProp.isPrimitive() ? undefined : determineFieldPropertyType(ecProp));
   if (!propertyType) {
     return undefined;
   }
 
   // The ultimate result must be a primitive value.
-  if (undefined === curValue.primitive) {
+  const value = curValue.primitive ?? jsonLeaf;
+  if (undefined === value) {
     return undefined;
   }
 
@@ -243,25 +244,96 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   let kindOfQuantityFullName: string | undefined;
   let persistenceUnitFullName: string | undefined;
   if (propertyType === "quantity" || propertyType === "coordinate") {
-    const koq = !isJsonPath && ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
+    const koq = undefined === jsonLeaf && ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
     kindOfQuantityFullName = koq?.fullName;
     persistenceUnitFullName = koq?.persistenceUnit?.fullName;
   }
 
-  return { value: curValue.primitive, type: propertyType, kindOfQuantityFullName, persistenceUnitFullName };
+  return { value, type: propertyType, kindOfQuantityFullName, persistenceUnitFullName };
 }
 
-function isJsonLeafPrimitive(value: FieldPrimitiveValue | undefined): boolean {
-  const t = typeof value;
-  return t === "string" || t === "number" || t === "boolean";
+function isNullish(value: unknown): value is null | undefined {
+  return undefined === value || null === value;
 }
 
-function inferJsonPrimitiveType(value: FieldPrimitiveValue | undefined): FieldPropertyType | undefined {
+/** Positions a schema cursor on `prop`. Entering a non-array struct moves the class context to
+ * the struct's class so that subsequent named accessors resolve against its members.
+ */
+function enterProperty(prop: Property, containingClass: AnyClass): SchemaCursor {
+  return { ecProp: prop, ecClass: prop.isStruct() && !prop.isArray() ? prop.structClass : containingClass };
+}
+
+/** Advances a schema cursor by one [FieldPropertyPath]($common) accessor, or returns `undefined`
+ * when the accessor doesn't apply to the current property.
+ *
+ * Shared by the value walker in [[getFieldPropertyValue]] and the metadata-only walker in
+ * [[resolveFieldTerminalProperty]] so the two cannot disagree about which paths are legal.
+ */
+function advanceSchemaCursor(cursor: SchemaCursor, accessor: string | number): SchemaCursor | undefined {
+  const { ecProp, ecClass } = cursor;
+  if (typeof accessor === "number") {
+    if (!ecProp.isArray()) {
+      return undefined;
+    }
+
+    // A struct array's element type is its struct class; a primitive array's element type is
+    // already described by `ecProp`. Either way the property itself doesn't advance.
+    return ecProp.isStruct() ? { ecProp, ecClass: ecProp.structClass } : cursor;
+  }
+
+  // Named accessors require a struct context. A String primitive with further accessors is a
+  // JSON-in-string path, which callers handle before reaching here.
+  if (!ecProp.isStruct()) {
+    return undefined;
+  }
+
+  const next = ecClass.getPropertySync(accessor);
+  return next ? enterProperty(next, ecClass) : undefined;
+}
+
+/** Wraps an EC-schema-backed value in the [[FieldValueType]] variant matching its property. */
+function classifyEcValue(prop: Property, value: any): FieldValueType | undefined {
+  if (prop.isArray()) {
+    return prop.isStruct() ? { structArray: value } : { primitiveArray: value };
+  }
+
+  if (prop.isStruct()) {
+    return { struct: value };
+  }
+
+  return prop.isPrimitive() ? { primitive: value } : undefined;
+}
+
+/** Applies one accessor to a deserialized JSON object or array. */
+function indexDeserializedJson(curValue: FieldValueType, accessor: string | number): FieldValueType | undefined {
+  if (typeof accessor === "number") {
+    const arr = curValue.deserializedArray;
+    if (!arr) {
+      return undefined;
+    }
+
+    const idx = accessor < 0 ? arr.length + accessor : accessor;
+    return classifyDeserializedValue(arr[idx]);
+  }
+
+  return curValue.deserializedJson ? classifyDeserializedValue(curValue.deserializedJson[accessor]) : undefined;
+}
+
+/** Types a JSON-in-string leaf. A numeric leaf is a `"quantity"`: JSON carries no units, so the
+ * field is expected to declare a [QuantityFieldFormatOptions.kindOfQuantity]($common) and
+ * [QuantityFieldFormatOptions.persistenceUnit]($common) of its own. It costs nothing when it
+ * doesn't — `collectFieldQuantityPairs` emits a candidate only when both halves are present, so
+ * an incomplete key yields no candidates, records no pre-warm miss, and renders through the same
+ * raw `toString()` fallback a `"string"` leaf would have used.
+ */
+function inferJsonPrimitiveType(value: JsonPrimitiveValue): FieldPropertyType {
   switch (typeof value) {
-    case "boolean": return "boolean";
-    case "number": return "quantity";
-    case "string": return "string";
-    default: return undefined;
+    case "boolean":
+      return "boolean";
+    case "number":
+      return "quantity";
+    default:
+      return "string";
   }
 }
 
@@ -283,14 +355,28 @@ function tryDeserializeJson(raw: string): FieldValueType | undefined {
   return undefined;
 }
 
-function classifyDeserializedValue(value: any): FieldValueType {
+/** Wraps a value pulled out of a deserialized JSON blob. Returns `undefined` for JSON `null`
+ * (and for a missing key), since neither is a [FieldPrimitiveValue]($common) — the path is
+ * simply unresolvable, and inventing a value here would hand the formatters something they
+ * cannot stringify.
+ */
+function classifyDeserializedValue(value: unknown): FieldValueType | undefined {
   if (Array.isArray(value)) {
     return { deserializedArray: value };
   }
+
   if (value !== null && typeof value === "object") {
     return { deserializedJson: value };
   }
-  return { primitive: value };
+
+  switch (typeof value) {
+    case "string":
+    case "number":
+    case "boolean":
+      return { jsonPrimitive: value };
+    default:
+      return undefined;
+  }
 }
 
 function determineFieldPropertyType(prop: Property): FieldPropertyType | undefined {
@@ -442,62 +528,59 @@ export function updateAllFields(annotationElementId: Id64String, txn: EditTxn, f
   doUpdateFields(txn, annotationElementId, undefined, false, formattingSpecProvider);
 }
 
+/** Sentinel returned by [[resolveFieldTerminalProperty]] for a path that dives into a
+ * JSON-in-string property. Such a path has no terminal [Property]($ecschema-metadata) — and so
+ * no schema-side [KindOfQuantity]($ecschema-metadata) — but the field may still supply a
+ * complete formatting key of its own.
+ */
+const jsonInStringTerminal = "json-in-string";
+
+type FieldTerminal = Property | typeof jsonInStringTerminal;
+
 /** Resolves a [FieldRun]($common)'s target to its terminal [Property]($ecschema-metadata)
  * using schema metadata only (no ECSQL, no element values). Returns `undefined` when the path
- * cannot be followed — notably when it dives into a JSON-in-string leaf, since such paths
- * have no reliable ECProperty/KoQ association.
+ * cannot be followed, or [[jsonInStringTerminal]] when it dives into a JSON-in-string leaf.
+ *
+ * Walks with the same [[advanceSchemaCursor]] the value path uses, so the two agree on which
+ * paths are legal. It is deliberately more permissive in one direction: it cannot know whether
+ * the stored string actually parses as JSON, so a JSON-in-string path may pre-warm a
+ * [FormatterSpec]($core-quantity) that evaluation never consults. An unused warmed spec is
+ * harmless; a missing one is not.
  */
-function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Property | undefined {
+function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldTerminal | undefined {
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
   if (!EntityClass.isEntityClass(schemaItem)) {
     return undefined;
   }
 
-  let ecClass: AnyClass = schemaItem;
   const { propertyName, accessors } = field.propertyPath;
-  let ecProp = ecClass.getPropertySync(propertyName);
-  if (!ecProp) {
+  const rootProp = schemaItem.getPropertySync(propertyName);
+  if (!rootProp) {
     return undefined;
   }
 
   if (!accessors || accessors.length === 0) {
-    return ecProp;
+    return rootProp;
   }
 
-  // Mirror the descent getFieldPropertyValue performs at query time: on entering a non-array
-  // struct at the root, subsequent named accessors are looked up on the struct's class.
-  if (ecProp.isStruct() && !ecProp.isArray()) {
-    ecClass = ecProp.structClass;
+  // Mirrors getFieldPropertyValue: accessors applied to a non-array String property index into
+  // deserialized JSON, so the schema walk stops here.
+  if (rootProp.isPrimitive() && !rootProp.isArray() && rootProp.primitiveType === PrimitiveType.String) {
+    return jsonInStringTerminal;
   }
 
+  let cursor = enterProperty(rootProp, schemaItem);
   for (const accessor of accessors) {
-    if (typeof accessor === "number") {
-      if (!ecProp.isArray()) {
-        return undefined;
-      }
-      if (ecProp.isStruct()) {
-        ecClass = ecProp.structClass;
-      }
-      // For primitive arrays, ecProp already represents the element type — nothing to advance.
-    } else {
-      // Named accessors require a struct context. A String primitive with further accessors is
-      // a JSON-in-string path, which has no schema-driven KoQ.
-      if (!ecProp.isStruct()) {
-        return undefined;
-      }
-      const next: Property | undefined = ecClass.getPropertySync(accessor);
-      if (!next) {
-        return undefined;
-      }
-      ecProp = next;
-      if (ecProp.isStruct() && !ecProp.isArray()) {
-        ecClass = ecProp.structClass;
-      }
+    const advanced = advanceSchemaCursor(cursor, accessor);
+    if (!advanced) {
+      return undefined;
     }
+
+    cursor = advanced;
   }
 
-  return ecProp;
+  return cursor.ecProp;
 }
 
 /** Returns the [FormattingSpecArgs]($core-quantity) entries the field may consult at
@@ -510,17 +593,27 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): Proper
 function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
   const quantityOptions = field.formatOptions?.quantity;
 
-  const ecProp = resolveFieldTerminalProperty(field, iModel);
-  if (!ecProp) {
+  const terminal = resolveFieldTerminalProperty(field, iModel);
+  if (!terminal) {
     return [];
   }
 
-  const propertyType = determineFieldPropertyType(ecProp);
+  if (terminal === jsonInStringTerminal) {
+    // A JSON leaf has no property-side pair to fall back to, so only the field's own overrides
+    // can form a candidate. `collectFieldQuantityPairs` drops an incomplete key, which matches
+    // the runtime falling through to the raw `toString()` representation.
+    return collectFieldQuantityPairs({
+      overrideName: quantityOptions?.kindOfQuantity,
+      overridePersistence: quantityOptions?.persistenceUnit,
+    });
+  }
+
+  const propertyType = determineFieldPropertyType(terminal);
   if (propertyType !== "quantity" && propertyType !== "coordinate") {
     return [];
   }
 
-  const koq = ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
+  const koq = terminal.kindOfQuantity ? terminal.getKindOfQuantitySync() : undefined;
   return collectFieldQuantityPairs({
     overrideName: quantityOptions?.kindOfQuantity,
     overridePersistence: quantityOptions?.persistenceUnit,
