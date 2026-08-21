@@ -612,7 +612,7 @@ describe("Ratio format tests", () => {
         } catch (error) {
           expect(error).to.be.instanceOf(QuantityError);
           expect((error as QuantityError).message)
-            .to.contain("exactly one non-whitespace character");
+            .to.contain("exactly one non-space character");
         }
       }
     });

@@ -970,7 +970,7 @@ export class Parser {
     if (!inString)
       return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
 
-    const separator = spec.format.ratioSeparator?.trim() || ":";
+    const separator = spec.format.ratioSeparator?.split(" ").join("") || ":";
     const parts = inString.split(separator).map((p) => p.trim());
     if (parts.length > 2) return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
 
