@@ -350,6 +350,7 @@ describe("EmphasizeElements tests", () => {
   it("applies default appearance with no elements emphasized", () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
+    vp.viewFlags = vp.viewFlags.with("weights", true);
 
     const emph = EmphasizeElements.getOrCreate(vp);
     const deemphasized = FeatureAppearance.fromTransparency(0.5);
