@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./CustomAttributeConverter";
+export * from "./SchemaAuthoringError";
 export * from "./SchemaComparison";
+export * from "./SchemaCopy";
 export * from "./SchemaDocument";
 export * from "./SchemaDocumentIO";
 export * from "./SchemaIssues";

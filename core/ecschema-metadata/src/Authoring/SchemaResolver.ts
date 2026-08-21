@@ -132,6 +132,17 @@ export class SchemaResolution {
   }
 }
 
+/** A schema name under resolution, before it becomes a {@link ResolvedSchema}: the header it was
+ * requested with, the candidate finally selected for it, and who asked for it. Module scope so the
+ * closure walk and the topological order share one declaration. */
+interface ResolutionNode {
+  name: string;
+  header?: SchemaDocumentHeader;
+  candidate?: SchemaCandidate;
+  isRoot: boolean;
+  requestedBy: string[];
+}
+
 /** Works out which schemas a set of root documents needs, and in what order to load them. The
  * middle of the three discovery steps: a {@link SchemaSource} says what schemas exist and what each
  * one declares about itself, this resolves the reference closure over those headers into a
@@ -173,13 +184,6 @@ export class SchemaResolver {
       }
     }
 
-    interface ResolutionNode {
-      name: string;
-      header?: SchemaDocumentHeader;
-      candidate?: SchemaCandidate;
-      isRoot: boolean;
-      requestedBy: string[];
-    }
     const nodes = new Map<string, ResolutionNode>(); // keyed by lowercased name
 
     // Seed the roots. Duplicate root names violate single-version-per-name immediately.
@@ -192,9 +196,11 @@ export class SchemaResolver {
       nodes.set(key, { name: root.name, header: root, isRoot: true, requestedBy: ["<request>"] });
     }
 
-    // Walk the reference closure breadth-first over headers.
+    // Walk the reference closure breadth-first over headers. The queue is appended to inside the
+    // loop; an array iterator re-reads `length` each step, so those appends are visited. Not
+    // `shift()`, which would make the walk quadratic in the queue length.
     const pending: ResolutionNode[] = [...nodes.values()];
-    for (let node = pending.shift(); node !== undefined; node = pending.shift()) {
+    for (const node of pending) {
       if (node.header === undefined)
         continue;
       for (const reference of node.header.references) {
@@ -258,7 +264,7 @@ export class SchemaResolver {
   /** Topologically orders the nodes so each schema follows everything it references. Reference
    * cycles are prohibited by the spec; one is reported and broken arbitrarily so ordering still
    * terminates. */
-  private _orderByDependencies(nodes: Map<string, { name: string, header?: SchemaDocumentHeader, candidate?: SchemaCandidate, isRoot: boolean, requestedBy: string[] }>, issues: SchemaIssueList): ResolvedSchema[] {
+  private _orderByDependencies(nodes: Map<string, ResolutionNode>, issues: SchemaIssueList): ResolvedSchema[] {
     const ordered: ResolvedSchema[] = [];
     const visited = new Set<string>(); // done
     const visiting = new Set<string>(); // on the current walk - re-entry means a cycle

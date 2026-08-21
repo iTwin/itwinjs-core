@@ -13,6 +13,10 @@ import * as Authoring from "./SchemaDocument";
 import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
+/** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
+ * allocates a new RegExp on every evaluation, and this runs per reference. */
+const separatorPattern = /[.:]/;
+
 /** The ECXML namespace URI of the 3.2 spec. */
 const ECXML_3_2_NAMESPACE = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
 
@@ -44,7 +48,7 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
     const emitter = this._prepare(document, issues, options);
     if (emitter === undefined)
       return { issues };
-    await emitter.emitTo(sink);
+    await emitter.emitTo(sink, options?.abortSignal);
     return { issues };
   }
 
@@ -60,14 +64,21 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
   }
 }
 
+/** Replacement per escapable character. Hoisted, and matched in a single pass: escaping runs on
+ * every attribute and every text node, so a large schema goes through it hundreds of thousands of
+ * times. */
+const xmlEscapes: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" };
+const attributeEscapePattern = /[&<>"]/g;
+const textEscapePattern = /[&<>]/g;
+
 /** Escapes a string for use inside an XML attribute value. */
 function escapeAttribute(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return value.replace(attributeEscapePattern, (char) => xmlEscapes[char]);
 }
 
 /** Escapes a string for use as XML element text. */
 function escapeText(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return value.replace(textEscapePattern, (char) => xmlEscapes[char]);
 }
 
 /** An attribute as [name, value]; a `undefined` value omits the attribute. */
@@ -118,10 +129,13 @@ class XmlStringBuilder {
    * length). Concatenating every chunk yields exactly what {@link toString} returns. The batch join
    * stays well under any limit, so this writes arbitrarily large documents; memory is still ~one
    * serialized copy (the line array), which is the accepted tier-1 tradeoff. */
-  public async drainTo(sink: SchemaTextSink): Promise<void> {
+  public async drainTo(sink: SchemaTextSink, abortSignal?: AbortSignal): Promise<void> {
+    abortSignal?.throwIfAborted();
     await sink(`<?xml version="1.0" encoding="UTF-8"?>\n`);
-    for (let start = 0; start < this._lines.length; start += XmlStringBuilder._linesPerChunk)
+    for (let start = 0; start < this._lines.length; start += XmlStringBuilder._linesPerChunk) {
+      abortSignal?.throwIfAborted();
       await sink(`${this._lines.slice(start, start + XmlStringBuilder._linesPerChunk).join("\n")}\n`);
+    }
   }
 
   private _indent(): string {
@@ -164,9 +178,9 @@ class ECXml32Emitter {
   }
 
   /** Builds the document, then streams it to `sink` in chunks instead of returning one string. */
-  public async emitTo(sink: SchemaTextSink): Promise<void> {
+  public async emitTo(sink: SchemaTextSink, abortSignal?: AbortSignal): Promise<void> {
     this._build();
-    await this._xml.drainTo(sink);
+    await this._xml.drainTo(sink, abortSignal);
   }
 
   /** Walks the document and fills the builder. Synchronous - the chunking happens at drain time, so
@@ -209,7 +223,7 @@ class ECXml32Emitter {
   /** Converts a stored item reference (local name or `Schema:Item` full name, either separator,
    * alias-qualified tolerated) to the alias-qualified form ECXML uses. */
   private _toXmlItemReference(reference: Authoring.LocalOrFullName, location: string): string {
-    const separatorIndex = reference.search(/[.:]/);
+    const separatorIndex = reference.search(separatorPattern);
     if (separatorIndex < 0)
       return reference; // local name
     const qualifier = reference.substring(0, separatorIndex);
@@ -241,7 +255,7 @@ class ECXml32Emitter {
    * schema defining the CA class, looked up from the reference list at emit time - the document
    * itself never stores a version on a CA reference. */
   private _customAttributeNamespace(className: string, location: string): { elementName: string, xmlns: string | undefined } {
-    const separatorIndex = className.search(/[.:]/);
+    const separatorIndex = className.search(separatorPattern);
     if (separatorIndex < 0)
       return { elementName: className, xmlns: this._ownNamespace() };
     const qualifier = className.substring(0, separatorIndex);

@@ -5,7 +5,7 @@
 
 import { DecimalPrecision, FormatTraits, FormatType } from "@itwin/core-quantity";
 import { CustomAttributeContainerType, ECClassModifier, PrimitiveType, StrengthDirection, StrengthType } from "../../ECObjects";
-import { Multiplicity, SchemaDocument } from "../../Authoring/SchemaDocument";
+import { SchemaDocument } from "../../Authoring/SchemaDocument";
 
 /** Composes a document exercising every schema item kind, property kind, and CA placement.
  * Shared by the XML and JSON round-trip tests. */
@@ -78,8 +78,8 @@ export function composeFullDocument(): SchemaDocument {
   // setting them here keeps the XML-read and JSON-read documents identical (the round-trip tests
   // assert byte-identical output across both formats).
   doc.createRelationship("PumpOwnsParts", { strength: StrengthType.Embedding, strengthDirection: StrengthDirection.Forward, modifier: ECClassModifier.None,
-    source: { multiplicity: Multiplicity.OneOne, roleLabel: "owns", constraintClasses: ["Pump"] },
-    target: { multiplicity: Multiplicity.ZeroMany, roleLabel: "is owned by", polymorphic: false, constraintClasses: ["PartInfo"] },
+    source: { multiplicity: "(1..1)", roleLabel: "owns", constraintClasses: ["Pump"] },
+    target: { multiplicity: "(0..*)", roleLabel: "is owned by", polymorphic: false, constraintClasses: ["PartInfo"] },
    });
   return doc;
 }

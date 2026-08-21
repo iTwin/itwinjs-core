@@ -18,6 +18,10 @@ import {
 } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
+/** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
+ * allocates a new RegExp on every evaluation, and this runs per reference. */
+const separatorPattern = /[.:]/;
+
 /** Reads {@link Authoring.SchemaDocument}s from ECXML text. Accepts any ECXML 3.x source (3.0 and 3.1 are
  * close subsets of 3.2) and records the source spec version on the document
  * ({@link Authoring.SchemaDocument.originalECXmlVersionMajor}); EC 2.0 is a substantially different format
@@ -34,7 +38,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
    * (malformed XML, not an ECSchema, an unsupported spec). */
   public async readDocument(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaDocumentReadResult> {
     const issues = new SchemaIssueList();
-    const root = await parseElementTree(text, issues, options?.source);
+    const root = await parseElementTree(text, issues, options?.source, options?.abortSignal);
     if (root === undefined)
       return { issues };
     const walker = new ECXml3Walker(issues, options?.source, options?.schemaSet);
@@ -96,7 +100,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
     // The sentinel thrown from a sax handler propagates out of `parser.write`, terminating the
     // loop - which closes the source iterator, so no further input is read or even produced.
     try {
-      for await (const chunk of decodeSchemaText(text))
+      for await (const chunk of decodeSchemaText(text, options?.abortSignal))
         parser.write(chunk);
       parser.close();
     } catch (error) {
@@ -128,7 +132,7 @@ interface XmlElementNode {
   column: number;
 }
 
-async function parseElementTree(text: SchemaText, issues: SchemaIssueList, source: string | undefined): Promise<XmlElementNode | undefined> {
+async function parseElementTree(text: SchemaText, issues: SchemaIssueList, source: string | undefined, abortSignal: AbortSignal | undefined): Promise<XmlElementNode | undefined> {
   const parser = sax.parser(true, { position: true });
   const stopSentinel = new Error("parse failed");
   let root: XmlElementNode | undefined;
@@ -164,7 +168,7 @@ async function parseElementTree(text: SchemaText, issues: SchemaIssueList, sourc
   parser.oncdata = appendText;
 
   try {
-    for await (const chunk of decodeSchemaText(text))
+    for await (const chunk of decodeSchemaText(text, abortSignal))
       parser.write(chunk);
     parser.close();
   } catch (error) {
@@ -829,7 +833,7 @@ class ECXml3Walker {
    * form (`bis:PhysicalElement` -> `BisCore:PhysicalElement`), a reference into this schema becomes
    * a bare local name. Unknown qualifiers are left as written for validation to diagnose. */
   private normalizeItemReference(reference: string): Authoring.LocalOrFullName {
-    const separatorIndex = reference.search(/[.:]/);
+    const separatorIndex = reference.search(separatorPattern);
     if (separatorIndex < 0)
       return reference;
     const qualifier = reference.substring(0, separatorIndex).toLowerCase();

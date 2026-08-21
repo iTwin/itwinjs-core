@@ -13,6 +13,10 @@ import * as Authoring from "./SchemaDocument";
 import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
+/** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
+ * allocates a new RegExp on every evaluation, and this runs per reference. */
+const separatorPattern = /[.:]/;
+
 /** The `$schema` URL of the ECJSON 3.2 spec. */
 const ECJSON_3_2_SCHEMA_URL = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 
@@ -59,7 +63,9 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
    * one step, with no streaming mode), so a true streaming ECJSON writer means hand-rolling a token
    * serializer, which is deferred. A chunk-emitting walk slots in behind this same signature with no API change. */
   public async writeDocumentTo(document: Authoring.SchemaDocument, sink: SchemaTextSink, options?: SchemaJsonWriteOptions): Promise<SchemaStreamWriteResult> {
+    options?.abortSignal?.throwIfAborted();
     const result = this.writeDocument(document, options);
+    options?.abortSignal?.throwIfAborted();
     if (result.text !== undefined)
       await sink(result.text);
     return { issues: result.issues };
@@ -77,6 +83,25 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
     }
     const emitter = new ECJson32Emitter(document, issues, options?.omitDefaults ?? false);
     return { tree: emitter.emit(), issues };
+  }
+
+  /** Writes one schema item as an ECJSON object tree, exactly as it would appear under the
+   * document's `items` map. Used to copy an item between documents without re-deriving the
+   * per-field walk; there is deliberately no public single-item serialization API.
+   * @internal */
+  public writeItemTree(item: Authoring.AnySchemaItem): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
+    const issues = new SchemaIssueList();
+    const emitter = new ECJson32Emitter(item.document, issues, false);
+    return { tree: emitter.emitItemTree(item), issues };
+  }
+
+  /** Writes one property as an ECJSON object tree, exactly as it would appear in a class's
+   * `properties` array. Companion to {@link writeItemTree}.
+   * @internal */
+  public writePropertyTree(property: Authoring.AnyProperty): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
+    const issues = new SchemaIssueList();
+    const emitter = new ECJson32Emitter(property.document, issues, false);
+    return { tree: emitter.emitPropertyTree(property), issues };
   }
 }
 
@@ -135,7 +160,7 @@ class ECJson32Emitter {
    * alias-qualified tolerated) to the schema-qualified dot form ECJSON uses. Local names are
    * qualified with this schema's name; alias qualifiers are resolved through the reference list. */
   private _toJsonItemReference(reference: Authoring.LocalOrFullName, location: string): string {
-    const separatorIndex = reference.search(/[.:]/);
+    const separatorIndex = reference.search(separatorPattern);
     if (separatorIndex < 0)
       return `${this._document.name}.${reference}`;
     const qualifier = reference.substring(0, separatorIndex);
@@ -183,6 +208,16 @@ class ECJson32Emitter {
    * could not be materialized (it is then skipped; an issue has been reported). */
   private _customAttributeJson(ca: Authoring.CustomAttribute, location: string): JsonObject | undefined {
     return readCustomAttributeValues(ca, this._issues, location);
+  }
+
+  /** Single-item and single-property entries, for {@link SchemaJsonWriter.writeItemTree} /
+   * {@link SchemaJsonWriter.writePropertyTree}. `prune` matches what the whole-document walk applies. */
+  public emitItemTree(item: Authoring.AnySchemaItem): JsonObject {
+    return prune(this._emitItem(item));
+  }
+
+  public emitPropertyTree(property: Authoring.AnyProperty): JsonObject {
+    return prune(this._emitProperty(property, property.declaringClass.name));
   }
 
   private _emitItem(item: Authoring.AnySchemaItem): JsonObject {

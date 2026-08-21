@@ -74,7 +74,8 @@ export type SchemaText = string | Uint8Array | AsyncIterable<string | Uint8Array
  * closed when the consumer stops early.
  * @alpha
  */
-export async function* decodeSchemaText(text: SchemaText): AsyncGenerator<string> {
+export async function* decodeSchemaText(text: SchemaText, abortSignal?: AbortSignal): AsyncGenerator<string> {
+  abortSignal?.throwIfAborted();
   if (typeof text === "string") {
     yield text;
     return;
@@ -85,6 +86,7 @@ export async function* decodeSchemaText(text: SchemaText): AsyncGenerator<string
   }
   let decoder: TextDecoder | undefined;
   for await (const chunk of text) {
+    abortSignal?.throwIfAborted();
     if (typeof chunk === "string") {
       if (chunk.length > 0)
         yield chunk;
@@ -161,6 +163,10 @@ export interface SchemaTextReadOptions {
    * fails with an issue, and the document stays in a private set, when the set already holds a
    * schema of that name. */
   schemaSet?: Authoring.SchemaSet;
+  /** Aborts the read. Checked between input chunks, so a streamed read of a very large file stops
+   * promptly; a fully materialized input is read in one go and cannot be interrupted. The returned
+   * promise rejects with the signal's reason. */
+  abortSignal?: AbortSignal;
 }
 
 /** The contract of a reader that hydrates a {@link Authoring.SchemaDocument} from text in some format
@@ -184,6 +190,9 @@ export interface SchemaDocumentTextReader {
 export interface SchemaWriteOptions {
   /** The spec version to emit. Defaults to {@link ECSpec.Latest}. */
   spec?: ECSpec;
+  /** Aborts a streamed write ({@link SchemaDocumentTextWriter.writeDocumentTo}). Checked between
+   * chunks handed to the sink. The returned promise rejects with the signal's reason. */
+  abortSignal?: AbortSignal;
 }
 
 /** The result every schema writer returns. `text` is `undefined` only when the document could not

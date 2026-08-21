@@ -13,6 +13,11 @@ import type {
 } from "./SchemaDocument";
 import { SchemaIssueList } from "./SchemaIssues";
 import { getStandardSchemas } from "./StandardSchemas";
+import { SchemaAuthoringError } from "./SchemaAuthoringError";
+
+/** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
+ * allocates a new RegExp on every evaluation, and this runs per reference. */
+const separatorPattern = /[.:]/;
 
 /**
  * Conversion of custom attribute values between the raw ECXML body a document reads them from and
@@ -69,13 +74,17 @@ export function materializeCustomAttribute(customAttribute: CustomAttribute, thr
   const caClass = resolveCustomAttributeClass(customAttribute.document, customAttribute.className);
   if (caClass === undefined) {
     if (throwOnMissingClass)
-      throw new Error(`Cannot read the custom attribute "${customAttribute.className}" on "${containerName(customAttribute)}": its custom attribute class is not in the schema set. Put the schema that defines it in the set, then read it again.`);
+      SchemaAuthoringError.throwError("custom-attribute-class-not-found",
+        `Cannot read the custom attribute "${customAttribute.className}" on "${containerName(customAttribute)}": its custom attribute class is not in the schema set. Put the schema that defines it in the set, then read it again.`,
+        { itemName: customAttribute.className, location: containerName(customAttribute) });
     return undefined;
   }
   const nodes = parseCustomAttributeBody(body);
   if (nodes === undefined) {
     if (throwOnMissingClass)
-      throw new Error(`The custom attribute "${customAttribute.className}" on "${containerName(customAttribute)}" holds an ECXML body that is not well-formed.`);
+      SchemaAuthoringError.throwError("malformed-custom-attribute-xml",
+        `The custom attribute "${customAttribute.className}" on "${containerName(customAttribute)}" holds an ECXML body that is not well-formed.`,
+        { itemName: customAttribute.className, location: containerName(customAttribute) });
     return undefined;
   }
   return nodesToValues(nodes, caClass);
@@ -129,7 +138,7 @@ export function resolveCustomAttributeClass(document: SchemaDocument, className:
   if (own !== undefined)
     return own;
   const schemaName = document.resolveSchemaName(className);
-  const localName = className.substring(className.search(/[.:]/) + 1);
+  const localName = className.substring(className.search(separatorPattern) + 1);
   return getStandardSchemas().getSchema(schemaName)?.getItemOfType(localName, SchemaItemType.CustomAttributeClass);
 }
 
@@ -235,7 +244,13 @@ function valueToNode(name: string, value: CustomAttributeValue, property: AnyPro
       }
       const children: CustomAttributeXmlNode[] = [];
       for (const entry of value) {
-        const memberNodes = valuesToNodes(entry as CustomAttributeValues, structClass, className, issues, location);
+        if (!isValuesObject(entry)) {
+          issues.addError("SchemaCA-0004",
+            `The custom attribute "${className}" has a struct-array property "${name}" holding a non-struct entry. The custom attribute was skipped.`,
+            { location });
+          return undefined;
+        }
+        const memberNodes = valuesToNodes(entry, structClass, className, issues, location);
         if (memberNodes === undefined)
           return undefined;
         children.push({ name: structClass.name, text: "", children: memberNodes });
@@ -333,9 +348,12 @@ function serializeNodes(nodes: ReadonlyArray<CustomAttributeXmlNode>, indent: nu
   return lines;
 }
 
+const textEscapes: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;" };
+const textEscapePattern = /[&<>]/g;
+
 /** Escapes element text - mirrors the schema writers so custom attribute bodies escape identically. */
 function escapeText(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return value.replace(textEscapePattern, (char) => textEscapes[char]);
 }
 
 /** Parses a raw body (a sequence of sibling value elements) into nodes. Synchronous - custom

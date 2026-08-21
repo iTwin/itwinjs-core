@@ -10,6 +10,7 @@ import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, Scient
 import { AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, isSupportedSchemaItemType, parsePrimitiveType, PrimitiveType, primitiveTypeToString, PropertyKind, RelationshipEnd, SchemaItemType, StrengthDirection, StrengthType } from "../ECObjects";
 import { SchemaKey } from "../SchemaKey";
 import { materializeCustomAttribute } from "./CustomAttributeConverter";
+import { SchemaAuthoringError } from "./SchemaAuthoringError";
 
 /** Case-invariant name comparison. EC names are case-insensitive; comparison is the document's
  * only interpretation of a name, kept deliberately simple. */
@@ -20,14 +21,17 @@ function namesEqual(a: string, b: string): boolean {
 /** Folds a schema-item full name to a comparable key: the two EC separators (`:` and `.`) are treated
  * as equivalent and case is ignored. */
 function foldFullName(fullName: string): string {
-  return fullName.replace(/\./g, ":").toLowerCase();
+  return fullName.replaceAll(".", ":").toLowerCase();
 }
+
+/** Matches the first EC separator. Hoisted because reference resolution runs it on every access. */
+const separatorPattern = /[.:]/;
 
 /** Splits an item reference into its optional qualifier (a schema name or alias) and the local item
  * name. Both EC separators are accepted; the first one encountered separates, since neither an EC
  * name nor an alias may contain one. */
 function splitReference(reference: LocalOrFullName): { qualifier?: string, name: string } {
-  const separator = reference.search(/[.:]/);
+  const separator = reference.search(separatorPattern);
   if (separator < 0)
     return { name: reference };
   return { qualifier: reference.substring(0, separator), name: reference.substring(separator + 1) };
@@ -203,7 +207,9 @@ export class SchemaSet implements Iterable<SchemaDocument> {
   private _requireNameFree(name: string): void {
     const incumbent = this._byName.get(name.toLowerCase());
     if (incumbent !== undefined)
-      throw new Error(`The schema set already holds a schema named "${incumbent.name}" (${incumbent.readVersion}.${incumbent.writeVersion}.${incumbent.minorVersion}); a set holds one version per name. Move it out first.`);
+      SchemaAuthoringError.throwError("duplicate-schema-name",
+        `The schema set already holds a schema named "${incumbent.name}" (${incumbent.readVersion}.${incumbent.writeVersion}.${incumbent.minorVersion}); a set holds one version per name. Move it out first.`,
+        { itemName: incumbent.name });
   }
 }
 
@@ -568,16 +574,49 @@ export class SchemaDocument {
   }
 }
 
-/** The four multiplicities that cover almost every relationship endpoint, as the `(lo..hi)` strings the
- * constraint stores. Convenience values only - any field or `init` that accepts a multiplicity also
- * accepts a raw string, so an uncommon range like `"(2..5)"` is still expressible.
+/** A relationship endpoint's multiplicity, as the `(lo..hi)` string the constraint stores.
+ *
+ * The four common values are spelled out so editors suggest them; any other well-formed range is
+ * accepted, because bounded ranges above one are legal and do occur in published schemas
+ * (`(2..2)`, `(0..2)`, `(2..*)`, `(1..2)` all appear in BIS). Use
+ * {@link parseMultiplicity} / {@link formatMultiplicity} to work in numbers instead of strings;
+ * validation is what reports a malformed one.
  * @alpha
  */
-export enum Multiplicity {
-  ZeroOne = "(0..1)",
-  ZeroMany = "(0..*)",
-  OneOne = "(1..1)",
-  OneMany = "(1..*)",
+export type Multiplicity = "(0..1)" | "(0..*)" | "(1..1)" | "(1..*)" | (string & {});
+
+/** The bounds of a {@link Multiplicity}, as numbers.
+ * @alpha
+ */
+export interface MultiplicityBounds {
+  /** Lower bound; `0` or more. */
+  lowerLimit: number;
+  /** Upper bound, or `undefined` when unbounded (`*`) - the same convention
+   * {@link PrimitiveArrayProperty.maxOccurs} uses. */
+  upperLimit?: number;
+}
+
+/** Matches `(lo..hi)` with optional surrounding whitespace, `hi` being a number or `*`. */
+const multiplicityPattern = /^\(\s*(\d+)\s*\.\.\s*(\d+|\*)\s*\)$/;
+
+/** Reads a multiplicity string into its numeric bounds, or `undefined` when it is not well-formed.
+ * Does not judge whether the bounds make sense together - `"(5..2)"` parses; validation is what
+ * reports it.
+ * @alpha
+ */
+export function parseMultiplicity(multiplicity: string): MultiplicityBounds | undefined {
+  const match = multiplicityPattern.exec(multiplicity);
+  if (match === null)
+    return undefined;
+  const upper = match[2];
+  return { lowerLimit: Number(match[1]), upperLimit: upper === "*" ? undefined : Number(upper) };
+}
+
+/** Writes numeric bounds back to the string form a constraint stores.
+ * @alpha
+ */
+export function formatMultiplicity(bounds: MultiplicityBounds): Multiplicity {
+  return `(${bounds.lowerLimit}..${bounds.upperLimit ?? "*"})`;
 }
 
 /** A reference to a schema item, as a plain string. Either a bare local name (`"Pump"` - an item in
@@ -819,11 +858,21 @@ export class CustomAttribute {
 
   /** `{ className }` plus the values when materialized, so `JSON.stringify` renders an attribute
    * transparently without materializing one that is not. */
-  public toJSON(): { className: LocalOrFullName, values?: CustomAttributeValues, xml?: XmlString } {
+  public toJSON(): CustomAttributeJson {
     if (this._values !== undefined)
       return { className: this.className, values: this._values };
     return { className: this.className, xml: this._rawXml };
   }
+}
+
+/** The plain shape a {@link CustomAttribute} renders as: its class name plus either the materialized
+ * `values` or, while it still holds an unconverted ECXML body, that `xml`.
+ * @alpha
+ */
+export interface CustomAttributeJson {
+  className: LocalOrFullName;
+  values?: CustomAttributeValues;
+  xml?: XmlString;
 }
 
 /** An ordered set of custom attribute instances on a container (schema, class, property, or
@@ -849,7 +898,7 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
   }
 
   /** Iterates the custom attribute instances in insertion order. */
-  public [Symbol.iterator](): Iterator<CustomAttribute> {
+  public [Symbol.iterator](): IterableIterator<CustomAttribute> {
     return this._items[Symbol.iterator]();
   }
 
@@ -901,7 +950,7 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
   }
 
   /** The instances as plain objects, so `JSON.stringify` renders the set transparently. */
-  public toJSON(): Array<ReturnType<CustomAttribute["toJSON"]>> {
+  public toJSON(): CustomAttributeJson[] {
     return this._items.map((ca) => ca.toJSON());
   }
 
@@ -933,8 +982,9 @@ export interface SchemaItemInit {
  * @alpha
  */
 export abstract class SchemaItem {
-  /** Discriminates the item kind. */
-  public abstract readonly schemaItemType: SchemaItemType;
+  /** Discriminates the item kind. A getter rather than a field: this constructor registers the
+   * item with its document, and a subclass field initializer would not have run yet at that point. */
+  public abstract get schemaItemType(): SchemaItemType;
   /** The invariant item name. Renaming is a document-level operation (not yet modeled). */
   public readonly name: string;
   /** Optional display label. */
@@ -1042,6 +1092,9 @@ export interface ClassInit {
   baseClass?: LocalOrFullName;
   /** Class-level custom attributes, added in order. */
   customAttributes?: ReadonlyArray<CustomAttributeProps>;
+  /** Properties to create on the class, in order, as plain declarations rather than constructed
+   * objects - see {@link ECClass.createProperties}. */
+  properties?: ReadonlyArray<AnyPropertyDeclaration>;
 }
 
 /** Common base of every EC class kind (entity, mixin, struct, custom attribute, relationship). Owns
@@ -1074,6 +1127,8 @@ export abstract class ECClass extends SchemaItem {
       this.modifier = init.modifier;
       this.baseClass = init.baseClass;
       addCustomAttributes(this.customAttributes, init.customAttributes);
+      for (const declaration of init.properties ?? [])
+        this.createProperty(declaration);
     }
   }
 
@@ -1156,7 +1211,9 @@ export abstract class ECClass extends SchemaItem {
   }
 
   /** The property with the given name (case-insensitive) this class has, inherited ones included,
-   * or `undefined`. Same resolution as {@link ECClass.getEffectiveProperties}. */
+   * or `undefined`. Same resolution as {@link ECClass.getEffectiveProperties}, which it delegates to
+   * for anything not declared on this class - override precedence lives in one place rather than in
+   * a second, subtly different walk. */
   public getEffectiveProperty(name: string): AnyProperty | undefined {
     return this.getProperty(name) ?? this.getEffectiveProperties().find((p) => namesEqual(p.name, name));
   }
@@ -1222,6 +1279,104 @@ export abstract class ECClass extends SchemaItem {
   public createNavigation(name: string, relationship: LocalOrFullName, direction: StrengthDirection, init?: PropertyInit): NavigationProperty {
     return new NavigationProperty(this, name, relationship, direction, init);
   }
+
+  /** Creates several properties from plain declarations, in order, and returns them.
+   *
+   * The `create*` factories above are the imperative front door; this is the declarative one, for
+   * when a class's properties are better written as data than as a sequence of statements. A
+   * declaration is not a constructed property - it describes one - so nothing is owned twice and the
+   * ownership rule is untouched. `kind` selects the factory; the rest of the declaration is that
+   * factory's arguments.
+   *
+   * @example
+   * ```ts
+   * pump.createProperties(
+   *   { kind: PropertyKind.Primitive, name: "SerialNumber", type: PrimitiveType.String },
+   *   { kind: PropertyKind.Primitive, name: "FlowRate", type: PrimitiveType.Double, kindOfQuantity: "AecUnits:VOLUMETRIC_FLOW" },
+   *   { kind: PropertyKind.StructArray, name: "Ports", structClass: "PortInfo", maxOccurs: 8 },
+   * );
+   * ```
+   */
+  public createProperties(...declarations: AnyPropertyDeclaration[]): AnyProperty[] {
+    return declarations.map((declaration) => this.createProperty(declaration));
+  }
+
+  /** Creates one property from a plain declaration and returns it, narrowed to the kind the
+   * declaration names. @see {@link ECClass.createProperties} */
+  public createProperty<D extends AnyPropertyDeclaration>(declaration: D): PropertyDeclarationTypeMap[D["kind"]] {
+    const property = this._createDeclaredProperty(declaration);
+    return property as PropertyDeclarationTypeMap[D["kind"]];
+  }
+
+  private _createDeclaredProperty(declaration: AnyPropertyDeclaration): AnyProperty {
+    switch (declaration.kind) {
+      case PropertyKind.Primitive:
+        return new PrimitiveProperty(this, declaration.name, declaration.type, declaration);
+      case PropertyKind.PrimitiveArray:
+        return new PrimitiveArrayProperty(this, declaration.name, declaration.type, declaration);
+      case PropertyKind.Struct:
+        return new StructProperty(this, declaration.name, declaration.structClass, declaration);
+      case PropertyKind.StructArray:
+        return new StructArrayProperty(this, declaration.name, declaration.structClass, declaration);
+      case PropertyKind.Navigation:
+        return new NavigationProperty(this, declaration.name, declaration.relationship, declaration.direction, declaration);
+    }
+  }
+}
+
+/** Describes a {@link PrimitiveProperty} to create. `type` is a primitive keyword or an enumeration
+ * reference, exactly as {@link ECClass.createPrimitive} takes it. */
+export interface PrimitivePropertyDeclaration extends PrimitivePropertyInit {
+  kind: PropertyKind.Primitive;
+  name: string;
+  type: PrimitiveType | LocalOrFullName;
+}
+
+/** Describes a {@link PrimitiveArrayProperty} to create. */
+export interface PrimitiveArrayPropertyDeclaration extends PrimitiveArrayPropertyInit {
+  kind: PropertyKind.PrimitiveArray;
+  name: string;
+  type: PrimitiveType | LocalOrFullName;
+}
+
+/** Describes a {@link StructProperty} to create. */
+export interface StructPropertyDeclaration extends PropertyInit {
+  kind: PropertyKind.Struct;
+  name: string;
+  structClass: LocalOrFullName;
+}
+
+/** Describes a {@link StructArrayProperty} to create. */
+export interface StructArrayPropertyDeclaration extends StructArrayPropertyInit {
+  kind: PropertyKind.StructArray;
+  name: string;
+  structClass: LocalOrFullName;
+}
+
+/** Describes a {@link NavigationProperty} to create. */
+export interface NavigationPropertyDeclaration extends PropertyInit {
+  kind: PropertyKind.Navigation;
+  name: string;
+  relationship: LocalOrFullName;
+  direction: StrengthDirection;
+}
+
+/** Plain data describing one property to create, discriminated by `kind` - the same discriminant
+ * {@link Property.kind} carries, so a declaration reads like the property it produces. Accepted by
+ * {@link ECClass.createProperties} and by {@link ClassInit.properties}.
+ * @alpha
+ */
+export type AnyPropertyDeclaration = PrimitivePropertyDeclaration | PrimitiveArrayPropertyDeclaration
+  | StructPropertyDeclaration | StructArrayPropertyDeclaration | NavigationPropertyDeclaration;
+
+/** Maps each {@link PropertyKind} discriminant to the property type a declaration of that kind
+ * produces, so {@link ECClass.createProperty} returns the concrete kind rather than the union. */
+export interface PropertyDeclarationTypeMap {
+  [PropertyKind.Primitive]: PrimitiveProperty;
+  [PropertyKind.PrimitiveArray]: PrimitiveArrayProperty;
+  [PropertyKind.Struct]: StructProperty;
+  [PropertyKind.StructArray]: StructArrayProperty;
+  [PropertyKind.Navigation]: NavigationProperty;
 }
 
 /** Complementary data accepted by the {@link EntityClass} constructor. */
@@ -1234,7 +1389,7 @@ export interface EntityClassInit extends ClassInit {
  * @alpha
  */
 export class EntityClass extends ECClass {
-  public readonly schemaItemType = SchemaItemType.EntityClass;
+  public get schemaItemType(): SchemaItemType.EntityClass { return SchemaItemType.EntityClass; }
   /** Applied mixin references, in declaration order. An entity has at most one
    * {@link ECClass.baseClass}; mixins are separate. Note that, lacking validation, after XML
    * deserialization a mixin may land in `baseClass` instead (the deserializer cannot tell them
@@ -1278,7 +1433,7 @@ export class EntityClass extends ECClass {
  * @alpha
  */
 export class Mixin extends ECClass {
-  public readonly schemaItemType = SchemaItemType.Mixin;
+  public get schemaItemType(): SchemaItemType.Mixin { return SchemaItemType.Mixin; }
   /** The entity class (including its derived classes) that this mixin may be applied to. (3.2: `IsMixin.AppliesToEntityClass`). */
   public appliesTo: LocalOrFullName;
 
@@ -1304,7 +1459,7 @@ export class Mixin extends ECClass {
  * @alpha
  */
 export class StructClass extends ECClass {
-  public readonly schemaItemType = SchemaItemType.StructClass;
+  public get schemaItemType(): SchemaItemType.StructClass { return SchemaItemType.StructClass; }
 
   /** Creates a struct class in `document`. `name` is the only other mandatory argument. */
   public constructor(document: SchemaDocument, name: string, init?: ClassInit) {
@@ -1316,7 +1471,7 @@ export class StructClass extends ECClass {
  * @alpha
  */
 export class CustomAttributeClass extends ECClass {
-  public readonly schemaItemType = SchemaItemType.CustomAttributeClass;
+  public get schemaItemType(): SchemaItemType.CustomAttributeClass { return SchemaItemType.CustomAttributeClass; }
   /** Bitmask of container kinds an instance of this class may be applied to. The wire form is a
    * delimited string; this is the parsed flags value. */
   public appliesTo: CustomAttributeContainerType;
@@ -1336,7 +1491,7 @@ export class CustomAttributeClass extends ECClass {
  * @alpha
  */
 export interface RelationshipConstraintInit {
-  multiplicity?: Multiplicity | string;
+  multiplicity?: Multiplicity;
   roleLabel?: string;
   polymorphic?: boolean;
   abstractConstraint?: LocalOrFullName;
@@ -1365,8 +1520,9 @@ export class RelationshipConstraint {
   public readonly relationshipEnd: RelationshipEnd;
   /** The relationship class this constraint is one end of. */
   public readonly relationshipClass: RelationshipClass;
-  /** Multiplicity as an `(lo..hi)` string (e.g. `"(0..1)"`, `"(1..*)"`). */
-  public multiplicity: string = "(0..*)";
+  /** Multiplicity as an `(lo..hi)` string (e.g. `"(0..1)"`, `"(1..*)"`).
+   * @see {@link parseMultiplicity} to read it as numbers. */
+  public multiplicity: Multiplicity = "(0..*)";
   /** Role label. The spec requires it; the document leaves it optional and defers to validation. */
   public roleLabel?: string;
   /** Whether the constraint matches derived classes of its constraint classes. `undefined` when the
@@ -1439,7 +1595,7 @@ export class RelationshipConstraint {
  * @alpha
  */
 export class RelationshipClass extends ECClass {
-  public readonly schemaItemType = SchemaItemType.RelationshipClass;
+  public get schemaItemType(): SchemaItemType.RelationshipClass { return SchemaItemType.RelationshipClass; }
   /** How the lifetimes of source and target are related. `undefined` when the source carried no
    * value, which reads as the spec default ({@link SpecDefaults.relationshipStrength}). */
   public strength?: StrengthType;
@@ -1496,7 +1652,7 @@ export interface EnumerationInit {
  * @alpha
  */
 export class Enumeration extends SchemaItem {
-  public readonly schemaItemType = SchemaItemType.Enumeration;
+  public get schemaItemType(): SchemaItemType.Enumeration { return SchemaItemType.Enumeration; }
   /** Backing primitive - `"int"` or `"string"`; the enumerators' values must match. */
   public backingType: EnumerationBackingType;
   /** When `false`, undeclared values are allowed. */
@@ -1545,7 +1701,7 @@ export interface KindOfQuantityInit {
  * @alpha
  */
 export class KindOfQuantity extends SchemaItem {
-  public readonly schemaItemType = SchemaItemType.KindOfQuantity;
+  public get schemaItemType(): SchemaItemType.KindOfQuantity { return SchemaItemType.KindOfQuantity; }
   /** The unit reference the quantity persists in (e.g. `"Units:M"`). */
   public persistenceUnit: LocalOrFullName;
   /** Conversion tolerance, as the ratio of absolute error to actual value (`0.001` reads
@@ -1593,7 +1749,7 @@ export interface PropertyCategoryInit {
  * @alpha
  */
 export class PropertyCategory extends SchemaItem {
-  public readonly schemaItemType = SchemaItemType.PropertyCategory;
+  public get schemaItemType(): SchemaItemType.PropertyCategory { return SchemaItemType.PropertyCategory; }
   /** Display sort order. */
   public priority?: number;
 
@@ -1619,7 +1775,7 @@ export class PropertyCategory extends SchemaItem {
  * @alpha
  */
 export class UnitSystem extends SchemaItem {
-  public readonly schemaItemType = SchemaItemType.UnitSystem;
+  public get schemaItemType(): SchemaItemType.UnitSystem { return SchemaItemType.UnitSystem; }
 
   /** Creates a unit system in `document`. `name` is the only other mandatory argument. */
   public constructor(document: SchemaDocument, name: string, init?: SchemaItemInit) {
@@ -1636,7 +1792,7 @@ export class UnitSystem extends SchemaItem {
  * @alpha
  */
 export class Phenomenon extends SchemaItem {
-  public readonly schemaItemType = SchemaItemType.Phenomenon;
+  public get schemaItemType(): SchemaItemType.Phenomenon { return SchemaItemType.Phenomenon; }
   /** Defining expression in terms of other phenomena (e.g. `"LENGTH(2)"` for area,
    * `"FORCE*LENGTH(-2)"` for pressure), or the phenomenon's own name for a base
    * phenomenon (e.g. `"LENGTH"`). */
@@ -1668,7 +1824,7 @@ export interface UnitInit extends SchemaItemInit {
  * @alpha
  */
 export class Unit extends SchemaItem {
-  public readonly schemaItemType = SchemaItemType.Unit;
+  public get schemaItemType(): SchemaItemType.Unit { return SchemaItemType.Unit; }
   /** Reference to the {@link Phenomenon} this unit measures. */
   public phenomenon: LocalOrFullName;
   /** Reference to the {@link UnitSystem} this unit belongs to. */
@@ -1719,7 +1875,7 @@ export class Unit extends SchemaItem {
  * @alpha
  */
 export class InvertedUnit extends SchemaItem {
-  public readonly schemaItemType = SchemaItemType.InvertedUnit;
+  public get schemaItemType(): SchemaItemType.InvertedUnit { return SchemaItemType.InvertedUnit; }
   /** Reference to the {@link Unit} this unit is the reciprocal of. */
   public invertsUnit: LocalOrFullName;
   /** Reference to the {@link UnitSystem} this unit belongs to. */
@@ -1761,7 +1917,7 @@ export interface ConstantInit extends SchemaItemInit {
  * @alpha
  */
 export class Constant extends SchemaItem {
-  public readonly schemaItemType = SchemaItemType.Constant;
+  public get schemaItemType(): SchemaItemType.Constant { return SchemaItemType.Constant; }
   /** Reference to the {@link Phenomenon} this constant belongs to (e.g. a dimensionless ratio
    * like `"NUMBER"` for `PI`). */
   public phenomenon: LocalOrFullName;
@@ -1843,7 +1999,7 @@ export interface FormatInit extends SchemaItemInit {
  * @alpha
  */
 export class Format extends SchemaItem {
-  public readonly schemaItemType = SchemaItemType.Format;
+  public get schemaItemType(): SchemaItemType.Format { return SchemaItemType.Format; }
   /** The numeric rendering kind (decimal, fractional, scientific, station). */
   public type: FormatType;
   /** Precision of the numeric part: a {@link DecimalPrecision} (decimal places) for decimal-based
@@ -1952,8 +2108,10 @@ export interface PropertyInit {
  * @alpha
  */
 export abstract class Property {
-  /** Discriminates the property kind. */
-  public abstract readonly kind: PropertyKind;
+  /** Discriminates the property kind. A getter rather than a field, for the same reason as
+   * {@link SchemaItem.schemaItemType}: the property is registered with its class from this
+   * constructor, before a subclass field initializer would have run. */
+  public abstract get kind(): PropertyKind;
   /** The invariant property name. */
   public readonly name: string;
   /** Optional display label. */
@@ -2104,7 +2262,7 @@ export interface PrimitivePropertyInit extends PropertyInit {
  * @alpha
  */
 export class PrimitiveProperty extends Property {
-  public readonly kind = PropertyKind.Primitive;
+  public get kind(): PropertyKind.Primitive { return PropertyKind.Primitive; }
   /** Primitive keyword (e.g. `"string"`, `"int"`) or an enumeration reference.
    *  For enumerations this can be set to their name or full-name (e.g. `"MySchema.MyEnum"` or `"alias.MyEnum"`). */
   public typeName: string;
@@ -2166,7 +2324,7 @@ export interface PrimitiveArrayPropertyInit extends PropertyInit {
  * @alpha
  */
 export class PrimitiveArrayProperty extends Property {
-  public readonly kind = PropertyKind.PrimitiveArray;
+  public get kind(): PropertyKind.PrimitiveArray { return PropertyKind.PrimitiveArray; }
   /** Primitive keyword or enumeration reference of the array element. */
   public typeName: string;
   /** Extended type name, if any. */
@@ -2218,7 +2376,7 @@ export class PrimitiveArrayProperty extends Property {
  * @alpha
  */
 export class StructProperty extends Property {
-  public readonly kind = PropertyKind.Struct;
+  public get kind(): PropertyKind.Struct { return PropertyKind.Struct; }
   /** Reference to the `StructClass` this property embeds. */
   public typeName: LocalOrFullName;
 
@@ -2251,7 +2409,7 @@ export interface StructArrayPropertyInit extends PropertyInit {
  * @alpha
  */
 export class StructArrayProperty extends Property {
-  public readonly kind = PropertyKind.StructArray;
+  public get kind(): PropertyKind.StructArray { return PropertyKind.StructArray; }
   /** Reference to the `StructClass` of the array element. */
   public typeName: LocalOrFullName;
   /** Minimum number of elements (default 0). */
@@ -2285,7 +2443,7 @@ export class StructArrayProperty extends Property {
  * @alpha
  */
 export class NavigationProperty extends Property {
-  public readonly kind = PropertyKind.Navigation;
+  public get kind(): PropertyKind.Navigation { return PropertyKind.Navigation; }
   /** Reference to the `RelationshipClass` this property traverses. */
   public relationshipName: LocalOrFullName;
   /** Which end of the relationship this property starts from. */

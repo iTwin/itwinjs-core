@@ -14,6 +14,10 @@ import {
 } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
+/** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
+ * allocates a new RegExp on every evaluation, and this runs per reference. */
+const separatorPattern = /[.:]/;
+
 /** The `$schema` URL pattern of ECJSON; the captured digits carry the spec version (`32` = 3.2). */
 const ECJSON_SCHEMA_URL_PATTERN = /\/json_schemas\/ec\/(\d)(\d)\/ecschema$/i;
 
@@ -44,7 +48,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
    * (malformed JSON, not an ECSchema, an unsupported spec). */
   public async readDocument(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaDocumentReadResult> {
     const issues = new SchemaIssueList();
-    const parsed = await parseRoot(text, issues, options?.source);
+    const parsed = await parseRoot(text, issues, options?.source, options?.abortSignal);
     if (parsed === undefined)
       return { issues };
     return { document: this._readDocument(parsed, issues, options), issues };
@@ -69,7 +73,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
    * note), then extracts just the header fields. */
   public async readHeader(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaHeaderReadResult> {
     const issues = new SchemaIssueList();
-    const parsed = await parseRoot(text, issues, options?.source);
+    const parsed = await parseRoot(text, issues, options?.source, options?.abortSignal);
     if (parsed === undefined)
       return { issues };
     return this._readHeader(parsed.root, issues, options?.source);
@@ -83,6 +87,27 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
     if (parsed === undefined)
       return { issues };
     return this._readHeader(parsed.root, issues, options?.source);
+  }
+
+  /** Reads one schema item from an ECJSON object tree into an existing document, under `name`.
+   * The counterpart of {@link SchemaJsonWriter.writeItemTree}; there is deliberately no public
+   * single-item deserialization API.
+   * @internal */
+  public readItemInto(document: Authoring.SchemaDocument, name: string, tree: object): SchemaIssueList {
+    const issues = new SchemaIssueList();
+    const walker = new ECJson32Walker(issues, undefined, undefined);
+    walker.readItemIntoDocument(document, name, tree as JsonObject);
+    return issues;
+  }
+
+  /** Reads one property from an ECJSON object tree into an existing class, under `name`.
+   * Companion to {@link readItemInto}.
+   * @internal */
+  public readPropertyInto(declaringClass: Authoring.AnyClass, name: string, tree: object): SchemaIssueList {
+    const issues = new SchemaIssueList();
+    const walker = new ECJson32Walker(issues, undefined, undefined);
+    walker.readPropertyIntoClass(declaringClass, name, tree as JsonObject);
+    return issues;
   }
 
   /** Hydrates the document from a validated root. Shared by the text and object entries. */
@@ -123,9 +148,9 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
 
 /** Collects and parses text input into the root schema object, validating that it is an ECJSON 3.x
  * schema. Returns `undefined` (after reporting) when the input is unusable. */
-async function parseRoot(text: SchemaText, issues: SchemaIssueList, source: string | undefined): Promise<{ root: JsonObject, specMajor: number, specMinor: number } | undefined> {
+async function parseRoot(text: SchemaText, issues: SchemaIssueList, source: string | undefined, abortSignal: AbortSignal | undefined): Promise<{ root: JsonObject, specMajor: number, specMinor: number } | undefined> {
   let collected = "";
-  for await (const chunk of decodeSchemaText(text))
+  for await (const chunk of decodeSchemaText(text, abortSignal))
     collected += chunk;
 
   let parsed: unknown;
@@ -197,6 +222,40 @@ function asArray(value: unknown): unknown[] | undefined {
   return Array.isArray(value) ? value : undefined;
 }
 
+/** Validates that a parsed JSON value is a legal {@link Authoring.CustomAttributeValue} - a string,
+ * number, boolean, nested value object, or array of those - and narrows it. `null`, `undefined`,
+ * and anything JSON cannot hold in the first place (a function, a symbol) are rejected. */
+function asCustomAttributeValue(value: unknown): Authoring.CustomAttributeValue | undefined {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean")
+    return value;
+  if (Array.isArray(value)) {
+    const entries: Authoring.CustomAttributeValue[] = [];
+    for (const entry of value) {
+      const converted = asCustomAttributeValue(entry);
+      if (converted === undefined)
+        return undefined;
+      entries.push(converted);
+    }
+    return entries;
+  }
+  const object = asObject(value);
+  return object === undefined ? undefined : asCustomAttributeValues(object);
+}
+
+/** Validates every member of a custom attribute's value bag. Returns `undefined` when any one of
+ * them is not a legal value, so a bad attribute is reported and skipped whole rather than landing
+ * in the document half-typed. */
+function asCustomAttributeValues(source: JsonObject): Authoring.CustomAttributeValues | undefined {
+  const values: Authoring.CustomAttributeValues = {};
+  for (const [name, raw] of Object.entries(source)) {
+    const converted = asCustomAttributeValue(raw);
+    if (converted === undefined)
+      return undefined;
+    values[name] = converted;
+  }
+  return values;
+}
+
 /** Walks a parsed ECJSON object tree into a Authoring.SchemaDocument. Created per read. */
 class ECJson32Walker {
   private readonly _issues: SchemaIssueList;
@@ -231,6 +290,20 @@ class ECJson32Walker {
     if (this._documentInProgress === undefined)
       throw new Error("SchemaJsonReader: the document is accessed before readSchema initialized it.");
     return this._documentInProgress;
+  }
+
+  /** Single-item and single-property entries, for {@link SchemaJsonReader.readItemInto} /
+   * {@link SchemaJsonReader.readPropertyInto}. Both set `_documentInProgress` so the shared
+   * per-field readers - which resolve references against the document under construction - see the
+   * target document rather than a half-built one. */
+  public readItemIntoDocument(document: Authoring.SchemaDocument, name: string, tree: JsonObject): void {
+    this._documentInProgress = document;
+    this.readItem(name, tree);
+  }
+
+  public readPropertyIntoClass(declaringClass: Authoring.AnyClass, name: string, tree: JsonObject): void {
+    this._documentInProgress = declaringClass.document;
+    this.readProperty({ ...tree, name }, declaringClass);
   }
 
   public readSchema(root: JsonObject, specMajor: number, specMinor: number): Authoring.SchemaDocument | undefined {
@@ -728,10 +801,16 @@ class ECJson32Walker {
         continue;
       }
       // The remaining keys are the custom attribute's property values, already in canonical ECJSON
-      // shape - which is the document's own value shape - so they carry over directly and the
-      // attribute is materialized from the start.
-      const { className: _discriminator, ...values } = caObject;
-      target.add({ className: this.normalizeItemReference(className), values: values as Authoring.CustomAttributeValues });
+      // shape - which is the document's own value shape. Validated rather than asserted, so a
+      // hand-edited file carrying something the shape does not allow (a `null`, a function-valued
+      // key that survived a bad producer) is reported instead of ending up inside the document.
+      const { className: _discriminator, ...rest } = caObject;
+      const values = asCustomAttributeValues(rest);
+      if (values === undefined) {
+        this._error("SchemaJson-0044", `The custom attribute "${className}" on "${location}" holds a value that is not valid ECJSON; it was skipped.`);
+        continue;
+      }
+      target.add({ className: this.normalizeItemReference(className), values });
     }
   }
 
@@ -742,7 +821,7 @@ class ECJson32Walker {
    * does not use alias qualifiers, but one is resolved through the reference list when it appears.
    * Unknown qualifiers are left as written for validation to diagnose. */
   private normalizeItemReference(reference: string): Authoring.LocalOrFullName {
-    const separatorIndex = reference.search(/[.:]/);
+    const separatorIndex = reference.search(separatorPattern);
     if (separatorIndex < 0)
       return reference;
     const qualifier = reference.substring(0, separatorIndex);

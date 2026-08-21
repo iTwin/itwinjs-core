@@ -63,7 +63,7 @@ export class SchemaIssueList implements Iterable<SchemaIssue> {
   }
 
   /** Iterates all issues in the order they were reported. */
-  public [Symbol.iterator](): Iterator<SchemaIssue> {
+  public [Symbol.iterator](): IterableIterator<SchemaIssue> {
     return this._issues[Symbol.iterator]();
   }
 

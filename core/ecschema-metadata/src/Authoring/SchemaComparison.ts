@@ -103,14 +103,14 @@ export function compareSchemaDocuments(left: Authoring.SchemaDocument, right: Au
   }
 
   const itemDifferences: SchemaItemComparison[] = [];
-  const leftItems = (leftTree.items ?? {}) as Record<string, unknown>;
-  const rightItems = (rightTree.items ?? {}) as Record<string, unknown>;
+  const leftItems = asItemMap(leftTree.items);
+  const rightItems = asItemMap(rightTree.items);
   for (const name of unionKeys(leftItems, rightItems)) {
-    if (!(name in rightItems)) {
+    if (!Object.hasOwn(rightItems, name)) {
       itemDifferences.push({ name, change: "removed", differences: [] });
       continue;
     }
-    if (!(name in leftItems)) {
+    if (!Object.hasOwn(leftItems, name)) {
       itemDifferences.push({ name, change: "added", differences: [] });
       continue;
     }
@@ -161,10 +161,16 @@ function renderDifference(difference: SchemaValueDifference): string {
 function unionKeys(left: Record<string, unknown>, right: Record<string, unknown>): string[] {
   const keys = Object.keys(left);
   for (const key of Object.keys(right)) {
-    if (!(key in left))
+    if (!Object.hasOwn(left, key))
       keys.push(key);
   }
   return keys;
+}
+
+/** The `items` member of a canonical tree as a dictionary. Anything else (absent, or a shape the
+ * writer never emits) compares as no items rather than throwing. */
+function asItemMap(items: unknown): Record<string, unknown> {
+  return isPlainObject(items) ? items : {};
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -238,8 +244,8 @@ function compareArrays(path: string, left: unknown[], right: unknown[], lenient:
   if (key !== undefined) {
     // Entries are named (properties, enumerators, references, composite units) or className-keyed
     // (custom attributes) - match by that key, order-insensitively.
-    const leftByKey = new Map(left.map((entry) => [(entry as Record<string, unknown>)[key] as string, entry]));
-    const rightByKey = new Map(right.map((entry) => [(entry as Record<string, unknown>)[key] as string, entry]));
+    const leftByKey = indexByKeyField(left, key);
+    const rightByKey = indexByKeyField(right, key);
     for (const [entryKey, leftEntry] of leftByKey)
       compareValues(joinPath(path, entryKey), leftEntry, rightByKey.get(entryKey), lenient, out);
     for (const [entryKey, rightEntry] of rightByKey) {
@@ -251,11 +257,26 @@ function compareArrays(path: string, left: unknown[], right: unknown[], lenient:
 
   const lastSegment = path.substring(path.lastIndexOf(".") + 1);
   const ordered = !UNORDERED_STRING_ARRAYS.has(lastSegment);
-  const leftEntries = ordered ? left : [...left].sort();
-  const rightEntries = ordered ? right : [...right].sort();
+  const leftEntries = ordered ? left : left.toSorted();
+  const rightEntries = ordered ? right : right.toSorted();
   const length = Math.max(leftEntries.length, rightEntries.length);
   for (let i = 0; i < length; ++i)
     compareValues(`${path}[${i}]`, leftEntries[i], rightEntries[i], lenient, out);
+}
+
+/** Indexes entries by the field {@link entryKeyField} picked. That check already established every
+ * entry is an object carrying a string there, so the guards here never actually skip an entry -
+ * they narrow instead of asserting. */
+function indexByKeyField(entries: unknown[], field: "name" | "className"): Map<string, unknown> {
+  const byKey = new Map<string, unknown>();
+  for (const entry of entries) {
+    if (!isPlainObject(entry))
+      continue;
+    const key = entry[field];
+    if (typeof key === "string")
+      byKey.set(key, entry);
+  }
+  return byKey;
 }
 
 /** When every entry on both sides is an object carrying a string `name` (or `className` for
