@@ -12,13 +12,14 @@ import { IModelSceneObject } from "../../scene/SceneObject";
 import { DecorateContext, SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 
-class IModelSceneObjectImpl implements IModelSceneObject {
-  public readonly [_implementationProhibited] = undefined;
-  public readonly kind = "iModel";
+class IModelSceneObjectImpl extends IModelSceneObject {
+  public override readonly [_implementationProhibited] = undefined;
+  public override readonly kind = "iModel";
 
   readonly #view: ViewState;
 
   public constructor(view: ViewState) {
+    super();
     this.#view = view;
   }
 
@@ -26,15 +27,15 @@ class IModelSceneObjectImpl implements IModelSceneObject {
     return this.#view.iModel;
   }
 
-  public get isLoadingComplete(): boolean {
+  public override get isLoadingComplete(): boolean {
     return this.#view.areAllTileTreesLoaded;
   }
 
-  public draw(context: SceneContext): void {
+  public override draw(context: SceneContext): void {
     this.#view.createScene(context);
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     context.addFromDecorator(this.#view);
   }
 }
