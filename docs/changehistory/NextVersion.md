@@ -11,6 +11,7 @@ publish: false
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
     - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
+    - [Experimental `Relations()` table valued function](#experimental-relations-table-valued-function)
   - [@itwin/core-common](#itwincore-common)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-electron](#itwincore-electron)
@@ -85,6 +86,43 @@ SELECT * FROM bis.Element WHERE CodeValue IS json_extract(JsonProperties, '$.cod
 ```
 
 See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--is-not-operator-null-safe-comparison) for more details.
+
+### Experimental `Relations()` table valued function
+
+ECSQL gains a new **experimental** table valued function, `ECVLib.Relations()`, that returns every instance directly related to a seed instance without the caller having to know which relationships apply to it. It is backed by a native graph traversal that bypasses ECSQL preparation and reads the relationship storage directly, so it is considerably faster than issuing one query per candidate relationship class.
+
+```sql
+ECVLib.Relations(<ECInstanceId>, <ECClassId>[, <direction>])
+```
+
+The `ECInstanceId` and `ECClassId` arguments are mandatory; a query that omits either is rejected rather than silently returning no rows. The optional third argument is the traversal direction — `'forward'`, `'backward'` or `'both'` (the default, also used when the argument is `NULL`). The comparison is case insensitive; any other value is an error. The function may also be written unqualified as `Relations(...)`.
+
+Each row describes one traversed relationship:
+
+| Column                     | Description                                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `RelatedECInstanceId`      | `ECInstanceId` of the related instance.                                                                                          |
+| `RelatedECClassId`         | `ECClassId` of the related instance.                                                                                             |
+| `Direction`                | `forward` when the seed is the source of the relationship, `backward` when it is the target.                                      |
+| `RelationshipECClassId`    | `ECClassId` of the relationship that was traversed.                                                                              |
+| `RelationshipECInstanceId` | `ECInstanceId` of the relationship instance, which distinguishes two link table rows connecting the same pair of instances.       |
+| `NavPropertyName`          | Name of the navigation property holding the relationship for end table (foreign key) relationships; `NULL` for link tables.       |
+
+Because `Relations()` is experimental it is disabled by default. Enable it with `PRAGMA experimental_features_enabled=true` or per query with `ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`.
+
+**Example** — find the model that contains an element, without knowing that `BisCore:ModelContainsElements` is stored in the `Model` navigation property:
+
+```sql
+SELECT r.RelatedECInstanceId
+FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId, 'backward') r
+  JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId
+WHERE e.ECInstanceId = :elementId AND rc.Name = 'ModelContainsElements'
+ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+Only instances of the primary (`main`) table space are traversed, and the ECSQL version was bumped to `2.0.4.1`.
+
+See the [Relations virtual table reference](../learning/ECSqlReference/Relations.md) for more details.
 
 ## @itwin/core-common
 
