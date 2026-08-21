@@ -1004,9 +1004,10 @@ describe("Field evaluation", () => {
 
     afterEach(() => {
       ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
-      // Clean up any TextAnnotation3d elements produced below so we don't leak state
-      // (and their ElementDrivesTextAnnotation relationships) into later describe
-      // blocks that assert on relationship counts.
+      // Clean up any TextAnnotation3d elements produced below so we don't leak state (and their
+      // ElementDrivesTextAnnotation relationships) into later describe blocks. No longer relied
+      // on for correctness -- every relationship-count assertion is scoped to its own target --
+      // but keeping the shared iModel tidy still makes failures elsewhere easier to read.
       const ids: Id64String[] = [];
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore.TextAnnotation3d", (stmt) => {
@@ -1292,16 +1293,20 @@ describe("Field evaluation", () => {
       expect(reqs.some((r) => r.name === "Fields.LENGTH" && r.persistenceUnitName === "Units.M")).to.be.true;
     });
 
-    function readFieldCachedContentById(annotationElementId: Id64String): string | undefined {
-      const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
-      const reloadedBlock = reloaded.getAnnotation()?.textBlock;
-      if (!reloadedBlock) return undefined;
-      for (const { child } of traverseTextBlockComponent(reloadedBlock)) {
+    function readFieldCachedContent(block: TextBlock): string | undefined {
+      for (const { child } of traverseTextBlockComponent(block)) {
         if (child.type === "field") {
           return child.cachedContent;
         }
       }
       return undefined;
+    }
+
+    function readFieldCachedContentById(annotationElementId: Id64String): string | undefined {
+      const reloaded = imodel.elements.getElement<TextAnnotation3d>(annotationElementId);
+      const reloadedBlock = reloaded.getAnnotation()?.textBlock;
+      if (!reloadedBlock) return undefined;
+      return readFieldCachedContent(reloadedBlock);
     }
 
     function insertAnnotationWithLengthField(sourceId: Id64String): Id64String {
@@ -1385,9 +1390,14 @@ describe("Field evaluation", () => {
       const annotation = reloaded.getAnnotation()!;
       const inMemoryBlock = annotation.textBlock;
 
-      // Evaluating in memory must not touch the persisted disk copy — nothing called `update`.
-      ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: inMemoryBlock });
+      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block: inMemoryBlock });
 
+      // The in-memory half of the contract: the field resolved through the registered provider
+      // and the call reported the one field it changed.
+      expect(updated).to.equal(1);
+      expect(readFieldCachedContent(inMemoryBlock)).to.equal("2500 mm");
+
+      // The persisted half: the disk copy is untouched, because nothing called `update`.
       expect(readFieldCachedContentById(annotationElementId)).to.equal(persistedBefore);
     });
   });
@@ -1419,19 +1429,23 @@ describe("Field evaluation", () => {
   }
 
   describe("ElementDrivesTextAnnotation", () => {
-    async function expectNumRelationships(expected: number, targetId?: Id64String): Promise<void> {
-      const where = targetId ? ` WHERE TargetECInstanceId=${targetId}` : "";
-      const ecsql = `SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation ${where}`;
+    /** Counts relationships targeting `targetId`. Deliberately requires a target: a global count
+     * would silently depend on cleanup performed by other describe blocks.
+     */
+    async function expectNumRelationships(expected: number, targetId: Id64String): Promise<void> {
+      const ecsql = `SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=${targetId}`;
       const reader = imodel.createQueryReader(ecsql);
       expect(await reader.step()).to.be.true;
       expect(reader.current[0]).to.equal(expected);
     }
 
     it("can be inserted", async () => {
-      await expectNumRelationships(0);
-
       const targetId = insertAnnotationElement(undefined);
       expect(targetId).not.to.equal(Id64.invalid);
+
+      // Scoped to this target rather than the whole iModel: other describe blocks insert
+      // annotations of their own, so a global count would couple this test to their cleanup.
+      await expectNumRelationships(0, targetId);
 
       const target = imodel.elements.getElement(targetId);
       expect(target.classFullName).to.equal("BisCore:TextAnnotation3d");
@@ -1444,7 +1458,7 @@ describe("Field evaluation", () => {
       const relId = withEditTxn(imodel, (txn) => txn.insertRelationship(rel.toJSON()));
       expect(relId).not.to.equal(Id64.invalid);
 
-      await expectNumRelationships(1);
+      await expectNumRelationships(1, targetId);
 
       const relationship = imodel.relationships.getInstance("BisCore:ElementDrivesTextAnnotation", relId);
       expect(relationship.sourceId).to.equal(sourceElementId);
