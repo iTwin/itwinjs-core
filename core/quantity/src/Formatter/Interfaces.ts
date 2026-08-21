@@ -84,7 +84,7 @@ export interface FormatProps {
 
   /** Required when type is Ratio. See [[RatioType]]*/
   readonly ratioType?: string;
-  /** The separator character for ratio formatting. Defaults to ':' if not specified. */
+  /** The non-empty separator string for ratio formatting. Defaults to ':' if not specified. */
   readonly ratioSeparator?: string;
    /** The format type for the numbers within a ratio. Defaults to "Decimal". */
   readonly ratioFormatType?: string;
