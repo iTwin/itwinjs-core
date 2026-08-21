@@ -589,7 +589,11 @@ export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
       strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
 
     const div = document.createElement("div");
-    div.innerHTML = strings.join("<br>");
+    strings.forEach((str, index) => {
+      if (index > 0)
+        div.appendChild(document.createElement("br"));
+      div.appendChild(document.createTextNode(str));
+    });
     return div;
   }
 }

@@ -18,6 +18,9 @@ publish: false
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Invalidate decorations when element visibility changes](#invalidate-decorations-when-element-visibility-changes)
     - [OPC point clouds without a vertical datum are now placed using orthometric heights](#opc-point-clouds-without-a-vertical-datum-are-now-placed-using-orthometric-heights)
+    - [Map-layer security hardening](#map-layer-security-hardening)
+      - [Origin-restricted credentials (opt-in)](#origin-restricted-credentials-opt-in)
+      - [Attribution and tooltip data are no longer rendered as HTML](#attribution-and-tooltip-data-are-no-longer-rendered-as-html)
   - [@itwin/core-geometry](#itwincore-geometry)
     - [Simplifying filleted line strings](#simplifying-filleted-line-strings)
 
@@ -107,6 +110,34 @@ Applications that shut down while requests are outstanding no longer need to fil
 ### OPC point clouds without a vertical datum are now placed using orthometric heights
 
 OPC point clouds whose CRS defines no vertical datum were displayed too high or low by the local geoid-ellipsoid separation, because their heights (conventionally orthometric, meaning measured against the geoid/mean sea level) were treated as ellipsoidal. Such heights are now interpreted as orthometric. If you previously applied a manual vertical offset to compensate for this fact, you may need to remove it.
+### Map-layer security hardening
+
+#### Origin-restricted credentials (opt-in)
+
+Map-layer imagery providers send credentials with any request they issue: the basic-auth credentials stored in [ImageMapLayerSettings]($common) are attached to every request URL, and an NTLM or Negotiate http 401 challenge from any server triggers a retry with browser credentials (i.e. SSO / Windows Authentication). Because map-layer URLs may come from user input or from URLs advertised in server capability documents, this can leak credentials to third-party hosts.
+
+Applications can now opt in to restricting credentials to origins they trust:
+
+```ts
+IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = ["https://tiles.corp.example.com"];
+```
+
+The default is `false`, preserving the existing behavior; while disabled, each request sending credentials to an untrusted origin logs a warning once per origin, so applications can discover the origins they need to whitelist first. Applications — especially those relying on Kerberos / Windows Authentication for map servers — are encouraged to enable the restriction.
+
+Both properties on [MapLayerFormatRegistry]($frontend) are `@beta`, as are the accompanying additions used to report blocked requests: the [MapLayerImageryProviderStatus]($frontend) and [MapLayerSourceStatus]($frontend) members `UntrustedOrigin`, and [MapLayerImageryProvider.blockedOrigins]($frontend).
+
+Because `fetch` follows redirects transparently, a request can deliver browser credentials to an origin other than the one it targeted. While the restriction is enabled, SSO requests that include browser credentials are therefore issued with `redirect: "error"`: every redirect fails before its destination can be evaluated, including same-origin and allowlisted redirects. Applications whose trusted map servers redirect these requests should configure the layer or request to use the final endpoint directly and trust that origin, or disable the restriction if redirects are required. This redirect policy does not apply to caller-supplied Authorization headers or API tokens.
+
+See [Map-layer security](../learning/frontend/MapLayersAndBasemaps.md#map-layer-security) for the full behavior, including redirect handling and how to react to blocked origins.
+
+#### Attribution and tooltip data are no longer rendered as HTML
+
+Attribution and copyright strings received from map servers (ArcGIS service metadata, Bing attribution service, Google Maps viewport info, Google Photorealistic 3D Tiles copyrights) were previously rendered using `innerHTML`, allowing a malicious or compromised server to inject markup or script into the viewport's logo cards and on-screen credits. These strings are now inserted as plain text; visual output is unchanged for legitimate attribution text. The same fix applies to reality-model tooltips (built from batch-table properties supplied by the tileset content), to user-supplied layer and model names shown in tooltips, and to ArcGIS identify results (field names and values shown in map tooltips), which are now HTML-escaped.
+
+WMS `GetFeatureInfo` tooltips, which servers may deliberately format as markup, intentionally remain HTML — scoped to trusted origins when the origin restriction above is enabled.
+
+The behavior of [IModelApp.makeLogoCard]($frontend) itself is unchanged: string `notice` values may still contain HTML. For untrusted text, use the new `noticeLines` option instead — its string entries are always rendered as plain text (never parsed as HTML) with standard logo-card styling, and an `HTMLElement` entry can be supplied for a line requiring markup.
 
 ## @itwin/core-geometry
 
