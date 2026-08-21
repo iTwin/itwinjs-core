@@ -51,7 +51,7 @@ export class IModelSchemaSource implements Authoring.SchemaSource {
   /** The names of every schema in the iModel. Cheap - it is the discovery pass, so it costs one
    * manifest query and is cached with it. */
   public async getSchemaNames(): Promise<string[]> {
-    const issues = new Authoring.SchemaIssueList();
+    const issues = new Authoring.SchemaIssueList("discovery");
     const candidates = await this.discoverCandidates(issues);
     return candidates.map((candidate) => candidate.header.name);
   }
@@ -106,8 +106,8 @@ export function readSchemaFromIModel(iModel: IModelDb, schemaName: string, schem
   try {
     props = iModel.getSchemaProps(schemaName);
   } catch (error) {
-    const issues = new Authoring.SchemaIssueList();
-    issues.addError("SchemaSources-0006", `The iModel has no schema named "${schemaName}": ${error instanceof Error ? error.message : String(error)}`, { source });
+    const issues = new Authoring.SchemaIssueList("discovery");
+    issues.addError("schema-missing", `The iModel has no schema named "${schemaName}": ${error instanceof Error ? error.message : String(error)}`, { source });
     return { issues };
   }
   // ECJSON props cross the native boundary as an object, so this is the object-in entry point

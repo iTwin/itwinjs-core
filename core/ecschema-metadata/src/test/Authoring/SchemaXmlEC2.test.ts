@@ -14,7 +14,7 @@ async function read(xml: string, set?: SchemaSet) {
 }
 
 function messages(issues: Iterable<{ severity: string, code: string, message: string }>): string {
-  return [...issues].map((i) => `${i.severity} ${i.code}: ${i.message}`).join("\n");
+  return [...issues].map((i) => `${i.severity} ${i.name}: ${i.message}`).join("\n");
 }
 
 /** A 2.0 schema exercising the whole legacy vocabulary: flagged classes, a struct array flag, the
@@ -74,7 +74,7 @@ describe("ECXml 2.0 reading", () => {
     const xml = `<?xml version="1.0"?><ECSchema schemaName="NoPrefix" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.2.0"/>`;
     const { document, issues } = await read(xml);
     expect(document!.alias).toBe("NoPrefix");
-    expect(issues.errors.map((i) => i.code)).toEqual([]);
+    expect(issues.errors.map((i) => i.name)).toEqual([]);
   });
 
   it("picks the class kind from the flags, struct winning over custom attribute", async () => {
@@ -88,7 +88,7 @@ describe("ECXml 2.0 reading", () => {
   it("reads a custom attribute class with no appliesTo as applying to anything", async () => {
     const { document, issues } = await read(legacySchema);
     expect(document!.getItemOfType("Marker", SchemaItemType.CustomAttributeClass)!.appliesTo).toBeGreaterThan(0);
-    expect(issues.errors.map((i) => i.code)).not.toContain("SchemaXml-0022");
+    expect(issues.errors.map((i) => i.name)).not.toContain("custom-attribute-class-applies-to-missing");
   });
 
   it("derives the class modifier from the flags: no kind is abstract, isFinal is sealed", async () => {
@@ -151,7 +151,7 @@ describe("ECXml 2.0 reading", () => {
       </ECSchema>`;
     const { document, issues } = await read(xml);
     expect(document!.getItemOfType("R", SchemaItemType.RelationshipClass)!.source.multiplicity).toBe("banana");
-    expect([...issues].some((i) => i.code === "SchemaXml-0063")).toBe(true);
+    expect([...issues].some((i) => i.name === "constraint-cardinality-unparseable")).toBe(true);
   });
 });
 
@@ -185,7 +185,7 @@ describe("ECXml 2.0 writing", () => {
 
   it("reports that a sealed class cannot survive the downgrade", () => {
     const result = write(buildDocument());
-    expect([...result.issues].filter((i) => i.code === "SchemaXml-0065")).toHaveLength(1);
+    expect([...result.issues].filter((i) => i.name === "class-sealed-modifier-dropped")).toHaveLength(1);
   });
 
   it("writes a struct array as an ECArrayProperty flagged isStruct", () => {
@@ -199,7 +199,7 @@ describe("ECXml 2.0 writing", () => {
     const result = write(buildDocument());
     expect(result.text).toContain(`<ECProperty propertyName="Owner" typeName="long"`);
     expect(result.text).not.toContain("ECNavigationProperty");
-    expect([...result.issues].filter((i) => i.code === "SchemaXml-0067")).toHaveLength(1);
+    expect([...result.issues].filter((i) => i.name === "property-navigation-relationship-dropped")).toHaveLength(1);
   });
 
   it("writes cardinality and leaves out abstractConstraint", () => {
@@ -221,7 +221,7 @@ describe("ECXml 2.0 writing", () => {
     doc.createEntity("C").createEnumeration("State", "Status");
     const result = write(doc);
     expect(result.text).toContain(`<ECProperty propertyName="State" typeName="int"`);
-    expect([...result.issues].filter((i) => i.code === "SchemaXml-0066")).toHaveLength(1);
+    expect([...result.issues].filter((i) => i.name === "property-enumeration-dropped")).toHaveLength(1);
   });
 
   it("writes a custom attribute namespace in the two-component legacy form", () => {

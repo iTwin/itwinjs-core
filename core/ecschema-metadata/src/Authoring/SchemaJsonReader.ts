@@ -12,7 +12,7 @@ import * as Authoring from "./SchemaDocument";
 import {
   decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentHeader, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
 } from "./SchemaDocumentIO";
-import { SchemaIssueList } from "./SchemaIssues";
+import { formatSourceLocation, SchemaIssueList } from "./SchemaIssues";
 
 /** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
  * allocates a new RegExp on every evaluation, and this runs per reference. */
@@ -47,7 +47,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
   /** Reads a full document. The result carries no document only when the input is unusable
    * (malformed JSON, not an ECSchema, an unsupported spec). */
   public async readDocument(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaDocumentReadResult> {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("json");
     const parsed = await parseRoot(text, issues, options?.source, options?.abortSignal);
     if (parsed === undefined)
       return { issues };
@@ -62,7 +62,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
    * reintroduce the platform string-length ceiling on the one source most likely to hold a very large
    * schema; this avoids both. The object is read, not retained. */
   public readObject(props: object, options?: SchemaTextReadOptions): SchemaDocumentReadResult {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("json");
     const parsed = validateRoot(props, issues, options?.source);
     if (parsed === undefined)
       return { issues };
@@ -72,7 +72,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
   /** Reads only the schema's identity and reference list. Parses the whole input (see the class
    * note), then extracts just the header fields. */
   public async readHeader(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaHeaderReadResult> {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("json");
     const parsed = await parseRoot(text, issues, options?.source, options?.abortSignal);
     if (parsed === undefined)
       return { issues };
@@ -82,7 +82,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
   /** Reads the header from an already-parsed ECJSON object, the {@link readHeader} counterpart to
    * {@link readObject}; see that method for why an object entry exists. */
   public readHeaderObject(props: object, options?: SchemaTextReadOptions): SchemaHeaderReadResult {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("json");
     const parsed = validateRoot(props, issues, options?.source);
     if (parsed === undefined)
       return { issues };
@@ -94,7 +94,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
    * single-item deserialization API.
    * @internal */
   public readItemInto(document: Authoring.SchemaDocument, name: string, tree: object): SchemaIssueList {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("json");
     const walker = new ECJson32Walker(issues, undefined, undefined);
     walker.readItemIntoDocument(document, name, tree as JsonObject);
     return issues;
@@ -104,7 +104,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
    * Companion to {@link readItemInto}.
    * @internal */
   public readPropertyInto(declaringClass: Authoring.AnyClass, name: string, tree: object): SchemaIssueList {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("json");
     const walker = new ECJson32Walker(issues, undefined, undefined);
     walker.readPropertyIntoClass(declaringClass, name, tree as JsonObject);
     return issues;
@@ -121,7 +121,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
     const name = asString(root.name);
     const version = parseVersionString(asString(root.version));
     if (name === undefined || version === undefined) {
-      issues.addError("SchemaJson-0012", "The schema object is missing its name or a parseable version.", { source });
+      issues.addError("schema-name-or-version-missing", "The schema object is missing its name or a parseable version.", formatSourceLocation(source));
       return { issues };
     }
 
@@ -157,7 +157,7 @@ async function parseRoot(text: SchemaText, issues: SchemaIssueList, source: stri
   try {
     parsed = JSON.parse(collected);
   } catch (error) {
-    issues.addError("SchemaJson-0010", `Malformed JSON: ${error instanceof Error ? error.message : String(error)}`, { source });
+    issues.addError("document-malformed", `Malformed JSON: ${error instanceof Error ? error.message : String(error)}`, formatSourceLocation(source));
     return undefined;
   }
   return validateRoot(parsed, issues, source);
@@ -168,7 +168,7 @@ async function parseRoot(text: SchemaText, issues: SchemaIssueList, source: stri
  * Shared by {@link parseRoot} (text path) and the reader's object entries. */
 function validateRoot(parsed: unknown, issues: SchemaIssueList, source: string | undefined): { root: JsonObject, specMajor: number, specMinor: number } | undefined {
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    issues.addError("SchemaJson-0011", "The input is not a JSON object.", { source });
+    issues.addError("document-root-unrecognized", "The input is not a JSON object.", formatSourceLocation(source));
     return undefined;
   }
   const root = parsed as JsonObject;
@@ -176,13 +176,13 @@ function validateRoot(parsed: unknown, issues: SchemaIssueList, source: string |
   const schemaUrl = asString(root.$schema);
   const urlMatch = schemaUrl !== undefined ? ECJSON_SCHEMA_URL_PATTERN.exec(schemaUrl) : null;
   if (urlMatch === null) {
-    issues.addError("SchemaJson-0014", `The schema object has a missing or unrecognized $schema ("${schemaUrl ?? ""}").`, { source });
+    issues.addError("spec-declaration-unrecognized", `The schema object has a missing or unrecognized $schema ("${schemaUrl ?? ""}").`, formatSourceLocation(source));
     return undefined;
   }
   const specMajor = parseInt(urlMatch[1], 10);
   const specMinor = parseInt(urlMatch[2], 10);
   if (specMajor !== 3) {
-    issues.addError("SchemaJson-0015", `Unsupported ECJSON spec version ${specMajor}.${specMinor} - this reader handles 3.x.`, { source });
+    issues.addError("spec-version-unsupported", `Unsupported ECJSON spec version ${specMajor}.${specMinor} - this reader handles 3.x.`, formatSourceLocation(source));
     return undefined;
   }
   return { root, specMajor, specMinor };
@@ -193,7 +193,7 @@ function readSchemaReference(entry: unknown, issues: SchemaIssueList, source: st
   const name = reference !== undefined ? asString(reference.name) : undefined;
   const version = reference !== undefined ? parseVersionString(asString(reference.version)) : undefined;
   if (name === undefined || version === undefined) {
-    issues.addError("SchemaJson-0013", "A schema reference is missing its name or a parseable version.", { source });
+    issues.addError("reference-name-or-version-missing", "A schema reference is missing its name or a parseable version.", formatSourceLocation(source));
     return undefined;
   }
   // ECJSON references carry no alias; null records that as an explicit absence.
@@ -278,7 +278,7 @@ class ECJson32Walker {
       return;
     const incumbent = schemaSet.getSchema(document.name);
     if (incumbent !== undefined) {
-      this._error("SchemaJson-0055", `The schema set already holds a schema named "${incumbent.name}"; "${document.name}" was read into a set of its own.`);
+      this._error("schema-name-duplicate", `The schema set already holds a schema named "${incumbent.name}"; "${document.name}" was read into a set of its own.`);
       return;
     }
     schemaSet.moveIn(document);
@@ -311,11 +311,11 @@ class ECJson32Walker {
     const alias = asString(root.alias);
     const version = parseVersionString(asString(root.version));
     if (name === undefined || version === undefined) {
-      this._error("SchemaJson-0012", "The schema object is missing its name or a parseable version.");
+      this._error("schema-name-or-version-missing", "The schema object is missing its name or a parseable version.");
       return undefined;
     }
     if (alias === undefined)
-      this._error("SchemaJson-0016", `The schema "${name}" is missing the required alias field.`);
+      this._error("schema-alias-missing", `The schema "${name}" is missing the required alias field.`);
 
     const document = new Authoring.SchemaDocument(name, alias ?? "", version.read, version.write, version.minor, {
       label: asString(root.label),
@@ -343,7 +343,7 @@ class ECJson32Walker {
       for (const [itemName, itemValue] of Object.entries(items)) {
         const item = asObject(itemValue);
         if (item === undefined) {
-          this._error("SchemaJson-0017", `The item "${itemName}" is not a JSON object; it was skipped.`);
+          this._error("item-wrong-type", `The item "${itemName}" is not a JSON object; it was skipped.`);
           continue;
         }
         this.readItem(itemName, item);
@@ -373,7 +373,7 @@ class ECJson32Walker {
       case "constant": return this.readConstant(name, item);
       case "format": return this.readFormat(name, item);
       default:
-        this._error("SchemaJson-0018", `The item "${name}" has a missing or unrecognized schemaItemType ("${itemType ?? ""}"); it was skipped.`);
+        this._error("item-type-missing-or-unrecognized", `The item "${name}" has a missing or unrecognized schemaItemType ("${itemType ?? ""}"); it was skipped.`);
         return;
     }
   }
@@ -388,7 +388,7 @@ class ECJson32Walker {
     if (modifierText !== undefined) {
       const modifier = parseClassModifier(modifierText);
       if (modifier === undefined)
-        this._warning("SchemaJson-0019", `Unrecognized class modifier "${modifierText}" was ignored.`);
+        this._warning("class-modifier-unrecognized", `Unrecognized class modifier "${modifierText}" was ignored.`);
       else
         init.modifier = modifier;
     }
@@ -411,7 +411,7 @@ class ECJson32Walker {
     // promotion, unlike the XML reader.
     const appliesToText = asString(item.appliesTo);
     if (appliesToText === undefined)
-      this._error("SchemaJson-0020", `The mixin "${name}" is missing the required appliesTo field.`);
+      this._error("mixin-applies-to-missing", `The mixin "${name}" is missing the required appliesTo field.`);
     const appliesTo = appliesToText !== undefined ? this.normalizeItemReference(appliesToText) : "";
     this.readClassContent(name, this._document.createMixin(name, appliesTo, this.classInit(item)), item);
   }
@@ -420,12 +420,12 @@ class ECJson32Walker {
     let appliesTo = 0;
     const appliesToText = asString(item.appliesTo);
     if (appliesToText === undefined) {
-      this._error("SchemaJson-0022", `The custom attribute class "${name}" is missing the required appliesTo field.`);
+      this._error("custom-attribute-class-applies-to-missing", `The custom attribute class "${name}" is missing the required appliesTo field.`);
     } else {
       try {
         appliesTo = parseCustomAttributeContainerType(appliesToText) ?? 0;
       } catch {
-        this._error("SchemaJson-0023", `The custom attribute class "${name}" has an unparseable appliesTo ("${appliesToText}").`);
+        this._error("custom-attribute-class-applies-to-unparseable", `The custom attribute class "${name}" has an unparseable appliesTo ("${appliesToText}").`);
       }
     }
     this.readClassContent(name, this._document.createCustomAttributeClass(name, appliesTo, this.classInit(item)), item);
@@ -437,13 +437,13 @@ class ECJson32Walker {
     if (strengthText !== undefined) {
       init.strength = parseStrength(strengthText);
       if (init.strength === undefined)
-        this._warning("SchemaJson-0024", `Unrecognized relationship strength "${strengthText}" was ignored.`);
+        this._warning("relationship-strength-unrecognized", `Unrecognized relationship strength "${strengthText}" was ignored.`);
     }
     const directionText = asString(item.strengthDirection);
     if (directionText !== undefined) {
       init.strengthDirection = parseStrengthDirection(directionText);
       if (init.strengthDirection === undefined)
-        this._warning("SchemaJson-0025", `Unrecognized strengthDirection "${directionText}" was ignored.`);
+        this._warning("relationship-strength-direction-unrecognized", `Unrecognized strengthDirection "${directionText}" was ignored.`);
     }
     const relationship = this._document.createRelationship(name, init);
     this.readClassContent(name, relationship, item);
@@ -453,11 +453,11 @@ class ECJson32Walker {
     if (sourceObject !== undefined)
       this.readRelationshipConstraint(sourceObject, relationship.source, name);
     else
-      this._error("SchemaJson-0026", `The relationship class "${name}" is missing its source constraint.`);
+      this._error("relationship-constraint-missing", `The relationship class "${name}" is missing its source constraint.`);
     if (targetObject !== undefined)
       this.readRelationshipConstraint(targetObject, relationship.target, name);
     else
-      this._error("SchemaJson-0026", `The relationship class "${name}" is missing its target constraint.`);
+      this._error("relationship-constraint-missing", `The relationship class "${name}" is missing its target constraint.`);
   }
 
   private readRelationshipConstraint(constraintObject: JsonObject, constraint: Authoring.RelationshipConstraint, className: string): void {
@@ -475,7 +475,7 @@ class ECJson32Walker {
         if (typeof entry === "string")
           constraint.constraintClasses.push(this.normalizeItemReference(entry));
         else
-          this._error("SchemaJson-0027", `A constraint class entry of "${className}" is not a string; it was skipped.`);
+          this._error("constraint-class-wrong-type", `A constraint class entry of "${className}" is not a string; it was skipped.`);
       }
     }
     this.readCustomAttributes(constraintObject.customAttributes, constraint.customAttributes, className);
@@ -490,7 +490,7 @@ class ECJson32Walker {
     for (const entry of properties) {
       const propertyObject = asObject(entry);
       if (propertyObject === undefined) {
-        this._error("SchemaJson-0028", `A property entry of class "${name}" is not a JSON object; it was skipped.`);
+        this._error("property-entry-wrong-type", `A property entry of class "${name}" is not a JSON object; it was skipped.`);
         continue;
       }
       this.readProperty(propertyObject, item);
@@ -503,7 +503,7 @@ class ECJson32Walker {
     const name = asString(propertyObject.name);
     const typeText = asString(propertyObject.type);
     if (name === undefined || typeText === undefined) {
-      this._error("SchemaJson-0029", `A property of class "${item.name}" is missing its name or type; the property was skipped.`);
+      this._error("property-name-or-type-missing", `A property of class "${item.name}" is missing its name or type; the property was skipped.`);
       return;
     }
 
@@ -548,14 +548,14 @@ class ECJson32Walker {
         const directionText = asString(propertyObject.direction);
         const direction = directionText !== undefined ? parseStrengthDirection(directionText) : undefined;
         if (relationshipName === undefined || direction === undefined) {
-          this._error("SchemaJson-0030", `The navigation property "${item.name}.${name}" is missing relationshipName or a parseable direction; the property was skipped.`);
+          this._error("property-navigation-fields-invalid", `The navigation property "${item.name}.${name}" is missing relationshipName or a parseable direction; the property was skipped.`);
           return;
         }
         property = item.createNavigation(name, this.normalizeItemReference(relationshipName), direction, this.propertyInit(propertyObject));
         break;
       }
       default:
-        this._error("SchemaJson-0031", `The property "${item.name}.${name}" has an unrecognized type ("${typeText}"); the property was skipped.`);
+        this._error("property-type-unrecognized", `The property "${item.name}.${name}" has an unrecognized type ("${typeText}"); the property was skipped.`);
         return;
     }
 
@@ -565,7 +565,7 @@ class ECJson32Walker {
   private propertyTypeName(propertyObject: JsonObject, propertyName: string, className: string): string | undefined {
     const typeName = asString(propertyObject.typeName);
     if (typeName === undefined) {
-      this._error("SchemaJson-0032", `The property "${className}.${propertyName}" is missing the required typeName field; the property was skipped.`);
+      this._error("property-type-name-missing", `The property "${className}.${propertyName}" is missing the required typeName field; the property was skipped.`);
       return undefined;
     }
     return this.normalizeItemReference(typeName);
@@ -576,7 +576,7 @@ class ECJson32Walker {
   private resolvePrimitivePropertyType(propertyObject: JsonObject, propertyName: string, className: string): { primitiveType: PrimitiveType } | { enumeration: string } | undefined {
     const typeName = asString(propertyObject.typeName);
     if (typeName === undefined) {
-      this._error("SchemaJson-0032", `The property "${className}.${propertyName}" is missing the required typeName field; the property was skipped.`);
+      this._error("property-type-name-missing", `The property "${className}.${propertyName}" is missing the required typeName field; the property was skipped.`);
       return undefined;
     }
     const primitiveType = parsePrimitiveType(typeName);
@@ -624,7 +624,7 @@ class ECJson32Walker {
     else if (backingTypeText === "string")
       backingType = "string";
     else {
-      this._error("SchemaJson-0033", `The enumeration "${name}" has a missing or unsupported type ("${asString(item.type) ?? ""}"); the item was skipped.`);
+      this._error("enumeration-backing-type-unrecognized", `The enumeration "${name}" has a missing or unsupported type ("${asString(item.type) ?? ""}"); the item was skipped.`);
       return;
     }
     const enumeration = this._document.createEnumeration(name, backingType, {
@@ -640,7 +640,7 @@ class ECJson32Walker {
       const value = enumeratorObject !== undefined && (typeof enumeratorObject.value === "number" || typeof enumeratorObject.value === "string")
         ? enumeratorObject.value : undefined;
       if (enumeratorObject === undefined || enumeratorName === undefined || value === undefined) {
-        this._error("SchemaJson-0034", `An enumerator of "${name}" is missing its name or value; it was skipped.`);
+        this._error("enumerator-name-or-value-missing", `An enumerator of "${name}" is missing its name or value; it was skipped.`);
         continue;
       }
       enumeration.createEnumerator(enumeratorName, value, {
@@ -654,7 +654,7 @@ class ECJson32Walker {
     const persistenceUnit = asString(item.persistenceUnit);
     const relativeError = asNumber(item.relativeError);
     if (persistenceUnit === undefined || relativeError === undefined) {
-      this._error("SchemaJson-0035", `The kind of quantity "${name}" is missing persistenceUnit or a numeric relativeError; the item was skipped.`);
+      this._error("kind-of-quantity-fields-invalid", `The kind of quantity "${name}" is missing persistenceUnit or a numeric relativeError; the item was skipped.`);
       return;
     }
     // Presentation format strings stay as strings; the override grammar is not parsed here.
@@ -675,7 +675,7 @@ class ECJson32Walker {
   private readPhenomenon(name: string, item: JsonObject): void {
     const definition = asString(item.definition);
     if (definition === undefined) {
-      this._error("SchemaJson-0036", `The phenomenon "${name}" is missing the required definition field; the item was skipped.`);
+      this._error("phenomenon-definition-missing", `The phenomenon "${name}" is missing the required definition field; the item was skipped.`);
       return;
     }
     this._document.createPhenomenon(name, definition, this.itemInit(item));
@@ -686,7 +686,7 @@ class ECJson32Walker {
     const unitSystem = asString(item.unitSystem);
     const definition = asString(item.definition);
     if (phenomenon === undefined || unitSystem === undefined || definition === undefined) {
-      this._error("SchemaJson-0037", `The unit "${name}" is missing phenomenon, unitSystem, or definition; the item was skipped.`);
+      this._error("unit-fields-missing", `The unit "${name}" is missing phenomenon, unitSystem, or definition; the item was skipped.`);
       return;
     }
     this._document.createUnit(name, this.normalizeItemReference(phenomenon), this.normalizeItemReference(unitSystem), definition, {
@@ -701,7 +701,7 @@ class ECJson32Walker {
     const invertsUnit = asString(item.invertsUnit);
     const unitSystem = asString(item.unitSystem);
     if (invertsUnit === undefined || unitSystem === undefined) {
-      this._error("SchemaJson-0038", `The inverted unit "${name}" is missing invertsUnit or unitSystem; the item was skipped.`);
+      this._error("unit-inverted-fields-missing", `The inverted unit "${name}" is missing invertsUnit or unitSystem; the item was skipped.`);
       return;
     }
     this._document.createInvertedUnit(name, this.normalizeItemReference(invertsUnit), this.normalizeItemReference(unitSystem), this.itemInit(item));
@@ -711,7 +711,7 @@ class ECJson32Walker {
     const phenomenon = asString(item.phenomenon);
     const definition = asString(item.definition);
     if (phenomenon === undefined || definition === undefined) {
-      this._error("SchemaJson-0039", `The constant "${name}" is missing phenomenon or definition; the item was skipped.`);
+      this._error("constant-fields-missing", `The constant "${name}" is missing phenomenon or definition; the item was skipped.`);
       return;
     }
     this._document.createConstant(name, this.normalizeItemReference(phenomenon), definition, {
@@ -724,7 +724,7 @@ class ECJson32Walker {
   private readFormat(name: string, item: JsonObject): void {
     const typeText = asString(item.type);
     if (typeText === undefined) {
-      this._error("SchemaJson-0040", `The format "${name}" is missing the required type field; the item was skipped.`);
+      this._error("format-type-missing", `The format "${name}" is missing the required type field; the item was skipped.`);
       return;
     }
     const init: Authoring.FormatInit = this.itemInit(item);
@@ -766,7 +766,7 @@ class ECJson32Walker {
           const unitObject = asObject(entry);
           const unitName = unitObject !== undefined ? asString(unitObject.name) : undefined;
           if (unitObject === undefined || unitName === undefined) {
-            this._error("SchemaJson-0041", `A composite unit of format "${name}" is missing its name; it was skipped.`);
+            this._error("format-composite-unit-name-missing", `A composite unit of format "${name}" is missing its name; it was skipped.`);
             continue;
           }
           units.push({ name: this.normalizeItemReference(unitName), label: asString(unitObject.label) });
@@ -780,7 +780,7 @@ class ECJson32Walker {
 
       this._document.createFormat(name, type, init);
     } catch (error) {
-      this._error("SchemaJson-0042", `The format "${name}" could not be read: ${error instanceof Error ? error.message : String(error)}; the item was skipped.`);
+      this._error("format-unparseable", `The format "${name}" could not be read: ${error instanceof Error ? error.message : String(error)}; the item was skipped.`);
     }
   }
 
@@ -797,7 +797,7 @@ class ECJson32Walker {
       const caObject = asObject(entry);
       const className = caObject !== undefined ? asString(caObject.className) : undefined;
       if (caObject === undefined || className === undefined) {
-        this._error("SchemaJson-0043", `A custom attribute on "${location}" is missing its className; it was skipped.`);
+        this._error("custom-attribute-class-name-missing", `A custom attribute on "${location}" is missing its className; it was skipped.`);
         continue;
       }
       // The remaining keys are the custom attribute's property values, already in canonical ECJSON
@@ -807,7 +807,7 @@ class ECJson32Walker {
       const { className: _discriminator, ...rest } = caObject;
       const values = asCustomAttributeValues(rest);
       if (values === undefined) {
-        this._error("SchemaJson-0044", `The custom attribute "${className}" on "${location}" holds a value that is not valid ECJSON; it was skipped.`);
+        this._error("custom-attribute-value-invalid", `The custom attribute "${className}" on "${location}" holds a value that is not valid ECJSON; it was skipped.`);
         continue;
       }
       target.add({ className: this.normalizeItemReference(className), values });
@@ -839,11 +839,11 @@ class ECJson32Walker {
     return reference;
   }
 
-  private _error(code: string, message: string): void {
-    this._issues.addError(code, message, { source: this._source });
+  private _error(name: string, message: string): void {
+    this._issues.addError(name, message, formatSourceLocation(this._source));
   }
 
-  private _warning(code: string, message: string): void {
-    this._issues.addWarning(code, message, { source: this._source });
+  private _warning(name: string, message: string): void {
+    this._issues.addWarning(name, message, formatSourceLocation(this._source));
   }
 }

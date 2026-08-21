@@ -42,7 +42,7 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
    * Builds the whole document as one string; for a schema large enough to approach the platform's
    * maximum string length use {@link writeDocumentTo} instead. */
   public writeDocument(document: Authoring.SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("xml");
     const emitter = this._prepare(document, issues, options);
     if (emitter === undefined)
       return { issues };
@@ -53,7 +53,7 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
    * a schema of any size can be written. The whole document still passes through `sink`; concatenating
    * the chunks yields exactly what {@link writeDocument} returns. */
   public async writeDocumentTo(document: Authoring.SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult> {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("xml");
     const emitter = this._prepare(document, issues, options);
     if (emitter === undefined)
       return { issues };
@@ -67,7 +67,7 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
     const spec = options?.spec ?? ECSpec.Latest;
     const dialect = dialectForSpec(spec);
     if (dialect === undefined) {
-      issues.addError("SchemaXml-0001", `Unsupported target spec version "${spec as string}".`);
+      issues.addError("target-spec-unsupported", `Unsupported target spec version "${spec as string}".`);
       return undefined;
     }
     return new ECXmlEmitter(document, issues, dialect);
@@ -195,9 +195,9 @@ class ECXmlEmitter {
     if (this._dialect.versionComponents === 3)
       return formatVersion(read, write, minor);
     if (write !== 0) {
-      this._issues.addWarning("SchemaXml-0060",
+      this._issues.addWarning("schema-write-version-dropped",
         `ECXML ${this._dialect.spec} writes a two-component version, so the write component ${write} of "${this._document.name}" cannot be expressed and was dropped.`,
-        { location: this._document.name });
+        this._document.name);
     }
     return `${padVersionComponent(read)}.${padVersionComponent(minor)}`;
   }
@@ -244,9 +244,9 @@ class ECXmlEmitter {
 
   private _emitSchemaReference(reference: Authoring.SchemaReference): void {
     if (reference.alias === null) {
-      this._issues.addError("SchemaXml-0002",
+      this._issues.addError("reference-alias-missing",
         `The reference to schema "${reference.name}" has no alias; ECXML requires one on every ECSchemaReference.`,
-        { location: this._document.name });
+        this._document.name);
     }
     this._xml.selfClosingElement("ECSchemaReference", [
       ["name", reference.name],
@@ -271,8 +271,8 @@ class ECXmlEmitter {
     for (const schemaReference of this._document.references) {
       if (schemaReference.name.toLowerCase() === qualifierLower) {
         if (schemaReference.alias === null) {
-          this._issues.addWarning("SchemaXml-0003",
-            `Cannot alias-qualify "${reference}": the reference to schema "${schemaReference.name}" has no alias.`, { location });
+          this._issues.addWarning("reference-alias-unavailable",
+            `Cannot alias-qualify "${reference}": the reference to schema "${schemaReference.name}" has no alias.`, location);
           return `${qualifier}:${itemName}`;
         }
         return `${schemaReference.alias}:${itemName}`;
@@ -281,8 +281,8 @@ class ECXmlEmitter {
         return `${schemaReference.alias}:${itemName}`; // already alias-qualified
     }
 
-    this._issues.addWarning("SchemaXml-0004",
-      `The item reference "${reference}" does not match this schema or any schema in the reference list; emitting it unchanged.`, { location });
+    this._issues.addWarning("reference-item-unresolved",
+      `The item reference "${reference}" does not match this schema or any schema in the reference list; emitting it unchanged.`, location);
     return `${qualifier}:${itemName}`;
   }
 
@@ -306,8 +306,8 @@ class ECXmlEmitter {
         return { elementName, xmlns: `${schemaReference.name}.${this._formatNamespaceVersion(schemaReference.readVersion, schemaReference.writeVersion, schemaReference.minorVersion)}` };
     }
 
-    this._issues.addWarning("SchemaXml-0005",
-      `The custom attribute class "${className}" does not match this schema or any schema in the reference list; its qualifier is emitted without a version.`, { location });
+    this._issues.addWarning("custom-attribute-class-unresolved",
+      `The custom attribute class "${className}" does not match this schema or any schema in the reference list; its qualifier is emitted without a version.`, location);
     // Emit the qualifier rather than nothing. Dropping the xmlns would leave a bare element name,
     // which a reader binds to whatever schema it is reading - silently turning this into an
     // instance of a different class. Keeping the qualifier without a version preserves which class
@@ -399,9 +399,9 @@ class ECXmlEmitter {
   /** Reports an item the target spec has no element for. The output stays readable, which is what a
    * downgrade is for, but the item is gone - so it is never silent. */
   private _dropItem(item: Authoring.SchemaItem, plural: string): void {
-    this._issues.addWarning("SchemaXml-0064",
+    this._issues.addWarning("enumeration-unsupported-in-spec",
       `ECXML ${this._dialect.spec} has no ${plural}, so "${item.name}" was dropped.`,
-      { location: `${this._document.name}:${item.name}` });
+      `${this._document.name}:${item.name}`);
   }
 
   /** 2.0 has one `ECClass` element carrying type flags where 3.x has three typed elements. */
@@ -417,9 +417,9 @@ class ECXmlEmitter {
       return [["modifier", item.modifier === undefined ? undefined : classModifierToString(item.modifier)]];
 
     if (item.modifier === ECClassModifier.Sealed) {
-      this._issues.addWarning("SchemaXml-0065",
+      this._issues.addWarning("class-sealed-modifier-dropped",
         `ECXML ${this._dialect.spec} cannot express a sealed class, so the modifier of "${item.name}" was dropped.`,
-        { location: `${this._document.name}:${item.name}` });
+        `${this._document.name}:${item.name}`);
     }
     const isStruct = kind === "struct";
     const isCustomAttribute = kind === "customAttribute";
@@ -460,9 +460,9 @@ class ECXmlEmitter {
     this._emitCustomAttributes(item.customAttributes, item.name, () => {
       const coreCa = this._document.getSchemaReference("CoreCustomAttributes");
       if (coreCa === undefined) {
-        this._issues.addWarning("SchemaXml-0007",
+        this._issues.addWarning("mixin-custom-attribute-reference-missing",
           `The mixin "${item.name}" requires the IsMixin custom attribute, but "CoreCustomAttributes" is not in the reference list; emitting with a 01.00.00 namespace.`,
-          { location: item.name });
+          item.name);
       }
       const xmlns = coreCa !== undefined
         ? `CoreCustomAttributes.${this._formatNamespaceVersion(coreCa.readVersion, coreCa.writeVersion, coreCa.minorVersion)}`
@@ -553,9 +553,9 @@ class ECXmlEmitter {
     if (!this._dialect.enumerationBackedProperties) {
       const enumeration = this._document.resolveItemOfType(typeName, SchemaItemType.Enumeration);
       if (enumeration !== undefined) {
-        this._issues.addWarning("SchemaXml-0066",
+        this._issues.addWarning("property-enumeration-dropped",
           `ECXML ${this._dialect.spec} has no enumerations, so "${location}" was written as its backing ${enumeration.backingType} and its allowed values were dropped.`,
-          { location });
+          location);
         return enumeration.backingType;
       }
     }
@@ -580,9 +580,9 @@ class ECXmlEmitter {
       } else {
         // 2.0 has no navigation property. Native writes the backing long instead of dropping the
         // property, so the instance data still has somewhere to live; the relationship is lost.
-        this._issues.addWarning("SchemaXml-0067",
+        this._issues.addWarning("property-navigation-relationship-dropped",
           `ECXML ${this._dialect.spec} has no navigation properties, so "${location}" was written as a long and its relationship was dropped.`,
-          { location });
+          location);
         elementName = "ECProperty";
         attributes = [common[0], ["typeName", "long"], ...common.slice(1)];
       }
@@ -660,9 +660,9 @@ class ECXmlEmitter {
       if (!this._dialect.enumeratorNames) {
         const synthesized = ECName.encode(synthesizeEnumeratorName(item.name, enumerator.value)).name;
         if (enumerator.name !== synthesized) {
-          this._issues.addWarning("SchemaXml-0061",
+          this._issues.addWarning("enumerator-name-dropped",
             `ECXML ${this._dialect.spec} does not carry enumerator names, and "${enumerator.name}" differs from the "${synthesized}" a reader will derive from its value; the name was dropped.`,
-            { location: `${this._document.name}:${item.name}` });
+            `${this._document.name}:${item.name}`);
         }
       }
     }

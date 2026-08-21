@@ -108,9 +108,9 @@ export function materializeCustomAttribute(customAttribute: CustomAttribute, thr
 export function readCustomAttributeValues(customAttribute: CustomAttribute, issues: SchemaIssueList, location: string): CustomAttributeValues | undefined {
   const values = customAttribute.tryGetValues();
   if (values === undefined) {
-    issues.addError("SchemaCA-0001",
+    issues.addError("custom-attribute-class-unresolved",
       `The custom attribute "${customAttribute.className}" could not be converted because its custom attribute class is not in the schema set; it was skipped.`,
-      { location });
+      location);
   }
   return values;
 }
@@ -127,9 +127,9 @@ export function readCustomAttributeValues(customAttribute: CustomAttribute, issu
 export function writeCustomAttributeXmlBody(customAttribute: CustomAttribute, issues: SchemaIssueList, location: string): string[] | undefined {
   const values = customAttribute.tryGetValues();
   if (values === undefined) {
-    issues.addWarning("SchemaCA-0002",
+    issues.addWarning("custom-attribute-body-passed-through",
       `The custom attribute "${customAttribute.className}" was copied verbatim: its custom attribute class is not in the schema set, so its values could not be validated.`,
-      { location });
+      location);
     // One entry, newlines and all: a verbatim body is already indented for the file it came from,
     // and re-indenting it would change any value that spans lines.
     const raw = customAttribute.rawXml;
@@ -255,17 +255,17 @@ function valueToNode(name: string, value: CustomAttributeValue, property: AnyPro
       // carry - only the property does.
       const structClass = property !== undefined && property.isStruct() && property.isArray() ? property.getStructClass() : undefined;
       if (structClass === undefined) {
-        issues.addError("SchemaCA-0003",
+        issues.addError("custom-attribute-struct-array-entry-class-unresolved",
           `The custom attribute "${className}" has a struct-array property "${name}" whose entry struct class cannot be determined without the custom attribute class; put the schema that defines it in the schema set. The custom attribute was skipped.`,
-          { location });
+          location);
         return undefined;
       }
       const children: CustomAttributeXmlNode[] = [];
       for (const entry of value) {
         if (!isValuesObject(entry)) {
-          issues.addError("SchemaCA-0004",
+          issues.addError("custom-attribute-struct-array-entry-not-convertible",
             `The custom attribute "${className}" has a struct-array property "${name}" holding a non-struct entry. The custom attribute was skipped.`,
-            { location });
+            location);
           return undefined;
         }
         const memberNodes = valuesToNodes(entry, structClass, className, issues, location);

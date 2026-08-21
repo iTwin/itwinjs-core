@@ -183,19 +183,19 @@ describe("SchemaJsonWriter / SchemaJsonReader", () => {
     const result = await new SchemaJsonReader().readDocument(`{"name": "Broken",`, { source: "broken.ecschema.json" });
     expect(result.document).to.be.undefined;
     expect(result.issues.hasErrors).to.be.true;
-    expect(result.issues.errors[0].code).to.equal("SchemaJson-0010");
-    expect(result.issues.errors[0].source).to.equal("broken.ecschema.json");
+    expect(result.issues.errors[0].name).to.equal("document-malformed");
+    expect(result.issues.errors[0].location).to.equal("broken.ecschema.json");
   });
 
   it("rejects a missing or foreign $schema", async () => {
     const noUrl = await new SchemaJsonReader().readDocument(`{"name": "Plain", "version": "01.00.00"}`);
     expect(noUrl.document).to.be.undefined;
-    expect(noUrl.issues.errors[0].code).to.equal("SchemaJson-0014");
+    expect(noUrl.issues.errors[0].name).to.equal("spec-declaration-unrecognized");
 
     const foreign = await new SchemaJsonReader().readDocument(
       `{"$schema": "https://example.com/other", "name": "Foreign", "version": "01.00.00"}`);
     expect(foreign.document).to.be.undefined;
-    expect(foreign.issues.errors[0].code).to.equal("SchemaJson-0014");
+    expect(foreign.issues.errors[0].name).to.equal("spec-declaration-unrecognized");
   });
 
   it("peeks the header", async () => {

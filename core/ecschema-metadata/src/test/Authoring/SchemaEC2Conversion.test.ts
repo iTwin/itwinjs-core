@@ -185,7 +185,7 @@ describe("Category and PropertyPriority", () => {
     </ECClass>`);
     const issues = convertEC2CustomAttributes(doc);
     expect([...doc.getItemsOfType(SchemaItemType.PropertyCategory)]).toHaveLength(0);
-    expect([...issues].map((i) => i.code)).toContain("SchemaEC2-0001");
+    expect([...issues].map((i) => i.name)).toContain("category-standard-only-dropped");
   });
 
   it("moves PropertyPriority onto the property", async () => {
@@ -406,7 +406,7 @@ describe("legacy unit attributes to kinds of quantity", () => {
     </ECClass>`, unitReference);
     const issues = convertEC2CustomAttributes(doc);
     expect([...doc.getItemsOfType(SchemaItemType.KindOfQuantity)]).toHaveLength(0);
-    expect([...issues].map((i) => i.code)).toContain("SchemaEC2-0021");
+    expect([...issues].map((i) => i.name)).toContain("unit-ec3-equivalent-missing");
   });
 
   it("drops the unit-system markers, which have no EC 3.2 equivalent", async () => {
@@ -491,6 +491,6 @@ describe("conversion back to EC2 custom attributes", () => {
     const doc = new SchemaDocument("Down", "dn", 1, 0, 0);
     doc.createKindOfQuantity("WEIRD", "Units:NOT_A_UNIT", 0.0001);
     doc.createEntity("C").createPrimitive("P", PrimitiveType.Double, { kindOfQuantity: "WEIRD" });
-    expect([...convertToEC2CustomAttributes(doc)].map((i) => i.code)).toEqual(["SchemaEC2-0022"]);
+    expect([...convertToEC2CustomAttributes(doc)].map((i) => i.name)).toEqual(["unit-legacy-equivalent-missing"]);
   });
 });

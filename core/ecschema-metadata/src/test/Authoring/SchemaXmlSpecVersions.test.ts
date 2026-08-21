@@ -23,7 +23,7 @@ async function read(file: string, set?: SchemaSet) {
 }
 
 function messages(issues: Iterable<{ severity: string, code: string, message: string }>): string {
-  return [...issues].map((i) => `${i.severity} ${i.code}: ${i.message}`).join("\n");
+  return [...issues].map((i) => `${i.severity} ${i.name}: ${i.message}`).join("\n");
 }
 
 describe("ECXml 3.1 reading", () => {
@@ -33,7 +33,7 @@ describe("ECXml 3.1 reading", () => {
     expect(document, messages(issues)).toBeDefined();
     // One custom attribute class in this fixture genuinely omits appliesTo - a defect in the file,
     // not a spec difference, so the reader is right to report it.
-    const unexpected = [...issues].filter((i) => i.severity === "error" && i.code !== "SchemaXml-0022");
+    const unexpected = [...issues].filter((i) => i.severity === "error" && i.name !== "custom-attribute-class-applies-to-missing");
     expect(unexpected.map((i) => i.message)).toEqual([]);
     expect(document!.items.length).toBeGreaterThan(40);
   });
@@ -118,7 +118,7 @@ describe("ECXml spec downgrade", () => {
     const doc = new SchemaDocument("SpecDelta", "sd", 1, 7, 0);
     const result = new SchemaXmlWriter().writeDocument(doc, { spec: ECSpec.V3_1 });
     expect(result.text).toContain(`version="01.00"`);
-    expect([...result.issues].some((i) => i.code === "SchemaXml-0060")).toBe(true);
+    expect([...result.issues].some((i) => i.name === "schema-write-version-dropped")).toBe(true);
   });
 
   it("writes `alias` from 3.1 and `nameSpacePrefix` at 3.0", () => {
@@ -151,7 +151,7 @@ describe("ECXml spec downgrade", () => {
     const status = doc.createEnumeration("Status", "int");
     status.createEnumerator("Handwritten", 1); // synthesis would produce "Status1"
     const result = new SchemaXmlWriter().writeDocument(doc, { spec: ECSpec.V3_1 });
-    expect([...result.issues].some((i) => i.code === "SchemaXml-0061")).toBe(true);
+    expect([...result.issues].some((i) => i.name === "enumerator-name-dropped")).toBe(true);
     // At 3.2 the name is carried, so there is nothing to warn about.
     expect([...new SchemaXmlWriter().writeDocument(doc, { spec: ECSpec.V3_2 }).issues]).toHaveLength(0);
   });
@@ -172,7 +172,7 @@ describe("ECXml spec downgrade", () => {
   it("reports each item kind 2.0 has no element for instead of dropping it silently", () => {
     const result = new SchemaXmlWriter().writeDocument(buildDocument(), { spec: ECSpec.V2_0 });
     expect(result.text).not.toContain("ECEnumeration");
-    expect([...result.issues].filter((i) => i.code === "SchemaXml-0064").map((i) => i.message))
+    expect([...result.issues].filter((i) => i.name === "enumeration-unsupported-in-spec").map((i) => i.message))
       .toEqual([`ECXML 2.0 has no enumerations, so "Status" was dropped.`]);
   });
 });

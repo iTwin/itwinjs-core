@@ -155,7 +155,7 @@ describe("Custom attributes through the built-in standard schemas", () => {
 describe("Custom attributes through the writers", () => {
   function xmlOf(doc: SchemaDocument): { text: string, errors: string[], warnings: string[] } {
     const result = new SchemaXmlWriter().writeDocument(doc);
-    return { text: result.text ?? "", errors: result.issues.errors.map((i) => i.code), warnings: result.issues.warnings.map((i) => i.code) };
+    return { text: result.text ?? "", errors: result.issues.errors.map((i) => i.name), warnings: result.issues.warnings.map((i) => i.name) };
   }
 
   it("writes an in-memory struct array to ECXML using the class to name the entry elements", () => {
@@ -181,7 +181,7 @@ describe("Custom attributes through the writers", () => {
     });
 
     const { text, errors } = xmlOf(doc);
-    expect(errors).to.include("SchemaCA-0003");
+    expect(errors).to.include("custom-attribute-struct-array-entry-class-unresolved");
     expect(text).to.not.contain("ix_a");
   });
 
@@ -191,7 +191,7 @@ describe("Custom attributes through the writers", () => {
 
     const { text, errors, warnings } = xmlOf(doc);
     expect(errors).to.be.empty;
-    expect(warnings).to.include("SchemaCA-0002");
+    expect(warnings).to.include("custom-attribute-body-passed-through");
     expect(text).to.contain("<Count>5</Count>");
   });
 
@@ -200,7 +200,7 @@ describe("Custom attributes through the writers", () => {
     applyXmlBody(doc, "Unknown:Mapping", "<Count>5</Count>");
 
     const result = new SchemaJsonWriter().writeDocument(doc);
-    expect(result.issues.errors.map((i) => i.code)).to.include("SchemaCA-0001");
+    expect(result.issues.errors.map((i) => i.name)).to.include("custom-attribute-class-unresolved");
     expect(result.text).to.not.contain("Count");
   });
 

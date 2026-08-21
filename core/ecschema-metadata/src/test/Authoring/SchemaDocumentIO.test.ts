@@ -87,13 +87,13 @@ describe("writer spec dispatch", () => {
   it("the XML writer rejects an unsupported target spec with an issue, producing no text", () => {
     const result = new SchemaXmlWriter().writeDocument(doc, { spec: "1.0" as ECSpec });
     expect(result.text).to.be.undefined;
-    expect(result.issues.errors.map((e) => e.code)).to.deep.equal(["SchemaXml-0001"]);
+    expect(result.issues.errors.map((e) => e.name)).to.deep.equal(["target-spec-unsupported"]);
   });
 
   it("the JSON writer rejects an unsupported target spec with an issue, producing no text", () => {
     const result = new SchemaJsonWriter().writeDocument(doc, { spec: "2.0" as ECSpec });
     expect(result.text).to.be.undefined;
-    expect(result.issues.errors.map((e) => e.code)).to.deep.equal(["SchemaJson-0001"]);
+    expect(result.issues.errors.map((e) => e.name)).to.deep.equal(["target-spec-unsupported"]);
   });
 
   it("ECSpec.Latest writes the same output as the explicit latest spec", () => {

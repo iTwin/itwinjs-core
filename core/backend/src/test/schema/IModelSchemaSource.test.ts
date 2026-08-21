@@ -26,7 +26,7 @@ describe("Reading an iModel's schemas into an authoring SchemaSet", () => {
 
   it("discovers every schema by header without reading any content", async () => {
     const source = new IModelSchemaSource(iModel);
-    const issues = new Authoring.SchemaIssueList();
+    const issues = new Authoring.SchemaIssueList("discovery");
     const candidates = await source.discoverCandidates(issues);
 
     assert.isFalse(issues.hasErrors, [...issues].map((i) => i.message).join("; "));

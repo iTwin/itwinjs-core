@@ -55,10 +55,10 @@ export class InMemorySchemaSource implements SchemaSource {
       header: document,
       source: document.source,
       loadDocument: async (schemaSet: SchemaSet) => {
-        const issues = new SchemaIssueList();
+        const issues = new SchemaIssueList("discovery");
         const incumbent = schemaSet.getSchema(document.name);
         if (incumbent !== undefined && incumbent !== document)
-          issues.addError("SchemaSources-0005", `The schema set already holds a schema named "${incumbent.name}"; the in-memory "${document.name}" was not moved in.`);
+          issues.addError("schema-name-duplicate", `The schema set already holds a schema named "${incumbent.name}"; the in-memory "${document.name}" was not moved in.`);
         else
           schemaSet.moveIn(document);
         return { document, issues };
@@ -169,7 +169,7 @@ export class SchemaResolver {
    * tolerance schema references resolve with today (same read.write, any equal-or-newer minor).
    * The roots themselves are never looked up in the sources; they are taken as given. */
   public async resolve(roots: ReadonlyArray<SchemaDocumentHeader>, matchType: SchemaMatchType = SchemaMatchType.LatestWriteCompatible): Promise<SchemaResolution> {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("discovery");
     const candidatesByName = await this._gatherCandidates(issues);
     const nodes = new Map<string, ResolutionNode>(); // keyed by lowercased name
 
@@ -177,7 +177,7 @@ export class SchemaResolver {
     for (const root of roots) {
       const key = root.name.toLowerCase();
       if (nodes.has(key)) {
-        issues.addError("SchemaSources-0001", `Two root documents share the name "${root.name}"; a resolution holds one version per name.`);
+        issues.addError("schema-root-duplicate", `Two root documents share the name "${root.name}"; a resolution holds one version per name.`);
         continue;
       }
       nodes.set(key, { name: root.name, header: root, isRoot: true, requestedBy: ["<request>"] });
@@ -195,7 +195,7 @@ export class SchemaResolver {
    * version to match against; from there `matchType` governs the references. A name no source
    * offers is reported and the rest still resolve. */
   public async resolveNames(names: ReadonlyArray<string>, matchType: SchemaMatchType = SchemaMatchType.LatestWriteCompatible): Promise<SchemaResolution> {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("discovery");
     const candidatesByName = await this._gatherCandidates(issues);
     const nodes = new Map<string, ResolutionNode>();
 
@@ -209,7 +209,7 @@ export class SchemaResolver {
       const selected = this._highestVersion(candidatesByName.get(key));
       if (selected === undefined) {
         nodes.set(key, { name, isRoot: false, requestedBy: ["<request>"] });
-        issues.addError("SchemaSources-0003", `Schema "${name}" was not found in any source.`);
+        issues.addError("schema-missing", `Schema "${name}" was not found in any source.`);
         continue;
       }
       nodes.set(key, { name: selected.header.name, header: selected.header, candidate: selected, isRoot: false, requestedBy: ["<request>"] });
@@ -254,7 +254,7 @@ export class SchemaResolver {
           if (existing.header !== undefined) {
             const settledKey = new SchemaKey(existing.header.name, new ECVersion(existing.header.readVersion, existing.header.writeVersion, existing.header.minorVersion));
             if (!settledKey.matches(requestedKey, matchType)) {
-              issues.addError("SchemaSources-0002",
+              issues.addError("reference-version-conflict",
                 `Conflicting requirements for schema "${reference.name}": "${node.name}" requires ${requestedKey.toString()} but version ${settledKey.toString()} was selected (requested by ${existing.requestedBy.filter((r) => r !== node.name).join(", ")}).`);
             }
           }
@@ -271,7 +271,7 @@ export class SchemaResolver {
         };
         nodes.set(key, newNode);
         if (selected === undefined) {
-          issues.addError("SchemaSources-0003",
+          issues.addError("schema-missing",
             `Schema "${reference.name}" (${requestedKey.toString()} or compatible) required by "${node.name}" was not found in any source.`);
           continue;
         }
@@ -328,7 +328,7 @@ export class SchemaResolver {
       if (visited.has(key))
         return;
       if (visiting.has(key)) {
-        issues.addError("SchemaSources-0004", `Schema "${nodes.get(key)?.name}" participates in a reference cycle, which EC prohibits.`);
+        issues.addError("reference-cycle", `Schema "${nodes.get(key)?.name}" participates in a reference cycle, which EC prohibits.`);
         return;
       }
       const node = nodes.get(key);

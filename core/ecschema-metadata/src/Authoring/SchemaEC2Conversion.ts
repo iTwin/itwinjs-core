@@ -121,7 +121,7 @@ export function convertEC2CustomAttributes(document: Authoring.SchemaDocument): 
  * @alpha
  */
 export function convertToEC2CustomAttributes(document: Authoring.SchemaDocument): SchemaIssueList {
-  const issues = new SchemaIssueList();
+  const issues = new SchemaIssueList("ec2-conversion");
   let addedEnumerations = false;
   let addedUnits = false;
 
@@ -169,8 +169,8 @@ function addUnitAttributes(document: Authoring.SchemaDocument, property: Authori
 
   const legacyUnit = legacyUnitNameFromECName(koq.persistenceUnit);
   if (legacyUnit === undefined) {
-    issues.addWarning("SchemaEC2-0022",
-      `The persistence unit "${koq.persistenceUnit}" of "${koq.name}" has no legacy equivalent, so "${location}" carries no unit attribute.`, { location });
+    issues.addWarning("unit-legacy-equivalent-missing",
+      `The persistence unit "${koq.persistenceUnit}" of "${koq.name}" has no legacy equivalent, so "${location}" carries no unit attribute.`, location);
     return false;
   }
   property.customAttributes.add({
@@ -205,7 +205,7 @@ function firstPresentationUnit(formatString: string | undefined): string | undef
 
 /** One up-conversion run over one document. */
 class EC2Upgrade {
-  private readonly _issues = new SchemaIssueList();
+  private readonly _issues = new SchemaIssueList("ec2-conversion");
   private _addedCoreReference = false;
   /** The schema-level legacy unit defaults, read once on first use. */
   private _unitSpecifications?: Authoring.CustomAttributeValues[];
@@ -337,7 +337,7 @@ class EC2Upgrade {
     if (rawName.length === 0) {
       // A `Standard` id with no name names one of the host application's built-in categories, which
       // has no schema item to become. Native drops it too.
-      this._issues.addWarning("SchemaEC2-0001", `The Category custom attribute on "${location}" names no category of its own, so no property category was created.`, { location });
+      this._issues.addWarning("category-standard-only-dropped", `The Category custom attribute on "${location}" names no category of its own, so no property category was created.`, location);
       return;
     }
     const requested = ECName.encode(rawName).name;
@@ -442,14 +442,14 @@ class EC2Upgrade {
 
     const legacyUnit = this._resolveLegacyUnit(unitSpecification);
     if (legacyUnit === undefined) {
-      this._issues.addWarning("SchemaEC2-0020",
-        `The unit custom attribute on "${location}" names no unit that could be resolved, so no kind of quantity was created.`, { location });
+      this._issues.addWarning("unit-unresolved",
+        `The unit custom attribute on "${location}" names no unit that could be resolved, so no kind of quantity was created.`, location);
       return;
     }
     const persistenceUnit = ecUnitNameFromLegacyName(legacyUnit);
     if (persistenceUnit === undefined) {
-      this._issues.addWarning("SchemaEC2-0021",
-        `The legacy unit "${legacyUnit}" on "${location}" has no EC 3.2 equivalent, so no kind of quantity was created.`, { location });
+      this._issues.addWarning("unit-ec3-equivalent-missing",
+        `The legacy unit "${legacyUnit}" on "${location}" has no EC 3.2 equivalent, so no kind of quantity was created.`, location);
       return;
     }
 
@@ -500,8 +500,8 @@ class EC2Upgrade {
       return undefined;
     const ecDisplayUnit = ecUnitNameFromLegacyName(displayUnit);
     if (ecDisplayUnit === undefined) {
-      this._issues.addWarning("SchemaEC2-0021",
-        `The legacy display unit "${displayUnit}" on "${location}" has no EC 3.2 equivalent, so no presentation format was created.`, { location });
+      this._issues.addWarning("unit-ec3-equivalent-missing",
+        `The legacy display unit "${displayUnit}" on "${location}" has no EC 3.2 equivalent, so no presentation format was created.`, location);
       return undefined;
     }
     return `${defaultPresentationFormat}[${ecDisplayUnit}]`;
@@ -555,9 +555,9 @@ class EC2Upgrade {
       return undefined;
     const values = customAttribute.tryGetValues();
     if (values === undefined) {
-      this._issues.addWarning("SchemaEC2-0002",
+      this._issues.addWarning("custom-attribute-class-unresolved",
         `The custom attribute "${className}" on "${location}" could not be read because its custom attribute class is not in the schema set; it was left as it is.`,
-        { location });
+        location);
     }
     return values;
   }
@@ -591,13 +591,13 @@ class EC2Upgrade {
     for (const { customAttribute, location } of allCustomAttributes(this._document)) {
       const schemaName = this._document.resolveSchemaName(customAttribute.className).toLowerCase();
       if (schemaName === unitAttributesSchema.toLowerCase()) {
-        this._issues.addWarning("SchemaEC2-0011",
+        this._issues.addWarning("unit-legacy-vocabulary-missing",
           `The legacy unit custom attribute "${customAttribute.className}" on "${location}" was left as it is; converting it to a kind of quantity needs the legacy unit vocabulary, which this conversion does not carry.`,
-          { location });
+          location);
       } else if (schemaName === editorSchema.toLowerCase() || schemaName === bentleyStandardSchema.toLowerCase()) {
-        this._issues.addInfo("SchemaEC2-0012",
+        this._issues.addInfo("custom-attribute-not-convertible",
           `The legacy custom attribute "${customAttribute.className}" on "${location}" has no first-class equivalent and was left as it is.`,
-          { location });
+          location);
       }
     }
   }

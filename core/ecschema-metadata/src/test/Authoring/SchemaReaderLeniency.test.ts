@@ -16,7 +16,7 @@ import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
 // kept, and which codes are raised - for the representative failure families of each format.
 
 function codes(issues: SchemaIssueList): string[] {
-  return [...issues].map((issue) => issue.code);
+  return [...issues].map((issue) => issue.name);
 }
 
 describe("SchemaXmlReader leniency", () => {
@@ -28,38 +28,38 @@ describe("SchemaXmlReader leniency", () => {
     const result = await new SchemaXmlReader().readDocument(schemaXml("", `schemaName="NoAlias" version="01.00.00"`));
     expect(result.document).to.not.be.undefined;
     expect(result.document!.alias).to.equal("");
-    expect(codes(result.issues)).to.contain("SchemaXml-0016");
+    expect(codes(result.issues)).to.contain("schema-alias-missing");
   });
 
   it("skips an unrecognized schema child element with a warning and reads the rest", async () => {
     const result = await new SchemaXmlReader().readDocument(schemaXml(`<SomethingNew/><ECEntityClass typeName="Kept"/>`));
-    expect(codes(result.issues)).to.deep.equal(["SchemaXml-0017"]);
+    expect(codes(result.issues)).to.deep.equal(["xml-child-unrecognized"]);
     expect(result.issues.hasErrors).to.be.false;
     expect(result.document!.getEntity("Kept")).to.not.be.undefined;
   });
 
   it("ignores an unrecognized class modifier with a warning, keeping the class", async () => {
     const result = await new SchemaXmlReader().readDocument(schemaXml(`<ECEntityClass typeName="Odd" modifier="Banana"/>`));
-    expect(codes(result.issues)).to.deep.equal(["SchemaXml-0019"]);
+    expect(codes(result.issues)).to.deep.equal(["class-modifier-unrecognized"]);
     expect(result.document!.getEntity("Odd")).to.not.be.undefined;
   });
 
   it("skips an item missing its typeName, keeping its siblings", async () => {
     const result = await new SchemaXmlReader().readDocument(schemaXml(`<ECEntityClass/><ECEntityClass typeName="Kept"/>`));
-    expect(codes(result.issues)).to.deep.equal(["SchemaXml-0018"]);
+    expect(codes(result.issues)).to.deep.equal(["item-type-name-missing"]);
     expect(result.document!.items.map((item) => item.name)).to.deep.equal(["Kept"]);
   });
 
   it("reports a relationship without constraints, keeping the class", async () => {
     const result = await new SchemaXmlReader().readDocument(schemaXml(`<ECRelationshipClass typeName="Rel" strength="referencing"/>`));
-    expect(codes(result.issues)).to.deep.equal(["SchemaXml-0026", "SchemaXml-0026"]); // source and target
+    expect(codes(result.issues)).to.deep.equal(["relationship-constraint-missing", "relationship-constraint-missing"]); // source and target
     expect(result.document!.getItemOfType("Rel", SchemaItemType.RelationshipClass)).to.not.be.undefined;
   });
 
   it("skips a non-integer enumerator on an int enumeration, keeping the valid ones", async () => {
     const result = await new SchemaXmlReader().readDocument(schemaXml(
       `<ECEnumeration typeName="Status" backingTypeName="int"><ECEnumerator name="On" value="1"/><ECEnumerator name="Bad" value="x"/></ECEnumeration>`));
-    expect(codes(result.issues)).to.deep.equal(["SchemaXml-0033"]);
+    expect(codes(result.issues)).to.deep.equal(["enumerator-value-unparseable"]);
     const status = result.document!.getItemOfType("Status", SchemaItemType.Enumeration)!;
     expect(status.enumerators.map((e) => e.name)).to.deep.equal(["On"]);
   });
@@ -67,7 +67,7 @@ describe("SchemaXmlReader leniency", () => {
   it("ignores a non-boolean attribute value with a warning", async () => {
     const result = await new SchemaXmlReader().readDocument(schemaXml(
       `<ECEntityClass typeName="E"><ECProperty propertyName="P" typeName="string" readOnly="banana"/></ECEntityClass>`));
-    expect(codes(result.issues)).to.deep.equal(["SchemaXml-0041"]);
+    expect(codes(result.issues)).to.deep.equal(["xml-boolean-attribute-unparseable"]);
     expect(result.document!.getEntity("E")!.getProperty("P")!.isReadOnly).to.be.undefined;
   });
 
@@ -89,18 +89,18 @@ describe("SchemaJsonReader leniency", () => {
   it("rejects a JSON array root", async () => {
     const result = await new SchemaJsonReader().readDocument("[]");
     expect(result.document).to.be.undefined;
-    expect(codes(result.issues)).to.deep.equal(["SchemaJson-0011"]);
+    expect(codes(result.issues)).to.deep.equal(["document-root-unrecognized"]);
   });
 
   it("skips an item that is not a JSON object, keeping its siblings", async () => {
     const result = await new SchemaJsonReader().readDocument(schemaJson({ Broken: 42, Kept: { schemaItemType: "EntityClass" } }));
-    expect(codes(result.issues)).to.deep.equal(["SchemaJson-0017"]);
+    expect(codes(result.issues)).to.deep.equal(["item-wrong-type"]);
     expect(result.document!.items.map((item) => item.name)).to.deep.equal(["Kept"]);
   });
 
   it("skips an item with an unrecognized schemaItemType", async () => {
     const result = await new SchemaJsonReader().readDocument(schemaJson({ Odd: { schemaItemType: "HologramClass" } }));
-    expect(codes(result.issues)).to.deep.equal(["SchemaJson-0018"]);
+    expect(codes(result.issues)).to.deep.equal(["item-type-missing-or-unrecognized"]);
     expect(result.document!.items).to.be.empty;
   });
 
@@ -108,7 +108,7 @@ describe("SchemaJsonReader leniency", () => {
     const result = await new SchemaJsonReader().readDocument(schemaJson({
       E: { schemaItemType: "EntityClass", properties: [{ name: "NoType" }, { name: "Kept", type: "PrimitiveProperty", typeName: "string" }] },
     }));
-    expect(codes(result.issues)).to.deep.equal(["SchemaJson-0029"]);
+    expect(codes(result.issues)).to.deep.equal(["property-name-or-type-missing"]);
     expect(result.document!.getEntity("E")!.properties.map((p) => p.name)).to.deep.equal(["Kept"]);
   });
 
@@ -116,13 +116,13 @@ describe("SchemaJsonReader leniency", () => {
     const result = await new SchemaJsonReader().readDocument(schemaJson({
       E: { schemaItemType: "EntityClass", properties: [{ name: "Nav", type: "NavigationProperty", relationshipName: "Lenient.Rel", direction: "Sideways" }] },
     }));
-    expect(codes(result.issues)).to.deep.equal(["SchemaJson-0030"]);
+    expect(codes(result.issues)).to.deep.equal(["property-navigation-fields-invalid"]);
     expect(result.document!.getEntity("E")!.properties).to.be.empty;
   });
 
   it("skips an enumeration with an unsupported backing type", async () => {
     const result = await new SchemaJsonReader().readDocument(schemaJson({ Status: { schemaItemType: "Enumeration", type: "double" } }));
-    expect(codes(result.issues)).to.deep.equal(["SchemaJson-0033"]);
+    expect(codes(result.issues)).to.deep.equal(["enumeration-backing-type-unrecognized"]);
     expect(result.document!.items).to.be.empty;
   });
 
@@ -130,7 +130,7 @@ describe("SchemaJsonReader leniency", () => {
     const result = await new SchemaJsonReader().readDocument(schemaJson({}, {
       customAttributes: [{ Note: "no class" }, { className: "Lenient.Tagged" }],
     }));
-    expect(codes(result.issues)).to.deep.equal(["SchemaJson-0043"]);
+    expect(codes(result.issues)).to.deep.equal(["custom-attribute-class-name-missing"]);
     expect(result.document!.customAttributes.has("Tagged")).to.be.true;
   });
 

@@ -41,7 +41,7 @@ describe("Native ECXML serialization cross-check", () => {
     ".persistenceUnit",
     // Before 3.2 an enumerator carries no name, so one is synthesized from its value. Native's own
     // 3.2 output has the real names, which need not match what synthesis produces - unavoidable,
-    // and the XML writer reports it per enumerator as SchemaXml-0061.
+    // and the XML writer reports it per enumerator as enumerator-name-dropped.
     "enumerators.",
   ];
 

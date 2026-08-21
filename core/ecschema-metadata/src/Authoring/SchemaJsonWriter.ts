@@ -75,10 +75,10 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
    * the props shape directly (feeding APIs that take parsed JSON, comparison) without a
    * stringify/parse round trip. Same conversion and issue reporting as {@link writeDocument}. */
   public writeDocumentTree(document: Authoring.SchemaDocument, options?: SchemaJsonWriteOptions): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("json");
     const spec = options?.spec ?? ECSpec.Latest;
     if (spec !== ECSpec.V3_2) {
-      issues.addError("SchemaJson-0001", `Unsupported target spec version "${spec as string}" - the JSON writer currently supports only 3.2.`);
+      issues.addError("target-spec-unsupported", `Unsupported target spec version "${spec as string}" - the JSON writer currently supports only 3.2.`);
       return { issues };
     }
     const emitter = new ECJson32Emitter(document, issues, options?.omitDefaults ?? false);
@@ -90,7 +90,7 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
    * per-field walk; there is deliberately no public single-item serialization API.
    * @internal */
   public writeItemTree(item: Authoring.AnySchemaItem): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("json");
     const emitter = new ECJson32Emitter(item.document, issues, false);
     return { tree: emitter.emitItemTree(item), issues };
   }
@@ -99,7 +99,7 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
    * `properties` array. Companion to {@link writeItemTree}.
    * @internal */
   public writePropertyTree(property: Authoring.AnyProperty): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("json");
     const emitter = new ECJson32Emitter(property.document, issues, false);
     return { tree: emitter.emitPropertyTree(property), issues };
   }
@@ -148,7 +148,7 @@ class ECJson32Emitter {
       const items: JsonObject = {};
       for (const item of doc.items) {
         if (item.name in items)
-          this._issues.addWarning("SchemaJson-0002", `Two items share the name "${item.name}"; JSON items are name-keyed, so the later one overwrote the earlier.`, { location: item.name });
+          this._issues.addWarning("item-name-duplicate", `Two items share the name "${item.name}"; JSON items are name-keyed, so the later one overwrote the earlier.`, item.name);
         items[item.name] = this._emitItem(item);
       }
       json.items = items;
@@ -177,8 +177,8 @@ class ECJson32Emitter {
         return `${schemaReference.name}.${itemName}`;
     }
 
-    this._issues.addWarning("SchemaJson-0003",
-      `The item reference "${reference}" does not match this schema or any schema in the reference list; emitting it unchanged.`, { location });
+    this._issues.addWarning("reference-item-unresolved",
+      `The item reference "${reference}" does not match this schema or any schema in the reference list; emitting it unchanged.`, location);
     return `${qualifier}.${itemName}`;
   }
 
@@ -195,8 +195,8 @@ class ECJson32Emitter {
       if (value === undefined)
         continue;
       if ("className" in value) {
-        this._issues.addWarning("SchemaJson-0004",
-          `The custom attribute "${ca.className}" has a property named "className", which collides with the ECJSON discriminator; the property was skipped.`, { location });
+        this._issues.addWarning("custom-attribute-class-name-duplicate",
+          `The custom attribute "${ca.className}" has a property named "className", which collides with the ECJSON discriminator; the property was skipped.`, location);
       }
       entries.push({ ...value, className: this._toJsonItemReference(ca.className, location) });
     }

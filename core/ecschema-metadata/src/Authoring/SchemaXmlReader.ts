@@ -19,7 +19,7 @@ import {
   decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
 } from "./SchemaDocumentIO";
 import { dialectForNamespace, dialectV32, ECXmlDialect, parseLegacyCardinality, synthesizeEnumeratorName } from "./SchemaXmlDialect";
-import { SchemaIssueList } from "./SchemaIssues";
+import { formatSourceLocation, SchemaIssueList } from "./SchemaIssues";
 
 /** Matches the first EC separator (`:` or `.`) in an item reference. Hoisted: a regex literal
  * allocates a new RegExp on every evaluation, and this runs per reference. */
@@ -46,7 +46,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
   /** Reads a full document. The result carries no document only when the input is unusable
    * (malformed XML, not an ECSchema, an unsupported spec). */
   public async readDocument(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaDocumentReadResult> {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("xml");
     const root = await parseElementTree(text, issues, options?.source, options?.abortSignal);
     if (root === undefined)
       return { issues };
@@ -54,7 +54,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
     // cannot know it before opening the file.
     const dialect = dialectForNamespace(root.attributes?.xmlns);
     if (dialect === undefined) {
-      issues.addError("SchemaXml-0014", `The ECSchema element has a missing or unrecognized xmlns ("${root.attributes?.xmlns ?? ""}").`, { source: options?.source, line: root.line, column: root.column });
+      issues.addError("spec-declaration-unrecognized", `The ECSchema element has a missing or unrecognized xmlns ("${root.attributes?.xmlns ?? ""}").`, formatSourceLocation(options?.source, root.line, root.column));
       return { issues };
     }
     const walker = new ECXmlWalker(issues, options?.source, options?.schemaSet, dialect);
@@ -66,7 +66,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
    * file reads only its leading kilobytes. This is the peek schema discovery is built on.
    * Relies on references preceding items, which the spec's content model mandates. */
   public async readHeader(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaHeaderReadResult> {
-    const issues = new SchemaIssueList();
+    const issues = new SchemaIssueList("xml");
     const source = options?.source;
 
     let name: string | undefined;
@@ -79,7 +79,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
     const parser = sax.parser(true, { position: true });
     let depth = 0;
     parser.onerror = (error: Error) => {
-      issues.addError("SchemaXml-0010", `Malformed XML: ${error.message}`, { source, line: parser.line + 1, column: parser.column + 1 });
+      issues.addError("document-malformed", `Malformed XML: ${error.message}`, formatSourceLocation(source, parser.line + 1, parser.column + 1));
       throw stopSentinel;
     };
     parser.onopentag = (tag: sax.Tag | sax.QualifiedTag) => {
@@ -88,7 +88,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
       const attributes = tag.attributes as { [name: string]: string };
       if (depth === 1) {
         if (tagName !== "ecschema") {
-          issues.addError("SchemaXml-0011", `Expected an ECSchema root element, found "${tag.name}".`, { source });
+          issues.addError("document-root-unrecognized", `Expected an ECSchema root element, found "${tag.name}".`, formatSourceLocation(source));
           throw stopSentinel;
         }
         name = attributes.schemaName;
@@ -128,7 +128,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
 
     if (name === undefined || version === undefined) {
       if (!issues.hasErrors)
-        issues.addError("SchemaXml-0012", "The ECSchema element is missing its schemaName or a parseable version.", { source });
+        issues.addError("schema-name-or-version-missing", "The ECSchema element is missing its schemaName or a parseable version.", formatSourceLocation(source));
       return { issues };
     }
     return {
@@ -157,7 +157,7 @@ async function parseElementTree(text: SchemaText, issues: SchemaIssueList, sourc
   const stack: XmlElementNode[] = [];
 
   parser.onerror = (error: Error) => {
-    issues.addError("SchemaXml-0010", `Malformed XML: ${error.message}`, { source, line: parser.line + 1, column: parser.column + 1 });
+    issues.addError("document-malformed", `Malformed XML: ${error.message}`, formatSourceLocation(source, parser.line + 1, parser.column + 1));
     throw stopSentinel;
   };
   parser.onopentag = (tag: sax.Tag | sax.QualifiedTag) => {
@@ -201,7 +201,7 @@ function readSchemaReferenceAttributes(attributes: { [name: string]: string }, i
   const name = attributes.name;
   const version = parseVersionString(attributes.version);
   if (name === undefined || version === undefined) {
-    issues.addError("SchemaXml-0013", "An ECSchemaReference is missing its name or a parseable version.", { source });
+    issues.addError("reference-name-or-version-missing", "An ECSchemaReference is missing its name or a parseable version.", formatSourceLocation(source));
     return undefined;
   }
   return { name, readVersion: version.read, writeVersion: version.write, minorVersion: version.minor, alias: attributes[dialect.referenceAliasAttribute] ?? null };
@@ -249,7 +249,7 @@ class ECXmlWalker {
       return;
     const incumbent = schemaSet.getSchema(document.name);
     if (incumbent !== undefined) {
-      this._issues.addError("SchemaXml-0055", `The schema set already holds a schema named "${incumbent.name}"; "${document.name}" was read into a set of its own.`, { source: this._source });
+      this._issues.addError("schema-name-duplicate", `The schema set already holds a schema named "${incumbent.name}"; "${document.name}" was read into a set of its own.`, formatSourceLocation(this._source));
       return;
     }
     schemaSet.moveIn(document);
@@ -265,7 +265,7 @@ class ECXmlWalker {
 
   public readSchema(root: XmlElementNode): Authoring.SchemaDocument | undefined {
     if (root.name.toLowerCase() !== "ecschema") {
-      this._error("SchemaXml-0011", `Expected an ECSchema root element, found "${root.name}".`, root);
+      this._error("document-root-unrecognized", `Expected an ECSchema root element, found "${root.name}".`, root);
       return undefined;
     }
 
@@ -275,7 +275,7 @@ class ECXmlWalker {
     let alias = root.attributes[this._dialect.schemaAliasAttribute];
     const version = this._readSchemaVersion(root);
     if (name === undefined || version === undefined) {
-      this._error("SchemaXml-0012", "The ECSchema element is missing its schemaName or a parseable version.", root);
+      this._error("schema-name-or-version-missing", "The ECSchema element is missing its schemaName or a parseable version.", root);
       return undefined;
     }
     if (alias === undefined) {
@@ -283,7 +283,7 @@ class ECXmlWalker {
       if (this._dialect.aliasDefaultsToSchemaName)
         alias = name;
       else
-        this._error("SchemaXml-0016", `The schema "${name}" is missing the required ${this._dialect.schemaAliasAttribute} attribute.`, root);
+        this._error("schema-alias-missing", `The schema "${name}" is missing the required ${this._dialect.schemaAliasAttribute} attribute.`, root);
     }
 
     const document = new Authoring.SchemaDocument(name, alias ?? "", version.read, version.write, version.minor, {
@@ -324,7 +324,7 @@ class ECXmlWalker {
         this.readItem(child);
         continue;
       }
-      this._warning("SchemaXml-0017", `Unrecognized schema child element "${child.name}" was skipped.`, child);
+      this._warning("xml-child-unrecognized", `Unrecognized schema child element "${child.name}" was skipped.`, child);
     }
 
     return document;
@@ -343,7 +343,7 @@ class ECXmlWalker {
     const version = parseVersionString(root.attributes.version);
     if (version !== undefined || this._dialect.requiresVersion)
       return version;
-    this._warning("SchemaXml-0068", `The schema "${root.attributes.schemaName ?? ""}" has a missing or unparseable version ("${root.attributes.version ?? ""}"); it was read as 01.00.00.`, root);
+    this._warning("schema-version-unparseable", `The schema "${root.attributes.schemaName ?? ""}" has a missing or unparseable version ("${root.attributes.version ?? ""}"); it was read as 01.00.00.`, root);
     return { read: 1, write: 0, minor: 0 };
   }
 
@@ -376,7 +376,7 @@ class ECXmlWalker {
     const isCustomAttribute = this.parseBooleanAttribute(node, "isCustomAttributeClass") ?? false;
     if (isStruct) {
       if (isCustomAttribute)
-        this._warning("SchemaXml-0062", `The class "${node.attributes.typeName ?? ""}" is flagged both isStruct and isCustomAttributeClass; it was read as a struct class.`, node);
+        this._warning("class-kind-conflicting", `The class "${node.attributes.typeName ?? ""}" is flagged both isStruct and isCustomAttributeClass; it was read as a struct class.`, node);
       return this.readStructClass(node);
     }
     if (isCustomAttribute)
@@ -387,7 +387,7 @@ class ECXmlWalker {
   private itemName(node: XmlElementNode): string | undefined {
     const name = node.attributes.typeName;
     if (name === undefined)
-      this._error("SchemaXml-0018", `A ${node.name} element is missing the required typeName attribute; the item was skipped.`, node);
+      this._error("item-type-name-missing", `A ${node.name} element is missing the required typeName attribute; the item was skipped.`, node);
     return name;
   }
 
@@ -406,7 +406,7 @@ class ECXmlWalker {
     if (modifierText !== undefined) {
       const modifier = parseClassModifier(modifierText);
       if (modifier === undefined)
-        this._warning("SchemaXml-0019", `Unrecognized class modifier "${modifierText}" was ignored.`, node);
+        this._warning("class-modifier-unrecognized", `Unrecognized class modifier "${modifierText}" was ignored.`, node);
       else
         init.modifier = modifier;
     }
@@ -446,12 +446,12 @@ class ECXmlWalker {
       const appliesToNode = this.findChild(isMixinNode, "appliestoentityclass");
       let appliesTo = "";
       if (appliesToNode === undefined)
-        this._error("SchemaXml-0020", `The mixin "${name}" has an IsMixin custom attribute without the AppliesToEntityClass property.`, isMixinNode);
+        this._error("mixin-applies-to-missing", `The mixin "${name}" has an IsMixin custom attribute without the AppliesToEntityClass property.`, isMixinNode);
       else
         appliesTo = this.normalizeItemReference(appliesToNode.text.trim());
       const mixin = this._document.createMixin(name, appliesTo, this.classInit(node, baseClasses));
       if (baseClasses.length > 1)
-        this._warning("SchemaXml-0021", `The mixin "${name}" lists more than one BaseClass; only the first was kept.`, node);
+        this._warning("mixin-multiple-base-classes", `The mixin "${name}" lists more than one BaseClass; only the first was kept.`, node);
       this.readClassContent(node, mixin, { skipCustomAttribute: "ismixin" });
       return;
     }
@@ -483,12 +483,12 @@ class ECXmlWalker {
       if (this._dialect.classElements === "flagged")
         appliesTo = parseCustomAttributeContainerType("Any") ?? 0;
       else
-        this._error("SchemaXml-0022", `The custom attribute class "${name}" is missing the required appliesTo attribute.`, node);
+        this._error("custom-attribute-class-applies-to-missing", `The custom attribute class "${name}" is missing the required appliesTo attribute.`, node);
     } else {
       try {
         appliesTo = parseCustomAttributeContainerType(appliesToText) ?? 0;
       } catch {
-        this._error("SchemaXml-0023", `The custom attribute class "${name}" has an unparseable appliesTo ("${appliesToText}").`, node);
+        this._error("custom-attribute-class-applies-to-unparseable", `The custom attribute class "${name}" has an unparseable appliesTo ("${appliesToText}").`, node);
       }
     }
     const item = this._document.createCustomAttributeClass(name, appliesTo, this.classInit(node, this.readBaseClassReferences(node)));
@@ -503,12 +503,12 @@ class ECXmlWalker {
     if (node.attributes.strength !== undefined) {
       init.strength = parseStrength(node.attributes.strength);
       if (init.strength === undefined)
-        this._warning("SchemaXml-0024", `Unrecognized relationship strength "${node.attributes.strength}" was ignored.`, node);
+        this._warning("relationship-strength-unrecognized", `Unrecognized relationship strength "${node.attributes.strength}" was ignored.`, node);
     }
     if (node.attributes.strengthDirection !== undefined) {
       init.strengthDirection = parseStrengthDirection(node.attributes.strengthDirection);
       if (init.strengthDirection === undefined)
-        this._warning("SchemaXml-0025", `Unrecognized strengthDirection "${node.attributes.strengthDirection}" was ignored.`, node);
+        this._warning("relationship-strength-direction-unrecognized", `Unrecognized strengthDirection "${node.attributes.strengthDirection}" was ignored.`, node);
     }
     const item = this._document.createRelationship(name, init);
     this.readClassContent(node, item);
@@ -518,11 +518,11 @@ class ECXmlWalker {
     if (sourceNode !== undefined)
       this.readRelationshipConstraint(sourceNode, item.source, name);
     else
-      this._error("SchemaXml-0026", `The relationship class "${name}" is missing its Source constraint.`, node);
+      this._error("relationship-constraint-missing", `The relationship class "${name}" is missing its Source constraint.`, node);
     if (targetNode !== undefined)
       this.readRelationshipConstraint(targetNode, item.target, name);
     else
-      this._error("SchemaXml-0026", `The relationship class "${name}" is missing its Target constraint.`, node);
+      this._error("relationship-constraint-missing", `The relationship class "${name}" is missing its Target constraint.`, node);
   }
 
   private readRelationshipConstraint(node: XmlElementNode, constraint: Authoring.RelationshipConstraint, className: string): void {
@@ -537,7 +537,7 @@ class ECXmlWalker {
       if (childName === "class") {
         const classReference = child.attributes.class;
         if (classReference === undefined)
-          this._error("SchemaXml-0027", `A constraint Class element of "${className}" is missing the class attribute.`, child);
+          this._error("constraint-class-reference-missing", `A constraint Class element of "${className}" is missing the class attribute.`, child);
         else
           constraint.constraintClasses.push(this.normalizeItemReference(classReference));
       } else if (childName === "eccustomattributes") {
@@ -559,7 +559,7 @@ class ECXmlWalker {
     }
     const multiplicity = parseLegacyCardinality(text);
     if (multiplicity === undefined) {
-      this._warning("SchemaXml-0063", `The constraint of "${className}" has an unparseable cardinality ("${text}"); it was kept as written.`, node);
+      this._warning("constraint-cardinality-unparseable", `The constraint of "${className}" has an unparseable cardinality ("${text}"); it was kept as written.`, node);
       constraint.multiplicity = text;
       return;
     }
@@ -587,7 +587,7 @@ class ECXmlWalker {
           this.readProperty(child, item);
           break;
         default:
-          this._warning("SchemaXml-0017", `Unrecognized child element "${child.name}" of class "${item.name}" was skipped.`, child);
+          this._warning("xml-child-unrecognized", `Unrecognized child element "${child.name}" of class "${item.name}" was skipped.`, child);
           break;
       }
     }
@@ -598,7 +598,7 @@ class ECXmlWalker {
   private readProperty(node: XmlElementNode, item: Authoring.AnyClass): void {
     const name = node.attributes.propertyName;
     if (name === undefined) {
-      this._error("SchemaXml-0028", `A ${node.name} element of class "${item.name}" is missing the required propertyName attribute; the property was skipped.`, node);
+      this._error("property-name-missing", `A ${node.name} element of class "${item.name}" is missing the required propertyName attribute; the property was skipped.`, node);
       return;
     }
 
@@ -653,7 +653,7 @@ class ECXmlWalker {
         const relationshipName = node.attributes.relationshipName;
         const direction = node.attributes.direction !== undefined ? parseStrengthDirection(node.attributes.direction) : undefined;
         if (relationshipName === undefined || direction === undefined) {
-          this._error("SchemaXml-0029", `The navigation property "${item.name}.${name}" is missing relationshipName or a parseable direction; the property was skipped.`, node);
+          this._error("property-navigation-unparseable", `The navigation property "${item.name}.${name}" is missing relationshipName or a parseable direction; the property was skipped.`, node);
           return;
         }
         property = item.createNavigation(name, this.normalizeItemReference(relationshipName), direction, this.propertyInit(node));
@@ -683,7 +683,7 @@ class ECXmlWalker {
   private propertyTypeName(node: XmlElementNode, propertyName: string, className: string): string | undefined {
     const typeName = node.attributes.typeName;
     if (typeName === undefined) {
-      this._error("SchemaXml-0030", `The property "${className}.${propertyName}" is missing the required typeName attribute; the property was skipped.`, node);
+      this._error("property-type-name-missing", `The property "${className}.${propertyName}" is missing the required typeName attribute; the property was skipped.`, node);
       return undefined;
     }
     return this.normalizeItemReference(typeName);
@@ -695,7 +695,7 @@ class ECXmlWalker {
   private resolvePrimitivePropertyType(node: XmlElementNode, propertyName: string, className: string): { primitiveType: PrimitiveType } | { enumeration: string } | undefined {
     const typeName = node.attributes.typeName;
     if (typeName === undefined) {
-      this._error("SchemaXml-0030", `The property "${className}.${propertyName}" is missing the required typeName attribute; the property was skipped.`, node);
+      this._error("property-type-name-missing", `The property "${className}.${propertyName}" is missing the required typeName attribute; the property was skipped.`, node);
       return undefined;
     }
     const primitiveType = parsePrimitiveType(typeName);
@@ -747,7 +747,7 @@ class ECXmlWalker {
     else if (backingTypeText === "string")
       backingType = "string";
     else {
-      this._error("SchemaXml-0031", `The enumeration "${name}" has a missing or unsupported backingTypeName ("${node.attributes.backingTypeName ?? ""}"); the item was skipped.`, node);
+      this._error("enumeration-backing-type-unrecognized", `The enumeration "${name}" has a missing or unsupported backingTypeName ("${node.attributes.backingTypeName ?? ""}"); the item was skipped.`, node);
       return;
     }
     const item = this._document.createEnumeration(name, backingType, {
@@ -759,14 +759,14 @@ class ECXmlWalker {
         continue;
       const valueText = child.attributes.value;
       if (valueText === undefined) {
-        this._error("SchemaXml-0032", `An enumerator of "${name}" is missing its value; it was skipped.`, child);
+        this._error("enumerator-name-or-value-missing", `An enumerator of "${name}" is missing its value; it was skipped.`, child);
         continue;
       }
       let value: number | string = valueText;
       if (backingType === "int") {
         value = parseInt(valueText, 10);
         if (isNaN(value)) {
-          this._error("SchemaXml-0033", `The enumerator "${name}.${valueText}" has a non-integer value on an int enumeration; it was skipped.`, child);
+          this._error("enumerator-value-unparseable", `The enumerator "${name}.${valueText}" has a non-integer value on an int enumeration; it was skipped.`, child);
           continue;
         }
       }
@@ -775,7 +775,7 @@ class ECXmlWalker {
       let enumeratorName = child.attributes.name;
       if (enumeratorName === undefined) {
         if (this._dialect.enumeratorNames) {
-          this._error("SchemaXml-0032", `An enumerator of "${name}" is missing its name; it was skipped.`, child);
+          this._error("enumerator-name-or-value-missing", `An enumerator of "${name}" is missing its name; it was skipped.`, child);
           continue;
         }
         enumeratorName = ECName.encode(synthesizeEnumeratorName(name, value)).name;
@@ -791,7 +791,7 @@ class ECXmlWalker {
     const persistenceUnit = node.attributes.persistenceUnit;
     const relativeError = this.parseFloatAttribute(node, "relativeError");
     if (persistenceUnit === undefined || relativeError === undefined) {
-      this._error("SchemaXml-0034", `The kind of quantity "${name}" is missing persistenceUnit or a parseable relativeError; the item was skipped.`, node);
+      this._error("kind-of-quantity-fields-invalid", `The kind of quantity "${name}" is missing persistenceUnit or a parseable relativeError; the item was skipped.`, node);
       return;
     }
     // Presentation format strings stay verbatim; the override grammar is not parsed here.
@@ -824,7 +824,7 @@ class ECXmlWalker {
       return;
     const definition = node.attributes.definition;
     if (definition === undefined) {
-      this._error("SchemaXml-0035", `The phenomenon "${name}" is missing the required definition attribute; the item was skipped.`, node);
+      this._error("phenomenon-definition-missing", `The phenomenon "${name}" is missing the required definition attribute; the item was skipped.`, node);
       return;
     }
     this._document.createPhenomenon(name, definition, this.itemInit(node));
@@ -836,7 +836,7 @@ class ECXmlWalker {
       return;
     const { phenomenon, unitSystem, definition } = node.attributes;
     if (phenomenon === undefined || unitSystem === undefined || definition === undefined) {
-      this._error("SchemaXml-0036", `The unit "${name}" is missing phenomenon, unitSystem, or definition; the item was skipped.`, node);
+      this._error("unit-fields-missing", `The unit "${name}" is missing phenomenon, unitSystem, or definition; the item was skipped.`, node);
       return;
     }
     this._document.createUnit(name, this.normalizeItemReference(phenomenon), this.normalizeItemReference(unitSystem), definition, {
@@ -853,7 +853,7 @@ class ECXmlWalker {
       return;
     const { invertsUnit, unitSystem } = node.attributes;
     if (invertsUnit === undefined || unitSystem === undefined) {
-      this._error("SchemaXml-0037", `The inverted unit "${name}" is missing invertsUnit or unitSystem; the item was skipped.`, node);
+      this._error("unit-inverted-fields-missing", `The inverted unit "${name}" is missing invertsUnit or unitSystem; the item was skipped.`, node);
       return;
     }
     this._document.createInvertedUnit(name, this.normalizeItemReference(invertsUnit), this.normalizeItemReference(unitSystem), this.itemInit(node));
@@ -865,7 +865,7 @@ class ECXmlWalker {
       return;
     const { phenomenon, definition } = node.attributes;
     if (phenomenon === undefined || definition === undefined) {
-      this._error("SchemaXml-0038", `The constant "${name}" is missing phenomenon or definition; the item was skipped.`, node);
+      this._error("constant-fields-missing", `The constant "${name}" is missing phenomenon or definition; the item was skipped.`, node);
       return;
     }
     this._document.createConstant(name, this.normalizeItemReference(phenomenon), definition, {
@@ -881,7 +881,7 @@ class ECXmlWalker {
       return;
     const typeText = node.attributes.type;
     if (typeText === undefined) {
-      this._error("SchemaXml-0039", `The format "${name}" is missing the required type attribute; the item was skipped.`, node);
+      this._error("format-type-missing", `The format "${name}" is missing the required type attribute; the item was skipped.`, node);
       return;
     }
     const init: Authoring.FormatInit = this.itemInit(node);
@@ -926,7 +926,7 @@ class ECXmlWalker {
 
       this._document.createFormat(name, type, init);
     } catch (error) {
-      this._error("SchemaXml-0040", `The format "${name}" could not be read: ${error instanceof Error ? error.message : String(error)}; the item was skipped.`, node);
+      this._error("format-unparseable", `The format "${name}" could not be read: ${error instanceof Error ? error.message : String(error)}; the item was skipped.`, node);
     }
   }
 
@@ -989,7 +989,7 @@ class ECXmlWalker {
       return true;
     if (lower === "false")
       return false;
-    this._warning("SchemaXml-0041", `The attribute ${attributeName}="${text}" is not a boolean and was ignored.`, node);
+    this._warning("xml-boolean-attribute-unparseable", `The attribute ${attributeName}="${text}" is not a boolean and was ignored.`, node);
     return undefined;
   }
 
@@ -999,7 +999,7 @@ class ECXmlWalker {
       return undefined;
     const value = parseInt(text, 10);
     if (isNaN(value)) {
-      this._warning("SchemaXml-0042", `The attribute ${attributeName}="${text}" is not an integer and was ignored.`, node);
+      this._warning("xml-integer-attribute-unparseable", `The attribute ${attributeName}="${text}" is not an integer and was ignored.`, node);
       return undefined;
     }
     return value;
@@ -1011,17 +1011,17 @@ class ECXmlWalker {
       return undefined;
     const value = parseFloat(text);
     if (isNaN(value)) {
-      this._warning("SchemaXml-0043", `The attribute ${attributeName}="${text}" is not a number and was ignored.`, node);
+      this._warning("xml-number-attribute-unparseable", `The attribute ${attributeName}="${text}" is not a number and was ignored.`, node);
       return undefined;
     }
     return value;
   }
 
-  private _error(code: string, message: string, node: XmlElementNode): void {
-    this._issues.addError(code, message, { source: this._source, line: node.line, column: node.column });
+  private _error(name: string, message: string, node: XmlElementNode): void {
+    this._issues.addError(name, message, formatSourceLocation(this._source, node.line, node.column));
   }
 
-  private _warning(code: string, message: string, node: XmlElementNode): void {
-    this._issues.addWarning(code, message, { source: this._source, line: node.line, column: node.column });
+  private _warning(name: string, message: string, node: XmlElementNode): void {
+    this._issues.addWarning(name, message, formatSourceLocation(this._source, node.line, node.column));
   }
 }

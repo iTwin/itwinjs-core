@@ -56,7 +56,7 @@
  *                          array emerges as a struct.
  *   JSON -> doc -> XML   : LOSSY for struct arrays - the entry element name (struct class) is not
  *                          present in canonical JSON, so the writer cannot name the entry element
- *                          and skips it (SchemaXml-0006). Booleans emit EC-canonical True/False (the
+ *                          and skips it (custom-attribute-struct-array-entry-not-convertible). Booleans emit EC-canonical True/False (the
  *                          writer capitalizes), so the boolean direction is no longer lossy.
  *
  * The remaining cross-format gaps are struct-array-only; both trace to the same root cause - the
@@ -256,7 +256,7 @@ export const customAttributeFragments: readonly CustomAttributeFragment[] = [
         ],
       },
     },
-    notes: "One residual divergence from canonical: the WRAPPER. The XML reader keeps each entry as { DbIndex: {...} } because the writer needs the entry element name (struct class) to emit <DbIndex>; canonical JSON drops it. For >=2 entries the wrapper is unambiguously the struct-type element, so the JSON writer CAN safely unwrap it. The scalar IsUnique is now promoted to true by the guard (matches canonical). JSON->doc->XML is still LOSSY here: the canonical/JSON shape has no DbIndex wrapper, so the XML writer cannot name the entry element and skips it (SchemaXml-0006).",
+    notes: "One residual divergence from canonical: the WRAPPER. The XML reader keeps each entry as { DbIndex: {...} } because the writer needs the entry element name (struct class) to emit <DbIndex>; canonical JSON drops it. For >=2 entries the wrapper is unambiguously the struct-type element, so the JSON writer CAN safely unwrap it. The scalar IsUnique is now promoted to true by the guard (matches canonical). JSON->doc->XML is still LOSSY here: the canonical/JSON shape has no DbIndex wrapper, so the XML writer cannot name the entry element and skips it (custom-attribute-struct-array-entry-not-convertible).",
   },
   // ------------------------------------------------------------------------------------------------
   {

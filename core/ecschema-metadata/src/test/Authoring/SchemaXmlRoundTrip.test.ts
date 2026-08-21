@@ -104,7 +104,7 @@ describe("SchemaXmlWriter / SchemaXmlReader", () => {
     const result = await new SchemaXmlReader().readDocument("<ECSchema schemaName='Broken'", { source: "broken.ecschema.xml" });
     expect(result.document).to.be.undefined;
     expect(result.issues.hasErrors).to.be.true;
-    expect(result.issues.errors[0].source).to.equal("broken.ecschema.xml");
+    expect(result.issues.errors[0].location).to.match(/^broken\.ecschema\.xml:\d+:\d+$/);
   });
 
   it("rejects a namespace naming no known ECXML version", async () => {

@@ -86,7 +86,7 @@ export interface SchemaComparison {
  * @alpha
  */
 export function compareSchemaDocuments(left: Authoring.SchemaDocument, right: Authoring.SchemaDocument): SchemaComparison {
-  const issues = new SchemaIssueList();
+  const issues = new SchemaIssueList("comparison");
   const writer = new SchemaJsonWriter();
   const leftResult = writer.writeDocumentTree(left, { omitDefaults: true });
   const rightResult = writer.writeDocumentTree(right, { omitDefaults: true });
