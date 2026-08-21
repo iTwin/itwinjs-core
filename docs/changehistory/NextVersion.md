@@ -106,8 +106,6 @@ Applications that shut down while requests are outstanding no longer need to fil
 
 [ViewportDecorator]($frontend)s often produce decoration graphics associated with elements in the scene. Such graphics should be updated if the visibility of the associated element changes. For example, a measurement tool might draw a label near a pipe indicating its length. The label should disappear if the user hides the pipe. To facilitate this, all cached decorations (produced and reused when [ViewportDecorator.useCachedDecorations]($frontend) is `true`) are now recreated in response to potential changes to the visibility of elements in a viewport, including modification of the sets of always- and never-drawn elements, displayed categories and subcategories, and feature symbology overrides.
 
-## @itwin/core-frontend
-
 ### Map-layer security hardening
 
 #### Origin-restricted credentials (opt-in)
