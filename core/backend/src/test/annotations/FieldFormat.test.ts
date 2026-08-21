@@ -603,11 +603,13 @@ describe("Field format resolution example", () => {
     expect(namesAlternate.cachedContent).to.equal("2.5 m");
   });
 
-  it("relabels rather than converts when the format's unit and the persistence unit disagree", async () => {
-    // KNOWN BUG: FormatterSpec.getUnitConversions logs a warning when the format's unit and the
-    // persistence unit belong to different phenomena, but pushes the identity conversion anyway,
-    // so the magnitude is relabelled rather than converted or rejected. Once fixed, this should
-    // stop resolving and fall back like any other failed override.
+  it("declines a format whose unit belongs to a different phenomenon than the persisted value", async () => {
+    // A format can only be applied if its unit is convertible from the persistence unit. An angle
+    // format cannot present a length, so the override is refused and the field falls back exactly
+    // as it would for any other unresolved format -- here, to the schema's own presentation format.
+    // Without that check the magnitude would be relabelled rather than converted ("2.5 deg"),
+    // because UnitsProvider.getConversion reports the mismatch by returning the *identity*
+    // conversion tagged `error: true`. See buildSpecEntry in FieldFormattingSpecProvider.ts.
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const crossed = appendField(block, "lengthProp", { kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.M" });
@@ -617,15 +619,10 @@ describe("Field format resolution example", () => {
       adopted: toFormatSet("Adopted", { "Example.ANGLE": decimalFormat("Units.ARC_DEG", "deg", 2) }),
     });
 
-    // 2.5 metres presented as 2.5 degrees. Stated as "same digits, different label" so the
-    // assertion keeps describing the bug precisely even if the seed value changes.
     expect(baseline.cachedContent).to.equal("2.5 m");
-    expect(crossed.cachedContent).to.equal("2.5 deg");
-    expect(numbersIn(crossed.cachedContent)).to.deep.equal(numbersIn(baseline.cachedContent));
+    expect(crossed.cachedContent).to.equal("2.5 m");
+    // Stated as an equality too, so the test keeps meaning "fell back to the baseline" rather
+    // than "happens to equal this literal" if the seed value ever changes.
+    expect(crossed.cachedContent).to.equal(baseline.cachedContent);
   });
 });
-
-/** The numeric literals in a rendered field, ignoring unit labels and punctuation. */
-function numbersIn(content: string): number[] {
-  return (content.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
-}
