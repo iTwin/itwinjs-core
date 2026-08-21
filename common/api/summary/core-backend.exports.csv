@@ -117,6 +117,7 @@ beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
 public;interface;CreateSheetViewDefinitionArgs
 beta;function;createTerminatorGeometry
+beta;interface;CreateTerminatorGeometryArgs
 beta;interface;CustomHandledProperty
 beta;interface;DataTransformationResources
 beta;enum;DataTransformationStrategy
@@ -499,6 +500,7 @@ preview;type;PropertyHandler
 beta;namespace;PropertyStore
 public;type;PullChangesArgs
 public;interface;PushChangesArgs
+beta;interface;QueryAspectOptions
 beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
 internal;function;queryStringResourceNames

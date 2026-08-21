@@ -2383,6 +2383,12 @@ export interface DefinitionElementProps extends ElementProps {
     isPrivate?: boolean;
 }
 
+// @beta
+export interface DefinitionSetProps extends DefinitionElementProps {
+    // (undocumented)
+    rank?: Rank;
+}
+
 // @public
 export interface DeletedElementGeometryChange {
     readonly id: Id64String;
@@ -10227,6 +10233,12 @@ export interface TabRunProps extends TextBlockComponentProps {
 }
 
 // @beta
+export type TargetPointShape = typeof targetPointShapes[number];
+
+// @beta
+export const targetPointShapes: readonly ["cross", "plus", "circle", "square", "rectangle"];
+
+// @beta
 export type TerminatorShape = typeof terminatorShapes[number];
 
 // @beta
@@ -10473,6 +10485,11 @@ export type TextJustification = "left" | "center" | "right";
 export interface TextLeaderStyleProps {
     color?: TextStyleColor | "inherit";
     elbowLength?: number;
+    showLeaders?: boolean;
+    showTargetPoint?: boolean;
+    showTerminators?: boolean;
+    targetPointOffsetFactor?: number;
+    targetPointShape?: TargetPointShape;
     terminatorHeightFactor?: number;
     terminatorShape?: TerminatorShape;
     terminatorWidthFactor?: number;

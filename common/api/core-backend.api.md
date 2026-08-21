@@ -64,6 +64,7 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
+import { DefinitionSetProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
 import { DisplayStyle3dSettings } from '@itwin/core-common';
 import { DisplayStyle3dSettingsProps } from '@itwin/core-common';
@@ -1992,7 +1993,18 @@ export interface CreateSheetViewDefinitionArgs {
 }
 
 // @beta
-export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number): boolean;
+export function createTerminatorGeometry(args: CreateTerminatorGeometryArgs): boolean;
+
+// @beta
+export interface CreateTerminatorGeometryArgs {
+    builder: ElementGeometry.Builder;
+    dir: Vector3d;
+    isArrow?: boolean;
+    params: GeometryParams;
+    point: Point3d;
+    textHeight: number;
+    textStyleSettings: TextStyleSettings;
+}
 
 // @beta
 export interface CustomHandledProperty {
@@ -2070,8 +2082,19 @@ export class DefinitionPartition extends InformationPartitionElement {
 
 // @public @preview
 export abstract class DefinitionSet extends DefinitionElement {
+    protected constructor(props: DefinitionSetProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): DefinitionSetProps;
+    // @beta
+    rank?: Rank;
+    // @beta
+    static serialize(props: DefinitionSetProps, iModel: IModelDb): ECSqlRow;
+    // (undocumented)
+    toJSON(): DefinitionSetProps;
 }
 
 // @beta
@@ -3746,7 +3769,8 @@ export abstract class GeometricElement2d extends GeometricElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): GeometricElement2dProps;
     // (undocumented)
-    placement: Placement2d;
+    get placement(): Placement2d;
+    set placement(value: Placement2d);
     // @beta
     static serialize(props: GeometricElement2dProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
@@ -3774,7 +3798,8 @@ export abstract class GeometricElement3d extends GeometricElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): GeometricElement3dProps;
     // (undocumented)
-    placement: Placement3d;
+    get placement(): Placement3d;
+    set placement(value: Placement3d);
     // @beta
     static serialize(props: GeometricElement3dProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
@@ -4276,6 +4301,8 @@ export namespace IModelDb {
         insertAspect(aspectProps: ElementAspectProps): Id64String;
         // @deprecated
         insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
+        // @beta
+        queryAspects(options: QueryAspectOptions): AsyncIterableIterator<ElementAspect>;
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
@@ -4345,6 +4372,8 @@ export namespace IModelDb {
     // @preview
     export class Views {
         // @internal
+        [_close](): void;
+        // @internal
         constructor(_iModel: IModelDb);
         // @beta (undocumented)
         accessViewStore(args: {
@@ -4363,7 +4392,7 @@ export namespace IModelDb {
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
         // @deprecated
         setDefaultViewId(viewId: Id64String): void;
-        // @beta (undocumented)
+        // @beta
         get viewStore(): ViewStore.CloudAccess;
         set viewStore(viewStore: ViewStore.CloudAccess);
     }
@@ -5918,6 +5947,15 @@ export interface PushChangesArgs extends TokenArg {
 }
 
 // @beta
+export interface QueryAspectOptions {
+    aspectClassFullName?: string;
+    elementIds: Id64Arg;
+    excludedAspectClassFullNames?: ReadonlySet<string>;
+    groupByOwner?: boolean;
+    usePrimaryConn?: boolean;
+}
+
+// @beta
 export interface QueryLocalChangesArgs {
     readonly includedClasses?: string[];
     readonly includeUnsavedChanges?: boolean;
@@ -7437,7 +7475,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.3";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
@@ -7864,7 +7902,6 @@ export class V2CheckpointManager {
         dbName: string;
         container: CloudSqlite.CloudContainer | undefined;
     }>;
-    // (undocumented)
     static cleanup(): void;
     // (undocumented)
     static readonly cloudCacheName = "Checkpoints";
