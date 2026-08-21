@@ -145,10 +145,9 @@ describe("Authoring.SchemaDocument", () => {
       expect(doc.items).to.have.lengthOf(1);
     });
 
-    it("also supports direct construction + push (the power path)", () => {
+    it("also supports direct construction and registers the item (the power path)", () => {
       const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
-      const widget = new Authoring.EntityClass("Widget");
-      doc.items.push(widget);
+      const widget = new Authoring.EntityClass(doc, "Widget");
       expect(doc.getEntity("Widget")).to.equal(widget);
     });
 
@@ -191,27 +190,28 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("splits base class and mixins, set inline or after", () => {
-      const e = new Authoring.EntityClass("E", { baseClass: "BisCore:PhysicalElement", mixins: ["MyDomain:IMixin"] });
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
+      const e = new Authoring.EntityClass(doc, "E", { baseClass: "BisCore:PhysicalElement", mixins: ["MyDomain:IMixin"] });
       e.mixins.push("Other:Thing");
       expect(e.baseClass).to.equal("BisCore:PhysicalElement");
       expect(e.mixins).to.deep.equal(["MyDomain:IMixin", "Other:Thing"]);
     });
 
     it("leaves modifier, baseClass and mixins unset by default", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       expect(e.modifier).to.be.undefined; // absent reads as None per spec; the document preserves absence
       expect(e.baseClass).to.be.undefined;
       expect(e.mixins).to.deep.equal([]);
     });
 
-    it("removeItem removes by name (case-insensitive) and returns the item", () => {
+    it("removeItem removes by name (case-insensitive) and returns whether it found one", () => {
       const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
-      const widget = doc.createEntity("Widget");
+      doc.createEntity("Widget");
       doc.createEntity("Other");
 
-      expect(doc.removeItem("WIDGET")).to.equal(widget);
+      expect(doc.removeItem("WIDGET")).to.be.true;
       expect(doc.items.map((i) => i.name)).to.deep.equal(["Other"]);
-      expect(doc.removeItem("Missing")).to.be.undefined;
+      expect(doc.removeItem("Missing")).to.be.false;
     });
 
     it("duplicate item names are tolerated; every name lookup is first-occurrence", () => {
@@ -231,18 +231,19 @@ describe("Authoring.SchemaDocument", () => {
       expect([...doc.getItemsOfType(SchemaItemType.Enumeration)]).to.deep.equal([second]);
 
       // removeItem peels the first occurrence only.
-      expect(doc.removeItem("foo")).to.equal(first);
+      expect(doc.removeItem("foo")).to.be.true;
       expect(doc.getItem("foo")).to.equal(second);
     });
 
     it("init arrays are copied, not aliased", () => {
       const mixins = ["MyDomain:IMixin"];
-      const e = new Authoring.EntityClass("E", { mixins });
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
+      const e = doc.createEntity("E", { mixins });
       mixins.push("Other:Thing"); // caller-side mutation after construction
       expect(e.mixins).to.deep.equal(["MyDomain:IMixin"]);
 
       const presentationFormats = ["Formats:DefaultReal"];
-      const koq = new Authoring.KindOfQuantity("Len", "Units:M", 0.001, { presentationFormats });
+      const koq = doc.createKindOfQuantity("Len", "Units:M", 0.001, { presentationFormats });
       presentationFormats.push("Formats:AmerFI");
       expect(koq.presentationFormats).to.deep.equal(["Formats:DefaultReal"]);
     });
@@ -293,7 +294,8 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("relationship init overrides strength and direction", () => {
-      const rel = new Authoring.RelationshipClass("R", {
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
+      const rel = doc.createRelationship("R", {
         strength: StrengthType.Embedding, strengthDirection: StrengthDirection.Backward,
       });
       expect(rel.strength).to.equal(StrengthType.Embedding);
@@ -317,18 +319,18 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("defaults an enumeration to strict", () => {
-      expect(new Authoring.Enumeration("E", "string").isStrict).to.be.true;
+      expect(new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEnumeration("E", "string").isStrict).to.be.true;
     });
 
     it("getEnumerator reads back by name, case-insensitively", () => {
-      const color = new Authoring.Enumeration("Color", "int");
+      const color = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEnumeration("Color", "int");
       const red = color.createEnumerator("Red", 1);
       expect(color.getEnumerator("RED")).to.equal(red);
       expect(color.getEnumerator("Blue")).to.be.undefined;
     });
 
     it("an enumerator value mismatching the backing type is tolerated (a compile diagnostic, not an edit error)", () => {
-      const color = new Authoring.Enumeration("Color", "int");
+      const color = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEnumeration("Color", "int");
       const odd = color.createEnumerator("Odd", "not-an-int");
       expect(odd.value).to.equal("not-an-int");
     });
@@ -352,7 +354,7 @@ describe("Authoring.SchemaDocument", () => {
 
   describe("properties", () => {
     it("createPrimitive stores typeName from a PrimitiveType and keeps the handle", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       const name = e.createPrimitive("Name", PrimitiveType.String);
       const count = e.createPrimitive("Count", PrimitiveType.Integer, { priority: 50 });
 
@@ -365,13 +367,13 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("createEnumeration stores the reference as typeName (same PrimitiveProperty storage)", () => {
-      const color = new Authoring.EntityClass("E").createEnumeration("Color", "MyDomain:ColorEnum");
+      const color = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E").createEnumeration("Color", "MyDomain:ColorEnum");
       expect(color.kind).to.equal(PropertyKind.Primitive);
       expect(color.typeName).to.equal("MyDomain:ColorEnum");
     });
 
     it("init passes every shared and primitive-specific field through", () => {
-      const p = new Authoring.EntityClass("E").createPrimitive("Length", PrimitiveType.Double, {
+      const p = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E").createPrimitive("Length", PrimitiveType.Double, {
         label: "Len", description: "d", isReadOnly: true, priority: 7,
         category: "MyDomain:Cat", kindOfQuantity: "AecUnits:LENGTH",
         extendedTypeName: "BeGuid", minValue: 0, maxValue: 100, minLength: 1, maxLength: 8,
@@ -390,7 +392,7 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("everything is unset by default - no field invents a value", () => {
-      const p = new Authoring.EntityClass("E").createPrimitive("P", PrimitiveType.String);
+      const p = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E").createPrimitive("P", PrimitiveType.String);
       expect(p.label).to.be.undefined;
       expect(p.description).to.be.undefined;
       expect(p.isReadOnly).to.be.undefined;
@@ -403,7 +405,7 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("createPrimitiveArray creates array properties with occurs bounds, defaulting to 0 / unbounded", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       const arr = e.createPrimitiveArray("Tags", PrimitiveType.String, { minOccurs: 1, maxOccurs: 5, minLength: 1, maxLength: 64 });
       expect(arr.kind).to.equal(PropertyKind.PrimitiveArray);
       expect(arr.minOccurs).to.equal(1);
@@ -417,7 +419,7 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("createStruct / createStructArray reference a struct class via typeName", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       const at = e.createStruct("At", "MyDomain:Point");
       const many = e.createStructArray("Forces", "MyDomain:Force", { minOccurs: 1 });
       expect(at.kind).to.equal(PropertyKind.Struct);
@@ -429,7 +431,7 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("createNavigation captures the relationship reference and direction", () => {
-      const nav = new Authoring.EntityClass("E").createNavigation("Parent", "BisCore:ElementOwnsChildElements", StrengthDirection.Backward);
+      const nav = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E").createNavigation("Parent", "BisCore:ElementOwnsChildElements", StrengthDirection.Backward);
       expect(nav.kind).to.equal(PropertyKind.Navigation);
       expect(nav.relationshipName).to.equal("BisCore:ElementOwnsChildElements");
       expect(nav.direction).to.equal(StrengthDirection.Backward);
@@ -441,23 +443,23 @@ describe("Authoring.SchemaDocument", () => {
       expect(rel.getProperty("Note")).to.equal(p);
     });
 
-    it("removeProperty removes by name (case-insensitive) and returns the property", () => {
-      const e = new Authoring.EntityClass("E");
-      const name = e.createPrimitive("Name", PrimitiveType.String);
+    it("removeProperty removes by name (case-insensitive) and returns whether it found one", () => {
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
+      e.createPrimitive("Name", PrimitiveType.String);
       e.createPrimitive("Count", PrimitiveType.Integer);
 
-      expect(e.removeProperty("NAME")).to.equal(name);
+      expect(e.removeProperty("NAME")).to.be.true;
       expect(e.properties.map((p) => p.name)).to.deep.equal(["Count"]);
-      expect(e.removeProperty("Missing")).to.be.undefined;
+      expect(e.removeProperty("Missing")).to.be.false;
     });
 
     it("duplicate property names are tolerated; getProperty and removeProperty are first-occurrence", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       const first = e.createPrimitive("Twin", PrimitiveType.String);
       const second = e.createPrimitive("TWIN", PrimitiveType.Integer); // accepted; a compile diagnostic later
       expect(e.properties).to.have.lengthOf(2);
       expect(e.getProperty("twin")).to.equal(first);
-      expect(e.removeProperty("twin")).to.equal(first);
+      expect(e.removeProperty("twin")).to.be.true;
       expect(e.getProperty("twin")).to.equal(second);
     });
   });
@@ -497,7 +499,7 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("property predicates narrow by kind; isPrimitive includes primitive arrays, matching SchemaView", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       const prim = e.createPrimitive("P", PrimitiveType.String);
       const primArr = e.createPrimitiveArray("Pa", PrimitiveType.Integer);
       const struct = e.createStruct("S", "MyDomain:Point");
@@ -520,16 +522,16 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("isEnumeration is a lexical check: any non-keyword typeName on a primitive kind counts as an enum reference", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       expect(e.createPrimitive("P", PrimitiveType.String).isEnumeration()).to.be.false;
-      expect(new Authoring.PrimitiveProperty("Kw", "String").isEnumeration()).to.be.false; // keyword match is case-insensitive
+      expect(new Authoring.PrimitiveProperty(e, "Kw", "String").isEnumeration()).to.be.false; // keyword match is case-insensitive
       expect(e.createEnumeration("En", "MyDomain:ColorEnum").isEnumeration()).to.be.true;
       expect(e.createEnumerationArray("EnArr", "ColorEnum").isEnumeration()).to.be.true; // local reference
       expect(e.createStruct("S", "MyDomain:Point").isEnumeration()).to.be.false; // not a primitive kind
     });
 
     it("property asserts pass on a match and throw with kind and name on a mismatch", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       const prim = e.createPrimitive("P", PrimitiveType.String);
       const nav = e.createNavigation("N", "S:R", StrengthDirection.Forward);
 
@@ -550,13 +552,13 @@ describe("Authoring.SchemaDocument", () => {
       expect(doc.customAttributes.has("corecustomattributes.dynamicschema")).to.be.true; // case
 
       const e = doc.createEntity("E");
-      e.customAttributes.add({ className: "BisCore:ClassHasHandler", json: { restricted: "yes" } });
-      expect(e.customAttributes.get("BisCore:ClassHasHandler")!.json!.restricted).to.equal("yes");
+      e.customAttributes.add({ className: "BisCore:ClassHasHandler", values: { restricted: "yes" } });
+      expect(e.customAttributes.get("BisCore:ClassHasHandler")!.values.restricted).to.equal("yes");
 
       const prop = e.createPrimitive("Serial", PrimitiveType.String);
       prop.customAttributes.add({ className: "CoreCustomAttributes:HiddenProperty" });
       expect(prop.customAttributes.size).to.equal(1);
-      expect(prop.customAttributes.remove("CoreCustomAttributes.HiddenProperty")).to.not.be.undefined;
+      expect(prop.customAttributes.remove("CoreCustomAttributes.HiddenProperty")).to.be.true;
       expect(prop.customAttributes.size).to.equal(0);
 
       const rel = doc.createRelationship("R");
@@ -565,59 +567,59 @@ describe("Authoring.SchemaDocument", () => {
     });
 
     it("add returns the stored instance for follow-up configuration", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       const ca = e.customAttributes.add({ className: "BisCore:ClassHasHandler" });
-      ca.json = { restricted: "yes" };
-      expect(e.customAttributes.get("BisCore:ClassHasHandler")!.json).to.deep.equal({ restricted: "yes" });
+      ca.values = { restricted: "yes" };
+      expect(e.customAttributes.get("BisCore:ClassHasHandler")!.values).to.deep.equal({ restricted: "yes" });
     });
 
-    it("holds the value in one of two formats; the wrong-side accessor throws", () => {
-      // Default (authoring / JSON reader) form is JSON; the value is reachable through `json`.
-      const json = new Authoring.CustomAttribute("MyDomain:Ca", { n: 1 });
-      expect(json.format).to.equal(Authoring.CustomAttributeFormat.Json);
-      expect(json.json).to.deep.equal({ n: 1 });
-      expect(() => json.xml).to.throw(/holds its value as JSON/); // reading the XML side is a bug
+    it("materializes ECXML bodies against the custom attribute class", () => {
+      const doc = new Authoring.SchemaDocument("S", "s", 1, 0, 0);
+      const e = doc.createEntity("E");
+      const caClass = doc.createCustomAttributeClass("Ca", CustomAttributeContainerType.AnyClass);
+      caClass.createPrimitive("n", PrimitiveType.Integer);
 
-      // Setting `xml` flips the format (this is what the XML reader does); now `json` throws.
-      const xml = new Authoring.CustomAttribute("MyDomain:Ca");
-      xml.xml = "<n>1</n>";
-      expect(xml.format).to.equal(Authoring.CustomAttributeFormat.Xml);
-      expect(xml.xml).to.equal("<n>1</n>");
-      expect(() => xml.json).to.throw(/holds its value as XML/);
+      const materialized = new Authoring.CustomAttribute(e, "Ca", { n: 1 });
+      expect(materialized.isMaterialized).to.be.true;
+      expect(materialized.values).to.deep.equal({ n: 1 });
 
-      // A plain props literal is wrapped in a JSON-form instance on the way in.
-      const e = new Authoring.EntityClass("E");
+      const fromXml = Authoring.CustomAttribute.fromXmlBody(e, "Ca", "<n>1</n>");
+      expect(fromXml.isMaterialized).to.be.false;
+      expect(fromXml.values).to.deep.equal({ n: 1 });
+      expect(fromXml.isMaterialized).to.be.true;
+
+      // A plain props literal is wrapped in a materialized instance on the way in.
       const fromLiteral = e.customAttributes.add({ className: "BisCore:ClassHasHandler" });
       expect(fromLiteral).to.be.instanceOf(Authoring.CustomAttribute);
-      expect(fromLiteral.format).to.equal(Authoring.CustomAttributeFormat.Json);
+      expect(fromLiteral.isMaterialized).to.be.true;
       // An instance passed to add is stored as-is, not re-wrapped.
-      expect(e.customAttributes.add(json)).to.equal(json);
+      expect(e.customAttributes.add(materialized)).to.equal(materialized);
     });
 
     it("a second instance of the same CA class is tolerated; get and remove are first-occurrence", () => {
       // The spec allows one instance per class; the validity-free document does not enforce that.
-      const e = new Authoring.EntityClass("E");
-      const first = e.customAttributes.add({ className: "MyDomain:Ca", json: { n: 1 } });
-      const second = e.customAttributes.add({ className: "mydomain.ca", json: { n: 2 } });
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
+      const first = e.customAttributes.add({ className: "MyDomain:Ca", values: { n: 1 } });
+      const second = e.customAttributes.add({ className: "mydomain.ca", values: { n: 2 } });
       expect(e.customAttributes.size).to.equal(2);
       expect([...e.customAttributes]).to.deep.equal([first, second]); // insertion order
       expect(e.customAttributes.get("MyDomain:Ca")).to.equal(first);
 
-      expect(e.customAttributes.remove("MyDomain:Ca")).to.equal(first);
+      expect(e.customAttributes.remove("MyDomain:Ca")).to.be.true;
       expect(e.customAttributes.get("MyDomain:Ca")).to.equal(second);
     });
 
     it("matching compares spellings, not resolved identity: alias-qualified does not match schema-name form", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       e.customAttributes.add({ className: "bis:ClassHasHandler" }); // alias-qualified (tolerated on input)
       expect(e.customAttributes.has("bis.ClassHasHandler")).to.be.true; // separator still folds
       expect(e.customAttributes.has("BisCore:ClassHasHandler")).to.be.false; // same class, different qualifier - no match
     });
 
     it("the set serializes transparently through JSON.stringify", () => {
-      const e = new Authoring.EntityClass("E");
+      const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
       e.customAttributes.add({ className: "BisCore:ClassHasHandler" });
-      expect(JSON.parse(JSON.stringify(e.customAttributes))).to.deep.equal([{ className: "BisCore:ClassHasHandler" }]);
+      expect(JSON.parse(JSON.stringify(e.customAttributes))).to.deep.equal([{ className: "BisCore:ClassHasHandler", values: {} }]);
     });
   });
 

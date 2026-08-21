@@ -47,9 +47,10 @@ export interface SchemaComparison {
   schemaDifferences: SchemaValueDifference[];
   /** The items that differ, one entry per item. */
   itemDifferences: SchemaItemComparison[];
-  /** Problems encountered while canonicalizing the documents for comparison (e.g. an item
-   * reference that matches nothing in the reference list) - they flag spots where the comparison
-   * may be less meaningful than it looks. */
+  /** Problems encountered while canonicalizing the documents for comparison - most often a custom
+   * attribute whose class is not in the schema set, which is left out of the canonical form and so
+   * takes no part in the comparison. They flag spots where the comparison may be less meaningful
+   * than it looks. */
   issues: SchemaIssueList;
 }
 
@@ -81,7 +82,7 @@ export interface SchemaComparison {
  * Custom attribute values compare leniently across types (`"5"` equals `5`, `"True"` equals
  * `true`): the documents are validity-free, so CA values are untyped, and ECXML renders every
  * scalar as text while ECJSON keeps types. Known limitation, same as the readers': an XML-read
- * struct-array CA value differs in shape from its JSON-read counterpart until a compiler types it.
+ * struct-array custom attribute value differs in shape from its JSON-read counterpart until it is materialized.
  * @alpha
  */
 export function compareSchemaDocuments(left: Authoring.SchemaDocument, right: Authoring.SchemaDocument): SchemaComparison {

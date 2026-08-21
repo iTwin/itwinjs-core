@@ -8,7 +8,6 @@
 
 import * as Authoring from "./SchemaDocument";
 import { SchemaIssueList } from "./SchemaIssues";
-import { SchemaView } from "../SchemaView/SchemaView";
 
 /** The EC specification (serialization format) versions a {@link Authoring.SchemaDocument} can be written to
  * or read from. The in-memory document always models the latest spec; readers and writers convert
@@ -26,7 +25,7 @@ export enum ECSpec {
  * JSON text, an iModel). `document` is `undefined` only when the input was too broken to produce
  * one (e.g. unparseable XML); everything less severe is reported through `issues` alongside a
  * best-effort document, consistent with the validity-free stance - a readable-but-invalid schema
- * is the compiler's problem, not the reader's.
+ * is validation's problem, not the reader's.
  * @alpha
  */
 export interface SchemaDocumentReadResult {
@@ -126,7 +125,7 @@ export function parseVersionString(version: string | undefined): { read: number,
  * references, so readers normalize them to the document form and writers requalify them per
  * format (alias-qualified for ECXML, schema-qualified for ECJSON) - the same treatment every
  * other item reference gets. Tolerant: segments that do not match the grammar pass through
- * verbatim for the compiler to diagnose.
+ * verbatim for validation to diagnose.
  * @alpha
  */
 export function mapFormatStringReferences(formatString: string, mapReference: (reference: string) => string): string {
@@ -155,6 +154,13 @@ export interface SchemaTextReadOptions {
   /** Origin of the text (file path, URL, ...), copied onto every reported issue and onto
    * {@link Authoring.SchemaDocument.source} so problems stay traceable to their file. */
   source?: string;
+  /** The set to read the document into. Every document belongs to exactly one
+   * {@link Authoring.SchemaSet}; leaving this out gives the document a private set of its own, so a
+   * schema read in isolation resolves nothing outside itself. Reading into a set is what lets the
+   * document resolve its references - and what lets its custom attributes be understood. The read
+   * fails with an issue, and the document stays in a private set, when the set already holds a
+   * schema of that name. */
+  schemaSet?: Authoring.SchemaSet;
 }
 
 /** The contract of a reader that hydrates a {@link Authoring.SchemaDocument} from text in some format
@@ -178,25 +184,17 @@ export interface SchemaDocumentTextReader {
 export interface SchemaWriteOptions {
   /** The spec version to emit. Defaults to {@link ECSpec.Latest}. */
   spec?: ECSpec;
-  /** An optional resolved schema view used only to convert custom-attribute values that cross the
-   * XML<->JSON boundary - a CA whose value was read in the other format than the one being written.
-   * Most CAs convert without it, but some genuinely need the CA class definition (see
-   * {@link CustomAttributeConverter}): a single-entry struct array going XML -> JSON, or any struct
-   * array going JSON -> XML. Without a view that resolves such a CA, that CA is dropped and an error is
-   * reported - the rest of the document is still written. Supply a view covering the document's CA
-   * classes to convert them faithfully. */
-  schemaView?: SchemaView;
 }
 
 /** The result every schema writer returns. `text` is `undefined` only when the document could not
  * be written at all (e.g. an unsupported target spec); recoverable problems - an item reference
- * whose schema is missing from the reference list, a custom-attribute value that could not be
- * converted to the target format - are reported as issues alongside best-effort output.
+ * whose schema is missing from the reference list, a custom attribute that could not be
+ * materialized - are reported as issues alongside best-effort output.
  *
  * Always check {@link issues} (in particular {@link SchemaIssueList.hasErrors}) before trusting the
  * text: an error means the output is incomplete - typically a custom attribute was dropped because
- * crossing the XML<->JSON boundary needed a CA class that no {@link SchemaWriteOptions.schemaView}
- * supplied - not that nothing was produced.
+ * its custom attribute class is not in the document's {@link Authoring.SchemaSet} - not that
+ * nothing was produced.
  * @alpha
  */
 export interface SchemaWriteResult {

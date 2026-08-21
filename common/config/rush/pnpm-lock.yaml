@@ -457,6 +457,12 @@ importers:
       '@bentley/core-custom-attributes-schema':
         specifier: ^1.0.4
         version: 1.0.4
+      '@bentley/ecdb-map-schema':
+        specifier: ^2.0.1
+        version: 2.0.4
+      '@bentley/ecdb-schema-policies-schema':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@bentley/formats-schema':
         specifier: ^1.0.0
         version: 1.0.0
@@ -12349,7 +12355,7 @@ snapshots:
       '@vitest/mocker': 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))
       playwright: 1.56.1
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.10(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -12365,7 +12371,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.10(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
       ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
@@ -12385,7 +12391,7 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.10(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
     optionalDependencies:
       '@vitest/browser': 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.10)
 

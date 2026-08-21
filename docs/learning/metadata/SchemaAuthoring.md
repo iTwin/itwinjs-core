@@ -15,10 +15,12 @@ Authoring and editing EC schemas in TypeScript has been harder than it should be
 
 In practice, tests and tooling frequently fell back to hand-editing XML strings rather than use the API.
 
-`SchemaDocument` resolves this by separating two concerns that the old model conflates:
+`SchemaDocument` keeps what a resolved graph is genuinely good for and drops the parts that made editing painful:
 
-- **The document** is plain, ordered, editable data. No resolved cross-references - references are names (strings). No validity enforcement - a document can hold a half-finished or even contradictory schema, the way a source file can hold code that does not compile. You can build, read, edit, clone, compare, and save it in isolation.
-- **Validation** is an explicit, separate step (the *compiler*, in progress - see [Roadmap](#roadmap)) that resolves references and checks the rules when you ask, reporting an inspectable list of problems instead of refusing to load.
+- **Ownership is explicit and singular.** A document belongs to one schema set, an item to one document, a property to one class. Nothing is shared, so nothing is ambiguous.
+- **References are stored as names and resolved on demand.** No promise graph, no load order, no invalidation.
+- **Nothing enforces validity.** A document can hold a half-finished or contradictory schema, the way a source file can hold code that does not compile. Validation is a separate step you invoke when you want it.
+- **Everything is synchronous** except actual I/O.
 
 ## Choosing the right API
 
@@ -28,48 +30,128 @@ In practice, tests and tooling frequently fell back to hand-editing XML strings 
 | Compose, load, edit, compare, or serialize a schema | `SchemaDocument` (this page) |
 | Workflows not yet covered by the above | [SchemaContext]($ecschema-metadata) / `@itwin/ecschema-editing` - the full resolved graph |
 
-`SchemaDocument` is additive: `SchemaView` remains the read path, and the existing packages stay in place during migration. Longer term, the authoring layer plus `SchemaView` are intended to cover what consumers reach to `SchemaContext` for today.
+`SchemaDocument` is additive: `SchemaView` remains the read path, and the existing packages stay in place during migration.
 
-A `SchemaDocument` differs from the resolved-graph model in ways worth internalizing up front:
+## Every document belongs to exactly one schema set
 
-- **References are strings.** `"BisCore:PhysicalElement"` is just data - nothing checks that BisCore is loaded, or that the class exists, until you explicitly compile. An item can be referenced by bare local name (`"Pump"`, same schema), full name (`"BisCore:PhysicalElement"` or dot-separated), or alias-qualified form (`"bis:PhysicalElement"`, resolved against the document's reference list).
-- **Everything is synchronous** except actual I/O (the readers accept streamed input).
-- **Problems are issues, not exceptions.** Readers, writers, and discovery never throw on bad data; they report `SchemaIssue`s (each with a stable `code`, a severity, and a message) alongside a best-effort result. You decide what is fatal.
-- **The document always models the latest EC spec.** Readers and writers convert older serialization formats at the boundary; the in-memory model stays canonical.
+A `SchemaSet` is a collection of documents that know about each other. It is the scope every reference in those documents resolves against, and it is the authority over their lifetime.
+
+Three rules, and they are the whole model:
+
+1. **A document is always in exactly one set.** `new SchemaDocument(...)` creates a private set holding only that document. There is no detached state.
+2. **A set holds one document per schema name**, compared case-insensitively. `BisCore 1.0.0` and `BisCore 1.0.15` cannot both be in one set.
+3. **Nothing appears in a set unless you put it there.** No locater, no on-demand loading, no priority chain. If a reference does not resolve, the schema is simply not in the set.
+
+Because a document can only be in one set, there is no `add` - joining a set always means leaving another, so the method says `moveIn`:
+
+```ts
+import { Authoring } from "@itwin/ecschema-metadata";
+
+const set = new Authoring.SchemaSet();
+
+// Create a document straight into the set...
+const bis = set.createSchema("BisCore", "bis", 1, 0, 15);
+
+// ...or move in one you already have. It leaves the set it was in.
+const myDomain = new Authoring.SchemaDocument("MyDomain", "md", 1, 0, 0);
+set.moveIn(myDomain);
+myDomain.schemaSet === set;   // true
+
+// Take it back out. It lands in a fresh private set of its own, never nowhere.
+const detached = set.moveOut("MyDomain");
+detached!.schemaSet.size;     // 1
+
+// Sets are iterable and support lookup by name.
+for (const document of set)
+  console.log(document.name);
+set.getSchema("biscore");     // case-insensitive
+set.getItem("BisCore:Element");
+```
+
+`moveIn` throws when the target set already holds a schema of that name. It will not silently evict the incumbent: call `moveOut` for it first, so eviction is always your decision.
+
+The same ownership rule applies one level down. An item belongs to one document and a property to one class, both from the moment they are constructed:
+
+```ts
+const pump = myDomain.createEntity("Pump");    // owned by myDomain
+pump.document === myDomain;                    // true
+otherDocument.moveItemIn(pump);                // leaves myDomain
+myDomain.removeItem("Pump");                   // returns false now - it is gone from here
+```
+
+`doc.items` and `class.properties` are read-only for this reason; use the `create*` factories, `moveItemIn` / `movePropertyIn`, and `removeItem` / `removeProperty`.
 
 ## Composing a schema in code
 
 Factory methods take the mandatory data as positional arguments and everything optional through an `init` object, and return the created object so you can keep working with it - no re-fetching, no casts:
 
 ```ts
-import { PrimitiveType, SchemaDocument, SchemaXmlWriter } from "@itwin/ecschema-metadata";
+import { Authoring, PrimitiveType } from "@itwin/ecschema-metadata";
 
-const doc = new SchemaDocument("MyDomain", "mydom", 1, 0, 0, {
+const doc = new Authoring.SchemaDocument("MyDomain", "mydom", 1, 0, 0, {
   description: "Example domain schema",
   references: [
     { name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" },
     { name: "AecUnits", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "AECU" },
   ],
+  customAttributes: [Authoring.CoreCustomAttributes.dynamicSchema()],
 });
-doc.customAttributes.add({ className: "CoreCustomAttributes.DynamicSchema" });
 
 const pump = doc.createEntity("Pump", {
   baseClass: "BisCore:PhysicalElement",
   description: "Pump physical element",
 });
-pump.createPrimitive("FlowRate", PrimitiveType.Double, {
-  kindOfQuantity: "AECU:VOLUMETRIC_FLOW",
-});
+pump.createPrimitive("FlowRate", PrimitiveType.Double, { kindOfQuantity: "AECU:VOLUMETRIC_FLOW" });
 const serial = pump.createPrimitive("SerialNumber", PrimitiveType.String);
-serial.customAttributes.add({ className: "CoreCustomAttributes.HiddenProperty" });
+serial.customAttributes.add(Authoring.CoreCustomAttributes.hiddenProperty());
 
-const { text, issues } = new SchemaXmlWriter().writeDocument(doc);
+const { text, issues } = new Authoring.SchemaXmlWriter().writeDocument(doc);
 if (issues.hasErrors)
   throw new Error(issues.errors.map((e) => e.message).join("\n"));
 // `text` is ECXML 3.2, ready for IModelDb.importSchemaStrings, a file, a test fixture...
 ```
 
+Every `create*` factory has an equivalent public constructor taking the owner as its first argument - `new Authoring.EntityClass(doc, "Pump", init)` does exactly what `doc.createEntity("Pump", init)` does. The factories read better; the constructors are there for code that builds items generically.
+
 This is particularly aimed at tests, which today often template raw XML strings: composing the schema in code is about as terse, and considerably easier to parameterize.
+
+## Referring to other items
+
+A reference to another item is stored as a plain string: a bare local name (`"Pump"`, an item in this schema), a full name (`"BisCore:PhysicalElement"`, either separator), or an alias-qualified name (`"bis:PhysicalElement"`, resolved through this document's reference list). That is what serializes, and it is what makes composing a document feel like writing a literal.
+
+Every reference field has a sibling getter that resolves it through the schema set:
+
+```ts
+pump.baseClass;          // "BisCore:PhysicalElement" - the stored string
+pump.getBaseClass();     // Authoring.EntityClass | undefined - resolved through the set
+
+property.kindOfQuantity; property.getKindOfQuantity();
+entity.mixins;           entity.getMixins();
+constraint.constraintClasses; constraint.getConstraintClasses();
+```
+
+A resolve miss returns `undefined` silently - a dangling reference is something validation reports, not something an accessor should decide about. For list-valued references the resolved array is positionally aligned with the stored one, so an entry that did not resolve is `undefined` rather than dropped.
+
+You can also set a reference from the item itself, which is usually what you have:
+
+```ts
+pump.setBaseClass(bis.getEntity("PhysicalElement")!);
+// pump.baseClass is now "BisCore:PhysicalElement", and MyDomain has gained a
+// schema reference to BisCore 1.0.15 if it did not have one.
+```
+
+Passing an **item** adds the missing schema reference for you, because the item's document supplies the version and a default alias. Assigning a **string** never does, because a string carries neither. An existing schema reference is never modified, so a version disagreement stays visible to validation instead of being silently rewritten.
+
+### Walking inherited properties
+
+`class.properties` is the class's own declarations. To see what a class actually has, resolved through its base class and mixins:
+
+```ts
+pump.getEffectiveProperties();       // base class first, then mixins, then own
+pump.getEffectiveProperty("CodeValue");
+```
+
+An overridden property appears once, at the position the ancestor introduced it, as the overriding declaration. Base classes and mixins the set cannot resolve contribute nothing.
 
 ## Reading and writing
 
@@ -81,26 +163,28 @@ Reader/writer pairs exist per format, with one shared contract. ECXML and ECJSON
 | ECJSON 3.x | `SchemaJsonReader` | `SchemaJsonWriter` |
 
 ```ts
-import { SchemaJsonWriter, SchemaXmlReader } from "@itwin/ecschema-metadata";
-
-// Read one schema in isolation - no reference graph required.
-const result = await new SchemaXmlReader().readDocument(xmlText, { source: "MyDomain.ecschema.xml" });
+const set = new Authoring.SchemaSet();
+const result = await new Authoring.SchemaXmlReader().readDocument(xmlText, {
+  source: "MyDomain.ecschema.xml",
+  schemaSet: set,      // leave this out and the document gets a private set of its own
+});
 for (const issue of result.issues)
   console.warn(`${issue.code}: ${issue.message}`);
 
 const doc = result.document; // undefined only if the input was unusable
 if (doc) {
   doc.getEntity("Pump")!.getProperty("FlowRate")!.description = "Flow rate of the pump";
-  const json = new SchemaJsonWriter().writeDocument(doc).text; // cross-format conversion is just read -> write
+  const json = new Authoring.SchemaJsonWriter().writeDocument(doc).text;
 }
 ```
 
 Points of note:
 
 - **Readers are lenient.** A recognizable schema with broken pieces yields a document with the broken pieces skipped and reported as issues - the read-and-repair workflow the old "does not load" behavior made impossible. `result.document` is `undefined` only for unusable input (malformed text, not a schema, unsupported spec version).
+- **Read into a set when you have one.** A document in a set can resolve its references, which is what lets its custom attributes be understood and its inherited properties be walked.
 - **Writers produce stable output.** The same document always serializes to byte-identical text, so write -> read -> write round-trips exactly - suitable for golden-file tests and clean diffs in version control.
 - **Issue codes are stable contract; messages are not.** Match on `issue.code` (e.g. `SchemaXml-0026`), never on message text.
-- **Spec versions are chosen at the boundary.** `writeDocument(doc, { spec: ECSpec.V3_2 })`; the default is `ECSpec.Latest`. Readers accept any 3.x input and record the source spec version on the document. Older spec versions (notably EC 2.0 write-back) are planned as sibling reader/writer pairs - see [Roadmap](#roadmap).
+- **Spec versions are chosen at the boundary.** `writeDocument(doc, { spec: ECSpec.V3_2 })`; the default is `ECSpec.Latest`. Readers accept any 3.x input and record the source spec version on the document. Older spec versions (notably EC 2.0 write-back) are planned as sibling reader/writer pairs.
 
 ### Large inputs and streaming
 
@@ -109,7 +193,7 @@ Schema files can reach hundreds of megabytes. The readers accept `SchemaText`: a
 ```ts
 import { createReadStream } from "fs";
 
-const reader = new SchemaXmlReader();
+const reader = new Authoring.SchemaXmlReader();
 const { document } = await reader.readDocument(createReadStream("Huge.ecschema.xml"), { source: "Huge.ecschema.xml" });
 ```
 
@@ -120,41 +204,82 @@ const { header } = await reader.readHeader(createReadStream("Huge.ecschema.xml")
 // header: { name, readVersion, writeVersion, minorVersion, alias, references }
 ```
 
-## Discovering and resolving schemas
+## Discovering and loading the schemas a document needs
 
-`SchemaSourceSet` answers "here are my documents, here is where schemas live - what do I need to load, in what order?". Discovery works on headers only; no full document is hydrated until you ask:
+Filling a set by hand works when you know what you need. When you do not, `SchemaResolver` answers "here are my documents, here is where schemas live - what do I need to load, in what order?". It works on headers only; no full document is read until you ask:
 
 ```ts
-import { InMemorySchemaSource, SchemaSourceSet } from "@itwin/ecschema-metadata";
-
-const source = new InMemorySchemaSource();
+const source = new Authoring.InMemorySchemaSource();
 source.addDocument(bisCoreDoc); // sources for files / iModels are thin adapters over the same interface
 
-const sources = new SchemaSourceSet();
-sources.addSource(source);
+const resolver = new Authoring.SchemaResolver();
+resolver.addSource(source);
 
-const resolution = await sources.resolve([myDoc]); // walk myDoc's reference closure
+const resolution = await resolver.resolve([myDoc]);   // walk myDoc's reference closure
 if (!resolution.isComplete)
   console.warn([...resolution.issues].map((i) => i.message)); // missing schemas, version conflicts, cycles
 
-const documents = await resolution.loadDocuments(); // hydrated in dependency order
+await resolution.loadDocuments(set);   // hydrated into the set, in dependency order
 ```
 
-Two deliberate improvements over the legacy locater model:
+Three steps, each doing one thing: a `SchemaSource` says what schemas exist and what each declares about itself, `resolve` turns that into a dependency-ordered plan, `loadDocuments` hydrates the plan into a set. Two deliberate improvements over the legacy locater model:
 
 - **All sources form one pool, and the highest compatible version wins** - not first-match-wins across an ordered locater list, where "latest" silently depended on registration order.
 - **Discovery fully precedes loading.** The resolution lists every schema with provenance (`requestedBy`) before anything heavy happens, and conflicts are reported, not silently re-picked.
+
+## Custom attributes
+
+A custom attribute attaches extra information to a piece of metadata, and the aim is to treat that information as plain data. The ECXML serialization works against that aim: it carries no types (every value is text), and it names a struct-array entry after the entry's struct class, which ECJSON does not carry at all. The two formats simply do not hold the same information, so a custom attribute's values can only be understood with its **custom attribute class** in hand.
+
+The document deals with that by **materializing lazily**:
+
+- A custom attribute read from ECXML starts out unmaterialized, holding its body verbatim.
+- Reading its values, editing it, or writing the document to any format materializes it against its custom attribute class.
+- The class is resolved through the owning document's schema set, falling back to built-in definitions of the standard classes.
+
+```ts
+const ca = pump.customAttributes.get("ECDbMap:DbIndexList")!;
+ca.isMaterialized;   // false, straight after reading the document from ECXML
+ca.values;           // { Indexes: [{ Name: "ix_pump_code", Properties: ["CodeValue"] }] }
+ca.isMaterialized;   // true
+ca.setValue("Indexes", [...]);
+```
+
+`ca.values` **throws** when the custom attribute class cannot be resolved. That is deliberate: the fix is to put the schema defining it in the set, and only you can do that - returning a half-typed bag instead would surface the problem somewhere much harder to diagnose. Where not knowing is legitimate, `ca.tryGetValues()` returns `undefined` instead.
+
+Writers never throw. A custom attribute they cannot materialize is reported as an issue and, when writing back to the format it came from, copied through verbatim - the output stays valid and keeps the data. Writing it to the *other* format is not possible, so it is dropped and an error reported. Check `issues.hasErrors` before trusting writer output.
+
+### The standard classes need nothing loaded
+
+`CoreCustomAttributes` and `ECDbMap` ship with the package as built-in definitions, so reading a `QueryView` query or an `IsMixin` works with an empty schema set. They are a **fallback only**: a class the document's own set resolves always wins, so a schema that upgrades or redefines one of these is never shadowed. A test asserts the built-ins still match the published `@bentley` schema packages.
+
+### Composing them
+
+Typed helpers build the well-known attributes, so the property names and value types are checked when you compile rather than when you serialize:
+
+```ts
+pump.customAttributes.add(
+  Authoring.CoreCustomAttributes.hiddenClass({ show: false }),
+  Authoring.ECDbMap.dbIndexList({
+    indexes: [{ name: "ix_pump_serial", properties: ["SerialNumber"], isUnique: true }],
+  }),
+);
+```
+
+Anything else goes in as a literal, which is the same shape the helpers return:
+
+```ts
+pump.customAttributes.add({ className: "MyDomain:Reviewed", values: { Reviewer: "rschili", Passed: true } });
+```
 
 ## Comparing schemas
 
 `compareSchemaDocuments` reports how two documents differ - in one synchronous walk, grouped the way consumers ask: which items were added, removed, or modified, with field-level detail on the modified ones.
 
 ```ts
-import { compareSchemaDocuments, formatSchemaComparison } from "@itwin/ecschema-metadata";
-
-const comparison = compareSchemaDocuments(before, after);
+const comparison = Authoring.compareSchemaDocuments(before, after);
 if (!comparison.areEqual) {
-  console.log(formatSchemaComparison(comparison));
+  console.log(Authoring.formatSchemaComparison(comparison));
   // ~ Pump
   //     label: "Pump" -> "Pumpe"
   //     properties.SerialNumber.priority: 50 -> 60
@@ -174,32 +299,6 @@ Comparison is semantic, not textual:
 
 This makes round-trip and migration testing direct: read, write, read back, compare - and on failure, print the exact differences.
 
-## Custom attributes
-
-A custom attribute attaches extra information to a piece of metadata. The aim is to treat that information as plain data - the custom attribute class defines its *shape*, but you should not need the class loaded just to read or write the value. The ECInstance XML serialization does not fully allow this: a value cannot be converted between XML and JSON without the class, because the two forms carry the information differently (the [ECSchema XML reference](../../bis/ec/ec-schema-xml.md#relationship-to-ecjson) lists exactly how they differ). The document works around that gap rather than hiding it.
-
-A custom attribute instance is held as its class name plus a value. Because the document has no resolved CA class definition (that arrives at compile), it keeps the value in whichever **raw form** its source produced and converts only when a writer crosses the format boundary:
-
-- **JSON form** - a plain property object (`{ [name]: value }`), the canonical ECJSON shape. This is what the JSON reader produces and what you write when authoring in code.
-- **XML form** - the raw ECXML body, exactly as written. This is what the XML reader produces; it is kept verbatim so an XML-sourced CA round-trips back to XML untouched.
-
-`CustomAttribute.format` says which form a value is in; the matching `json` or `xml` accessor returns it, and the *other* accessor throws - reading the wrong side can only mean a conversion was skipped:
-
-```ts
-const ca = entity.customAttributes.add({ className: "BisCore:ClassHasHandler", json: { Restrictions: ["Clone"] } });
-ca.format;     // Authoring.CustomAttributeFormat.Json
-ca.json;       // { Restrictions: ["Clone"] }
-// ca.xml;     // throws - this value is held as JSON, not XML
-```
-
-Writing to the **same** format the value came from is a passthrough - no interpretation, exact bytes. Writing to the **other** format runs the conversion, which is where the XML/JSON custom-attribute gap lives:
-
-- **Most values convert without the CA class** - scalars (with type recovery for booleans and canonical numbers), primitive arrays, structs, and multi-entry struct arrays.
-- **Two shapes genuinely need the CA class**, because one format carries information the other does not. Going XML -> JSON, a *single-entry* struct array is lexically identical to a struct, so without the class it is read as a struct. Going JSON -> XML, a struct array's entry element name (its struct class) is absent from canonical JSON and cannot be invented.
-- When such a value is met and no class is available, **the custom attribute is dropped and an error is reported** - the rest of the document is still written. Supply a resolved [SchemaView](./SchemaView.md) through `writeDocument(doc, { schemaView })` to convert these faithfully: the writer looks up the CA class to disambiguate the struct array and to name its entry elements.
-
-> Because of this, **always check `issues.hasErrors` before trusting writer output.** An error means something was dropped (typically a struct-array custom attribute that needed a CA class no `schemaView` supplied), not that nothing was produced. The conversion logic - and the full matrix of what is recoverable without the class - lives in one place, `CustomAttributeConverter`.
-
 ## The issue model
 
 Everything in the authoring layer reports problems the same way: a `SchemaIssueList` of `SchemaIssue` entries, each carrying:
@@ -211,13 +310,16 @@ Everything in the authoring layer reports problems the same way: a `SchemaIssueL
 
 There is no throw-on-error helper by design: you inspect the issues and decide what is fatal for *your* workflow, attaching the context you need to any error you raise.
 
+Two places do throw, both about the API rather than about data: moving a document into a set that already holds its name, and reading the values of a custom attribute whose class is not in the set.
+
 ## Roadmap
 
 This page grows as the initiative ([#9337](https://github.com/iTwin/itwinjs-core/issues/9337)) lands its increments:
 
-- **Available now**: the document model, ECXML/ECJSON 3.2 reader/writer pairs with streaming input, schema discovery (`SchemaSourceSet`), and comparison.
+- **Available now**: the document model and its schema set, reference resolution, ECXML/ECJSON 3.2 reader/writer pairs with streaming input, discovery and loading (`SchemaResolver`), and comparison.
+- **Validation** - an explicit pass over one document or a whole set, reporting the same inspectable issues: unresolved references, override compatibility, base-class cycles, plus opt-in rule packs for conventions such as BIS.
+- **Views** as a first-class item kind, instead of a hand-assembled `QueryView` custom attribute.
 - **Reading schemas from an iModel** into documents.
 - **Older spec versions** - reader/writer pairs for EC 2.0 and 3.1, including EC 2.0 write-back (long a gap: today the platform can effectively only emit 3.2).
-- **Compilation** - the explicit validation step: resolve references against sources, validate against the spec and BIS rules, produce a read model (a `SchemaView`) plus diagnostics.
 - **Merging** on document data, replacing the resolved-graph comparer/merger.
 - **Migration and deprecation** of the legacy editing surface (`@itwin/ecschema-editing`, `@itwin/ecschema-locaters`) once consumers have moved.

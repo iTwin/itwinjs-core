@@ -10,6 +10,7 @@ export * from "./SchemaDocumentIO";
 export * from "./SchemaIssues";
 export * from "./SchemaJsonReader";
 export * from "./SchemaJsonWriter";
-export * from "./SchemaSources";
+export * from "./SchemaResolver";
 export * from "./SchemaXmlReader";
 export * from "./SchemaXmlWriter";
+export * from "./StandardSchemas";

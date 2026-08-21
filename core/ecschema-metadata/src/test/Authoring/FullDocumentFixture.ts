@@ -20,7 +20,7 @@ export function composeFullDocument(): SchemaDocument {
   });
   doc.customAttributes.add({ className: "CoreCustomAttributes.DynamicSchema" });
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  doc.customAttributes.add({ className: "TestDomain:Tagged", json: { Note: "hello & <welcome>", Tags: ["a", "b"] } });
+  doc.customAttributes.add({ className: "TestDomain:Tagged", values: { Note: "hello & <welcome>", Tags: ["a", "b"] } });
 
   // Units / formats family.
   doc.createUnitSystem("METRIC", { label: "Metric" });
@@ -48,7 +48,9 @@ export function composeFullDocument(): SchemaDocument {
   const codes = doc.createEnumeration("Codes", "string");
   codes.createEnumerator("A", "a-value", { description: "the a" });
 
-  doc.createCustomAttributeClass("Tagged", CustomAttributeContainerType.Schema | CustomAttributeContainerType.AnyClass);
+  const tagged = doc.createCustomAttributeClass("Tagged", CustomAttributeContainerType.Schema | CustomAttributeContainerType.AnyClass);
+  tagged.createPrimitive("Note", PrimitiveType.String);
+  tagged.createPrimitiveArray("Tags", PrimitiveType.String);
 
   const partInfo = doc.createStructClass("PartInfo");
   partInfo.createPrimitive("PartNumber", PrimitiveType.String);

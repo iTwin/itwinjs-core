@@ -76,11 +76,11 @@
     },
     {
       "name": "@bentley/ecdb-map-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/ecdb-schema-policies-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/formats-schema",

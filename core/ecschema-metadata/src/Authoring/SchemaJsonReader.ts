@@ -28,7 +28,7 @@ interface JsonObject {
  * ({@link Authoring.SchemaDocument.originalECXmlVersionMajor}).
  *
  * The reader is as lenient as the validity-free document allows: it reports problems as issues and
- * keeps whatever it could extract, leaving semantic judgment to the compiler. Custom attribute
+ * keeps whatever it could extract, leaving semantic judgment to validation. Custom attribute
  * values are kept untyped; ECJSON's values are already plain JSON shapes, so they pass through
  * unchanged (no struct-array ambiguity, unlike the XML reader).
  *
@@ -47,7 +47,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
     const parsed = await parseRoot(text, issues, options?.source);
     if (parsed === undefined)
       return { issues };
-    return { document: this._readDocument(parsed, issues, options?.source), issues };
+    return { document: this._readDocument(parsed, issues, options), issues };
   }
 
   /** Reads a full document from an already-parsed ECJSON object, skipping the text decode and
@@ -62,7 +62,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
     const parsed = validateRoot(props, issues, options?.source);
     if (parsed === undefined)
       return { issues };
-    return { document: this._readDocument(parsed, issues, options?.source), issues };
+    return { document: this._readDocument(parsed, issues, options), issues };
   }
 
   /** Reads only the schema's identity and reference list. Parses the whole input (see the class
@@ -86,8 +86,8 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
   }
 
   /** Hydrates the document from a validated root. Shared by the text and object entries. */
-  private _readDocument(parsed: { root: JsonObject, specMajor: number, specMinor: number }, issues: SchemaIssueList, source: string | undefined): Authoring.SchemaDocument | undefined {
-    const walker = new ECJson32Walker(issues, source);
+  private _readDocument(parsed: { root: JsonObject, specMajor: number, specMinor: number }, issues: SchemaIssueList, options: SchemaTextReadOptions | undefined): Authoring.SchemaDocument | undefined {
+    const walker = new ECJson32Walker(issues, options?.source, options?.schemaSet);
     return walker.readSchema(parsed.root, parsed.specMajor, parsed.specMinor);
   }
 
@@ -201,11 +201,28 @@ function asArray(value: unknown): unknown[] | undefined {
 class ECJson32Walker {
   private readonly _issues: SchemaIssueList;
   private readonly _source: string | undefined;
+  private readonly _schemaSet: Authoring.SchemaSet | undefined;
   private _documentInProgress?: Authoring.SchemaDocument;
 
-  public constructor(issues: SchemaIssueList, source: string | undefined) {
+  public constructor(issues: SchemaIssueList, source: string | undefined, schemaSet: Authoring.SchemaSet | undefined) {
     this._issues = issues;
     this._source = source;
+    this._schemaSet = schemaSet;
+  }
+
+  /** Moves the freshly read document into the caller's schema set, or reports why it could not.
+   * A name collision leaves the document in the private set it was constructed with, which is the
+   * only outcome that does not silently evict someone else's schema. */
+  private _joinSchemaSet(document: Authoring.SchemaDocument): void {
+    const schemaSet = this._schemaSet;
+    if (schemaSet === undefined)
+      return;
+    const incumbent = schemaSet.getSchema(document.name);
+    if (incumbent !== undefined) {
+      this._error("SchemaJson-0055", `The schema set already holds a schema named "${incumbent.name}"; "${document.name}" was read into a set of its own.`);
+      return;
+    }
+    schemaSet.moveIn(document);
   }
 
   /** The document under construction. Set at the start of {@link readSchema}; every item/property
@@ -235,6 +252,7 @@ class ECJson32Walker {
       source: this._source,
     });
     this._documentInProgress = document;
+    this._joinSchemaSet(document);
 
     const references = asArray(root.references);
     if (references !== undefined) {
@@ -566,7 +584,7 @@ class ECJson32Walker {
       this._error("SchemaJson-0035", `The kind of quantity "${name}" is missing persistenceUnit or a numeric relativeError; the item was skipped.`);
       return;
     }
-    // Presentation format strings stay as strings; the override grammar is parsed at compile.
+    // Presentation format strings stay as strings; the override grammar is not parsed here.
     // The references embedded in them are normalized like any other item reference.
     // ECJSON allows a single string or an array; both normalize to the document's array.
     let presentationFormats: string[] | undefined;
@@ -697,7 +715,7 @@ class ECJson32Walker {
 
   /** Reads a `customAttributes` array into a set. Each entry is the flattened ECJSON form: the
    * `className` key plus the property values inline. Values stay untyped and pass through as the
-   * plain JSON shapes they already are; typing them against the CA class happens at compile. */
+   * plain JSON shapes they already are, which is the document's own value shape. */
   private readCustomAttributes(value: unknown, target: Authoring.CustomAttributeSet, location: string): void {
     const entries = asArray(value);
     if (entries === undefined)
@@ -709,12 +727,11 @@ class ECJson32Walker {
         this._error("SchemaJson-0043", `A custom attribute on "${location}" is missing its className; it was skipped.`);
         continue;
       }
-      // The remaining keys are the CA's property values, already in canonical ECJSON shape - exactly
-      // the document's untyped JSON representation - so they carry over as the value directly.
-      const { className: _discriminator, ...properties } = caObject;
-      target.add(Object.keys(properties).length > 0
-        ? { className: this.normalizeItemReference(className), json: properties }
-        : { className: this.normalizeItemReference(className) });
+      // The remaining keys are the custom attribute's property values, already in canonical ECJSON
+      // shape - which is the document's own value shape - so they carry over directly and the
+      // attribute is materialized from the start.
+      const { className: _discriminator, ...values } = caObject;
+      target.add({ className: this.normalizeItemReference(className), values: values as Authoring.CustomAttributeValues });
     }
   }
 
@@ -723,7 +740,7 @@ class ECJson32Walker {
   /** Normalizes an item reference read from JSON, mirroring the XML reader: a reference into this
    * schema becomes a bare local name; other schema-name qualifiers keep the full-name form. ECJSON
    * does not use alias qualifiers, but one is resolved through the reference list when it appears.
-   * Unknown qualifiers are left as written for the compiler to diagnose. */
+   * Unknown qualifiers are left as written for validation to diagnose. */
   private normalizeItemReference(reference: string): Authoring.LocalOrFullName {
     const separatorIndex = reference.search(/[.:]/);
     if (separatorIndex < 0)

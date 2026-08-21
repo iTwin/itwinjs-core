@@ -24,10 +24,9 @@ import { SchemaIssueList } from "./SchemaIssues";
  * and is rejected until a dedicated reader exists.
  *
  * The reader is as lenient as the validity-free document allows: it reports problems as issues and
- * keeps whatever it could extract, leaving semantic judgment to the compiler. Custom attribute
- * values are kept as their raw ECXML body - typing or converting them requires the CA class
- * definition, which is resolved at compile, not read; a writer that must emit a CA in another format
- * runs the {@link CustomAttributeConverter} at that point.
+ * keeps whatever it could extract, leaving semantic judgment to validation. Custom attribute
+ * values are kept as their raw ECXML body: understanding one needs its custom attribute class, so
+ * the attribute stays unmaterialized until something reads or writes it.
  * @alpha
  */
 export class SchemaXmlReader implements SchemaDocumentTextReader {
@@ -38,7 +37,7 @@ export class SchemaXmlReader implements SchemaDocumentTextReader {
     const root = await parseElementTree(text, issues, options?.source);
     if (root === undefined)
       return { issues };
-    const walker = new EcXml3Walker(issues, options?.source);
+    const walker = new ECXml3Walker(issues, options?.source, options?.schemaSet);
     return { document: walker.readSchema(root), issues };
   }
 
@@ -196,16 +195,33 @@ const ITEM_ELEMENT_NAMES = new Set([
 ]);
 
 /** Walks a parsed element tree into a Authoring.SchemaDocument. Created per read. */
-class EcXml3Walker {
+class ECXml3Walker {
   private readonly _issues: SchemaIssueList;
   private readonly _source: string | undefined;
+  private readonly _schemaSet: Authoring.SchemaSet | undefined;
   /** Lowercased reference alias -> schema name, for normalizing alias-qualified references. */
   private readonly _aliasToSchemaName = new Map<string, string>();
   private _documentInProgress?: Authoring.SchemaDocument;
 
-  public constructor(issues: SchemaIssueList, source: string | undefined) {
+  public constructor(issues: SchemaIssueList, source: string | undefined, schemaSet: Authoring.SchemaSet | undefined) {
     this._issues = issues;
     this._source = source;
+    this._schemaSet = schemaSet;
+  }
+
+  /** Moves the freshly read document into the caller's schema set, or reports why it could not.
+   * A name collision leaves the document in the private set it was constructed with, which is the
+   * only outcome that does not silently evict someone else's schema. */
+  private _joinSchemaSet(document: Authoring.SchemaDocument): void {
+    const schemaSet = this._schemaSet;
+    if (schemaSet === undefined)
+      return;
+    const incumbent = schemaSet.getSchema(document.name);
+    if (incumbent !== undefined) {
+      this._issues.addError("SchemaXml-0055", `The schema set already holds a schema named "${incumbent.name}"; "${document.name}" was read into a set of its own.`, { source: this._source });
+      return;
+    }
+    schemaSet.moveIn(document);
   }
 
   /** The document under construction. Set at the start of {@link readSchema}; every item/property
@@ -252,6 +268,7 @@ class EcXml3Walker {
       source: this._source,
     });
     this._documentInProgress = document;
+    this._joinSchemaSet(document);
     this._aliasToSchemaName.set(document.alias.toLowerCase(), document.name);
 
     // References first, so item-reference normalization sees the full alias map.
@@ -365,7 +382,7 @@ class EcXml3Walker {
 
     const entity = this._document.createEntity(name, this.classInit(node, baseClasses));
     // A bare BaseClass entry does not reveal whether it names a class or a mixin; the first goes
-    // to baseClass and the rest to mixins, and the compiler reconciles misplacements.
+    // to baseClass and the rest to mixins; validation reports a misplacement.
     entity.mixins.push(...baseClasses.slice(1));
     this.readClassContent(node, entity);
   }
@@ -643,7 +660,7 @@ class EcXml3Walker {
       this._error("SchemaXml-0034", `The kind of quantity "${name}" is missing persistenceUnit or a parseable relativeError; the item was skipped.`, node);
       return;
     }
-    // Presentation format strings stay verbatim; the override grammar is parsed at compile.
+    // Presentation format strings stay verbatim; the override grammar is not parsed here.
     const presentationFormats = node.attributes.presentationUnits !== undefined
       ? node.attributes.presentationUnits.split(";").map((entry) => entry.trim()).filter((entry) => entry.length > 0)
         .map((entry) => mapFormatStringReferences(entry, (reference) => this.normalizeItemReference(reference)))
@@ -781,12 +798,11 @@ class EcXml3Walker {
 
   // ===== Custom attributes =====
 
-  /** Reads an `<ECCustomAttributes>` container into a set. The CA class is identified by the entry
-   * element's name plus its `xmlns` (`Schema.RR.WW.mm` - the version is a serialization artifact and
-   * is dropped). The value is kept as the raw ECXML body, exactly as written: the document has no CA
-   * class definition, so it does not interpret the value here - it stays XML until a writer must emit
-   * it as JSON, at which point the {@link CustomAttributeConverter} converts it (the same class-aware
-   * split ECDb's XmlCAToJson makes). An empty CA carries no body. */
+  /** Reads an `<ECCustomAttributes>` container into a set. The custom attribute class is identified
+   * by the entry element's name plus its `xmlns` (`Schema.RR.WW.mm` - the version is a serialization
+   * artifact and is dropped). The value is kept as the raw ECXML body, exactly as written: the body
+   * cannot be understood without the custom attribute class, so the attribute stays unmaterialized
+   * until something reads or writes it (see {@link Authoring.CustomAttribute}). */
   private readCustomAttributes(container: XmlElementNode, target: Authoring.CustomAttributeSet, _location: string, skipElementName?: string): void {
     for (const caNode of container.children) {
       if (skipElementName !== undefined && caNode.name.toLowerCase() === skipElementName)
@@ -798,11 +814,7 @@ class EcXml3Walker {
         if (schemaName.length > 0 && schemaName.toLowerCase() !== this._document.name.toLowerCase())
           className = `${schemaName}:${caNode.name}`;
       }
-      const ca = new Authoring.CustomAttribute(className);
-      const body = serializeCustomAttributeBody(caNode.children);
-      if (body !== undefined)
-        ca.xml = body;
-      target.add(ca);
+      Authoring.CustomAttribute.fromXmlBody(target.container, className, serializeCustomAttributeBody(caNode.children));
     }
   }
 
@@ -815,7 +827,7 @@ class EcXml3Walker {
 
   /** Normalizes an item reference read from XML: the alias-qualified form becomes the full-name
    * form (`bis:PhysicalElement` -> `BisCore:PhysicalElement`), a reference into this schema becomes
-   * a bare local name. Unknown qualifiers are left as written for the compiler to diagnose. */
+   * a bare local name. Unknown qualifiers are left as written for validation to diagnose. */
   private normalizeItemReference(reference: string): Authoring.LocalOrFullName {
     const separatorIndex = reference.search(/[.:]/);
     if (separatorIndex < 0)

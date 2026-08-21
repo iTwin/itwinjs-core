@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { readFile } from "fs/promises";
+import { readdir, readFile } from "fs/promises";
 import { join } from "path";
 import { describe, expect, it } from "vitest";
 import { DOMParser } from "@xmldom/xmldom";
+import { classModifierToString, strengthDirectionToString, strengthToString } from "../../ECObjects";
 import { compareSchemaDocuments, formatSchemaComparison } from "../../Authoring/SchemaComparison";
-import { SchemaDocument } from "../../Authoring/SchemaDocument";
+import { SchemaDocument, SchemaSet, SpecDefaults } from "../../Authoring/SchemaDocument";
 import { SchemaJsonReader } from "../../Authoring/SchemaJsonReader";
 import { SchemaJsonWriter } from "../../Authoring/SchemaJsonWriter";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
@@ -39,16 +40,51 @@ function assetPath(packageName: string, fileName: string): string {
   return join(process.cwd(), "node_modules", "@bentley", packageName, fileName);
 }
 
-async function readDocumentFromXml(xml: string, source: string): Promise<SchemaDocument> {
-  const result = await new SchemaXmlReader().readDocument(xml, { source });
+async function readDocumentFromXml(xml: string, source: string, schemaSet?: SchemaSet): Promise<SchemaDocument> {
+  const result = await new SchemaXmlReader().readDocument(xml, { source, schemaSet });
   expect(result.issues.hasErrors, JSON.stringify(result.issues.errors)).to.be.false;
   return result.document!;
 }
 
-async function readDocumentFromJson(json: string, source: string): Promise<SchemaDocument> {
-  const result = await new SchemaJsonReader().readDocument(json, { source });
+async function readDocumentFromJson(json: string, source: string, schemaSet?: SchemaSet): Promise<SchemaDocument> {
+  const result = await new SchemaJsonReader().readDocument(json, { source, schemaSet });
   expect(result.issues.hasErrors, JSON.stringify(result.issues.errors)).to.be.false;
   return result.document!;
+}
+
+// The npm package each schema BisCore and friends reference is published in. Custom attributes are
+// converted against their custom attribute class, so a faithful round trip of a real schema needs
+// the schemas defining those classes in the same set - which is the workflow this exercises.
+/* eslint-disable @typescript-eslint/naming-convention -- keys are EC schema names */
+const REFERENCED_SCHEMA_PACKAGES: Record<string, string> = {
+  BisCustomAttributes: "bis-custom-attributes-schema",
+  CoreCustomAttributes: "core-custom-attributes-schema",
+  ECDbMap: "ecdb-map-schema",
+  ECDbSchemaPolicies: "ecdb-schema-policies-schema",
+  Formats: "formats-schema",
+  Units: "units-schema",
+};
+/* eslint-enable @typescript-eslint/naming-convention */
+
+/** A set holding every schema the named one references, read from its own npm package. */
+async function setWithReferencesOf(packageName: string, schemaName: string): Promise<SchemaSet> {
+  const set = new SchemaSet();
+  const { header } = await new SchemaXmlReader().readHeader(await readFile(assetPath(packageName, `${schemaName}.ecschema.xml`), "utf-8"));
+  for (const reference of header?.references ?? []) {
+    const referencedPackage = REFERENCED_SCHEMA_PACKAGES[reference.name];
+    expect(referencedPackage, `no npm package known for the referenced schema "${reference.name}"`).to.not.be.undefined;
+    const fileName = await resolveSchemaFileName(referencedPackage, reference.name);
+    await readDocumentFromXml(await readFile(assetPath(referencedPackage, fileName), "utf-8"), reference.name, set);
+  }
+  return set;
+}
+
+/** Schema packages name their file either `Name.ecschema.xml` or `Name.RR.WW.mm.ecschema.xml`. */
+async function resolveSchemaFileName(packageName: string, schemaName: string): Promise<string> {
+  const names = await readdir(join(process.cwd(), "node_modules", "@bentley", packageName));
+  const match = names.find((name) => name.toLowerCase().startsWith(`${schemaName.toLowerCase()}.`) && name.endsWith(".ecschema.xml"));
+  expect(match, `no ECXML file for "${schemaName}" in @bentley/${packageName}`).to.not.be.undefined;
+  return match!;
 }
 
 // ===== Scalar comparison shared by both oracles =====
@@ -158,6 +194,44 @@ function canonicalizeElement(element: Element): CanonicalXmlElement {
   return { name: element.nodeName, attributes, text: text.trim(), children: hoisted };
 }
 
+// Published files disagree on whether spec defaults are written; the document preserves its source,
+// so tolerate an absent attribute against its default here.
+function specDefaultXmlValue(left: CanonicalXmlElement, right: CanonicalXmlElement, attributeName: string): string | undefined {
+  if (attributeName === "modifier") {
+    // ECXML 3.2 represents a mixin as an ECEntityClass with an IsMixin custom attribute.
+    const isMixin = [left, right].some((element) => element.name === "ECEntityClass" && element.children.some((child) =>
+      child.name === "ECCustomAttributes" && child.children.some((customAttribute) => customAttribute.name === "IsMixin")));
+    return classModifierToString(isMixin ? SpecDefaults.mixinModifier : SpecDefaults.classModifier);
+  }
+  if (left.name === "ECRelationshipClass") {
+    if (attributeName === "strength")
+      return strengthToString(SpecDefaults.relationshipStrength);
+    if (attributeName === "strengthDirection")
+      return strengthDirectionToString(SpecDefaults.relationshipStrengthDirection);
+  }
+  if (left.name === "Source" || left.name === "Target") {
+    if (attributeName === "polymorphic")
+      return String(SpecDefaults.constraintPolymorphic);
+  }
+  if (left.name === "Format") {
+    switch (attributeName) {
+      case "roundFactor": return String(SpecDefaults.formatRoundFactor);
+      case "showSignOption": return SpecDefaults.formatShowSignOption;
+      case "decimalSeparator": return SpecDefaults.formatDecimalSeparator;
+      case "thousandSeparator": return SpecDefaults.formatThousandSeparator;
+      case "uomSeparator": return SpecDefaults.formatUomSeparator;
+      case "stationSeparator": return SpecDefaults.formatStationSeparator;
+    }
+  }
+  if (left.name === "Composite") {
+    if (attributeName === "spacer")
+      return SpecDefaults.compositeSpacer;
+    if (attributeName === "includeZero")
+      return String(SpecDefaults.compositeIncludeZero);
+  }
+  return undefined;
+}
+
 function diffCanonicalXml(path: string, left: CanonicalXmlElement | undefined, right: CanonicalXmlElement | undefined, out: string[]): void {
   if (left === undefined || right === undefined || left.name !== right.name) {
     out.push(`${path}: <${left?.name ?? "absent"}> vs <${right?.name ?? "absent"}>`);
@@ -180,6 +254,12 @@ function diffCanonicalXml(path: string, left: CanonicalXmlElement | undefined, r
       continue;
     if (name === "minOccurs" && (leftValue ?? "0") === (rightValue ?? "0"))
       continue;
+    if (leftValue === undefined || rightValue === undefined) {
+      const presentValue = leftValue ?? rightValue;
+      const defaultValue = specDefaultXmlValue(left, right, name);
+      if (presentValue !== undefined && defaultValue !== undefined && scalarsMatch(presentValue, defaultValue))
+        continue;
+    }
     // formatTraits is an unordered trait set with case-insensitive spellings.
     if (name === "formatTraits" && leftValue !== undefined && rightValue !== undefined) {
       const traitSet = (value: string): string => value.toLowerCase().split(/[|,;]/).map((t) => t.trim()).sort().join("|");
@@ -217,30 +297,36 @@ describe("real released schemas (from @bentley schema packages)", () => {
         };
       }
 
+      /** A fresh set per read, holding the schema's references. Two documents of the same name
+       * cannot share a set, so each read gets its own. */
+      async function referenceSet(): Promise<SchemaSet> {
+        return setWithReferencesOf(packageName, schemaName);
+      }
+
       it("round-trips the published XML with stable output", async () => {
         const { xml } = await loadTexts();
-        const document = await readDocumentFromXml(xml, schemaName);
+        const document = await readDocumentFromXml(xml, schemaName, await referenceSet());
         const writer = new SchemaXmlWriter();
         const firstWrite = writer.writeDocument(document);
         expect(firstWrite.issues.hasErrors, JSON.stringify(firstWrite.issues.errors)).to.be.false;
-        const reread = await readDocumentFromXml(firstWrite.text!, schemaName);
+        const reread = await readDocumentFromXml(firstWrite.text!, schemaName, await referenceSet());
         expect(writer.writeDocument(reread).text).to.equal(firstWrite.text);
       });
 
       it("round-trips the published JSON with stable output", async () => {
         const { json } = await loadTexts();
-        const document = await readDocumentFromJson(json, schemaName);
+        const document = await readDocumentFromJson(json, schemaName, await referenceSet());
         const writer = new SchemaJsonWriter();
         const firstWrite = writer.writeDocument(document);
         expect(firstWrite.issues.hasErrors, JSON.stringify(firstWrite.issues.errors)).to.be.false;
-        const reread = await readDocumentFromJson(firstWrite.text!, schemaName);
+        const reread = await readDocumentFromJson(firstWrite.text!, schemaName, await referenceSet());
         expect(writer.writeDocument(reread).text).to.equal(firstWrite.text);
       });
 
       it("XML-read and JSON-read documents compare equal", async () => {
         const { xml, json } = await loadTexts();
-        const fromXml = await readDocumentFromXml(xml, schemaName);
-        const fromJson = await readDocumentFromJson(json, schemaName);
+        const fromXml = await readDocumentFromXml(xml, schemaName, await referenceSet());
+        const fromJson = await readDocumentFromJson(json, schemaName, await referenceSet());
         // Some packages published their XML and JSON from different source revisions, so the
         // reference versions can genuinely differ (e.g. Formats.ecschema.xml references Units
         // 01.00.00, the .json 01.00.05). Align them - that skew is the package's, not ours.
@@ -252,7 +338,7 @@ describe("real released schemas (from @bentley schema packages)", () => {
 
       it("re-emitted JSON matches the published JSON (independent oracle)", async () => {
         const { json } = await loadTexts();
-        const document = await readDocumentFromJson(json, schemaName);
+        const document = await readDocumentFromJson(json, schemaName, await referenceSet());
         const emitted = new SchemaJsonWriter().writeDocument(document).text!;
         const differences: string[] = [];
         diffJson(schemaName, JSON.parse(json), JSON.parse(emitted), differences);
@@ -261,7 +347,7 @@ describe("real released schemas (from @bentley schema packages)", () => {
 
       it("re-emitted XML matches the published XML semantically (independent oracle)", async () => {
         const { xml } = await loadTexts();
-        const document = await readDocumentFromXml(xml, schemaName);
+        const document = await readDocumentFromXml(xml, schemaName, await referenceSet());
         const emitted = new SchemaXmlWriter().writeDocument(document).text!;
         const differences: string[] = [];
         diffCanonicalXml(schemaName, canonicalizeXml(xml), canonicalizeXml(emitted), differences);
@@ -278,27 +364,20 @@ describe("real released schemas (from @bentley schema packages)", () => {
       // against the published file of that other format - the only assertions that exercise the
       // actual XML->JSON / JSON->XML conversion against an independent oracle.
       //
-      // KNOWN FAILING (kept red on purpose, no SchemaView passed): conversion across the boundary is
-      // lossy without the CA class for two shapes, and these are the only assertions that surface it.
-      // Both directions need a CompiledSchemaView fed to the writer to go green; that does not exist
-      // yet (see CustomAttributeConverter and the Schema Authoring living doc), so the gap is real and
-      // visible here rather than papered over.
-      //  - XML -> JSON: a SINGLE-entry struct array is lexically a struct, so the converter reads it
-      //    as one without the class. In BisCore this hits UrlLink and EmbeddedFileLink (their one-entry
-      //    DbIndexList.Indexes). Multi-entry struct arrays (Element, ExternalSourceAspect) already
-      //    convert cleanly. This is the authoritative direction (the package JSON was produced from the
-      //    XML by the heavy serializer), so this failure is a genuine fidelity gap pending a SchemaView.
-      //  - JSON -> XML: a struct array's entry element name (struct class) is absent from canonical
-      //    JSON, so the converter drops the whole CA and reports SchemaCA-0001 (BisCore DbIndexList).
-      //    Plus the spec-default spelling skew this direction always had (strengthDirection,
-      //    stationSeparator, modifier materialized one way in the published file, the other in ours) -
-      //    and this is NOT a trustworthy oracle anyway, since the package XML was the conversion SOURCE,
-      //    not a JSON->XML target. Kept red as a marker, not a correctness bar.
+      // Cross-format conversion. Custom attribute values are converted against their custom
+      // attribute class, so both directions need the referenced schemas in the set - which is
+      // exactly what a consumer converting a real schema has to do.
+      //
+      // The JSON -> XML direction still differs in how spec defaults are spelled: the published
+      // ECJSON materializes defaults its ECXML omits (relationship strengthDirection, format
+      // stationSeparator, entity modifier), and the writers faithfully preserve whatever their
+      // source said. That skew is the published files', not ours, so the comparison tolerates a
+      // spec default on one side and absence on the other, the same rule the comparer applies.
 
       it("XML converted to JSON matches the published JSON (independent oracle)", async () => {
         const { xml, json } = await loadTexts();
-        const fromXml = await readDocumentFromXml(xml, schemaName);
-        const fromJson = await readDocumentFromJson(json, schemaName);
+        const fromXml = await readDocumentFromXml(xml, schemaName, await referenceSet());
+        const fromJson = await readDocumentFromJson(json, schemaName, await referenceSet());
         // Neutralize cross-format reference-version skew (some packages published their XML and JSON
         // from different source revisions) by aligning to the published JSON's references, so only
         // value/CA conversion differences remain in the diff.
@@ -312,8 +391,8 @@ describe("real released schemas (from @bentley schema packages)", () => {
 
       it("JSON converted to XML matches the published XML semantically (independent oracle)", async () => {
         const { xml, json } = await loadTexts();
-        const fromXml = await readDocumentFromXml(xml, schemaName);
-        const fromJson = await readDocumentFromJson(json, schemaName);
+        const fromXml = await readDocumentFromXml(xml, schemaName, await referenceSet());
+        const fromJson = await readDocumentFromJson(json, schemaName, await referenceSet());
         for (const reference of fromXml.references)
           fromJson.setSchemaReference(reference);
         const emitted = new SchemaXmlWriter().writeDocument(fromJson).text!;

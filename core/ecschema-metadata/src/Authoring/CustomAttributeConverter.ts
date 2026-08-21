@@ -7,62 +7,34 @@
  */
 
 import * as sax from "sax";
-import { parsePrimitiveType } from "../ECObjects";
-import { SchemaView } from "../SchemaView/SchemaView";
-import * as Authoring from "./SchemaDocument";
+import { parsePrimitiveType, PrimitiveType, SchemaItemType } from "../ECObjects";
+import type {
+  AnyProperty, CustomAttribute, CustomAttributeClass, CustomAttributeValue, CustomAttributeValues, ECClass, SchemaDocument, XmlString,
+} from "./SchemaDocument";
 import { SchemaIssueList } from "./SchemaIssues";
-
-/** A custom attribute's value in canonical ECJSON form: a property-name -> value object. Values are
- * untyped (`unknown`) because the document has no CA class to type them against. */
-interface JsonObject { [name: string]: unknown }
+import { getStandardSchemas } from "./StandardSchemas";
 
 /**
- * Conversion between the two raw, format-native shapes a custom-attribute value takes inside a
- * {@link Authoring.CustomAttribute}: the canonical ECJSON property object and the raw ECXML body
- * string. Every wrinkle of the XML<->JSON custom-attribute representation gap is confined to this
- * module.
+ * Conversion of custom attribute values between the raw ECXML body a document reads them from and
+ * the typed {@link CustomAttributeValues} it holds them as, plus the way back out to ECXML.
  *
- * A {@link Authoring.SchemaDocument} deliberately has no resolved CA class definitions, so its readers store CA
- * values in whichever shape the source produced - the XML reader an {@link Authoring.XmlString}, the
- * JSON reader and in-memory construction a JSON object. Writing to the *same* format is then a
- * passthrough; only crossing the format boundary calls into here.
+ * Every conversion runs **against the custom attribute class**, which is what makes it exact: the
+ * class says a value is a boolean rather than the text `"True"`, and that a nested element is a
+ * one-entry struct array rather than a struct - two things neither serialization format can tell
+ * you on its own. Resolution goes through the owning document's schema set first, then the
+ * built-in definitions of the standard custom attribute classes ({@link getStandardSchemas}), so
+ * the common ones need nothing loaded.
  *
- * The boundary cannot be crossed losslessly without the CA class, because ECXML carries information
- * ECJSON drops (the struct class on a struct-array entry, spelled as the entry element name) and
- * ECJSON carries types ECXML drops (a value is just text in XML). What this module recovers without
- * the class, and where it needs one:
- *  - Scalars: text <-> typed value, recovered heuristically with a reversibility guard (see
- *    {@link promoteScalar}). No class needed.
- *  - Primitive arrays: repeated primitive-keyword entry elements <-> a JS array of values. No class.
- *  - Structs: nested element <-> object. No class.
- *  - Multi-entry struct arrays, XML -> JSON: the >=2 repeated entry elements are unambiguously an
- *    array, so the entry element name is dropped and a canonical array is produced. No class needed.
- *  - Single-entry struct arrays, XML -> JSON: one nested element is lexically identical to a struct,
- *    so without a {@link SchemaView} it is read as a struct (best effort, the common case). A view
- *    resolves it to a one-element array.
- *  - Struct arrays, JSON -> XML: the entry element name (struct class) is absent from canonical JSON
- *    and cannot be invented. Without a {@link SchemaView} that resolves the CA class, the whole CA is
- *    dropped and an error is reported - the caller must check the issue list. A view supplies the name.
+ * A property the class does not declare is still converted, by shape alone, so an attribute whose
+ * class has drifted still round-trips its extra values instead of losing them. Validation is where
+ * that mismatch gets reported.
  */
 
-/** Context threaded through a conversion: the optional resolver, the issue sink, and provenance. */
-export interface CustomAttributeConversionContext {
-  /** Resolves CA classes so struct-array shapes can be converted faithfully. When absent, conversions
-   * fall back to best effort and report an error where the class is genuinely required (struct arrays,
-   * JSON -> XML). */
-  schemaView?: SchemaView;
-  /** The name of the schema that owns the custom attribute, used to qualify a bare own-schema class
-   * name before looking it up in {@link schemaView}. */
-  ownerSchemaName: string;
-  /** Where conversion problems are reported. */
-  issues: SchemaIssueList;
-  /** Path of the element carrying the custom attribute, copied onto reported issues. */
-  location: string;
-}
-
 /** A minimal XML element node - the shape both the XML reader's parsed tree and this module's own
- * fragment parser expose. Attributes are irrelevant inside a CA body (the only attribute, `xmlns`,
- * lives on the CA element itself), so they are not modeled here. */
+ * fragment parser expose. Attributes are irrelevant inside a custom attribute body (the only
+ * attribute, `xmlns`, lives on the custom attribute element itself), so they are not modeled here.
+ * @alpha
+ */
 export interface CustomAttributeXmlNode {
   readonly name: string;
   readonly text: string;
@@ -70,50 +42,175 @@ export interface CustomAttributeXmlNode {
 }
 
 /** Serializes a custom attribute element's child nodes (its property value elements) into the raw
- * {@link Authoring.XmlString} body the document stores for an XML-sourced CA. Returns `undefined` when
- * there are no children (an empty CA carries no body). The XML reader calls this on the nodes it
- * parsed; the formatting matches what {@link customAttributeJsonToXml} produces, so an XML-sourced and
- * a JSON-sourced CA of identical content serialize to identical bytes. */
-export function serializeCustomAttributeBody(children: ReadonlyArray<CustomAttributeXmlNode>): Authoring.XmlString | undefined {
+ * {@link XmlString} body an unmaterialized custom attribute holds. Returns `undefined` when there
+ * are no children. The XML reader calls this on the nodes it parsed; the formatting matches what
+ * this module produces when writing, so an XML-sourced and an in-memory custom attribute of
+ * identical content serialize to identical bytes.
+ * @alpha
+ */
+export function serializeCustomAttributeBody(children: ReadonlyArray<CustomAttributeXmlNode>): XmlString | undefined {
   if (children.length === 0)
     return undefined;
   return serializeNodes(children, 0).join("\n");
 }
 
-/** Converts a raw ECXML CA body into the canonical ECJSON property object. Used by the JSON writer
- * when it meets an XML-sourced CA. Never throws; an unparseable body reports an error and yields
- * `undefined` (the caller drops the CA). See the module comment for what needs a {@link SchemaView}. */
-export function customAttributeXmlToJson(body: Authoring.XmlString, className: string, context: CustomAttributeConversionContext): JsonObject | undefined {
-  const nodes = parseCustomAttributeBody(body);
-  if (nodes === undefined) {
-    context.issues.addError("SchemaCA-0003", `The custom attribute "${className}" has an XML value that could not be parsed; it was skipped.`, { location: context.location });
+/** Converts a custom attribute's unconverted ECXML body into its typed values, against its custom
+ * attribute class. Called by {@link CustomAttribute.values} and {@link CustomAttribute.tryGetValues}.
+ * Throws when `throwOnMissingClass` is set and the class cannot be resolved, and returns
+ * `undefined` otherwise - the two behaviours those two accessors promise.
+ * @internal
+ */
+export function materializeCustomAttribute(customAttribute: CustomAttribute, throwOnMissingClass: true): CustomAttributeValues;
+export function materializeCustomAttribute(customAttribute: CustomAttribute, throwOnMissingClass: boolean): CustomAttributeValues | undefined;
+export function materializeCustomAttribute(customAttribute: CustomAttribute, throwOnMissingClass: boolean): CustomAttributeValues | undefined {
+  const body = customAttribute.rawXml;
+  if (body === undefined || body.trim().length === 0)
+    return {};
+  const caClass = resolveCustomAttributeClass(customAttribute.document, customAttribute.className);
+  if (caClass === undefined) {
+    if (throwOnMissingClass)
+      throw new Error(`Cannot read the custom attribute "${customAttribute.className}" on "${containerName(customAttribute)}": its custom attribute class is not in the schema set. Put the schema that defines it in the set, then read it again.`);
     return undefined;
   }
-  const caClass = resolveClass(className, context);
-  return nodesToBag(nodes, caClass, context);
+  const nodes = parseCustomAttributeBody(body);
+  if (nodes === undefined) {
+    if (throwOnMissingClass)
+      throw new Error(`The custom attribute "${customAttribute.className}" on "${containerName(customAttribute)}" holds an ECXML body that is not well-formed.`);
+    return undefined;
+  }
+  return nodesToValues(nodes, caClass);
 }
 
-/** Converts a canonical ECJSON property object into the raw ECXML CA body. Used by the XML writer when
- * it meets a JSON-sourced (or in-memory) CA. Returns `undefined` when the value cannot be expressed in
- * XML without the CA class - a struct array with no {@link SchemaView} to name its entry elements - in
- * which case an error is reported and the caller drops the whole CA. An empty object yields `""`. */
-export function customAttributeJsonToXml(json: JsonObject, className: string, context: CustomAttributeConversionContext): Authoring.XmlString | undefined {
-  const caClass = resolveClass(className, context);
-  const nodes = bagToNodes(json, className, caClass, context);
+/** The typed values of a custom attribute for a writer: materializes if needed, and on failure
+ * reports an issue and returns `undefined` instead of throwing. Writers report and carry on.
+ * @internal
+ */
+export function readCustomAttributeValues(customAttribute: CustomAttribute, issues: SchemaIssueList, location: string): CustomAttributeValues | undefined {
+  const values = customAttribute.tryGetValues();
+  if (values === undefined) {
+    issues.addError("SchemaCA-0001",
+      `The custom attribute "${customAttribute.className}" could not be converted because its custom attribute class is not in the schema set; it was skipped.`,
+      { location });
+  }
+  return values;
+}
+
+/** Serializes a custom attribute into an ECXML body for a writer.
+ *
+ * An attribute that is still unmaterialized and whose class cannot be resolved is passed through
+ * verbatim, with a warning - the output stays valid and keeps the data, which beats dropping it.
+ * Returns `undefined` when the attribute cannot be written at all (its values need the class to
+ * name a struct array's entry elements), in which case an error has been reported and the caller
+ * drops it.
+ * @internal
+ */
+export function writeCustomAttributeXmlBody(customAttribute: CustomAttribute, issues: SchemaIssueList, location: string): XmlString | undefined {
+  const values = customAttribute.tryGetValues();
+  if (values === undefined) {
+    issues.addWarning("SchemaCA-0002",
+      `The custom attribute "${customAttribute.className}" was copied verbatim: its custom attribute class is not in the schema set, so its values could not be validated.`,
+      { location });
+    return customAttribute.rawXml ?? "";
+  }
+  const caClass = resolveCustomAttributeClass(customAttribute.document, customAttribute.className);
+  const nodes = valuesToNodes(values, caClass, customAttribute.className, issues, location);
   if (nodes === undefined)
     return undefined;
   return serializeNodes(nodes, 0).join("\n");
 }
 
-// ===== XML <- JSON (json object -> nodes) =====
+/** Resolves a custom attribute class name against a document: its own schema set first, then the
+ * built-in standard schemas. Returns `undefined` when neither holds a custom attribute class of
+ * that name.
+ * @internal
+ */
+export function resolveCustomAttributeClass(document: SchemaDocument, className: string): CustomAttributeClass | undefined {
+  const own = document.resolveItemOfType(className, SchemaItemType.CustomAttributeClass);
+  if (own !== undefined)
+    return own;
+  const schemaName = document.resolveSchemaName(className);
+  const localName = className.substring(className.search(/[.:]/) + 1);
+  return getStandardSchemas().getSchema(schemaName)?.getItemOfType(localName, SchemaItemType.CustomAttributeClass);
+}
 
-/** Builds the value-element nodes for a JSON property object, or `undefined` if any value needs the CA
- * class but it is unavailable (the whole CA is then dropped by the caller). `ownerClass` is the CA or
- * struct class whose properties name `bag`'s entries, when resolved. */
-function bagToNodes(bag: JsonObject, className: string, ownerClass: SchemaView.Class | undefined, context: CustomAttributeConversionContext): CustomAttributeXmlNode[] | undefined {
+// ===== values <- XML nodes =====
+
+function nodesToValues(nodes: ReadonlyArray<CustomAttributeXmlNode>, ownerClass: ECClass | undefined): CustomAttributeValues {
+  const values: CustomAttributeValues = {};
+  for (const node of nodes)
+    values[node.name] = nodeToValue(node, ownerClass?.getEffectiveProperty(node.name));
+  return values;
+}
+
+function nodeToValue(node: CustomAttributeXmlNode, property: AnyProperty | undefined): CustomAttributeValue {
+  if (property !== undefined && property.isStruct()) {
+    const structClass = property.getStructClass();
+    if (property.isArray())
+      return node.children.map((entry) => nodesToValues(entry.children, structClass));
+    return nodesToValues(node.children, structClass);
+  }
+
+  if (property !== undefined && property.isPrimitive()) {
+    const elementType = primitiveTypeOf(property);
+    if (property.isArray())
+      return node.children.map((entry) => parseScalar(entry.text.trim(), elementType));
+    return parseScalar(node.text.trim(), elementType);
+  }
+
+  // No declared property to go on - the class has drifted, or this is a navigation property, which
+  // a custom attribute cannot carry. Read by shape so the value survives to be reported.
+  if (node.children.length === 0)
+    return node.text.trim();
+  return nodesToValues(node.children, undefined);
+}
+
+/** The primitive type of a primitive property's value (its element type, on an array), or
+ * `undefined` when it is enumeration-backed with an unresolvable enumeration. */
+function primitiveTypeOf(property: AnyProperty & { typeName: string }): PrimitiveType | undefined {
+  const keyword = parsePrimitiveType(property.typeName);
+  if (keyword !== undefined)
+    return keyword;
+  const enumeration = property.document.resolveItemOfType(property.typeName, SchemaItemType.Enumeration);
+  if (enumeration === undefined)
+    return undefined;
+  return enumeration.backingType === "int" ? PrimitiveType.Integer : PrimitiveType.String;
+}
+
+/** Converts XML text to a typed value per the declared primitive type. An unparseable number and
+ * an unrecognized boolean keep their text: the document tolerates invalid data and validation is
+ * where it gets reported. */
+function parseScalar(text: string, type: PrimitiveType | undefined): string | number | boolean {
+  switch (type) {
+    case PrimitiveType.Boolean: {
+      const lower = text.toLowerCase();
+      if (lower === "true" || lower === "1")
+        return true;
+      if (lower === "false" || lower === "0")
+        return false;
+      return text;
+    }
+    case PrimitiveType.Integer:
+    case PrimitiveType.Long: {
+      const value = Number.parseInt(text, 10);
+      return Number.isNaN(value) ? text : value;
+    }
+    case PrimitiveType.Double: {
+      const value = Number.parseFloat(text);
+      return Number.isNaN(value) ? text : value;
+    }
+    default:
+      // String, DateTime, Binary, Point2d, Point3d, IGeometry and anything unresolved: the wire form
+      // is the value.
+      return text;
+  }
+}
+
+// ===== values -> XML nodes =====
+
+function valuesToNodes(values: CustomAttributeValues, ownerClass: ECClass | undefined, className: string, issues: SchemaIssueList, location: string): CustomAttributeXmlNode[] | undefined {
   const nodes: CustomAttributeXmlNode[] = [];
-  for (const [name, value] of Object.entries(bag)) {
-    const node = valueToNode(name, value, ownerClass?.getProperty(name), className, context);
+  for (const [name, value] of Object.entries(values)) {
+    const node = valueToNode(name, value, ownerClass?.getEffectiveProperty(name), className, issues, location);
     if (node === undefined)
       return undefined;
     nodes.push(node);
@@ -121,37 +218,39 @@ function bagToNodes(bag: JsonObject, className: string, ownerClass: SchemaView.C
   return nodes;
 }
 
-function valueToNode(name: string, value: unknown, property: SchemaView.Property | undefined, className: string, context: CustomAttributeConversionContext): CustomAttributeXmlNode | undefined {
+function valueToNode(name: string, value: CustomAttributeValue, property: AnyProperty | undefined, className: string, issues: SchemaIssueList, location: string): CustomAttributeXmlNode | undefined {
   if (Array.isArray(value)) {
     if (value.length === 0)
       return { name, text: "", children: [] };
-    if (isObjectValue(value[0])) {
-      // Struct array: each entry is an element named for the struct class, which canonical JSON does
-      // not carry. Only a resolved struct-array property supplies it; otherwise the CA cannot be
-      // written and is dropped.
-      const structClass = property !== undefined && property.isStruct() && property.isArray() ? property.structClass : undefined;
+
+    if (isValuesObject(value[0])) {
+      // A struct array's entries are elements named for their struct class, which the values do not
+      // carry - only the property does.
+      const structClass = property !== undefined && property.isStruct() && property.isArray() ? property.getStructClass() : undefined;
       if (structClass === undefined) {
-        context.issues.addError("SchemaCA-0001",
-          `The custom attribute "${className}" has a struct-array property "${name}" whose entry struct class cannot be determined without the custom attribute class; provide a SchemaView to write it. The custom attribute was skipped.`,
-          { location: context.location });
+        issues.addError("SchemaCA-0003",
+          `The custom attribute "${className}" has a struct-array property "${name}" whose entry struct class cannot be determined without the custom attribute class; put the schema that defines it in the schema set. The custom attribute was skipped.`,
+          { location });
         return undefined;
       }
       const children: CustomAttributeXmlNode[] = [];
       for (const entry of value) {
-        const memberNodes = bagToNodes(entry as JsonObject, className, structClass, context);
+        const memberNodes = valuesToNodes(entry as CustomAttributeValues, structClass, className, issues, location);
         if (memberNodes === undefined)
           return undefined;
         children.push({ name: structClass.name, text: "", children: memberNodes });
       }
       return { name, text: "", children };
     }
-    // Primitive array: the entry element name carries the type (string/int/double/boolean).
-    return { name, text: "", children: value.map((entry) => primitiveEntryNode(entry)) };
+
+    // A primitive array's entry elements are named for the element's primitive type.
+    const entryName = primitiveKeywordOf(property) ?? primitiveKeywordOfValue(value[0]);
+    return { name, text: "", children: value.map((entry) => ({ name: entryName, text: scalarToXmlText(entry), children: [] })) };
   }
 
-  if (isObjectValue(value)) {
-    const structClass = property !== undefined && property.isStruct() && !property.isArray() ? property.structClass : undefined;
-    const memberNodes = bagToNodes(value, className, structClass, context);
+  if (isValuesObject(value)) {
+    const structClass = property !== undefined && property.isStruct() && !property.isArray() ? property.getStructClass() : undefined;
+    const memberNodes = valuesToNodes(value, structClass, className, issues, location);
     if (memberNodes === undefined)
       return undefined;
     return { name, text: "", children: memberNodes };
@@ -160,93 +259,60 @@ function valueToNode(name: string, value: unknown, property: SchemaView.Property
   return { name, text: scalarToXmlText(value), children: [] };
 }
 
-/** A primitive array entry: a leaf element whose name is the EC primitive keyword for the JS type. */
-function primitiveEntryNode(value: unknown): CustomAttributeXmlNode {
+/** The EC primitive keyword an array property's entry elements carry, from the declared type. */
+function primitiveKeywordOf(property: AnyProperty | undefined): string | undefined {
+  if (property === undefined || !property.isPrimitive() || !property.isArray())
+    return undefined;
+  const type = primitiveTypeOf(property);
+  return type === undefined ? undefined : primitiveKeyword(type);
+}
+
+function primitiveKeyword(type: PrimitiveType): string {
+  switch (type) {
+    case PrimitiveType.Boolean: return "boolean";
+    case PrimitiveType.Integer: return "int";
+    case PrimitiveType.Long: return "long";
+    case PrimitiveType.Double: return "double";
+    case PrimitiveType.DateTime: return "dateTime";
+    case PrimitiveType.Binary: return "binary";
+    case PrimitiveType.Point2d: return "point2d";
+    case PrimitiveType.Point3d: return "point3d";
+    case PrimitiveType.IGeometry: return "Bentley.Geometry.Common.IGeometry";
+    default: return "string";
+  }
+}
+
+/** Fallback entry element name when the property is not declared: the JS type is all there is. */
+function primitiveKeywordOfValue(value: CustomAttributeValue): string {
   if (typeof value === "boolean")
-    return { name: "boolean", text: value ? "True" : "False", children: [] };
+    return "boolean";
   if (typeof value === "number")
-    return { name: Number.isInteger(value) ? "int" : "double", text: String(value), children: [] };
-  return { name: "string", text: typeof value === "string" ? value : String(value), children: [] };
+    return Number.isInteger(value) ? "int" : "double";
+  return "string";
 }
 
 /** Serializes a scalar to its EC-canonical XML text: `True`/`False` for booleans (capitalized, not
- * `String(value)`'s lowercase), the plain string form otherwise. */
-function scalarToXmlText(value: unknown): string {
+ * `String(value)`'s lowercase), the plain string form otherwise. A struct or array reaching here
+ * means the values disagree with the class about the property's shape; it is written as JSON so the
+ * data survives to be reported rather than becoming "[object Object]". */
+function scalarToXmlText(value: CustomAttributeValue): string {
   if (typeof value === "boolean")
     return value ? "True" : "False";
+  if (typeof value === "object")
+    return JSON.stringify(value);
   return String(value);
 }
 
-// ===== JSON <- XML (nodes -> json object) =====
+// ===== Shared: node serialization, fragment parsing =====
 
-function nodesToBag(nodes: ReadonlyArray<CustomAttributeXmlNode>, ownerClass: SchemaView.Class | undefined, context: CustomAttributeConversionContext): JsonObject {
-  const bag: JsonObject = {};
-  for (const node of nodes)
-    bag[node.name] = nodeToValue(node, ownerClass?.getProperty(node.name), context);
-  return bag;
-}
-
-function nodeToValue(node: CustomAttributeXmlNode, property: SchemaView.Property | undefined, context: CustomAttributeConversionContext): unknown {
-  if (node.children.length === 0)
-    return promoteScalar(node.text.trim());
-
-  const firstName = node.children[0].name;
-  const allSameName = node.children.every((child) => child.name === firstName);
-
-  // Repeated primitive-keyword children are a primitive array; entries stay strings (the keyword
-  // carries the type, but typing array entries is left to the compiler, as before).
-  if (allSameName && parsePrimitiveType(firstName) !== undefined)
-    return node.children.map((child) => child.text.trim());
-
-  // With the resolved property, the struct-vs-struct-array question is answered directly.
-  if (property !== undefined && property.isStruct()) {
-    if (property.isArray())
-      return node.children.map((entry) => nodesToBag(entry.children, property.structClass, context));
-    return nodesToBag(node.children, property.structClass, context);
-  }
-
-  // Without the class: two or more same-named children are unambiguously a struct array, so the entry
-  // element name is dropped and a canonical array is produced. A single nested element (or a mix) is
-  // read as a struct - lexically identical to a one-entry struct array, which a SchemaView would
-  // disambiguate; this is the documented residual gap.
-  if (allSameName && node.children.length >= 2)
-    return node.children.map((entry) => nodesToBag(entry.children, undefined, context));
-  return nodesToBag(node.children, undefined, context);
-}
-
-/** Promotes a class-blind scalar text value to a typed value when, and only when, the typed value
- * re-serializes to the byte-identical text - so promotion can never change a round-trip through XML.
- * Boolean: exact EC-canonical `True`/`False`. Number: `String(Number(x)) === x`, which rejects
- * `"007"`, `"1.0"`, `"1e3"`, `"NaN"`, `"Infinity"`, and anything with stray whitespace. Everything
- * else stays a string. */
-export function promoteScalar(text: string): string | boolean | number {
-  if (text === "True")
-    return true;
-  if (text === "False")
-    return false;
-  if (text.length > 0) {
-    const value = Number(text);
-    if (Number.isFinite(value) && String(value) === text)
-      return value;
-  }
-  return text;
-}
-
-// ===== Shared: class resolution, node serialization, fragment parsing =====
-
-/** Resolves the CA (or struct) class through the optional {@link SchemaView}, qualifying a bare
- * own-schema name first. Returns `undefined` when no view is supplied or the class is not found - the
- * conversion then proceeds class-blind. */
-function resolveClass(className: string, context: CustomAttributeConversionContext): SchemaView.Class | undefined {
-  if (context.schemaView === undefined)
-    return undefined;
-  const qualified = /[.:]/.test(className) ? className : `${context.ownerSchemaName}:${className}`;
-  return context.schemaView.findClass(qualified);
-}
-
-/** Whether the JS value is a struct (a plain object), as opposed to a scalar or array. */
-function isObjectValue(value: unknown): value is JsonObject {
+/** Whether the value is a struct (a plain object), as opposed to a scalar or array. */
+function isValuesObject(value: CustomAttributeValue): value is CustomAttributeValues {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function containerName(customAttribute: CustomAttribute): string {
+  const container = customAttribute.container;
+  return "fullName" in container ? container.fullName : customAttribute.document.name;
 }
 
 /** Serializes nodes to indented XML lines at the given base indent. A node with children is emitted as
@@ -267,14 +333,14 @@ function serializeNodes(nodes: ReadonlyArray<CustomAttributeXmlNode>, indent: nu
   return lines;
 }
 
-/** Escapes element text - mirrors the schema writers so CA bodies escape identically. */
+/** Escapes element text - mirrors the schema writers so custom attribute bodies escape identically. */
 function escapeText(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-/** Parses a raw CA body (a sequence of sibling value elements) into nodes. Synchronous - CA bodies are
- * tiny. Returns `undefined` on malformed XML. */
-function parseCustomAttributeBody(body: Authoring.XmlString): CustomAttributeXmlNode[] | undefined {
+/** Parses a raw body (a sequence of sibling value elements) into nodes. Synchronous - custom
+ * attribute bodies are tiny. Returns `undefined` on malformed XML. */
+function parseCustomAttributeBody(body: XmlString): CustomAttributeXmlNode[] | undefined {
   interface MutableNode { name: string, text: string, children: MutableNode[] }
   const root: MutableNode = { name: "", text: "", children: [] };
   const stack: MutableNode[] = [root];

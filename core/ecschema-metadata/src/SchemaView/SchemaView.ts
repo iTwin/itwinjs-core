@@ -1261,33 +1261,6 @@ export namespace SchemaView {
     readonly customAttribute?: CustomAttribute;
   }
 
-  /** Synchronous access to the custom attributes applied to the containers in a `SchemaView`.
-   *
-   * @beta
-   */
-  export interface CustomAttributeProvider {
-    /** The custom attributes applied directly to a schema, in application order. */
-    getSchemaCustomAttributes(schema: Schema): CustomAttribute[];
-    /** The custom attributes applied directly to a class, in application order. */
-    getClassCustomAttributes(cls: Class): CustomAttribute[];
-    /** The custom attributes applied directly to a property, in application order. */
-    getPropertyCustomAttributes(property: Property): CustomAttribute[];
-
-    /** The named custom attribute applied directly to a schema, or `undefined` if not applied. */
-    getSchemaCustomAttribute(schema: Schema, caClassFullName: string): CustomAttribute | undefined;
-    /** The named custom attribute applied directly to a class, or `undefined` if not applied. */
-    getClassCustomAttribute(cls: Class, caClassFullName: string): CustomAttribute | undefined;
-    /** The named custom attribute applied directly to a property, or `undefined` if not applied. */
-    getPropertyCustomAttribute(property: Property, caClassFullName: string): CustomAttribute | undefined;
-
-    /** Walk every schema that carries the named custom attribute. */
-    findSchemasWithCustomAttribute(caClassFullName: string, options?: FindCustomAttributeOptions): IterableIterator<SchemaCustomAttributeMatch>;
-    /** Walk every class that carries the named custom attribute. */
-    findClassesWithCustomAttribute(caClassFullName: string, options?: FindCustomAttributeOptions): IterableIterator<ClassCustomAttributeMatch>;
-    /** Walk every property that carries the named custom attribute. */
-    findPropertiesWithCustomAttribute(caClassFullName: string, options?: FindCustomAttributeOptions): IterableIterator<PropertyCustomAttributeMatch>;
-  }
-
   /** Asynchronous access to the custom attributes applied to the containers in a `SchemaView`.
    *
    * This modality is backed by a database (and possibly an RPC round trip), so every call is a
@@ -1325,8 +1298,3 @@ export namespace SchemaView {
  */
 export type IModelSchemaView = SchemaView & { readonly customAttributes: SchemaView.AsyncCustomAttributeProvider };
 
-/** A `SchemaView` compiled from one or more `SchemaDocument`s. Its `customAttributes` member
- * resolves attributes synchronously from data held in memory.
- * @beta
- */
-export type CompiledSchemaView = SchemaView & { readonly customAttributes: SchemaView.CustomAttributeProvider };

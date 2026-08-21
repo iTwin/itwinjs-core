@@ -3,163 +3,224 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// CA property names mirror real ECSchema identifiers (PascalCase), so the EC naming is intentional.
+// Custom attribute property names mirror real ECSchema identifiers (PascalCase), so the EC naming
+// is intentional.
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { describe, expect, it } from "vitest";
-import { customAttributeJsonToXml, customAttributeXmlToJson, CustomAttributeConversionContext } from "../../Authoring/CustomAttributeConverter"; // eslint-disable-line sort-imports
-import { SchemaIssueList } from "../../Authoring/SchemaIssues";
-import { SchemaView } from "../../SchemaView/SchemaView";
+import { CustomAttributeContainerType, PrimitiveType } from "../../ECObjects";
+import { CustomAttribute, SchemaDocument, SchemaSet } from "../../Authoring/SchemaDocument";
+import { SchemaXmlWriter } from "../../Authoring/SchemaXmlWriter";
+import { SchemaJsonWriter } from "../../Authoring/SchemaJsonWriter";
 
-// The converter only touches a narrow slice of SchemaView: findClass -> getProperty ->
-// isStruct()/isArray() -> structClass.name/getProperty. A structural mock exercises exactly that
-// slice without building a binary schema-view blob. Cast to SchemaView at the boundary; the runtime
-// shape is all the converter uses.
+/** A document declaring its own custom attribute class, so conversion has a class to work from
+ * without leaning on the built-in standard schemas. */
+function documentWithCustomAttributeClass(): SchemaDocument {
+  const doc = new SchemaDocument("TestDomain", "td", 1, 0, 0);
+  const dbIndex = doc.createStructClass("DbIndex");
+  dbIndex.createPrimitive("Name", PrimitiveType.String);
+  dbIndex.createPrimitive("IsUnique", PrimitiveType.Boolean);
+  dbIndex.createPrimitiveArray("Properties", PrimitiveType.String);
 
-interface FakeProperty {
-  isStruct(): boolean;
-  isArray(): boolean;
-  structClass?: FakeClass;
-}
-interface FakeClass {
-  name: string;
-  getProperty(name: string): FakeProperty | undefined;
-}
-
-/** A scalar/primitive-array property: neither struct nor (for our purposes) a struct array. */
-const scalarProperty: FakeProperty = { isStruct: () => false, isArray: () => false };
-
-function structArrayProperty(structClass: FakeClass): FakeProperty {
-  return { isStruct: () => true, isArray: () => true, structClass };
-}
-
-/** Builds a fake SchemaView whose `findClass` returns the given class for any name. */
-function fakeView(rootClass: FakeClass): SchemaView {
-  return { findClass: () => rootClass } as unknown as SchemaView;
+  const ca = doc.createCustomAttributeClass("Mapping", CustomAttributeContainerType.AnyClass);
+  ca.createPrimitive("Count", PrimitiveType.Integer);
+  ca.createPrimitive("Ratio", PrimitiveType.Double);
+  ca.createPrimitive("IsUnique", PrimitiveType.Boolean);
+  ca.createPrimitive("Collation", PrimitiveType.String);
+  ca.createPrimitiveArray("Restrictions", PrimitiveType.String);
+  ca.createStruct("Primary", "DbIndex");
+  ca.createStructArray("Indexes", "DbIndex");
+  return doc;
 }
 
-function context(schemaView?: SchemaView): CustomAttributeConversionContext & { issues: SchemaIssueList } {
-  return { schemaView, ownerSchemaName: "TestDomain", issues: new SchemaIssueList(), location: "TestDomain:Item" };
+/** Applies an unmaterialized custom attribute carrying `body` to a fresh class in `doc`. */
+function applyXmlBody(doc: SchemaDocument, className: string, body: string): CustomAttribute {
+  const target = doc.createEntity(`Target${doc.items.length}`);
+  return CustomAttribute.fromXmlBody(target, className, body);
 }
 
-describe("CustomAttributeConverter", () => {
-  describe("XML -> JSON", () => {
-    it("promotes scalar booleans and numbers with a reversibility guard, keeps everything else a string", () => {
-      const ctx = context();
-      const json = customAttributeXmlToJson(
-        "<IsUnique>True</IsUnique>\n<IsNullable>False</IsNullable>\n<Count>5</Count>\n<Padded>007</Padded>\n<Collation>NoCase</Collation>",
-        "ECDbMap:PropertyMap", ctx);
-      expect(ctx.issues.hasErrors).to.be.false;
-      // Exact EC-canonical True/False -> boolean; "5" -> 5 (String(Number("5")) === "5"); "007" stays
-      // a string (would not re-serialize byte-identically); a plain word stays a string.
-      expect(json).to.deep.equal({ IsUnique: true, IsNullable: false, Count: 5, Padded: "007", Collation: "NoCase" });
-    });
+describe("Custom attribute materialization", () => {
+  it("starts unmaterialized when read from ECXML and converts on first read", () => {
+    const doc = documentWithCustomAttributeClass();
+    const ca = applyXmlBody(doc, "Mapping", "<Count>5</Count>");
 
-    it("reads repeated primitive-keyword children as a string array (entries stay strings)", () => {
-      const ctx = context();
-      const json = customAttributeXmlToJson("<Restrictions>\n    <string>Clone</string>\n    <string>Copy</string>\n</Restrictions>", "BisCore:ClassHasHandler", ctx);
-      expect(json).to.deep.equal({ Restrictions: ["Clone", "Copy"] });
-    });
-
-    it("reads a nested element as a struct object", () => {
-      const ctx = context();
-      const json = customAttributeXmlToJson("<Ref>\n    <SchemaName>BisCore</SchemaName>\n    <MajorVersion>1</MajorVersion>\n</Ref>", "CoreCA:SupplementalSchema", ctx);
-      expect(json).to.deep.equal({ Ref: { SchemaName: "BisCore", MajorVersion: 1 } });
-    });
-
-    it("reads a multi-entry struct array as a canonical array, dropping the entry element name (no class needed)", () => {
-      const ctx = context();
-      const body =
-        "<Indexes>\n    <DbIndex>\n        <Name>ix_a</Name>\n        <IsUnique>True</IsUnique>\n    </DbIndex>\n    <DbIndex>\n        <Name>ix_b</Name>\n        <IsUnique>False</IsUnique>\n    </DbIndex>\n</Indexes>";
-      const json = customAttributeXmlToJson(body, "ECDbMap:DbIndexList", ctx);
-      expect(json).to.deep.equal({ Indexes: [{ Name: "ix_a", IsUnique: true }, { Name: "ix_b", IsUnique: false }] });
-    });
-
-    it("class-blind, reads a SINGLE-entry struct array as a struct (the documented residual gap)", () => {
-      const ctx = context();
-      const body = "<Indexes>\n    <DbIndex>\n        <Name>ix_a</Name>\n    </DbIndex>\n</Indexes>";
-      const json = customAttributeXmlToJson(body, "ECDbMap:DbIndexList", ctx);
-      // Lexically identical to a struct property whose single member is named DbIndex.
-      expect(json).to.deep.equal({ Indexes: { DbIndex: { Name: "ix_a" } } });
-    });
-
-    it("with a SchemaView, resolves a single-entry struct array to a one-element array", () => {
-      const dbIndex: FakeClass = { name: "DbIndex", getProperty: () => scalarProperty };
-      const caClass: FakeClass = { name: "DbIndexList", getProperty: (n) => (n === "Indexes" ? structArrayProperty(dbIndex) : undefined) };
-      const ctx = context(fakeView(caClass));
-      const body = "<Indexes>\n    <DbIndex>\n        <Name>ix_a</Name>\n    </DbIndex>\n</Indexes>";
-      const json = customAttributeXmlToJson(body, "ECDbMap:DbIndexList", ctx);
-      expect(json).to.deep.equal({ Indexes: [{ Name: "ix_a" }] });
-      expect(ctx.issues.hasErrors).to.be.false;
-    });
-
-    it("reports an error and yields undefined for an unparseable body", () => {
-      const ctx = context();
-      const json = customAttributeXmlToJson("<Unclosed>", "X:Y", ctx);
-      expect(json).to.be.undefined;
-      expect(ctx.issues.errors.map((i) => i.code)).to.include("SchemaCA-0003");
-    });
+    expect(ca.isMaterialized).to.be.false;
+    expect(ca.values).to.deep.equal({ Count: 5 });
+    expect(ca.isMaterialized).to.be.true;
   });
 
-  describe("JSON -> XML", () => {
-    it("serializes scalars to EC-canonical text (booleans capitalized)", () => {
-      const ctx = context();
-      const xml = customAttributeJsonToXml({ IsUnique: true, IsNullable: false, Count: 5, Collation: "NoCase" }, "ECDbMap:PropertyMap", ctx);
-      expect(xml).to.equal("<IsUnique>True</IsUnique>\n<IsNullable>False</IsNullable>\n<Count>5</Count>\n<Collation>NoCase</Collation>");
-    });
+  it("types every value from the custom attribute class, not from how the text looks", () => {
+    const doc = documentWithCustomAttributeClass();
+    const ca = applyXmlBody(doc, "Mapping",
+      "<Count>007</Count>\n<Ratio>1.0</Ratio>\n<IsUnique>True</IsUnique>\n<Collation>5</Collation>");
 
-    it("serializes a primitive array as repeated typed entry elements", () => {
-      const ctx = context();
-      const xml = customAttributeJsonToXml({ Restrictions: ["Clone", "Copy"] }, "BisCore:ClassHasHandler", ctx);
-      expect(xml).to.equal("<Restrictions>\n    <string>Clone</string>\n    <string>Copy</string>\n</Restrictions>");
-    });
-
-    it("serializes a struct object as a nested element", () => {
-      const ctx = context();
-      const xml = customAttributeJsonToXml({ Ref: { SchemaName: "BisCore", MajorVersion: 1 } }, "CoreCA:SupplementalSchema", ctx);
-      expect(xml).to.equal("<Ref>\n    <SchemaName>BisCore</SchemaName>\n    <MajorVersion>1</MajorVersion>\n</Ref>");
-    });
-
-    it("drops a CA with a struct-array value and reports an error when no SchemaView names the entry element", () => {
-      const ctx = context();
-      const xml = customAttributeJsonToXml({ Indexes: [{ Name: "ix_a" }] }, "ECDbMap:DbIndexList", ctx);
-      expect(xml).to.be.undefined;
-      expect(ctx.issues.errors.map((i) => i.code)).to.include("SchemaCA-0001");
-    });
-
-    it("with a SchemaView, names struct-array entry elements from the struct class", () => {
-      const dbIndex: FakeClass = { name: "DbIndex", getProperty: () => scalarProperty };
-      const caClass: FakeClass = { name: "DbIndexList", getProperty: (n) => (n === "Indexes" ? structArrayProperty(dbIndex) : undefined) };
-      const ctx = context(fakeView(caClass));
-      const xml = customAttributeJsonToXml({ Indexes: [{ Name: "ix_a" }, { Name: "ix_b" }] }, "ECDbMap:DbIndexList", ctx);
-      expect(xml).to.equal(
-        "<Indexes>\n    <DbIndex>\n        <Name>ix_a</Name>\n    </DbIndex>\n    <DbIndex>\n        <Name>ix_b</Name>\n    </DbIndex>\n</Indexes>");
-      expect(ctx.issues.hasErrors).to.be.false;
-    });
-
-    it("escapes element text", () => {
-      const ctx = context();
-      const xml = customAttributeJsonToXml({ Note: "a & b < c" }, "X:Y", ctx);
-      expect(xml).to.equal("<Note>a &amp; b &lt; c</Note>");
-    });
+    // "007" and "1.0" are numbers because the class says so - the old class-blind reader had to
+    // leave them as strings to keep the round trip reversible. "5" stays a string for the same
+    // reason in reverse: the class declares it a string.
+    expect(ca.values).to.deep.equal({ Count: 7, Ratio: 1, IsUnique: true, Collation: "5" });
   });
 
-  describe("round trips", () => {
-    it("XML -> JSON -> XML is byte-identical for scalars, primitive arrays, and structs", () => {
-      const body = "<IsUnique>True</IsUnique>\n<Restrictions>\n    <string>Clone</string>\n</Restrictions>\n<Ref>\n    <SchemaName>BisCore</SchemaName>\n</Ref>";
-      const toJson = context();
-      const json = customAttributeXmlToJson(body, "X:Y", toJson)!;
-      const toXml = context();
-      expect(customAttributeJsonToXml(json, "X:Y", toXml)).to.equal(body);
+  it("distinguishes a single-entry struct array from a struct, which is what needs the class", () => {
+    const doc = documentWithCustomAttributeClass();
+    const single = applyXmlBody(doc, "Mapping",
+      "<Indexes>\n    <DbIndex>\n        <Name>ix_a</Name>\n    </DbIndex>\n</Indexes>");
+    const struct = applyXmlBody(doc, "Mapping",
+      "<Primary>\n    <Name>ix_a</Name>\n</Primary>");
+
+    expect(single.values).to.deep.equal({ Indexes: [{ Name: "ix_a" }] });
+    expect(struct.values).to.deep.equal({ Primary: { Name: "ix_a" } });
+  });
+
+  it("reads a primitive array through the class, whatever its entry elements are named", () => {
+    const doc = documentWithCustomAttributeClass();
+    const ca = applyXmlBody(doc, "Mapping",
+      "<Restrictions>\n    <string>Clone</string>\n    <string>Copy</string>\n</Restrictions>");
+
+    expect(ca.values).to.deep.equal({ Restrictions: ["Clone", "Copy"] });
+  });
+
+  it("throws on read when the custom attribute class is not in the schema set", () => {
+    const doc = new SchemaDocument("TestDomain", "td", 1, 0, 0);
+    const ca = applyXmlBody(doc, "SomeOtherDomain:Mapping", "<Count>5</Count>");
+
+    expect(() => ca.values).to.throw(/not in the schema set/);
+    expect(ca.tryGetValues()).to.be.undefined;
+    expect(ca.isMaterialized).to.be.false;
+  });
+
+  it("resolves the class once the schema holding it joins the set", () => {
+    const set = new SchemaSet();
+    const doc = set.createSchema("TestDomain", "td", 1, 0, 0);
+    const ca = applyXmlBody(doc, "Mapping:Flag", "<Enabled>True</Enabled>");
+    expect(ca.tryGetValues()).to.be.undefined;
+
+    const mapping = set.createSchema("Mapping", "map", 1, 0, 0);
+    mapping.createCustomAttributeClass("Flag", CustomAttributeContainerType.AnyClass)
+      .createPrimitive("Enabled", PrimitiveType.Boolean);
+
+    expect(ca.values).to.deep.equal({ Enabled: true });
+  });
+
+  it("keeps a value the class does not declare rather than losing it", () => {
+    const doc = documentWithCustomAttributeClass();
+    const ca = applyXmlBody(doc, "Mapping", "<Count>5</Count>\n<Removed>whatever</Removed>");
+
+    expect(ca.values).to.deep.equal({ Count: 5, Removed: "whatever" });
+  });
+
+  it("is materialized from the start when authored in code", () => {
+    const doc = documentWithCustomAttributeClass();
+    const target = doc.createEntity("Pump");
+    const ca = target.customAttributes.add({ className: "Mapping", values: { Count: 5 } });
+
+    expect(ca.isMaterialized).to.be.true;
+    expect(ca.getValue("Count")).to.equal(5);
+    ca.setValue("Count", 6);
+    expect(ca.values.Count).to.equal(6);
+  });
+});
+
+describe("Custom attributes through the built-in standard schemas", () => {
+  it("materializes an ECDbMap attribute with nothing loaded", () => {
+    const doc = new SchemaDocument("TestDomain", "td", 1, 0, 0);
+    const ca = applyXmlBody(doc, "ECDbMap:DbIndexList",
+      "<Indexes>\n    <DbIndex>\n        <Name>ix_a</Name>\n        <IsUnique>True</IsUnique>\n        <Properties>\n            <string>Code</string>\n        </Properties>\n    </DbIndex>\n</Indexes>");
+
+    expect(ca.values).to.deep.equal({ Indexes: [{ Name: "ix_a", IsUnique: true, Properties: ["Code"] }] });
+  });
+
+  it("materializes a CoreCustomAttributes attribute with nothing loaded", () => {
+    const doc = new SchemaDocument("TestDomain", "td", 1, 0, 0);
+    const hidden = applyXmlBody(doc, "CoreCustomAttributes:HiddenClass", "<Show>False</Show>");
+    const mixin = applyXmlBody(doc, "CoreCustomAttributes:IsMixin", "<AppliesToEntityClass>BisCore:Element</AppliesToEntityClass>");
+
+    expect(hidden.values).to.deep.equal({ Show: false });
+    expect(mixin.values).to.deep.equal({ AppliesToEntityClass: "BisCore:Element" });
+  });
+
+  it("lets a schema in the set redefine a standard class, which then wins", () => {
+    const set = new SchemaSet();
+    const doc = set.createSchema("TestDomain", "td", 1, 0, 0);
+    const ecdbMap = set.createSchema("ECDbMap", "ecdbmap", 3, 0, 0);
+    ecdbMap.createCustomAttributeClass("QueryView", CustomAttributeContainerType.EntityClass)
+      .createPrimitiveArray("Query", PrimitiveType.String);
+
+    const ca = applyXmlBody(doc, "ECDbMap:QueryView", "<Query>\n    <string>SELECT 1</string>\n</Query>");
+
+    // Against the built-in definition Query is a single string; the set's version says array.
+    expect(ca.values).to.deep.equal({ Query: ["SELECT 1"] });
+  });
+});
+
+describe("Custom attributes through the writers", () => {
+  function xmlOf(doc: SchemaDocument): { text: string, errors: string[], warnings: string[] } {
+    const result = new SchemaXmlWriter().writeDocument(doc);
+    return { text: result.text ?? "", errors: result.issues.errors.map((i) => i.code), warnings: result.issues.warnings.map((i) => i.code) };
+  }
+
+  it("writes an in-memory struct array to ECXML using the class to name the entry elements", () => {
+    const doc = documentWithCustomAttributeClass();
+    doc.createEntity("Pump").customAttributes.add({
+      className: "Mapping",
+      values: { Indexes: [{ Name: "ix_a", IsUnique: true }] },
     });
 
-    it("with a SchemaView, a struct array survives XML -> JSON -> XML", () => {
-      const dbIndex: FakeClass = { name: "DbIndex", getProperty: () => scalarProperty };
-      const caClass: FakeClass = { name: "DbIndexList", getProperty: (n) => (n === "Indexes" ? structArrayProperty(dbIndex) : undefined) };
-      const body = "<Indexes>\n    <DbIndex>\n        <Name>ix_a</Name>\n    </DbIndex>\n    <DbIndex>\n        <Name>ix_b</Name>\n    </DbIndex>\n</Indexes>";
-      const json = customAttributeXmlToJson(body, "ECDbMap:DbIndexList", context(fakeView(caClass)))!;
-      expect(json).to.deep.equal({ Indexes: [{ Name: "ix_a" }, { Name: "ix_b" }] });
-      expect(customAttributeJsonToXml(json, "ECDbMap:DbIndexList", context(fakeView(caClass)))).to.equal(body);
+    const { text, errors } = xmlOf(doc);
+    expect(errors).to.be.empty;
+    expect(text).to.contain("<Indexes>");
+    expect(text).to.contain("<DbIndex>");
+    expect(text).to.contain("<Name>ix_a</Name>");
+    expect(text).to.contain("<IsUnique>True</IsUnique>");
+  });
+
+  it("drops a struct array it cannot name the entry elements of, and reports an error", () => {
+    const doc = new SchemaDocument("TestDomain", "td", 1, 0, 0);
+    doc.createEntity("Pump").customAttributes.add({
+      className: "Unknown:Mapping",
+      values: { Indexes: [{ Name: "ix_a" }] },
     });
+
+    const { text, errors } = xmlOf(doc);
+    expect(errors).to.include("SchemaCA-0003");
+    expect(text).to.not.contain("ix_a");
+  });
+
+  it("copies an unresolvable attribute through verbatim when writing back to ECXML, with a warning", () => {
+    const doc = new SchemaDocument("TestDomain", "td", 1, 0, 0);
+    applyXmlBody(doc, "Unknown:Mapping", "<Count>5</Count>");
+
+    const { text, errors, warnings } = xmlOf(doc);
+    expect(errors).to.be.empty;
+    expect(warnings).to.include("SchemaCA-0002");
+    expect(text).to.contain("<Count>5</Count>");
+  });
+
+  it("drops an unresolvable attribute when writing to ECJSON, which cannot pass it through", () => {
+    const doc = new SchemaDocument("TestDomain", "td", 1, 0, 0);
+    applyXmlBody(doc, "Unknown:Mapping", "<Count>5</Count>");
+
+    const result = new SchemaJsonWriter().writeDocument(doc);
+    expect(result.issues.errors.map((i) => i.code)).to.include("SchemaCA-0001");
+    expect(result.text).to.not.contain("Count");
+  });
+
+  it("round-trips an ECXML body through materialization unchanged", () => {
+    const doc = documentWithCustomAttributeClass();
+    const body = "<Count>5</Count>\n<Restrictions>\n    <string>Clone</string>\n</Restrictions>\n<Indexes>\n    <DbIndex>\n        <Name>ix_a</Name>\n    </DbIndex>\n</Indexes>";
+    const ca = applyXmlBody(doc, "Mapping", body);
+    expect(ca.isMaterialized).to.be.false;
+    expect(ca.values).to.not.be.undefined; // materializes
+
+    const { text, errors } = xmlOf(doc);
+    expect(errors).to.be.empty;
+    for (const line of body.split("\n"))
+      expect(text).to.contain(line.trim());
+  });
+
+  it("escapes element text", () => {
+    const doc = documentWithCustomAttributeClass();
+    doc.createEntity("Pump").customAttributes.add({ className: "Mapping", values: { Collation: "a & b < c" } });
+
+    expect(xmlOf(doc).text).to.contain("<Collation>a &amp; b &lt; c</Collation>");
   });
 });

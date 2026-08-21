@@ -46,6 +46,8 @@
     "@bentley/bis-custom-attributes-schema": "^1.0.0",
     "@bentley/cif-units-schema": "^1.0.7",
     "@bentley/core-custom-attributes-schema": "^1.0.4",
+    "@bentley/ecdb-map-schema": "^2.0.1",
+    "@bentley/ecdb-schema-policies-schema": "^1.0.1",
     "@bentley/formats-schema": "^1.0.0",
     "@bentley/road-rail-units-schema": "^1.0.3",
     "@bentley/units-schema": "^1.0.11",

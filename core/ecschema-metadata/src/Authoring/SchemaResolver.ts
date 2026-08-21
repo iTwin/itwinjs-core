@@ -8,7 +8,7 @@
 
 import { SchemaMatchType } from "../ECObjects";
 import { ECVersion, SchemaKey } from "../SchemaKey";
-import { SchemaDocument } from "./SchemaDocument";
+import { SchemaDocument, SchemaSet } from "./SchemaDocument";
 import { SchemaDocumentHeader, SchemaDocumentReadResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
@@ -21,13 +21,14 @@ export interface SchemaCandidate {
   readonly header: SchemaDocumentHeader;
   /** Where the candidate comes from (file path, "iModel", ...), for issue reporting and tie-breaking transparency. */
   readonly source?: string;
-  /** Loads the full document. Called at most once per resolution, only for selected candidates. */
-  loadDocument(): Promise<SchemaDocumentReadResult>;
+  /** Loads the full document into `schemaSet`. Called at most once per resolution, and only for
+   * selected candidates. */
+  loadDocument(schemaSet: SchemaSet): Promise<SchemaDocumentReadResult>;
 }
 
 /** A place schemas can be discovered in: a directory of schema files, an iModel, an in-memory set.
  * A source enumerates candidates by header; it does not resolve references or chase dependencies -
- * that is {@link SchemaSourceSet.resolve}'s job, so the loading order stays explicit instead of
+ * that is {@link SchemaResolver.resolve}'s job, so the loading order stays explicit instead of
  * happening behind a locater. Implementations requiring platform access (the file system, an
  * iModel) live in the packages that have it; this package ships {@link InMemorySchemaSource}.
  * @alpha
@@ -47,12 +48,21 @@ export interface SchemaSource {
 export class InMemorySchemaSource implements SchemaSource {
   private readonly _candidates: SchemaCandidate[] = [];
 
-  /** Adds a document already in hand. Serving its header and "load" are both immediate. */
+  /** Adds a document already in hand. Serving its header and "load" are both immediate; loading it
+   * moves it into the target schema set, since a document belongs to exactly one. */
   public addDocument(document: SchemaDocument): void {
     this._candidates.push({
       header: document,
       source: document.source,
-      loadDocument: async () => ({ document, issues: new SchemaIssueList() }),
+      loadDocument: async (schemaSet: SchemaSet) => {
+        const issues = new SchemaIssueList();
+        const incumbent = schemaSet.getSchema(document.name);
+        if (incumbent !== undefined && incumbent !== document)
+          issues.addError("SchemaSources-0005", `The schema set already holds a schema named "${incumbent.name}"; the in-memory "${document.name}" was not moved in.`);
+        else
+          schemaSet.moveIn(document);
+        return { document, issues };
+      },
     });
   }
 
@@ -76,7 +86,7 @@ export interface ResolvedSchema {
   /** The chosen candidate; `undefined` for roots (the caller already holds those documents) and
    * for missing schemas. */
   readonly candidate?: SchemaCandidate;
-  /** True when this entry is one of the roots passed to {@link SchemaSourceSet.resolve}. */
+  /** True when this entry is one of the roots passed to {@link SchemaResolver.resolve}. */
   readonly isRoot: boolean;
   /** Who asked for this schema: schema names, or `"<request>"` for the roots themselves. */
   readonly requestedBy: ReadonlyArray<string>;
@@ -104,15 +114,16 @@ export class SchemaResolution {
     return !this.issues.hasErrors;
   }
 
-  /** Hydrates the full documents of every selected candidate, in dependency order. Root entries
-   * are skipped - the caller already holds those documents. Load problems are appended to
+  /** Hydrates the full documents of every selected candidate into `schemaSet`, in dependency order,
+   * and returns them. Root entries are skipped - the caller already holds those documents, and
+   * moving them into the set is the caller's decision. Load problems are appended to
    * {@link SchemaResolution.issues}; a candidate whose load produces no document is omitted. */
-  public async loadDocuments(): Promise<SchemaDocument[]> {
+  public async loadDocuments(schemaSet: SchemaSet): Promise<SchemaDocument[]> {
     const documents: SchemaDocument[] = [];
     for (const resolved of this.schemas) {
       if (resolved.candidate === undefined)
         continue;
-      const result = await resolved.candidate.loadDocument();
+      const result = await resolved.candidate.loadDocument(schemaSet);
       this.issues.addAll(result.issues);
       if (result.document !== undefined)
         documents.push(result.document);
@@ -121,11 +132,12 @@ export class SchemaResolution {
   }
 }
 
-/** The schema discovery mechanism: "here are my documents, here is where schemas live - work out
- * what needs to be loaded." Sources are added explicitly; {@link resolve} walks the references of
- * the given root documents against every source's candidates and produces a complete, dependency-
- * ordered load plan, with issues for anything missing or conflicting. Discovery happens entirely
- * before loading or compiling - no reference is chased implicitly mid-load.
+/** Works out which schemas a set of root documents needs, and in what order to load them. The
+ * middle of the three discovery steps: a {@link SchemaSource} says what schemas exist and what each
+ * one declares about itself, this resolves the reference closure over those headers into a
+ * dependency-ordered plan, and {@link SchemaResolution.loadDocuments} hydrates the plan into a
+ * {@link SchemaSet}. Nothing is read until the plan exists, and the plan is inspectable first -
+ * which is what the old locater chain, resolving references as it loaded them, could not offer.
  *
  * Selection: among the candidates whose version satisfies a request under the match tolerance, the
  * **highest version across all sources** wins - sources are a pool, not a priority order. Exactly
@@ -133,7 +145,7 @@ export class SchemaResolution {
  * satisfied by one version is a conflict, reported as an error.
  * @alpha
  */
-export class SchemaSourceSet {
+export class SchemaResolver {
   private readonly _sources: SchemaSource[] = [];
 
   /** Adds a source. Order does not grant priority (see selection rule above). */

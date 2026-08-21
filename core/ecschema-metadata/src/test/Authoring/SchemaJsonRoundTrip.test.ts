@@ -143,7 +143,7 @@ describe("SchemaJsonWriter / SchemaJsonReader", () => {
 
     const tagged = doc.customAttributes.get("Tagged");
     expect(tagged).to.not.be.undefined;
-    expect(tagged!.json!.Tags).to.deep.equal(["a", "b"]);
+    expect(tagged!.values.Tags).to.deep.equal(["a", "b"]);
 
     // Dot-form references normalize the same way the XML reader normalizes alias-form ones.
     const pump = doc.getEntity("Pump")!;

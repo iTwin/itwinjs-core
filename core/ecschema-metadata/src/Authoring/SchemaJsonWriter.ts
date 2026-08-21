@@ -8,8 +8,7 @@
 
 import { formatTraitsToArray, FormatType } from "@itwin/core-quantity";
 import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
-import { SchemaView } from "../SchemaView/SchemaView";
-import { customAttributeXmlToJson } from "./CustomAttributeConverter";
+import { readCustomAttributeValues } from "./CustomAttributeConverter";
 import * as Authoring from "./SchemaDocument";
 import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
@@ -76,7 +75,7 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
       issues.addError("SchemaJson-0001", `Unsupported target spec version "${spec as string}" - the JSON writer currently supports only 3.2.`);
       return { issues };
     }
-    const emitter = new EcJson32Emitter(document, issues, options?.omitDefaults ?? false, options?.schemaView);
+    const emitter = new ECJson32Emitter(document, issues, options?.omitDefaults ?? false);
     return { tree: emitter.emit(), issues };
   }
 }
@@ -91,17 +90,15 @@ function formatVersion(read: number, write: number, minor: number): string {
 }
 
 /** Emits one document as an ECJSON 3.2 object tree. Created per write. */
-class EcJson32Emitter {
+class ECJson32Emitter {
   private readonly _document: Authoring.SchemaDocument;
   private readonly _issues: SchemaIssueList;
   private readonly _omitDefaults: boolean;
-  private readonly _schemaView: SchemaView | undefined;
 
-  public constructor(document: Authoring.SchemaDocument, issues: SchemaIssueList, omitDefaults: boolean, schemaView: SchemaView | undefined) {
+  public constructor(document: Authoring.SchemaDocument, issues: SchemaIssueList, omitDefaults: boolean) {
     this._document = document;
     this._issues = issues;
     this._omitDefaults = omitDefaults;
-    this._schemaView = schemaView;
   }
 
   public emit(): JsonObject {
@@ -161,10 +158,9 @@ class EcJson32Emitter {
   }
 
   /** Attaches a `customAttributes` array: each instance is the flattened ECJSON form - the
-   * `className` key plus the property values inline. A CA already in JSON form passes through; one in
-   * XML form (from the XML reader) is converted here, dropping the CA and reporting an error if the
-   * conversion fails (an unparseable body, or a single-entry struct array that needs a CA class no
-   * {@link _schemaView} supplied). */
+   * `className` key plus the property values inline. An attribute still holding an ECXML body is
+   * materialized here against its custom attribute class, and dropped with an error reported when
+   * that class is not in the schema set. */
   private _attachCustomAttributes(json: JsonObject, customAttributes: Authoring.CustomAttributeSet, location: string): void {
     if (customAttributes.size === 0)
       return;
@@ -183,16 +179,10 @@ class EcJson32Emitter {
       json.customAttributes = entries;
   }
 
-  /** The CA's value as a JSON property object: passthrough when it is already in JSON form, otherwise
-   * converted from its raw XML body. Returns `{}` for a valueless CA, or `undefined` when an XML-form
-   * value could not be converted (the CA is then skipped; an issue has been reported). */
+  /** The custom attribute's values as a JSON property object, or `undefined` when the attribute
+   * could not be materialized (it is then skipped; an issue has been reported). */
   private _customAttributeJson(ca: Authoring.CustomAttribute, location: string): JsonObject | undefined {
-    if (ca.format === Authoring.CustomAttributeFormat.Json)
-      return ca.json ?? {};
-    const body = ca.xml;
-    if (body === undefined)
-      return {};
-    return customAttributeXmlToJson(body, ca.className, { schemaView: this._schemaView, ownerSchemaName: this._document.name, issues: this._issues, location });
+    return readCustomAttributeValues(ca, this._issues, location);
   }
 
   private _emitItem(item: Authoring.AnySchemaItem): JsonObject {

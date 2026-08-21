@@ -8,8 +8,7 @@
 
 import { formatTraitsToArray } from "@itwin/core-quantity";
 import { classModifierToString, containerTypeToString, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
-import { SchemaView } from "../SchemaView/SchemaView";
-import { customAttributeJsonToXml } from "./CustomAttributeConverter";
+import { writeCustomAttributeXmlBody } from "./CustomAttributeConverter";
 import * as Authoring from "./SchemaDocument";
 import { ECSpec, mapFormatStringReferences, SchemaDocumentTextWriter, SchemaStreamWriteResult, SchemaTextSink, SchemaWriteOptions, SchemaWriteResult } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
@@ -57,7 +56,7 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
       issues.addError("SchemaXml-0001", `Unsupported target spec version "${spec as string}" - the XML writer currently supports only 3.2.`);
       return undefined;
     }
-    return new ECXml32Emitter(document, issues, options?.schemaView);
+    return new ECXml32Emitter(document, issues);
   }
 }
 
@@ -152,13 +151,11 @@ function formatVersion(read: number, write: number, minor: number): string {
 class ECXml32Emitter {
   private readonly _document: Authoring.SchemaDocument;
   private readonly _issues: SchemaIssueList;
-  private readonly _schemaView: SchemaView | undefined;
   private readonly _xml = new XmlStringBuilder();
 
-  public constructor(document: Authoring.SchemaDocument, issues: SchemaIssueList, schemaView: SchemaView | undefined) {
+  public constructor(document: Authoring.SchemaDocument, issues: SchemaIssueList) {
     this._document = document;
     this._issues = issues;
-    this._schemaView = schemaView;
   }
 
   public emit(): string {
@@ -295,18 +292,12 @@ class ECXml32Emitter {
     this._xml.closeElement("ECCustomAttributes");
   }
 
-  /** The CA's value as a raw ECXML body: passthrough when it is already in XML form, otherwise
-   * converted from its JSON value. Returns `""` for a valueless CA (emitted self-closing), or
-   * `undefined` when a JSON value could not be expressed in XML - a struct array needing a CA class no
-   * {@link _schemaView} supplied - in which case the CA is dropped and an issue has been reported. */
+  /** The custom attribute's values serialized to a raw ECXML body. `""` for a valueless attribute
+   * (emitted self-closing), or `undefined` when the values cannot be expressed in ECXML - a struct
+   * array whose entry struct class no resolvable custom attribute class names - in which case the
+   * attribute is dropped and an issue has been reported. */
   private _customAttributeXmlBody(ca: Authoring.CustomAttribute, location: string): string | undefined {
-    if (ca.format === Authoring.CustomAttributeFormat.Xml)
-      return ca.xml ?? "";
-    const json = ca.json;
-    if (json === undefined || Object.keys(json).length === 0)
-      return "";
-    return customAttributeJsonToXml(json, ca.className,
-      { schemaView: this._schemaView, ownerSchemaName: this._document.name, issues: this._issues, location });
+    return writeCustomAttributeXmlBody(ca, this._issues, location);
   }
 
   private _emitItem(item: Authoring.AnySchemaItem): void {

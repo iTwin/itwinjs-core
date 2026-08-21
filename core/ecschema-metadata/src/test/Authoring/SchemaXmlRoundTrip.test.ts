@@ -8,7 +8,7 @@ import { SchemaItemType, SchemaMatchType } from "../../ECObjects";
 import * as Authoring from "../../Authoring/SchemaDocument";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
 import { SchemaXmlWriter } from "../../Authoring/SchemaXmlWriter";
-import { InMemorySchemaSource, SchemaSourceSet } from "../../Authoring/SchemaSources";
+import { InMemorySchemaSource, SchemaResolver } from "../../Authoring/SchemaResolver";
 import { composeFullDocument } from "./FullDocumentFixture";
 
 describe("SchemaXmlWriter / SchemaXmlReader", () => {
@@ -59,15 +59,14 @@ describe("SchemaXmlWriter / SchemaXmlReader", () => {
     expect(doc.source).to.equal("fixture");
     expect(doc.references).to.have.lengthOf(2);
 
-    // The schema CA survives; the XML reader keeps its value as a raw ECXML body (XML form), so the
-    // text - escaped note, repeated <string> entries - is preserved verbatim until a writer needs it.
+    // The schema CA is initially unmaterialized. Reading its values resolves the class and converts
+    // the XML scalars to their declared types.
     expect(doc.customAttributes.has("CoreCustomAttributes:DynamicSchema")).to.be.true;
     const tagged = doc.customAttributes.get("TestDomain.Tagged") ?? doc.customAttributes.get("Tagged");
     expect(tagged).to.not.be.undefined;
-    expect(tagged!.format).to.equal(Authoring.CustomAttributeFormat.Xml);
-    expect(tagged!.xml).to.contain("<Note>hello &amp; &lt;welcome&gt;</Note>");
-    expect(tagged!.xml).to.contain("<string>a</string>");
-    expect(tagged!.xml).to.contain("<string>b</string>");
+    expect(tagged!.isMaterialized).to.be.false;
+    expect(tagged!.values.Note).to.equal("hello & <welcome>");
+    expect(tagged!.values.Tags).to.deep.equal(["a", "b"]);
 
     // The mixin is promoted to a first-class item; IsMixin is consumed, not kept as a CA.
     const mixin = doc.getItemOfType("IMonitored", SchemaItemType.Mixin);
@@ -157,7 +156,7 @@ describe("SchemaXmlWriter / SchemaXmlReader", () => {
   });
 });
 
-describe("SchemaSourceSet", () => {
+describe("SchemaResolver", () => {
   function makeDocument(name: string, minor: number, references: Array<{ name: string, minor?: number }> = []): Authoring.SchemaDocument {
     return new Authoring.SchemaDocument(name, name.toLowerCase(), 1, 0, minor, {
       references: references.map((r) => ({ name: r.name, readVersion: 1, writeVersion: 0, minorVersion: r.minor ?? 0, alias: r.name.toLowerCase() })),
@@ -170,7 +169,7 @@ describe("SchemaSourceSet", () => {
     source.addDocument(makeDocument("B", 0));
     source.addDocument(makeDocument("B", 5)); // same read.write, higher minor - should win
 
-    const sources = new SchemaSourceSet();
+    const sources = new SchemaResolver();
     sources.addSource(source);
 
     const root = makeDocument("Root", 0, [{ name: "A" }, { name: "B" }]);
@@ -181,13 +180,14 @@ describe("SchemaSourceSet", () => {
     expect(names.indexOf("B")).to.be.lessThan(names.indexOf("A"));
     expect(names.indexOf("A")).to.be.lessThan(names.indexOf("Root"));
 
-    const documents = await resolution.loadDocuments();
+    const schemaSet = new Authoring.SchemaSet([root]);
+    const documents = await resolution.loadDocuments(schemaSet);
     expect(documents.map((d) => d.name)).to.deep.equal(["B", "A"]); // roots are not loaded
     expect(documents[0].minorVersion).to.equal(5);
   });
 
   it("reports a missing reference as an error", async () => {
-    const sources = new SchemaSourceSet();
+    const sources = new SchemaResolver();
     sources.addSource(new InMemorySchemaSource());
     const root = makeDocument("Root", 0, [{ name: "Nowhere" }]);
     const resolution = await sources.resolve([root]);
@@ -201,7 +201,7 @@ describe("SchemaSourceSet", () => {
     const conflicting = new Authoring.SchemaDocument("C", "c", 2, 0, 0); // only a 2.0.0 is available
     source.addDocument(conflicting);
 
-    const sources = new SchemaSourceSet();
+    const sources = new SchemaResolver();
     sources.addSource(source);
 
     // Root demands C 1.0.0 (via A's reference at 1.0.x the same), but only C 2.0.0 exists.
@@ -213,7 +213,7 @@ describe("SchemaSourceSet", () => {
   it("respects the requested match tolerance", async () => {
     const source = new InMemorySchemaSource();
     source.addDocument(makeDocument("A", 5));
-    const sources = new SchemaSourceSet();
+    const sources = new SchemaResolver();
     sources.addSource(source);
 
     const root = makeDocument("Root", 0, [{ name: "A", minor: 0 }]);

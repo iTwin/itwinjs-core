@@ -9,6 +9,7 @@
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, isSupportedSchemaItemType, parsePrimitiveType, PrimitiveType, primitiveTypeToString, PropertyKind, RelationshipEnd, SchemaItemType, StrengthDirection, StrengthType } from "../ECObjects";
 import { SchemaKey } from "../SchemaKey";
+import { materializeCustomAttribute } from "./CustomAttributeConverter";
 
 /** Case-invariant name comparison. EC names are case-insensitive; comparison is the document's
  * only interpretation of a name, kept deliberately simple. */
@@ -17,30 +18,216 @@ function namesEqual(a: string, b: string): boolean {
 }
 
 /** Folds a schema-item full name to a comparable key: the two EC separators (`:` and `.`) are treated
- * as equivalent and case is ignored. Used only to match custom-attribute references by name; the
- * document resolves nothing else about a reference. */
+ * as equivalent and case is ignored. */
 function foldFullName(fullName: string): string {
   return fullName.replace(/\./g, ":").toLowerCase();
 }
 
+/** Splits an item reference into its optional qualifier (a schema name or alias) and the local item
+ * name. Both EC separators are accepted; the first one encountered separates, since neither an EC
+ * name nor an alias may contain one. */
+function splitReference(reference: LocalOrFullName): { qualifier?: string, name: string } {
+  const separator = reference.search(/[.:]/);
+  if (separator < 0)
+    return { name: reference };
+  return { qualifier: reference.substring(0, separator), name: reference.substring(separator + 1) };
+}
+
+/** Case-folded name lookup over a collection its owner keeps ordered. Built on first use and
+ * dropped whenever the collection changes, so an authoring session that edits far more than it
+ * reads never pays for an index, and a walk that reads far more than it edits pays once. First
+ * occurrence wins, matching the ordered collection's own duplicate rule. */
+class NameLookup<T extends { readonly name: string }> {
+  private _byName?: Map<string, T>;
+
+  public constructor(private readonly _entries: ReadonlyArray<T>) { }
+
+  /** Drops the index. Called by the owner on every collection change. */
+  public invalidate(): void {
+    this._byName = undefined;
+  }
+
+  public get(name: string): T | undefined {
+    if (this._byName === undefined) {
+      this._byName = new Map<string, T>();
+      for (const entry of this._entries) {
+        const key = entry.name.toLowerCase();
+        if (!this._byName.has(key))
+          this._byName.set(key, entry);
+      }
+    }
+    return this._byName.get(name.toLowerCase());
+  }
+}
+
+/** Assigns the owner of a document, item, property, or custom attribute. Module-private: ownership
+ * is established at construction and changed only through the owning collection's move methods. */
+const _setOwner = Symbol("Authoring.setOwner");
+
+/** Registers a newly constructed child with its owner. Module-private, same reasoning. */
+const _attach = Symbol("Authoring.attach");
+
+/** Applies the custom attributes an `init` object carries, in order. */
+function addCustomAttributes(target: CustomAttributeSet, customAttributes: ReadonlyArray<CustomAttributeProps> | undefined): void {
+  for (const props of customAttributes ?? [])
+    target.add(props);
+}
+
+/** A collection of {@link SchemaDocument}s that know about each other: the scope every item
+ * reference in those documents resolves against, and the authority over their lifetime.
+ *
+ * A set holds at most **one document per schema name**, compared case-insensitively - `BisCore
+ * 1.0.0` and `BisCore 1.0.15` cannot both be in one set. Nothing appears in a set unless someone
+ * put it there. There is no locater, no on-demand loading, and no priority chain; use
+ * {@link SchemaResolver} to work out *which* schemas a document needs and to load them in.
+ *
+ * **Every document belongs to exactly one set, always.** That is what keeps a schema graph clean,
+ * and it is the one rule to internalize:
+ *
+ * - `new SchemaDocument(...)` produces a document in a private set of its own, containing only it.
+ * - {@link SchemaSet.createSchema} constructs a document directly into this set.
+ * - {@link SchemaSet.moveIn} takes a document **out of** the set it is in and puts it here. There
+ *   is deliberately no `add` - a document cannot be in two sets, so joining one always means
+ *   leaving another.
+ * - {@link SchemaSet.moveOut} hands a document back in a fresh private set of its own, so it is
+ *   never left without one.
+ *
+ * @example
+ * ```ts
+ * const set = new Authoring.SchemaSet();
+ * const bis = set.createSchema("BisCore", "bis", 1, 0, 15);
+ * set.moveIn(myDocument);            // myDocument leaves its previous set
+ * myDocument.schemaSet === set;      // true
+ * for (const document of set) { ... }
+ * const detached = set.moveOut("MyDomain");  // back in a private set of its own
+ * ```
+ * @alpha
+ */
+export class SchemaSet implements Iterable<SchemaDocument> {
+  /** Keyed by lowercased schema name - name lookup is the hot path of every reference resolution. */
+  private readonly _byName = new Map<string, SchemaDocument>();
+
+  /** Creates a set, optionally moving documents in straight away (see {@link SchemaSet.moveIn}). */
+  public constructor(documents?: Iterable<SchemaDocument>) {
+    if (documents !== undefined) {
+      for (const document of documents)
+        this.moveIn(document);
+    }
+  }
+
+  /** The number of documents in the set. */
+  public get size(): number {
+    return this._byName.size;
+  }
+
+  /** Iterates the documents in insertion order. */
+  public [Symbol.iterator](): IterableIterator<SchemaDocument> {
+    return this._byName.values();
+  }
+
+  /** The documents in insertion order, as an array. */
+  public get schemas(): SchemaDocument[] {
+    return [...this._byName.values()];
+  }
+
+  /** Constructs a document and holds it here. Same arguments as the {@link SchemaDocument}
+   * constructor. Throws if the set already holds a schema of that name. */
+  public createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number, init?: SchemaDocumentInit): SchemaDocument {
+    this._requireNameFree(name);
+    const document = new SchemaDocument(name, alias, readVersion, writeVersion, minorVersion, init);
+    this.moveIn(document);
+    return document;
+  }
+
+  /** Moves documents into this set, removing each from the set it currently belongs to. A document
+   * already in this set is left alone. Throws if this set already holds a *different* document of
+   * the same name - call {@link SchemaSet.moveOut} for the incumbent first, so evicting it is
+   * always the caller's decision. */
+  public moveIn(...documents: SchemaDocument[]): void {
+    for (const document of documents) {
+      if (document.schemaSet === this)
+        continue;
+      this._requireNameFree(document.name);
+      document.schemaSet._detach(document);
+      this._byName.set(document.name.toLowerCase(), document);
+      document[_setOwner](this);
+    }
+  }
+
+  /** Removes the named schema (case-insensitive) and returns it in a fresh private set of its own,
+   * or `undefined` if the set does not hold it. Accepts the document itself as well, which removes
+   * it only if this set is the one holding it. */
+  public moveOut(schema: string | SchemaDocument): SchemaDocument | undefined {
+    const document = typeof schema === "string" ? this.getSchema(schema) : (schema.schemaSet === this ? schema : undefined);
+    if (document === undefined)
+      return undefined;
+    this._detach(document);
+    const privateSet = new SchemaSet();
+    document[_setOwner](privateSet);
+    privateSet[_attach](document);
+    return document;
+  }
+
+  /** Returns the named schema (case-insensitive), or `undefined`. */
+  public getSchema(name: string): SchemaDocument | undefined {
+    return this._byName.get(name.toLowerCase());
+  }
+
+  /** True when the set holds a schema of that name (case-insensitive). */
+  public hasSchema(name: string): boolean {
+    return this._byName.has(name.toLowerCase());
+  }
+
+  /** Returns the item a schema-qualified full name (`"BisCore:Element"`, either separator) points
+   * at, or `undefined` when the schema is not in the set or holds no such item. Aliases are not
+   * accepted here - an alias is a property of the *referencing* document, so resolve through that
+   * document ({@link SchemaDocument.resolveItem}) when you have one. */
+  public getItem(fullName: LocalOrFullName): AnySchemaItem | undefined {
+    const { qualifier, name } = splitReference(fullName);
+    if (qualifier === undefined)
+      return undefined;
+    return this.getSchema(qualifier)?.getItem(name);
+  }
+
+  /** Drops the document from this set's map without giving it a new owner - the caller must. */
+  private _detach(document: SchemaDocument): void {
+    this._byName.delete(document.name.toLowerCase());
+  }
+
+  /** @internal Registers a document that already points at this set - how a document constructed
+   * with `new` joins the private set it creates for itself. */
+  public [_attach](document: SchemaDocument): void {
+    this._byName.set(document.name.toLowerCase(), document);
+  }
+
+  private _requireNameFree(name: string): void {
+    const incumbent = this._byName.get(name.toLowerCase());
+    if (incumbent !== undefined)
+      throw new Error(`The schema set already holds a schema named "${incumbent.name}" (${incumbent.readVersion}.${incumbent.writeVersion}.${incumbent.minorVersion}); a set holds one version per name. Move it out first.`);
+  }
+}
+
 /**
- * A raw, editable, single in-memory ECSchema. Models the latest spec with no validity assumptions,
- * no cross-reference resolution.
- * The underlying collections
- * ({@link SchemaDocument.items}, {@link ECClass.properties}) and the
- * `new X(...)` constructors stay public for direct manipulation and power use (clone,
- * merge, programmatic generation). Every type takes its mandatory data as positional arguments and
- * the rest through an optional `init` object, so a single field can be set by name while the others
- * keep their defaults.
+ * An editable, single in-memory ECSchema. Models the latest spec with no validity assumptions: a
+ * document may hold duplicate names, dangling references, or missing required fields, and reports
+ * them only when validated.
+ *
+ * Every document belongs to exactly one {@link SchemaSet}, which is the scope its item references
+ * resolve against. A document created with `new` gets a private set of its own; see
+ * {@link SchemaSet} for how documents move between sets.
+ *
+ * Items are **owned**: an item is created into a document and belongs to exactly one, the same rule
+ * a document has with its schema set. The `create*` factories are the front door; the equivalent
+ * `new X(document, ...)` constructors are public and do the same thing.
  * @example
  * ```ts
  * const doc = new SchemaDocument("MyDomain", "mydom", 1, 0, 0, {
  *   references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 0, alias: "bis" }],
  * });
  * const pump = doc.createEntity("Pump", { label: "Pump", baseClass: "BisCore:PhysicalElement" });
- * const serial = pump.createPrimitive("SerialNumber", PrimitiveType.String);
- * serial.customAttributes.add({ className: "CoreCustomAttributes.HiddenProperty" });
  * pump.createPrimitive("FlowRate", PrimitiveType.Double, { kindOfQuantity: "AecUnits:VOLUMETRIC_FLOW" });
+ * const serial = pump.createPrimitive("SerialNumber", PrimitiveType.String);
+ * serial.customAttributes.add(CoreCustomAttributes.hiddenProperty());
  * ```
  * @alpha
  */
@@ -70,20 +257,23 @@ export class SchemaDocument {
   /** Schema references (`name` + version components, each with its own local `alias`), in declaration order. */
   public readonly references: SchemaReference[] = [];
   /** Schema-level custom attributes. */
-  public readonly customAttributes = new CustomAttributeSet();
-  /** The schema items (classes, enumerations, ...) in declaration order. Prefer the `create*` factories
-   * ({@link SchemaDocument.createEntity}, ...) which append here and return a handle; the typed
-   * accessors below ({@link SchemaDocument.getItemOfType}, ...) read it back. */
-  public readonly items: AnySchemaItem[] = [];
+  public readonly customAttributes: CustomAttributeSet;
 
-  /** Creates a new document with the given identity. `init` carries the complementary schema-level
-   * data; every field left out keeps its default. */
+  private readonly _items: AnySchemaItem[] = [];
+  private readonly _itemLookup = new NameLookup(this._items);
+  private _schemaSet: SchemaSet;
+
+  /** Creates a new document with the given identity, in a private {@link SchemaSet} of its own.
+   * `init` carries the complementary schema-level data; every field left out keeps its default. */
   public constructor(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number, init?: SchemaDocumentInit) {
     this.name = name;
     this.alias = alias;
     this.readVersion = readVersion;
     this.writeVersion = writeVersion;
     this.minorVersion = minorVersion;
+    this.customAttributes = new CustomAttributeSet(this);
+    this._schemaSet = new SchemaSet();
+    this._schemaSet[_attach](this);
     if (init) {
       this.label = init.label;
       this.description = init.description;
@@ -94,7 +284,69 @@ export class SchemaDocument {
         for (const reference of init.references)
           this.setSchemaReference(reference);
       }
+      addCustomAttributes(this.customAttributes, init.customAttributes);
     }
+  }
+
+  /** The set this document belongs to - never `undefined`, and the scope every item reference in it
+   * resolves against. A document created with `new` has a private set containing only itself. Use
+   * {@link SchemaSet.moveIn} / {@link SchemaSet.moveOut} to change it. */
+  public get schemaSet(): SchemaSet {
+    return this._schemaSet;
+  }
+
+  /** @internal */
+  public [_setOwner](schemaSet: SchemaSet): void {
+    this._schemaSet = schemaSet;
+  }
+
+  /** The schema items (classes, enumerations, ...) in declaration order. Read-only because the
+   * document owns them: an item is created into a document and stays there until it is removed or
+   * moved. Use the `create*` factories (or the equivalent item constructors),
+   * {@link SchemaDocument.moveItemIn}, and {@link SchemaDocument.removeItem}. */
+  public get items(): ReadonlyArray<AnySchemaItem> {
+    return this._items;
+  }
+
+  /** Moves items into this document, removing each from the document it currently belongs to - an
+   * item belongs to exactly one, the way a document belongs to exactly one {@link SchemaSet}. The
+   * item's own references are **not** rewritten: they were written in the origin's vocabulary and
+   * only the caller knows what they should mean here. Duplicate names are allowed, consistent with
+   * the document tolerating invalid states. */
+  public moveItemIn(...items: SchemaItem[]): void {
+    for (const item of items) {
+      if (item.document === this)
+        continue;
+      item.document._detachItem(item);
+      this._items.push(item as AnySchemaItem);
+      item[_setOwner](this);
+    }
+    this._itemLookup.invalidate();
+  }
+
+  /** Removes the first item with the given name (case-insensitive) and returns whether there was
+   * one. The item is gone: to keep it, move it into another document instead
+   * ({@link SchemaDocument.moveItemIn}). */
+  public removeItem(name: string): boolean {
+    const index = this._items.findIndex((i) => namesEqual(i.name, name));
+    if (index === -1)
+      return false;
+    this._items.splice(index, 1);
+    this._itemLookup.invalidate();
+    return true;
+  }
+
+  /** @internal Registers an item constructed into this document. */
+  public [_attach](item: SchemaItem): void {
+    this._items.push(item as AnySchemaItem);
+    this._itemLookup.invalidate();
+  }
+
+  private _detachItem(item: SchemaItem): void {
+    const index = this._items.indexOf(item as AnySchemaItem);
+    if (index >= 0)
+      this._items.splice(index, 1);
+    this._itemLookup.invalidate();
   }
 
   /** A read-only {@link SchemaKey} over this document's current name and version, for matching and
@@ -133,15 +385,71 @@ export class SchemaDocument {
     return this.references.find((r) => namesEqual(r.name, name));
   }
 
-  /** Returns the first item with the given name (case-insensitive), or `undefined`. */
-  public getItem(name: string): AnySchemaItem | undefined {
-    return this.items.find((i) => namesEqual(i.name, name));
+  /** Returns the document a schema reference points at, looked up by name in this document's
+   * {@link SchemaSet}, or `undefined` when the set does not hold it. The set holds one version per
+   * name, so the reference's version components take no part in the lookup - a version mismatch
+   * between the reference and the document in the set is a validation finding, not a resolve miss. */
+  public getReferencedSchema(name: string): SchemaDocument | undefined {
+    return this._schemaSet.getSchema(name);
   }
 
-  /** Removes and returns the first item with the given name (case-insensitive), or `undefined`. */
-  public removeItem(name: string): AnySchemaItem | undefined {
-    const index = this.items.findIndex((i) => namesEqual(i.name, name));
-    return index === -1 ? undefined : this.items.splice(index, 1)[0];
+  /** Returns the first item with the given name (case-insensitive), or `undefined`. */
+  public getItem(name: string): AnySchemaItem | undefined {
+    return this._itemLookup.get(name);
+  }
+
+  /** The name of the schema an item reference points at: this document's own name for an
+   * unqualified reference, the schema a matching alias maps to, or the qualifier itself when it is
+   * not an alias this document declares. Answers "which schema" without requiring the schema to be
+   * in the set. */
+  public resolveSchemaName(reference: LocalOrFullName): string {
+    const { qualifier } = splitReference(reference);
+    if (qualifier === undefined || namesEqual(qualifier, this.alias))
+      return this.name;
+    const referenced = this.references.find((r) => (r.alias !== null && namesEqual(r.alias, qualifier)) || namesEqual(r.name, qualifier));
+    return referenced?.name ?? qualifier;
+  }
+
+  /** Resolves an item reference to the document that should hold the item, or `undefined` when the
+   * schema set does not hold it. An unqualified reference (`"Pump"`) means this document. A
+   * qualified one (`"BisCore:Element"`, `"bis.Element"`) is matched against this document's own
+   * name and alias, then against its reference list by alias and by name, and the resulting schema
+   * name is looked up in the set. */
+  public resolveDocument(reference: LocalOrFullName): SchemaDocument | undefined {
+    const schemaName = this.resolveSchemaName(reference);
+    return namesEqual(schemaName, this.name) ? this : this._schemaSet.getSchema(schemaName);
+  }
+
+  /** Resolves an item reference to the item itself, or `undefined` when it does not resolve - the
+   * schema set does not hold the target schema, or that schema has no such item. A miss is silent;
+   * a dangling reference is reported by validation, not by an accessor.
+   * @see {@link SchemaDocument.resolveDocument} for how a reference maps to a schema. */
+  public resolveItem(reference: LocalOrFullName): AnySchemaItem | undefined {
+    const { name } = splitReference(reference);
+    return this.resolveDocument(reference)?.getItem(name);
+  }
+
+  /** Resolves an item reference and narrows it to the given kind, or `undefined` when it does not
+   * resolve or resolves to an item of a different kind. `itemType` may be a concrete
+   * {@link SchemaItemType} or a grouping ({@link AbstractSchemaItemType.Class}). */
+  public resolveItemOfType<K extends keyof SchemaItemTypeMap>(reference: LocalOrFullName, itemType: K): SchemaItemTypeMap[K] | undefined {
+    const item = this.resolveItem(reference);
+    return item !== undefined && isSupportedSchemaItemType(item.schemaItemType, itemType) ? item as SchemaItemTypeMap[K] : undefined;
+  }
+
+  /** Builds the reference string this document uses to refer to `item`, and is what every setter
+   * that accepts an item calls. An item of this document yields its bare name; an item of another
+   * document yields `"SchemaName:ItemName"` and, when this document has no reference to that schema
+   * yet, **one is added** using the other schema's version and its own alias as the suggested
+   * default. An existing reference is never modified, so a version disagreement stays visible to
+   * validation instead of being silently rewritten. */
+  public referenceTo(item: SchemaItem): LocalOrFullName {
+    const owner = item.document;
+    if (owner === this)
+      return item.name;
+    if (this.getSchemaReference(owner.name) === undefined)
+      this.setSchemaReference(owner);
+    return `${owner.name}:${item.name}`;
   }
 
   /** Returns the first item with the given name whose kind matches `itemType`, narrowed to that
@@ -176,33 +484,33 @@ export class SchemaDocument {
     return this.getItemsOfType(SchemaItemType.EntityClass);
   }
 
-  /** Creates an entity class, appends it to {@link SchemaDocument.items}, and returns it. */
+  /** Creates an entity class, appends it, and returns it. */
   public createEntity(name: string, init?: EntityClassInit): EntityClass {
-    return this._add(new EntityClass(name, init));
+    return new EntityClass(this, name, init);
   }
 
   /** Creates a mixin, appends it, and returns it. `appliesTo` is the entity class the mixin may be
    * applied to (mandatory data). A mixin is abstract by definition regardless of its
    * {@link ECClass.modifier} - see {@link Mixin}. */
   public createMixin(name: string, appliesTo: LocalOrFullName, init?: ClassInit): Mixin {
-    return this._add(new Mixin(name, appliesTo, init));
+    return new Mixin(this, name, appliesTo, init);
   }
 
   /** Creates a struct class, appends it, and returns it. */
   public createStructClass(name: string, init?: ClassInit): StructClass {
-    return this._add(new StructClass(name, init));
+    return new StructClass(this, name, init);
   }
 
   /** Creates a custom attribute class, appends it, and returns it. `appliesTo` is the bitmask of
    * container kinds the attribute may be applied to (mandatory data). */
   public createCustomAttributeClass(name: string, appliesTo: CustomAttributeContainerType, init?: ClassInit): CustomAttributeClass {
-    return this._add(new CustomAttributeClass(name, appliesTo, init));
+    return new CustomAttributeClass(this, name, appliesTo, init);
   }
 
   /** Creates a relationship class, appends it, and returns it. Configure the `source` and `target`
    * constraints inline via `init`, or on the returned handle with {@link RelationshipConstraint.set}. */
   public createRelationship(name: string, init?: RelationshipClassInit): RelationshipClass {
-    return this._add(new RelationshipClass(name, init));
+    return new RelationshipClass(this, name, init);
   }
 
   /** Creates an enumeration item, appends it, and returns it. `backingType` is the enumeration's
@@ -210,59 +518,53 @@ export class SchemaDocument {
    * Note: this creates the enumeration *item*; to add an enumeration-backed *property* to a class use
    * {@link ECClass.createEnumeration}. */
   public createEnumeration(name: string, backingType: EnumerationBackingType, init?: EnumerationInit): Enumeration {
-    return this._add(new Enumeration(name, backingType, init));
+    return new Enumeration(this, name, backingType, init);
   }
 
   /** Creates a kind of quantity, appends it, and returns it. `persistenceUnit` is the unit reference
    * the KoQ persists in and `relativeError` its conversion tolerance (both mandatory data). */
   public createKindOfQuantity(name: string, persistenceUnit: LocalOrFullName, relativeError: number, init?: KindOfQuantityInit): KindOfQuantity {
-    return this._add(new KindOfQuantity(name, persistenceUnit, relativeError, init));
+    return new KindOfQuantity(this, name, persistenceUnit, relativeError, init);
   }
 
   /** Creates a property category, appends it, and returns it. */
   public createPropertyCategory(name: string, init?: PropertyCategoryInit): PropertyCategory {
-    return this._add(new PropertyCategory(name, init));
+    return new PropertyCategory(this, name, init);
   }
 
   /** Creates a unit system, appends it, and returns it. */
   public createUnitSystem(name: string, init?: SchemaItemInit): UnitSystem {
-    return this._add(new UnitSystem(name, init));
+    return new UnitSystem(this, name, init);
   }
 
   /** Creates a phenomenon, appends it, and returns it. `definition` is its defining expression
    * (mandatory data). */
   public createPhenomenon(name: string, definition: string, init?: SchemaItemInit): Phenomenon {
-    return this._add(new Phenomenon(name, definition, init));
+    return new Phenomenon(this, name, definition, init);
   }
 
   /** Creates a unit, appends it, and returns it. `phenomenon` and `unitSystem` are item references
    * and `definition` its defining expression (all mandatory data). */
   public createUnit(name: string, phenomenon: LocalOrFullName, unitSystem: LocalOrFullName, definition: string, init?: UnitInit): Unit {
-    return this._add(new Unit(name, phenomenon, unitSystem, definition, init));
+    return new Unit(this, name, phenomenon, unitSystem, definition, init);
   }
 
   /** Creates an inverted unit, appends it, and returns it. `invertsUnit` references the unit it is
    * the reciprocal of and `unitSystem` the system it belongs to (both mandatory data). */
   public createInvertedUnit(name: string, invertsUnit: LocalOrFullName, unitSystem: LocalOrFullName, init?: SchemaItemInit): InvertedUnit {
-    return this._add(new InvertedUnit(name, invertsUnit, unitSystem, init));
+    return new InvertedUnit(this, name, invertsUnit, unitSystem, init);
   }
 
   /** Creates a constant, appends it, and returns it. `phenomenon` is an item reference and
    * `definition` its defining expression (both mandatory data). */
   public createConstant(name: string, phenomenon: LocalOrFullName, definition: string, init?: ConstantInit): Constant {
-    return this._add(new Constant(name, phenomenon, definition, init));
+    return new Constant(this, name, phenomenon, definition, init);
   }
 
   /** Creates a format, appends it, and returns it. `type` is the numeric rendering kind (mandatory
    * data). */
   public createFormat(name: string, type: FormatType, init?: FormatInit): Format {
-    return this._add(new Format(name, type, init));
-  }
-
-  /** Appends a constructed item and returns it - the shared tail of every `create*` factory. */
-  private _add<T extends AnySchemaItem>(item: T): T {
-    this.items.push(item);
-    return item;
+    return new Format(this, name, type, init);
   }
 }
 
@@ -282,7 +584,7 @@ export enum Multiplicity {
  * this same schema) or a full name (`"BisCore:PhysicalElement"`). On input it also tolerates the
  * alias-qualified form (`"bis:PhysicalElement"`) and the dot separator
  * (`"BisCore.PhysicalElement"`). The document is validity-free and resolves nothing,
- * so reference correctness is a compile diagnostic - which is why this is a plain string. */
+ * so reference correctness is a validation finding - which is why this is a plain string. */
 export type LocalOrFullName = string;
 
 /** The spec-defined value each optional, defaultable field reads as when absent. The document keeps
@@ -350,109 +652,196 @@ export interface SchemaDocumentInit {
   /** Set through {@link SchemaDocument.setSchemaReference}, so the same shapes are accepted
    * (a literal, a held {@link SchemaDocument}, a `SchemaView` `Schema`) and the fields are copied. */
   references?: ReadonlyArray<Readonly<SchemaReference>>;
+  /** Schema-level custom attributes, added in order. */
+  customAttributes?: ReadonlyArray<CustomAttributeProps>;
 }
 
-/** A raw ECXML custom-attribute body: the serialized value elements of a CA, exactly as the XML
- * reader produced them, kept verbatim so an XML-sourced CA round-trips back to XML untouched. It is
- * opaque to the document; only the {@link CustomAttributeConverter} interprets it, and only when a
- * writer must emit it in the other format. A type alias over `string`. */
+/** A raw ECXML custom-attribute body: the value elements of a custom attribute exactly as the XML
+ * reader found them. Held verbatim until the attribute is materialized against its class, and
+ * written straight back out when it never is. A type alias over `string`. */
 export type XmlString = string;
 
-/** Which raw form a {@link CustomAttribute} currently holds its value in. The document keeps a CA's
- * value in whichever format its source produced and converts only when a writer crosses the
- * boundary, so this records the source without committing to a conversion.
+/** One value inside a {@link CustomAttribute}: a primitive, a nested struct, or an array of either.
+ * Primitives are already typed - the conversion from a source format produced them against the
+ * custom attribute class, so a `boolean` property is a `boolean` here and not the string `"True"`.
  * @alpha
  */
-export enum CustomAttributeFormat {
-  /** The value is an untyped JSON property object - from the JSON reader or in-memory authoring. */
-  Json = "json",
-  /** The value is a raw ECXML body {@link XmlString} - from the XML reader. */
-  Xml = "xml",
-}
+export type CustomAttributeValue = string | number | boolean | CustomAttributeValues | CustomAttributeValue[];
 
-/** The plain shape accepted by {@link CustomAttributeSet.add}: a class name and an optional JSON
- * value. A {@link CustomAttribute} instance satisfies it too, so either a literal or an instance
- * works. Authoring is always in JSON form; the {@link XmlString} form is set by the XML reader. */
+/** The values of a {@link CustomAttribute}, keyed by the property names of its custom attribute
+ * class. This is the canonical ECJSON shape of a custom attribute instance minus its `className`,
+ * and it serializes to any output format.
+ * @alpha
+ */
+export interface CustomAttributeValues { [name: string]: CustomAttributeValue }
+
+/** Anything a {@link CustomAttributeSet} can be attached to: a schema, a class, a property, or a
+ * relationship constraint. A custom attribute reaches its {@link SchemaDocument} through its
+ * container, which is how it finds its own custom attribute class.
+ * @alpha
+ */
+export type CustomAttributeContainer = SchemaDocument | ECClass | Property | RelationshipConstraint;
+
+/** The plain shape accepted by {@link CustomAttributeSet.add}: a custom attribute class name and
+ * optional values. The typed helpers for the standard custom attribute classes
+ * ({@link CoreCustomAttributes}, {@link ECDbMap}) return this shape.
+ * @alpha
+ */
 export interface CustomAttributeProps {
   className: LocalOrFullName;
-  json?: { [name: string]: unknown };
+  values?: CustomAttributeValues;
 }
 
-/** A custom attribute instance: the custom-attribute class it instantiates, plus its value held in
- * whichever raw form its source produced. A custom attribute attaches extra information to metadata;
- * the intent is to treat that information as data, needing the CA class only to validate it, not to
- * read or write it. The ECInstance XML serialization format unfortunately works against that intent -
- * an XML value cannot be understood as JSON and a JSON value cannot be emitted as XML without the CA
- * class definition. (see the ECSchema XML reference docs for the specifics). Hence the two-form storage below: rather
- * than force an eager, lossy conversion, the document holds the value exactly as its source produced
- * it and converts only when a writer must emit the other format. The document has no CA class
- * definition, so it resolves nothing until compile - the value is either an untyped JSON property
- * object (from the JSON reader or in-memory authoring) or a raw ECXML body ({@link XmlString}, from
- * the XML reader), tracked by {@link format}. Access the value through the matching {@link json} or
- * {@link xml} accessor; the other throws, because reading the wrong side means a conversion was
- * skipped. A writer emitting to the value's own format passes it through; crossing the boundary runs
- * the {@link CustomAttributeConverter}.
+/** A custom attribute instance: the custom attribute class it instantiates plus its values.
+ *
+ * A custom attribute attaches extra information to a piece of metadata, and the intent is to treat
+ * that information as plain data. The ECXML serialization works against that intent: it carries no
+ * types (every value is text) and it names a struct-array entry after the entry's struct class,
+ * which ECJSON does not carry at all. So the values of a custom attribute can only be understood -
+ * in either direction - with its custom attribute class in hand.
+ *
+ * The document therefore **materializes lazily**. A custom attribute read from ECXML starts out
+ * unmaterialized: its body is held verbatim as an {@link XmlString}. Reading {@link values},
+ * editing it, or writing the document to any format materializes it against its custom attribute
+ * class, which that class must be resolvable for. Resolution goes through the owning document's
+ * {@link SchemaSet} and falls back to built-in definitions of the standard custom attribute classes
+ * ({@link CoreCustomAttributes}, {@link ECDbMap}), so the common ones need nothing loaded.
+ *
+ * {@link CustomAttribute.values} throws when the class cannot be resolved, because the fix - put
+ * the custom attribute's schema in the schema set - is something only the caller can do, and a
+ * half-typed bag handed back instead would surface the problem somewhere much harder to diagnose.
+ * Use {@link CustomAttribute.tryGetValues} where not knowing is legitimate. Writers never throw:
+ * they report an issue and, when the target format is the one the attribute came from, pass the
+ * verbatim body through.
+ *
+ * An instance belongs to exactly one container. Prefer {@link CustomAttributeSet.add} over this
+ * constructor; both do the same thing.
  * @alpha
  */
-export class CustomAttribute implements CustomAttributeProps {
+export class CustomAttribute {
   /** Full name of the custom attribute class, e.g. `"CoreCustomAttributes.DynamicSchema"`. Either EC
-   * separator (`:` or `.`) is accepted and they compare as equal; the class is resolved at compile.
-   * The XML reader fills this from the entry element name and its `xmlns`; in memory, prefer the
-   * schema-name form over an alias - there is no reference list to resolve an alias against until the
-   * document holds one. */
+   * separator (`:` or `.`) is accepted and they compare as equal. The XML reader fills this from the
+   * entry element name and its `xmlns`; when authoring, prefer the schema-name form over an alias -
+   * an alias only resolves once the document holds the matching reference. */
   public className: LocalOrFullName;
 
-  private _format: CustomAttributeFormat;
-  private _value: XmlString | { [name: string]: unknown } | undefined;
+  private _values?: CustomAttributeValues;
+  private _rawXml?: XmlString;
+  private _container: CustomAttributeContainer;
 
-  /** Creates a CA in JSON form (the authoring form) with an optional value. The XML reader sets the
-   * {@link xml} accessor afterwards to switch a CA to XML form. */
-  public constructor(className: LocalOrFullName, json?: { [name: string]: unknown }) {
+  /** Creates a materialized custom attribute on a container - the authoring form. */
+  public constructor(container: CustomAttributeContainer, className: LocalOrFullName, values?: CustomAttributeValues) {
+    this._container = container;
     this.className = className;
-    this._format = CustomAttributeFormat.Json;
-    this._value = json;
+    this._values = values ?? {};
+    container.customAttributes[_attach](this);
   }
 
-  /** Which raw form the value is currently held in. */
-  public get format(): CustomAttributeFormat {
-    return this._format;
+  /** Creates an unmaterialized custom attribute holding a raw ECXML body, for readers of that
+   * format. The body is understood only when the attribute is materialized against its class. */
+  public static fromXmlBody(container: CustomAttributeContainer, className: LocalOrFullName, body: XmlString | undefined): CustomAttribute {
+    const instance = new CustomAttribute(container, className);
+    instance._values = undefined;
+    instance._rawXml = body ?? "";
+    return instance;
   }
 
-  /** The untyped JSON property object, or `undefined` when the CA carries no value. Throws when the
-   * value is held as XML ({@link format} is {@link CustomAttributeFormat.Xml}) - convert it first.
-   * Setting this switches {@link format} to JSON. */
-  public get json(): { [name: string]: unknown } | undefined {
-    if (this._format !== CustomAttributeFormat.Json)
-      throw new Error(`Custom attribute "${this.className}" holds its value as XML, not JSON; convert it before reading json.`);
-    return this._value as { [name: string]: unknown } | undefined;
-  }
-  public set json(value: { [name: string]: unknown } | undefined) {
-    this._value = value;
-    this._format = CustomAttributeFormat.Json;
+  /** The schema, class, property, or relationship constraint this attribute is applied to. */
+  public get container(): CustomAttributeContainer {
+    return this._container;
   }
 
-  /** The raw ECXML body, or `undefined` when the CA carries no value. Throws when the value is held
-   * as JSON ({@link format} is {@link CustomAttributeFormat.Json}) - convert it first. Setting this
-   * switches {@link format} to XML. */
-  public get xml(): XmlString | undefined {
-    if (this._format !== CustomAttributeFormat.Xml)
-      throw new Error(`Custom attribute "${this.className}" holds its value as JSON, not XML; convert it before reading xml.`);
-    return this._value as XmlString | undefined;
+  /** The document this attribute is applied within, reached through its container - the scope its
+   * custom attribute class resolves in. */
+  public get document(): SchemaDocument {
+    const container = this._container;
+    return container instanceof SchemaDocument ? container : container.document;
   }
-  public set xml(value: XmlString | undefined) {
-    this._value = value;
-    this._format = CustomAttributeFormat.Xml;
+
+  /** @internal */
+  public [_setOwner](container: CustomAttributeContainer): void {
+    this._container = container;
+  }
+
+  /** False while the attribute still holds an unconverted ECXML body. Diagnostic only - reading
+   * {@link CustomAttribute.values} materializes. */
+  public get isMaterialized(): boolean {
+    return this._values !== undefined;
+  }
+
+  /** The unconverted ECXML body, or `undefined` once the attribute is materialized. Writers use it
+   * to pass an attribute through verbatim when its class cannot be resolved.
+   * @internal
+   */
+  public get rawXml(): XmlString | undefined {
+    return this._rawXml;
+  }
+
+  /** The attribute's values, materializing it if needed. Throws when materialization needs the
+   * custom attribute class and it cannot be resolved - see the class remarks. The returned object
+   * is the live one: editing it edits the attribute. */
+  public get values(): CustomAttributeValues {
+    if (this._values === undefined) {
+      this._values = materializeCustomAttribute(this, true);
+      this._rawXml = undefined;
+    }
+    return this._values;
+  }
+
+  public set values(values: CustomAttributeValues) {
+    this._values = values;
+    this._rawXml = undefined;
+  }
+
+  /** The attribute's values, or `undefined` when materialization needs the custom attribute class
+   * and it cannot be resolved. The non-throwing form of {@link CustomAttribute.values}, for callers
+   * that legitimately do not know whether the class is reachable. */
+  public tryGetValues(): CustomAttributeValues | undefined {
+    if (this._values === undefined) {
+      this._values = materializeCustomAttribute(this, false);
+      if (this._values !== undefined)
+        this._rawXml = undefined;
+    }
+    return this._values;
+  }
+
+  /** The value of one property, or `undefined` when the attribute does not carry it. Materializes,
+   * so it throws under the same conditions as {@link CustomAttribute.values}. */
+  public getValue(name: string): CustomAttributeValue | undefined {
+    return this.values[name];
+  }
+
+  /** Sets the value of one property. Materializes first, so an attribute read from ECXML is
+   * converted against its class before being edited. */
+  public setValue(name: string, value: CustomAttributeValue): void {
+    this.values[name] = value;
+  }
+
+  /** `{ className }` plus the values when materialized, so `JSON.stringify` renders an attribute
+   * transparently without materializing one that is not. */
+  public toJSON(): { className: LocalOrFullName, values?: CustomAttributeValues, xml?: XmlString } {
+    if (this._values !== undefined)
+      return { className: this.className, values: this._values };
+    return { className: this.className, xml: this._rawXml };
   }
 }
 
 /** An ordered set of custom attribute instances on a container (schema, class, property, or
- * relationship constraint). The spec allows at most one instance per CA class and does not
- * guarantee order on round-trip; this preserves insertion order and, consistent with the
+ * relationship constraint). The spec allows at most one instance per custom attribute class and
+ * does not guarantee order on round-trip; this preserves insertion order and, consistent with the
  * validity-free stance, does not reject a second instance of the same class.
  * @alpha
  */
 export class CustomAttributeSet implements Iterable<CustomAttribute> {
   private readonly _items: CustomAttribute[] = [];
+
+  /** @internal */
+  public constructor(private readonly _container: CustomAttributeContainer) { }
+
+  /** The container these attributes are applied to. */
+  public get container(): CustomAttributeContainer {
+    return this._container;
+  }
 
   /** The number of custom attribute instances. */
   public get size(): number {
@@ -464,46 +853,67 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
     return this._items[Symbol.iterator]();
   }
 
-  /** Adds a custom attribute instance and returns it, for follow-up configuration in one expression.
-   * Accepts either a {@link CustomAttribute} instance or a plain {@link CustomAttributeProps} literal
-   * (`{ className, properties? }`); a literal is wrapped in an instance before storing, so the
-   * returned value is always a {@link CustomAttribute}. */
-  public add(ca: CustomAttribute | CustomAttributeProps): CustomAttribute {
-    const instance = ca instanceof CustomAttribute ? ca : new CustomAttribute(ca.className, ca.json);
-    this._items.push(instance);
-    return instance;
+  /** Adds custom attributes and returns the last one, for follow-up configuration in one
+   * expression. A `{ className, values? }` literal - what the typed helpers for the standard
+   * classes return - is constructed here; an existing {@link CustomAttribute} instance is moved
+   * over from the container it is currently applied to. */
+  public add(customAttribute: CustomAttributeProps | CustomAttribute, ...more: Array<CustomAttributeProps | CustomAttribute>): CustomAttribute {
+    let last = this._addOne(customAttribute);
+    for (const ca of more)
+      last = this._addOne(ca);
+    return last;
   }
 
-  /** Returns the first instance of the named CA class, or `undefined`. Matching is case-insensitive
-   * and treats the `:` and `.` separators as equivalent, but compares spellings, not resolved
-   * identity: an alias-qualified name (`"bis:HiddenProperty"`) does not match the schema-name form
-   * (`"BisCore:HiddenProperty"`) of the same class. */
+  private _addOne(ca: CustomAttributeProps | CustomAttribute): CustomAttribute {
+    if (!(ca instanceof CustomAttribute))
+      return new CustomAttribute(this._container, ca.className, ca.values);
+    if (ca.container !== this._container) {
+      ca.container.customAttributes._detach(ca);
+      ca[_setOwner](this._container);
+      this._items.push(ca);
+    }
+    return ca;
+  }
+
+  /** Returns the first instance of the named custom attribute class, or `undefined`. Matching is
+   * case-insensitive and treats the `:` and `.` separators as equivalent, but compares spellings,
+   * not resolved identity: an alias-qualified name (`"bis:HiddenProperty"`) does not match the
+   * schema-name form (`"BisCore:HiddenProperty"`) of the same class. */
   public get(className: string): CustomAttribute | undefined {
     const key = foldFullName(className);
     return this._items.find((ca) => foldFullName(ca.className) === key);
   }
 
-  /** True when an instance of the named CA class is present. */
+  /** True when an instance of the named custom attribute class is present. */
   public has(className: string): boolean {
     return this.get(className) !== undefined;
   }
 
-  /** Removes and returns the first instance of the named CA class, or `undefined`. */
-  public remove(className: string): CustomAttribute | undefined {
+  /** Removes the first instance of the named custom attribute class and returns whether there was
+   * one. To keep it, add it to another container instead, which moves it. */
+  public remove(className: string): boolean {
     const key = foldFullName(className);
     const idx = this._items.findIndex((ca) => foldFullName(ca.className) === key);
-    return idx === -1 ? undefined : this._items.splice(idx, 1)[0];
+    if (idx === -1)
+      return false;
+    this._items.splice(idx, 1);
+    return true;
   }
 
-  /** The instances as plain objects, so `JSON.stringify` renders the set transparently rather than
-   * leaking the instances' private storage: each is `{ className }` plus the value under `json` or
-   * `xml` per its {@link CustomAttribute.format}, omitted when the CA carries none. */
-  public toJSON(): Array<{ className: LocalOrFullName, json?: { [name: string]: unknown }, xml?: XmlString }> {
-    return this._items.map((ca) => {
-      if (ca.format === CustomAttributeFormat.Xml)
-        return ca.xml !== undefined ? { className: ca.className, xml: ca.xml } : { className: ca.className };
-      return ca.json !== undefined ? { className: ca.className, json: ca.json } : { className: ca.className };
-    });
+  /** The instances as plain objects, so `JSON.stringify` renders the set transparently. */
+  public toJSON(): Array<ReturnType<CustomAttribute["toJSON"]>> {
+    return this._items.map((ca) => ca.toJSON());
+  }
+
+  /** @internal Registers an attribute constructed onto this container. */
+  public [_attach](customAttribute: CustomAttribute): void {
+    this._items.push(customAttribute);
+  }
+
+  private _detach(customAttribute: CustomAttribute): void {
+    const index = this._items.indexOf(customAttribute);
+    if (index >= 0)
+      this._items.splice(index, 1);
   }
 }
 
@@ -516,6 +926,10 @@ export interface SchemaItemInit {
 
 /** Common base of every schema item. `schemaItemType` is the discriminant for narrowing; the
  * `is*()` / `assert*()` methods below mirror the same checks on `SchemaView`.
+ *
+ * An item belongs to exactly one {@link SchemaDocument} - the one that resolves its references -
+ * from the moment it is constructed. Every item constructor takes that document as its first
+ * argument and registers the item with it, which is all the `create*` factories on the document do.
  * @alpha
  */
 export abstract class SchemaItem {
@@ -528,8 +942,28 @@ export abstract class SchemaItem {
   /** Optional description. */
   public description?: string;
 
-  protected constructor(name: string) {
+  private _document: SchemaDocument;
+
+  protected constructor(document: SchemaDocument, name: string) {
+    this._document = document;
     this.name = name;
+    document[_attach](this);
+  }
+
+  /** The document this item belongs to. Every reference the item holds resolves through this
+   * document and its {@link SchemaSet}. Changed only by {@link SchemaDocument.moveItemIn}. */
+  public get document(): SchemaDocument {
+    return this._document;
+  }
+
+  /** @internal */
+  public [_setOwner](document: SchemaDocument): void {
+    this._document = document;
+  }
+
+  /** `"SchemaName:ItemName"`. */
+  public get fullName(): string {
+    return `${this._document.name}:${this.name}`;
   }
 
   /** Narrows to {@link EntityClass}. */
@@ -606,13 +1040,15 @@ export interface ClassInit {
   description?: string;
   /** The single base class reference, if any. */
   baseClass?: LocalOrFullName;
+  /** Class-level custom attributes, added in order. */
+  customAttributes?: ReadonlyArray<CustomAttributeProps>;
 }
 
 /** Common base of every EC class kind (entity, mixin, struct, custom attribute, relationship). Owns
  * the modifier, the single base-class reference, the custom attributes, and the property collection
  * plus its `create*` factories. Property kinds are valid per-class in the spec (e.g. navigation only
  * on relationship-endpoint classes, structs not recursing) - the document does not enforce that, so
- * every factory is available on every class kind and the compiler reports a misuse.
+ * every factory is available on every class kind and validation reports a misuse.
  * @alpha
  */
 export abstract class ECClass extends SchemaItem {
@@ -620,78 +1056,171 @@ export abstract class ECClass extends SchemaItem {
    * spec default ({@link SpecDefaults.classModifier}, or {@link SpecDefaults.mixinModifier} for a
    * mixin). The distinction is preserved so a document round-trips exactly. */
   public modifier?: ECClassModifier;
-  /** The single base class reference (e.g. `"BisCore:PhysicalElement"`), if any. */
+  /** The single base class reference (e.g. `"BisCore:PhysicalElement"`), if any.
+   * @see {@link ECClass.getBaseClass} to resolve it, {@link ECClass.setBaseClass} to set it from a class. */
   public baseClass?: LocalOrFullName;
   /** Class-level custom attributes. */
-  public readonly customAttributes = new CustomAttributeSet();
-  /** This class's own properties in declaration order. Prefer the `create*` factories, which append
-   * here and return a handle. */
-  public readonly properties: AnyProperty[] = [];
+  public readonly customAttributes: CustomAttributeSet;
 
-  protected constructor(name: string, init?: ClassInit) {
-    super(name);
+  private readonly _properties: AnyProperty[] = [];
+  private readonly _propertyLookup = new NameLookup(this._properties);
+
+  protected constructor(document: SchemaDocument, name: string, init?: ClassInit) {
+    super(document, name);
+    this.customAttributes = new CustomAttributeSet(this);
     if (init) {
       this.label = init.label;
       this.description = init.description;
       this.modifier = init.modifier;
       this.baseClass = init.baseClass;
+      addCustomAttributes(this.customAttributes, init.customAttributes);
     }
   }
 
-  /** Returns this class's own property with the given name (case-insensitive), or `undefined`. */
-  public getProperty(name: string): AnyProperty | undefined {
-    return this.properties.find((p) => namesEqual(p.name, name));
+  /** The base class this class derives from, resolved through the document's schema set, or
+   * `undefined` when there is no base class or it does not resolve. */
+  public getBaseClass(): AnyClass | undefined {
+    return this.baseClass === undefined ? undefined : this.document.resolveItemOfType(this.baseClass, AbstractSchemaItemType.Class);
   }
 
-  /** Removes and returns this class's own property with the given name (case-insensitive), or `undefined`. */
-  public removeProperty(name: string): AnyProperty | undefined {
-    const index = this.properties.findIndex((p) => namesEqual(p.name, name));
-    return index === -1 ? undefined : this.properties.splice(index, 1)[0];
+  /** Sets {@link ECClass.baseClass} from a class rather than a reference string, adding a schema
+   * reference to that class's schema when this document has none (see
+   * {@link SchemaDocument.referenceTo}). */
+  public setBaseClass(baseClass: AnyClass): void {
+    this.baseClass = this.document.referenceTo(baseClass);
+  }
+
+  /** This class's own properties in declaration order. Read-only because the class owns them: a
+   * property is created into a class and stays there until it is removed or moved. Use the
+   * `create*` factories (or the equivalent property constructors), {@link ECClass.movePropertyIn},
+   * and {@link ECClass.removeProperty}. */
+  public get properties(): ReadonlyArray<AnyProperty> {
+    return this._properties;
+  }
+
+  /** Moves properties into this class, removing each from the class it currently belongs to - a
+   * property belongs to exactly one. Its own references are not rewritten. */
+  public movePropertyIn(...properties: Property[]): void {
+    for (const property of properties) {
+      if (property.declaringClass === this)
+        continue;
+      property.declaringClass._detachProperty(property);
+      this._properties.push(property as AnyProperty);
+      property[_setOwner](this);
+    }
+    this._propertyLookup.invalidate();
+  }
+
+  /** Returns this class's own property with the given name (case-insensitive), or `undefined`.
+   * @see {@link ECClass.getEffectiveProperty} to search base classes and mixins too. */
+  public getProperty(name: string): AnyProperty | undefined {
+    return this._propertyLookup.get(name);
+  }
+
+  /** Removes this class's own property with the given name (case-insensitive) and returns whether
+   * there was one. To keep it, move it into another class instead ({@link ECClass.movePropertyIn}). */
+  public removeProperty(name: string): boolean {
+    const index = this._properties.findIndex((p) => namesEqual(p.name, name));
+    if (index === -1)
+      return false;
+    this._properties.splice(index, 1);
+    this._propertyLookup.invalidate();
+    return true;
+  }
+
+  /** @internal Registers a property constructed into this class. */
+  public [_attach](property: Property): void {
+    this._properties.push(property as AnyProperty);
+    this._propertyLookup.invalidate();
+  }
+
+  private _detachProperty(property: Property): void {
+    const index = this._properties.indexOf(property as AnyProperty);
+    if (index >= 0)
+      this._properties.splice(index, 1);
+    this._propertyLookup.invalidate();
+  }
+
+  /** Every property this class has, inherited ones included, resolved through the document's schema
+   * set: the base class first (depth first, so the root base class leads), then applied mixins in
+   * declaration order, then this class's own properties.
+   *
+   * A property an ancestor declares and this class overrides appears **once**: the overriding
+   * declaration, at the position the ancestor introduced it. Unresolvable base classes and mixins
+   * contribute nothing and are skipped silently; validation is where a dangling base class is
+   * reported. A base-class cycle terminates rather than hanging. */
+  public getEffectiveProperties(): AnyProperty[] {
+    const collected: AnyProperty[] = [];
+    this._collectEffectiveProperties(collected, new Map<string, number>(), new Set<ECClass>());
+    return collected;
+  }
+
+  /** The property with the given name (case-insensitive) this class has, inherited ones included,
+   * or `undefined`. Same resolution as {@link ECClass.getEffectiveProperties}. */
+  public getEffectiveProperty(name: string): AnyProperty | undefined {
+    return this.getProperty(name) ?? this.getEffectiveProperties().find((p) => namesEqual(p.name, name));
+  }
+
+  private _collectEffectiveProperties(collected: AnyProperty[], positionsByName: Map<string, number>, visitedClasses: Set<ECClass>): void {
+    if (visitedClasses.has(this))
+      return;
+    visitedClasses.add(this);
+    this.getBaseClass()?._collectEffectiveProperties(collected, positionsByName, visitedClasses);
+    if (this.isEntity()) {
+      for (const mixin of this.getMixins()) {
+        if (mixin !== undefined)
+          mixin._collectEffectiveProperties(collected, positionsByName, visitedClasses);
+      }
+    }
+    for (const property of this._properties) {
+      const key = property.name.toLowerCase();
+      const inherited = positionsByName.get(key);
+      if (inherited !== undefined) {
+        collected[inherited] = property;
+        continue;
+      }
+      positionsByName.set(key, collected.length);
+      collected.push(property);
+    }
   }
 
   /** Creates a primitive property (keyword type), appends it, and returns it. */
   public createPrimitive(name: string, type: PrimitiveType, init?: PrimitivePropertyInit): PrimitiveProperty {
-    return this._addProperty(new PrimitiveProperty(name, type, init));
+    return new PrimitiveProperty(this, name, type, init);
   }
 
   /** Creates an enumeration-backed primitive property, appends it, and returns it. `enumeration` is
    * a reference to an `Enumeration` item. Stored the same way as a keyword primitive (one
    * `typeName` field); the separate method just keeps the reference param strongly typed. */
   public createEnumeration(name: string, enumeration: LocalOrFullName, init?: PrimitivePropertyInit): PrimitiveProperty {
-    return this._addProperty(new PrimitiveProperty(name, enumeration, init));
+    return new PrimitiveProperty(this, name, enumeration, init);
   }
 
   /** Creates a primitive array property (keyword element type), appends it, and returns it. */
   public createPrimitiveArray(name: string, type: PrimitiveType, init?: PrimitiveArrayPropertyInit): PrimitiveArrayProperty {
-    return this._addProperty(new PrimitiveArrayProperty(name, type, init));
+    return new PrimitiveArrayProperty(this, name, type, init);
   }
 
   /** Creates an enumeration-backed array property, appends it, and returns it. */
   public createEnumerationArray(name: string, enumeration: LocalOrFullName, init?: PrimitiveArrayPropertyInit): PrimitiveArrayProperty {
-    return this._addProperty(new PrimitiveArrayProperty(name, enumeration, init));
+    return new PrimitiveArrayProperty(this, name, enumeration, init);
   }
 
   /** Creates a struct property, appends it, and returns it. `structClass` is a reference to a
    * `StructClass` item. */
   public createStruct(name: string, structClass: LocalOrFullName, init?: PropertyInit): StructProperty {
-    return this._addProperty(new StructProperty(name, structClass, init));
+    return new StructProperty(this, name, structClass, init);
   }
 
   /** Creates a struct array property, appends it, and returns it. */
   public createStructArray(name: string, structClass: LocalOrFullName, init?: StructArrayPropertyInit): StructArrayProperty {
-    return this._addProperty(new StructArrayProperty(name, structClass, init));
+    return new StructArrayProperty(this, name, structClass, init);
   }
 
   /** Creates a navigation property, appends it, and returns it. `relationship` references the
    * `RelationshipClass` it traverses and `direction` which end it starts from (mandatory data). */
   public createNavigation(name: string, relationship: LocalOrFullName, direction: StrengthDirection, init?: PropertyInit): NavigationProperty {
-    return this._addProperty(new NavigationProperty(name, relationship, direction, init));
-  }
-
-  /** Appends a constructed property and returns it - the shared tail of every property factory. */
-  private _addProperty<T extends AnyProperty>(property: T): T {
-    this.properties.push(property);
-    return property;
+    return new NavigationProperty(this, name, relationship, direction, init);
   }
 }
 
@@ -706,17 +1235,32 @@ export interface EntityClassInit extends ClassInit {
  */
 export class EntityClass extends ECClass {
   public readonly schemaItemType = SchemaItemType.EntityClass;
-  /** Applied mixin references, in declaration order. An entity has at most one {@link ECClass.baseClass};
-   * mixins are separate. Note that, lacking validation, after XML deserialization a mixin may land in
-   * `baseClass` instead (the deserializer cannot tell them apart) when there is no other base class;
-   * the compiler corrects this. */
+  /** Applied mixin references, in declaration order. An entity has at most one
+   * {@link ECClass.baseClass}; mixins are separate. Note that, lacking validation, after XML
+   * deserialization a mixin may land in `baseClass` instead (the deserializer cannot tell them
+   * apart) when there is no other base class.
+   * @see {@link EntityClass.getMixins} to resolve them, {@link EntityClass.addMixin} to add one from a mixin. */
   public readonly mixins: LocalOrFullName[] = [];
 
-  /** Creates an entity class. `name` is the only mandatory argument; `init` carries the rest. */
-  public constructor(name: string, init?: EntityClassInit) {
-    super(name, init);
+  /** Creates an entity class in `document`. `name` is the only other mandatory argument. */
+  public constructor(document: SchemaDocument, name: string, init?: EntityClassInit) {
+    super(document, name, init);
     if (init?.mixins)
       this.mixins.push(...init.mixins);
+  }
+
+  /** The applied mixins, resolved through the document's schema set, positionally aligned with
+   * {@link EntityClass.mixins} - an entry that does not resolve is `undefined` rather than dropped,
+   * so a caller can tell which one is missing. */
+  public getMixins(): Array<Mixin | undefined> {
+    return this.mixins.map((mixin) => this.document.resolveItemOfType(mixin, SchemaItemType.Mixin));
+  }
+
+  /** Appends a mixin reference from the mixin itself, adding a schema reference to its schema when
+   * this document has none (see {@link SchemaDocument.referenceTo}). */
+  public addMixin(...mixins: Mixin[]): void {
+    for (const mixin of mixins)
+      this.mixins.push(this.document.referenceTo(mixin));
   }
 }
 
@@ -738,11 +1282,21 @@ export class Mixin extends ECClass {
   /** The entity class (including its derived classes) that this mixin may be applied to. (3.2: `IsMixin.AppliesToEntityClass`). */
   public appliesTo: LocalOrFullName;
 
-  /** Creates a mixin. `appliesTo` is mandatory. A mixin is abstract whether or not a modifier is
-   * written, so none is defaulted here - an absent modifier round-trips as absent. */
-  public constructor(name: string, appliesTo: LocalOrFullName, init?: ClassInit) {
-    super(name, init);
+  /** Creates a mixin in `document`. `appliesTo` is mandatory. A mixin is abstract whether or not a
+   * modifier is written, so none is defaulted here - an absent modifier round-trips as absent. */
+  public constructor(document: SchemaDocument, name: string, appliesTo: LocalOrFullName, init?: ClassInit) {
+    super(document, name, init);
     this.appliesTo = appliesTo;
+  }
+
+  /** The entity class this mixin may be applied to, resolved through the document's schema set. */
+  public getAppliesTo(): EntityClass | undefined {
+    return this.document.resolveItemOfType(this.appliesTo, SchemaItemType.EntityClass);
+  }
+
+  /** Sets {@link Mixin.appliesTo} from the entity class itself (see {@link SchemaDocument.referenceTo}). */
+  public setAppliesTo(entityClass: EntityClass): void {
+    this.appliesTo = this.document.referenceTo(entityClass);
   }
 }
 
@@ -752,9 +1306,9 @@ export class Mixin extends ECClass {
 export class StructClass extends ECClass {
   public readonly schemaItemType = SchemaItemType.StructClass;
 
-  /** Creates a struct class. `name` is the only mandatory argument; `init` carries the rest. */
-  public constructor(name: string, init?: ClassInit) {
-    super(name, init);
+  /** Creates a struct class in `document`. `name` is the only other mandatory argument. */
+  public constructor(document: SchemaDocument, name: string, init?: ClassInit) {
+    super(document, name, init);
   }
 }
 
@@ -767,9 +1321,9 @@ export class CustomAttributeClass extends ECClass {
    * delimited string; this is the parsed flags value. */
   public appliesTo: CustomAttributeContainerType;
 
-  /** Creates a custom attribute class. `appliesTo` is mandatory. */
-  public constructor(name: string, appliesTo: CustomAttributeContainerType, init?: ClassInit) {
-    super(name, init);
+  /** Creates a custom attribute class in `document`. `appliesTo` is mandatory. */
+  public constructor(document: SchemaDocument, name: string, appliesTo: CustomAttributeContainerType, init?: ClassInit) {
+    super(document, name, init);
     this.appliesTo = appliesTo;
   }
 }
@@ -788,6 +1342,8 @@ export interface RelationshipConstraintInit {
   abstractConstraint?: LocalOrFullName;
   /** Constraint class references; appended to any already present. */
   constraintClasses?: LocalOrFullName[];
+  /** Constraint-level custom attributes, added in order. */
+  customAttributes?: ReadonlyArray<CustomAttributeProps>;
 }
 
 export interface RelationshipClassInit extends ClassInit {
@@ -807,9 +1363,11 @@ export interface RelationshipClassInit extends ClassInit {
 export class RelationshipConstraint {
   /** Which end of the relationship this constraint describes. */
   public readonly relationshipEnd: RelationshipEnd;
+  /** The relationship class this constraint is one end of. */
+  public readonly relationshipClass: RelationshipClass;
   /** Multiplicity as an `(lo..hi)` string (e.g. `"(0..1)"`, `"(1..*)"`). */
   public multiplicity: string = "(0..*)";
-  /** Role label. The spec requires it; the document leaves it optional and defers to the compiler. */
+  /** Role label. The spec requires it; the document leaves it optional and defers to validation. */
   public roleLabel?: string;
   /** Whether the constraint matches derived classes of its constraint classes. `undefined` when the
    * source carried no value, which reads as the spec default ({@link SpecDefaults.constraintPolymorphic}). */
@@ -820,17 +1378,47 @@ export class RelationshipConstraint {
   /** Constraint class references (at least one is required by the spec). */
   public readonly constraintClasses: LocalOrFullName[] = [];
   /** Constraint-level custom attributes. */
-  public readonly customAttributes = new CustomAttributeSet();
+  public readonly customAttributes: CustomAttributeSet;
 
-  public constructor(relationshipEnd: RelationshipEnd) {
+  /** @internal Constructed by its {@link RelationshipClass}. */
+  public constructor(relationshipClass: RelationshipClass, relationshipEnd: RelationshipEnd) {
+    this.relationshipClass = relationshipClass;
     this.relationshipEnd = relationshipEnd;
+    this.customAttributes = new CustomAttributeSet(this);
+  }
+
+  /** The document this constraint's relationship class belongs to. */
+  public get document(): SchemaDocument {
+    return this.relationshipClass.document;
+  }
+
+  /** The constraint classes, resolved through the document's schema set, positionally aligned with
+   * {@link RelationshipConstraint.constraintClasses}; an entry that does not resolve is `undefined`. */
+  public getConstraintClasses(): Array<AnyClass | undefined> {
+    return this.constraintClasses.map((c) => this.document.resolveItemOfType(c, AbstractSchemaItemType.Class));
+  }
+
+  /** Appends constraint class references from the classes themselves (see {@link SchemaDocument.referenceTo}). */
+  public addConstraintClass(...constraintClasses: AnyClass[]): void {
+    for (const constraintClass of constraintClasses)
+      this.constraintClasses.push(this.document.referenceTo(constraintClass));
+  }
+
+  /** The abstract constraint, resolved through the document's schema set. */
+  public getAbstractConstraint(): AnyClass | undefined {
+    return this.abstractConstraint === undefined ? undefined : this.document.resolveItemOfType(this.abstractConstraint, AbstractSchemaItemType.Class);
+  }
+
+  /** Sets {@link RelationshipConstraint.abstractConstraint} from the class itself. */
+  public setAbstractConstraint(constraintClass: AnyClass): void {
+    this.abstractConstraint = this.document.referenceTo(constraintClass);
   }
 
   /** Sets the common endpoint fields (multiplicity / role label / polymorphic / abstract constraint) and
    * appends any constraint classes, in one call. Provided fields are assigned; omitted fields are left
    * untouched. Returns the constraint so calls can chain. Note `abstractConstraint` is not derived from a
    * single constraint class - it is only required when an endpoint has more than one, so the document
-   * leaves it to the author (or the compiler) rather than inventing it. */
+   * leaves it to the author. */
   public set(init: RelationshipConstraintInit): this {
     if (init.multiplicity !== undefined)
       this.multiplicity = init.multiplicity;
@@ -842,6 +1430,7 @@ export class RelationshipConstraint {
       this.abstractConstraint = init.abstractConstraint;
     if (init.constraintClasses !== undefined)
       this.constraintClasses.push(...init.constraintClasses);
+    addCustomAttributes(this.customAttributes, init.customAttributes);
     return this;
   }
 }
@@ -858,15 +1447,15 @@ export class RelationshipClass extends ECClass {
    * the spec default ({@link SpecDefaults.relationshipStrengthDirection}). */
   public strengthDirection?: StrengthDirection;
   /** The source end. */
-  public readonly source = new RelationshipConstraint(RelationshipEnd.Source);
+  public readonly source = new RelationshipConstraint(this, RelationshipEnd.Source);
   /** The target end. */
-  public readonly target = new RelationshipConstraint(RelationshipEnd.Target);
+  public readonly target = new RelationshipConstraint(this, RelationshipEnd.Target);
 
-  /** Creates a relationship class. `init` carries strength / direction, the shared class fields, and
-   * optional `source` / `target` configuration; any constraint end left out of `init` starts empty and
-   * can be configured later via {@link RelationshipConstraint.set}. */
-  public constructor(name: string, init?: RelationshipClassInit) {
-    super(name, init);
+  /** Creates a relationship class in `document`. `init` carries strength / direction, the shared
+   * class fields, and optional `source` / `target` configuration; any constraint end left out of
+   * `init` starts empty and can be configured later via {@link RelationshipConstraint.set}. */
+  public constructor(document: SchemaDocument, name: string, init?: RelationshipClassInit) {
+    super(document, name, init);
     this.strength = init?.strength;
     this.strengthDirection = init?.strengthDirection;
     if (init?.source !== undefined)
@@ -899,6 +1488,8 @@ export interface EnumerationInit {
   description?: string;
   /** When `false`, instances may carry values not declared here. Defaults to `true`. */
   isStrict?: boolean;
+  /** The declared values, in declaration order; copied into the enumeration. */
+  enumerators?: ReadonlyArray<Readonly<Enumerator>>;
 }
 
 /** An enumeration: a named set of `int` or `string` values.
@@ -913,15 +1504,17 @@ export class Enumeration extends SchemaItem {
   /** The declared values in declaration order. */
   public readonly enumerators: Enumerator[] = [];
 
-  /** Creates an enumeration. `backingType` is mandatory; `init` carries the rest. */
-  public constructor(name: string, backingType: EnumerationBackingType, init?: EnumerationInit) {
-    super(name);
+  /** Creates an enumeration in `document`. `backingType` is mandatory; `init` carries the rest. */
+  public constructor(document: SchemaDocument, name: string, backingType: EnumerationBackingType, init?: EnumerationInit) {
+    super(document, name);
     this.backingType = backingType;
     if (init) {
       this.label = init.label;
       this.description = init.description;
       if (init.isStrict !== undefined)
         this.isStrict = init.isStrict;
+      if (init.enumerators)
+        this.enumerators.push(...init.enumerators.map((e) => ({ ...e })));
     }
   }
 
@@ -961,9 +1554,22 @@ export class KindOfQuantity extends SchemaItem {
   /** Presentation format override strings, in declaration order; the first is the default presentation. */
   public readonly presentationFormats: string[] = [];
 
-  /** Creates a kind of quantity. `persistenceUnit` and `relativeError` are mandatory; `init` carries the rest. */
-  public constructor(name: string, persistenceUnit: LocalOrFullName, relativeError: number, init?: KindOfQuantityInit) {
-    super(name);
+  /** The unit the quantity persists in, resolved through the document's schema set. A unit
+   * reference that does not resolve is a warning, not an error: units are moving out of schemas
+   * into the external units framework, where the same identifier resolves elsewhere. */
+  public getPersistenceUnit(): Unit | InvertedUnit | undefined {
+    const item = this.document.resolveItem(this.persistenceUnit);
+    return item?.schemaItemType === SchemaItemType.Unit || item?.schemaItemType === SchemaItemType.InvertedUnit ? item : undefined;
+  }
+
+  /** Sets {@link KindOfQuantity.persistenceUnit} from the unit itself (see {@link SchemaDocument.referenceTo}). */
+  public setPersistenceUnit(unit: Unit | InvertedUnit): void {
+    this.persistenceUnit = this.document.referenceTo(unit);
+  }
+
+  /** Creates a kind of quantity in `document`. `persistenceUnit` and `relativeError` are mandatory. */
+  public constructor(document: SchemaDocument, name: string, persistenceUnit: LocalOrFullName, relativeError: number, init?: KindOfQuantityInit) {
+    super(document, name);
     this.persistenceUnit = persistenceUnit;
     this.relativeError = relativeError;
     if (init) {
@@ -991,9 +1597,9 @@ export class PropertyCategory extends SchemaItem {
   /** Display sort order. */
   public priority?: number;
 
-  /** Creates a property category. `name` is the only mandatory argument; `init` carries the rest. */
-  public constructor(name: string, init?: PropertyCategoryInit) {
-    super(name);
+  /** Creates a property category in `document`. `name` is the only other mandatory argument. */
+  public constructor(document: SchemaDocument, name: string, init?: PropertyCategoryInit) {
+    super(document, name);
     if (init) {
       this.label = init.label;
       this.description = init.description;
@@ -1015,9 +1621,9 @@ export class PropertyCategory extends SchemaItem {
 export class UnitSystem extends SchemaItem {
   public readonly schemaItemType = SchemaItemType.UnitSystem;
 
-  /** Creates a unit system. `name` is the only mandatory argument; `init` carries the rest. */
-  public constructor(name: string, init?: SchemaItemInit) {
-    super(name);
+  /** Creates a unit system in `document`. `name` is the only other mandatory argument. */
+  public constructor(document: SchemaDocument, name: string, init?: SchemaItemInit) {
+    super(document, name);
     if (init) {
       this.label = init.label;
       this.description = init.description;
@@ -1036,9 +1642,9 @@ export class Phenomenon extends SchemaItem {
    * phenomenon (e.g. `"LENGTH"`). */
   public definition: string;
 
-  /** Creates a phenomenon. `definition` is mandatory; `init` carries the rest. */
-  public constructor(name: string, definition: string, init?: SchemaItemInit) {
-    super(name);
+  /** Creates a phenomenon in `document`. `definition` is mandatory; `init` carries the rest. */
+  public constructor(document: SchemaDocument, name: string, definition: string, init?: SchemaItemInit) {
+    super(document, name);
     this.definition = definition;
     if (init) {
       this.label = init.label;
@@ -1080,9 +1686,9 @@ export class Unit extends SchemaItem {
    * `-273.15`). `undefined` reads as `0.0` and is not persisted. */
   public offset?: number;
 
-  /** Creates a unit. `phenomenon`, `unitSystem`, and `definition` are mandatory; `init` carries the rest. */
-  public constructor(name: string, phenomenon: LocalOrFullName, unitSystem: LocalOrFullName, definition: string, init?: UnitInit) {
-    super(name);
+  /** Creates a unit in `document`. `phenomenon`, `unitSystem`, and `definition` are mandatory. */
+  public constructor(document: SchemaDocument, name: string, phenomenon: LocalOrFullName, unitSystem: LocalOrFullName, definition: string, init?: UnitInit) {
+    super(document, name);
     this.phenomenon = phenomenon;
     this.unitSystem = unitSystem;
     this.definition = definition;
@@ -1093,6 +1699,16 @@ export class Unit extends SchemaItem {
       this.denominator = init.denominator;
       this.offset = init.offset;
     }
+  }
+
+  /** The phenomenon this unit measures, resolved through the document's schema set. */
+  public getPhenomenon(): Phenomenon | undefined {
+    return this.document.resolveItemOfType(this.phenomenon, SchemaItemType.Phenomenon);
+  }
+
+  /** The unit system this unit belongs to, resolved through the document's schema set. */
+  public getUnitSystem(): UnitSystem | undefined {
+    return this.document.resolveItemOfType(this.unitSystem, SchemaItemType.UnitSystem);
   }
 }
 
@@ -1109,15 +1725,25 @@ export class InvertedUnit extends SchemaItem {
   /** Reference to the {@link UnitSystem} this unit belongs to. */
   public unitSystem: LocalOrFullName;
 
-  /** Creates an inverted unit. `invertsUnit` and `unitSystem` are mandatory; `init` carries the rest. */
-  public constructor(name: string, invertsUnit: LocalOrFullName, unitSystem: LocalOrFullName, init?: SchemaItemInit) {
-    super(name);
+  /** Creates an inverted unit in `document`. `invertsUnit` and `unitSystem` are mandatory. */
+  public constructor(document: SchemaDocument, name: string, invertsUnit: LocalOrFullName, unitSystem: LocalOrFullName, init?: SchemaItemInit) {
+    super(document, name);
     this.invertsUnit = invertsUnit;
     this.unitSystem = unitSystem;
     if (init) {
       this.label = init.label;
       this.description = init.description;
     }
+  }
+
+  /** The unit this one is the reciprocal of, resolved through the document's schema set. */
+  public getInvertsUnit(): Unit | undefined {
+    return this.document.resolveItemOfType(this.invertsUnit, SchemaItemType.Unit);
+  }
+
+  /** The unit system this unit belongs to, resolved through the document's schema set. */
+  public getUnitSystem(): UnitSystem | undefined {
+    return this.document.resolveItemOfType(this.unitSystem, SchemaItemType.UnitSystem);
   }
 }
 
@@ -1147,9 +1773,9 @@ export class Constant extends SchemaItem {
   /** Denominator of the constant's value. `undefined` reads as `1.0` and is not persisted. */
   public denominator?: number;
 
-  /** Creates a constant. `phenomenon` and `definition` are mandatory; `init` carries the rest. */
-  public constructor(name: string, phenomenon: LocalOrFullName, definition: string, init?: ConstantInit) {
-    super(name);
+  /** Creates a constant in `document`. `phenomenon` and `definition` are mandatory. */
+  public constructor(document: SchemaDocument, name: string, phenomenon: LocalOrFullName, definition: string, init?: ConstantInit) {
+    super(document, name);
     this.phenomenon = phenomenon;
     this.definition = definition;
     if (init) {
@@ -1158,6 +1784,11 @@ export class Constant extends SchemaItem {
       this.numerator = init.numerator;
       this.denominator = init.denominator;
     }
+  }
+
+  /** The phenomenon this constant belongs to, resolved through the document's schema set. */
+  public getPhenomenon(): Phenomenon | undefined {
+    return this.document.resolveItemOfType(this.phenomenon, SchemaItemType.Phenomenon);
   }
 }
 
@@ -1208,7 +1839,7 @@ export interface FormatInit extends SchemaItemInit {
  * Every field beyond `type` is optional, `undefined` meaning "not set": it reads as the noted
  * default and is not persisted. Note the EC schema spec serializes only the decimal, fractional,
  * scientific, and station types; the remaining {@link FormatType} members belong to the quantity
- * formatting library and a compile diagnostic reports them on a schema format.
+ * formatting library and validation reports them on a schema format.
  * @alpha
  */
 export class Format extends SchemaItem {
@@ -1252,9 +1883,9 @@ export class Format extends SchemaItem {
   /** The composite specification splitting the value across multiple units, if any. */
   public composite?: FormatComposite;
 
-  /** Creates a format. `type` is mandatory; `init` carries the rest. */
-  public constructor(name: string, type: FormatType, init?: FormatInit) {
-    super(name);
+  /** Creates a format in `document`. `type` is mandatory; `init` carries the rest. */
+  public constructor(document: SchemaDocument, name: string, type: FormatType, init?: FormatInit) {
+    super(document, name);
     this.type = type;
     if (init) {
       this.label = init.label;
@@ -1284,6 +1915,16 @@ export class Format extends SchemaItem {
   public hasFormatTrait(trait: FormatTraits): boolean {
     return this.formatTraits !== undefined && (this.formatTraits & trait) === trait;
   }
+
+  /** The composite's units, resolved through the document's schema set, positionally aligned with
+   * `composite.units`; an entry that does not resolve is `undefined`. Empty when there is no
+   * composite. */
+  public getCompositeUnits(): Array<Unit | InvertedUnit | undefined> {
+    return (this.composite?.units ?? []).map((unit) => {
+      const item = this.document.resolveItem(unit.name);
+      return item?.schemaItemType === SchemaItemType.Unit || item?.schemaItemType === SchemaItemType.InvertedUnit ? item : undefined;
+    });
+  }
 }
 
 // ===== End of units / formats family =====
@@ -1299,9 +1940,15 @@ export interface PropertyInit {
   /** Reference to a KindOfQuantity (e.g. `"AecUnits:VOLUMETRIC_FLOW"`). Only meaningful on primitive
    * and primitive-array properties (whose values are scalar quantities). */
   kindOfQuantity?: LocalOrFullName;
+  /** Property-level custom attributes, added in order. */
+  customAttributes?: ReadonlyArray<CustomAttributeProps>;
 }
 
 /** Common base of every property kind. `kind` is the discriminant for narrowing.
+ *
+ * A property belongs to exactly one {@link ECClass} from the moment it is constructed. Every
+ * property constructor takes that class as its first argument and registers the property with it,
+ * which is all the `create*` factories on the class do.
  * @alpha
  */
 export abstract class Property {
@@ -1317,16 +1964,23 @@ export abstract class Property {
   public isReadOnly?: boolean;
   /** Display priority. */
   public priority?: number;
-  /** Reference to a PropertyCategory (e.g. `"MyDomain:Cat"`); resolved at compile. */
+  /** Reference to a PropertyCategory (e.g. `"MyDomain:Cat"`).
+   * @see {@link Property.getCategory}, {@link Property.setCategory}. */
   public category?: LocalOrFullName;
-  /** Reference to a KindOfQuantity (e.g. `"AecUnits:VOLUMETRIC_FLOW"`); resolved at compile. Only
-   * meaningful on primitive / primitive-array properties. */
+  /** Reference to a KindOfQuantity (e.g. `"AecUnits:VOLUMETRIC_FLOW"`). Only meaningful on
+   * primitive / primitive-array properties.
+   * @see {@link Property.getKindOfQuantity}, {@link Property.setKindOfQuantity}. */
   public kindOfQuantity?: LocalOrFullName;
   /** Property-level custom attributes. */
-  public readonly customAttributes = new CustomAttributeSet();
+  public readonly customAttributes: CustomAttributeSet;
 
-  protected constructor(name: string, init?: PropertyInit) {
+  private _declaringClass: ECClass;
+
+  protected constructor(declaringClass: ECClass, name: string, init?: PropertyInit) {
+    this._declaringClass = declaringClass;
     this.name = name;
+    this.customAttributes = new CustomAttributeSet(this);
+    declaringClass[_attach](this);
     if (init) {
       this.label = init.label;
       this.description = init.description;
@@ -1334,7 +1988,48 @@ export abstract class Property {
       this.priority = init.priority;
       this.category = init.category;
       this.kindOfQuantity = init.kindOfQuantity;
+      addCustomAttributes(this.customAttributes, init.customAttributes);
     }
+  }
+
+  /** The class this property belongs to. Changed only by {@link ECClass.movePropertyIn}. */
+  public get declaringClass(): ECClass {
+    return this._declaringClass;
+  }
+
+  /** @internal */
+  public [_setOwner](declaringClass: ECClass): void {
+    this._declaringClass = declaringClass;
+  }
+
+  /** The document this property's class belongs to - the scope its references resolve in. */
+  public get document(): SchemaDocument {
+    return this._declaringClass.document;
+  }
+
+  /** `"SchemaName:ClassName.PropertyName"`. */
+  public get fullName(): string {
+    return `${this._declaringClass.fullName}.${this.name}`;
+  }
+
+  /** The property category, resolved through the document's schema set. */
+  public getCategory(): PropertyCategory | undefined {
+    return this.category === undefined ? undefined : this.document.resolveItemOfType(this.category, SchemaItemType.PropertyCategory);
+  }
+
+  /** Sets {@link Property.category} from the category itself (see {@link SchemaDocument.referenceTo}). */
+  public setCategory(category: PropertyCategory): void {
+    this.category = this.document.referenceTo(category);
+  }
+
+  /** The kind of quantity, resolved through the document's schema set. */
+  public getKindOfQuantity(): KindOfQuantity | undefined {
+    return this.kindOfQuantity === undefined ? undefined : this.document.resolveItemOfType(this.kindOfQuantity, SchemaItemType.KindOfQuantity);
+  }
+
+  /** Sets {@link Property.kindOfQuantity} from the kind of quantity itself (see {@link SchemaDocument.referenceTo}). */
+  public setKindOfQuantity(kindOfQuantity: KindOfQuantity): void {
+    this.kindOfQuantity = this.document.referenceTo(kindOfQuantity);
   }
 
   /** Narrows to the primitive kinds ({@link PrimitiveProperty}, {@link PrimitiveArrayProperty}).
@@ -1360,8 +2055,8 @@ export abstract class Property {
 
   /** True when this property is backed by an enumeration rather than a primitive keyword: an
    * enum-backed property is a primitive property whose `typeName` is an enumeration reference.
-   * The check is lexical (the primitive keywords are a closed set); the reference itself is only
-   * resolved at compile. */
+   * The check is lexical (the primitive keywords are a closed set); the reference itself resolves
+   * through the schema set. */
   public isEnumeration(): this is AnyPrimitiveProperty {
     return this.isPrimitive() && parsePrimitiveType(this.typeName) === undefined;
   }
@@ -1405,7 +2100,7 @@ export interface PrimitivePropertyInit extends PropertyInit {
 }
 
 /** A primitive (or enumeration-backed) property. `typeName` is a primitive keyword or an
- * enumeration reference; the distinction is resolved at compile.
+ * enumeration reference; the distinction is lexical, and the reference resolves through the schema set.
  * @alpha
  */
 export class PrimitiveProperty extends Property {
@@ -1424,11 +2119,10 @@ export class PrimitiveProperty extends Property {
   /** Maximum length (string / binary only). */
   public maxLength?: number;
 
-  /** Creates a primitive property. `name` and `type` are mandatory; `type` may be a `PrimitiveType`
-   * or an enumeration reference. For enumerations this can be set to their name or
-   * full-name (e.g. `"MySchema.MyEnum"` or `"alias.MyEnum"`). `init` carries the rest. */
-  public constructor(name: string, type: PrimitiveType | string, init?: PrimitivePropertyInit) {
-    super(name, init);
+  /** Creates a primitive property on `declaringClass`. `type` may be a `PrimitiveType` or an
+   * enumeration reference (e.g. `"MySchema.MyEnum"` or `"alias.MyEnum"`). */
+  public constructor(declaringClass: ECClass, name: string, type: PrimitiveType | string, init?: PrimitivePropertyInit) {
+    super(declaringClass, name, init);
     this.typeName = typeof type === "string" ? type : primitiveTypeToString(type);
     if (init) {
       this.extendedTypeName = init.extendedTypeName;
@@ -1437,6 +2131,17 @@ export class PrimitiveProperty extends Property {
       this.minLength = init.minLength;
       this.maxLength = init.maxLength;
     }
+  }
+
+  /** The enumeration backing this property, resolved through the document's schema set, or
+   * `undefined` when the property is a plain primitive or the reference does not resolve. */
+  public getEnumeration(): Enumeration | undefined {
+    return this.isEnumeration() ? this.document.resolveItemOfType(this.typeName, SchemaItemType.Enumeration) : undefined;
+  }
+
+  /** Points {@link PrimitiveProperty.typeName} at the enumeration itself (see {@link SchemaDocument.referenceTo}). */
+  public setEnumeration(enumeration: Enumeration): void {
+    this.typeName = this.document.referenceTo(enumeration);
   }
 }
 
@@ -1481,9 +2186,10 @@ export class PrimitiveArrayProperty extends Property {
    * and the writers omit the field. */
   public maxOccurs?: number;
 
-  /** Creates a primitive array property. `name` and `type` are mandatory; `init` carries the rest. */
-  public constructor(name: string, type: PrimitiveType | string, init?: PrimitiveArrayPropertyInit) {
-    super(name, init);
+  /** Creates a primitive array property on `declaringClass`. `type` may be a `PrimitiveType` or an
+   * enumeration reference. */
+  public constructor(declaringClass: ECClass, name: string, type: PrimitiveType | string, init?: PrimitiveArrayPropertyInit) {
+    super(declaringClass, name, init);
     this.typeName = typeof type === "string" ? type : primitiveTypeToString(type);
     if (init) {
       this.extendedTypeName = init.extendedTypeName;
@@ -1496,6 +2202,16 @@ export class PrimitiveArrayProperty extends Property {
       this.maxOccurs = init.maxOccurs;
     }
   }
+
+  /** The enumeration backing this property's elements, resolved through the document's schema set. */
+  public getEnumeration(): Enumeration | undefined {
+    return this.isEnumeration() ? this.document.resolveItemOfType(this.typeName, SchemaItemType.Enumeration) : undefined;
+  }
+
+  /** Points {@link PrimitiveArrayProperty.typeName} at the enumeration itself. */
+  public setEnumeration(enumeration: Enumeration): void {
+    this.typeName = this.document.referenceTo(enumeration);
+  }
 }
 
 /** A struct property - an embedded instance of a struct class.
@@ -1506,10 +2222,20 @@ export class StructProperty extends Property {
   /** Reference to the `StructClass` this property embeds. */
   public typeName: LocalOrFullName;
 
-  /** Creates a struct property. `name` and `structClass` are mandatory; `init` carries the rest. */
-  public constructor(name: string, structClass: LocalOrFullName, init?: PropertyInit) {
-    super(name, init);
+  /** Creates a struct property on `declaringClass`. `structClass` is mandatory. */
+  public constructor(declaringClass: ECClass, name: string, structClass: LocalOrFullName, init?: PropertyInit) {
+    super(declaringClass, name, init);
     this.typeName = structClass;
+  }
+
+  /** The struct class this property embeds, resolved through the document's schema set. */
+  public getStructClass(): StructClass | undefined {
+    return this.document.resolveItemOfType(this.typeName, SchemaItemType.StructClass);
+  }
+
+  /** Points {@link StructProperty.typeName} at the struct class itself (see {@link SchemaDocument.referenceTo}). */
+  public setStructClass(structClass: StructClass): void {
+    this.typeName = this.document.referenceTo(structClass);
   }
 }
 
@@ -1533,15 +2259,25 @@ export class StructArrayProperty extends Property {
   /** Maximum number of elements; `undefined` means unbounded. See {@link PrimitiveArrayProperty.maxOccurs}. */
   public maxOccurs?: number;
 
-  /** Creates a struct array property. `name` and `structClass` are mandatory; `init` carries the rest. */
-  public constructor(name: string, structClass: LocalOrFullName, init?: StructArrayPropertyInit) {
-    super(name, init);
+  /** Creates a struct array property on `declaringClass`. `structClass` is mandatory. */
+  public constructor(declaringClass: ECClass, name: string, structClass: LocalOrFullName, init?: StructArrayPropertyInit) {
+    super(declaringClass, name, init);
     this.typeName = structClass;
     if (init) {
       if (init.minOccurs !== undefined)
         this.minOccurs = init.minOccurs;
       this.maxOccurs = init.maxOccurs;
     }
+  }
+
+  /** The struct class of the array elements, resolved through the document's schema set. */
+  public getStructClass(): StructClass | undefined {
+    return this.document.resolveItemOfType(this.typeName, SchemaItemType.StructClass);
+  }
+
+  /** Points {@link StructArrayProperty.typeName} at the struct class itself. */
+  public setStructClass(structClass: StructClass): void {
+    this.typeName = this.document.referenceTo(structClass);
   }
 }
 
@@ -1555,12 +2291,21 @@ export class NavigationProperty extends Property {
   /** Which end of the relationship this property starts from. */
   public direction: StrengthDirection;
 
-  /** Creates a navigation property. `name`, `relationship`, and `direction` are mandatory; `init`
-   * carries the rest. */
-  public constructor(name: string, relationship: LocalOrFullName, direction: StrengthDirection, init?: PropertyInit) {
-    super(name, init);
+  /** Creates a navigation property on `declaringClass`. `relationship` and `direction` are mandatory. */
+  public constructor(declaringClass: ECClass, name: string, relationship: LocalOrFullName, direction: StrengthDirection, init?: PropertyInit) {
+    super(declaringClass, name, init);
     this.relationshipName = relationship;
     this.direction = direction;
+  }
+
+  /** The relationship class this property traverses, resolved through the document's schema set. */
+  public getRelationshipClass(): RelationshipClass | undefined {
+    return this.document.resolveItemOfType(this.relationshipName, SchemaItemType.RelationshipClass);
+  }
+
+  /** Points {@link NavigationProperty.relationshipName} at the relationship class itself. */
+  public setRelationshipClass(relationshipClass: RelationshipClass): void {
+    this.relationshipName = this.document.referenceTo(relationshipClass);
   }
 }
 

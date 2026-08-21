@@ -3,8 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+// Custom attribute property names are real ECSchema identifiers (PascalCase), so the EC naming is
+// intentional here.
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import { describe, expect, it } from "vitest";
-import { CustomAttributeContainerType, StrengthType } from "../../ECObjects";
+import { CustomAttributeContainerType, PrimitiveType, StrengthType } from "../../ECObjects";
 import { compareSchemaDocuments, formatSchemaComparison } from "../../Authoring/SchemaComparison";
 import * as Authoring from "../../Authoring/SchemaDocument";
 import { SchemaJsonReader } from "../../Authoring/SchemaJsonReader";
@@ -50,15 +54,19 @@ describe("compareSchemaDocuments", () => {
 
   it("compares custom attribute values across the XML/JSON typing boundary", async () => {
     const original = new Authoring.SchemaDocument("CaTest", "ct", 1, 0, 0);
-    original.createCustomAttributeClass("Marked", CustomAttributeContainerType.Schema);
-    original.customAttributes.add({ className: "Marked", json: { Count: 5, Active: true } }); // eslint-disable-line @typescript-eslint/naming-convention
+    const marked = original.createCustomAttributeClass("Marked", CustomAttributeContainerType.Schema);
+    marked.createPrimitive("Count", PrimitiveType.Integer);
+    marked.createPrimitive("Active", PrimitiveType.Boolean);
+    original.customAttributes.add({ className: "Marked", values: { Count: 5, Active: true } });
 
     // The XML writer renders the scalars as canonical text ("5", "True"); the round-tripped document
-    // holds them as a raw XML body. The comparison converts that body back to JSON (the guarded
-    // promotion reads "5"/"True" as the same types), so the typing gap is closed for canonical values.
+    // initially holds them as a raw XML body. Reading values materializes that body against the
+    // declared property types, so the typing gap is closed for canonical values.
     const xml = new SchemaXmlWriter().writeDocument(original).text!;
     const fromXml = (await new SchemaXmlReader().readDocument(xml)).document!;
-    expect(fromXml.customAttributes.get("Marked")!.format).to.equal(Authoring.CustomAttributeFormat.Xml);
+    const markedFromXml = fromXml.customAttributes.get("Marked")!;
+    expect(markedFromXml.isMaterialized).to.be.false;
+    expect(markedFromXml.values).to.deep.equal({ Count: 5, Active: true });
 
     const comparison = compareSchemaDocuments(original, fromXml);
     expect(comparison.areEqual, formatSchemaComparison(comparison)).to.be.true;
