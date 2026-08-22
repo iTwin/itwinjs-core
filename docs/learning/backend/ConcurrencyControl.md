@@ -41,7 +41,7 @@ This article assumes that you already know that:
 | **Push**                            | Upload a Changeset to iModelHub                                                                                                                                                                                                                                     |
 | **Pull**                            | Download a Changeset from iModelHub. See [IModelDb synchronization](./IModelDbSync.md)                                                                                                                                                                              |
 | **Tip**                             | The most recent version of an iModel. Also, the most recent Changeset in the timeline.                                                                                                                                                                              |
-| **Transaction**                     | A set of changes that are committed or abandoned atomically, making up a unit of work. A transaction is *committed* by calling [BriefcaseDb.saveChanges]($backend). Multiple transactions to a briefcase are combined into a [Changeset](../Glossary.md#Changeset). |
+| **Transaction**                     | A set of changes that are committed or abandoned atomically, making up a unit of work. A transaction is *committed* by calling [EditTxn.saveChanges]($backend). Multiple transactions to a briefcase are combined into a [Changeset](../Glossary.md#Changeset). |
 | **Version**                         | The state of an iModel as of a specific point in its timeline, that is, the result of the Changesets up to that point.                                                                                                                                              |
 
 ## Concurrency Control Policies
@@ -63,7 +63,7 @@ There are two types of locks:
 
 #### Acquiring Locks On Elements
 
-Locks are acquired via the [LockControl]($backend) interface by calling `BriefcaseDb.locks.acquireExclusiveLock` and `BriefcaseDb.locks.acquireSharedLock`, supplying one or more ElementIds.
+Locks are acquired via the [LockControl]($backend) interface by calling `BriefcaseDb.locks.acquireLocks`, passing an object with `shared` and/or `exclusive` element Ids.
 
 Rules for acquiring locks:
 
@@ -84,6 +84,9 @@ For reference, the pessimistic locking rules are as follows:
 | Insert element | Shared lock on Model and Parent Element, if present |
 | Modify element | Exclusive Lock                                      |
 | Delete element | Exclusive Lock                                      |
+| Insert aspect  | Exclusive Lock on owning Element                    |
+| Update aspect  | Exclusive Lock on owning Element                    |
+| Delete aspect  | Exclusive Lock on owning Element                    |
 
 Notes:
 
@@ -93,7 +96,7 @@ Notes:
 
 #### Releasing Locks
 
-Locks are normally released when the briefcase pushes its changes via [BriefcaseDb.pushChanges]($backend), though they may optionally be retained via the `retainLocks` option. If locks are acquired and no changes were made, or if all changes were abandoned, locks can be manually released via [BriefcaseDb.locks.releaseAllLocks].
+Locks are normally released when the briefcase pushes its changes via [BriefcaseDb.pushChanges]($backend), though they may optionally be retained via the `retainLocks` option. If locks were acquired but the associated elements were never modified, release them with [LockControl.abandonAllLocks]($backend). If changes were made and then abandoned (rather than pushed), first discard the changes and then call [LockControl.releaseAllLocks]($backend).
 
 ### Optimistic Concurrency Control
 
