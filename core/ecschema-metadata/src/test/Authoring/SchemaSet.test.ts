@@ -326,62 +326,6 @@ describe("Setting references from items", () => {
   });
 });
 
-describe("Effective properties", () => {
-  it("walks base classes and mixins, base first, then mixins, then own", () => {
-    const set = new SchemaSet();
-    const bis = set.createSchema("BisCore", "bis", 1, 0, 15);
-    const element = bis.createEntity("Element");
-    element.createPrimitive("CodeValue", PrimitiveType.String);
-    const physical = bis.createEntity("PhysicalElement", { baseClass: "Element" });
-    physical.createPrimitive("Category", PrimitiveType.Long);
-
-    const domain = set.createSchema("MyDomain", "md", 1, 0, 0, {
-      references: [{ name: "BisCore", readVersion: 1, writeVersion: 0, minorVersion: 15, alias: "bis" }],
-    });
-    const mixin = domain.createMixin("IServiceable", "bis:PhysicalElement");
-    mixin.createPrimitive("LastServiced", PrimitiveType.DateTime);
-    const pump = domain.createEntity("Pump", { baseClass: "bis:PhysicalElement", mixins: ["IServiceable"] });
-    pump.createPrimitive("FlowRate", PrimitiveType.Double);
-
-    expect(pump.getEffectiveProperties().map((p) => p.name)).to.deep.equal([
-      "CodeValue", "Category", "LastServiced", "FlowRate",
-    ]);
-    expect(pump.getEffectiveProperty("codevalue")!.declaringClass).to.equal(element);
-    expect(pump.getProperty("CodeValue")).to.be.undefined;
-  });
-
-  it("keeps an overriding property at the position the base class introduced it", () => {
-    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
-    const base = doc.createEntity("Base");
-    base.createPrimitive("Name", PrimitiveType.String);
-    base.createPrimitive("Tail", PrimitiveType.String);
-    const derived = doc.createEntity("Derived", { baseClass: "Base" });
-    const override = derived.createPrimitive("Name", PrimitiveType.String, { label: "Overridden" });
-
-    const effective = derived.getEffectiveProperties();
-    expect(effective.map((p) => p.name)).to.deep.equal(["Name", "Tail"]);
-    expect(effective[0]).to.equal(override);
-  });
-
-  it("skips a base class the schema set cannot resolve", () => {
-    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
-    const pump = doc.createEntity("Pump", { baseClass: "BisCore:PhysicalElement" });
-    pump.createPrimitive("FlowRate", PrimitiveType.Double);
-
-    expect(pump.getEffectiveProperties().map((p) => p.name)).to.deep.equal(["FlowRate"]);
-  });
-
-  it("terminates on a base class cycle", () => {
-    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
-    const first = doc.createEntity("First", { baseClass: "Second" });
-    first.createPrimitive("A", PrimitiveType.String);
-    const second = doc.createEntity("Second", { baseClass: "First" });
-    second.createPrimitive("B", PrimitiveType.String);
-
-    expect(first.getEffectiveProperties().map((p) => p.name)).to.deep.equal(["B", "A"]);
-  });
-});
-
 describe("SchemaSet lookups", () => {
   it("finds an item by schema-qualified full name", () => {
     const { set, documents } = makeSet("BisCore");

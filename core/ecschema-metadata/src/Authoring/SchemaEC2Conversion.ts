@@ -145,7 +145,7 @@ export function convertToEC2CustomAttributes(document: Authoring.SchemaDocument)
         addedEnumerations = true;
       }
 
-      if (!overridesBase && property.kindOfQuantity !== undefined && addUnitAttributes(document, property, issues))
+      if (!overridesBase && property.kindOfQuantity !== undefined && addUnitAttributes(property, issues))
         addedUnits = true;
     }
   }
@@ -161,7 +161,7 @@ export function convertToEC2CustomAttributes(document: Authoring.SchemaDocument)
 const legacyDisplayFormatString = "0.######";
 
 /** Adds the legacy unit attributes for a property's kind of quantity, and says whether it did. */
-function addUnitAttributes(document: Authoring.SchemaDocument, property: Authoring.AnyProperty, issues: SchemaIssueList): boolean {
+function addUnitAttributes(property: Authoring.AnyProperty, issues: SchemaIssueList): boolean {
   const location = `${property.declaringClass.name}.${property.name}`;
   const koq = property.getKindOfQuantity();
   if (koq === undefined)

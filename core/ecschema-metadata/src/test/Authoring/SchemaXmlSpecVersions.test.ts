@@ -10,6 +10,7 @@ import { SchemaItemType } from "../../ECObjects";
 import { compareSchemaDocuments, formatSchemaComparison } from "../../Authoring/SchemaComparison";
 import { SchemaDocument, SchemaSet } from "../../Authoring/SchemaDocument";
 import { ECSpec } from "../../Authoring/SchemaDocumentIO";
+import { SchemaIssue } from "../../Authoring/SchemaIssues";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
 import { SchemaXmlWriter } from "../../Authoring/SchemaXmlWriter";
 
@@ -22,7 +23,7 @@ async function read(file: string, set?: SchemaSet) {
   return new SchemaXmlReader().readDocument(text, { schemaSet: set, source: file });
 }
 
-function messages(issues: Iterable<{ severity: string, code: string, message: string }>): string {
+function messages(issues: Iterable<SchemaIssue>): string {
   return [...issues].map((i) => `${i.severity} ${i.name}: ${i.message}`).join("\n");
 }
 

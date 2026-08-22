@@ -1189,7 +1189,7 @@ export abstract class ECClass extends SchemaItem {
   }
 
   /** Returns this class's own property with the given name (case-insensitive), or `undefined`.
-   * @see {@link ECClass.getEffectiveProperty} to search base classes and mixins too. */
+   * @see {@link ECClass.getExpandedProperty} to search base classes and mixins too. */
   public getProperty(name: string): AnyProperty | undefined {
     return this._propertyLookup.get(name);
   }
@@ -1221,46 +1221,102 @@ export abstract class ECClass extends SchemaItem {
   /** Every property this class has, inherited ones included, resolved through the document's schema
    * set: the base class first (depth first, so the root base class leads), then applied mixins in
    * declaration order, then this class's own properties.
+   *   * A property an ancestor declares and this class overrides appears **once**: the overriding
+   * declaration, at this class's own position rather than the one the ancestor introduced it at.
+   * That is what native ecobjects does, and what the column order of an ECSQL `SELECT *` reflects.
    *
-   * A property an ancestor declares and this class overrides appears **once**: the overriding
-   * declaration, at the position the ancestor introduced it. Unresolvable base classes and mixins
-   * contribute nothing and are skipped silently; validation is where a dangling base class is
-   * reported. A base-class cycle terminates rather than hanging. */
-  public getEffectiveProperties(): AnyProperty[] {
-    const collected: AnyProperty[] = [];
-    this._collectEffectiveProperties(collected, new Map<string, number>(), new Set<ECClass>());
-    return collected;
+   * The base class and the applied mixins are separate branches, so a name they both declare is
+   * kept from the first branch that contributed it and neither declaration overrides the other.
+   * Within one branch the usual override rule applies.
+   *
+   * This is a structural expansion by name. It does not check that an override is compatible with
+   * the property it overrides, so a struct property overridden by a primitive one is returned as
+   * written; the validator is what reports that. Nor does it merge anything: use
+   * {@link Property.getBaseProperty} and decide for yourself what an inherited label, category or
+   * kind of quantity should be.
+   *
+   * Resilient by design. A base class or mixin the schema set cannot resolve contributes nothing,
+   * and a base-class cycle terminates rather than hanging - so the result can be incomplete without
+   * saying so. Both conditions are validation findings. */
+  public getExpandedProperties(): AnyProperty[] {
+    return this._expandProperties(new Map<ECClass, AnyProperty[] | undefined>());
   }
 
   /** The property with the given name (case-insensitive) this class has, inherited ones included,
-   * or `undefined`. Same resolution as {@link ECClass.getEffectiveProperties}, which it delegates to
-   * for anything not declared on this class - override precedence lives in one place rather than in
-   * a second, subtly different walk. */
-  public getEffectiveProperty(name: string): AnyProperty | undefined {
-    return this.getProperty(name) ?? this.getEffectiveProperties().find((p) => namesEqual(p.name, name));
+   * or `undefined`: this class's own properties first, then the base class, then applied mixins in
+   * declaration order, depth first, first match winning. That is the same property
+   * {@link ECClass.getExpandedProperties} yields for the name, found without expanding the rest.
+   *
+   * `undefined` means no property of that name was reachable, which includes the case where a base
+   * class does not resolve. */
+  public getExpandedProperty(name: string): AnyProperty | undefined {
+    return this._findExpandedProperty(name, new Set<ECClass>());
   }
 
-  private _collectEffectiveProperties(collected: AnyProperty[], positionsByName: Map<string, number>, visitedClasses: Set<ECClass>): void {
+  private _findExpandedProperty(name: string, visitedClasses: Set<ECClass>): AnyProperty | undefined {
     if (visitedClasses.has(this))
-      return;
+      return undefined;
     visitedClasses.add(this);
-    this.getBaseClass()?._collectEffectiveProperties(collected, positionsByName, visitedClasses);
+    const own = this.getProperty(name);
+    if (own !== undefined)
+      return own;
+    const inherited = this.getBaseClass()?._findExpandedProperty(name, visitedClasses);
+    if (inherited !== undefined)
+      return inherited;
     if (this.isEntity()) {
       for (const mixin of this.getMixins()) {
-        if (mixin !== undefined)
-          mixin._collectEffectiveProperties(collected, positionsByName, visitedClasses);
+        const fromMixin = mixin?._findExpandedProperty(name, visitedClasses);
+        if (fromMixin !== undefined)
+          return fromMixin;
       }
     }
+    return undefined;
+  }
+
+  /** `expanded` memoizes one list per class for the duration of a single walk, so a mixin reached
+   * through several paths is expanded once. A class maps to `undefined` while its own expansion is
+   * still running, which is what makes a base-class cycle terminate. */
+  private _expandProperties(expanded: Map<ECClass, AnyProperty[] | undefined>): AnyProperty[] {
+    if (expanded.has(this))
+      return expanded.get(this) ?? [];
+    expanded.set(this, undefined);
+
+    const collected: AnyProperty[] = [];
+    const seen = new Set<string>();
+
+    // This class's own properties are collected first so their names block the inherited ones - an
+    // override lands here, at this class's own position, rather than where the ancestor introduced
+    // the name. A duplicate own name keeps the first declaration, which is what getProperty does.
+    const ownProperties: AnyProperty[] = [];
     for (const property of this._properties) {
       const key = property.name.toLowerCase();
-      const inherited = positionsByName.get(key);
-      if (inherited !== undefined) {
-        collected[inherited] = property;
+      if (seen.has(key))
         continue;
-      }
-      positionsByName.set(key, collected.length);
-      collected.push(property);
+      seen.add(key);
+      ownProperties.push(property);
     }
+
+    // The base class and the applied mixins are separate branches of the same class, so neither
+    // overrides the other: the first branch to contribute a name keeps it.
+    const baseClass = this.getBaseClass();
+    const branches: Array<ECClass | undefined> = this.isEntity() ? [baseClass, ...this.getMixins()] : [baseClass];
+    for (const branch of branches) {
+      if (branch === undefined)
+        continue;
+      for (const property of branch._expandProperties(expanded)) {
+        const key = property.name.toLowerCase();
+        if (seen.has(key))
+          continue;
+        seen.add(key);
+        collected.push(property);
+      }
+    }
+
+    for (const property of ownProperties)
+      collected.push(property);
+
+    expanded.set(this, collected);
+    return collected;
   }
 
   /** Creates a primitive property (keyword type), appends it, and returns it. */
@@ -2190,6 +2246,29 @@ export abstract class Property {
   /** `"SchemaName:ClassName.PropertyName"`. */
   public get fullName(): string {
     return `${this._declaringClass.fullName}.${this.name}`;
+  }
+
+  /** The property of the same name this one overrides - searching the declaring class's base class
+   * first, then its mixins in declaration order, depth first, first match winning - or `undefined`
+   * when there is none. Chain it to reach the declaration that introduced the name.
+   *
+   * Resolved on every call and never stored, so re-parenting a class or swapping a schema in the
+   * set takes effect immediately. `undefined` also covers a base class the schema set cannot
+   * resolve; the validator is what reports that. Whether the override is a legal one is not checked
+   * here either. */
+  public getBaseProperty(): AnyProperty | undefined {
+    const declaringClass = this._declaringClass;
+    const fromBase = declaringClass.getBaseClass()?.getExpandedProperty(this.name);
+    if (fromBase !== undefined)
+      return fromBase;
+    if (declaringClass.isEntity()) {
+      for (const mixin of declaringClass.getMixins()) {
+        const fromMixin = mixin?.getExpandedProperty(this.name);
+        if (fromMixin !== undefined)
+          return fromMixin;
+      }
+    }
+    return undefined;
   }
 
   /** The property category, resolved through the document's schema set. */

@@ -314,10 +314,13 @@ export class SchemaView {
       this._collectMixinProperties(mixinIdx, merged);
     }
 
-    // 3. Own properties - always override
+    // 3. Own properties - always override, and take this class's own position rather than the one
+    // the ancestor introduced the name at. Map.set alone would leave an existing key where it is,
+    // so the delete is what moves it.
     for (let i = 0; i < cls.ownPropCount; i++) {
       const ref = this[_storage].propertyRefs[cls.ownPropStart + i];
       const nameKey = this[_storage].lowerStrings[this[_storage].propDefs[ref.defIdx].nameStringIdx];
+      merged.delete(nameKey);
       merged.set(nameKey, { ref, classIdx });
     }
   }
@@ -340,12 +343,22 @@ export class SchemaView {
       this._collectMixinProperties(subMixinIdx, merged);
     }
 
-    // Mixin's own properties - only set if not already present (first mixin wins)
+    // Mixin's own properties. They override what this mixin itself inherits, and lose to anything
+    // the entity's base chain or an earlier mixin already contributed - those are separate branches,
+    // so neither overrides the other. Whoever holds the name now decides which case this is, and
+    // only a name that is already taken needs the ancestor set at all.
+    let ancestors: ReadonlySet<number> | undefined;
     for (let i = 0; i < mixin.ownPropCount; i++) {
       const ref = this[_storage].propertyRefs[mixin.ownPropStart + i];
       const nameKey = this[_storage].lowerStrings[this[_storage].propDefs[ref.defIdx].nameStringIdx];
-      if (!merged.has(nameKey))
-        merged.set(nameKey, { ref, classIdx: mixinIdx });
+      const holder = merged.get(nameKey);
+      if (holder !== undefined) {
+        ancestors ??= this.getTransitiveBases(mixinIdx);
+        if (!ancestors.has(holder.classIdx))
+          continue;
+        merged.delete(nameKey);
+      }
+      merged.set(nameKey, { ref, classIdx: mixinIdx });
     }
   }
 
@@ -646,7 +659,9 @@ export namespace SchemaView {
       return undefined;
     }
 
-    /** All properties including inherited, in inheritance order (base first, then mixins, then own). */
+    /** All properties including inherited, in inheritance order (base first, then mixins, then own).
+     * A property a class overrides appears once, at the overriding class's own position - which is
+     * what native ecobjects does and what an ECSQL `SELECT *` reflects. */
     public getProperties(): readonly Property[] {
       const allRefs = this._ctx.resolveAllProperties(this.idx);
       return allRefs.map((rp) => createProperty(this._ctx, rp.ref, rp.classIdx));

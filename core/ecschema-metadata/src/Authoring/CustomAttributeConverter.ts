@@ -161,7 +161,7 @@ export function resolveCustomAttributeClass(document: SchemaDocument, className:
 function nodesToValues(nodes: ReadonlyArray<CustomAttributeXmlNode>, ownerClass: ECClass | undefined): CustomAttributeValues {
   const values: CustomAttributeValues = {};
   for (const node of nodes)
-    values[node.name] = nodeToValue(node, ownerClass?.getEffectiveProperty(node.name));
+    values[node.name] = nodeToValue(node, ownerClass?.getExpandedProperty(node.name));
   return values;
 }
 
@@ -237,7 +237,7 @@ function parseScalar(text: string, type: PrimitiveType | undefined): string | nu
 function valuesToNodes(values: CustomAttributeValues, ownerClass: ECClass | undefined, className: string, issues: SchemaIssueList, location: string): CustomAttributeXmlNode[] | undefined {
   const nodes: CustomAttributeXmlNode[] = [];
   for (const [name, value] of Object.entries(values)) {
-    const node = valueToNode(name, value, ownerClass?.getEffectiveProperty(name), className, issues, location);
+    const node = valueToNode(name, value, ownerClass?.getExpandedProperty(name), className, issues, location);
     if (node === undefined)
       return undefined;
     nodes.push(node);

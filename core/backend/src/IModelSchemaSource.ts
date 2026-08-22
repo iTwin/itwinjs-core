@@ -107,7 +107,7 @@ export function readSchemaFromIModel(iModel: IModelDb, schemaName: string, schem
     props = iModel.getSchemaProps(schemaName);
   } catch (error) {
     const issues = new Authoring.SchemaIssueList("discovery");
-    issues.addError("schema-missing", `The iModel has no schema named "${schemaName}": ${error instanceof Error ? error.message : String(error)}`, { source });
+    issues.addError("schema-missing", `The iModel has no schema named "${schemaName}": ${error instanceof Error ? error.message : String(error)}`, source);
     return { issues };
   }
   // ECJSON props cross the native boundary as an object, so this is the object-in entry point
@@ -157,7 +157,7 @@ export interface ReadSchemasFromIModelResult {
  *
  * Documents arrive in dependency order, so every reference a document makes resolves against a set
  * that already holds its target - which is what makes custom attributes readable and
- * {@link Authoring.ECClass.getEffectiveProperties} walk the real base classes. The reference aliases
+ * {@link Authoring.ECClass.getExpandedProperties} walk the real base classes. The reference aliases
  * ECJSON does not carry are filled in from the set, so what is read can be written back as ECXML.
  *
  * Never throws on schema data. Everything that went wrong is in `issues`.

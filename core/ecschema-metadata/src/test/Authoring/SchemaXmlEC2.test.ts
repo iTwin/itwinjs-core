@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { CustomAttributeContainerType, ECClassModifier, PrimitiveType, SchemaItemType, StrengthDirection } from "../../ECObjects";
 import { SchemaDocument, SchemaSet } from "../../Authoring/SchemaDocument";
 import { ECSpec } from "../../Authoring/SchemaDocumentIO";
+import { SchemaIssue } from "../../Authoring/SchemaIssues";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
 import { SchemaXmlWriter } from "../../Authoring/SchemaXmlWriter";
 
@@ -13,7 +14,7 @@ async function read(xml: string, set?: SchemaSet) {
   return new SchemaXmlReader().readDocument(xml, { schemaSet: set });
 }
 
-function messages(issues: Iterable<{ severity: string, code: string, message: string }>): string {
+function messages(issues: Iterable<SchemaIssue>): string {
   return [...issues].map((i) => `${i.severity} ${i.name}: ${i.message}`).join("\n");
 }
 

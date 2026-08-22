@@ -83,7 +83,7 @@ describe("Reading an iModel's schemas into an authoring SchemaSet", () => {
     assert.isDefined(physicalElement.getBaseClass(), "PhysicalElement's base class did not resolve");
 
     // Effective properties walk the real base chain, which needs the whole hierarchy present.
-    const effective = physicalElement.getEffectiveProperties();
+    const effective = physicalElement.getExpandedProperties();
     assert.isAtLeast(effective.length, 5);
     assert.isDefined(effective.find((p) => p.name === "Model"));
 
