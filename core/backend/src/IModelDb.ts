@@ -53,6 +53,7 @@ import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
 import { createServerBasedLocks } from "./internal/ServerBasedLocks";
+import { querySchemaManifest } from "./internal/SchemaManifestQuery";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
@@ -70,8 +71,9 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
+import { IModelCustomAttributeProvider } from "./internal/SchemaViewCustomAttributeProvider";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, type IModelSchemaView, SchemaContext, SchemaJsonLocater, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -495,6 +497,7 @@ export abstract class IModelDb extends IModel {
   // Created lazily on the first getSchemaView call. Owns the SchemaView's lifetime and does all its
   // data access through the SchemaViewDataProvider implemented below.
   private _schemaViewManager?: SchemaViewManager;
+  private _schemaViewCustomAttributes?: IModelCustomAttributeProvider;
   /** @deprecated in 5.0.0 - might be removed in next major version. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1785,7 +1788,10 @@ export abstract class IModelDb extends IModel {
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
    * It is the recommended default for runtime read-only metadata access and is significantly
    * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
-   * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
+   * or anywhere you need the full ecschema-metadata object graph.
+   *
+   * The returned view is an `IModelSchemaView`: its `customAttributes` member resolves custom
+   * attributes asynchronously by querying the iModel.
    *
    * Every call shares one accumulating view instance and concurrent calls are serialized, so a
    * caller never observes a partially loaded view. The instance is discarded by [[clearCaches]],
@@ -1793,9 +1799,13 @@ export abstract class IModelDb extends IModel {
    * [GetSchemaViewArgs]($ecschema-metadata) for the arguments.
    * @beta
    */
-  public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
+  public async getSchemaView(args?: GetSchemaViewArgs): Promise<IModelSchemaView> {
     this._schemaViewManager ??= new SchemaViewManager(this._createSchemaViewDataProvider());
-    return this._schemaViewManager.getSchemaView(args);
+    const view = await this._schemaViewManager.getSchemaView(args);
+    // The iModel is the source, so it owns the modality: attach an async (ECSql-backed) provider and
+    // expose the view as an `IModelSchemaView`. `SchemaView` itself stays unaware of custom attributes.
+    this._schemaViewCustomAttributes ??= new IModelCustomAttributeProvider((ecsql, params) => this.createQueryReader(ecsql, params));
+    return Object.assign(view, { customAttributes: this._schemaViewCustomAttributes });
   }
 
   /** The [SchemaViewDataProvider]($ecschema-metadata) backing this iModel's [[getSchemaView]]: the
@@ -1808,22 +1818,7 @@ export abstract class IModelDb extends IModel {
       // Names are ECNames, so a comma can never occur in one. Native re-validates each token as an
       // ECName and fails the pragma on an unknown name.
       fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${schemaNames.join(",")}')`),
-      fetchManifest: async () => {
-        const schemaRows: SchemaManifestSchemaRow[] = [];
-        const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
-        for await (const row of this.createQueryReader(schemaSql)) {
-          // ECInstanceId arrives as a hex Id64String. `ec_` metadata rowids carry no briefcase
-          // prefix, so the local id is the full value.
-          schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
-        }
-
-        const referenceRows: SchemaManifestReferenceRow[] = [];
-        const referenceSql = "SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences";
-        for await (const row of this.createQueryReader(referenceSql))
-          referenceRows.push({ sourceECInstanceId: Id64.getLocalId(row[0]), targetECInstanceId: Id64.getLocalId(row[1]) });
-
-        return SchemaManifest.fromRows(schemaRows, referenceRows);
-      },
+      fetchManifest: async () => querySchemaManifest((ecsql) => this.createQueryReader(ecsql)),
       fetchSchemaToken: async () => {
         const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
         const result = await reader.next();

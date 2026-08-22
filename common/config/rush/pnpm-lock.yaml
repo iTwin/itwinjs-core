@@ -437,10 +437,17 @@ importers:
         version: 5.6.3
 
   ../../core/ecschema-metadata:
+    dependencies:
+      sax:
+        specifier: ^1.6.0
+        version: 1.6.1
     devDependencies:
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
         version: 1.0.3
+      '@bentley/bis-core-schema':
+        specifier: ^1.0.15
+        version: 1.0.25
       '@bentley/bis-custom-attributes-schema':
         specifier: ^1.0.0
         version: 1.0.0
@@ -450,6 +457,12 @@ importers:
       '@bentley/core-custom-attributes-schema':
         specifier: ^1.0.4
         version: 1.0.4
+      '@bentley/ecdb-map-schema':
+        specifier: ^2.0.1
+        version: 2.0.4
+      '@bentley/ecdb-schema-policies-schema':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@bentley/formats-schema':
         specifier: ^1.0.0
         version: 1.0.0
@@ -477,6 +490,9 @@ importers:
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
+      '@types/sax':
+        specifier: ^1.2.7
+        version: 1.2.7
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -5801,6 +5817,9 @@ packages:
 
   '@types/responselike@1.0.3':
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
+
+  '@types/sax@1.2.7':
+    resolution: {integrity: sha512-rO73L89PJxeYM3s3pPPjiPgVVcymqU490g0YO5n5By0k2Erzj6tay/4lr1CHAAU4JyOWd1rpQ8bCf6cZfHU96A==}
 
   '@types/semver@7.3.10':
     resolution: {integrity: sha512-zsv3fsC7S84NN6nPK06u79oWgrPVd0NvOyqgghV1haPaFcVxIrP4DLomRwGAXk0ui4HZA7mOcSFL98sMVW9viw==}
@@ -12113,6 +12132,10 @@ snapshots:
       form-data: 4.0.6
 
   '@types/responselike@1.0.3':
+    dependencies:
+      '@types/node': 20.17.58
+
+  '@types/sax@1.2.7':
     dependencies:
       '@types/node': 20.17.58
 
