@@ -32,6 +32,8 @@ export class CesiumScene {
   private _lastDevicePixelRatio: number = 1;
   private _splatTileset?: Cesium3DTileset;
   private _splatPlaced = false;
+  private _vectorTileset?: Cesium3DTileset;
+  private _vectorPlaced = false;
 
   /** Get access to the underlying CesiumJS Scene for advanced operations */
   public get cesiumScene(): Scene {
@@ -119,6 +121,9 @@ export class CesiumScene {
     void this.loadGaussianSplatTileset("https://raw.githubusercontent.com/CesiumGS/cesium/1.135/Specs/Data/Cesium3DTiles/GaussianSplats/tower/tileset.json");
     // void this.loadGaussianSplatTileset(3667783);
 
+    void this.loadVectorTileset(4854512);
+    void this.loadVectorTileset(96188);
+
     const onRenderError = function (_scene: any, error: any) {
       const title =
         "An error occurred while rendering. Rendering has stopped.";
@@ -130,6 +135,7 @@ export class CesiumScene {
     IModelApp.viewManager.onBeginRender.addListener(() => {
       this.resize();
       this.placeSplatIfReady();
+      this.placeVectorIfReady();
 
       // ###TODO figure out how to handle the need to call `initializeFrame` in Cesium.
       // That function inside Cesium has the following comment: "Destroy released shaders and textures once every 120 frames to avoid thrashing the cache"
@@ -185,6 +191,16 @@ export class CesiumScene {
     }
   }
 
+  private async loadVectorTileset(assetId: number): Promise<void> {
+    try {
+      const tileset = await Cesium3DTileset.fromIonAssetId(assetId);
+      this._scene.primitives.add(tileset);
+      this._vectorTileset = tileset;
+    } catch (error) {
+      console.log(`Failed to load vector tileset ${assetId.toString(10)}`, error);
+    }
+  }
+
   // ###TODO Temporary prototype hack: relocate the splat tileset to a fixed spot in front of the
   // initial camera (which is continuously synced to the iTwin.js viewport), scaled up so it is
   // comparable in size to the test decorations (which span hundreds of km). The real tileset is a
@@ -217,6 +233,16 @@ export class CesiumScene {
     tileset.modelMatrix = modelMatrix;
 
     this._splatPlaced = true;
+    this._scene.requestRender();
+  }
+
+  private placeVectorIfReady(): void {
+    const tileset = this._vectorTileset;
+    if (!tileset || this._vectorPlaced) {
+      return;
+    }
+
+    this._vectorPlaced = true;
     this._scene.requestRender();
   }
 
