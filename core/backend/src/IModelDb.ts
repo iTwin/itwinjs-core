@@ -55,7 +55,7 @@ import { SchemaSync } from "./SchemaSync";
 import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
-import { TxnManager } from "./TxnManager";
+import { TxnIdString, TxnManager } from "./TxnManager";
 import { BulkDeleteElementsArgs, BulkDeleteElementsResult, EditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
@@ -285,6 +285,17 @@ export interface SchemaImportOptions<T = any> {
    * @beta
    */
   data?: T
+}
+
+/** Arguments for [[BriefcaseDb.upgradeSchemas]] and [[BriefcaseDb.upgradeSchemaStrings]].
+ * @alpha
+ */
+export interface UpgradeSchemasArgs extends PushChangesArgs {
+  /**
+   * An [[ECSchemaXmlContext]] to use instead of building a default one.
+   * @internal
+   */
+  ecSchemaXmlContext?: ECSchemaXmlContext;
 }
 
 /** @internal */
@@ -731,7 +742,11 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].closeFile();
   }
 
-  private saveSchemaChanges(args?: string): void {
+  /**
+   * Save any unsaved schema changes in this iModel.
+   * @internal
+  */
+  protected saveSchemaChanges(args?: string): void {
     if (!this[_nativeDb].hasUnsavedChanges())
       return;
 
@@ -739,7 +754,11 @@ export abstract class IModelDb extends IModel {
     saveArgs === undefined ? this[_nativeDb].saveChanges() : this[_nativeDb].saveChanges(JSON.stringify(saveArgs));
   }
 
-  private abandonSchemaChanges(): void {
+  /**
+   * Abandon any unsaved schema changes in this iModel.
+   * @internal
+   */
+  protected abandonSchemaChanges(): void {
     if (!this[_nativeDb].hasUnsavedChanges())
       return;
 
@@ -1355,7 +1374,7 @@ export abstract class IModelDb extends IModel {
   public async dropSchemas(schemaNames: string[]): Promise<void> {
     if (schemaNames.length === 0)
       return;
-    if (this[_nativeDb].schemaSyncEnabled())
+    if (SchemaSync.isEnabled(this))
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot drop schemas when schema sync is enabled");
     if (this[_nativeDb].hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot drop schemas with unsaved changes");
@@ -1446,31 +1465,39 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Refuse a schema import this briefcase is in no state to run. Shared by [[importSchemas]] and
+   * [[BriefcaseDb.upgradeSchemas]], which reach the native importer by different routes.
+   * @internal
+   */
+  protected assertCanImportSchemas(): void {
+    if (!this.isBriefcaseDb())
+      return;
+
+    if (this.txns.rebaser.isRebasing) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+    }
+    if (this.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
+    }
+
+    // Additional checks when semantic rebase is enabled
+    if (IModelHost.useSemanticRebase) {
+      if (this[_nativeDb].hasUnsavedChanges()) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
+      }
+      if (SchemaSync.isEnabled(this)) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
+      }
+    }
+  }
+
   /** Shared implementation for importing schemas from file or string. */
-  private async importSchemasInternal<T extends LocalFileName[] | string[]>(
+  protected async importSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
-    // BriefcaseDb-specific validation checks
-    if (this.isBriefcaseDb()) {
-      if (this.txns.rebaser.isRebasing) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
-      }
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
-      }
-
-      // Additional checks when semantic rebase is enabled
-      if (IModelHost.useSemanticRebase) {
-        if (this[_nativeDb].hasUnsavedChanges()) {
-          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
-        }
-        if (this[_nativeDb].schemaSyncEnabled()) {
-          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
-        }
-      }
-    }
+    this.assertCanImportSchemas();
 
     if (options?.channelUpgrade) {
       const channelUpgrade = options.channelUpgrade;
@@ -1490,28 +1517,50 @@ export abstract class IModelDb extends IModel {
       preSchemaImportCallbackResult = await this.preSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, data: options.data, schemaData: schemas });
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    if (this[_nativeDb].schemaSyncEnabled()) {
-      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
-        const schemaSyncDbUri = syncAccess.getUri();
-        this.saveSchemaChanges();
+    if (SchemaSync.isEnabled(this)) {
+      // The shared lock lets concurrent updates through while blocking anyone taking the exclusive lock for an upgrade.
+      if (this[_nativeDb].getITwinId() !== Guid.empty)
+        await this.locks.acquireLocks({ shared: IModel.repositoryModelId });
 
-        try {
-          nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-        } catch (outerErr: any) {
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonSchemaChanges();
-            if (this[_nativeDb].getITwinId() !== Guid.empty)
-              await this.acquireSchemaLock();
-            try {
-              nativeImportOp(schemas, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-            } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
-            }
-          } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
+      // Adopting the sync db's rows commits as it goes - attaching and detaching the sync db both
+      // commit, and SQLite allows neither inside a transaction - so abandoning unsaved changes cannot
+      // undo it. Anything that fails after that point, and the container upload during lock release is
+      // the one to worry about, has to put the briefcase back. Left alone, the next pushChanges would
+      // publish ec_ rows carrying ids the sync db has no record of, and the sync db would hand those
+      // same ids to somebody else.
+      let txnBeforeAdopt: TxnIdString | undefined;
+      try {
+        await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+          const schemaSyncDbUri = syncAccess.getUri();
+          this.saveSchemaChanges();
+          // After saveSchemaChanges, so rolling back cannot reach the caller's own work.
+          if (this.isBriefcaseDb())
+            txnBeforeAdopt = this.txns.getCurrentTxnId();
+
+          try {
+            nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+          } catch (err: any) {
+            if (SchemaSync.requiresUpgrade(err))
+              throw new IModelError(err.errorNumber, `${err.message} - this schema change needs the upgrade path. Use BriefcaseDb.upgradeSchemas, which takes the exclusive schema lock and pushes the result.`);
+
+            throw new IModelError(err.errorNumber, err.message);
           }
+        });
+      } catch (err: any) {
+        this.abandonSchemaChanges();
+        if (this.isBriefcaseDb() && undefined !== txnBeforeAdopt && this.txns.getCurrentTxnId() !== txnBeforeAdopt) {
+          // Saving the adopt's txn started a new undo session, because schema changes are kept out of the
+          // user's undo stack, so this reverses across that boundary. The changes themselves reverse like
+          // any other - a rebase does it to every local txn on every pull. It does not reverse DDL: a table
+          // or column the adopt created stays behind with no ec_ row describing it, which is the state a
+          // briefcase already tolerates, and the next successful import finds the table up to date and
+          // carries on. Cancel rather than reverse, so the rows cannot come back through undo either.
+          const status = this[_nativeDb].cancelTo(txnBeforeAdopt, true);
+          if (IModelStatus.Success !== status)
+            Logger.logError(loggerCategory, `Failed to roll back the adopted schema rows after a failed import: ${IModelStatus[status] ?? status}`);
         }
-      });
+        throw err;
+      }
     } else {
       const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
         schemaLockHeld: true,
@@ -3710,11 +3759,6 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
-  private _skipSyncSchemasOnPullAndPush?: true;
-
-  /** @internal */
-  public get skipSyncSchemasOnPullAndPush() { return this._skipSyncSchemasOnPullAndPush ?? false; }
-
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -3823,28 +3867,31 @@ export class BriefcaseDb extends IModelDb {
       wasChanges = nativeDb.hasPendingTxns();
       nativeDb.closeFile();
     };
+    const push = async () => {
+      if (wasChanges)
+        await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
+    };
 
-    const isSchemaSyncEnabled = await withBriefcaseDb(briefcase, async (db) => {
-      await SchemaSync.pull(db);
-      return db[_nativeDb].schemaSyncEnabled();
-    }) as boolean;
-
-    if (isSchemaSyncEnabled) {
+    // Asked of the closed file, so an iModel without schema sync never gets opened for this.
+    if (SchemaSync.isEnabled(briefcase)) {
+      await withBriefcaseDb(briefcase, async (db) => SchemaSync.updateDbSchema(db));
       await SchemaSync.withLockedAccess(briefcase, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         executeUpgrade();
         await withBriefcaseDb(briefcase, async (db) => {
-          db[_nativeDb].schemaSyncPush(schemaSyncDbUri);
+          // A profile upgrade runs on the file itself, so the sync db learns about it by being rebuilt from
+          // the result. That discards whatever the sync db held beyond this briefcase, which is why the
+          // changeset has to be pushed before the container lock is released.
+          db[_nativeDb].schemaSyncOverwrite(schemaSyncDbUri);
           db[_nativeDb].saveChanges();
         });
+        await push();
         syncAccess.synchronizeWithCloud();
       });
     } else {
       executeUpgrade();
+      await push();
     }
-
-    if (wasChanges)
-      await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
   }
 
   /** Upgrades the schemas in the iModel based on the current version of the software. Follows a sequence of operations -
@@ -3865,6 +3912,22 @@ export class BriefcaseDb extends IModelDb {
     // - push changes
     // - release schema lock
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
+
+    // With schema sync the upgrade rebuilds the sync db from this briefcase, which discards rows no
+    // briefcase holds yet. That is only sound under the exclusive schema lock: it cannot be acquired
+    // while anyone else holds a lock, so nobody can be sitting on an unpushed import whose rows are
+    // about to go. Take it up front rather than only when a data transform turns out to be needed.
+    if (SchemaSync.isEnabled(briefcase)) {
+      try {
+        await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+        await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
+        await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
+      } finally {
+        await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
+      }
+      return;
+    }
+
     try {
       await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
     } catch (error: any) {
@@ -4182,8 +4245,7 @@ export class BriefcaseDb extends IModelDb {
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
-      if (!this.skipSyncSchemasOnPullAndPush)
-        await SchemaSync.pull(this);
+      SchemaSync.updateDbSchema(this);
       this.initializeIModelDb("pullMerge");
     });
 
@@ -4278,23 +4340,10 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot revert with pending txns");
     }
 
-    const skipSchemaSyncPull = async <T>(func: () => Promise<T>) => {
-      if (nativeDb.schemaSyncEnabled()) {
-        this._skipSyncSchemasOnPullAndPush = true;
-        try {
-          return await func();
-        } finally {
-          this._skipSyncSchemasOnPullAndPush = undefined;
-        }
-      } else {
-        return func();
-      }
-    };
     this.clearCaches();
-    await skipSchemaSyncPull(async () => this.pullChanges({ ...arg, toIndex: undefined }));
+    await this.pullChanges({ ...arg, toIndex: undefined });
     await this.acquireSchemaLock();
-
-    if (nativeDb.schemaSyncEnabled()) {
+    if (SchemaSync.isEnabled(this)) {
       arg.skipSchemaChanges = true;
     }
 
@@ -4317,7 +4366,7 @@ export class BriefcaseDb extends IModelDb {
         pushRetryDelay: arg.pushRetryDelay,
         retainLocks: arg.retainLocks,
       };
-      await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
+      await this.pushChanges(pushArgs);
       this.clearCaches();
     } catch (err) {
       const failureAction = arg.inCaseOfFailure ?? "revert";
@@ -4391,6 +4440,123 @@ export class BriefcaseDb extends IModelDb {
 
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
     BriefcaseManager.deleteRebaseFolders(this);
+  }
+
+  /** Import schemas that [[importSchemas]] refuses, under the exclusive schema lock.
+   *
+   * The upgrade tier of the two-tier surface. [[importSchemas]] is the update tier: it takes a shared
+   * lock, never moves or destroys data, and leaves the result local for the caller to push. This one
+   * takes the exclusive schema lock, allows the import to move and destroy data, and pushes before it
+   * returns. Use it when [[importSchemas]] rejects with a status [[SchemaSync.requiresUpgrade]]
+   * recognizes.
+   *
+   * Takes the exclusive schema lock, pulls to the tip, imports, then pushes the changeset and uploads
+   * the sync db before releasing either lock. With schema sync enabled the result cannot be kept
+   * local: the sync db is rebuilt from this briefcase, so a caller who abandoned instead of pushing
+   * would leave every other briefcase taking its layout decisions from a file that never existed.
+   * @note The briefcase must have no local changes. Acquiring the exclusive lock fails while anyone
+   * else holds a lock, so no other briefcase can be sitting on unpushed changes either.
+   * @see [[BriefcaseDb.upgradeSchemas]] (static) for the profile and domain schemas the software
+   * supplies, which follows the same protocol at a different scope.
+   * @alpha
+   */
+  public async upgradeSchemas(schemaFileNames: LocalFileName[], arg: UpgradeSchemasArgs): Promise<void> {
+    return this.upgradeSchemasInternal(
+      schemaFileNames,
+      arg,
+      (schemas, importOptions) => this[_nativeDb].importSchemas(schemas, importOptions),
+    );
+  }
+
+  /** The [[importSchemaStrings]] counterpart of [[upgradeSchemas]].
+   * @alpha
+   */
+  public async upgradeSchemaStrings(serializedXmlSchemas: string[], arg: UpgradeSchemasArgs): Promise<void> {
+    return this.upgradeSchemasInternal(
+      serializedXmlSchemas,
+      arg,
+      (schemas, importOptions) => this[_nativeDb].importXmlSchemas(schemas, importOptions),
+    );
+  }
+
+  private async upgradeSchemasInternal<T extends LocalFileName[] | string[]>(
+    schemas: T,
+    arg: UpgradeSchemasArgs,
+    nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
+  ): Promise<void> {
+    if (schemas.length === 0)
+      return;
+
+    this.assertCanImportSchemas();
+
+    if (this[_nativeDb].hasUnsavedChanges() || this.txns.hasLocalChanges)
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot upgrade schemas while there are local changes");
+
+    await this.acquireSchemaLock();
+    await this.pullChanges({ accessToken: arg.accessToken });
+
+    if (!SchemaSync.isEnabled(this)) {
+      await this.importSchemasInternal(schemas, { ecSchemaXmlContext: arg.ecSchemaXmlContext }, nativeImportOp);
+      await this.pushChanges(arg);
+      return;
+    }
+
+    // Both stores have to land or neither may. An upgrade rebuilds the sync db from this briefcase, so a
+    // sync db the timeline never learned about describes columns no briefcase has, and the next update
+    // import adopts a layout nobody can read. The container goes first because it is the one that can still
+    // be taken back: nothing else can touch it while this briefcase holds the exclusive schema lock, so a
+    // failed push is compensated by rolling the briefcase back and mirroring the pre-upgrade state up again.
+    let txnBeforeUpgrade: TxnIdString | undefined;
+    await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema upgrade" }, async (syncAccess) => {
+      this.saveSchemaChanges();
+      txnBeforeUpgrade = this.txns.getCurrentTxnId();
+      try {
+        nativeImportOp(schemas, {
+          schemaLockHeld: true,
+          ecSchemaXmlContext: arg.ecSchemaXmlContext?.nativeContext,
+          schemaSyncDbUri: syncAccess.getUri(),
+        });
+      } catch (err: any) {
+        this.abandonSchemaChanges();
+        throw new IModelError(err.errorNumber, err.message);
+      }
+
+      this.clearCaches();
+    });
+
+    try {
+      await this.pushChanges(arg);
+    } catch (err: any) {
+      await this.restoreSyncDbAfterFailedUpgradePush(txnBeforeUpgrade);
+      throw err;
+    }
+  }
+
+  /** Undo an upgrade that reached the sync db but not the timeline: roll the briefcase back to `txnBeforeUpgrade`
+   * and mirror that state over the sync db, so the two agree on what the timeline holds.
+   *
+   * Skipped when the briefcase cannot be rolled back. The reversal is txn-based, so it does not undo DDL -
+   * an upgrade that dropped a table has nothing to put the reversed rows into. Leaving both stores at the
+   * upgraded state is then the better answer, because retrying the push still resolves it.
+   */
+  private async restoreSyncDbAfterFailedUpgradePush(txnBeforeUpgrade: TxnIdString | undefined): Promise<void> {
+    if (undefined === txnBeforeUpgrade || this.txns.getCurrentTxnId() === txnBeforeUpgrade)
+      return;
+
+    const status = this[_nativeDb].cancelTo(txnBeforeUpgrade, true);
+    if (IModelStatus.Success !== status) {
+      Logger.logError(loggerCategory, `An upgrade reached the sync db but not the timeline, and the briefcase could not be rolled back (${IModelStatus[status] ?? status}). Retry the push - the sync db and this briefcase agree, the timeline does not.`);
+      return;
+    }
+
+    this.clearCaches();
+    await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "restore schema sync db" }, async (syncAccess) => {
+      this[_nativeDb].schemaSyncOverwrite(syncAccess.getUri());
+      // schemaSyncOverwrite stamps the new data version on the briefcase too. Dropping it keeps the
+      // briefcase free of local changes so the caller can simply upgrade again; a briefcase whose stamp
+      // trails the sync db is the ordinary state of one that has not imported lately.
+      this.abandonSchemaChanges();
+    });
   }
 
   public override close(options?: CloseIModelArgs) {

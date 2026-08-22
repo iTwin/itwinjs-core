@@ -73,6 +73,19 @@ Use `rushx docs` from the package directory to build its documentation.
 
 Check the package's `package.json` to identify Mocha or Vitest. Use the existing test scripts first. Use runner-supported filters for focused local work, but do not commit `.only` or a temporary Vitest test filter. For interactive debugging, use the launch configurations in [`.vscode/launch.json`](./.vscode/launch.json).
 
+### Opt-in tests
+
+Some tests are too slow or too repetitive to run on every build, so they are skipped unless an environment variable asks for them. A normal run reports them as pending rather than hiding them, which is the signal that one of these exists.
+
+| Variable | Turns on | Where |
+|---|---|---|
+| `ITWIN_INCLUDE_SCHEMASYNC_EXTENDED_TESTS` | the extended tier of the schema sync suites - further permutations of behaviour the core tier already covers | `full-stack-tests/backend/src/integration/SchemaSync*.test.ts` |
+| `ITWIN_INCLUDE_LARGE_DELETE_ELEMENTS_PERFTESTS` | the 1,000,000 and 1,700,000 element cases of the bulk deletion performance test | `full-stack-tests/backend/src/perftest/DeleteElements.test.ts` |
+
+Set one to `1`, `true` or `yes` and run the package's usual test script. Nothing sets them in CI today.
+
+Adding another: read it once at module scope and pick `it` or `it.skip` from it, so the block is skipped when the file loads and its setup never runs. `extendedIt` in `SchemaSyncTestUtils.ts` is the pattern. Name it `ITWIN_INCLUDE_<AREA>_<KIND>` and add a row above, so the set stays findable.
+
 ## Ask questions or report issues
 
 ### Discussions

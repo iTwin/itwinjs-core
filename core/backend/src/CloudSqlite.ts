@@ -11,7 +11,7 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, ITwinError, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch, wrapTimerCallback,
+  AccessToken, BeDuration, BentleyError, BriefcaseStatus, Constructor, GuidString, ITwinError, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch, wrapTimerCallback,
 } from "@itwin/core-bentley";
 import { CloudSqliteError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
@@ -932,7 +932,12 @@ export namespace CloudSqlite {
       releaseWriteLock(containerInternal);
       return val;
     } catch (e) {
-      args.container.abandonChanges();  // if operation threw, abandon all changes
+      try {
+        args.container.abandonChanges();  // if operation threw, abandon all changes
+      } catch (abandonError) {
+        // abandonChanges throws when the container is locked, which would replace the error the caller needs to see.
+        logError(`abandonChanges failed while handling an error: ${BentleyError.getErrorMessage(abandonError)}`);
+      }
       containerInternal.writeLockHeldBy = undefined;
       throw e;
     }
