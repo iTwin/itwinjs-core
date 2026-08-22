@@ -7,21 +7,7 @@
  */
 
 import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
-import { NotifyEntitiesChangedArgs } from "@itwin/core-common";
-
-/** Describes the BIS class of a [[TxnEntityChange]].
- * @public
- * @extensions
- */
-export interface TxnEntityMetadata {
-  /** The class's name in "Schema:Class" format. */
-  readonly classFullName: string;
-
-  /** Returns true if this class is or is derived from the specified class.
-   * @note Class names are compared case-sensitively.
-   */
-  is(baseClassFullName: string): boolean;
-}
+import { NotifyEntitiesChangedArgs, TxnEntityMetadata } from "@itwin/core-common";
 
 /** The type of operation that produced a [[TxnEntityChange]].
  * @public
@@ -73,11 +59,9 @@ export interface TxnEntityChangesFilterOptions {
   includeTypes?: TxnEntityChangeType[];
 }
 
-/** Describes a set of elements or models that were modified as part of a transaction in a [[BriefcaseConnection]],
- * serving as the payload for the [[BriefcaseTxns.onElementsChanged]] and [[BriefcaseTxns.onModelsChanged]] events.
- * The [[inserted]], [[deleted]], and [[updated]] compressed Id sets can be awkward to work with.
- * It can be more convenient to iterate over the individual [[TxnEntityChange]]s, especially if you wish to [[filter]] out some
- * changes.
+/** The frontend transaction-change payload for [[BriefcaseTxns.onElementsChanged]] and [[BriefcaseTxns.onModelsChanged]].
+ * Iterate [[TxnEntityChange]]s to inspect their `id`, `type`, and [[TxnEntityChange.metadata]], or use [[filter]] to select by change type or class hierarchy.
+ * The compressed `inserted`, `deleted`, and `updated` sets remain available for bulk operations. Unlike backend [[TxnChangedEntities]], this payload exposes per-change `type` and metadata.
  * @public
  * @extensions
  */
