@@ -147,20 +147,56 @@ Passing an **item** adds the missing schema reference for you, because the item'
 `class.properties` is the class's own declarations. To see what a class actually has, resolved through its base class and mixins:
 
 ```ts
-pump.getEffectiveProperties();       // base class first, then mixins, then own
-pump.getEffectiveProperty("CodeValue");
+pump.getExpandedProperties();       // base class first, then mixins, then own
+pump.getExpandedProperty("CodeValue");
 ```
 
-An overridden property appears once, at the position the ancestor introduced it, as the overriding declaration. Base classes and mixins the set cannot resolve contribute nothing.
+An overridden property appears once, as the overriding declaration, at the overriding class's own position - the order an ECSQL `SELECT *` reflects. Base classes and mixins the set cannot resolve contribute nothing.
+
+## Validating
+
+A document is allowed to be invalid, so checking one is a separate step you invoke when you want it. `validateSchemaDocument` walks one document; `validateSchemaSet` walks every document in a set. Both return the same `SchemaIssueList` the rest of the layer reports through, and neither throws:
+
+```ts
+const issues = Authoring.validateSchemaDocument(doc);
+if (issues.hasErrors)
+  throw new Error(issues.errors.map((issue) => `${issue.location}: ${issue.message}`).join("\n"));
+for (const issue of issues.warnings)
+  console.warn(`${issue.location}: ${issue.message}`);
+```
+
+It covers item references (every one resolves, and to an item of the right kind), names and version components, declarations that collide, inheritance (base class kind, sealed bases, cycles, mixin applicability, a property arriving from two places), property overrides (kind, value type, persistence unit), navigation properties, relationship constraints, custom attributes (the class resolves, is concrete, accepts this kind of container, and the values are ones it declares), and the constraints an iModel import adds on top.
+
+**What is loaded decides what can be checked.** References resolve through the document's schema set, so a schema that is not in the set is reported **once**, as `schema-reference-not-loaded`, and every reference into it is skipped - one unloaded schema costs one issue rather than hundreds. Load the closure first when you want those references checked:
+
+```ts
+const resolution = await resolver.resolve([doc]);
+await resolution.loadDocuments(doc.schemaSet);
+const issues = Authoring.validateSchemaSet(doc.schemaSet);
+```
+
+**Match on `issue.name`.** Names are kebab-case and start with the subject they are about, so sorting an issue list groups it by subject: `class-base-sealed`, `entity-mixin-not-applicable`, `property-override-kind-mismatch`, `relationship-constraint-abstract-required`, `custom-attribute-container-not-allowed`, `schema-reference-alias-duplicate`. Where a check exists in one of the published rule catalogs, its number comes along in `issue.code` (`ECObjects-1300`, `ECDb_0299`, `BIS-1700`) so findings can be lined up against the older validators - but the name is the identity, and no new numbers are allocated.
+
+**Severity says whether the schema is invalid.** Errors mean it is; warnings cover everything else, and these fire on healthy schemas:
+
+- An unresolved **unit or format** reference. Units and formats are moving out of schemas into the external units framework, where the same identifier resolves elsewhere, so the schema set not holding it says little.
+- A reference to a **deprecated** item, unless the thing referring to it is deprecated too.
+- A **schema reference nothing uses**, and a reference with no alias (which ECJSON does not carry - see `fillMissingReferenceAliases`).
+
+**`options.spec`** is the specification version the document is held to; it defaults to `ECSpec.Latest`. Most of the spec's history cannot be represented in a latest-spec document at all, so this only affects the handful of rules that got stricter going up - three-component versions, enumerator names, the strict multiplicity grammar, role labels and abstract constraints. Validating a document read from a 3.0 file against the default therefore tells you what to fix before it can be saved as 3.2, which is usually what you want; pass the older spec when you mean to check it as what it is.
+
+The rule set is the universal one: what the EC specification requires, plus the constraints an ECDb import enforces (tagged with their `ECDb_` codes). BIS conventions are a separate pack and are not applied here.
+
+Validation is one walk over the document, with the inherited-property expansion computed once per class for the whole run, so cost scales with the size of the schema rather than with the number of rules. Validating every released BIS schema at once takes a fraction of a second.
 
 ## Reading and writing
 
-Reader/writer pairs exist per format, with one shared contract. ECXML and ECJSON 3.2 are covered today:
+Reader/writer pairs exist per format, with one shared contract:
 
 | | Read | Write |
 | --- | --- | --- |
-| ECXML 3.x | `SchemaXmlReader` | `SchemaXmlWriter` |
-| ECJSON 3.x | `SchemaJsonReader` | `SchemaJsonWriter` |
+| ECXML 2.0, 3.0, 3.1, 3.2 | `SchemaXmlReader` | `SchemaXmlWriter` |
+| ECJSON | `SchemaJsonReader` | `SchemaJsonWriter` |
 
 ```ts
 const set = new Authoring.SchemaSet();
@@ -169,7 +205,7 @@ const result = await new Authoring.SchemaXmlReader().readDocument(xmlText, {
   schemaSet: set,      // leave this out and the document gets a private set of its own
 });
 for (const issue of result.issues)
-  console.warn(`${issue.code}: ${issue.message}`);
+  console.warn(`${issue.name}: ${issue.message}`);
 
 const doc = result.document; // undefined only if the input was unusable
 if (doc) {
@@ -183,8 +219,8 @@ Points of note:
 - **Readers are lenient.** A recognizable schema with broken pieces yields a document with the broken pieces skipped and reported as issues - the read-and-repair workflow the old "does not load" behavior made impossible. `result.document` is `undefined` only for unusable input (malformed text, not a schema, unsupported spec version).
 - **Read into a set when you have one.** A document in a set can resolve its references, which is what lets its custom attributes be understood and its inherited properties be walked.
 - **Writers produce stable output.** The same document always serializes to byte-identical text, so write -> read -> write round-trips exactly - suitable for golden-file tests and clean diffs in version control.
-- **Issue codes are stable contract; messages are not.** Match on `issue.code` (e.g. `SchemaXml-0026`), never on message text.
-- **Spec versions are chosen at the boundary.** `writeDocument(doc, { spec: ECSpec.V3_2 })`; the default is `ECSpec.Latest`. Readers accept any 3.x input and record the source spec version on the document. Older spec versions (notably EC 2.0 write-back) are planned as sibling reader/writer pairs.
+- **Issue names are stable contract; messages are not.** Match on `issue.name` (e.g. `relationship-source-missing`), never on message text.
+- **Spec versions are chosen at the boundary.** `writeDocument(doc, { spec: ECSpec.V3_2 })`; the default is `ECSpec.Latest`. Reading is the other way round - a caller cannot know a file's version before opening it, so `SchemaXmlReader` reads the version out of the namespace and records it on the document. Writing to an older version drops what that version has no way to express, and reports each loss as an issue.
 
 ### Large inputs and streaming
 
@@ -304,9 +340,11 @@ This makes round-trip and migration testing direct: read, write, read back, comp
 Everything in the authoring layer reports problems the same way: a `SchemaIssueList` of `SchemaIssue` entries, each carrying:
 
 - `severity` - error, warning, or info. Only *errors* indicate the result is incomplete; warnings flag suspicious-but-handled input.
-- `code` - a stable identifier, e.g. `SchemaXml-0026` ("relationship missing its Source constraint"). Codes are contract; match on them programmatically.
+- `group` - which operation reported it: `"xml"`, `"json"`, `"discovery"`, `"ec2-conversion"`, `"comparison"`, `"validation"`.
+- `name` - a stable kebab-case identifier starting with the subject it is about, e.g. `custom-attribute-class-unresolved`. Names are contract; match on them programmatically. Sorting a list of issues by name groups it by subject.
 - `message` - human-readable detail. Not contract; may be reworded.
-- `source` / `location` / `line` / `column` - where the problem was found, where the input form provides it.
+- `location` - where the problem is, when known. Either a source position as `path:line:column`, which the readers produce and terminals turn into a clickable link, or a schema element path such as `MyDomain:Pump.SerialNumber`.
+- `code` - the number this check carries in a published rule catalog, where one exists (`ECObjects-1300`, `BIS-601`, `ECDb_0299`). Present only so findings can be matched against the older validators.
 
 There is no throw-on-error helper by design: you inspect the issues and decide what is fatal for *your* workflow, attaching the context you need to any error you raise.
 
@@ -316,10 +354,8 @@ Two places do throw, both about the API rather than about data: moving a documen
 
 This page grows as the initiative ([#9337](https://github.com/iTwin/itwinjs-core/issues/9337)) lands its increments:
 
-- **Available now**: the document model and its schema set, reference resolution, ECXML/ECJSON 3.2 reader/writer pairs with streaming input, discovery and loading (`SchemaResolver`), and comparison.
-- **Validation** - an explicit pass over one document or a whole set, reporting the same inspectable issues: unresolved references, override compatibility, base-class cycles, plus opt-in rule packs for conventions such as BIS.
+- **Available now**: the document model and its schema set, reference resolution, ECXML (2.0 through 3.2) and ECJSON reader/writer pairs with streaming input, the opt-in EC2 custom attribute conversion, discovery and loading (`SchemaResolver`), reading schemas out of an iModel, comparison, and validation.
 - **Views** as a first-class item kind, instead of a hand-assembled `QueryView` custom attribute.
-- **Reading schemas from an iModel** into documents.
-- **Older spec versions** - reader/writer pairs for EC 2.0 and 3.1, including EC 2.0 write-back (long a gap: today the platform can effectively only emit 3.2).
+- **Rule packs** on top of validation, for conventions such as BIS.
 - **Merging** on document data, replacing the resolved-graph comparer/merger.
 - **Migration and deprecation** of the legacy editing surface (`@itwin/ecschema-editing`, `@itwin/ecschema-locaters`) once consumers have moved.

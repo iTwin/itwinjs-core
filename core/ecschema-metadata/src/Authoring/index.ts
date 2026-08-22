@@ -17,3 +17,4 @@ export * from "./SchemaResolver";
 export * from "./SchemaXmlReader";
 export * from "./SchemaXmlWriter";
 export * from "./StandardSchemas";
+export * from "./Validation/SchemaValidator";
