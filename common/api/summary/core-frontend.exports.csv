@@ -607,6 +607,7 @@ public;interface;SelectRemoveEvent
 public;interface;SelectReplaceEvent
 internal;function;setBasicAuthorization
 internal;function;setBasicAuthorization
+beta;interface;SetFormatsProviderOptions
 internal;function;setRequestTimeout
 public;class;SetupCameraTool
 public;class;SetupWalkCameraTool
