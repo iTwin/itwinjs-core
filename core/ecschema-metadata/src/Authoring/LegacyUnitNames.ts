@@ -925,3 +925,15 @@ export function legacyUnitNameFromECName(ecName: string): string | undefined {
   const newName = getFoldedECNameToNewName().get(foldECName(ecName));
   return newName === undefined ? undefined : getFoldedNewNameToLegacyName().get(foldName(newName));
 }
+
+/** Converts the unit name written inside a pre-3.2 FUS descriptor to its EC 3.2 unit full name.
+ * A FUS names units by the intermediate name, not the EC2 one, so this is the second hop of
+ * {@link ecUnitNameFromLegacyName} on its own. */
+export function ecUnitNameFromFusName(fusName: string): string | undefined {
+  return getFoldedNewNameToECName().get(foldName(fusName));
+}
+
+/** The inverse of {@link ecUnitNameFromFusName}: the name a FUS descriptor writes a unit under. */
+export function fusNameFromECUnitName(ecName: string): string | undefined {
+  return getFoldedECNameToNewName().get(foldECName(ecName));
+}

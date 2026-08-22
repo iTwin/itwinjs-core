@@ -14,6 +14,8 @@ import {
 } from "../ECObjects";
 import { ECName } from "../ECName";
 import { serializeCustomAttributeBody } from "./CustomAttributeConverter";
+import { formatStringFromFus, splitFusDescriptor } from "./LegacyFormatNames";
+import { ecUnitNameFromFusName } from "./LegacyUnitNames";
 import * as Authoring from "./SchemaDocument";
 import {
   decodeSchemaText, mapFormatStringReferences, parseVersionString, SchemaDocumentReadResult, SchemaDocumentTextReader, SchemaHeaderReadResult, SchemaText, SchemaTextReadOptions,
@@ -352,7 +354,7 @@ class ECXmlWalker {
   private readItem(node: XmlElementNode): void {
     switch (node.name.toLowerCase()) {
       case LEGACY_CLASS_ELEMENT: return this.readLegacyClass(node);
-      case "ecentityclass": return this.readEntityOrMixin(node);
+      case "ecentityclass": return this.readEntityMixinOrView(node);
       case "ecstructclass": return this.readStructClass(node);
       case "eccustomattributeclass": return this.readCustomAttributeClass(node);
       case "ecrelationshipclass": return this.readRelationshipClass(node);
@@ -381,7 +383,7 @@ class ECXmlWalker {
     }
     if (isCustomAttribute)
       return this.readCustomAttributeClass(node);
-    return this.readEntityOrMixin(node);
+    return this.readEntityMixinOrView(node);
   }
 
   private itemName(node: XmlElementNode): string | undefined {
@@ -431,16 +433,18 @@ class ECXmlWalker {
     return references;
   }
 
-  private readEntityOrMixin(node: XmlElementNode): void {
+  private readEntityMixinOrView(node: XmlElementNode): void {
     const name = this.itemName(node);
     if (name === undefined)
       return;
     const baseClasses = this.readBaseClassReferences(node);
 
-    // ECXML 3.2 has no first-class mixin: detect the IsMixin custom attribute and promote it,
-    // consuming the CA. Everything else in ECCustomAttributes stays an ordinary instance.
+    // No ECXML version has a first-class mixin or view: both are an entity class carrying a custom
+    // attribute the document promotes, consuming the attribute. Everything else in
+    // ECCustomAttributes stays an ordinary instance.
     const caContainer = this.findChild(node, "eccustomattributes");
     const isMixinNode = caContainer !== undefined ? this.findChild(caContainer, "ismixin") : undefined;
+    const queryViewNode = caContainer !== undefined ? this.findChild(caContainer, "queryview") : undefined;
 
     if (isMixinNode !== undefined) {
       const appliesToNode = this.findChild(isMixinNode, "appliestoentityclass");
@@ -453,6 +457,20 @@ class ECXmlWalker {
       if (baseClasses.length > 1)
         this._warning("mixin-multiple-base-classes", `The mixin "${name}" lists more than one BaseClass; only the first was kept.`, node);
       this.readClassContent(node, mixin, { skipCustomAttribute: "ismixin" });
+      return;
+    }
+
+    if (queryViewNode !== undefined) {
+      const queryNode = this.findChild(queryViewNode, "query");
+      let query = "";
+      if (queryNode === undefined)
+        this._error("view-query-missing", `The view "${name}" has a QueryView custom attribute without the Query property.`, queryViewNode);
+      else
+        query = queryNode.text;
+      const view = this._document.createView(name, query, this.classInit(node, baseClasses));
+      if (baseClasses.length > 1)
+        this._warning("view-multiple-base-classes", `The view "${name}" lists more than one BaseClass; only the first was kept.`, node);
+      this.readClassContent(node, view, { skipCustomAttribute: "queryview" });
       return;
     }
 
@@ -794,6 +812,9 @@ class ECXmlWalker {
       this._error("kind-of-quantity-fields-invalid", `The kind of quantity "${name}" is missing persistenceUnit or a parseable relativeError; the item was skipped.`, node);
       return;
     }
+    if (!this._dialect.unitAndFormatReferences)
+      return this.readKindOfQuantityFromFus(node, name, persistenceUnit, relativeError);
+
     // Presentation format strings stay verbatim; the override grammar is not parsed here.
     const presentationFormats = node.attributes.presentationUnits !== undefined
       ? node.attributes.presentationUnits.split(";").map((entry) => entry.trim()).filter((entry) => entry.length > 0)
@@ -803,6 +824,66 @@ class ECXmlWalker {
       ...this.itemInit(node),
       presentationFormats,
     });
+  }
+
+  /** Before 3.2 a kind of quantity carried FUS descriptors instead of unit and format references -
+   * `CM(real4u)` rather than `Formats:DefaultRealU(4)[Units:CM]`. The document is 3.2-canonical, so
+   * they are upgraded here, matching native's semantics including its edge cases. */
+  private readKindOfQuantityFromFus(node: XmlElementNode, name: string, persistenceDescriptor: string, relativeError: number): void {
+    const { unit, format: persistenceFormat } = splitFusDescriptor(persistenceDescriptor);
+    const persistenceUnit = ecUnitNameFromFusName(unit);
+    if (persistenceUnit === undefined) {
+      this._error("kind-of-quantity-unit-unmapped", `The kind of quantity "${name}" persists in "${unit}", which is not a known legacy unit name; the item was skipped.`, node);
+      return;
+    }
+
+    const presentationFormats: string[] = [];
+    for (const descriptor of (node.attributes.presentationUnits ?? "").split(";").map((entry) => entry.trim()).filter((entry) => entry.length > 0)) {
+      // A presentation descriptor with no format part means the default real format.
+      const formatString = formatStringFromFus(descriptor, "Formats:DefaultReal");
+      if (formatString === undefined)
+        this._warning("kind-of-quantity-format-unmapped", `The kind of quantity "${name}" presents as "${descriptor}", which has no EC 3.2 equivalent; that presentation format was dropped.`, node);
+      else
+        presentationFormats.push(formatString);
+    }
+
+    // With nothing left to present by, the format the persistence descriptor named becomes the
+    // presentation format, over the persistence unit.
+    if (presentationFormats.length === 0 && persistenceFormat !== undefined) {
+      const formatString = formatStringFromFus(persistenceDescriptor);
+      if (formatString !== undefined)
+        presentationFormats.push(formatString);
+    }
+
+    this.addStandardUnitReferences();
+    this._document.createKindOfQuantity(name, this.normalizeItemReference(persistenceUnit), relativeError, {
+      ...this.itemInit(node),
+      presentationFormats: presentationFormats.length > 0
+        ? presentationFormats.map((entry) => mapFormatStringReferences(entry, (reference) => this.normalizeItemReference(reference)))
+        : undefined,
+    });
+  }
+
+  /** The upgraded references name the standard `Units` and `Formats` schemas, which a pre-3.2 file
+   * has no reason to reference. Native adds them at the same point.
+   *
+   * The version comes from the schema set when it holds the schema, which is the case whenever the
+   * read is part of a resolved load. A bare read has nothing to go on - the source file does not
+   * carry the version - so it falls back to 1.0.0 and validation reports the disagreement if there
+   * is one. */
+  private addStandardUnitReferences(): void {
+    for (const [name, alias] of [["Units", "u"], ["Formats", "f"]]) {
+      if (this._document.getSchemaReference(name) !== undefined)
+        continue;
+      const known = this._document.schemaSet.getSchema(name);
+      this._document.setSchemaReference({
+        name,
+        readVersion: known?.readVersion ?? 1,
+        writeVersion: known?.writeVersion ?? 0,
+        minorVersion: known?.minorVersion ?? 0,
+        alias,
+      });
+    }
   }
 
   private readPropertyCategory(node: XmlElementNode): void {

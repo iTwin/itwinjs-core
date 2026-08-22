@@ -399,11 +399,35 @@ class ECJson32Walker {
   }
 
   private readEntityClass(name: string, item: JsonObject): void {
+    // ECJSON has no view element: an entity class carrying ECDbMap:QueryView is one, and the
+    // document promotes it, consuming the attribute - what the XML reader does for both a view and
+    // a mixin, and here for a view alone since ECJSON does carry mixins first-class.
+    const queryView = this.findCustomAttribute(item.customAttributes, "ECDbMap:QueryView");
+    if (queryView !== undefined) {
+      const query = asString(queryView.Query);
+      if (query === undefined)
+        this._error("view-query-missing", `The view "${name}" has a QueryView custom attribute without a string Query property.`);
+      this.readClassContent(name, this._document.createView(name, query ?? "", this.classInit(item)), item, "ECDbMap:QueryView");
+      return;
+    }
     const init: Authoring.EntityClassInit = this.classInit(item);
     const mixins = asArray(item.mixins);
     if (mixins !== undefined)
       init.mixins = mixins.flatMap((mixin) => typeof mixin === "string" ? [this.normalizeItemReference(mixin)] : []);
     this.readClassContent(name, this._document.createEntity(name, init), item);
+  }
+
+  /** The first entry of a `customAttributes` array naming the given class, comparing case- and
+   * separator-insensitively. Used to spot the attributes the document models first-class. */
+  private findCustomAttribute(value: unknown, className: string): JsonObject | undefined {
+    const key = className.replaceAll(".", ":").toLowerCase();
+    for (const entry of asArray(value) ?? []) {
+      const caObject = asObject(entry);
+      const name = caObject !== undefined ? asString(caObject.className) : undefined;
+      if (caObject !== undefined && name !== undefined && name.replaceAll(".", ":").toLowerCase() === key)
+        return caObject;
+    }
+    return undefined;
   }
 
   private readMixin(name: string, item: JsonObject): void {
@@ -481,9 +505,10 @@ class ECJson32Walker {
     this.readCustomAttributes(constraintObject.customAttributes, constraint.customAttributes, className);
   }
 
-  /** Reads the content shared by every class kind: properties and custom attributes. */
-  private readClassContent(name: string, item: Authoring.AnyClass, json: JsonObject): void {
-    this.readCustomAttributes(json.customAttributes, item.customAttributes, name);
+  /** Reads the content shared by every class kind: properties and custom attributes.
+   * `skipCustomAttribute` names the attribute a promoted item kind has already consumed. */
+  private readClassContent(name: string, item: Authoring.AnyClass, json: JsonObject, skipCustomAttribute?: string): void {
+    this.readCustomAttributes(json.customAttributes, item.customAttributes, name, skipCustomAttribute);
     const properties = asArray(json.properties);
     if (properties === undefined)
       return;
@@ -789,10 +814,11 @@ class ECJson32Walker {
   /** Reads a `customAttributes` array into a set. Each entry is the flattened ECJSON form: the
    * `className` key plus the property values inline. Values stay untyped and pass through as the
    * plain JSON shapes they already are, which is the document's own value shape. */
-  private readCustomAttributes(value: unknown, target: Authoring.CustomAttributeSet, location: string): void {
+  private readCustomAttributes(value: unknown, target: Authoring.CustomAttributeSet, location: string, skipClassName?: string): void {
     const entries = asArray(value);
     if (entries === undefined)
       return;
+    const skipKey = skipClassName?.replaceAll(".", ":").toLowerCase();
     for (const entry of entries) {
       const caObject = asObject(entry);
       const className = caObject !== undefined ? asString(caObject.className) : undefined;
@@ -800,6 +826,8 @@ class ECJson32Walker {
         this._error("custom-attribute-class-name-missing", `A custom attribute on "${location}" is missing its className; it was skipped.`);
         continue;
       }
+      if (skipKey !== undefined && className.replaceAll(".", ":").toLowerCase() === skipKey)
+        continue;
       // The remaining keys are the custom attribute's property values, already in canonical ECJSON
       // shape - which is the document's own value shape. Validated rather than asserted, so a
       // hand-edited file carrying something the shape does not allow (a `null`, a function-valued

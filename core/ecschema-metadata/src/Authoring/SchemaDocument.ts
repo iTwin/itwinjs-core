@@ -12,6 +12,37 @@ import { SchemaKey } from "../SchemaKey";
 import { materializeCustomAttribute } from "./CustomAttributeConverter";
 import { SchemaAuthoringError } from "./SchemaAuthoringError";
 
+/** Item kinds the authoring model adds on top of {@link SchemaItemType}. The shared enum is what
+ * the persisted formats and the read model speak, so it is not widened; the authoring discriminant
+ * is the union of both ({@link ItemKind}).
+ * @alpha
+ */
+export enum AuthoringSchemaItemType {
+  /** An ECSQL-backed view. No format has a `View` element: it is an entity class carrying the
+   * `ECDbMap:QueryView` custom attribute, which the readers promote and the writers undo.
+   * @see {@link View} */
+  // eslint-disable-next-line @typescript-eslint/no-shadow -- deliberately named for the View class, as every SchemaItemType member is
+  View = "View",
+}
+
+/** The discriminant carried by {@link SchemaItem.schemaItemType}.
+ * @alpha
+ */
+export type ItemKind = SchemaItemType | AuthoringSchemaItemType;
+
+/** Whether `kind` satisfies `supported`, which may be a concrete kind or an
+ * {@link AbstractSchemaItemType} grouping. Extends {@link isSupportedSchemaItemType} over the
+ * authoring-only kinds: a {@link View} is a class, so it answers to the `Class` grouping.
+ * @internal
+ */
+export function isItemOfKind(kind: ItemKind, supported: keyof SchemaItemTypeMap): boolean {
+  if (kind === supported)
+    return true;
+  if (kind === AuthoringSchemaItemType.View)
+    return supported === AbstractSchemaItemType.Class || supported === AbstractSchemaItemType.SchemaItem;
+  return isSupportedSchemaItemType(kind, supported as SchemaItemType | AbstractSchemaItemType);
+}
+
 /** Case-invariant name comparison. EC names are case-insensitive; comparison is the document's
  * only interpretation of a name, kept deliberately simple. */
 function namesEqual(a: string, b: string): boolean {
@@ -462,7 +493,7 @@ export class SchemaDocument {
    * {@link SchemaItemType} or a grouping ({@link AbstractSchemaItemType.Class}). */
   public resolveItemOfType<K extends keyof SchemaItemTypeMap>(reference: LocalOrFullName, itemType: K): SchemaItemTypeMap[K] | undefined {
     const item = this.resolveItem(reference);
-    return item !== undefined && isSupportedSchemaItemType(item.schemaItemType, itemType) ? item as SchemaItemTypeMap[K] : undefined;
+    return item !== undefined && isItemOfKind(item.schemaItemType, itemType) ? item as SchemaItemTypeMap[K] : undefined;
   }
 
   /** Builds the reference string this document uses to refer to `item`, and is what every setter
@@ -488,7 +519,7 @@ export class SchemaDocument {
    * the most common ones. */
   public getItemOfType<K extends keyof SchemaItemTypeMap>(name: string, itemType: K): SchemaItemTypeMap[K] | undefined {
     const item = this.getItem(name);
-    return item !== undefined && isSupportedSchemaItemType(item.schemaItemType, itemType) ? item as SchemaItemTypeMap[K] : undefined;
+    return item !== undefined && isItemOfKind(item.schemaItemType, itemType) ? item as SchemaItemTypeMap[K] : undefined;
   }
 
   /** Iterates every item of the given kind in declaration order, narrowed to that kind's type.
@@ -496,7 +527,7 @@ export class SchemaDocument {
    * ({@link AbstractSchemaItemType.Class}, {@link AbstractSchemaItemType.SchemaItem}). */
   public *getItemsOfType<K extends keyof SchemaItemTypeMap>(itemType: K): IterableIterator<SchemaItemTypeMap[K]> {
     for (const item of this.items) {
-      if (isSupportedSchemaItemType(item.schemaItemType, itemType))
+      if (isItemOfKind(item.schemaItemType, itemType))
         yield item as SchemaItemTypeMap[K];
     }
   }
@@ -527,6 +558,12 @@ export class SchemaDocument {
   /** Creates a struct class, appends it, and returns it. */
   public createStructClass(name: string, init?: ClassInit): StructClass {
     return new StructClass(this, name, init);
+  }
+
+  /** Creates a view, appends it, and returns it. `query` is the ECSQL its instances come from
+   * (mandatory data). Declare a property per column the query returns - see {@link View}. */
+  public createView(name: string, query: string, init?: ClassInit): View {
+    return new View(this, name, query, init);
   }
 
   /** Creates a custom attribute class, appends it, and returns it. `appliesTo` is the bitmask of
@@ -1006,7 +1043,7 @@ export interface SchemaItemInit {
 export abstract class SchemaItem {
   /** Discriminates the item kind. A getter rather than a field: this constructor registers the
    * item with its document, and a subclass field initializer would not have run yet at that point. */
-  public abstract get schemaItemType(): SchemaItemType;
+  public abstract get schemaItemType(): ItemKind;
   /** The invariant item name. Renaming is a document-level operation (not yet modeled). */
   public readonly name: string;
   /** Optional display label. */
@@ -1063,9 +1100,14 @@ export abstract class SchemaItem {
     return this.schemaItemType === SchemaItemType.RelationshipClass;
   }
 
-  /** Narrows to {@link AnyClass} - true for every class kind. */
+  /** Narrows to {@link View}. */
+  public isView(): this is View {
+    return this.schemaItemType === AuthoringSchemaItemType.View;
+  }
+
+  /** Narrows to {@link AnyClass} - true for every class kind, {@link View} included. */
   public isClass(): this is AnyClass {
-    return isSupportedSchemaItemType(this.schemaItemType, AbstractSchemaItemType.Class);
+    return isItemOfKind(this.schemaItemType, AbstractSchemaItemType.Class);
   }
 
   /** @see isEntity */
@@ -1096,6 +1138,12 @@ export abstract class SchemaItem {
   public assertRelationship(): asserts this is RelationshipClass {
     if (!this.isRelationship())
       throw new Error(`Expected a relationship class, got ${this.schemaItemType} for "${this.name}"`);
+  }
+
+  /** @see isView */
+  public assertView(): asserts this is View {
+    if (!this.isView())
+      throw new Error(`Expected a view, got ${this.schemaItemType} for "${this.name}"`);
   }
 
   /** @see isClass */
@@ -1530,6 +1578,35 @@ export class Mixin extends ECClass {
   /** Sets {@link Mixin.appliesTo} from the entity class itself (see {@link SchemaDocument.referenceTo}). */
   public setAppliesTo(entityClass: EntityClass): void {
     this.appliesTo = this.document.referenceTo(entityClass);
+  }
+}
+
+/** An ECSQL-backed view: a class whose instances are produced by a query rather than stored.
+ *
+ * No persisted format has a `View` element. In both ECXML and ECJSON a view is an entity class
+ * carrying the `ECDbMap:QueryView` custom attribute, which holds the query; the readers promote such
+ * a class to this kind and the writers undo the promotion. That is the same treatment {@link Mixin}
+ * gets in ECXML, one step further because ECJSON has no view either.
+ *
+ * The {@link View.query} is stored and round-tripped verbatim - never parsed, and never rewritten
+ * when an item it names is renamed. It is ECSQL, so it is the one place this otherwise
+ * database-independent model depends on ECDb.
+ *
+ * ECDb accepts a view only when it is `Abstract`, has no base class, has no derived classes, and
+ * declares exactly the properties its query returns with matching types. Nothing here enforces
+ * that - the validator reports what it can see.
+ * @alpha
+ */
+export class View extends ECClass {
+  public get schemaItemType(): AuthoringSchemaItemType.View { return AuthoringSchemaItemType.View; }
+  /** The ECSQL the view's instances come from (3.2: `ECDbMap:QueryView.Query`). Opaque to this
+   * model: stored, compared, and written back as given. */
+  public query: string;
+
+  /** Creates a view in `document`. `query` is mandatory. */
+  public constructor(document: SchemaDocument, name: string, query: string, init?: ClassInit) {
+    super(document, name, init);
+    this.query = query;
   }
 }
 
@@ -2581,7 +2658,7 @@ export type AnyStructProperty = StructProperty | StructArrayProperty;
 export type AnyArrayProperty = PrimitiveArrayProperty | StructArrayProperty;
 
 /** Union of every EC class kind. */
-export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
+export type AnyClass = EntityClass | Mixin | View | StructClass | CustomAttributeClass | RelationshipClass;
 
 /** Union of every schema item kind. */
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory
@@ -2594,6 +2671,7 @@ export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCa
 export interface SchemaItemTypeMap {
   [SchemaItemType.EntityClass]: EntityClass;
   [SchemaItemType.Mixin]: Mixin;
+  [AuthoringSchemaItemType.View]: View;
   [SchemaItemType.StructClass]: StructClass;
   [SchemaItemType.CustomAttributeClass]: CustomAttributeClass;
   [SchemaItemType.RelationshipClass]: RelationshipClass;

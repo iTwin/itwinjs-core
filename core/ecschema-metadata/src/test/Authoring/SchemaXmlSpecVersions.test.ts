@@ -6,9 +6,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import { describe, expect, it } from "vitest";
-import { SchemaItemType } from "../../ECObjects";
+import { ECClassModifier, SchemaItemType } from "../../ECObjects";
 import { compareSchemaDocuments, formatSchemaComparison } from "../../Authoring/SchemaComparison";
-import { SchemaDocument, SchemaSet } from "../../Authoring/SchemaDocument";
+import { AuthoringSchemaItemType, SchemaDocument, SchemaSet } from "../../Authoring/SchemaDocument";
 import { ECSpec } from "../../Authoring/SchemaDocumentIO";
 import { SchemaIssue } from "../../Authoring/SchemaIssues";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
@@ -180,17 +180,32 @@ describe("ECXml spec downgrade", () => {
 
 describe("multi-line custom attribute values", () => {
   it("keeps newlines inside a value out of the writer's indentation", async () => {
-    // ECDbMap:QueryView carries an ECSQL string that spans lines. The writer indents markup, and a
-    // value's own newlines must not be mistaken for markup - re-indenting rewrote the ECSQL a
-    // little further on every write. Found by cross-checking against native's serializer.
+    // A custom attribute value may span lines. The writer indents markup, and a value's own
+    // newlines must not be mistaken for markup - re-indenting rewrote the value a little further on
+    // every write. Found by cross-checking against native's serializer, on the ECSQL a view carries.
     const query = "SELECT a\n  FROM b\n  WHERE c = 1";
     const doc = new SchemaDocument("D", "d", 1, 0, 0);
-    doc.createEntity("C").customAttributes.add({ className: "ECDbMap:QueryView", values: { Query: query } });
+    doc.createEntity("C").customAttributes.add({ className: "ECDbMap:UseRequiresVersion", values: { ECSqlVersion: query } });
 
     let text = new SchemaXmlWriter().writeDocument(doc).text!;
     for (let pass = 0; pass < 3; ++pass) {
       const reread = (await new SchemaXmlReader().readDocument(text)).document!;
-      expect(reread.getEntity("C")!.customAttributes.get("ECDbMap:QueryView")!.getValue("Query")).toBe(query);
+      expect(reread.getEntity("C")!.customAttributes.get("ECDbMap:UseRequiresVersion")!.getValue("ECSqlVersion")).toBe(query);
+      text = new SchemaXmlWriter().writeDocument(reread).text!;
+    }
+  });
+
+  it("keeps a view's multi-line query intact across repeated writes", async () => {
+    // The same guarantee where it originally mattered: a view's ECSQL, now promoted out of the
+    // QueryView custom attribute but still serialized through it.
+    const query = "SELECT a\n  FROM b\n  WHERE c = 1";
+    const doc = new SchemaDocument("D", "d", 1, 0, 0);
+    doc.createView("V", query, { modifier: ECClassModifier.Abstract });
+
+    let text = new SchemaXmlWriter().writeDocument(doc).text!;
+    for (let pass = 0; pass < 3; ++pass) {
+      const reread = (await new SchemaXmlReader().readDocument(text)).document!;
+      expect(reread.getItemOfType("V", AuthoringSchemaItemType.View)!.query).toBe(query);
       text = new SchemaXmlWriter().writeDocument(reread).text!;
     }
   });

@@ -225,6 +225,8 @@ class ECJson32Emitter {
       return this._emitEntityClass(item);
     if (item.isMixin())
       return this._emitMixin(item);
+    if (item.isView())
+      return this._emitView(item);
     if (item.isStruct())
       return this._emitClass(item, {});
     if (item.isCustomAttribute())
@@ -316,6 +318,21 @@ class ECJson32Emitter {
     return this._emitClass(item, {
       appliesTo: this._toJsonItemReference(item.appliesTo, item.name),
     });
+  }
+
+  /** ECJSON has no view either, so a view goes out as an entity class carrying `ECDbMap:QueryView`.
+   * The attribute is appended after the class's own, matching where the XML writer puts it and
+   * where native emits it. */
+  private _emitView(item: Authoring.View): JsonObject {
+    const json = this._emitClass(item, {});
+    // The envelope names the item's own kind; ECJSON has none for a view, so it goes out as what it
+    // is in every persisted format - an entity class plus the attribute. Assigned rather than
+    // inserted, so the discriminator keeps its leading position in the object.
+    json.schemaItemType = SchemaItemType.EntityClass;
+    const queryView = { className: this._toJsonItemReference("ECDbMap:QueryView", item.name), Query: item.query }; // eslint-disable-line @typescript-eslint/naming-convention -- EC property name
+    const existing = json.customAttributes;
+    json.customAttributes = Array.isArray(existing) ? [...existing, queryView] : [queryView];
+    return json;
   }
 
   private _emitRelationshipClass(item: Authoring.RelationshipClass): JsonObject {

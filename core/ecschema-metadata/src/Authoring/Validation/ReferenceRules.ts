@@ -6,11 +6,11 @@
  * @module Schema
  */
 
-import { AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, isSupportedSchemaItemType, PropertyKind, SchemaItemType } from "../../ECObjects";
+import { AbstractSchemaItemType, CustomAttributeContainerType, ECClassModifier, PropertyKind, SchemaItemType } from "../../ECObjects";
 import { ECName } from "../../ECName";
 import { resolveCustomAttributeClass } from "../CustomAttributeConverter";
 import {
-  AnyProperty, AnySchemaItem, CustomAttributeContainer, CustomAttributeSet, LocalOrFullName, Property, RelationshipConstraint, SchemaDocument,
+  AnyProperty, AnySchemaItem, CustomAttributeContainer, CustomAttributeSet, isItemOfKind, LocalOrFullName, Property, RelationshipConstraint, SchemaDocument,
   SchemaItem, SchemaReference,
 } from "../SchemaDocument";
 import { mapFormatStringReferences } from "../SchemaDocumentIO";
@@ -200,7 +200,7 @@ function checkReferenceSite(site: ReferenceSite, document: SchemaDocument, refer
     return;
   }
 
-  if (!site.expected.some((kind) => isSupportedSchemaItemType(item.schemaItemType, kind))) {
+  if (!site.expected.some((kind) => isItemOfKind(item.schemaItemType, kind))) {
     context.error("reference-item-wrong-kind",
       `${site.field} names "${site.value}", which is a ${item.schemaItemType}; expected ${describeKinds(site.expected)}.`);
     return;

@@ -35,10 +35,12 @@ describe("Native ECXML serialization cross-check", () => {
     ".strengthDirection",
     ".modifier",
     ".stationSeparator",
-    // A KindOfQuantity's presentation formats are FUS descriptors before 3.2 and unit/format
-    // references from 3.2; the two spellings do not compare as equal strings.
-    ".presentationFormats",
-    ".persistenceUnit",
+    // The version of the Units and Formats references a pre-3.2 schema gains when its FUS
+    // descriptors are upgraded. The source file does not carry it - it has no such reference at all
+    // - so a standalone read falls back to 1.0.0 while native writes the version its context held.
+    // A read into a set holding those schemas takes the version from there and agrees.
+    "references.Units.version",
+    "references.Formats.version",
     // Before 3.2 an enumerator carries no name, so one is synthesized from its value. Native's own
     // 3.2 output has the real names, which need not match what synthesis produces - unavoidable,
     // and the XML writer reports it per enumerator as enumerator-name-dropped.

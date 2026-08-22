@@ -7,7 +7,7 @@
  */
 
 import { CustomAttributeContainerType, PropertyKind, RelationshipEnd, SchemaItemType } from "../../ECObjects";
-import { AnyProperty, AnySchemaItem, ECClass, RelationshipConstraint, SchemaDocument, SchemaSet } from "../SchemaDocument";
+import { AnyProperty, AnySchemaItem, AuthoringSchemaItemType, ECClass, RelationshipConstraint, SchemaDocument, SchemaSet } from "../SchemaDocument";
 import { ECSpec } from "../SchemaDocumentIO";
 import { SchemaIssueList, SchemaIssueSeverity } from "../SchemaIssues";
 import { dialectForSpec, dialectV32, ECXmlDialect } from "../SchemaXmlDialect";
@@ -18,7 +18,7 @@ import {
 } from "./ShapeRules";
 import {
   checkClassInheritance, checkCustomAttributeClass, checkEntityInheritance, checkMixin, checkNavigationProperty, checkPropertyOverride,
-  checkRelationshipConstraintStructure, checkStructClass, checkStructPropertyRecursion, checkSystemPropertyName,
+  checkRelationshipConstraintStructure, checkStructClass, checkStructPropertyRecursion, checkSystemPropertyName, checkView,
 } from "./StructureRules";
 
 /** How a {@link validateSchemaDocument} or {@link validateSchemaSet} run is configured.
@@ -202,6 +202,13 @@ function walkItem(item: AnySchemaItem, context: ValidationContext): void {
       // A mixin serializes as an entity class carrying CoreCustomAttributes:IsMixin, so a document
       // holding one uses that schema even though nothing in the model names it.
       context.noteSchemaUsed("CoreCustomAttributes");
+      return;
+    case AuthoringSchemaItemType.View:
+      walkClass(item, context);
+      checkView(item, context);
+      // A view serializes as an entity class carrying ECDbMap:QueryView, so a document holding one
+      // uses that schema even though nothing in the model names it.
+      context.noteSchemaUsed("ECDbMap");
       return;
     case SchemaItemType.StructClass:
       walkClass(item, context);

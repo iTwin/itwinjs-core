@@ -8,7 +8,9 @@
 
 import { formatTraitsToArray } from "@itwin/core-quantity";
 import { classModifierToString, containerTypeToString, ECClassModifier, parsePrimitiveType, SchemaItemType, strengthDirectionToString, strengthToString } from "../ECObjects";
-import { writeCustomAttributeXmlBody } from "./CustomAttributeConverter";
+import { writeCustomAttributeValuesToXmlBody, writeCustomAttributeXmlBody } from "./CustomAttributeConverter";
+import { fusFromFormatString } from "./LegacyFormatNames";
+import { fusNameFromECUnitName } from "./LegacyUnitNames";
 import * as Authoring from "./SchemaDocument";
 import { parseMultiplicity } from "./SchemaDocument";
 import { ECName } from "../ECName";
@@ -365,6 +367,8 @@ class ECXmlEmitter {
       return this._emitEntityClass(item);
     if (item.isMixin())
       return this._emitMixin(item);
+    if (item.isView())
+      return this._emitView(item);
     if (item.isStruct())
       return this._emitClass(this._classElementName("ECStructClass"), item, []);
     if (item.isCustomAttribute()) {
@@ -470,6 +474,35 @@ class ECXmlEmitter {
       this._xml.openElement("IsMixin", [["xmlns", xmlns]]);
       this._xml.textElement("AppliesToEntityClass", this._toXmlItemReference(item.appliesTo, item.name));
       this._xml.closeElement("IsMixin");
+    });
+    this._emitProperties(item);
+    this._xml.closeElement(elementName);
+  }
+
+  /** A view is an entity class carrying `ECDbMap:QueryView`; no ECXML version has a view element.
+   * The attribute goes through the ordinary value conversion so the query - which routinely spans
+   * lines - is escaped and laid out exactly as a hand-authored instance would be. */
+  private _emitView(item: Authoring.View): void {
+    const elementName = this._classElementName("ECEntityClass");
+    this._xml.openElement(elementName, [...this._itemHeaderAttributes(item), ...this._classKindAttributes(item, "entity")]);
+    if (item.baseClass !== undefined)
+      this._xml.textElement("BaseClass", this._toXmlItemReference(item.baseClass, item.name));
+    this._emitCustomAttributes(item.customAttributes, item.name, () => {
+      const ecdbMap = this._document.getSchemaReference("ECDbMap");
+      if (ecdbMap === undefined) {
+        this._issues.addWarning("view-custom-attribute-reference-missing",
+          `The view "${item.name}" requires the QueryView custom attribute, but "ECDbMap" is not in the reference list; emitting with a 02.00.04 namespace.`,
+          item.name);
+      }
+      const xmlns = ecdbMap !== undefined
+        ? `ECDbMap.${this._formatNamespaceVersion(ecdbMap.readVersion, ecdbMap.writeVersion, ecdbMap.minorVersion)}`
+        : `ECDbMap.${this._formatNamespaceVersion(2, 0, 4)}`;
+      // eslint-disable-next-line @typescript-eslint/naming-convention -- EC property name
+      const body = writeCustomAttributeValuesToXmlBody(this._document, "ECDbMap:QueryView", { Query: item.query }, this._issues, item.name);
+      this._xml.openElement("QueryView", [["xmlns", xmlns]]);
+      if (body !== undefined)
+        this._xml.rawLines(body);
+      this._xml.closeElement("QueryView");
     });
     this._emitProperties(item);
     this._xml.closeElement(elementName);
@@ -670,6 +703,8 @@ class ECXmlEmitter {
   }
 
   private _emitKindOfQuantity(item: Authoring.KindOfQuantity): void {
+    if (!this._dialect.unitAndFormatReferences)
+      return this._emitKindOfQuantityAsFus(item);
     // The references embedded in the override grammar are alias-qualified like any other item
     // reference in ECXML.
     const presentationUnits = item.presentationFormats
@@ -677,6 +712,38 @@ class ECXmlEmitter {
     this._xml.selfClosingElement("KindOfQuantity", [
       ...this._itemHeaderAttributes(item),
       ["persistenceUnit", this._toXmlItemReference(item.persistenceUnit, item.name)],
+      ["relativeError", item.relativeError],
+      ["presentationUnits", presentationUnits.length > 0 ? presentationUnits.join(";") : undefined],
+    ]);
+  }
+
+  /** Below 3.2 there are no unit or format items, so the references go back out as FUS descriptors.
+   * A persistence unit with no legacy name drops the whole item - it is what the kind of quantity
+   * means. A presentation format with no legacy counterpart drops just that format. */
+  private _emitKindOfQuantityAsFus(item: Authoring.KindOfQuantity): void {
+    const persistenceUnit = fusNameFromECUnitName(item.persistenceUnit);
+    if (persistenceUnit === undefined) {
+      this._issues.addWarning("kind-of-quantity-persistence-unit-unmapped",
+        `ECXML ${this._dialect.spec} has no units, and "${item.persistenceUnit}" has no legacy name, so "${item.name}" was dropped.`,
+        item.name);
+      return;
+    }
+
+    const presentationUnits: string[] = [];
+    for (const formatString of item.presentationFormats) {
+      const descriptor = fusFromFormatString(formatString);
+      if (descriptor === undefined) {
+        this._issues.addWarning("kind-of-quantity-format-unmapped",
+          `The presentation format "${formatString}" of "${item.name}" has no ECXML ${this._dialect.spec} equivalent; it was dropped.`,
+          item.name);
+      } else {
+        presentationUnits.push(descriptor);
+      }
+    }
+
+    this._xml.selfClosingElement("KindOfQuantity", [
+      ...this._itemHeaderAttributes(item),
+      ["persistenceUnit", persistenceUnit],
       ["relativeError", item.relativeError],
       ["presentationUnits", presentationUnits.length > 0 ? presentationUnits.join(";") : undefined],
     ]);

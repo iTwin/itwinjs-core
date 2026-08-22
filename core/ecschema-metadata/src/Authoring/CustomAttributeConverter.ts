@@ -142,6 +142,21 @@ export function writeCustomAttributeXmlBody(customAttribute: CustomAttribute, is
   return serializeNodes(nodes, 0);
 }
 
+/** The same ECXML body as {@link writeCustomAttributeXmlBody}, from values a writer holds directly
+ * rather than from an applied {@link CustomAttribute}. This is what lets a writer emit a custom
+ * attribute the document models first-class - a {@link View}'s `ECDbMap:QueryView` - through the
+ * one conversion path, so its values are typed against the class and a multi-line value keeps its
+ * own newlines exactly as a hand-authored instance would.
+ * @internal
+ */
+export function writeCustomAttributeValuesToXmlBody(document: SchemaDocument, className: string, values: CustomAttributeValues, issues: SchemaIssueList, location: string): string[] | undefined {
+  const caClass = resolveCustomAttributeClass(document, className);
+  const nodes = valuesToNodes(values, caClass, className, issues, location);
+  if (nodes === undefined)
+    return undefined;
+  return serializeNodes(nodes, 0);
+}
+
 /** Resolves a custom attribute class name against a document: its own schema set first, then the
  * built-in standard schemas. Returns `undefined` when neither holds a custom attribute class of
  * that name.

@@ -8,7 +8,7 @@
 
 import { ECClassModifier, parsePrimitiveType, PropertyKind, SchemaItemType, StrengthDirection } from "../../ECObjects";
 import {
-  AnyProperty, CustomAttributeClass, ECClass, EntityClass, Mixin, NavigationProperty, parseMultiplicity, RelationshipConstraint, StructClass,
+  AnyProperty, CustomAttributeClass, ECClass, EntityClass, Mixin, NavigationProperty, parseMultiplicity, RelationshipConstraint, StructClass, View,
 } from "../SchemaDocument";
 import { namesEqual } from "./ReferenceRules";
 import { ValidationContext } from "./SchemaValidator";
@@ -103,6 +103,27 @@ export function checkMixin(mixin: Mixin, context: ValidationContext): void {
         property.fullName, "BIS-1100");
     }
   }
+}
+
+/** View rules, all of them ECDb import constraints - a view is not an EC spec concept.
+ *
+ * What is not checked here needs a database: whether the query prepares, whether the declared
+ * properties match the columns it returns, and whether anything derives from the view. ECDb reports
+ * those on import.
+ * @internal
+ */
+export function checkView(view: View, context: ValidationContext): void {
+  if (view.modifier !== ECClassModifier.Abstract)
+    context.error("view-not-abstract", `View "${view.name}" must be abstract.`, "ECDb_0702");
+
+  if (view.baseClass !== undefined)
+    context.error("view-base-not-allowed", `View "${view.name}" has a base class; a view may not derive from another class.`, "ECDb_0703");
+
+  if (view.query.trim().length === 0)
+    context.error("view-query-empty", `View "${view.name}" has no query.`, "ECDb_0705");
+
+  if (view.properties.length === 0)
+    context.warning("view-no-properties", `View "${view.name}" declares no properties, so its query returns nothing a caller can select.`);
 }
 
 /** A struct class may not have a base class.

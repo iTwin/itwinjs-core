@@ -4,18 +4,9 @@
 
 > **Status: alpha.** The API described here is released under the `@alpha` tag and may change between minor versions. It is the second evolution of the metadata package, following [SchemaView](./SchemaView.md), and tracks [the Schema Authoring Revision initiative](https://github.com/iTwin/itwinjs-core/issues/9337). Feedback on the issue is welcome.
 
-## Why a new authoring API
+## What a document is
 
-Authoring and editing EC schemas in TypeScript has been harder than it should be. The existing model ([SchemaContext]($ecschema-metadata) plus `@itwin/ecschema-editing`) keeps every schema as part of a fully-resolved, always-valid object graph - an excellent shape for trusted reading, but a poor one for authoring:
-
-- **You cannot work on a schema in isolation.** Editing requires the whole reference graph to be loaded and kept valid through every change. There is no notion of a temporarily-invalid, work-in-progress schema.
-- **Editing leans on casts.** Setters on the metadata types are protected; edits beyond what `SchemaContextEditor` exposes require casting to `@internal` `Mutable*` shadow types.
-- **Async spreads everywhere.** Cross-references are lazy promises, so `await` appears throughout even when all data is already in hand.
-- **Errors are opaque.** A problem anywhere in the graph surfaces as "the schema does not load", not as an inspectable list of problems.
-
-In practice, tests and tooling frequently fell back to hand-editing XML strings rather than use the API.
-
-`SchemaDocument` keeps what a resolved graph is genuinely good for and drops the parts that made editing painful:
+`SchemaDocument` holds one EC schema as plain, editable data:
 
 - **Ownership is explicit and singular.** A document belongs to one schema set, an item to one document, a property to one class. Nothing is shared, so nothing is ambiguous.
 - **References are stored as names and resolved on demand.** No promise graph, no load order, no invalidation.
@@ -153,6 +144,26 @@ pump.getExpandedProperty("CodeValue");
 
 An overridden property appears once, as the overriding declaration, at the overriding class's own position - the order an ECSQL `SELECT *` reflects. Base classes and mixins the set cannot resolve contribute nothing.
 
+### Mixins and views
+
+Two kinds are first-class in the document but not in the file formats, because the formats express them as an entity class carrying a custom attribute:
+
+| Kind | Serializes as | ECJSON |
+| --- | --- | --- |
+| `Mixin` | entity class + `CoreCustomAttributes:IsMixin` | first-class `Mixin` item |
+| `View` | entity class + `ECDbMap:QueryView` | entity class + the attribute |
+
+The readers promote such a class and consume the attribute; the writers put it back. Either way you author against the kind, not the attribute:
+
+```ts
+const view = doc.createView("PipeView", `
+  SELECT [p].[ECInstanceId], [p].[Length]
+    FROM [pipphys].[Pipe] [p]`, { modifier: ECClassModifier.Abstract });
+view.createPrimitive("Length", PrimitiveType.Double, { kindOfQuantity: "CivilUnits:LENGTH" });
+```
+
+A view's query is ECSQL, kept opaque: stored, compared, and written back exactly as given, never parsed. Declare one property per column the query returns. ECDb additionally requires a view to be abstract, to have no base class, and to have nothing derived from it - the validator reports the first two, and the last only surfaces on import.
+
 ## Validating
 
 A document is allowed to be invalid, so checking one is a separate step you invoke when you want it. `validateSchemaDocument` walks one document; `validateSchemaSet` walks every document in a set. Both return the same `SchemaIssueList` the rest of the layer reports through, and neither throws:
@@ -221,6 +232,7 @@ Points of note:
 - **Writers produce stable output.** The same document always serializes to byte-identical text, so write -> read -> write round-trips exactly - suitable for golden-file tests and clean diffs in version control.
 - **Issue names are stable contract; messages are not.** Match on `issue.name` (e.g. `relationship-source-missing`), never on message text.
 - **Spec versions are chosen at the boundary.** `writeDocument(doc, { spec: ECSpec.V3_2 })`; the default is `ECSpec.Latest`. Reading is the other way round - a caller cannot know a file's version before opening it, so `SchemaXmlReader` reads the version out of the namespace and records it on the document. Writing to an older version drops what that version has no way to express, and reports each loss as an issue.
+- **Kinds of quantity change shape below 3.2.** That is where `Unit` and `Format` items were introduced, so earlier versions carry legacy FUS descriptors (`CM(real4u)`) instead of references. The readers upgrade them and the writers put them back, and the mapping is lossy in both directions - a precision or unit label with no legacy name does not survive the way down, and a composite format's descriptor unit does not survive the way up. Each loss is reported.
 
 ### Large inputs and streaming
 
@@ -335,12 +347,47 @@ Comparison is semantic, not textual:
 
 This makes round-trip and migration testing direct: read, write, read back, compare - and on failure, print the exact differences.
 
+## Merging schemas
+
+`mergeSchemaInto` folds an incoming document into a target set. A name the set does not hold is copied in; a name it holds is merged into that document. The incoming document is never touched, and calling it repeatedly with the same set is how you accumulate several schemas into one.
+
+```ts
+const result = Authoring.mergeSchemaInto(targetSet, incoming);
+for (const rename of result.renames) {
+  // { kind: "property", location: "MyDomain:Pump", from: "Serial", to: "Serial_1" }
+}
+const issues = Authoring.validateSchemaSet(targetSet);
+```
+
+The merge **never throws and never refuses**. It produces a document plus a `SchemaIssueList`, and you validate the result and fix what it reports. That is what makes it usable in a pipeline: policy is a separate, inspectable step rather than a set of flags that decide whether the operation happens at all.
+
+What it does:
+
+- **Merge is a union. It never removes.** Items, properties, enumerators, mixins, constraint classes, schema references, and presentation formats from both sides end up in the result.
+- **Fields are classified, not case-analysed.** A leaf where both sides hold a differing value is a conflict, and each field has a policy: *identity* fields (a property's type, a unit's definition, an enumerator's value) say the two sides describe different things; *descriptive* fields (label, description, priority) resolve to the target's value and are reported as info.
+- **Properties rename on conflict** with a counter suffix (`Serial_1`), reusing an existing name when its declaration is compatible - so merging a third schema that agrees with an earlier rename lands on the same name, and merging the same schema twice changes nothing. Items rename only under `renameItemOnConflict`, because renaming an item breaks references to it from other schemas.
+- **Target property order is authoritative**, with incoming-only properties appended.
+- **The higher of the two schema versions wins.**
+
+Two hooks override the defaults, both synchronous:
+
+```ts
+Authoring.mergeSchemaInto(targetSet, incoming, {
+  onConflict: (conflict) => "takeIncoming",       // or "keepTarget" | "rename" | "skip"
+  onCustomAttribute: (site) => site.className === "MyDomain:Internal" ? "drop" : undefined,
+});
+```
+
+A custom attribute merges as one unit keyed by class name - no field-level merge, since a hybrid instance neither side authored is worse than picking a side. `onCustomAttribute` fires for every class on either side of every container, including containers copied wholesale from the incoming schema, so it is also how you strip an attribute off a newly added class.
+
+One limit worth knowing: detecting that an incoming `Pump.Name` collides with an inherited `Element.Name` needs BisCore in the target set. Without it the merge reports `merge-base-class-not-loaded` once and falls back to comparing own properties.
+
 ## The issue model
 
 Everything in the authoring layer reports problems the same way: a `SchemaIssueList` of `SchemaIssue` entries, each carrying:
 
 - `severity` - error, warning, or info. Only *errors* indicate the result is incomplete; warnings flag suspicious-but-handled input.
-- `group` - which operation reported it: `"xml"`, `"json"`, `"discovery"`, `"ec2-conversion"`, `"comparison"`, `"validation"`.
+- `group` - which operation reported it: `"xml"`, `"json"`, `"discovery"`, `"ec2-conversion"`, `"comparison"`, `"merge"`, `"validation"`.
 - `name` - a stable kebab-case identifier starting with the subject it is about, e.g. `custom-attribute-class-unresolved`. Names are contract; match on them programmatically. Sorting a list of issues by name groups it by subject.
 - `message` - human-readable detail. Not contract; may be reworded.
 - `location` - where the problem is, when known. Either a source position as `path:line:column`, which the readers produce and terminals turn into a clickable link, or a schema element path such as `MyDomain:Pump.SerialNumber`.
@@ -354,8 +401,6 @@ Two places do throw, both about the API rather than about data: moving a documen
 
 This page grows as the initiative ([#9337](https://github.com/iTwin/itwinjs-core/issues/9337)) lands its increments:
 
-- **Available now**: the document model and its schema set, reference resolution, ECXML (2.0 through 3.2) and ECJSON reader/writer pairs with streaming input, the opt-in EC2 custom attribute conversion, discovery and loading (`SchemaResolver`), reading schemas out of an iModel, comparison, and validation.
-- **Views** as a first-class item kind, instead of a hand-assembled `QueryView` custom attribute.
+- **Available now**: the document model and its schema set, reference resolution, ECXML (2.0 through 3.2) and ECJSON reader/writer pairs with streaming input, the opt-in EC2 custom attribute conversion, discovery and loading (`SchemaResolver`), reading schemas out of an iModel, comparison, merging, and validation.
 - **Rule packs** on top of validation, for conventions such as BIS.
-- **Merging** on document data, replacing the resolved-graph comparer/merger.
 - **Migration and deprecation** of the legacy editing surface (`@itwin/ecschema-editing`, `@itwin/ecschema-locaters`) once consumers have moved.
