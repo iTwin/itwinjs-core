@@ -43,6 +43,12 @@ export interface ReferenceSite {
   value: LocalOrFullName;
   /** The kinds the reference may point at. */
   expected: ReadonlyArray<ExpectedKind>;
+  /** Writes a new reference string back to the field this site came from. Validation never calls
+   * it; it exists so a caller that renames an item can repoint the references to it using the same
+   * table that enumerates them, rather than a second list that would drift from this one. For a
+   * reference embedded in a presentation format string, this rewrites just that reference and
+   * leaves the rest of the format spec alone. */
+  set: (value: LocalOrFullName) => void;
 }
 
 /** The item kinds that are moving out of schemas and into the external units and formats framework.
@@ -62,9 +68,9 @@ const unitsAndFormatsKinds: ReadonlySet<ExpectedKind> = new Set([
 export function* collectReferenceSites(construct: ReferencingConstruct): Iterable<ReferenceSite> {
   if (construct instanceof RelationshipConstraint) {
     if (construct.abstractConstraint !== undefined)
-      yield { field: "abstractConstraint", value: construct.abstractConstraint, expected: [AbstractSchemaItemType.Class] };
+      yield { field: "abstractConstraint", value: construct.abstractConstraint, expected: [AbstractSchemaItemType.Class], set: (v) => construct.abstractConstraint = v };
     for (const [index, constraintClass] of construct.constraintClasses.entries())
-      yield { field: `constraintClasses[${index}]`, value: constraintClass, expected: [AbstractSchemaItemType.Class] };
+      yield { field: `constraintClasses[${index}]`, value: constraintClass, expected: [AbstractSchemaItemType.Class], set: (v) => construct.constraintClasses[index] = v };
     return;
   }
 
@@ -74,22 +80,22 @@ export function* collectReferenceSites(construct: ReferencingConstruct): Iterabl
   }
 
   if (construct.category !== undefined)
-    yield { field: "category", value: construct.category, expected: [SchemaItemType.PropertyCategory] };
+    yield { field: "category", value: construct.category, expected: [SchemaItemType.PropertyCategory], set: (v) => construct.category = v };
   if (construct.kindOfQuantity !== undefined)
-    yield { field: "kindOfQuantity", value: construct.kindOfQuantity, expected: [SchemaItemType.KindOfQuantity] };
+    yield { field: "kindOfQuantity", value: construct.kindOfQuantity, expected: [SchemaItemType.KindOfQuantity], set: (v) => construct.kindOfQuantity = v };
 
   switch (construct.kind) {
     case PropertyKind.Primitive:
     case PropertyKind.PrimitiveArray:
       if (construct.isEnumeration())
-        yield { field: "typeName", value: construct.typeName, expected: [SchemaItemType.Enumeration] };
+        yield { field: "typeName", value: construct.typeName, expected: [SchemaItemType.Enumeration], set: (v) => construct.typeName = v };
       return;
     case PropertyKind.Struct:
     case PropertyKind.StructArray:
-      yield { field: "typeName", value: construct.typeName, expected: [SchemaItemType.StructClass] };
+      yield { field: "typeName", value: construct.typeName, expected: [SchemaItemType.StructClass], set: (v) => construct.typeName = v };
       return;
     case PropertyKind.Navigation:
-      yield { field: "relationshipName", value: construct.relationshipName, expected: [SchemaItemType.RelationshipClass] };
+      yield { field: "relationshipName", value: construct.relationshipName, expected: [SchemaItemType.RelationshipClass], set: (v) => construct.relationshipName = v };
       return;
   }
 }
@@ -97,58 +103,64 @@ export function* collectReferenceSites(construct: ReferencingConstruct): Iterabl
 function* collectItemReferenceSites(item: AnySchemaItem): Iterable<ReferenceSite> {
   switch (item.schemaItemType) {
     case SchemaItemType.EntityClass:
-      yield* baseClassSite(item.baseClass);
+      yield* baseClassSite(item);
       for (const [index, mixin] of item.mixins.entries())
-        yield { field: `mixins[${index}]`, value: mixin, expected: [SchemaItemType.Mixin] };
+        yield { field: `mixins[${index}]`, value: mixin, expected: [SchemaItemType.Mixin], set: (v) => item.mixins[index] = v };
       return;
     case SchemaItemType.Mixin:
-      yield* baseClassSite(item.baseClass);
-      yield { field: "appliesTo", value: item.appliesTo, expected: [SchemaItemType.EntityClass] };
+      yield* baseClassSite(item);
+      yield { field: "appliesTo", value: item.appliesTo, expected: [SchemaItemType.EntityClass], set: (v) => item.appliesTo = v };
       return;
     case SchemaItemType.StructClass:
     case SchemaItemType.CustomAttributeClass:
     case SchemaItemType.RelationshipClass:
-      yield* baseClassSite(item.baseClass);
+      yield* baseClassSite(item);
       return;
     case SchemaItemType.KindOfQuantity:
-      yield { field: "persistenceUnit", value: item.persistenceUnit, expected: [SchemaItemType.Unit, SchemaItemType.InvertedUnit] };
+      yield { field: "persistenceUnit", value: item.persistenceUnit, expected: [SchemaItemType.Unit, SchemaItemType.InvertedUnit], set: (v) => item.persistenceUnit = v };
       for (const [index, presentationFormat] of item.presentationFormats.entries())
-        yield* presentationFormatSites(`presentationFormats[${index}]`, presentationFormat);
+        yield* presentationFormatSites(`presentationFormats[${index}]`, presentationFormat, (v) => item.presentationFormats[index] = v);
       return;
     case SchemaItemType.Unit:
-      yield { field: "phenomenon", value: item.phenomenon, expected: [SchemaItemType.Phenomenon] };
-      yield { field: "unitSystem", value: item.unitSystem, expected: [SchemaItemType.UnitSystem] };
+      yield { field: "phenomenon", value: item.phenomenon, expected: [SchemaItemType.Phenomenon], set: (v) => item.phenomenon = v };
+      yield { field: "unitSystem", value: item.unitSystem, expected: [SchemaItemType.UnitSystem], set: (v) => item.unitSystem = v };
       return;
     case SchemaItemType.InvertedUnit:
-      yield { field: "invertsUnit", value: item.invertsUnit, expected: [SchemaItemType.Unit] };
-      yield { field: "unitSystem", value: item.unitSystem, expected: [SchemaItemType.UnitSystem] };
+      yield { field: "invertsUnit", value: item.invertsUnit, expected: [SchemaItemType.Unit], set: (v) => item.invertsUnit = v };
+      yield { field: "unitSystem", value: item.unitSystem, expected: [SchemaItemType.UnitSystem], set: (v) => item.unitSystem = v };
       return;
     case SchemaItemType.Constant:
-      yield { field: "phenomenon", value: item.phenomenon, expected: [SchemaItemType.Phenomenon] };
+      yield { field: "phenomenon", value: item.phenomenon, expected: [SchemaItemType.Phenomenon], set: (v) => item.phenomenon = v };
       return;
     case SchemaItemType.Format:
       for (const [index, unit] of (item.composite?.units ?? []).entries())
-        yield { field: `composite.units[${index}]`, value: unit.name, expected: [SchemaItemType.Unit, SchemaItemType.InvertedUnit] };
+        yield { field: `composite.units[${index}]`, value: unit.name, expected: [SchemaItemType.Unit, SchemaItemType.InvertedUnit], set: (v) => unit.name = v };
       return;
     default:
       return; // Enumeration, PropertyCategory, UnitSystem, Phenomenon reference nothing
   }
 }
 
-function* baseClassSite(baseClass: LocalOrFullName | undefined): Iterable<ReferenceSite> {
-  if (baseClass !== undefined)
-    yield { field: "baseClass", value: baseClass, expected: [AbstractSchemaItemType.Class] };
+function* baseClassSite(item: { baseClass?: LocalOrFullName }): Iterable<ReferenceSite> {
+  if (item.baseClass !== undefined)
+    yield { field: "baseClass", value: item.baseClass, expected: [AbstractSchemaItemType.Class], set: (v) => item.baseClass = v };
 }
 
 /** A presentation format override names a `Format` and, in its bracketed segments, the units that
  * format is applied with (`"Formats:DefaultRealU(4)[Units:M]"`). Both are ordinary item references
  * embedded in a string, so both get sites. */
-function* presentationFormatSites(field: string, presentationFormat: string): Iterable<ReferenceSite> {
+function* presentationFormatSites(field: string, presentationFormat: string, write: (value: string) => void): Iterable<ReferenceSite> {
   const sites: ReferenceSite[] = [];
+  // Rewrites the reference at `position` and leaves every other segment of the format spec as it
+  // was, by running the mapper again and swapping only that one.
+  const setAt = (position: number) => (value: LocalOrFullName) => {
+    let seen = 0;
+    write(mapFormatStringReferences(presentationFormat, (reference) => seen++ === position ? value : reference));
+  };
   mapFormatStringReferences(presentationFormat, (reference) => {
     sites.push(sites.length === 0
-      ? { field, value: reference, expected: [SchemaItemType.Format] }
-      : { field: `${field}[${sites.length - 1}]`, value: reference, expected: [SchemaItemType.Unit, SchemaItemType.InvertedUnit] });
+      ? { field, value: reference, expected: [SchemaItemType.Format], set: setAt(0) }
+      : { field: `${field}[${sites.length - 1}]`, value: reference, expected: [SchemaItemType.Unit, SchemaItemType.InvertedUnit], set: setAt(sites.length) });
     return reference;
   });
   yield* sites;

@@ -17,7 +17,7 @@ export type SchemaIssueSeverity = "error" | "warning" | "info";
  * group `"xml"` and name `"custom-attribute-class-unresolved"`.
  * @alpha
  */
-export type SchemaIssueGroup = "xml" | "json" | "discovery" | "ec2-conversion" | "comparison" | "validation";
+export type SchemaIssueGroup = "xml" | "json" | "discovery" | "ec2-conversion" | "comparison" | "merge" | "validation";
 
 /** One problem found while reading, writing, resolving, converting, or validating schemas.
  * Operations on {@link SchemaDocument}s never throw on bad input data - they report issues and

@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./CustomAttributeConverter";
+export * from "./MergeFields";
 export * from "./SchemaAuthoringError";
 export * from "./SchemaComparison";
 export * from "./SchemaCopy";
@@ -13,6 +14,7 @@ export * from "./SchemaEC2Conversion";
 export * from "./SchemaIssues";
 export * from "./SchemaJsonReader";
 export * from "./SchemaJsonWriter";
+export * from "./SchemaMerge";
 export * from "./SchemaResolver";
 export * from "./SchemaXmlReader";
 export * from "./SchemaXmlWriter";
