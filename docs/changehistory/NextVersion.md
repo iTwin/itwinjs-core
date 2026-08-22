@@ -17,6 +17,7 @@ publish: false
     - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Invalidate decorations when element visibility changes](#invalidate-decorations-when-element-visibility-changes)
+    - [EmphasizeElements applies default appearance with no elements emphasized](#emphasizeelements-applies-default-appearance-with-no-elements-emphasized)
     - [Map-layer security hardening](#map-layer-security-hardening)
       - [Origin-restricted credentials (opt-in)](#origin-restricted-credentials-opt-in)
       - [Attribution and tooltip data are no longer rendered as HTML](#attribution-and-tooltip-data-are-no-longer-rendered-as-html)
@@ -73,7 +74,7 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 
 The ECSQL `IS` and `IS NOT` operators can now be used between two operands — for example `prop1 IS [NOT] prop2`, where each operand may be any value expression: a property, the `NULL` literal, a constant, a parameter, a function call, an arithmetic expression, etc. These map to SQLite's **null-safe** comparison operators, so `NULL IS NULL` is `TRUE` and `1 IS NULL` is `FALSE`, unlike `=`/`<>` which treat a `NULL` operand as _unknown_.
 
-Previously `IS` / `IS NOT` only supported the right-hand operands `NULL`, the boolean literals `TRUE`/`FALSE`/`UNKNOWN`, and the [ECClass type predicate](../learning/ECSqlReference/ECClassFilter.md) (`IS (ClassName)`). Those forms still take precedence — a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized **qualified** class name such as `(bis.Element)` (optionally with an `ONLY`/`ALL` prefix or a comma-separated list), keeps its original meaning. A parenthesized *unqualified* name such as `(prop2)` is instead read as a value expression, so `prop1 IS (prop2)` is a null-safe comparison. A parenthesized *qualified* name that does not resolve to a known ECClass — for example `(alias.prop)` or `(ts.Status.Active)` — is also treated as a null-safe value expression instead of failing with a "class not found" error; when a qualified name is both a valid class and a valid property path, the type-predicate (class) reading takes precedence.
+Previously `IS` / `IS NOT` only supported the right-hand operands `NULL`, the boolean literals `TRUE`/`FALSE`/`UNKNOWN`, and the [ECClass type predicate](../learning/ECSqlReference/ECClassFilter.md) (`IS (ClassName)`). Those forms still take precedence — a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized **qualified** class name such as `(bis.Element)` (optionally with an `ONLY`/`ALL` prefix or a comma-separated list), keeps its original meaning. A parenthesized _unqualified_ name such as `(prop2)` is instead read as a value expression, so `prop1 IS (prop2)` is a null-safe comparison. A parenthesized _qualified_ name that does not resolve to a known ECClass — for example `(alias.prop)` or `(ts.Status.Active)` — is also treated as a null-safe value expression instead of failing with a "class not found" error; when a qualified name is both a valid class and a valid property path, the type-predicate (class) reading takes precedence.
 
 For multi-column operands (such as `Point2d`/`Point3d` and navigation properties) the comparison is expanded column-wise, consistent with `=` and `<>`: `IS` joins the per-column comparisons with `AND`, and `IS NOT` joins them with `OR`.
 
@@ -105,6 +106,10 @@ Applications that shut down while requests are outstanding no longer need to fil
 ### Invalidate decorations when element visibility changes
 
 [ViewportDecorator]($frontend)s often produce decoration graphics associated with elements in the scene. Such graphics should be updated if the visibility of the associated element changes. For example, a measurement tool might draw a label near a pipe indicating its length. The label should disappear if the user hides the pipe. To facilitate this, all cached decorations (produced and reused when [ViewportDecorator.useCachedDecorations]($frontend) is `true`) are now recreated in response to potential changes to the visibility of elements in a viewport, including modification of the sets of always- and never-drawn elements, displayed categories and subcategories, and feature symbology overrides.
+
+### EmphasizeElements applies default appearance with no elements emphasized
+
+[EmphasizeElements.addFeatureOverrides]($frontend) now applies [EmphasizeElements.defaultAppearance]($frontend) to de-emphasize all other elements even when no elements are currently emphasized or overridden. Previously, `defaultAppearance` only took effect if the always-drawn element set (established by [EmphasizeElements.emphasizeElements]($frontend) or [EmphasizeElements.isolateElements]($frontend)) was non-empty, so setting `defaultAppearance` directly - for example to de-emphasize the whole view when a tool has no elements to emphasize - had no visible effect. Note that `emphasizeElements` called with an empty set of Ids is still a no-op; use the `defaultAppearance` property setter directly for this scenario.
 
 ### Map-layer security hardening
 
