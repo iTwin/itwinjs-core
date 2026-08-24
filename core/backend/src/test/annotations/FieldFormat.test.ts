@@ -37,10 +37,10 @@ import { withEditTxn } from "../../EditTxn";
 
 // cspell: ignore koqs
 
-const ADOPTED_SET: Id64String = "0x111";
-const ALT_SET: Id64String = "0x222";
+const ADOPTED_SET = "adopted-set";
+const ALT_SET = "alternate-set";
 /** Deliberately never registered, so `getProviderFor` falls back to the adopted bucket. */
-const UNREGISTERED_SET: Id64String = "0x999";
+const UNREGISTERED_SET = "unregistered-set";
 
 // ---------------------------------------------------------------------------------------------
 // Test schema
@@ -179,7 +179,7 @@ describe("Field format resolution example", () => {
    */
   async function render(
     block: TextBlock,
-    formatSets: { readonly adopted?: FormatSet, readonly byId?: ReadonlyArray<{ id: Id64String, formatSet: FormatSet }> } = {},
+    formatSets: { readonly adopted?: FormatSet, readonly byId?: ReadonlyArray<{ id: string, formatSet: FormatSet }> } = {},
   ): Promise<void> {
     await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
       iModel: imodel,

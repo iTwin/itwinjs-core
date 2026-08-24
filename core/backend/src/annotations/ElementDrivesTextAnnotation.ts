@@ -285,7 +285,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *
    * One provider serves **all** of an iModel's FormatSets, so mixing presentations does not mean
    * registering more than once. Supply the adopted FormatSet as `formatSet` and any additional
-   * per-field ones as `formatSets`, each keyed by the [Id64String]($bentley) that
+   * per-field ones as `formatSets`, each keyed by the a unique id that
    * [FieldRun]($common)s name via [QuantityFieldFormatOptions.formatSet]($common). Fields select
    * among them at evaluation time with no further registration:
    *
