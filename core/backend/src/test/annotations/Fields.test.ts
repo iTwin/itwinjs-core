@@ -973,7 +973,7 @@ describe("Field evaluation", () => {
 
     // Registers a provider for `imodel` with the given per-field FormatSets, pre-warmed for the
     // single (Fields.LENGTH, Units.M) requirement the length-field tests use.
-    async function registerSets(formatSets: ReadonlyArray<{ id: Id64String, formats: Record<string, FormatDefinition> }>): Promise<FieldFormattingSpecProvider> {
+    async function registerSets(formatSets: ReadonlyArray<{ id: string, formats: Record<string, FormatDefinition> }>): Promise<FieldFormattingSpecProvider> {
       return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
         iModel: imodel,
         formatSets: formatSets.map(({ id, formats }) => ({ id, formatSet: toFormatSet("TestSet", formats) })),

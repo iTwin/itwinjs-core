@@ -269,18 +269,18 @@ const DEMO_SEED_PERSISTENCE_UNITS: { readonly [name: string]: string } = {
   "Demo.SLOPE_HORIZONTAL_PER_VERTICAL": "Units.M_PER_M",
 };
 
-/** [Id64String]($bentley) under which [[DEMO_FORMAT_SET]] is registered as an *addressable*
- * set, so a [FieldRun]($common) may name it explicitly via
+/** Id under which [[DEMO_FORMAT_SET]] is registered as an *addressable* set, so a
+ * [FieldRun]($common) may name it explicitly via
  * [QuantityFieldFormatOptions.formatSet]($common). Naming it is equivalent to naming nothing,
  * since the same set is also adopted for the iModel.
  */
-export const DEMO_FORMAT_SET_ID: Id64String = "0xd01";
+export const DEMO_FORMAT_SET_ID = "dta-field-formatting-demo";
 
-/** [Id64String]($bentley) under which [[DEMO_ALT_FORMAT_SET]] is registered. A
- * [FieldRun]($common) must name this via [QuantityFieldFormatOptions.formatSet]($common) to
- * resolve against the alternate presentations.
+/** Id under which [[DEMO_ALT_FORMAT_SET]] is registered. A [FieldRun]($common) must name this
+ * via [QuantityFieldFormatOptions.formatSet]($common) to resolve against the alternate
+ * presentations.
  */
-export const DEMO_ALT_FORMAT_SET_ID: Id64String = "0xd02";
+export const DEMO_ALT_FORMAT_SET_ID = "dta-field-formatting-demo-alt";
 
 /** The [FormatSet]($ecschema-metadata) **adopted** by the demo. Registering it makes every
  * `Demo.*` key above resolvable as a `kindOfQuantity` override, and overrides any real KoQ

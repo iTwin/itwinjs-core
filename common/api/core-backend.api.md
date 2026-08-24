@@ -3550,12 +3550,12 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
     static collectSchemaFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[];
     formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
     // @internal
-    getProviderFor(formatSet: Id64String | undefined): FormattingSpecProvider;
+    getProviderFor(formatSet: string | undefined): FormattingSpecProvider;
     getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
     get misses(): UnresolvedFieldFormat[];
     readonly onFormattingReady: BeUnorderedUiEvent<void>;
     // @internal
-    recordMisses(candidates: FormattingSpecArgs[], formatSet: Id64String | undefined): void;
+    recordMisses(candidates: FormattingSpecArgs[], formatSet: string | undefined): void;
     readonly unitSystem: UnitSystemKey;
     warmUp(requirements: FormattingSpecArgs[]): Promise<void>;
 }
@@ -3564,7 +3564,7 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
 export interface FieldFormattingSpecProviderArgs {
     formatSet?: FormatSet;
     formatSets?: ReadonlyArray<{
-        id: Id64String;
+        id: string;
         formatSet: FormatSet;
     }>;
     iModel: IModelDb;
@@ -7837,7 +7837,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
 
 // @beta
 export interface UnresolvedFieldFormat extends FormattingSpecArgs {
-    formatSet?: Id64String;
+    formatSet?: string;
 }
 
 // @public

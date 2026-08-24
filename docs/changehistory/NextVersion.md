@@ -15,6 +15,7 @@ publish: false
       - [Configuring a FieldRun](#configuring-a-fieldrun)
       - [Format resolution](#format-resolution)
       - [Adopting a FormatSet](#adopting-a-formatset)
+        - [Deciding what to warm](#deciding-what-to-warm)
       - [Evaluating fields](#evaluating-fields)
   - [@itwin/core-common](#itwincore-common-1)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
@@ -78,7 +79,7 @@ The options support the same polymorphic `aspectClassFullName` filter as `getAsp
 
 The ECSQL `IS` and `IS NOT` operators can now be used between two operands — for example `prop1 IS [NOT] prop2`, where each operand may be any value expression: a property, the `NULL` literal, a constant, a parameter, a function call, an arithmetic expression, etc. These map to SQLite's **null-safe** comparison operators, so `NULL IS NULL` is `TRUE` and `1 IS NULL` is `FALSE`, unlike `=`/`<>` which treat a `NULL` operand as _unknown_.
 
-Previously `IS` / `IS NOT` only supported the right-hand operands `NULL`, the boolean literals `TRUE`/`FALSE`/`UNKNOWN`, and the [ECClass type predicate](../learning/ECSqlReference/ECClassFilter.md) (`IS (ClassName)`). Those forms still take precedence — a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized **qualified** class name such as `(bis.Element)` (optionally with an `ONLY`/`ALL` prefix or a comma-separated list), keeps its original meaning. A parenthesized *unqualified* name such as `(prop2)` is instead read as a value expression, so `prop1 IS (prop2)` is a null-safe comparison. A parenthesized *qualified* name that does not resolve to a known ECClass — for example `(alias.prop)` or `(ts.Status.Active)` — is also treated as a null-safe value expression instead of failing with a "class not found" error; when a qualified name is both a valid class and a valid property path, the type-predicate (class) reading takes precedence.
+Previously `IS` / `IS NOT` only supported the right-hand operands `NULL`, the boolean literals `TRUE`/`FALSE`/`UNKNOWN`, and the [ECClass type predicate](../learning/ECSqlReference/ECClassFilter.md) (`IS (ClassName)`). Those forms still take precedence — a right-hand operand that is exactly `NULL`/`TRUE`/`FALSE`/`UNKNOWN`, or a parenthesized **qualified** class name such as `(bis.Element)` (optionally with an `ONLY`/`ALL` prefix or a comma-separated list), keeps its original meaning. A parenthesized _unqualified_ name such as `(prop2)` is instead read as a value expression, so `prop1 IS (prop2)` is a null-safe comparison. A parenthesized _qualified_ name that does not resolve to a known ECClass — for example `(alias.prop)` or `(ts.Status.Active)` — is also treated as a null-safe value expression instead of failing with a "class not found" error; when a qualified name is both a valid class and a valid property path, the type-predicate (class) reading takes precedence.
 
 For multi-column operands (such as `Point2d`/`Point3d` and navigation properties) the comparison is expanded column-wise, consistent with `=` and `<>`: `IS` joins the per-column comparisons with `AND`, and `IS NOT` joins them with `OR`.
 
@@ -158,7 +159,7 @@ Registering at open matters because field evaluation fires from `TxnManager` cal
 | [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) | one `TextBlock`, deduplicated | proportional to that block |
 | [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend) | one `FieldRun` | negligible |
 
-`collectSchemaFormattingRequirements` is a sensible floor because its cost is bounded by the schemas rather than the data. It is **not** sufficient on its own: it sees only pairs a *property* declares, so it cannot see a field whose `formatOptions.quantity.persistenceUnit` overrides that unit, nor a `"coordinate"` or no-KindOfQuantity field where both halves of the key come from the field's own overrides. Leaving those unwarmed is not a cosmetic shortfall — evaluation resolves the property's pair instead and scales the value by the wrong unit.
+`collectSchemaFormattingRequirements` is a sensible floor because its cost is bounded by the schemas rather than the data. It is **not** sufficient on its own: it sees only pairs a _property_ declares, so it cannot see a field whose `formatOptions.quantity.persistenceUnit` overrides that unit, nor a `"coordinate"` or no-KindOfQuantity field where both halves of the key come from the field's own overrides. Leaving those unwarmed is not a cosmetic shortfall — evaluation resolves the property's pair instead and scales the value by the wrong unit.
 
 Applications that allow such overrides should also gather requirements from the annotations themselves. Because the overrides are persisted under their public property names, a targeted query finds the ones that need attention without loading every annotation:
 
@@ -173,7 +174,7 @@ const sql = `
     WHERE TextAnnotationData LIKE '%"kindOfQuantity"%' OR TextAnnotationData LIKE '%"persistenceUnit"%'`;
 ```
 
-Note that `BisCore.ITextAnnotation` is a mixin and does **not** carry `TextAnnotationData`, so it cannot be filtered this way. Applications with their own `ITextAnnotation` implementations need a second pass over those classes, excluding the two built-ins already covered. Getting either pass wrong yields *zero rows*, which is indistinguishable from "this iModel has no overrides" — so treat [FieldFormattingSpecProvider.misses]($backend) as the check that the requirement set was complete, not as an error report.
+Note that `BisCore.ITextAnnotation` is a mixin and does **not** carry `TextAnnotationData`, so it cannot be filtered this way. Applications with their own `ITextAnnotation` implementations need a second pass over those classes, excluding the two built-ins already covered. Getting either pass wrong yields _zero rows_, which is indistinguishable from "this iModel has no overrides" — so treat [FieldFormattingSpecProvider.misses]($backend) as the check that the requirement set was complete, not as an error report.
 
 For each matched element, walk its blocks and accumulate:
 
@@ -189,7 +190,7 @@ A block authored later in the session may need a spec the initial warm-up never 
 await provider.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }));
 ```
 
-Most applications adopt exactly one FormatSet per iModel. To mix presentations within a single iModel — imperial callouts on an otherwise metric drawing, say — supply additional FormatSets keyed by [Id64String]($bentley) and have individual fields name one via `formatOptions.quantity.formatSet`:
+Most applications adopt exactly one FormatSet per iModel. To mix presentations within a single iModel — imperial callouts on an otherwise metric drawing, say — supply additional FormatSets, each paired with an application-chosen id, and have individual fields name one via `formatOptions.quantity.formatSet`:
 
 ```typescript
 await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
@@ -199,13 +200,15 @@ await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
 });
 ```
 
+Generally speaking, the formatSet id should be the id of the FormatSet definition element, but as core does not enforce the definition element workflow, this is typed as a string.
+
 This is still a **single** registration. One `FieldFormattingSpecProvider` holds every FormatSet the iModel uses — each is warmed into its own bucket, and fields select among them at evaluation time. There is no need to register once per FormatSet, and no need to swap providers to change which presentation a given field gets.
 
 The `unitSystem` used to pick a KindOfQuantity's presentation format when its schema offers several defaults to the adopted FormatSet's own [FormatSet.unitSystem]($ecschema-metadata), or `"metric"` when no FormatSet is adopted. Override it with `unitSystem` on the same arguments.
 
 Registrations are keyed by [IModelDb]($backend) and are **process-wide** — Core never sweeps them automatically, so unregister when the iModel closes. Registering a provider does **not** reformat existing annotations; applications that need to refresh already-persisted `cachedContent` must re-evaluate the affected blocks explicitly. Symmetrically, unregistering a provider that saved annotations depend on causes the next source-element edit to overwrite their formatted `cachedContent` with the raw string representation.
 
-Keep a provider registered for as long as the annotations depending on it are editable. Note that this is only a concern when *no* provider is registered: a registered provider whose FormatSet lacks an entry for a field's KindOfQuantity still falls back to that KoQ's presentation format from the iModel's schemas, so the field renders as `"2.5 m"` rather than `"2.5"`. Changing the adopted FormatSet needs only a second `registerFieldFormattingProvider` call — each registration replaces the prior one after its pre-warm completes, so there is no window in which the iModel has no provider. Unregistering first would create one.
+Keep a provider registered for as long as the annotations depending on it are editable. Note that this is only a concern when _no_ provider is registered: a registered provider whose FormatSet lacks an entry for a field's KindOfQuantity still falls back to that KoQ's presentation format from the iModel's schemas, so the field renders as `"2.5 m"` rather than `"2.5"`. Changing the adopted FormatSet needs only a second `registerFieldFormattingProvider` call — each registration replaces the prior one after its pre-warm completes, so there is no window in which the iModel has no provider. Unregistering first would create one.
 
 #### Evaluating fields
 
