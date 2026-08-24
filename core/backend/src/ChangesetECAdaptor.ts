@@ -954,9 +954,11 @@ export class ChangesetECAdaptor implements Disposable {
   private static setValue(targetObj: any, accessString: string, value: any): void {
     let cursor = targetObj;
     const propPath = accessString.split(".");
+    // Validate every segment before mutating anything so a dangerous segment later in the path
+    // cannot leave partially written data behind.
     propPath.forEach((propertyName) => {
-      if (propertyName === "__proto__")
-        throw new Error("access string cannot container __proto__");
+      if (ChangesetECAdaptor.isUnsafePropertyName(propertyName))
+        throw new Error(`access string cannot contain ${propertyName}`);
     });
 
     const leafProp = propPath.splice(-1).shift();
@@ -964,11 +966,20 @@ export class ChangesetECAdaptor implements Disposable {
       throw new Error("not access string was specified.");
 
     for (const elem of propPath) {
-      if (typeof cursor[elem] === "undefined")
+      // Only follow own properties. Inherited members must never be traversed or mutated.
+      if (!Object.prototype.hasOwnProperty.call(cursor, elem) || typeof cursor[elem] === "undefined")
         cursor[elem] = {};
       cursor = cursor[elem];
     }
     cursor[leafProp] = value;
+  }
+
+  /**
+   * Determine if a property path segment could be used to reach the prototype chain.
+   * @param propertyName single segment of an access string.
+   */
+  private static isUnsafePropertyName(propertyName: string): boolean {
+    return propertyName === "__proto__" || propertyName === "constructor" || propertyName === "prototype";
   }
 
   /**
