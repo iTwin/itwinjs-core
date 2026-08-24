@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
 import { IModelConnection, Pixel } from "@itwin/core-frontend";
@@ -15,9 +15,9 @@ const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : d
 describeChrome("Background map (#integration)", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
-    assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
-    assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
+  beforeAll(async () => {
+    expect(process.env.TEST_BING_MAPS_KEY).toBeDefined();
+    expect(process.env.TEST_MAPBOX_KEY).toBeDefined();
 
     await TestUtility.startFrontend({
       ...TestUtility.iModelAppOptions,
@@ -40,7 +40,7 @@ describeChrome("Background map (#integration)", () => {
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -67,8 +67,8 @@ describeChrome("Background map (#integration)", () => {
       // Test what's rendered to the screen.
       const expectColor = (x: number, y: number, expectedColor: PixelType) => {
         const actualColor = vp.readColor(x, y);
-        expect(actualColor.equalsColorDef(ColorDef.white)).to.equal("model" === expectedColor);
-        expect(actualColor.equalsColorDef(vp.view.backgroundColor)).to.equal("bg" === expectedColor);
+        expect(actualColor.equalsColorDef(ColorDef.white)).toBe("model" === expectedColor);
+        expect(actualColor.equalsColorDef(vp.view.backgroundColor)).toBe("bg" === expectedColor);
       };
 
       expectColor(cx, cy, expectedCenterColor);
@@ -78,13 +78,13 @@ describeChrome("Background map (#integration)", () => {
       const expectPixel = (x: number, y: number, expectedPixel: PixelType) => {
         const actualPixel = vp.readPixel(x, y, true);
         if ("bg" === expectedPixel) {
-          expect(actualPixel.type).to.equal(Pixel.GeometryType.None);
+          expect(actualPixel.type).toBe(Pixel.GeometryType.None);
           return;
         }
 
-        expect(actualPixel.type).to.equal(Pixel.GeometryType.Surface);
-        expect(actualPixel.modelId).not.to.be.undefined;
-        expect(Id64.isTransient(actualPixel.modelId!)).to.equal("map" === expectedPixel);
+        expect(actualPixel.type).toBe(Pixel.GeometryType.Surface);
+        expect(actualPixel.modelId).not.toBeUndefined();
+        expect(Id64.isTransient(actualPixel.modelId!)).toBe("map" === expectedPixel);
       };
 
       expectPixel(cx, cy, expectedCenterFeature);

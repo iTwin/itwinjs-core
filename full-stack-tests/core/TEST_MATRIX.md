@@ -1,6 +1,6 @@
 # Full-stack core test matrix
 
-This matrix records which `full-stack-tests/core` tests run in each Certa runtime during the staged Vitest migration. The source bundle is shared; a runtime-specific entry means the suite is intentionally skipped in the other runtime, not deleted.
+This matrix records which `full-stack-tests/core` tests run in each Vitest browser runtime. The source is shared; a runtime-specific entry means the suite is intentionally skipped in the other runtime, not deleted.
 
 ## Runner commands
 
@@ -14,7 +14,7 @@ Normal commands exclude `#integration` and `#performance`. Integration and perfo
 
 ## 5a decisions
 
-The following suites are Chrome-only because they validate transport-independent frontend behavior or expensive pixel/GPU behavior already covered by the Chrome renderer. They remain in the Chrome bundle and are reported as skipped by Certa in Electron through the framework-neutral `describe.skip` conditional.
+The following suites are Chrome-only because they validate transport-independent frontend behavior or expensive pixel/GPU behavior already covered by the Chrome renderer. They remain in the shared test source but are selected only by the Chrome Vitest project; the Electron project excludes them rather than reporting no-op skips.
 
 - `src/frontend/map/BackgroundMap.test.ts` — pixel assertions over background-map rendering.
 - `src/frontend/map/PlanProjection.test.ts` — pixel assertions over plan projection rendering.
@@ -47,7 +47,7 @@ These files already guard their tests with `ProcessDetector.isElectronAppFronten
 These files contain tests or setup that differ by runtime. File-level counts must not be used to classify them.
 
 - `src/frontend/_Setup.test.ts` — initializes Bentley Cloud RPC and the backend health test only for Chrome; cleanup hooks apply to both runtimes.
-- `src/frontend/hub/HyperModeling.test.ts` — the key-in marker-display test skips Electron because the Certa Electron path cannot locate its JSON key-in file.
+- `src/frontend/hub/HyperModeling.test.ts` — the key-in marker-display test skips Electron because the Electron provider cannot locate its JSON key-in file.
 - `src/frontend/hub/IModelConnection.test.ts` — the repeated-open test is Chrome-only because the behavior is not valid over Electron IPC.
 - `src/frontend/standalone/ECSqlQuery.test.ts` — the frontend-restart test skips the browser and therefore runs in Electron.
 - `src/frontend/standalone/tile/TileIO.test.ts` — worker decoding and Electron frontend startup/shutdown are conditional.
@@ -84,6 +84,6 @@ The 44 files not listed in the exception sections are currently shared by Chrome
 ## Migration requirements
 
 - Preserve these mode decisions while moving Electron to Vitest in 5b and Chrome to Vitest in 5c.
-- Reconcile Certa and Vitest test names/counts against this matrix before removing Certa.
+- Reconcile Vitest test names/counts against this matrix and the pre-migration baseline.
 - Keep Electron execution serial initially; do not add PR #9094's sharding/retry runner to the migration PR.
 - Revisit any Chrome-only decision if Vitest exposes a meaningful transport or renderer difference.

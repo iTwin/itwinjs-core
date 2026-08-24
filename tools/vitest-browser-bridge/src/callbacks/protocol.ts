@@ -22,7 +22,9 @@ export interface CallbackRequest {
 }
 
 export type CallbackResponse =
-  | { readonly ok: true; readonly value: unknown }
+  // A missing value is intentional: Certa's callback transports represent a successful undefined
+  // result by returning no value, and JSON removes an explicit `value: undefined` property.
+  | { readonly ok: true; readonly value?: unknown }
   | { readonly ok: false; readonly error: { readonly message: string; readonly stack?: string } };
 
 function serializeCallbackError(reason: unknown): { readonly message: string; readonly stack?: string } {
@@ -85,11 +87,8 @@ export async function captureCallbackResponse(callback: () => Promise<unknown>):
 export function unwrapCallbackResponse(response: unknown, source = "backend callback transport"): unknown {
   if (!isRecord(response) || typeof response.ok !== "boolean")
     throw new Error(`Invalid callback response from the ${source}.`);
-  if (response.ok) {
-    if (!("value" in response))
-      throw new Error(`Invalid callback response from the ${source}.`);
+  if (response.ok)
     return response.value;
-  }
 
   const responseError = response.error;
   if (!isRecord(responseError)

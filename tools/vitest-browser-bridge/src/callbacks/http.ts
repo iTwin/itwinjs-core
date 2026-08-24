@@ -79,6 +79,6 @@ export function createHttpBackendCallbackInvoker(options: HttpBackendCallbackInv
       throw new Error(`Backend callback at ${url} returned invalid JSON.`, { cause: error });
     }
 
-    return unwrapCallbackResponse(payload, "the HTTP backend callback endpoint");
+    return unwrapCallbackResponse(payload, "HTTP backend callback endpoint");
   };
 }

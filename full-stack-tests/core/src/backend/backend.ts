@@ -16,18 +16,18 @@ import { ElectronHost } from "@itwin/core-electron/main";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
-import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import * as fs from "fs";
 import * as path from "path";
-import { exposeBackendCallbacks } from "../certa/certaBackend";
+import { exposeBackendCallbacks } from "./testCallbacks";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
 import { Range2d } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
+import { TestServer } from "./TestServer";
 
 /* eslint-disable no-console */
 
@@ -280,8 +280,8 @@ async function init() {
 
   let shutdown: undefined | (() => Promise<void>);
 
+  exposeBackendCallbacks();
   if (ProcessDetector.isElectronAppBackend) {
-    exposeBackendCallbacks();
     electronAuth = new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
       redirectUris: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] : ["testRedirectUri"],
@@ -300,9 +300,9 @@ async function init() {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
     // create a basic express web server
-    const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const webEditServer = new WebEditServer(rpcConfig.protocol);
-    const httpServer = await webEditServer.initialize(port);
+    const port = Number(process.env.VITEST_FRONTEND_PORT || 3010) + 2000;
+    const testServer = new TestServer(rpcConfig.protocol);
+    const httpServer = await testServer.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
     await LocalhostIpcHost.startup({ iModelHost, localhostIpcHost: { noServer: true } });

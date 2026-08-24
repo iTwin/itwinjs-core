@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { CompressedId64Set, Guid, Id64, ProcessDetector } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
 import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, TileTreeReference, Viewport } from "@itwin/core-frontend";
@@ -17,9 +17,9 @@ const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : d
 describeChrome("Planar clip mask (#integration)", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
-    assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
-    assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
+  beforeAll(async () => {
+    expect(process.env.TEST_BING_MAPS_KEY).toBeDefined();
+    expect(process.env.TEST_MAPBOX_KEY).toBeDefined();
 
     await TestUtility.startFrontend({
       ...TestUtility.iModelAppOptions,
@@ -42,7 +42,7 @@ describeChrome("Planar clip mask (#integration)", () => {
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -86,8 +86,8 @@ describeChrome("Planar clip mask (#integration)", () => {
         ];
 
         const match = lookup.find((entry) => color.equalsColorDef(entry[1]))!;
-        expect(match).not.to.be.undefined;
-        expect(match[0]).to.equal(expectedPixel);
+        expect(match).not.toBeUndefined();
+        expect(match[0]).toBe(expectedPixel);
       };
 
       expectColor(cx, cy, expectedCenter);
@@ -97,15 +97,15 @@ describeChrome("Planar clip mask (#integration)", () => {
       const expectFeature = (x: number, y: number, expectedFeature: PixelType) => {
         const px = vp.readPixel(x, y, true);
         if ("bg" === expectedFeature) {
-          expect(px.type).to.equal(Pixel.GeometryType.None);
-          expect(px.modelId).to.be.undefined;
+          expect(px.type).toBe(Pixel.GeometryType.None);
+          expect(px.modelId).toBeUndefined();
           return;
         }
 
-        expect(px.type).to.equal(Pixel.GeometryType.Surface);
-        expect(px.modelId).not.to.be.undefined;
-        expect(Id64.isValidId64(px.modelId!)).to.be.true;
-        expect(!Id64.isTransient(px.modelId!)).to.equal(expectedFeature === "model");
+        expect(px.type).toBe(Pixel.GeometryType.Surface);
+        expect(px.modelId).not.toBeUndefined();
+        expect(Id64.isValidId64(px.modelId!)).toBe(true);
+        expect(!Id64.isTransient(px.modelId!)).toBe(expectedFeature === "model");
       };
 
       expectFeature(cx, cy, expectedCenter);
@@ -117,9 +117,8 @@ describeChrome("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map");
   });
 
-  it("is masked by specific model", async function () {
+  it("is masked by specific model", { timeout: 480000 }, async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
-    this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Models, modelIds: CompressedId64Set.compressArray(["0x1c"]) };
 
     // If the model is visible, it fills the masked region of the mask.
@@ -129,9 +128,8 @@ describeChrome("Planar clip mask (#integration)", () => {
     await expectPixels(mask, "bg", (vp) => vp.changeViewedModels([]));
   });
 
-  it("is masked by DesignModel priority",  async function () {
+  it("is masked by DesignModel priority", { timeout: 480000 }, async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
-    this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap };
 
     // Models only contribute to the mask in priority mode if they are visible.
@@ -183,9 +181,8 @@ describeChrome("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map", addDynamicGeometry);
   });
 
-  it("is masked by dynamic element geometry",  async function () {
+  it("is masked by dynamic element geometry", { timeout: 480000 }, async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
-    this.timeout(480000);
     const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, {
       elementId: "0x29",
       id: Guid.createValue(),
@@ -211,9 +208,8 @@ describeChrome("Planar clip mask (#integration)", () => {
     });
   });
 
-  it("is masked by priority by dynamic geometry", async function () {
+  it("is masked by priority by dynamic geometry", { timeout: 480000 }, async () => {
     // These tests can exceed the default timeout due to shader compilation for draping.
-    this.timeout(480000);
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
