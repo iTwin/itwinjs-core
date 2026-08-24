@@ -13,7 +13,6 @@ import { withEditTxn } from "../TestEditTxn";
 import { Code, GeometricElement2dProps, GeometryStreamBuilder, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory } from "../../core-backend";
 import { LineSegment3d, Point2d, Point3d, XYProps } from "@itwin/core-geometry";
-import { InsertRebaseConflict, TheirDeleteOurUpdateRebaseConflict, TheirUpdateOurDeleteRebaseConflict, UniqueConstraintRebaseConflict, UpdateRebaseConflict } from "../../InteractiveRebase";
 import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
 chai.use(chaiAsPromised);
@@ -154,9 +153,11 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
 
     chai.expect(interactive.conflicts.length).to.equal(1);
-    const updateConflict = interactive.conflicts[0] as UpdateRebaseConflict;
+    const updateConflict = interactive.conflicts[0];
     chai.expect(updateConflict.id).to.equal(id);
-    chai.expect(updateConflict.kind).to.equal("Update");
+    chai.expect(updateConflict.ours).to.not.be.undefined;
+    chai.expect(updateConflict.theirs).to.not.be.undefined;
+    chai.expect(updateConflict.original).to.not.be.undefined;
 
     // This property is not conflicting, but it should still be present in instances where it has a value.
     chai.expect(updateConflict.ours).has.property("userLabel");
@@ -168,17 +169,17 @@ describe("InteractiveRebase", () => {
     chai.expect(updateConflict.conflictingProperties).to.include("lastMod");
 
     // All of the reported values should be correct.
-    chai.expect(updateConflict.original.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
-    chai.expect(updateConflict.ours.somePoint).to.deep.equal({ x: 3.0, y: 4.0 });
-    chai.expect(updateConflict.theirs.somePoint).to.deep.equal({ x: 1.0, y: 2.0 });
+    chai.expect(updateConflict.original!.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
+    chai.expect(updateConflict.ours!.somePoint).to.deep.equal({ x: 3.0, y: 4.0 });
+    chai.expect(updateConflict.theirs!.somePoint).to.deep.equal({ x: 1.0, y: 2.0 });
 
-    chai.expect(updateConflict.original.foo).to.equal("Original");
-    chai.expect(updateConflict.ours.foo).to.equal("User2");
-    chai.expect(updateConflict.theirs.foo).to.equal("User1");
+    chai.expect(updateConflict.original!.foo).to.equal("Original");
+    chai.expect(updateConflict.ours!.foo).to.equal("User2");
+    chai.expect(updateConflict.theirs!.foo).to.equal("User1");
 
-    chai.expect(updateConflict.original.userLabel).to.be.undefined;
-    chai.expect(updateConflict.ours.userLabel).to.equal("Wat");
-    chai.expect(updateConflict.theirs.userLabel).to.be.undefined;
+    chai.expect(updateConflict.original!.userLabel).to.be.undefined;
+    chai.expect(updateConflict.ours!.userLabel).to.equal("Wat");
+    chai.expect(updateConflict.theirs!.userLabel).to.be.undefined;
 
     // Initially, "our" values are selected.
     const valuesInitial = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
@@ -187,39 +188,40 @@ describe("InteractiveRebase", () => {
     chai.expect(valuesInitial.userLabel).to.equal("Wat");
 
     // We can explicitly accept "theirs" instead.
-    updateConflict.acceptTheirs(interactive);
+    updateConflict.acceptTheirs();
     const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirs.foo).to.equal("User1");
     chai.expect(Point2d.fromJSON(valuesTheirs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
-    // UserLabel does not conflict, so our value is maintained.
-    chai.expect(valuesTheirs.userLabel).to.equal("Wat");
+    // Accepting "theirs" with no explicit properties replaces the whole instance with their version,
+    // so our non-conflicting userLabel is cleared, since they never set it.
+    chai.expect(valuesTheirs.userLabel).to.be.undefined;
 
     // And then switch back to "ours" again.
-    updateConflict.acceptOurs(interactive);
+    updateConflict.acceptOurs();
     const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesOurs.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
     chai.expect(valuesOurs.userLabel).to.equal("Wat");
 
     // We can accept a subset of properties
-    updateConflict.acceptTheirs(interactive, ["somePoint"]);
+    updateConflict.acceptTheirs(["somePoint"]);
     const valuesTheirsSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirsSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesTheirsSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    updateConflict.acceptTheirs(interactive, ["foo"]);
+    updateConflict.acceptTheirs(["foo"]);
     const valuesTheirsSubset2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirsSubset2.foo).to.equal("User1");
     chai.expect(Point2d.fromJSON(valuesTheirsSubset2.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    updateConflict.acceptOurs(interactive, ["foo"]);
+    updateConflict.acceptOurs(["foo"]);
     const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesOursSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
     // acceptOurs and acceptTheirs should throw if we try to accept a property that is not in conflictingProperties.
-    chai.expect(() => updateConflict.acceptOurs(interactive, ["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
-    chai.expect(() => updateConflict.acceptTheirs(interactive, ["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
+    chai.expect(() => updateConflict.acceptOurs(["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
+    chai.expect(() => updateConflict.acceptTheirs(["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
   });
 
   it("identifies conflicting properties by their name in the element props", async () => {
@@ -248,22 +250,21 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive.nextGroup()).to.be.false;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
-    const conflict = interactive.conflicts[0] as UpdateRebaseConflict;
-    chai.expect(conflict.kind).to.equal("Update");
+    const conflict = interactive.conflicts[0];
     chai.expect(conflict.conflictingProperties).to.include("code.value");
-    chai.expect(conflict.original.code.value).to.equal("Initial");
-    chai.expect(conflict.ours.code.value).to.equal("User2Code");
-    chai.expect(conflict.theirs.code.value).to.equal("User1Code");
+    chai.expect(conflict.original!.code.value).to.equal("Initial");
+    chai.expect(conflict.ours!.code.value).to.equal("User2Code");
+    chai.expect(conflict.theirs!.code.value).to.equal("User1Code");
 
-    conflict.acceptTheirs(interactive, ["code.value"]);
+    conflict.acceptTheirs(["code.value"]);
     chai.expect(briefcase2.elements.getElementProps(id).code.value).to.equal("User1Code");
 
-    conflict.acceptOurs(interactive, ["code.value"]);
+    conflict.acceptOurs(["code.value"]);
     chai.expect(briefcase2.elements.getElementProps(id).code.value).to.equal("User2Code");
 
     // Neither the name under which the property is stored, nor a non-conflicting property, is accepted.
-    chai.expect(() => conflict.acceptTheirs(interactive, ["codeValue"])).to.throw(`Property codeValue is not a conflicting property for instance ${id}`);
-    chai.expect(() => conflict.acceptTheirs(interactive, ["code.spec"])).to.throw(`Property code.spec is not a conflicting property for instance ${id}`);
+    chai.expect(() => conflict.acceptTheirs(["codeValue"])).to.throw(`Property codeValue is not a conflicting property for instance ${id}`);
+    chai.expect(() => conflict.acceptTheirs(["code.spec"])).to.throw(`Property code.spec is not a conflicting property for instance ${id}`);
   });
 
   it("can present a conflict where we delete something the upstream modified", async () => {
@@ -290,20 +291,20 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
-    const deleteConflict = interactive.conflicts[0] as TheirUpdateOurDeleteRebaseConflict;
-    chai.expect(deleteConflict.kind).to.equal("TheirUpdateOurDelete");
+    const deleteConflict = interactive.conflicts[0];
+    chai.expect(deleteConflict.ours).to.be.undefined;
 
     // The properties that were updated in their changes should be called out.
-    chai.expect(deleteConflict.updatedProperties.length).to.equal(3);
-    chai.expect(deleteConflict.updatedProperties).to.include("somePoint");
-    chai.expect(deleteConflict.updatedProperties).to.include("foo");
-    chai.expect(deleteConflict.updatedProperties).to.include("lastMod");
+    chai.expect(deleteConflict.theirModifiedProperties.length).to.equal(3);
+    chai.expect(deleteConflict.theirModifiedProperties).to.include("somePoint");
+    chai.expect(deleteConflict.theirModifiedProperties).to.include("foo");
+    chai.expect(deleteConflict.theirModifiedProperties).to.include("lastMod");
 
     // The original and their values should both be correctly captured.
-    chai.expect(deleteConflict.original.foo).to.equal("Original");
-    chai.expect(deleteConflict.original.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
-    chai.expect(deleteConflict.theirs.foo).to.equal("User1");
-    chai.expect(deleteConflict.theirs.somePoint).to.deep.equal({ x: 1.0, y: 2.0 });
+    chai.expect(deleteConflict.original!.foo).to.equal("Original");
+    chai.expect(deleteConflict.original!.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
+    chai.expect(deleteConflict.theirs!.foo).to.equal("User1");
+    chai.expect(deleteConflict.theirs!.somePoint).to.deep.equal({ x: 1.0, y: 2.0 });
   });
 
   it("can present a conflict where we modify something the upstream deleted", async () => {
@@ -330,19 +331,19 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
-    const conflict = interactive.conflicts[0] as TheirDeleteOurUpdateRebaseConflict;
-    chai.expect(conflict.kind).to.equal("TheirDeleteOurUpdate");
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.theirs).to.be.undefined;
 
-    chai.expect(conflict.updatedProperties.length).to.equal(3);
-    chai.expect(conflict.updatedProperties).to.include("somePoint");
-    chai.expect(conflict.updatedProperties).to.include("foo");
-    chai.expect(conflict.updatedProperties).to.include("lastMod");
+    chai.expect(conflict.ourModifiedProperties.length).to.equal(3);
+    chai.expect(conflict.ourModifiedProperties).to.include("somePoint");
+    chai.expect(conflict.ourModifiedProperties).to.include("foo");
+    chai.expect(conflict.ourModifiedProperties).to.include("lastMod");
 
     // The original and their values should both be correctly captured.
-    chai.expect(conflict.original.foo).to.equal("Original");
-    chai.expect(conflict.original.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
-    chai.expect(conflict.ours.foo).to.equal("User2");
-    chai.expect(conflict.ours["somePoint"]).to.deep.equal({ x: 3.0, y: 4.0 });
+    chai.expect(conflict.original!.foo).to.equal("Original");
+    chai.expect(conflict.original!.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
+    chai.expect(conflict.ours!.foo).to.equal("User2");
+    chai.expect(conflict.ours!["somePoint"]).to.deep.equal({ x: 3.0, y: 4.0 });
   });
 
   it("can present a conflict where local and upstream both insert a row with the same primary key", async () => {
@@ -390,15 +391,14 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
-    const conflict = interactive.conflicts[0] as InsertRebaseConflict;
-    chai.expect(conflict.kind).to.equal("Insert");
+    const conflict = interactive.conflicts[0];
     chai.expect(conflict.id).to.equal(id);
 
-    chai.expect(conflict.conflictingProperties.length).to.equal(4);
-    chai.expect(conflict.conflictingProperties).to.include("somePoint");
-    chai.expect(conflict.conflictingProperties).to.include("foo");
-    chai.expect(conflict.conflictingProperties).to.include("lastMod");
-    chai.expect(conflict.conflictingProperties).to.include("userLabel");
+    chai.expect(conflict.differentProperties.length).to.equal(4);
+    chai.expect(conflict.differentProperties).to.include("somePoint");
+    chai.expect(conflict.differentProperties).to.include("foo");
+    chai.expect(conflict.differentProperties).to.include("lastMod");
+    chai.expect(conflict.differentProperties).to.include("userLabel");
 
     // Initially, "our" values are selected.
     const valuesInitial = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
@@ -407,38 +407,38 @@ describe("InteractiveRebase", () => {
     chai.expect(valuesInitial.userLabel).to.equal("Wat");
 
     // We can explicitly accept "theirs" instead.
-    conflict.acceptTheirs(interactive);
+    conflict.acceptTheirs();
     const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirs.foo).to.equal("User1");
     chai.expect(Point2d.fromJSON(valuesTheirs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
     chai.expect(valuesTheirs.userLabel).to.be.undefined;
 
     // And then switch back to "ours" again.
-    conflict.acceptOurs(interactive);
+    conflict.acceptOurs();
     const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesOurs.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
     chai.expect(valuesOurs.userLabel).to.equal("Wat");
 
     // We can accept a subset of properties
-    conflict.acceptTheirs(interactive, ["somePoint"]);
+    conflict.acceptTheirs(["somePoint"]);
     const valuesTheirsSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirsSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesTheirsSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    conflict.acceptTheirs(interactive, ["foo"]);
+    conflict.acceptTheirs(["foo"]);
     const valuesTheirsSubset2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirsSubset2.foo).to.equal("User1");
     chai.expect(Point2d.fromJSON(valuesTheirsSubset2.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    conflict.acceptOurs(interactive, ["foo"]);
+    conflict.acceptOurs(["foo"]);
     const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesOursSubset1.foo).to.equal("User2");
     chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
     // acceptOurs and acceptTheirs should throw if we try to accept a property that is not in conflictingProperties.
-    chai.expect(() => conflict.acceptOurs(interactive, ["federationGuid"])).to.throw(`Property federationGuid is not a conflicting property for instance ${id}`);
-    chai.expect(() => conflict.acceptTheirs(interactive, ["federationGuid"])).to.throw(`Property federationGuid is not a conflicting property for instance ${id}`);
+    chai.expect(() => conflict.acceptOurs(["federationGuid"])).to.throw(`Property federationGuid is not a conflicting property for instance ${id}`);
+    chai.expect(() => conflict.acceptTheirs(["federationGuid"])).to.throw(`Property federationGuid is not a conflicting property for instance ${id}`);
   });
 
   it("can present a conflict where a locally-inserted row triggers a unique constraint violation", async () => {
@@ -482,15 +482,14 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
-    const conflict = interactive.conflicts[0] as UniqueConstraintRebaseConflict;
-    chai.expect(conflict.kind).to.equal("UniqueConstraint");
+    const conflict = interactive.conflicts[0];
 
     chai.expect(conflict.original).to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
-    chai.expect(conflict.ours.federationGuid).not.to.be.undefined;
+    chai.expect(conflict.ours!.federationGuid).not.to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
-    chai.expect(conflict.ours.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
+    chai.expect(conflict.ours!.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
 
     const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(localId);
     chai.expect(localElement.federationGuid).not.to.equal(guid);
@@ -517,6 +516,7 @@ describe("InteractiveRebase", () => {
     await withEditTxn(briefcase2, async (txn) => {
       txn.updateElement({
         id: id,
+        userLabel: "Wat",
         // Same code as the element inserted in briefcase1, which will trigger a unique constraint violation.
         code: code,
       });
@@ -533,15 +533,14 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
-    const conflict = interactive.conflicts[0] as UniqueConstraintRebaseConflict;
-    chai.expect(conflict.kind).to.equal("UniqueConstraint");
+    const conflict = interactive.conflicts[0];
     chai.expect(conflict.original).not.to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
     chai.expect(conflict.original?.code.scope).not.to.be.undefined;
     chai.expect(conflict.original?.code.spec).not.to.be.undefined;
-    chai.expect(conflict.ours.code.scope).not.to.be.undefined;
-    chai.expect(conflict.ours.code.spec).not.to.be.undefined;
-    chai.expect(conflict.ours.code.value).not.to.be.undefined;
+    chai.expect(conflict.ours!.code.scope).not.to.be.undefined;
+    chai.expect(conflict.ours!.code.spec).not.to.be.undefined;
+    chai.expect(conflict.ours!.code.value).not.to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
@@ -549,9 +548,9 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.original?.code.scope).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.scope);
     chai.expect(conflict.original?.code.spec).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec);
     chai.expect(conflict.original?.code.value).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
-    chai.expect(conflict.ours.code.scope).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.scope);
-    chai.expect(conflict.ours.code.spec).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec);
-    chai.expect(conflict.ours.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
+    chai.expect(conflict.ours!.code.scope).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.scope);
+    chai.expect(conflict.ours!.code.spec).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec);
+    chai.expect(conflict.ours!.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
 
     const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(localElement.code.value).to.equal("SomeValue (Conflict)");
@@ -626,18 +625,17 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
-    const conflict = interactive.conflicts[0] as UniqueConstraintRebaseConflict;
-    chai.expect(conflict.kind).to.equal("UniqueConstraint");
+    const conflict = interactive.conflicts[0];
 
     // The codeValue should be included, because it was changed.
     chai.expect(conflict.original?.code.value).not.to.be.undefined;
-    chai.expect(conflict.ours.code.value).not.to.be.undefined;
+    chai.expect(conflict.ours!.code.value).not.to.be.undefined;
 
     // codeSpec and codeScope should also be included even though they were not changed.
     chai.expect(conflict.original?.code.spec).not.to.be.undefined;
     chai.expect(conflict.original?.code.scope).not.to.be.undefined;
-    chai.expect(conflict.ours.code.spec).not.to.be.undefined;
-    chai.expect(conflict.ours.code.scope).not.to.be.undefined;
+    chai.expect(conflict.ours!.code.spec).not.to.be.undefined;
+    chai.expect(conflict.ours!.code.scope).not.to.be.undefined;
 
     // The conflict should correctly identify which unique constraint was violated.
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
@@ -648,7 +646,7 @@ describe("InteractiveRebase", () => {
 
     // The conflicting row should include the changed codeValue property
     chai.expect(conflict.original?.code.value).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
-    chai.expect(conflict.ours.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
+    chai.expect(conflict.ours!.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
 
     // And it should also contain the unchanged codeSpec and codeScope properties, which are part of the unique constraint.
     chai.expect(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec).to.equal(IModel.dictionaryId);
@@ -698,26 +696,33 @@ describe("InteractiveRebase", () => {
     const moreGroups = interactive.nextGroup();
     chai.expect(moreGroups).to.be.false;
 
-    chai.expect(interactive.conflicts.length).to.equal(2);
-    const updateConflict = interactive.conflicts[0] as UpdateRebaseConflict;
-    chai.expect(updateConflict.id).to.equal(id);
-    chai.expect(updateConflict.kind).to.equal("Update");
+    // Both the data conflict (on "foo") and the UNIQUE constraint violation (on "code") are reported
+    // against the same instance, so they're merged into a single RebaseConflict2 entry.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(id);
 
-    const uniqueConflict = interactive.conflicts[1] as UniqueConstraintRebaseConflict;
-    chai.expect(uniqueConflict.kind).to.equal("UniqueConstraint");
-    chai.expect(uniqueConflict.uniqueConstraintViolations.length).to.equal(1);
-    chai.expect(uniqueConflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
-    chai.expect(uniqueConflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
-    chai.expect(uniqueConflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
-    chai.expect(uniqueConflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
+    chai.expect(conflict.differentProperties.length).to.equal(6);
+    chai.expect(conflict.differentProperties).to.include("code.scope");
+    chai.expect(conflict.differentProperties).to.include("code.spec");
+    chai.expect(conflict.differentProperties).to.include("code.value");
+    chai.expect(conflict.differentProperties).to.include("lastMod");
+    chai.expect(conflict.differentProperties).to.include("foo");
+    chai.expect(conflict.differentProperties).to.include("somePoint");
+
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
 
     // Only the properties with actual conflicts should be found in conflictingProperties.
-    chai.expect(updateConflict.conflictingProperties.length).to.equal(2);
-    chai.expect(updateConflict.conflictingProperties).to.include("foo");
-    chai.expect(updateConflict.conflictingProperties).to.include("lastMod");
+    chai.expect(conflict.conflictingProperties.length).to.equal(2);
+    chai.expect(conflict.conflictingProperties).to.include("foo");
+    chai.expect(conflict.conflictingProperties).to.include("lastMod");
 
     // Initially, "our" values are selected.
-    // - For the data conflicts, or value has been applied.
+    // - For the data conflicts, "our" value has been applied.
     // - For the unique constraint conflict, a new value has been selected automatically to avoid the conflict.
     const valuesInitial = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesInitial.foo).to.equal("User2");
@@ -725,39 +730,40 @@ describe("InteractiveRebase", () => {
     chai.expect(valuesInitial.code.scope).to.equal(code.scope);
     chai.expect(valuesInitial.code.value).to.equal("SomeValue (Conflict)");
 
-    // // We can explicitly accept "theirs" instead.
-    // updateConflict.acceptTheirs(interactive);
-    // const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
-    // chai.expect(valuesTheirs.foo).to.equal("User1");
+    // We can explicitly accept "theirs" instead.
+    conflict.acceptTheirs();
+    const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirs.foo).to.equal("User1");
+    chai.expect(valuesTheirs.code.value).to.equal("");
     // chai.expect(Point2d.fromJSON(valuesTheirs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
     // // UserLabel does not conflict, so our value is maintained.
     // chai.expect(valuesTheirs.userLabel).to.equal("Wat");
 
     // // And then switch back to "ours" again.
-    // updateConflict.acceptOurs(interactive);
+    // conflict.acceptOurs();
     // const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     // chai.expect(valuesOurs.foo).to.equal("User2");
     // chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
     // chai.expect(valuesOurs.userLabel).to.equal("Wat");
 
     // // We can accept a subset of properties
-    // updateConflict.acceptTheirs(interactive, ["somePoint"]);
+    // conflict.acceptTheirs(["somePoint"]);
     // const valuesTheirsSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     // chai.expect(valuesTheirsSubset1.foo).to.equal("User2");
     // chai.expect(Point2d.fromJSON(valuesTheirsSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    // updateConflict.acceptTheirs(interactive, ["foo"]);
+    // conflict.acceptTheirs(["foo"]);
     // const valuesTheirsSubset2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     // chai.expect(valuesTheirsSubset2.foo).to.equal("User1");
     // chai.expect(Point2d.fromJSON(valuesTheirsSubset2.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    // updateConflict.acceptOurs(interactive, ["foo"]);
+    // conflict.acceptOurs(["foo"]);
     // const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     // chai.expect(valuesOursSubset1.foo).to.equal("User2");
     // chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
     // // acceptOurs and acceptTheirs should throw if we try to accept a property that is not in conflictingProperties.
-    // chai.expect(() => updateConflict.acceptOurs(interactive, ["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
-    // chai.expect(() => updateConflict.acceptTheirs(interactive, ["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
+    // chai.expect(() => conflict.acceptOurs(["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
+    // chai.expect(() => conflict.acceptTheirs(["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
   });
 });

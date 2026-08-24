@@ -46,10 +46,97 @@ export namespace InteractiveRebaseError {
   }
 }
 
-export interface RebaseConflict {
-  kind: string;
+export interface RebaseConflict2 {
   id: Id64String;
   classFullName: string;
+
+  /**
+   * The instance that was in place just before we originally modified the instance. This is the common
+   * baseline between {@link theirs} and {@link ours}.
+   *
+   * This will be undefined if this instance is newly-inserted.
+   */
+  original: RebaseConflictProperties | undefined;
+
+  /**
+   * The instance after applying the incoming (their) changes and any earlier rebase groups.
+   * This is the state of the instance in the database just before applying our local changes.
+   *
+   * This property will be undefined if the instance does not exist prior to our changes, either
+   * because it was deleted or because it never existed.
+   */
+  theirs: RebaseConflictProperties | undefined;
+
+  /**
+   * The instance after applying our local changes. This is the state of the instance that we are
+   * trying to apply to the database.
+   *
+   * This property will be undefined if our change deleted the instance.
+   */
+  ours: RebaseConflictProperties | undefined;
+
+  /**
+   * The properties that were modified by {@link theirs} changes, relative to the {@link original} baseline.
+   *
+   * Each entry is an access string into {@link original}, {@link theirs}, and {@link ours}, e.g. `code.value`.
+   */
+  theirModifiedProperties: string[];
+
+  /**
+   * The properties that were modified by {@link ours} changes, relative to the {@link original} baseline.
+   *
+   * Each entry is an access string into {@link original}, {@link theirs}, and {@link ours}, e.g. `code.value`.
+   */
+  ourModifiedProperties: string[];
+
+  /**
+   * The properties that are in conflict between the incoming (their) changes and the local (our) changes.
+   * Specifically, these are the properties where the "original" value is different from "their" value,
+   * meaning that the value has changed from when we originally modified it. A property is reported
+   * as a conflict even if both "theirs" and "ours" are the same.
+   *
+   * If one side or the other deleted the instance, this array will be empty. Look at
+   * {@link theirModifiedProperties} or {@link ourModifiedProperties} to see which properties were
+   * modified by the side that did not delete the instance.
+   *
+   * Each entry is an access string into {@link original}, {@link theirs}, and {@link ours}, e.g. `code.value`.
+   */
+  conflictingProperties: string[];
+
+  /**
+   * The properties that are different between the {@link theirs} and {@link ours} instances.
+   *
+   * Don't confuse this with {@link conflictingProperties}. If both "theirs" and "ours" changed a property to the
+   * same value, that property will appear in {@link conflictingProperties} but not in {@link differentProperties}.
+   * If either "theirs" or "ours" changed a property while the other did not, that property will appear in
+   * {@link differentProperties} but not in {@link conflictingProperties}.
+   *
+   * Each entry is an access string into {@link original}, {@link theirs}, and {@link ours}, e.g. `code.value`.
+   */
+  differentProperties: string[];
+
+  /**
+   * The UNIQUE constraints that are violated after our change.
+   */
+  uniqueConstraintViolations: UniqueConstraintViolation[];
+
+  /**
+   * Accepts the local (our) vesion of the instance.
+   *
+   * @param properties The properties for which to accept "our" value. If not specified, or if
+   * the array is empty, then the "our" value of all properties will be accepted. Properties
+   * that are not accepted are left unmodified.
+   */
+  acceptOurs(properties?: string[]): void;
+
+  /**
+   * Accepts the upstream (their) vesion of the instance.
+   *
+   * @param properties The properties for which to accept "their" value. If not specified, or if
+   * the array is empty, then the "their" value of all properties will be accepted. Properties
+   * that are not accepted are left unmodified.
+   */
+  acceptTheirs(properties?: string[]): void;
 }
 
 /**
@@ -59,188 +146,6 @@ export interface RebaseConflict {
  */
 export interface RebaseConflictProperties {
   [propertyName: string]: any;
-}
-
-/**
- * Both the incoming (their) and the local (our) changes modified the same properties
- * on the same instance.
- */
-export interface UpdateRebaseConflict extends RebaseConflict {
-  kind: "Update";
-
-  /**
-   * The original values of the instance. These were the values that were in place just before
-   * we originally made our local changes.
-   *
-   * This will usually not include every property of the instance. Only the following properties
-   * are included:
-   * 1. The primary key(s) (usually `id`) and the `classFullName` if the table has one.
-   * 2. Any properties that were modified by our local changes.
-   */
-  original: RebaseConflictProperties;
-
-  /**
-   * The new instance values after applying the incoming (their) changes. These are the new
-   * values set by the upstream changes.
-   *
-   * This will usually not include every property of the instance. See {@link original} for
-   * details on which properties are included.
-   */
-  theirs: RebaseConflictProperties;
-
-  /**
-   * Our new values for the instance, as set by our local changes.
-   *
-   * This will usually not include every property of the instance. See {@link original} for
-   * details on which properties are included.
-   */
-  ours: RebaseConflictProperties;
-
-  /**
-   * The properties that are in conflict between the incoming (their) changes and the local (our) changes.
-   * Specifically, these are the properties where the "original" value is different from "their" value,
-   * meaning that the value has changed from when we originally modified it. A property is reported
-   * as a conflict even if both "theirs" and "ours" are the same.
-   *
-   * Each entry is an access string into {@link original}, {@link theirs}, and {@link ours}, e.g. `code.value`.
-   */
-  conflictingProperties: string[];
-
-  /**
-   * Accepts the local (our) changes for some or all of the conflicting properties, and applies
-   * them to the instance in the iModel.
-   *
-   * @param rebase The in-progress interactive rebase operation.
-   * @param properties The conflicting properties for which to accept "our" value. If not specified, or if
-   * the array is empty, then the "our" value of all conflicting properties will be accepted. Properties
-   * that are not accepted are left unmodified.
-   */
-  acceptOurs(rebase: InteractiveRebase, properties?: string[]): void;
-
-  /**
-   * Accepts the upstream (their) changes for some or all of the conflicting properties, and applies
-   * them to the instance in the iModel.
-   *
-   * @param rebase The in-progress interactive rebase operation.
-   * @param properties The conflicting properties for which to accept "their" value. If not specified, or if
-   * the array is empty, then the "their" value of all conflicting properties will be accepted. Properties
-   * that are not accepted are left unmodified.
-   */
-  acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void;
-}
-
-/**
- * The incoming (their) changes modified properties on an instance that was deleted by the
- * local (our) changes.
- */
-export interface TheirUpdateOurDeleteRebaseConflict extends RebaseConflict {
-  kind: "TheirUpdateOurDelete";
-
-  /**
-   * The original property values that were in place just before we deleted the instance.
-   *
-   * This will usually not include every property of the instance. Only the following properties
-   * are included:
-   * 1. The primary key(s) (usually `id`) and the `classFullName` if the table has one.
-   * 2. Any properties that were modified by the incoming (their) changes.
-   * 3. All properties that share an underlying table with the properties in (2).
-   */
-  original: RebaseConflictProperties;
-
-  /**
-   * The new instance values after applying the incoming (their) changes. These are the new
-   * values set by the upstream changes.
-   *
-   * This will usually not include every property of the instance. See {@link original} for
-   * details on which properties are included.
-   */
-  theirs: RebaseConflictProperties;
-
-  /**
-   * The properties that were modified by the incoming (their) changes, as access strings into
-   * {@link original} and {@link theirs}, e.g. `code.value`.
-   */
-  updatedProperties: string[];
-}
-
-/**
- * The incoming (their) changes deleted an instance that was modified by the
- * local (our) changes.
- */
-export interface TheirDeleteOurUpdateRebaseConflict extends RebaseConflict {
-  kind: "TheirDeleteOurUpdate";
-
-  /**
-   * The original property values that were in place just before we modified the instance.
-   *
-   * This will usually not include every property of the instance. Only the following properties
-   * are included:
-   * 1. The primary key(s) (usually `id`) and the `classFullName` if the table has one.
-   * 2. Any properties that were modified by our local changes.
-   */
-  original: RebaseConflictProperties;
-
-  /**
-   * Our new values for the instance, as set by our local changes.
-   *
-   * This will usually not include every property of the instance. See {@link original} for
-   * details on which properties are included.
-   */
-  ours: RebaseConflictProperties;
-
-  /**
-   * The properties that were modified by the local (our) changes, as access strings into
-   * {@link original} and {@link ours}, e.g. `code.value`.
-   */
-  updatedProperties: string[];
-}
-
-/**
- * Both the incoming (their) changes and the local (our) changes inserted an instance
- * with the same primary key (ECInstanceId).
- */
-export interface InsertRebaseConflict extends RebaseConflict {
-  kind: "Insert";
-
-  /**
-   * The new instance values after applying the incoming (their) changes.
-   */
-  theirs: RebaseConflictProperties;
-
-  /**
-   * The new instance values from the local (our) changes.
-   */
-  ours: RebaseConflictProperties;
-
-  /**
-   * The properties that are different (in conflict) between the incoming (their) changes and the local (our) changes.
-   * This may be empty if identical instances were inserted by both the incoming and local changes.
-   *
-   * Each entry is an access string into {@link theirs} and {@link ours}, e.g. `code.value`.
-   */
-  conflictingProperties: string[];
-
-  /**
-   * Accepts the local (our) changes for some or all of the conflicting properties, and applies
-   * them to the instance in the iModel.
-   *
-   * @param rebase The in-progress interactive rebase operation.
-   * @param properties The conflicting properties for which to accept "our" value. If not specified, or if
-   * the array is empty, then the "our" value of all conflicting properties will be accepted. Properties
-   * that are not accepted are left unmodified.
-   */
-  acceptOurs(rebase: InteractiveRebase, properties?: string[]): void;
-
-  /**
-   * Accepts the upstream (their) changes for some or all of the conflicting properties, and applies
-   * them to the instance in the iModel.
-   *
-   * @param rebase The in-progress interactive rebase operation.
-   * @param properties The conflicting properties for which to accept "their" value. If not specified, or if
-   * the array is empty, then the "their" value of all conflicting properties will be accepted. Properties
-   * that are not accepted are left unmodified.
-   */
-  acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void;
 }
 
 export interface UniqueConstraintViolation {
@@ -255,30 +160,6 @@ export interface UniqueConstraintViolation {
    * inserted or updated by the incoming (their) changes, which conflicts with the local (our) changes.
    */
   conflictingRow: RebaseConflictProperties;
-}
-
-export interface UniqueConstraintRebaseConflict extends RebaseConflict {
-  kind: "UniqueConstraint";
-
-  /**
-   * The original row that our change modified. If our change is an insertion, this will be undefined.
-   */
-  original?: RebaseConflictProperties;
-
-  /**
-   * Our change's properties.
-   */
-  ours: RebaseConflictProperties;
-
-  /**
-   * The UNIQUE constraints that are violated after our change.
-   */
-  uniqueConstraintViolations: UniqueConstraintViolation[];
-}
-
-export interface ForeignKeyConstraintRebaseConflict extends RebaseConflict {
-  kind: "ForeignKeyConstraint";
-  numberOfConflictingRows: number;
 }
 
 /** The `conflictDetail` that native attaches to the error thrown by `insertInstance`/`updateInstance` when the
@@ -305,7 +186,7 @@ export class InteractiveRebase {
   private _txns: TxnProps[];
   private _groups: TxnRebaseGroup[];
   private _currentGroupIndex: number = -1;
-  private _conflicts: RebaseConflict[] = [];
+  private _conflicts: RebaseConflict2[] = [];
 
   constructor(db: BriefcaseDb, txns: TxnProps[], schemaView: SchemaView) {
     this._db = db;
@@ -381,7 +262,7 @@ export class InteractiveRebase {
   /**
    * Gets the conflicts that have been detected in the current group of Txns being rebased.
    */
-  public get conflicts(): ReadonlyArray<RebaseConflict> {
+  public get conflicts(): ReadonlyArray<RebaseConflict2> {
     return this._conflicts;
   }
 
@@ -563,11 +444,11 @@ export class InteractiveRebase {
     const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
     if (theirs === undefined) {
       // The incoming changes deleted the instance that our local change updated. Their delete stands.
-      TheirDeleteOurUpdateRebaseConflictImpl.record(this, this._conflicts, oldProps, newProps, result.conflictingProperties);
+      RebaseConflict2Impl.recordTheirDeleteOurUpdate(this, this._conflicts, oldProps, newProps, result.conflictingProperties);
     } else {
       // The row still exists, but at least one property we touched (result.conflictingProperties) no
       // longer matches our captured baseline, meaning the incoming changes also modified it.
-      UpdateRebaseConflictImpl.record(this, this._conflicts, oldProps, theirs, newProps, result.conflictingProperties);
+      RebaseConflict2Impl.recordUpdate(this, this._conflicts, oldProps, theirs, newProps, result.conflictingProperties);
       this.applyOrRecordConstraintConflict(propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
     }
   }
@@ -593,7 +474,7 @@ export class InteractiveRebase {
     // The row still exists but no longer matches our captured baseline (result.conflictingProperties),
     // meaning the incoming changes modified it. Report the conflict, but proceed with the delete (matching
     // the native changeset-conflict model for a Deleted opcode with a "Data" conflict cause).
-    TheirUpdateOurDeleteRebaseConflictImpl.record(this, this._conflicts, oldProps, theirs, result.conflictingProperties);
+    RebaseConflict2Impl.recordTheirUpdateOurDelete(this, this._conflicts, oldProps, theirs, result.conflictingProperties);
     nativeDb.deleteInstance(key, { useJsNames: true });
   }
 
@@ -612,10 +493,11 @@ export class InteractiveRebase {
    * conflict instead of letting the exception propagate, returning `undefined` in that case. When
    * oldProps is undefined (indicating
    * that this is an Insert operation), a UNIQUE/PRIMARYKEY failure is first checked against whether it's
-   * an id collision with an existing row (an [[InsertRebaseConflict]], which also retries the write via
-   * `acceptOurs`) before falling back to a [[UniqueConstraintRebaseConflict]] built from the error's
-   * [[UniqueConstraintConflictDetail]]; for updates/deletes the row already exists by definition, so
-   * id-collision detection doesn't apply and the write is not retried (it would just fail again).
+   * an id collision with an existing row (recorded via [[RebaseConflict2Impl.recordInsert]], which also
+   * retries the write via `acceptOurs`) before falling back to a UNIQUE constraint violation recorded via
+   * [[RebaseConflict2Impl.recordUniqueConstraint]] built from the error's [[UniqueConstraintConflictDetail]];
+   * for updates/deletes the row already exists by definition, so id-collision detection doesn't apply and
+   * the write is not retried (it would just fail again).
    */
   private applyOrRecordConstraintConflict<T>(id: Id64String, classFullName: string, oldProps: RebaseConflictProperties | undefined, newProps: RebaseConflictProperties | undefined, apply: () => T): T | undefined {
     // PRINCIPLE: The application of "our" change must succeed in the end, because that increases the chances
@@ -649,7 +531,7 @@ export class InteractiveRebase {
       return apply();
     } catch (err: any) {
       if (err.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
-        // TODO: report a ForeignKeyConstraintRebaseConflict once native exposes conflict-row counts for
+        // TODO: report a foreign-key constraint conflict once native exposes conflict-row counts for
         // direct instance writes (see interactive-rebase-instance-conflict-native-spec.md, "Change 2").
         return undefined;
       }
@@ -661,14 +543,14 @@ export class InteractiveRebase {
       const theirs = isInsert ? this.tryReadCurrentInstance(id, classFullName) : undefined;
       if (theirs !== undefined) {
         // Both local and incoming changes wrote an instance with the same id.
-        InsertRebaseConflictImpl.record(this, this._conflicts, newProps!, theirs);
+        RebaseConflict2Impl.recordInsert(this, this._conflicts, newProps!, theirs);
 
         // Attempt to apply "our" change to the existing row, which may trigger further conflicts (e.g. UNIQUE constraint violations).
         this.applyOrRecordConstraintConflict(id, classFullName, theirs, newProps, () => this._db[_nativeDb].updateInstance(newProps!, { useJsNames: true }));
       } else {
         // Some other UNIQUE index (not the primary key) was violated.
         const conflictDetail = err.conflictDetail as UniqueConstraintConflictDetail | undefined;
-        UniqueConstraintRebaseConflictImpl.record(this, this._conflicts, oldProps, newProps!, conflictDetail);
+        RebaseConflict2Impl.recordUniqueConstraint(this, this._conflicts, oldProps, newProps!, conflictDetail);
 
         // Fix this UNIQUE constraint violation by changing the value of one of the properties involved in the constraint until we
         // find a value that doesn't collide.
@@ -811,10 +693,13 @@ export class InteractiveRebase {
    * Applies a resolved conflict's properties directly to the iModel via the native instance writer.
    * Used by conflict resolution methods (`acceptOurs`/`acceptTheirs`) once native reinstatement of the
    * txn is no longer in progress, so there is no changeset-apply conflict callback to defer to.
+   *
+   * @param fullReplace When true, properties absent from `props` are cleared instead of left as-is, so
+   * that `props` fully replaces the instance rather than incrementally updating it.
    * @internal
    */
-  public applyConflictResolution(props: RebaseConflictProperties): void {
-    this._db[_nativeDb].updateInstance(props, { useJsNames: true });
+  public applyConflictResolution(props: RebaseConflictProperties, fullReplace: boolean = false): void {
+    this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: !fullReplace });
 
     // TODO: too heavy-handed?
     this._db.clearCaches();
@@ -886,7 +771,7 @@ function computeChangedProperties(baseline: RebaseConflictProperties, compare: R
       : a !== b;
   }
 
-  return Object.keys(baseline).filter((prop) => prop !== "id" && prop !== "classFullName" && valuesDiffer(baseline[prop], compare[prop]));
+  return [...new Set([...Object.keys(baseline), ...Object.keys(compare)])].filter((prop) => prop !== "id" && prop !== "classFullName" && valuesDiffer(baseline[prop], compare[prop]));
 }
 
 /** Strips the identity properties (`id`/`classFullName`) from a captured instance snapshot, since they aren't
@@ -971,241 +856,148 @@ function addPropsAccessStrings(target: string[], classDef: typeof Element, insta
   }
 }
 
-/** Resolves a conflict by writing the values of `properties` (props access strings, defaulting to all of the
- * conflict's conflicting properties) taken from `source` onto the instance, leaving its other properties as
- * they are. The values are round-tripped through [[Entity.serialize]], which is what knows how a props value
- * is represented in an ECSql instance (e.g. props `placement.origin` `[x, y]` is instance `origin` `{x, y}`).
+/** Resolves a conflict by writing `properties` (props access strings) taken from `source` onto the instance,
+ * leaving its other properties as they are. If `properties` is not specified, or is empty, every property of
+ * `source` is written instead, fully replacing the instance with `source`'s version. The values are
+ * round-tripped through [[Entity.serialize]], which is what knows how a props value is represented in an
+ * ECSql instance (e.g. props `placement.origin` `[x, y]` is instance `origin` `{x, y}`).
  */
-function applyResolution(rebase: InteractiveRebase, conflict: { id: Id64String, classFullName: string, ours: RebaseConflictProperties, conflictingProperties: string[] }, source: RebaseConflictProperties, properties?: string[]): void {
-  const accepted = properties && properties.length > 0 ? properties : conflict.conflictingProperties;
+function applyResolution(rebase: InteractiveRebase, conflict: { id: Id64String, classFullName: string, conflictingProperties: string[], differentProperties: string[] }, ours: RebaseConflictProperties, source: RebaseConflictProperties, properties?: string[]): void {
+  const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
 
-  const resolved: RebaseConflictProperties = { ...conflict.ours };
-  for (const prop of accepted) {
-    if (accepted !== conflict.conflictingProperties && !conflict.conflictingProperties.includes(prop)) {
+  if (properties === undefined || properties.length === 0) {
+    // Fully replace the instance with `source`: pass `fullReplace` so native clears (rather than leaves
+    // as-is) any property that `source`'s serialized form doesn't include.
+    const instance = classDef.serialize(source as ElementProps, rebase.iModel);
+    rebase.applyConflictResolution(instance as RebaseConflictProperties, true /* fullReplace */);
+    return;
+  }
+
+  // `conflictingProperties` requires an "original" baseline to compare against, so it's always empty for a
+  // newly-inserted instance (see {@link RebaseConflict2.conflictingProperties}); in that case, any of the
+  // properties that differ between "theirs" and "ours" are choosable instead.
+  const acceptableProperties = conflict.conflictingProperties.length > 0 ? conflict.conflictingProperties : conflict.differentProperties;
+
+  const resolved: RebaseConflictProperties = { ...ours };
+  for (const prop of properties) {
+    if (!acceptableProperties.includes(prop)) {
       InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${conflict.id}`);
     }
     setPropertyValue(resolved, prop, getPropertyValue(source, prop));
   }
 
-  const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
   const instance = classDef.serialize(resolved as ElementProps, rebase.iModel);
 
+  // Explicitly requested properties must be set even when their value is `undefined` (e.g. reverting a
+  // property that a previous acceptTheirs() set, back to a value ours never had) - a native update leaves
+  // any property it isn't given untouched, so an `undefined` here must become an explicit `null` rather
+  // than being omitted, or it would silently keep whatever value is currently in the iModel.
   const updateProps: RebaseConflictProperties = { id: conflict.id, classFullName: conflict.classFullName };
-  for (const prop of accepted) {
+  for (const prop of properties) {
     const instanceAccessString = classDef.toInstanceAccessString(prop);
-    setPropertyValue(updateProps, instanceAccessString, getPropertyValue(instance, instanceAccessString));
+    const value = getPropertyValue(instance, instanceAccessString);
+    setPropertyValue(updateProps, instanceAccessString, value === undefined ? null : value);
   }
 
   rebase.applyConflictResolution(updateProps);
 }
 
-class UpdateRebaseConflictImpl implements UpdateRebaseConflict {
-  public readonly kind: "Update" = "Update";
-
+/** Implements {@link RebaseConflict2} and provides the `record*` helpers used to build up a conflict for a
+ * given instance as it is discovered. Detections for the same instance id are merged into a single entry
+ * (e.g. an Update conflict followed by a UNIQUE constraint violation while retrying the write), since
+ * {@link RebaseConflict2} reports at most one entry per instance.
+ */
+class RebaseConflict2Impl implements RebaseConflict2 {
   public readonly id: Id64String;
   public readonly classFullName: string;
-  public readonly original: RebaseConflictProperties = {};
-  public readonly theirs: RebaseConflictProperties = {};
-  public readonly ours: RebaseConflictProperties = {};
+  public original: RebaseConflictProperties | undefined = undefined;
+  public theirs: RebaseConflictProperties | undefined = undefined;
+  public ours: RebaseConflictProperties | undefined = undefined;
+  public readonly theirModifiedProperties: string[] = [];
+  public readonly ourModifiedProperties: string[] = [];
   public readonly conflictingProperties: string[] = [];
+  public readonly differentProperties: string[] = [];
+  public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
 
-  public static record(interactive: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
-    const instanceId = original.id;
-
-    let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "Update") as UpdateRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new UpdateRebaseConflictImpl(instanceId, original.classFullName);
-      conflicts.push(instanceConflict);
-    }
-
-    const classDef = interactive.iModel.getJsClass<typeof Element>(original.classFullName);
-
-    addPropsAccessStrings(instanceConflict.conflictingProperties, classDef, conflictingProperties);
-
-    instanceConflict.original = classDef.deserialize({
-      row: original,
-      iModel: interactive.iModel
-    });
-    instanceConflict.theirs = classDef.deserialize({
-      row: theirs,
-      iModel: interactive.iModel
-    });
-    instanceConflict.ours = classDef.deserialize({
-      row: ours,
-      iModel: interactive.iModel
-    });
-  }
-
-  public constructor(id: Id64String, classFullName: string) {
+  private constructor(private readonly _rebase: InteractiveRebase, id: Id64String, classFullName: string) {
     this.id = id;
     this.classFullName = classFullName;
   }
 
-  public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
-    applyResolution(rebase, this, this.ours, properties);
-  }
-  public acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void {
-    applyResolution(rebase, this, this.theirs, properties);
-  }
-}
-
-class TheirUpdateOurDeleteRebaseConflictImpl implements TheirUpdateOurDeleteRebaseConflict {
-  public readonly kind: "TheirUpdateOurDelete" = "TheirUpdateOurDelete";
-
-  public readonly id: Id64String;
-  public readonly classFullName: string;
-  public readonly original: RebaseConflictProperties = {};
-  public readonly theirs: RebaseConflictProperties = {};
-  public readonly updatedProperties: string[] = [];
-
-  public static record(interactive: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
-    const instanceId = original.id;
-
-    let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "TheirUpdateOurDelete") as TheirUpdateOurDeleteRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new TheirUpdateOurDeleteRebaseConflictImpl(instanceId, original.classFullName);
-      conflicts.push(instanceConflict);
+  private static getOrCreate(rebase: InteractiveRebase, conflicts: RebaseConflict2[], id: Id64String, classFullName: string): RebaseConflict2Impl {
+    let conflict = conflicts.find((c) => c.id === id) as RebaseConflict2Impl | undefined;
+    if (conflict === undefined) {
+      conflict = new RebaseConflict2Impl(rebase, id, classFullName);
+      conflicts.push(conflict);
     }
-
-    const classDef = interactive.iModel.getJsClass<typeof Element>(original.classFullName);
-
-    addPropsAccessStrings(instanceConflict.updatedProperties, classDef, updatedProperties);
-
-    instanceConflict.original = classDef.deserialize({
-      row: original,
-      iModel: interactive.iModel
-    });
-    instanceConflict.theirs = classDef.deserialize({
-      row: theirs,
-      iModel: interactive.iModel
-    });
+    return conflict;
   }
 
-  public constructor(id: Id64String, classFullName: string) {
-    this.id = id;
-    this.classFullName = classFullName;
-  }
-}
+  /** Both the incoming (their) changes and the local (our) changes modified the same instance. */
+  public static recordUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict2[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
+    const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, original.id, original.classFullName);
 
-class TheirDeleteOurUpdateRebaseConflictImpl implements TheirDeleteOurUpdateRebaseConflict {
-  public readonly kind: "TheirDeleteOurUpdate" = "TheirDeleteOurUpdate";
+    addPropsAccessStrings(conflict.conflictingProperties, classDef, conflictingProperties);
+    addPropsAccessStrings(conflict.theirModifiedProperties, classDef, computeChangedProperties(original, theirs));
+    addPropsAccessStrings(conflict.ourModifiedProperties, classDef, computeChangedProperties(original, ours));
+    addPropsAccessStrings(conflict.differentProperties, classDef, computeChangedProperties(theirs, ours));
 
-  public readonly id: Id64String;
-  public readonly classFullName: string;
-  public readonly original: RebaseConflictProperties = {};
-  public readonly ours: RebaseConflictProperties = {};
-  public readonly updatedProperties: string[] = [];
-
-  public static record(interactive: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
-    const instanceId = original.id;
-
-    let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "TheirDeleteOurUpdate") as TheirDeleteOurUpdateRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new TheirDeleteOurUpdateRebaseConflictImpl(instanceId, original.classFullName);
-      conflicts.push(instanceConflict);
-    }
-
-    const classDef = interactive.iModel.getJsClass<typeof Element>(original.classFullName);
-
-    addPropsAccessStrings(instanceConflict.updatedProperties, classDef, conflictingProperties);
-
-    instanceConflict.original = classDef.deserialize({
-      row: original,
-      iModel: interactive.iModel
-    });
-    instanceConflict.ours = classDef.deserialize({
-      row: ours,
-      iModel: interactive.iModel
-    });
+    conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
+    conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
+    conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
   }
 
-  public constructor(id: Id64String, classFullName: string) {
-    this.id = id;
-    this.classFullName = classFullName;
+  /** The incoming (their) changes modified properties on an instance that was deleted by the local (our) changes. */
+  public static recordTheirUpdateOurDelete(rebase: InteractiveRebase, conflicts: RebaseConflict2[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
+    const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, original.id, original.classFullName);
+
+    addPropsAccessStrings(conflict.theirModifiedProperties, classDef, updatedProperties);
+
+    conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
+    conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
   }
-}
 
-class InsertRebaseConflictImpl implements InsertRebaseConflict {
-  public readonly kind: "Insert" = "Insert";
+  /** The incoming (their) changes deleted an instance that was modified by the local (our) changes. */
+  public static recordTheirDeleteOurUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict2[], original: RebaseConflictProperties, ours: RebaseConflictProperties, updatedProperties: string[]): void {
+    const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, original.id, original.classFullName);
 
-  public readonly id: Id64String;
-  public readonly classFullName: string;
-  public readonly theirs: RebaseConflictProperties = {};
-  public readonly ours: RebaseConflictProperties = {};
-  public readonly conflictingProperties: string[] = [];
+    addPropsAccessStrings(conflict.ourModifiedProperties, classDef, updatedProperties);
 
-  public static record(rebase: InteractiveRebase, conflicts: RebaseConflict[], ours: RebaseConflictProperties, theirs: RebaseConflictProperties): void {
-    const instanceId = ours.id;
+    conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
+    conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
+  }
 
-    let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "Insert") as InsertRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new InsertRebaseConflictImpl(instanceId, ours.classFullName);
-      conflicts.push(instanceConflict);
-    }
+  /** Both the incoming (their) changes and the local (our) changes inserted an instance with the same id. */
+  public static recordInsert(rebase: InteractiveRebase, conflicts: RebaseConflict2[], ours: RebaseConflictProperties, theirs: RebaseConflictProperties): void {
+    const classDef = rebase.iModel.getJsClass<typeof Element>(ours.classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, ours.id, ours.classFullName);
+
+    addPropsAccessStrings(conflict.differentProperties, classDef, computeChangedProperties(ours, theirs));
+
+    conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
+    conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
+  }
+
+  /** Our change (insert or update) violated a UNIQUE constraint against some other, unrelated instance. */
+  public static recordUniqueConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict2[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, detail?: UniqueConstraintConflictDetail): void {
+    const instanceId = ours.id ?? original?.id;
+    const classFullName = ours.classFullName ?? original?.classFullName;
+    const conflict = this.getOrCreate(rebase, conflicts, instanceId, classFullName);
 
     const classDef = rebase.iModel.getJsClass<typeof Element>(ours.classFullName);
 
-    addPropsAccessStrings(instanceConflict.conflictingProperties, classDef, computeChangedProperties(ours, theirs));
-    instanceConflict.theirs = classDef.deserialize({
-      row: theirs,
-      iModel: rebase.iModel
-    });
-    instanceConflict.ours = classDef.deserialize({
-      row: ours,
-      iModel: rebase.iModel
-    });
-  }
-
-  public constructor(id: Id64String, classFullName: string) {
-    this.id = id;
-    this.classFullName = classFullName;
-  }
-
-  public acceptOurs(rebase: InteractiveRebase, properties?: string[]): void {
-    applyResolution(rebase, this, this.ours, properties);
-  }
-
-  public acceptTheirs(rebase: InteractiveRebase, properties?: string[]): void {
-    applyResolution(rebase, this, this.theirs, properties);
-  }
-}
-
-class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConflict {
-  public readonly kind: "UniqueConstraint" = "UniqueConstraint";
-
-  public readonly id: Id64String;
-  public readonly classFullName: string;
-  public readonly original: RebaseConflictProperties | undefined = undefined;
-  public readonly ours: RebaseConflictProperties = {};
-  public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
-
-  public static record(interactive: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, detail?: UniqueConstraintConflictDetail): void {
-    const instanceId = ours.id ?? original?.id;
-    const classFullName = ours.classFullName ?? original?.classFullName;
-
-    let instanceConflict = conflicts.find(c => c.id === instanceId && c.kind === "UniqueConstraint") as UniqueConstraintRebaseConflict | undefined;
-    if (instanceConflict === undefined) {
-      instanceConflict = new UniqueConstraintRebaseConflictImpl(instanceId, classFullName);
-      conflicts.push(instanceConflict);
-    }
-
-    const classDef = interactive.iModel.getJsClass<typeof Element>(ours.classFullName);
-
     if (original !== undefined) {
-      instanceConflict.original = classDef.deserialize({
-        row: original,
-        iModel: interactive.iModel
-      });
+      conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
     }
-    instanceConflict.ours = classDef.deserialize({
-      row: ours,
-      iModel: interactive.iModel
-    });
+    conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
 
     if (detail === undefined) {
       // Native could not map the violated index back to EC properties. Still surface the conflict.
-      if (instanceConflict.uniqueConstraintViolations.length === 0) {
-        instanceConflict.uniqueConstraintViolations.push({ uniqueConstraintProperties: [], conflictingRow: {} });
+      if (conflict.uniqueConstraintViolations.length === 0) {
+        conflict.uniqueConstraintViolations.push({ uniqueConstraintProperties: [], conflictingRow: {} });
       }
       return;
     }
@@ -1216,19 +1008,26 @@ class UniqueConstraintRebaseConflictImpl implements UniqueConstraintRebaseConfli
     const isSameIndex = (other: UniqueConstraintViolation) =>
       other.uniqueConstraintProperties.length === uniqueConstraintProperties.length &&
       other.uniqueConstraintProperties.every((prop, i) => prop === uniqueConstraintProperties[i]);
-    if (!instanceConflict.uniqueConstraintViolations.some(isSameIndex)) {
-      instanceConflict.uniqueConstraintViolations.push({
+    if (!conflict.uniqueConstraintViolations.some(isSameIndex)) {
+      conflict.uniqueConstraintViolations.push({
         uniqueConstraintProperties,
         conflictingRow: classDef.deserialize({
           row: detail.conflictingRow ?? {},
-          iModel: interactive.iModel
+          iModel: rebase.iModel
         }),
       });
     }
   }
 
-  public constructor(id: Id64String, classFullName: string) {
-    this.id = id;
-    this.classFullName = classFullName;
+  public acceptOurs(properties?: string[]): void {
+    const ours = this.ours;
+    assert(ours !== undefined, "there are no local changes to accept for this conflict");
+    applyResolution(this._rebase, this, ours, ours, properties);
+  }
+
+  public acceptTheirs(properties?: string[]): void {
+    const { ours, theirs } = this;
+    assert(ours !== undefined && theirs !== undefined, "there are no upstream changes to accept for this conflict");
+    applyResolution(this._rebase, this, ours, theirs, properties);
   }
 }
