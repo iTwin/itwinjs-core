@@ -7,13 +7,13 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldRun, QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { FormattingSpecArgs } from "@itwin/core-quantity";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { Element } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
-import { collectFieldFormattingRequirements, collectIModelFieldFormattingRequirements, createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
+import { collectFieldFormattingRequirements, collectFieldRequirements, createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
 import { _implicitTxn } from "../internal/Symbols";
 import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
 import { EditTxn } from "../EditTxn";
@@ -223,24 +223,35 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * evaluation rather than falling back to raw strings.
    * Fields whose target property has no [KindOfQuantity]($ecschema-metadata) and no
    * `kindOfQuantity` / `persistenceUnit` override are omitted.
-   * @see [[collectIModelFieldFormattingRequirements]] to sweep an entire iModel instead.
+   *
+   * This answers "what does *this block* need". Deciding *which* blocks are in scope is the
+   * application's, not iTwin.js's — see [[registerFieldFormattingProvider]].
+   * @see [[getFieldFormattingRequirements]] for a single [FieldRun]($common).
    * @beta
    */
   public static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[] {
     return collectFieldFormattingRequirements(args.block, args.iModel);
   }
 
-  /** Returns the deduplicated [FormattingSpecArgs]($core-quantity) needed to format every
-   * dependency-tracked annotation already present in `iModel` — that is, every target of an
-   * `ElementDrivesTextAnnotation` relationship. This is what
-   * [[registerFieldFormattingProvider]] pre-warms by default.
+  /** Returns the [FormattingSpecArgs]($core-quantity) that formatting `field` may consult —
+   * usually one entry, more when the field's `formatOptions.quantity` overrides produce
+   * additional candidates, and none when the field's target property carries no
+   * [KindOfQuantity]($ecschema-metadata) and the field supplies no override.
    *
-   * Returns an empty array when `iModel`'s BisCore schema predates field dependencies (see
-   * [[isSupportedForIModel]]).
+   * Use this to accumulate requirements across a set of [FieldRun]($common)s the application
+   * has already gathered — for instance while building an annotation, or while walking the
+   * result of its own query for annotations in scope. Prefer
+   * [[collectFieldFormattingRequirements]] when the unit of work is a whole
+   * [TextBlock]($common), since it deduplicates for you.
+   *
+   * The mapping this performs is deliberately not something applications should reimplement:
+   * it must produce exactly the candidates, in the priority order, that evaluation walks. A
+   * near-miss does not render unformatted — it lets evaluation resolve a *different*
+   * (KindOfQuantity, persistence unit) pair and scale the value by the wrong unit.
    * @beta
    */
-  public static collectIModelFieldFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[] {
-    return collectIModelFieldFormattingRequirements(iModel);
+  public static getFieldFormattingRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
+    return collectFieldRequirements(field, iModel);
   }
 
   /** Creates a [[FieldFormattingSpecProvider]] for `args.iModel`, pre-warms it, and registers
@@ -258,10 +269,19 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * formats, units, and conversions all require `await`. Doing that work here — once, up front —
    * is what allows evaluation to stay synchronous afterwards.
    *
-   * By default every requirement of every annotation currently in the iModel is pre-warmed (see
-   * [[collectIModelFieldFormattingRequirements]]). Pass `requirements` to warm a specific set
-   * instead; pass an empty array to skip the sweep on a large iModel and warm incrementally via
-   * [FieldFormattingSpecProvider.warmUp]($backend).
+   * `requirements` is mandatory and iTwin.js performs no discovery of its own: it never walks
+   * `iModel` looking for annotations to warm. Applications own that decision because they
+   * already own the [FormatSet]($ecschema-metadata)s — both halves of the "which key resolves
+   * to which format" question are theirs, and they know which drawing, sheet or view is in
+   * scope in a way iTwin.js cannot. Build the array from
+   * [[collectFieldFormattingRequirements]] over the blocks you care about, from
+   * [[getFieldFormattingRequirements]] over individual [FieldRun]($common)s, and/or from
+   * [FieldFormattingSpecProvider.collectSchemaFormattingRequirements]($backend) for every [KindOfQuantity]($ecschema-metadata) the
+   * iModel's schemas declare.
+   *
+   * Anything left unwarmed renders as a raw string and is recorded in
+   * [FieldFormattingSpecProvider.misses]($backend); poll it after evaluating, then
+   * [FieldFormattingSpecProvider.warmUp]($backend) and re-evaluate.
    *
    * One provider serves **all** of an iModel's FormatSets, so mixing presentations does not mean
    * registering more than once. Supply the adopted FormatSet as `formatSet` and any additional
@@ -298,8 +318,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    */
   public static async registerFieldFormattingProvider(
     args: FieldFormattingSpecProviderArgs & {
-      /** Requirements to pre-warm. Defaults to [[collectIModelFieldFormattingRequirements]] over `args.iModel`. */
-      requirements?: FormattingSpecArgs[];
+      /** The specs to pre-build. Required — iTwin.js does not discover requirements on its own.
+       * Pass an empty array to register a provider that formats nothing until
+       * [FieldFormattingSpecProvider.warmUp]($backend) is called.
+       */
+      requirements: FormattingSpecArgs[];
     },
   ): Promise<FieldFormattingSpecProvider> {
     const provider = new FieldFormattingSpecProvider(args);
