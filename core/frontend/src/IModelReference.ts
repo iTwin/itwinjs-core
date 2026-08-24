@@ -10,11 +10,12 @@ import { BeEvent, Id64String, ObservableSet, OrderedId64Iterable } from "@itwin/
 import { _implementationProhibited } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { IModelDisplaySettings, IModelDisplaySettings3d } from "./IModelDisplaySettings";
+import { TileTreeReference } from "./tile/internal";
 
 export interface ExcludedElements extends OrderedId64Iterable {
-  addIds(ids: Iterable<Id64String>): void;
-  deleteIds(ids: Iterable<Id64String>): void;
-  clear(): void;
+  readonly addIds: (ids: Iterable<Id64String>) => void;
+  readonly deleteIds: (ids: Iterable<Id64String>) => void;
+  readonly clear: () => void;
 
   readonly onChanged: BeEvent<() => void>;
 }
@@ -30,6 +31,9 @@ export interface IModelReference {
 
   readonly isSpatial: () => this is SpatialIModelReference;
   readonly is2d: () => this is IModelReference2d;
+
+  readonly isLoadingComplete: boolean;
+  readonly tileTreeRefs: Iterable<TileTreeReference>;
 }
 
 export interface IModelReference2d extends IModelReference {
