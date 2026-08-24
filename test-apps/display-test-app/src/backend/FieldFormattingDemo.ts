@@ -51,8 +51,8 @@
  * production-quality implementation.
  */
 
-import { ElementDrivesTextAnnotation, FieldFormattingSpecProvider, IModelDb, UnresolvedFieldFormat } from "@itwin/core-backend";
-import { Id64String } from "@itwin/core-bentley";
+import { ElementDrivesTextAnnotation, FieldFormattingSpecProvider, IModelDb, isITextAnnotation, UnresolvedFieldFormat } from "@itwin/core-backend";
+import { BentleyError, Id64String, Logger } from "@itwin/core-bentley";
 import { TextBlock } from "@itwin/core-common";
 import { FormatProps, FormattingSpecArgs } from "@itwin/core-quantity";
 import { FormatSet } from "@itwin/ecschema-metadata";
@@ -324,6 +324,86 @@ let currentDemo: FieldFormattingSpecProvider | undefined;
 let currentDemoIModel: IModelDb | undefined;
 let currentDemoCloseUnsubscribe: (() => void) | undefined;
 
+/** The two BisCore classes that persist their annotation JSON in a `TextAnnotationData`
+ * column, and can therefore be pre-filtered in SQLite rather than in JavaScript.
+ */
+const TEXT_ANNOTATION_DATA_CLASSES = ["BisCore.TextAnnotation2d", "BisCore.TextAnnotation3d"] as const;
+
+/** Selects persisted annotations whose JSON mentions a field-level quantity override.
+ *
+ * Both keys are [QuantityFieldFormatOptions]($common) property names, which is what makes this
+ * legitimate to match on: they are the persisted form, not an implementation detail. A hit is a
+ * *superset* of "some field overrides its format" — the substring could equally appear in
+ * literal text — which is the safe direction to err in, since the block walk below decides for
+ * real and over-matching only costs time.
+ */
+const OVERRIDE_JSON_PREDICATE = `TextAnnotationData LIKE '%"kindOfQuantity"%' OR TextAnnotationData LIKE '%"persistenceUnit"%'`;
+
+/** Gathers the requirements contributed by [FieldRun]($common)s that carry an explicit
+ * `kindOfQuantity` or `persistenceUnit` override, by walking the annotations that have one.
+ *
+ * This is the half of the requirement set that [FieldFormattingSpecProvider.collectSchemaFormattingRequirements]($backend)
+ * cannot supply. Schema enumeration sees only pairs a *property* declares; a field may name a
+ * persistence unit no property in the iModel declares, and that pair is reachable no other way.
+ * Missing it is not a cosmetic shortfall — evaluation falls back to the property's own pair and
+ * scales the value by the wrong unit, so the field renders a plausible but **numerically wrong**
+ * number, which the txn callback then persists into `cachedContent`.
+ *
+ * Core deliberately does not do this: which annotations are in scope is an application question
+ * (a drawing? a sheet? the whole briefcase?), and the app already owns the FormatSets that the
+ * requirements resolve against. DTA answers "the whole briefcase" because it is a test app. A
+ * real application would more likely scope this to the model or view being opened.
+ *
+ * Cost is proportional to the number of *matching* annotations rather than to how many exist:
+ * the substring test runs inside SQLite, so annotations that override nothing never reach
+ * JavaScript. Only the second pass below pays per element, and in practice it matches nothing.
+ */
+function collectAnnotationOverrideRequirements(iModel: IModelDb): FormattingSpecArgs[] {
+  if (!ElementDrivesTextAnnotation.isSupportedForIModel(iModel))
+    return [];
+
+  const annotationIds: Id64String[] = [];
+
+  // Pass 1: the built-in classes, pre-filtered on their persisted JSON.
+  for (const className of TEXT_ANNOTATION_DATA_CLASSES) {
+    iModel.withQueryReader(`SELECT ECInstanceId FROM ${className} WHERE ${OVERRIDE_JSON_PREDICATE}`, (reader) => {
+      for (const row of reader)
+        annotationIds.push(row[0]);
+    });
+  }
+
+  // Pass 2: any other ITextAnnotation implementor. The mixin does not declare where an
+  // implementor keeps its text, so there is no column to pre-filter on — these have to be
+  // constructed and asked. Excluding the two classes above keeps that cost off the common case.
+  const excluded = TEXT_ANNOTATION_DATA_CLASSES.join(", ");
+  iModel.withQueryReader(`SELECT ECInstanceId FROM BisCore.ITextAnnotation WHERE ECClassId IS NOT (${excluded})`, (reader) => {
+    for (const row of reader)
+      annotationIds.push(row[0]);
+  });
+
+  const seen = new Map<string, FormattingSpecArgs>();
+  for (const annotationId of annotationIds) {
+    try {
+      const element = iModel.elements.tryGetElement(annotationId);
+      if (!element || !isITextAnnotation(element))
+        continue;
+
+      for (const { textBlock } of element.getTextBlocks()) {
+        // Core supplies the field -> (KindOfQuantity, persistence unit) mapping. Reimplementing
+        // it here would be the one part of this an application must not do: the requirement has
+        // to match the candidate evaluation actually walks, or the wrong pair resolves.
+        for (const args of ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block: textBlock }))
+          seen.set(`${args.name}|${args.persistenceUnitName}`, args);
+      }
+    } catch (err) {
+      // One unreadable annotation must not abort the scan.
+      Logger.logError("dta", `Failed to collect field formatting requirements from ${annotationId}: ${BentleyError.getErrorMessage(err)}`);
+    }
+  }
+
+  return Array.from(seen.values());
+}
+
 /** Returns the provider registered by [[enableFieldFormattingDemo]], if any. */
 export function getFieldFormattingDemo(): FieldFormattingSpecProvider | undefined {
   return currentDemo;
@@ -339,8 +419,9 @@ export async function prepareFieldFormattingDemoFor(iModel: IModelDb, block: Tex
   await currentDemo.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }));
 }
 
-/** Adopts [[DEMO_FORMAT_SET]] for `iModel`, pre-warming the demo seeds plus every
- * KindOfQuantity the iModel's schemas declare. Toggled by the `dta text demo <on|off>` keyin.
+/** Adopts [[DEMO_FORMAT_SET]] for `iModel`, pre-warming the demo seeds, every KindOfQuantity
+ * the iModel's schemas declare, and every pair contributed by an annotation that overrides one.
+ * Toggled by the `dta text demo <on|off>` keyin.
  *
  * The registration is torn down automatically when `iModel` closes (via
  * [IModelDb.onBeforeClose]($backend)) so it cannot outlive the briefcase it was warmed against.
@@ -358,14 +439,19 @@ export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void>
       { id: DEMO_FORMAT_SET_ID, formatSet: DEMO_FORMAT_SET },
       { id: DEMO_ALT_FORMAT_SET_ID, formatSet: DEMO_ALT_FORMAT_SET },
     ],
+    // Core discovers nothing on its own, so the demo composes its own requirement set from
+    // three sources. Duplicates across them are harmless: warm-up skips anything already cached.
     requirements: [
+      // 1. The demo's own formats, so they are usable as `kindOfQuantity` overrides even for
+      //    keys no property in the iModel declares.
       ...demoSeedRequirements(),
-      // The schema-derived floor: every KindOfQuantity the iModel's schemas declare, so any
-      // field targeting a KoQ-bearing property formats without the demo having to find that
-      // annotation first. Fields that *override* the persistence unit are not covered by this
-      // — `prepareFieldFormattingDemoFor` warms those per block as they are authored, and
-      // `dta text misses` reports anything that still slipped through.
+      // 2. The schema-derived floor: every KindOfQuantity the iModel's schemas declare, so a
+      //    field targeting a KoQ-bearing property formats without the demo having to find that
+      //    annotation first. Cheap, and independent of how many annotations exist.
       ...FieldFormattingSpecProvider.collectSchemaFormattingRequirements(iModel),
+      // 3. What the floor cannot see: pairs that exist only because a field overrides one.
+      //    Requires actually walking annotations — see the note there on why Core does not.
+      ...collectAnnotationOverrideRequirements(iModel),
     ],
   });
   currentDemoIModel = iModel;
