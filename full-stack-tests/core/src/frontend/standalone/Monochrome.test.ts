@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@itwin/core-common";
 import { FeatureSymbology, IModelConnection, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
@@ -12,12 +12,12 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Monochrome", async () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -48,10 +48,10 @@ describe("Monochrome", async () => {
 
         const isWireframe = RenderMode.Wireframe === renderMode;
         const colors = vp.readUniqueColors();
-        expect(colors.length).to.equal(isWireframe ? 2 : 3);
-        expect(colors.contains(bgColor)).to.be.true;
-        expect(colors.contains(monoColor)).to.be.true;
-        expect(colors.contains(edgeColor)).to.equal(!isWireframe);
+        expect(colors.length).toBe(isWireframe ? 2 : 3);
+        expect(colors.contains(bgColor)).toBe(true);
+        expect(colors.contains(monoColor)).toBe(true);
+        expect(colors.contains(edgeColor)).toBe(!isWireframe);
       }
     });
   });
@@ -73,9 +73,9 @@ describe("Monochrome", async () => {
       // Draw white surface on blue background. 100% intensity = 100% monochrome color.
       await vp.waitForAllTilesToRender();
       let colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      expect(colors.contains(Color.fromColorDef(ColorDef.red))).to.be.true;
-      expect(colors.contains(Color.fromColorDef(ColorDef.blue))).to.be.true;
+      expect(colors.length).toBe(2);
+      expect(colors.contains(Color.fromColorDef(ColorDef.red))).toBe(true);
+      expect(colors.contains(Color.fromColorDef(ColorDef.blue))).toBe(true);
 
       class ColorOverride {
         constructor(public color: ColorDef) { }
@@ -89,22 +89,22 @@ describe("Monochrome", async () => {
       vp.addFeatureOverrideProvider(provider);
       await vp.waitForAllTilesToRender();
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
-      expect(colors.contains(Color.fromColorDef(ColorDef.blue))).to.be.true;
-      expect(colors.contains(Color.fromColorDef(ColorDef.black))).to.be.true;
+      expect(colors.length).toBe(2);
+      expect(colors.contains(Color.fromColorDef(ColorDef.blue))).toBe(true);
+      expect(colors.contains(Color.fromColorDef(ColorDef.black))).toBe(true);
 
       // Draw surface as grey. 50% intensity = 50% monochrome color.
       provider.color = ColorDef.from(0x7f, 0x7f, 0x7f);
       vp.setFeatureOverrideProviderChanged();
       await vp.waitForAllTilesToRender();
       colors = vp.readUniqueColors();
-      expect(colors.length).to.equal(2);
+      expect(colors.length).toBe(2);
       for (const color of colors) {
         if (!color.equalsColorDef(ColorDef.blue)) {
-          expect(color.r).least(0x79);
+          expect(color.r).toBeGreaterThanOrEqual(0x79);
           expect(color.r).most(0x85);
-          expect(color.g).to.equal(0);
-          expect(color.b).to.equal(0);
+          expect(color.g).toBe(0);
+          expect(color.b).toBe(0);
         }
       }
     });

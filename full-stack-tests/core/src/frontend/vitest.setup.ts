@@ -11,8 +11,7 @@ import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
-import "./testHooks";
-import { installChaiAssertions, resolveChaiPlugin } from "./testAssertions";
+import { installVitestMatchers } from "./testMatchers";
 
 beforeAll(async () => {
   const { invokeBackendCallback } = await import("@itwin/vitest-browser-bridge/callbacks/browser");

@@ -1,6 +1,6 @@
 # Full-stack core test matrix
 
-This matrix records which `full-stack-tests/core` tests run in Chrome and Electron. Chrome uses Certa; Electron normal, integration, and performance runs use Vitest, with explicit Electron Certa fallback commands retained. The test source is shared; a runtime-specific entry means the suite is intentionally skipped in the other runtime, not deleted.
+This matrix records which `full-stack-tests/core` tests run in each Vitest browser runtime. The source is shared; a runtime-specific entry means the suite is intentionally skipped in the other runtime, not deleted.
 
 ## Runner commands
 
@@ -14,7 +14,7 @@ Normal commands exclude `#integration` and `#performance`. Integration and perfo
 
 ## Chrome-only suite decisions
 
-The following suites are Chrome-only because they validate transport-independent frontend behavior or expensive pixel/GPU behavior already covered by the Chrome renderer. They remain in the Chrome bundle and are reported as skipped by the Electron runner through the framework-neutral `describe.skip` conditional.
+The following suites are Chrome-only because they validate transport-independent frontend behavior or expensive pixel/GPU behavior already covered by the Chrome renderer. They remain in the shared test source but are selected only by the Chrome Vitest project; the Electron project excludes them rather than reporting no-op skips.
 
 - `src/frontend/map/BackgroundMap.test.ts` — pixel assertions over background-map rendering.
 - `src/frontend/map/PlanProjection.test.ts` — pixel assertions over plan projection rendering.
@@ -83,7 +83,7 @@ The 44 files not listed in the exception sections are currently shared by Chrome
 
 ## Runner requirements
 
-- Preserve these mode decisions: Chrome remains on Certa; Electron normal, integration, and performance runs use Vitest, with the explicit Electron Certa fallback commands retained.
-- Keep Certa and Vitest test names and counts aligned with this matrix.
+- Preserve these mode decisions for the Chrome and Electron Vitest projects.
+- Reconcile Vitest test names/counts against this matrix and the pre-migration baseline.
 - Keep Electron execution serial; do not add PR #9094's sharding/retry runner.
 - Revisit any Chrome-only decision if Vitest exposes a meaningful transport or renderer difference.

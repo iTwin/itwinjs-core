@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps,
   TerrainHeightOriginMode,
@@ -15,7 +15,7 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Background map", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend({
       ...TestUtility.iModelAppOptions,
       renderSys: {
@@ -27,7 +27,7 @@ describe("Background map", () => {
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -36,10 +36,10 @@ describe("Background map", () => {
 
   it("produces a different tile tree when background map settings change", async () => {
     async function isSameTileTree(vp: TestViewport, props: BackgroundMapProps | PersistentBackgroundMapProps): Promise<boolean> {
-      expect(vp.viewFlags.backgroundMap).to.be.true;
+      expect(vp.viewFlags.backgroundMap).toBe(true);
       await vp.waitForAllTilesToRender();
       const prevTree = vp.backgroundMap!.treeOwner.tileTree!;
-      expect(prevTree).not.to.be.undefined;
+      expect(prevTree).not.toBeUndefined();
 
       vp.changeBackgroundMapProps(props as BackgroundMapProps);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -50,7 +50,7 @@ describe("Background map", () => {
 
       await vp.waitForAllTilesToRender();
       const newTree = vp.backgroundMap!.treeOwner.tileTree!;
-      expect(newTree).not.to.be.undefined;
+      expect(newTree).not.toBeUndefined();
 
       return newTree === prevTree;
     }
@@ -92,8 +92,8 @@ describe("Background map", () => {
       vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
 
       for (const test of tests) {
-        expect(await isSameTileTree(vp, test[0])).to.equal(test[1]);
-        expect(await isSameTileTree(vp, test[0])).to.be.true;
+        expect(await isSameTileTree(vp, test[0])).toBe(test[1]);
+        expect(await isSameTileTree(vp, test[0])).toBe(true);
       }
     });
   });

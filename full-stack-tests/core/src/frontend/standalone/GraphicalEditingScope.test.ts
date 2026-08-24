@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
+import { expect } from "vitest";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
@@ -17,10 +16,6 @@ import { IModelTileTree, IModelTileTreeParams } from "@itwin/core-frontend/lib/c
 import { addAllowedChannel, coreFullStackTestCommandIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 import { readUniqueElements, testOnScreenViewport } from "../TestViewport";
-import { resolveChaiPlugin } from "../testAssertions";
-
-const expect = chai.expect;
-chai.use(resolveChaiPlugin(chaiAsPromised));
 
 const dummyRange = new Range3d();
 function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange {
@@ -48,12 +43,12 @@ describe("GraphicalEditingScope", () => {
       }
     }
 
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await closeIModel();
       await TestUtility.shutdownFrontend();
     });
@@ -64,33 +59,33 @@ describe("GraphicalEditingScope", () => {
 
     it("should not be supported for read-only connections", async () => {
       imodel = await BriefcaseConnection.openStandalone(oldFilePath, OpenMode.Readonly);
-      expect(imodel.openMode).to.equal(OpenMode.Readonly);
-      expect(await imodel.supportsGraphicalEditing()).to.be.false;
-      await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
+      expect(imodel.openMode).toBe(OpenMode.Readonly);
+      expect(await imodel.supportsGraphicalEditing()).toBe(false);
+      await expect(imodel.enterEditingScope()).rejects.toThrow(IModelError);
     });
 
     it("should not be supported for iModels with BisCore < 1.0.11", async () => {
       imodel = await BriefcaseConnection.openStandalone(oldFilePath);
-      expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
-      expect(await imodel.supportsGraphicalEditing()).to.be.false;
-      await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
+      expect(imodel.openMode).toBe(OpenMode.ReadWrite);
+      expect(await imodel.supportsGraphicalEditing()).toBe(false);
+      await expect(imodel.enterEditingScope()).rejects.toThrow(IModelError);
     });
 
     it("should not be supported for read-only iModels with BisCore >= 1.0.11", async () => {
       imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.Readonly);
-      expect(imodel.openMode).to.equal(OpenMode.Readonly);
-      expect(await imodel.supportsGraphicalEditing()).to.be.false;
-      await expect(imodel.enterEditingScope()).to.be.rejectedWith(IModelError);
+      expect(imodel.openMode).toBe(OpenMode.Readonly);
+      expect(await imodel.supportsGraphicalEditing()).toBe(false);
+      await expect(imodel.enterEditingScope()).rejects.toThrow(IModelError);
     });
 
     it("should be supported for writable iModels with BisCore >= 1.0.11", async () => {
       imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
-      expect(imodel.openMode).to.equal(OpenMode.ReadWrite);
-      expect(await imodel.supportsGraphicalEditing()).to.be.true;
+      expect(imodel.openMode).toBe(OpenMode.ReadWrite);
+      expect(await imodel.supportsGraphicalEditing()).toBe(true);
       const scope = await imodel.enterEditingScope();
-      expect(imodel.editingScope).to.equal(scope);
+      expect(imodel.editingScope).toBe(scope);
       await scope.exit();
-      expect(imodel.editingScope).to.be.undefined;
+      expect(imodel.editingScope).toBeUndefined();
     });
 
     it("waits for deferred cleanup before testOnScreenViewport returns", async () => {
@@ -104,11 +99,11 @@ describe("GraphicalEditingScope", () => {
       try {
         const testViewport = testOnScreenViewport(views[0].id, imodel, 100, 100, async () => { }).finally(() => settled = true);
         await new Promise<void>((resolve) => setTimeout(resolve, 0));
-        expect(settled).to.be.false;
+        expect(settled).toBe(false);
 
         releaseFinishCommand?.();
         await testViewport;
-        expect(settled).to.be.true;
+        expect(settled).toBe(true);
       } finally {
         IModelApp.toolAdmin.setEditCommandHandler();
       }
@@ -118,34 +113,34 @@ describe("GraphicalEditingScope", () => {
       imodel = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
       const scope = await imodel.enterEditingScope();
       try {
-        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(10_000);
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).toBe(10_000);
 
         scope.dynamicGraphicsAbsolutePositionThreshold = 25_000;
-        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(25_000);
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).toBe(25_000);
 
         scope.dynamicGraphicsAbsolutePositionThreshold = 0;
-        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(0);
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).toBe(0);
 
         scope.dynamicGraphicsAbsolutePositionThreshold = Number.POSITIVE_INFINITY;
-        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(Number.POSITIVE_INFINITY);
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).toBe(Number.POSITIVE_INFINITY);
 
         // Negative values are clamped to zero.
         scope.dynamicGraphicsAbsolutePositionThreshold = -100;
-        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(0);
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).toBe(0);
 
         // Non-finite values other than +Infinity are ignored.
         scope.dynamicGraphicsAbsolutePositionThreshold = 5_000;
         scope.dynamicGraphicsAbsolutePositionThreshold = Number.NaN;
-        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(5_000);
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).toBe(5_000);
         scope.dynamicGraphicsAbsolutePositionThreshold = Number.NEGATIVE_INFINITY;
-        expect(scope.dynamicGraphicsAbsolutePositionThreshold).to.equal(5_000);
+        expect(scope.dynamicGraphicsAbsolutePositionThreshold).toBe(5_000);
       } finally {
         await scope.exit();
       }
     });
 
     async function openWritable(): Promise<BriefcaseConnection> {
-      expect(imodel).to.be.undefined;
+      expect(imodel).toBeUndefined();
       const rwConn = await BriefcaseConnection.openStandalone(newFilePath, OpenMode.ReadWrite);
       await addAllowedChannel(rwConn, "shared");
       return rwConn;
@@ -154,7 +149,7 @@ describe("GraphicalEditingScope", () => {
     it("throws if enter is called repeatedly", async () => {
       imodel = await openWritable();
       const scope = await imodel.enterEditingScope();
-      await expect(imodel.enterEditingScope()).to.be.rejectedWith("Cannot create an editing scope for an iModel that already has one");
+      await expect(imodel.enterEditingScope()).rejects.toThrow("Cannot create an editing scope for an iModel that already has one");
       await scope.exit();
     });
 
@@ -162,17 +157,17 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
       const scope = await imodel.enterEditingScope();
       await scope.exit();
-      await expect(scope.exit()).to.be.rejectedWith("Cannot exit editing scope after it is disconnected from the iModel");
+      await expect(scope.exit()).rejects.toThrow("Cannot exit editing scope after it is disconnected from the iModel");
     });
 
     it("exits the scope when closing the iModel", async () => {
       imodel = await openWritable();
       const scope = await imodel.enterEditingScope();
-      expect(imodel.editingScope).to.equal(scope);
-      expect(scope.isDisposed).to.be.false;
+      expect(imodel.editingScope).toBe(scope);
+      expect(scope.isDisposed).toBe(false);
       await imodel.close();
-      expect(scope.isDisposed).to.be.true;
-      expect(imodel.editingScope).to.be.undefined;
+      expect(scope.isDisposed).toBe(true);
+      expect(imodel.editingScope).toBeUndefined();
     });
 
     it("dispatches events when scopes enter or exit", async () => {
@@ -182,7 +177,7 @@ describe("GraphicalEditingScope", () => {
       const removeBeginListener = GraphicalEditingScope.onEnter.addListener(() => ++beginCount);
 
       const scope = await imodel.enterEditingScope();
-      expect(beginCount).to.equal(1);
+      expect(beginCount).toBe(1);
 
       let endingCount = 0;
       let endCount = 0;
@@ -190,11 +185,11 @@ describe("GraphicalEditingScope", () => {
       const removeEndListener = scope.onExited.addListener(() => ++endCount);
 
       const endPromise = scope.exit();
-      expect(endingCount).to.equal(1);
-      expect(endCount).to.equal(0);
+      expect(endingCount).toBe(1);
+      expect(endCount).toBe(0);
 
       await endPromise;
-      expect(endCount).to.equal(1);
+      expect(endCount).toBe(1);
 
       removeBeginListener();
       removeEndListener();
@@ -218,31 +213,31 @@ describe("GraphicalEditingScope", () => {
 
       function expectChanges(expected: ElementGeometryChange[], compareRange = false): void {
         const changes = scope.getGeometryChangesForModel(modelId);
-        expect(undefined === changes).to.equal(expected.length === 0);
+        expect(undefined === changes).toBe(expected.length === 0);
         if (changes) {
           const actual = Array.from(changes).sort((x, y) => compareStrings(x.id, y.id));
           if (compareRange) {
-            expect(actual).to.deep.equal(expected);
+            expect(actual).toEqual(expected);
           } else {
-            expect(actual.length).to.equal(expected.length);
+            expect(actual.length).toBe(expected.length);
             for (let i = 0; i < actual.length; i++) {
-              expect(actual[i].id).to.equal(expected[i].id);
-              expect(actual[i].type).to.equal(expected[i].type);
+              expect(actual[i].id).toBe(expected[i].id);
+              expect(actual[i].type).toBe(expected[i].type);
             }
           }
         }
       }
 
       // Insert a line element.
-      expect(scope.getGeometryChangesForModel(modelId)).to.be.undefined;
+      expect(scope.getGeometryChangesForModel(modelId)).toBeUndefined();
       const elem1 = await insertLineElement(imodel, modelId, category);
       // Events not dispatched until changes saved.
       await saveBriefcaseChanges(imodel);
       const insertElem1 = makeInsert(elem1);
       expectChanges([insertElem1]);
-      expect(changedElements!.deleted).to.be.undefined;
-      expect(changedElements!.updated).to.be.undefined;
-      expect(changedElements!.inserted).to.not.be.undefined;
+      expect(changedElements!.deleted).toBeUndefined();
+      expect(changedElements!.updated).toBeUndefined();
+      expect(changedElements!.inserted).not.toBeUndefined();
 
       // Modify the line element.
       await transformElements(imodel, [elem1], Transform.createTranslationXYZ(1, 0, 0));
@@ -269,7 +264,7 @@ describe("GraphicalEditingScope", () => {
       // NOTE: Elements do not get removed from the set returned by getGeometryChangedForModel -
       // but their state may change (e.g. from "insert" to "delete") as a result of undo/redo/
       const isUndoPossible = await imodel.txns.isUndoPossible();
-      expect(isUndoPossible).to.be.true;
+      expect(isUndoPossible).toBe(true);
 
       const undo = async () => imodel!.txns.reverseSingleTxn();
       await imodel.txns.reverseSingleTxn();
@@ -313,7 +308,7 @@ describe("GraphicalEditingScope", () => {
 
       await imodel.models.load([modelId]);
       const model = imodel.models.getLoaded(modelId) as GeometricModel3dState;
-      expect(model).not.to.be.undefined;
+      expect(model).not.toBeUndefined();
       const location = Transform.createTranslationXYZ(0, 0, 2);
 
       // NB: element ranges are minimum 1mm on each axis. Our line element is aligned to X axis.
@@ -359,17 +354,17 @@ describe("GraphicalEditingScope", () => {
         const rangeTolerance = 0.0001;
         const treeList = tree instanceof IModelTileTree ? [tree] : tree;
         for (const t of treeList) {
-          expect(t.tileState).to.equal(expectedState);
-          expect(t.hiddenElements.length).to.equal(expectedHiddenElementCount);
-          expect(t.rootTile.range.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
-          expect(t.rootTile.contentRange.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
-          expect(t.contentRange!.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
+          expect(t.tileState).toBe(expectedState);
+          expect(t.hiddenElements.length).toBe(expectedHiddenElementCount);
+          expect(t.rootTile.range.isAlmostEqual(expectedRange, rangeTolerance)).toBe(true);
+          expect(t.rootTile.contentRange.isAlmostEqual(expectedRange, rangeTolerance)).toBe(true);
+          expect(t.contentRange!.isAlmostEqual(expectedRange, rangeTolerance)).toBe(true);
         }
       };
 
       // No editing scope currently active.
       const tree1 = createTileTree();
-      expect(tree1.range.isAlmostEqual(modelRange)).to.be.true;
+      expect(tree1.range.isAlmostEqual(modelRange)).toBe(true);
       await expectTreeState(tree1, "static", 0, modelRange);
 
       const tree0 = createTileTree();
@@ -454,7 +449,7 @@ describe("GraphicalEditingScope", () => {
 
       await imodel.models.load([modelId]);
       const model = imodel.models.getLoaded(modelId) as GeometricModel3dState;
-      expect(model).not.to.be.undefined;
+      expect(model).not.toBeUndefined();
       const location = Transform.createIdentity();
 
       const modelRange = await model.queryModelRange();
@@ -504,9 +499,9 @@ describe("GraphicalEditingScope", () => {
           for (const child of root.children) {
             if (child instanceof DynamicIModelTile && child.children) {
               for (const gc of child.children) {
-                expect(gc.range.isAlmostEqual(expectedRange, rangeTolerance)).to.be.true;
-                expect(gc.boundingSphere.center.isAlmostEqual(expectedCenter, rangeTolerance)).to.be.true;
-                expect(Math.abs(gc.boundingSphere.radius - expectedRadius)).to.be.lessThan(rangeTolerance);
+                expect(gc.range.isAlmostEqual(expectedRange, rangeTolerance)).toBe(true);
+                expect(gc.boundingSphere.center.isAlmostEqual(expectedCenter, rangeTolerance)).toBe(true);
+                expect(Math.abs(gc.boundingSphere.radius - expectedRadius)).toBeLessThan(rangeTolerance);
               }
             }
           }
@@ -588,9 +583,9 @@ describe("GraphicalEditingScope", () => {
         const featureAppearance = onScreenTarget.uniforms.branch.stack.top.symbologyOverrides.animationNodeOverrides.get(1);
 
         // Make sure the feature appearance overrides was applied.
-        expect(featureAppearance).to.not.be.undefined;
-        expect(featureAppearance?.overridesRgb).to.be.true;
-        expect(featureAppearance?.rgb).to.eql({ r: 255, g: 0, b: 0 });
+        expect(featureAppearance).not.toBeUndefined();
+        expect(featureAppearance?.overridesRgb).toBe(true);
+        expect(featureAppearance?.rgb).toEqual({ r: 255, g: 0, b: 0 });
       });
 
       // Restore the element to its original position.
@@ -631,23 +626,23 @@ describe("GraphicalEditingScope", () => {
       const bc = imodel;
       await testOnScreenViewport(view, bc, 100, 100, async (vp) => {
         await vp.waitForAllTilesToRender();
-        expect(vp.sceneValid).to.be.true;
-        expect(readUniqueElements(vp).length).to.equal(numInitialElements);
+        expect(vp.sceneValid).toBe(true);
+        expect(readUniqueElements(vp).length).toBe(numInitialElements);
 
         let tileTree: IModelTileTree | undefined;
         for (const ref of vp.getTileTreeRefs()) {
-          expect(tileTree).to.be.undefined;
+          expect(tileTree).toBeUndefined();
           tileTree = ref.treeOwner.tileTree as IModelTileTree;
-          expect(tileTree).not.to.be.undefined;
-          expect(tileTree).instanceof(IModelTileTree);
+          expect(tileTree).not.toBeUndefined();
+          expect(tileTree).toBeInstanceOf(IModelTileTree);
         }
 
-        expect(tileTree).not.to.be.undefined;
-        expect(tileTree!.tileState).to.equal("static");
-        expect(tileTree!.dynamicElements.length).to.equal(0);
+        expect(tileTree).not.toBeUndefined();
+        expect(tileTree!.tileState).toBe("static");
+        expect(tileTree!.dynamicElements.length).toBe(0);
 
         const scope = await bc.enterEditingScope();
-        expect(tileTree!.tileState).to.equal("interactive");
+        expect(tileTree!.tileState).toBe("interactive");
 
         // Insert a new line element. It should draw using dynamic graphics.
         const ext = bc.projectExtents;
@@ -656,14 +651,14 @@ describe("GraphicalEditingScope", () => {
 
         const waitTime = 150;
         await BeDuration.wait(waitTime);
-        expect(tileTree!.tileState).to.equal("dynamic");
+        expect(tileTree!.tileState).toBe("dynamic");
 
         await vp.waitForAllTilesToRender();
-        expect(vp.sceneValid).to.be.true;
-        expect(tileTree!.dynamicElements.length).to.equal(1);
+        expect(vp.sceneValid).toBe(true);
+        expect(tileTree!.dynamicElements.length).toBe(1);
         const elements = readUniqueElements(vp);
-        expect(elements.length).to.equal(numInitialElements + 1);
-        expect(elements.includes(lineElementId)).to.be.true;
+        expect(elements.length).toBe(numInitialElements + 1);
+        expect(elements.includes(lineElementId)).toBe(true);
 
         await scope.exit();
       });
@@ -722,7 +717,7 @@ describe("GraphicalEditingScope", () => {
       const p1 = new Point3d(bc.projectExtents.high.x, bc.projectExtents.low.y, 0);
       const center = p0.interpolate(0.5, p1);
       const maxCoord = Math.max(Math.abs(center.x), Math.abs(center.y), Math.abs(center.z));
-      expect(maxCoord).to.be.greaterThan(0);
+      expect(maxCoord).toBeGreaterThan(0);
       const threshold = maxCoord * thresholdFactor; // 0, below maxCoord, above maxCoord, or +Infinity
 
       const tileAdmin = IModelApp.tileAdmin;
@@ -752,9 +747,9 @@ describe("GraphicalEditingScope", () => {
             await BeDuration.wait(150);
             await vp.waitForAllTilesToRender();
 
-            expect(requested.length).to.be.greaterThan(0);
+            expect(requested.length).toBeGreaterThan(0);
             for (const useAbsolutePositions of requested)
-              expect(useAbsolutePositions).to.equal(expected);
+              expect(useAbsolutePositions).toBe(expected);
           } finally {
             await scope.exit().catch(() => { });
           }

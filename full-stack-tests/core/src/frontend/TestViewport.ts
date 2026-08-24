@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { Id64, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import {
@@ -135,7 +135,7 @@ export function readUniqueElements(vp: Viewport, readRect?: ViewRect, excludeNon
 
 function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
   const pixels = readUniquePixelData(vp, new ViewRect(x, y, x + 1, y + 1), excludeNonLocatable);
-  expect(pixels.length).to.equal(1);
+  expect(pixels.length).toBe(1);
   return pixels.array[0];
 }
 
@@ -143,7 +143,7 @@ function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boo
 function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const buffer = vp.readImageBuffer({ rect })!;
-  expect(buffer).not.to.be.undefined;
+  expect(buffer).not.toBeUndefined();
   const u32 = new Uint32Array(buffer.data.buffer);
   const colors = new ColorSet();
   for (const rgba of u32)
@@ -154,7 +154,7 @@ function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
 
 function readColor(vp: Viewport, x: number, y: number): Color {
   const colors = readUniqueColors(vp, new ViewRect(x, y, x + 1, y + 1));
-  expect(colors.length).to.equal(1);
+  expect(colors.length).toBe(1);
   return colors.array[0];
 }
 
@@ -237,7 +237,7 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
 
     const rect = new ViewRect(0, 0, width, height);
     const vp = this.create({ view, viewRect: rect }) as OffScreenTestViewport;
-    expect(vp).instanceof(OffScreenTestViewport);
+    expect(vp).toBeInstanceOf(OffScreenTestViewport);
     return vp;
   }
 
@@ -311,7 +311,7 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
     view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
 
     const vp = this.create(div, view) as ScreenTestViewport;
-    expect(vp).instanceof(ScreenTestViewport);
+    expect(vp).toBeInstanceOf(ScreenTestViewport);
     IModelApp.viewManager.addViewport(vp);
     return vp;
   }

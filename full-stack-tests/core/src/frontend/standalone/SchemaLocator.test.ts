@@ -7,7 +7,7 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { EntityClass, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 const describeChrome = ProcessDetector.isElectronAppFrontend ? describe.skip : describe;
@@ -50,25 +50,25 @@ describeChrome("Schema Locater Tests", () => {
   it("locating a non-existent schema asynchronously should return undefined", async () => {
     const schemaKey = new SchemaKey("SchemaDoesNotExist", 1, 0, 0);
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
-    assert.isUndefined(schema);
+    expect(schema).toBeUndefined();
   });
 
   it("should throw an exception when locating a schema synchronously without caching", () => {
     const schemaKey = new SchemaKey("Gist", 1, 0, 0);
     let schema: Schema | undefined;
     expect(() => schema = context.getSchemaSync(schemaKey, SchemaMatchType.Exact)).to.throw("getSchemaSync is not supported. Use the asynchronous getSchema method instead.");
-    assert.isUndefined(schema);
+    expect(schema).toBeUndefined();
   });
 
   it("should retrieve schema items asynchronously", async () => {
     const toyPart = await context.getSchemaItem("Gist.ToyPart", EntityClass);
-    expect(toyPart?.name).to.eql("ToyPart");
+    expect(toyPart?.name).toEqual("ToyPart");
     const rod = await context.getSchemaItem("Gist.Rod", EntityClass);
-    expect(rod?.name).to.eql("Rod");
+    expect(rod?.name).toEqual("Rod");
     const hub = await context.getSchemaItem("Gist.Hub", EntityClass);
-    expect(hub?.name).to.eql("Hub");
+    expect(hub?.name).toEqual("Hub");
     const gistPhysicalElement = await context.getSchemaItem("Gist.GistPhysicalElement", EntityClass);
-    expect(gistPhysicalElement?.name).to.eql("GistPhysicalElement");
+    expect(gistPhysicalElement?.name).toEqual("GistPhysicalElement");
   });
 
   it("should throw an exception when retrieving schema items synchronously over RPC/HTTP", () => {
@@ -81,14 +81,14 @@ describeChrome("Schema Locater Tests", () => {
   it("should cache schema items in the context after asynchronous retrieval", async () => {
     // Retrieve a schema item asynchronously, which caches the schema in the context
     const toyPart = await context.getSchemaItem("Gist.ToyPart", EntityClass);
-    expect(toyPart?.name).to.eql("ToyPart");
+    expect(toyPart?.name).toEqual("ToyPart");
 
     // Retrieve other schema items synchronously, which works because the schema is now cached
     const rod = context.getSchemaItemSync("Gist.Rod", EntityClass);
-    expect(rod?.name).to.eql("Rod");
+    expect(rod?.name).toEqual("Rod");
     const hub = context.getSchemaItemSync("Gist.Hub", EntityClass);
-    expect(hub?.name).to.eql("Hub");
+    expect(hub?.name).toEqual("Hub");
     const gistPhysicalElement = context.getSchemaItemSync("Gist.GistPhysicalElement", EntityClass);
-    expect(gistPhysicalElement?.name).to.eql("GistPhysicalElement");
+    expect(gistPhysicalElement?.name).toEqual("GistPhysicalElement");
   });
 });
