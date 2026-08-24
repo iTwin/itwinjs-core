@@ -5,7 +5,7 @@
 
 import { ViewDefinition3dProps } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Cesium3DTileset, Clock, Color, createWorldImageryAsync, defined, Ellipsoid, Globe, ImageryLayer, Ion, IonWorldImageryStyle, Matrix4, OrthographicFrustum, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
+import { Cartesian3, Cesium3DTileset, Cesium3DTileStyle, Clock, Color, createWorldImageryAsync, defined, Ellipsoid, Globe, ImageryLayer, Ion, IonWorldImageryStyle, Matrix4, OrthographicFrustum, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
 
 /** Options to configure a Cesium scene.
@@ -121,8 +121,7 @@ export class CesiumScene {
     void this.loadGaussianSplatTileset("https://raw.githubusercontent.com/CesiumGS/cesium/1.135/Specs/Data/Cesium3DTiles/GaussianSplats/tower/tileset.json");
     // void this.loadGaussianSplatTileset(3667783);
 
-    void this.loadVectorTileset(4854512);
-    void this.loadVectorTileset(96188);
+    void this.loadVectorTileset(5157733);
 
     const onRenderError = function (_scene: any, error: any) {
       const title =
@@ -193,9 +192,28 @@ export class CesiumScene {
 
   private async loadVectorTileset(assetId: number): Promise<void> {
     try {
+      // Tileset is in NYC. Brooklyn Navy Yard is a good location to view it from.
       const tileset = await Cesium3DTileset.fromIonAssetId(assetId);
       this._scene.primitives.add(tileset);
       this._vectorTileset = tileset;
+
+      tileset.style = new Cesium3DTileStyle({
+        color: {
+          conditions: [
+            [
+              "Number(${cnstrct_yr}) === 0 || ${cnstrct_yr} === null",
+              "color('grey', 0.6)",
+            ],
+            ["Number(${cnstrct_yr}) < 1900", "color('#4b0082', 0.8)"],
+            ["Number(${cnstrct_yr}) < 1940", "color('#0000cd', 0.8)"],
+            ["Number(${cnstrct_yr}) < 1970", "color('#008080', 0.8)"],
+            ["Number(${cnstrct_yr}) < 1990", "color('#228b22', 0.8)"],
+            ["Number(${cnstrct_yr}) < 2000", "color('#ffd700', 0.8)"],
+            ["Number(${cnstrct_yr}) < 2010", "color('#ff8c00', 0.8)"],
+            ["true", "color('#ff3300', 0.8)"],
+          ],
+        },
+      });
     } catch (error) {
       console.log(`Failed to load vector tileset ${assetId.toString(10)}`, error);
     }
