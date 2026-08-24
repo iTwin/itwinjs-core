@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BeUnorderedUiEvent, Id64String } from "@itwin/core-bentley";
+import { BeUnorderedUiEvent } from "@itwin/core-bentley";
 import {
   createUnitsProvider, Format, FormatsProvider, FormatterSpec, FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParserSpec,
   UnitsProvider, UnitSystemKey,
@@ -20,8 +20,11 @@ import { IModelDb } from "../IModelDb";
  * @beta
  */
 export interface UnresolvedFieldFormat extends FormattingSpecArgs {
-  /** The [QuantityFieldFormatOptions.formatSet]($common) of the field that missed, if it declared one. */
-  formatSet?: Id64String;
+  /** The [QuantityFieldFormatOptions.formatSet]($common) of the field that missed, if it declared
+   * one. Diagnostic only: [[FieldFormattingSpecProvider.warmUp]] warms every bucket, so it does
+   * not need this to act on a miss.
+   */
+  formatSet?: string;
 }
 
 /** Identifies one cached spec. `system` participates because a [FormattingSpecArgs]($core-quantity)
@@ -187,12 +190,13 @@ export interface FieldFormattingSpecProviderArgs {
    * precedence over the schema's own presentation formats.
    */
   formatSet?: FormatSet;
-  /** Additional FormatSets addressable per-field, each paired with the [Id64String]($bentley)
-   * that [FieldRun]($common)s reference via [QuantityFieldFormatOptions.formatSet]($common).
+  /** Additional FormatSets addressable per-field, each paired with the id that
+   * [FieldRun]($common)s reference via [QuantityFieldFormatOptions.formatSet]($common).
    * Use these to mix presentations within one iModel — imperial callouts on an otherwise metric
-   * drawing, say. A field naming an id absent from this list falls back to [[formatSet]].
+   * drawing, say. The id must be unique; a field naming an id absent from this list falls back to
+   * [[formatSet]].
    */
-  formatSets?: ReadonlyArray<{ id: Id64String, formatSet: FormatSet }>;
+  formatSets?: ReadonlyArray<{ id: string, formatSet: FormatSet }>;
   /** Unit system used to pick a KindOfQuantity's presentation format when the schema offers
    * several. Defaults to [[formatSet]]'s own `unitSystem`, or `"metric"` when no FormatSet is
    * adopted.
@@ -206,9 +210,9 @@ export interface FieldFormattingSpecProviderArgs {
  *
  * One provider holds **every** FormatSet an iModel uses, not one per FormatSet: the adopted
  * [[FieldFormattingSpecProviderArgs.formatSet]] plus any number of additional
- * [[FieldFormattingSpecProviderArgs.formatSets]] keyed by [Id64String]($bentley). Each is warmed
- * into its own bucket, and an individual [FieldRun]($common) selects one by naming its id in
- * [QuantityFieldFormatOptions.formatSet]($common).
+ * [[FieldFormattingSpecProviderArgs.formatSets]] keyed by a unique id. Each is
+ * warmed into its own bucket, and an individual [FieldRun]($common) selects one by naming its id
+ * in [QuantityFieldFormatOptions.formatSet]($common).
  *
  * This is what lets the synchronous field-evaluation path — [ElementDrivesTextAnnotation.evaluateFields]($backend)
  * and the `TxnManager` field-update callbacks, neither of which can await — produce the same
@@ -244,7 +248,7 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
 
   private readonly _unitsProvider: UnitsProvider;
   private readonly _default: FieldSpecBucket;
-  private readonly _buckets = new Map<Id64String, FieldSpecBucket>();
+  private readonly _buckets = new Map<string, FieldSpecBucket>();
   private readonly _misses = new Map<string, UnresolvedFieldFormat>();
 
   public constructor(args: FieldFormattingSpecProviderArgs) {
@@ -339,7 +343,7 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
    * only when a field resolved *none* of its candidates, so a miss here is always actionable.
    * @internal
    */
-  public recordMisses(candidates: FormattingSpecArgs[], formatSet: Id64String | undefined): void {
+  public recordMisses(candidates: FormattingSpecArgs[], formatSet: string | undefined): void {
     for (const args of candidates) {
       const key = `${formatSet ?? ""}|${specKey(args)}`;
       if (!this._misses.has(key)) {
@@ -353,7 +357,7 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
    * against the iModel's schema formats.
    * @internal
    */
-  public getProviderFor(formatSet: Id64String | undefined): FormattingSpecProvider {
+  public getProviderFor(formatSet: string | undefined): FormattingSpecProvider {
     return (formatSet ? this._buckets.get(formatSet) : undefined) ?? this._default;
   }
 

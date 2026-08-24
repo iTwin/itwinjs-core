@@ -131,16 +131,18 @@ export interface QuantityFieldFormatOptions {
    * the interface JSDoc for the full resolution priority.
    */
   kindOfQuantity?: string;
-  /** [Id64String]($bentley) of a persisted FormatSet element whose formats take precedence for
-   * this field, letting one iModel mix presentations (e.g. metric and imperial callouts).
+  /** Identifier of a FormatSet whose formats take precedence for this field, letting one iModel
+   * mix presentations (e.g. metric and imperial callouts).
    *
-   * Resolved against the FormatSets supplied to
-   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend). A FormatSet with no
-   * entry for the field's [KindOfQuantity]($ecschema-metadata) — and a field naming a FormatSet
+   * This is an application-chosen identifier, matched against the ids the application supplies
+   * alongside each FormatSet to
+   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend). iTwin.js does not
+   * interpret it and does not resolve it against anything persisted in the iModel. A FormatSet
+   * with no entry for the field's [KindOfQuantity]($ecschema-metadata) — and a field naming an id
    * that was never supplied — falls through to the iModel's schema presentation format rather
    * than to the raw string.
    */
-  formatSet?: Id64String;
+  formatSet?: string;
 }
 
 /** Customizes how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
