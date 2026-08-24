@@ -6,10 +6,18 @@
  * @module Views
  */
 
-import { Id64String, ObservableSet } from "@itwin/core-bentley";
+import { BeEvent, Id64String, ObservableSet, OrderedId64Iterable } from "@itwin/core-bentley";
 import { _implementationProhibited } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { IModelDisplaySettings, IModelDisplaySettings3d } from "./IModelDisplaySettings";
+
+export interface ExcludedElements extends OrderedId64Iterable {
+  addIds(ids: Iterable<Id64String>): void;
+  deleteIds(ids: Iterable<Id64String>): void;
+  clear(): void;
+
+  readonly onChanged: BeEvent<() => void>;
+}
 
 export interface IModelReference {
   readonly [_implementationProhibited]: unknown;
@@ -18,7 +26,7 @@ export interface IModelReference {
   readonly displaySettings: IModelDisplaySettings;
 
   readonly viewedCategories: ObservableSet<Id64String>;
-  // excluded elements
+  readonly excludedElements: ExcludedElements;
 
   readonly isSpatial: () => this is SpatialIModelReference;
   readonly is2d: () => this is IModelReference2d;
