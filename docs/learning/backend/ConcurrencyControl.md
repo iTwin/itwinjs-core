@@ -194,9 +194,12 @@ Not every lock has to be requested by hand. These are handled for you:
 | --- | --- |
 | **Elements you just created** | An element inserted by your briefcase since its last push is *implicitly* exclusively locked — no server round trip is needed to edit or delete it in the same session. This is inferred from a recorded local-Id "high-water mark" (see [How the briefcase tracks locks locally](#how-the-briefcase-tracks-locks-locally)), plus an explicit record for the cases the high-water mark can't cover. |
 | **Owner locks** | `acquireLocks` adds the shared locks on models and parents up the hierarchy — see [Acquiring locks on elements](#acquiring-locks-on-elements). |
-| **Schema import** | [IModelDb.importSchemas]($backend) acquires the lock it needs (schema lock, or a shared root lock, depending on configuration) before importing. You still control the surrounding pull/push. |
-| **Dropping schemas** | `dropSchemas` acquires the schema lock and releases all locks when finished. |
+| **Schema import** | [IModelDb.importSchemas]($backend) and `importSchemaStrings` acquire the lock needed by the import (schema lock, or a shared root lock, depending on configuration). Channel-upgrade and pre-import callbacks run *before* that acquisition and must acquire the locks needed by their own edits. A post-import callback runs afterwards, but must not assume it has the exclusive schema lock when schema sync or semantic rebase is enabled. You still control the surrounding pull/push. |
+| **Dropping schemas** | [IModelDb.dropSchemas]($backend) *(alpha)* acquires the schema lock. On success it retains the lock to protect the unpublished schema change; your subsequent push releases it. If dropping fails, it abandons the changes and releases the lock. Schema sync does not support this operation. |
 | **Profile & domain schema upgrade** | [BriefcaseDb.upgradeSchemas]($backend) first attempts the upgrade *without* any lock. Only if the upgrade reports that a data transformation is required does it acquire the schema lock and retry, releasing all locks when done. |
+| **Reverting pushed changesets** | [BriefcaseDb.revertAndPushChanges]($backend) pulls to the tip, acquires the schema lock, creates the revert changeset, and pushes it. The push releases the lock unless `retainLocks` is set. |
+| **Embedding or allocating fonts** | [IModelDbFonts.embedFontFile]($backend) and [IModelDbFonts.acquireId]($backend) use the configured [CodeService](./CodeService.md) without locking when possible. Without that service, they acquire the schema lock to allocate collision-free identifiers; the caller must later push or abandon the changes and locks. |
+| **Importing the Functional schema** | [FunctionalSchema.importSchema]($backend) acquires the schema lock for a briefcase and retains it with the imported schema changes until the caller pushes or abandons them. |
 | **Indirect changes** | Changes made during change propagation (for example, from `ElementDrivesElement` dependency handlers) run in "indirect" Txn mode, where lock checks are suspended. Only *direct* edits by app code require locks. |
 | **Push** | [BriefcaseDb.pushChanges]($backend) releases all locks afterwards unless you pass `retainLocks: true`. |
 
@@ -228,6 +231,14 @@ sequenceDiagram
     BC->>Hub: push schema changeset
     Hub-->>BC: locks released
 ```
+
+The beta schema-import extension points require additional care. A `channelUpgrade` callback and
+`preSchemaImportCallback` run before the import acquires its lock, so their editing APIs must acquire
+the normal element/model locks themselves. A `postSchemaImportCallback` runs after the import. It is
+covered by the schema lock in the default workflow, but schema sync may import without that lock and
+semantic rebase holds only a shared root lock. A post-import callback that changes data should therefore
+request the locks for those changes explicitly; those requests are harmless when an exclusive schema
+lock already covers them.
 
 Two variations relax this bottleneck. **Neither is on by default** — both must be turned on explicitly, so unless your app opts in, the sequence above is what you get:
 
@@ -287,13 +298,15 @@ Nothing blocks either briefcase. Whoever pushes first wins the timeline; the oth
 | API | When to use |
 | --- | --- |
 | [BriefcaseDb.pushChanges]($backend) | Normal path. Releases all locks after a successful push, recording the new changeset index against each. Pass `retainLocks: true` to keep them for the next edit round. |
-| [LockControl.releaseAllLocks]($backend) | Manual release. **Fails if the briefcase still has local changes** — release only after pushing or abandoning. |
-| [LockControl.abandonAllLocks]($backend) *(beta)* | Release locks for elements you locked but never actually edited. Unlike `releaseAllLocks`, this does *not* bump the changeset index recorded with the lock, so other briefcases are not forced to pull first. |
-| [BriefcaseDb.discardChanges]($backend) *(preview)* | Throws away local changes and releases locks (unless `retainLocks`). |
+| [LockControl.releaseAllLocks]($backend) | Manual release after published work. **Fails if the briefcase still has local changes.** Normally `pushChanges` calls it for you. |
+| [LockControl.abandonAllLocks]($backend) *(beta)* | Use after deciding not to publish: either no protected element was edited, or every protected edit was reversed or discarded. It releases the locks without advancing their release changeset indices, so other briefcases are not forced to pull edits that were never published. |
+| [BriefcaseDb.discardChanges]($backend) *(preview)* | Throws away local changes and calls `abandonAllLocks` unless `retainLocks` is set. |
 
 Note that [BriefcaseDb.pullChanges]($backend) does **not** release locks — pulling only brings your briefcase up to date. Locks are released on push, or explicitly.
 
-There is also a set of **beta, Txn-level** APIs for undo/redo-style workflows, where you want the locks to follow the reversal and reinstatement of individual transactions: [LockControl.abandonLocksForReversedTxn]($backend), [LockControl.abandonLocksForCurrentUnsavedTxn]($backend), [LockControl.acquireLocksForReinstatingTxn]($backend), [LockControl.holdsNecessaryLocksForReinstatingTxn]($backend), and [LockControl.clearTxnLockRecords]($backend). Use `holdsNecessaryLocksForReinstatingTxn` before [TxnManager.reinstateTxn]($backend), or use `TxnManager.reinstateTxnAsync`, which re-acquires the locks for you.
+For lock-aware undo, prefer the beta async APIs [TxnManager.reverseTxnsAsync]($backend), [TxnManager.reverseSingleTxnAsync]($backend), [TxnManager.reverseAllTxnsAsync]($backend), [TxnManager.reverseToTxnAsync]($backend), and [TxnManager.cancelToTxnAsync]($backend). They abandon the locks belonging to the reversed Txns by default; pass `retainLocks: true` only when you intentionally want to keep them. For redo, prefer [TxnManager.reinstateTxnAsync]($backend), which re-acquires abandoned locks before reinstating the Txn.
+
+The corresponding low-level beta helpers are [LockControl.abandonLocksForReversedTxn]($backend), [LockControl.abandonLocksForCurrentUnsavedTxn]($backend), [LockControl.acquireLocksForReinstatingTxn]($backend), [LockControl.holdsNecessaryLocksForReinstatingTxn]($backend), and [LockControl.clearTxnLockRecords]($backend). The synchronous reverse APIs do not abandon locks automatically, and synchronous [TxnManager.reinstateTxn]($backend) cannot re-acquire abandoned locks.
 
 Note that re-acquiring an abandoned lock can fail: another briefcase may have taken it in the meantime.
 

@@ -329,6 +329,23 @@ describe("Server-based locks", () => {
       await locks.releaseAllLocks();
       expectUnlocked();
     });
+
+    it("retains the schema lock after dropping a schema until the change is pushed", async () => {
+      const schemaName = "DropSchemasLocksTest";
+      const schema = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="${schemaName}" alias="dslt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2"/>`;
+
+      await bc.importSchemaStrings([schema]);
+      await push();
+      expectUnlocked();
+
+      await bc.dropSchemas([schemaName]);
+      expectLocked();
+      expect(() => bc.getSchemaProps(schemaName)).to.throw();
+
+      await push();
+      expectUnlocked();
+    });
   });
 
   describe("abandonLocksForReversedTxn", () => {
