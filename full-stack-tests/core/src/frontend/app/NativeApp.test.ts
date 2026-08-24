@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { expect } from "vitest";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/frontend/ElectronApp";
 import { NativeApp } from "@itwin/core-frontend";
 import { usingOfflineScope } from "../HttpRequestHook";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -13,10 +13,10 @@ import { TestUtility } from "../TestUtility";
 if (ProcessDetector.isElectronAppFrontend) {
 
   describe("NativeApp startup", () => {
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend();
     });
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 
@@ -24,18 +24,18 @@ if (ProcessDetector.isElectronAppFrontend) {
       await usingOfflineScope(async () => {
         await ElectronApp.shutdown();
         await ElectronApp.startup({ iModelApp: TestUtility.iModelAppOptions }); // restart with no network available
-        assert.isTrue(ElectronApp.isValid);
+        expect(ElectronApp.isValid).toBe(true);
       });
     });
   });
 
   describe("NativeApp Storage", () => {
-    before(async () => {
+    beforeAll(async () => {
       await TestUtility.startFrontend();
       await TestRpcInterface.getClient().purgeStorageCache();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await TestUtility.shutdownFrontend();
     });
 
@@ -54,55 +54,55 @@ if (ProcessDetector.isElectronAppFrontend) {
         await test1.setData(item.key, item.value);
         const data = await test1.getData(item.key);
         if (item.value instanceof Uint8Array) {
-          assert.equal((data as Uint8Array).length, item.value.length);
+          expect((data as Uint8Array).length).toBe(item.value.length);
         } else {
-          assert.equal(data, item.value, `${item.key} -> ${item.value} <> ${data}`);
+          expect(data, `${item.key} -> ${item.value} <> ${data}`).toBe(item.value);
         }
       }
-      assert.equal((await test1.getKeys()).length, dataset.length);
+      expect((await test1.getKeys()).length).toBe(dataset.length);
       await NativeApp.closeStorage(test1, true);
     });
 
     it("Override and type check", async () => {
       const test1 = await NativeApp.openStorage("fronted_test_2");
       await test1.setData("key1", undefined);
-      assert.isUndefined(await test1.getData("key1"));
-      assert.equal(await test1.getValueType("key1"), "null");
+      expect(await test1.getData("key1")).toBeUndefined();
+      expect(await test1.getValueType("key1")).toBe("null");
 
       await test1.removeData("key1");
-      assert.isUndefined(await test1.getData("key1"));
-      assert.equal(await test1.getValueType("key1"), undefined);
+      expect(await test1.getData("key1")).toBeUndefined();
+      expect(await test1.getValueType("key1")).toBe(undefined);
 
       await test1.setData("key1", 2222);
-      assert.isNumber(await test1.getData("key1"));
-      assert.equal(await test1.getData("key1"), 2222);
+      expect(await test1.getData("key1")).toEqual(expect.any(Number));
+      expect(await test1.getData("key1")).toBe(2222);
       await test1.removeData("key1");
-      assert.isUndefined(await test1.getData("key1"));
+      expect(await test1.getData("key1")).toBeUndefined();
 
       await test1.setData("key1", "Hello, World");
-      assert.isString(await test1.getData("key1"));
-      assert.equal(await test1.getData("key1"), "Hello, World");
+      expect(await test1.getData("key1")).toEqual(expect.any(String));
+      expect(await test1.getData("key1")).toBe("Hello, World");
       await test1.removeData("key1");
-      assert.isUndefined(await test1.getData("key1"));
+      expect(await test1.getData("key1")).toBeUndefined();
 
       await test1.setData("key1", true);
-      assert.isBoolean(await test1.getData("key1"));
-      assert.equal(await test1.getData("key1"), true);
+      expect(await test1.getData("key1")).toEqual(expect.any(Boolean));
+      expect(await test1.getData("key1")).toBe(true);
       await test1.removeData("key1");
-      assert.isUndefined(await test1.getData("key1"));
+      expect(await test1.getData("key1")).toBeUndefined();
 
       await test1.setData("key1", false);
-      assert.isBoolean(await test1.getData("key1"));
-      assert.equal(await test1.getData("key1"), false);
+      expect(await test1.getData("key1")).toEqual(expect.any(Boolean));
+      expect(await test1.getData("key1")).toBe(false);
       await test1.removeData("key1");
-      assert.isUndefined(await test1.getData("key1"));
+      expect(await test1.getData("key1")).toBeUndefined();
 
       const testArray = new Uint8Array([1, 2, 3, 4, 5]);
       await test1.setData("key1", testArray);
-      assert.isTrue(await test1.getData("key1") instanceof Uint8Array);
-      assert.equal((await test1.getData("key1") as Uint8Array).length, testArray.length);
+      expect(await test1.getData("key1") instanceof Uint8Array).toBe(true);
+      expect((await test1.getData("key1") as Uint8Array).length).toBe(testArray.length);
       await test1.removeData("key1");
-      assert.isUndefined(await test1.getData("key1"));
+      expect(await test1.getData("key1")).toBeUndefined();
       await NativeApp.closeStorage(test1, true);
     });
   });

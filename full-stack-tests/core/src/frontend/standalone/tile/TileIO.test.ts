@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
   BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
@@ -11,12 +11,10 @@ import {
 import {
   GeometricModelState, IModelApp, IModelConnection, RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
-import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
-import type { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
-import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
-import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive } from "@itwin/core-frontend/lib/cjs/internal/webgl";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import {
+  Batch, GraphicsArray, type ImdlModel, MeshGraphic, MockRender, parseImdlDocument, PolylineGeometry, Primitive, SurfaceType,
+} from "@itwin/core-frontend/lib/cjs/internal/test-support";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/frontend/ElectronApp";
 import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
@@ -92,16 +90,16 @@ function processHeader(data: TileTestData, test: TileTestCase, numElements: numb
   const stream = ByteStream.fromUint8Array(test.bytes);
   stream.reset();
   const header = new ImdlHeader(stream);
-  expect(header.isValid).to.be.true;
-  expect(header.format).to.equal(TileFormat.IModel);
-  expect(header.versionMajor).to.equal(data.versionMajor);
-  expect(header.versionMinor).to.equal(data.versionMinor);
-  expect(header.headerLength).to.equal(data.headerLength);
-  expect(header.tileLength).to.equal(test.bytes.byteLength);
-  expect(header.flags).to.equal(test.flags);
-  expect(header.numElementsIncluded).to.equal(numElements);
-  expect(header.numElementsExcluded).to.equal(0);
-  expect(header.isReadableVersion).to.equal(!data.unreadable);
+  expect(header.isValid).toBe(true);
+  expect(header.format).toBe(TileFormat.IModel);
+  expect(header.versionMajor).toBe(data.versionMajor);
+  expect(header.versionMinor).toBe(data.versionMinor);
+  expect(header.headerLength).toBe(data.headerLength);
+  expect(header.tileLength).toBe(test.bytes.byteLength);
+  expect(header.flags).toBe(test.flags);
+  expect(header.numElementsIncluded).toBe(numElements);
+  expect(header.numElementsExcluded).toBe(0);
+  expect(header.isReadableVersion).toBe(!data.unreadable);
 }
 
 async function readTile(imodel: IModelConnection, data: TileTestData, test: TileTestCase): Promise<IModelTileContent | undefined> {
@@ -119,7 +117,7 @@ async function readTile(imodel: IModelConnection, data: TileTestData, test: Tile
   if (result.readStatus === TileReadStatus.Success)
     return result;
 
-  expect(data.unreadable).to.be.true;
+  expect(data.unreadable).toBe(true);
   return undefined;
 }
 
@@ -127,21 +125,21 @@ async function processRectangle(data: TileTestData, imodel: IModelConnection, pr
   processHeader(data, data.rectangle, 1);
   const result = await readTile(imodel, data, data.rectangle);
   if (undefined !== result) {
-    expect(result.isLeaf).to.be.true;
-    expect(result.contentRange).not.to.be.undefined;
+    expect(result.isLeaf).toBe(true);
+    expect(result.contentRange).not.toBeUndefined();
 
     // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
     const low = result.contentRange!.low;
-    expect(delta(low.x, -2.5)).to.be.lessThan(0.0005);
-    expect(delta(low.y, -5.0)).to.be.lessThan(0.0005);
-    expect(delta(low.z, 0.0)).to.be.lessThan(0.0005);
+    expect(delta(low.x, -2.5)).toBeLessThan(0.0005);
+    expect(delta(low.y, -5.0)).toBeLessThan(0.0005);
+    expect(delta(low.z, 0.0)).toBeLessThan(0.0005);
 
     const high = result.contentRange!.high;
-    expect(delta(high.x, 2.5)).to.be.lessThan(0.0005);
-    expect(delta(high.y, 5.0)).to.be.lessThan(0.0005);
-    expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
+    expect(delta(high.x, 2.5)).toBeLessThan(0.0005);
+    expect(delta(high.y, 5.0)).toBeLessThan(0.0005);
+    expect(delta(high.z, 0.0)).toBeLessThan(0.0005);
 
-    expect(result.graphic).not.to.be.undefined;
+    expect(result.graphic).not.toBeUndefined();
     processGraphic(result.graphic!);
   }
 }
@@ -155,21 +153,21 @@ async function processTriangles(data: TileTestData, imodel: IModelConnection, pr
   processHeader(data, data.triangles, 6);
   const result = await readTile(imodel, data, data.triangles);
   if (result) {
-    expect(result.isLeaf).to.be.true;
-    expect(result.contentRange).not.to.be.undefined;
+    expect(result.isLeaf).toBe(true);
+    expect(result.contentRange).not.toBeUndefined();
 
     // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
     const low = result.contentRange!.low;
-    expect(delta(low.x, -7.5)).to.be.lessThan(0.0005);
-    expect(delta(low.y, -10.0)).to.be.lessThan(0.00051);
-    expect(delta(low.z, 0.0)).to.be.lessThan(0.0005);
+    expect(delta(low.x, -7.5)).toBeLessThan(0.0005);
+    expect(delta(low.y, -10.0)).toBeLessThan(0.00051);
+    expect(delta(low.z, 0.0)).toBeLessThan(0.0005);
 
     const high = result.contentRange!.high;
-    expect(delta(high.x, 7.5)).to.be.lessThan(0.0005);
-    expect(delta(high.y, 10.0)).to.be.lessThan(0.00051);
-    expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
+    expect(delta(high.x, 7.5)).toBeLessThan(0.0005);
+    expect(delta(high.y, 10.0)).toBeLessThan(0.00051);
+    expect(delta(high.z, 0.0)).toBeLessThan(0.0005);
 
-    expect(result.graphic).not.to.be.undefined;
+    expect(result.graphic).not.toBeUndefined();
     processGraphic(result.graphic!);
   }
 }
@@ -183,21 +181,21 @@ async function processLineString(data: TileTestData, imodel: IModelConnection, p
   processHeader(data, data.lineString, 1);
   const result = await readTile(imodel, data, data.lineString);
   if (result) {
-    expect(result.isLeaf).to.be.true;
-    expect(result.contentRange).not.to.be.undefined;
+    expect(result.isLeaf).toBe(true);
+    expect(result.contentRange).not.toBeUndefined();
 
     // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
     const low = result.contentRange!.low;
-    expect(delta(low.x, -7.5)).to.be.lessThan(0.0005);
-    expect(delta(low.y, -10.0)).to.be.lessThan(0.00051);
-    expect(delta(low.z, 0.0)).to.be.lessThan(0.0005);
+    expect(delta(low.x, -7.5)).toBeLessThan(0.0005);
+    expect(delta(low.y, -10.0)).toBeLessThan(0.00051);
+    expect(delta(low.z, 0.0)).toBeLessThan(0.0005);
 
     const high = result.contentRange!.high;
-    expect(delta(high.x, 7.5)).to.be.lessThan(0.0005);
-    expect(delta(high.y, 10.0)).to.be.lessThan(0.00051);
-    expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
+    expect(delta(high.x, 7.5)).toBeLessThan(0.0005);
+    expect(delta(high.y, 10.0)).toBeLessThan(0.00051);
+    expect(delta(high.z, 0.0)).toBeLessThan(0.0005);
 
-    expect(result.graphic).not.to.be.undefined;
+    expect(result.graphic).not.toBeUndefined();
     processGraphic(result.graphic!);
   }
 }
@@ -211,21 +209,21 @@ async function processLineStrings(data: TileTestData, imodel: IModelConnection, 
   processHeader(data, data.lineStrings, 3);
   const result = await readTile(imodel, data, data.lineStrings);
   if (result) {
-    expect(result.isLeaf).to.be.true;
-    expect(result.contentRange).not.to.be.undefined;
+    expect(result.isLeaf).toBe(true);
+    expect(result.contentRange).not.toBeUndefined();
 
     // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
     const low = result.contentRange!.low;
-    expect(delta(low.x, -7.5)).to.be.lessThan(0.0005);
-    expect(delta(low.y, -30.0)).to.be.lessThan(0.0016);
-    expect(delta(low.z, 0.0)).to.be.lessThan(0.0005);
+    expect(delta(low.x, -7.5)).toBeLessThan(0.0005);
+    expect(delta(low.y, -30.0)).toBeLessThan(0.0016);
+    expect(delta(low.z, 0.0)).toBeLessThan(0.0005);
 
     const high = result.contentRange!.high;
-    expect(delta(high.x, 7.5)).to.be.lessThan(0.0005);
-    expect(delta(high.y, 30.0)).to.be.lessThan(0.0016);
-    expect(delta(high.z, 0.0)).to.be.lessThan(0.0005);
+    expect(delta(high.x, 7.5)).toBeLessThan(0.0005);
+    expect(delta(high.y, 30.0)).toBeLessThan(0.0016);
+    expect(delta(high.z, 0.0)).toBeLessThan(0.0005);
 
-    expect(result.graphic).not.to.be.undefined;
+    expect(result.graphic).not.toBeUndefined();
     processGraphic(result.graphic!);
   }
 }
@@ -239,21 +237,21 @@ async function processCylinder(data: TileTestData, imodel: IModelConnection, pro
   processHeader(data, data.cylinder, 1);
   const result = await readTile(imodel, data, data.cylinder);
   if (result) {
-    expect(result.isLeaf).to.be.false; // cylinder contains curves - not a leaf - can be refined to higher-resolution single child.
-    expect(result.contentRange).not.to.be.undefined;
+    expect(result.isLeaf).toBe(false); // cylinder contains curves - not a leaf - can be refined to higher-resolution single child.
+    expect(result.contentRange).not.toBeUndefined();
 
     // Confirm content range. Positions in the tile are transformed such that the origin is at the tile center.
     const low = result.contentRange!.low;
-    expect(delta(low.x, -2.0)).to.be.lessThan(0.0005);
-    expect(delta(low.y, -2.0)).to.be.lessThan(0.0005);
-    expect(delta(low.z, -3.0)).to.be.lessThan(0.0005);
+    expect(delta(low.x, -2.0)).toBeLessThan(0.0005);
+    expect(delta(low.y, -2.0)).toBeLessThan(0.0005);
+    expect(delta(low.z, -3.0)).toBeLessThan(0.0005);
 
     const high = result.contentRange!.high;
-    expect(delta(high.x, 2.0)).to.be.lessThan(0.0005);
-    expect(delta(high.y, 2.0)).to.be.lessThan(0.0005);
-    expect(delta(high.z, 3.0)).to.be.lessThan(0.0005);
+    expect(delta(high.x, 2.0)).toBeLessThan(0.0005);
+    expect(delta(high.y, 2.0)).toBeLessThan(0.0005);
+    expect(delta(high.z, 3.0)).toBeLessThan(0.0005);
 
-    expect(result.graphic).not.to.be.undefined;
+    expect(result.graphic).not.toBeUndefined();
     processGraphic(result.graphic!);
   }
 }
@@ -267,46 +265,46 @@ async function processEachCylinder(imodel: IModelConnection, processGraphic: Pro
 describe("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
   function getFeatureTable(batch: Batch): PackedFeatureTable {
-    expect(batch.featureTable).instanceof(PackedFeatureTable);
+    expect(batch.featureTable).toBeInstanceOf(PackedFeatureTable);
     return batch.featureTable as PackedFeatureTable;
   }
 
   function expectNumFeatures(batch: Batch, expected: number): void {
     const table = getFeatureTable(batch);
-    expect(table.numFeatures).to.equal(expected);
-    expect(table.isUniform).to.equal(expected === 1);
+    expect(table.numFeatures).toBe(expected);
+    expect(table.isUniform).toBe(expected === 1);
   }
 
   it("should read an iModel tile containing a single rectangle", async () => {
     if (IModelApp.initialized) {
       await processEachRectangle(imodel, (graphic) => {
-        expect(graphic).to.be.instanceOf(Batch);
+        expect(graphic).toBeInstanceOf(Batch);
         const batch = graphic as Batch;
         expectNumFeatures(batch, 1);
-        expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(MeshGraphic);
+        expect(batch.graphic).not.toBeUndefined();
+        expect(batch.graphic).toBeInstanceOf(MeshGraphic);
         const mg = batch.graphic as MeshGraphic;
-        expect(mg.surfaceType).to.equal(SurfaceType.Lit);
-        expect(mg.meshData).not.to.be.undefined;
-        expect(mg.meshData.edgeLineCode).to.equal(0);
-        expect(mg.meshData.edgeWidth).to.equal(1);
-        expect(mg.meshData.isPlanar).to.be.true;
-        expect(mg.meshData.lut.numRgbaPerVertex).to.equal(4);
-        expect(mg.meshData.lut.numVertices).to.equal(4);
-        expect(mg.meshData.lut.colorInfo.isUniform).to.be.true;
-        expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.false;
-        expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.false;
+        expect(mg.surfaceType).toBe(SurfaceType.Lit);
+        expect(mg.meshData).not.toBeUndefined();
+        expect(mg.meshData.edgeLineCode).toBe(0);
+        expect(mg.meshData.edgeWidth).toBe(1);
+        expect(mg.meshData.isPlanar).toBe(true);
+        expect(mg.meshData.lut.numRgbaPerVertex).toBe(4);
+        expect(mg.meshData.lut.numVertices).toBe(4);
+        expect(mg.meshData.lut.colorInfo.isUniform).toBe(true);
+        expect(mg.meshData.lut.colorInfo.isNonUniform).toBe(false);
+        expect(mg.meshData.lut.colorInfo.hasTranslucency).toBe(false);
       });
     }
   });
@@ -314,39 +312,39 @@ describe("TileIO (WebGL)", () => {
   it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
     if (IModelApp.initialized) {
       await processEachTriangles(imodel, (graphic) => {
-        expect(graphic).to.be.instanceOf(Batch);
+        expect(graphic).toBeInstanceOf(Batch);
         const batch = graphic as Batch;
         expectNumFeatures(batch, 6);
-        expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(GraphicsArray);
+        expect(batch.graphic).not.toBeUndefined();
+        expect(batch.graphic).toBeInstanceOf(GraphicsArray);
         const list = batch.graphic as GraphicsArray;
-        expect(list.graphics.length).to.equal(2);
+        expect(list.graphics.length).toBe(2);
 
-        expect(list.graphics[0]).to.be.instanceOf(MeshGraphic);
+        expect(list.graphics[0]).toBeInstanceOf(MeshGraphic);
         let mg = list.graphics[0] as MeshGraphic;
-        expect(mg.surfaceType).to.be.equal(SurfaceType.Lit);
-        expect(mg.meshData).not.to.be.undefined;
-        expect(mg.meshData.edgeLineCode).to.equal(0);
-        expect(mg.meshData.edgeWidth).to.equal(1);
-        expect(mg.meshData.isPlanar).to.be.true;
-        expect(mg.meshData.lut.numRgbaPerVertex).to.equal(4);
-        expect(mg.meshData.lut.numVertices).to.equal(9);
-        expect(mg.meshData.lut.colorInfo.isUniform).to.be.false;
-        expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.true;
-        expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.false;
+        expect(mg.surfaceType).toBe(SurfaceType.Lit);
+        expect(mg.meshData).not.toBeUndefined();
+        expect(mg.meshData.edgeLineCode).toBe(0);
+        expect(mg.meshData.edgeWidth).toBe(1);
+        expect(mg.meshData.isPlanar).toBe(true);
+        expect(mg.meshData.lut.numRgbaPerVertex).toBe(4);
+        expect(mg.meshData.lut.numVertices).toBe(9);
+        expect(mg.meshData.lut.colorInfo.isUniform).toBe(false);
+        expect(mg.meshData.lut.colorInfo.isNonUniform).toBe(true);
+        expect(mg.meshData.lut.colorInfo.hasTranslucency).toBe(false);
 
-        expect(list.graphics[1]).to.be.instanceOf(MeshGraphic);
+        expect(list.graphics[1]).toBeInstanceOf(MeshGraphic);
         mg = list.graphics[1] as MeshGraphic;
-        expect(mg.surfaceType).to.be.equal(SurfaceType.Lit);
-        expect(mg.meshData).not.to.be.undefined;
-        expect(mg.meshData.edgeLineCode).to.equal(0);
-        expect(mg.meshData.edgeWidth).to.equal(1);
-        expect(mg.meshData.isPlanar).to.be.true;
-        expect(mg.meshData.lut.numRgbaPerVertex).to.equal(4);
-        expect(mg.meshData.lut.numVertices).to.equal(9);
-        expect(mg.meshData.lut.colorInfo.isUniform).to.be.false;
-        expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.true;
-        expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.true;
+        expect(mg.surfaceType).toBe(SurfaceType.Lit);
+        expect(mg.meshData).not.toBeUndefined();
+        expect(mg.meshData.edgeLineCode).toBe(0);
+        expect(mg.meshData.edgeWidth).toBe(1);
+        expect(mg.meshData.isPlanar).toBe(true);
+        expect(mg.meshData.lut.numRgbaPerVertex).toBe(4);
+        expect(mg.meshData.lut.numVertices).toBe(9);
+        expect(mg.meshData.lut.colorInfo.isUniform).toBe(false);
+        expect(mg.meshData.lut.colorInfo.isNonUniform).toBe(true);
+        expect(mg.meshData.lut.colorInfo.hasTranslucency).toBe(true);
       });
     }
   });
@@ -354,23 +352,23 @@ describe("TileIO (WebGL)", () => {
   it("should read an iModel tile containing single open yellow line string", async () => {
     if (IModelApp.initialized) {
       await processEachLineString(imodel, (graphic) => {
-        expect(graphic).to.be.instanceOf(Batch);
+        expect(graphic).toBeInstanceOf(Batch);
         const batch = graphic as Batch;
         expectNumFeatures(batch, 1);
-        expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(Primitive);
+        expect(batch.graphic).not.toBeUndefined();
+        expect(batch.graphic).toBeInstanceOf(Primitive);
         const plinePrim = batch.graphic as Primitive;
-        expect(plinePrim.hasFeatures).to.be.true;
-        expect(plinePrim.isEdge).to.be.false;
-        expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.renderOrder).to.equal(linearRenderOrder);
-        expect(plinePrim.cachedGeometry).to.not.be.undefined;
+        expect(plinePrim.hasFeatures).toBe(true);
+        expect(plinePrim.isEdge).toBe(false);
+        expect(plinePrim.isLit).toBe(false);
+        expect(plinePrim.renderOrder).toBe(linearRenderOrder);
+        expect(plinePrim.cachedGeometry).not.toBeUndefined();
         const plGeom = plinePrim.cachedGeometry as PolylineGeometry;
-        expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
-        expect(plGeom.lut.numVertices).to.equal(6);
-        expect(plGeom.lineCode).to.equal(0);
-        expect(plGeom.lineWeight).to.equal(9);
-        expect(plGeom.isPlanar).to.be.false;
+        expect(plGeom.numIndices).toBe(114); // previously was 60 - but now polyline is tesselated.
+        expect(plGeom.lut.numVertices).toBe(6);
+        expect(plGeom.lineCode).toBe(0);
+        expect(plGeom.lineWeight).toBe(9);
+        expect(plGeom.isPlanar).toBe(false);
       });
     }
   });
@@ -378,41 +376,41 @@ describe("TileIO (WebGL)", () => {
   it("should read an iModel tile containing multiple line strings", async () => {
     if (IModelApp.initialized) {
       await processEachLineStrings(imodel, (graphic) => {
-        expect(graphic).to.be.instanceOf(Batch);
+        expect(graphic).toBeInstanceOf(Batch);
         const batch = graphic as Batch;
         expectNumFeatures(batch, 3);
-        expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(GraphicsArray);
+        expect(batch.graphic).not.toBeUndefined();
+        expect(batch.graphic).toBeInstanceOf(GraphicsArray);
         const list = batch.graphic as GraphicsArray;
-        expect(list.graphics.length).to.equal(2);
+        expect(list.graphics.length).toBe(2);
 
-        expect(list.graphics[0]).to.be.instanceOf(Primitive);
+        expect(list.graphics[0]).toBeInstanceOf(Primitive);
         let plinePrim = list.graphics[0] as Primitive;
-        expect(plinePrim.hasFeatures).to.be.true;
-        expect(plinePrim.isEdge).to.be.false;
-        expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.renderOrder).to.equal(linearRenderOrder);
-        expect(plinePrim.cachedGeometry).to.not.be.undefined;
+        expect(plinePrim.hasFeatures).toBe(true);
+        expect(plinePrim.isEdge).toBe(false);
+        expect(plinePrim.isLit).toBe(false);
+        expect(plinePrim.renderOrder).toBe(linearRenderOrder);
+        expect(plinePrim.cachedGeometry).not.toBeUndefined();
         let plGeom = plinePrim.cachedGeometry as PolylineGeometry;
-        expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
-        expect(plGeom.lut.numVertices).to.equal(6);
-        expect(plGeom.lineCode).to.equal(0);
-        expect(plGeom.lineWeight).to.equal(9);
-        expect(plGeom.isPlanar).to.be.false;
+        expect(plGeom.numIndices).toBe(114); // previously was 60 - but now polyline is tesselated.
+        expect(plGeom.lut.numVertices).toBe(6);
+        expect(plGeom.lineCode).toBe(0);
+        expect(plGeom.lineWeight).toBe(9);
+        expect(plGeom.isPlanar).toBe(false);
 
-        expect(list.graphics[1]).to.be.instanceOf(Primitive);
+        expect(list.graphics[1]).toBeInstanceOf(Primitive);
         plinePrim = list.graphics[1] as Primitive;
-        expect(plinePrim.hasFeatures).to.be.true;
-        expect(plinePrim.isEdge).to.be.false;
-        expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.renderOrder).to.equal(linearRenderOrder);
-        expect(plinePrim.cachedGeometry).to.not.be.undefined;
+        expect(plinePrim.hasFeatures).toBe(true);
+        expect(plinePrim.isEdge).toBe(false);
+        expect(plinePrim.isLit).toBe(false);
+        expect(plinePrim.renderOrder).toBe(linearRenderOrder);
+        expect(plinePrim.cachedGeometry).not.toBeUndefined();
         plGeom = plinePrim.cachedGeometry as PolylineGeometry;
-        expect(plGeom.numIndices).to.equal(228); // 120 pre-tesselation...
-        expect(plGeom.lut.numVertices).to.equal(12);
-        expect(plGeom.lineCode).to.equal(2);
-        expect(plGeom.lineWeight).to.equal(9);
-        expect(plGeom.isPlanar).to.be.false;
+        expect(plGeom.numIndices).toBe(228); // 120 pre-tesselation...
+        expect(plGeom.lut.numVertices).toBe(12);
+        expect(plGeom.lineCode).toBe(2);
+        expect(plGeom.lineWeight).toBe(9);
+        expect(plGeom.isPlanar).toBe(false);
       });
     }
   });
@@ -420,22 +418,22 @@ describe("TileIO (WebGL)", () => {
   it("should read an iModel tile containing edges and silhouettes", async () => {
     if (IModelApp.initialized) {
       await processEachCylinder(imodel, (graphic) => {
-        expect(graphic).to.be.instanceOf(Batch);
+        expect(graphic).toBeInstanceOf(Batch);
         const batch = graphic as Batch;
         expectNumFeatures(batch, 1);
-        expect(batch.graphic).not.to.be.undefined;
-        expect(batch.graphic).to.be.instanceOf(MeshGraphic);
+        expect(batch.graphic).not.toBeUndefined();
+        expect(batch.graphic).toBeInstanceOf(MeshGraphic);
         const mg = batch.graphic as MeshGraphic;
-        expect(mg.surfaceType).to.equal(SurfaceType.Lit);
-        expect(mg.meshData).not.to.be.undefined;
-        expect(mg.meshData.edgeLineCode).to.equal(0);
-        expect(mg.meshData.edgeWidth).to.equal(1);
-        expect(mg.meshData.isPlanar).to.be.false;
-        expect(mg.meshData.lut.numRgbaPerVertex).to.equal(4);
-        expect(mg.meshData.lut.numVertices).to.equal(146);
-        expect(mg.meshData.lut.colorInfo.isUniform).to.be.true;
-        expect(mg.meshData.lut.colorInfo.isNonUniform).to.be.false;
-        expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.false;
+        expect(mg.surfaceType).toBe(SurfaceType.Lit);
+        expect(mg.meshData).not.toBeUndefined();
+        expect(mg.meshData.edgeLineCode).toBe(0);
+        expect(mg.meshData.edgeWidth).toBe(1);
+        expect(mg.meshData.isPlanar).toBe(false);
+        expect(mg.meshData.lut.numRgbaPerVertex).toBe(4);
+        expect(mg.meshData.lut.numVertices).toBe(146);
+        expect(mg.meshData.lut.colorInfo.isUniform).toBe(true);
+        expect(mg.meshData.lut.colorInfo.isNonUniform).toBe(false);
+        expect(mg.meshData.lut.colorInfo.hasTranslucency).toBe(false);
       });
     }
   });
@@ -445,25 +443,25 @@ describe("TileIO (WebGL)", () => {
 describe("TileIO (mock render)", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
   function getFeatureTable(batch: MockRender.Batch): PackedFeatureTable {
-    expect(batch.featureTable).instanceof(PackedFeatureTable);
+    expect(batch.featureTable).toBeInstanceOf(PackedFeatureTable);
     return batch.featureTable as PackedFeatureTable;
   }
 
   function expectNumFeatures(batch: MockRender.Batch, expected: number): void {
     const table = getFeatureTable(batch);
-    expect(table.numFeatures).to.equal(expected);
-    expect(table.isUniform).to.equal(expected === 1);
+    expect(table.numFeatures).toBe(expected);
+    expect(table.isUniform).toBe(expected === 1);
   }
 
   it("should support canceling operation", async () => {
@@ -481,78 +479,78 @@ describe("TileIO (mock render)", () => {
         isCanceled: () => true,
       });
 
-      expect(reader).not.to.be.undefined;
+      expect(reader).not.toBeUndefined();
 
       const result = await reader.read();
-      expect(result.readStatus).to.equal(TileReadStatus.Canceled);
+      expect(result.readStatus).toBe(TileReadStatus.Canceled);
     }
   });
 
   it("should obtain tiles from backend", async () => {
     // This data set contains 4 physical models: 0x1c (empty), 0x22, 0x23, and 0x24. The latter 3 collectively contain 4 spheres.
     const modelProps = await imodel.models.getProps("0x22");
-    expect(modelProps.length).to.equal(1);
+    expect(modelProps.length).toBe(1);
 
     const tree = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id!.toString());
 
-    expect(tree.id).to.equal(modelProps[0].id);
-    expect(tree.maxTilesToSkip).to.equal(1);
-    expect(tree.rootTile).not.to.be.undefined;
+    expect(tree.id).toBe(modelProps[0].id);
+    expect(tree.maxTilesToSkip).toBe(1);
+    expect(tree.rootTile).not.toBeUndefined();
 
     const rootTile = tree.rootTile;
-    expect(rootTile.contentId).to.equal("0/0/0/0/1");
-    expect(rootTile.isLeaf).to.be.false; // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
+    expect(rootTile.contentId).toBe("0/0/0/0/1");
+    expect(rootTile.isLeaf).toBe(false); // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
   });
 
   it("should read an iModel tile containing a single rectangle", async () => {
     await processEachRectangle(imodel, (graphic) => {
-      expect(graphic).instanceof(MockRender.Batch);
+      expect(graphic).toBeInstanceOf(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expectNumFeatures(batch, 1);
-      expect(batch.graphic).not.to.be.undefined;
-      expect(batch.graphic).instanceof(MockRender.Graphic);
+      expect(batch.graphic).not.toBeUndefined();
+      expect(batch.graphic).toBeInstanceOf(MockRender.Graphic);
     });
   });
 
   it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
     await processEachTriangles(imodel, (graphic) => {
-      expect(graphic).instanceof(MockRender.Batch);
+      expect(graphic).toBeInstanceOf(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expectNumFeatures(batch, 6);
-      expect(batch.graphic).not.to.be.undefined;
-      expect(batch.graphic).instanceof(MockRender.List);
+      expect(batch.graphic).not.toBeUndefined();
+      expect(batch.graphic).toBeInstanceOf(MockRender.List);
       const list = batch.graphic as MockRender.List;
-      expect(list.graphics.length).to.equal(2);
+      expect(list.graphics.length).toBe(2);
     });
   });
 
   it("should read an iModel tile containing single open yellow line string", async () => {
     await processEachLineString(imodel, (graphic) => {
-      expect(graphic).instanceof(MockRender.Batch);
+      expect(graphic).toBeInstanceOf(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expectNumFeatures(batch, 1);
-      expect(batch.graphic).not.to.be.undefined;
+      expect(batch.graphic).not.toBeUndefined();
     });
   });
 
   it("should read an iModel tile containing multiple line strings", async () => {
     await processEachLineStrings(imodel, (graphic) => {
-      expect(graphic).instanceof(MockRender.Batch);
+      expect(graphic).toBeInstanceOf(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expectNumFeatures(batch, 3);
-      expect(batch.graphic).not.to.be.undefined;
-      expect(batch.graphic).to.be.instanceOf(MockRender.List);
+      expect(batch.graphic).not.toBeUndefined();
+      expect(batch.graphic).toBeInstanceOf(MockRender.List);
       const list = batch.graphic as MockRender.List;
-      expect(list.graphics.length).to.equal(2);
+      expect(list.graphics.length).toBe(2);
     });
   });
 
   it("should read an iModel tile containing edges and silhouettes", async () => {
     await processEachCylinder(imodel, (graphic) => {
-      expect(graphic).instanceof(MockRender.Batch);
+      expect(graphic).toBeInstanceOf(MockRender.Batch);
       const batch = graphic as MockRender.Batch;
       expectNumFeatures(batch, 1);
-      expect(batch.graphic).not.to.be.undefined;
+      expect(batch.graphic).not.toBeUndefined();
     });
   });
 });
@@ -568,9 +566,9 @@ async function waitUntil(condition: () => boolean): Promise<void> {
 async function getGeometricModel(imodel: IModelConnection, modelId: Id64String): Promise<GeometricModelState> {
   await imodel.models.load(modelId);
   const baseModel = imodel.models.getLoaded(modelId)!;
-  expect(baseModel).not.to.be.undefined;
+  expect(baseModel).not.toBeUndefined();
   const model = baseModel.asGeometricModel!;
-  expect(model).not.to.be.undefined;
+  expect(model).not.toBeUndefined();
   return model;
 }
 
@@ -591,7 +589,7 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
   });
 
   const tree = owner.tileTree;
-  expect(tree).not.to.be.undefined;
+  expect(tree).not.toBeUndefined();
   return tree! as IModelTileTree;
 }
 
@@ -608,10 +606,10 @@ describe("mirukuru TileTree", () => {
     public override createTarget(canvas: HTMLCanvasElement): TestTarget { return new TestTarget(this, canvas); }
   }
 
-  before(async () => {
+  beforeAll(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
 
-    // electron version of certa doesn't serve worker scripts.
+    // The Electron provider does not serve worker scripts.
     const isElectron = ProcessDetector.isElectronAppFrontend;
     const tileAdmin = isElectron ? { decodeImdlInWorker: false } : undefined;
 
@@ -642,7 +640,7 @@ describe("mirukuru TileTree", () => {
     }
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await MockRender.App.shutdown();
     if (ProcessDetector.isElectronAppFrontend)
@@ -653,14 +651,14 @@ describe("mirukuru TileTree", () => {
   // confirm we can obtain and deserialize contents of that tile, and that it is a leaf tile.
   it("should obtain a single leaf tile", async () => {
     const modelProps = await imodel.models.getProps("0x1c");
-    expect(modelProps.length).to.equal(1);
+    expect(modelProps.length).toBe(1);
 
     const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, modelProps[0].id!);
-    expect(treeProps.id).to.equal(modelProps[0].id);
-    expect(treeProps.rootTile).not.to.be.undefined;
+    expect(treeProps.id).toBe(modelProps[0].id);
+    expect(treeProps.rootTile).not.toBeUndefined();
 
     const rootTile = treeProps.rootTile;
-    expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
+    expect(rootTile.isLeaf).not.toBe(true); // the backend will only set this to true if the tile range contains no elements.
 
     const edges = { smooth: false, type: "non-indexed" as const };
     const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
@@ -668,49 +666,49 @@ describe("mirukuru TileTree", () => {
     const tree = new IModelTileTree(params, { edges, type: BatchType.Primary });
 
     const response: TileRequest.Response = await tree.staticBranch.requestContent();
-    expect(response).not.to.be.undefined;
-    expect(response).instanceof(Uint8Array);
+    expect(response).not.toBeUndefined();
+    expect(response).toBeInstanceOf(Uint8Array);
 
     const isCanceled = () => false; // Our tile has no Request, therefore not considered in "loading" state, so would be immediately treated as "canceled" during loading...
     const gfx = await tree.staticBranch.readContent(response as Uint8Array, IModelApp.renderSystem, isCanceled);
-    expect(gfx).not.to.be.undefined;
-    expect(gfx.graphic).not.to.be.undefined;
-    expect(gfx.isLeaf).to.be.true;
-    expect(gfx.contentRange).not.to.be.undefined;
-    expect(gfx.contentRange!.isNull).to.be.false;
+    expect(gfx).not.toBeUndefined();
+    expect(gfx.graphic).not.toBeUndefined();
+    expect(gfx.isLeaf).toBe(true);
+    expect(gfx.contentRange).not.toBeUndefined();
+    expect(gfx.contentRange!.isNull).toBe(false);
 
     const projExt = imodel.projectExtents;
-    expect(projExt.maxLength()).to.equal(gfx.contentRange!.maxLength());
+    expect(projExt.maxLength()).toBe(gfx.contentRange!.maxLength());
   });
 
   it("should load model's tile tree asynchronously", async () => {
     const tree = getTileTree(imodel, "0x1c");
-    expect(tree).not.to.be.undefined;
+    expect(tree).not.toBeUndefined();
   });
 
   it("should have expected metadata for root tile", async () => {
     const test = async (tree: IModelTileTree, expectedVersion: number, expectedRootContentId: string) => {
-      expect(tree).not.to.be.undefined;
-      expect(tree.staticBranch.contentId).to.equal(expectedRootContentId);
+      expect(tree).not.toBeUndefined();
+      expect(tree.staticBranch.contentId).toBe(expectedRootContentId);
       const response = await tree.staticBranch.requestContent();
-      expect(response).instanceof(Uint8Array);
+      expect(response).toBeInstanceOf(Uint8Array);
 
       // The model contains a single rectangular element.
       const stream = ByteStream.fromUint8Array(response as Uint8Array);
       const header = new ImdlHeader(stream);
-      expect(header.isValid).to.be.true;
-      expect(header.format).to.equal(TileFormat.IModel);
-      expect(header.version).to.equal(expectedVersion);
-      expect(header.versionMajor).to.equal(expectedVersion >> 0x10);
-      expect(header.versionMinor).to.equal(expectedVersion & 0xffff);
-      expect(header.flags).to.equal(ImdlFlags.None);
-      expect(header.numElementsIncluded).to.equal(1);
-      expect(header.numElementsExcluded).to.equal(0);
+      expect(header.isValid).toBe(true);
+      expect(header.format).toBe(TileFormat.IModel);
+      expect(header.version).toBe(expectedVersion);
+      expect(header.versionMajor).toBe(expectedVersion >> 0x10);
+      expect(header.versionMinor).toBe(expectedVersion & 0xffff);
+      expect(header.flags).toBe(ImdlFlags.None);
+      expect(header.numElementsIncluded).toBe(1);
+      expect(header.numElementsExcluded).toBe(0);
 
       const projExt = imodel.projectExtents;
-      expect(projExt.xLength()).to.equal(header.contentRange.xLength());
-      expect(projExt.yLength()).to.equal(header.contentRange.yLength());
-      expect(header.contentRange.zLength()).to.deep.equalWithFpTolerance(0); // project extents are chubbed up; content range is tight.
+      expect(projExt.xLength()).toBe(header.contentRange.xLength());
+      expect(projExt.yLength()).toBe(header.contentRange.yLength());
+      expect(header.contentRange.zLength()).toEqualWithFpTolerance(0); // project extents are chubbed up; content range is tight.
     };
 
     // Test current version of tile tree by asking model to load it
@@ -719,7 +717,7 @@ describe("mirukuru TileTree", () => {
 
     // Test directly loading a tile tree of version 3.0
     const v3Props = await IModelApp.tileAdmin.requestTileTreeProps(imodel, "0x1c");
-    expect(v3Props).not.to.be.undefined;
+    expect(v3Props).not.toBeUndefined();
 
     const edges = false as const;
     const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: false, timeline: undefined };
@@ -740,14 +738,14 @@ describe("mirukuru TileTree", () => {
 
     viewState.viewFlags = viewState.viewFlags.with("visibleEdges", true);
     const edges = treeRef.treeOwner;
-    expect(edges).not.to.equal(noEdges);
+    expect(edges).not.toBe(noEdges);
 
     const edges2 = treeRef.treeOwner;
-    expect(edges2).to.equal(edges);
+    expect(edges2).toBe(edges);
 
     viewState.viewFlags = viewState.viewFlags.with("visibleEdges", false);
     const noEdges2 = treeRef.treeOwner;
-    expect(noEdges2).to.equal(noEdges);
+    expect(noEdges2).toBe(noEdges);
   });
 });
 
@@ -765,7 +763,7 @@ describe("TileAdmin", () => {
       await TestUtility.shutdownFrontend();
   };
 
-  after(async () => {
+  afterAll(async () => {
     await cleanup();
   });
 
@@ -777,7 +775,7 @@ describe("TileAdmin", () => {
       props.expandProjectExtents = false;
 
       if (ProcessDetector.isElectronAppFrontend) {
-        // certa doesn't serve worker script.
+        // The Electron provider doesn't serve worker scripts.
         props.decodeImdlInWorker = false;
       }
 
@@ -820,8 +818,8 @@ describe("TileAdmin", () => {
     class App extends TileAdminApp {
       private static async rootTileHasEdges(tree: IModelTileTree): Promise<boolean> {
         const response = await tree.staticBranch.requestContent() as Uint8Array;
-        expect(response).not.to.be.undefined;
-        expect(response).instanceof(Uint8Array);
+        expect(response).not.toBeUndefined();
+        expect(response).toBeInstanceOf(Uint8Array);
 
         const document = await parseImdlDocument({
           data: response,
@@ -831,7 +829,7 @@ describe("TileAdmin", () => {
           timeline: undefined,
         }) as ImdlModel.Document;
 
-        expect(typeof document).to.equal("object");
+        expect(typeof document).toBe("object");
         return document.nodes.some((node) => node.primitives && node.primitives.some((primitive) => primitive.type === "mesh" && undefined !== primitive.params.edges));
       }
 
@@ -839,18 +837,18 @@ describe("TileAdmin", () => {
         const expectTreeId = async (edges: EdgeOptions | false, expectedTreeIdStr: string) => {
           const treeId: IModelTileTreeId = { type: BatchType.Primary, edges };
           const actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
-          expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
+          expect(actualTreeIdStr).toBe(expectedTreeIdStr);
 
           const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
-          expect(treeProps.id).to.equal(actualTreeIdStr);
+          expect(treeProps.id).toBe(actualTreeIdStr);
 
           const tree = await getTileTree(imodel, "0x1c", false !== edges);
-          expect(tree.id).to.equal(actualTreeIdStr);
+          expect(tree.id).toBe(actualTreeIdStr);
 
           const tree2 = await getTileTree(imodel, "0x1c", false !== edges);
-          expect(tree2).to.equal(tree);
+          expect(tree2).toBe(tree);
 
-          expect(await this.rootTileHasEdges(tree)).to.equal(false !== edges);
+          expect(await this.rootTileHasEdges(tree)).toBe(false !== edges);
         };
 
         const version = CurrentImdlVersion.Major.toString(16);
@@ -877,15 +875,15 @@ describe("TileAdmin", () => {
 
         const tree = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
 
-        expect(tree).not.to.be.undefined;
-        expect(tree.id).to.equal(treeId);
-        expect(tree.formatVersion).not.to.be.undefined;
+        expect(tree).not.toBeUndefined();
+        expect(tree.id).toBe(treeId);
+        expect(tree.formatVersion).not.toBeUndefined();
 
         const majorVersion = (tree.formatVersion!) >>> 0x10;
-        expect(majorVersion).to.equal(expectedMajorVersion);
+        expect(majorVersion).toBe(expectedMajorVersion);
 
         // Old root content Id supplied strictly for very old front-ends - newer front-ends compute root content Id based on major version + flags
-        expect(tree.rootTile.contentId).to.equal("0/0/0/0/1");
+        expect(tree.rootTile.contentId).toBe("0/0/0/0/1");
 
         await App.stop();
       }
@@ -912,9 +910,9 @@ describe("TileAdmin", () => {
 
         const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
         const qualifier = treeProps.contentIdQualifier;
-        expect(qualifier !== undefined).to.equal(useProjectExtents);
+        expect(qualifier !== undefined).toBe(useProjectExtents);
         if (undefined !== qualifier)
-          expect(qualifier.length > 0).to.be.true;
+          expect(qualifier.length > 0).toBe(true);
 
         const edges = { type: "non-indexed" as const, smooth: false };
         const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
@@ -924,13 +922,13 @@ describe("TileAdmin", () => {
         const intfc = IModelTileRpcInterface.getClient();
         const generateTileContent = intfc.generateTileContent;
         intfc.generateTileContent = async (_token: IModelRpcProps, tileTreeId: string, _contentId: string, guid: string | undefined) => {
-          expect(tileTreeId).to.equal(treeId);
+          expect(tileTreeId).toBe(treeId);
 
-          expect(guid).not.to.be.undefined;
+          expect(guid).not.toBeUndefined();
           if (!useProjectExtents)
-            expect(guid).to.equal("first");
+            expect(guid).toBe("first");
           else
-            expect(guid).to.equal(`first_${qualifier!}`);
+            expect(guid).toBe(`first_${qualifier!}`);
 
           return TileContentSource.Backend;
         };

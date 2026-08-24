@@ -5,18 +5,18 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "resolvePackageJsonExports": true,
-    "types": ["mocha", "node"],
+    "types": ["vitest/globals", "node"],
     "baseUrl": ".",
     "paths": {
-      "@itwin/core-electron/lib/cjs/ElectronFrontend": ["../../core/electron/lib/cjs/ElectronFrontend.d.ts"],
-      "@itwin/core-frontend/lib/cjs/internal/render/MockRender": ["../../core/frontend/lib/cjs/internal/render/MockRender.d.ts"],
-      "@itwin/certa/lib/utils/CallbackUtils": ["../../tools/certa/lib/utils/CallbackUtils.d.ts"],
+      "@itwin/core-electron/lib/cjs/frontend/ElectronApp": ["../../core/electron/lib/cjs/frontend/ElectronApp.d.ts"],
+      "@itwin/core-frontend/lib/cjs/internal/test-support": ["../../core/frontend/lib/cjs/internal/test-support.d.ts"],
       "@itwin/vitest-browser-bridge/callbacks/backend": ["../../tools/vitest-browser-bridge/lib/cjs/callbacks/backend.d.ts"],
-      "@itwin/vitest-browser-bridge/callbacks/browser": ["../../tools/vitest-browser-bridge/lib/esm/callbacks/browser.d.ts"],
-      "@itwin/vitest-browser-bridge/callbacks/http": ["../../tools/vitest-browser-bridge/lib/esm/callbacks/http.d.ts"]
+      "@itwin/vitest-browser-bridge/callbacks/http": ["../../tools/vitest-browser-bridge/lib/cjs/callbacks/http.d.ts"],
+      "@itwin/vitest-browser-bridge/callbacks/browser": ["../../tools/vitest-browser-bridge/lib/esm/callbacks/browser.d.ts"]
     }
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.mts"
   ]
 }

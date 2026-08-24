@@ -80,6 +80,7 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
   let window: BrowserWindow | undefined;
   let exitCode = 0;
   let settled = false;
+  let shutdownRequested = false;
   let resolveShutdown: () => void;
   const shutdown = new Promise<void>((resolve) => {
     resolveShutdown = resolve;
@@ -99,10 +100,17 @@ export async function runProviderSession(environment: ProviderSessionConfigurati
   const onSignal = () => finish(0);
   const onProviderDisconnect = () => finish(0);
   const onProviderMessage = (message: unknown) => {
-    if (isSessionShutdownMessage(message))
+    if (isSessionShutdownMessage(message)) {
+      shutdownRequested = true;
       finish(0);
+    }
   };
-  const onWindowClosed = () => finish(exitCode);
+  const onWindowClosed = () => {
+    if (settled || shutdownRequested)
+      return;
+    console.error(`[vitest-browser-bridge:${environment.sessionId}] provider window closed unexpectedly.`);
+    finish(1);
+  };
   const onRenderGone = (_event: Electron.Event, details: Electron.RenderProcessGoneDetails) => {
     console.error(`[vitest-browser-bridge:${environment.sessionId}] renderer exited: ${details.reason}`);
     finish(1);

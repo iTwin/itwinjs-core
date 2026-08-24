@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, SubCategoryOverride } from "@itwin/core-common";
 import {
@@ -25,26 +25,26 @@ class Overrides extends FeatureSymbology.Overrides {
 
   public expectOverridden(modelId: Id64String, subcategoryId: Id64String): void {
     const set = this.getOverride(modelId);
-    expect(set).not.to.be.undefined;
-    expect(set!.hasId(subcategoryId)).to.be.true;
+    expect(set).not.toBeUndefined();
+    expect(set!.hasId(subcategoryId)).toBe(true);
   }
 
   public expectNotOverridden(modelId: Id64String, subcategoryId: Id64String): void {
     const set = this.getOverride(modelId);
     if (undefined !== set)
-      expect(set.hasId(subcategoryId)).to.be.false;
+      expect(set.hasId(subcategoryId)).toBe(false);
   }
 
   public expectSubCategoryAppearance(modelId: Id64String, subcatId: Id64String, visible: boolean, color?: ColorDef): void {
     const app = this.getElementAppearance(modelId, subcatId);
-    expect(undefined !== app).to.equal(visible);
+    expect(undefined !== app).toBe(visible);
     if (undefined !== app) {
-      expect(app.overridesRgb).to.equal(undefined !== color);
+      expect(app.overridesRgb).toBe(undefined !== color);
       if (undefined !== color && undefined !== app.rgb) {
         const c = color.colors;
-        expect(app.rgb.r).to.equal(c.r);
-        expect(app.rgb.g).to.equal(c.g);
-        expect(app.rgb.b).to.equal(c.b);
+        expect(app.rgb.r).toBe(c.r);
+        expect(app.rgb.g).toBe(c.g);
+        expect(app.rgb.b).toBe(c.b);
       }
     }
   }
@@ -71,7 +71,7 @@ describe("Per-model category visibility overrides", () => {
   const hide = PerModelCategoryVisibility.Override.Hide;
   const usedCatIds = ["0x17", "0x2d", "0x2f", "0x31"];
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
@@ -83,7 +83,7 @@ describe("Per-model category visibility overrides", () => {
       await req.promise;
 
     for (const usedCatId of usedCatIds)
-      expect(imodel.subcategories.getSubCategories(usedCatId)).not.to.be.undefined;
+      expect(imodel.subcategories.getSubCategories(usedCatId)).not.toBeUndefined();
   });
 
   beforeEach(() => {
@@ -94,7 +94,7 @@ describe("Per-model category visibility overrides", () => {
     vp[Symbol.dispose]();
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -105,23 +105,23 @@ describe("Per-model category visibility overrides", () => {
     // Turn off all categories
     vp.changeCategoryDisplay(usedCatIds, false);
     for (const catId of usedCatIds)
-      expect(vp.view.viewsCategory(catId)).to.be.false;
+      expect(vp.view.viewsCategory(catId)).toBe(false);
 
-    expect(vp.view.viewsModel("0x1c"));
-    expect(vp.view.viewsModel("0x1f"));
+    expect(vp.view.viewsModel("0x1c")).toBe(true);
+    expect(vp.view.viewsModel("0x1f")).toBe(true);
 
     // Turn on category 2f for model 1c, and turn off category 17 for model 1f (latter is no-op because already off).
     const pmcv = vp.perModelCategoryVisibility;
     pmcv.setOverride("0x1c", "0x2f", show);
     pmcv.setOverride("0x1f", "0x17", hide);
 
-    expect(pmcv.getOverride("0x1c", "0x2f")).to.equal(show);
-    expect(pmcv.getOverride("0x1f", "0x17")).to.equal(hide);
+    expect(pmcv.getOverride("0x1c", "0x2f")).toBe(show);
+    expect(pmcv.getOverride("0x1f", "0x17")).toBe(hide);
 
     const ovrs = new Overrides(vp);
 
     // Only the per-model overrides which actually override visibility are recorded.
-    expect(ovrs.modelSubCategoryOverrides.size).to.equal(1);
+    expect(ovrs.modelSubCategoryOverrides.size).toBe(1);
     ovrs.expectOverridden("0x1c", "0x30");
     ovrs.expectOverridden("0x1c", "0x33");
     ovrs.expectNotOverridden("0x1f", "0x17");
@@ -132,13 +132,13 @@ describe("Per-model category visibility overrides", () => {
       const lo = Id64.getLowerUint32(modelId);
       const hi = Id64.getUpperUint32(modelId);
 
-      expect(ovrs.isSubCategoryVisibleInModel(0x30, 0, lo, hi)).to.equal(expectVisible);
-      expect(ovrs.isSubCategoryVisibleInModel(0x33, 0, lo, hi)).to.equal(expectVisible);
-      expect(ovrs.isSubCategoryVisibleInModel(0x18, 0, lo, hi)).to.be.false;
-      expect(ovrs.isSubCategoryVisibleInModel(0x2e, 0, lo, hi)).to.be.false;
+      expect(ovrs.isSubCategoryVisibleInModel(0x30, 0, lo, hi)).toBe(expectVisible);
+      expect(ovrs.isSubCategoryVisibleInModel(0x33, 0, lo, hi)).toBe(expectVisible);
+      expect(ovrs.isSubCategoryVisibleInModel(0x18, 0, lo, hi)).toBe(false);
+      expect(ovrs.isSubCategoryVisibleInModel(0x2e, 0, lo, hi)).toBe(false);
 
-      expect(ovrs.getElementAppearance(modelId, "0x30") !== undefined).to.equal(expectVisible);
-      expect(ovrs.getElementAppearance(modelId, "0x33") !== undefined).to.equal(expectVisible);
+      expect(ovrs.getElementAppearance(modelId, "0x30") !== undefined).toBe(expectVisible);
+      expect(ovrs.getElementAppearance(modelId, "0x33") !== undefined).toBe(expectVisible);
     }
   });
 
@@ -152,28 +152,28 @@ describe("Per-model category visibility overrides", () => {
     pmcv.setOverride("0x1c", "0x31", hide);
     pmcv.setOverride("0x1f", "0x17", show);
     pmcv.setOverride("0x1f", "0x2d", hide);
-    expect(pmcv.getOverride("0x1c", "0x31")).to.equal(hide);
-    expect(pmcv.getOverride("0x1f", "0x17")).to.equal(show);
-    expect(pmcv.getOverride("0x1f", "0x2d")).to.equal(hide);
+    expect(pmcv.getOverride("0x1c", "0x31")).toBe(hide);
+    expect(pmcv.getOverride("0x1f", "0x17")).toBe(show);
+    expect(pmcv.getOverride("0x1f", "0x2d")).toBe(hide);
 
     vp.setAlwaysDrawn(new Set<string>(["0xabc"]));
     vp.setNeverDrawn(new Set<string>(["0xdef"]));
 
     const ovrs = new Overrides(vp);
 
-    expect(ovrs.modelSubCategoryOverrides.size).to.equal(2);
+    expect(ovrs.modelSubCategoryOverrides.size).toBe(2);
     ovrs.expectOverridden("0x1c", "0x32");
     ovrs.expectOverridden("0x1f", "0x18");
 
     for (const modelId of spatialView.modelSelector.models) {
-      expect(ovrs.getElementAppearance(modelId, "0x18", "0xabc")).not.to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x32", "0xabc")).not.to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x18", "0xdef")).to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x32", "0xdef")).to.be.undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x18", "0xabc")).not.toBeUndefined();
+      expect(ovrs.getElementAppearance(modelId, "0x32", "0xabc")).not.toBeUndefined();
+      expect(ovrs.getElementAppearance(modelId, "0x18", "0xdef")).toBeUndefined();
+      expect(ovrs.getElementAppearance(modelId, "0x32", "0xdef")).toBeUndefined();
 
-      expect(ovrs.getElementAppearance(modelId, "0x32") !== undefined).to.equal(modelId !== "0x1c");
-      expect(ovrs.getElementAppearance(modelId, "0x18") !== undefined).to.equal(modelId === "0x1f");
-      expect(ovrs.getElementAppearance(modelId, "0x2e") !== undefined).to.equal(modelId !== "0x1f");
+      expect(ovrs.getElementAppearance(modelId, "0x32") !== undefined).toBe(modelId !== "0x1c");
+      expect(ovrs.getElementAppearance(modelId, "0x18") !== undefined).toBe(modelId === "0x1f");
+      expect(ovrs.getElementAppearance(modelId, "0x2e") !== undefined).toBe(modelId !== "0x1f");
     }
   });
 
@@ -191,11 +191,11 @@ describe("Per-model category visibility overrides", () => {
 
     // With no per-model overrides, expect subcategory appearance overrides for invisible subcategories not to be loaded.
     let ovrs = new Overrides(vp);
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x18")).to.be.true; // because visible and overridden
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x30")).to.be.false; // because overridden to be invisible
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x32")).to.be.false; // because overridden to be invisible
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x2e")).to.be.false; // because overridden but category turned off
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x33")).to.be.false; // because overridden to be invisible
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x18")).toBe(true); // because visible and overridden
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x30")).toBe(false); // because overridden to be invisible
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x32")).toBe(false); // because overridden to be invisible
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x2e")).toBe(false); // because overridden but category turned off
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x33")).toBe(false); // because overridden to be invisible
 
     // Turning a category on for a specific model turns on all subcategories.
     // If any of those subcategories have appearance overrides they must be loaded.
@@ -205,11 +205,11 @@ describe("Per-model category visibility overrides", () => {
     vp.perModelCategoryVisibility.setOverride("0x1c", "0x17", hide);
 
     ovrs = new Overrides(vp);
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x18")).to.be.true;
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x30")).to.be.true; // because model overrode visibility and viewport override color
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x32")).to.be.false; // model overrode visibility but no other appearance overrides
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x2e")).to.be.true; // category is off in selector but on for model and viewport overrode color
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x33")).to.be.true; // because model overrode visibility and viewport override color
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x18")).toBe(true);
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x30")).toBe(true); // because model overrode visibility and viewport override color
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x32")).toBe(false); // model overrode visibility but no other appearance overrides
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x2e")).toBe(true); // category is off in selector but on for model and viewport overrode color
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x33")).toBe(true); // because model overrode visibility and viewport override color
 
     ovrs.expectSubCategoryAppearance("0x1f", "0x18", true, ColorDef.red);
     ovrs.expectSubCategoryAppearance("0x1f", "0x30", false);
@@ -240,24 +240,24 @@ describe("Per-model category visibility overrides", () => {
       const catId = entry.categoryId;
       const vis = entry.visible;
 
-      expect(modelId === "0x1c" || modelId === "0x1d").to.be.true;
+      expect(modelId === "0x1c" || modelId === "0x1d").toBe(true);
       const arr = modelId === "0x1c" ? cats1c : cats1d;
       const set = vis ? arr[0] : arr[1];
       set.add(catId);
       ++nIterations;
     }
 
-    expect(nIterations).to.equal(6);
+    expect(nIterations).toBe(6);
 
-    expect(cats1c[0].size).to.equal(2);
-    expect(cats1c[1].size).to.equal(1);
-    expect(cats1d[0].size).to.equal(1);
-    expect(cats1d[1].size).to.equal(2);
+    expect(cats1c[0].size).toBe(2);
+    expect(cats1c[1].size).toBe(1);
+    expect(cats1d[0].size).toBe(1);
+    expect(cats1d[1].size).toBe(2);
 
-    expect(Array.from(cats1c[0]).join()).to.equal("0x2f,0x31");
-    expect(Array.from(cats1c[1]).join()).to.equal("0x2d");
-    expect(Array.from(cats1d[0]).join()).to.equal("0x2d");
-    expect(Array.from(cats1d[1]).join()).to.equal("0x2f,0x2e");
+    expect(Array.from(cats1c[0]).join()).toBe("0x2f,0x31");
+    expect(Array.from(cats1c[1]).join()).toBe("0x2d");
+    expect(Array.from(cats1d[0]).join()).toBe("0x2d");
+    expect(Array.from(cats1d[1]).join()).toBe("0x2f,0x2e");
   });
 });
 describe("Per-model category visibility overrides with setOverrides function", () => {
@@ -273,7 +273,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
   const hide = PerModelCategoryVisibility.Override.Hide;
   const usedCatIds = ["0x17", "0x2d", "0x2f", "0x31"];
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
@@ -289,7 +289,7 @@ describe("Per-model category visibility overrides with setOverrides function", (
     vp[Symbol.dispose]();
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -300,10 +300,10 @@ describe("Per-model category visibility overrides with setOverrides function", (
     // Turn off all categories
     vp.changeCategoryDisplay(usedCatIds, false);
     for (const catId of usedCatIds)
-      expect(vp.view.viewsCategory(catId)).to.be.false;
+      expect(vp.view.viewsCategory(catId)).toBe(false);
 
-    expect(vp.view.viewsModel("0x1c"));
-    expect(vp.view.viewsModel("0x1f"));
+    expect(vp.view.viewsModel("0x1c")).toBe(true);
+    expect(vp.view.viewsModel("0x1f")).toBe(true);
 
     // Turn on category 2f for model 1c, and turn off category 17 for model 1f (latter is no-op because already off).
     const pmcv = vp.perModelCategoryVisibility;
@@ -312,13 +312,13 @@ describe("Per-model category visibility overrides with setOverrides function", (
     overrides.push({ modelId: "0x1f", categoryIds: "0x17", visOverride: hide });
     await pmcv.setOverrides(overrides);
 
-    expect(pmcv.getOverride("0x1c", "0x2f")).to.equal(show);
-    expect(pmcv.getOverride("0x1f", "0x17")).to.equal(hide);
+    expect(pmcv.getOverride("0x1c", "0x2f")).toBe(show);
+    expect(pmcv.getOverride("0x1f", "0x17")).toBe(hide);
 
     const ovrs = new Overrides(vp);
 
     // Only the per-model overrides which actually override visibility are recorded.
-    expect(ovrs.modelSubCategoryOverrides.size).to.equal(1);
+    expect(ovrs.modelSubCategoryOverrides.size).toBe(1);
     ovrs.expectOverridden("0x1c", "0x30");
     ovrs.expectOverridden("0x1c", "0x33");
     ovrs.expectNotOverridden("0x1f", "0x17");
@@ -329,13 +329,13 @@ describe("Per-model category visibility overrides with setOverrides function", (
       const lo = Id64.getLowerUint32(modelId);
       const hi = Id64.getUpperUint32(modelId);
 
-      expect(ovrs.isSubCategoryVisibleInModel(0x30, 0, lo, hi)).to.equal(expectVisible);
-      expect(ovrs.isSubCategoryVisibleInModel(0x33, 0, lo, hi)).to.equal(expectVisible);
-      expect(ovrs.isSubCategoryVisibleInModel(0x18, 0, lo, hi)).to.be.false;
-      expect(ovrs.isSubCategoryVisibleInModel(0x2e, 0, lo, hi)).to.be.false;
+      expect(ovrs.isSubCategoryVisibleInModel(0x30, 0, lo, hi)).toBe(expectVisible);
+      expect(ovrs.isSubCategoryVisibleInModel(0x33, 0, lo, hi)).toBe(expectVisible);
+      expect(ovrs.isSubCategoryVisibleInModel(0x18, 0, lo, hi)).toBe(false);
+      expect(ovrs.isSubCategoryVisibleInModel(0x2e, 0, lo, hi)).toBe(false);
 
-      expect(ovrs.getElementAppearance(modelId, "0x30") !== undefined).to.equal(expectVisible);
-      expect(ovrs.getElementAppearance(modelId, "0x33") !== undefined).to.equal(expectVisible);
+      expect(ovrs.getElementAppearance(modelId, "0x30") !== undefined).toBe(expectVisible);
+      expect(ovrs.getElementAppearance(modelId, "0x33") !== undefined).toBe(expectVisible);
     }
   });
 
@@ -351,28 +351,28 @@ describe("Per-model category visibility overrides with setOverrides function", (
     overrides.push({ modelId: "0x1f", categoryIds: ["0x17"], visOverride: show });
     overrides.push({ modelId: "0x1f", categoryIds: "0x2d", visOverride: hide });
     await pmcv.setOverrides(overrides);
-    expect(pmcv.getOverride("0x1c", "0x31")).to.equal(hide);
-    expect(pmcv.getOverride("0x1f", "0x17")).to.equal(show);
-    expect(pmcv.getOverride("0x1f", "0x2d")).to.equal(hide);
+    expect(pmcv.getOverride("0x1c", "0x31")).toBe(hide);
+    expect(pmcv.getOverride("0x1f", "0x17")).toBe(show);
+    expect(pmcv.getOverride("0x1f", "0x2d")).toBe(hide);
 
     vp.setAlwaysDrawn(new Set<string>(["0xabc"]));
     vp.setNeverDrawn(new Set<string>(["0xdef"]));
 
     const ovrs = new Overrides(vp);
 
-    expect(ovrs.modelSubCategoryOverrides.size).to.equal(2);
+    expect(ovrs.modelSubCategoryOverrides.size).toBe(2);
     ovrs.expectOverridden("0x1c", "0x32");
     ovrs.expectOverridden("0x1f", "0x18");
 
     for (const modelId of spatialView.modelSelector.models) {
-      expect(ovrs.getElementAppearance(modelId, "0x18", "0xabc")).not.to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x32", "0xabc")).not.to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x18", "0xdef")).to.be.undefined;
-      expect(ovrs.getElementAppearance(modelId, "0x32", "0xdef")).to.be.undefined;
+      expect(ovrs.getElementAppearance(modelId, "0x18", "0xabc")).not.toBeUndefined();
+      expect(ovrs.getElementAppearance(modelId, "0x32", "0xabc")).not.toBeUndefined();
+      expect(ovrs.getElementAppearance(modelId, "0x18", "0xdef")).toBeUndefined();
+      expect(ovrs.getElementAppearance(modelId, "0x32", "0xdef")).toBeUndefined();
 
-      expect(ovrs.getElementAppearance(modelId, "0x32") !== undefined).to.equal(modelId !== "0x1c");
-      expect(ovrs.getElementAppearance(modelId, "0x18") !== undefined).to.equal(modelId === "0x1f");
-      expect(ovrs.getElementAppearance(modelId, "0x2e") !== undefined).to.equal(modelId !== "0x1f");
+      expect(ovrs.getElementAppearance(modelId, "0x32") !== undefined).toBe(modelId !== "0x1c");
+      expect(ovrs.getElementAppearance(modelId, "0x18") !== undefined).toBe(modelId === "0x1f");
+      expect(ovrs.getElementAppearance(modelId, "0x2e") !== undefined).toBe(modelId !== "0x1f");
     }
   });
 
@@ -390,11 +390,11 @@ describe("Per-model category visibility overrides with setOverrides function", (
 
     // With no per-model overrides, expect subcategory appearance overrides for invisible subcategories not to be loaded.
     let ovrs = new Overrides(vp);
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x18")).to.be.true; // because visible and overridden
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x30")).to.be.false; // because overridden to be invisible
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x32")).to.be.false; // because overridden to be invisible
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x2e")).to.be.false; // because overridden but category turned off
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x33")).to.be.false; // because overridden to be invisible
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x18")).toBe(true); // because visible and overridden
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x30")).toBe(false); // because overridden to be invisible
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x32")).toBe(false); // because overridden to be invisible
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x2e")).toBe(false); // because overridden but category turned off
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x33")).toBe(false); // because overridden to be invisible
 
     // Turning a category on for a specific model turns on all subcategories.
     // If any of those subcategories have appearance overrides they must be loaded.
@@ -408,11 +408,11 @@ describe("Per-model category visibility overrides with setOverrides function", (
     await vp.perModelCategoryVisibility.setOverrides(overrides);
 
     ovrs = new Overrides(vp);
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x18")).to.be.true;
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x30")).to.be.true; // because model overrode visibility and viewport override color
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x32")).to.be.false; // model overrode visibility but no other appearance overrides
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x2e")).to.be.true; // category is off in selector but on for model and viewport overrode color
-    expect(ovrs.hasSubCategoryAppearanceOverride("0x33")).to.be.true; // because model overrode visibility and viewport override color
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x18")).toBe(true);
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x30")).toBe(true); // because model overrode visibility and viewport override color
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x32")).toBe(false); // model overrode visibility but no other appearance overrides
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x2e")).toBe(true); // category is off in selector but on for model and viewport overrode color
+    expect(ovrs.hasSubCategoryAppearanceOverride("0x33")).toBe(true); // because model overrode visibility and viewport override color
 
     ovrs.expectSubCategoryAppearance("0x1f", "0x18", true, ColorDef.red);
     ovrs.expectSubCategoryAppearance("0x1f", "0x30", false);
@@ -445,23 +445,23 @@ describe("Per-model category visibility overrides with setOverrides function", (
       const catId = entry.categoryId;
       const vis = entry.visible;
 
-      expect(modelId === "0x1c" || modelId === "0x1d").to.be.true;
+      expect(modelId === "0x1c" || modelId === "0x1d").toBe(true);
       const arr = modelId === "0x1c" ? cats1c : cats1d;
       const set = vis ? arr[0] : arr[1];
       set.add(catId);
       ++nIterations;
     }
 
-    expect(nIterations).to.equal(6);
+    expect(nIterations).toBe(6);
 
-    expect(cats1c[0].size).to.equal(2);
-    expect(cats1c[1].size).to.equal(1);
-    expect(cats1d[0].size).to.equal(1);
-    expect(cats1d[1].size).to.equal(2);
+    expect(cats1c[0].size).toBe(2);
+    expect(cats1c[1].size).toBe(1);
+    expect(cats1d[0].size).toBe(1);
+    expect(cats1d[1].size).toBe(2);
 
-    expect(Array.from(cats1c[0]).join()).to.equal("0x2f,0x31");
-    expect(Array.from(cats1c[1]).join()).to.equal("0x2d");
-    expect(Array.from(cats1d[0]).join()).to.equal("0x2d");
-    expect(Array.from(cats1d[1]).join()).to.equal("0x2f,0x2e");
+    expect(Array.from(cats1c[0]).join()).toBe("0x2f,0x31");
+    expect(Array.from(cats1c[1]).join()).toBe("0x2d");
+    expect(Array.from(cats1d[0]).join()).toBe("0x2d");
+    expect(Array.from(cats1d[1]).join()).toBe("0x2f,0x2e");
   });
 });

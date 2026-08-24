@@ -2,24 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { Guid } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { PersistentGraphicsRequestProps } from "@itwin/core-common";
 import { IModelApp, readElementGraphics } from "@itwin/core-frontend";
-import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/test-support";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 describe("requestElementGraphics", () => {
   let imodel: TestSnapshotConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -38,18 +38,18 @@ describe("requestElementGraphics", () => {
         requestProps.quantizePositions = requestQuantized;
 
       const bytes = await IModelApp.tileAdmin.requestElementGraphics(imodel, requestProps);
-      expect(bytes).not.to.be.undefined;
+      expect(bytes).not.toBeUndefined();
 
       let createdMesh = false;
       IModelApp.renderSystem.createMeshGeometry = (params, _origin) => {
-        expect(params.vertices.usesUnquantizedPositions).to.equal(!expected);
+        expect(params.vertices.usesUnquantizedPositions).toBe(!expected);
         createdMesh = true;
         return new MockRender.Geometry("mesh");
       };
 
       const gfx = await readElementGraphics(bytes!, imodel, "0", true);
-      expect(gfx).not.to.be.undefined;
-      expect(createdMesh).to.be.true;
+      expect(gfx).not.toBeUndefined();
+      expect(createdMesh).toBe(true);
     }
 
     it("is not applied by default", async () => {
@@ -68,9 +68,9 @@ describe("requestElementGraphics", () => {
   describe("relative-to-center transform", async () => {
     let elemRtc: number[];
 
-    before(async () => {
+    beforeAll(async () => {
       const placement = (await imodel.elements.getPlacements("0x29", { type: "3d" }))[0];
-      expect(placement).not.to.be.undefined;
+      expect(placement).not.toBeUndefined();
       const range = placement.calculateRange();
       const rangeCenter = range.center;
       elemRtc = [rangeCenter.x, rangeCenter.y, rangeCenter.z];
@@ -92,11 +92,11 @@ describe("requestElementGraphics", () => {
       };
 
       const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, requestProps))!;
-      expect(bytes).not.to.be.undefined;
+      expect(bytes).not.toBeUndefined();
 
       let createdMesh = false;
       IModelApp.renderSystem.createMeshGeometry = (params) => {
-        expect(params.vertices.usesUnquantizedPositions).to.equal(true !== options.quantize);
+        expect(params.vertices.usesUnquantizedPositions).toBe(true !== options.quantize);
         createdMesh = true;
         return new MockRender.Geometry("mesh");
       };
@@ -108,9 +108,9 @@ describe("requestElementGraphics", () => {
       };
 
       const gfx = await readElementGraphics(bytes, imodel, "0", true);
-      expect(gfx).not.to.be.undefined;
-      expect(createdMesh).to.be.true;
-      expect(undefined === actualRtc).to.equal(undefined === expectedRtc);
+      expect(gfx).not.toBeUndefined();
+      expect(createdMesh).toBe(true);
+      expect(undefined === actualRtc).toBe(undefined === expectedRtc);
       if (actualRtc && expectedRtc) {
         const expectAlmostEqual = (actual: number, expected: number) => expect(Math.abs(actual - expected)).most(0.00001);
         expectAlmostEqual(actualRtc[0], expectedRtc[0]);

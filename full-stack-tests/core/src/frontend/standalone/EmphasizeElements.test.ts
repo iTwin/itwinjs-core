@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
@@ -17,18 +17,18 @@ describe("EmphasizeElements tests", () => {
   let spatialView: SpatialViewState;
 
   const viewDiv = document.createElement("div");
-  assert(null !== viewDiv);
+  expect(null !== viewDiv).toBeTruthy();
   viewDiv.style.width = viewDiv.style.height = "1000px";
   document.body.appendChild(viewDiv);
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim");
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -43,27 +43,27 @@ describe("EmphasizeElements tests", () => {
     ids.add("0x2");
     ids.add("0x3");
     let status = emph.emphasizeElements(ids, vp, undefined, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     let currIds = emph.getEmphasizedElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
     ids.add("0x4");
     status = emph.emphasizeElements(ids, vp, undefined, false);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currIds = emph.getEmphasizedElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
     ids.clear();
     ids.add("0x5");
     status = emph.emphasizeElements(ids, vp, undefined, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currIds = emph.getEmphasizedElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
     status = emph.clearEmphasizedElements(vp);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currIds = emph.getEmphasizedElements(vp);
-    assert.isTrue(undefined === currIds);
+    expect(undefined === currIds).toBe(true);
 
     EmphasizeElements.clear(vp);
   });
@@ -78,27 +78,27 @@ describe("EmphasizeElements tests", () => {
     ids.add("0x2");
     ids.add("0x3");
     let status = emph.isolateElements(ids, vp, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     let currIds = emph.getIsolatedElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
     ids.add("0x4");
     status = emph.isolateElements(ids, vp, false);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currIds = emph.getIsolatedElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
     ids.clear();
     ids.add("0x5");
     status = emph.isolateElements(ids, vp, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currIds = emph.getIsolatedElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
     status = emph.clearIsolatedElements(vp);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currIds = emph.getIsolatedElements(vp);
-    assert.isTrue(undefined === currIds);
+    expect(undefined === currIds).toBe(true);
 
     EmphasizeElements.clear(vp);
   });
@@ -113,27 +113,27 @@ describe("EmphasizeElements tests", () => {
     ids.add("0x2");
     ids.add("0x3");
     let status = emph.hideElements(ids, vp, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     let currIds = emph.getHiddenElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
     ids.add("0x4");
     status = emph.hideElements(ids, vp, false);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currIds = emph.getHiddenElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
     ids.clear();
     ids.add("0x5");
     status = emph.hideElements(ids, vp, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currIds = emph.getHiddenElements(vp);
-    assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+    expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
     status = emph.clearHiddenElements(vp);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currIds = emph.getHiddenElements(vp);
-    assert.isTrue(undefined === currIds);
+    expect(undefined === currIds).toBe(true);
 
     EmphasizeElements.clear(vp);
   });
@@ -146,70 +146,70 @@ describe("EmphasizeElements tests", () => {
     const blueIds = new Set<string>();
     const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly);
     const blueKey = emph.createOverrideKey(ColorDef.blue, FeatureOverrideType.ColorOnly);
-    assert.isFalse(undefined === redKey);
-    assert.isFalse(undefined === blueKey);
+    expect(undefined === redKey).toBe(false);
+    expect(undefined === blueKey).toBe(false);
 
     redIds.add("0x1");
     redIds.add("0x2");
     redIds.add("0x3");
     let status = emph.overrideElements(redIds, vp, ColorDef.red, FeatureOverrideType.ColorOnly, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     let currRedIds = emph.getOverriddenElementsByKey(redKey!);
-    assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
+    expect(undefined !== currRedIds && redIds.size === currRedIds.size).toBe(true);
 
     blueIds.add("0x11");
     blueIds.add("0x21");
     status = emph.overrideElements(blueIds, vp, ColorDef.blue, FeatureOverrideType.ColorOnly, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     let currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
-    assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);
+    expect(undefined !== currBlueIds && blueIds.size === currBlueIds.size).toBe(true);
 
     let currMap = emph.getOverriddenElements();
-    assert.isTrue(undefined !== currMap && 2 === currMap.size);
+    expect(undefined !== currMap && 2 === currMap.size).toBe(true);
 
     redIds.add("0x4");
     status = emph.overrideElements(redIds, vp, ColorDef.red, FeatureOverrideType.ColorOnly, false);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currRedIds = emph.getOverriddenElementsByKey(redKey!);
-    assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
+    expect(undefined !== currRedIds && redIds.size === currRedIds.size).toBe(true);
 
     blueIds.add("0x31");
     status = emph.overrideElements(blueIds, vp, ColorDef.blue, FeatureOverrideType.ColorOnly, false);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
-    assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);
+    expect(undefined !== currBlueIds && blueIds.size === currBlueIds.size).toBe(true);
 
     currMap = emph.getOverriddenElements();
-    assert.isTrue(undefined !== currMap && 2 === currMap.size);
+    expect(undefined !== currMap && 2 === currMap.size).toBe(true);
 
     redIds.clear();
     redIds.add("0x5");
     status = emph.overrideElements(redIds, vp, ColorDef.red, FeatureOverrideType.ColorOnly, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currRedIds = emph.getOverriddenElementsByKey(redKey!);
-    assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
+    expect(undefined !== currRedIds && redIds.size === currRedIds.size).toBe(true);
 
     blueIds.clear();
     blueIds.add("0x41");
     status = emph.overrideElements(blueIds, vp, ColorDef.blue, FeatureOverrideType.ColorOnly, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
-    assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);
+    expect(undefined !== currBlueIds && blueIds.size === currBlueIds.size).toBe(true);
 
     currMap = emph.getOverriddenElements();
-    assert.isTrue(undefined !== currMap && 2 === currMap.size);
+    expect(undefined !== currMap && 2 === currMap.size).toBe(true);
 
     status = emph.clearOverriddenElements(vp);
-    assert.isTrue(status);
+    expect(status).toBe(true);
 
     currRedIds = emph.getOverriddenElementsByKey(redKey!);
-    assert.isTrue(undefined === currRedIds);
+    expect(undefined === currRedIds).toBe(true);
 
     currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
-    assert.isTrue(undefined === currBlueIds);
+    expect(undefined === currBlueIds).toBe(true);
 
     currMap = emph.getOverriddenElements();
-    assert.isTrue(undefined === currMap);
+    expect(undefined === currMap).toBe(true);
 
     EmphasizeElements.clear(vp);
   });
@@ -222,53 +222,53 @@ describe("EmphasizeElements tests", () => {
     const blueIds = new Set<string>();
     const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly);
     const blueKey = emph.createOverrideKey(ColorDef.blue, FeatureOverrideType.ColorOnly);
-    assert.isFalse(undefined === redKey);
-    assert.isFalse(undefined === blueKey);
+    expect(undefined === redKey).toBe(false);
+    expect(undefined === blueKey).toBe(false);
 
     redIds.add("0x1");
     redIds.add("0x2");
     redIds.add("0x3");
     let status = emph.overrideElements(redIds, vp, ColorDef.red, FeatureOverrideType.ColorOnly, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     let currRedIds = emph.getOverriddenElementsByKey(redKey!);
-    assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
+    expect(undefined !== currRedIds && redIds.size === currRedIds.size).toBe(true);
 
     blueIds.add("0x11");
     blueIds.add("0x21");
     status = emph.overrideElements(blueIds, vp, ColorDef.blue, FeatureOverrideType.ColorOnly, true);
-    assert.isTrue(status);
+    expect(status).toBe(true);
     let currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
-    assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);
+    expect(undefined !== currBlueIds && blueIds.size === currBlueIds.size).toBe(true);
 
     let currMap = emph.getOverriddenElements();
-    assert.isTrue(undefined !== currMap && 2 === currMap.size);
+    expect(undefined !== currMap && 2 === currMap.size).toBe(true);
 
     status = emph.clearOverriddenElements(vp, ["0x21", "0x2"]); // Clear some elements with red and blue overrides...
-    assert.isTrue(status);
+    expect(status).toBe(true);
 
     currRedIds = emph.getOverriddenElementsByKey(redKey!);
-    assert.isTrue(undefined !== currRedIds && 2 === currRedIds.size);
+    expect(undefined !== currRedIds && 2 === currRedIds.size).toBe(true);
 
     currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
-    assert.isTrue(undefined !== currBlueIds && 1 === currBlueIds.size);
+    expect(undefined !== currBlueIds && 1 === currBlueIds.size).toBe(true);
 
     status = emph.clearOverriddenElements(vp, redIds); // Clear remaining red overrides by element ids...
-    assert.isTrue(status);
+    expect(status).toBe(true);
 
     currRedIds = emph.getOverriddenElementsByKey(redKey!);
-    assert.isTrue(undefined === currRedIds);
+    expect(undefined === currRedIds).toBe(true);
 
     currMap = emph.getOverriddenElements();
-    assert.isTrue(undefined !== currMap && 1 === currMap.size);
+    expect(undefined !== currMap && 1 === currMap.size).toBe(true);
 
     status = emph.clearOverriddenElements(vp, blueKey); // Clear blue overrides by key...
-    assert.isTrue(status);
+    expect(status).toBe(true);
 
     currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
-    assert.isTrue(undefined === currBlueIds);
+    expect(undefined === currBlueIds).toBe(true);
 
     currMap = emph.getOverriddenElements();
-    assert.isTrue(undefined === currMap);
+    expect(undefined === currMap).toBe(true);
 
     EmphasizeElements.clear(vp);
   });
@@ -292,9 +292,9 @@ describe("EmphasizeElements tests", () => {
 
       const feature = new Feature(elemId);
       const actualAppearance = ovrs.getFeatureAppearance(feature, "0");
-      expect(actualAppearance).not.to.be.undefined;
+      expect(actualAppearance).not.toBeUndefined();
       if (undefined !== actualAppearance) {
-        expect(JSON.stringify(actualAppearance)).to.equal(JSON.stringify(expectedAppearance));
+        expect(JSON.stringify(actualAppearance)).toBe(JSON.stringify(expectedAppearance));
       }
 
       EmphasizeElements.clear(vp);
@@ -332,8 +332,8 @@ describe("EmphasizeElements tests", () => {
     const emphasizedRed = FeatureAppearance.fromJSON({ rgb: { r: 255, g: 0, b: 0 }, emphasized: true });
     const expectAppearance = (elementId: string, nodeId: number, expected: FeatureAppearance) => {
       const actual = ovrs.getFeatureAppearance(new Feature(elementId), "0x123", undefined, nodeId)!;
-      expect(actual).not.to.be.undefined;
-      expect(actual.toJSON()).to.deep.equal(expected.toJSON());
+      expect(actual).not.toBeUndefined();
+      expect(actual.toJSON()).toEqual(expected.toJSON());
     };
 
     expectAppearance("0x1", 0, emphasized);
@@ -362,16 +362,16 @@ describe("EmphasizeElements tests", () => {
       const key = emph.createOverrideKey(entry.color, entry.overrideType);
       bAssert(undefined !== key);
       const { overrideType, color } = { ...emph.getOverrideFromKey(key) };
-      assert(overrideType === entry.overrideType);
+      expect(overrideType === entry.overrideType).toBeTruthy();
       switch (overrideType) {
         case FeatureOverrideType.ColorOnly:
-          assert.isTrue(color.getRgb() === entry.color.getRgb());
+          expect(color.getRgb() === entry.color.getRgb()).toBe(true);
           break;
         case FeatureOverrideType.AlphaOnly:
-          assert.isTrue(color.getAlpha() === entry.color.getAlpha());
+          expect(color.getAlpha() === entry.color.getAlpha()).toBe(true);
           break;
         case FeatureOverrideType.ColorAndAlpha:
-          assert.isTrue(color.equals(entry.color));
+          expect(color.equals(entry.color)).toBe(true);
           break;
       }
     }
@@ -392,28 +392,28 @@ describe("EmphasizeElements tests", () => {
       const after = EmphasizeElements.getOrCreate(vp2);
       after.fromJSON(JSON.parse(inputJson), vp2);
       const outputJson = JSON.stringify(after.toJSON(vp2));
-      expect(outputJson).to.equal(inputJson);
+      expect(outputJson).toBe(inputJson);
 
       function expectEqualSets(a: Set<string> | undefined, b: Set<string> | undefined): void {
-        expect(a === undefined).to.equal(b === undefined);
+        expect(a === undefined).toBe(b === undefined);
         if (undefined !== a && undefined !== b)
-          expect(a.size).to.equal(b.size);
+          expect(a.size).toBe(b.size);
       }
 
-      expect(after.wantEmphasis).to.equal(before.wantEmphasis);
-      expect(vp2.isAlwaysDrawnExclusive).to.equal(vp1.isAlwaysDrawnExclusive);
+      expect(after.wantEmphasis).toBe(before.wantEmphasis);
+      expect(vp2.isAlwaysDrawnExclusive).toBe(vp1.isAlwaysDrawnExclusive);
 
       const aApp = after.defaultAppearance;
       const bApp = before.defaultAppearance;
-      expect(undefined === aApp).to.equal(undefined === bApp);
+      expect(undefined === aApp).toBe(undefined === bApp);
       if (undefined !== aApp && undefined !== bApp)
-        expect(aApp.equals(bApp)).to.be.true;
+        expect(aApp.equals(bApp)).toBe(true);
 
       const aUnanimated = after.unanimatedAppearance;
       const bUnanimated = before.unanimatedAppearance;
-      expect(undefined === aUnanimated).to.equal(undefined === bUnanimated);
+      expect(undefined === aUnanimated).toBe(undefined === bUnanimated);
       if (aUnanimated && bUnanimated)
-        expect(aUnanimated.equals(bUnanimated)).to.be.true;
+        expect(aUnanimated.equals(bUnanimated)).toBe(true);
 
       expectEqualSets(after.getHiddenElements(vp2), before.getHiddenElements(vp1));
       expectEqualSets(after.getEmphasizedElements(vp2), before.getEmphasizedElements(vp1));
@@ -422,16 +422,16 @@ describe("EmphasizeElements tests", () => {
 
       const aOvr = after.getOverriddenElements();
       const bOvr = before.getOverriddenElements();
-      expect(undefined === aOvr).to.equal(undefined === bOvr);
+      expect(undefined === aOvr).toBe(undefined === bOvr);
       if (undefined !== aOvr && undefined !== bOvr) {
-        expect(aOvr.size).to.equal(bOvr.size);
+        expect(aOvr.size).toBe(bOvr.size);
         for (const key of aOvr.keys()) {
           expectEqualSets(after.getOverriddenElementsByKey(key), before.getOverriddenElementsByKey(key));
 
           const aOvrs = after.getOverrideFromKey(key);
           const bOvrs = before.getOverrideFromKey(key);
-          expect(aOvrs.overrideType).to.equal(bOvrs.overrideType);
-          expect(aOvrs.color.tbgr).to.equal(bOvrs.color.tbgr);
+          expect(aOvrs.overrideType).toBe(bOvrs.overrideType);
+          expect(aOvrs.color.tbgr).toBe(bOvrs.color.tbgr);
         }
       }
 
@@ -440,12 +440,12 @@ describe("EmphasizeElements tests", () => {
     }
 
     roundTrip((emph, _vp) => {
-      expect(emph.wantEmphasis).to.be.false;
+      expect(emph.wantEmphasis).toBe(false);
       emph.wantEmphasis = true;
     });
 
     roundTrip((emph, _vp) => {
-      expect(emph.defaultAppearance).to.be.undefined;
+      expect(emph.defaultAppearance).toBeUndefined();
       emph.defaultAppearance = FeatureAppearance.fromJSON({
         rgb: { r: 10, g: 20, b: 30 },
         weight: 4,
@@ -460,8 +460,8 @@ describe("EmphasizeElements tests", () => {
     roundTrip((emph, vp) => {
       emph.isolateElements("0x123", vp, false);
       emph.emphasizeElements("0x456", vp, undefined, false);
-      expect(emph.getIsolatedElements(vp)!.size).to.equal(1);
-      expect(emph.getEmphasizedIsolatedElements()!.size).to.equal(1);
+      expect(emph.getIsolatedElements(vp)!.size).toBe(1);
+      expect(emph.getEmphasizedIsolatedElements()!.size).toBe(1);
     });
 
     roundTrip((emph, vp) => {
@@ -471,71 +471,71 @@ describe("EmphasizeElements tests", () => {
       ids.add("0x3");
       ids.add("0x4");
       ids.add("0x5");
-      expect(emph.isolateElements(ids, vp, true)).to.be.true;
+      expect(emph.isolateElements(ids, vp, true)).toBe(true);
       let currIds = emph.getIsolatedElements(vp);
-      assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+      expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
       ids.clear();
       ids.add("0x3");
       ids.add("0x4");
       ids.add("0x5");
-      expect(emph.emphasizeElements(ids, vp, undefined, true)).to.be.true;
+      expect(emph.emphasizeElements(ids, vp, undefined, true)).toBe(true);
       currIds = emph.getEmphasizedElements(vp);
-      assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+      expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
       const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly)!;
-      expect(redKey).not.to.be.undefined;
+      expect(redKey).not.toBeUndefined();
       ids.clear();
       ids.add("0x5");
-      expect(emph.overrideElements(ids, vp, ColorDef.red, undefined, true)).to.be.true;
+      expect(emph.overrideElements(ids, vp, ColorDef.red, undefined, true)).toBe(true);
       currIds = emph.getOverriddenElementsByKey(redKey);
-      assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+      expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
 
       ids.clear();
       ids.add("0x2");
-      expect(emph.hideElements(ids, vp, true)).to.be.true;
+      expect(emph.hideElements(ids, vp, true)).toBe(true);
       currIds = emph.getHiddenElements(vp);
-      assert.isTrue(undefined !== currIds && ids.size === currIds.size);
+      expect(undefined !== currIds && ids.size === currIds.size).toBe(true);
     });
 
     roundTrip((emph, vp) => {
       const redIds = new Set<string>();
       const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly)!;
-      expect(redKey).not.to.be.undefined;
+      expect(redKey).not.toBeUndefined();
       redIds.add("0x1");
       redIds.add("0x2");
       redIds.add("0x3");
-      expect(emph.overrideElements(redIds, vp, ColorDef.red, undefined, true)).to.be.true;
+      expect(emph.overrideElements(redIds, vp, ColorDef.red, undefined, true)).toBe(true);
       const currRedIds = emph.getOverriddenElementsByKey(redKey);
-      assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
+      expect(undefined !== currRedIds && redIds.size === currRedIds.size).toBe(true);
 
       const blueIds = new Set<string>();
       const blueKey = emph.createOverrideKey(ColorDef.blue, FeatureOverrideType.ColorOnly)!;
-      expect(blueKey).not.to.be.undefined;
+      expect(blueKey).not.toBeUndefined();
       blueIds.add("0x4");
       blueIds.add("0x5");
-      expect(emph.overrideElements(blueIds, vp, ColorDef.blue, undefined, true)).to.be.true;
+      expect(emph.overrideElements(blueIds, vp, ColorDef.blue, undefined, true)).toBe(true);
       const currBlueIds = emph.getOverriddenElementsByKey(blueKey);
-      assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);
+      expect(undefined !== currBlueIds && blueIds.size === currBlueIds.size).toBe(true);
     });
 
     roundTrip((emph, vp) => {
       const blue = FeatureAppearance.fromRgb(ColorDef.blue);
       emph.unanimatedAppearance = blue;
-      expect(emph.unanimatedAppearance).not.to.be.undefined;
-      expect(JSON.stringify(emph.unanimatedAppearance.toJSON())).to.equal(JSON.stringify(blue.toJSON()));
+      expect(emph.unanimatedAppearance).not.toBeUndefined();
+      expect(JSON.stringify(emph.unanimatedAppearance.toJSON())).toBe(JSON.stringify(blue.toJSON()));
 
       const ovrs = new FeatureSymbology.Overrides();
       const feature = new Feature("0x123");
       let app = ovrs.getFeatureAppearance(feature, "0x456")!;
-      expect(app).not.to.be.undefined;
-      expect(app.matchesDefaults).to.be.true;
+      expect(app).not.toBeUndefined();
+      expect(app.matchesDefaults).toBe(true);
 
       emph.addFeatureOverrides(ovrs, vp);
       app = ovrs.getFeatureAppearance(feature, "0x456")!;
-      expect(app).not.to.be.undefined;
-      expect(app.matchesDefaults).to.be.false;
-      expect(app.equals(blue)).to.be.true;
+      expect(app).not.toBeUndefined();
+      expect(app.matchesDefaults).toBe(false);
+      expect(app.equals(blue)).toBe(true);
     });
 
     roundTrip((emph, vp) => {
@@ -545,11 +545,11 @@ describe("EmphasizeElements tests", () => {
       const ovrs = new FeatureSymbology.Overrides();
       const feature = new Feature("0x123");
       const app = ovrs.getFeatureAppearance(feature, "0x456");
-      expect(app).not.to.be.undefined;
-      expect(app!.matchesDefaults).to.be.true;
+      expect(app).not.toBeUndefined();
+      expect(app!.matchesDefaults).toBe(true);
 
       emph.addFeatureOverrides(ovrs, vp);
-      expect(ovrs.getFeatureAppearance(feature, "0x456")).to.be.undefined;
+      expect(ovrs.getFeatureAppearance(feature, "0x456")).toBeUndefined();
     });
   });
 });

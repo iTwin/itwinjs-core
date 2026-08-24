@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import {
   GraphicType, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
-import { PrimitiveBuilder } from "@itwin/core-frontend/lib/cjs/internal/render/PrimitiveBuilder";
-import { DisplayParams } from "@itwin/core-frontend/lib/cjs/common/internal/render/DisplayParams";
-import { _accumulator } from "@itwin/core-frontend/lib/cjs/common/internal/Symbols";
-import { Geometry } from "@itwin/core-frontend/lib/cjs/common/internal/render/GeometryPrimitives";
-import { Branch } from "@itwin/core-frontend/lib/cjs/internal/webgl";
+import {
+  _accumulator, Branch, DisplayParams, Geometry, PrimitiveBuilder,
+} from "@itwin/core-frontend/lib/cjs/internal/test-support";
 import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -20,12 +18,12 @@ describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;
   let viewport: ScreenViewport;
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  beforeAll(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     const viewDiv = document.createElement("div");
-    assert(null !== viewDiv);
+    expect(null !== viewDiv).toBeTruthy();
     viewDiv.style.width = viewDiv.style.height = "1000px";
     document.body.appendChild(viewDiv);
 
@@ -35,7 +33,7 @@ describe("PrimitiveBuilder", () => {
     viewport = ScreenViewport.create(viewDiv, spatialView);
   });
 
-  after(async () => {
+  afterAll(async () => {
     viewport?.[Symbol.dispose]();
     await imodel?.close();
     await TestUtility.shutdownFrontend();
@@ -48,52 +46,52 @@ describe("PrimitiveBuilder", () => {
     const pointB = new Point3d(0, 100, 0);
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
-    assert(arc !== undefined && arc instanceof Arc3d);
+    expect(arc !== undefined && arc instanceof Arc3d).toBeTruthy();
     if (arc === undefined || !(arc instanceof Arc3d))
       return;
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder[_accumulator].geometries.isEmpty));
+    expect(!(primBuilder[_accumulator].geometries.isEmpty)).toBeTruthy();
 
     const arcGeom = primBuilder[_accumulator].geometries.first;
-    assert(arcGeom !== undefined);
+    expect(arcGeom !== undefined).toBeTruthy();
     if (arcGeom === undefined)
       return;
 
     let strokesPrimList = arcGeom.getStrokes(0.22);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList !== undefined).toBeTruthy();
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     let strksPrims = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     let strks = strksPrims[0];
 
     // check that first and last point of stroking match first and last point of original points
-    expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
+    expect(strks.points[0].isAlmostEqual(pointA)).toBe(true);
+    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).toBe(true);
     const numPointsA = strks.points.length;
 
     strokesPrimList = arcGeom.getStrokes(0.12);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList !== undefined).toBeTruthy();
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     strksPrims = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     strks = strksPrims[0];
 
     // check that first and last point of stroking match first and last point of original points
-    expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).to.be.true;
+    expect(strks.points[0].isAlmostEqual(pointA)).toBe(true);
+    expect(strks.points[strks.points.length - 1].isAlmostEqual(pointC)).toBe(true);
     const numPointsB = strks.points.length;
 
-    expect(numPointsA).to.be.lessThan(numPointsB);
+    expect(numPointsA).toBeLessThan(numPointsB);
   });
 
   it("should not produce any strokes for Polyface", () => {
@@ -107,24 +105,24 @@ describe("PrimitiveBuilder", () => {
     polyFace.addPointXYZ(-100, 0, 0);
     polyFace.addPointXYZ(0, 100, 0);
     polyFace.addPointXYZ(100, 0, 0);
-    assert(polyFace !== undefined && polyFace instanceof Polyface);
+    expect(polyFace !== undefined && polyFace instanceof Polyface).toBeTruthy();
     if (polyFace === undefined || !(polyFace instanceof Polyface))
       return;
 
     primBuilder.addPolyface(polyFace);
 
-    assert(!(primBuilder[_accumulator].geometries.isEmpty));
+    expect(!(primBuilder[_accumulator].geometries.isEmpty)).toBeTruthy();
 
     const firstGeom = primBuilder[_accumulator].geometries.first;
-    assert(firstGeom !== undefined);
+    expect(firstGeom !== undefined).toBeTruthy();
     if (firstGeom === undefined)
       return;
 
     let strokesPrimList = firstGeom.getStrokes(0.22);
-    assert(strokesPrimList === undefined);
+    expect(strokesPrimList === undefined).toBeTruthy();
 
     strokesPrimList = firstGeom.getStrokes(0.12);
-    assert(strokesPrimList === undefined);
+    expect(strokesPrimList === undefined).toBeTruthy();
   });
 
   it("should not produce any strokes for Shape", () => {
@@ -134,18 +132,18 @@ describe("PrimitiveBuilder", () => {
     const pointB = new Point3d(0, 100, 0);
     const pointC = new Point3d(100, 0, 0);
     primBuilder.addShape([pointA, pointB, pointC]);
-    assert(!(primBuilder[_accumulator].geometries.isEmpty));
+    expect(!(primBuilder[_accumulator].geometries.isEmpty)).toBeTruthy();
 
     const arcGeom = primBuilder[_accumulator].geometries.first;
-    assert(arcGeom !== undefined);
+    expect(arcGeom !== undefined).toBeTruthy();
     if (arcGeom === undefined)
       return;
 
     let strokesPrimList = arcGeom.getStrokes(0.22);
-    assert(strokesPrimList === undefined || strokesPrimList.length === 0);
+    expect(strokesPrimList === undefined || strokesPrimList.length === 0).toBeTruthy();
 
     strokesPrimList = arcGeom.getStrokes(0.12);
-    assert(strokesPrimList === undefined || strokesPrimList.length === 0);
+    expect(strokesPrimList === undefined || strokesPrimList.length === 0).toBeTruthy();
   });
 
   it("should not produce any strokes for Shape2d", () => {
@@ -155,18 +153,18 @@ describe("PrimitiveBuilder", () => {
     const pointB = new Point2d(0, 100);
     const pointC = new Point2d(100, 0);
     primBuilder.addShape2d([pointA, pointB, pointC], 5);
-    assert(!(primBuilder[_accumulator].geometries.isEmpty));
+    expect(!(primBuilder[_accumulator].geometries.isEmpty)).toBeTruthy();
 
     const arcGeom = primBuilder[_accumulator].geometries.first;
-    assert(arcGeom !== undefined);
+    expect(arcGeom !== undefined).toBeTruthy();
     if (arcGeom === undefined)
       return;
 
     let strokesPrimList = arcGeom.getStrokes(0.22);
-    assert(strokesPrimList === undefined || strokesPrimList.length === 0);
+    expect(strokesPrimList === undefined || strokesPrimList.length === 0).toBeTruthy();
 
     strokesPrimList = arcGeom.getStrokes(0.12);
-    assert(strokesPrimList === undefined || strokesPrimList.length === 0);
+    expect(strokesPrimList === undefined || strokesPrimList.length === 0).toBeTruthy();
   });
 
   it("should produce proper LineString strokes; different tolerances should have no effect", () => {
@@ -179,48 +177,48 @@ describe("PrimitiveBuilder", () => {
 
     primBuilder.addLineString(pointList);
 
-    assert(!(primBuilder[_accumulator].geometries.isEmpty));
+    expect(!(primBuilder[_accumulator].geometries.isEmpty)).toBeTruthy();
 
     const pointGeom = primBuilder[_accumulator].geometries.first;
-    assert(pointGeom !== undefined);
+    expect(pointGeom !== undefined).toBeTruthy();
     if (pointGeom === undefined)
       return;
 
     let strokesPrimList = pointGeom.getStrokes(0.0);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList !== undefined).toBeTruthy();
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     let strksPrims = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     let strks = strksPrims[0];
 
     // check that points of stroking match points of original points
-    expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[1].isAlmostEqual(pointB)).to.be.true;
-    expect(strks.points[2].isAlmostEqual(pointC)).to.be.true;
+    expect(strks.points[0].isAlmostEqual(pointA)).toBe(true);
+    expect(strks.points[1].isAlmostEqual(pointB)).toBe(true);
+    expect(strks.points[2].isAlmostEqual(pointC)).toBe(true);
     const numPointsA = strks.points.length;
 
     strokesPrimList = pointGeom.getStrokes(1.0);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList !== undefined).toBeTruthy();
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     strksPrims = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     strks = strksPrims[0];
 
     // check that first and last point of stroking match first and last point of original points
-    expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[1].isAlmostEqual(pointB)).to.be.true;
-    expect(strks.points[2].isAlmostEqual(pointC)).to.be.true;
+    expect(strks.points[0].isAlmostEqual(pointA)).toBe(true);
+    expect(strks.points[1].isAlmostEqual(pointB)).toBe(true);
+    expect(strks.points[2].isAlmostEqual(pointC)).toBe(true);
     const numPointsB = strks.points.length;
 
-    expect(numPointsA).to.equal(numPointsB);
+    expect(numPointsA).toBe(numPointsB);
   });
 
   it("should produce proper PointString strokes; different tolerances should have no effect", () => {
@@ -233,48 +231,48 @@ describe("PrimitiveBuilder", () => {
 
     primBuilder.addPointString(pointList);
 
-    assert(!(primBuilder[_accumulator].geometries.isEmpty));
+    expect(!(primBuilder[_accumulator].geometries.isEmpty)).toBeTruthy();
 
     const pointGeom = primBuilder[_accumulator].geometries.first;
-    assert(pointGeom !== undefined);
+    expect(pointGeom !== undefined).toBeTruthy();
     if (pointGeom === undefined)
       return;
 
     let strokesPrimList = pointGeom.getStrokes(0.0);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList !== undefined).toBeTruthy();
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     let strksPrims = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     let strks = strksPrims[0];
 
     // check that points of stroking match points of original points
-    expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[1].isAlmostEqual(pointB)).to.be.true;
-    expect(strks.points[2].isAlmostEqual(pointC)).to.be.true;
+    expect(strks.points[0].isAlmostEqual(pointA)).toBe(true);
+    expect(strks.points[1].isAlmostEqual(pointB)).toBe(true);
+    expect(strks.points[2].isAlmostEqual(pointC)).toBe(true);
     const numPointsA = strks.points.length;
 
     strokesPrimList = pointGeom.getStrokes(1.0);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList !== undefined).toBeTruthy();
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     strksPrims = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     strks = strksPrims[0];
 
     // check that first and last point of stroking match first and last point of original points
-    expect(strks.points[0].isAlmostEqual(pointA)).to.be.true;
-    expect(strks.points[1].isAlmostEqual(pointB)).to.be.true;
-    expect(strks.points[2].isAlmostEqual(pointC)).to.be.true;
+    expect(strks.points[0].isAlmostEqual(pointA)).toBe(true);
+    expect(strks.points[1].isAlmostEqual(pointB)).toBe(true);
+    expect(strks.points[2].isAlmostEqual(pointC)).toBe(true);
     const numPointsB = strks.points.length;
 
-    expect(numPointsA).to.equal(numPointsB);
+    expect(numPointsA).toBe(numPointsB);
   });
 
   it("should produce proper PointString2d strokes; different tolerances should have no effect", () => {
@@ -287,48 +285,48 @@ describe("PrimitiveBuilder", () => {
 
     primBuilder.addPointString2d(pointList, 5);
 
-    assert(!(primBuilder[_accumulator].geometries.isEmpty));
+    expect(!(primBuilder[_accumulator].geometries.isEmpty)).toBeTruthy();
 
     const pointGeom = primBuilder[_accumulator].geometries.first;
-    assert(pointGeom !== undefined);
+    expect(pointGeom !== undefined).toBeTruthy();
     if (pointGeom === undefined)
       return;
 
     let strokesPrimList = pointGeom.getStrokes(0.0);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList !== undefined).toBeTruthy();
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     let strksPrims = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     let strks = strksPrims[0];
 
     // check that points of stroking match points of original points
-    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).to.be.true;
-    expect(strks.points[1].isAlmostEqual(Point3d.create(0, 100, 5))).to.be.true;
-    expect(strks.points[2].isAlmostEqual(Point3d.create(100, 0, 5))).to.be.true;
+    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).toBe(true);
+    expect(strks.points[1].isAlmostEqual(Point3d.create(0, 100, 5))).toBe(true);
+    expect(strks.points[2].isAlmostEqual(Point3d.create(100, 0, 5))).toBe(true);
     const numPointsA = strks.points.length;
 
     strokesPrimList = pointGeom.getStrokes(1.0);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList !== undefined).toBeTruthy();
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     strksPrims = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     strks = strksPrims[0];
 
     // check that first and last point of stroking match first and last point of original points
-    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).to.be.true;
-    expect(strks.points[1].isAlmostEqual(Point3d.create(0, 100, 5))).to.be.true;
-    expect(strks.points[2].isAlmostEqual(Point3d.create(100, 0, 5))).to.be.true;
+    expect(strks.points[0].isAlmostEqual(Point3d.create(-100, 0, 5))).toBe(true);
+    expect(strks.points[1].isAlmostEqual(Point3d.create(0, 100, 5))).toBe(true);
+    expect(strks.points[2].isAlmostEqual(Point3d.create(100, 0, 5))).toBe(true);
     const numPointsB = strks.points.length;
 
-    expect(numPointsA).to.equal(numPointsB);
+    expect(numPointsA).toBe(numPointsB);
   });
 
   it("should be able to finish graphics", () => {
@@ -368,8 +366,8 @@ describe("PrimitiveBuilder", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     const graphic = primBuilder.finish();
-    expect(primBuilder.primitives.length).to.equal(0); // if only 1 entry (a branch), the list of primitives is popped.
-    expect(graphic instanceof Branch).to.be.true;
-    expect((graphic as Branch).branch.entries.length).to.equal(2);
+    expect(primBuilder.primitives.length).toBe(0); // if only 1 entry (a branch), the list of primitives is popped.
+    expect(graphic instanceof Branch).toBe(true);
+    expect((graphic as Branch).branch.entries.length).toBe(2);
   });
 });

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import {
   ChangeFlag, ChangeFlags, MutableChangeFlags, Viewport,
@@ -39,39 +39,39 @@ export class ViewportChangedHandler {
 
     this._vp = vp;
     this._removals.push(vp.onViewportChanged.addListener((_: Viewport, cf) => {
-      expect(this._changeFlags).to.be.undefined;
+      expect(this._changeFlags).toBeUndefined();
       this._changeFlags = cf;
     }));
     this._removals.push(vp.onAlwaysDrawnChanged.addListener(() => {
-      expect(this._eventFlags.alwaysDrawn).to.be.false;
+      expect(this._eventFlags.alwaysDrawn).toBe(false);
       this._eventFlags.setAlwaysDrawn();
     }));
     this._removals.push(vp.onNeverDrawnChanged.addListener(() => {
-      expect(this._eventFlags.neverDrawn).to.be.false;
+      expect(this._eventFlags.neverDrawn).toBe(false);
       this._eventFlags.setNeverDrawn();
     }));
     this._removals.push(vp.onDisplayStyleChanged.addListener(() => {
-      expect(this._eventFlags.displayStyle).to.be.false;
+      expect(this._eventFlags.displayStyle).toBe(false);
       this._eventFlags.setDisplayStyle();
     }));
     this._removals.push(vp.onViewedCategoriesChanged.addListener(() => {
-      expect(this._eventFlags.viewedCategories).to.be.false;
+      expect(this._eventFlags.viewedCategories).toBe(false);
       this._eventFlags.setViewedCategories();
     }));
     this._removals.push(vp.onViewedCategoriesPerModelChanged.addListener(() => {
-      expect(this._eventFlags.viewedCategoriesPerModel).to.be.false;
+      expect(this._eventFlags.viewedCategoriesPerModel).toBe(false);
       this._eventFlags.setViewedCategoriesPerModel();
     }));
     this._removals.push(vp.onViewedModelsChanged.addListener(() => {
-      expect(this._eventFlags.viewedModels).to.be.false;
+      expect(this._eventFlags.viewedModels).toBe(false);
       this._eventFlags.setViewedModels();
     }));
     this._removals.push(vp.onFeatureOverrideProviderChanged.addListener(() => {
-      expect(this._eventFlags.featureOverrideProvider).to.be.false;
+      expect(this._eventFlags.featureOverrideProvider).toBe(false);
       this._eventFlags.setFeatureOverrideProvider();
     }));
     this._removals.push(vp.onFeatureOverridesChanged.addListener(() => {
-      expect(this._featureOverridesDirty).to.be.false;
+      expect(this._featureOverridesDirty).toBe(false);
       this._featureOverridesDirty = true;
     }));
 
@@ -96,11 +96,11 @@ export class ViewportChangedHandler {
     this._vp.setAllValid();
     func();
 
-    expect(this._vp.sceneValid).to.equal(0 === (state & ViewportState.SceneBit));
-    expect(this._vp.renderPlanValid).to.equal(0 === (state & ViewportState.RenderPlanBit));
-    expect(this._vp.controllerValid).to.equal(0 === (state & ViewportState.ControllerBit));
-    expect(this._vp.timePointValid).to.equal(0 === (state & ViewportState.TimePoint));
-    expect(this._vp.analysisFractionValid).to.equal(0 === (state & ViewportState.AnalysisFraction));
+    expect(this._vp.sceneValid).toBe(0 === (state & ViewportState.SceneBit));
+    expect(this._vp.renderPlanValid).toBe(0 === (state & ViewportState.RenderPlanBit));
+    expect(this._vp.controllerValid).toBe(0 === (state & ViewportState.ControllerBit));
+    expect(this._vp.timePointValid).toBe(0 === (state & ViewportState.TimePoint));
+    expect(this._vp.analysisFractionValid).toBe(0 === (state & ViewportState.AnalysisFraction));
 
     this._vp.renderFrame();
     // A scene rebuild can invalidate the time point again while processing a view change.
@@ -108,26 +108,26 @@ export class ViewportChangedHandler {
     if (!this._vp.sceneValid || !this._vp.renderPlanValid || !this._vp.controllerValid || !this._vp.timePointValid || !this._vp.analysisFractionValid)
       this._vp.renderFrame();
 
-    expect(this._vp.sceneValid).to.be.true;
-    expect(this._vp.renderPlanValid).to.be.true;
-    expect(this._vp.controllerValid).to.be.true;
-    expect(this._vp.timePointValid).to.be.true;
-    expect(this._vp.analysisFractionValid).to.be.true;
+    expect(this._vp.sceneValid).toBe(true);
+    expect(this._vp.renderPlanValid).toBe(true);
+    expect(this._vp.controllerValid).toBe(true);
+    expect(this._vp.timePointValid).toBe(true);
+    expect(this._vp.analysisFractionValid).toBe(true);
 
     // Expect exactly the same ChangeFlags to be received by onViewportChanged handler.
     if (undefined === this._changeFlags)
-      expect(flags).to.equal(ChangeFlag.None);
+      expect(flags).toBe(ChangeFlag.None);
     else
-      expect(this._changeFlags.value).to.equal(flags);
+      expect(this._changeFlags.value).toBe(flags);
 
     // Confirm onFeatureOverridesChanged invoked or not invoked based on expected flags.
     const expectFeatureOverridesChanged = 0 !== (flags & ChangeFlag.Overrides);
-    expect(this._featureOverridesDirty).to.equal(expectFeatureOverridesChanged);
+    expect(this._featureOverridesDirty).toBe(expectFeatureOverridesChanged);
     if (undefined !== this._changeFlags)
-      expect(this._changeFlags.areFeatureOverridesDirty).to.equal(expectFeatureOverridesChanged);
+      expect(this._changeFlags.areFeatureOverridesDirty).toBe(expectFeatureOverridesChanged);
 
     // No dedicated deferred event for ViewState changed...just the immediate one.
-    expect(this._eventFlags.value).to.equal(flags & ~ChangeFlag.ViewState);
+    expect(this._eventFlags.value).toBe(flags & ~ChangeFlag.ViewState);
 
     // Reset for next frame.
     this._eventFlags.clear();

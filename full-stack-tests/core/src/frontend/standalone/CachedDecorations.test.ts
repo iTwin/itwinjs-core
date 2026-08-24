@@ -2,26 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect } from "vitest";
 import {
   CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport,
 } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
-import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/internal/webgl";
+import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/internal/test-support";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Cached decorations", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
     await TestUtility.shutdownFrontend();
@@ -60,24 +60,24 @@ describe("Cached decorations", () => {
   async function dropAndVerifyEmptyCache(vp: ScreenTestViewport, dec: Decorator, cache: DecorationsCache) {
     IModelApp.viewManager.dropDecorator(dec);
     await vp.drawFrame();
-    expect(cache.size).to.equal(0);
-    expect(cache.get(dec)).to.be.undefined;
+    expect(cache.size).toBe(0);
+    expect(cache.get(dec)).toBeUndefined();
   }
 
   function verifyGraphicDecorationDisposed(decoration: CachedDecoration) {
-    expect("graphic" === decoration.type);
+    expect("graphic" === decoration.type).toBe(true);
     if ("graphic" === decoration.type) {
       const graphicOwner = decoration.graphicOwner as GraphicOwner;
       const graphic = graphicOwner.graphic as Graphic;
-      expect(graphicOwner.isDisposed).to.be.true;
-      expect(graphic.isDisposed).to.be.true;
+      expect(graphicOwner.isDisposed).toBe(true);
+      expect(graphic.isDisposed).toBe(true);
     }
   }
 
   function getDecorationsCache(vp: ScreenTestViewport): DecorationsCache {
     const cache = (vp as any)._decorationCache as DecorationsCache;
-    expect(cache).not.to.be.undefined;
-    expect(cache).instanceof(DecorationsCache);
+    expect(cache).not.toBeUndefined();
+    expect(cache).toBeInstanceOf(DecorationsCache);
     return cache;
   }
 
@@ -89,23 +89,23 @@ describe("Cached decorations", () => {
 
       // Add no decorators and ensure no decorations have been cached.
       await vp.drawFrame();
-      expect(cache.size).to.equal(0);
+      expect(cache.size).toBe(0);
 
       // Add non-cachable decorator and ensure no decorations have been cached.
       const nonCachableDecorator = new TestDecorator(type, false);
       IModelApp.viewManager.addDecorator(nonCachableDecorator);
       await vp.drawFrame();
-      expect(cache.size).to.equal(0);
-      expect(cache.get(nonCachableDecorator)).to.be.undefined;
+      expect(cache.size).toBe(0);
+      expect(cache.get(nonCachableDecorator)).toBeUndefined();
 
       // Add a cachable decorator and ensure one decoration has been cached.
       const cachableDecoratorA = new TestDecorator(type, true);
       IModelApp.viewManager.addDecorator(cachableDecoratorA);
       await vp.drawFrame();
-      expect(cache.size).to.equal(1);
+      expect(cache.size).toBe(1);
       const cachedA = cache.get(cachableDecoratorA);
-      expect(cachedA).to.not.be.undefined;
-      expect(cachedA!.length).to.equal(1); // verify only one decoration was added (as seen above in decorate())
+      expect(cachedA).not.toBeUndefined();
+      expect(cachedA!.length).toBe(1); // verify only one decoration was added (as seen above in decorate())
       const cachedDecorationA = cachedA![0];
 
       await dropAndVerifyEmptyCache(vp, cachableDecoratorA, cache);
@@ -116,21 +116,21 @@ describe("Cached decorations", () => {
       const cachableDecoratorB = new TestDecorator(type, true);
       IModelApp.viewManager.addDecorator(cachableDecoratorB);
       await vp.drawFrame();
-      expect(cache.size).to.equal(1);
+      expect(cache.size).toBe(1);
       const cachedB = cache.get(cachableDecoratorB);
-      expect(cachedB).to.not.be.undefined;
-      expect(cachedB!.length).to.equal(1); // verify only one decoration was added (as seen above in decorate())
+      expect(cachedB).not.toBeUndefined();
+      expect(cachedB!.length).toBe(1); // verify only one decoration was added (as seen above in decorate())
       const cachedDecorationB = cachedB![0];
-      expect(cachedDecorationB !== cachedDecorationA).to.be.true; // verify that the new cached decoration is not the old one
+      expect(cachedDecorationB !== cachedDecorationA).toBe(true); // verify that the new cached decoration is not the old one
 
       // Invalidate viewport's decorations but do not invalidate the cached decorations; verify the cached decoration graphic remains.
       vp.invalidateDecorations();
       await vp.drawFrame();
       const cachedC = cache.get(cachableDecoratorB);
-      expect(cachedC).to.not.be.undefined;
-      expect(cachedC!.length).to.equal(1); // verify only one decoration was added (as seen above in decorate())
+      expect(cachedC).not.toBeUndefined();
+      expect(cachedC!.length).toBe(1); // verify only one decoration was added (as seen above in decorate())
       const cachedDecorationC = cachedC![0];
-      expect(cachedDecorationC === cachedDecorationB).to.be.true; // verify that this cached decoration is the previous one
+      expect(cachedDecorationC === cachedDecorationB).toBe(true); // verify that this cached decoration is the previous one
 
       await dropAndVerifyEmptyCache(vp, cachableDecoratorB, cache);
       if ("graphic" === type)
@@ -167,13 +167,13 @@ describe("Cached decorations", () => {
         IModelApp.viewManager.addDecorator(badDecorator);
 
         const cache = getDecorationsCache(vp);
-        expect(cache.size).to.equal(0);
+        expect(cache.size).toBe(0);
 
         await vp.drawFrame();
-        expect(cache.size).to.equal(1);
+        expect(cache.size).toBe(1);
 
         decorateFunc(vp);
-        expect(cache.size).to.equal(expectRemovalAfterDecorate ? 0 : 1);
+        expect(cache.size).toBe(expectRemovalAfterDecorate ? 0 : 1);
 
         IModelApp.viewManager.dropDecorator(cachedDecorator);
         IModelApp.viewManager.dropDecorator(badDecorator);

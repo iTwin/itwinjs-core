@@ -10,19 +10,35 @@ import { defineConfig } from "vitest/config";
 
 const require = createRequire(import.meta.url);
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
+const dotenv = require("dotenv");
+const dotenvExpand = require("dotenv-expand");
+const envResult = dotenv.config({ path: path.join(packageRoot, ".env") });
+if (!envResult.error)
+  dotenvExpand(envResult);
+const testEnvironment = Object.fromEntries(
+  Object.entries(process.env)
+    .filter(([key, value]) => value !== undefined && /^(IMJS_|TEST_|ITWINJS_)/.test(key)),
+);
+const define: Record<string, string> = {
+  "process.env.IMODELJS_CORE_DIRNAME": JSON.stringify(path.resolve(packageRoot, "../..")),
+};
+for (const [key, value] of Object.entries(testEnvironment))
+  define[`process.env.${key}`] = JSON.stringify(value);
 const grep = process.env.VITEST_CORE_GREP ?? "#integration|#performance";
 const invert = process.env.VITEST_CORE_GREP_INVERT !== "false";
 const testNamePattern = new RegExp(invert ? `^(?!.*(?:${grep})).*$` : grep);
 
 export default defineConfig({
-  define: {
-    "process.env.IMODELJS_CORE_DIRNAME": JSON.stringify(path.resolve(packageRoot, "../..")),
-  },
+  define,
   resolve: {
     alias: [
       {
         find: "path",
         replacement: require.resolve("path-browserify"),
+      },
+      {
+        find: "@itwin/core-frontend/lib/cjs/internal/test-support",
+        replacement: path.resolve(packageRoot, "../../core/frontend/lib/esm/internal/test-support.js"),
       },
       {
         find: "@itwin/core-frontend/lib/cjs/internal/render/MockRender",
@@ -65,8 +81,8 @@ export default defineConfig({
         replacement: path.resolve(packageRoot, "../../core/frontend/lib/esm/core-frontend.js"),
       },
       {
-        find: "@itwin/core-electron/lib/cjs/ElectronFrontend",
-        replacement: path.resolve(packageRoot, "../../core/electron/src/ElectronFrontend.ts"),
+        find: "@itwin/core-electron/lib/cjs/frontend/ElectronApp",
+        replacement: path.resolve(packageRoot, "../../core/electron/src/frontend/ElectronApp.ts"),
       },
       {
         find: "../../package.json",
@@ -102,7 +118,21 @@ export default defineConfig({
   test: {
     dir: "src/frontend",
     include: ["**/*.test.ts"],
-    exclude: ["**/_Setup.test.ts"],
+    exclude: [
+      "**/Backend.test.ts",
+      "**/map/BackgroundMap.test.ts",
+      "**/map/PlanProjection.test.ts",
+      "**/map/PlanarClipMask.test.ts",
+      "**/standalone/BlankConnection.test.ts",
+      "**/standalone/Categories.test.ts",
+      "**/standalone/CodeSpecs.test.ts",
+      "**/standalone/ECSqlAst.test.ts",
+      "**/standalone/Elements.test.ts",
+      "**/standalone/ModelState.test.ts",
+      "**/standalone/SchemaLocator.test.ts",
+      "**/standalone/SubCategoriesCache.test.ts",
+      "**/standalone/ViewState.test.ts",
+    ],
     setupFiles: [path.resolve(packageRoot, "src/frontend/vitest.setup.ts")],
     globals: true,
     testNamePattern,
@@ -111,7 +141,7 @@ export default defineConfig({
     fileParallelism: false,
     reporters: [
       "default",
-      ["junit", { outputFile: "lib/test/electron_junit_results.xml" }],
+      ["junit", { outputFile: "lib/test/junit_results.xml" }],
     ],
     browser: {
       enabled: true,

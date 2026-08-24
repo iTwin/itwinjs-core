@@ -2,20 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as sinonChai from "sinon-chai";
 import { afterEach, beforeEach } from "vitest";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
-import "./testHooks";
-import { installChaiAssertions, resolveChaiPlugin } from "./testAssertions";
+import { installVitestMatchers } from "./testMatchers";
 
-chai.use(resolveChaiPlugin(chaiAsPromised));
-chai.use(resolveChaiPlugin(sinonChai));
-installChaiAssertions();
+installVitestMatchers();
 
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;

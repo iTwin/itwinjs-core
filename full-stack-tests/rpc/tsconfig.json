@@ -7,6 +7,7 @@
     "paths": {
       "@itwin/vitest-browser-bridge/callbacks/backend": ["../../tools/vitest-browser-bridge/lib/cjs/callbacks/backend.d.ts"],
       "@itwin/vitest-browser-bridge/callbacks/browser": ["../../tools/vitest-browser-bridge/lib/esm/callbacks/browser.d.ts"],
+      "@itwin/vitest-browser-bridge/electron/frame-routing": ["../../tools/vitest-browser-bridge/lib/cjs/electron/frame-routing.d.ts"],
       "@itwin/vitest-browser-bridge/callbacks/http": ["../../tools/vitest-browser-bridge/lib/esm/callbacks/http.d.ts"]
     }
   },

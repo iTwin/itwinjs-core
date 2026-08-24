@@ -12,24 +12,24 @@ const packageRoot = path.resolve(__dirname, "..");
 const frontendPort = 3020;
 const backendPort = frontendPort + 2000;
 
-async function delay(ms: number) {
+async function delay(ms: number): Promise<void> {
   await new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitForBackend(process: ChildProcess, environment: string) {
+async function waitForBackend(backendProcess: ChildProcess, environment: string): Promise<void> {
   const url = `http://127.0.0.1:${backendPort}/ping`;
   const deadline = Date.now() + 30000;
 
   while (Date.now() < deadline) {
-    if (process.exitCode !== null)
-      throw new Error(`${environment} backend exited before becoming ready with code ${process.exitCode}.`);
+    if (backendProcess.exitCode !== null)
+      throw new Error(`${environment} backend exited before becoming ready with code ${backendProcess.exitCode}.`);
 
     try {
       const response = await fetch(url);
       if (response.ok)
         return;
     } catch {
-      // The server is still starting.
+      // The backend is still starting.
     }
 
     await delay(100);
@@ -38,7 +38,7 @@ async function waitForBackend(process: ChildProcess, environment: string) {
   throw new Error(`Timed out waiting for the ${environment} backend at ${url}.`);
 }
 
-function isProcessAlive(pid: number) {
+function isProcessAlive(pid: number): boolean {
   try {
     process.kill(pid, 0);
     return true;
@@ -47,7 +47,7 @@ function isProcessAlive(pid: number) {
   }
 }
 
-async function waitForExistingBackend(environment: string, statePath: string) {
+async function waitForExistingBackend(environment: string, statePath: string): Promise<boolean> {
   const url = `http://127.0.0.1:${backendPort}/ping`;
   const deadline = Date.now() + 30000;
 
@@ -79,27 +79,27 @@ async function waitForExistingBackend(environment: string, statePath: string) {
   throw new Error(`Timed out waiting for the ${environment} backend owned by another Vitest setup.`);
 }
 
-function claimBackend(statePath: string) {
+function claimBackend(statePath: string): boolean {
   try {
     const descriptor = fs.openSync(statePath, "wx");
     fs.writeFileSync(descriptor, JSON.stringify({ pid: process.pid }));
     fs.closeSync(descriptor);
     return true;
-  } catch (error: any) {
-    if (error.code === "EEXIST")
+  } catch (error: unknown) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "EEXIST")
       return false;
     throw error;
   }
 }
 
-async function stopBackend(process: ChildProcess) {
-  if (process.exitCode !== null)
+async function stopBackend(backendProcess: ChildProcess): Promise<void> {
+  if (backendProcess.exitCode !== null)
     return;
 
-  process.kill("SIGTERM");
-  await Promise.race([once(process, "exit"), delay(5000)]);
-  if (process.exitCode === null)
-    process.kill("SIGKILL");
+  backendProcess.kill("SIGTERM");
+  await Promise.race([once(backendProcess, "exit"), delay(5000)]);
+  if (backendProcess.exitCode === null)
+    backendProcess.kill("SIGKILL");
 }
 
 export default async function setup() {
@@ -107,6 +107,9 @@ export default async function setup() {
   if (environment !== "http" && environment !== "websocket")
     throw new Error(`Unsupported RPC browser environment: ${environment ?? "undefined"}.`);
 
+  // Vitest invokes global setup more than once for browser projects. Only the setup that claims
+  // this file owns the fixed-port backend; other setups reuse it and do not tear it down. The lock
+  // is required because the browser and backend share fixed ports.
   const statePath = path.join(packageRoot, "lib/backend/.vitest", `${environment}.json`);
   fs.mkdirSync(path.dirname(statePath), { recursive: true });
 

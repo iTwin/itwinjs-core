@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import {
   ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride,
@@ -20,9 +20,9 @@ class Overrides extends FeatureSymbology.Overrides {
   public get visibleSubCategories() { return this._visibleSubCategories; }
 
   public expectSubCategory(id: string, expectVisible: boolean): void {
-    expect(this.visibleSubCategories.hasId(id)).to.equal(expectVisible);
+    expect(this.visibleSubCategories.hasId(id)).toBe(expectVisible);
     const feature = new Feature("0xabc", id);
-    expect(this.isFeatureVisible(feature)).to.equal(expectVisible);
+    expect(this.isFeatureVisible(feature)).toBe(expectVisible);
   }
 }
 
@@ -31,20 +31,20 @@ describe("FeatureSymbology.Overrides", () => {
   let viewId: string;
   let viewState: SpatialViewState;
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend();
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows = await imodel.views.getViewList({ from: SpatialViewState.classFullName, limit: 1 });
-    assert.exists(viewRows, "Should find some views");
+    expect(viewRows).toEqual(expect.anything());
     viewId = viewRows[0].id!;
   });
 
   beforeEach(async () => {
     viewState = await imodel.views.load(viewId) as SpatialViewState;
-    expect(viewState).instanceof(SpatialViewState);
+    expect(viewState).toBeInstanceOf(SpatialViewState);
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
     await TestUtility.shutdownFrontend();
@@ -54,36 +54,36 @@ describe("FeatureSymbology.Overrides", () => {
     // init overrides from ViewState
     const overrides = new Overrides(viewState);
 
-    expect(overrides.isClassVisible(GeometryClass.Construction)).to.equal(viewState.viewFlags.constructions);
-    expect(overrides.isClassVisible(GeometryClass.Dimension)).to.equal(viewState.viewFlags.dimensions);
-    expect(overrides.isClassVisible(GeometryClass.Pattern)).to.equal(viewState.viewFlags.patterns);
-    expect(overrides.lineWeights).to.equal(viewState.viewFlags.weights);
+    expect(overrides.isClassVisible(GeometryClass.Construction)).toBe(viewState.viewFlags.constructions);
+    expect(overrides.isClassVisible(GeometryClass.Dimension)).toBe(viewState.viewFlags.dimensions);
+    expect(overrides.isClassVisible(GeometryClass.Pattern)).toBe(viewState.viewFlags.patterns);
+    expect(overrides.lineWeights).toBe(viewState.viewFlags.weights);
   });
 
   it("isClassVisible works as expected", () => {
     let overrides = new Overrides();
     viewState.displayStyle.viewFlags = new ViewFlags({ constructions: false, dimensions: false, patterns: false });
 
-    assert.isFalse(overrides.isClassVisible(GeometryClass.Construction), "constructions 1");
-    assert.isFalse(overrides.isClassVisible(GeometryClass.Dimension), "dimensions 1");
-    assert.isFalse(overrides.isClassVisible(GeometryClass.Pattern), "patterns 1");
+    expect(overrides.isClassVisible(GeometryClass.Construction)).toBe(false);
+    expect(overrides.isClassVisible(GeometryClass.Dimension)).toBe(false);
+    expect(overrides.isClassVisible(GeometryClass.Pattern)).toBe(false);
 
     viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("constructions", true);
     overrides = new Overrides(viewState);
 
-    assert.isTrue(overrides.isClassVisible(GeometryClass.Construction), "constructions 2");
+    expect(overrides.isClassVisible(GeometryClass.Construction)).toBe(true);
 
     viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("dimensions", true);
     overrides = new Overrides(viewState);
 
-    assert.isTrue(overrides.isClassVisible(GeometryClass.Dimension), "dimensions 2");
+    expect(overrides.isClassVisible(GeometryClass.Dimension)).toBe(true);
 
     viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("patterns", true);
     overrides = new Overrides(viewState);
 
-    assert.isTrue(overrides.isClassVisible(GeometryClass.Pattern), "patterns 2");
+    expect(overrides.isClassVisible(GeometryClass.Pattern)).toBe(true);
 
-    assert.isTrue(overrides.isClassVisible(GeometryClass.Primary), "default");
+    expect(overrides.isClassVisible(GeometryClass.Primary)).toBe(true);
   });
 
   it("isFeatureVisible works as expected", () => {
@@ -94,30 +94,30 @@ describe("FeatureSymbology.Overrides", () => {
     const feature = new Feature(elementId, subCategoryId, geometryClass);
 
     overrides = new Overrides();
-    assert.isFalse(overrides.isFeatureVisible(feature), "if subCategoryId isn't included in visibleSubCategories set, feature isn't visible");
+    expect(overrides.isFeatureVisible(feature)).toBe(false);
 
     overrides.setNeverDrawn(elementId);
-    assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in never drawn set, feature isn't visible");
+    expect(overrides.isFeatureVisible(feature)).toBe(false);
 
     overrides = new Overrides();
     overrides.setAlwaysDrawn(elementId);
 
-    assert.isTrue(overrides.isFeatureVisible(feature), "if elementId is in always drawn set, feature is visible");
+    expect(overrides.isFeatureVisible(feature)).toBe(true);
 
     overrides = new Overrides();
     overrides.isAlwaysDrawnExclusive = true;
 
     // doesn't sound right... but this is how it works in the native code
-    assert.isFalse(overrides.isFeatureVisible(feature), "if alwaysDrawnExclusive flag is set, but element not in always drawn set, feature isn't visible");
+    expect(overrides.isFeatureVisible(feature)).toBe(false);
 
     overrides = new Overrides();
     overrides.setVisibleSubCategory(subCategoryId);
-    assert.isFalse(overrides.isFeatureVisible(feature), "if geometryClass isn't visible, feature isn't visible");
+    expect(overrides.isFeatureVisible(feature)).toBe(false);
 
     viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
-    assert.isTrue(overrides.isFeatureVisible(feature), "if geometryClass and subCategory are visible, feature is visible");
+    expect(overrides.isFeatureVisible(feature)).toBe(true);
   });
 
   it("getFeatureAppearance works as expected", () => {
@@ -140,47 +140,47 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setNeverDrawn(elementId);
 
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isUndefined(appearance, "returns undefined if feature id is in the never drawn set");
+    expect(appearance).toBeUndefined();
 
     overrides = new Overrides();
     overrides.isAlwaysDrawnExclusive = true;
 
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isUndefined(appearance, "returns false if feature isn't in always drawn set, but alwaysDrawnExclusive flag is set");
+    expect(appearance).toBeUndefined();
 
     overrides = new Overrides();
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isUndefined(appearance, "returns false if feature isn't in always drawn set nor subCategoryId in visibleSubCategories set");
+    expect(appearance).toBeUndefined();
 
     overrides = new Overrides();
     overrides.setAlwaysDrawn(elementId);
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isDefined(appearance, "return true if elementId is in always drawn set");
+    expect(appearance).toBeDefined();
 
     viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isDefined(appearance, "return true if either elementId is in always drawn set or subCategoryId is visible as well as geometryClass is visible");
+    expect(appearance).toBeDefined();
 
     overrides = new Overrides();
     appearance = FeatureAppearance.fromJSON(props);
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isUndefined(appearance, "if neither elementId is in alwaysDrawn set nor subCategoryId in visibleSubCategory set nor id in modelOverrides map, then app is reset");
+    expect(appearance).toBeUndefined();
 
     overrides = new Overrides();
     appearance = FeatureAppearance.fromJSON(props);
     overrides.setAlwaysDrawn(elementId);
     appearance = overrides.getFeatureAppearance(feature, id);
     const msg = "if elementId in alwaysDrawn set, but id not in ModelOverrides map, nor elementId in elementOverrides map, nor subCategoryId in subCategoryOverrides, then app will be set to default overrides";
-    assert.isTrue(appearance!.equals(overrides.defaultOverrides), msg);
+    expect(appearance!.equals(overrides.defaultOverrides), msg).toBe(true);
 
     overrides = new Overrides();
     appearance = FeatureAppearance.fromJSON(props);
     overrides.setAlwaysDrawn(elementId);
     overrides.override({ modelId: id, appearance: modelApp });
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isTrue(appearance!.equals(modelApp), "if elementId in alwaysDrawn set and overrides has Model corresponding to id, then appearance will be set to the ModelApp");
+    expect(appearance!.equals(modelApp)).toBe(true);
 
     overrides = new Overrides();
     appearance = FeatureAppearance.fromJSON(props);
@@ -188,7 +188,7 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setAlwaysDrawn(elementId);
     overrides.override({ modelId: id, appearance: modelApp });
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isUndefined(appearance, "if appearance is set from model app and that app has an invalid transparency value, then getFeatureAppearance returns false");
+    expect(appearance).toBeUndefined();
     // NOTE: The above assertion appears to have assumed that getFeatureAppearance() returns undefined because it rejects the "invalid" transparency value.
     // In reality it detects that transparency is above the threshold considered "fully transparent" and therefore not visible.
 
@@ -197,14 +197,14 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.override({ elementId, appearance: elemApp });
     overrides.setAlwaysDrawn(elementId);
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isTrue(appearance!.equals(elemApp), "if elementId in alwaysDrawn set and overrides has Element corresponding to id but not Model nor SubCategory, then the app is set to the elemApp");
+    expect(appearance!.equals(elemApp)).toBe(true);
 
     overrides = new Overrides(viewState);
     appearance = FeatureAppearance.fromJSON(props);
     overrides.setVisibleSubCategory(subCategoryId);
     overrides.override({ subCategoryId, appearance: subCatApp });
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isTrue(appearance!.equals(subCatApp), "if subCategoryId is in visible set and SubCategoryApp is found, absent element or model apps, the result app is equal to the app extended by the subCategoryApp");
+    expect(appearance!.equals(subCatApp)).toBe(true);
 
     overrides = new Overrides(viewState);
     appearance = FeatureAppearance.fromJSON(props);
@@ -214,7 +214,7 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.override({ subCategoryId, appearance: subCatApp });
     appearance = overrides.getFeatureAppearance(feature, id);
     let expected = subCatApp.extendAppearance(modelApp);
-    assert.isTrue(appearance!.equals(expected), "if subCat and modelApp are found then the appearance is the extension of the subCatApp with the ModelApp");
+    expect(appearance!.equals(expected)).toBe(true);
     overrides = new Overrides(viewState);
     appearance = FeatureAppearance.fromJSON(props);
     modelApp = FeatureAppearance.fromJSON(modelProps);
@@ -225,7 +225,7 @@ describe("FeatureSymbology.Overrides", () => {
     appearance = overrides.getFeatureAppearance(feature, id);
     expected = elemApp.extendAppearance(modelApp);
     expected = subCatApp.extendAppearance(expected);
-    assert.isTrue(appearance!.equals(expected), "if subCat, elemApp, and modelApp are found then the appearance is the extension of all three");
+    expect(appearance!.equals(expected)).toBe(true);
   });
 
   it("excludedElements works as expected", () => {
@@ -239,20 +239,20 @@ describe("FeatureSymbology.Overrides", () => {
     const feature2 = new Feature(elementId2, subCategoryId, geometryClass);
 
     let overrides = new Overrides(viewState);
-    assert.isFalse(overrides.isFeatureVisible(feature), "if subCategoryId isn't included in visibleSubCategories set, feature isn't visible");
-    assert.isFalse(overrides.isFeatureVisible(feature2), "if subCategoryId isn't included in visibleSubCategories set, feature isn't visible");
+    expect(overrides.isFeatureVisible(feature)).toBe(false);
+    expect(overrides.isFeatureVisible(feature2)).toBe(false);
     overrides = new Overrides(viewState);
     overrides.setAlwaysDrawn(elementId);
     overrides.setAlwaysDrawn(elementId2);
 
-    assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in display style's excludedElements, feature isn't visible");
-    assert.isTrue(overrides.isFeatureVisible(feature2), "if elementId is in always drawn set and not in the neverDrawn set and not in display style's excludedElements, feature is visible");
+    expect(overrides.isFeatureVisible(feature)).toBe(false);
+    expect(overrides.isFeatureVisible(feature2)).toBe(true);
 
     viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
-    assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in excludedElements and if geometryClass and subCategory are visible, feature isn't visible");
-    assert.isTrue(overrides.isFeatureVisible(feature2), "if elementId is not in excludedElements and if geometryClass and subCategory are visible, feature is visible");
+    expect(overrides.isFeatureVisible(feature)).toBe(false);
+    expect(overrides.isFeatureVisible(feature2)).toBe(true);
   });
 
   it("model appearance overrides work as expected", () => {
@@ -268,17 +268,17 @@ describe("FeatureSymbology.Overrides", () => {
 
     const displayStyle = viewState.displayStyle;
     displayStyle.settings.overrideModelAppearance(modelId1, modelOverride1);
-    assert(displayStyle.settings.hasModelAppearanceOverride);
-    assert(displayStyle.settings.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
+    expect(displayStyle.settings.hasModelAppearanceOverride).toBeTruthy();
+    expect(displayStyle.settings.getModelAppearanceOverride(modelId1)!.equals(modelOverride1)).toBeTruthy();
 
     displayStyle.settings.dropModelAppearanceOverride(modelId1);
-    assert(!displayStyle.settings.hasModelAppearanceOverride);
+    expect(!displayStyle.settings.hasModelAppearanceOverride).toBeTruthy();
 
     displayStyle.settings.overrideModelAppearance(modelId1, modelOverride1);
     displayStyle.settings.overrideModelAppearance(modelId2, modelOverride2);
-    assert(displayStyle.settings.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
-    assert(displayStyle.settings.getModelAppearanceOverride(modelId2)!.equals(modelOverride2));
-    expect(displayStyle.settings.getModelAppearanceOverride(modelId3)).to.be.undefined;
+    expect(displayStyle.settings.getModelAppearanceOverride(modelId1)!.equals(modelOverride1)).toBeTruthy();
+    expect(displayStyle.settings.getModelAppearanceOverride(modelId2)!.equals(modelOverride2)).toBeTruthy();
+    expect(displayStyle.settings.getModelAppearanceOverride(modelId3)).toBeUndefined();
 
     const overrides = new Overrides(viewState);
     overrides.setAlwaysDrawn(elementId);
@@ -286,9 +286,9 @@ describe("FeatureSymbology.Overrides", () => {
     const appearance2 = overrides.getFeatureAppearance(feature, modelId2);
     const appearance3 = overrides.getFeatureAppearance(feature, modelId3);
 
-    assert(appearance1!.equals(modelOverride1));
-    assert(appearance2!.equals(modelOverride2));
-    assert(!appearance3?.overridesRgb);
+    expect(appearance1!.equals(modelOverride1)).toBeTruthy();
+    expect(appearance2!.equals(modelOverride2)).toBeTruthy();
+    expect(!appearance3?.overridesRgb).toBeTruthy();
   });
 
   it("overrides subcategory visibility", () => {

@@ -2,17 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { expect } from "vitest";
+import { GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, IModelConnection, LocalhostIpcApp, NativeApp } from "@itwin/core-frontend";
-import type { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender";
-import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
+import type { MockRender } from "@itwin/core-frontend/lib/cjs/internal/test-support";
+import type { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { IModelHubUserMgr } from "./IModelHubUserMgr";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
-import { setBackendAccessToken } from "../certa/certaCommon";
 
 export class TestUtility {
   private static readonly _openIModels = new Set<IModelConnection>();
@@ -110,10 +109,6 @@ export class TestUtility {
 
   public static iTwinPlatformEnv: ITwinPlatformAbstraction;
 
-  public static async getAccessToken(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessToken> {
-    return getAccessTokenFromBackend(user, oidcConfig);
-  }
-
   /** The initialize methods wraps creating and setting up all of the clients needed to perform integrations tests. If a user is provided,
    * a headless sign-in will be attempted in both Web and Electron setups.
    *
@@ -137,6 +132,7 @@ export class TestUtility {
         { clientId },
       );
       IModelApp.authorizationClient = authorizationClient;
+      const { setBackendAccessToken } = await import("./testCallbacks.mjs");
       const accessToken = await setBackendAccessToken(user);
       if ("" === accessToken)
         throw new Error("no access token");
@@ -158,14 +154,16 @@ export class TestUtility {
       throw new Error("no access token");
 
     const iTwin: ITwin = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(accessToken, iTwinName);
-    assert(iTwin && iTwin.id);
+    expect(iTwin && iTwin.id).toBeTruthy();
+    if (!iTwin.id)
+      throw new Error("Test iTwin has no id");
     return iTwin.id;
   }
 
   public static async queryIModelIdByName(iTwinId: string, iModelName: string): Promise<string> {
     const accessToken = await IModelApp.getAccessToken();
     const iModelId = await this.iTwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
-    assert.isDefined(iModelId);
+    expect(iModelId).toBeDefined();
     if (!iModelId)
       throw new Error("no access token");
     return iModelId;
@@ -204,8 +202,8 @@ export class TestUtility {
 
   private static async loadMockRender(): Promise<typeof MockRender> {
     if (this._mockRender === undefined) {
-      // Vitest aliases this internal CJS specifier to a deferred ESM compatibility module.
-      const mockRenderModule = await import("@itwin/core-frontend/lib/cjs/internal/render/MockRender");
+      // Vitest maps the CJS-shaped internal specifier to core-frontend's ESM build.
+      const mockRenderModule = await import("@itwin/core-frontend/lib/cjs/internal/test-support");
       this._mockRender = mockRenderModule.MockRender;
     }
     return this._mockRender;
@@ -226,13 +224,13 @@ export class TestUtility {
     }
 
     if (ProcessDetector.isElectronAppFrontend) {
-      // electron version of certa does not serve assets like worker scripts.
+      // The Electron provider does not serve assets like worker scripts.
       if (iopts.tileAdmin)
         iopts.tileAdmin.decodeImdlInWorker = false;
       else
         iopts.tileAdmin = { decodeImdlInWorker: false };
 
-      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend");
+      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/frontend/ElectronApp");
       return electronApp.startup({ iModelApp: iopts });
     }
 
@@ -256,7 +254,7 @@ export class TestUtility {
     await this.cleanupOpenIModels();
 
     if (ProcessDetector.isElectronAppFrontend) {
-      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/ElectronFrontend");
+      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/frontend/ElectronApp");
       return electronApp.shutdown();
     }
 

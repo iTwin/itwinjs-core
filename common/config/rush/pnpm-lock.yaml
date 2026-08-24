@@ -2410,31 +2410,16 @@ importers:
       azurite:
         specifier: ^3.35.0
         version: 3.36.0(@types/node@20.17.58)
-      chai:
-        specifier: ^4.3.10
-        version: 4.5.0
-      chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.2(chai@4.5.0)
       electron:
         specifier: ^43.0.0
         version: 43.1.1
       fs-extra:
         specifier: ^8.1.0
         version: 8.1.0
-      sinon:
-        specifier: ^17.0.2
-        version: 17.0.2
-      sinon-chai:
-        specifier: ^3.7.0
-        version: 3.7.0(chai@4.5.0)(sinon@17.0.2)
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
       '@itwin/eslint-plugin':
         specifier: ^6.0.0
         version: 6.1.0(eslint@9.39.5)(typescript@5.6.3)
@@ -2450,42 +2435,18 @@ importers:
       '@itwin/vitest-browser-bridge':
         specifier: workspace:*
         version: link:../../tools/vitest-browser-bridge
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/chai-as-promised':
-        specifier: ^7
-        version: 7.1.8
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.15
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.10
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.58
-      '@types/sinon':
-        specifier: ^17.0.2
-        version: 17.0.4
-      '@types/sinon-chai':
-        specifier: ^3.2.0
-        version: 3.2.12
       '@vitest/browser':
         specifier: ^4.1.10
         version: 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.10)
-      assert:
-        specifier: ^2.0.0
-        version: 2.1.0
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.29.7)(webpack@5.108.4)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.1
-      browserify-zlib:
-        specifier: ^0.2.0
-        version: 0.2.0
+      '@vitest/browser-playwright':
+        specifier: ^4.1.10
+        version: 4.1.10(playwright@1.56.1)(vite@6.4.3(@types/node@20.17.58)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.10)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -2498,12 +2459,6 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
-      glob:
-        specifier: ^13.0.6
-        version: 13.0.6
-      https-browserify:
-        specifier: ^1.0.0
-        version: 1.0.0
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -2516,39 +2471,21 @@ importers:
       npm-run-all2:
         specifier: ^7.0.2
         version: 7.0.2
-      null-loader:
-        specifier: ^4.0.1
-        version: 4.0.1(webpack@5.108.4)
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       path-browserify:
         specifier: ^1.0.1
         version: 1.0.1
+      playwright:
+        specifier: ~1.56.1
+        version: 1.56.1
       rimraf:
         specifier: ^6.0.1
         version: 6.1.3
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.108.4)
-      stream-browserify:
-        specifier: ^3.0.0
-        version: 3.0.0
-      stream-http:
-        specifier: ^3.2.0
-        version: 3.2.0
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.50.0)(tsx@4.22.5)(yaml@2.9.0)
-      webpack:
-        specifier: ^5.97.1
-        version: 5.108.4(webpack-cli@5.1.4)
-      webpack-cli:
-        specifier: ^5.0.1
-        version: 5.1.4(webpack@5.108.4)
 
   ../../full-stack-tests/ecschema-rpc-interface:
     dependencies:
@@ -6529,9 +6466,6 @@ packages:
   buffer@6.0.3:
     resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
 
-  builtin-status-codes@3.0.0:
-    resolution: {integrity: sha512-HpGFw18DgFWlncDfjTa2rcQ4W88O1mC8e8yZ2AvQY5KDaktSTwo+KRf6nHK6FRI5FyRyb/5T6+TSxfP7QyGsmQ==}
-
   bundle-name@4.1.0:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
     engines: {node: '>=18'}
@@ -7907,9 +7841,6 @@ packages:
   http2-wrapper@2.2.1:
     resolution: {integrity: sha512-V5nVw1PAOgfI3Lmeaj2Exmeg7fenjhRUgz1lPSezy1CuhPYbgQtbQj4jZfEAEMlaL+vupsvhjqCyjzob0yxsmQ==}
     engines: {node: '>=10.19.0'}
-
-  https-browserify@1.0.0:
-    resolution: {integrity: sha512-J+FkSdyD+0mA0N+81tMotaRMfSL9SGi+xpD3T6YApKsc3bGSXJlfXri3VyFOeYkfLRQisDk1W+jIFFKBeUBbBg==}
 
   https-proxy-agent@5.0.1:
     resolution: {integrity: sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==}
@@ -9843,9 +9774,6 @@ packages:
   stream-events@1.0.5:
     resolution: {integrity: sha512-E1GUzBSgvct8Jsb3v2X15pjzN1tYebtbLaMg+eBOUOAxgbLoSbT2NS91ckc5lJD1KfLjId+jXJRgo0qnV5Nerg==}
 
-  stream-http@3.2.0:
-    resolution: {integrity: sha512-Oq1bLqisTyK3TSCXpPbT4sdeYNdmyZJv1LxpEm2vu1ZhK89kSE5YXwZc3cWk0MagGaKriBh9mCFbVGtO+vY29A==}
-
   stream-shift@1.0.3:
     resolution: {integrity: sha512-76ORR0DO1o1hlKwTbi/DM3EXWGf3ZJYO8cXX5RJwnul2DEg2oyoZyjLNoQM8WsvZiFKCRfC1O0J7iCvie3RZmQ==}
 
@@ -10601,10 +10529,6 @@ packages:
 
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
-
-  xtend@4.0.2:
-    resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
-    engines: {node: '>=0.4'}
 
   y18n@4.0.3:
     resolution: {integrity: sha512-JKhqTOwSrqNA1NY5lSztJ1GrBiUodLMmIZuLiDaMRJ+itFd+ABVE8XBjOvIWL+rSqNDC74LCSFmlb/U4UZ4hJQ==}
@@ -13079,8 +13003,6 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  builtin-status-codes@3.0.0: {}
-
   bundle-name@4.1.0:
     dependencies:
       run-applescript: 7.1.0
@@ -14720,8 +14642,6 @@ snapshots:
     dependencies:
       quick-lru: 5.1.1
       resolve-alpn: 1.2.1
-
-  https-browserify@1.0.0: {}
 
   https-proxy-agent@5.0.1:
     dependencies:
@@ -16705,13 +16625,6 @@ snapshots:
     dependencies:
       stubs: 3.0.0
 
-  stream-http@3.2.0:
-    dependencies:
-      builtin-status-codes: 3.0.0
-      inherits: 2.0.4
-      readable-stream: 3.6.2
-      xtend: 4.0.2
-
   stream-shift@1.0.3: {}
 
   string-argv@0.3.2: {}
@@ -17554,8 +17467,6 @@ snapshots:
   xmlbuilder@11.0.1: {}
 
   xmlchars@2.2.0: {}
-
-  xtend@4.0.2: {}
 
   y18n@4.0.3: {}
 

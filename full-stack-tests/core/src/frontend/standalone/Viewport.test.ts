@@ -9,7 +9,7 @@ import {
   CompassMode, IModelApp, IModelConnection, PanViewTool,
   ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync,
 } from "@itwin/core-frontend";
-import { assert, expect } from "chai";
+import { expect } from "vitest";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
@@ -17,7 +17,7 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 function createViewDiv() {
   const div = document.createElement("div");
-  assert(null !== div);
+  expect(null !== div).toBeTruthy();
   div.style.width = div.style.height = "1000px";
   document.body.appendChild(div);
   return div;
@@ -31,7 +31,7 @@ describe("Viewport", () => {
   const viewDiv = createViewDiv();
   const viewDiv2 = createViewDiv();
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  beforeAll(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await TestSnapshotConnection.openFile("test2.bim"); // relative path resolved by BackendTestAssetResolver
@@ -39,7 +39,7 @@ describe("Viewport", () => {
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await imodel2?.close();
     await TestUtility.shutdownFrontend();
@@ -48,95 +48,95 @@ describe("Viewport", () => {
   it("Viewport", async () => {
     const vpView = spatialView.clone();
     const vp = ScreenViewport.create(viewDiv, vpView);
-    assert.isFalse(vp.isRedoPossible, "no redo");
-    assert.isFalse(vp.isUndoPossible, "no undo");
-    assert.isFalse(vp.isCameraOn, "camera is off");
+    expect(vp.isRedoPossible).toBe(false);
+    expect(vp.isUndoPossible).toBe(false);
+    expect(vp.isCameraOn).toBe(false);
 
     const saveView = vpView.clone();
-    assert.notEqual(saveView.modelSelector, vpView.modelSelector, "clone should copy modelSelector");
-    assert.notEqual(saveView.categorySelector, vpView.categorySelector, "clone should copy categorySelector");
-    assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
+    expect(saveView.modelSelector, "clone should copy modelSelector").not.toBe(vpView.modelSelector);
+    expect(saveView.categorySelector, "clone should copy categorySelector").not.toBe(vpView.categorySelector);
+    expect(saveView.displayStyle, "clone should copy displayStyle").not.toBe(vpView.displayStyle);
 
     const frustSave = vp.getFrustum();
     const vpView2 = spatialView.clone(imodel2);
     vpView2.setStandardRotation(StandardViewId.Top);
     const vp2 = ScreenViewport.create(viewDiv2, vpView2);
-    assert.isFalse(vp2.getFrustum().isSame(vp.getFrustum()), "frustums should start out different");
+    expect(vp2.getFrustum().isSame(vp.getFrustum())).toBe(false);
 
     // test the two-way connection between 2 viewports
     const vpConnection = new TwoWayViewportSync();
     vpConnection.connect(vp, vp2); // wire them together
-    assert.isTrue(vp2.getFrustum().isSame(frustSave), "vp2 frustum should be same as vp1 after connect");
+    expect(vp2.getFrustum().isSame(frustSave)).toBe(true);
     vp.turnCameraOn();
 
     vp.synchWithView();
-    assert.equal(vp.iModel, imodel);
-    assert.equal(vp2.iModel, imodel2);
+    expect(vp.iModel).toBe(imodel);
+    expect(vp2.iModel).toBe(imodel2);
 
-    assert.isTrue(vp.isCameraOn, "camera should be on");
-    assert.isTrue(vp2.isCameraOn, "camera should be synched");
-    assert.isTrue(vp2.getFrustum().isSame(vp.getFrustum()), "frustum should be synched");
+    expect(vp.isCameraOn).toBe(true);
+    expect(vp2.isCameraOn).toBe(true);
+    expect(vp2.getFrustum().isSame(vp.getFrustum())).toBe(true);
 
     const frust2 = vp.getFrustum();
-    assert.isFalse(frust2.isSame(frustSave), "turning camera on changes frustum");
-    assert.isTrue(vp.isUndoPossible, "undo should now be possible");
+    expect(frust2.isSame(frustSave)).toBe(false);
+    expect(vp.isUndoPossible).toBe(true);
     vp.doUndo();
-    assert.isTrue(vp.getFrustum().isSame(frustSave), "undo should reinstate saved view");
-    assert.isTrue(vp.isRedoPossible, "redo is possible");
-    assert.isFalse(vp.isUndoPossible, "no undo");
-    assert.isTrue(vp2.getFrustum().isSame(vp.getFrustum()), "frustum should be synched");
+    expect(vp.getFrustum().isSame(frustSave)).toBe(true);
+    expect(vp.isRedoPossible).toBe(true);
+    expect(vp.isUndoPossible).toBe(false);
+    expect(vp2.getFrustum().isSame(vp.getFrustum())).toBe(true);
     vp.doRedo();
-    assert.isTrue(vp.getFrustum().isSame(frust2), "redo should reinstate saved view");
-    assert.isFalse(vp.isRedoPossible, "after redo, redo is not possible");
-    assert.isTrue(vp.isUndoPossible, "after redo, undo is possible");
-    assert.isTrue(vp2.getFrustum().isSame(frust2), "frustum should be synched");
+    expect(vp.getFrustum().isSame(frust2)).toBe(true);
+    expect(vp.isRedoPossible).toBe(false);
+    expect(vp.isUndoPossible).toBe(true);
+    expect(vp2.getFrustum().isSame(frust2)).toBe(true);
 
     vp2.view.displayStyle.monochromeColor = ColorDef.blue;
     vp2.synchWithView();
-    assert.equal(vp.view.displayStyle.monochromeColor.getRgb(), ColorDef.blue.getRgb(), "synch from 2->1 should work");
+    expect(vp.view.displayStyle.monochromeColor.getRgb(), "synch from 2->1 should work").toBe(ColorDef.blue.getRgb());
 
     const pan = IModelApp.tools.create("View.Pan", vp) as PanViewTool;
-    assert.instanceOf(pan, PanViewTool);
-    assert.equal(pan.viewport, vp);
+    expect(pan).toBeInstanceOf(PanViewTool);
+    expect(pan.viewport).toBe(vp);
   });
 
   it("AccuDraw", () => {
     const vpView = spatialView.clone();
     const viewport = ScreenViewport.create(viewDiv, vpView);
     const accudraw = IModelApp.accuDraw;
-    assert.isTrue(accudraw.isEnabled, "Accudraw should be enabled");
+    expect(accudraw.isEnabled).toBe(true);
     const pt = new Point3d(1, 1, 1);
     accudraw.adjustPoint(pt, viewport, false);
 
     accudraw.activate();
-    assert.isTrue(accudraw.isActive, "AccuDraw is active");
+    expect(accudraw.isActive).toBe(true);
     accudraw.deactivate();
-    assert.isFalse(accudraw.isActive, "not active");
+    expect(accudraw.isActive).toBe(false);
     accudraw.setCompassMode(CompassMode.Polar);
-    assert.equal(accudraw.compassMode, CompassMode.Polar, "polar mode");
+    expect(accudraw.compassMode, "polar mode").toBe(CompassMode.Polar);
   });
 
   it("loadFontMap", async () => {
     const fonts1 = await imodel.loadFontMap(); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
-    assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
-    assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
-    assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
-    assert.equal(1, fonts1.getFont("arial")!.id, "get Font 1, by name case insensitive");
-    assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
-    assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
-    assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
-    assert.equal(2, fonts1.getFont("fOnt0")!.id, "get Font 2, by name case insensitive");
-    assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
-    assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
-    assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
-    assert.equal(3, fonts1.getFont("shxfont0")!.id, "get Font 3, by name case insensitive");
-    assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
-    assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
-    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 4, by name");
-    assert.equal(4, fonts1.getFont("cAlIbRi")!.id, "get Font 4, by name case insensitive");
-    assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
-    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap"); // eslint-disable-line @typescript-eslint/no-deprecated
+    expect(fonts1.fonts.size, "font map size should be 4").toBe(4);
+    expect(FontType.TrueType, "get font 1 type is TrueType").toBe(fonts1.getFont(1)!.type);
+    expect("Arial", "get Font 1 name").toBe(fonts1.getFont(1)!.name);
+    expect(1, "get Font 1, by name").toBe(fonts1.getFont("Arial")!.id);
+    expect(1, "get Font 1, by name case insensitive").toBe(fonts1.getFont("arial")!.id);
+    expect(FontType.Rsc, "get font 2 type is Rsc").toBe(fonts1.getFont(2)!.type);
+    expect("Font0", "get Font 2 name").toBe(fonts1.getFont(2)!.name);
+    expect(2, "get Font 2, by name").toBe(fonts1.getFont("Font0")!.id);
+    expect(2, "get Font 2, by name case insensitive").toBe(fonts1.getFont("fOnt0")!.id);
+    expect(FontType.Shx, "get font 1 type is Shx").toBe(fonts1.getFont(3)!.type);
+    expect("ShxFont0", "get Font 3 name").toBe(fonts1.getFont(3)!.name);
+    expect(3, "get Font 3, by name").toBe(fonts1.getFont("ShxFont0")!.id);
+    expect(3, "get Font 3, by name case insensitive").toBe(fonts1.getFont("shxfont0")!.id);
+    expect(FontType.TrueType, "get font 4 type is TrueType").toBe(fonts1.getFont(4)!.type);
+    expect("Calibri", "get Font 4 name").toBe(fonts1.getFont(4)!.name);
+    expect(4, "get Font 4, by name").toBe(fonts1.getFont("Calibri")!.id);
+    expect(4, "get Font 4, by name case insensitive").toBe(fonts1.getFont("cAlIbRi")!.id);
+    expect(fonts1.getFont("notfound")).toBeUndefined();
+    expect(new FontMap(fonts1.toJSON()), "toJSON on FontMap").toEqual(fonts1); // eslint-disable-line @typescript-eslint/no-deprecated
   });
 
   it("supports changing a subset of background map settings", () => {
@@ -147,11 +147,11 @@ describe("Viewport", () => {
       vp.changeBackgroundMapProps(changeProps);
       const newSettings = vp.backgroundMapSettings;
 
-      expect(newSettings).to.deep.equal(expectSettings);
-      expect(newSettings.equals(expectSettings)).to.be.true;
+      expect(newSettings).toEqual(expectSettings);
+      expect(newSettings.equals(expectSettings)).toBe(true);
 
       if (undefined === changeProps.groundBias)
-        expect(newSettings.groundBias).to.equal(oldSettings.groundBias);
+        expect(newSettings.groundBias).toBe(oldSettings.groundBias);
     };
 
     // Set up baseline values for all properties
@@ -200,7 +200,7 @@ describe("Viewport performance", () => {
 
   const viewDiv = createViewDiv();
 
-  before(async () => {
+  beforeAll(async () => {
     await TestUtility.startFrontend(undefined, true);
     imodel = await TestSnapshotConnection.openFile("test.bim");
     spatialView = SpatialViewState.createBlank(
@@ -211,7 +211,7 @@ describe("Viewport performance", () => {
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
@@ -223,7 +223,7 @@ describe("Viewport performance", () => {
     const start = Date.now();
     vp.changeCategoryDisplay(categories, true, undefined, true);
     const elapsed = Date.now() - start;
-    expect(elapsed).to.be.lessThan(15_000, `changeCategoryDisplay for ${categories.length} categories took ${elapsed} ms`);
+    expect(elapsed, `changeCategoryDisplay for ${categories.length} categories took ${elapsed} ms`).toBeLessThan(15_000);
   });
 
   function generateCategoryIds(count: number): Id64String[] {
