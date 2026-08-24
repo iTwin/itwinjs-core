@@ -1491,7 +1491,9 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Shared implementation for importing schemas from file or string. */
+  /** Shared implementation for importing schemas from file or string.
+   * @internal
+   */
   protected async importSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
     options: SchemaImportOptions | undefined,
@@ -4447,8 +4449,8 @@ export class BriefcaseDb extends IModelDb {
    * The upgrade tier of the two-tier surface. [[importSchemas]] is the update tier: it takes a shared
    * lock, never moves or destroys data, and leaves the result local for the caller to push. This one
    * takes the exclusive schema lock, allows the import to move and destroy data, and pushes before it
-   * returns. Use it when [[importSchemas]] rejects with a status [[SchemaSync.requiresUpgrade]]
-   * recognizes.
+   * returns. Use it when [[importSchemas]] rejects with `BE_SQLITE_ERROR_DataTransformRequired` or
+   * `BE_SQLITE_ERROR_DataDeletionRequired` ([DbResult]($core-bentley)).
    *
    * Takes the exclusive schema lock, pulls to the tip, imports, then pushes the changeset and uploads
    * the sync db before releasing either lock. With schema sync enabled the result cannot be kept

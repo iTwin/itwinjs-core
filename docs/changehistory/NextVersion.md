@@ -11,7 +11,8 @@ publish: false
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
     - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
-  - [@itwin/core-common](#itwincore-common)
+    - [Schema sync rework](#schema-sync-rework)
+  - [@itwin/core-common](#itwincore-common-1)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-electron](#itwincore-electron)
     - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
@@ -85,6 +86,16 @@ SELECT * FROM bis.Element WHERE CodeValue IS json_extract(JsonProperties, '$.cod
 ```
 
 See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--is-not-operator-null-safe-comparison) for more details.
+
+### Schema sync rework
+
+Schema sync lets the briefcases of one iModel import ECSchemas without taking the exclusive schema lock. This new version explicitly splits between updates, which update the sync db, and upgrades which rewrite the sync db and push it with the briefcase at the same time via the new `BriefcaseDb.upgradeSchemas` API.
+
+Updates no longer automatically end up in other users' briefcases when they import schemas. Instead, they only pick the references closue of what they import, so updates only hit when a briefcase pushes.
+
+A change that would move or destroy existing data is now refused with `BE_SQLITE_ERROR_DataTransformRequired` or the new `BE_SQLITE_ERROR_DataDeletionRequired`; the new `@alpha` `BriefcaseDb.upgradeSchemas` runs those under the exclusive schema lock and lands the changeset and the sync db together. iModels without schema sync are unaffected.
+
+Introduced a new flag for tests, so our exentive test suite only runs when explicitly requested, documented in CONTRIBUTING.md.
 
 ## @itwin/core-common
 
