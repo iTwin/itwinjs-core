@@ -6,6 +6,13 @@ An iModel is a multi-user database that is edited through *briefcases*. Every us
 
 Concurrency control is *not* user access control. It says nothing about whether a person is *permitted* to edit; it only coordinates edits that are already permitted.
 
+iTwin.js provides two complementary coordination mechanisms:
+
+- **Locks** protect existing models and elements from conflicting concurrent modification.
+- **Reservations** coordinate concurrent creation of elements that share an identity across briefcases. When Schema Sync is enabled, any element inserted with an explicit `federationGuid` must first be reserved.
+
+Locks serialize changes to established data; reservations allow many briefcases to create the same shared building block without producing duplicate elements or conflicting identities.
+
 ## Before you start
 
 This article assumes you already know that:
@@ -22,6 +29,7 @@ Related reading: [Synchronizing with iModelHub](./IModelDbSync.md), [Pull merge 
 ```mermaid
 graph LR
     Hub[("iModelHub<br/>timeline + lock server")]
+    Sync[("Schema Sync<br/>reservation store")]
     B1["Briefcase A<br/>(user 1)"]
     B2["Briefcase B<br/>(user 2)"]
 
@@ -31,12 +39,15 @@ graph LR
     B2 -- "acquire / release locks" --> Hub
     B1 -- "push changeset" --> Hub
     B2 -- "push changeset" --> Hub
+    B1 -. "reserve shared identities" .-> Sync
+    B2 -. "reserve shared identities" .-> Sync
 ```
 
-Two independent services are involved:
+Three independent services can be involved:
 
 - The **timeline** stores changesets in a strict order. You can only push a changeset that is based on the current tip.
 - The **lock server** hands out locks on elements. A lock is granted to a *briefcase*, not to a user, and it is remembered along with the changeset index at which it was last released.
+- The optional **Schema Sync reservation store** pre-allocates element Ids for explicitly assigned federation GUIDs so concurrent creators converge on the same identity.
 
 ## Glossary
 
@@ -44,10 +55,13 @@ Two independent services are involved:
 | --- | --- |
 | **Base** | Changeset B is *based on* changeset A if B comes after A in the timeline. |
 | **Conflict** | Two changesets change the same data in incompatible ways, and neither is based on the other. |
+| **DefinitionElement** | A reusable [DefinitionElement]($backend), such as a category, line style, or material, that is commonly shared by many other elements. Definition elements are a common use case for reservations, but reservations apply to any element with an explicit federation GUID. |
+| **Federation GUID** | A globally unique identifier that stably identifies an element across briefcases and iModels. Reservations associate an explicitly assigned federation GUID with a pre-allocated element Id. |
 | **Lock** | The right of a briefcase to change (Exclusive) or to depend on (Shared) an element. |
 | **Merge / Rebase** | Applying incoming changesets to a briefcase that has local changes. See [PullMerge](./PullMerge.md). |
 | **Push** | Upload a changeset to iModelHub. |
 | **Pull** | Download and apply changesets from iModelHub. |
+| **Reservation** | An agreement, coordinated through Schema Sync, that pre-allocates an element Id for an explicitly assigned federation GUID so multiple briefcases can create the same element concurrently. |
 | **Schema Lock** | The exclusive lock on the root element ([IModel.repositoryModelId]($common)). Effectively locks the whole iModel. |
 | **Tip** | The most recent changeset on the timeline; the newest state of the iModel. |
 | **Txn** | A local transaction, created by [BriefcaseDb.saveChanges]($backend). Many Txns combine into one changeset. |
@@ -61,6 +75,8 @@ The policy is fixed when the iModel is created in iModelHub, via the `noLocks` p
 | --- | --- |
 | **Locking (default)** | Locks *must* be held before elements/models are changed. The editing APIs check locks as each change is made, so two briefcases cannot concurrently change the same element. |
 | **No locks** (`noLocks: true`) | No locks are required or acquired. Simultaneous edits are reconciled by [change merging / rebase](./PullMerge.md). |
+
+> **`noLocks` is experimental.** Its conflict-resolution behavior is not yet a complete replacement for the default locking policy and it is not recommended for production applications. Reservations—not `noLocks`—are the mechanism for concurrent creation of shared definitions and component elements.
 
 Every [BriefcaseDb]($backend) exposes [BriefcaseDb.locks]($backend), a [LockControl]($backend) implementation chosen automatically when the briefcase is opened:
 
@@ -203,6 +219,90 @@ Not every lock has to be requested by hand. These are handled for you:
 | **Indirect changes** | Changes made during change propagation (for example, from `ElementDrivesElement` dependency handlers) run in "indirect" Txn mode, where lock checks are suspended. Only *direct* edits by app code require locks. |
 | **Push** | [BriefcaseDb.pushChanges]($backend) releases all locks afterwards unless you pass `retainLocks: true`. |
 
+## Reservations
+
+> Reservations are a beta feature. See [IModelDb.reservations]($backend) and [SynchronousChannel.Reservations]($backend).
+
+Locks solve concurrent edits to existing data, but they do not establish that two briefcases creating a new element mean to create the *same* element. For example, two users may both need a `"Steel"` material, a `"Hidden"` line style, or the same component template from a catalog. Without coordination, each briefcase can allocate a different element Id for the same logical definition, producing duplicates or a Code conflict when their changesets merge.
+
+A reservation agrees on one caller-supplied federation GUID and one pre-allocated element Id before insertion. Every briefcase that inserts that reserved identity receives the same Id.
+
+The rule is deliberately broader than definition elements: **when Schema Sync is enabled, any [Element]($backend) inserted with an explicitly assigned `federationGuid` must first be reserved**, unless the briefcase holds the Schema Lock. Elements that leave `federationGuid` unset are unaffected.
+
+### Reservations and locks are complementary
+
+| | Locks | Reservations |
+| --- | --- | --- |
+| Protect against | Conflicting modification of existing elements | Conflicting creation of elements with a shared identity |
+| Coordination model | Serialize competing writers | Let many briefcases create the same thing |
+| Applies to | Models and elements | Elements inserted with an explicit `federationGuid` |
+| Enabled by | The default locking policy | Schema Sync |
+| API | [BriefcaseDb.locks]($backend) | [IModelDb.reservations]($backend) |
+
+Inserting a reserved element still follows the normal locking rules. For example, inserting a shared definition into the dictionary model requires a shared lock on [IModel.dictionaryId]($common). The reservation prevents an identity conflict; the lock protects the containing model while it changes.
+
+### Schema Sync behavior
+
+Reservations are stored in the Schema Sync cloud database. Its write lock serializes reservation requests so Id allocation and non-empty [Code]($common) uniqueness are enforced atomically across briefcases.
+
+- Without Schema Sync, `IModelDb.reservations` is a no-op. `needsElementReservation` returns `false`, `reserveElements` does nothing, and inserts behave as before.
+- With Schema Sync, insertion of an element with an explicit `federationGuid` validates and applies its reservation.
+- The reservation control is reinitialized automatically if a pull or push changes whether Schema Sync is enabled for the briefcase.
+
+### Reserving and inserting elements
+
+Call [SynchronousChannel.Reservations.reserveElements]($backend) before insertion. The batch succeeds or fails as a unit. Each entry requires a valid `federationGuid` and `classFullName`; `code` is optional. A non-empty Code is stored with the reservation and must be unique across reservations.
+
+```ts
+const federationGuid = Guid.createValue();
+const code = LineStyle.createCode(briefcase, IModel.dictionaryId, "Hidden");
+
+await briefcase.reservations.reserveElements({
+  elements: [{
+    federationGuid,
+    classFullName: LineStyle.classFullName,
+    code,
+  }],
+});
+
+await briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
+const id = briefcase.elements.insertElement({
+  classFullName: LineStyle.classFullName,
+  model: IModel.dictionaryId,
+  code,
+  federationGuid,
+});
+```
+
+Reservation is idempotent: concurrent requests with the same federation GUID, class, and Code converge on one reservation. Reusing a non-empty Code for a different federation GUID, or changing the class or Code associated with a GUID, produces a conflict.
+
+[SynchronousChannel.Reservations.needsElementReservation]($backend) consults a local cache. A `false` result means the reservation was observed as of the most recent `reserveElements` call; the Schema Sync container remains the authority when another briefcase may be reserving concurrently.
+
+During insertion, the element hook looks up the explicit federation GUID, verifies the class and Code, and assigns the reserved Id. If no reservation exists, insertion throws an [ElementReservationError]($common) with the `reservation-not-found` key. Holding the Schema Lock bypasses reservation checks because it already serializes all briefcases.
+
+### Reservation errors
+
+| Key | Meaning |
+| --- | --- |
+| `invalid-reservation` | The federation GUID, Code, or class is invalid. |
+| `reservation-conflict` | The requested or inserted element disagrees with an existing reservation. |
+| `reservation-not-found` | No reservation exists for the explicitly assigned federation GUID. |
+| `container-has-local-changes` | The Schema Sync container has unpublished local changes, so its reservations cannot yet be trusted. |
+| `id-sequence-exhausted` | The reserved element Id range is exhausted. |
+| `corrupt-reservation-data` | The persisted reservation data is corrupt. |
+
+Use [ElementReservationError.isError]($common) to identify these errors and, optionally, a specific key.
+
+### Combined workflow
+
+For an editing session that creates shared elements and modifies existing data:
+
+1. Pull and merge to synchronize with the tip.
+1. Reserve every new element that will carry an explicit federation GUID.
+1. Acquire the model and element locks required by the changes.
+1. Insert the reserved elements and make the other edits.
+1. Save and push. The elements use their agreed Ids and the push releases locks unless `retainLocks` is set.
+
 ## The Schema Lock
 
 The schema lock is simply *the exclusive lock on the root element*, [IModel.repositoryModelId]($common). Because of the hierarchy rules, that has dramatic consequences:
@@ -322,13 +422,14 @@ Note that re-acquiring an abandoned lock can fail: another briefcase may have ta
 
 ## Related, but not the same thing
 
-- **Codes.** Uniqueness of element codes is coordinated separately by reserving codes — see [Reserving Codes](./ReserveCodes.md) and [CodeService](./CodeService.md). Holding a lock does not reserve a code.
+- **Codes.** General element-code uniqueness is coordinated separately by reserving codes — see [Reserving Codes](./ReserveCodes.md) and [CodeService](./CodeService.md). A reservation also checks the non-empty Code attached to a reserved identity, but holding a lock alone does not reserve a code.
 - **Channels.** [Channels](./Channel.md) restrict *which* parts of an iModel a given application is allowed to write, which is an orthogonal (and additional) check to locks.
 - **Access control.** Whether a user may edit at all is decided by iTwin permissions, not by this document.
 
 ## Practical guidance
 
 - **Always pull before you lock.** This is the safe workflow: the server checks freshness per lock, so a stale briefcase is refused with `PullIsRequired` — sometimes because of an ancestor element you never asked about.
+- **Reserve before inserting an explicit federation GUID.** When Schema Sync is enabled, batch reservations before acquiring locks and starting the editing transaction.
 - **Lock at the right granularity.** For bulk edits, take the exclusive lock on the model rather than on each element; for adding many elements to a model, one shared lock on the model covers them all.
 - **Acquire locks in one call where possible.** `acquireLocks({ shared: [...], exclusive: [...] })` is atomic, so a batch either fully succeeds or leaves you holding nothing new — which avoids partially-locked states and reduces deadlock-like stalls between briefcases.
 - **Keep the schema lock for as short a time as possible.** While you hold it, every other briefcase in the iModel is blocked from acquiring anything. Push and release immediately after the import.
