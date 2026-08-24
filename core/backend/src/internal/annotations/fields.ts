@@ -7,7 +7,7 @@ import { collectFieldQuantityPairs, FieldPrimitiveValue, FieldPropertyType, Fiel
 import { IModelDb } from "../../IModelDb";
 import { Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
-import { ElementDrivesTextAnnotation, isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType } from "@itwin/ecschema-metadata";
 import { FormattingSpecArgs } from "@itwin/core-quantity";
 import type { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
@@ -589,8 +589,17 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldT
  * overrides. Delegates to `collectFieldQuantityPairs` (`@itwin/core-common` internal) so
  * pre-warm enumerates the same candidates the runtime iterates. See
  * [[QuantityFieldFormatOptions]] for the priority contract and the coordinate/no-KoQ caveat.
+ *
+ * This is the single source of the `field -> (KoQ, persistenceUnit)` mapping. Pre-warm and
+ * evaluation must agree on it exactly: a requirement that differs from the candidate the
+ * runtime actually walks does not merely fail to format, it lets the runtime resolve a
+ * *different* pair and scale the value by the wrong unit. That agreement is enforced here by
+ * construction — both paths share `collectFieldQuantityPairs`, and the metadata walk shares
+ * `advanceSchemaCursor` with the runtime value walk — which is why this computation stays in
+ * core even though callers choose for themselves which fields to ask about.
+ * @internal
  */
-function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
+export function collectFieldRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
   const quantityOptions = field.formatOptions?.quantity;
 
   const terminal = resolveFieldTerminalProperty(field, iModel);
@@ -630,55 +639,15 @@ function computeFieldFormattingRequirement(field: FieldRun, iModel: IModelDb): F
  */
 export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel: IModelDb): FormattingSpecArgs[] {
   const seen = new Map<string, FormattingSpecArgs>();
-  collectInto(seen, textBlock, iModel);
-  return Array.from(seen.values());
-}
-
-function collectInto(seen: Map<string, FormattingSpecArgs>, textBlock: TextBlock, iModel: IModelDb): void {
   for (const { child } of traverseTextBlockComponent(textBlock)) {
     if (child.type !== "field") {
       continue;
     }
-    for (const args of computeFieldFormattingRequirement(child, iModel)) {
+    for (const args of collectFieldRequirements(child, iModel)) {
       const key = `${args.name}|${args.persistenceUnitName}`;
       if (!seen.has(key)) {
         seen.set(key, args);
       }
-    }
-  }
-}
-
-/** Aggregates the formatting requirements of every dependency-tracked annotation in `iModel` —
- * i.e. every target of a `BisCore.ElementDrivesTextAnnotation` relationship. Used to pre-warm a
- * [[FieldFormattingSpecProvider]] at registration time so the synchronous evaluation paths find
- * a cache hit. See [[ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements]].
- * @internal
- */
-export function collectIModelFieldFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[] {
-  const seen = new Map<string, FormattingSpecArgs>();
-  if (!ElementDrivesTextAnnotation.isSupportedForIModel(iModel)) {
-    return [];
-  }
-
-  const annotationIds: Id64String[] = [];
-  iModel.withQueryReader("SELECT DISTINCT TargetECInstanceId FROM BisCore.ElementDrivesTextAnnotation", (reader) => {
-    for (const row of reader) {
-      annotationIds.push(row[0]);
-    }
-  });
-
-  for (const annotationId of annotationIds) {
-    try {
-      const element = iModel.elements.tryGetElement(annotationId);
-      if (!element || !isITextAnnotation(element)) {
-        continue;
-      }
-      for (const block of element.getTextBlocks()) {
-        collectInto(seen, block.textBlock, iModel);
-      }
-    } catch (err) {
-      // One unreadable annotation must not abort the sweep.
-      Logger.logError(BackendLoggerCategory.IModelDb, err);
     }
   }
 
