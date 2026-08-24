@@ -11,7 +11,7 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult,
+  AccessToken, assert, BeEvent, BentleyError, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
@@ -1531,10 +1531,15 @@ export abstract class IModelDb extends IModel {
       // publish ec_ rows carrying ids the sync db has no record of, and the sync db would hand those
       // same ids to somebody else.
       let txnBeforeAdopt: TxnIdString | undefined;
+      // Set once the caller's own work is committed. Getting a token or the container write lock happens
+      // before that, and abandonSchemaChanges discards every unsaved change rather than only this import's,
+      // so abandoning on a failure from that window would throw away work the import never touched.
+      let callerChangesSaved = false;
       try {
         await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
           const schemaSyncDbUri = syncAccess.getUri();
           this.saveSchemaChanges();
+          callerChangesSaved = true;
           // After saveSchemaChanges, so rolling back cannot reach the caller's own work.
           if (this.isBriefcaseDb())
             txnBeforeAdopt = this.txns.getCurrentTxnId();
@@ -1549,7 +1554,8 @@ export abstract class IModelDb extends IModel {
           }
         });
       } catch (err: any) {
-        this.abandonSchemaChanges();
+        if (callerChangesSaved)
+          this.abandonSchemaChanges();
         if (this.isBriefcaseDb() && undefined !== txnBeforeAdopt && this.txns.getCurrentTxnId() !== txnBeforeAdopt) {
           // Saving the adopt's txn started a new undo session, because schema changes are kept out of the
           // user's undo stack, so this reverses across that boundary. The changes themselves reverse like
@@ -4529,7 +4535,12 @@ export class BriefcaseDb extends IModelDb {
     try {
       await this.pushChanges(arg);
     } catch (err: any) {
-      await this.restoreSyncDbAfterFailedUpgradePush(txnBeforeUpgrade);
+      try {
+        await this.restoreSyncDbAfterFailedUpgradePush(txnBeforeUpgrade);
+      } catch (restoreErr) {
+        // The push error is the one the caller can act on, so it is the one that gets thrown.
+        Logger.logError(loggerCategory, `Could not put the sync db back after a failed upgrade push: ${BentleyError.getErrorMessage(restoreErr)}. Retry the push - the sync db and this briefcase agree, the timeline does not.`);
+      }
       throw err;
     }
   }
@@ -4545,14 +4556,18 @@ export class BriefcaseDb extends IModelDb {
     if (undefined === txnBeforeUpgrade || this.txns.getCurrentTxnId() === txnBeforeUpgrade)
       return;
 
-    const status = this[_nativeDb].cancelTo(txnBeforeUpgrade, true);
-    if (IModelStatus.Success !== status) {
-      Logger.logError(loggerCategory, `An upgrade reached the sync db but not the timeline, and the briefcase could not be rolled back (${IModelStatus[status] ?? status}). Retry the push - the sync db and this briefcase agree, the timeline does not.`);
-      return;
-    }
-
-    this.clearCaches();
+    // The rollback runs inside the container lock rather than ahead of it. Reaching the container is the
+    // step most likely to fail here - the push probably failed for the same reason - and a briefcase rolled
+    // back with no way to mirror that state up is the one outcome nothing recovers from. Failing before the
+    // cancelTo instead leaves briefcase and sync db agreeing on the upgrade, which retrying the push resolves.
     await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "restore schema sync db" }, async (syncAccess) => {
+      const status = this[_nativeDb].cancelTo(txnBeforeUpgrade, true);
+      if (IModelStatus.Success !== status) {
+        Logger.logError(loggerCategory, `An upgrade reached the sync db but not the timeline, and the briefcase could not be rolled back (${IModelStatus[status] ?? status}). Retry the push - the sync db and this briefcase agree, the timeline does not.`);
+        return;
+      }
+
+      this.clearCaches();
       this[_nativeDb].schemaSyncOverwrite(syncAccess.getUri());
       // schemaSyncOverwrite stamps the new data version on the briefcase too. Dropping it keeps the
       // briefcase free of local changes so the caller can simply upgrade again; a briefcase whose stamp
