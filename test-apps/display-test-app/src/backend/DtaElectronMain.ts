@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
+import { app } from "electron";
 import { promises as fs } from "fs";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
@@ -111,6 +112,12 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 const dtaElectronMain = async () => {
   // Need to load the config first to get the electron options
   loadBackendConfig();
+
+  // Allow Chromium to respond to Negotiate/NTLM (Kerberos SSO) challenges from the listed servers.
+  // Must be set before the Electron app is ready.
+  const authServerAllowlist = getConfig().authServerAllowlist;
+  if (authServerAllowlist)
+    app.commandLine.appendSwitch("auth-server-whitelist", authServerAllowlist);
 
   const opts = {
     webResourcesPath: path.join(__dirname, "..", "..", "lib"),
