@@ -242,14 +242,12 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
   /** The unit system used to select presentation formats from the iModel's schemas. */
   public readonly unitSystem: UnitSystemKey;
 
-  private readonly _iModel: IModelDb;
   private readonly _unitsProvider: UnitsProvider;
   private readonly _default: FieldSpecBucket;
   private readonly _buckets = new Map<Id64String, FieldSpecBucket>();
   private readonly _misses = new Map<string, UnresolvedFieldFormat>();
 
   public constructor(args: FieldFormattingSpecProviderArgs) {
-    this._iModel = args.iModel;
     // An adopted FormatSet declares the unit system it was authored for; honor it unless the
     // caller says otherwise.
     this.unitSystem = args.unitSystem ?? args.formatSet?.unitSystem ?? "metric";
