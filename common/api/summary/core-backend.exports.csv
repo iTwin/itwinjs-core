@@ -678,6 +678,7 @@ public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
+alpha;interface;UpgradeSchemasArgs
 public;class;UrlLink
 preview;class;UrlLink
 public;interface;V2CheckpointAccessProps

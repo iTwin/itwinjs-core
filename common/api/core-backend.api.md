@@ -644,13 +644,15 @@ export class BriefcaseDb extends IModelDb {
     pullChanges(arg?: PullChangesArgs): Promise<void>;
     pushChanges(arg: PushChangesArgs): Promise<void>;
     revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
-    // @internal (undocumented)
-    get skipSyncSchemasOnPullAndPush(): boolean;
     toJSON(): BriefcaseConnectionProps;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
     static upgradeSchemas(briefcase: OpenBriefcaseArgs): Promise<void>;
+    // @alpha
+    upgradeSchemas(schemaFileNames: LocalFileName[], arg: UpgradeSchemasArgs): Promise<void>;
+    // @alpha
+    upgradeSchemaStrings(serializedXmlSchemas: string[], arg: UpgradeSchemasArgs): Promise<void>;
     protected get useLockServer(): boolean;
 }
 
@@ -4043,9 +4045,13 @@ export abstract class IModelDb extends IModel {
     });
     // @deprecated
     abandonChanges(): void;
+    // @internal
+    protected abandonSchemaChanges(): void;
     acquireSchemaLock(): Promise<void>;
     // @beta
     analyze(): void;
+    // @internal
+    protected assertCanImportSchemas(): void;
     attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
@@ -4137,6 +4143,8 @@ export abstract class IModelDb extends IModel {
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
+    // @internal
+    protected importSchemasInternal<T extends LocalFileName[] | string[]>(schemas: T, options: SchemaImportOptions | undefined, nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void): Promise<void>;
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
@@ -4217,6 +4225,8 @@ export abstract class IModelDb extends IModel {
     saveChanges(args: SaveChangesArgs): void;
     // @deprecated
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
+    // @internal
+    protected saveSchemaChanges(args?: string): void;
     // @beta @deprecated
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     // @preview
@@ -6345,38 +6355,70 @@ export class Schemas {
 export namespace SchemaSync {
     export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
         constructor(props: CloudSqlite.ContainerAccessProps);
+        static createNewContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps>;
         // (undocumented)
         getUri(): string;
         static initializeDb(props: CloudSqlite.ContainerProps): Promise<void>;
     }
-    const // (undocumented)
-    setTestCache: (iModel: IModelDb, cacheName?: string) => void;
-    const // (undocumented)
-    withLockedAccess: (iModel: IModelDb | {
-        readonly fileName: LocalFileName;
-    }, args: {
-        operationName: string;
-        openMode?: OpenMode;
-        user?: string;
-    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
-    const // (undocumented)
-    withReadonlyAccess: (iModel: IModelDb | {
-        readonly fileName: LocalFileName;
-    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
-    const // (undocumented)
-    isEnabled: (iModel: IModelDb) => boolean;
-    const pull: (iModel: IModelDb) => Promise<void>;
-    const // (undocumented)
-    initializeForIModel: (arg: {
+    const containerType = "schema-sync";
+    export function createContainerForIModel(arg: CreateContainerForIModelArgs): Promise<CloudSqlite.ContainerProps>;
+    export interface CreateContainerForIModelArgs {
+        // (undocumented)
+        description?: string;
+        // (undocumented)
         iModel: IModelDb;
-        containerProps: CloudSqlite.ContainerProps;
+        // (undocumented)
+        label?: string;
+    }
+    export interface CreateNewContainerProps {
+        // (undocumented)
+        metadata: Omit<BlobContainer.Metadata, "containerType">;
+        // (undocumented)
+        scope: BlobContainer.Scope;
+    }
+    export function enableForIModel(arg: EnableForIModelArgs): Promise<CloudSqlite.ContainerProps>;
+    export interface EnableForIModelArgs {
+        containerProps?: CloudSqlite.ContainerProps;
+        // (undocumented)
+        description?: string;
+        // (undocumented)
+        iModel: IModelDb;
+        // (undocumented)
+        label?: string;
         overrideContainer?: boolean;
-    }) => Promise<void>;
+    }
+    export type IModelOrFileName = IModelDb | {
+        readonly fileName: LocalFileName;
+    };
+    export function initializeForIModel(arg: InitializeForIModelArgs): Promise<void>;
+    export interface InitializeForIModelArgs {
+        // (undocumented)
+        containerProps: CloudSqlite.ContainerProps;
+        // (undocumented)
+        iModel: IModelDb;
+        overrideContainer?: boolean;
+    }
+    export function isEnabled(arg: IModelOrFileName): boolean;
+    export function queryContainerProps(arg: IModelOrFileName): CloudSqlite.ContainerProps | undefined;
+    export function requiresUpgrade(error: unknown): boolean;
     export class SchemaSyncDb extends VersionedSqliteDb {
         // (undocumented)
         protected createDDL(): void;
         // (undocumented)
         readonly myVersion = "4.0.0";
+    }
+    // (undocumented)
+    export function setTestCache(iModel: IModelDb, cacheName?: string): void;
+    export function updateDbSchema(iModel: IModelDb): void;
+    // (undocumented)
+    export function withLockedAccess(iModel: IModelOrFileName, args: WithLockedAccessArgs, operation: (access: CloudAccess) => Promise<void>): Promise<void>;
+    export interface WithLockedAccessArgs {
+        // (undocumented)
+        openMode?: OpenMode;
+        // (undocumented)
+        operationName: string;
+        // (undocumented)
+        user?: string;
     }
 }
 
@@ -7801,6 +7843,12 @@ export interface UpdateModelOptions extends ModelProps {
 
 // @beta
 export function upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[];
+
+// @alpha
+export interface UpgradeSchemasArgs extends PushChangesArgs {
+    // @internal
+    ecSchemaXmlContext?: ECSchemaXmlContext;
+}
 
 // @public @preview
 export class UrlLink extends LinkElement {
