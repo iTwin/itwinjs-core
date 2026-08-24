@@ -5637,6 +5637,9 @@ export abstract class IpcHandler {
     static register(): RemoveFunction;
 }
 
+// @internal
+export function isAccessClientAuthFailure(response: Response, context: MapLayerAccessTokenParams, accessClient?: MapLayerAccessClient): Promise<boolean>;
+
 // @public
 export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
 

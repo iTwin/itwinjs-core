@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -65,6 +65,8 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     } catch (err) {
       if (err instanceof MapLayerUntrustedOriginError)
         this.reportBlockedOrigin(err.url);
+      else if (err instanceof MapLayerAuthenticationFailedError)
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
     }
     if (metadata && metadata.accessTokenRequired) {
       const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);

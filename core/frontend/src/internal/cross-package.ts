@@ -44,6 +44,7 @@ export {
  ImageryMapTileTree,
  type ImdlDecoder,
  ImdlReader,
+ isAccessClientAuthFailure,
  type MapLayerInfoFromTileTree,
  MapTileTreeReference,
  RealityModelTileUtils,

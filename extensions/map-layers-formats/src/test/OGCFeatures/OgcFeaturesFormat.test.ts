@@ -279,6 +279,34 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
   });
 
+  it("reports RequireAuth for a shaped validation request rejected with 403", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.setAccessClient(OgcApiFeaturesMapLayerFormat.formatId, {
+      getAccessToken: async () => undefined,
+      applyToRequest: ({ headers }) => headers.set("Authorization", "Bearer secret-jwt"),
+    });
+    stubFetch({}, { [sourceUrl]: 403 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    // The access client is the authentication authority for shaped requests: RequireAuth, not InvalidCredentials.
+    expect(validation.status).to.equals(MapLayerSourceStatus.RequireAuth);
+  });
+
+  it("uses the client's isAuthenticationError to classify shaped validation responses", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.setAccessClient(OgcApiFeaturesMapLayerFormat.formatId, {
+      getAccessToken: async () => undefined,
+      applyToRequest: ({ headers }) => headers.set("Authorization", "Bearer secret-jwt"),
+      isAuthenticationError: ({ response }) => response.status === 407,
+    });
+    stubFetch({}, { [sourceUrl]: 407 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(validation.status).to.equals(MapLayerSourceStatus.RequireAuth);
+  });
+
   it("resolves a relative collections link and appends saved and unsaved query params", async () => {
     registry.restrictCredentialsToTrustedOrigins = true;
     const source = createSource();

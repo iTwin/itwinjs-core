@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { accessClientRedirect, appendQueryParams, applyAccessClientToRequest, ImageryMapLayerFormat, IModelApp, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
+import { accessClientRedirect, appendQueryParams, applyAccessClientToRequest, ImageryMapLayerFormat, IModelApp, isAccessClientAuthFailure, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
@@ -28,8 +28,19 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         headers,
       };
 
+      // Give the format's access client full control over each outgoing request (e.g. an Authorization header).
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId);
+      const clientShapesRequests = undefined !== accessClient?.applyToRequest;
+
       // Classify HTTP failures before parsing JSON, using the final response URL to enforce origin trust after redirects.
-      const classifyResponseFailure = (httpResponse: Response, requestedUrl: string): MapLayerSourceValidation | undefined => {
+      const classifyResponseFailure = async (httpResponse: Response, requestedUrl: string): Promise<MapLayerSourceValidation | undefined> => {
+        // The access client is the authentication authority for the requests it shaped (default: 401/403).
+        if (clientShapesRequests) {
+          if (await isAccessClientAuthFailure(httpResponse, { mapLayerUrl: new URL(source.url), userName, password }, accessClient))
+            return { status: MapLayerSourceStatus.RequireAuth };
+          return httpResponse.ok ? undefined : { status: MapLayerSourceStatus.InvalidUrl };
+        }
+
         if (httpResponse.ok)
           return undefined;
 
@@ -53,8 +64,6 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       if (headers && allowLandingCredentials)
         IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url, source.url);
 
-      // Give the format's access client full control over each outgoing request (e.g. an Authorization header).
-      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId);
       const applyClientAuth = async (requestUrl: string, baseOpts: RequestInit): Promise<{ url: string, opts: RequestInit }> => {
         if (!accessClient?.applyToRequest)
           return { url: requestUrl, opts: baseOpts };
@@ -67,7 +76,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
 
       const landingRequest = await applyClientAuth(url, allowLandingCredentials ? opts : { method: "GET" });
       let response = await fetch(landingRequest.url, landingRequest.opts);
-      const landingFailure = classifyResponseFailure(response, url);
+      const landingFailure = await classifyResponseFailure(response, url);
       if (landingFailure)
         return landingFailure;
 
@@ -132,7 +141,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
 
         const collectionsRequest = await applyClientAuth(collectionsUrl, allowCreds ? opts : { method: "GET" });
         response = await fetch(collectionsRequest.url, collectionsRequest.opts);
-        const collectionsFailure = classifyResponseFailure(response, collectionsUrl);
+        const collectionsFailure = await classifyResponseFailure(response, collectionsUrl);
         if (collectionsFailure)
           return collectionsFailure;
 

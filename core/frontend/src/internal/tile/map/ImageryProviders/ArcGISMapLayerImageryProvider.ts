@@ -226,7 +226,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
     if (metadata?.content === undefined) {
       // By returning (i.e., not throwing), we ensure the tile tree gets created and the current provider is preserved to report status.
-      if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin)
+      if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin || this.status === MapLayerImageryProviderStatus.RequireAuth)
         return;
       throw new ServerError(IModelStatus.ValidationFailed, "");
     }

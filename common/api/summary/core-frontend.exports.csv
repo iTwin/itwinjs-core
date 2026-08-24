@@ -346,6 +346,7 @@ public;class;IntersectDetail
 public;class;IpcApp
 public;interface;IpcAppOptions
 beta;class;IpcHandler
+internal;function;isAccessClientAuthFailure
 public;const;isCheckboxFormatPropEditorSpec
 public;function;isCustomQuantityTypeDefinition
 public;const;isTextInputFormatPropEditorSpec

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { accessClientRedirect, applyAccessClientToRequest, MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
+import { accessClientRedirect, applyAccessClientToRequest, isAccessClientAuthFailure, MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthenticationFailedError, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { headersIncludeAuthMethod } from "../../../request/utils";
 
@@ -191,6 +191,8 @@ export class ArcGisUtilities {
     try {
       metadata = await this.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams(), ignoreCache});
     } catch (err) {
+      if (err instanceof MapLayerAuthenticationFailedError)
+        return { status: MapLayerSourceStatus.RequireAuth };
       if (err instanceof MapLayerUntrustedOriginError) {
         let blockedOrigin: string | undefined;
         try { blockedOrigin = new URL(err.url).origin; } catch { /* non-hierarchical URL */ }
@@ -271,6 +273,8 @@ export class ArcGisUtilities {
    * @param requireToken Flag to indicate if a token is required
    * @throws [[MapLayerUntrustedOriginError]] if an NTLM/Negotiate challenge could not be answered because
    * the URL's origin is not trusted (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]);
+   * [[MapLayerAuthenticationFailedError]] if the request was shaped by the format's access client and classified
+   * as an authentication failure (see [[MapLayerRequestAuthenticator.isAuthenticationError]]);
    * all other errors are caught and reported by returning `undefined`.
    */
 
@@ -356,6 +360,11 @@ export class ArcGisUtilities {
         }
       }
 
+      // Let the access client classify authentication failures for the requests it shaped (default: 401/403),
+      // mirroring WmsUtilities.fetchXml, so callers can transition to RequireAuth rather than a generic failure.
+      if (clientShapesRequests && await isAccessClientAuthFailure(response, { mapLayerUrl: new URL(url), userName, password }, accessClient))
+        throw new MapLayerAuthenticationFailedError(response.url || tmpUrl.toString());
+
       const json = await response.json();
       const info = {content: json, accessTokenRequired};
       // Cache the response only if it doesn't contain any error, and never when the request was shaped by an
@@ -366,8 +375,8 @@ export class ArcGisUtilities {
 
     } catch (err) {
       ArcGisUtilities._serviceCache.set(url, undefined);
-      if (err instanceof MapLayerUntrustedOriginError)
-        throw err;    // propagate so callers can report the blocked origin
+      if (err instanceof MapLayerUntrustedOriginError || err instanceof MapLayerAuthenticationFailedError)
+        throw err;    // propagate so callers can report the blocked origin / authentication failure
       return undefined;
     }
   }

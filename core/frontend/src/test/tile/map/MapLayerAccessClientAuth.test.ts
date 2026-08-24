@@ -5,7 +5,7 @@
 
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ArcGisUtilities, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequestAuthenticator } from "../../../tile/internal";
+import { ArcGisUtilities, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequestAuthenticator, MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { WmsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmsMapLayerImageryProvider";
 import { WmtsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmtsMapLayerImageryProvider";
@@ -328,6 +328,39 @@ describe("MapLayerAccessClient request shaping", () => {
     const requested = new URL(getRequestUrl());
     expect(requested.searchParams.get("clientParam")).toEqual("clientParamValue");
     expect(requested.searchParams.get("f")).toEqual("json");
+  });
+
+  it("transitions an ArcGIS layer to RequireAuth when its shaped service metadata request fails", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient());
+    const provider = new ArcGISMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" }));
+
+    // Must not throw: the tile tree is kept alive so the application can offer re-authentication.
+    await provider.initialize();
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
+  });
+
+  it("reports RequireAuth from ArcGIS source validation when the shaped metadata request fails", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient());
+    const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" })!;
+
+    const validation = await ArcGisUtilities.validateSource({ source, capabilitiesFilter: ["Map"] });
+
+    expect(validation.status).toEqual(MapLayerSourceStatus.RequireAuth);
+  });
+
+  it("uses the client's isAuthenticationError to classify shaped ArcGIS provider responses", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 407 }));
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient({
+      isAuthenticationError: ({ response }) => response.status === 407,
+    }));
+    const provider = new ArcGISMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" }));
+
+    await (provider as any).fetch(new URL("https://arcgis.example.com/MapServer/tile/0/0/0"), { method: "GET" });
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
   it("applies access client auth to ArcGIS provider requests", async () => {
