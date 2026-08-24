@@ -1222,6 +1222,33 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
     }
   });
 
+  it("publishes schema sync only after the initialized container is uploaded", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-init-upload" });
+    const accessToken = "sync life init upload token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life init upload", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLifeInitUploadB1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLifeInitUploadB2" });
+
+    try {
+      failInsideTheContainerLock();
+      await assertThrowsAsync(async () => SchemaSync.initializeForIModel({ iModel: b1, containerProps }));
+      sinon.restore();
+
+      assert.isFalse(SchemaSync.isEnabled(b1), "the failed container upload left schema sync enabled locally");
+      assert.isFalse(b1.txns.hasLocalChanges, "the failed container upload left the initialization txn behind");
+      await b2.pullChanges({ accessToken });
+      assert.isFalse(SchemaSync.isEnabled(b2), "the initialization reached the timeline before the container upload");
+
+      await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+      await b2.pullChanges({ accessToken });
+      assert.isTrue(SchemaSync.isEnabled(b2), "the initialization did not reach the timeline after a successful upload");
+    } finally {
+      sinon.restore();
+      b1.close();
+      b2.close();
+    }
+  });
+
   extendedIt("enabling schema sync from a briefcase that is behind the tip is refused", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-5" });
     const accessToken = "sync life enable token";

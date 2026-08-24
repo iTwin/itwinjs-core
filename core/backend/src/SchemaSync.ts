@@ -10,7 +10,7 @@
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
-import { BentleyError, ChangeSetStatus, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
+import { BentleyError, ChangeSetStatus, DbResult, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import type { BlobContainer } from "./BlobContainerService";
@@ -137,6 +137,11 @@ export namespace SchemaSync {
     user?: string;
   }
 
+  /** @note A schema import can commit its local adopt before releasing this lock uploads the container.
+   * Exception handling rolls that adopt back, but process termination cannot. After such a termination,
+   * recover under the exclusive schema lock by discarding the local import or rebuilding the sync db from
+   * that briefcase before its schema changes are pushed.
+   */
   export async function withLockedAccess(iModel: IModelOrFileName, args: WithLockedAccessArgs, operation: (access: CloudAccess) => Promise<void>): Promise<void> {
     const access = await getCloudAccess(iModel);
     try {
@@ -235,16 +240,28 @@ export namespace SchemaSync {
     const description = arg.overrideContainer
       ? `Overriding SchemaSync for iModel with container-id: ${props.containerId}`
       : `Enable SchemaSync for iModel with container-id: ${props.containerId}`;
+    const txnBeforeInit = briefcase?.txns.getCurrentTxnId();
     try {
       iModel[_implicitTxn].saveFileProperty(syncProperty, JSON.stringify(props));
-      await withLockedAccess(iModel, { operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async (syncAccess) => {
-        iModel[_nativeDb].schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
-        iModel[_implicitTxn].saveChanges(description);
-        // The container is uploaded when the write lock is released, so pushing here puts the changeset out
-        // first and makes a failed push discard the container's writes with it. The reverse order can leave
-        // an initialized container that no briefcase can learn about.
-        await briefcase?.pushChanges({ description });
-      });
+      try {
+        await withLockedAccess(iModel, { operationName: "initialize schemaSync", openMode: OpenMode.Readonly }, async (syncAccess) => {
+          iModel[_nativeDb].schemaSyncInit(syncAccess.getUri(), props.containerId, arg.overrideContainer ?? false);
+          iModel[_implicitTxn].saveChanges(description);
+        });
+      } catch (error) {
+        iModel[_implicitTxn].abandonChanges();
+        if (briefcase && txnBeforeInit !== undefined && briefcase.txns.getCurrentTxnId() !== txnBeforeInit) {
+          const status = briefcase[_nativeDb].cancelTo(txnBeforeInit, true);
+          if (status !== IModelStatus.Success)
+            Logger.logError("SchemaSync", `Failed to roll back schema sync initialization after the container upload failed: ${IModelStatus[status] ?? status}`);
+        }
+        throw error;
+      }
+
+      // Upload the initialized container before publishing the property that tells every briefcase to use it.
+      // If the push fails, this briefcase keeps the local txn and exclusive schema lock so the push can be retried;
+      // an initialized container that no timeline points at is safe.
+      await briefcase?.pushChanges({ description });
     } finally {
       iModel[_implicitTxn].abandonChanges();
     }

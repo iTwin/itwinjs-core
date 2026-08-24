@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import { Suite } from "mocha";
-import { BriefcaseDb, IModelDb, IModelHost } from "@itwin/core-backend";
+import { BriefcaseDb, IModelDb, IModelHost, SchemaSync } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { DbResult } from "@itwin/core-bentley";
@@ -801,9 +801,9 @@ describe("Schema synchronization data", function (this: Suite) {
     }
   });
 
-  // A shared column carries no type, so a primitive type change moves no data and the update path takes it. Existing values are
-  // reinterpreted under the new type on read: a numeric string comes back as its number, anything else comes back as zero.
-  extendedIt("takes a property type change through the update path and reinterprets existing values", async () => {
+  // A shared column carries no type, so changing the metadata alone would reinterpret existing values on read.
+  // The update path must refuse that semantic data loss and require the caller to choose the exclusive upgrade path.
+  extendedIt("routes a property type change through the upgrade path", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-data-11" });
     const accessToken = "sync data 11 token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync data 11", accessToken });
@@ -854,8 +854,16 @@ describe("Schema synchronization data", function (this: Suite) {
           { kind: "primitive", name: "changingValue", type: "int" },
         ] }],
       };
-      await importTinySchema(b1, schemaV2);
-      await b1.pushChanges({ accessToken, description: "change property type" });
+      let updateError: unknown;
+      try {
+        await importTinySchema(b1, schemaV2);
+      } catch (error) {
+        updateError = error;
+      }
+      assert.equal((updateError as { errorNumber?: number } | undefined)?.errorNumber, DbResult.BE_SQLITE_ERROR_DataDeletionRequired);
+      assert.isTrue(SchemaSync.requiresUpgrade(updateError));
+
+      await b1.upgradeSchemaStrings([tinySchemaToXml(schemaV2)], { accessToken, description: "change property type" });
 
       assert.deepEqual(queryPropNames(b1, "SchemaSyncDataTypeChange:DataElement"), ["stableText", "changingValue"]);
       assert.equal(readElementProp(b1, elementId, "stableText"), "keep this");
