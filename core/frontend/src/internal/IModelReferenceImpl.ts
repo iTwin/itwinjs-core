@@ -6,12 +6,15 @@
  * @module Views
  */
 
-import { DisplayStyleSettings } from "@itwin/core-common";
+import { DisplayStyleSettings, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { ExcludedElements, IModelReference, IModelReference2d, SpatialIModelReference } from "../IModelReference";
-import { BeEvent, Id64String } from "@itwin/core-bentley";
+import { BeEvent, Id64, Id64String } from "@itwin/core-bentley";
 import { _implementationProhibited } from "./cross-package";
 import { ViewState, ViewState2d } from "../ViewState";
 import { SpatialViewState } from "../SpatialViewState";
+import { IModelConnection } from "../IModelConnection";
+import { CategorySelectorState } from "../CategorySelectorState";
+import { DisplayStyle3dState } from "../DisplayStyleState";
 
 class ExcludedElementsImpl implements ExcludedElements {
   public readonly onChanged = new BeEvent<() => void>();
@@ -111,18 +114,48 @@ class SpatialIModelReferenceImpl extends IModelReferenceImpl implements SpatialI
 }
 
 /** @internal */
-export function createIModelReference(view: ViewState2d | SpatialViewState, isPrimaryIModel: boolean): IModelReference {
-  if (!isPrimaryIModel) {
-    // The primary iModel remains in sync with Viewport.view - they are the same object.
-    // All other "linked" iModels are cloned to isolate them from changes made to the input ViewState,
-    view = view.clone();
+export function createPrimaryIModelReference(view: ViewState2d | SpatialViewState): IModelReference {
+  return view.is2d() ? new IModelReference2dImpl(view) : new SpatialIModelReferenceImpl(view);
+}
 
-    // Only context reality models from the primary iModel are included in the scene.
-    view.displayStyle.settings.contextRealityModels.clear();
-  }
+export function createLinkedSpatialIModelReference(iModel: IModelConnection, _primaryRef: SpatialIModelReference): SpatialIModelReference {
+  const elementProps = {
+    model: Id64.invalid,
+    code: {
+      spec: Id64.invalid,
+      scope: Id64.invalid,
+    },
+  };
 
-  if (view.is2d())
-    return new IModelReference2dImpl(view);
-  
+  const viewDefinitionProps: SpatialViewDefinitionProps = {
+    ...elementProps,
+    modelSelectorId: Id64.invalid,
+    cameraOn: false,
+    origin: [0, 0, 0],
+    extents: [1, 1, 1],
+    camera: {
+      lens: { degrees: 90 },
+      focusDist: 1,
+      eye: [0, 0, 0],
+    },
+    categorySelectorId: Id64.invalid,
+    displayStyleId: Id64.invalid,
+    classFullName: SpatialViewState.classFullName,
+  };
+
+  const viewStateProps: ViewStateProps = {
+    viewDefinitionProps,
+    categorySelectorProps: {
+      ...elementProps,
+      classFullName: CategorySelectorState.classFullName,
+      categories: [],
+    },
+    displayStyleProps: {
+      ...elementProps,
+      classFullName: DisplayStyle3dState.classFullName,
+    },
+  };
+
+  const view = SpatialViewState.createFromProps(viewStateProps, iModel);
   return new SpatialIModelReferenceImpl(view);
 }
