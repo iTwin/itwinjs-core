@@ -308,8 +308,9 @@ export const DEMO_ALT_FORMAT_SET: FormatSet = {
  * compiled against, so the demo formats are usable as `kindOfQuantity` overrides even for
  * properties the iModel has never seen.
  *
- * Warming the union matters because [FieldFormattingSpecProvider.warmUp]($backend) warms every
- * bucket with every requirement: an alt-only key must be warmed for the alt bucket to hold it.
+ * Warming the union matters because each bucket warms the keys its own FormatSet defines: an
+ * alt-only key reaches the alt bucket only if it is in the requirement set handed to
+ * [FieldFormattingSpecProvider.warmUp]($backend).
  */
 function demoSeedRequirements(defaultPersistenceUnitName: string = "Units.M"): FormattingSpecArgs[] {
   const names = new Set([...Object.keys(DEMO_SEED_FORMATS), ...Object.keys(DEMO_ALT_SEED_FORMATS)]);
@@ -338,8 +339,8 @@ export async function prepareFieldFormattingDemoFor(iModel: IModelDb, block: Tex
   await currentDemo.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }));
 }
 
-/** Adopts [[DEMO_FORMAT_SET]] for `iModel`, pre-warming both the demo seeds and every field
- * requirement already persisted in the iModel. Toggled by the `dta text demo <on|off>` keyin.
+/** Adopts [[DEMO_FORMAT_SET]] for `iModel`, pre-warming the demo seeds plus every
+ * KindOfQuantity the iModel's schemas declare. Toggled by the `dta text demo <on|off>` keyin.
  *
  * The registration is torn down automatically when `iModel` closes (via
  * [IModelDb.onBeforeClose]($backend)) so it cannot outlive the briefcase it was warmed against.
@@ -359,7 +360,12 @@ export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void>
     ],
     requirements: [
       ...demoSeedRequirements(),
-      ...ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements(iModel),
+      // The schema-derived floor: every KindOfQuantity the iModel's schemas declare, so any
+      // field targeting a KoQ-bearing property formats without the demo having to find that
+      // annotation first. Fields that *override* the persistence unit are not covered by this
+      // — `prepareFieldFormattingDemoFor` warms those per block as they are authored, and
+      // `dta text misses` reports anything that still slipped through.
+      ...FieldFormattingSpecProvider.collectSchemaFormattingRequirements(iModel),
     ],
   });
   currentDemoIModel = iModel;

@@ -2982,16 +2982,16 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
     static collectFieldFormattingRequirements(args: EvaluateFieldsArgs): FormattingSpecArgs[];
-    static collectIModelFieldFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[];
     static evaluateFields(args: EvaluateFieldsArgs): number;
     static getFieldFormattingProvider(iModel: IModelDb): FieldFormattingSpecProvider | undefined;
+    static getFieldFormattingRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[];
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
     static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs & {
-        requirements?: FormattingSpecArgs[];
+        requirements: FormattingSpecArgs[];
     }): Promise<FieldFormattingSpecProvider>;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     static unregisterFieldFormattingProvider(iModel: IModelDb): void;
@@ -3547,6 +3547,7 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
 export class FieldFormattingSpecProvider implements FormattingSpecProvider {
     constructor(args: FieldFormattingSpecProviderArgs);
     clearMisses(): void;
+    static collectSchemaFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[];
     formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
     // @internal
     getProviderFor(formatSet: Id64String | undefined): FormattingSpecProvider;
@@ -3554,9 +3555,9 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
     get misses(): UnresolvedFieldFormat[];
     readonly onFormattingReady: BeUnorderedUiEvent<void>;
     // @internal
-    recordMisses(candidates: Iterable<FormattingSpecArgs>, formatSet: Id64String | undefined): void;
+    recordMisses(candidates: FormattingSpecArgs[], formatSet: Id64String | undefined): void;
     readonly unitSystem: UnitSystemKey;
-    warmUp(requirements?: Iterable<FormattingSpecArgs>): Promise<void>;
+    warmUp(requirements: FormattingSpecArgs[]): Promise<void>;
 }
 
 // @beta

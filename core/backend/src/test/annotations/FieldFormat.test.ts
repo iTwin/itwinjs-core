@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { Code, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextBlock } from "@itwin/core-common";
-import { FormatSet } from "@itwin/ecschema-metadata";
+import { FormatSet, SchemaFormatsProvider } from "@itwin/ecschema-metadata";
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { StandaloneDb } from "../../IModelDb";
@@ -587,8 +588,41 @@ describe("Field format resolution example", () => {
     expect(angle.cachedContent).to.equal("90.0 °");
   });
 
-  it("does nothing when a field names a FormatSet but no KindOfQuantity and no persistence unit", async () => {
-    // A FormatSet is only ever reached through a KoQ key, so naming one on its own is inert.
+  it("warms a requirement once rather than once per FormatSet when no set defines it", async () => {
+    // Pre-warming resolves a format for every bucket, but a FormatSet that does not define the
+    // key resolves it by delegating to the same provider the default bucket uses -- producing a
+    // duplicate of an entry lookup already reaches through the fallback chain. Warming it per
+    // bucket would therefore re-walk the schema's presentation formats once per registered set,
+    // which is the dominant cost of warming an iModel's worth of schema KindOfQuantities.
+    //
+    // Asserted on the *schema* provider because that is the expensive one: it rebuilds its
+    // FormatDefinition on every call rather than returning a cached instance.
+    const getFormat = sinon.spy(SchemaFormatsProvider.prototype, "getFormat");
+    try {
+      // Neither set defines this KoQ, so both buckets would fall through to the schema.
+      const block = TextBlock.create();
+      const angle = appendField(block, "angleProp", { kindOfQuantity: "FieldExample.SCHEMA_ANGLE", persistenceUnit: "Units.ARC_DEG" });
+
+      await render(block, {
+        adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
+        byId: [
+          { id: ADOPTED_SET, formatSet: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }) },
+          { id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) },
+        ],
+      });
+
+      // Three buckets are registered (default + two sets); the requirement is resolved once.
+      const schemaAngleLookups = getFormat.getCalls().filter((call) => call.args[0] === "FieldExample.SCHEMA_ANGLE");
+      expect(schemaAngleLookups.length).to.equal(1);
+
+      // ...and the field still renders, proving the fallback chain covers what was not warmed.
+      expect(angle.cachedContent).to.equal("90.0 °");
+    } finally {
+      getFormat.restore();
+    }
+  });
+
+  it("does nothing when a field names a FormatSet but no KindOfQuantity and no persistence unit", async () => {    // A FormatSet is only ever reached through a KoQ key, so naming one on its own is inert.
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET });

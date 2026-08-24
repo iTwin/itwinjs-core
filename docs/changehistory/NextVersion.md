@@ -138,20 +138,49 @@ The same rule applies to a field that indexes into a string property holding ser
 Register the FormatSet your application has adopted for an iModel, **when the iModel opens**. Registration is asynchronous: it pre-warms a [FormatterSpec]($core-quantity) for every field requirement it can find, so that subsequent evaluation needs no `await`.
 
 ```typescript
-const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel, formatSet });
+const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+  iModel,
+  formatSet,
+  requirements: FieldFormattingSpecProvider.collectSchemaFormattingRequirements(iModel),
+});
 iModel.onBeforeClose.addOnce(() => ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel));
 ```
 
 Registering at open matters because field evaluation fires from `TxnManager` callbacks on any source-element edit. An edit that lands before registration completes formats without the provider and persists a raw string, and — since registering does not walk existing annotations — that field is not revisited until the next edit to the same source.
 
-By default this sweeps the iModel for every dependency-tracked annotation and warms what they need. Applications that know their requirements — or that want to skip the sweep on a large iModel — can pass them explicitly, using [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) for an in-memory block or [ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements]($backend) for the persisted ones:
+##### Deciding what to warm
+
+`requirements` is mandatory, and Core performs **no discovery of its own** — it never walks the iModel looking for annotations to warm. That decision belongs to the application, which already owns the FormatSets and knows which drawing, sheet or view is in scope in a way Core cannot. Three sources compose:
+
+| Source | Answers | Cost |
+| --- | --- | --- |
+| [FieldFormattingSpecProvider.collectSchemaFormattingRequirements]($backend) | every KindOfQuantity the iModel's schemas declare | two metadata queries; independent of model size |
+| [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) | one `TextBlock`, deduplicated | proportional to that block |
+| [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend) | one `FieldRun` | negligible |
+
+`collectSchemaFormattingRequirements` is a sensible floor because its cost is bounded by the schemas rather than the data. It is **not** sufficient on its own: it sees only pairs a *property* declares, so it cannot see a field whose `formatOptions.quantity.persistenceUnit` overrides that unit, nor a `"coordinate"` or no-KindOfQuantity field where both halves of the key come from the field's own overrides. Leaving those unwarmed is not a cosmetic shortfall — evaluation resolves the property's pair instead and scales the value by the wrong unit.
+
+Applications that allow such overrides should also gather requirements from the annotations themselves. Because the overrides are persisted under their public property names, a targeted query finds the ones that need attention without loading every annotation:
 
 ```typescript
-await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-  iModel,
-  formatSet,
-  requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }),
-});
+// Pass 1: the two built-in classes carry TextAnnotationData, so the substring test runs inside
+// SQLite and non-overriding annotations never reach JavaScript.
+const sql = `
+  SELECT ECInstanceId FROM BisCore.TextAnnotation2d
+    WHERE TextAnnotationData LIKE '%"kindOfQuantity"%' OR TextAnnotationData LIKE '%"persistenceUnit"%'
+  UNION ALL
+  SELECT ECInstanceId FROM BisCore.TextAnnotation3d
+    WHERE TextAnnotationData LIKE '%"kindOfQuantity"%' OR TextAnnotationData LIKE '%"persistenceUnit"%'`;
+```
+
+Note that `BisCore.ITextAnnotation` is a mixin and does **not** carry `TextAnnotationData`, so it cannot be filtered this way. Applications with their own `ITextAnnotation` implementations need a second pass over those classes, excluding the two built-ins already covered. Getting either pass wrong yields *zero rows*, which is indistinguishable from "this iModel has no overrides" — so treat [FieldFormattingSpecProvider.misses]($backend) as the check that the requirement set was complete, not as an error report.
+
+For each matched element, walk its blocks and accumulate:
+
+```typescript
+const requirements = ids.flatMap((id) =>
+  iModel.elements.getElement<TextAnnotation2d>(id).getTextBlocks().flatMap((b) =>
+    ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block: b.textBlock })));
 ```
 
 A block authored later in the session may need a spec the initial warm-up never saw. Warm it before writing the annotation:

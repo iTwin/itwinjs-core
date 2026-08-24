@@ -109,6 +109,12 @@ export interface DateTimeFieldFormatOptions {
  * [[kindOfQuantity]] and [[persistenceUnit]] can form a candidate. Declaring just one — or
  * neither — is not an error: the field simply renders its raw value, exactly as it would have
  * without a quantity type at all.
+ *
+ * These property names are also the **persisted** form: a [[FieldRun]] serializes them verbatim
+ * into its element's `TextAnnotationData`. Applications may therefore rely on the literal strings
+ * `"kindOfQuantity"` and `"persistenceUnit"` when querying for annotations carrying quantity
+ * overrides — for example to decide what to pre-warm. See the "Deciding what to warm" section of
+ * the 5.4 change history.
  * @beta
  */
 export interface QuantityFieldFormatOptions {

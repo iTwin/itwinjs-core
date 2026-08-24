@@ -1268,13 +1268,39 @@ describe("Field evaluation", () => {
       expect(field.cachedContent).to.equal("2500 mm");
     });
 
-    it("collectIModelFieldFormattingRequirements sweeps dependency-tracked annotations in the iModel", () => {
-      const sourceId = withEditTxn(imodel, (txn) => insertTestElement(txn, model, category));
-      insertAnnotationWithLengthField(sourceId);
+    it("getFieldFormattingRequirements returns the property's (KindOfQuantity, persistence unit) pair for one field", () => {
+      const field = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        cachedContent: "old",
+      });
 
-      const reqs = ElementDrivesTextAnnotation.collectIModelFieldFormattingRequirements(imodel);
+      const reqs = ElementDrivesTextAnnotation.getFieldFormattingRequirements(field, imodel);
 
-      expect(reqs.some((r) => r.name === "Fields.LENGTH" && r.persistenceUnitName === "Units.M")).to.be.true;
+      expect(reqs).to.deep.equal([{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }]);
+    });
+
+    it("collectSchemaFormattingRequirements enumerates schema-declared pairs but not field-supplied ones", () => {
+      const schemaReqs = FieldFormattingSpecProvider.collectSchemaFormattingRequirements(imodel);
+      const has = (name: string, unit: string) => schemaReqs.some((r) => r.name === name && r.persistenceUnitName === unit);
+
+      // The floor: lengthProp declares Fields.LENGTH, persisted in Units.M, so a schema-driven
+      // warm-up finds it without anyone naming an annotation.
+      expect(has("Fields.LENGTH", "Units.M")).to.be.true;
+
+      // The ceiling: a field may override the persistence unit to one no property declares.
+      // Nothing in the schema records that, so the schema sweep cannot see it — this is the
+      // documented gap that makes supplementing with field-derived requirements mandatory.
+      const overriding = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "lengthProp" },
+        formatOptions: { quantity: { persistenceUnit: "Units.FT" } },
+        cachedContent: "old",
+      });
+      const fieldReqs = ElementDrivesTextAnnotation.getFieldFormattingRequirements(overriding, imodel);
+
+      expect(fieldReqs.some((r) => r.name === "Fields.LENGTH" && r.persistenceUnitName === "Units.FT")).to.be.true;
+      expect(has("Fields.LENGTH", "Units.FT")).to.be.false;
     });
 
     function readFieldCachedContent(block: TextBlock): string | undefined {
