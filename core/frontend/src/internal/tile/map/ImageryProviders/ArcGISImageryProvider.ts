@@ -106,6 +106,17 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         password: this._settings.password });
     }
 
+    // Give the format's access client full control over the outgoing request (e.g. an Authorization header).
+    // Applied after all provider query params so the client sees the complete request.
+    // Guarded so the common no-client path stays synchronous up to the fetch call.
+    let clientAuthApplied = false;
+    let clientHeaders: Headers | undefined;
+    if (this.accessClient?.applyToRequest) {
+      clientHeaders = new Headers(options?.headers);
+      clientAuthApplied = await this.applyAccessClientAuth(urlObj, clientHeaders);
+      options = { ...options, headers: clientHeaders };
+    }
+
     // We want to complete the first request before letting other requests go;
     // this done to avoid flooding server with requests missing credentials
     if (!this._firstRequestPromise)
@@ -120,13 +131,14 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       response = await fetch(urlObj, {
         ...options,
         credentials: includeCredentials ?  "include" : undefined,
-        redirect: includeCredentials ? this.credentialedRedirect : options?.redirect,
+        // Client-shaped requests carry secrets too, so they get the same redirect policy as credentialed ones.
+        redirect: (includeCredentials || clientAuthApplied) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
       });
 
-      if (includeCredentials)
+      if (includeCredentials || clientAuthApplied)
         this.checkCredentialedRedirect(requestUrl, response);
 
-      if (response.status === 401 && !this._lastAccessToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
+      if (response.status === 401 && !this._lastAccessToken && !clientAuthApplied && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
         // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
         const challengedUrl = response.url || requestUrl;
         if (this.isSsoAllowed(challengedUrl)) {
@@ -155,8 +167,13 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         if (this._lastAccessToken && this._accessTokenRequired)
           tmpUrl.searchParams.append("token", this._lastAccessToken.token);
         tmpUrl.searchParams.append("f","json");
+        if (clientAuthApplied && clientHeaders)
+          await this.applyAccessClientAuth(tmpUrl, clientHeaders);
         response = await  fetch(tmpUrl.toString(), options);
       }
+
+      if (clientAuthApplied && await this.isAccessClientAuthFailure(response))
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 
       errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
 

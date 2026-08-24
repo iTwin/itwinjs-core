@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { appendQueryParams, ImageryMapLayerFormat, IModelApp, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
+import { accessClientRedirect, appendQueryParams, applyAccessClientToRequest, ImageryMapLayerFormat, IModelApp, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
@@ -53,7 +53,20 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       if (headers && allowLandingCredentials)
         IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url, source.url);
 
-      let response = await fetch(url, allowLandingCredentials ? opts : { method: "GET" });
+      // Give the format's access client full control over each outgoing request (e.g. an Authorization header).
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId);
+      const applyClientAuth = async (requestUrl: string, baseOpts: RequestInit): Promise<{ url: string, opts: RequestInit }> => {
+        if (!accessClient?.applyToRequest)
+          return { url: requestUrl, opts: baseOpts };
+        const urlObj = new URL(requestUrl);
+        const clientHeaders = new Headers(baseOpts.headers);
+        await applyAccessClientToRequest(urlObj, clientHeaders, { mapLayerUrl: new URL(source.url), userName, password }, accessClient);
+        // Client-shaped requests carry secrets too, so they get the same redirect policy as credentialed ones.
+        return { url: urlObj.toString(), opts: { ...baseOpts, headers: clientHeaders, redirect: accessClientRedirect() } };
+      };
+
+      const landingRequest = await applyClientAuth(url, allowLandingCredentials ? opts : { method: "GET" });
+      let response = await fetch(landingRequest.url, landingRequest.opts);
       const landingFailure = classifyResponseFailure(response, url);
       if (landingFailure)
         return landingFailure;
@@ -117,7 +130,8 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         if (headers && allowCreds)
           IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(collectionsUrl, source.url);
 
-        response = await fetch(collectionsUrl, allowCreds ? opts : { method: "GET" });
+        const collectionsRequest = await applyClientAuth(collectionsUrl, allowCreds ? opts : { method: "GET" });
+        response = await fetch(collectionsRequest.url, collectionsRequest.opts);
         const collectionsFailure = classifyResponseFailure(response, collectionsUrl);
         if (collectionsFailure)
           return collectionsFailure;

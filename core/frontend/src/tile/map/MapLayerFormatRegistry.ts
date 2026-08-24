@@ -102,6 +102,25 @@ export class MapLayerUntrustedOriginError extends Error {
   }
 }
 
+/** Error thrown when a request shaped by [[MapLayerRequestAuthenticator.applyToRequest]] failed for
+ * authentication reasons, as classified by [[MapLayerRequestAuthenticator.isAuthenticationError]]
+ * (or the default HTTP 401/403 rule when it is not defined).
+ * Thrown by the static map-layer utilities (e.g. capabilities / service-metadata fetches) that have no
+ * provider instance on which to report the failure; callers convert it to
+ * [[MapLayerImageryProviderStatus.RequireAuth]] (provider initialization) or
+ * [[MapLayerSourceStatus.RequireAuth]] (source validation).
+ * @internal
+ */
+export class MapLayerAuthenticationFailedError extends Error {
+  /** The URL of the request that failed to authenticate. */
+  public readonly url: string;
+
+  constructor(url: string) {
+    super(`Authentication failed for map-layer request '${url}'`);
+    this.url = url;
+  }
+}
+
 /** @public */
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;

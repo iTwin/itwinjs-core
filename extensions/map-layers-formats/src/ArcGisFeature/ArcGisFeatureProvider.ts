@@ -285,7 +285,10 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     tmpUrl.searchParams.append("outSR", "3857");
     tmpUrl.searchParams.append("returnExtentOnly", "true");
     tmpUrl.searchParams.append("f", arcgisFeatureFormats.json);
-    const cached = ArcGisFeatureProvider._extentCache.get(tmpUrl.toString());
+    // The cache is keyed by URL only, so responses shaped by an access client (e.g. header-authenticated)
+    // must not be shared with or served from differently-authenticated requests.
+    const clientShapesRequests = undefined !== this.accessClient?.applyToRequest;
+    const cached = clientShapesRequests ? undefined : ArcGisFeatureProvider._extentCache.get(tmpUrl.toString());
     if (cached) {
       extentJson = cached;
     } else {
@@ -296,7 +299,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       const response = await this.fetch(tmpUrl, opts);
 
       extentJson = await response.json();
-      ArcGisFeatureProvider._extentCache.set(tmpUrl.toString(), extentJson);
+      if (!clientShapesRequests)
+        ArcGisFeatureProvider._extentCache.set(tmpUrl.toString(), extentJson);
     }
     return (extentJson ? extentJson.extent : undefined);
   }

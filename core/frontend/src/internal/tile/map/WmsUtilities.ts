@@ -6,7 +6,9 @@
 import { IModelApp } from "../../../IModelApp";
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
 import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
-import { MapLayerUntrustedOriginError } from "../../../tile/internal";
+import {
+  accessClientRedirect, applyAccessClientToRequest, isAccessClientAuthFailure, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerUntrustedOriginError,
+} from "../../../tile/internal";
 
 /** @packageDocumentation
  * @module Tiles
@@ -23,7 +25,7 @@ export class WmsUtilities {
  * fetch XML from HTTP request
  * @param url server URL to address the request
  */
-  public static async fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string> {
+  public static async fetchXml(url: string, credentials?: RequestBasicCredentials, accessClient?: MapLayerAccessClient): Promise<string> {
 
     let headers: Headers|undefined;
     if (credentials && credentials.user && credentials.password) {
@@ -38,7 +40,41 @@ export class WmsUtilities {
       }
     }
 
-    let response = await fetch(url, { method: "GET", headers });
+    // Give the format's access client full control over the outgoing request (e.g. an Authorization header).
+    let requestUrl = url;
+    let clientAuthApplied = false;
+    const context = { mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password };
+    if (accessClient?.applyToRequest) {
+      const urlObj = new URL(url);
+      headers = headers ?? new Headers();
+      clientAuthApplied = await applyAccessClientToRequest(urlObj, headers, context, accessClient);
+      requestUrl = urlObj.toString();
+    }
+
+    const response = await fetch(requestUrl, {
+      method: "GET",
+      headers,
+      // Client-shaped requests carry secrets too, so they get the same redirect policy as credentialed ones.
+      redirect: clientAuthApplied ? accessClientRedirect() : undefined,
+    });
+
+    // The shaping client is the authority on what a failed authentication looks like; classify before the
+    // generic non-200 handling so callers can transition to RequireAuth rather than a generic failure.
+    if (clientAuthApplied) {
+      if (await isAccessClientAuthFailure(response, context, accessClient))
+        throw new MapLayerAuthenticationFailedError(requestUrl);
+
+      if (response.status !== 200)
+        throw new HttpResponseError(response.status, await response.text());
+      return response.text();
+    }
+
+    return WmsUtilities.handleUnshapedResponse(response, requestUrl, credentials, headers);
+  }
+
+  /** Legacy (no access client) response handling: basic-auth/untrusted-origin classification and the SSO retry. */
+  private static async handleUnshapedResponse(firstResponse: Response, url: string, credentials?: RequestBasicCredentials, headers?: Headers): Promise<string> {
+    let response = firstResponse;
     if (!headers && credentials && credentials.user && credentials.password && (response.status === 401 || response.status === 403)) {
       throw new MapLayerUntrustedOriginError(url);
     }

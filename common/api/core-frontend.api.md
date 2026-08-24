@@ -365,6 +365,9 @@ import { XYAndZ } from '@itwin/core-geometry';
 import { XYZ } from '@itwin/core-geometry';
 import { XYZProps } from '@itwin/core-geometry';
 
+// @internal
+export function accessClientRedirect(): RequestRedirect | undefined;
+
 // @public
 export class AccuDraw {
     // @internal (undocumented)
@@ -1252,6 +1255,9 @@ export interface Animator {
 export function appendQueryParams(url: string, queryParams?: {
     [key: string]: string;
 }): string;
+
+// @internal
+export function applyAccessClientToRequest(url: URL, headers: Headers, context: MapLayerAccessTokenParams, accessClient?: MapLayerAccessClient): Promise<boolean>;
 
 // @internal
 export enum ArcGisErrorCode {
@@ -6028,7 +6034,7 @@ export class MapFeatureInfoRecord extends PropertyRecord {
 }
 
 // @beta (undocumented)
-export interface MapLayerAccessClient {
+export interface MapLayerAccessClient extends MapLayerRequestAuthenticator {
     // (undocumented)
     getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
     // (undocumented)
@@ -6060,6 +6066,20 @@ export interface MapLayerAccessTokenParams {
 export interface MapLayerAuthenticationInfo {
     // (undocumented)
     tokenEndpoint?: MapLayerTokenEndpoint;
+}
+
+// @beta
+export interface MapLayerAuthRequest {
+    context: MapLayerAccessTokenParams;
+    headers: Headers;
+    searchParams: URLSearchParams;
+    readonly url: string;
+}
+
+// @beta
+export interface MapLayerAuthResponse {
+    context: MapLayerAccessTokenParams;
+    response: Response;
 }
 
 // @beta
@@ -6144,11 +6164,17 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 // @beta
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
+    // @internal
+    protected get accessClient(): MapLayerAccessClient | undefined;
+    // @internal
+    protected get accessTokenParams(): MapLayerAccessTokenParams;
     addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     // @deprecated (undocumented)
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
     // @internal
     protected appendCustomParams(url: string): string;
+    // @internal
+    protected applyAccessClientAuth(url: URL, headers: Headers): Promise<boolean>;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     get blockedOrigins(): ReadonlyArray<string>;
@@ -6209,6 +6235,8 @@ export abstract class MapLayerImageryProvider {
     // @internal
     protected includeUserCredentials(url: string): boolean;
     initialize(): Promise<void>;
+    // @internal
+    protected isAccessClientAuthFailure(response: Response): Promise<boolean>;
     // @internal
     protected isCredentialsSharingAllowed(url: string): boolean;
     // @internal
@@ -6302,6 +6330,12 @@ export interface MapLayerOptions {
     // @deprecated
     BingMaps?: MapLayerKey;
     MapboxImagery?: MapLayerKey;
+}
+
+// @beta
+export interface MapLayerRequestAuthenticator {
+    applyToRequest?(request: MapLayerAuthRequest): Promise<void> | void;
+    isAuthenticationError?(response: MapLayerAuthResponse): Promise<boolean> | boolean;
 }
 
 // @beta
@@ -14354,7 +14388,7 @@ export class WindowAreaTool extends ViewTool {
 
 // @internal (undocumented)
 export class WmsUtilities {
-    static fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string>;
+    static fetchXml(url: string, credentials?: RequestBasicCredentials, accessClient?: MapLayerAccessClient): Promise<string>;
     // (undocumented)
     static getBaseUrl(url: string): string;
 }

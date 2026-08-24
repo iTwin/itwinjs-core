@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import { appendQueryParams, applyAccessClientToRequest, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, isAccessClientAuthFailure, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerAccessTokenParams, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 import { DecorateContext } from "../../ViewContext";
@@ -373,6 +373,38 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
+  /** The access client registered for this layer's format, if any.
+   * @internal
+   */
+  protected get accessClient(): MapLayerAccessClient | undefined {
+    return IModelApp.mapLayerFormatRegistry?.getAccessClient(this._settings.formatId);
+  }
+
+  /** Context identifying this layer, passed to the access client's callbacks.
+   * @internal
+   */
+  protected get accessTokenParams(): MapLayerAccessTokenParams {
+    return { mapLayerUrl: new URL(this._settings.url), userName: this._settings.userName, password: this._settings.password };
+  }
+
+  /** Gives the access client registered for this layer's format the opportunity to authenticate the outgoing
+   * request via [[MapLayerAccessClient.applyToRequest]], mutating the URL's query parameters and `headers` in place.
+   * @returns true if the request was shaped by the access client.
+   * @internal
+   */
+  protected async applyAccessClientAuth(url: URL, headers: Headers): Promise<boolean> {
+    return applyAccessClientToRequest(url, headers, this.accessTokenParams, this.accessClient);
+  }
+
+  /** Returns true if the given response represents an authentication failure for a request shaped by
+   * [[MapLayerAccessClient.applyToRequest]]. Delegates to [[MapLayerAccessClient.isAuthenticationError]] when
+   * defined; otherwise treats HTTP 401/403 as authentication failures.
+   * @internal
+   */
+  protected async isAccessClientAuthFailure(response: Response): Promise<boolean> {
+    return isAccessClientAuthFailure(response, this.accessTokenParams, this.accessClient);
+  }
+
   /** Returns true if the given URL has the same origin as this layer's settings URL.
    * Used to avoid leaking credentials to third-party hosts.
    * @internal
@@ -513,30 +545,48 @@ export abstract class MapLayerImageryProvider {
           this.logUntrustedOriginUse(url);
       }
     }
-    const includeCredentials = this.includeUserCredentials(url);
+
+    // Give the format's registered access client full control over the outgoing request (e.g. an Authorization
+    // header for a service behind an authenticating proxy). Applied last so its headers take precedence.
+    let requestUrl = url;
+    let clientAuthApplied = false;
+    if (this.accessClient?.applyToRequest) {
+      try {
+        const urlObj = new URL(url);
+        headers = headers ?? new Headers();
+        clientAuthApplied = await this.applyAccessClientAuth(urlObj, headers);
+        requestUrl = urlObj.toString();
+      } catch {
+        // Not a parseable absolute URL; let fetch fail (or succeed) on the original request unshaped.
+      }
+    }
+
+    const includeCredentials = this.includeUserCredentials(requestUrl);
     const opts: RequestInit = {
       method: "GET",
       headers,
       credentials: includeCredentials ? "include" : undefined,
-      redirect: includeCredentials ? this.credentialedRedirect : undefined,
+      // Client-shaped requests carry secrets too, so they get the same redirect policy as credentialed ones.
+      redirect: (includeCredentials || clientAuthApplied) ? this.credentialedRedirect : undefined,
     };
 
     if (timeoutMs !== undefined)
       setRequestTimeout(opts, timeoutMs);
 
-    response = await fetch(url, opts);
+    response = await fetch(requestUrl, opts);
 
-    if (includeCredentials)
-      this.checkCredentialedRedirect(url, response);
+    if (includeCredentials || clientAuthApplied)
+      this.checkCredentialedRedirect(requestUrl, response);
 
     // fetch follows redirects transparently, so all trust decisions below target the final
     // (post-redirect) URL reported by the response, not the URL we asked for.
-    const challengedUrl = response.url || url;
+    const challengedUrl = response.url || requestUrl;
 
     if (response.status === 401
           && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
           && !includeCredentials
           && !hasCreds
+          && !clientAuthApplied
     ) {
       if (this.isSsoAllowed(challengedUrl)) {
         // Removed the previous headers and make sure "include" credentials is set
@@ -564,6 +614,9 @@ export abstract class MapLayerImageryProvider {
       // and conversely a request that started out untrusted may end up at an origin that is trusted.
       this.reportBlockedOrigin(challengedUrl);
     }
+
+    if (clientAuthApplied && await this.isAccessClientAuthFailure(response))
+      this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 
     return response;
   }
@@ -608,22 +661,35 @@ export abstract class MapLayerImageryProvider {
       this.setRequestAuthorization(headers);
     }
 
+    let requestUrl = url;
+    let clientAuthApplied = false;
+    if (this.accessClient?.applyToRequest) {
+      try {
+        const urlObj = new URL(url);
+        headers = headers ?? new Headers();
+        clientAuthApplied = await this.applyAccessClientAuth(urlObj, headers);
+        requestUrl = urlObj.toString();
+      } catch {
+        // Not a parseable absolute URL; issue the original request unshaped.
+      }
+    }
+
     try {
-      const includeCredentials = this.includeUserCredentials(url);
-      const response = await fetch(url, {
+      const includeCredentials = this.includeUserCredentials(requestUrl);
+      const response = await fetch(requestUrl, {
         method: "GET",
         headers,
         credentials: includeCredentials ? "include" : undefined,
-        redirect: includeCredentials ? this.credentialedRedirect : undefined,
+        redirect: (includeCredentials || clientAuthApplied) ? this.credentialedRedirect : undefined,
       });
-      if (includeCredentials)
-        this.checkCredentialedRedirect(url, response);
+      if (includeCredentials || clientAuthApplied)
+        this.checkCredentialedRedirect(requestUrl, response);
       let text = await response.text();
       if (text) {
         // Tooltip content (e.g. WMS GetFeatureInfo responses) is rendered as HTML downstream and may
         // deliberately contain markup; text from origins not trusted for credentials is escaped.
         // fetch follows redirects transparently, so the text may come from a different origin than requested.
-        if (!this.isCredentialsSharingAllowed(response.url || url))
+        if (!this.isCredentialsSharingAllowed(response.url || requestUrl))
           text = escapeHtml(text);
         strings.push(text);
       }

@@ -17,8 +17,10 @@ export { PrimitiveVisibility, type RenderTargetDebugControl } from "./render/Ren
 
 // Used by frontend-tiles, map-layers-formats, frontend-dev-tools
 export {
+ accessClientRedirect,
  acquireImdlDecoder,
  appendQueryParams,
+ applyAccessClientToRequest,
  ArcGisErrorCode,
  ArcGisGeometryReaderJSON,
  type ArcGisGetServiceJsonArgs,

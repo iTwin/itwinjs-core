@@ -8,6 +8,7 @@
 import { assert, IModelStatus } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import {
+  MapLayerAuthenticationFailedError,
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
   MapLayerUntrustedOriginError,
@@ -41,7 +42,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   public override async initialize(): Promise<void> {
     try {
       const credentials = (this._settings.userName && this._settings.password ? { user: this._settings.userName, password: this._settings.password } : undefined);
-      this._capabilities = await WmtsCapabilities.create(this._baseUrl, credentials);
+      this._capabilities = await WmtsCapabilities.create(this._baseUrl, credentials, undefined, this._settings.collectQueryParams(), this.accessClient);
       this.initPreferredTileMatrixSet();
       this.initPreferredStyle();
       this.initDisplayedLayer();
@@ -56,7 +57,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       // When credentials will be provided, a new provider will be created, and initialization should be fine.
       if (error instanceof MapLayerUntrustedOriginError) {
         this.reportBlockedOrigin(error.url);
-      } else if (error?.status === 401) {
+      } else if (error instanceof MapLayerAuthenticationFailedError || error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
       } else {
         throw new ServerError(IModelStatus.ValidationFailed, "");

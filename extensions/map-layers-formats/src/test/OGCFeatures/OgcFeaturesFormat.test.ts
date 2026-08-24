@@ -248,6 +248,37 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
   });
 
+  it("applies access client headers and query parameters to both validation requests", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.setAccessClient(OgcApiFeaturesMapLayerFormat.formatId, {
+      getAccessToken: async () => undefined,
+      applyToRequest: ({ searchParams, headers }) => {
+        searchParams.set("clientParam", "clientParamValue");
+        headers.set("Authorization", "Bearer secret-jwt");
+      },
+    });
+    const source = createSource();
+    source.savedQueryParams = { saved: "1" };
+    source.unsavedQueryParams = { unsaved: "2" };
+    // Settings custom params are appended first, then the access client shapes the request.
+    const shapedLanding = `${sourceUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
+    const shapedCollections = `${sameOriginCollectionsUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
+    stubFetch({
+      [shapedLanding]: makeLandingPage(sameOriginCollectionsUrl),
+      [shapedCollections]: collectionsDoc,
+    });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source });
+
+    expect(fetchCalls.length).to.equals(2);
+    expect(fetchCalls[0].url).to.equals(shapedLanding);
+    // The access client has full control: its Authorization header wins over settings-derived basic auth.
+    expect(getAuthorization(fetchCalls[0].init)).to.equals("Bearer secret-jwt");
+    expect(fetchCalls[1].url).to.equals(shapedCollections);
+    expect(getAuthorization(fetchCalls[1].init)).to.equals("Bearer secret-jwt");
+    expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
+  });
+
   it("resolves a relative collections link and appends saved and unsaved query params", async () => {
     registry.restrictCredentialsToTrustedOrigins = true;
     const source = createSource();

@@ -9,7 +9,7 @@
 import { expectDefined } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import { RequestBasicCredentials } from "../../../request/Request";
-import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal";
+import { MapCartoRectangle, MapLayerAccessClient, WmsUtilities } from "../../../tile/internal";
 
 enum OwsConstants {
   ABSTRACT_XMLTAG = "ows:Abstract",
@@ -554,8 +554,11 @@ export class WmtsCapabilities {
     return new WmtsCapabilities(xmlDoc);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}): Promise<WmtsCapabilities | undefined> {
-    if (!ignoreCache) {
+  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}, accessClient?: MapLayerAccessClient): Promise<WmtsCapabilities | undefined> {
+    // The cache is keyed by URL only, so responses shaped by an access client (e.g. header-authenticated)
+    // must not be shared with or served from differently-authenticated requests.
+    const clientShapesRequests = undefined !== accessClient?.applyToRequest;
+    if (!ignoreCache && !clientShapesRequests) {
       const cached = WmtsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
         return cached;
@@ -571,12 +574,12 @@ export class WmtsCapabilities {
       });
     }
 
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials);
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials, accessClient);
     if (!xmlCapabilities)
       return undefined;
 
     const capabilities = WmtsCapabilities.createFromXml(xmlCapabilities);
-    if (capabilities)
+    if (capabilities && !credentials && !clientShapesRequests)
       WmtsCapabilities._capabilitiesCache.set(url, capabilities);
 
     return capabilities;

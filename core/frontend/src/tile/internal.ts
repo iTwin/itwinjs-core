@@ -60,6 +60,7 @@ export * from "./map/MapLayerAuthentication";
 export * from "./map/MapFeatureInfo";
 export * from "./map/MapLayerFormatRegistry";
 export * from "../internal/tile/map/ArcGisUtilities";
+export * from "../internal/tile/map/MapLayerAccessClientHelpers";
 export * from "../internal/tile/map/WmsUtilities";
 export * from "../internal/tile/map/WmsCapabilities";
 export * from "../internal/tile/map/WmtsCapabilities";

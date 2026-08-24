@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item Type;API Item Name
+internal;function;accessClientRedirect
 public;class;AccuDraw
 beta;class;AccuDrawChangeModeTool
 internal;class;AccudrawData
@@ -43,6 +44,7 @@ deprecated;class;AngleDescription
 internal;enum;AnimationNodeId
 public;interface;Animator
 internal;function;appendQueryParams
+internal;function;applyAccessClientToRequest
 internal;enum;ArcGisErrorCode
 internal;class;ArcGisGeometryReaderJSON
 internal;interface;ArcGisGetServiceJsonArgs
@@ -387,6 +389,8 @@ beta;interface;MapLayerAccessClient
 beta;interface;MapLayerAccessToken
 beta;interface;MapLayerAccessTokenParams
 beta;interface;MapLayerAuthenticationInfo
+beta;interface;MapLayerAuthRequest
+beta;interface;MapLayerAuthResponse
 beta;interface;MapLayerFeature
 beta;interface;MapLayerFeatureAttribute
 beta;interface;MapLayerFeatureGeometry
@@ -400,6 +404,7 @@ public;enum;MapLayerImageryProviderStatus
 public;interface;MapLayerIndex
 internal;interface;MapLayerInfoFromTileTree
 public;interface;MapLayerOptions
+beta;interface;MapLayerRequestAuthenticator
 beta;interface;MapLayerScaleRangeVisibility
 public;class;MapLayerSource
 public;interface;MapLayerSourceProps

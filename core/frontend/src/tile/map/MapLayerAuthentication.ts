@@ -40,8 +40,73 @@ export interface MapLayerAccessTokenParams {
   password?: string;
 }
 
+/** Describes an outgoing map-layer request submitted to [[MapLayerAccessClient.applyToRequest]].
+ * The request target cannot be changed: only its query parameters and headers may be mutated,
+ * so a client can never (accidentally or otherwise) reroute the request to a different origin or path.
+ * @beta
+ */
+export interface MapLayerAuthRequest {
+  /** The request URL, for inspection only (e.g. routing decisions); mutations to [[searchParams]] are not reflected. */
+  readonly url: string;
+  /** The complete query-parameter set of the outgoing request — including parameters embedded in the layer's URL
+   * and those appended by the provider (e.g. custom query parameters, protocol parameters). May be mutated in
+   * place for query-parameter based authentication: `searchParams.set("token", ...)` overrides an existing value,
+   * `append` adds one. Mutating parameters the provider relies on may break the request.
+   */
+  searchParams: URLSearchParams;
+  /** The request headers. May be mutated in place (e.g. `headers.set("Authorization", ...)`). */
+  headers: Headers;
+  /** Context identifying the layer the request is made for. */
+  context: MapLayerAccessTokenParams;
+}
+
+/** Describes a completed map-layer request submitted to [[MapLayerAccessClient.isAuthenticationError]].
+ * @beta
+ */
+export interface MapLayerAuthResponse {
+  /** The response returned by `fetch`.
+   * @note Implementations must not consume the response body directly; call `response.clone()` before reading it
+   * so the body remains available to the caller.
+   */
+  response: Response;
+  /** Context identifying the layer the request was made for. */
+  context: MapLayerAccessTokenParams;
+}
+
+/** The request-shaping contract of a [[MapLayerAccessClient]]: gives the hosting application full control
+ * over how map-layer requests are authenticated, independently of the token-based (`getAccessToken`) and
+ * OAuth (`getTokenServiceEndPoint`/`onOAuthProcessEnd`) facilities.
+ * @beta
+ */
+export interface MapLayerRequestAuthenticator {
+  /** When defined, invoked immediately before every request made for a layer whose format this client is
+   * registered for (tiles, tooltips, capabilities and service metadata), giving the hosting application full
+   * control over how the request is authenticated: mutate `searchParams` and/or `headers` in place (e.g. set an
+   * `Authorization` header for a service behind an authenticating proxy).
+   *
+   * Requests shaped by this method are treated like credentialed requests by
+   * [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]: while the restriction is enabled, redirects
+   * are refused so the injected values cannot silently reach an unlisted origin.
+   *
+   * Called on the hot path of tile loading; implementations should be fast and cache their tokens internally.
+   * When defined, URL-keyed capability/service-metadata caches are bypassed for this format so that
+   * authenticated responses are never shared across differing authentication contexts.
+   * @beta
+   */
+  applyToRequest?(request: MapLayerAuthRequest): Promise<void> | void;
+
+  /** When defined, invoked after each request that was shaped by [[applyToRequest]], letting the client decide
+   * - using whatever convention its protocol uses (status code, embedded error body, redirect target, etc.) -
+   * whether the request failed for authentication reasons. Returning `true` transitions the layer to
+   * [[MapLayerImageryProviderStatus.RequireAuth]]. When omitted, an HTTP 401 or 403 status is treated as an
+   * authentication failure.
+   * @beta
+   */
+  isAuthenticationError?(response: MapLayerAuthResponse): Promise<boolean> | boolean;
+}
+
 /** @beta */
-export interface MapLayerAccessClient {
+export interface MapLayerAccessClient extends MapLayerRequestAuthenticator {
   getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
   getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
   invalidateToken?(token: MapLayerAccessToken): boolean;
