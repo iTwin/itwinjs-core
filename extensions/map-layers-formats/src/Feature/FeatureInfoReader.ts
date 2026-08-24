@@ -26,9 +26,11 @@ export abstract class FeatureInfoReader {
       return  "";
     } else if ( typename === StandardTypeNames.DateTime && this.forceDateDisplayValueToIso) {
       return (value as Date).toISOString();
+    } else if (typeof value === "object") {
+      // Primitives.Value can be a plain object (Point, Composite, InstanceKey); String() would yield "[object Object]".
+      return JSON.stringify(value);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      return `${value}`;
+      return String(value);
     }
   };
 
