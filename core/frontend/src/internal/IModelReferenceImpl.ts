@@ -17,7 +17,9 @@ class ExcludedElementsImpl implements ExcludedElements {
   public readonly onChanged = new BeEvent<() => void>();
 
   public constructor(private readonly _settings: DisplayStyleSettings) {
-    this._settings.onExcludedElementsChanged.addListener(() => this.onChanged.raiseEvent());
+    this._settings.onExcludedElementsChanged.addListener(
+      () => this.onChanged.raiseEvent()
+    );
   }
 
   public [Symbol.iterator](): Iterator<Id64String> {
@@ -109,7 +111,16 @@ class SpatialIModelReferenceImpl extends IModelReferenceImpl implements SpatialI
 }
 
 /** @internal */
-export function createIModelReference(view: ViewState2d | SpatialViewState): IModelReference {
+export function createIModelReference(view: ViewState2d | SpatialViewState, isPrimaryIModel: boolean): IModelReference {
+  if (!isPrimaryIModel) {
+    // The primary iModel remains in sync with Viewport.view - they are the same object.
+    // All other "linked" iModels are cloned to isolate them from changes made to the input ViewState,
+    view = view.clone();
+
+    // Only context reality models from the primary iModel are included in the scene.
+    view.displayStyle.settings.contextRealityModels.clear();
+  }
+
   if (view.is2d())
     return new IModelReference2dImpl(view);
   
