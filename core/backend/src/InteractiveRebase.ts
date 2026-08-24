@@ -46,7 +46,7 @@ export namespace InteractiveRebaseError {
   }
 }
 
-export interface RebaseConflict2 {
+export interface RebaseConflict {
   id: Id64String;
   classFullName: string;
 
@@ -186,7 +186,7 @@ export class InteractiveRebase {
   private _txns: TxnProps[];
   private _groups: TxnRebaseGroup[];
   private _currentGroupIndex: number = -1;
-  private _conflicts: RebaseConflict2[] = [];
+  private _conflicts: RebaseConflict[] = [];
 
   constructor(db: BriefcaseDb, txns: TxnProps[], schemaView: SchemaView) {
     this._db = db;
@@ -262,7 +262,7 @@ export class InteractiveRebase {
   /**
    * Gets the conflicts that have been detected in the current group of Txns being rebased.
    */
-  public get conflicts(): ReadonlyArray<RebaseConflict2> {
+  public get conflicts(): ReadonlyArray<RebaseConflict> {
     return this._conflicts;
   }
 
@@ -444,11 +444,11 @@ export class InteractiveRebase {
     const theirs = this.tryReadCurrentInstance(oldProps.id, oldProps.classFullName);
     if (theirs === undefined) {
       // The incoming changes deleted the instance that our local change updated. Their delete stands.
-      RebaseConflict2Impl.recordTheirDeleteOurUpdate(this, this._conflicts, oldProps, newProps, result.conflictingProperties);
+      RebaseConflictImpl.recordTheirDeleteOurUpdate(this, this._conflicts, oldProps, newProps, result.conflictingProperties);
     } else {
       // The row still exists, but at least one property we touched (result.conflictingProperties) no
       // longer matches our captured baseline, meaning the incoming changes also modified it.
-      RebaseConflict2Impl.recordUpdate(this, this._conflicts, oldProps, theirs, newProps, result.conflictingProperties);
+      RebaseConflictImpl.recordUpdate(this, this._conflicts, oldProps, theirs, newProps, result.conflictingProperties);
       this.applyOrRecordConstraintConflict(propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
     }
   }
@@ -474,7 +474,7 @@ export class InteractiveRebase {
     // The row still exists but no longer matches our captured baseline (result.conflictingProperties),
     // meaning the incoming changes modified it. Report the conflict, but proceed with the delete (matching
     // the native changeset-conflict model for a Deleted opcode with a "Data" conflict cause).
-    RebaseConflict2Impl.recordTheirUpdateOurDelete(this, this._conflicts, oldProps, theirs, result.conflictingProperties);
+    RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, oldProps, theirs, result.conflictingProperties);
     nativeDb.deleteInstance(key, { useJsNames: true });
   }
 
@@ -493,9 +493,9 @@ export class InteractiveRebase {
    * conflict instead of letting the exception propagate, returning `undefined` in that case. When
    * oldProps is undefined (indicating
    * that this is an Insert operation), a UNIQUE/PRIMARYKEY failure is first checked against whether it's
-   * an id collision with an existing row (recorded via [[RebaseConflict2Impl.recordInsert]], which also
+   * an id collision with an existing row (recorded via [[RebaseConflictImpl.recordInsert]], which also
    * retries the write via `acceptOurs`) before falling back to a UNIQUE constraint violation recorded via
-   * [[RebaseConflict2Impl.recordUniqueConstraint]] built from the error's [[UniqueConstraintConflictDetail]];
+   * [[RebaseConflictImpl.recordUniqueConstraint]] built from the error's [[UniqueConstraintConflictDetail]];
    * for updates/deletes the row already exists by definition, so id-collision detection doesn't apply and
    * the write is not retried (it would just fail again).
    */
@@ -543,14 +543,14 @@ export class InteractiveRebase {
       const theirs = isInsert ? this.tryReadCurrentInstance(id, classFullName) : undefined;
       if (theirs !== undefined) {
         // Both local and incoming changes wrote an instance with the same id.
-        RebaseConflict2Impl.recordInsert(this, this._conflicts, newProps!, theirs);
+        RebaseConflictImpl.recordInsert(this, this._conflicts, newProps!, theirs);
 
         // Attempt to apply "our" change to the existing row, which may trigger further conflicts (e.g. UNIQUE constraint violations).
         this.applyOrRecordConstraintConflict(id, classFullName, theirs, newProps, () => this._db[_nativeDb].updateInstance(newProps!, { useJsNames: true }));
       } else {
         // Some other UNIQUE index (not the primary key) was violated.
         const conflictDetail = err.conflictDetail as UniqueConstraintConflictDetail | undefined;
-        RebaseConflict2Impl.recordUniqueConstraint(this, this._conflicts, oldProps, newProps!, conflictDetail);
+        RebaseConflictImpl.recordUniqueConstraint(this, this._conflicts, oldProps, newProps!, conflictDetail);
 
         // Fix this UNIQUE constraint violation by changing the value of one of the properties involved in the constraint until we
         // find a value that doesn't collide.
@@ -874,7 +874,7 @@ function applyResolution(rebase: InteractiveRebase, conflict: { id: Id64String, 
   }
 
   // `conflictingProperties` requires an "original" baseline to compare against, so it's always empty for a
-  // newly-inserted instance (see {@link RebaseConflict2.conflictingProperties}); in that case, any of the
+  // newly-inserted instance (see {@link RebaseConflict.conflictingProperties}); in that case, any of the
   // properties that differ between "theirs" and "ours" are choosable instead.
   const acceptableProperties = conflict.conflictingProperties.length > 0 ? conflict.conflictingProperties : conflict.differentProperties;
 
@@ -902,12 +902,12 @@ function applyResolution(rebase: InteractiveRebase, conflict: { id: Id64String, 
   rebase.applyConflictResolution(updateProps);
 }
 
-/** Implements {@link RebaseConflict2} and provides the `record*` helpers used to build up a conflict for a
+/** Implements {@link RebaseConflict} and provides the `record*` helpers used to build up a conflict for a
  * given instance as it is discovered. Detections for the same instance id are merged into a single entry
  * (e.g. an Update conflict followed by a UNIQUE constraint violation while retrying the write), since
- * {@link RebaseConflict2} reports at most one entry per instance.
+ * {@link RebaseConflict} reports at most one entry per instance.
  */
-class RebaseConflict2Impl implements RebaseConflict2 {
+class RebaseConflictImpl implements RebaseConflict {
   public readonly id: Id64String;
   public readonly classFullName: string;
   public original: RebaseConflictProperties | undefined = undefined;
@@ -924,17 +924,17 @@ class RebaseConflict2Impl implements RebaseConflict2 {
     this.classFullName = classFullName;
   }
 
-  private static getOrCreate(rebase: InteractiveRebase, conflicts: RebaseConflict2[], id: Id64String, classFullName: string): RebaseConflict2Impl {
-    let conflict = conflicts.find((c) => c.id === id) as RebaseConflict2Impl | undefined;
+  private static getOrCreate(rebase: InteractiveRebase, conflicts: RebaseConflict[], id: Id64String, classFullName: string): RebaseConflictImpl {
+    let conflict = conflicts.find((c) => c.id === id) as RebaseConflictImpl | undefined;
     if (conflict === undefined) {
-      conflict = new RebaseConflict2Impl(rebase, id, classFullName);
+      conflict = new RebaseConflictImpl(rebase, id, classFullName);
       conflicts.push(conflict);
     }
     return conflict;
   }
 
   /** Both the incoming (their) changes and the local (our) changes modified the same instance. */
-  public static recordUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict2[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
+  public static recordUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
     const conflict = this.getOrCreate(rebase, conflicts, original.id, original.classFullName);
 
@@ -949,7 +949,7 @@ class RebaseConflict2Impl implements RebaseConflict2 {
   }
 
   /** The incoming (their) changes modified properties on an instance that was deleted by the local (our) changes. */
-  public static recordTheirUpdateOurDelete(rebase: InteractiveRebase, conflicts: RebaseConflict2[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
+  public static recordTheirUpdateOurDelete(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
     const conflict = this.getOrCreate(rebase, conflicts, original.id, original.classFullName);
 
@@ -960,7 +960,7 @@ class RebaseConflict2Impl implements RebaseConflict2 {
   }
 
   /** The incoming (their) changes deleted an instance that was modified by the local (our) changes. */
-  public static recordTheirDeleteOurUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict2[], original: RebaseConflictProperties, ours: RebaseConflictProperties, updatedProperties: string[]): void {
+  public static recordTheirDeleteOurUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, ours: RebaseConflictProperties, updatedProperties: string[]): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
     const conflict = this.getOrCreate(rebase, conflicts, original.id, original.classFullName);
 
@@ -971,7 +971,7 @@ class RebaseConflict2Impl implements RebaseConflict2 {
   }
 
   /** Both the incoming (their) changes and the local (our) changes inserted an instance with the same id. */
-  public static recordInsert(rebase: InteractiveRebase, conflicts: RebaseConflict2[], ours: RebaseConflictProperties, theirs: RebaseConflictProperties): void {
+  public static recordInsert(rebase: InteractiveRebase, conflicts: RebaseConflict[], ours: RebaseConflictProperties, theirs: RebaseConflictProperties): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(ours.classFullName);
     const conflict = this.getOrCreate(rebase, conflicts, ours.id, ours.classFullName);
 
@@ -982,7 +982,7 @@ class RebaseConflict2Impl implements RebaseConflict2 {
   }
 
   /** Our change (insert or update) violated a UNIQUE constraint against some other, unrelated instance. */
-  public static recordUniqueConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict2[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, detail?: UniqueConstraintConflictDetail): void {
+  public static recordUniqueConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, detail?: UniqueConstraintConflictDetail): void {
     const instanceId = ours.id ?? original?.id;
     const classFullName = ours.classFullName ?? original?.classFullName;
     const conflict = this.getOrCreate(rebase, conflicts, instanceId, classFullName);
