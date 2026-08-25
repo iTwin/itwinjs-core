@@ -698,8 +698,22 @@ export class InteractiveRebase {
    * that `props` fully replaces the instance rather than incrementally updating it.
    * @internal
    */
-  public applyConflictResolution(props: RebaseConflictProperties, fullReplace: boolean = false): void {
-    this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: !fullReplace });
+  public applyConflictResolution(conflict: RebaseConflict, props: RebaseConflictProperties | undefined, fullReplace: boolean = false): void {
+    if (props === undefined) {
+      const key = { id: conflict.id, classFullName: conflict.classFullName };
+      this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
+      this._db.clearCaches();
+      return;
+    }
+
+    try {
+      this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: !fullReplace });
+    } catch (err: any) {
+      if (err.errorNumber === DbResult.BE_SQLITE_NOTFOUND) {
+        // Row does not exist - try inserting it.
+        this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
+      }
+    }
 
     // TODO: too heavy-handed?
     this._db.clearCaches();
@@ -865,31 +879,34 @@ function addPropsAccessStrings(target: string[], classDef: typeof Element, insta
 function applyResolution(
   rebase: InteractiveRebase,
   conflict: RebaseConflict,
-  source: RebaseConflictProperties,
+  source: RebaseConflictProperties | undefined,
   properties?: string[]
 ): void {
-  const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
-  const instance = classDef.serialize(source as ElementProps, rebase.iModel);
+  let fullReplace = true;
+  let updateProps: RebaseConflictProperties | undefined = undefined;;
 
-  if (properties === undefined || properties.length === 0) {
-    // Fully replace the instance with `source`: pass `fullReplace` so native clears (rather than leaves
-    // as-is) any property that `source`'s serialized form doesn't include.
-    rebase.applyConflictResolution(instance as RebaseConflictProperties, true /* fullReplace */);
-    return;
+  if (source !== undefined) {
+    const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
+    const instance = classDef.serialize(source as ElementProps, rebase.iModel);
+
+    updateProps = instance;
+
+    if (properties !== undefined && properties.length > 0) {
+      // Explicitly requested properties must be set even when their value is `undefined` (e.g. reverting a
+      // property that a previous acceptTheirs() set, back to a value ours never had) - a native update leaves
+      // any property it isn't given untouched, so an `undefined` here must become an explicit `null` rather
+      // than being omitted, or it would silently keep whatever value is currently in the iModel.
+      fullReplace = false;
+      updateProps = { id: conflict.id, classFullName: conflict.classFullName };
+      for (const prop of properties) {
+        const instanceAccessString = classDef.toInstanceAccessString(prop);
+        const value = getPropertyValue(instance, instanceAccessString);
+        setPropertyValue(updateProps, instanceAccessString, value === undefined ? null : value);
+      }
+    }
   }
 
-  // Explicitly requested properties must be set even when their value is `undefined` (e.g. reverting a
-  // property that a previous acceptTheirs() set, back to a value ours never had) - a native update leaves
-  // any property it isn't given untouched, so an `undefined` here must become an explicit `null` rather
-  // than being omitted, or it would silently keep whatever value is currently in the iModel.
-  const updateProps: RebaseConflictProperties = { id: conflict.id, classFullName: conflict.classFullName };
-  for (const prop of properties) {
-    const instanceAccessString = classDef.toInstanceAccessString(prop);
-    const value = getPropertyValue(instance, instanceAccessString);
-    setPropertyValue(updateProps, instanceAccessString, value === undefined ? null : value);
-  }
-
-  rebase.applyConflictResolution(updateProps);
+  rebase.applyConflictResolution(conflict, updateProps, fullReplace);
 }
 
 /** Implements {@link RebaseConflict} and provides the `record*` helpers used to build up a conflict for a
@@ -1010,17 +1027,10 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   public acceptOurs(properties?: string[]): void {
-    const ours = this.ours;
-    if (ours === undefined) {
-      // TODO: delete this instance
-    }
-    assert(ours !== undefined, "there are no local changes to accept for this conflict");
-    applyResolution(this._rebase, this, ours, properties);
+    applyResolution(this._rebase, this, this.ours, properties);
   }
 
   public acceptTheirs(properties?: string[]): void {
-    const { ours, theirs } = this;
-    assert(ours !== undefined && theirs !== undefined, "there are no upstream changes to accept for this conflict");
-    applyResolution(this._rebase, this, theirs, properties);
+    applyResolution(this._rebase, this, this.theirs, properties);
   }
 }

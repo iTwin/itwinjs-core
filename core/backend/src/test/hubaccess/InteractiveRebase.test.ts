@@ -278,20 +278,38 @@ describe("InteractiveRebase", () => {
     chai.expect(moreGroups).to.be.false;
     chai.expect(interactive.conflicts.length).to.equal(1);
 
-    const deleteConflict = interactive.conflicts[0];
-    chai.expect(deleteConflict.ours).to.be.undefined;
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.original).to.not.be.undefined;
+    chai.expect(conflict.ours).to.be.undefined;
+    chai.expect(conflict.theirs).to.not.be.undefined;
 
     // The properties that were updated in their changes should be called out.
-    chai.expect(deleteConflict.theirModifiedProperties.length).to.equal(3);
-    chai.expect(deleteConflict.theirModifiedProperties).to.include("somePoint");
-    chai.expect(deleteConflict.theirModifiedProperties).to.include("foo");
-    chai.expect(deleteConflict.theirModifiedProperties).to.include("lastMod");
+    chai.expect(conflict.theirModifiedProperties.length).to.equal(3);
+    chai.expect(conflict.theirModifiedProperties).to.include("somePoint");
+    chai.expect(conflict.theirModifiedProperties).to.include("foo");
+    chai.expect(conflict.theirModifiedProperties).to.include("lastMod");
 
     // The original and their values should both be correctly captured.
-    chai.expect(deleteConflict.original!.foo).to.equal("Original");
-    chai.expect(deleteConflict.original!.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
-    chai.expect(deleteConflict.theirs!.foo).to.equal("User1");
-    chai.expect(deleteConflict.theirs!.somePoint).to.deep.equal({ x: 1.0, y: 2.0 });
+    chai.expect(conflict.original!.foo).to.equal("Original");
+    chai.expect(conflict.original!.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
+    chai.expect(conflict.theirs!.foo).to.equal("User1");
+    chai.expect(conflict.theirs!.somePoint).to.deep.equal({ x: 1.0, y: 2.0 });
+
+    // The instance should not exist in the iModel, since we deleted it.
+    const values = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(values).to.be.undefined;
+
+    // Accepting "theirs" should restore the element to the state it was in after their changes.
+    conflict.acceptTheirs();
+    const theirsValues = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(theirsValues).to.not.be.undefined;
+    chai.expect(theirsValues!.foo).to.equal("User1");
+    chai.expect(Point2d.fromJSON(theirsValues!.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+
+    // Accepting "ours" again should delete it.
+    conflict.acceptOurs();
+    const oursValues = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(oursValues).to.be.undefined;
   });
 
   it("can present a conflict where we modify something the upstream deleted", async () => {
