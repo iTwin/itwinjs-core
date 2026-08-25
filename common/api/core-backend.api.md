@@ -94,6 +94,7 @@ import { ElementLoadOptions } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
 import { EntityClass } from '@itwin/ecschema-metadata';
+import { EntityIdAndClassId } from '@itwin/core-common';
 import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
@@ -296,6 +297,7 @@ import { ThumbnailFormatProps } from '@itwin/core-common';
 import { ThumbnailProps } from '@itwin/core-common';
 import type { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
+import { TxnEntityMetadata } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
@@ -7652,6 +7654,21 @@ export interface TxnChangedEntities {
 }
 
 // @public @preview
+export interface TxnChangedEntitiesWithMetadata extends TxnChangedEntities {
+    readonly deletes: TxnChangedEntityIterable;
+    readonly inserts: TxnChangedEntityIterable;
+    readonly updates: TxnChangedEntityIterable;
+}
+
+// @public @preview
+export interface TxnChangedEntity extends EntityIdAndClassId {
+    readonly metadata: TxnEntityMetadata;
+}
+
+// @public @preview
+export type TxnChangedEntityIterable = Iterable<Readonly<TxnChangedEntity>>;
+
+// @public @preview
 export type TxnIdString = string;
 
 // @public @preview
@@ -7723,7 +7740,7 @@ export class TxnManager {
     protected _onCommitted(): void;
     // @internal (undocumented)
     protected _onDeletedDependency(props: RelationshipProps): void;
-    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
     // @internal
     protected _onEndValidate(): void;
     // @internal (undocumented)
@@ -7735,7 +7752,7 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
-    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;

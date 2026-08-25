@@ -6,6 +6,7 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-common](#itwincore-common)
     - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
+    - [Class metadata in transaction change events](#class-metadata-in-transaction-change-events)
   - [@itwin/core-backend](#itwincore-backend)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
@@ -32,6 +33,14 @@ publish: false
 [QueryBinder.bindIdSet]($common) previously silently ignored string entries that are not valid [Id64String]($bentley)s (for example `"50"` or `""`) during id compression. It now throws a descriptive [ITwinError]($bentley) instead, identifiable via `ITwinError.isError(error, "itwin-QueryBinder", "invalid-arguments")`, so callers can catch and diagnose the invalid entry rather than having it silently dropped.
 
 **Note:** `bindIdSet` still expects entries typed as `Id64String`. Callers binding ids from untyped or nullable query data (for example a nullable column via [ECSqlReader]($common)) should filter out non-string/`null`/`undefined` values before calling `bindIdSet`, as such entries remain outside the documented contract and are not guaranteed to produce this descriptive error.
+
+### Class metadata in transaction change events
+
+The shared [TxnEntityMetadata]($common) contract is now exported from `@itwin/core-common` and used by both transaction event APIs. [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend) expose [TxnChangedEntity.metadata]($backend) for each changed entity. Use `metadata.classFullName` to match an exact ECClass or `metadata.is("Schema:BaseClass")` to include derived classes without resolving class Ids asynchronously.
+
+The frontend [BriefcaseTxns]($frontend) events continue to supply [TxnEntityChanges]($frontend), which has its own metadata and filtering API. The backend and frontend payloads describe the same transaction activity but are different types and should be documented and used separately.
+
+The existing `TxnEntityMetadata` export from `@itwin/core-frontend` is deprecated; import [TxnEntityMetadata]($common) from `@itwin/core-common` instead.
 
 ## @itwin/core-backend
 
