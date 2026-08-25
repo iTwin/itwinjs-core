@@ -95,6 +95,7 @@ import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
 import { EntityClass } from '@itwin/ecschema-metadata';
 import { EntityIdAndClassId } from '@itwin/core-common';
+import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
 import { EntityQueryParams } from '@itwin/core-common';
@@ -7647,6 +7648,13 @@ export interface TokenArg {
 
 // @public @preview
 export interface TxnChangedEntities {
+    readonly deletes: EntityIdAndClassIdIterable;
+    readonly inserts: EntityIdAndClassIdIterable;
+    readonly updates: EntityIdAndClassIdIterable;
+}
+
+// @public @preview
+export interface TxnChangedEntitiesWithMetadata extends TxnChangedEntities {
     readonly deletes: TxnChangedEntityIterable;
     readonly inserts: TxnChangedEntityIterable;
     readonly updates: TxnChangedEntityIterable;
@@ -7732,7 +7740,7 @@ export class TxnManager {
     protected _onCommitted(): void;
     // @internal (undocumented)
     protected _onDeletedDependency(props: RelationshipProps): void;
-    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
     // @internal
     protected _onEndValidate(): void;
     // @internal (undocumented)
@@ -7744,7 +7752,7 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
-    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;

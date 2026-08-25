@@ -13,7 +13,7 @@ import {
   _nativeDb,
   ChangeInstanceKey,
   ChannelControl,
-  DocumentListModel, Drawing, EditTxn, IModelDb, IModelJsFs, PhysicalModel, PhysicalPartition, RebaseHandler, SectionDrawing, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntities, TxnChangedEntity, TxnManager, withEditTxn,
+  DocumentListModel, Drawing, EditTxn, IModelDb, IModelJsFs, PhysicalModel, PhysicalPartition, RebaseHandler, SectionDrawing, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, SubCategory, SubjectOwnsPartitionElements, TxnChangedEntitiesWithMetadata, TxnChangedEntity, TxnManager, withEditTxn,
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
@@ -427,7 +427,7 @@ describe("TxnManager", () => {
       this._cleanup.length = 0;
     }
 
-    public static test(txns: TxnManager, event: BeEvent<(changes: TxnChangedEntities) => void>, func: (accum: EventAccumulator) => void): void {
+    public static test(txns: TxnManager, event: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>, func: (accum: EventAccumulator) => void): void {
       using accum = new EventAccumulator(txns);
       accum.listen(event);
       func(accum);
@@ -441,7 +441,7 @@ describe("TxnManager", () => {
       this.test(iModel.txns, iModel.txns.onModelsChanged, func);
     }
 
-    public listen(evt: BeEvent<(changes: TxnChangedEntities) => void>): void {
+    public listen(evt: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>): void {
       this._cleanup.push(evt.addListener((changes) => {
         this.copyArray(changes, "inserted");
         this.copyArray(changes, "updated");
@@ -449,7 +449,7 @@ describe("TxnManager", () => {
       }));
     }
 
-    private copyArray(changes: TxnChangedEntities, propName: "inserted" | "updated" | "deleted"): void {
+    private copyArray(changes: TxnChangedEntitiesWithMetadata, propName: "inserted" | "updated" | "deleted"): void {
       const iterNames = { inserted: "inserts", updated: "updates", deleted: "deletes" } as const;
       const iterName = iterNames[propName];
       const entities = changes[iterName];
@@ -711,12 +711,26 @@ describe("TxnManager", () => {
       const existingModelId = props.model;
 
       let newModelId: string;
+      let modelMetadataChecked = false;
       EventAccumulator.testModels(imodel, (accum) => {
-        newModelId = insertPhysicalModel(editTxn, IModel.rootSubjectId, Guid.createValue());
-        editTxn.saveChanges("1 insert");
-        accum.expectNumValidations(1);
-        accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
+        const removeMetadataListener = imodel.txns.onModelsChanged.addListener((changes) => {
+          for (const change of changes.inserts) {
+            assert.strictEqual(change.metadata.classFullName, "BisCore:PhysicalModel");
+            assert.isTrue(change.metadata.is("BisCore:Model"));
+            modelMetadataChecked = true;
+          }
+        });
+
+        try {
+          newModelId = insertPhysicalModel(editTxn, IModel.rootSubjectId, Guid.createValue());
+          editTxn.saveChanges("1 insert");
+          accum.expectNumValidations(1);
+          accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
+        } finally {
+          removeMetadataListener();
+        }
       });
+      assert.isTrue(modelMetadataChecked, "model insert did not include metadata");
 
       EventAccumulator.testModels(roImodel, (accum) => {
         roImodel[_nativeDb].restartDefaultTxn();
@@ -907,7 +921,7 @@ describe("TxnManager", () => {
 
   it("dispatches events in batches", async () => {
     await withEditTxn(imodel, "batch-events", async (editTxn) => {
-      function entityCount(entities: TxnChangedEntities["inserts"]): number {
+      function entityCount(entities: TxnChangedEntitiesWithMetadata["inserts"]): number {
         let count = 0;
         for (const entity of entities) {
           expect(entity.metadata.classFullName).to.equal("TestBim:TestPhysicalObject");

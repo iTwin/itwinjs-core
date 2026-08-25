@@ -10,7 +10,7 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassId, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnEntityMetadata, TxnProps } from "@itwin/core-common";
+import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnEntityMetadata, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb } from "./IModelDb";
 import { Element } from "./Element";
@@ -56,11 +56,24 @@ export interface TxnChangedEntity extends EntityIdAndClassId {
  */
 export type TxnChangedEntityIterable = Iterable<Readonly<TxnChangedEntity>>;
 
-/** Describes a set of [[Element]]s or [[Model]]s that changed as part of a transaction.
+/** Describes the entities that changed as part of a transaction by their Ids and ECClass Ids.
  * @see [[TxnManager.onElementsChanged]] and [[TxnManager.onModelsChanged]].
  * @public @preview
  */
 export interface TxnChangedEntities {
+  /** The entities that were inserted by the transaction. */
+  readonly inserts: EntityIdAndClassIdIterable;
+  /** The entities that were deleted by the transaction. */
+  readonly deletes: EntityIdAndClassIdIterable;
+  /** The entities that were modified by the transaction, including any [[Element]]s for which one of their [[ElementAspect]]s was changed. */
+  readonly updates: EntityIdAndClassIdIterable;
+}
+
+/** Describes a set of [[Element]]s or [[Model]]s that changed as part of a transaction, including ECClass metadata for each changed entity.
+ * @see [[TxnManager.onElementsChanged]] and [[TxnManager.onModelsChanged]].
+ * @public @preview
+ */
+export interface TxnChangedEntitiesWithMetadata extends TxnChangedEntities {
   /** The entities that were inserted by the transaction. */
   readonly inserts: TxnChangedEntityIterable;
   /** The entities that were deleted by the transaction. */
@@ -92,7 +105,7 @@ export interface ChangeInstanceKey {
   changeType: "inserted" | "updated" | "deleted";
 }
 
-type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
+type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
 
 /** Strictly for tests. @internal */
 export function setMaxEntitiesPerEvent(max: number): number {
@@ -277,7 +290,7 @@ class ChangedEntitiesProc {
     // Notify backend listeners. Avoid constructing the backend metadata graph when there are no listeners.
     if (evt.numberOfListeners > 0) {
       const backendMetadata = this.populateBackendMetadata(frontendMetadata);
-      const txnEntities: TxnChangedEntities = {
+      const txnEntities: TxnChangedEntitiesWithMetadata = {
         inserts: this._inserted.iterable(classIds, backendMetadata),
         deletes: this._deleted.iterable(classIds, backendMetadata),
         updates: this._updated.iterable(classIds, backendMetadata),
@@ -1267,14 +1280,14 @@ export class TxnManager {
    * ```
    * @note If there are many changed elements in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onElementsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
+  public readonly onElementsChanged = new BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>();
 
   /** Called after validation completes from [[IModelDb.saveChanges]].
    * The argument to the event holds the list of models that were inserted, updated, and deleted.
    * Each changed model includes its `id`, `classId`, and [[TxnChangedEntity.metadata]]. Use `metadata.classFullName` for an exact class match or `metadata.is` to match a class or one of its subclasses.
    * @note If there are many changed models in a single Txn, the notifications are sent in batches so this event *may be called multiple times* per Txn.
    */
-  public readonly onModelsChanged = new BeEvent<(changes: TxnChangedEntities) => void>();
+  public readonly onModelsChanged = new BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>();
 
   /** Event raised after the geometry within one or more [[GeometricModel]]s is modified by applying a changeset or validation of a transaction.
    * A model's geometry can change as a result of:

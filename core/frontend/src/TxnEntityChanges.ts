@@ -61,7 +61,7 @@ export interface TxnEntityChangesFilterOptions {
 
 /** The frontend transaction-change payload for [[BriefcaseTxns.onElementsChanged]] and [[BriefcaseTxns.onModelsChanged]].
  * Iterate [[TxnEntityChange]]s to inspect their `id`, `type`, and [[TxnEntityChange.metadata]], or use [[filter]] to select by change type or class hierarchy.
- * The compressed `inserted`, `deleted`, and `updated` sets remain available for bulk operations. Unlike backend [[TxnChangedEntities]], this payload exposes per-change `type` and metadata.
+ * Both payloads include metadata. Frontend changes also expose a per-change `type`, while backend changes are grouped into `inserts`, `deletes`, and `updates`; the compressed `inserted`, `deleted`, and `updated` sets remain available for bulk operations.
  * @public
  * @extensions
  */
