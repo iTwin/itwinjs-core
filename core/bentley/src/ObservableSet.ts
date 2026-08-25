@@ -12,6 +12,8 @@ import { BeEvent } from "./BeEvent";
  * @public
  */
 export class ObservableSet<T> extends Set<T> {
+  public override get [Symbol.toStringTag]() { return "ObservableSet"; }
+
   /** Emitted after `item` is added to this set. */
   public readonly onAdded = new BeEvent<(item: T) => void>();
   /** Emitted after `item` is deleted from this set. */
