@@ -24,10 +24,12 @@ import { FieldFormattingSpecProvider, FieldFormattingSpecProviderArgs } from "./
  * and consulted by [[ElementDrivesTextAnnotation.evaluateFields]] and the `TxnManager`
  * field-update callbacks.
  *
- * Keyed by iModel rather than by FormatSet so that a provider is reachable for *every* field of
- * that iModel — including fields declaring no [QuantityFieldFormatOptions.formatSet]($common),
- * which resolve against the iModel's schema formats. Never swept automatically: hosts must call
- * [[ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]] on iModel close.
+ * Keyed by iModel so that a provider is reachable for *every* field of that iModel — including
+ * fields declaring no [QuantityFieldFormatOptions.formatSet]($common), which resolve against
+ * the iModel's schema formats. Never swept automatically: hosts must call
+ * [[ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]] on iModel close. Provider
+ * lifetime is deliberately the host's to manage — a host may want a provider to outlive a
+ * particular [IModelDb]($backend) instance, and iTwin.js cannot know that.
  */
 const fieldFormattingProviders = new Map<string, FieldFormattingSpecProvider>();
 
@@ -216,16 +218,15 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, fieldFormattingProviders.get(args.iModel.key)));
   }
 
-  /** Returns the deduplicated [FormattingSpecArgs]($core-quantity) needed to format every
+  /** Returns the [FormattingSpecArgs]($core-quantity) needed to format every
    * `"quantity"` and `"coordinate"` [FieldRun]($common) in `args.block` through the standard
-   * iTwin.js quantity pipeline. Pass these to [FieldFormattingSpecProvider.warmUp]($backend)
+   * iTwin.js quantity pipeline, deduplicated. Pass these to
+   * [FieldFormattingSpecProvider.warmUp]($backend)
    * before inserting or updating an annotation, so its fields resolve on the next synchronous
    * evaluation rather than falling back to raw strings.
    * Fields whose target property has no [KindOfQuantity]($ecschema-metadata) and no
    * `kindOfQuantity` / `persistenceUnit` override are omitted.
    *
-   * This answers "what does *this block* need". Deciding *which* blocks are in scope is the
-   * application's, not iTwin.js's — see [[registerFieldFormattingProvider]].
    * @see [[getFieldFormattingRequirements]] for a single [FieldRun]($common).
    * @beta
    */
@@ -244,9 +245,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * [[collectFieldFormattingRequirements]] when the unit of work is a whole
    * [TextBlock]($common), since it deduplicates for you.
    *
-   * The mapping this performs is deliberately not something applications should reimplement:
-   * it must produce exactly the candidates, in the priority order, that evaluation walks. A
-   * near-miss does not render unformatted — it lets evaluation resolve a *different*
+   * A near-miss does not render unformatted — it lets evaluation resolve a *different*
    * (KindOfQuantity, persistence unit) pair and scale the value by the wrong unit.
    * @beta
    */
@@ -254,66 +253,55 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     return collectFieldRequirements(field, iModel);
   }
 
-  /** Creates a [[FieldFormattingSpecProvider]] for `args.iModel`, pre-warms it, and registers
-   * it so that [[evaluateFields]] and the `TxnManager` field-update callbacks can format
-   * `"quantity"` and `"coordinate"` [FieldRun]($common)s synchronously.
+  /** Creates a [[FieldFormattingSpecProvider]] for `args.iModel`, pre-warms it against
+   * `requirements`, and registers it so that [[evaluateFields]] and `TxnManager` field-update
+   * callbacks can format `"quantity"` and `"coordinate"` [FieldRun]($common)s synchronously.
    *
-   * **Call this when the iModel opens.** Field evaluation fires from `TxnManager` callbacks on
-   * any source-element edit, so a provider that is not yet registered when the first edit lands
-   * cannot participate in it — that field persists its raw string representation and is not
-   * revisited until the *next* edit to the same source (registering does not walk existing
-   * annotations). Registering up front, before the iModel is handed to editing code, is what
-   * makes formatting deterministic.
+   * **Call this when the iModel opens**, before any editing code touches it. Evaluation fires
+   * from `TxnManager` on source-element edits; a field evaluated with no provider registered
+   * persists its raw string and is not revisited until the *next* edit to the same source
+   * (registering does not walk existing annotations).
    *
-   * This is asynchronous because building [FormatterSpec]($core-quantity)s is: resolving
-   * formats, units, and conversions all require `await`. Doing that work here — once, up front —
-   * is what allows evaluation to stay synchronous afterwards.
-   *
-   * `requirements` is mandatory and iTwin.js performs no discovery of its own: it never walks
-   * `iModel` looking for annotations to warm. Applications own that decision because they
-   * already own the [FormatSet]($ecschema-metadata)s — both halves of the "which key resolves
-   * to which format" question are theirs, and they know which drawing, sheet or view is in
-   * scope in a way iTwin.js cannot. Build the array from
-   * [[collectFieldFormattingRequirements]] over the blocks you care about, from
-   * [[getFieldFormattingRequirements]] over individual [FieldRun]($common)s, and/or from
-   * [FieldFormattingSpecProvider.collectSchemaFormattingRequirements]($backend) for every [KindOfQuantity]($ecschema-metadata) the
-   * iModel's schemas declare.
-   *
-   * Anything left unwarmed renders as a raw string and is recorded in
-   * [FieldFormattingSpecProvider.misses]($backend); poll it after evaluating, then
+   * `requirements` is mandatory — iTwin.js does not discover them. Build the array with
+   * [[collectFieldFormattingRequirements]], [[getFieldFormattingRequirements]], and/or
+   * [FieldFormattingSpecProvider.collectSchemaFormattingRequirements]($backend). Anything left
+   * unwarmed is recorded in [FieldFormattingSpecProvider.misses]($backend); poll it, then call
    * [FieldFormattingSpecProvider.warmUp]($backend) and re-evaluate.
    *
-   * One provider serves **all** of an iModel's FormatSets, so mixing presentations does not mean
-   * registering more than once. Supply the adopted FormatSet as `formatSet` and any additional
-   * per-field ones as `formatSets`, each keyed by the a unique id that
-   * [FieldRun]($common)s name via [QuantityFieldFormatOptions.formatSet]($common). Fields select
-   * among them at evaluation time with no further registration:
+   * One provider serves all of an iModel's FormatSets: pass the iModel-wide default as
+   * `formatSet` and any per-field alternatives as `formatSets`, keyed by the id that
+   * [FieldRun]($common)s name via [QuantityFieldFormatOptions.formatSet]($common):
    *
    * ```ts
    * await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
    *   iModel,
-   *   formatSet: metricFormatSet,                                     // the iModel-wide default
-   *   formatSets: [{ id: imperialFormatSetId, formatSet: imperial }], // named per-field
+   *   formatSet: metricFormatSet,
+   *   formatSets: [{ id: imperialFormatSetId, formatSet: imperial }],
    * });
    * ```
    *
-   * Each registration replaces any prior one for the same iModel, and does so only after its
-   * pre-warm completes. Changing the adopted [FormatSet]($ecschema-metadata) is therefore a
-   * single call to this method — do **not** call [[unregisterFieldFormattingProvider]] first,
-   * which would leave the iModel with no provider for the duration of the `await` and expose
-   * any field evaluated in that window to the raw fallback described there.
+   * Each call replaces any prior registration for the same iModel, atomically after its
+   * pre-warm completes.
    *
-   * Registrations are **process-wide** and are not released when the iModel closes, so hosts
-   * must pair this with [[unregisterFieldFormattingProvider]]:
+   * To swap FormatSets, call this method again rather than unregistering first — otherwise
+   * fields evaluated during the `await` fall back to raw strings.
+   *
+   * Registrations are process-wide and are **never** released automatically, so pair every call
+   * with [[unregisterFieldFormattingProvider]] from an [IModelDb.onBeforeClose]($backend)
+   * listener:
    *
    * ```ts
-   * iModel.onBeforeClose.addOnce(() => {
-   *   ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
-   * });
-   * await ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel, formatSets });
+   * iModel.onBeforeClose.addOnce(() => ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel));
    * ```
-   * @returns the registered provider, so callers can inspect
-   * [FieldFormattingSpecProvider.misses]($backend) or warm it further.
+   *
+   * Skipping that has two costs. The provider captures the iModel's
+   * [SchemaContext]($ecschema-metadata), so a stale registration pins it — and the closed
+   * `IModelDb` behind it — alive for the lifetime of the process. And while [IModelDb.key]($common)
+   * is a fresh GUID on each open by default (making a stale entry merely unreachable), a host that
+   * supplies its own stable `key` when opening will land on that entry again on reopen and format
+   * against a *closed* schema context, which surfaces as a confusing schema error from inside a
+   * `TxnManager` callback.
+   * @returns the registered provider.
    * @beta
    */
   public static async registerFieldFormattingProvider(
@@ -331,24 +319,17 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     return provider;
   }
 
-  /** Removes the registration previously created by [[registerFieldFormattingProvider]] for
-   * `iModel`, if any. Typically called from an [IModelDb.onBeforeClose]($backend) listener
-   * paired with the corresponding register call.
+  /** Removes the registration created by [[registerFieldFormattingProvider]] for `iModel`, if
+   * any. Typically called from an [IModelDb.onBeforeClose]($backend) listener.
    *
-   * Unregistering does **not** clear or reformat any [FieldRun.cachedContent]($common) already
-   * persisted while the provider was registered. However, the next source-element update that
-   * fires a `TxnManager` field-update callback will re-run [[evaluateFields]] and — finding no
-   * provider — overwrite `cachedContent` with the raw string representation.
+   * Existing [FieldRun.cachedContent]($common) is unchanged, but the next source-element edit
+   * re-runs [[evaluateFields]] with no provider and overwrites `cachedContent` with the raw
+   * string — a harder fallback than a *registered* provider with a partial FormatSet, which
+   * still resolves each field's [KindOfQuantity]($ecschema-metadata) presentation format from
+   * schema (`"2.5 m"` rather than `"2.5"`).
    *
-   * That fallback is abrupt by comparison with a *registered* provider, which degrades
-   * gracefully: a provider whose FormatSet lacks an entry for a field's
-   * [KindOfQuantity]($ecschema-metadata) still resolves that KoQ's own presentation format from
-   * the iModel's schemas, so the field renders as `"2.5 m"` rather than `"2.5"`. Having some
-   * provider registered is meaningfully better than having none.
-   *
-   * Hosts that need formatted output to survive should therefore keep a provider registered for
-   * the lifetime of the annotations that depend on it, and swap FormatSets by calling
-   * [[registerFieldFormattingProvider]] again rather than unregistering in between.
+   * To swap FormatSets, call [[registerFieldFormattingProvider]] again rather than
+   * unregistering in between.
    * @beta
    */
   public static unregisterFieldFormattingProvider(iModel: IModelDb): void {
