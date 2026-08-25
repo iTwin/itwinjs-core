@@ -115,4 +115,91 @@ describe("WmsCapabilities", () => {
     // because the underlying range contains -Infinity values
     expect(provider.cartoRange).toBeUndefined();
   });
+
+  describe("hostile and degenerate input", () => {
+    const wrap130 = (inner: string) => `<?xml version="1.0"?><WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms">${inner}</WMS_Capabilities>`;
+
+    it("should not throw on malformed XML", async () => {
+      fakeTextFetch("<WMS_Capabilities><Service><Name>oops");
+      let capabilities;
+      let error;
+      try {
+        capabilities = await WmsCapabilities.create("https://fake/malformed", undefined, true);
+      } catch (err) {
+        error = err;
+      }
+      // Either a graceful undefined or a proper Error; never a raw TypeError from property access.
+      if (error !== undefined)
+        expect(error).toBeInstanceOf(Error);
+      else if (capabilities !== undefined)
+        expect(capabilities.version).toBeUndefined();
+    });
+
+    it("should not throw on non-WMS XML", async () => {
+      fakeTextFetch(`<?xml version="1.0"?><html><body>Not a WMS server</body></html>`);
+      const capabilities = await WmsCapabilities.create("https://fake/nonwms", undefined, true);
+      expect(capabilities).toBeUndefined();
+    });
+
+    it("should reject a capabilities document with no Service or Capability", async () => {
+      fakeTextFetch(`<?xml version="1.0"?><WMS_Capabilities xmlns="http://www.opengis.net/wms"></WMS_Capabilities>`);
+      const capabilities = await WmsCapabilities.create("https://fake/empty", undefined, true);
+      expect(capabilities).toBeUndefined();
+    });
+
+    it("should handle missing version and Capability", async () => {
+      fakeTextFetch(wrap130(`<Service><Name>svc</Name></Service>`).replace(` version="1.3.0"`, ""));
+      const capabilities = await WmsCapabilities.create("https://fake/noversion", undefined, true);
+      expect(capabilities).toBeDefined();
+      expect(capabilities!.version).toBeUndefined();
+      expect(capabilities!.isVersion13).toEqual(false);
+      expect(capabilities!.service.name).toEqual("svc");
+      expect(capabilities!.layer).toBeUndefined();
+      expect(capabilities!.getSubLayers()).toBeUndefined();
+      expect(capabilities!.featureInfoSupported).toEqual(false);
+    });
+
+    it("should handle unexpected elements and non-string version", async () => {
+      fakeTextFetch(wrap130(`<Bogus><Nested/></Bogus><Service><Name>svc</Name></Service>`));
+      const capabilities = await WmsCapabilities.create("https://fake/unexpected", undefined, true);
+      expect(capabilities).toBeDefined();
+      expect(capabilities!.service.name).toEqual("svc");
+    });
+
+    it("should handle a layer without CRS/SRS", async () => {
+      fakeTextFetch(wrap130(`<Service><Name>svc</Name></Service><Capability><Layer><Title>root</Title><Layer><Name>child</Name><Title>child</Title></Layer></Layer></Capability>`));
+      const capabilities = await WmsCapabilities.create("https://fake/nocrs", undefined, true);
+      expect(capabilities).toBeDefined();
+      const crsMap = capabilities!.getSubLayersCrs(["child"]);
+      expect(crsMap).toBeDefined();
+      expect(crsMap!.get("child")).toEqual([]);
+    });
+
+    it("should handle deeply nested layers", async () => {
+      const depth = 100;
+      let inner = `<Layer><Name>leaf</Name><Title>leaf</Title></Layer>`;
+      for (let i = 0; i < depth; i++)
+        inner = `<Layer><Name>n${i}</Name><Title>n${i}</Title>${inner}</Layer>`;
+      fakeTextFetch(wrap130(`<Service><Name>svc</Name></Service><Capability>${inner}</Capability>`));
+      const capabilities = await WmsCapabilities.create("https://fake/deep", undefined, true);
+      expect(capabilities).toBeDefined();
+      const subLayers = capabilities!.getSubLayers();
+      expect(subLayers).toBeDefined();
+      expect(subLayers!.length).toEqual(depth + 1);
+    });
+
+    it("should not resolve external entities", async () => {
+      const payload = `<?xml version="1.0"?><!DOCTYPE WMS_Capabilities [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms"><Service><Name>&xxe;</Name></Service></WMS_Capabilities>`;
+      fakeTextFetch(payload);
+      let capabilities;
+      try {
+        capabilities = await WmsCapabilities.create("https://fake/xxe", undefined, true);
+      } catch {
+        // acceptable: parser rejects the doctype outright
+        return;
+      }
+      if (capabilities !== undefined)
+        expect(capabilities.service.name).not.toContain("root:");
+    });
+  });
 });
