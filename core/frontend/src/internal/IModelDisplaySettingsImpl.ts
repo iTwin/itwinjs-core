@@ -10,7 +10,6 @@ import { HiddenLine, ModelClipGroups, PlanProjectionSettings, ViewFlagOverrides 
 import { IModelDisplaySettings, IModelDisplaySettings3d } from "../IModelDisplaySettings";
 import { ViewState, ViewState3d } from "../ViewState";
 import { _implementationProhibited } from "./cross-package";
-import { ClipVector } from "@itwin/core-geometry";
 import { BeEvent, Id64String, ObservableMap } from "@itwin/core-bentley";
 
 class IModelDisplaySettingsImpl implements IModelDisplaySettings {
@@ -18,9 +17,7 @@ class IModelDisplaySettingsImpl implements IModelDisplaySettings {
 
   #viewFlagOverrides: ViewFlagOverrides = { }
   #ignoreClipStyle = false;
-  #clipVector?: ClipVector;
 
-  public readonly onClipVectorChanged = new BeEvent<() => void>();
   public readonly onIgnoreClipStyleChanged = new BeEvent<() => void>();
   public readonly onViewFlagOverridesChanged = new BeEvent<() => void>();
 
@@ -42,16 +39,6 @@ class IModelDisplaySettingsImpl implements IModelDisplaySettings {
     this.#viewFlagOverrides = ovrs;
     // Synchronize display style
     this.onViewFlagOverridesChanged.raiseEvent();
-  }
-
-  public get clipVector() {
-    return this.#clipVector;
-  }
-
-  public set clipVector(clip: ClipVector | undefined) {
-    this.#clipVector = clip;
-    // synchronize ViewDetails
-    this.onClipVectorChanged.raiseEvent();
   }
 
   public get ignoreClipStyle() {

@@ -34,6 +34,8 @@ export interface IModelReference {
 
   readonly isLoadingComplete: boolean;
   readonly tileTreeRefs: Iterable<TileTreeReference>;
+
+  // set/commitScheduleEditing?
 }
 
 export interface IModelReference2d extends IModelReference {
