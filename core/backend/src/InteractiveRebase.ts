@@ -125,7 +125,7 @@ export interface RebaseConflict {
    *
    * @param properties The properties for which to accept "our" value. If not specified, or if
    * the array is empty, then the "our" value of all properties will be accepted. Properties
-   * that are not accepted are left unmodified.
+   * that are not accepted are left unmodified. Unknown properties are ignored.
    */
   acceptOurs(properties?: string[]): void;
 
@@ -134,7 +134,7 @@ export interface RebaseConflict {
    *
    * @param properties The properties for which to accept "their" value. If not specified, or if
    * the array is empty, then the "their" value of all properties will be accepted. Properties
-   * that are not accepted are left unmodified.
+   * that are not accepted are left unmodified. Unknown properties are ignored.
    */
   acceptTheirs(properties?: string[]): void;
 }
@@ -862,31 +862,21 @@ function addPropsAccessStrings(target: string[], classDef: typeof Element, insta
  * round-tripped through [[Entity.serialize]], which is what knows how a props value is represented in an
  * ECSql instance (e.g. props `placement.origin` `[x, y]` is instance `origin` `{x, y}`).
  */
-function applyResolution(rebase: InteractiveRebase, conflict: { id: Id64String, classFullName: string, conflictingProperties: string[], differentProperties: string[] }, ours: RebaseConflictProperties, source: RebaseConflictProperties, properties?: string[]): void {
+function applyResolution(
+  rebase: InteractiveRebase,
+  conflict: RebaseConflict,
+  source: RebaseConflictProperties,
+  properties?: string[]
+): void {
   const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
+  const instance = classDef.serialize(source as ElementProps, rebase.iModel);
 
   if (properties === undefined || properties.length === 0) {
     // Fully replace the instance with `source`: pass `fullReplace` so native clears (rather than leaves
     // as-is) any property that `source`'s serialized form doesn't include.
-    const instance = classDef.serialize(source as ElementProps, rebase.iModel);
     rebase.applyConflictResolution(instance as RebaseConflictProperties, true /* fullReplace */);
     return;
   }
-
-  // `conflictingProperties` requires an "original" baseline to compare against, so it's always empty for a
-  // newly-inserted instance (see {@link RebaseConflict.conflictingProperties}); in that case, any of the
-  // properties that differ between "theirs" and "ours" are choosable instead.
-  const acceptableProperties = conflict.conflictingProperties.length > 0 ? conflict.conflictingProperties : conflict.differentProperties;
-
-  const resolved: RebaseConflictProperties = { ...ours };
-  for (const prop of properties) {
-    if (!acceptableProperties.includes(prop)) {
-      InteractiveRebaseError.throwError("not-conflicting-property", `Property ${prop} is not a conflicting property for instance ${conflict.id}`);
-    }
-    setPropertyValue(resolved, prop, getPropertyValue(source, prop));
-  }
-
-  const instance = classDef.serialize(resolved as ElementProps, rebase.iModel);
 
   // Explicitly requested properties must be set even when their value is `undefined` (e.g. reverting a
   // property that a previous acceptTheirs() set, back to a value ours never had) - a native update leaves
@@ -1021,13 +1011,16 @@ class RebaseConflictImpl implements RebaseConflict {
 
   public acceptOurs(properties?: string[]): void {
     const ours = this.ours;
+    if (ours === undefined) {
+      // TODO: delete this instance
+    }
     assert(ours !== undefined, "there are no local changes to accept for this conflict");
-    applyResolution(this._rebase, this, ours, ours, properties);
+    applyResolution(this._rebase, this, ours, properties);
   }
 
   public acceptTheirs(properties?: string[]): void {
     const { ours, theirs } = this;
     assert(ours !== undefined && theirs !== undefined, "there are no upstream changes to accept for this conflict");
-    applyResolution(this._rebase, this, ours, theirs, properties);
+    applyResolution(this._rebase, this, theirs, properties);
   }
 }
