@@ -97,7 +97,20 @@ export interface DateTimeFieldFormatOptions {
  *     `persistenceUnit ?? propertyPersistenceUnit`, looked up via the active
  *     [FormatsProvider]($core-quantity).
  *  2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped
- *     when identical to the effective pair.
+ *     when identical to the effective pair, and skipped entirely when [[persistenceUnit]] names
+ *     a **different** unit than the property's own (see below).
+ *
+ * The property-side fallback is a *presentation* fallback only. [[kindOfQuantity]] chooses how a
+ * magnitude is displayed, so falling back to the property's KoQ yields a different-looking but
+ * still correct number. [[persistenceUnit]], by contrast, is a statement about what the stored
+ * magnitude *means*: a field declaring `persistenceUnit: "Units.FT"` asserts that the `2.5` on
+ * the property is 2.5 feet. Formatting that 2.5 through the property's metre-based pair would
+ * render it as 2.5 m — a silently wrong value, off by the conversion factor. So when
+ * [[persistenceUnit]] disagrees with the property's persistence unit, there is no fallback:
+ * either the requested pair is pre-warmed, or the field renders its raw value and the shortfall
+ * is reported (on the synchronous path, via
+ * [FieldFormattingSpecProvider.misses]($backend)). When [[persistenceUnit]] agrees with the
+ * property's unit — or is omitted — the property-side pair remains a safe fallback.
  *
  * The first pair with a pre-warmed [FormatterSpec]($core-quantity) wins; if neither resolves,
  * the field falls back to `toString()` for `"quantity"` or a `(x, y[, z])` tuple for

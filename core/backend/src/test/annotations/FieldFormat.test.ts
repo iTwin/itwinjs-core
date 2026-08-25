@@ -6,6 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Code, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextBlock } from "@itwin/core-common";
 import { FormatSet, SchemaFormatsProvider } from "@itwin/ecschema-metadata";
+import { FormattingSpecArgs } from "@itwin/core-quantity";
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { StandaloneDb } from "../../IModelDb";
@@ -15,6 +16,7 @@ import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { decimalFormat, toFormatSet } from "../AnnotationTestUtils";
 import { withEditTxn } from "../../EditTxn";
 
@@ -191,6 +193,15 @@ describe("Field format resolution example", () => {
     ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
   }
 
+  /** Registers a provider warmed for exactly `requirements` — not for what `block` needs — then
+   * evaluates `block`. Lets a test create a deliberate pre-warm gap, which [[render]] cannot.
+   */
+  async function renderWarmedFor(block: TextBlock, requirements: FormattingSpecArgs[]): Promise<FieldFormattingSpecProvider> {
+    const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({ iModel: imodel, requirements });
+    ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
+    return provider;
+  }
+
   it("renders a field with no format options from the property's own KindOfQuantity, and raw where it has none", async () => {
     // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
     // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
@@ -295,9 +306,11 @@ describe("Field format resolution example", () => {
     expect(point.cachedContent).to.equal("(1, 2, 3)");
   });
 
-  it("falls back to the property's own format when the persistence unit does not exist", async () => {
-    // The format leg is fine and the unit leg is garbage. The override fails as a unit, and the
-    // property-side candidate silently rescues the properties that carry a KoQ.
+  it("renders raw and records a miss when the persistence unit override does not exist", async () => {
+    // The format leg is fine and the unit leg is garbage. The override is a claim about what the
+    // stored magnitude means, so an unresolvable unit is not silently replaced by the property's
+    // own -- that would ignore the claim and, for a *valid* wrong-phenomenon unit, render a number
+    // off by the conversion factor. The field goes raw and the shortfall is reported instead.
     // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
     // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
@@ -310,12 +323,48 @@ describe("Field format resolution example", () => {
 
     await render(block);
 
-    expect(length.cachedContent).to.equal("2.5 m");
-    expect(area.cachedContent).to.equal("100.0 m²");
-    expect(slope.cachedContent).to.equal("0.01 m/m");
+    expect(length.cachedContent).to.equal("2.5");
+    expect(area.cachedContent).to.equal("100");
+    expect(slope.cachedContent).to.equal("0.01");
     expect(angle.cachedContent).to.equal("90");
     expect(ratio.cachedContent).to.equal("0.9");
     expect(point.cachedContent).to.equal("(1, 2, 3)");
+
+    const provider = ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)!;
+    expect(provider.misses.some((m) => m.persistenceUnitName === "Units.NOT_A_UNIT")).to.be.true;
+  });
+
+  it("does not format a valid persistence-unit override through the property's unit when it was never warmed", async () => {
+    // The sharp edge this whole rule exists for. The field says the 2.5 stored on lengthProp is
+    // 2.5 *feet*. Only the property's own (LENGTH_PROP, Units.M) pair is warmed. Formatting the
+    // 2.5 through that metre pair would render "2.5 m" -- a plausible-looking, durable, 3.28x
+    // wrong answer that the caller has no way to detect. It must go raw and be reported instead.
+    // Persisted on the element: lengthProp 2.5 m
+    const block = TextBlock.create();
+    const claimsFeet = appendField(block, "lengthProp", { persistenceUnit: "Units.FT" });
+
+    const provider = await renderWarmedFor(block, [{ name: "FieldExample.LENGTH_PROP", persistenceUnitName: "Units.M" }]);
+
+    expect(claimsFeet.cachedContent).to.equal("2.5");
+    expect(claimsFeet.cachedContent).to.not.equal("2.5 m");
+    expect(provider.misses.some((m) => m.name === "FieldExample.LENGTH_PROP" && m.persistenceUnitName === "Units.FT")).to.be.true;
+    // ...and specifically not as the property pair, which is the fallback that must not have run.
+    expect(provider.misses.some((m) => m.persistenceUnitName === "Units.M")).to.be.false;
+  });
+
+  it("formats a valid persistence-unit override through the requested unit once it is warmed", async () => {
+    // The complement: the same field, with the pair it asked for actually warmed. 2.5 ft renders
+    // through a feet-based spec, confirming the miss above was a pre-warm gap and not a refusal
+    // to honor the override at all.
+    // Persisted on the element: lengthProp 2.5 m (reinterpreted by the field as 2.5 ft)
+    const block = TextBlock.create();
+    const claimsFeet = appendField(block, "lengthProp", { persistenceUnit: "Units.FT" });
+
+    const provider = await renderWarmedFor(block, [{ name: "FieldExample.LENGTH_PROP", persistenceUnitName: "Units.FT" }]);
+
+    // LENGTH_PROP presents in metres to 4 places, so 2.5 ft renders as its metre equivalent.
+    expect(claimsFeet.cachedContent).to.equal("0.762 m");
+    expect(provider.misses).to.be.empty;
   });
 
   it("falls back to the property's own format when the KindOfQuantity does not exist", async () => {
@@ -341,11 +390,12 @@ describe("Field format resolution example", () => {
     expect(point.cachedContent).to.equal("(1, 2, 3)");
   });
 
-  it("renders exactly as if no format options were given when both legs of the override fail", async () => {
-    // The most degenerate row: nothing the field says can be resolved, so it must be
-    // indistinguishable from a field carrying no formatOptions at all. Asserted here against a
-    // baseline field rendered in the same pass rather than against captured literals, so the
-    // claim survives any change to the seed values or the schema's formats.
+  it("renders raw when both legs of the override fail, matching a no-KoQ property's baseline", async () => {
+    // The most degenerate row: nothing the field says can be resolved. Because the failing leg
+    // includes a persistence unit that contradicts the property's, there is no property-side
+    // rescue -- every field here goes raw, including the three whose properties do carry a KoQ.
+    // Asserted against the KoQ-less baselines rendered in the same pass rather than against
+    // captured literals, so the claim survives any change to the seed values or the schema.
     // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
     // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
@@ -358,21 +408,22 @@ describe("Field format resolution example", () => {
     const ratio = appendField(block, "ratioProp", bothLegsFail);
     const point = appendField(block, "point", bothLegsFail);
 
-    const lengthBaseline = appendField(block, "lengthProp");
-    const areaBaseline = appendField(block, "areaProp");
-    const slopeBaseline = appendField(block, "slopeProp");
+    // These three properties carry no KoQ, so they render raw with or without formatOptions --
+    // the shape a fully-failed override must now also produce.
     const angleBaseline = appendField(block, "angleProp");
     const ratioBaseline = appendField(block, "ratioProp");
     const pointBaseline = appendField(block, "point");
 
     await render(block);
 
-    expect(length.cachedContent).to.equal(lengthBaseline.cachedContent);
-    expect(area.cachedContent).to.equal(areaBaseline.cachedContent);
-    expect(slope.cachedContent).to.equal(slopeBaseline.cachedContent);
     expect(angle.cachedContent).to.equal(angleBaseline.cachedContent);
     expect(ratio.cachedContent).to.equal(ratioBaseline.cachedContent);
     expect(point.cachedContent).to.equal(pointBaseline.cachedContent);
+
+    // The KoQ-carrying three no longer fall back to their property format.
+    expect(length.cachedContent).to.equal("2.5");
+    expect(area.cachedContent).to.equal("100");
+    expect(slope.cachedContent).to.equal("0.01");
   });
 
   it("prefers the adopted FormatSet's format over the property's own schema format", async () => {
