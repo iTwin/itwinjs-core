@@ -23,6 +23,9 @@ class IModelDisplaySettingsImpl implements IModelDisplaySettings {
 
   public constructor(view: ViewState) {
     this._view = view;
+    view.displayStyle.settings.onViewFlagsChanged.addListener(
+      () => this.onViewFlagOverridesChanged.raiseEvent()
+    );
   }
 
   public is3d(): this is IModelDisplaySettings3d {
@@ -35,8 +38,7 @@ class IModelDisplaySettingsImpl implements IModelDisplaySettings {
 
   public set viewFlagOverrides(ovrs: ViewFlagOverrides) {
     this.#viewFlagOverrides = ovrs;
-    // Synchronize display style
-    this.onViewFlagOverridesChanged.raiseEvent();
+    this._view.viewFlags = this._view.viewFlags.override(ovrs);
   }
 
   public get subCategoryOverrides() {
