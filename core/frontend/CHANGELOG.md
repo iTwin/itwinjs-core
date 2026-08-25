@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 25 Aug 2026 19:57:01 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Aug 2026 21:22:08 GMT and should not be manually modified.
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+### Updates
+
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
 
 ## 5.12.4
 Tue, 18 Aug 2026 15:45:35 GMT
