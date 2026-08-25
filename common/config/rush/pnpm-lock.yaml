@@ -802,8 +802,8 @@ importers:
         specifier: ^3.3.0
         version: 3.6.1
       wms-capabilities:
-        specifier: 0.4.0
-        version: 0.4.0
+        specifier: 0.6.0
+        version: 0.6.0
     devDependencies:
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
@@ -10431,8 +10431,8 @@ packages:
   wkx@0.5.0:
     resolution: {integrity: sha512-Xng/d4Ichh8uN4l0FToV/258EjMGU9MGcA0HV2d9B/ZpZB3lqQm7nkOdZdm5GhKtLLhAE7PiVQwN4eN+2YJJUg==}
 
-  wms-capabilities@0.4.0:
-    resolution: {integrity: sha512-dGe1SQ4GySIfsmGF+yk07QRsed0DgJJkPpimbmehE9nGXLqIGhbpi6pNk71YENqupLPSqcABDrKZ1UqepOhCyA==}
+  wms-capabilities@0.6.0:
+    resolution: {integrity: sha512-yTbtesuSyKkHhw1TUX4VklXEkbQByc+hyo7TWq1sGjBA6tQ+XN32w546TPDTzROuwFTE/Dcq5F5FN4aA9nesaQ==}
     hasBin: true
 
   word-wrap@1.2.5:
@@ -17430,9 +17430,7 @@ snapshots:
     dependencies:
       '@types/node': 20.17.58
 
-  wms-capabilities@0.4.0:
-    dependencies:
-      minimist: 1.2.8
+  wms-capabilities@0.6.0: {}
 
   word-wrap@1.2.5: {}
 
