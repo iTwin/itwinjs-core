@@ -7,7 +7,7 @@ import { statSync } from "fs";
 import { assert } from "chai";
 import * as sinon from "sinon";
 import { Suite } from "mocha";
-import { BriefcaseDb, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
+import { BriefcaseDb, CloudSqlite, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { DbResult } from "@itwin/core-bentley";
@@ -667,12 +667,13 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   // the sync db's rows were never uploaded. CloudSqlite.withWriteLock abandons the container's local
   // changes when the locked operation throws, which reverts the cache to the last uploaded state - the
   // ids this import took are handed out again to whoever asks next.
+  const containerLockFailureMessage = "simulated failure before the container write lock was released";
   const failInsideTheContainerLock = (): void => {
-    const realWithLockedAccess = SchemaSync.withLockedAccess;
-    sinon.stub(SchemaSync, "withLockedAccess").callsFake(async (iModel, args, operation) => {
-      await realWithLockedAccess(iModel, args, async (access) => {
-        await operation(access);
-        throw new Error("simulated failure before the container write lock was released");
+    const realWithWriteLock = CloudSqlite.withWriteLock;
+    sinon.stub(CloudSqlite, "withWriteLock").callsFake(async (args, operation) => {
+      await realWithWriteLock(args, async () => {
+        await operation();
+        throw new Error(containerLockFailureMessage);
       });
     });
   };
@@ -702,7 +703,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
       };
 
       failInsideTheContainerLock();
-      await assertThrowsAsync(async () => importTinySchema(b1, rollbackSchema));
+      await assertThrowsAsync(async () => importTinySchema(b1, rollbackSchema), containerLockFailureMessage);
       sinon.restore();
 
       // The briefcase rolled its adopt back, as in the test above.
@@ -1231,7 +1232,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
 
     try {
       failInsideTheContainerLock();
-      await assertThrowsAsync(async () => SchemaSync.initializeForIModel({ iModel: b1, containerProps }));
+      await assertThrowsAsync(async () => SchemaSync.initializeForIModel({ iModel: b1, containerProps }), containerLockFailureMessage);
       sinon.restore();
 
       assert.isFalse(SchemaSync.isEnabled(b1), "the failed container upload left schema sync enabled locally");
