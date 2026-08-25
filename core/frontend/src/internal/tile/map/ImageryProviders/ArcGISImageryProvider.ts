@@ -112,12 +112,22 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     // Applied after all provider query params so the client sees the complete request.
     // Guarded so the common no-client path stays synchronous up to the fetch call.
     let clientAuthApplied = false;
-    let clientHeaders: Headers | undefined;
+    const baseHeaders = options?.headers;
     if (this.accessClient?.applyToRequest) {
-      clientHeaders = new Headers(options?.headers);
+      const clientHeaders = new Headers(baseHeaders);
       clientAuthApplied = await this.applyAccessClientAuth(urlObj, clientHeaders);
       options = { ...options, headers: clientHeaders };
     }
+
+    // Shapes each follow-up request independently, with fresh headers and the same redirect policy as the
+    // initial request, so injected values are neither accumulated nor exposed to cross-origin redirects.
+    const shapedFetch = async (target: URL): Promise<Response> => {
+      if (!clientAuthApplied)
+        return fetch(target.toString(), options);
+      const headers = new Headers(baseHeaders);
+      await this.applyAccessClientAuth(target, headers);
+      return fetch(target.toString(), { ...options, headers, redirect: this.credentialedRedirect ?? options?.redirect });
+    };
 
     // We want to complete the first request before letting other requests go;
     // this done to avoid flooding server with requests missing credentials
@@ -169,13 +179,8 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         if (this._lastAccessToken && this._accessTokenRequired)
           tmpUrl.searchParams.append("token", this._lastAccessToken.token);
         tmpUrl.searchParams.append("f","json");
-        if (clientAuthApplied && clientHeaders)
-          await this.applyAccessClientAuth(tmpUrl, clientHeaders);
-        response = await  fetch(tmpUrl.toString(), options);
+        response = await shapedFetch(tmpUrl);
       }
-
-      if (clientAuthApplied && await this.isAccessClientAuthFailure(response))
-        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 
       errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
 
@@ -201,7 +206,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
           }
 
           // Make a second attempt with refreshed token
-          response = await fetch(urlObj2.toString(), options);
+          response = await shapedFetch(urlObj2);
           errorCode  = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
 
@@ -227,6 +232,10 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
     if (response === undefined)
       throw new Error("fetch call failed");
+
+    // Classify the final response - initial, fallback or token-retry - once all retries are done.
+    if (clientAuthApplied && await this.isAccessClientAuthFailure(response))
+      this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 
     return response;
   }

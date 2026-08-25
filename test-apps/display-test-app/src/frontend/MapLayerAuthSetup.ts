@@ -92,7 +92,8 @@ function configureAuthAccessClient(configuration: DtaConfiguration): void {
 }
 
 /** Applies the map-layer security/authentication configuration derived from environment variables.
- * Must be called after IModelApp startup.
+ * Must be called after IModelApp startup and after every map-layer format the access client targets
+ * (including the MapLayersFormats extension formats) has been registered.
  */
 export function configureMapLayerAuth(configuration: DtaConfiguration): void {
   configureTrustedCredentialsOrigins(configuration);

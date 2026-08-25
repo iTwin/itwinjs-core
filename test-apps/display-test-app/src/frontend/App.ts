@@ -350,8 +350,6 @@ export class DisplayTestApp {
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
-    configureMapLayerAuth(configuration);
-
     IModelConnection.onOpen.addListener((imodel: IModelConnection) => {
       if (imodel.isBlankConnection()) return;
 
@@ -453,6 +451,9 @@ export class DisplayTestApp {
         ? { subscriptionKey: configuration.azureMapsKey }
         : undefined,
     });
+
+    // After MapLayersFormats.initialize so access clients can target the extension formats too.
+    configureMapLayerAuth(configuration);
 
     EditTools.registerProjectLocationTools();
   }

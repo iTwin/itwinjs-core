@@ -6,7 +6,7 @@
  * @module MapLayers
  */
 
-import { assert, BeEvent } from "@itwin/core-bentley";
+import { assert, BeEvent, BentleyError, Logger } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
@@ -21,6 +21,7 @@ import { DecorateContext } from "../../ViewContext";
 const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
 const doDebugToolTips = false;
+const loggerCategory = "MapLayerImageryProvider";
 
 /** Escapes HTML metacharacters so the text renders literally when assigned to `innerHTML`.
  * Use for any server- or user-supplied string that ends up in the map tooltip, which is rendered
@@ -551,13 +552,17 @@ export abstract class MapLayerImageryProvider {
     let requestUrl = url;
     let clientAuthApplied = false;
     if (this.accessClient?.applyToRequest) {
+      let urlObj: URL | undefined;
       try {
-        const urlObj = new URL(url);
+        urlObj = new URL(url);
+      } catch {
+        // Not a parseable absolute URL; let fetch fail (or succeed) on the original request unshaped.
+      }
+      // applyToRequest failures propagate: the request must never silently degrade to an unauthenticated one.
+      if (urlObj) {
         headers = headers ?? new Headers();
         clientAuthApplied = await this.applyAccessClientAuth(urlObj, headers);
         requestUrl = urlObj.toString();
-      } catch {
-        // Not a parseable absolute URL; let fetch fail (or succeed) on the original request unshaped.
       }
     }
 
@@ -664,13 +669,22 @@ export abstract class MapLayerImageryProvider {
     let requestUrl = url;
     let clientAuthApplied = false;
     if (this.accessClient?.applyToRequest) {
+      let urlObj: URL | undefined;
       try {
-        const urlObj = new URL(url);
-        headers = headers ?? new Headers();
-        clientAuthApplied = await this.applyAccessClientAuth(urlObj, headers);
-        requestUrl = urlObj.toString();
+        urlObj = new URL(url);
       } catch {
         // Not a parseable absolute URL; issue the original request unshaped.
+      }
+      if (urlObj) {
+        headers = headers ?? new Headers();
+        try {
+          clientAuthApplied = await this.applyAccessClientAuth(urlObj, headers);
+        } catch (error) {
+          // Never degrade to an unauthenticated request; skip the tooltip instead.
+          Logger.logWarning(loggerCategory, `Access client applyToRequest failed for tooltip request: ${BentleyError.getErrorMessage(error)}`);
+          return;
+        }
+        requestUrl = urlObj.toString();
       }
     }
 

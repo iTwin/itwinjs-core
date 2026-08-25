@@ -433,4 +433,61 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(requested.searchParams.get("request")).toEqual("GetCapabilities");
     expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer secret-jwt");
   });
+
+  it("propagates applyToRequest failures instead of issuing the request unshaped", async () => {
+    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
+      applyToRequest: ({ headers }) => {
+        headers.set("Authorization", "Bearer partial");
+        throw new Error("token service unreachable");
+      },
+    }));
+    const provider = createProvider();
+
+    await expect(provider.makeRequest(tileUrl)).rejects.toThrow("token service unreachable");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("skips the tooltip request when applyToRequest fails", async () => {
+    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
+      applyToRequest: () => {
+        throw new Error("token service unreachable");
+      },
+    }));
+    const provider = createProvider();
+    const strings: string[] = [];
+    // Must neither reject (getToolTip callers do not catch) nor fall back to an unshaped request.
+    await provider.testToolTipFromUrl(strings, `${settingsUrl}/getFeatureInfo`);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(strings).toHaveLength(0);
+  });
+
+  it("issues a non-absolute URL unshaped rather than failing", async () => {
+    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+    const provider = createProvider();
+    await provider.makeRequest("relative/tile/0/0/0");
+
+    expect(getRequestUrl()).toEqual("relative/tile/0/0/0");
+    expect(getRequestHeaders()).toBeUndefined();
+  });
+
+  it("re-shapes and protects the ArcGIS HTML-fallback request and classifies its response", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient());
+    fetchMock.mockResolvedValueOnce(new Response("<html></html>", { status: 200, headers: { "content-type": "text/html" } }));
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    const provider = new ArcGISMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" }));
+
+    await (provider as any).fetch(new URL("https://arcgis.example.com/MapServer/tile/0/0/0"), { method: "GET" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const fallbackUrl = new URL(getRequestUrl(1));
+    expect(fallbackUrl.searchParams.get("f")).toEqual("json");
+    expect(fallbackUrl.searchParams.get("clientParam")).toEqual("clientParamValue");
+    expect(getRequestHeaders(1)?.get("Authorization")).toEqual("Bearer secret-jwt");
+    // The follow-up request must carry the same redirect policy as the initial shaped request.
+    expect(getRequestInit(1)?.redirect).toEqual("error");
+    // The final (fallback) response is the one classified.
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
+  });
 });
