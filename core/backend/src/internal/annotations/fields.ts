@@ -435,33 +435,37 @@ export function createUpdateContext(
 
 /** Recomputes a single field's cached display string synchronously. Returns true iff
  * cachedContent changed.
+ *
+ * Resolving the property value and formatting it are both fallible — formatting in particular
+ * runs [FormatterSpec.applyFormatting]($core-quantity), which can throw on a malformed format.
+ * A failure of either is logged and degrades *this* field to
+ * [FieldRun.invalidContentIndicator]($common); it never escapes to abandon the sibling fields of
+ * the same annotation, which would leave them mutated in memory but unpersisted.
  */
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
   if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
     return false;
   }
 
-  let propValue: FieldValue | undefined;
+  let newContent: string | undefined;
   try {
-    propValue = context.getProperty(field);
+    const propValue = context.getProperty(field);
+    if (undefined !== propValue) {
+      const specProvider = context.formattingSpecProvider;
+      if (specProvider) {
+        const formatSet = field.formatOptions?.quantity?.formatSet;
+        newContent = formatFieldValueWithSpecProvider(
+          propValue,
+          field.formatOptions,
+          specProvider.getProviderFor(formatSet),
+          (candidates) => specProvider.recordMisses(candidates, formatSet),
+        );
+      } else {
+        newContent = formatFieldValue(propValue, field.formatOptions);
+      }
+    }
   } catch (err) {
     Logger.logError(BackendLoggerCategory.IModelDb, err);
-  }
-
-  let newContent: string | undefined;
-  if (undefined !== propValue) {
-    const specProvider = context.formattingSpecProvider;
-    if (specProvider) {
-      const formatSet = field.formatOptions?.quantity?.formatSet;
-      newContent = formatFieldValueWithSpecProvider(
-        propValue,
-        field.formatOptions,
-        specProvider.getProviderFor(formatSet),
-        (candidates) => specProvider.recordMisses(candidates, formatSet),
-      );
-    } else {
-      newContent = formatFieldValue(propValue, field.formatOptions);
-    }
   }
 
   newContent = newContent ?? FieldRun.invalidContentIndicator;
