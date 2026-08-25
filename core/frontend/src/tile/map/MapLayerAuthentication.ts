@@ -88,6 +88,11 @@ export interface MapLayerRequestAuthenticator {
    * [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]: while the restriction is enabled, redirects
    * are refused so the injected values cannot silently reach an unlisted origin.
    *
+   * When this method is defined, the client is the sole authentication authority for its format: a 401
+   * challenge on a shaped request is never answered with browser credentials (NTLM / Negotiate SSO), so
+   * layers served by Windows-Authentication-protected services cannot be combined with a shaping client
+   * on the same format.
+   *
    * Called on the hot path of tile loading; implementations should be fast and cache their tokens internally.
    * When defined, URL-keyed capability/service-metadata caches are bypassed for this format so that
    * authenticated responses are never shared across differing authentication contexts.

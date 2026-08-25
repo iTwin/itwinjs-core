@@ -183,6 +183,12 @@ You can use these environment variables to alter the default behavior of various
   * Electron only. If defined, a comma-separated list of servers for which Chromium is allowed to perform integrated authentication (Kerberos/NTLM SSO), e.g. `*.example.com`. Without this, Chromium silently ignores `Negotiate`/`NTLM` challenges from servers outside the intranet zone and map layer SSO fails with HTTP 401.
 * IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS
   * If defined, a comma-separated list of exact origins (scheme + host + port, e.g. `https://maps.corp.example.com`) trusted to receive map-layer credentials. When set, display-test-app assigns the parsed origins to `MapLayerFormatRegistry.trustedCredentialsOrigins` and enables `MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins`, so basic-auth sharing and SSO retries are blocked for any cross-origin map server not in the list. There is no default value; set it to the origin of the WMS/WMTS/ArcGIS server you use for testing. Unlike IMJS_AUTH_SERVER_ALLOWLIST (a Chromium host-pattern allowlist that may contain wildcards), entries here must be exact origins.
+* IMJS_MAP_LAYER_AUTH_HEADER
+  * If defined, a `Header-Name=value` pair (e.g. `Authorization=Bearer my-test-token`, split on the first `=`). display-test-app registers a `MapLayerAccessClient` whose `applyToRequest` injects that header into every map-layer request of the formats listed in IMJS_MAP_LAYER_AUTH_FORMATS, for testing request-shaping authentication (e.g. services behind an authenticating proxy).
+* IMJS_MAP_LAYER_AUTH_QUERY_PARAMS
+  * If defined, a comma-separated list of `name=value` pairs (e.g. `token=my-test-token,client=dta`). Injected as query parameters into every map-layer request by the same access client as IMJS_MAP_LAYER_AUTH_HEADER; either variable may be used alone or both together.
+* IMJS_MAP_LAYER_AUTH_FORMATS
+  * A comma-separated list of map-layer format ids (e.g. `WMS,WMTS,ArcGIS`) for which the IMJS_MAP_LAYER_AUTH_HEADER/IMJS_MAP_LAYER_AUTH_QUERY_PARAMS access client is registered. Required: without it, no access client is registered.
 * IMJS_ALWAYS_LOAD_EDGES
   * If defined, when requesting tile content, edges will always be requested regardless of view settings.
 * IMJS_SUBDIVIDE_INCOMPLETE
