@@ -211,8 +211,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * registered for the iModel, falls back to its raw string representation. Such shortfalls are
    * recorded in [FieldFormattingSpecProvider.misses]($backend); re-warm and re-evaluate to
    * pick them up.
+   *
+   * A field whose property cannot be resolved, or whose format throws while being applied, is
+   * logged and rendered as [FieldRun.invalidContentIndicator]($common). One bad field does not
+   * abandon the rest of the block.
    * @returns the number of fields whose display strings were modified.
-   * @throws Error if evaluation of any field fails.
    */
   public static evaluateFields(args: EvaluateFieldsArgs): number {
     return updateFields(args.block, createUpdateContext(undefined, args.iModel, false, fieldFormattingProviders.get(args.iModel.key)));
