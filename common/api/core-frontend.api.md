@@ -184,6 +184,7 @@ import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { Map4d } from '@itwin/core-geometry';
 import { MapLayerKey } from '@itwin/core-common';
 import { MapLayerProps } from '@itwin/core-common';
+import { MapLayerProviderProperties } from '@itwin/core-common';
 import { MapLayerSettings } from '@itwin/core-common';
 import { MapSubLayerProps } from '@itwin/core-common';
 import { MassPropertiesOperation } from '@itwin/core-common';
@@ -1290,6 +1291,7 @@ export interface ArcGisGetServiceJsonArgs {
     ignoreCache?: boolean;
     // (undocumented)
     password?: string;
+    properties?: MapLayerProviderProperties;
     // (undocumented)
     queryParams?: {
         [key: string]: string;
@@ -6048,6 +6050,16 @@ export interface MapLayerAccessClient extends MapLayerRequestAuthenticator {
     onOAuthProcessEnd?: BeEvent<Listener>;
 }
 
+// @beta
+export type MapLayerAccessClientResolver = (args: MapLayerAccessClientResolverArgs) => MapLayerAccessClient | undefined;
+
+// @beta
+export interface MapLayerAccessClientResolverArgs {
+    layerUrl: string;
+    name?: string;
+    properties?: MapLayerProviderProperties;
+}
+
 // @beta (undocumented)
 export interface MapLayerAccessToken {
     // (undocumented)
@@ -6137,8 +6149,8 @@ export class MapLayerFormatRegistry {
     createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
     // @internal
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
-    // @beta (undocumented)
-    getAccessClient(formatId: string): MapLayerAccessClient | undefined;
+    // @beta
+    getAccessClient(formatId: string, layer?: MapLayerAccessClientResolverArgs): MapLayerAccessClient | undefined;
     // @internal
     isCredentialsSharingAllowed(url: string, settingsUrl: string): boolean;
     // (undocumented)
@@ -6153,6 +6165,8 @@ export class MapLayerFormatRegistry {
     restrictCredentialsToTrustedOrigins: boolean;
     // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
+    // @beta
+    setAccessClientResolver(formatId: string, resolver: MapLayerAccessClientResolver): boolean;
     // @beta
     get trustedCredentialsOrigins(): ReadonlyArray<string>;
     set trustedCredentialsOrigins(origins: ReadonlyArray<string>);

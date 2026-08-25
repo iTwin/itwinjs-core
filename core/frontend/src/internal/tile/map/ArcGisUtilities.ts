@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
-import { MapSubLayerProps } from "@itwin/core-common";
+import { MapLayerProviderProperties, MapSubLayerProps } from "@itwin/core-common";
 import { accessClientRedirect, applyAccessClientToRequest, isAccessClientAuthFailure, MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthenticationFailedError, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { headersIncludeAuthMethod } from "../../../request/utils";
@@ -57,6 +57,8 @@ export interface ArcGisGetServiceJsonArgs  {
   queryParams?: {[key: string]: string};
   ignoreCache?: boolean;
   requireToken?: boolean;
+  /** Provider-specific properties of the layer's settings, forwarded to the format's access-client resolver. */
+  properties?: MapLayerProviderProperties;
 }
 
 /**
@@ -280,7 +282,7 @@ export class ArcGisUtilities {
 
   public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
     const {url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
-    const accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(formatId);
+    const accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(formatId, { layerUrl: url, properties: args.properties });
     // The cache is keyed by URL only, so responses shaped by an access client (e.g. header-authenticated)
     // must not be shared with or served from differently-authenticated requests.
     const clientShapesRequests = undefined !== accessClient?.applyToRequest;

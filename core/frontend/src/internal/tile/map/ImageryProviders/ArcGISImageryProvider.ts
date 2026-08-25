@@ -35,7 +35,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
   constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean) {
     super(settings, usesCachedTiles);
-    this._accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(settings.formatId);
+    this._accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(settings.formatId, { layerUrl: settings.url, name: settings.name, properties: settings.properties });
   }
 
   /** Updates the accessClient token state whenever the status of the provider change.
@@ -60,7 +60,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   protected async getServiceJson() {
     let metadata: ArcGISServiceMetadata|undefined;
     try {
-      metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
+      metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams(), properties: this._settings.properties});
 
     } catch (err) {
       if (err instanceof MapLayerUntrustedOriginError)
@@ -69,7 +69,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
     }
     if (metadata && metadata.accessTokenRequired) {
-      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId, { layerUrl: this._settings.url, name: this._settings.name, properties: this._settings.properties });
       if (accessClient) {
         try {
           // Keep track of last used access token, so we can invalidate it later when an errors occurs

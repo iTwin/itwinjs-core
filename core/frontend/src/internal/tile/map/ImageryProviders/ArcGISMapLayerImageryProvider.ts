@@ -145,7 +145,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   public serviceJson: any;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
-    this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId);
+    this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId, { layerUrl: settings.url, name: settings.name, properties: settings.properties });
   }
 
   protected override get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)

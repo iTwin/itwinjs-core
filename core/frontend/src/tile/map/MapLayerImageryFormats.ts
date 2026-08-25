@@ -69,7 +69,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
         credentials: (userName && password ? {user: userName, password} : undefined),
         ignoreCache,
         queryParams: source.collectQueryParams(),
-        accessClient: IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId),
+        accessClient: IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId, { layerUrl: source.url, name: source.name }),
       });
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
@@ -159,7 +159,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
         credentials: (userName && password ? {user: userName, password} : undefined),
         ignoreCache,
         queryParams: source.collectQueryParams(),
-        accessClient: IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId),
+        accessClient: IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId, { layerUrl: source.url, name: source.name }),
       });
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };

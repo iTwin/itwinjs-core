@@ -387,6 +387,8 @@ beta;interface;MapFeatureInfo
 beta;interface;MapFeatureInfoOptions
 beta;class;MapFeatureInfoRecord
 beta;interface;MapLayerAccessClient
+beta;type;MapLayerAccessClientResolver
+beta;interface;MapLayerAccessClientResolverArgs
 beta;interface;MapLayerAccessToken
 beta;interface;MapLayerAccessTokenParams
 beta;interface;MapLayerAuthenticationInfo

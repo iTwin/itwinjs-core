@@ -7,6 +7,7 @@
  */
 
 import { BeEvent, Listener } from "@itwin/core-bentley";
+import { MapLayerProviderProperties } from "@itwin/core-common";
 
 /** @beta */
 export interface MapLayerTokenEndpoint {
@@ -124,4 +125,31 @@ export interface MapLayerAccessClient extends MapLayerRequestAuthenticator {
 
   onOAuthProcessEnd?: BeEvent<Listener>;
 }
+
+/** Identifies the map layer for which an access client is being resolved.
+ * Contains only state that survives serialization of the hosting view, so a resolver registered via
+ * [[MapLayerFormatRegistry.setAccessClientResolver]] yields the same client after a view is restored from JSON.
+ * @beta
+ */
+export interface MapLayerAccessClientResolverArgs {
+  /** The URL of the map-layer source, as configured on the layer's settings; the stable identity of the layer. */
+  layerUrl: string;
+  /** The layer name, when available. */
+  name?: string;
+  /** Provider-specific properties persisted on the layer settings, when available (e.g. a key identifying
+   * which of the application's access clients serves this layer). Not available on every lookup: requests
+   * made while validating a map-layer source only know the source URL and name.
+   */
+  properties?: MapLayerProviderProperties;
+}
+
+/** Resolves the [[MapLayerAccessClient]] serving a specific map layer, letting an application use different
+ * clients for different layers of the same format (e.g. an OAuth client for public services and a proxy client
+ * for internal ones). Registered per format via [[MapLayerFormatRegistry.setAccessClientResolver]].
+ * Invoked on the tile-loading hot path: implementations must be fast and synchronous — typically a lookup keyed
+ * on [[MapLayerAccessClientResolverArgs.layerUrl]] or a value in [[MapLayerAccessClientResolverArgs.properties]].
+ * Returning `undefined` means no access client serves the layer.
+ * @beta
+ */
+export type MapLayerAccessClientResolver = (args: MapLayerAccessClientResolverArgs) => MapLayerAccessClient | undefined;
 

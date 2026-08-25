@@ -378,7 +378,7 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected get accessClient(): MapLayerAccessClient | undefined {
-    return IModelApp.mapLayerFormatRegistry?.getAccessClient(this._settings.formatId);
+    return IModelApp.mapLayerFormatRegistry?.getAccessClient(this._settings.formatId, { layerUrl: this._settings.url, name: this._settings.name, properties: this._settings.properties });
   }
 
   /** Context identifying this layer, passed to the access client's callbacks.

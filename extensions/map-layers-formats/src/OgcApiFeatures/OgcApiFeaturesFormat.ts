@@ -29,7 +29,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       };
 
       // Give the format's access client full control over each outgoing request (e.g. an Authorization header).
-      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId);
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId, { layerUrl: source.url, name: source.name });
       const clientShapesRequests = undefined !== accessClient?.applyToRequest;
 
       // Classify HTTP failures before parsing JSON, using the final response URL to enforce origin trust after redirects.

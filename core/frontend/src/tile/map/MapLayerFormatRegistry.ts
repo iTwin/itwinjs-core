@@ -10,7 +10,7 @@ import { assert, expectDefined, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference, tryGetOrigin } from "../internal";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAccessClientResolver, MapLayerAccessClientResolverArgs, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference, tryGetOrigin } from "../internal";
 const loggerCategory = "MapLayerFormatRegistry";
 
 /**
@@ -166,6 +166,7 @@ export interface MapLayerOptions {
 export interface MapLayerFormatEntry {
   type: MapLayerFormatType;
   accessClient?: MapLayerAccessClient;
+  accessClientResolver?: MapLayerAccessClientResolver;
 }
 
 /**
@@ -311,12 +312,39 @@ export class MapLayerFormatRegistry {
     return false;
   }
 
-  /** @beta */
-  public getAccessClient(formatId: string): MapLayerAccessClient | undefined {
+  /** Registers a resolver that picks the [[MapLayerAccessClient]] serving each individual layer of the given
+   * format, enabling different clients for different layers (see [[MapLayerAccessClientResolver]]).
+   * When a resolver is registered, it is the sole authority for lookups that identify a layer — including
+   * returning `undefined` for layers no client serves; the client registered via [[setAccessClient]] is only
+   * returned for lookups that do not identify a layer (e.g. [[getAccessClient]] called with `formatId` alone).
+   * @returns false if the format is not registered.
+   * @beta
+   */
+  public setAccessClientResolver(formatId: string, resolver: MapLayerAccessClientResolver): boolean {
+    const entry = this._formats.get(formatId);
+    if (entry !== undefined) {
+      entry.accessClientResolver = resolver;
+      return true;
+    }
+    return false;
+  }
+
+  /** Returns the access client serving the given format — or, when `layer` is supplied and a resolver was
+   * registered via [[setAccessClientResolver]], the client serving that specific layer.
+   * @beta
+   */
+  public getAccessClient(formatId: string, layer?: MapLayerAccessClientResolverArgs): MapLayerAccessClient | undefined {
     if (formatId.length === 0)
       return undefined;
 
-    return this._formats.get(formatId)?.accessClient;
+    const entry = this._formats.get(formatId);
+    if (entry === undefined)
+      return undefined;
+
+    if (entry.accessClientResolver !== undefined && layer !== undefined)
+      return entry.accessClientResolver(layer);
+
+    return entry.accessClient;
   }
 
   public get configOptions(): MapLayerOptions {
