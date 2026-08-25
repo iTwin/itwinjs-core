@@ -770,6 +770,21 @@ export enum BulkDeleteElementsStatus {
     Success = 0
 }
 
+// @beta
+export interface BulkInsertOptions extends BulkWriteOptions {
+    forceUseId?: boolean;
+}
+
+// @beta
+export interface BulkUpdateOptions extends BulkWriteOptions {
+    useIncrementalUpdate?: boolean;
+}
+
+// @beta
+export interface BulkWriteOptions {
+    useJsNames?: boolean;
+}
+
 // @public
 export abstract class Callout extends DetailingSymbol {
     constructor(props: CalloutProps, iModel: IModelDb);
@@ -2434,6 +2449,12 @@ export class ECDb implements Disposable {
     abandonChanges(): void;
     attachDb(fileName: string, alias: string): void;
     // @beta
+    bulkDeleteInstances(keys: object[], options?: BulkWriteOptions): number;
+    // @beta
+    bulkInsertInstances(instances: object[], options?: BulkInsertOptions): Id64String[];
+    // @beta
+    bulkUpdateInstances(instances: object[], options?: BulkUpdateOptions): number;
+    // @beta
     clearCaches(): void;
     // @internal
     clearStatementCache(): void;
@@ -2449,6 +2470,8 @@ export class ECDb implements Disposable {
     getCachedStatementCount(): number;
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
+    // @beta
+    get isBulkInstanceWriteSupported(): boolean;
     get isOpen(): boolean;
     readonly onBeforeClose: BeEvent<() => void>;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;

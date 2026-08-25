@@ -1,0 +1,28 @@
+{
+  "//": "Row counts used by the ECSqlWriteStatement vs bulk instance write comparison.",
+  "//rowCounts": "Default tiers kept modest so the suite stays fast in CI.",
+  "rowCounts": [
+    1000,
+    10000,
+    100000
+  ],
+  "//largeRowCounts": "Opt-in tiers for the ~1M row scenario. Enable with BULK_WRITE_PERF_LARGE=1.",
+  "largeRowCounts": [
+    1000000
+  ],
+  "//batchSize": "Rows handed to the native layer per bulk call. 0 means one single call for the whole set.",
+  "batchSize": 0,
+  "//batchSweep": "Row count used by the batch-size sweep, and the batch sizes it tries. 0 means a single call for the whole set.",
+  "batchSweepRowCount": 100000,
+  "batchSizes": [
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    0
+  ],
+  "//repeats": "Each sweep configuration is timed this many times and the best (minimum) time is reported, to suppress GC/scheduling noise.",
+  "repeats": 3
+}

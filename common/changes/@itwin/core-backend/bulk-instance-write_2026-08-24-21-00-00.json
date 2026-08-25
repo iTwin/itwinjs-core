@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added beta ECDb.bulkInsertInstances, ECDb.bulkUpdateInstances and ECDb.bulkDeleteInstances, which write a whole batch of instances across the native boundary in a single call with all-or-nothing semantics.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

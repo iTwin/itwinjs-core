@@ -11,6 +11,7 @@ publish: false
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
     - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
+    - [Bulk instance write API for ECDb](#bulk-instance-write-api-for-ecdb)
   - [@itwin/core-common](#itwincore-common)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-electron](#itwincore-electron)
@@ -87,6 +88,57 @@ SELECT * FROM bis.Element WHERE CodeValue IS json_extract(JsonProperties, '$.cod
 ```
 
 See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--is-not-operator-null-safe-comparison) for more details.
+
+### Bulk instance write API for ECDb
+
+Writing a large number of instances previously required one JavaScript-to-native call per row — either an [ECSqlWriteStatement]($backend) prepare/bind/step/reset cycle, or a single-row `insertInstance`/`updateInstance`/`deleteInstance` call. At the scale of hundreds of thousands or millions of rows, the per-row boundary crossing dominates the cost.
+
+Three new beta APIs submit an entire batch across the native boundary in a single call:
+
+- [ECDb.bulkInsertInstances]($backend) — returns the [Id64String]($bentley) of every inserted instance, in input order.
+- [ECDb.bulkUpdateInstances]($backend) — returns the number of supplied instances that were updated.
+- [ECDb.bulkDeleteInstances]($backend) — returns the number of supplied instances that were deleted.
+
+```ts
+const ids = ecdb.bulkInsertInstances(instances);
+```
+
+Instances use the same JSON shape as the existing single-row APIs, so each batch may contain instances of different ECClasses.
+
+**All-or-nothing semantics.** Each batch runs inside a single savepoint. If any row fails — including when a JavaScript property getter throws — the entire batch is rolled back, no row in that batch is written, and the thrown error identifies the index of the failing row. Calls back into the same `ECDb` from a property getter are rejected while the batch is active so they cannot reset its statement or commit its savepoint. Callers that want partial progress should submit smaller batches and handle failures per batch.
+
+**Updating without reading each row back.** [ECDb.bulkUpdateInstances]($backend) accepts `useIncrementalUpdate`, which defaults to `true` to match the behavior of the single-row update API. Incremental update reads each existing instance back so that properties omitted from the supplied JSON retain their current values. When the supplied instances are complete, pass `useIncrementalUpdate: false` to skip those reads; this is significantly faster for large batches.
+
+**Availability.** These APIs require a version of `@bentley/imodeljs-native` that implements bulk writes. Use [ECDb.isBulkInstanceWriteSupported]($backend) to detect support at runtime; calling a bulk method against an older addon throws a descriptive error rather than failing with a `TypeError`.
+
+**Scope.** Bulk writes are available on [ECDb]($backend) only; there is deliberately no [IModelDb]($backend) equivalent. Writing BIS elements, models, and aspects directly through a bulk instance writer would bypass element handlers and the change-tracking that briefcase editing depends on, so iModel content should continue to be written through the [IModelDb]($backend) APIs.
+
+Alongside the batching itself, six per-row bottlenecks were removed from the native instance writer: property-name lookups no longer allocate temporary strings on every property of every row, the statement cache no longer performs a linear most-recently-used reordering per row, the cache mutex is acquired once per batch instead of once per row, reading a property no longer round-trips its name out of V8 and back in as a freshly hashed string, each distinct ECClass name is resolved once per batch, and temporary N-API handles are released after each row instead of accumulating for the full call.
+
+Measured against a per-row [ECSqlWriteStatement]($backend) bind/step loop over a five-property class (macOS arm64, release build), writing the same columns on both sides:
+
+| Rows | Insert (statement → bulk) | Update | Delete |
+| --- | --- | --- | --- |
+| 10,000 | 0.062s → 0.029s (**2.1x**) | 0.063s → 0.036s (**1.8x**) | 0.031s → 0.011s (**2.8x**) |
+| 100,000 | 0.72s → 0.27s (**2.6x**) | 0.89s → 0.36s (**2.5x**) | 0.21s → 0.11s (**1.9x**) |
+| 1,000,000 | 7.94s → 2.87s (**2.8x**) | 10.08s → 3.41s (**3.0x**) | 2.40s → 1.07s (**2.3x**) |
+
+**Where the remaining time goes.** Sampling a one-million-row bulk insert shows only about 9% of the time inside `sqlite3_step`; the bulk of the rest is spent reading properties off the supplied JavaScript objects across the N-API boundary. Callers that need to go substantially faster than the numbers above should reduce the amount of JSON handed across per row rather than expect further gains from larger batches.
+
+**Choosing a batch size.** The speedup comes from amortizing the per-call cost, so it depends on how many rows each call carries, not on the total. Sweeping batch size over 100,000 rows (best of three runs):
+
+| Rows per call | Insert | Update | Delete |
+| --- | --- | --- | --- |
+| 1 | 1.13x | 1.16x | 0.62x |
+| 10 | 2.11x | 1.93x | 1.50x |
+| 100 | 2.33x | 2.09x | 1.76x |
+| 1,000 | 2.43x | 2.12x | 1.84x |
+| 10,000 | 2.36x | 2.21x | 1.86x |
+| all 100,000 | 2.23x | 2.16x | 1.86x |
+
+At one row per call the batch API is no better than a plain statement loop, and is actually *slower* for delete, because a batch of one pays the savepoint and array-marshalling cost without amortizing it. Nearly all of the benefit is realised by about 100 rows per call and the curve is flat after roughly 1,000. Batches in the 1,000–10,000 range are therefore a good default: they capture the full speedup while bounding peak memory and keeping the all-or-nothing rollback window small. Passing millions of instances in a single call is supported but buys nothing further.
+
+The comparison is reproducible via `npm run perftest:bulkInstanceWrite` in `full-stack-tests/backend` (set `BULK_WRITE_PERF_LARGE=1` to include the one-million-row case).
 
 ## @itwin/core-common
 
