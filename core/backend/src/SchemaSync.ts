@@ -210,13 +210,13 @@ export namespace SchemaSync {
     if (!propsString)
       throw new Error("iModel does not have a SchemaSyncDb");
 
-    // Reuse the existing access for this container so there is only ever one CloudAccess per container (per cache).
-    const sharedAccessKey = propsString + (testSyncCache ?? "");
-    const cached = sharedAccessByIModel.get(sharedAccessKey);
-    if (cached)
-      return cached;
-
     try {
+      // Reuse the existing access for this container so there is only ever one CloudAccess per container (per cache).
+      const sharedAccessKey = propsString + (testSyncCache ?? "");
+      const cached = sharedAccessByIModel.get(sharedAccessKey);
+      if (cached)
+        return cached;
+
       const props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       const accessToken = await CloudSqlite.requestToken(props);
       const access = new CloudAccess({ ...props, accessToken });
