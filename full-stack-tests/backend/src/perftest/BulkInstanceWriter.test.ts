@@ -25,6 +25,7 @@ const testSchema = `<ECSchema schemaName="BulkPerf" alias="bp" version="01.00.00
     <ECProperty propertyName="Active" typeName="boolean"/>
   </ECEntityClass>
 </ECSchema>`;
+const propertyNames = ["Name", "Code", "Quantity", "Weight", "Active"];
 
 interface ItemProps {
   classFullName: string;
@@ -99,14 +100,15 @@ function insertWithWriteStatement(ecdb: ECDb, items: ItemProps[]): number {
 
 /** The batched API: the whole set crosses into native in one (or a few) call(s). */
 function insertWithBulkApi(ecdb: ECDb, items: ItemProps[], batchSize: number): { elapsed: number, ids: Id64String[] } {
+  const rows = items.map((item) => [item.name, item.code, item.quantity, item.weight, item.active]);
   let ids: Id64String[] = [];
   const sw = new StopWatch(undefined, true);
   if (batchSize <= 0) {
-    ids = ecdb.bulkInsertInstances(items, { useJsNames: true });
+    ids = ecdb.bulkInsertInstances("BulkPerf.Item", propertyNames, rows);
   } else {
-    for (let i = 0; i < items.length; i += batchSize) {
+    for (let i = 0; i < rows.length; i += batchSize) {
       // Note: no `push(...batch)` here - spreading a multi-million element array exceeds the argument limit.
-      for (const id of ecdb.bulkInsertInstances(items.slice(i, i + batchSize), { useJsNames: true }))
+      for (const id of ecdb.bulkInsertInstances("BulkPerf.Item", propertyNames, rows.slice(i, i + batchSize)))
         ids.push(id);
     }
   }
@@ -136,47 +138,16 @@ function updateWithWriteStatement(ecdb: ECDb, items: ItemProps[], ids: Id64Strin
 }
 
 function updateWithBulkApi(ecdb: ECDb, items: ItemProps[], ids: Id64String[], batchSize: number): number {
-  const updates = ids.map((id, i) => ({ ...items[i], id, quantity: i % 7, weight: 42.5 }));
+  const updates = ids.map((id, i) => [id, items[i].name, items[i].code, i % 7, 42.5, items[i].active]);
   const sw = new StopWatch(undefined, true);
-  // Every instance is complete, so the read-back of existing values can be skipped.
-  const options = { useJsNames: true, useIncrementalUpdate: false };
   let affected = 0;
   if (batchSize <= 0) {
-    affected = ecdb.bulkUpdateInstances(updates, options);
+    affected = ecdb.bulkUpdateInstances("BulkPerf.Item", propertyNames, updates);
   } else {
     for (let i = 0; i < updates.length; i += batchSize)
-      affected += ecdb.bulkUpdateInstances(updates.slice(i, i + batchSize), options);
+      affected += ecdb.bulkUpdateInstances("BulkPerf.Item", propertyNames, updates.slice(i, i + batchSize));
   }
   assert.equal(affected, updates.length);
-  ecdb.saveChanges();
-  return sw.stop().milliseconds;
-}
-
-function deleteWithWriteStatement(ecdb: ECDb, ids: Id64String[]): number {
-  const sw = new StopWatch(undefined, true);
-  ecdb.withCachedWriteStatement("DELETE FROM bp.Item WHERE ECInstanceId=?", (stmt: ECSqlWriteStatement) => {
-    for (const id of ids) {
-      stmt.bindId(1, id);
-      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      stmt.reset();
-      stmt.clearBindings();
-    }
-  });
-  ecdb.saveChanges();
-  return sw.stop().milliseconds;
-}
-
-function deleteWithBulkApi(ecdb: ECDb, ids: Id64String[], batchSize: number): number {
-  const keys = ids.map((id) => ({ id, classFullName: "BulkPerf.Item" }));
-  const sw = new StopWatch(undefined, true);
-  let affected = 0;
-  if (batchSize <= 0) {
-    affected = ecdb.bulkDeleteInstances(keys, { useJsNames: true });
-  } else {
-    for (let i = 0; i < keys.length; i += batchSize)
-      affected += ecdb.bulkDeleteInstances(keys.slice(i, i + batchSize), { useJsNames: true });
-  }
-  assert.equal(affected, keys.length);
   ecdb.saveChanges();
   return sw.stop().milliseconds;
 }
@@ -195,9 +166,6 @@ describe("BulkInstanceWritePerformance", () => {
     await IModelHost.startup();
     ensureDirectoryExists(KnownTestLocations.outputDir);
     ensureDirectoryExists(outDir);
-
-    using probe = createEcdb(outDir, "bulkperf_probe.ecdb");
-    assert.isTrue(probe.isBulkInstanceWriteSupported, "the pinned @bentley/imodeljs-native must expose the bulk API");
   });
 
   after(async () => {
@@ -209,8 +177,6 @@ describe("BulkInstanceWritePerformance", () => {
     using ecdb = createEcdb(outDir, "bulkperf_surface.ecdb");
     assert.isTrue(typeof ecdb.bulkInsertInstances === "function");
     assert.isTrue(typeof ecdb.bulkUpdateInstances === "function");
-    assert.isTrue(typeof ecdb.bulkDeleteInstances === "function");
-    assert.isTrue(ecdb.isBulkInstanceWriteSupported);
   });
 
   function report(op: string, approach: string, rows: number, elapsedMs: number) {
@@ -227,7 +193,7 @@ describe("BulkInstanceWritePerformance", () => {
   }
 
   for (const rows of [1000, 10000, 100000, 1000000]) {
-    it(`Insert/Update/Delete ${rows} rows: ECSqlWriteStatement vs bulk API`, function () {
+    it(`Insert/Update ${rows} rows: ECSqlWriteStatement vs bulk API`, function () {
       if (!rowCounts.includes(rows))
         this.skip();
 
@@ -249,10 +215,6 @@ describe("BulkInstanceWritePerformance", () => {
       const stmtUpdateMs = updateWithWriteStatement(stmtDb, items, stmtIds);
       report("Update", "ECSqlWriteStatement", rows, stmtUpdateMs);
 
-      const stmtDeleteMs = deleteWithWriteStatement(stmtDb, stmtIds);
-      assert.equal(countItems(stmtDb), 0);
-      report("Delete", "ECSqlWriteStatement", rows, stmtDeleteMs);
-
       // ---- batched API ----
       using bulkDb = createEcdb(outDir, `bulkperf_bulk_${rows}.ecdb`);
       const { elapsed: bulkInsertMs, ids: bulkIds } = insertWithBulkApi(bulkDb, items, batchSize);
@@ -263,12 +225,8 @@ describe("BulkInstanceWritePerformance", () => {
       const bulkUpdateMs = updateWithBulkApi(bulkDb, items, bulkIds, batchSize);
       report("Update", "BulkInstanceWrite", rows, bulkUpdateMs);
 
-      const bulkDeleteMs = deleteWithBulkApi(bulkDb, bulkIds, batchSize);
-      assert.equal(countItems(bulkDb), 0);
-      report("Delete", "BulkInstanceWrite", rows, bulkDeleteMs);
-
       // eslint-disable-next-line no-console
-      console.log(`  => speedup insert=${(stmtInsertMs / bulkInsertMs).toFixed(2)}x update=${(stmtUpdateMs / bulkUpdateMs).toFixed(2)}x delete=${(stmtDeleteMs / bulkDeleteMs).toFixed(2)}x`);
+      console.log(`  => speedup insert=${(stmtInsertMs / bulkInsertMs).toFixed(2)}x update=${(stmtUpdateMs / bulkUpdateMs).toFixed(2)}x`);
 
       // The batched path exists to be faster; a regression below parity is a real failure.
       assert.isBelow(bulkInsertMs, stmtInsertMs, "bulk insert should outperform the per-row statement loop");
@@ -281,9 +239,9 @@ describe("BulkInstanceWritePerformance", () => {
     const repeats: number = config.repeats ?? 3;
     const items = makeItems(rows);
 
-    interface Timing { insert: number, update: number, delete: number }
+    interface Timing { insert: number, update: number }
 
-    /** Times one full insert/update/delete cycle on a fresh db. `size < 0` selects the statement baseline. */
+    /** Times one full insert/update cycle on a fresh db. `size < 0` selects the statement baseline. */
     const cycle = (tag: string, size: number): Timing => {
       using db = createEcdb(outDir, `bulkperf_sweep_${tag}.ecdb`);
       let ids: Id64String[];
@@ -305,9 +263,7 @@ describe("BulkInstanceWritePerformance", () => {
       assert.equal(countItems(db), rows);
 
       const update = size < 0 ? updateWithWriteStatement(db, items, ids) : updateWithBulkApi(db, items, ids, size);
-      const del = size < 0 ? deleteWithWriteStatement(db, ids) : deleteWithBulkApi(db, ids, size);
-      assert.equal(countItems(db), 0);
-      return { insert, update, delete: del };
+      return { insert, update };
     };
 
     /** Minimum of `repeats` runs: the least noise-contaminated estimate of the true cost. */
@@ -318,7 +274,6 @@ describe("BulkInstanceWritePerformance", () => {
         best = best === undefined ? t : {
           insert: Math.min(best.insert, t.insert),
           update: Math.min(best.update, t.update),
-          delete: Math.min(best.delete, t.delete),
         };
       }
       return best!;
@@ -327,14 +282,13 @@ describe("BulkInstanceWritePerformance", () => {
     const base = bestOf("stmt", -1);
     report("Insert", "ECSqlWriteStatement", rows, base.insert);
     report("Update", "ECSqlWriteStatement", rows, base.update);
-    report("Delete", "ECSqlWriteStatement", rows, base.delete);
 
     /* eslint-disable no-console */
     console.log(`\n  Batch size sweep over ${rows} rows, best of ${repeats} (baseline = ECSqlWriteStatement bind/step per row)`);
-    console.log(`  ${"batch".padStart(8)} | ${"insert".padStart(18)} | ${"update".padStart(18)} | ${"delete".padStart(18)}`);
-    console.log(`  ${"-".repeat(8)}-+-${"-".repeat(18)}-+-${"-".repeat(18)}-+-${"-".repeat(18)}`);
+    console.log(`  ${"batch".padStart(8)} | ${"insert".padStart(18)} | ${"update".padStart(18)}`);
+    console.log(`  ${"-".repeat(8)}-+-${"-".repeat(18)}-+-${"-".repeat(18)}`);
     const asSec = (ms: number) => `${(ms / 1000).toFixed(3)}s`.padStart(18);
-    console.log(`  ${"stmt".padStart(8)} | ${asSec(base.insert)} | ${asSec(base.update)} | ${asSec(base.delete)}`);
+    console.log(`  ${"stmt".padStart(8)} | ${asSec(base.insert)} | ${asSec(base.update)}`);
 
     for (const size of sizes) {
       // A batch larger than the row count is indistinguishable from a single call; skip the duplicate.
@@ -346,10 +300,9 @@ describe("BulkInstanceWritePerformance", () => {
 
       report("Insert", `BulkInstanceWrite/batch=${label}`, rows, t.insert);
       report("Update", `BulkInstanceWrite/batch=${label}`, rows, t.update);
-      report("Delete", `BulkInstanceWrite/batch=${label}`, rows, t.delete);
 
       const fmt = (ms: number, b: number) => `${(ms / 1000).toFixed(3)}s ${(b / ms).toFixed(2)}x`.padStart(18);
-      console.log(`  ${label.padStart(8)} | ${fmt(t.insert, base.insert)} | ${fmt(t.update, base.update)} | ${fmt(t.delete, base.delete)}`);
+      console.log(`  ${label.padStart(8)} | ${fmt(t.insert, base.insert)} | ${fmt(t.update, base.update)}`);
     }
     console.log("");
     /* eslint-enable no-console */

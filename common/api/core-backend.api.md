@@ -771,18 +771,8 @@ export enum BulkDeleteElementsStatus {
 }
 
 // @beta
-export interface BulkInsertOptions extends BulkWriteOptions {
-    forceUseId?: boolean;
-}
-
-// @beta
-export interface BulkUpdateOptions extends BulkWriteOptions {
-    useIncrementalUpdate?: boolean;
-}
-
-// @beta
-export interface BulkWriteOptions {
-    useJsNames?: boolean;
+export interface BulkInsertOptions {
+    returnIds?: boolean;
 }
 
 // @public
@@ -2449,11 +2439,15 @@ export class ECDb implements Disposable {
     abandonChanges(): void;
     attachDb(fileName: string, alias: string): void;
     // @beta
-    bulkDeleteInstances(keys: object[], options?: BulkWriteOptions): number;
+    bulkInsertInstances(className: string, propertyNames: string[], rows: unknown[][], options?: BulkInsertOptions & {
+        returnIds?: true;
+    }): Id64String[];
+    // @beta (undocumented)
+    bulkInsertInstances(className: string, propertyNames: string[], rows: unknown[][], options: BulkInsertOptions & {
+        returnIds: false;
+    }): number;
     // @beta
-    bulkInsertInstances(instances: object[], options?: BulkInsertOptions): Id64String[];
-    // @beta
-    bulkUpdateInstances(instances: object[], options?: BulkUpdateOptions): number;
+    bulkUpdateInstances(className: string, propertyNames: string[], rows: unknown[][]): number;
     // @beta
     clearCaches(): void;
     // @internal
@@ -2470,8 +2464,6 @@ export class ECDb implements Disposable {
     getCachedStatementCount(): number;
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
-    // @beta
-    get isBulkInstanceWriteSupported(): boolean;
     get isOpen(): boolean;
     readonly onBeforeClose: BeEvent<() => void>;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;

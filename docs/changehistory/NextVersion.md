@@ -91,25 +91,29 @@ See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--
 
 ### Bulk instance write API for ECDb
 
-Writing a large number of instances previously required one JavaScript-to-native call per row — either an [ECSqlWriteStatement]($backend) prepare/bind/step/reset cycle, or a single-row `insertInstance`/`updateInstance`/`deleteInstance` call. At the scale of hundreds of thousands or millions of rows, the per-row boundary crossing dominates the cost.
+Writing a large number of instances previously required one JavaScript-to-native call per row. At the scale of hundreds of thousands or millions of rows, the per-row boundary crossing dominates the cost.
 
-Three new beta APIs submit an entire batch across the native boundary in a single call:
+Two new beta APIs submit homogeneous positional rows across the native boundary in a single call:
 
 - [ECDb.bulkInsertInstances]($backend) — returns the [Id64String]($bentley) of every inserted instance, in input order.
-- [ECDb.bulkUpdateInstances]($backend) — returns the number of supplied instances that were updated.
-- [ECDb.bulkDeleteInstances]($backend) — returns the number of supplied instances that were deleted.
+- [ECDb.bulkUpdateInstances]($backend) — returns the number of rows that matched existing instances.
 
 ```ts
-const ids = ecdb.bulkInsertInstances(instances);
+const properties = ["Name", "Age"];
+const ids = ecdb.bulkInsertInstances("Example.Person", properties, [
+  ["Alice", 42],
+  ["Bob", 37],
+]);
+
+ecdb.bulkUpdateInstances("Example.Person", properties, [
+  [ids[0], "Alice", 43],
+]);
 ```
 
-Instances use the same JSON shape as the existing single-row APIs, so each batch may contain instances of different ECClasses.
+The class and property layout are resolved once per call. Every insert row contains one value per property; every update row starts with its `ECInstanceId`, followed by one value per property.
 
-**All-or-nothing semantics.** Each batch runs inside a single savepoint. If any row fails — including when a JavaScript property getter throws — the entire batch is rolled back, no row in that batch is written, and the thrown error identifies the index of the failing row. Calls back into the same `ECDb` from a property getter are rejected while the batch is active so they cannot reset its statement or commit its savepoint. Callers that want partial progress should submit smaller batches and handle failures per batch.
+**All-or-nothing semantics.** Each batch runs inside a single savepoint. If any row fails, the entire batch is rolled back. Callers that want partial progress should submit smaller batches and handle failures per batch.
 
-**Updating without reading each row back.** [ECDb.bulkUpdateInstances]($backend) accepts `useIncrementalUpdate`, which defaults to `true` to match the behavior of the single-row update API. Incremental update reads each existing instance back so that properties omitted from the supplied JSON retain their current values. When the supplied instances are complete, pass `useIncrementalUpdate: false` to skip those reads; this is significantly faster for large batches.
-
-**Availability.** These APIs require a version of `@bentley/imodeljs-native` that implements bulk writes. Use [ECDb.isBulkInstanceWriteSupported]($backend) to detect support at runtime; calling a bulk method against an older addon throws a descriptive error rather than failing with a `TypeError`.
 
 **Scope.** Bulk writes are available on [ECDb]($backend) only; there is deliberately no [IModelDb]($backend) equivalent. Writing BIS elements, models, and aspects directly through a bulk instance writer would bypass element handlers and the change-tracking that briefcase editing depends on, so iModel content should continue to be written through the [IModelDb]($backend) APIs.
 

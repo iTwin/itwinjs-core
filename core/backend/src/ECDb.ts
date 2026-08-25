@@ -16,39 +16,15 @@ import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
-import { getNativeBulkWriter, isNativeBulkWriteSupported } from "./internal/NativeBulkInstanceWriter";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
-
-/** Options common to all bulk instance write operations.
- * @see [[ECDb.bulkInsertInstances]], [[ECDb.bulkUpdateInstances]] and [[ECDb.bulkDeleteInstances]].
- * @beta
- */
-export interface BulkWriteOptions {
-  /** If true, the supplied instances use JavaScript property names (e.g. `id`, `classFullName`)
-   * instead of EC property names (e.g. `ECInstanceId`, `ECClassId`).
-   */
-  useJsNames?: boolean;
-}
 
 /** Options for [[ECDb.bulkInsertInstances]].
  * @beta
  */
-export interface BulkInsertOptions extends BulkWriteOptions {
-  /** If true, use the instance id supplied on each instance instead of letting ECDb allocate one. */
-  forceUseId?: boolean;
-}
-
-/** Options for [[ECDb.bulkUpdateInstances]].
- * @beta
- */
-export interface BulkUpdateOptions extends BulkWriteOptions {
-  /** When true (the default), properties omitted from an input instance keep their current value, which
-   * requires reading each existing instance back from the file. Set to false when every input instance is
-   * complete - omitted properties are then set to null, and the read-back is skipped, which is substantially
-   * faster for large batches.
-   */
-  useIncrementalUpdate?: boolean;
+export interface BulkInsertOptions {
+  /** Return each inserted ECInstanceId. Disable this when only the inserted row count is needed. Defaults to true. */
+  returnIds?: boolean;
 }
 
 /** Modes for how to open [ECDb]($backend) files.
@@ -248,57 +224,38 @@ export class ECDb implements Disposable {
     return this[_nativeDb].getSchemaProps(name);
   }
 
-  /** True if the loaded native addon supports the bulk instance write API
-   * ([[bulkInsertInstances]], [[bulkUpdateInstances]] and [[bulkDeleteInstances]]).
+  /** Insert homogeneous positional instances in a single native call.
+   *
+   * The class and property paths are resolved once and one ECSQL statement is reused for every row.
+   * The batch is all-or-nothing and callers must call [[saveChanges]] to commit it to disk.
+   * @param className Full name or ECSQL name of the ECClass to insert.
+   * @param propertyNames EC property access strings corresponding to each value in a row.
+   * @param rows Positional values. Every row must contain exactly one value for each property name.
+   * @param options Controls whether generated instance ids are returned.
    * @beta
    */
-  public get isBulkInstanceWriteSupported(): boolean {
-    return isNativeBulkWriteSupported(this[_nativeDb]);
+  public bulkInsertInstances(className: string, propertyNames: string[], rows: unknown[][], options?: BulkInsertOptions & { returnIds?: true }): Id64String[];
+  /** @beta */
+  public bulkInsertInstances(className: string, propertyNames: string[], rows: unknown[][], options: BulkInsertOptions & { returnIds: false }): number;
+  /** @beta */
+  public bulkInsertInstances(className: string, propertyNames: string[], rows: unknown[][], options?: BulkInsertOptions): Id64String[] | number {
+    const returnIds = options?.returnIds ?? true;
+    return this[_nativeDb].bulkInsertInstances(className, propertyNames, rows, { returnIds });
   }
 
-  /** Insert many instances in a single call into the native layer.
+  /** Update homogeneous positional instances in a single native call.
    *
-   * This is the batched equivalent of preparing an `INSERT` [[ECSqlWriteStatement]] and running
-   * bind/step/reset once per row. The whole batch crosses the JavaScript/native boundary once and is
-   * written inside a single savepoint, which makes it substantially faster for large numbers of rows.
-   *
-   * @param instances The instances to insert. Each instance identifies its own class, so a single batch
-   * may contain instances of different classes.
-   * @param options Controls how the instances are interpreted. See [[BulkInsertOptions]].
-   * @returns The ids of the inserted instances, in the same order as `instances`.
-   * @throws [[Error]] if any instance fails to insert. The batch is all-or-nothing: when one instance
-   * fails, no instance in the batch is written and the error identifies the index of the offending instance.
-   * @note Callers must still call [[saveChanges]] to commit the batch to disk.
+   * Each row starts with the ECInstanceId to update, followed by one value for every entry in
+   * `propertyNames`. The class and property paths are resolved once and one ECSQL statement is reused.
+   * The batch is all-or-nothing and callers must call [[saveChanges]] to commit it to disk.
+   * @param className Full name or ECSQL name of the ECClass to update.
+   * @param propertyNames EC property access strings corresponding to the values after the id in each row.
+   * @param rows Positional rows in the form `[ECInstanceId, ...propertyValues]`.
+   * @returns The number of rows that matched an existing instance.
    * @beta
    */
-  public bulkInsertInstances(instances: object[], options?: BulkInsertOptions): Id64String[] {
-    return getNativeBulkWriter(this[_nativeDb]).bulkInsertInstances(instances, options ?? {});
-  }
-
-  /** Update many instances in a single call into the native layer.
-   *
-   * See [[bulkInsertInstances]] for the performance and all-or-nothing semantics of a batch.
-   * @param instances The instances to update. Each instance must identify its own class and instance id.
-   * @param options Controls how the instances are interpreted. See [[BulkUpdateOptions]].
-   * @returns The number of instances updated.
-   * @throws [[Error]] if any instance fails to update, in which case no instance in the batch is written.
-   * @beta
-   */
-  public bulkUpdateInstances(instances: object[], options?: BulkUpdateOptions): number {
-    return getNativeBulkWriter(this[_nativeDb]).bulkUpdateInstances(instances, options ?? {});
-  }
-
-  /** Delete many instances in a single call into the native layer.
-   *
-   * See [[bulkInsertInstances]] for the performance and all-or-nothing semantics of a batch.
-   * @param keys The keys of the instances to delete. Each key must identify its class and instance id.
-   * @param options Controls how the keys are interpreted. See [[BulkWriteOptions]].
-   * @returns The number of instances deleted.
-   * @throws [[Error]] if any instance fails to delete, in which case no instance in the batch is deleted.
-   * @beta
-   */
-  public bulkDeleteInstances(keys: object[], options?: BulkWriteOptions): number {
-    return getNativeBulkWriter(this[_nativeDb]).bulkDeleteInstances(keys, options ?? {});
+  public bulkUpdateInstances(className: string, propertyNames: string[], rows: unknown[][]): number {
+    return this[_nativeDb].bulkUpdateInstances(className, propertyNames, rows);
   }
 
   /**

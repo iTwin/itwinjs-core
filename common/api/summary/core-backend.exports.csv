@@ -33,8 +33,6 @@ beta;interface;BulkDeleteElementsArgs
 beta;interface;BulkDeleteElementsResult
 beta;enum;BulkDeleteElementsStatus
 beta;interface;BulkInsertOptions
-beta;interface;BulkUpdateOptions
-beta;interface;BulkWriteOptions
 public;class;Callout
 beta;interface;CatalogDb
 beta;namespace;CatalogDb
