@@ -161,7 +161,7 @@ export namespace WmsCapability {
       this.title = _json.Title;
       this.queryable = _json.queryable ? true : false;
       this.cartoRange = rangeFromJSON(_json);
-      this.ownCrs = capabilities.isVersion13 ? _json.CRS : _json.SRS;
+      this.ownCrs = initArray<string>(capabilities.isVersion13 ? _json.CRS : _json.SRS) ?? [];
       const crs = new Set<string>(this.ownCrs);
       if (parent) {
         getParentCrs(parent, crs);
@@ -190,10 +190,13 @@ export class WmsCapabilities {
   public get featureInfoSupported() { return undefined !== this._json.Capability?.Request?.GetFeatureInfo; }
   public get featureInfoFormats(): string[] | undefined { return Array.isArray(this._json.Capability?.Request?.GetFeatureInfo?.Format) ? this._json.Capability?.Request?.GetFeatureInfo?.Format : undefined; }
   constructor(private _json: any) {
-    this.version = _json.version;
-    this.isVersion13 = _json.version !== undefined && 0 === _json.version.indexOf("1.3");
-    this.service = new WmsCapability.Service(_json.Service);
-    if (_json.Capability)
+    if (!_json || typeof _json !== "object")
+      throw new Error("Invalid WMS GetCapabilities response");
+
+    this.version = typeof _json.version === "string" ? _json.version : undefined;
+    this.isVersion13 = this.version !== undefined && this.version.startsWith("1.3");
+    this.service = new WmsCapability.Service(_json.Service ?? {});
+    if (_json.Capability?.Layer)
       this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
   }
 
@@ -218,7 +221,11 @@ export class WmsCapabilities {
     if (!xmlCapabilities)
       return undefined;
 
-    const capabilities = new WmsCapabilities(new WMS().parse(xmlCapabilities));
+    const json = new WMS(undefined, DOMParser).parse(xmlCapabilities);
+    if (!json || typeof json !== "object" || (json.Service === undefined && json.Capability === undefined))
+      return undefined; // Not a WMS GetCapabilities document
+
+    const capabilities = new WmsCapabilities(json);
     if (!credentials) {
       // Avoid caching protected data
       WmsCapabilities._capabilitiesCache.set(url, capabilities);
