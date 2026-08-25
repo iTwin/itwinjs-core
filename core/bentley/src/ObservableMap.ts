@@ -94,28 +94,4 @@ export class ObservableMap<K, V> extends Map<K, V> {
     return prevSize - this.size;
   }
 
-  /** Return the value for `key` if present, otherwise insert `value` and return it.
-   * If an insertion occurs, the [[onAdded]] event is raised.
-   */
-  public getOrInsert(key: K, value: V): V {
-    // Potential double lookup but handles the (IMO stupid) case where `undefined` is explicitly inserted.
-    // Would be nice if we could detect and optimize for the common case where V cannot be `undefined`.
-    if (super.has(key))
-      return super.get(key) as V;
-
-    this.set(key, value);
-    return value;
-  }
-
-  /** Return the value for `key` if present, otherwise compute a value using `factory`, insert it, and return it.
-   * The `factory` is only invoked if the key is not already present. If an insertion occurs, the [[onAdded]] event is raised.
-   */
-  public getOrInsertComputed(key: K, factory: () => V): V {
-    if (super.has(key))
-      return super.get(key) as V;
-
-    const value = factory();
-    this.set(key, value);
-    return value;
-  }
 }

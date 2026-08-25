@@ -8,7 +8,7 @@
 
 import { FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlagOverrides } from "@itwin/core-common";
 import { _implementationProhibited } from "./common/internal/Symbols";
-import { Id64String, ObservableMap } from "@itwin/core-bentley";
+import { BeEvent, Id64String, ObservableMap } from "@itwin/core-bentley";
 import { ClipVector } from "@itwin/core-geometry";
 
 export interface IModelDisplaySettings {
@@ -27,7 +27,9 @@ export interface IModelDisplaySettings {
   // renderTimeLine, scheduleScriptProps
   // set/commitScheduleEditing?
 
-  // changed events
+  readonly onClipVectorChanged: BeEvent<() => void>;
+  readonly onIgnoreClipStyleChanged: BeEvent<() => void>;
+  readonly onViewFlagOverridesChanged: BeEvent<() => void>;
 }
 
 export interface IModelDisplaySettings3d extends IModelDisplaySettings {
@@ -36,8 +38,10 @@ export interface IModelDisplaySettings3d extends IModelDisplaySettings {
 
   hiddenLineSettings: HiddenLine.Settings | undefined;
   readonly planProjectionSettings: ObservableMap<Id64String, PlanProjectionSettings>;
-  readonly modelClipGroups: ModelClipGroups;
+  modelClipGroups: ModelClipGroups;
 
   // contours
-  // changed events
+
+  readonly onHiddenLineSettingsChanged: BeEvent<() => void>;
+  readonly onModelClipGroupsChanged: BeEvent<() => void>;
 }
