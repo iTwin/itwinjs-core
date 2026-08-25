@@ -10,6 +10,7 @@ build
 /generated-docs
 /staging-docs
 /out
+/graphify-out/
 **/DevBuild.txt
 coverage
 full_stack_test_results
