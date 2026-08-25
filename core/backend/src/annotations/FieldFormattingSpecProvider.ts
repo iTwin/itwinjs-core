@@ -176,7 +176,7 @@ class FieldSpecBucket implements FormattingSpecProvider {
   }
 }
 
-/** Arguments supplied to the [[FieldFormattingSpecProvider]] constructor and to
+/** Arguments supplied to [FieldFormattingSpecProvider.create]($backend) and to
  * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend).
  * @beta
  */
@@ -202,6 +202,17 @@ export interface FieldFormattingSpecProviderArgs {
    * adopted.
    */
   unitSystem?: UnitSystemKey;
+  /** The specs to pre-build, so that the synchronous evaluation that follows finds each in cache.
+   * Required — iTwin.js does not discover requirements on its own. Compose it from
+   * [[FieldFormattingSpecProvider.collectSchemaFormattingRequirements]],
+   * [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) and/or
+   * [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend). Duplicates are
+   * harmless: warming skips anything already cached.
+   *
+   * Pass an empty array to obtain a provider that formats nothing until
+   * [[FieldFormattingSpecProvider.warmUp]] is called.
+   */
+  requirements: FormattingSpecArgs[];
 }
 
 /** A per-[IModelDb]($backend) [FormattingSpecProvider]($core-quantity) that resolves
@@ -251,7 +262,7 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
   private readonly _buckets = new Map<string, FieldSpecBucket>();
   private readonly _misses = new Map<string, UnresolvedFieldFormat>();
 
-  public constructor(args: FieldFormattingSpecProviderArgs) {
+  private constructor(args: FieldFormattingSpecProviderArgs) {
     // An adopted FormatSet declares the unit system it was authored for; honor it unless the
     // caller says otherwise.
     this.unitSystem = args.unitSystem ?? args.formatSet?.unitSystem ?? "metric";
@@ -273,6 +284,26 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
     for (const { id, formatSet } of args.formatSets ?? []) {
       this._buckets.set(id, new FieldSpecBucket(new FormatSetFormatsProvider({ formatSet, fallbackProvider: defaultFormats }), this._default, formatSet));
     }
+  }
+
+  /** Creates a provider and pre-warms it with [[FieldFormattingSpecProviderArgs.requirements]],
+   * so the returned provider is ready for synchronous evaluation.
+   *
+   * This is the only way to obtain a `FieldFormattingSpecProvider`: the constructor is private
+   * because a provider is only useful once warmed, and warming is asynchronous. Requirements
+   * discovered later — a block authored after open, or anything surfacing in [[misses]] — are
+   * added incrementally with [[warmUp]].
+   *
+   * @note Applications registering the provider for an iModel should call
+   * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) instead, which
+   * creates, warms and registers in one step. Use this directly only for a provider that is not
+   * registered against an iModel.
+   * @beta
+   */
+  public static async create(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider> {
+    const provider = new FieldFormattingSpecProvider(args);
+    await provider.warmUp(args.requirements);
+    return provider;
   }
 
   /** Enumerates one [FormattingSpecArgs]($core-quantity) for every
