@@ -5,6 +5,7 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
+import { serialize } from "node:v8";
 // @ts-expect-error node:sqlite is available in Node 22, but this package's typings also support Node 20.
 import { DatabaseSync } from "node:sqlite";
 import { DbResult, StopWatch } from "@itwin/core-bentley";
@@ -30,7 +31,7 @@ interface MemberForce {
 }
 
 interface Timing {
-  key: "raw" | "bulk" | "bulk-flat" | "bulk-rows" | "ecsql";
+  key: "raw" | "bulk" | "serialized" | "ecsql";
   approach: string;
   elapsedMs: number;
 }
@@ -136,9 +137,8 @@ function countRows(db: ECDb): number {
   });
 }
 
-function insertBulk(dbPath: string, records: MemberForce[]): number {
-  using db = openECDb(dbPath);
-  const rows = records.map((record) => [
+function createBulkRows(records: MemberForce[]): unknown[][] {
+  return records.map((record) => [
     record.objectId,
     record.physicalId,
     record.loadCaseComboId,
@@ -152,6 +152,11 @@ function insertBulk(dbPath: string, records: MemberForce[]): number {
     record.force.mz,
     record.analyticalId,
   ]);
+}
+
+function insertBulk(dbPath: string, records: MemberForce[]): number {
+  using db = openECDb(dbPath);
+  const rows = createBulkRows(records);
   const sw = new StopWatch(undefined, true);
   const inserted = db.bulkInsertInstances(ecClassName, bulkPropertyNames, rows, { returnIds: false });
   db.saveChanges();
@@ -159,6 +164,24 @@ function insertBulk(dbPath: string, records: MemberForce[]): number {
   assert.equal(inserted, records.length);
   assert.equal(countRows(db), records.length);
   return elapsedMs;
+}
+
+function insertSerialized(dbPath: string, records: MemberForce[]): number {
+  using db = openECDb(dbPath);
+  const rows = createBulkRows(records);
+  const serializeTimer = new StopWatch(undefined, true);
+  const serializedRows = serialize(rows);
+  const serializeMs = serializeTimer.stop().milliseconds;
+
+  const nativeTimer = new StopWatch(undefined, true);
+  const inserted = db.bulkInsertInstancesSerialized(ecClassName, bulkPropertyNames, serializedRows, { returnIds: false });
+  db.saveChanges();
+  const nativeMs = nativeTimer.stop().milliseconds;
+  assert.equal(inserted, records.length);
+  assert.equal(countRows(db), records.length);
+  // eslint-disable-next-line no-console
+  console.log(`Serialized ${(serializedRows.byteLength / 1024 / 1024).toFixed(1)} MiB in ${(serializeMs / 1000).toFixed(3)}s; native insert ${(nativeMs / 1000).toFixed(3)}s`);
+  return serializeMs + nativeMs;
 }
 
 function insertWithWriteStatement(dbPath: string, records: MemberForce[]): number {
@@ -252,6 +275,11 @@ describe("ECDbRawPerformance", () => {
         key: "bulk",
         approach: "ECDb bulk (positional rows)",
         run: () => insertBulk(prepareDb(outputDir, "bulk.ecdb"), records),
+      },
+      {
+        key: "serialized",
+        approach: "ECDb bulk (V8 serialized rows)",
+        run: () => insertSerialized(prepareDb(outputDir, "serialized.ecdb"), records),
       },
       {
         key: "ecsql",

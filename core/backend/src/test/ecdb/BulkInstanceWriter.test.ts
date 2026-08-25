@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import { serialize } from "node:v8";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { ECDb, ECSqlStatement, ECSqlWriteStatement } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -86,6 +87,24 @@ describe("ECDb positional bulk instance write", () => {
     expect(() => ecdb.bulkInsertInstances("Test.Person", propertyNames, [makePersonRow(1), makePersonRow(2).slice(1)]))
       .to.throw(/rows\[1\]/);
     expect(countPersons(ecdb)).to.equal(1);
+  });
+
+  it("streams V8-serialized primitive rows and rolls back malformed row layouts", () => {
+    const rows = Array.from({ length: 5 }, (_, i) => makePersonRow(i));
+    rows[1][3] = "Résumé";
+    rows[2][3] = "用户";
+    using ecdb = ECDbTestHelper.createECDb(outDir, "bulkwrite_serialized.ecdb", testSchema);
+    expect(ecdb.bulkInsertInstancesSerialized("Test.Person", propertyNames, serialize(rows), { returnIds: false })).to.equal(rows.length);
+    expect(readPersons(ecdb).map(({ id: _id, ...values }) => values)).to.deep.equal(rows.map((row) => ({
+      name: row[0],
+      age: row[1],
+      salary: row[2],
+      nickname: row[3],
+    })));
+
+    expect(() => ecdb.bulkInsertInstancesSerialized("Test.Person", propertyNames, serialize([makePersonRow(5), makePersonRow(6).slice(1)])))
+      .to.throw(/unexpected column count/);
+    expect(countPersons(ecdb)).to.equal(rows.length);
   });
 
   it("rejects invalid layouts before writing", () => {

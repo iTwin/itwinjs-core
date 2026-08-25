@@ -243,6 +243,16 @@ export class ECDb implements Disposable {
     return this[_nativeDb].bulkInsertInstances(className, propertyNames, rows, { returnIds });
   }
 
+  /** @internal */
+  public bulkInsertInstancesSerialized(className: string, propertyNames: string[], rows: Uint8Array, options?: BulkInsertOptions & { returnIds?: true }): Id64String[];
+  /** @internal */
+  public bulkInsertInstancesSerialized(className: string, propertyNames: string[], rows: Uint8Array, options: BulkInsertOptions & { returnIds: false }): number;
+  /** @internal */
+  public bulkInsertInstancesSerialized(className: string, propertyNames: string[], rows: Uint8Array, options?: BulkInsertOptions): Id64String[] | number {
+    const returnIds = options?.returnIds ?? true;
+    return this[_nativeDb].bulkInsertInstancesSerialized(className, propertyNames, rows, { returnIds });
+  }
+
   /** Update homogeneous positional instances in a single native call.
    *
    * Each row starts with the ECInstanceId to update, followed by one value for every entry in

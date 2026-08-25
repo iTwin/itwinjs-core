@@ -2446,6 +2446,14 @@ export class ECDb implements Disposable {
     bulkInsertInstances(className: string, propertyNames: string[], rows: unknown[][], options: BulkInsertOptions & {
         returnIds: false;
     }): number;
+    // @internal (undocumented)
+    bulkInsertInstancesSerialized(className: string, propertyNames: string[], rows: Uint8Array, options?: BulkInsertOptions & {
+        returnIds?: true;
+    }): Id64String[];
+    // @internal (undocumented)
+    bulkInsertInstancesSerialized(className: string, propertyNames: string[], rows: Uint8Array, options: BulkInsertOptions & {
+        returnIds: false;
+    }): number;
     // @beta
     bulkUpdateInstances(className: string, propertyNames: string[], rows: unknown[][]): number;
     // @beta

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Added beta ECDb.bulkInsertInstances and ECDb.bulkUpdateInstances APIs for writing homogeneous positional rows across the native boundary with all-or-nothing semantics.",
+      "comment": "Added beta ECDb.bulkInsertInstances and ECDb.bulkUpdateInstances APIs for writing homogeneous positional rows across the native boundary with all-or-nothing semantics, plus an internal V8-serialized insert prototype.",
       "type": "none"
     }
   ],
