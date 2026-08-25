@@ -450,3 +450,52 @@ describe("Spec-provider field formatting", () => {
   });
 });
 
+
+describe("collectFieldQuantityPairs candidate priority", () => {
+  const PROPERTY_PAIR = { name: "P.KOQ", persistenceUnitName: "Units.M" };
+
+  /** The property-side pair is a *presentation* fallback. It is legal for a `kindOfQuantity`-only
+   * override, and for a `persistenceUnit` that agrees with the property, because neither changes
+   * what the stored magnitude means. It is illegal for a `persistenceUnit` that names a different
+   * unit: falling back there would format the magnitude as though it were the property's unit and
+   * render a value off by the conversion factor, with nothing to signal the substitution.
+   */
+  it("keeps the property-side fallback for a kindOfQuantity-only override", () => {
+    expect(collectFieldQuantityPairs({
+      overrideName: "A.KOQ", propertyName: "P.KOQ", propertyPersistence: "Units.M",
+    })).toEqual([{ name: "A.KOQ", persistenceUnitName: "Units.M" }, PROPERTY_PAIR]);
+  });
+
+  it("keeps the property-side fallback when the persistence override restates the property's unit", () => {
+    expect(collectFieldQuantityPairs({
+      overrideName: "A.KOQ", overridePersistence: "Units.M", propertyName: "P.KOQ", propertyPersistence: "Units.M",
+    })).toEqual([{ name: "A.KOQ", persistenceUnitName: "Units.M" }, PROPERTY_PAIR]);
+  });
+
+  it("drops the property-side fallback when the persistence override names a different unit", () => {
+    expect(collectFieldQuantityPairs({
+      overridePersistence: "Units.FT", propertyName: "P.KOQ", propertyPersistence: "Units.M",
+    })).toEqual([{ name: "P.KOQ", persistenceUnitName: "Units.FT" }]);
+  });
+
+  it("treats an empty-string persistence override as unset, not as a contradicting claim", () => {
+    // `??` does not fall through on "", so the effective pair is suppressed either way. What must
+    // not happen is the empty string being read as "this value is in some other unit" and taking
+    // the property's own pair down with it.
+    expect(collectFieldQuantityPairs({
+      overridePersistence: "", propertyName: "P.KOQ", propertyPersistence: "Units.M",
+    })).toEqual([PROPERTY_PAIR]);
+  });
+
+  it("emits no property-side pair at all when the property has no persistence unit", () => {
+    // A property with no KindOfQuantity contributes nothing to fall back to, so the override rule
+    // is inert here: the field either resolves on its own two halves or renders raw.
+    expect(collectFieldQuantityPairs({
+      overrideName: "A.KOQ", overridePersistence: "Units.ARC_DEG", propertyName: undefined, propertyPersistence: undefined,
+    })).toEqual([{ name: "A.KOQ", persistenceUnitName: "Units.ARC_DEG" }]);
+
+    for (const overridePersistence of [undefined, "", "Units.ARC_DEG"]) {
+      expect(collectFieldQuantityPairs({ overridePersistence, propertyName: undefined, propertyPersistence: undefined })).toEqual([]);
+    }
+  });
+});

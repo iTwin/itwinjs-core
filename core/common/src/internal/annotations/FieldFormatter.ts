@@ -142,6 +142,13 @@ export function isKnownFieldPropertyType(type: string): type is FieldPropertyTyp
  * candidate is emitted only when both name and persistence unit are defined, so a coordinate
  * property with no [KindOfQuantity]($ecschema-metadata) contributes no property-side pair.
  *
+ * The property-side pair is additionally withheld when `overridePersistence` names a *different*
+ * unit than `propertyPersistence`. An explicit persistence-unit override is a claim about what
+ * the stored magnitude means, so the property's own unit is not a legal fallback for it —
+ * formatting through it would silently render a value off by the conversion factor. Falling back
+ * across a `kindOfQuantity`-only override is safe by comparison, since that changes presentation
+ * rather than meaning.
+ *
  * Shared by the runtime formatter path (`lookupSyncSpec`) and by
  * `computeFieldFormattingRequirement` in `core-backend`'s `fields.ts` (via `cross-package.ts`),
  * so pre-warm enumerates exactly the candidates the runtime iterates.
@@ -157,12 +164,17 @@ export function collectFieldQuantityPairs(args: {
   const effectiveName = overrideName ?? propertyName;
   const effectivePersistence = overridePersistence ?? propertyPersistence;
 
+  // An override that merely restates the property's unit still permits the fallback: it makes no
+  // claim the property side contradicts. An empty string is not a claim either -- `??` above does
+  // not treat it as absent, so it is checked for truthiness rather than for `undefined`.
+  const contradictsProperty = !!overridePersistence && overridePersistence !== propertyPersistence;
+
   const pairs: FormattingSpecArgs[] = [];
   if (effectiveName && effectivePersistence) {
     pairs.push({ name: effectiveName, persistenceUnitName: effectivePersistence });
   }
   if (
-    propertyName && propertyPersistence &&
+    propertyName && propertyPersistence && !contradictsProperty &&
     (propertyName !== effectiveName || propertyPersistence !== effectivePersistence)
   ) {
     pairs.push({ name: propertyName, persistenceUnitName: propertyPersistence });
