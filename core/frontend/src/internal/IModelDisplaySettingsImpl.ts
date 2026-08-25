@@ -16,9 +16,7 @@ class IModelDisplaySettingsImpl implements IModelDisplaySettings {
   public readonly [_implementationProhibited] = undefined;
 
   #viewFlagOverrides: ViewFlagOverrides = { }
-  #ignoreClipStyle = false;
 
-  public readonly onIgnoreClipStyleChanged = new BeEvent<() => void>();
   public readonly onViewFlagOverridesChanged = new BeEvent<() => void>();
 
   protected readonly _view: ViewState;
@@ -39,17 +37,6 @@ class IModelDisplaySettingsImpl implements IModelDisplaySettings {
     this.#viewFlagOverrides = ovrs;
     // Synchronize display style
     this.onViewFlagOverridesChanged.raiseEvent();
-  }
-
-  public get ignoreClipStyle() {
-    return this.#ignoreClipStyle;
-  }
-
-  public set ignoreClipStyle(ignore: boolean) {
-    if (ignore !== this.#ignoreClipStyle) {
-      this.#ignoreClipStyle = ignore;
-      this.onIgnoreClipStyleChanged.raiseEvent();
-    }
   }
 
   public get subCategoryOverrides() {

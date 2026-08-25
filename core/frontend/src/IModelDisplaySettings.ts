@@ -16,14 +16,12 @@ export interface IModelDisplaySettings {
   readonly is3d: () => this is IModelDisplaySettings3d;
 
   viewFlagOverrides: ViewFlagOverrides;
-  ignoreClipStyle: boolean;
 
   readonly subCategoryOverrides: ObservableMap<Id64String, SubCategoryOverride>;
   readonly modelAppearanceOverrides: ObservableMap<Id64String, FeatureAppearance>;
 
   // renderTimeLine, scheduleScriptProps
 
-  readonly onIgnoreClipStyleChanged: BeEvent<() => void>;
   readonly onViewFlagOverridesChanged: BeEvent<() => void>;
 }
 
