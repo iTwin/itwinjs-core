@@ -308,16 +308,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * @beta
    */
   public static async registerFieldFormattingProvider(
-    args: FieldFormattingSpecProviderArgs & {
-      /** The specs to pre-build. Required — iTwin.js does not discover requirements on its own.
-       * Pass an empty array to register a provider that formats nothing until
-       * [FieldFormattingSpecProvider.warmUp]($backend) is called.
-       */
-      requirements: FormattingSpecArgs[];
-    },
+    args: FieldFormattingSpecProviderArgs,
   ): Promise<FieldFormattingSpecProvider> {
-    const provider = new FieldFormattingSpecProvider(args);
-    await provider.warmUp(args.requirements);
+    const provider = await FieldFormattingSpecProvider.create(args);
     fieldFormattingProviders.set(args.iModel.key, provider);
     return provider;
   }

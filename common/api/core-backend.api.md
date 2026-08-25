@@ -2990,9 +2990,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static onDeletedDependencyArg(arg: OnDependencyArg): void;
     // @internal (undocumented)
     static onRootChangedArg(arg: OnDependencyArg): void;
-    static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs & {
-        requirements: FormattingSpecArgs[];
-    }): Promise<FieldFormattingSpecProvider>;
+    static registerFieldFormattingProvider(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider>;
     static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     static unregisterFieldFormattingProvider(iModel: IModelDb): void;
     // @deprecated
@@ -3545,9 +3543,9 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
 
 // @beta
 export class FieldFormattingSpecProvider implements FormattingSpecProvider {
-    constructor(args: FieldFormattingSpecProviderArgs);
     clearMisses(): void;
     static collectSchemaFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[];
+    static create(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
     // @internal
     getProviderFor(formatSet: string | undefined): FormattingSpecProvider;
@@ -3568,6 +3566,7 @@ export interface FieldFormattingSpecProviderArgs {
         formatSet: FormatSet;
     }>;
     iModel: IModelDb;
+    requirements: FormattingSpecArgs[];
     unitSystem?: UnitSystemKey;
 }
 
