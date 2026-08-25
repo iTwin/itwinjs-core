@@ -710,4 +710,36 @@ describe("Field format resolution example", () => {
     // than "happens to equal this literal" if the seed value ever changes.
     expect(crossed.cachedContent).to.equal(baseline.cachedContent);
   });
+
+  it("degrades only the offending field when applying a format throws", async () => {
+    // FormatterSpec.applyFormatting is a much larger exception surface than the `toString()` it
+    // replaced. A throw used to escape updateField and updateFields, get swallowed by
+    // doUpdateFields, and abandon the whole element -- earlier fields mutated in memory, nothing
+    // persisted, one log line as the only trace. It must degrade this field alone.
+    // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m
+    const block = TextBlock.create();
+    const before = appendField(block, "areaProp");
+    const thrower = appendField(block, "lengthProp");
+    const after = appendField(block, "slopeProp");
+
+    const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+      iModel: imodel,
+      requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
+    });
+
+    // Evaluation formats through the bucket, not the top-level provider, so stub the bucket.
+    const bucket = provider.getProviderFor(undefined);
+    sinon.stub(bucket, "formatQuantity").callsFake((magnitude: number, spec: any) => {
+      if (2.5 === magnitude)
+        throw new Error("malformed format");
+      return spec.applyFormatting(magnitude);
+    });
+
+    expect(() => ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block })).to.not.throw();
+
+    expect(thrower.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    // The fields on either side of the failure still resolved and still persisted.
+    expect(before.cachedContent).to.equal("100.0 m²");
+    expect(after.cachedContent).to.equal("0.01 m/m");
+  });
 });
