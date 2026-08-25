@@ -83,6 +83,8 @@ function prepareDb(outputDir: string, fileName: string): string {
 function insertRaw(dbPath: string, records: MemberForce[]): number {
   const db = new DatabaseSync(dbPath);
   try {
+    // Match BeSQLite's default 8,000-page connection cache.
+    db.exec("PRAGMA cache_size=8000");
     const columns = [
       "ObjectId", "PhysicalId", "LoadCaseComboId", "DistanceFromStartPhysical", "DistanceFromStartAnalytical",
       "Force_Fx", "Force_Fy", "Force_Fz", "Force_Mx", "Force_My", "Force_Mz", "AnalyticalId",
