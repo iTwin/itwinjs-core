@@ -119,20 +119,26 @@ describe("WmsCapabilities", () => {
   describe("hostile and degenerate input", () => {
     const wrap130 = (inner: string) => `<?xml version="1.0"?><WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms">${inner}</WMS_Capabilities>`;
 
-    it("should not throw on malformed XML", async () => {
+    it("should recover truncated XML without throwing", async () => {
+      // The browser DOMParser recovers this fragment by auto-closing the open tags.
       fakeTextFetch("<WMS_Capabilities><Service><Name>oops");
-      let capabilities;
-      let error;
-      try {
-        capabilities = await WmsCapabilities.create("https://fake/malformed", undefined, true);
-      } catch (err) {
-        error = err;
-      }
-      // Either a graceful undefined or a proper Error; never a raw TypeError from property access.
-      if (error !== undefined)
-        expect(error).toBeInstanceOf(Error);
-      else if (capabilities !== undefined)
-        expect(capabilities.version).toBeUndefined();
+      const capabilities = await WmsCapabilities.create("https://fake/truncated", undefined, true);
+      expect(capabilities).toBeDefined();
+      expect(capabilities!.version).toBeUndefined();
+      expect(capabilities!.service.name).toEqual("oops");
+      expect(capabilities!.layer).toBeUndefined();
+    });
+
+    it("should degrade gracefully on unparseable XML without throwing", async () => {
+      // Mismatched tags produce a parsererror document; DOMParser still exposes the
+      // partially parsed content, so the result is a degenerate but valid object.
+      fakeTextFetch("<WMS_Capabilities><Service></WMS_Capabilities></Service>");
+      const capabilities = await WmsCapabilities.create("https://fake/malformed", undefined, true);
+      expect(capabilities).toBeDefined();
+      expect(capabilities!.version).toBeUndefined();
+      expect(capabilities!.service.name).toEqual("");
+      expect(capabilities!.layer).toBeUndefined();
+      expect(capabilities!.getSubLayers()).toBeUndefined();
     });
 
     it("should not throw on non-WMS XML", async () => {
@@ -191,15 +197,12 @@ describe("WmsCapabilities", () => {
     it("should not resolve external entities", async () => {
       const payload = `<?xml version="1.0"?><!DOCTYPE WMS_Capabilities [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms"><Service><Name>&xxe;</Name></Service></WMS_Capabilities>`;
       fakeTextFetch(payload);
-      let capabilities;
-      try {
-        capabilities = await WmsCapabilities.create("https://fake/xxe", undefined, true);
-      } catch {
-        // acceptable: parser rejects the doctype outright
-        return;
+      const capabilities = await WmsCapabilities.create("https://fake/xxe", undefined, true);
+      // The browser DOMParser does not resolve external entities; the document is
+      // either rejected outright or parsed with an empty entity value.
+      if (capabilities !== undefined) {
+        expect(capabilities.service.name).toEqual("");
       }
-      if (capabilities !== undefined)
-        expect(capabilities.service.name).not.toContain("root:");
     });
   });
 });
