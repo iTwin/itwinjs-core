@@ -221,9 +221,19 @@ export class WmsCapabilities {
     if (!xmlCapabilities)
       return undefined;
 
+    // Validate the document is actually rooted at a WMS capabilities element before parsing:
+    // wms-capabilities happily parses any root and recognizes direct Service/Capability children.
+    // WMS 1.3.0 uses WMS_Capabilities; WMS 1.0.0-1.1.1 uses WMT_MS_Capabilities.
+    const doc = new DOMParser().parseFromString(xmlCapabilities, "text/xml");
+    const rootName = doc.documentElement?.localName;
+    if (rootName !== "WMS_Capabilities" && rootName !== "WMT_MS_Capabilities")
+      return undefined; // Not a WMS GetCapabilities document
+    if (doc.getElementsByTagName("parsererror").length > 0)
+      return undefined; // XML parse error (browsers embed a parsererror element)
+
     const json = new WMS(undefined, DOMParser).parse(xmlCapabilities);
     if (!json || typeof json !== "object" || (json.Service === undefined && json.Capability === undefined))
-      return undefined; // Not a WMS GetCapabilities document
+      return undefined; // Degenerate capabilities document
 
     const capabilities = new WmsCapabilities(json);
     if (!credentials) {

@@ -119,26 +119,23 @@ describe("WmsCapabilities", () => {
   describe("hostile and degenerate input", () => {
     const wrap130 = (inner: string) => `<?xml version="1.0"?><WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms">${inner}</WMS_Capabilities>`;
 
-    it("should recover truncated XML without throwing", async () => {
-      // The browser DOMParser recovers this fragment by auto-closing the open tags.
+    it("should reject truncated XML without throwing", async () => {
       fakeTextFetch("<WMS_Capabilities><Service><Name>oops");
       const capabilities = await WmsCapabilities.create("https://fake/truncated", undefined, true);
-      expect(capabilities).toBeDefined();
-      expect(capabilities!.version).toBeUndefined();
-      expect(capabilities!.service.name).toEqual("oops");
-      expect(capabilities!.layer).toBeUndefined();
+      expect(capabilities).toBeUndefined();
     });
 
     it("should degrade gracefully on unparseable XML without throwing", async () => {
-      // Mismatched tags produce a parsererror document; DOMParser still exposes the
-      // partially parsed content, so the result is a degenerate but valid object.
+      // Mismatched tags are a hard parse error; the document root becomes parsererror.
       fakeTextFetch("<WMS_Capabilities><Service></WMS_Capabilities></Service>");
       const capabilities = await WmsCapabilities.create("https://fake/malformed", undefined, true);
-      expect(capabilities).toBeDefined();
-      expect(capabilities!.version).toBeUndefined();
-      expect(capabilities!.service.name).toEqual("");
-      expect(capabilities!.layer).toBeUndefined();
-      expect(capabilities!.getSubLayers()).toBeUndefined();
+      expect(capabilities).toBeUndefined();
+    });
+
+    it("should reject a non-WMS root element that spoofs Service/Capability children", async () => {
+      fakeTextFetch(`<?xml version="1.0"?><html><Service><Name>fake</Name></Service><Capability/></html>`);
+      const capabilities = await WmsCapabilities.create("https://fake/spoof", undefined, true);
+      expect(capabilities).toBeUndefined();
     });
 
     it("should not throw on non-WMS XML", async () => {
