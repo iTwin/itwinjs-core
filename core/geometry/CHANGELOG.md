@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Tue, 18 Aug 2026 15:45:35 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Aug 2026 19:57:01 GMT and should not be manually modified.
 
 ## 5.12.4
 Tue, 18 Aug 2026 15:45:35 GMT
@@ -32,6 +32,11 @@ Mon, 03 Aug 2026 12:25:49 GMT
 - added test for fillet vs line intersection
 - Reduced Newton max iteration for spiral/bspline intersection
 - Rewrote CurveCurveCloseApproachXY Bspline and Spiral CloseApproach tests
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+_Version update only_
 
 ## 5.11.3
 Wed, 15 Jul 2026 19:40:44 GMT

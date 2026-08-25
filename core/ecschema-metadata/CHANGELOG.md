@@ -1,6 +1,6 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Tue, 18 Aug 2026 15:45:35 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Aug 2026 19:57:01 GMT and should not be manually modified.
 
 ## 5.12.4
 Tue, 18 Aug 2026 15:45:35 GMT
@@ -29,6 +29,11 @@ Mon, 03 Aug 2026 12:25:49 GMT
 
 - Update pre-existing bearing test expectation to match the new ANGLE-phenomenon convention (see #9465).
 - Add performance improvements for SchemaView. Filtering by schema, incremental loading, and a common lifetime manager class for invalidation.
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+_Version update only_
 
 ## 5.11.3
 Wed, 15 Jul 2026 19:40:44 GMT
