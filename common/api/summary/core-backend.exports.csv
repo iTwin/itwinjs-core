@@ -670,6 +670,12 @@ public;interface;ToChangesetArgs
 public;interface;TokenArg
 public;interface;TxnChangedEntities
 preview;interface;TxnChangedEntities
+public;interface;TxnChangedEntitiesWithMetadata
+preview;interface;TxnChangedEntitiesWithMetadata
+public;interface;TxnChangedEntity
+preview;interface;TxnChangedEntity
+public;type;TxnChangedEntityIterable
+preview;type;TxnChangedEntityIterable
 public;type;TxnIdString
 preview;type;TxnIdString
 public;class;TxnManager
