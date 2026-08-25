@@ -12,7 +12,7 @@ import { IModelConnection } from "./IModelConnection";
 import { TileTreeReference } from "./tile/internal";
 import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlagOverrides } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
-import { SubCategoriesCache } from "./SubCategoriesCache";
+import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 
 export interface IModelDisplayReference {
   readonly [_implementationProhibited]: unknown;
@@ -42,11 +42,10 @@ export interface IModelDisplayReference {
   isAlwaysDrawnExclusive: boolean;
   readonly onIsAlwaysDrawnExclusiveChanged: BeEvent<() => void>;
 
-  /** @internal */
-  readonly subcategories: SubCategoriesCache;
-
   clipStyle: ClipStyle | undefined;
   readonly onClipStyleChanged: BeEvent<() => void>;
+
+  readonly featureOverrideProviders: ObservableSet<FeatureOverrideProvider>;
 }
 
 export interface IModelDisplayReference2d extends IModelDisplayReference {
