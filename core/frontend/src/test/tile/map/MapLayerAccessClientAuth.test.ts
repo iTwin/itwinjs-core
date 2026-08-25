@@ -124,10 +124,12 @@ describe("MapLayerAccessClient request shaping", () => {
   it("provides the complete request URL and layer context to applyToRequest", async () => {
     let seenUrl: string | undefined;
     let seenLayerUrl: string | undefined;
+    let seenContextUrl: string | undefined;
     IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      applyToRequest: ({ url, context }) => {
+      applyToRequest: ({ url, layerUrl, context }) => {
         seenUrl = url;
-        seenLayerUrl = context.mapLayerUrl.toString();
+        seenLayerUrl = layerUrl;
+        seenContextUrl = context.mapLayerUrl.toString();
       },
     }));
     const provider = createProvider();
@@ -135,6 +137,21 @@ describe("MapLayerAccessClient request shaping", () => {
 
     expect(seenUrl).toEqual(`${tileUrl}?embedded=1`);
     expect(seenLayerUrl).toEqual(settingsUrl);
+    expect(seenContextUrl).toEqual(settingsUrl);
+  });
+
+  it("passes the layer's settings URL as layerUrl on capabilities requests too", async () => {
+    const seenLayerUrls: string[] = [];
+    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
+      applyToRequest: ({ layerUrl }) => { seenLayerUrls.push(layerUrl); },
+    }));
+    // A settings URL whose query is stripped from the GetCapabilities request URL.
+    const urlWithQuery = `${settingsUrl}?embedded=1`;
+    const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: urlWithQuery }));
+    await provider.initialize();
+
+    // The GetCapabilities request URL differs from the layer URL; per-layer credential lookups must still match.
+    expect(seenLayerUrls).toEqual([urlWithQuery]);
   });
 
   it("applies client headers on top of basic-auth credentials", async () => {
@@ -410,7 +427,7 @@ describe("MapLayerAccessClient request shaping", () => {
     // MapLayerImageryFormats.validate passes source.collectQueryParams() to create().
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
 
-    await expect(WmsCapabilities.create(settingsUrl, undefined, true, { custom: "1" }, makeAccessClient()))
+    await expect(WmsCapabilities.create(settingsUrl, { ignoreCache: true, queryParams: { custom: "1" }, accessClient: makeAccessClient() }))
       .rejects.toBeInstanceOf(MapLayerAuthenticationFailedError);
 
     const requested = new URL(getRequestUrl());
@@ -424,7 +441,7 @@ describe("MapLayerAccessClient request shaping", () => {
     // The queryParams merge is duplicated in WmtsCapabilities.create; guard it separately.
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
 
-    await expect(WmtsCapabilities.create(settingsUrl, undefined, true, { custom: "1" }, makeAccessClient()))
+    await expect(WmtsCapabilities.create(settingsUrl, { ignoreCache: true, queryParams: { custom: "1" }, accessClient: makeAccessClient() }))
       .rejects.toBeInstanceOf(MapLayerAuthenticationFailedError);
 
     const requested = new URL(getRequestUrl());

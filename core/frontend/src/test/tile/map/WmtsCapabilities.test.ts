@@ -416,7 +416,7 @@ describe("WmtsCapabilities1", () => {
     const searchParams = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const queryParams: {[key: string]: string} = {};
     searchParams.forEach((value: string, key: string) =>  queryParams[key] = value);
-    await WmtsCapabilities.create(sampleUrl, undefined, true, queryParams);
+    await WmtsCapabilities.create(sampleUrl, { ignoreCache: true, queryParams });
     expect(fetchStub).toHaveBeenCalledOnce();
     const firstCall = fetchStub.mock.calls[0];
     expect(firstCall[0]).toEqual(`${sampleUrl}?request=GetCapabilities&service=WMTS&${searchParams.toString()}`);

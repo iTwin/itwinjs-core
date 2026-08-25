@@ -48,6 +48,12 @@ export interface MapLayerAccessTokenParams {
 export interface MapLayerAuthRequest {
   /** The request URL, for inspection only (e.g. routing decisions); mutations to [[searchParams]] are not reflected. */
   readonly url: string;
+  /** The URL of the map-layer source this request is made for, as configured on the layer's settings.
+   * Unlike [[url]], it is stable across every request kind (tiles, tooltips, capabilities, service metadata),
+   * making it the key to use when a single client manages distinct credentials for several layers of the
+   * same format.
+   */
+  readonly layerUrl: string;
   /** The complete query-parameter set of the outgoing request — including parameters embedded in the layer's URL
    * and those appended by the provider (e.g. custom query parameters, protocol parameters). May be mutated in
    * place for query-parameter based authentication: `searchParams.set("token", ...)` overrides an existing value,

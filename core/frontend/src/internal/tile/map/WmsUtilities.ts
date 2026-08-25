@@ -14,6 +14,27 @@ import {
  * @module Tiles
  */
 
+/** Options for a capabilities/XML request that an access client may authenticate.
+ * @internal
+ */
+export interface WmsFetchOptions {
+  credentials?: RequestBasicCredentials;
+  /** The format's registered access client, given control over the outgoing request. */
+  accessClient?: MapLayerAccessClient;
+  /** The map-layer source URL identifying the layer to the access client. Defaults to the request URL,
+   * which callers should avoid: capabilities request URLs differ from the layer's. */
+  layerUrl?: string;
+}
+
+/** Options for [[WmsCapabilities.create]] and [[WmtsCapabilities.create]].
+ * @internal
+ */
+export interface WmsCapabilitiesCreateOptions extends WmsFetchOptions {
+  ignoreCache?: boolean;
+  /** Custom query parameters appended to the GetCapabilities request. */
+  queryParams?: { [key: string]: string };
+}
+
 /** @internal */
 export class WmsUtilities {
   public static getBaseUrl(url: string): string {
@@ -25,7 +46,8 @@ export class WmsUtilities {
  * fetch XML from HTTP request
  * @param url server URL to address the request
  */
-  public static async fetchXml(url: string, credentials?: RequestBasicCredentials, accessClient?: MapLayerAccessClient): Promise<string> {
+  public static async fetchXml(url: string, options?: WmsFetchOptions): Promise<string> {
+    const { credentials, accessClient, layerUrl } = options ?? {};
 
     let headers: Headers|undefined;
     if (credentials && credentials.user && credentials.password) {
@@ -43,7 +65,7 @@ export class WmsUtilities {
     // Give the format's access client full control over the outgoing request (e.g. an Authorization header).
     let requestUrl = url;
     let clientAuthApplied = false;
-    const context = { mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password };
+    const context = { mapLayerUrl: new URL(layerUrl ?? url), userName: credentials?.user, password: credentials?.password };
     if (accessClient?.applyToRequest) {
       const urlObj = new URL(url);
       headers = headers ?? new Headers();

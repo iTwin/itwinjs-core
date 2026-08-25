@@ -42,7 +42,12 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   public override async initialize(): Promise<void> {
     try {
       const credentials = (this._settings.userName && this._settings.password ? { user: this._settings.userName, password: this._settings.password } : undefined);
-      this._capabilities = await WmtsCapabilities.create(this._baseUrl, credentials, undefined, this._settings.collectQueryParams(), this.accessClient);
+      this._capabilities = await WmtsCapabilities.create(this._baseUrl, {
+        credentials,
+        queryParams: this._settings.collectQueryParams(),
+        accessClient: this.accessClient,
+        layerUrl: this._settings.url,
+      });
       this.initPreferredTileMatrixSet();
       this.initPreferredStyle();
       this.initDisplayedLayer();

@@ -57,6 +57,24 @@ const proxyAccessClient: MapLayerAccessClient = {
 IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", proxyAccessClient);
 ```
 
+### One credential per layer
+
+The access client is registered per format, but [MapLayerAuthRequest.layerUrl]($frontend) identifies the layer each request is made for. Unlike `request.url`, it is stable across every request kind (tiles, tooltips, capabilities, service metadata), so a single client can serve any number of layers of its format, each with its own credentials:
+
+```ts
+// Layer URL → token, obtained and refreshed by the hosting application through its own channels.
+const tokensByLayer = new Map<string, string>();
+
+IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", {
+  getAccessToken: async () => undefined,
+  applyToRequest: (request: MapLayerAuthRequest) => {
+    const token = tokensByLayer.get(request.layerUrl);
+    if (token !== undefined)
+      request.headers.set("Authorization", `Bearer ${token}`);
+  },
+});
+```
+
 When `isAuthenticationError` reports a failure (or a shaped request receives a 401/403 by default), the layer's provider transitions to the [MapLayerImageryProviderStatus]($frontend) member `RequireAuth` and raises [MapLayerImageryProvider.onStatusChanged]($frontend), which applications can use to prompt the user to re-authenticate. How the provider behaves afterwards varies by format: the ArcGIS providers stop requesting tiles while in `RequireAuth`, while the other formats keep requesting new tiles — each still passing through `applyToRequest`, so a client that has silently refreshed its token keeps the layer alive without intervention. Applications should keep monitoring this event even with an access client in place: a client that refreshes its tokens proactively inside `applyToRequest` can make the event rare, but it remains the only signal for failures the client cannot fix silently (revoked access, expired refresh token), and other statuses such as `UntrustedOrigin` flow through it as well.
 
 Once the application has re-established authentication, it must detach and re-attach the layer so that a fresh provider is created: a provider whose initialization failed never obtained the service's capabilities, and tiles that already failed are not re-requested. The same applies to a layer restored from a saved view before its access client was registered — once the client is in place, re-attach the layer.

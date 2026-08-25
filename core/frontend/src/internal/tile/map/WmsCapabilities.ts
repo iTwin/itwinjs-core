@@ -7,9 +7,8 @@
  */
 
 import { MapSubLayerProps } from "@itwin/core-common";
-import { RequestBasicCredentials } from "../../../request/Request";
 import WMS from "wms-capabilities";
-import { MapCartoRectangle, MapLayerAccessClient, WmsUtilities } from "../../../tile/internal";
+import { MapCartoRectangle, WmsCapabilitiesCreateOptions, WmsUtilities } from "../../../tile/internal";
 
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
   return (Array.isArray(json) && json.length === 4) ? MapCartoRectangle.fromDegrees(json[0], json[1], json[2], json[3]) : undefined;
@@ -197,7 +196,8 @@ export class WmsCapabilities {
       this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}, accessClient?: MapLayerAccessClient): Promise<WmsCapabilities | undefined> {
+  public static async create(url: string, options?: WmsCapabilitiesCreateOptions): Promise<WmsCapabilities | undefined> {
+    const { credentials, ignoreCache, queryParams, accessClient, layerUrl } = options ?? {};
     // The cache is keyed by URL only, so responses shaped by an access client (e.g. header-authenticated)
     // must not be shared with or served from differently-authenticated requests.
     const clientShapesRequests = undefined !== accessClient?.applyToRequest;
@@ -216,7 +216,7 @@ export class WmsCapabilities {
           tmpUrl.searchParams.append(paramKey, queryParams[paramKey]);
       });
     }
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials, accessClient);
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, accessClient, layerUrl: layerUrl ?? url });
 
     if (!xmlCapabilities)
       return undefined;

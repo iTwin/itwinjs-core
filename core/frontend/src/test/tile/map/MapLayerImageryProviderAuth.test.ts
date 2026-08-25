@@ -575,7 +575,7 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
     const opaqueUrl = "myapp://tiles/wms?request=GetCapabilities&service=WMS";
     fetchMock.mockResolvedValueOnce(new Response("<xml/>", { status: 200 }));
 
-    const xml = await WmsUtilities.fetchXml(opaqueUrl, { user: "user", password: "pwd" });
+    const xml = await WmsUtilities.fetchXml(opaqueUrl, { credentials: { user: "user", password: "pwd" } });
 
     expect(xml).toEqual("<xml/>");
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -587,7 +587,7 @@ describe("WmsUtilities.fetchXml SSO origin restriction", () => {
     const opaqueUrl = "myapp://tiles/wms?request=GetCapabilities&service=WMS";
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
 
-    await expect(WmsUtilities.fetchXml(opaqueUrl, { user: "user", password: "pwd" })).rejects.toBeInstanceOf(MapLayerUntrustedOriginError);
+    await expect(WmsUtilities.fetchXml(opaqueUrl, { credentials: { user: "user", password: "pwd" } })).rejects.toBeInstanceOf(MapLayerUntrustedOriginError);
   });
 
   it("retries with SSO credentials for any origin when restriction is disabled (legacy default)", async () => {

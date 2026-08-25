@@ -6075,6 +6075,7 @@ export interface MapLayerAuthenticationInfo {
 export interface MapLayerAuthRequest {
     context: MapLayerAccessTokenParams;
     headers: Headers;
+    readonly layerUrl: string;
     searchParams: URLSearchParams;
     readonly url: string;
 }
@@ -14391,7 +14392,7 @@ export class WindowAreaTool extends ViewTool {
 
 // @internal (undocumented)
 export class WmsUtilities {
-    static fetchXml(url: string, credentials?: RequestBasicCredentials, accessClient?: MapLayerAccessClient): Promise<string>;
+    static fetchXml(url: string, options?: WmsFetchOptions): Promise<string>;
     // (undocumented)
     static getBaseUrl(url: string): string;
 }

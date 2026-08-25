@@ -7,7 +7,6 @@ import { EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/co
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QuadId, WmtsCapabilities, WmtsCapability, WmtsMapLayerImageryProvider } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
-import { RequestBasicCredentials } from "../../../request/Request";
 import { fakeTextFetch } from "./MapLayerTestUtilities";
 import { Range2d } from "@itwin/core-geometry";
 
@@ -28,7 +27,7 @@ describe("WmtsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
+    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _() {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
@@ -40,7 +39,7 @@ describe("WmtsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
+    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _() {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
@@ -92,7 +91,7 @@ describe("WmtsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
+    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _() {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);

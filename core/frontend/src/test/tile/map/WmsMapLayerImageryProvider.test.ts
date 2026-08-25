@@ -17,7 +17,6 @@ import {
   WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
-import { RequestBasicCredentials } from "../../../request/Request";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { createFakeTileResponse, fakeTextFetch } from "./MapLayerTestUtilities";
 
@@ -47,7 +46,7 @@ describe("WmsMapLayerImageryProvider", () => {
       return "1,2,3,4";
     });
 
-    vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    vi.spyOn(WmsCapabilities, "create").mockImplementation(async () => {
       return {} as WmsCapabilities;
     });
 
@@ -99,7 +98,7 @@ describe("WmsMapLayerImageryProvider", () => {
       return Point2d.createFrom(point, result);
     });
 
-    vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    vi.spyOn(WmsCapabilities, "create").mockImplementation(async () => {
       return {featureInfoFormats: ["text/html"] } as WmsCapabilities;
     });
 
@@ -130,7 +129,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    const createSub = vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    const createSub = vi.spyOn(WmsCapabilities, "create").mockImplementation(async () => {
       // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
@@ -145,7 +144,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    const createSub = vi.spyOn(WmtsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    const createSub = vi.spyOn(WmtsCapabilities, "create").mockImplementation(async () => {
       // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
@@ -160,7 +159,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    vi.spyOn(WmsCapabilities, "create").mockImplementation(async () => {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmsMapLayerImageryProvider(settings);
@@ -172,7 +171,7 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
+    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async () => {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);

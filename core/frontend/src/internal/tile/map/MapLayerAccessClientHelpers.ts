@@ -19,7 +19,7 @@ export async function applyAccessClientToRequest(url: URL, headers: Headers, con
     return false;
 
   // searchParams is a live view: mutations made by the client are reflected on `url`.
-  await accessClient.applyToRequest({ url: url.toString(), searchParams: url.searchParams, headers, context });
+  await accessClient.applyToRequest({ url: url.toString(), layerUrl: context.mapLayerUrl.toString(), searchParams: url.searchParams, headers, context });
   return true;
 }
 
