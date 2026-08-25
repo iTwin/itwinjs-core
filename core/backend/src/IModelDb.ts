@@ -2675,7 +2675,7 @@ export namespace IModelDb {
      * @param props The data for the new model.
      * @returns The newly inserted model's Id.
      * @throws [[IModelError]] if insertion fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.insertModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.insertModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertModel(props: ModelProps): Id64String {
       return this._iModel[_implicitTxn].insertModel(props);
@@ -2684,7 +2684,7 @@ export namespace IModelDb {
     /** Update an existing model.
      * @param props the properties of the model to change
      * @throws [[IModelError]] if update fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateModel(props: UpdateModelOptions): void {
       this._iModel[_implicitTxn].updateModel(props);
@@ -2696,7 +2696,7 @@ export namespace IModelDb {
      * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($core-bentley) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws [[IModelError]] if the update fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateGeometryGuid instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateGeometryGuid instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
@@ -2706,7 +2706,7 @@ export namespace IModelDb {
     /** Delete one or more existing models.
      * @param ids The Ids of the models to be deleted
      * @throws [[IModelError]] if deletion fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteModel(ids: Id64Arg): void {
       this._iModel[_implicitTxn].deleteModel(ids);
@@ -2950,7 +2950,7 @@ export namespace IModelDb {
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
      * if you intend to continue working with it. That will ensure its values reflect the persistent state.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.insertElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.insertElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       return this._iModel[_implicitTxn].insertElement(elProps, options);
@@ -2966,7 +2966,7 @@ export namespace IModelDb {
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
      * @throws [[ITwinError]] if update fails.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       this._iModel[_implicitTxn].updateElement(elProps);
@@ -2976,7 +2976,7 @@ export namespace IModelDb {
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[ITwinError]]
      * @see deleteDefinitionElements
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteElement(ids: Id64Arg): void {
       this._iModel[_implicitTxn].deleteElement(ids);
@@ -2988,7 +2988,7 @@ export namespace IModelDb {
      * @param deleteOptions Options for the delete operation.
      * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
      * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
-     * @deprecated in 5.1.9 - will not be removed until after 2026-08-15. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.1.9 - might be removed in next major version. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @beta
      */
     public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
@@ -3003,7 +3003,7 @@ export namespace IModelDb {
      * DefinitionElements rather than calling this method separately for each one. Ids that are not valid DefinitionElements will be ignored.
      * @returns An IdSet of the DefinitionElements that are used and were therefore not deleted.
      * @see deleteElement
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
       return this._iModel[_implicitTxn].deleteDefinitionElements(definitionElementIds);
@@ -3210,7 +3210,7 @@ export namespace IModelDb {
      * @returns the id of the newly inserted aspect.
      * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
      *       use [EntityReference]($common) for that instead.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.insertAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.insertAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
       return this._iModel[_implicitTxn].insertAspect(aspectProps);
@@ -3219,7 +3219,7 @@ export namespace IModelDb {
     /** Update an exist ElementAspect within the iModel.
      * @param aspectProps The properties to use to update the ElementAspect.
      * @throws [[IModelError]] if unable to update the ElementAspect.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.updateAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
       this._iModel[_implicitTxn].updateAspect(aspectProps);
@@ -3228,7 +3228,7 @@ export namespace IModelDb {
     /** Delete one or more ElementAspects from this iModel.
      * @param aspectInstanceIds The set of instance Ids of the ElementAspect(s) to be deleted
      * @throws [[IModelError]] if unable to delete the ElementAspect.
-     * @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.deleteAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
       this._iModel[_implicitTxn].deleteAspect(aspectInstanceIds);
@@ -3238,7 +3238,7 @@ export namespace IModelDb {
      * @param props The properties specifying the element to reparent and its new parent.
      * @throws [[ITwinError]] if the operation fails.
      * @beta
-     * @deprecated in 5.11.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementParent instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.11.0 - might be removed in next major version. Use EditTxn.changeElementParent instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public changeElementParent(props: ChangeElementParentProps): void {
       this._iModel[_implicitTxn].changeElementParent(props);
@@ -3248,7 +3248,7 @@ export namespace IModelDb {
      * @param props The properties specifying the element to move and its new model.
      * @throws [[ITwinError]] if the operation fails.
      * @beta
-     * @deprecated in 5.11.0 - will not be removed until after 2026-08-04. Use EditTxn.changeElementModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @deprecated in 5.11.0 - might be removed in next major version. Use EditTxn.changeElementModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public changeElementModel(props: ChangeElementModelProps): void {
       this._iModel[_implicitTxn].changeElementModel(props);
@@ -3296,7 +3296,7 @@ export namespace IModelDb {
     }
 
     /**
-     * @beta @deprecated in 5.9.0 - will not be removed until after 2026-08-04. Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @beta @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
       this._iModel[_implicitTxn].saveDefaultViewStore(arg);

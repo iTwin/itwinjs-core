@@ -2,6 +2,18 @@
   "name": "@itwin/ecschema-locaters",
   "entries": [
     {
+      "version": "5.11.4",
+      "tag": "@itwin/ecschema-locaters_v5.11.4",
+      "date": "Tue, 25 Aug 2026 19:54:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgraded glob dependency to 13.x"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.11.3",
       "tag": "@itwin/ecschema-locaters_v5.11.3",
       "date": "Wed, 15 Jul 2026 19:40:44 GMT",
