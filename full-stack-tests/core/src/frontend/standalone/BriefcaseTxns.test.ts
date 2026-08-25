@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, Logger, LogLevel, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, TxnEntityChanges, TxnEntityChangeType } from "@itwin/core-frontend";
-import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { addAllowedChannel, coreFullStackTestCommandIpc, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, saveBriefcaseChanges, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 describe("BriefcaseTxns", () => {
@@ -97,35 +97,49 @@ describe("BriefcaseTxns", () => {
     }
 
     describe("writable connection", () => {
+      it("uses default EditCommand save args and overrides only the description", async () => {
+        const defaultProps = await coreFullStackTestCommandIpc.saveChangesAndReturnProps(rwConn.key, `default-${Guid.createValue()}`);
+        expect(defaultProps).to.deep.equal({
+          description: "FullStackTestEditCommand",
+          source: "full-stack-tests.fullStackTestCommand",
+          appData: { suite: "full-stack-tests" },
+        });
+
+        const overrideProps = await coreFullStackTestCommandIpc.endEditsAndReturnProps(rwConn.key, `override-${Guid.createValue()}`, "override description");
+        expect(overrideProps).to.deep.equal({
+          description: "override description",
+          source: "full-stack-tests.fullStackTestCommand",
+          appData: { suite: "full-stack-tests" },
+        });
+      });
+
       it("receives events from TxnManager", async () => {
         const expectEvents = installListeners(rwConn);
         Logger.initializeToConsole();
         Logger.setLevel("TestCategory", LogLevel.Trace);
-        const expectCommit = async (label: string, ...evts: TxnEvent[]) => expectEvents(label, ["onCommit", ...evts, "onCommitted"]);
+        const expectCommit = async (label: string, operation: () => Promise<void>, ...evts: TxnEvent[]) => {
+          const pending = expectEvents(label, ["onCommit", ...evts, "onCommitted"]);
+          await operation();
+          await pending;
+        };
 
         const dictModelId = await rwConn.models.getDictionaryModel();
-        const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
-        await rwConn.saveChanges();
-        await expectCommit("create and insert spatial category", "onElementsChanged");
+        const category = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await expectCommit("create and insert spatial category", async () => saveBriefcaseChanges(rwConn), "onElementsChanged");
 
         const code = await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue());
-        const model = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, code);
-        await rwConn.saveChanges();
-        await expectCommit("create and insert physical model", "onElementsChanged", "onModelsChanged");
+        const model = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(rwConn.key, code);
+        await expectCommit("create and insert physical model", async () => saveBriefcaseChanges(rwConn), "onElementsChanged", "onModelsChanged");
 
         // NB: onCommit is produced *after* we process all changes. onModelGeometryChanged is produced *during* change processing.
         const elem1 = await insertLineElement(rwConn, model, category);
-        await rwConn.saveChanges();
-
-        await expectCommit("insert line element", "onModelGeometryChanged", "onElementsChanged");
+        await expectCommit("insert line element", async () => saveBriefcaseChanges(rwConn), "onModelGeometryChanged", "onElementsChanged");
 
         await transformElements(rwConn, [elem1], Transform.createTranslationXYZ(1, 0, 0));
-        await rwConn.saveChanges();
-        await expectCommit("translate", "onModelGeometryChanged", "onElementsChanged");
+        await expectCommit("translate", async () => saveBriefcaseChanges(rwConn), "onModelGeometryChanged", "onElementsChanged");
 
         await deleteElements(rwConn, [elem1]);
-        await rwConn.saveChanges();
-        await expectCommit("delete element", "onModelGeometryChanged", "onElementsChanged");
+        await expectCommit("delete element", async () => saveBriefcaseChanges(rwConn), "onModelGeometryChanged", "onElementsChanged");
 
         const undo = async () => rwConn.txns.reverseSingleTxn();
         const expectUndo = async (label: string, evts: TxnEvent[]) => expectEvents(label, ["beforeUndo", ...evts, "afterUndo"]);
@@ -208,11 +222,11 @@ describe("BriefcaseTxns", () => {
         }
 
         const dictModelId = await rwConn.models.getDictionaryModel();
-        const cat1 = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
-        const cat2 = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        const cat1 = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        const cat2 = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
 
         const code = await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue());
-        const model = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, code);
+        const model = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(rwConn.key, code);
 
         await insertLineElement(rwConn, model, cat1);
         await insertLineElement(rwConn, model, cat2);
@@ -228,7 +242,7 @@ describe("BriefcaseTxns", () => {
           ["BisCore:PhysicalModel", "inserted"],
         ];
 
-        await expectChangedEntities(async () => rwConn.saveChanges(), "onCommitted", expected);
+        await expectChangedEntities(async () => saveBriefcaseChanges(rwConn), "onCommitted", expected);
         await expectChangedEntities(async () => {
           await rwConn.txns.reverseSingleTxn();
         }, "onAfterUndoRedo", expected.map((x) => [x[0], "deleted"]));
@@ -260,27 +274,27 @@ describe("BriefcaseTxns", () => {
         const expectCommit = async (label: string, ...evts: TxnEvent[]) => expectEvents(label, ["onReplayExternalTxns", ...evts, "onReplayedExternalTxns"]);
 
         const dictModelId = await rwConn.models.getDictionaryModel();
-        const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
-        await rwConn.saveChanges();
+        const category = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await saveBriefcaseChanges(rwConn);
         await expectCommit("create and insert spatial category", "onElementsChanged", "onChangesApplied");
 
         const code = await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue());
-        const model = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, code);
-        await rwConn.saveChanges();
+        const model = await coreFullStackTestCommandIpc.createAndInsertPhysicalModel(rwConn.key, code);
+        await saveBriefcaseChanges(rwConn);
         await expectCommit("create and insert physical model", "onElementsChanged", "onModelsChanged", "onChangesApplied");
 
         // NB: onCommit is produced *after* we process all changes. onModelGeometryChanged is produced *during* change processing.
         const elem1 = await insertLineElement(rwConn, model, category);
-        await rwConn.saveChanges();
+        await saveBriefcaseChanges(rwConn);
 
         await expectCommit("insert line element", "onElementsChanged", "onChangesApplied", "onModelGeometryChanged");
 
         await transformElements(rwConn, [elem1], Transform.createTranslationXYZ(1, 0, 0));
-        await rwConn.saveChanges();
+        await saveBriefcaseChanges(rwConn);
         await expectCommit("translate", "onElementsChanged", "onChangesApplied", "onModelGeometryChanged");
 
         await deleteElements(rwConn, [elem1]);
-        await rwConn.saveChanges();
+        await saveBriefcaseChanges(rwConn);
         await expectCommit("delete element", "onElementsChanged", "onChangesApplied", "onModelGeometryChanged");
       });
 
@@ -289,12 +303,12 @@ describe("BriefcaseTxns", () => {
         const expectCommit = async (label: string, ...evts: TxnEvent[]) => expectEvents(label, ["onReplayExternalTxns", ...evts, "onReplayedExternalTxns"]);
 
         const dictModelId = await rwConn.models.getDictionaryModel();
-        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
-        await rwConn.saveChanges();
+        await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await saveBriefcaseChanges(rwConn);
         await expectCommit("create and insert spatial category 1", "onElementsChanged", "onChangesApplied");
 
-        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
-        await rwConn.saveChanges();
+        await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await saveBriefcaseChanges(rwConn);
         await expectCommit("create and insert spatial category 2", "onElementsChanged", "onChangesApplied");
 
         // Cannot reopen roConn as writable while rwConn is open for write.
@@ -306,8 +320,8 @@ describe("BriefcaseTxns", () => {
         // Reopen rwConn
         await openRW();
 
-        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
-        await rwConn.saveChanges();
+        await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await saveBriefcaseChanges(rwConn);
         await expectCommit("create and insert spatial category 3", "onElementsChanged", "onChangesApplied");
 
         // Repeat.
@@ -315,10 +329,15 @@ describe("BriefcaseTxns", () => {
         await coreFullStackTestIpc.closeAndReopenDb(roConn.key);
         await openRW();
 
-        await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
-        await rwConn.saveChanges();
+        await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(rwConn.key, dictModelId, Guid.createValue(), { color: 0 });
+        await saveBriefcaseChanges(rwConn);
         await expectCommit("create and insert spatial category 4", "onElementsChanged", "onChangesApplied");
       });
     });
   }
 });
+
+
+
+
+

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module iModels
  */
@@ -29,6 +29,10 @@ export interface AvailableCoordinateReferenceSystemProps {
    *  Maximum longitude and latitude correspond to crsExtent.high.x and crsExtent.high.y, respectively.
    */
   crsExtent: Range2dProps;
+  /** The name of the linear unit used by the coordinate reference system.
+   *  When returned by [[getAvailableCoordinateReferenceSystems]], the value uses the canonical casing returned by [[getAvailableCRSUnits]].
+   */
+  unit?: string;
 }
 
 /** Arguments supplied to [[getAvailableCoordinateReferenceSystems]].
@@ -42,7 +46,13 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
   /** If true, returns additional coordinate reference systems with extents spanning the entire Earth's surface.
    * @default false
    */
-  includeWorld?: boolean
+  includeWorld?: boolean;
+  /**
+   * If provided, filter coordinate reference systems by unit name.
+   * Matching is case-insensitive.
+   * Use [[getAvailableCRSUnits]] to get a list of canonical unit names.
+   */
+  unit?: string;
 }
 
 /** Get a list of Geographic Coordinate Reference Systems.
@@ -50,7 +60,22 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
  * @returns The list of Geographic Coordinate Reference Systems, according to the supplied parameters.
  * @beta
  */
-export async function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]> {
+export async function getAvailableCoordinateReferenceSystems(
+  args: GetAvailableCoordinateReferenceSystemsArgs
+): Promise<AvailableCoordinateReferenceSystemProps[]> {
   GeoCoordConfig.loadDefaultDatabases();
-  return IModelNative.platform.GeoServices.getListOfCRS(args.extent, args.includeWorld);
+  return IModelNative.platform.GeoServices.getListOfCRS(
+    args.extent,
+    args.includeWorld,
+    args.unit
+  );
+}
+
+/** Get a list of units used by Geographic Coordinate Reference Systems in iTwin.js.
+ * @returns An array of canonical unit names.
+ * @beta
+ */
+export function getAvailableCRSUnits(): string[] {
+  GeoCoordConfig.loadDefaultDatabases();
+  return IModelNative.platform.GeoServices.getAvailableUnitNames();
 }

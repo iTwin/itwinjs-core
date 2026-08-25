@@ -325,7 +325,7 @@ describe("SchemaValidationVisitor tests", () => {
       const entityClass = new EntityClass(schema, "TestClass");
       const property = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestPropertyA", PrimitiveType.String);
 
-      await visitor.visitProperty(property as AnyProperty);
+      await visitor.visitProperty(property);
 
       ruleSet.propertyRules.forEach((spy) => expect(spy.calledOnceWithExactly(property)).to.be.true);
     });
@@ -935,7 +935,7 @@ describe("SchemaValidationVisitor tests", () => {
       (property as unknown as MutableProperty).addCustomAttribute({ className: "TestSchema.TestCA" });
 
       const properties = Array.from(await entityClass.getProperties(true));
-      await visitor.visitCustomAttributeContainer(properties[0] as AnyProperty);
+      await visitor.visitCustomAttributeContainer(properties[0]);
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.calledOnceWithExactly(properties[0])).to.be.true);
       ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(properties[0], property.customAttributes!.get("TestSchema.TestCA")!)).to.be.true);
@@ -949,7 +949,7 @@ describe("SchemaValidationVisitor tests", () => {
       (property as unknown as MutableProperty).addCustomAttribute({ className: "TestSchema.TestCA" });
 
       const properties = Array.from(await entityClass.getProperties(true));
-      await visitor.visitCustomAttributeContainer(properties[0] as AnyProperty);
+      await visitor.visitCustomAttributeContainer(properties[0]);
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.notCalled).to.be.true);
       ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.notCalled).to.be.true);

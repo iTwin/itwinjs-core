@@ -219,7 +219,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
 
     // create list of entries for Classifier in the spatial Classifiers
     const entries = realityModels.map((spatialClassifier, i) => {
-      return ({ name: spatialClassifier.modelName, value: i } as ComboBoxEntry);
+      return ({ name: spatialClassifier.modelName, value: i });
     });
 
     clearElement(this._realityModelListDiv);
@@ -372,7 +372,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       parent,
       entries: insideEntries,
       handler: (select) => {
-        const newValue = Number.parseInt(select.value, 10) as SpatialClassifierInsideDisplay;
+        const newValue = Number.parseInt(select.value, 10);
         updateFlags({ inside: newValue });
         this._vp.invalidateScene();
       },
@@ -385,7 +385,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       parent,
       entries: outsideEntries,
       handler: (select) => {
-        const newValue = Number.parseInt(select.value, 10) as SpatialClassifierOutsideDisplay;
+        const newValue = Number.parseInt(select.value, 10);
         updateFlags({ outside: newValue });
         this._vp.invalidateScene();
       },

@@ -2,6 +2,7 @@
   "$schema": "./Base.Schema.json",
   "description": "settings for geocoordinate services",
   "schemaPrefix": "itwin/core/gcs",
+  "title": "Geocoordinate Services",
   "settingDefs": {
     "default/databases": {
       "type": "array",

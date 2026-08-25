@@ -11,7 +11,7 @@ import {
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, DbResponseKind, DbResponseStatus, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelIdAndGeometryGuid, ModelProps, ModelQueryParams, Placement, Placement2d,
@@ -30,12 +30,11 @@ import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
-import { SchemaContext } from "@itwin/ecschema-metadata";
+import { type GetSchemaViewArgs, SchemaContext, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, schemaViewFormatVersion, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater, RpcIncrementalSchemaLocater } from '@itwin/ecschema-rpcinterface-common';
 
 
@@ -156,15 +155,18 @@ export abstract class IModelConnection extends IModel {
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled.
-   * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
+   * @deprecated in 5.0.0 - might be removed in next major version. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   private _schemaContext?: SchemaContext;
+  // Created lazily on the first getSchemaView call. Owns the SchemaView's lifetime and does all its
+  // data access through the SchemaViewDataProvider implemented below.
+  private _schemaViewManager?: SchemaViewManager;
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
-   * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
+   * @deprecated in 5.0.0 - might be removed in next major version. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
   public async loadFontMap(): Promise<FontMap> { // eslint-disable-line @typescript-eslint/no-deprecated
     if (undefined === this.fontMap) { // eslint-disable-line @typescript-eslint/no-deprecated
@@ -261,6 +263,10 @@ export abstract class IModelConnection extends IModel {
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
       execute: async (request: DbQueryRequest) => {
+        // Best-effort guard for the common case where the connection closes before iteration starts.
+        if (!this.isOpen) {
+          return { status: DbResponseStatus.NotOpen, data: [], meta: [], rowCount: 0, stats: { cpuTime: 0, totalTime: 0, memUsed: 0, prepareTime: 0, timeLimit: 0, memLimit: 0 }, kind: DbResponseKind.ECSql };
+        }
         return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
     };
@@ -308,7 +314,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal
-   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use AccuSnap.doSnapRequest.
+   * @deprecated in 4.8 - might be removed in next major version. Use AccuSnap.doSnapRequest.
    */
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
     return this[_requestSnap](props);
@@ -355,7 +361,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** Request mass properties for multiple elements from the backend.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use [[IModelConnection.getMassProperties]].
+   * @deprecated in 4.11 - might be removed in next major version. Use [[IModelConnection.getMassProperties]].
    */
   public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {  // eslint-disable-line @typescript-eslint/no-deprecated
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
@@ -579,20 +585,24 @@ export abstract class IModelConnection extends IModel {
   private _projectCenterAltitude?: number | Promise<number>;
 
   /** Event called immediately after map elevation request is completed. This occurs only in the case where background map terrain is displayed
-   * with either geoid or ground offset. These require a query to BingElevation and therefore synching the view may be required
+   * with either geoid or ground offset. These require a query to the elevation/geoid provider and therefore synching the view may be required
    * when the request is completed.
    * @internal
    */
   public readonly onMapElevationLoaded = new BeEvent<(_imodel: IModelConnection) => void>();
 
-  /** The offset between sea level and the geodetic ellipsoid. This will return undefined only if the request for the offset to Bing Elevation
+  /** The offset between sea level and the geodetic ellipsoid. This will return undefined only if the request for the offset
    * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */
   public get geodeticToSeaLevel(): number | undefined {
     if (undefined === this._geodeticToSeaLevel) {
-      const elevationProvider = new BingElevationProvider();
-      this._geodeticToSeaLevel = elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this);
+      if (!this.isGeoLocated) {
+        this._geodeticToSeaLevel = 0.0;
+        return 0.0;
+      }
+      const carto = this.spatialToCartographicFromEcef(this.projectExtents.center);
+      this._geodeticToSeaLevel = IModelApp.geoidProvider.getGeodeticToSeaLevelOffset(carto);
       this._geodeticToSeaLevel.then((geodeticToSeaLevel) => {
         this._geodeticToSeaLevel = geodeticToSeaLevel;
         this.onMapElevationLoaded.raiseEvent(this);
@@ -601,14 +611,18 @@ export abstract class IModelConnection extends IModel {
     return ("number" === typeof this._geodeticToSeaLevel) ? this._geodeticToSeaLevel : undefined;
   }
 
-  /** The altitude (geodetic) at the project center. This will return undefined only if the request for the offset to Bing Elevation
+  /** The altitude (geodetic) at the project center. This will return undefined only if the request for the altitude
    * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */
   public get projectCenterAltitude(): number | undefined {
     if (undefined === this._projectCenterAltitude) {
-      const elevationProvider = new BingElevationProvider();
-      this._projectCenterAltitude = elevationProvider.getHeightValue(this.projectExtents.center, this);
+      if (!this.isGeoLocated) {
+        this._projectCenterAltitude = 0.0;
+        return 0.0;
+      }
+      const carto = this.spatialToCartographicFromEcef(this.projectExtents.center);
+      this._projectCenterAltitude = IModelApp.elevationProvider.getHeight(carto);
       this._projectCenterAltitude.then((projectCenterAltitude) => {
         this._projectCenterAltitude = projectCenterAltitude;
         this.onMapElevationLoaded.raiseEvent(this);
@@ -622,6 +636,10 @@ export abstract class IModelConnection extends IModel {
    * The context is created lazily when this property is accessed for the first time, with an `ECSchemaRpcLocater` registered as a fallback locater, enabling users to register their own locater that'd take more priority.
    * This means to correctly access schema context, client-side applications must register `ECSchemaRpcInterface` following instructions for [RPC configuration]($docs/learning/rpcinterface/#client-side-configuration).
    * Server-side applications would also [configure RPC]($docs/learning/rpcinterface/#server-side-configuration) as needed.
+   *
+   * For runtime read-only access - class/property iteration, IS-A checks, navigating relationships, KOQ lookups -
+   * prefer [[getSchemaView]]. `schemaContext` remains the right choice when you need custom-attribute deserialization
+   * or the full ecschema-metadata object graph.
    *
    * @note While a `BlankConnection` returns a valid `schemaContext`, it has an invalid locater registered by default, and will throw an error when trying to call it's methods.
    * @beta
@@ -639,6 +657,105 @@ export abstract class IModelConnection extends IModel {
     }
 
     return this._schemaContext;
+  }
+
+  /** Get the schema view for this iModel. The view is built lazily on
+   * first call by fetching compact binary schema data via `PRAGMA schema_view` through
+   * the existing queryRows RPC (ConcurrentQuery).
+   *
+   * The returned `SchemaView` is a lightweight, read-only, synchronous API for
+   * navigating schema metadata - classes, properties, relationships, enumerations, etc.
+   * It is the recommended default for runtime read-only metadata access and is significantly
+   * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for custom-attribute
+   * deserialization or anywhere you need the full ecschema-metadata object graph.
+   *
+   * Every call shares one accumulating view instance and concurrent calls are serialized, so a
+   * caller never observes a partially loaded view. The instance is discarded once the connection
+   * detects that schemas changed, for example after [[BriefcaseConnection.pullChanges]]; the next
+   * call builds a new one. See [GetSchemaViewArgs]($ecschema-metadata) for the arguments.
+   * @beta
+   */
+  public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
+    this._schemaViewManager ??= new SchemaViewManager(this._createSchemaViewDataProvider());
+    return this._schemaViewManager.getSchemaView(args);
+  }
+
+  /**
+   * Checks whether the iModel's schemas have changed since the current cached [[SchemaView]] was
+   * built, and discards the cache only if they have.
+   *
+   * Frontend code paths that may affect schemas - such as [[BriefcaseConnection.pullChanges]], or
+   * application-specific IPC calls that import or upgrade schemas - cannot reliably determine
+   * whether the operation actually modified any schemas. The IPC response for a pull, for example,
+   * returns only the new changeset id, not the list of applied changesets with their types.
+   * Unconditionally discarding the cached [[SchemaView]] after every such operation would cause
+   * unnecessary reloads in the common case where schemas are unchanged. This method avoids that
+   * cost by fetching a lightweight schema token via `PRAGMA checksum(schema_token)` and
+   * comparing it against the token stored in the cached view. Only when the token differs is the
+   * cache discarded.
+   *
+   * Subclasses that expose operations which may modify schemas should await this method after the
+   * operation completes to ensure [[getSchemaView]] returns a fresh view if needed.
+   * @internal
+   */
+  protected async invalidateSchemaViewIfChanged(): Promise<void> {
+    await this._schemaViewManager?.invalidateIfChanged();
+  }
+
+  /** The [SchemaViewDataProvider]($ecschema-metadata) backing this iModel's [[getSchemaView]]: the
+   * transport-specific half of schema-view loading, issued through the queryRows RPC
+   * (ConcurrentQuery). The frontend *pins* the blob format version in both pragmas, because the
+   * backend it talks to can be older or newer; the pin makes it return a blob this code can parse,
+   * or fail cleanly.
+   */
+  private _createSchemaViewDataProvider(): SchemaViewDataProvider {
+    return {
+      fetchFullBlob: async () => this._fetchSchemaBlob(`PRAGMA schema_view(${schemaViewFormatVersion})`),
+      // Names are ECNames, so a comma can never occur in one. Native re-validates each token as an
+      // ECName and fails the pragma on an unknown name. The `v<N>;` prefix pins the format version.
+      fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('v${schemaViewFormatVersion};${schemaNames.join(",")}')`),
+      fetchManifest: async () => {
+        const schemaRows: SchemaManifestSchemaRow[] = [];
+        const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
+        for await (const row of this.createQueryReader(schemaSql)) {
+          // ECInstanceId arrives as a hex Id64String. `ec_` metadata rowids carry no briefcase
+          // prefix, so the local id is the full value.
+          schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
+        }
+
+        const referenceRows: SchemaManifestReferenceRow[] = [];
+        const referenceSql = "SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences";
+        for await (const row of this.createQueryReader(referenceSql))
+          referenceRows.push({ sourceECInstanceId: Id64.getLocalId(row[0]), targetECInstanceId: Id64.getLocalId(row[1]) });
+
+        return SchemaManifest.fromRows(schemaRows, referenceRows);
+      },
+      fetchSchemaToken: async () => {
+        const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
+        const result = await reader.next();
+        if (result.done)
+          throw new IModelError(IModelStatus.BadRequest, "PRAGMA checksum(schema_token) returned no rows");
+        return result.value.sha3_256 as string;
+      },
+    };
+  }
+
+  /** Fetch one schema-view blob (full or fragment). Both `PRAGMA schema_view` and
+   * `PRAGMA schema_view_fragment` return a single row with the same columns. */
+  private async _fetchSchemaBlob(pragma: string): Promise<SchemaViewBlob> {
+    // Only call reader.next() once - do NOT use `for await` on PRAGMA results. ConcurrentQuery wraps
+    // regular ECSQL in LIMIT/OFFSET for pagination but skips this for PRAGMAs; if the serialized
+    // result exceeds the memory threshold, the response is marked "Partial", and a `for await` loop
+    // would re-issue the same PRAGMA forever since PRAGMAs don't support OFFSET-based pagination.
+    const reader = this.createQueryReader(pragma);
+    const result = await reader.next();
+    if (result.done)
+      throw new IModelError(IModelStatus.BadRequest, `${pragma} returned no rows`);
+    const data = result.value.data as Uint8Array | undefined;
+    const token = result.value.schemaToken as string | undefined;
+    if (data === undefined || data === null)
+      throw new IModelError(IModelStatus.BadRequest, `${pragma} returned null data column`);
+    return { data, schemaToken: token ?? "" };
   }
 }
 
@@ -732,7 +849,7 @@ export class SnapshotConnection extends IModelConnection {
 
   /** Open an IModelConnection to a remote read-only snapshot iModel from a key that will be resolved by the backend.
    * @note This method is intended for web applications.
-   * @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [[CheckpointConnection.openRemote]].
+   * @deprecated in 4.10 - might be removed in next major version. Use [[CheckpointConnection.openRemote]].
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
@@ -928,8 +1045,9 @@ export namespace IModelConnection {
 
       // Add the cached model ids and the invalid ids
       for (const modelId of modelIds) {
-        if (this._loadedExtents.has(modelId)) {
-          resolvedExtents.set(modelId, this._loadedExtents.get(modelId)!);
+        const cachedExtents = this._loadedExtents.get(modelId);
+        if (cachedExtents !== undefined) {
+          resolvedExtents.set(modelId, cachedExtents);
         } else if (!Id64.isValidId64(modelId)) {
           resolvedExtents.set(modelId, { id: modelId, extents: Range3d.createNull(), status: IModelStatus.InvalidId });
         } else {
@@ -1179,12 +1297,12 @@ export namespace IModelConnection {
 
       const select3d = `
         SELECT
-          ECInstanceId,
+          ECInstanceId as id,
           Origin.x as x, Origin.y as y, Origin.z as z,
           BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
           BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
-          Yaw, Pitch, Roll,
-          NULL as Rotation
+          Yaw as yaw, Pitch as pitch, Roll as roll,
+          NULL as rotation
         FROM bis.GeometricElement3d
         WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
 
@@ -1192,12 +1310,12 @@ export namespace IModelConnection {
       // must match those in select3d.
       const select2d = `
         SELECT
-          ECInstanceId,
+          ECInstanceId as id,
           Origin.x as x, Origin.y as y, NULL as z,
           BBoxLow.x as lx, BBoxLow.y as ly, NULL as lz,
           BBoxHigh.x as hx, BBoxHigh.y as hy, NULL as hz,
           NULL as yaw, NULL as pitch, NULL as roll,
-          Rotation
+          Rotation as rotation
         FROM bis.GeometricElement2d
         WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
 
@@ -1222,7 +1340,7 @@ export namespace IModelConnection {
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];
         const bbox = {
@@ -1412,7 +1530,7 @@ export namespace IModelConnection {
      * There is no guarantee that this view will be suitable for the purposes of any other applications.
      * Most applications should ignore the default view and instead create a [[ViewState]] that fits their own requirements using APIs like [[ViewCreator3d]].
      * @returns the Id of the default view as defined in the iModel's property table, or an invalid ID if no default view is defined.
-     * @deprecated in 4.2 - will not be removed until after 2026-06-13. Create a ViewState to your own specifications.
+     * @deprecated in 4.2 - might be removed in next major version. Create a ViewState to your own specifications.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;

@@ -202,8 +202,8 @@ describe("SelectionSet", () => {
         subcategories: ["0x3"],
       });
       expect(result).to.be.false;
-      expect(viewManagerMock.onSelectionSetChanged).not.toBeCalled();
-      expect(onChangedSpy).not.toBeCalled();
+      expect(viewManagerMock.onSelectionSetChanged).not.toHaveBeenCalled();
+      expect(onChangedSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -381,8 +381,8 @@ describe("SelectionSet", () => {
         subcategories: ["0x7"],
       });
       expect(result).to.be.false;
-      expect(viewManagerMock.onSelectionSetChanged).not.toBeCalled();
-      expect(onChangedSpy).not.toBeCalled();
+      expect(viewManagerMock.onSelectionSetChanged).not.toHaveBeenCalled();
+      expect(onChangedSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -596,8 +596,8 @@ describe("SelectionSet", () => {
         subcategories: ["0x3"],
       });
       expect(result).to.be.false;
-      expect(viewManagerMock.onSelectionSetChanged).not.toBeCalled();
-      expect(onChangedSpy).not.toBeCalled();
+      expect(viewManagerMock.onSelectionSetChanged).not.toHaveBeenCalled();
+      expect(onChangedSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -841,8 +841,8 @@ describe("SelectionSet", () => {
 
       const result = ss.invert({});
       expect(result).to.be.false;
-      expect(viewManagerMock.onSelectionSetChanged).not.toBeCalled();
-      expect(onChangedSpy).not.toBeCalled();
+      expect(viewManagerMock.onSelectionSetChanged).not.toHaveBeenCalled();
+      expect(onChangedSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -882,8 +882,8 @@ describe("SelectionSet", () => {
       const { ss, onChangedSpy } = createSelectionSet();
       expect(ss.isActive).to.be.false;
       ss.emptyAll();
-      expect(viewManagerMock.onSelectionSetChanged).not.toBeCalled();
-      expect(onChangedSpy).not.toBeCalled();
+      expect(viewManagerMock.onSelectionSetChanged).not.toHaveBeenCalled();
+      expect(onChangedSpy).not.toHaveBeenCalled();
     });
   });
 });
@@ -932,19 +932,19 @@ describe("HiliteSet", () => {
   it("raises `onModelSubCategoryModeChanged` event when the mode changes", () => {
     const { hilite, onModelSubCategoryModeChangedSpy } = createHiliteSet(false);
     expect(hilite.modelSubCategoryMode).to.eq("union");
-    expect(onModelSubCategoryModeChangedSpy).not.toBeCalled();
+    expect(onModelSubCategoryModeChangedSpy).not.toHaveBeenCalled();
 
     hilite.modelSubCategoryMode = "intersection";
     expect(hilite.modelSubCategoryMode).to.eq("intersection");
-    expect(onModelSubCategoryModeChangedSpy).toBeCalledTimes(1);
+    expect(onModelSubCategoryModeChangedSpy).toHaveBeenCalledTimes(1);
 
     hilite.modelSubCategoryMode = "union";
     expect(hilite.modelSubCategoryMode).to.eq("union");
-    expect(onModelSubCategoryModeChangedSpy).toBeCalledTimes(2);
+    expect(onModelSubCategoryModeChangedSpy).toHaveBeenCalledTimes(2);
 
     hilite.modelSubCategoryMode = "union";
     expect(hilite.modelSubCategoryMode).to.eq("union");
-    expect(onModelSubCategoryModeChangedSpy).toBeCalledTimes(2);
+    expect(onModelSubCategoryModeChangedSpy).toHaveBeenCalledTimes(2);
   });
 
   describe("changing hilite", () => {
@@ -998,45 +998,45 @@ describe("HiliteSet", () => {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       hilite.setHilite("0x1", true);
       expect(hilite.elements.toId64Array()).toBeId64Arg(["0x1"]);
-      expect(viewManagerMock.onSelectionSetChanged).toBeCalledTimes(1);
+      expect(viewManagerMock.onSelectionSetChanged).toHaveBeenCalledTimes(1);
 
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       hilite.setHilite(["0x1"], false);
       expect(hilite.elements.isEmpty).to.be.true;
-      expect(viewManagerMock.onSelectionSetChanged).toBeCalledTimes(2);
+      expect(viewManagerMock.onSelectionSetChanged).toHaveBeenCalledTimes(2);
     });
 
     it("changes elements hilite directly", () => {
       const { hilite } = createHiliteSet(false);
       hilite.elements.addId("0x1");
       expect(hilite.elements.toId64Array()).toBeId64Arg(["0x1"]);
-      expect(viewManagerMock.onSelectionSetChanged).toBeCalledTimes(1);
+      expect(viewManagerMock.onSelectionSetChanged).toHaveBeenCalledTimes(1);
 
       hilite.elements.deleteIds(["0x1"]);
       expect(hilite.elements.isEmpty).to.be.true;
-      expect(viewManagerMock.onSelectionSetChanged).toBeCalledTimes(2);
+      expect(viewManagerMock.onSelectionSetChanged).toHaveBeenCalledTimes(2);
     });
 
     it("changes models hilite directly", () => {
       const { hilite } = createHiliteSet(false);
       hilite.models.addId("0x1");
       expect(hilite.models.toId64Array()).toBeId64Arg(["0x1"]);
-      expect(viewManagerMock.onSelectionSetChanged).toBeCalledTimes(1);
+      expect(viewManagerMock.onSelectionSetChanged).toHaveBeenCalledTimes(1);
 
       hilite.models.deleteIds(["0x1"]);
       expect(hilite.models.isEmpty).to.be.true;
-      expect(viewManagerMock.onSelectionSetChanged).toBeCalledTimes(2);
+      expect(viewManagerMock.onSelectionSetChanged).toHaveBeenCalledTimes(2);
     });
 
     it("changes subcategories hilite directly", () => {
       const { hilite } = createHiliteSet(false);
       hilite.subcategories.addId("0x1");
       expect(hilite.subcategories.toId64Array()).toBeId64Arg(["0x1"]);
-      expect(viewManagerMock.onSelectionSetChanged).toBeCalledTimes(1);
+      expect(viewManagerMock.onSelectionSetChanged).toHaveBeenCalledTimes(1);
 
       hilite.subcategories.deleteIds(["0x1"]);
       expect(hilite.subcategories.isEmpty).to.be.true;
-      expect(viewManagerMock.onSelectionSetChanged).toBeCalledTimes(2);
+      expect(viewManagerMock.onSelectionSetChanged).toHaveBeenCalledTimes(2);
     });
   });
 

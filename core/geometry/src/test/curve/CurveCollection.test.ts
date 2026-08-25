@@ -6,6 +6,7 @@
 import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
@@ -19,18 +20,17 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
-import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../../curve/RegionOps";
+import { ConsolidateAdjacentPrimitivesOptions, RegionOps } from "../../curve/RegionOps";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { Sample } from "../GeometrySamples";
 
 const consolidateAdjacentPath = "./src/test/data/curve/";
 
@@ -242,6 +242,38 @@ describe("CurveCollection", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("Clone", () => {
+    const ck = new Checker();
+    const outerLoop = Loop.create(Arc3d.createUnitCircle());
+    const innerLoop = Loop.createPolygon([Point3d.createZero(), Point3d.create(0.5, -0.5), Point3d.create(0.5, 0.5)]);
+    innerLoop.isInner = true; // as of 4/2026, this property is only set by user code
+    const parityRegion = ParityRegion.createLoops([outerLoop, innerLoop]); // loop orientation doesn't matter
+    const clonedRegion = parityRegion.clone();
+    if (ck.testType(parityRegion, ParityRegion, "original region is a ParityRegion")) {
+      if (ck.testType(clonedRegion, ParityRegion, "cloned region is a ParityRegion")) {
+        ck.testExactNumber(parityRegion.children.length, clonedRegion.children.length, "regions have same number of children");
+        ck.testExactNumber(clonedRegion.children.length, 2, "regions have 2 children");
+        for (let i = 0; i < parityRegion.children.length; i++) {
+          const origChild = parityRegion.children[i];
+          const cloneChild = clonedRegion.children[i];
+          if (ck.testType(origChild, Loop, "origChild is Loop")) {
+            if (ck.testType(cloneChild, Loop, "cloneChild is Loop")) {
+              ck.testExactNumber(origChild.children.length, cloneChild.children.length, "child loops have same number of children");
+              ck.testExactNumber(origChild.children.length, 1, "child loops have only one child");
+              ck.testTrue(typeof origChild.children[0] === typeof cloneChild.children[0], "child loops' only children have the same type");
+              if (i === 0)
+                ck.testType(origChild.children[0], Arc3d, "regions' first child's only children are Arc3d");
+              else
+                ck.testType(origChild.children[0], LineString3d, "regions' second child's only children are LineString3d");
+              // As of 4/2026, Loops are the only CurveCollections with a spare property lying around. It wasn't always propagated by clone.
+              ck.testBoolean(origChild.isInner, cloneChild.isInner, "clone should preserve child isInner property");
+            }
+          }
+        }
+      }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 describe("ConsolidateAdjacentPrimitives", () => {
@@ -310,11 +342,9 @@ describe("ConsolidateAdjacentPrimitives", () => {
     markLimits(allGeometry, chain1.collectCurvePrimitives(), 0.01, 0.03, 0.01, x0, y0);
     x0 += 20.0;
     for (const optionBits of [0, 1, 2, 3]) {
-      const options = new ConsolidateAdjacentCurvePrimitivesOptions();
+      const options: ConsolidateAdjacentPrimitivesOptions = { consolidateLinearGeometry: false, consolidateCompatibleArcs: false };
       let dx = 0;
       let dy = 0;
-      options.consolidateLinearGeometry = false;
-      options.consolidateCompatibleArcs = false;
       if ((optionBits & 0x01) !== 0) {
         dx = 10;
         options.consolidateLinearGeometry = true;
@@ -421,18 +451,14 @@ describe("ConsolidateAdjacentPrimitives", () => {
         ck.testExactNumber(6, loop0.children[0].packedPoints.length, "...with minimal point count");
 
     const loop1 = loop.clone();
-    const options1 = new ConsolidateAdjacentCurvePrimitivesOptions();
-    options1.consolidateLoopSeam = true;
-    RegionOps.consolidateAdjacentPrimitives(loop1, options1);
+    RegionOps.consolidateAdjacentPrimitives(loop1, { consolidateLoopSeam: true });
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, x0 += 3);
     if (ck.testExactNumber(1, loop1.children.length, "consolidated all children into one..."))
       if (ck.testType(loop1.children[0], LineString3d, "...cyclic linestring..."))
         ck.testExactNumber(5, loop1.children[0].packedPoints.length, "...with minimal point count");
 
     const loop2 = loop.clone();
-    const options2 = new ConsolidateAdjacentCurvePrimitivesOptions();
-    options2.disableLinearCompression = true;
-    RegionOps.consolidateAdjacentPrimitives(loop2, options2);
+    RegionOps.consolidateAdjacentPrimitives(loop2, { disableLinearCompression: true });
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, x0 += 3);
     if (ck.testExactNumber(1, loop2.children.length, "consolidated all children into one..."))
       if (ck.testType(loop2.children[0], LineString3d, "...linestring..."))

@@ -8,7 +8,7 @@ import {
   assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
-  BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
+  BackgroundMapType, BaseMapLayerSettings, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
 } from "@itwin/core-common";
 import {
   CheckpointConnection,
@@ -112,7 +112,9 @@ class Timings {
   }
 
   public set callbackEnabled(enabled: boolean) {
-    IModelApp.renderSystem.debugControl!.resultsCallback = enabled ? this.callback : undefined;
+    const debugControl = IModelApp.renderSystem.debugControl;
+    assert(undefined !== debugControl);
+    debugControl.resultsCallback = enabled ? this.callback : undefined;
   }
 }
 
@@ -242,10 +244,13 @@ export class TestRunner {
       await this.runTestSet(set);
 
     // Update UI to signal we're finished.
-    const topdiv = document.getElementById("topdiv")!;
+    const topdiv = document.getElementById("topdiv");
+    assert(topdiv instanceof HTMLElement);
     topdiv.style.display = "block";
     topdiv.innerText = "Tests Completed.";
-    document.getElementById("imodel-viewport")!.style.display = "hidden";
+    const viewportElement = document.getElementById("imodel-viewport");
+    assert(viewportElement instanceof HTMLElement);
+    viewportElement.style.display = "hidden";
 
     // Write WebGL compatibility info to CSV.
     await this.finish();
@@ -389,7 +394,9 @@ export class TestRunner {
       setPerformanceMetrics(vp, new PerformanceMetrics(true, false, undefined));
       for (let i = 0; i < this.curConfig.numRendersToTime; ++i) {
         vp.readPixels(viewRect, pixSelect, () => { });
-        timings.cpu[i] = (vp.target as Target).performanceMetrics!.frameTimings;
+        const performanceMetrics = (vp.target as Target).performanceMetrics;
+        assert(undefined !== performanceMetrics);
+        timings.cpu[i] = performanceMetrics.frameTimings;
         timings.cpu[i].delete("Scene Time");
       }
 
@@ -517,7 +524,7 @@ export class TestRunner {
     if (config.displayStyle) {
       const styleProps = await imodel.elements.queryProps({ from: DisplayStyleState.classFullName, where: `CodeValue='${config.displayStyle}'` });
       if (styleProps.length >= 1) {
-        const style = new DisplayStyle3dState(styleProps[0] as DisplayStyleProps, imodel);
+        const style = new DisplayStyle3dState(styleProps[0], imodel);
         await style.load();
         viewport.view.setDisplayStyle(style);
       }
@@ -819,7 +826,10 @@ export class TestRunner {
     let testName = prefix ?? "";
     const configs = this.curConfig;
 
-    testName += configs.iModelName.replace(/\.[^/.]+$/, "");
+    if (configs.iModelNameAlias)
+      testName += configs.iModelNameAlias.replace(/\.[^/.]+$/, "");
+    else
+      testName += configs.iModelName.replace(/\.[^/.]+$/, "");
     testName += `_${configs.viewName}`;
     testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
     testName = testName.replace(/[/\\?%*:|"<>]/g, "-");

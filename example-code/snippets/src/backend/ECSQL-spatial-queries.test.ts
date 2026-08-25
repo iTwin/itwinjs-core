@@ -85,7 +85,7 @@ describe("Useful ECSQL spatial queries", () => {
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
           return {} as Range3dProps;
         // Note that the the ECSQL value is a blob. Its data must be extracted and interpreted as a Range3d.
-        return Range3d.fromArrayBuffer(stmt.getValue(0).getBlob().buffer as ArrayBuffer);
+        return Range3d.fromArrayBuffer(stmt.getValue(0).getBlob().buffer);
       });
     reportRange(rangeSum);
     // __PUBLISH_EXTRACT_END__

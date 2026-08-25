@@ -37,7 +37,7 @@ export class IModelIncrementalSchemaLocater extends ECSqlSchemaLocater {
     // time by ~3x.
     return new Promise((resolve, reject) => setTimeout(() => {
       try {
-        resolve(this._iModel.getSchemaProps(schemaKey.name) as SchemaProps);
+        resolve(this._iModel.getSchemaProps(schemaKey.name));
       }
       catch (error: any) {
         reject(error as Error);

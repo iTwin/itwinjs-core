@@ -158,6 +158,10 @@ export class LinearSweep extends SolidPrimitive {
     }
     rangeToExtend.extendRange(contourRange);
   }
+  /** Return true if the solid's local z-axis is not perpendicular to its local xy-plane. */
+  public override get isSkew(): boolean {
+    return !this._direction.isParallelTo(this._contour.localToWorld.matrix.columnXCrossColumnY(), true, true);
+  }
   /**
    * @return true if this is a closed volume.
    */

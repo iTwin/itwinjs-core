@@ -1,0 +1,28 @@
+{
+  "$schema": "ecschema-localization-v1",
+  "name": "TestPerson",
+  "version": "01.XX.XX",
+  "locale": "de",
+  "label": "Test-Personenschema",
+  "description": "Ein Testschema für Personendaten",
+  "items": {
+    "Person": {
+      "label": "Person",
+      "description": "Eine Personenentität",
+      "members": {
+        "FirstName": {
+          "label": "Vorname",
+          "description": "Der Vorname"
+        },
+        "LastName": {
+          "label": "Nachname",
+          "description": "Der Nachname"
+        },
+        "Age": {
+          "label": "Alter",
+          "description": "Das Alter in Jahren"
+        }
+      }
+    }
+  }
+}

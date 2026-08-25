@@ -15,8 +15,8 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
-  TileAdmin, Tool, ToolAdmin,
+  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool,
+  SnapMode, TileAdmin, Tool, ToolAdmin,
   ViewManager,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -31,7 +31,7 @@ import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, SetEditorToolSettingsTool } from "./EditingTools";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, ReproJaggedCurvesTool, SetEditorToolSettingsTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -51,6 +51,7 @@ import {
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
 import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
+import { InvokeFrontendIpcTool, registerDtaFrontendIpcHandler } from "./InvokeFrontendIpcTool";
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
@@ -348,6 +349,31 @@ export class DisplayTestApp {
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
+    // Optionally restrict map-layer credentials (including SSO / Windows Authentication) to the exact
+    // origins listed in IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS. See README.md.
+    if (configuration.mapLayerTrustedCredentialsOrigins) {
+      const trustedOrigins: string[] = [];
+      for (const entry of configuration.mapLayerTrustedCredentialsOrigins.split(",")) {
+        const value = entry.trim();
+        if (!value)
+          continue;
+        try {
+          trustedOrigins.push(new URL(value).origin);
+        } catch {
+          // eslint-disable-next-line no-console
+          console.warn(`Ignoring invalid origin in IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS: "${value}"`);
+        }
+      }
+
+      if (trustedOrigins.length > 0) {
+        IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = trustedOrigins;
+        IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn("IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS was set but contained no valid origins; leaving restrictCredentialsToTrustedOrigins disabled.");
+      }
+    }
+
     IModelConnection.onOpen.addListener((imodel: IModelConnection) => {
       if (imodel.isBlankConnection()) return;
 
@@ -388,6 +414,7 @@ export class DisplayTestApp {
       GenerateTileContentTool,
       GltfDecorationTool,
       IncidentMarkerDemoTool,
+      InvokeFrontendIpcTool,
       PathDecorationTestTool,
       MacroTool,
       MarkupSelectTestTool,
@@ -409,6 +436,7 @@ export class DisplayTestApp {
       RecordTileSizesTool,
       RefreshTilesTool,
       ReopenIModelTool,
+      ReproJaggedCurvesTool,
       ResizeWindowTool,
       RestoreWindowTool,
       SaveImageTool,
@@ -431,6 +459,8 @@ export class DisplayTestApp {
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 
+    registerDtaFrontendIpcHandler();
+
     BingTerrainMeshProvider.register();
 
     const realityApiKey = import.meta.env.IMJS_REALITY_DATA_KEY;
@@ -440,7 +470,11 @@ export class DisplayTestApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize();
-    await MapLayersFormats.initialize();
+    await MapLayersFormats.initialize({
+      azureMapsOpts: configuration.azureMapsKey
+        ? { subscriptionKey: configuration.azureMapsKey }
+        : undefined,
+    });
 
     EditTools.registerProjectLocationTools();
   }

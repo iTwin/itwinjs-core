@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 
 describe("SchemaDesignPerf Impact of Mixins", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "MixinPerformance");
@@ -133,37 +133,38 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestMixinSchema:MixinElement"), "Mixin Class is not present in iModel.");
-        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
         // create base class elements
-        for (let i = 0; i < seedCount; ++i) {
-          let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestMixinSchema:propElement");
-          let geomElement = seedIModel.elements.createElement(elementProps);
-          setPropVals(geomElement, propCount);
-          let id = seedIModel.elements.insertElement(geomElement.toJSON());
-          assert.isTrue(Id64.isValidId64(id), "insert failed");
-          // create elements of base upto required level
-          for (let j = 0; j < hCount; ++j) {
-            const className: string = `child${j.toString()}A`;
-            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestMixinSchema:${className}`);
-            geomElement = seedIModel.elements.createElement(elementProps);
-            setPropVal(geomElement, `${className}PrimProp`, "AChild Value");
-            id = seedIModel.elements.insertElement(geomElement.toJSON());
+        withEditTxn(seedIModel, (txn) => {
+          for (let i = 0; i < seedCount; ++i) {
+            let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestMixinSchema:propElement");
+            let geomElement = seedIModel.elements.createElement(elementProps);
+            setPropVals(geomElement, propCount);
+            let id = txn.insertElement(geomElement.toJSON());
             assert.isTrue(Id64.isValidId64(id), "insert failed");
+            // create elements of base upto required level
+            for (let j = 0; j < hCount; ++j) {
+              const className: string = `child${j.toString()}A`;
+              elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestMixinSchema:${className}`);
+              geomElement = seedIModel.elements.createElement(elementProps);
+              setPropVal(geomElement, `${className}PrimProp`, "AChild Value");
+              id = txn.insertElement(geomElement.toJSON());
+              assert.isTrue(Id64.isValidId64(id), "insert failed");
+            }
+            for (let j = 0; j < hCount; ++j) {
+              const className: string = `child${j.toString()}B`;
+              elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestMixinSchema:${className}`);
+              geomElement = seedIModel.elements.createElement(elementProps);
+              setPropVal(geomElement, `${className}PrimProp`, "BChild Value");
+              setPropVals(geomElement, propCount, "mixinProp", "Mixin Value");
+              id = txn.insertElement(geomElement.toJSON());
+              assert.isTrue(Id64.isValidId64(id), "insert failed");
+            }
           }
-          for (let j = 0; j < hCount; ++j) {
-            const className: string = `child${j.toString()}B`;
-            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestMixinSchema:${className}`);
-            geomElement = seedIModel.elements.createElement(elementProps);
-            setPropVal(geomElement, `${className}PrimProp`, "BChild Value");
-            setPropVals(geomElement, propCount, "mixinProp", "Mixin Value");
-            id = seedIModel.elements.insertElement(geomElement.toJSON());
-            assert.isTrue(Id64.isValidId64(id), "insert failed");
-          }
-        }
-        seedIModel.saveChanges();
+        }); // auto-saves
         assert.equal(getCount(seedIModel, "TestMixinSchema:PropElement"), ((2 * seedCount * hCount) + seedCount));
         seedIModel.close();
         await IModelHost.shutdown();
@@ -190,7 +191,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const startTime = new Date().getTime();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       perfimodel.withPreparedStatement("SELECT * FROM tps.MixinElement", (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
         const row = stmt.getRow();

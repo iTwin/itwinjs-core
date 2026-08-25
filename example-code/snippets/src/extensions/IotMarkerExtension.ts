@@ -35,6 +35,7 @@ export class IotMarkerExtension {
       const query = `SELECT ECInstanceId FROM Bis.Category WHERE CodeValue IN (${categoriesToHide.toString()})`;
 
       const result = vp.iModel.createQueryReader(query, undefined, {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         rowFormat: QueryRowFormat.UseJsPropertyNames,
       });
 

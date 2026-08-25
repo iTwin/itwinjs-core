@@ -7,7 +7,7 @@
  * @module Curve
  */
 
-import { assert, DuplicatePolicy, OrderedComparator, SortedArray } from "@itwin/core-bentley";
+import { assert, DuplicatePolicy, SortedArray } from "@itwin/core-bentley";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -147,12 +147,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     extend1: boolean,
     pointA: Point3d,
     pointB: Point3d,
-    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     if (!extend0 && fraction < 0) {
-      return Geometry.isDistanceWithinTol(fraction * pointA.distanceXY(pointB), tolerance);
-    } else if (!extend1 && fraction > 1.0)
-      return Geometry.isDistanceWithinTol((fraction - 1.0) * pointA.distanceXY(pointB), tolerance);
+      return Geometry.isDistanceWithinTol(fraction * fraction * pointA.distanceSquaredXY(pointB), this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance);
+    } else if (!extend1 && fraction > 1.0) {
+      const f = fraction - 1;
+      return Geometry.isDistanceWithinTol(f * f * pointA.distanceSquaredXY(pointB), this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance);
+    }
     return true;
   }
   /**
@@ -166,7 +167,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     return result;
   }
   /**
-   * Record the pre-computed intersection between two curves. Filter by extension rules. Record with fraction mapping.
+   * Record the pre-computed intersection between two curves. Record with fraction mapping.
    * @param localFractionA intersection fraction local to the subcurve of cpA between fractionA0 and fractionA1
    * @param cpA the first curve
    * @param fractionA0 start of the subcurve of cpA
@@ -177,7 +178,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param fractionB1 end of the subcurve of cpB
    * @param reversed whether to reverse the details in the recorded intersection pair
    * @param intervalDetails optional data for a coincident segment intersection
-   * @param fractionTol relative tolerance for comparing fractions to avoid duplicating the last intersection. Defaults to [[Geometry.smallAngleRadians]].
+   * @param fractionTol relative tolerance for comparing fractions to avoid duplicating the last intersection. Defaults
+   * to [[Geometry.smallAngleRadians]].
    */
   private recordPointWithLocalFractions(
     localFractionA: number,
@@ -277,8 +279,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   ): void {
     const aDir = { x: pointA1.x - pointA0.x, y: pointA1.y - pointA0.y };
     const bDir = { x: pointB1.x - pointB0.x, y: pointB1.y - pointB0.y };
-    const tol = this._coincidentGeometryContext.tolerance;
-    const fractions = SmallSystem.lineSegmentXYUVIntersectionUnbounded(pointA0, aDir, pointB0, bDir, tol);
+    const fractions = SmallSystem.lineSegmentXYUVIntersectionUnbounded(pointA0, aDir, pointB0, bDir, this._coincidentGeometryContext.tolerance);
     if (!fractions)
       return;
     if (fractions.f1) { // the lines are coincident
@@ -290,8 +291,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(overlap, pointA0, pointA1, pointB0, pointB1, extendA0, extendA1, extendB0, extendB1))
         this.recordPointWithLocalFractions(overlap.detailA.fraction, cpA, fractionA0, fractionA1, overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
     } else { // the lines have a transverse intersection
-      if (this.acceptFractionOnLine(extendA0, fractions.f0.x, extendA1, pointA0, pointA1, tol)) {
-        if (this.acceptFractionOnLine(extendB0, fractions.f0.y, extendB1, pointB0, pointB1, tol))
+      if (this.acceptFractionOnLine(extendA0, fractions.f0.x, extendA1, pointA0, pointA1)) {
+        if (this.acceptFractionOnLine(extendB0, fractions.f0.y, extendB1, pointB0, pointB1))
           this.recordPointWithLocalFractions(fractions.f0.x, cpA, fractionA0, fractionA1, fractions.f0.y, cpB, fractionB0, fractionB1, reversed);
       }
     }
@@ -384,6 +385,135 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       );
     }
   }
+
+  /** Implementation of dispatchSegmentArc under affine transform. KEEP IN SYNC WITH computeSegmentArcHomogeneous. */
+  private computeSegmentArc(cpA: CurvePrimitive, extendA0: boolean, pointA0: Point3d, fractionA0: number, pointA1: Point3d, fractionA1: number, extendA1: boolean, arc: Arc3d, extendB0: boolean, extendB1: boolean, reversed: boolean): void {
+    const tol2 = this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance;
+    const cosines = new GrowableFloat64Array(2);
+    const sines = new GrowableFloat64Array(2);
+    const radians = new GrowableFloat64Array(2);
+    const recordIfNearIntersection = (fA: number, fB: number, d2: number): boolean => {
+      if (!Geometry.isDistanceWithinTol(d2, tol2))
+        return false;
+      this.recordPointWithLocalFractions(fA, cpA, fractionA0, fractionA1, fB, arc, 0, 1, reversed);
+      return true;
+    };
+    const data = arc.toTransformedVectors(this._worldToLocalAffine);
+    let pointA0Local = pointA0;
+    let pointA1Local = pointA1;
+    const pointB0Local = arc.startPoint();
+    const pointB1Local = arc.endPoint();
+    if (this._worldToLocalAffine) {
+      pointA0Local = this._worldToLocalAffine.multiplyPoint3d(pointA0);
+      pointA1Local = this._worldToLocalAffine.multiplyPoint3d(pointA1);
+      this._worldToLocalAffine.multiplyXYAndZInPlace(pointB0Local);
+      this._worldToLocalAffine.multiplyXYAndZInPlace(pointB1Local);
+    }
+    const alpha = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.center, 1);
+    const beta = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector0, 0);
+    const gamma = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector90, 0);
+    // note really tight tol for tangency since below we check closest approach also
+    let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians, tol2);
+    const closeApproach = (0 === numRoots);
+    if (closeApproach)
+      numRoots = 1; // we returned the closest approach instead: first entry is the arc point, which is all we need
+    const roots: { fArc: number, fArcNearest01: number, fLine: number, arcPt: Point3d, linePt: Point3d }[] = [];
+    for (let i = 0; i < numRoots; i++) {
+      const arcPt = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
+      const fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0); // exterior fraction sign based on extend flags
+      const fArcNearest01 = data.sweep.fractionToSignedPeriodicFraction(fArc, undefined); // exterior fraction sign based on proximity to 0/1
+      const fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPt);
+      if (fLine !== undefined) {
+        const linePt = pointA0Local.interpolate(fLine, pointA1Local);
+        roots.push({ fArc, fArcNearest01, fLine, arcPt, linePt });
+      }
+    }
+    // range-test and record roots
+    for (const root of roots) {
+      const { fArc, fArcNearest01, fLine, arcPt, linePt } = root;
+      if (closeApproach && !Geometry.isDistanceWithinTol(arcPt.distanceSquaredXY(linePt), tol2)) {
+        continue;
+      }
+      if (this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1)) {
+        this.recordPointWithLocalFractions(fLine, cpA, fractionA0, fractionA1, fArc, arc, 0, 1, reversed);
+        continue;
+      }
+      // since line-arc chains are so common, look for near-endpoint intersections using distance tol, which is often relatively looser than fraction tol
+      const inArcRange = extendB0 || extendB1 || Geometry.isIn01(fArc);
+      const inLineRange = (extendA0 && fLine < 0) || (extendA1 && fLine > 1) || Geometry.isIn01(fLine);
+      let accepted = false;
+      if (inArcRange && !inLineRange) // check tangency near line endpoint
+        accepted = recordIfNearIntersection(fLine < 0 ? 0 : 1, fArc, (fLine < 0 ? pointA0Local : pointA1Local).distanceSquaredXY(arcPt));
+      else if (!inArcRange && inLineRange) // check tangency near arc endpoint
+        accepted = recordIfNearIntersection(fLine, fArcNearest01 < 0 ? 0 : 1, linePt.distanceSquaredXY(fArcNearest01 < 0 ? pointB0Local : pointB1Local));
+      if (!accepted) // check intersection between nearest endpoints
+        recordIfNearIntersection(fLine < 0.5 ? 0 : 1, fArcNearest01 < 0.5 ? 0 : 1, (fLine < 0.5 ? pointA0Local : pointA1Local).distanceSquaredXY(fArcNearest01 < 0.5 ? pointB0Local : pointB1Local));
+    }
+  }
+
+  /** Implementation of dispatchSegmentArc under perspective transform. KEEP IN SYNC WITH computeSegmentArc. */
+  private computeSegmentArcHomogeneous(cpA: CurvePrimitive, extendA0: boolean, pointA0: Point3d, fractionA0: number, pointA1: Point3d, fractionA1: number, extendA1: boolean, arc: Arc3d, extendB0: boolean, extendB1: boolean, reversed: boolean): void {
+    if (!this._worldToLocalPerspective)
+      return;
+    const tol2 = this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance;
+    const cosines = new GrowableFloat64Array(2);
+    const sines = new GrowableFloat64Array(2);
+    const radians = new GrowableFloat64Array(2);
+    const recordIfNearIntersection = (fA: number, fB: number, d2?: number): boolean => {
+      if (d2 === undefined || !Geometry.isDistanceWithinTol(d2, tol2))
+        return false;
+      this.recordPointWithLocalFractions(fA, cpA, fractionA0, fractionA1, fB, arc, 0, 1, reversed);
+      return true;
+    };
+    const data = arc.toTransformedPoint4d(this._worldToLocalPerspective);
+    const pointA0H = this._worldToLocalPerspective.multiplyPoint3d(pointA0, 1);
+    const pointA1H = this._worldToLocalPerspective.multiplyPoint3d(pointA1, 1);
+    const pointB0H = this._worldToLocalPerspective.multiplyPoint3d(arc.startPoint(), 1);
+    const pointB1H = this._worldToLocalPerspective.multiplyPoint3d(arc.endPoint(), 1);
+    const alpha = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.center);
+    const beta = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector0);
+    const gamma = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector90);
+    // note really tight tol for tangency since below we check closest approach also
+    let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians, tol2);
+    const closeApproach = (0 === numRoots);
+    if (closeApproach)
+      numRoots = 1; // we returned the closest approach instead: first entry is the arc point, which is all we need
+    const roots: { fArc: number, fArcNearest01: number, fLine: number, arcPt: Point4d, linePt: Point4d }[] = [];
+    for (let i = 0; i < numRoots; i++) {
+      const arcPt = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
+      const fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0); // exterior fraction sign based on extend flags
+      const fArcNearest01 = data.sweep.fractionToSignedPeriodicFraction(fArc, undefined); // exterior fraction sign based on proximity to 0/1
+      const fLine = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPt);
+      if (fLine !== undefined) {
+        const linePt = pointA0H.interpolate(fLine, pointA1H);
+        roots.push({ fArc, fArcNearest01, fLine, arcPt, linePt });
+      }
+    }
+    // range-test and record roots
+    for (const root of roots) {
+      const { fArc, fArcNearest01, fLine, arcPt, linePt } = root;
+      if (closeApproach) {
+        const dist2 = arcPt.realDistanceSquaredXY(linePt);
+        if (dist2 === undefined || !Geometry.isDistanceWithinTol(dist2, tol2))
+          continue;
+      }
+      if (this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1)) {
+        this.recordPointWithLocalFractions(fLine, cpA, fractionA0, fractionA1, fArc, arc, 0, 1, reversed);
+        continue;
+      }
+      // since line-arc chains are so common, look for near-endpoint intersections using distance tol, which is often relatively looser than fraction tol
+      const inArcRange = extendB0 || extendB1 || Geometry.isIn01(fArc);
+      const inLineRange = (extendA0 && fLine < 0) || (extendA1 && fLine > 1) || Geometry.isIn01(fLine);
+      let accepted = false;
+      if (inArcRange && !inLineRange) // check tangency near line endpoint
+        accepted = recordIfNearIntersection(fLine < 0 ? 0 : 1, fArc, (fLine < 0 ? pointA0H : pointA1H).realDistanceSquaredXY(arcPt));
+      else if (!inArcRange && inLineRange) // check tangency near arc endpoint
+        accepted = recordIfNearIntersection(fLine, fArcNearest01 < 0 ? 0 : 1, linePt.realDistanceSquaredXY(fArcNearest01 < 0 ? pointB0H : pointB1H));
+      if (!accepted) // check intersection between nearest endpoints
+        recordIfNearIntersection(fLine < 0.5 ? 0 : 1, fArcNearest01 < 0.5 ? 0 : 1, (fLine < 0.5 ? pointA0H : pointA1H).realDistanceSquaredXY(fArcNearest01 < 0.5 ? pointB0H : pointB1H));
+    }
+  }
+
   // Caller accesses data from a linestring or segment and passes it here.
   // The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.
   // The fraction and extend parameters allow all combinations to be passed in.
@@ -400,95 +530,18 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     extendB1: boolean,
     reversed: boolean,
   ): void {
-    const tol2 = this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance;
-    const cosines = new GrowableFloat64Array(2);
-    const sines = new GrowableFloat64Array(2);
-    const radians = new GrowableFloat64Array(2);
-    // Arc: X = C + cU + sV
+    // Arc:  X(theta) = C + cos(theta)·U + sin(theta)·V
     // Line:  contains points A0,A1
-    // Arc point colinear with line if det (A0, A1, X) = 0
-    // with homogeneous xyw points and vectors.
-    // With equational X: det (A0, A1, C) + c det (A0, A1,U) + s det (A0, A1, V) = 0.
-    // solve for theta.
-    // evaluate points.
-    // project back to line.
-    if (this._worldToLocalPerspective) {
-      const data = arc.toTransformedPoint4d(this._worldToLocalPerspective);
-      const radians0 = data.sweep.fractionToRadians(0);
-      const pointB0H = data.center.plus2Scaled(data.vector0, Math.cos(radians0), data.vector90, Math.sin(radians0));
-      const radians1 = data.sweep.fractionToRadians(1);
-      const pointB1H = data.center.plus2Scaled(data.vector0, Math.cos(radians1), data.vector90, Math.sin(radians1));
-      const pointA0H = this._worldToLocalPerspective.multiplyPoint3d(pointA0, 1);
-      const pointA1H = this._worldToLocalPerspective.multiplyPoint3d(pointA1, 1);
-      const alpha = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.center);
-      const beta = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector0);
-      const gamma = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector90);
-      let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
-      const closeApproach = (0 === numRoots);
-      if (closeApproach)
-        numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
-      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): { fLine: number, fArc: number } | undefined => {
-        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(iRoot), data.vector90, sines.atUncheckedIndex(iRoot));
-        let fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(iRoot), extendB0);
-        let fLine = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
-        if (fLine === undefined)
-          return undefined;
-        if (!checkOnlyEndPointDistance && this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1))
-          return { fLine, fArc };
-        // check for an endpoint intersection that is beyond parametric tolerance but within point tolerance
-        fLine = fLine < 0.5 ? 0 : 1;
-        fArc = data.sweep.fractionToSignedPeriodicFraction(fArc) < 0.5 ? 0 : 1;
-        const pointAH = fLine ? pointA1H : pointA0H;
-        const pointBH = fArc ? pointB1H : pointB0H;
-        const dist2 = pointAH.realDistanceSquaredXY(pointBH);
-        return (dist2 !== undefined && Geometry.isDistanceWithinTol(dist2, tol2)) ? { fLine, fArc } : undefined;
-      };
-      for (let i = 0; i < numRoots; i++) {
-        const result = acceptSolution(i, closeApproach);
-        if (result)
-          this.recordPointWithLocalFractions(result.fLine, cpA, fractionA0, fractionA1, result.fArc, arc, 0, 1, reversed);
-      }
-    } else {
-      const data = arc.toTransformedVectors(this._worldToLocalAffine);
-      const radians0 = data.sweep.fractionToRadians(0);
-      const pointB0Local = data.center.plus2Scaled(data.vector0, Math.cos(radians0), data.vector90, Math.sin(radians0));
-      const radians1 = data.sweep.fractionToRadians(1);
-      const pointB1Local = data.center.plus2Scaled(data.vector0, Math.cos(radians1), data.vector90, Math.sin(radians1));
-      let pointA0Local = pointA0;
-      let pointA1Local = pointA1;
-      if (this._worldToLocalAffine) {
-        pointA0Local = this._worldToLocalAffine.multiplyPoint3d(pointA0);
-        pointA1Local = this._worldToLocalAffine.multiplyPoint3d(pointA1);
-      }
-      const alpha = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.center, 1);
-      const beta = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector0, 0);
-      const gamma = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector90, 0);
-      let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
-      const closeApproach = (0 === numRoots);
-      if (closeApproach)
-        numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
-      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): { fLine: number, fArc: number } | undefined => {
-        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(iRoot), data.vector90, sines.atUncheckedIndex(iRoot));
-        let fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(iRoot), extendB0);
-        let fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
-        if (fLine === undefined)
-          return undefined;
-        if (!checkOnlyEndPointDistance && this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1))
-          return { fLine, fArc };
-        // check for an endpoint intersection that is beyond parametric tolerance but within point tolerance
-        fLine = fLine < 0.5 ? 0 : 1;
-        fArc = data.sweep.fractionToSignedPeriodicFraction(fArc) < 0.5 ? 0 : 1;
-        const pointALocal = fLine ? pointA1Local : pointA0Local;
-        const pointBLocal = fArc ? pointB1Local : pointB0Local;
-        const dist2 = pointALocal.distanceSquaredXY(pointBLocal);
-        return Geometry.isDistanceWithinTol(dist2, tol2) ? { fLine, fArc } : undefined;
-      };
-      for (let i = 0; i < numRoots; i++) {
-        const result = acceptSolution(i, closeApproach);
-        if (result)
-          this.recordPointWithLocalFractions(result.fLine, cpA, fractionA0, fractionA1, result.fArc, arc, 0, 1, reversed);
-      }
-    }
+    // Arc point X is colinear (intersects) with line if det(A0, A1, X) = 0 with homogeneous xyw points and vectors
+    // This leads to
+    // det(A0, A1, C) + cos(theta) det(A0, A1, U) + sin(theta) det(A0, A1, V) = 0
+    // or
+    // alpha + beta cos(theta) + gamma sin(theta) = 0
+    // solve for theta; evaluate points; project back to line
+    if (this._worldToLocalPerspective)
+      this.computeSegmentArcHomogeneous(cpA, extendA0, pointA0, fractionA0, pointA1, fractionA1, extendA1, arc, extendB0, extendB1, reversed);
+    else
+      this.computeSegmentArc(cpA, extendA0, pointA0, fractionA0, pointA1, fractionA1, extendA1, arc, extendB0, extendB1, reversed);
   }
   /**
    * Compute the intersection of two xy-arcs.
@@ -715,15 +768,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       bezierB.poleProductsXYZW(
         univariateBezierB.coffs, this._xyzwPlane.x, this._xyzwPlane.y, this._xyzwPlane.z, this._xyzwPlane.w,
       );
-      let errors = 0;
       const roots = univariateBezierB.roots(0.0, true);
       if (roots) {
+        const strictTolerance = this._coincidentGeometryContext.tolerance * 0.0001;
         for (const r of roots) {
           let bezierBFraction = r;
           bezierB.fractionToPoint4d(bezierBFraction, this._xyzwB);
-          const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(
-            this._xyzwA0, this._xyzwA1, this._xyzwB,
-          );
+          const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(this._xyzwA0, this._xyzwA1, this._xyzwB);
           if (segmentAFraction !== undefined && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
             // We have a near intersection at fractions on the two beziers
@@ -731,30 +782,19 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
             const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(bezierA, bezierB);
             const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
             newtonSearcher.setUV(bezierAFraction, bezierBFraction);
-            if (newtonSearcher.runIterations()) {
-              bezierAFraction = newtonSearcher.getU();
-              bezierBFraction = newtonSearcher.getV();
-            }
+            let converged = newtonSearcher.runIterations();
+            bezierAFraction = newtonSearcher.getU();
+            bezierBFraction = newtonSearcher.getV();
             const bcurveAFraction = bezierA.fractionToParentFraction(bezierAFraction);
             const bcurveBFraction = bezierB.fractionToParentFraction(bezierBFraction);
-            if (false) { // verify results
-              const xyzA0 = bezierA.fractionToPoint(bezierAFraction);
-              const xyzA1 = bcurveA.fractionToPoint(bcurveAFraction);
-              const xyzB0 = bezierB.fractionToPoint(bezierBFraction);
-              const xyzB1 = bcurveB.fractionToPoint(bcurveBFraction);
-              if (!xyzA0.isAlmostEqualXY(xyzA1))
-                errors++;
-              if (!xyzB0.isAlmostEqualXY(xyzB1))
-                errors++;
-              if (errors > 0 && !xyzA0.isAlmostEqual(xyzB0))
-                errors++;
-              if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
-                errors++;
-            }
             if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false)) {
-              this.recordPointWithLocalFractions(
-                bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed,
-              );
+              const pointA = bezierA.fractionToPoint(bezierAFraction, CurveCurveIntersectXY._workPointA0);
+              const pointB = bezierB.fractionToPoint(bezierBFraction, CurveCurveIntersectXY._workPointB0);
+              if (!converged) { // Newton may have found close points even if it didn't converge parametrically
+                converged = pointA.isAlmostEqualXY(pointB, strictTolerance); // we can afford to be choosy
+              }
+              if (converged)
+                this.recordPointWithLocalFractions(bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed);
             }
           }
         }
@@ -1031,9 +1071,160 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     );
   }
   /**
-   * Invoke dispatch on each child of `g` as "geometryA".
-   * * If `g` is a `Path` or `Loop`, adjust extension flags for geometryA accordingly.
+   * Process tail of `this._results` for xy-intersections between the curve and spiral.
+   * * Refine each result via Newton iteration. If it doesn't converge, remove it.
+   * @param curveA The other curve primitive. May also be a transition spiral.
+   * @param spiralB The transition spiral.
+   * @param index0 index of first entry in tail of `this._results` to refine.
+   * @param reversed whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
    */
+  private refineSpiralResultsByNewton(
+    curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false,
+  ): void {
+    if (index0 >= this._results.length)
+      return;
+    // ASSUME: seeds in results tail are ordered by most accurate first, as only the first convergence within tolerance is recorded.
+    const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(curveA, spiralB);
+    const maxIterations = 50;
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
+    const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
+    const compare = CurveLocationDetailPair.comparePairsByFractions(fractionTol, this._coincidentGeometryContext.tolerance, true);
+    const myResults = new SortedArray<CurveLocationDetailPair>(compare, DuplicatePolicy.Retain);
+    const pushToMyResults = (cpA: CurvePrimitive, fA: number, pA: Point3d, cpB: CurvePrimitive, fB: number, pB: Point3d): void => {
+      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, pA);
+      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, pB);
+      detailA.setIntervalRole(CurveIntervalRole.isolated);
+      detailB.setIntervalRole(CurveIntervalRole.isolated);
+      myResults.insert(new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB));
+    };
+    const strictTolerance = this._coincidentGeometryContext.tolerance * 0.0001;
+    for (let i = index0; i < this._results.length; i++) {
+      const pair = this._results[i];
+      const detailA = reversed ? pair.detailB : pair.detailA;
+      const detailB = reversed ? pair.detailA : pair.detailB;
+      assert(detailB.curve instanceof LineString3d, "Caller has discretized the spiral");
+      const extendA0 = reversed ? this._extendB0 : this._extendA0;
+      const extendA1 = reversed ? this._extendB1 : this._extendA1;
+      newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use linestring fraction as spiral param; it generally yields a closer point than fractional length!
+      let converged = newtonSearcher.runIterations();
+      const fractionA = newtonSearcher.getU();
+      const fractionB = newtonSearcher.getV();
+      // note looser tol for spiral, which can have high order tangency at start/end
+      if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(false, fractionB, false, Geometry.smallFraction)) {
+        const pointA = curveA.fractionToPoint(fractionA, CurveCurveIntersectXY._workPointA0);
+        const pointB = spiralB.fractionToPoint(fractionB, CurveCurveIntersectXY._workPointB0);
+        if (!converged) // Newton may have found close points even if it didn't converge parametrically
+          converged = pointA.isAlmostEqualXY(pointB, strictTolerance); // we can afford to be choosy
+        if (converged)
+          pushToMyResults(curveA, fractionA, pointA, spiralB, fractionB, pointB);
+      }
+    }
+    this._results.splice(index0, this._results.length - index0, ...myResults.extractArray());
+  }
+  /**
+   * Append stroke points and return the line string.
+   * * This is a convenient wrapper for [[CurvePrimitive.emitStrokes]] but the analogous instance method cannot be added
+   * to that class due to the ensuing recursion with subclass [[LineString3d]].
+   * @param options options for stroking the instance curve.
+   * @param result object to receive appended stroke points; if omitted, a new object is created, populated, and returned.
+   */
+  private strokeCurve(curve: CurvePrimitive, options?: StrokeOptions, result?: LineString3d): LineString3d {
+    const ls = result ? result : LineString3d.create();
+    curve.emitStrokes(ls, options);
+    return ls;
+  }
+  /** Compute an approximation to the max chord height error of the stroked spiral, and another curve if a spiral. */
+  private computeMaxSpiralStrokeError(
+    spiral0: TransitionSpiral3d, ls0: LineString3d, spiral1?: CurvePrimitive, ls1?: CurvePrimitive,
+  ): number {
+    let maxError = 0;
+    if (ls0.numEdges() > 0) {
+      // the max error occurs at the spiral end with higher curvature
+      const k0 = spiral0.fractionToCurvature(0);
+      const k1 = spiral0.fractionToCurvature(1);
+      const iChord = (k0 !== undefined && k1 !== undefined && Math.abs(k0) > Math.abs(k1)) ? 0 : ls0.numEdges() - 1;
+      const midPoint = Point3d.create();
+      const detail = CurveLocationDetail.create();
+      if (ls0.packedPoints.interpolateIndexIndex(iChord, 0.5, iChord + 1, midPoint)) {
+        if (spiral0.closestPoint(midPoint, false, detail))
+          maxError = detail.a;
+      }
+      if (spiral1 && spiral1 instanceof TransitionSpiral3d && ls1 && ls1 instanceof LineString3d) {
+        const maxError1 = this.computeMaxSpiralStrokeError(spiral1, ls1);
+        if (maxError1 > maxError)
+          maxError = maxError1;
+      }
+    }
+    return maxError;
+  }
+  /**
+   * Solve the intersection problem for stroked, unextended curveB.
+   * * @return the number of results appended.
+   */
+  private appendDiscreteIntersectionResults(
+    curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, lsB: LineString3d, reversed: boolean,
+  ): number {
+    const i0 = this._results.length;
+    // handleLineString3d requires us to swap geometries
+    const geomB = this._geometryB;
+    const extendB0 = this._extendB0;
+    const extendB1 = this._extendB1;
+    this.resetGeometryA(false, false); // lsB is never extended
+    this.resetGeometryB(curveA, extendA0, extendA1);
+    this.handleLineString3d(lsB); // this puts lsB data in detailA, as expected when reversed is true
+    if (!reversed) { // swap lsB data to detailB
+      for (let i = i0; i < this._results.length; i++)
+        this._results[i].swapDetails();
+    }
+    this.resetGeometryA(extendA0, extendA1);
+    this.resetGeometryB(geomB, extendB0, extendB1);
+    return this._results.length - i0;
+  }
+  /**
+   * Solve the close approach problem for stroked, unextended curveB.
+   * * Sort the results shortest projection distance first.
+   * @return the number of results appended.
+   */
+  private appendDiscreteCloseApproachResults(
+    curveA: CurvePrimitive, lsB: LineString3d, maxDistance: number, reversed: boolean,
+  ): number {
+    const i0 = this._results.length;
+    const closeApproachPairs = CurveCurve.closeApproachProjectedXYPairs(
+      reversed ? lsB : curveA, reversed ? curveA : lsB, maxDistance,
+    );
+    closeApproachPairs.sort((p0: CurveLocationDetailPair, p1: CurveLocationDetailPair) => p0.detailA.a - p1.detailA.a);
+    this._results.push(...closeApproachPairs);
+    return this._results.length - i0;
+  }
+  /**
+   * Compute the xy-intersection of a curve and a spiral.
+   * * When `curveA` is extended, duplicate solutions may be returned.
+   * @param curveA curve to intersect with spiralB. May also be a transition spiral.
+   * @param extendA0 whether to compute xy-intersections with curveA extended beyond its start.
+   * @param extendA1 whether to compute xy-intersections with curveA extended beyond its end.
+   * @param spiralB transition spiral to intersect with curveA.
+   * @param reversed whether `spiralB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
+   */
+  private dispatchCurveSpiral(
+    curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, spiralB: TransitionSpiral3d, reversed: boolean,
+  ): void {
+    let cpA = curveA;
+    if (curveA instanceof TransitionSpiral3d) {
+      cpA = this.strokeCurve(curveA);
+      extendA0 = extendA1 = false;
+    }
+    const cpB = this.strokeCurve(spiralB);
+    const maxError = 1.01 * this.computeMaxSpiralStrokeError(spiralB, cpB, curveA, cpA);
+    const index0 = this._results.length;
+    // append seeds computed by solving discretized spiral problems, then refine the seeds via Newton
+    this.appendDiscreteIntersectionResults(cpA, extendA0, extendA1, cpB, reversed); // recorded first because more accurate
+    this.appendDiscreteCloseApproachResults(cpA, cpB, maxError, reversed); // seeds for finding tangent intersections
+    this.refineSpiralResultsByNewton(curveA, spiralB, index0, reversed);
+  }
+  /**
+  * Invoke dispatch on each child of `g` as "geometryA".
+  * * If `g` is a `Path` or `Loop`, adjust extension flags for geometryA accordingly.
+  */
   public override handleChildren(g: GeometryQuery): any {
     const children = g.children;
     if (!children)
@@ -1168,171 +1359,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     return undefined;
   }
-  /**
-   * Process tail of `this._results` for xy-intersections between the curve and spiral.
-   * * If a result is not already an intersection, refine it via Newton iteration unless it doesn't converge, in which
-   * case remove it.
-   * @param curveA The other curve primitive. May also be a transition spiral.
-   * @param spiralB The transition spiral.
-   * @param index0 index of first entry in tail of `this._results` to refine.
-   * @param reversed Whether `spiralB` data is in `detailA` of each recorded pair, and `curveA` data in `detailB`.
-   */
-  private refineSpiralResultsByNewton(
-    curveA: CurvePrimitive, spiralB: TransitionSpiral3d, index0: number, reversed = false,
-  ): void {
-    if (index0 >= this._results.length)
-      return;
-    // ASSUME: seeds in results tail are ordered by most accurate first, as only the first convergence within tolerance is recorded.
-    const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(curveA, spiralB);
-    const maxIterations = 100; // observed 73 iterations to convergence in tangent case
-    const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction, maxIterations);
-    const fractionTol = 2 * newtonSearcher.stepSizeTolerance; // relative cluster diameter for Newton convergence
-    const comparePairs: OrderedComparator<CurveLocationDetailPair> = (
-      a: CurveLocationDetailPair, b: CurveLocationDetailPair,
-    ): number => {
-      assert(() => a.detailA.curve === b.detailA.curve && a.detailB.curve === b.detailB.curve, "pairs are compatible");
-      // sort on either fraction, then on the point, using appropriate tolerances for each
-      if (Geometry.isAlmostEqualNumber(a.detailA.fraction, b.detailA.fraction, fractionTol))
-        return 0;
-      if (a.detailA.point.isAlmostEqualXY(b.detailA.point, this._coincidentGeometryContext.tolerance))
-        return 0;
-      return a.detailA.fraction - b.detailA.fraction;
-    };
-    const myResults = new SortedArray<CurveLocationDetailPair>(comparePairs, DuplicatePolicy.Retain);
-    const pushToMyResults = (cpA: CurvePrimitive, fA: number, cpB: CurvePrimitive, fB: number): boolean => {
-      const detailA = CurveLocationDetail.createCurveFractionPoint(cpA, fA, cpA.fractionToPoint(fA));
-      const detailB = CurveLocationDetail.createCurveFractionPoint(cpB, fB, cpB.fractionToPoint(fB));
-      detailA.setIntervalRole(CurveIntervalRole.isolated);
-      detailB.setIntervalRole(CurveIntervalRole.isolated);
-      let pushed = false;
-      myResults.insert(
-        new CurveLocationDetailPair(reversed ? detailB : detailA, reversed ? detailA : detailB), () => pushed = true,
-      );
-      return pushed;
-    };
-    for (let i = index0; i < this._results.length; i++) {
-      const pair = this._results[i];
-      const detailA = reversed ? pair.detailB : pair.detailA;
-      const detailB = reversed ? pair.detailA : pair.detailB;
-      assert(detailB.curve instanceof LineString3d, "Caller has discretized the spiral");
-      const extendA0 = reversed ? this._extendB0 : this._extendA0;
-      const extendA1 = reversed ? this._extendB1 : this._extendA1;
-      newtonSearcher.setUV(detailA.fraction, detailB.fraction); // use linestring fraction as spiral param; it generally yields a closer point than fractional length!
-      if (newtonSearcher.runIterations()) {
-        const fractionA = newtonSearcher.getU();
-        const fractionB = newtonSearcher.getV();
-        if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(false, fractionB, false))
-          pushToMyResults(curveA, fractionA, spiralB, fractionB);
-      } else if (newtonSearcher.numIterations < 10) {
-        // if Newton failed early due to vanishing (partial) derivative, check for a root there
-        const fractionA = newtonSearcher.getU();
-        const fractionB = newtonSearcher.getV();
-        if (curveA.fractionToPoint(fractionA).isAlmostEqualXY(spiralB.fractionToPoint(fractionB), this._coincidentGeometryContext.tolerance))
-          pushToMyResults(curveA, fractionA, spiralB, fractionB);
-      }
-    }
-    this._results.splice(index0, this._results.length - index0, ...myResults.extractArray());
-  }
-  /**
-   * Append stroke points and return the line string.
-   * * This is a convenient wrapper for [[CurvePrimitive.emitStrokes]] but the analogous instance method cannot be added
-   * to that class due to the ensuing recursion with subclass [[LineString3d]].
-   * @param options options for stroking the instance curve.
-   * @param result object to receive appended stroke points; if omitted, a new object is created, populated, and returned.
-   */
-  private strokeCurve(curve: CurvePrimitive, options?: StrokeOptions, result?: LineString3d): LineString3d {
-    const ls = result ? result : LineString3d.create();
-    curve.emitStrokes(ls, options);
-    return ls;
-  }
-  /** Compute an approximation to the max chord height error of the stroked spiral, and another curve if a spiral. */
-  private computeMaxSpiralStrokeError(
-    spiral0: TransitionSpiral3d, ls0: LineString3d, spiral1?: CurvePrimitive, ls1?: CurvePrimitive,
-  ): number {
-    let maxError = 0;
-    if (ls0.numEdges() > 0) {
-      // the max error occurs at the spiral end with higher curvature
-      const k0 = spiral0.fractionToCurvature(0);
-      const k1 = spiral0.fractionToCurvature(1);
-      const iChord = (k0 !== undefined && k1 !== undefined && Math.abs(k0) > Math.abs(k1)) ? 0 : ls0.numEdges() - 1;
-      const midPoint = Point3d.create();
-      const detail = CurveLocationDetail.create();
-      if (ls0.packedPoints.interpolateIndexIndex(iChord, 0.5, iChord + 1, midPoint)) {
-        if (spiral0.closestPoint(midPoint, false, detail))
-          maxError = detail.a;
-      }
-      if (spiral1 && spiral1 instanceof TransitionSpiral3d && ls1 && ls1 instanceof LineString3d) {
-        const maxError1 = this.computeMaxSpiralStrokeError(spiral1, ls1);
-        if (maxError1 > maxError)
-          maxError = maxError1;
-      }
-    }
-    return maxError;
-  }
-  /**
-   * Solve the intersection problem for stroked, unextended curveB.
-   * * @return the number of results appended.
-   */
-  private appendDiscreteIntersectionResults(
-    curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, lsB: LineString3d, reversed: boolean,
-  ): number {
-    const i0 = this._results.length;
-    // handleLineString3d requires us to swap geometries:
-    const geomB = this._geometryB;
-    const extendB0 = this._extendB0;
-    const extendB1 = this._extendB1;
-    this.resetGeometryA(false, false); // lsB is never extended
-    this.resetGeometryB(curveA, extendA0, extendA1);
-    this.handleLineString3d(lsB); // this puts lsB data in detailA, as expected when reversed is true
-    if (!reversed) { // swap lsB data to detailB
-      for (let i = i0; i < this._results.length; i++)
-        this._results[i].swapDetails();
-    }
-    this.resetGeometryA(extendA0, extendA1);
-    this.resetGeometryB(geomB, extendB0, extendB1);
-    return this._results.length - i0;
-  }
-  /**
-   * Solve the close approach problem for stroked, unextended curveB.
-   * * Sort the results shortest projection distance first.
-   * @return the number of results appended.
-   */
-  private appendDiscreteCloseApproachResults(
-    curveA: CurvePrimitive, lsB: LineString3d, maxDistance: number, reversed: boolean,
-  ): number {
-    const i0 = this._results.length;
-    const closeApproachPairs = CurveCurve.closeApproachProjectedXYPairs(
-      reversed ? lsB : curveA, reversed ? curveA : lsB, maxDistance,
-    );
-    closeApproachPairs.sort((p0: CurveLocationDetailPair, p1: CurveLocationDetailPair) => p0.detailA.a - p1.detailA.a);
-    this._results.push(...closeApproachPairs);
-    return this._results.length - i0;
-  }
-  /**
-   * Compute the xy-intersection of a curve and a spiral.
-   * * When `curveA` is extended, duplicate solutions may be returned.
-   * @param curveA curve to intersect with spiralB. May also be a transition spiral.
-   * @param extendA0 whether to compute xy-intersections with curveA extended beyond its start.
-   * @param extendA1 whether to compute xy-intersections with curveA extended beyond its end.
-   * @param spiralB transition spiral to intersect with curveA.
-   * @param reversed whether `spiralB` data will be recorded in `detailA` of each result, and `curveA` data in `detailB`.
-   */
-  private dispatchCurveSpiral(
-    curveA: CurvePrimitive, extendA0: boolean, extendA1: boolean, spiralB: TransitionSpiral3d, reversed: boolean,
-  ): void {
-    let cpA = curveA;
-    if (curveA instanceof TransitionSpiral3d) {
-      cpA = this.strokeCurve(curveA);
-      extendA0 = extendA1 = false;
-    }
-    const cpB = this.strokeCurve(spiralB);
-    const maxError = 1.01 * this.computeMaxSpiralStrokeError(spiralB, cpB, curveA, cpA);
-    const index0 = this._results.length;
-    // append seeds computed by solving discretized spiral problems, then refine the seeds via Newton
-    this.appendDiscreteIntersectionResults(cpA, extendA0, extendA1, cpB, reversed); // recorded first because more accurate
-    this.appendDiscreteCloseApproachResults(cpA, cpB, maxError, reversed); // seeds for finding tangent intersections
-    this.refineSpiralResultsByNewton(curveA, spiralB, index0, reversed);
-  }
   /** Double dispatch handler for strongly typed spiral curve. */
   public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {
     if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1352,19 +1378,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /** Double dispatch handler for strongly typed homogeneous bspline curve. */
   public override handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
-    /*
     // NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH .
     // "easy" if both present BezierCurve3dH span loaders
-    if (this._geometryB instanceof LineSegment3d) {
-      this.dispatchSegmentBsplineCurve(
-        this._geometryB, this._extendB, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB,
-        curve, this._extendA, true);
-    } else if (this._geometryB instanceof LineString3d) {
-      this.dispatchLineStringBSplineCurve(this._geometryB, this._extendB, curve, this._extendA, true);
-    } else if (this._geometryB instanceof Arc3d) {
-      this.dispatchArcBsplineCurve3d(this._geometryB, this._extendB, curve, this._extendA, true);
-    }
-    */
     return undefined;
   }
 }

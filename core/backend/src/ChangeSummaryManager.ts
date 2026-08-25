@@ -7,12 +7,12 @@
  */
 
 import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
-import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
+import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion, QueryBinder } from "@itwin/core-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
-import { ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
+import { ECSqlInsertResult, ECSqlWriteStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -164,12 +164,11 @@ export class ChangeSummaryManager {
   private static openChangeCacheFile(changesFile: ECDb, changeCacheFilePath: string): void {
     changesFile.openDb(changeCacheFilePath, ECDbOpenMode.FileUpgrade);
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const actualSchemaVersion: { read: number, write: number, minor: number } = changesFile.withPreparedStatement("SELECT VersionMajor read,VersionWrite write,VersionMinor minor FROM meta.ECSchemaDef WHERE Name='IModelChange'", (stmt: ECSqlStatement) => {
-      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+    const actualSchemaVersion: { read: number, write: number, minor: number } = changesFile.withQueryReader("SELECT VersionMajor read,VersionWrite write,VersionMinor minor FROM meta.ECSchemaDef WHERE Name='IModelChange'", (reader): { read: number, write: number, minor: number } => {
+      if (!reader.step())
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "File is not a valid Change Cache file.");
 
-      return stmt.getRow();
+      return { read: reader.current[0], write: reader.current[1], minor: reader.current[2] };
     });
 
     if (actualSchemaVersion.read === ChangeSummaryManager._currentIModelChangeSchemaVersion.read &&
@@ -183,14 +182,11 @@ export class ChangeSummaryManager {
   private static getExtendedSchemaPath(): string { return path.join(KnownLocations.packageAssetsDir, "IModelChange.02.00.00.ecschema.xml"); }
 
   private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: GuidString): Id64String | undefined {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return changesFile.withPreparedStatement("SELECT Summary.Id summaryid FROM imodelchange.ChangeSet WHERE WsgId=?", (stmt: ECSqlStatement) => {
-      stmt.bindString(1, changeSetId);
-      if (DbResult.BE_SQLITE_ROW === stmt.step())
-        return stmt.getValue(0).getId();
-
+    return changesFile.withQueryReader("SELECT Summary.Id summaryid FROM imodelchange.ChangeSet WHERE WsgId=?", (reader): Id64String | undefined => {
+      if (reader.step())
+        return reader.current[0];
       return undefined;
-    });
+    }, new QueryBinder().bindString(1, changeSetId));
   }
 
   private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64String, changesetWsgId: GuidString, changesetParentWsgId?: GuidString, description?: string, changesetPushDate?: string, changeSetUserCreated?: GuidString): void {
@@ -231,15 +227,21 @@ export class ChangeSummaryManager {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,Description,PushDate,UserCreated FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?", (stmt: ECSqlStatement) => {
-      stmt.bindId(1, changeSummaryId);
-      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+    return iModel.withQueryReader("SELECT WsgId,ParentWsgId,Description,PushDate,UserCreated FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?", (reader): ChangeSummary => {
+      if (!reader.step())
         throw new IModelError(IModelStatus.BadArg, `No ChangeSet information found for ChangeSummary ${changeSummaryId}.`);
 
-      const row = stmt.getRow();
-      return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, description: row.description, pushDate: row.pushDate, userCreated: row.userCreated } };
-    });
+      return {
+        id: changeSummaryId,
+        changeSet: {
+          wsgId: reader.current[0],
+          parentWsgId: reader.current[1],
+          description: reader.current[2],
+          pushDate: reader.current[3],
+          userCreated: reader.current[4],
+        },
+      };
+    }, new QueryBinder().bindId(1, changeSummaryId));
   }
 
   /** Queries the InstanceChange for the specified instance change id.
@@ -258,26 +260,22 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
     // query instance changes
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const instanceChange: InstanceChange = iModel.withPreparedStatement(`SELECT ic.Summary.Id summaryId, s.Name changedInstanceSchemaName, c.Name changedInstanceClassName, ic.ChangedInstance.Id changedInstanceId,
+    const instanceChange: InstanceChange = iModel.withQueryReader(`SELECT ic.Summary.Id summaryId, s.Name changedInstanceSchemaName, c.Name changedInstanceClassName, ic.ChangedInstance.Id changedInstanceId,
        ic.OpCode, ic.IsIndirect FROM ecchange.change.InstanceChange ic JOIN main.meta.ECClassDef c ON c.ECInstanceId = ic.ChangedInstance.ClassId
        JOIN main.meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId WHERE ic.ECInstanceId =? `,
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      (stmt: ECSqlStatement) => {
-        stmt.bindId(1, instanceChangeId);
-        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+      (reader): InstanceChange => {
+        if (!reader.step())
           throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId}.`);
 
-        const row = stmt.getRow();
-        const changedInstanceId: Id64String = row.changedInstanceId;
-        const changedInstanceClassName: string = `[${row.changedInstanceSchemaName}].[${row.changedInstanceClassName}]`;
-        const op: ChangeOpCode = row.opCode as ChangeOpCode;
+        const changedInstanceId: Id64String = reader.current[3];
+        const changedInstanceClassName: string = `[${reader.current[1]}].[${reader.current[2]}]`;
+        const op: ChangeOpCode = reader.current[4] as ChangeOpCode;
 
         return {
-          id: instanceChangeId, summaryId: row.summaryId, changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
-          opCode: op, isIndirect: row.isIndirect,
+          id: instanceChangeId, summaryId: reader.current[0], changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
+          opCode: op, isIndirect: reader.current[5],
         };
-      });
+      }, new QueryBinder().bindId(1, instanceChangeId));
 
     return instanceChange;
   }
@@ -291,14 +289,11 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) if the change cache file hasn't been attached, or in case of other errors.
    */
   public static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[] {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?", (stmt: ECSqlStatement) => {
-      stmt.bindId(1, instanceChangeId);
-
+    return iModel.withQueryReader("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?", (reader): string[] => {
       const selectClauseItems: string[] = [];
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      while (reader.step()) {
         // access string tokens need to be escaped as they might collide with reserved words in ECSQL or SQLite
-        const accessString: string = stmt.getValue(0).getString();
+        const accessString: string = reader.current[0];
         const accessStringTokens: string[] = accessString.split(".");
         assert(accessStringTokens.length > 0);
 
@@ -315,7 +310,7 @@ export class ChangeSummaryManager {
       }
 
       return selectClauseItems;
-    });
+    }, new QueryBinder().bindId(1, instanceChangeId));
   }
 
   /** Builds the ECSQL to query the property value changes for the specified instance change and the specified ChangedValueState.

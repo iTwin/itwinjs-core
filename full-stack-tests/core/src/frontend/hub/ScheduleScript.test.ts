@@ -110,7 +110,7 @@ describe("Schedule script (#integration)", () => {
     const testStyle = async (imodel: IModelConnection) => {
       const styles = await imodel.elements.getProps(embedStyleId);
       expect(styles.length).to.equal(1);
-      expect(styleHasNonEmptyElementIds(styles[0] as DisplayStyleProps)).to.be.true;
+      expect(styleHasNonEmptyElementIds(styles[0])).to.be.true;
 
       const view = await imodel.views.load(viewId);
       expect(view.displayStyle.id).to.equal(embedStyleId);
@@ -134,7 +134,7 @@ describe("Schedule script (#integration)", () => {
 
     const timelines = await dbNew.elements.getProps(timelineId);
     expect(timelines.length).to.equal(1);
-    expect(timelineHasNonEmptyElementIds(timelines[0] as RenderTimelineProps)).to.be.true;
+    expect(timelineHasNonEmptyElementIds(timelines[0])).to.be.true;
 
     expect(timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId))).to.be.true;
     expect(timelineHasNonEmptyElementIds(await dbNew.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: false } }))).to.be.true;

@@ -1,5 +1,5 @@
 import { BeEvent } from "@itwin/core-bentley";
-import { FormatDefinition, FormatsChangedArgs, FormatsProvider, MutableFormatsProvider } from "@itwin/core-quantity";
+import { FormatDefinition, FormatsChangedArgs, FormatsProvider, MutableFormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { FormatSet } from "../Deserialization/JsonProps";
 import { SchemaItem } from "../Metadata/SchemaItem";
 
@@ -61,7 +61,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
    * Retrieves a format definition by its name from the format set. If not found, it checks the fallback provider to find the format, else returns undefined.
    * If the format is a string reference to another format, it resolves the reference and returns the FormatDefinition.
    */
-  public async getFormat(input: string): Promise<FormatDefinition | undefined> {
+  public async getFormat(input: string, system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     // Normalizes any schemaItem names coming from node addon 'schemaName:schemaItemName' -> 'schemaName.schemaItemName'
     const [schemaName, itemName] = SchemaItem.parseFullName(input);
 
@@ -71,12 +71,12 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     if (format !== undefined) {
       // If format is a string reference, resolve it
       if (typeof format === "string") {
-        return this.resolveReference(format);
+        return this.resolveReference(format, undefined, system);
       }
       return format;
     }
 
-    if (this._fallbackProvider) return this._fallbackProvider.getFormat(name);
+    if (this._fallbackProvider) return this._fallbackProvider.getFormat(name, system);
     return undefined;
   }
 
@@ -84,8 +84,9 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
    * Resolves a string reference to its FormatDefinition, following chains of references.
    * @param reference The string reference to resolve
    * @param visited Set of visited references to detect circular references
+   * @param system Optional unit system override
    */
-  private async resolveReference(reference: string, visited: Set<string> = new Set()): Promise<FormatDefinition | undefined> {
+  private async resolveReference(reference: string, visited: Set<string> = new Set(), system?: UnitSystemKey): Promise<FormatDefinition | undefined> {
     // Prevent infinite loops from circular references
     if (visited.has(reference)) {
       return undefined;
@@ -96,14 +97,14 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
 
     if (format === undefined) {
       if (this._fallbackProvider) {
-        return this._fallbackProvider.getFormat(reference);
+        return this._fallbackProvider.getFormat(reference, system);
       }
       return undefined;
     }
 
     // If we found another string reference, resolve it recursively
     if (typeof format === "string") {
-      return this.resolveReference(format, visited);
+      return this.resolveReference(format, visited, system);
     }
 
     return format;

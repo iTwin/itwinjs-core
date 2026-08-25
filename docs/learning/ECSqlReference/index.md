@@ -5,6 +5,7 @@
   - [Arithmetic operator](./Operators.md#arithmetic-operator)
   - [String operator](./Operators.md#string-operator)
   - [Boolean operator](./Operators.md#boolean-operator)
+  - [`IS` / `IS NOT` operator (null-safe comparison)](./Operators.md#is--is-not-operator-null-safe-comparison)
 - Built-in functions
   - [Scalar SQLite built-in functions](./SQLiteScalarFunctions.md)
   - [ECSQL Built-In functions](./ECSqlFunctions.md)
@@ -14,6 +15,7 @@
     - [`regexp_extract()`](./ECSqlFunctions.md#regexp_extract--value-regex--rewrite)
     - [`strToGuid()`](./ECSqlFunctions.md#strtoguid-guid-string)
     - [`guidToStr()`](./ECSqlFunctions.md#guidtostr-binary-guid)
+    - [`supports_instance_query()`](./ECSqlFunctions.md#supports_instance_query-class-name-or-class-id)
 - [JSON1 virtual classes](./JSON1VirtualClasses.md)
   - [json_tree()](./JSON1VirtualClasses.md#json_tree)
   - [json_each()](./JSON1VirtualClasses.md#json_each)

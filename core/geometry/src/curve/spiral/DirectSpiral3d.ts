@@ -8,7 +8,7 @@
 import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
+import { GeometryHandler, IStrokeHandler, UniformStrokeCollector } from "../../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
@@ -523,11 +523,16 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
   /**
    * Add strokes from this spiral to `dest`.
-   * * Line strings will usually stroke as just their points.
-   * * If maxEdgeLength is given, this will sub-stroke within the linestring -- not what we want.
+   * @param options optional stroking options. Pass `undefined` to return cached strokes.
    */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
-    this.activeStrokes.emitStrokes(dest, options);
+    if (!options)
+      this.activeStrokes.emitStrokes(dest, options);
+    else {
+      const stroker = new UniformStrokeCollector(this);
+      this.emitStrokableParts(stroker, options);
+      stroker.claimLineString(dest);
+    }
   }
   /** Emit stroke fragments to `dest` handler. */
   public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void {

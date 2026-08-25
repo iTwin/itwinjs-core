@@ -60,6 +60,10 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     );
   }
 
+  public detachLayerListeners(): void {
+    this._layerRefHandler.detachFromDisplayStyle();
+  }
+
   public get groupModelIds(): Id64Set | undefined {
     return (this._groupInfo as ModelGroup).modelIds;
   }

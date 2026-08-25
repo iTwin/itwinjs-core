@@ -36,7 +36,7 @@ describe("SubCategoryAppearance", () => {
       dontSnap: true,
       invisible: true,
     };
-    let a1 = new SubCategoryAppearance({} as SubCategoryAppearance.Props);
+    let a1 = new SubCategoryAppearance({});
     assert.isFalse(a1.dontLocate);
     assert.isFalse(a1.dontPlot);
     assert.isFalse(a1.dontSnap);

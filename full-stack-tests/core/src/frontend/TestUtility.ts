@@ -8,7 +8,7 @@ import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions, LocalhostIpcApp, NativeApp } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, IModelConnection, LocalhostIpcApp, NativeApp } from "@itwin/core-frontend";
 import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
@@ -17,6 +17,68 @@ import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlat
 import { setBackendAccessToken } from "../certa/certaCommon";
 
 export class TestUtility {
+  private static readonly _openIModels = new Set<IModelConnection>();
+  private static _expectedOpenIModels = new Set<IModelConnection>();
+  private static _isTrackingOpenIModels = false;
+
+  private static shouldLogToConsole(): boolean {
+    return process.env.ITWINJS_FRONTEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
+  }
+
+  private static trackOpenIModels(): void {
+    if (this._isTrackingOpenIModels)
+      return;
+
+    this._isTrackingOpenIModels = true;
+    IModelConnection.onOpen.addListener((imodel) => this._openIModels.add(imodel));
+    IModelConnection.onClose.addListener((imodel) => this._openIModels.delete(imodel));
+  }
+
+  public static setupLogging(): void {
+    if (TestUtility.shouldLogToConsole())
+      Logger.initializeToConsole();
+    else
+      Logger.initialize();
+  }
+
+  public static beginTestCleanupScope(): void {
+    this.trackOpenIModels();
+    this._expectedOpenIModels = new Set(Array.from(this._openIModels).filter((imodel) => !imodel.isClosed));
+  }
+
+  public static async cleanupOpenIModels(options?: { failOnLeaks?: boolean }): Promise<Error | undefined> {
+    this.trackOpenIModels();
+
+    const openIModels = Array.from(this._openIModels)
+      .filter((imodel) => !this._expectedOpenIModels.has(imodel))
+      .reverse();
+    const leakedIModels: string[] = [];
+    const closeErrors: string[] = [];
+    for (const imodel of openIModels) {
+      if (imodel.isClosed)
+        continue;
+
+      leakedIModels.push(imodel.name);
+
+      try {
+        await imodel.close();
+      } catch (err) {
+        Logger.logWarning("TestUtility", `Failed to close leaked iModel ${imodel.name}`, () => ({ error: err }));
+        closeErrors.push(`${imodel.name}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
+    if (options?.failOnLeaks && leakedIModels.length > 0) {
+      const message = [`Test leaked open iModel connection${leakedIModels.length === 1 ? "" : "s"}: ${leakedIModels.join(", ")}`];
+      if (closeErrors.length > 0)
+        message.push(`Cleanup errors: ${closeErrors.join("; ")}`);
+
+      return new Error(message.join("\n"));
+    }
+
+    return undefined;
+  }
+
   public static testITwinName = "iModelJsIntegrationTest";
   public static testIModelNames = {
     codePush: "CodesPushTest",
@@ -68,8 +130,12 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
+      const clientId = process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID;
+      if (!clientId)
+        throw new Error("missing IMJS_OIDC_ELECTRON_TEST_CLIENT_ID");
+
       authorizationClient = new ElectronRendererAuthorization(
-        { clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID! },
+        { clientId },
       );
       IModelApp.authorizationClient = authorizationClient;
       const accessToken = await setBackendAccessToken(user);
@@ -137,7 +203,9 @@ export class TestUtility {
    * Otherwise, IModelApp.startup is used directly.
    */
   public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean, enableWebEdit?: boolean): Promise<void> {
+    this.trackOpenIModels();
     const iopts = { ...TestUtility.iModelAppOptions, ...opts };
+    TestUtility.setupLogging();
     if (mockRender)
       iopts.renderSys = this.systemFactory();
 
@@ -167,6 +235,8 @@ export class TestUtility {
    */
   public static async shutdownFrontend(): Promise<void> {
     this.systemFactory = () => TestUtility.createDefaultRenderSystem();
+    this._expectedOpenIModels.clear();
+    await this.cleanupOpenIModels();
 
     if (ProcessDetector.isElectronAppFrontend)
       return ElectronApp.shutdown();

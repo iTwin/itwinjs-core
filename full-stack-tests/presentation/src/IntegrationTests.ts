@@ -146,7 +146,7 @@ export const testLocalization = new ITwinLocalization({
        * - i18n-http-backend uses fetch if it defined globally
        */
       const fileProtocol = "file://";
-      const request = new Backend().options.request?.bind(this as void);
+      const request = new Backend().options.request?.bind(this);
 
       if (url.startsWith(fileProtocol)) {
         try {

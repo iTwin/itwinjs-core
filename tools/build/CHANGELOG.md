@@ -1,6 +1,167 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Thu, 26 Feb 2026 22:18:10 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Aug 2026 15:47:07 GMT and should not be manually modified.
+
+## 5.12.4
+Tue, 18 Aug 2026 15:45:34 GMT
+
+_Version update only_
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+_Version update only_
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- extract-api.js now checks the standard CI env var (in addition to TF_BUILD) so api-extractor runs in strict CI mode on GitHub Actions and other standard CI platforms without requiring a separate git-diff assertion step
+- Made mocha an optional peer dependency so it is no longer a direct dependency of @itwin/build-tools, removing its vulnerable transitive dependencies from the package's direct dependency closure for consumers that do not use the mocha reporter.
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+_Version update only_
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+### Updates
+
+- extract-api.js now checks the standard CI env var (in addition to TF_BUILD) so api-extractor runs in strict CI mode on GitHub Actions and other standard CI platforms without requiring a separate git-diff assertion step
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Bumped `typedoc` version
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+_Version update only_
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+_Version update only_
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Updates
+
+- Update @microsoft/api-extractor to ~7.58.7 (removes lodash CVE GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh).
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+### Updates
+
+- Update @microsoft/api-extractor to ~7.58.7 (removes lodash CVE GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh).
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:13 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
+
+## 5.8.2
+Thu, 16 Apr 2026 11:05:01 GMT
+
+_Version update only_
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+_Version update only_
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+_Version update only_
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+_Version update only_
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+_Version update only_
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+_Version update only_
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+_Version update only_
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT

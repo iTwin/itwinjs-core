@@ -74,14 +74,14 @@ To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) as sh
 
 ### Units Provider
 
-A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most iModels contain a `Units` schema. If this is the case, a SchemaUnitProvider may be defined when an IModel is opened. The parent application must opt-in to using an iModel specific UnitsProvider using the following technique:
+A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider `BasicUnitsProvider` that covers the full BIS unit set. Most iModels contain a `Units` schema. If this is the case, a SchemaUnitProvider may be defined when an IModel is opened to layer iModel-specific unit overrides on top of the defaults. The parent application must opt-in to using an iModel specific UnitsProvider using the following technique:
 
 ```ts
     const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
     await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(schemaLocater));
 ```
 
-If errors occur while configuring the units provider, they are caught within the [QuantityFormatter.setUnitsProvider]($frontend) method, and the code reverts back to the [BasicUnitsProvider] described above.
+If errors occur while configuring the units provider, they are caught within the [QuantityFormatter.setUnitsProvider]($frontend) method, and the code reverts back to the `BasicUnitsProvider` described above.
 
 ### Measure Tools
 
@@ -196,7 +196,7 @@ The default angle format (FormatProps) is used during parsing to supply the defa
 
 ## SchemaUnitProvider
 
-It is possible to retrieve `Units` from schemas stored in IModels. The new [SchemaUnitProvider]($ecschema-metadata) can now be created and used by the [QuantityFormatter]($core-frontend) or any method in the `core-quantity` package that requires a [UnitsProvider]($quantity). Below is an example, extracted from `ui-test-app`, that demonstrates how to register the IModel-specific `UnitsProvider` as the IModelConnection is created. This new provider will provide access to a wide variety of Units that were not available in the standalone `BasicUnitsProvider`.
+It is possible to retrieve `Units` from schemas stored in IModels. The new [SchemaUnitProvider]($ecschema-metadata) can now be created and used by the [QuantityFormatter]($core-frontend) or any method in the `core-quantity` package that requires a [UnitsProvider]($quantity). Below is an example, extracted from `ui-test-app`, that demonstrates how to register the IModel-specific `UnitsProvider` as the IModelConnection is created. This new provider layers iModel-specific unit definitions on top of the bundled BIS unit set provided by `BasicUnitsProvider`.
 
 ```ts
     // Provide the QuantityFormatter with the iModelConnection so it can find the unit definitions defined in the iModel

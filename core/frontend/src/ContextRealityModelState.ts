@@ -72,6 +72,11 @@ export class ContextRealityModelState extends ContextRealityModel {
   /** The tile tree reference responsible for drawing the reality model into a [[Viewport]]. */
   public get treeRef(): TileTreeReference { return this._treeRef; }
 
+  /** @internal */
+  public detachLayerListeners(): void {
+    this._treeRef.detachLayerListeners();
+  }
+
   /** The set of available [[ActiveSpatialClassifier]]s that can be used to classify the reality model. */
   public override get classifiers(): SpatialClassifiersState {
     assert(super.classifiers instanceof SpatialClassifiersState);

@@ -16,11 +16,13 @@ export class UndoAllTool extends Tool {
   public static override toolId = "UndoAll";
   public override async run(): Promise<boolean> {
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
-    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
+    if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return true;
 
-    await IpcApp.appFunctionIpc.reverseAllTxn(imodel.key);
-    return true;
+    if (!await IModelApp.toolAdmin.finishEditCommandForTxnOperation())
+      return false;
+
+    return IpcApp.appFunctionIpc.reverseAllTxn(imodel.key).then(() => true).catch(() => false);
   }
 }
 

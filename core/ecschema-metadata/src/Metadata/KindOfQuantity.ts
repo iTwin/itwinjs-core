@@ -93,9 +93,9 @@ export class KindOfQuantity extends SchemaItem {
         for (const unitOverride of presFormatOverride.unitAndLabels) {
           const unitOrInverted = await this.schema.lookupItem(unitOverride[0]);
 
-          if(Unit.isUnit(unitOrInverted))
+          if (Unit.isUnit(unitOrInverted))
             unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
-          else if(InvertedUnit.isInvertedUnit(unitOrInverted))
+          else if (InvertedUnit.isInvertedUnit(unitOrInverted))
             unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
           else
             throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
@@ -129,12 +129,12 @@ export class KindOfQuantity extends SchemaItem {
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
           const unitOrInverted = this.schema.lookupItemSync(unitOverride[0]);
-          if(Unit.isUnit(unitOrInverted))
+          if (Unit.isUnit(unitOrInverted))
             unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
-          else if(InvertedUnit.isInvertedUnit(unitOrInverted))
+          else if (InvertedUnit.isInvertedUnit(unitOrInverted))
             unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
           else
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
         }
       }
 
@@ -151,7 +151,7 @@ export class KindOfQuantity extends SchemaItem {
   public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): KindOfQuantityProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.relativeError = this.relativeError;
-    schemaJson.persistenceUnit = this.persistenceUnit!.fullName;
+    schemaJson.persistenceUnit = this.persistenceUnit?.fullName ?? "";
     if (undefined !== this.presentationFormats && 0 < this.presentationFormats.length)
       schemaJson.presentationUnits = this.presentationFormats.map((format) => format.fullName);
     return schemaJson;
@@ -169,7 +169,7 @@ export class KindOfQuantity extends SchemaItem {
 
     if (undefined !== this.presentationFormats) {
       const presUnitStrings: string[] = [];
-      for(const format of this.presentationFormats) {
+      for (const format of this.presentationFormats) {
         if (!OverrideFormat.isOverrideFormat(format)) {
           const resolvedFormat = await format;
           presUnitStrings.push(XmlSerializationUtils.createXmlTypedName(this.schema, resolvedFormat.schema, format.name));

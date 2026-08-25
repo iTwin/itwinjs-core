@@ -8,7 +8,7 @@
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@bentley/architectural-physical-schema",
@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/formats-schema",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -136,7 +136,7 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@cesium/engine",
@@ -340,7 +340,7 @@
     },
     {
       "name": "@itwin/presentation-shared",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@itwin/reality-data-client",
@@ -391,7 +391,7 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@vitest/browser",
+      "name": "@vitest/browser-playwright",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -695,6 +695,10 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "magic-string",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "marked",
       "allowedCategories": [ "backend" ]
     },
@@ -891,6 +895,10 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "tsx",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "tty-browserify",
       "allowedCategories": [ "internal" ]
     },
@@ -928,7 +936,7 @@
     },
     {
       "name": "vite",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "frontend", "internal" ]
     },
     {
       "name": "vite-multiple-assets",

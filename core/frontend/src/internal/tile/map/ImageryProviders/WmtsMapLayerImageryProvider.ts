@@ -10,6 +10,7 @@ import { ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import {
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
+  MapLayerUntrustedOriginError,
   QuadId,
   WmsUtilities, WmtsCapabilities, WmtsCapability, WmtsConstants,
 } from "../../../../tile/internal";
@@ -39,7 +40,8 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   public override async initialize(): Promise<void> {
     try {
-      this._capabilities = await WmtsCapabilities.create(this._baseUrl);
+      const credentials = (this._settings.userName && this._settings.password ? { user: this._settings.userName, password: this._settings.password } : undefined);
+      this._capabilities = await WmtsCapabilities.create(this._baseUrl, credentials);
       this.initPreferredTileMatrixSet();
       this.initPreferredStyle();
       this.initDisplayedLayer();
@@ -52,7 +54,9 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       // Don't throw error if unauthorized status:
       // We want the tile tree to be created, so that end-user can get feedback on which layer is missing credentials.
       // When credentials will be provided, a new provider will be created, and initialization should be fine.
-      if (error?.status === 401) {
+      if (error instanceof MapLayerUntrustedOriginError) {
+        this.reportBlockedOrigin(error.url);
+      } else if (error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
       } else {
         throw new ServerError(IModelStatus.ValidationFailed, "");
@@ -187,7 +191,13 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       assert(false);    // Must always hava a matrix set.
       return;
     }
-    const limits = matrixSetAndLimits.limits?.[quadId.level + 1]?.limits;
+    const childLevel = quadId.level + 1;
+    const childMatrixId = matrixSetAndLimits.tileMatrixSet.tileMatrix.length > childLevel
+      ? matrixSetAndLimits.tileMatrixSet.tileMatrix[childLevel].identifier
+      : undefined;
+    const limits = childMatrixId !== undefined
+      ? matrixSetAndLimits.limits?.find((l) => l.tileMatrix === childMatrixId)?.limits
+      : undefined;
     if (!limits) {
       resolveChildren(childIds);
       return;

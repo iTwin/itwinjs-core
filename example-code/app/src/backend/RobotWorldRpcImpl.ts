@@ -31,15 +31,19 @@ export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldRea
 /* eslint-disable no-duplicate-imports */ // Disable this because it is intentionally separated.
 import { Angle, AngleProps, Point3d, XYZProps } from "@itwin/core-geometry";
 import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
+import { withEditTxn } from "@itwin/core-backend";
 
 // Implement RobotWorldWriteRpcInterface
 export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
   public async insertRobot(tokenProps: IModelRpcProps, modelId: Id64String, name: string, location: XYZProps): Promise<Id64String> {
-    return RobotWorldEngine.insertRobot(IModelDb.findByKey(tokenProps.key), modelId, name, Point3d.fromJSON(location));
+    return withEditTxn(IModelDb.findByKey(tokenProps.key), `insert robot ${name}`, (txn) =>
+      RobotWorldEngine.insertRobot(txn, modelId, name, Point3d.fromJSON(location)));
   }
 
   public async moveRobot(tokenProps: IModelRpcProps, id: Id64String, location: XYZProps): Promise<void> {
-    RobotWorldEngine.moveRobot(IModelDb.findByKey(tokenProps.key), id, Point3d.fromJSON(location));
+    withEditTxn(IModelDb.findByKey(tokenProps.key), "move robot", (txn) => {
+      RobotWorldEngine.moveRobot(txn, id, Point3d.fromJSON(location));
+    });
   }
 
   public async insertBarrier(tokenProps: IModelRpcProps, modelId: Id64String, location: XYZProps, angle: AngleProps, length: number): Promise<Id64String> {

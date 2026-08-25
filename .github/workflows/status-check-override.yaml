@@ -55,12 +55,14 @@ jobs:
     name: Detect If Skip
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # actions/checkout v6.0.3
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
       # Check for certain paths having been modified
       - name: Get specific changed files
         id: changed-files-specific
-        uses: tj-actions/changed-files@v45    # See https://github.com/marketplace/actions/changed-files
+        # tj-actions/changed-files v47.0.6
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96    # See https://github.com/marketplace/actions/changed-files
         with:
           files: |
             **/*.md
@@ -71,17 +73,39 @@ jobs:
             **/CHANGELOG.md
 
       # Fake required checks if neccessary
-      - uses: LouisBrunner/checks-action@v2.0.0   # See https://github.com/marketplace/actions/github-checks
+      # LouisBrunner/checks-action v3.1.0
+      - uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff   # See https://github.com/marketplace/actions/github-checks
         if: steps.changed-files-specific.outputs.only_modified == 'true'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: extract-api
+          name: rush check
+          conclusion: success
+
+      - uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff
+        if: steps.changed-files-specific.outputs.only_modified == 'true'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: rush change
+          conclusion: success
+
+      - uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff
+        if: steps.changed-files-specific.outputs.only_modified == 'true'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: rush audit
+          conclusion: success
+
+      - uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff
+        if: steps.changed-files-specific.outputs.only_modified == 'true'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: rush lint + extract-api
           conclusion: success
 
       # Add more status checks below if necessary
 
       # TEMPLATE
-      # - uses: LouisBrunner/checks-action@v1.3.0
+      # - uses: LouisBrunner/checks-action@<full-length-commit-sha>   # vX.Y.Z
       #   if: steps.changed-files-specific.outputs.only_modified == 'true'
       #   with:
       #     token: ${{ secrets.GITHUB_TOKEN }}

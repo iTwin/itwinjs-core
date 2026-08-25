@@ -7,6 +7,7 @@ import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
+import { TestUtility } from "./TestUtility";
 
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
@@ -130,3 +131,20 @@ if (!ProcessDetector.isElectronAppFrontend) {
 }
 
 UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
+
+beforeEach(function () {
+  TestUtility.beginTestCleanupScope();
+});
+
+afterEach(async function () {
+  const leakError = await TestUtility.cleanupOpenIModels({ failOnLeaks: true });
+  if (!leakError)
+    return;
+
+  const currentTest = this.currentTest;
+  if (!currentTest)
+    throw leakError;
+
+  (currentTest as Mocha.Test & { err?: Error }).err = leakError;
+  currentTest.state = "failed";
+});

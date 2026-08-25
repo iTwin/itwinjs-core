@@ -12,8 +12,10 @@ variables:
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
   - name: win_pool
     value: "imodelNative-Win11-VS2022"
-  - name: linux_pool
+  - name: linuxX64_pool
     value: "imodelNative-Debian12"
+  - name: linuxARM64_pool
+    value: "Platform-Debian12-ARM"
   - name: mac_pool
     value: "iModelTechMacArm"
   - name: BUILD_URL
@@ -80,10 +82,8 @@ jobs:
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then
-            branch=$(System.PullRequest.SourceBranch)
-
             # Use GH CLI to get the PR description, SHA and title in json format so it can be parsed
-            gh pr view $branch --json title,body,headRefOid >> pr_view.json
+            gh pr view "$PR_NUMBER" --json title,body,headRefOid >> pr_view.json
 
             #save SHA and PR description
             currentSHA=$(node -e "const data = require('./pr_view.json'); console.log(data.headRefOid)")
@@ -104,6 +104,7 @@ jobs:
 
         env:
           GITHUB_TOKEN: $(GH_TOKEN)
+          PR_NUMBER: $(System.PullRequest.PullRequestNumber)
         name: checkForPr
 
   - job: ParseCommitNotes
@@ -191,9 +192,12 @@ jobs:
         "Windows_Node_24":
           platform: Windows_NT
           name: $(win_pool)
-        "Linux_Node_24":
+        "LinuxX64_Node_24":
           platform: Linux
-          name: $(linux_pool)
+          name: $(linuxX64_pool)
+        "LinuxARM64_Node_24":
+          platform: Linux
+          name: $(linuxARM64_pool)
         "MacOS_Node_24":
           platform: Darwin
           name: $(mac_pool)
@@ -238,8 +242,7 @@ jobs:
 
     steps:
       - bash: |
-          branch=$(System.PullRequest.SourceBranch)
-          sha=$(gh pr view $branch --json "headRefOid" -q ".headRefOid")
+          sha=$(gh pr view "$PR_NUMBER" --json "headRefOid" -q ".headRefOid")
           echo "Posting 'success' status to current PR"
           gh api \
             --method POST \
@@ -251,3 +254,4 @@ jobs:
             -f description='No native PR was linked'
         env:
           GITHUB_TOKEN: $(GH_TOKEN)
+          PR_NUMBER: $(System.PullRequest.PullRequestNumber)

@@ -271,6 +271,7 @@ function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOpt
           indices: new VertexIndices(primitive.params.polyline.indices),
           prevIndices: new VertexIndices(primitive.params.polyline.prevIndices),
         },
+        hasCumulativeDistances: primitive.params.hasCumulativeDistances,
       }, viOrigin);
     case "mesh": {
       const surf = primitive.params.surface;

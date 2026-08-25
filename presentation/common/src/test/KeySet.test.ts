@@ -48,7 +48,7 @@ describe("KeySet", () => {
       const instanceKey12 = {
         className: instanceKey11.className,
         id: "0x222",
-      } as InstanceKey;
+      };
       const instanceKey2 = createTestECInstanceKey({ id: "0x333" });
       const nodeKey = createTestECInstancesNodeKey({ instanceKeys: [createTestECInstanceKey({ id: "0x444" })] });
       const source = new KeySet();
@@ -881,7 +881,7 @@ describe("KeySet", () => {
       const instanceKey12 = {
         className: instanceKey11.className,
         id: "0x456",
-      } as InstanceKey;
+      };
       const instanceKey2 = createTestECInstanceKey({ id: "0x789" });
       const nodeKey = createTestECInstancesNodeKey({ instanceKeys: [createTestECInstanceKey({ id: "0x999" })] });
 

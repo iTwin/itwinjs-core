@@ -93,7 +93,7 @@ async function fetchWithRetry(fetchFunc: () => Promise<Response>, remainingRetri
 
 /**
  * @internal
- * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[DownloadProgressInfo]].
+ * @deprecated in 4.0 - might be removed in next major version. Use [[DownloadProgressInfo]].
  */
 export interface ProgressInfo {
   percent?: number;
@@ -103,7 +103,7 @@ export interface ProgressInfo {
 
 /**
  * @internal
- * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[OnDownloadProgress]].
+ * @deprecated in 4.0 - might be removed in next major version. Use [[OnDownloadProgress]].
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export type ProgressCallback = (progress: ProgressInfo) => void;

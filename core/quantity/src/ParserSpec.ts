@@ -6,10 +6,12 @@
  * @module Quantity
  */
 
+import { Logger } from "@itwin/core-bentley";
 import { Format } from "./Formatter/Format";
 import { FormatType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { Parser, QuantityParseResult } from "./Parser";
+import { QuantityLoggerCategory } from "./QuantityLoggerCategory";
 
 /** A ParserSpec holds information needed to parse a string into a quantity synchronously.
  * @beta
@@ -48,6 +50,9 @@ export class ParserSpec {
 
     // Compute ratio scale: how many numerator units per denominator unit (e.g., IN:FT = 12)
     const denominatorToNumerator = await unitsProvider.getConversion(denominatorUnit, numeratorUnit);
+    if (denominatorToNumerator.error) {
+      Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${denominatorUnit.name}" to "${numeratorUnit.name}" could not be resolved.`);
+    }
     const displayRatioScale = denominatorToNumerator.factor;
 
     // Avoid double-scaling: if persistence unit already encodes the display ratio, use factor 1.
@@ -98,6 +103,9 @@ export class ParserSpec {
    *  @param format     The format specification.
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
    *  @param outUnit The unit a value will be formatted to. This unit is often referred to as persistence unit.
+   *  @note For Bearing/Azimuth formats, `outUnit`'s phenomenon must match `format.azimuthBaseUnit`/`format.revolutionUnit`.
+   *  @see BaseFormat.azimuthBaseUnit
+   *  @see BaseFormat.revolutionUnit
    */
   public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<ParserSpec> {
     let conversions: UnitConversionSpec[];
@@ -112,14 +120,22 @@ export class ParserSpec {
     const spec = new ParserSpec(outUnit, format, conversions);
     if (format.azimuthBaseUnit !== undefined) {
       if (outUnit !== undefined) {
-        spec._azimuthBaseConversion = await unitsProvider.getConversion(format.azimuthBaseUnit, outUnit);
+        const azimuthResult = await unitsProvider.getConversion(format.azimuthBaseUnit, outUnit);
+        if (azimuthResult.error) {
+          Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${format.azimuthBaseUnit.name}" to "${outUnit.name}" could not be resolved.`);
+        }
+        spec._azimuthBaseConversion = azimuthResult;
       } else {
         spec._azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
       }
     }
     if (format.revolutionUnit !== undefined) {
       if (outUnit !== undefined) {
-        spec._revolutionConversion = await unitsProvider.getConversion(format.revolutionUnit, outUnit);
+        const revolutionResult = await unitsProvider.getConversion(format.revolutionUnit, outUnit);
+        if (revolutionResult.error) {
+          Logger.logWarning(QuantityLoggerCategory.Parsing, `Unit conversion from "${format.revolutionUnit.name}" to "${outUnit.name}" could not be resolved.`);
+        }
+        spec._revolutionConversion = revolutionResult;
       } else {
         spec._revolutionConversion = { factor: 1.0, offset: 0.0 };
       }

@@ -4,7 +4,11 @@ The ECObjects language is comprised of items that have attributes. Items are gro
 
 The root of any domain is an *ECSchema* itself.
 
-- An **[ECSchema](./ec-schema.md)** describes one "domain"—its primary contents are a closely related set of "ECClasses" of various kinds. The name attribute of the ECSchema serves as a namespace for all items defined within it. All items within an ECSchema have a unique name.
+- An **[ECSchema](./ec-schema.md)** describes one "domain". Its primary contents are a closely related set of "ECClasses" of various kinds. The name attribute of the ECSchema serves as a namespace for all items defined within it. All items within an ECSchema have a unique name.
+
+- **[ECSchema XML](./ec-schema-xml.md)** is the XML representation used to persist and interchange ECSchema metadata.
+
+- **[ECSchema JSON](./ec-schema-json.md)** is the JSON representation of the same metadata, including the standalone SchemaItem JSON form.
 
 ECSchemas cannot contain other ECSchemas but they can reference ECSchemas:
 
@@ -30,7 +34,7 @@ The remaining kinds of elements are also direct members of an ECSchema:
 
 - **[ECEnumeration](./ec-enumeration.md)** defines a named type that contains a set of value-label pairs where the label is a non-localized display label (which can be used to form a localization key) and the value is the persistent primitive value. The value may be a string or an integer.
 
-- **[KindOfQuantity](./kindofQuantity.md)** describes the quantity that a property’s value is measuring. For example, an ECProperty named "Pressure" in an "Instrument" ECEntityClass could have KindOfQuantity "RelativePressure". The "RelativePressure" may specify persistence units as being in PSI, as well as other metadata associated with that KindOfQuantity.
+- **[KindOfQuantity](./kindofquantity.md)** describes the quantity that a property's value is measuring. For example, an ECProperty named "Pressure" in an "Instrument" ECEntityClass could have KindOfQuantity "RelativePressure". The "RelativePressure" may specify persistence units as being in PSI, as well as other metadata associated with that KindOfQuantity.
 
 - **[PropertyCategory](./property-category.md)** defines a classification that can be associated with a property and help identify the importance of the properties it classifies.
 

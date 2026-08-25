@@ -20,7 +20,7 @@ For most unit conversions (length, angle, area, etc.), only the factor is used (
 
 `UnitConversionSpec` objects are created from [UnitConversionProps]($quantity) returned by a [UnitsProvider]($quantity). The provider's `getConversion` method calculates conversion properties based on unit definitions:
 
-- **[BasicUnitsProvider]($frontend)** - Uses hardcoded conversion factors for common units
+- **[BasicUnitsProvider]($quantity)** - Resolves conversions from the bundled BIS Units schema. Default provider.
 - **[SchemaUnitProvider]($ecschema-metadata)** - Calculates conversions from EC schema unit definitions
 - **Custom providers** - Can implement custom conversion logic
 
@@ -89,15 +89,65 @@ To optimize conversion performance:
 1. **Reuse specs** - Create FormatterSpec and ParserSpec once and reuse them (e.g., store as class instance properties) rather than recreating on each operation
 2. **Batch operations** - Format/parse multiple values with the same spec
 3. **Cache providers** - Don't recreate UnitsProvider instances unnecessarily
-4. **Use schema providers** - SchemaUnitProvider is more comprehensive than BasicUnitsProvider
+4. **Use the default BasicUnitsProvider** - It covers the full BIS unit set; only switch to SchemaUnitProvider when you need custom domain-specific units
 
 ## Example: Direct Unit Conversion
 
 While most conversions happen automatically through FormatterSpec and ParserSpec, you can also request conversions directly from a UnitsProvider:
 
+<details>
+<summary>Example Code</summary>
+
 ```ts
 [[include:Quantity_UnitConversion.Direct_Conversion]]
 ```
+
+</details>
+
+## Built-in UnitConversions
+
+Use [UnitConversions]($quantity) for the built-in canonical unit set shipped with `core-quantity`.
+Pair it with the generated [Units]($quantity), [Phenomena]($quantity), and [UnitSystems]($quantity) identifiers, with bundled units grouped by phenomenon for discovery.
+Its data is generated from the canonical units schema in `@bentley/units-schema`, so this path stays synchronous and does not require any app startup/init hook.
+
+If your units are not from the built-in canonical set, use a [UnitsProvider]($quantity)-based workflow instead.
+
+For a one-off conversion, use [UnitConversions]($quantity)'s `convert(...)` helper:
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_UnitConversion.Convert]]
+```
+
+</details>
+
+For repeated conversions within the same built-in unit pair, resolve once and reuse the conversion with [UnitConversions]($quantity)'s `getConversion(...)` and `convertValue(...)` helpers. `getConversion(...)` may still return `UnitConversionProps` with `error: true` for incompatible known units, so apply the result with `convertValue(...)` rather than using the raw factors directly:
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_UnitConversion.Repeated_Convert]]
+```
+
+</details>
+
+Use [UnitConversions]($quantity)'s `isCompatible(...)` helper before attempting a conversion when you need a built-in canonical-unit boolean compatibility check instead of conversion metadata:
+
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_UnitConversion.IsCompatible]]
+```
+
+</details>
+
+> **Note:** [UnitConversions]($quantity)'s `getConversion(...)` and `isCompatible(...)` helpers operate only on the built-in canonical unit set; they are not package-wide helpers for schema-defined, custom, or provider-resolved units.
+>
+> **Note:** [UnitConversions]($quantity)'s `getConversion(...)` helper may still return `UnitConversionProps` with `error: true` for incompatible known units. Its `convertValue(...)` and `convert(...)` helpers are the throwing application paths. Lookup-based helpers throw when a unit name cannot be resolved.
 
 ## See Also
 

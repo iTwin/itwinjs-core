@@ -975,7 +975,7 @@ export class ProjectLocationSaveTool extends Tool {
       if (undefined !== ecefLocation)
         await basicManipulationIpc.updateEcefLocation(ecefLocation);
 
-      await deco.iModel.saveChanges(this.toolId);
+      await basicManipulationIpc.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));

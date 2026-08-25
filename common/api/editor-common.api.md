@@ -39,11 +39,13 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
 
 // @beta
 export interface EditCommandIpc {
+    abandonChanges: () => Promise<void>;
     ping: () => Promise<{
         commandId: string;
         version: string;
         [propName: string]: any;
     }>;
+    saveChanges: (description?: string) => Promise<void>;
 }
 
 // @beta

@@ -7,8 +7,8 @@
  */
 
 import { IModelStatus } from "@itwin/core-bentley";
-import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
-import { BackendError, IModelError } from "@itwin/core-common";
+import { EditTxn, IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
+import { BackendError, IModelError, SaveChangesArgs } from "@itwin/core-common";
 import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-common";
 
 /** @beta */
@@ -36,6 +36,7 @@ export type EditCommandType = typeof EditCommand;
  * @see [[BasicManipulationCommand]] for an example EditCommand.
  * @beta
  */
+
 export class EditCommand implements EditCommandIpc {
   /** The unique string that identifies this EditCommand class. This must be overridden in every subclass. */
   public static commandId = "";
@@ -44,8 +45,15 @@ export class EditCommand implements EditCommandIpc {
   /** The iModel this EditCommand may modify. */
   public readonly iModel: IModelDb;
 
+  /** The explicit editing transaction for this command. Subclasses use this to perform writes to the iModel. */
+  protected readonly txn: EditTxn;
+
+  /** Application-specific data included when this command commits its EditTxn. */
+  protected appData?: SaveChangesArgs["appData"];
+
   public constructor(iModel: IModelDb, ..._args: any[]) {
     this.iModel = iModel;
+    this.txn = new EditTxn(iModel, this.ctor.name);
   }
   public get ctor(): EditCommandType {
     return this.constructor as EditCommandType;
@@ -53,22 +61,61 @@ export class EditCommand implements EditCommandIpc {
 
   public async onStart(): Promise<any> { }
 
-  public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
-    return { version: this.ctor.version, commandId: this.ctor.commandId };
+  /** Start this command's transaction if it has not already started. */
+  protected beginEditing(): void {
+    if (!this.txn.isActive)
+      this.txn.start();
   }
 
-  // This is only temporary to find subclasses that used to implement this method. It was made async and renamed `requestFinish`.
-  private onFinish() { }
+  /** Returns true if this command's transaction is currently active. */
+  public get isTxnActive(): boolean {
+    return this.txn.isActive;
+  }
+
+  /** Abandon any pending changes and end this command's EditTxn */
+  public async abandonEdits(): Promise<void> {
+    if (this.txn.isActive)
+      this.txn.end("abandon");
+  }
+
+  /** Save all pending edits and end this command's EditTxn */
+  public async endEdits(description?: string): Promise<void> {
+    if (this.txn.isActive)
+      this.txn.end("save", this.resolveSaveChangesArg(description));
+  }
+
+  public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
+    return { version: this.ctor.version, commandId: this.ctor.commandId, iModelKey: this.iModel.key };
+  }
+
+  /** Save any pending changes on this command's EditTxn. Leaves the EditTxn active for further edits.
+   * @param description Optional description saved with the changes.
+   */
+  public async saveChanges(description?: string): Promise<void> {
+    if (this.txn.isActive)
+      this.txn.saveChanges(this.resolveSaveChangesArg(description));
+  }
+
+  /** Abandon any pending changes on this command's EditTxn. Leaves the EditTxn active for further edits. */
+  public async abandonChanges(): Promise<void> {
+    if (this.txn.isActive)
+      this.txn.abandonChanges();
+  }
 
   /**
    * Called when another EditCommand wishes to become the active EditCommand.
-   * Subclasses should complete and save their work as soon as possible and then return "done".
+   * The default implementation abandons pending edits (does not save changes) and returns "done".
+   * Subclasses should complete and call end their work as soon as possible before returning "done".
    * If it is not currently possible to finish, return any string other than "done" and the other EditCommand will have to wait and retry,
    * potentially showing the returned string to the user.
    */
   public async requestFinish(): Promise<"done" | string> {  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
-    this.onFinish(); // TODO: temporary, remove
+    await this.abandonEdits(); // by default, don't save changes. Subclasses must determine whether they are valid and save them themselves
     return "done";
+  }
+
+  private resolveSaveChangesArg(description?: string): SaveChangesArgs {
+    return { description: description ?? this.ctor.name, source: this.ctor.commandId, appData: this.appData };
   }
 }
 
@@ -90,7 +137,7 @@ class EditorAppHandler extends IpcHandler implements EditorIpc {
   public async callMethod(methodName: string, ...args: any[]) {
     const cmd = EditCommandAdmin.activeCommand;
     if (!cmd)
-      throw new IModelError(IModelStatus.NoActiveCommand, `No active command`);
+      throw new IModelError(IModelStatus.NoActiveCommand, `No active command`, { methodName });
 
     const func = (cmd as any)[methodName];
     if (typeof func !== "function")

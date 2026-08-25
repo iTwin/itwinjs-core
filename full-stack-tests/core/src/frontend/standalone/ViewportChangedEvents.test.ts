@@ -693,28 +693,34 @@ describe("Viewport changed events", async () => {
     expect(vp.view.viewsCategory(id64(0x1a))).to.be.false;
     expect(vp.view.viewsCategory(id64(0x1c))).to.be.false;
 
+    // Wait for requested categories to reach the cache and for any queued subcategory work to drain.
+    // The implementation guarantees eventual loading, but not that multiple categories become visible
+    // in the cache atomically within a single polling interval.
     const waitForSubCats = async (catIds: Id64Arg): Promise<void> => {
+      const expectedCount = Id64.sizeOf(catIds);
       for (const catId of Id64.iterable(catIds))
         expect(subcats.getSubCategories(catId)).to.be.undefined;
 
-      // We used to wait half a second (no loop). That was sometimes apparently not long enough for the Linux CI job.
-      // Waiting for some async operation to happen in background within a limited amount of time is not great, but that is the
-      // behavior we are trying to test...
-      // Wait up to 4 seconds. Loop prevents tests from taking longer than necessary if response is speedy.
-      for (let i = 1; i < 16; i++) {
-        await BeDuration.wait(250);
-        let numLoaded = 0;
+      let numLoaded = 0;
+
+      // Wait for the queued subcategory loads to drain instead of assuming a fixed completion time.
+      // This keeps the test focused on eventual completion instead of machine speed.
+      for (let elapsedMs = 0; elapsedMs <= 30000; elapsedMs += 50) {
+        numLoaded = 0;
         for (const catId of Id64.iterable(catIds)) {
           if (subcats.getSubCategories(catId) !== undefined)
             ++numLoaded;
         }
 
-        if (0 !== numLoaded) {
-          // If one category was loaded, they all should have been.
-          expect(numLoaded).to.equal(Id64.sizeOf(catIds));
+        if (numLoaded === expectedCount && vp.subcategories.isEmpty) {
           break;
         }
+
+        await BeDuration.wait(50);
       }
+
+      expect(vp.subcategories.isEmpty).to.be.true;
+      expect(numLoaded).to.equal(expectedCount);
 
       for (const catId of Id64.iterable(catIds))
         expect(subcats.getSubCategories(catId)).not.to.be.undefined;
@@ -730,6 +736,7 @@ describe("Viewport changed events", async () => {
 
     // If we turn on 2 more categories in succession, subcategories for both should be loaded asynchronously.
     // The loading of the first category's subcategories should not be interrupted by loading of second category's subcategories.
+    // Because these are separate calls, the queue may load them sequentially.
     vp.changeCategoryDisplay(id64(0x1a), true);
     vp.changeCategoryDisplay(id64(0x1c), true);
     await waitForSubCats([id64(0x1c), id64(0x1a)]);

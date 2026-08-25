@@ -660,7 +660,7 @@ export class UnivariateBezier extends BezierCoffs {
    * that the final iteration will clean it up to nearly machine precision.
    * @returns final fraction of iteration if converged.  undefined if iteration failed to converge.
    */
-  public runNewton(startFraction: number, tolerance: number = 1.0e-11): number | undefined {
+  public runNewton(startFraction: number, tolerance: number = Geometry.smallNewtonStep): number | undefined {
     const derivativeFactor = this.order - 1;
     let numConverged = 0;
     let u = startFraction;
@@ -669,7 +669,8 @@ export class UnivariateBezier extends BezierCoffs {
     const order = this.order;
     const coffs = this.coffs;
     const orderD = order - 1;
-    for (let iterations = 0; iterations++ < 20;) {
+    const maxIterations = 20;
+    for (let iterations = 0; iterations < maxIterations; iterations++) {
       UnivariateBezier._basisBuffer = PascalCoefficients.getBezierBasisValues(order, u, UnivariateBezier._basisBuffer);
       f = 0;
       for (let i = 0; i < order; i++)

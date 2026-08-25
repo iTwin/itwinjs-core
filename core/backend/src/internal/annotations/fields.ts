@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
-import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
+import { assert, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
-
+import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
+import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
 // An intermediate value obtained while evaluating a FieldPropertyPath.
@@ -57,58 +58,40 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   const isAspect = ecClass.isSync("ElementAspect", "BisCore");
-  const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=${host.elementId}`;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  let curValue: FieldValueType | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} ${where}`, (stmt) => {
-    if (stmt.step() !== DbResult.BE_SQLITE_ROW) {
+  const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=:elementId`;
+  // `propertyName` may itself be a struct/array/point/navigation property, so its value can't be
+  // decomposed into scalar sub-columns ahead of time. Query using the non-deprecated
+  // UseECSqlPropertyNames format and reshape the value into the legacy UseJsPropertyNames shape using
+  // ECSchema metadata (see ECSqlInstanceReshaper for why a naive, non-schema-aware rename isn't safe here).
+  let curValue: FieldValueType | undefined = iModel.withQueryReader(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} ${where}`, (reader): FieldValueType | undefined => {
+    if (!reader.step()) {
       return undefined;
     }
 
-    const rootValue = stmt.getValue(0);
-    if (undefined === rootValue || rootValue.isNull) {
+    const rawRootValue = reader.current[0];
+    if (undefined === rawRootValue) {
       return undefined;
     }
 
-    switch (rootValue.columnInfo.getType()) {
-      case ECSqlValueType.Blob:
-        return { primitive: rootValue.getBlob() };
-      case ECSqlValueType.Boolean:
-        return { primitive: rootValue.getBoolean() };
-      case ECSqlValueType.DateTime:
-        return { primitive: new Date(rootValue.getDateTime()) };
-      case ECSqlValueType.Double:
-        return { primitive: rootValue.getDouble() };
-      case ECSqlValueType.Guid:
-        return { primitive: rootValue.getGuid() };
-      case ECSqlValueType.Int:
-      case ECSqlValueType.Int64:
-        return { primitive: rootValue.getInteger() };
-      case ECSqlValueType.Point2d:
-        return { primitive: rootValue.getXAndY() };
-      case ECSqlValueType.Point3d:
-        return { primitive: rootValue.getXYAndZ() };
-      case ECSqlValueType.String:
-        return { primitive: rootValue.getString() };
-      case ECSqlValueType.Struct: {
-        ecProp = expectDefined(ecProp);
-        assert(ecProp.isStruct());
-        ecClass = ecProp.structClass;
-        return { struct: rootValue.getStruct() };
-      }
-      case ECSqlValueType.PrimitiveArray: {
-        return { primitiveArray: rootValue.getArray() };
-      }
-      case ECSqlValueType.StructArray: {
-        return { structArray: rootValue.getArray() };
-      }
-      // Unsupported:
-      // case ECSqlValueType.Geometry:
-      // case ECSqlValueType.Navigation:
-      // case ECSqlValueType.Id:
+    ecProp = expectDefined(ecProp);
+    const rootValue = reshapePropertyValue(rawRootValue, ecProp, iModel);
+    if (ecProp.isArray()) {
+      return ecProp.isStruct() ? { structArray: rootValue } : { primitiveArray: rootValue };
+    }
+
+    if (ecProp.isStruct()) {
+      ecClass = ecProp.structClass;
+      return { struct: rootValue };
+    }
+
+    if (ecProp.isPrimitive()) {
+      return {
+        primitive: ecProp.primitiveType === PrimitiveType.DateTime ? new Date(rootValue) : rootValue,
+      };
     }
 
     return undefined;
-  });
+  }, new QueryBinder().bindId("elementId", host.elementId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
 
   if (undefined === curValue) {
     return undefined;
@@ -170,7 +153,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   const propertyType = determineFieldPropertyType(ecProp);
-  if(!propertyType) {
+  if (!propertyType) {
     return undefined;
   }
 
@@ -266,7 +249,8 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
-function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefined, iModel: IModelDb, deleted: boolean): void {
+function doUpdateFields(txn: EditTxn, annotationId: Id64String, sourceId: Id64String | undefined, deleted: boolean): void {
+  const iModel = txn.iModel;
   try {
     const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
@@ -280,7 +264,7 @@ function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefin
 
       if (updatedBlocks.length > 0) {
         target.updateTextBlocks(updatedBlocks);
-        target.update();
+        target.update(txn);
       }
     }
   } catch (err) {
@@ -289,11 +273,10 @@ function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefin
 }
 
 // Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
-export function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {
-  doUpdateFields(props.targetId, props.sourceId, iModel, deleted);
+export function updateElementFields(props: RelationshipProps, txn: EditTxn, deleted: boolean): void {
+  doUpdateFields(txn, props.targetId, props.sourceId, deleted);
 }
 
-export function updateAllFields(annotationElementId: Id64String, iModel: IModelDb): void {
-  doUpdateFields(annotationElementId, undefined, iModel, false);
+export function updateAllFields(annotationElementId: Id64String, txn: EditTxn): void {
+  doUpdateFields(txn, annotationElementId, undefined, false);
 }
-

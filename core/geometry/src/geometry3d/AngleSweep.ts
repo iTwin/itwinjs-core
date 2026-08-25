@@ -121,9 +121,13 @@ export class AngleSweep implements BeJSONFunctions {
     result.setStartEndRadians(startRadians, endRadians);
     return result;
   }
-  /** Return the AngleSweep obtained by subtracting radians from the start and end angles of this sweep. */
+  /** Return the AngleSweep obtained by adding `radians` to the start and end angles of this sweep. */
+  public clonePlusRadians(radians: number): AngleSweep {
+    return new AngleSweep(this._radians0 + radians, this._radians1 + radians);
+  }
+  /** Return the AngleSweep obtained by subtracting `radians` from the start and end angles of this sweep. */
   public cloneMinusRadians(radians: number): AngleSweep {
-    return new AngleSweep(this._radians0 - radians, this._radians1 - radians);
+    return this.clonePlusRadians(-radians);
   }
   /** Create an AngleSweep from start and end angles given in degrees. */
   public static createStartEndDegrees(startDegrees: number = 0, endDegrees: number = 360, result?: AngleSweep): AngleSweep {
@@ -274,7 +278,7 @@ export class AngleSweep implements BeJSONFunctions {
    * @param toNegativeFraction exterior fraction handling:
    * * if true, return `fraction` period-shifted to within one period of the start
    * * if false, return `fraction` period-shifted to within one period of the end
-   * * if undefined, return the period-shift of `fraction` closest to [0,1].
+   * * if undefined, return the period-shift of `fraction` closest in fraction space to [0,1].
    * @returns period-shifted fraction. If `fraction` is already in [0,1], or the sweep is empty, then `fraction` is
    * returned unchanged.
    */
@@ -306,7 +310,7 @@ export class AngleSweep implements BeJSONFunctions {
    * @param toNegativeFraction exterior fraction handling:
    * * if true, return `fraction` period-shifted to within one period of the start
    * * if false, return `fraction` period-shifted to within one period of the end
-   * * if undefined, return the period-shift of `fraction` closest to [0,1].
+   * * if undefined, return the period-shift of `fraction` closest in fraction space to [0,1].
    * @returns period-shifted fraction. If `fraction` is already in [0,1], or the sweep is empty, then `fraction` is
    * returned unchanged.
    */

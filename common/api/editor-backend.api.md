@@ -8,6 +8,7 @@ import { BasicManipulationCommandIpc } from '@itwin/editor-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EcefLocationProps } from '@itwin/core-common';
 import { EditCommandIpc } from '@itwin/editor-common';
+import { EditTxn } from '@itwin/core-backend';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { FlatBufferGeometryFilter } from '@itwin/editor-common';
@@ -18,6 +19,7 @@ import { IModelDb } from '@itwin/core-backend';
 import { IModelStatus } from '@itwin/core-bentley';
 import { Matrix3dProps } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
+import { SaveChangesArgs } from '@itwin/core-common';
 import { TransformProps } from '@itwin/core-geometry';
 
 // @beta
@@ -56,10 +58,16 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 // @beta
 export class EditCommand implements EditCommandIpc {
     constructor(iModel: IModelDb, ..._args: any[]);
+    abandonChanges(): Promise<void>;
+    abandonEdits(): Promise<void>;
+    protected appData?: SaveChangesArgs["appData"];
+    protected beginEditing(): void;
     static commandId: string;
     // (undocumented)
     get ctor(): EditCommandType;
+    endEdits(description?: string): Promise<void>;
     readonly iModel: IModelDb;
+    get isTxnActive(): boolean;
     // (undocumented)
     onStart(): Promise<any>;
     // (undocumented)
@@ -69,6 +77,8 @@ export class EditCommand implements EditCommandIpc {
         [propName: string]: any;
     }>;
     requestFinish(): Promise<"done" | string>;
+    saveChanges(description?: string): Promise<void>;
+    protected readonly txn: EditTxn;
     // (undocumented)
     static version: string;
 }

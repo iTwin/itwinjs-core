@@ -348,7 +348,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
     try {
       this._startedCmd = await this.startCommand();
       if (IModelStatus.Success === await basicManipulationIpc.transformPlacement(this.agenda.compressIds(), transform.toJSON()))
-        await this.saveChanges();
+        await basicManipulationIpc.saveChanges(this.flyover);
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }

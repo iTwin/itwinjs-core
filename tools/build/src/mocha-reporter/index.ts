@@ -54,8 +54,10 @@ const isCI = process.env.CI || process.env.TF_BUILD;
 if (isCI) {
   if (typeof (mocha) !== "undefined")
     mocha.forbidOnly();
-  else
-    require.cache[require.resolve("mocha/lib/mocharc.json", { paths: require.main?.paths ?? module.paths })]!.exports.forbidOnly = true;
+  else {
+    const mocharc = require(require.resolve("mocha/lib/mocharc.json", { paths: require.main?.paths ?? module.paths }));
+    mocharc.forbidOnly = true;
+  }
 }
 
 // This is necessary to enable colored output when running in rush test:
@@ -81,7 +83,7 @@ class BentleyMochaReporter extends Spec {
             if (i + 1 < process.argv.length && process.argv[i + 1] === "chrome") {
               this._chrome = true;
               process.on("chrome-test-runner-done", () => {
-                this.confirmExit();
+                this.confirmExit(30);
               });
             }
             break;
@@ -91,7 +93,7 @@ class BentleyMochaReporter extends Spec {
     }
   }
 
-  private confirmExit(seconds: number = 30) {
+  private confirmExit(seconds: number = 10) {
     // NB: By calling unref() on this timer, we stop it from keeping the process alive, so it will only fire if _something else_ is still keeping
     // the process alive after n seconds.  This also has the benefit of preventing the timer from showing up in wtfnode's dump of open handles.
     setTimeout(() => {
@@ -139,7 +141,7 @@ class BentleyMochaReporter extends Spec {
     // Detect hangs caused by tests that leave timers/other handles open - not possible in electron frontends.
     if (!this._electron && !this._chrome) {
       // Not running in Chrome or Electron, so check for open handles.
-      this.confirmExit(30);
+      this.confirmExit();
     }
 
     if (!this.stats.pending)

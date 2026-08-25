@@ -76,6 +76,7 @@ alpha;interface;BRepOffsetProps
 public;interface;BRepPrimitive
 alpha;interface;BRepRoundProps
 alpha;interface;BRepThickenProps
+public;interface;BriefcaseConnectionProps
 public;interface;BriefcaseDownloader
 public;type;BriefcaseId
 public;enum;BriefcaseIdValue
@@ -178,6 +179,8 @@ public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
 public;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
+internal;function;createIpcDispatcher
+internal;function;createIpcProxy
 public;interface;CreateSnapshotIModelProps
 public;interface;CreateStandaloneIModelProps
 internal;const;CURRENT_INVOCATION
@@ -193,6 +196,7 @@ public;type;DanishSystem34Region
 beta;interface;DateTimeFieldFormatOptions
 internal;interface;DbBlobRequest
 internal;interface;DbBlobResponse
+public;interface;DbCloudContainerInfo
 internal;interface;DbQueryConfig
 public;class;DbQueryError
 internal;interface;DbQueryRequest
@@ -212,6 +216,7 @@ beta;enum;DefaultSupportedTypes
 internal;const;defaultTileOptions
 public;interface;DefinitionElementProps
 preview;interface;DefinitionElementProps
+beta;interface;DefinitionSetProps
 public;interface;DeletedElementGeometryChange
 public;interface;DeprecatedBackgroundMapProps
 internal;class;DevToolsRpcInterface
@@ -245,6 +250,7 @@ public;interface;ECSchemaItemProps
 public;interface;ECSchemaProps
 public;interface;ECSchemaReferenceProps
 public;class;ECSqlReader
+public;class;ECSqlReaderBase
 public;enum;ECSqlSystemProperty
 public;enum;ECSqlValueType
 beta;type;ECVersionString
@@ -252,10 +258,13 @@ internal;interface;EdgeAppearanceOverrides
 internal;class;EdgeArgs
 internal;interface;EdgeOptions
 internal;interface;EditingScopeNotifications
+beta;interface;EditTxnError
+beta;namespace;EditTxnError
 public;type;ElementAlignedBox2d
 public;type;ElementAlignedBox3d
 public;interface;ElementAspectProps
 preview;interface;ElementAspectProps
+beta;namespace;ElementError
 beta;namespace;ElementGeometry
 public;interface;ElementGeometryBuilderParams
 public;interface;ElementGeometryBuilderParamsForPart
@@ -517,6 +526,8 @@ preview;function;isPlacement3dProps
 public;function;isPowerOfTwo
 public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
+beta;interface;ITwinSettingsError
+beta;namespace;ITwinSettingsError
 public;interface;JsonGeometryStream
 beta;type;LeaderAttachment
 beta;type;LeaderTextPointOptions
@@ -738,7 +749,9 @@ beta;namespace;RealityDataSourceKey
 beta;interface;RealityDataSourceProps
 beta;interface;RealityModelDisplayProps
 beta;class;RealityModelDisplaySettings
+internal;function;rebuildIpcError
 internal;const;REGISTRY
+beta;interface;ReinstateTxnArgs
 public;class;RelatedElement
 preview;class;RelatedElement
 public;interface;RelatedElementProps
@@ -767,7 +780,10 @@ preview;interface;RenderTimelineProps
 public;interface;RepositoryLinkProps
 preview;interface;RepositoryLinkProps
 public;interface;RequestNewBriefcaseProps
+internal;function;resolveNavProp
+internal;function;resolveNavPropId
 internal;class;ResponseLike
+beta;interface;ReverseTxnArgs
 public;class;RgbColor
 public;interface;RgbColorProps
 public;type;RgbFactorProps
@@ -844,7 +860,7 @@ beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
 beta;type;RunProps
-alpha;interface;SaveChangesArgs
+beta;interface;SaveChangesArgs
 public;enum;SchemaState
 public;interface;SectionDrawingLocationProps
 preview;interface;SectionDrawingLocationProps
@@ -856,6 +872,8 @@ preview;enum;SectionType
 public;interface;SerializedRpcActivity
 internal;interface;SerializedRpcOperation
 internal;interface;SerializedRpcRequest
+internal;function;serializeIpcError
+beta;namespace;ServerBasedLocksError
 public;class;ServerError
 public;class;ServerTimeoutError
 public;interface;SessionProps
@@ -922,6 +940,8 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 beta;class;TabRun
 beta;interface;TabRunProps
+beta;type;TargetPointShape
+beta;const;targetPointShapes
 beta;type;TerminatorShape
 beta;const;terminatorShapes
 public;enum;TerrainHeightOriginMode
@@ -1023,6 +1043,7 @@ preview;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
+internal;function;unwrapIpcInvokeReturn
 public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps

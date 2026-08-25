@@ -591,12 +591,12 @@ describe("ReorientFacets", () => {
     const rangeA = RegionOps.curveArrayRange(data);
     const dyA = -1.5 * rangeA.yLength();
     for (const g of data) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + 2 * dyA);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g, x0, y0 + 2 * dyA);
     }
     for (const g of dataB) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + dyA);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0 + 2 * dyA);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g, x0, y0 + dyA);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, g, x0, y0 + 2 * dyA);
     }
     y0 += 3 * dyA;
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(x0, y0, x0 + rangeA.xLength(), y0));

@@ -96,7 +96,9 @@ export class Loop extends CurveChain {
   }
   /** Create a new `Loop` with no children */
   public cloneEmptyPeer(): Loop {
-    return new Loop();
+    const emptyClone = new Loop();
+    emptyClone.isInner = this.isInner;
+    return emptyClone;
   }
   /** Second step of double dispatch:  call `handler.handleLoop(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {

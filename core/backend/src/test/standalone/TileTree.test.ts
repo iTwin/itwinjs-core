@@ -6,6 +6,7 @@
 import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { withEditTxn } from "../../EditTxn";
 import {
   BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps,
   PrimaryTileTreeId, RenderSchedule,
@@ -45,32 +46,33 @@ function almostEqualRange(a: Range3d, b: Range3d): boolean {
 function insertPhysicalModel(db: IModelDb): Id64String {
   GenericSchema.registerSchema();
 
-  const partitionProps = {
-    classFullName: PhysicalPartition.classFullName,
-    model: IModel.repositoryModelId,
-    parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-    code: PhysicalPartition.createCode(db, IModel.rootSubjectId, `PhysicalPartition_${(++uniqueId)}`),
-  };
+  return withEditTxn(db, (txn) => {
+    const partitionProps = {
+      classFullName: PhysicalPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+      code: PhysicalPartition.createCode(db, IModel.rootSubjectId, `PhysicalPartition_${(++uniqueId)}`),
+    };
 
-  const partitionId = db.elements.insertElement(partitionProps);
-  expect(Id64.isValidId64(partitionId)).to.be.true;
+    const partitionId = txn.insertElement(partitionProps);
+    expect(Id64.isValidId64(partitionId)).to.be.true;
 
-  const model = db.models.createModel({
-    classFullName: PhysicalModel.classFullName,
-    modeledElement: { id: partitionId },
+    const model = db.models.createModel({
+      classFullName: PhysicalModel.classFullName,
+      modeledElement: { id: partitionId },
+    });
+
+    expect(model instanceof PhysicalModel).to.be.true;
+
+    const modelId = txn.insertModel(model.toJSON());
+    expect(Id64.isValidId64(modelId)).to.be.true;
+    return modelId;
   });
-
-  expect(model instanceof PhysicalModel).to.be.true;
-
-  const modelId = db.models.insertModel(model.toJSON());
-  expect(Id64.isValidId64(modelId)).to.be.true;
-  return modelId;
 }
-function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
+async function scaleProjectExtents(db: IModelDb, scale: number): Promise<Range3d> {
   const range = db.projectExtents.clone();
   range.scaleAboutCenterInPlace(scale);
-  db.updateProjectExtents(range);
-  db.saveChanges();
+  await withEditTxn(db, async (txn) => txn.updateProjectExtents(range));
   return scaleSpatialRange(range);
 }
 
@@ -104,7 +106,7 @@ describe("tile tree", () => {
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.
     const geomBuilder = new GeometryStreamBuilder();
     geomBuilder.appendGeometry(Box.createDgnBox(Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, 2), 2, 2, 2, 2, true)!);
-    const category = SpatialCategory.insert(db, IModel.dictionaryId, "kittycat", { color: ColorDef.white.toJSON(), transp: 0, invisible: false });
+    const category = withEditTxn(db, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "kittycat", { color: ColorDef.white.toJSON(), transp: 0, invisible: false }));
     const elemProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: modelId,
@@ -118,16 +120,18 @@ describe("tile tree", () => {
       },
     };
 
-    spatialElementId = db.elements.insertElement(elemProps);
+    withEditTxn(db, (txn) => {
+      spatialElementId = txn.insertElement(elemProps);
 
-    const script = makeScript((timeline) => timeline.addVisibility(1234, 0.5));
-    const renderTimeline = RenderTimeline.fromJSON({
-      script: JSON.stringify(script),
-      classFullName: RenderTimeline.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-    }, db);
-    renderTimelineId = db.elements.insertElement(renderTimeline.toJSON());
+      const script = makeScript((timeline) => timeline.addVisibility(1234, 0.5));
+      const renderTimeline = RenderTimeline.fromJSON({
+        script: JSON.stringify(script),
+        classFullName: RenderTimeline.classFullName,
+        model: IModel.dictionaryId,
+        code: Code.createEmpty(),
+      }, db);
+      renderTimelineId = txn.insertElement(renderTimeline.toJSON());
+    });
     expect(Id64.isValid(renderTimelineId)).to.be.true;
   });
 
@@ -164,7 +168,7 @@ describe("tile tree", () => {
     let prevQualifier = tree.contentIdQualifier;
 
     // Change the project extents - nothing should change - we haven't yet purged our model's tile tree.
-    let newExtents = scaleProjectExtents(db, 2.0);
+    let newExtents = await scaleProjectExtents(db, 2.0);
 
     tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
@@ -215,7 +219,7 @@ describe("tile tree", () => {
     prevQualifier = tree.contentIdQualifier;
 
     // Change extents again and purge tile trees for all loaded models (by passing `undefined` for model Ids).
-    newExtents = scaleProjectExtents(db, 0.75);
+    newExtents = await scaleProjectExtents(db, 0.75);
     db[_nativeDb].purgeTileTrees(undefined);
 
     tree = await db.tiles.requestTileTreeProps(treeId);
@@ -283,7 +287,7 @@ describe("tile tree", () => {
     const renderTimeline = db.elements.getElement<RenderTimeline>(renderTimelineId);
     const props = renderTimeline.toJSON();
     props.script = JSON.stringify(makeScript((timeline) => timeline.addVisibility(4321, 0.25)));
-    db.elements.updateElement(props);
+    withEditTxn(db, (txn) => txn.updateElement(props));
 
     const tree2 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     expect(tree2).not.to.equal(tree1);
@@ -297,3 +301,5 @@ describe("tile tree", () => {
     expect(tree3.contentIdQualifier!.length).least(1);
   });
 });
+
+

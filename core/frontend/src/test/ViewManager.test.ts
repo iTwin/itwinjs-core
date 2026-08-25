@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { OnScreenTarget } from "../internal/render/webgl/Target";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -64,5 +64,70 @@ describe("ViewManager", () => {
     await IModelApp.shutdown();
 
     expect(vp.isDisposed).toBe(true);
+  });
+
+  it("should start edit command cleanup before final viewport disposal returns", async () => {
+    const vp = openBlankViewport({ width: 30, height: 30 });
+    const finishCommand = vi.fn(async () => {
+      expect(vp.isDisposed).toBe(false);
+      return "done";
+    });
+    IModelApp.toolAdmin.setEditCommandHandler({ finishCommand });
+    IModelApp.viewManager.addViewport(vp);
+
+    IModelApp.viewManager.dropViewport(vp);
+
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(vp.isDisposed).toBe(true);
+    await IModelApp.viewManager.waitForSelectedViewportChange();
+  });
+
+  it("should observe a rejected selected-viewport change immediately", async () => {
+    let releaseFirstChange: (() => void) | undefined;
+    const firstChange = new Promise<void>((resolve) => releaseFirstChange = resolve);
+    const secondChange = Promise.reject(new Error("selected viewport change failed"));
+    const selectedViewportChanged = vi.spyOn(IModelApp.toolAdmin, "onSelectedViewportChanged")
+      .mockReturnValueOnce(firstChange)
+      .mockReturnValueOnce(secondChange);
+
+    IModelApp.viewManager.notifySelectedViewportChanged(undefined, undefined);
+    IModelApp.viewManager.notifySelectedViewportChanged(undefined, undefined);
+
+    releaseFirstChange?.();
+    await IModelApp.viewManager.waitForSelectedViewportChange();
+    expect(selectedViewportChanged).toHaveBeenCalledTimes(2);
+  });
+
+  it("should not overwrite a reopened viewport's tool after delayed last-viewport cleanup", async () => {
+    using firstViewport = openBlankViewport({ width: 30, height: 30 });
+    IModelApp.viewManager.addViewport(firstViewport);
+    await IModelApp.viewManager.waitForSelectedViewportChange();
+    await IModelApp.toolAdmin.startPrimitiveTool(undefined);
+
+    let releaseCleanup: (() => void) | undefined;
+    const cleanupReleased = new Promise<void>((resolve) => releaseCleanup = resolve);
+    const oldTool = {
+      onCleanup: vi.fn(async () => cleanupReleased),
+      onSelectedViewportChanged: vi.fn(),
+    };
+    (IModelApp.toolAdmin as any)._primitiveTool = oldTool;
+    const finishCommand = vi.fn(async () => "done");
+    IModelApp.toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const startPrimitiveTool = vi.spyOn(IModelApp.toolAdmin, "startPrimitiveTool");
+
+    IModelApp.viewManager.dropViewport(firstViewport, false);
+    using reopenedViewport = openBlankViewport({ width: 30, height: 30 });
+    IModelApp.viewManager.addViewport(reopenedViewport);
+
+    expect(oldTool.onCleanup).toHaveBeenCalledOnce();
+    expect(finishCommand).toHaveBeenCalledOnce();
+
+    releaseCleanup?.();
+    await IModelApp.viewManager.waitForSelectedViewportChange();
+    await startPrimitiveTool.mock.results[0].value;
+
+    expect(oldTool.onCleanup).toHaveBeenCalledOnce();
+    expect(finishCommand).toHaveBeenCalledOnce();
   });
 });

@@ -8,7 +8,7 @@
 
 import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
-import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
+import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, Point4d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
@@ -125,6 +125,9 @@ const scratchViewZ = Vector3d.create();
 const scratchPoint = Point3d.create();
 const scratchClipPlanes = [ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint)];
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
+const scratchXRange = Range1d.createNull();
+const scratchYRange = Range1d.createNull();
+const scratchPoint4d = Point4d.create();
 
 /** A [[Tile]] belonging to a [[MapTileTree]] representing a rectangular region of a map of the Earth.
  * @public
@@ -203,9 +206,17 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public override getSizeProjectionCorners(): Point3d[] | undefined {
-    // Use only the first 4 corners -- On terrain tiles the height is initially exagerated to world height range which can cause excessive tile loading.
-    const rangeCorners = this.getRangeCorners(scratchCorners);
-    return rangeCorners.slice(0, 4);
+    if (this._patch instanceof PlanarTilePatch) {
+      // Use only the first 4 corners -- On terrain tiles the height is initially exaggerated to world height range which can cause excessive tile loading.
+      const rangeCorners = this._patch.getRangeCorners(expectDefined(this.heightRange), scratchCorners);
+      return rangeCorners.slice(0, 4);
+    }
+    // For globe (non-planar) tiles, use actual surface points from _cornerRays instead of the inflated ECEF AABB.
+    // The AABB extends deep into the Earth's interior, causing unreliable pixel-size calculations, especially on narrow viewports.
+    if (this._cornerRays)
+      return [this._cornerRays[0].origin, this._cornerRays[1].origin, this._cornerRays[3].origin, this._cornerRays[2].origin];
+
+    return this.range.corners(scratchCorners).slice(0, 4);
   }
 
   /** @internal */
@@ -492,6 +503,54 @@ export class MapTile extends RealityTile {
   /** @internal */
   public override isRegionCulled(args: TileDrawArgs): boolean {
     return this.isContentCulled(args);
+  }
+
+  /** The default pixel-size calculation for reality tiles uses the geometric mean of the projected
+   * x and y ranges: `sqrt(xRange * yRange)`. For non-planar globe tiles, the projected surface corners
+   * can be significantly anisotropic, causing the geometric mean to underestimate screen coverage.
+   * Additionally, the projected pixel size scales linearly with viewport width-- on narrow viewports
+   * the reduced scale can push the geometric mean below `maximumSize`, stopping refinement at depth 3
+   * before reaching the planar imagery tiles at depth 8+.
+   *
+   * This override uses `max(xRange, yRange)` for non-planar tiles, which correctly reflects the tile's
+   * actual screen extent for LOD decisions.
+   * @internal
+   */
+  public override computeVisibilityFactor(args: TileDrawArgs): number {
+    if (this.isPlanar)
+      return super.computeVisibilityFactor(args);
+
+    // Let the base class handle frustum test and structural tiles.
+    const baseResult = super.computeVisibilityFactor(args);
+    if (baseResult <= 0)
+      return baseResult;
+
+    // baseResult > 0 means the tile passed the frustum test but pixel size used geometric mean.
+    // Recompute using max dimension of projected surface corners for a more accurate estimate.
+    const corners = this.getSizeProjectionCorners();
+    if (!corners || 0 === this.maximumSize)
+      return baseResult;
+
+    // Project corners to view space. For MapTileTree, args.location is identity,
+    // so the world-to-view transform applies directly.
+    const tileToView = args.worldToViewMap.transform0;
+    scratchXRange.setNull();
+    scratchYRange.setNull();
+
+    for (const corner of corners) {
+      const viewCorner = tileToView.multiplyPoint3d(corner, 1, scratchPoint4d);
+      if (viewCorner.w < 0)
+        return baseResult; // corner behind eye, fall back to base result
+
+      scratchXRange.extendX(viewCorner.x / viewCorner.w);
+      scratchYRange.extendX(viewCorner.y / viewCorner.w);
+    }
+
+    const maxDimension = Math.max(scratchXRange.length(), scratchYRange.length());
+    if (maxDimension < 1e-3)
+      return baseResult;
+
+    return this.maximumSize / args.context.adjustPixelSizeForLOD(maxDimension);
   }
 
   /** @internal */

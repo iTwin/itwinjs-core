@@ -1006,11 +1006,11 @@ export class AnalyticRoots {
    *   * -2 -- all coefficients identically 0.   The entire c, s plane-- and therefore the entire unit circle-- is a solution.
    *   * -1 -- beta, gamma are zero, alpha is not.There is no line defined.There are no solutions.
    *   * 0 -- the line is well defined, but passes completely outside the unit circle.
-   *     * In this case, (c1, s1) is the circle point closest to the line and(c2, s2) is the line point closest to the circle.
+   *     * In this case, (c[0], s[0]) is the circle point closest to the line and (c[1], s[1]) is the line point closest to the circle.
    *   * 1 -- the line is tangent to the unit circle.
    *     * Tangency is determined by tolerances, which calls a "close approach" point a tangency.
-   *       * (c1, s1) is the closest circle point
-   *       * (c2, s2) is the line point.
+   *       * (c[0], s[0]) is the closest circle point
+   *       * (c[1], s[1]) is the line point.
    *   * 2 -- two simple intersections.
    * @param alpha constant coefficient on line
    * @param beta x cosine coefficient on line
@@ -1041,20 +1041,20 @@ export class AnalyticRoots {
     if (delta2 <= 0.0) {
       solutionType = (alpha === 0) ? -2 : -1;
     } else {
-      const lambda = - alpha / delta2;
+      const lambda = -alpha / delta2;
       const a2 = alpha2 / delta2;
       const D2 = 1.0 - a2;
       if (D2 < -twoTol) {
         const delta = Math.sqrt(delta2);
         const iota = (alpha < 0) ? (1.0 / delta) : (-1.0 / delta);
-        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
         this.appendCosSinRadians(beta * iota, gamma * iota, cosValues, sinValues, radiansValues);
+        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
         solutionType = 0;
       } else if (D2 < twoTol) {
         const delta = Math.sqrt(delta2);
         const iota = (alpha < 0) ? (1.0 / delta) : (- 1.0 / delta);
-        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
         this.appendCosSinRadians(beta * iota, gamma * iota, cosValues, sinValues, radiansValues);
+        this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
         solutionType = 1;
       } else {
         const mu = Math.sqrt(D2 / delta2);
@@ -1205,7 +1205,7 @@ export class TrigPolynomial {
     }
     return radians.length > 0;
   }
-  private static readonly _coefficientRelTol = 1.0e-12;
+  private static readonly _coefficientRelTolSquared = 1.0e-24;
   /**
    * Compute intersections of the unit circle `x^2 + y^2 = 1` with the general quadric (conic)
    * `axx x^2 + axy xy + ayy y^2 + ax x + ay y + a = 0`.
@@ -1224,7 +1224,24 @@ export class TrigPolynomial {
     PowerPolynomial.zero(coffs);
     let degree;
     // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients
-    if (Geometry.hypotenuseXYZ(axx, axy, ayy) > TrigPolynomial._coefficientRelTol * Geometry.hypotenuseXYZ(ax, ay, a)) {
+    const degree1CoefficientSizeSquared = Geometry.hypotenuseSquaredXYZ(ax, ay, a);
+    const degree2CoefficientSizeSquared = Geometry.hypotenuseSquaredXYZ(axx, axy, ayy);
+    if (degree2CoefficientSizeSquared <= TrigPolynomial._coefficientRelTolSquared * degree1CoefficientSizeSquared) {
+      // terms axx, axy, ayy are small compared to ax, ay, a so ignore them
+      PowerPolynomial.accumulate(coffs, this.C, ax);
+      PowerPolynomial.accumulate(coffs, this.S, ay);
+      PowerPolynomial.accumulate(coffs, this.W, a);
+      degree = 2;
+    } else if (degree2CoefficientSizeSquared - 2 * axx * ayy <= 2 * TrigPolynomial._coefficientRelTolSquared * degree2CoefficientSizeSquared) {
+      const c = 0.5 * (axx + ayy);
+      // The lhs above is (axx - ayy)^2 + axy^2. When the inequality is satisfied, both terms are "zero" (quadric is a circle).
+      // With c as a stable substitute for axx and ayy, we have on the unit circle x^2 + y^2 = 1:
+      // 0 = c * (x^2 + y^2) + ax*x + ay*y + a = ax*x + ay*y + a + c
+      PowerPolynomial.accumulate(coffs, this.C, ax);
+      PowerPolynomial.accumulate(coffs, this.S, ay);
+      PowerPolynomial.accumulate(coffs, this.W, a + c);
+      degree = 2;
+    } else {
       PowerPolynomial.accumulate(coffs, this.CW, ax);
       PowerPolynomial.accumulate(coffs, this.SW, ay);
       PowerPolynomial.accumulate(coffs, this.WW, a);
@@ -1232,23 +1249,19 @@ export class TrigPolynomial {
       PowerPolynomial.accumulate(coffs, this.CC, axx);
       PowerPolynomial.accumulate(coffs, this.SC, axy);
       degree = 4;
-    } else {
-      PowerPolynomial.accumulate(coffs, this.C, ax);
-      PowerPolynomial.accumulate(coffs, this.S, ay);
-      PowerPolynomial.accumulate(coffs, this.W, a);
-      degree = 2;
     }
     const maxCoff = Math.max(Math.abs(axx), Math.abs(ayy), Math.abs(axy), Math.abs(ax), Math.abs(ay), Math.abs(a));
     const b = this.solveAngles(coffs, degree, maxCoff, radians);
-    /*
-    for (const theta of angles) {
-      const c = theta.cos();
-      const s = theta.sin();
-      GeometryCoreTestIO.consoleLog({
+    /**
+    for (const theta of radians) {
+      const c = Math.cos(theta)
+      const s = Math.sin(theta)
+      console.log({
         angle: theta, co: c, si: s,
         f: axx * c * c + axy * c * s + ayy * s * s + ax * c + ay * s + a,
       });
-    } */
+    }
+    */
     return b;
   }
   /**
@@ -1317,9 +1330,7 @@ export class TrigPolynomial {
     const ac = 2.0 * (ux * cx + uy * cy - uw * cw);
     const as = 2.0 * (vx * cx + vy * cy - vw * cw);
     const a = cx * cx + cy * cy - cw * cw;
-    const status = this.solveUnitCircleImplicitQuadricIntersection(
-      acc, acs, ass, ac, as, a, ellipseRadians,
-    );
+    const status = this.solveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, as, a, ellipseRadians);
     for (const radians of ellipseRadians) {
       const cc = Math.cos(radians);
       const ss = Math.sin(radians);

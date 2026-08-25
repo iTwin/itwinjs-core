@@ -12,6 +12,7 @@ import { DefinitionContainer, DefinitionModel, DocumentListModel, Drawing, Drawi
 import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope } from "../../ElementTreeWalker";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { withEditTxn } from "../../EditTxn";
 
 // Test class that collects the results of a bottom-up tree walk
 class ElementTreeCollector extends ElementTreeBottomUp {
@@ -37,7 +38,7 @@ class ElementTreeCollector extends ElementTreeBottomUp {
   }
 
   public collect(topElement: Id64String): void {
-    this.processElementTree(topElement, ElementTreeWalkerScope.createTopScope(this._iModel, topElement));
+    this.processElementTree(topElement, ElementTreeWalkerScope.createTopScope(this.txn.iModel, topElement));
   }
 }
 
@@ -134,56 +135,58 @@ describe("ElementTreeWalker", () => {
                                           PhysicalObject, PhysicalObject, PhysicalObject (grouped)
     */
 
-    repositoryLinkId = IModelTestUtils.insertRepositoryLink(iModel, "test link", "foo", "bar");
-    jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "Job").insert();
+    withEditTxn(iModel, (txn) => {
+      repositoryLinkId = IModelTestUtils.insertRepositoryLink(txn, "test link", "foo", "bar");
+      jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "Job").insert(txn);
 
-    childSubject = Subject.insert(iModel, jobSubjectId, "Child Subject");
+      childSubject = Subject.insert(txn, jobSubjectId, "Child Subject");
 
-    definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
-    spatialCategoryId = SpatialCategory.insert(iModel, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
-    drawingDefinitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "DrawingDefinition");
-    drawingCategoryId = DrawingCategory.insert(iModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
-    drawingSubCategory1Id = SubCategory.insert(iModel, drawingCategoryId, "SubCategory1", new SubCategoryAppearance());
-    drawingSubCategory2Id = SubCategory.insert(iModel, drawingCategoryId, "SubCategory2", new SubCategoryAppearance());
+      definitionModelId = DefinitionModel.insert(txn, jobSubjectId, "Definition");
+      spatialCategoryId = SpatialCategory.insert(txn, definitionModelId, "SpatialCategory", new SubCategoryAppearance());
+      drawingDefinitionModelId = DefinitionModel.insert(txn, jobSubjectId, "DrawingDefinition");
+      drawingCategoryId = DrawingCategory.insert(txn, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
+      drawingSubCategory1Id = SubCategory.insert(txn, drawingCategoryId, "SubCategory1", new SubCategoryAppearance());
+      drawingSubCategory2Id = SubCategory.insert(txn, drawingCategoryId, "SubCategory2", new SubCategoryAppearance());
 
-    definitionContainerId = DefinitionContainer.insert(iModel, definitionModelId, Code.createEmpty());
-    nestedSpatialCategoryId = SpatialCategory.insert(iModel, definitionContainerId, "nested", {});
+      definitionContainerId = DefinitionContainer.insert(txn, definitionModelId, Code.createEmpty());
+      nestedSpatialCategoryId = SpatialCategory.insert(txn, definitionContainerId, "nested", {});
 
-    xsGroup = iModel.elements.insertElement({ classFullName: ExternalSourceGroup.classFullName, model: drawingDefinitionModelId, code: Code.createEmpty() });
-    xsElement = iModel.elements.insertElement({ classFullName: ExternalSource.classFullName, model: drawingDefinitionModelId, parent: new ElementOwnsChildElements(xsGroup), code: Code.createEmpty() });
+      xsGroup = txn.insertElement({ classFullName: ExternalSourceGroup.classFullName, model: drawingDefinitionModelId, code: Code.createEmpty() });
+      xsElement = txn.insertElement({ classFullName: ExternalSource.classFullName, model: drawingDefinitionModelId, parent: new ElementOwnsChildElements(xsGroup), code: Code.createEmpty() });
 
-    documentListModelId = DocumentListModel.insert(iModel, jobSubjectId, "Document");
-    assert.isTrue(Id64.isValidId64(documentListModelId));
-    drawingModelId = Drawing.insert(iModel, documentListModelId, "Drawing");
-    const drawingGraphicProps1: GeometricElement2dProps = {
-      classFullName: DrawingGraphic.classFullName,
-      model: drawingModelId,
-      category: drawingCategoryId,
-      code: Code.createEmpty(),
-      userLabel: "DrawingGraphic1",
-      geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
-      placement: { origin: Point2d.create(2, 2), angle: 0 },
-    };
-    drawingGraphicId1 = iModel.elements.insertElement(drawingGraphicProps1);
+      documentListModelId = DocumentListModel.insert(txn, jobSubjectId, "Document");
+      assert.isTrue(Id64.isValidId64(documentListModelId));
+      drawingModelId = Drawing.insert(txn, documentListModelId, "Drawing");
+      const drawingGraphicProps1: GeometricElement2dProps = {
+        classFullName: DrawingGraphic.classFullName,
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        userLabel: "DrawingGraphic1",
+        geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
+        placement: { origin: Point2d.create(2, 2), angle: 0 },
+      };
+      drawingGraphicId1 = txn.insertElement(drawingGraphicProps1);
 
-    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, PhysicalPartition.createCode(iModel, childSubject, "Physical"), false, childSubject);
-    const elementProps: GeometricElementProps = {
-      classFullName: "TestBim:TestPhysicalObject",
-      model: physicalModelId,
-      category: spatialCategoryId,
-      code: Code.createEmpty(),
-    };
-    const elementProps2: GeometricElementProps = {
-      classFullName: "TestBim:TestPhysicalObject",
-      model: physicalModelId,
-      category: nestedSpatialCategoryId,
-      code: Code.createEmpty(),
-    };
-    physicalObjectId1 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
-    physicalObjectId2 = iModel.elements.insertElement(iModel.elements.createElement(elementProps2).toJSON());
-    physicalObjectId3 = iModel.elements.insertElement(iModel.elements.createElement(elementProps).toJSON());
-    ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId2).insert();
-    ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId3).insert();
+      [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, PhysicalPartition.createCode(iModel, childSubject, "Physical"), false, childSubject);
+      const elementProps: GeometricElementProps = {
+        classFullName: "TestBim:TestPhysicalObject",
+        model: physicalModelId,
+        category: spatialCategoryId,
+        code: Code.createEmpty(),
+      };
+      const elementProps2: GeometricElementProps = {
+        classFullName: "TestBim:TestPhysicalObject",
+        model: physicalModelId,
+        category: nestedSpatialCategoryId,
+        code: Code.createEmpty(),
+      };
+      physicalObjectId1 = txn.insertElement(iModel.elements.createElement(elementProps).toJSON());
+      physicalObjectId2 = txn.insertElement(iModel.elements.createElement(elementProps2).toJSON());
+      physicalObjectId3 = txn.insertElement(iModel.elements.createElement(elementProps).toJSON());
+      txn.insertRelationship(ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId2).toJSON());
+      txn.insertRelationship(ElementGroupsMembers.create(iModel, physicalObjectId1, physicalObjectId3).toJSON());
+    });
 
     assert.isTrue(doesElementExist(iModel, repositoryLinkId));
     assert.equal(iModel.elements.getElement(jobSubjectId).parent?.id, IModel.rootSubjectId);
@@ -263,7 +266,9 @@ describe("ElementTreeWalker", () => {
     }
 
     // Test the deleteElementTree function
-    deleteElementTree(iModel, jobSubjectId);
+    withEditTxn(iModel, (txn) => {
+      deleteElementTree(txn, jobSubjectId);
+    });
 
     assert.isTrue(doesModelExist(iModel, IModel.repositoryModelId));
     assert.isTrue(doesModelExist(iModel, IModel.dictionaryId));
@@ -322,7 +327,9 @@ describe("ElementTreeWalker", () => {
     toPrune.add(drawingCategoryId);
     toPrune.add(physicalObjectId3);
 
-    deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    withEditTxn(iModel, (txn) => {
+      deleteElementSubTrees(txn, jobSubjectId, (elementId) => toPrune.has(elementId));
+    });
 
     assert.isFalse(doesElementExist(iModel, drawingCategoryId));
     assert.isFalse(doesElementExist(iModel, drawingSubCategory1Id));
@@ -382,7 +389,9 @@ describe("ElementTreeWalker", () => {
     toPrune.add(drawingDefinitionModelId);
     toPrune.add(documentListModelId); // (also get rid of the elements that use the definitions)
 
-    deleteElementSubTrees(iModel, jobSubjectId, (elementId) => toPrune.has(elementId));
+    withEditTxn(iModel, (txn) => {
+      deleteElementSubTrees(txn, jobSubjectId, (elementId) => toPrune.has(elementId));
+    });
 
     assert.isFalse(doesElementExist(iModel, drawingDefinitionModelId));
     assert.isFalse(doesModelExist(iModel, drawingDefinitionModelId));
@@ -416,3 +425,6 @@ describe("ElementTreeWalker", () => {
     assert.isTrue(doesModelExist(iModel, IModel.dictionaryId));
   });
 });
+
+
+

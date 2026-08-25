@@ -74,7 +74,7 @@ IModelHost.startup().then(async () => {
     if (!importer) {
       console.log("Failed to create bim file");
     } else {
-      const modelGroups = importer.importFilesFromDirectory(path.join("..", "..", "core", "geometry", "src", "test", "output", directoryTail));
+      const modelGroups = await importer.importFilesFromDirectory(path.join("..", "..", "core", "geometry", "src", "test", "output", directoryTail));
       let numModel = 0;
       for (const group of modelGroups) {
         numModel += group.modelNames.length;

@@ -1984,7 +1984,7 @@ describe("PresentationManager", () => {
               mergedFieldNames: [],
             } as ItemJSON,
           ],
-        } as ContentJSON;
+        };
         setup(addonResponse);
 
         // test
@@ -2047,7 +2047,7 @@ describe("PresentationManager", () => {
               mergedFieldNames: [],
             } as ItemJSON,
           ],
-        } as ContentJSON;
+        };
         setup(addonResponse);
 
         // test
@@ -2106,7 +2106,7 @@ describe("PresentationManager", () => {
               mergedFieldNames: [],
             } as ItemJSON,
           ],
-        } as ContentJSON;
+        };
         setup(addonResponse);
 
         // test
@@ -2164,7 +2164,7 @@ describe("PresentationManager", () => {
               mergedFieldNames: [],
             } as ItemJSON,
           ],
-        } as ContentJSON;
+        };
         setup(addonResponse);
 
         // test
@@ -2212,9 +2212,9 @@ describe("PresentationManager", () => {
                 [fieldName]: "test display value",
               },
               mergedFieldNames: [],
-            } as ItemJSON,
+            },
           ],
-        } as ContentJSON;
+        };
         setup(addonResponse);
 
         // test
@@ -2270,9 +2270,9 @@ describe("PresentationManager", () => {
               },
               displayValues: {},
               mergedFieldNames: [],
-            } as ItemJSON,
+            },
           ],
-        } as ContentJSON;
+        };
         setup(addonResponse);
 
         // test
@@ -2328,9 +2328,9 @@ describe("PresentationManager", () => {
               },
               displayValues: {},
               mergedFieldNames: [],
-            } as ItemJSON,
+            },
           ],
-        } as ContentJSON;
+        };
         setup(addonResponse);
 
         // test
@@ -3556,7 +3556,7 @@ describe("PresentationManager", () => {
               mergedFieldNames: [],
             }),
           ),
-        } as ContentJSON;
+        };
         setup(addonContentResponse);
 
         // test
@@ -3609,7 +3609,7 @@ describe("PresentationManager", () => {
               mergedFieldNames: [],
             }),
           ),
-        } as ContentJSON;
+        };
         setup(addonContentResponse);
 
         // test

@@ -11,17 +11,17 @@ import { join } from "path";
 import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseConnectionProps, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, EditTxnError, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps,
+  FontMap, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SaveChangesArgs, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, resolveNavPropId, SaveChangesArgs, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams,
   ViewStateLoadProps, ViewStateProps, ViewStoreError, ViewStoreRpc
@@ -32,6 +32,7 @@ import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs }
 import { ChannelControl, ChannelUpgradeOptions } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
+import { getRuntimeClass, reshapeInstanceRow } from "./internal/ECSqlInstanceReshaper";
 import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
@@ -55,6 +56,7 @@ import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
+import { BulkDeleteElementsArgs, BulkDeleteElementsResult, EditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
 import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from "./workspace/Settings";
@@ -68,16 +70,55 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
+import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
+import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
+import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
 
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
+
+/**
+ * Internal write surface used to preserve legacy implicit-transaction mutators while callers migrate to explicit [[EditTxn]] scopes.
+ *
+ * Unlike an explicit [[EditTxn]], this transaction is always available for writable iModels and cannot be manually started or ended.
+ * When implicit-write enforcement is enabled, attempts to write through this transaction are logged or rejected.
+ */
+class ImplicitWriteTxn extends EditTxn {
+  public constructor(iModel: IModelDb) {
+    super(iModel, "implicit");
+  }
+
+  public override start(): never {
+    throw new Error("ImplicitWriteTxn cannot be started");
+  }
+
+  public override end(_mode: "save" | "abandon" = "save", _args?: string | SaveChangesArgs): never {
+    throw new Error("ImplicitWriteTxn cannot be ended");
+  }
+
+  public override verifyWriteable(): void {
+    const enforcement = EditTxn.implicitWriteEnforcement;
+    if (enforcement === "allow")
+      return;
+
+    try {
+      EditTxnError.throwError("implicit-txn-write-disallowed", "Implicit transaction write is disallowed. Use an explicit EditTxn instead", this.iModel.key);
+    } catch (err) {
+      if (enforcement === "log") {
+        Logger.logError(loggerCategory, err);
+        return;
+      }
+
+      throw err;
+    }
+  }
+}
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
@@ -100,6 +141,51 @@ export interface InsertElementOptions {
    * @beta
    */
   forceUseId?: boolean;
+}
+
+/** Options for [[EditTxn.changeElementParent]].
+ * Changes the parent of an element within its model. The new parent must be in the same model as the
+ * element; cross-model reparenting is not allowed.
+ *
+ * See [[EditTxn.changeElementParent]] for the allowed and blocked cases.
+ * @beta
+ */
+export interface ChangeElementParentProps {
+  /** The Id of the element to reparent. */
+  id: Id64String;
+  /** The Id of the new parent element. Must be in the same model as the element. */
+  parentId: Id64String;
+}
+
+/** Options for [[EditTxn.changeElementModel]].
+ * Changes the model of a root element (one with no parent), making it a root element in the new model.
+ * The element's entire subtree moves with it, preserving the parent-child hierarchy.
+ *
+ * See [[EditTxn.changeElementModel]] for the allowed and blocked cases.
+ * @beta
+ */
+export interface ChangeElementModelProps {
+  /** The Id of the element to move. Must be a root element (no parent). */
+  id: Id64String;
+  /** The Id of the target model. The element becomes a root element (no parent) in this model. */
+  modelId: Id64String;
+}
+
+/** Options for streaming the aspects owned by a set of elements.
+ * @see [[IModelDb.Elements.queryAspects]]
+ * @beta
+ */
+export interface QueryAspectOptions {
+  /** The elements whose aspects to return. Duplicate Ids are ignored. */
+  elementIds: Id64Arg;
+  /** Return only instances of this aspect class or its subclasses. */
+  aspectClassFullName?: string;
+  /** Omit instances of these exact aspect classes. Subclasses are not automatically omitted. */
+  excludedAspectClassFullNames?: ReadonlySet<string>;
+  /** If true, order the results so that aspects owned by the same element are contiguous. */
+  groupByOwner?: boolean;
+  /** If true, run the query on the primary connection so that uncommitted changes in an edit transaction are visible. */
+  usePrimaryConn?: boolean;
 }
 
 /** Options supplied to [[IModelDb.clearCaches]].
@@ -406,7 +492,10 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
+  // Created lazily on the first getSchemaView call. Owns the SchemaView's lifetime and does all its
+  // data access through the SchemaViewDataProvider implemented below.
+  private _schemaViewManager?: SchemaViewManager;
+  /** @deprecated in 5.0.0 - might be removed in next major version. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
   private _workspace?: OwnedWorkspace;
@@ -418,6 +507,32 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected _codeService?: CodeService;
+
+  /**
+   * The always-available implicit transaction for this iModel.
+   *
+   * Legacy mutating APIs route through this transaction for backwards compatibility until they are fully migrated to explicit [[EditTxn]] usage.
+   * @internal
+   */
+  public readonly [_implicitTxn]: EditTxn;
+
+  /** @internal */
+  public [_activeTxn]: EditTxn | undefined;
+
+  /** Returns the transaction to use for additional edits from an element, model, or aspect callback.
+   * In callbacks whose arguments provide an [[IModelDb]] but no transaction, obtain this transaction through
+   * `arg.iModel.getIndirectTxn()` and pass it to APIs that accept an [[EditTxn]].
+   *
+   * If an explicit transaction is active, this returns that transaction. Otherwise, it returns the implicit transaction
+   * used by legacy write paths. Callbacks that receive an `indirectEditTxn` argument should use that transaction directly.
+   *
+   * @note The operation that invoked the callback owns the transaction. Callback implementations must not invoke transaction
+   * lifecycle methods such as [[EditTxn.start]], [[EditTxn.end]], [[EditTxn.saveChanges]], [[EditTxn.abandonChanges]], or [[EditTxn.onClose]].
+   * @beta
+   */
+  public getIndirectTxn(): EditTxn {
+    return this[_activeTxn] ?? this[_implicitTxn];
+  }
 
   /** @alpha */
   public get codeService() { return this._codeService; }
@@ -474,7 +589,7 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].restartDefaultTxn();
   }
 
-  /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
+  /** @deprecated in 5.0.0 - might be removed in next major version. Use [[fonts]]. */
   public get fontMap(): FontMap { // eslint-disable-line @typescript-eslint/no-deprecated
     return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap())); // eslint-disable-line @typescript-eslint/no-deprecated
   }
@@ -525,8 +640,9 @@ export abstract class IModelDb extends IModel {
     // Make closeIModel available so their code doesn't break.
     (this[_nativeDb] as any).closeIModel = () => {
       if (!this.isReadonly)
-        this.saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
+        this[_nativeDb].saveChanges(); // preserve old behavior of closeIModel that was removed when renamed to closeFile
 
+      this[_activeTxn] = undefined;
       this[_nativeDb].closeFile();
     };
 
@@ -535,11 +651,14 @@ export abstract class IModelDb extends IModel {
     this[_resetIModelDb]();
     IModelDb._openDbs.set(this._fileKey, this);
 
+    this[_implicitTxn] = new ImplicitWriteTxn(this);
+    this[_activeTxn] = undefined;
+
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
         IModelDb._openDbs.forEach((db) => { // N.B.: db.close() removes from _openedDbs
           try {
-            db.abandonChanges();
+            db[_nativeDb].abandonChanges();
             db.close();
           } catch { }
         });
@@ -570,8 +689,8 @@ export abstract class IModelDb extends IModel {
   }
   /**
    * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
-   * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
-   * @param alias identifer that was used in the call to [[attachDb]]
+   * @note There are some reserved table names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+   * @param alias identifier that was used in the call to [[attachDb]]
    *
    * @example [[include:IModelDb_attachDb.code]]
    *
@@ -590,19 +709,42 @@ export abstract class IModelDb extends IModel {
     if (!this.isOpen)
       return; // don't continue if already closed
 
+    // Give the active txn a chance to save or abandon before beforeClose() cleanup runs.
+    // StandaloneDb.beforeClose() saves any unsaved changes, so onClose() must run first so
+    // subclasses that override onClose() to abandon changes can do so before that save.
+    if (!this.isReadonly)
+      (this[_activeTxn] ?? this[_implicitTxn]).onClose();
+
     this.beforeClose();
+    this[_activeTxn] = undefined;
+
     if (options?.optimize)
       this.optimize();
 
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace?.close();
+    this.views[_close]();
     this.locks[_close]();
     this._locks = undefined;
     this._codeService?.close();
     this._codeService = undefined;
-    if (!this.isReadonly)
-      this.saveChanges();
     this[_nativeDb].closeFile();
+  }
+
+  private saveSchemaChanges(args?: string): void {
+    if (!this[_nativeDb].hasUnsavedChanges())
+      return;
+
+    const saveArgs = typeof args === "string" ? { description: args } : args;
+    saveArgs === undefined ? this[_nativeDb].saveChanges() : this[_nativeDb].saveChanges(JSON.stringify(saveArgs));
+  }
+
+  private abandonSchemaChanges(): void {
+    if (!this[_nativeDb].hasUnsavedChanges())
+      return;
+
+    this.clearCaches({ instanceCachesOnly: true });
+    this[_nativeDb].abandonChanges();
   }
 
   /** Optimize this iModel by vacuuming, and analyzing.
@@ -777,7 +919,7 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [[createQueryReader]] instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use [[createQueryReader]] instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -808,7 +950,7 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [[createQueryReader]] instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use [[createQueryReader]] instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -838,11 +980,12 @@ export abstract class IModelDb extends IModel {
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
+   * Should be used when we donot want true step by step behaviour and want to take advantage of caching capabilities of the reader.
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this[_nativeDb].isOpen())
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
 
     const executor = {
       execute: async (request: DbQueryRequest) => {
@@ -850,6 +993,48 @@ export abstract class IModelDb extends IModel {
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
+  }
+
+  /** Allow to execute query and read results along with meta data. The result are stepped one by one.
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   * - [ECSQL Row Format]($docs/learning/ECSQLRowFormat)
+   * @param ecsql The ECSQL query to execute.
+   * @param callback the callback to invoke on the prepared ECSqlReader
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param config Allow to specify certain flags which control how query is executed.
+   * @returns the value returned by `callback`.
+   * @throws IModelError if db is not open.
+   * Use this method for true step-by-step row consumption without intermediate result or page caching.
+   * The prepared ECSQL statement may be reused from the statement cache between completed calls.
+   * @beta
+   * */
+  public withQueryReader<T>(ecsql: string, callback: (reader: ECSqlSyncReader) => T, params?: QueryBinder, config?: SynchronousQueryOptions): T {
+    if (!this[_nativeDb].isOpen())
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_NOTOPEN, "db not open");
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? new ECSqlStatement();
+    const executor = new ECSqlRowExecutor(this, stmt, loggerCategory);
+    const release = () => {
+      executor[Symbol.dispose]();
+      releaseECSqlStatement(stmt, this._statementCache, loggerCategory, executor.canCacheStatement);
+    };
+    try {
+      const reader = new ECSqlSyncReader(executor, ecsql, params, config);
+      const val = callback(reader);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err: any) {
+      release();
+      throw err;
+    }
   }
 
   /**
@@ -936,7 +1121,7 @@ export abstract class IModelDb extends IModel {
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
 
     try {
-      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
@@ -957,7 +1142,7 @@ export abstract class IModelDb extends IModel {
     const where = [...categoryIds].join(",");
     const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
     try {
-      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const row of this.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
         result.push(row.toRow() as SubCategoryResultRow);
       }
     } catch {
@@ -994,19 +1179,17 @@ export abstract class IModelDb extends IModel {
       sql += ` OFFSET ${params.offset}`;
 
     const ids = new Set<string>();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    this.withPreparedStatement(sql, (stmt) => {
-      if (params.bindings)
-        stmt.bindValues(params.bindings);
-      for (const row of stmt) {
-        if (row.id !== undefined) {
-          ids.add(row.id);
+    this.withQueryReader(sql, (reader) => {
+      for (const row of reader) {
+        const id = row[0];
+        if (id !== undefined) {
+          ids.add(id);
           if (ids.size > IModelDb.maxLimit) {
             throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement");
           }
         }
       }
-    });
+    }, QueryBinder.fromSkippingNullish(params.bindings));
     return ids;
   }
 
@@ -1027,6 +1210,7 @@ export abstract class IModelDb extends IModel {
       this._jsClassMap = undefined;
       this._schemaMap = undefined;
       this._schemaContext = undefined;
+      this._schemaViewManager?.reset();
       this[_nativeDb].clearECDbCache();
     }
     this.elements[_cache].clear();
@@ -1040,10 +1224,10 @@ export abstract class IModelDb extends IModel {
    * ``` ts
    * [[include:IModelDb.updateProjectExtents]]
    * ```
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.updateProjectExtents instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
-    this.projectExtents = newExtents;
-    this.updateIModelProps();
+    this[_implicitTxn].updateProjectExtents(newExtents);
   }
 
   /** Compute an appropriate project extents for this iModel based on the ranges of all spatial elements.
@@ -1065,15 +1249,18 @@ export abstract class IModelDb extends IModel {
     };
   }
 
-  /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.  */
+  /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.updateEcefLocation instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+   */
   public updateEcefLocation(ecef: EcefLocation) {
-    this.setEcefLocation(ecef);
-    this.updateIModelProps();
+    this[_implicitTxn].updateEcefLocation(ecef);
   }
 
-  /** Update the IModelProps of this iModel in the database. */
+  /** Update the IModelProps of this iModel in the database.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.updateIModelProps instead, within an explicit EditTxn scope (or via withEditTxn).
+   */
   public updateIModelProps(): void {
-    this[_nativeDb].updateIModelProps(this.toJSON());
+    this[_implicitTxn].updateIModelProps();
   }
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
@@ -1082,6 +1269,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveChanges(description?: string): void;
 
@@ -1092,46 +1280,19 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.saveChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveChanges(args: SaveChangesArgs): void;
 
-  /** Commit unsaved changes in memory as a Txn to this iModelDb.
-   * @internal
-   * @param descriptionOrArgs Optionally provide description or [[SaveChangesArgs]] args for the changes.
-   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
-   * @note This will not push changes to the iModelHub.
-   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
-   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
-   */
   public saveChanges(descriptionOrArgs?: string | SaveChangesArgs): void {
-    if (this.openMode === OpenMode.Readonly)
-      throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
-
-    if (this.isBriefcaseDb()) {
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
-      }
-    }
-    const args = typeof descriptionOrArgs === "string" ? { description: descriptionOrArgs } : descriptionOrArgs;
-    if (!this[_nativeDb].hasUnsavedChanges()) {
-      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
-    }
-
-    const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
-    if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
-      throw new IModelError(stat, `Could not save changes due to propagation failure.`);
-
-    if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, `Could not save changes (${args?.description})`);
+    this[_implicitTxn].saveChanges(descriptionOrArgs);
   }
 
   /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
-   * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.abandonChanges instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
   */
   public abandonChanges(): void {
-    // Clears instanceKey caches only, instead of all of the backend caches, since the changes are not saved yet
-    this.clearCaches({ instanceCachesOnly: true });
-    this[_nativeDb].abandonChanges();
+    this[_implicitTxn].abandonChanges();
   }
 
   /**
@@ -1144,7 +1305,7 @@ export abstract class IModelDb extends IModel {
    */
   public performCheckpoint() {
     if (!this.isReadonly) {
-      this.saveChanges();
+      this[_nativeDb].saveChanges();
       this.clearCaches();
       this[_nativeDb].concurrentQueryShutdown();
       this[_nativeDb].performCheckpoint();
@@ -1152,7 +1313,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal
-   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use `txns.reverseTxns`.
+   * @deprecated in 4.8 - might be removed in next major version. Use `txns.reverseTxns`.
    */
   public reverseTxns(numOperations: number): IModelStatus {
     return this[_nativeDb].reverseTxns(numOperations);
@@ -1188,7 +1349,7 @@ export abstract class IModelDb extends IModel {
    *
    * If the removal was successful, the database is automatically saved to disk.
    * @param schemaNames Array of schema names to drop
-   * @throws [IModelError]($common) if the database if the operation failed.
+   * @throws [[IModelError]] if the operation fails.
    * @alpha
    */
   public async dropSchemas(schemaNames: string[]): Promise<void> {
@@ -1203,10 +1364,10 @@ export abstract class IModelDb extends IModel {
 
     try {
       this[_nativeDb].dropSchemas(schemaNames);
-      this.saveChanges(`dropped unused schemas`);
+      this.saveSchemaChanges("dropped unused schemas");
     } catch (error: any) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
-      this.abandonChanges();
+      this.abandonSchemaChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
     } finally {
       await this.locks.releaseAllLocks();
@@ -1233,8 +1394,9 @@ export abstract class IModelDb extends IModel {
     };
 
     try {
-      if (callback?.preSchemaImportCallback) {
-        const callbackResult = await callback.preSchemaImportCallback(context);
+      const preSchemaImportCallback = callback?.preSchemaImportCallback;
+      if (preSchemaImportCallback) {
+        const callbackResult = await preSchemaImportCallback(context);
         callbackResources.transformStrategy = callbackResult.transformStrategy;
 
         if (callbackResult.transformStrategy === DataTransformationStrategy.Snapshot) {
@@ -1248,12 +1410,11 @@ export abstract class IModelDb extends IModel {
           callbackResources.cachedData = callbackResult.cachedData;
         }
 
-        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
-          this.saveChanges("Save changes from schema import pre callback");
-        }
+        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
+          this.saveSchemaChanges("Save changes from schema import pre callback");
       }
     } catch (callbackError: any) {
-      this.abandonChanges();
+      this.abandonSchemaChanges();
       this.cleanupSnapshot(callbackResources);
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute preSchemaImportCallback: ${callbackError.message}`);
     }
@@ -1271,13 +1432,13 @@ export abstract class IModelDb extends IModel {
     }
 
     try {
-      if (callback?.postSchemaImportCallback)
-        await callback.postSchemaImportCallback(context);
-      if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
-        this.saveChanges("Save changes from schema import post callback");
-      }
+      const postSchemaImportCallback = callback?.postSchemaImportCallback;
+      if (postSchemaImportCallback)
+        await postSchemaImportCallback(context);
+      if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
+        this.saveSchemaChanges("Save changes from schema import post callback");
     } catch (callbackError: any) {
-      this.abandonChanges();
+      this.abandonSchemaChanges();
       throw new IModelError(callbackError.errorNumber ?? IModelStatus.BadRequest, `Failed to execute postSchemaImportCallback: ${callbackError.message}`);
     } finally {
       // Always clean up snapshot, whether success or error
@@ -1291,7 +1452,6 @@ export abstract class IModelDb extends IModel {
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
-
     // BriefcaseDb-specific validation checks
     if (this.isBriefcaseDb()) {
       if (this.txns.rebaser.isRebasing) {
@@ -1313,14 +1473,14 @@ export abstract class IModelDb extends IModel {
     }
 
     if (options?.channelUpgrade) {
+      const channelUpgrade = options.channelUpgrade;
       try {
-        await this.channels.upgradeChannel(options.channelUpgrade, this, options.data);
+        await this.channels.upgradeChannel(channelUpgrade, this, options.data);
         // If semantic rebase is enabled and channel upgrade made changes, save them
-        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase) {
-          this.saveChanges();
-        }
+        if (this.isBriefcaseDb() && IModelHost.useSemanticRebase)
+          this.saveSchemaChanges();
       } catch (error) {
-        this.abandonChanges();
+        this.abandonSchemaChanges();
         throw error;
       }
     }
@@ -1333,13 +1493,13 @@ export abstract class IModelDb extends IModel {
     if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
-        this.saveChanges();
+        this.saveSchemaChanges();
 
         try {
           nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
           if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonChanges();
+            this.abandonSchemaChanges();
             if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
             try {
@@ -1393,13 +1553,16 @@ export abstract class IModelDb extends IModel {
       await this.postSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, resources: preSchemaImportCallbackResult, data: options.data });
   }
 
-  /** Import an ECSchema. On success, the schema definition is stored in the iModel.
+  /** Import ECSchema(s). On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
-   * @param schemaFileName  array of Full paths to ECSchema.xml files to be imported.
+   * @param schemaFileNames  Files containing serialized ECSchemas.
    * @param {SchemaImportOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
+   * @note To turn on native logging, use NativeLoggerCategory and a console appender.
+   * - For metadata differences between existing and imported schemas, turn on "ECDb" category.
+   * - For import details, turn on "SchemaImport" category.
    * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
    * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
@@ -1552,7 +1715,7 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from the `iModel` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` from the `iModel` instead.
    *
    * @example
    * ```typescript
@@ -1560,7 +1723,8 @@ export abstract class IModelDb extends IModel {
    * const classMetaData: EntityMetaData | undefined = iModel.classMetaDataRegistry.find("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1583,7 +1747,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Allows locally registering a schema for this imodel, in constrast to [Schemas.registerSchema] which is a global operation
+   * Allows locally registering a schema for this imodel, in contrast to [Schemas.registerSchema] which is a global operation
    */
   public get schemaMap(): SchemaMap {
     if (this._schemaMap === undefined)
@@ -1593,7 +1757,11 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel
+   * Gets the context that allows accessing the metadata (`@itwin/ecschema-metadata` package) of this iModel.
+   *
+   * For runtime read-only access - class/property iteration, IS-A checks, navigating relationships, KOQ lookups -
+   * prefer [[getSchemaView]]. `schemaContext` remains the right choice when you need schema authoring
+   * (via `@itwin/ecschema-editing`), custom-attribute deserialization, or the full ecschema-metadata object graph.
    * @public @preview
    */
   public get schemaContext(): SchemaContext {
@@ -1609,6 +1777,81 @@ export abstract class IModelDb extends IModel {
     return this._schemaContext;
   }
 
+  /** Get the schema view for this iModel. The view is built lazily on
+   * first call by fetching compact binary schema data through
+   * the ConcurrentQuery thread pool.
+   *
+   * The returned `SchemaView` is a lightweight, read-only, synchronous API for
+   * navigating schema metadata - classes, properties, relationships, enumerations, etc.
+   * It is the recommended default for runtime read-only metadata access and is significantly
+   * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
+   * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
+   *
+   * Every call shares one accumulating view instance and concurrent calls are serialized, so a
+   * caller never observes a partially loaded view. The instance is discarded by [[clearCaches]],
+   * for example after a schema import; the next call builds a new one. See
+   * [GetSchemaViewArgs]($ecschema-metadata) for the arguments.
+   * @beta
+   */
+  public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
+    this._schemaViewManager ??= new SchemaViewManager(this._createSchemaViewDataProvider());
+    return this._schemaViewManager.getSchemaView(args);
+  }
+
+  /** The [SchemaViewDataProvider]($ecschema-metadata) backing this iModel's [[getSchemaView]]: the
+   * transport-specific half of schema-view loading. The backend always uses the latest blob version
+   * since it is strictly coupled with native code.
+   */
+  private _createSchemaViewDataProvider(): SchemaViewDataProvider {
+    return {
+      fetchFullBlob: async () => this._fetchSchemaBlob("PRAGMA schema_view"),
+      // Names are ECNames, so a comma can never occur in one. Native re-validates each token as an
+      // ECName and fails the pragma on an unknown name.
+      fetchFragmentBlob: async (schemaNames) => this._fetchSchemaBlob(`PRAGMA schema_view_fragment('${schemaNames.join(",")}')`),
+      fetchManifest: async () => {
+        const schemaRows: SchemaManifestSchemaRow[] = [];
+        const schemaSql = "SELECT ECInstanceId, Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef";
+        for await (const row of this.createQueryReader(schemaSql)) {
+          // ECInstanceId arrives as a hex Id64String. `ec_` metadata rowids carry no briefcase
+          // prefix, so the local id is the full value.
+          schemaRows.push({ ecInstanceId: Id64.getLocalId(row[0]), name: row[1], versionMajor: row[2], versionWrite: row[3], versionMinor: row[4] });
+        }
+
+        const referenceRows: SchemaManifestReferenceRow[] = [];
+        const referenceSql = "SELECT SourceECInstanceId, TargetECInstanceId FROM meta.SchemaHasSchemaReferences";
+        for await (const row of this.createQueryReader(referenceSql))
+          referenceRows.push({ sourceECInstanceId: Id64.getLocalId(row[0]), targetECInstanceId: Id64.getLocalId(row[1]) });
+
+        return SchemaManifest.fromRows(schemaRows, referenceRows);
+      },
+      fetchSchemaToken: async () => {
+        const reader = this.createQueryReader("PRAGMA checksum(schema_token)");
+        const result = await reader.next();
+        if (result.done)
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "PRAGMA checksum(schema_token) returned no rows");
+        return result.value.sha3_256 as string;
+      },
+    };
+  }
+
+  /** Fetch one schema-view blob (full or fragment). Both `PRAGMA schema_view` and
+   * `PRAGMA schema_view_fragment` return a single row with the same columns. */
+  private async _fetchSchemaBlob(pragma: string): Promise<SchemaViewBlob> {
+    // Only call reader.next() once - do NOT use `for await` on PRAGMA results. ConcurrentQuery wraps
+    // regular ECSQL in LIMIT/OFFSET for pagination but skips this for PRAGMAs; if the serialized result
+    // exceeds the memory threshold the response is marked "Partial", and a `for await` loop would
+    // re-issue the same PRAGMA forever since PRAGMAs don't support OFFSET-based pagination.
+    const reader = this.createQueryReader(pragma);
+    const result = await reader.next();
+    if (result.done)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned no rows`);
+    const data = result.value.data as Uint8Array | undefined;
+    const token = result.value.schemaToken as string | undefined;
+    if (data === undefined || data === null)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `${pragma} returned null data column`);
+    return { data, schemaToken: token ?? "" };
+  }
+
   /** Get the linkTableRelationships for this IModel */
   public get relationships(): Relationships {
     return this._relationships || (this._relationships = new Relationships(this));
@@ -1622,7 +1865,7 @@ export abstract class IModelDb extends IModel {
    * @param sql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * @deprecated in 4.11 - might be removed in next major version. Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public prepareStatement(sql: string, logErrors = true): ECSqlStatement {
@@ -1635,7 +1878,7 @@ export abstract class IModelDb extends IModel {
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @returns `undefined` if there is a problem preparing the statement.
-   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * @deprecated in 4.11 - might be removed in next major version. Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
@@ -1686,7 +1929,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1694,7 +1937,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData = imodel.getMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName", "ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1713,7 +1957,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` on the iModel and call `view.findClass(...)` instead.
    *
    * @example
    *  * ```typescript
@@ -1721,7 +1965,8 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityMetaData | undefined = imodel.tryGetMetaData("SchemaName:ClassName");
    *
    * // Replacement:
-   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * const view = await imodel.getSchemaView();
+   * const cls = view.findClass("SchemaName:ClassName");
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1741,7 +1986,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `forEachProperty` instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1751,9 +1996,10 @@ export abstract class IModelDb extends IModel {
    * }, false);
    *
    * // Replacement:
-   * await IModelDb.forEachProperty(imodel, "TestDomain.TestDomainClass", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * }, false);
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.findClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1768,7 +2014,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `forEachProperty` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use `getSchemaView()` on the iModel and iterate `view.findClass(classFullName)?.getProperties()` instead.
    *
    * @example
    * ```typescript
@@ -1778,9 +2024,10 @@ export abstract class IModelDb extends IModel {
    * });
    *
    * // Replacement:
-   * imodel.schemaContext.forEachProperty("BisCore:Element", true, (propName: string, property: Property) => {
-   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
-   * });
+   * const view = await imodel.getSchemaView();
+   * for (const property of view.findClass("BisCore:Element")?.getProperties() ?? []) {
+   *   console.log(`Property name: ${property.name}, Kind: ${property.kind}`);
+   * }
    * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1800,7 +2047,7 @@ export abstract class IModelDb extends IModel {
 
   /**
    * @internal
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from `iModel` instead to get metadata.
+   * @deprecated in 5.0 - might be removed in next major version. Please use `schemaContext` from `iModel` instead to get metadata.
    */
   private loadMetaData(classFullName: string) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1860,17 +2107,15 @@ export abstract class IModelDb extends IModel {
    */
   public querySchemaVersionNumbers(schemaName: string): ECVersion | undefined {
     const sql = `SELECT VersionMajor,VersionWrite,VersionMinor FROM ECDbMeta.ECSchemaDef WHERE Name=:schemaName LIMIT 1`;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.withPreparedStatement(sql, (statement: ECSqlStatement): ECVersion | undefined => {
-      statement.bindString("schemaName", schemaName);
-      if (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const read: number = statement.getValue(0).getInteger(); // ECSchemaDef.VersionMajor --> semver.major
-        const write: number = statement.getValue(1).getInteger(); // ECSchemaDef.VersionWrite --> semver.minor
-        const minor: number = statement.getValue(2).getInteger(); // ECSchemaDef.VersionMinor --> semver.patch
+    return this.withQueryReader(sql, (reader): ECVersion | undefined => {
+      if (reader.step()) {
+        const read: number = reader.current[0]; // ECSchemaDef.VersionMajor --> semver.major
+        const write: number = reader.current[1]; // ECSchemaDef.VersionWrite --> semver.minor
+        const minor: number = reader.current[2]; // ECSchemaDef.VersionMinor --> semver.patch
         return new ECVersion(read, write, minor);
       }
       return undefined;
-    });
+    }, new QueryBinder().bindString("schemaName", schemaName));
   }
 
   /** Returns true if the specified schema exists in the iModel and is no older than the specified minimum version.
@@ -1920,27 +2165,19 @@ export abstract class IModelDb extends IModel {
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.saveFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
-    if (this.isBriefcaseDb()) {
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot save file property while in an indirect change scope");
-      }
-    }
-    this[_nativeDb].saveFileProperty(prop, strValue, blobVal);
+    this[_implicitTxn].saveFileProperty(prop, strValue, blobVal);
   }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.deleteFileProperty instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public deleteFileProperty(prop: FilePropertyProps): void {
-    if (this.isBriefcaseDb()) {
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot delete file property while in an indirect change scope");
-      }
-    }
-    this[_nativeDb].saveFileProperty(prop, undefined, undefined);
+    this[_implicitTxn].deleteFileProperty(prop);
   }
 
   /** Query for the next available major id for a "file property" from this iModel.
@@ -2163,29 +2400,19 @@ export abstract class IModelDb extends IModel {
    * @param name The name for the SettingDictionary. If a dictionary by that name already exists in the iModel, its value is replaced.
    * @param dict The SettingDictionary object to stringify and save.
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
-   * @beta
+   * @see [[Settings.addDictionary]] to register a dictionary for the current session only without persisting it.
+   * @beta @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.saveSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public saveSettingDictionary(name: string, dict: SettingsContainer) {
-    this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
-      stmt.bindString(1, IModelDb._settingPropNamespace);
-      stmt.bindString(2, name);
-      stmt.bindString(3, JSON.stringify(dict));
-      stmt.stepForWrite();
-    });
-    this.saveChanges("add settings");
+    this[_implicitTxn].saveSettingDictionary(name, dict);
   }
 
   /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
    * @param name The name of the dictionary to delete.
-   * @beta
+   * @beta @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use EditTxn.deleteSettingDictionary instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
    */
   public deleteSettingDictionary(name: string) {
-    this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
-      stmt.bindString(1, IModelDb._settingPropNamespace);
-      stmt.bindString(2, name);
-      stmt.stepForWrite();
-    });
-    this.saveChanges("delete settings");
+    this[_implicitTxn].deleteSettingDictionary(name);
   }
 
   /** Load all setting dictionaries in this iModel into `this.workspace.settings` */
@@ -2269,6 +2496,17 @@ export abstract class IModelDb extends IModel {
    */
   public exportSchemas(outputDirectory: LocalFileName): void {
     processSchemaWriteStatus(this[_nativeDb].exportSchemas(outputDirectory));
+  }
+
+  /** Serializes the specified ECSchema to an XML string.
+   * @param schemaName The name of the schema to serialize.
+   * @param ecSpecVersion The ECXml specification version to use for the output XML.
+   * @returns The schema XML string, or `undefined` if the schema was not found or serialization failed.
+   * @beta
+   */
+  public exportSchemaXmlString(schemaName: string, ecSpecVersion?: ECSpecVersion): string | undefined {
+    const nativeVersion = ecSpecVersion === undefined ? undefined : ((ecSpecVersion.readVersion << 16) | ecSpecVersion.writeVersion);
+    return this[_nativeDb].schemaToXmlString(schemaName, nativeVersion);
   }
 
   /** Attempt to simplify the geometry stream of a single [[GeometricElement]] or [[GeometryPart]] as specified by `args`.
@@ -2374,14 +2612,12 @@ export namespace IModelDb {
      */
     public queryLastModifiedTime(modelId: Id64String): string {
       const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement) => {
-        statement.bindId("modelId", modelId);
-        if (DbResult.BE_SQLITE_ROW === statement.step()) {
-          return statement.getValue(0).getDateTime();
+      return this._iModel.withQueryReader(sql, (reader) => {
+        if (reader.step()) {
+          return reader.current[0];
         }
         throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Model ${modelId}`);
-      });
+      }, new QueryBinder().bindId("modelId", modelId));
     }
 
     /** Get the Model with the specified identifier.
@@ -2481,33 +2717,20 @@ export namespace IModelDb {
     /** Insert a new model.
      * @param props The data for the new model.
      * @returns The newly inserted model's Id.
-     * @throws [[IModelError]] if unable to insert the model.
+     * @throws [[IModelError]] if insertion fails.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.insertModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertModel(props: ModelProps): Id64String {
-      try {
-        return props.id = this._iModel[_nativeDb].insertModel(props);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
-        error.cause = err;
-        throw error;
-      }
+      return this._iModel[_implicitTxn].insertModel(props);
     }
 
     /** Update an existing model.
      * @param props the properties of the model to change
-     * @throws [[IModelError]] if unable to update the model.
+     * @throws [[IModelError]] if update fails.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateModel(props: UpdateModelOptions): void {
-      try {
-        if (props.id)
-          this[_cache].delete(props.id);
-
-        this._iModel[_nativeDb].updateModel(props);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error updating model [${err.message}], id: ${props.id}`);
-        error.cause = err;
-        throw error;
-      }
+      this._iModel[_implicitTxn].updateModel(props);
     }
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
@@ -2515,32 +2738,21 @@ export namespace IModelDb {
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
      * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
      * @note This will throw IModelError with [IModelStatus.VersionTooOld]($core-bentley) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
-     * @throws IModelError if unable to update the geometry guid.
+     * @throws [[IModelError]] if the update fails.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateGeometryGuid instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
-      this._iModel.models[_cache].delete(modelId);
-      const error = this._iModel[_nativeDb].updateModelGeometryGuid(modelId);
-      if (error !== IModelStatus.Success)
-        throw new IModelError(error, `Error updating geometry guid for model ${modelId}`);
+      this._iModel[_implicitTxn].updateGeometryGuid(modelId);
     }
 
     /** Delete one or more existing models.
      * @param ids The Ids of the models to be deleted
-     * @throws [[IModelError]]
+     * @throws [[IModelError]] if deletion fails.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteModel(ids: Id64Arg): void {
-      Id64.toIdSet(ids).forEach((id) => {
-        try {
-          this[_cache].delete(id);
-          this[_instanceKeyCache].deleteById(id);
-          this._iModel[_nativeDb].deleteModel(id);
-        } catch (err: any) {
-          const error = new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
-          error.cause = err;
-          throw error;
-        }
-      });
+      this._iModel[_implicitTxn].deleteModel(ids);
     }
 
     /** For each specified [[GeometricModel]], attempts to obtain the union of the volumes of all geometric elements within that model.
@@ -2758,13 +2970,11 @@ export namespace IModelDb {
      */
     public queryLastModifiedTime(elementId: Id64String): string {
       const sql = "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
-        statement.bindId("elementId", elementId);
-        if (DbResult.BE_SQLITE_ROW === statement.step())
-          return statement.getValue(0).getDateTime();
+      return this._iModel.withQueryReader<string>(sql, (reader): string => {
+        if (reader.step())
+          return reader.current[0];
         throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`);
-      });
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Create a new instance of an element.
@@ -2776,25 +2986,15 @@ export namespace IModelDb {
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
-     * @throws [[ITwinError]] if unable to insert the element.
+     * @throws [[ITwinError]] if insertion fails.
      * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
      * if you intend to continue working with it. That will ensure its values reflect the persistent state.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.insertElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
-      try {
-        this[_cache].delete({
-          id: elProps.id,
-          federationGuid: elProps.federationGuid,
-          code: elProps.code,
-        });
-        return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
-      } catch (err: any) {
-        err.message = `Error inserting element [${err.message}]`;
-        err.metadata = { elProps };
-        throw err;
-      }
+      return this._iModel[_implicitTxn].insertElement(elProps, options);
     }
 
     /**
@@ -2806,131 +3006,48 @@ export namespace IModelDb {
      * @param elProps the properties of the element to update.
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
-     * @throws [[ITwinError]] if unable to update the element.
+     * @throws [[ITwinError]] if update fails.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
-      try {
-        if (elProps.id) {
-          this[_instanceKeyCache].deleteById(elProps.id);
-        } else {
-          this[_instanceKeyCache].delete({
-            federationGuid: elProps.federationGuid,
-            code: elProps.code,
-          });
-        }
-        this[_cache].delete({
-          id: elProps.id,
-          federationGuid: elProps.federationGuid,
-          code: elProps.code,
-        });
-        this._iModel[_nativeDb].updateElement(elProps);
-      } catch (err: any) {
-        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
-        err.metadata = { elProps };
-        throw err;
-      }
+      this._iModel[_implicitTxn].updateElement(elProps);
     }
 
     /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[ITwinError]]
      * @see deleteDefinitionElements
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteElement instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteElement(ids: Id64Arg): void {
-      const iModel = this._iModel;
-      Id64.toIdSet(ids).forEach((id) => {
-        try {
-          this[_cache].delete({ id });
-          this[_instanceKeyCache].deleteById(id);
-          iModel[_nativeDb].deleteElement(id);
-        } catch (err: any) {
-          err.message = `Error deleting element [${err.message}], id: ${id}`;
-          err.metadata = { elementId: id };
-          throw err;
-        }
-      });
+      this._iModel[_implicitTxn].deleteElement(ids);
+    }
+
+    /**
+     * Delete multiple elements from the iModel.
+     * @param ids The ids of the elements to delete. All ids must be well-formed and valid [[Id64String]]s.
+     * @param deleteOptions Options for the delete operation.
+     * @returns A result object containing information about the deletion operation success and the element ids that failed to delete (if any).
+     * @throws [[ITwinError]] if any of the supplied ids are not well-formed/valid [[Id64String]]s.
+     * @deprecated in 5.1.9 - might be removed in next major version. Use EditTxn.deleteElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     * @beta
+     */
+    public deleteElements(ids: Id64Array, deleteOptions?: BulkDeleteElementsArgs): BulkDeleteElementsResult {
+      return this._iModel[_implicitTxn].deleteElements(ids, deleteOptions);
     }
 
     /** DefinitionElements can only be deleted if it can be determined that they are not referenced by other Elements.
      * This *usage query* can be expensive since it may involve scanning the GeometryStreams of all GeometricElements.
      * Since [[deleteElement]] does not perform these additional checks, it fails in order to prevent potentially referenced DefinitionElements from being deleted.
      * This method performs those expensive checks and then calls *delete* if not referenced.
-     * @param ids The Ids of the DefinitionElements to attempt to delete. To prevent multiple passes over the same GeometricElements, it is best to pass in the entire array of
+     * @param definitionElementIds The Ids of the DefinitionElements to attempt to delete. To prevent multiple passes over the same GeometricElements, it is best to pass in the entire array of
      * DefinitionElements rather than calling this method separately for each one. Ids that are not valid DefinitionElements will be ignored.
      * @returns An IdSet of the DefinitionElements that are used and were therefore not deleted.
      * @see deleteElement
-     * @beta
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteDefinitionElements instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set {
-      const usageInfo = this._iModel[_nativeDb].queryDefinitionElementUsage(definitionElementIds);
-      if (!usageInfo) {
-        throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
-      }
-
-      const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
-      const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
-        if (ids) {
-          ids.forEach((id) => {
-            if (!used.has(id))
-              this._iModel.elements.deleteElement(id);
-          });
-        }
-      };
-
-      try {
-        this._iModel[_nativeDb].beginPurgeOperation();
-        deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
-        deleteIfUnused(usageInfo.drawingCategoryIds, usedIdSet);
-        deleteIfUnused(usageInfo.viewDefinitionIds, usedIdSet);
-        deleteIfUnused(usageInfo.geometryPartIds, usedIdSet);
-        deleteIfUnused(usageInfo.lineStyleIds, usedIdSet);
-        deleteIfUnused(usageInfo.renderMaterialIds, usedIdSet);
-        deleteIfUnused(usageInfo.subCategoryIds, usedIdSet);
-        deleteIfUnused(usageInfo.textureIds, usedIdSet);
-        deleteIfUnused(usageInfo.displayStyleIds, usedIdSet);
-        deleteIfUnused(usageInfo.categorySelectorIds, usedIdSet);
-        deleteIfUnused(usageInfo.modelSelectorIds, usedIdSet);
-        if (usageInfo.otherDefinitionElementIds) {
-          this._iModel.elements.deleteElement(usageInfo.otherDefinitionElementIds);
-        }
-      } finally {
-        this._iModel[_nativeDb].endPurgeOperation();
-      }
-
-      if (usageInfo.viewDefinitionIds) {
-        // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
-        let viewRelatedIds: Id64Array = [];
-        if (usageInfo.displayStyleIds)
-          viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id)));
-
-        if (usageInfo.categorySelectorIds)
-          viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id)));
-
-        if (usageInfo.modelSelectorIds)
-          viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id)));
-
-        if (viewRelatedIds.length > 0) {
-          const viewRelatedUsageInfo = this._iModel[_nativeDb].queryDefinitionElementUsage(viewRelatedIds);
-          if (viewRelatedUsageInfo) {
-            const usedViewRelatedIdSet: Id64Set = viewRelatedUsageInfo.usedIds ? Id64.toIdSet(viewRelatedUsageInfo.usedIds) : new Set<Id64String>();
-            try {
-              this._iModel[_nativeDb].beginPurgeOperation();
-              deleteIfUnused(viewRelatedUsageInfo.displayStyleIds, usedViewRelatedIdSet);
-              deleteIfUnused(viewRelatedUsageInfo.categorySelectorIds, usedViewRelatedIdSet);
-              deleteIfUnused(viewRelatedUsageInfo.modelSelectorIds, usedViewRelatedIdSet);
-            } finally {
-              this._iModel[_nativeDb].endPurgeOperation();
-            }
-
-            viewRelatedIds.forEach((id) => {
-              if (!usedViewRelatedIdSet.has(id))
-                usedIdSet.delete(id);
-            });
-          }
-        }
-      }
-
-      return usedIdSet;
+      return this._iModel[_implicitTxn].deleteDefinitionElements(definitionElementIds);
     }
 
     /** Query for the child elements of the specified element.
@@ -2939,15 +3056,13 @@ export namespace IModelDb {
      */
     public queryChildren(elementId: Id64String): Id64String[] {
       const sql = "SELECT ECInstanceId FROM BisCore:Element WHERE Parent.Id=:elementId";
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String[] => {
-        statement.bindId("elementId", elementId);
+      return this._iModel.withQueryReader(sql, (reader): Id64String[] => {
         const childIds: Id64String[] = [];
-        while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          childIds.push(statement.getValue(0).getId());
+        for (const row of reader) {
+          childIds.push(row[0]);
         }
         return childIds;
-      });
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Query for the parent of the specified element.
@@ -2956,14 +3071,12 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element does not exist
      */
     public queryParent(elementId: Id64String): Id64String | undefined {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(`select parent.id from ${Element.classFullName} where ecinstanceid=?`, (stmt) => {
-        stmt.bindId(1, elementId);
-        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+      return this._iModel.withQueryReader(`select parent.id from ${Element.classFullName} where ecinstanceid=?`, (reader) => {
+        if (!reader.step())
           throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
-        const value = stmt.getValue(0);
-        return value.isNull ? undefined : value.getId();
-      });
+        const value = reader.current[0];
+        return value ?? undefined;
+      }, new QueryBinder().bindId(1, elementId));
     }
 
     /** Returns true if the specified Element has a sub-model.
@@ -2975,11 +3088,9 @@ export namespace IModelDb {
 
       // A sub-model will have the same Id value as the element it is describing
       const sql = "SELECT ECInstanceId FROM BisCore:Model WHERE ECInstanceId=:elementId";
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
-        statement.bindId("elementId", elementId);
-        return DbResult.BE_SQLITE_ROW === statement.step();
-      });
+      return this._iModel.withQueryReader(sql, (reader): boolean => {
+        return reader.step();
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Get the root subject element. */
@@ -2991,38 +3102,39 @@ export namespace IModelDb {
      * @internal
      */
     public _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[] { // eslint-disable-line @typescript-eslint/naming-convention
-      const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId ORDER BY ECClassId,ECInstanceId`; // ORDER BY to maximize statement reuse
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
-        statement.bindId("elementId", elementId);
+      const sql = `SELECT ECInstanceId, ec_classname(ECClassId, 's:c') FROM ${fromClassFullName} WHERE Element.Id=:elementId ORDER BY ECClassId,ECInstanceId`; // ORDER BY to maximize statement reuse
+      return this._iModel.withQueryReader(sql, (reader): ElementAspect[] => {
         const aspects: ElementAspect[] = [];
-        while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const aspectInstanceId: Id64String = statement.getValue(0).getId();
-          const aspectClassFullName: string = statement.getValue(1).getClassNameForClassId().replace(".", ":");
+        for (const row of reader) {
+          const aspectInstanceId: Id64String = row[0];
+          const aspectClassFullName: string = row[1];
           if ((undefined === excludedClassFullNames) || (!excludedClassFullNames.has(aspectClassFullName))) {
             aspects.push(this._queryAspect(aspectInstanceId, aspectClassFullName));
           }
         }
         return aspects;
-      });
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Query for aspect by ECInstanceId
      * @throws [[IModelError]]
      */
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
+      // `SELECT *` targets a caller/runtime-determined ElementAspect subclass, so its shape can't be decomposed
+      // ahead of time. Query using the non-deprecated UseECSqlPropertyNames format and reshape the row into the
+      // legacy UseJsPropertyNames shape using ECSchema metadata (see ECSqlInstanceReshaper for why a naive,
+      // non-schema-aware rename isn't safe here).
+      const ecClass = getRuntimeClass(this._iModel, aspectClassName);
       const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const aspect: ElementAspectProps | undefined = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspectProps | undefined => {
-        statement.bindId("aspectInstanceId", aspectInstanceId);
-        if (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const aspectProps: ElementAspectProps = statement.getRow(); // start with everything that SELECT * returned
-          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
-          (aspectProps as any).className = undefined; // clear property from SELECT * that we don't want in the final instance
-          return aspectProps;
+      const aspect: ElementAspectProps | undefined = this._iModel.withQueryReader(sql, (reader): ElementAspectProps | undefined => {
+        if (reader.step()) {
+          const aspectProps = reshapeInstanceRow(reader.current.toRow(), ecClass, this._iModel) as Omit<ElementAspectProps, "classFullName"> & { className?: string, classFullName?: string };
+          aspectProps.classFullName = (aspectProps.className as string).replace(".", ":"); // add in property required by EntityProps
+          aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
+          return aspectProps as ElementAspectProps;
         }
         return undefined;
-      });
+      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId), { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
       if (undefined === aspect) {
         throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}, ${aspectClassName}`);
       }
@@ -3033,12 +3145,10 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public getAspect(aspectInstanceId: Id64String): ElementAspect {
-      const sql = "SELECT ECClassId FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
-        statement.bindId("aspectInstanceId", aspectInstanceId);
-        return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;
-      });
+      const sql = "SELECT ec_classname(ECClassId, 's:c') FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
+      const aspectClassFullName = this._iModel.withQueryReader(sql, (reader): string | undefined => {
+        return reader.step() ? reader.current[0] : undefined;
+      }, new QueryBinder().bindId("aspectInstanceId", aspectInstanceId));
       if (undefined === aspectClassFullName) {
         throw new IModelError(IModelStatus.NotFound, `ElementAspect not found ${aspectInstanceId}`);
       }
@@ -3047,27 +3157,36 @@ export namespace IModelDb {
 
     private static classMap = new Map<string, string>();
 
+    private getAspectPropsFromInstanceQuery(rawInstance: unknown): ElementAspectProps {
+      const parsedRow: unknown = typeof rawInstance === "string" ? JSON.parse(rawInstance, Base64EncodedString.reviver) : rawInstance;
+      if (!JsonUtils.isObject(parsedRow))
+        throw new IModelError(IModelStatus.BadRequest, "Expected an ElementAspect instance query to return an object");
+
+      const row: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(parsedRow)) {
+        const ecPropertyName = key.length === 0 ? key : key[0].toUpperCase() + key.substring(1);
+        row[ECJsNames.toJsName(ecPropertyName)] = value;
+      }
+
+      const className = row.className;
+      if (typeof className !== "string")
+        throw new IModelError(IModelStatus.BadRequest, "Expected an ElementAspect instance query to return a className");
+
+      row.classFullName = className.replace(".", ":"); // add in property required by EntityProps
+      delete row.className; // clear property from SELECT $ that we don't want in the final instance
+      return row as unknown as ElementAspectProps;
+    }
+
     private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-        statement.bindId("elementId", elementId);
+      return this._iModel.withQueryReader(sql, (reader) => {
         const aspects: ElementAspect[] = [];
-        while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const row: object = {};
-          const parsedRow = JSON.parse(statement.getValue(0).getString());
-          // eslint-disable-next-line guard-for-in
-          for (const key in parsedRow) {
-            const jsName = ECJsNames.toJsName(key[0].toUpperCase() + key.substring(1));
-            Object.defineProperty(row, jsName, { enumerable: true, configurable: true, writable: true, value: parsedRow[key] });
-          }
-          const aspectProps: ElementAspectProps = row as any;
-          aspectProps.classFullName = (aspectProps as any).className.replace(".", ":"); // add in property required by EntityProps
-          (aspectProps as any).className = undefined; // clear property from SELECT $ that we don't want in the final instance
+        for (const queryRow of reader) {
+          const aspectProps = this.getAspectPropsFromInstanceQuery(queryRow[0]);
           if ((undefined === excludedClassFullNames) || !excludedClassFullNames.has(aspectProps.classFullName))
             aspects.push(this._iModel.constructEntity<ElementAspect>(aspectProps));
         }
         return aspects;
-      });
+      }, new QueryBinder().bindId("elementId", elementId));
     }
 
     /** Get the ElementAspect instances that are owned by the specified element.
@@ -3100,14 +3219,15 @@ export namespace IModelDb {
       let classIdList = IModelDb.Elements.classMap.get(aspectClassFullName);
       if (classIdList === undefined) {
         const classIds: string[] = [];
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        this._iModel.withPreparedStatement(`select SourceECInstanceId from meta.ClassHasAllBaseClasses where TargetECInstanceId = (select ECInstanceId from meta.ECClassDef where Name='${fullClassName[1]}'
-        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name='${fullClassName[0]}')) and SourceECInstanceId != TargetECInstanceId`,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          (statement: ECSqlStatement) => {
-            while (statement.step() === DbResult.BE_SQLITE_ROW)
-              classIds.push(statement.getValue(0).getId());
-          });
+        const sql = `select SourceECInstanceId from meta.ClassHasAllBaseClasses where TargetECInstanceId = (select ECInstanceId from meta.ECClassDef where Name=:className
+        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name=:schemaName)) and SourceECInstanceId != TargetECInstanceId`;
+        this._iModel.withQueryReader(sql, (reader) => {
+          for (const row of reader) {
+            classIds.push(row[0]);
+          }
+        }, new QueryBinder()
+          .bindString("className", fullClassName[1])
+          .bindString("schemaName", fullClassName[0]));
         if (classIds.length > 0) {
           classIdList = classIds.join(",");
           IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);
@@ -3128,52 +3248,108 @@ export namespace IModelDb {
       return aspects;
     }
 
+    /** Stream the [[ElementAspect]] instances owned by a set of elements.
+     *
+     * Use this method instead of calling [[getAspects]] repeatedly when reading aspects for multiple elements or when the result may be large. The query reads all requested owners together and yields each aspect without buffering the complete result set. For a single element with a small result, [[getAspects]] provides a simpler synchronous API.
+     *
+     * The order is unspecified unless [[QueryAspectOptions.groupByOwner]] is true.
+     * @param options Defines the element Ids, class filters, result ordering, and query connection.
+     * @returns An async iterator over the matching aspects.
+     * @beta
+     */
+    public async *queryAspects(options: QueryAspectOptions): AsyncIterableIterator<ElementAspect> {
+      const elementIds = Id64.toIdSet(options.elementIds);
+      if (elementIds.size === 0)
+        return;
+
+      const params = new QueryBinder().bindIdSet("elementIds", elementIds);
+      const classFilter = options.aspectClassFullName === undefined ? "" : `AND aspect.ECClassId IN (
+        SELECT SourceECInstanceId FROM meta.ClassHasAllBaseClasses
+        WHERE TargetECInstanceId=ec_classid(:aspectClassFullName)
+      )`;
+      if (options.aspectClassFullName !== undefined)
+        params.bindString("aspectClassFullName", options.aspectClassFullName.replace(".", ":"));
+
+      const excludedClassIds: string[] = [];
+      let excludedClassIndex = 0;
+      for (const classFullName of options.excludedAspectClassFullNames ?? []) {
+        const parameterName = `excludedAspectClass${excludedClassIndex++}`;
+        excludedClassIds.push(`ec_classid(:${parameterName})`);
+        params.bindString(parameterName, classFullName.replace(".", ":"));
+      }
+      const excludedClassFilter = excludedClassIds.length === 0 ? "" : `AND aspect.ECClassId NOT IN (
+        SELECT ECInstanceId FROM meta.ECClassDef WHERE ECInstanceId IN (${excludedClassIds.join(",")})
+      )`;
+      const orderBy = options.groupByOwner
+        ? "ORDER BY OwnerId, AspectKind, ECClassId, ECInstanceId"
+        : "";
+      const sql = `WITH OwnerIds AS (SELECT id FROM IdSet(:elementIds))
+        SELECT $ FROM (
+          SELECT aspect.ECInstanceId, aspect.ECClassId, aspect.Element.Id AS OwnerId, 0 AS AspectKind
+          FROM OwnerIds owners
+          CROSS JOIN Bis.ElementMultiAspect aspect ON aspect.Element.Id=owners.id
+          WHERE TRUE ${classFilter} ${excludedClassFilter}
+          UNION ALL
+          SELECT aspect.ECInstanceId, aspect.ECClassId, aspect.Element.Id AS OwnerId, 1 AS AspectKind
+          FROM OwnerIds owners
+          CROSS JOIN Bis.ElementUniqueAspect aspect ON aspect.Element.Id=owners.id
+          WHERE TRUE ${classFilter} ${excludedClassFilter}
+        ) ${orderBy}
+        OPTIONS USE_JS_PROP_NAMES DO_NOT_TRUNCATE_BLOB`;
+
+      const reader = this._iModel.createQueryReader(sql, params, { usePrimaryConn: options.usePrimaryConn });
+      for await (const queryRow of reader)
+        yield this._iModel.constructEntity<ElementAspect>(this.getAspectPropsFromInstanceQuery(queryRow[0]));
+    }
+
     /** Insert a new ElementAspect into the iModel.
      * @param aspectProps The properties of the new ElementAspect.
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      * @returns the id of the newly inserted aspect.
      * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
      *       use [EntityReference]($common) for that instead.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.insertAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
-      try {
-        return this._iModel[_nativeDb].insertElementAspect(aspectProps);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
-        error.cause = err;
-        throw error;
-      }
+      return this._iModel[_implicitTxn].insertAspect(aspectProps);
     }
 
     /** Update an exist ElementAspect within the iModel.
      * @param aspectProps The properties to use to update the ElementAspect.
      * @throws [[IModelError]] if unable to update the ElementAspect.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.updateAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      try {
-        this._iModel[_nativeDb].updateElementAspect(aspectProps);
-      } catch (err: any) {
-        const error = new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
-        error.cause = err;
-        throw error;
-      }
+      this._iModel[_implicitTxn].updateAspect(aspectProps);
     }
 
     /** Delete one or more ElementAspects from this iModel.
      * @param aspectInstanceIds The set of instance Ids of the ElementAspect(s) to be deleted
      * @throws [[IModelError]] if unable to delete the ElementAspect.
+     * @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.deleteAspect instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
      */
     public deleteAspect(aspectInstanceIds: Id64Arg): void {
-      const iModel = this._iModel;
-      Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
-        try {
-          iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
-        } catch (err: any) {
-          const error = new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
-          error.cause = err;
-          throw error;
-        }
-      });
+      this._iModel[_implicitTxn].deleteAspect(aspectInstanceIds);
+    }
+
+    /** Change the parent of an element.
+     * @param props The properties specifying the element to reparent and its new parent.
+     * @throws [[ITwinError]] if the operation fails.
+     * @beta
+     * @deprecated in 5.11.0 - might be removed in next major version. Use EditTxn.changeElementParent instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     */
+    public changeElementParent(props: ChangeElementParentProps): void {
+      this._iModel[_implicitTxn].changeElementParent(props);
+    }
+
+    /** Change the model of an element.
+     * @param props The properties specifying the element to move and its new model.
+     * @throws [[ITwinError]] if the operation fails.
+     * @beta
+     * @deprecated in 5.11.0 - might be removed in next major version. Use EditTxn.changeElementModel instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     */
+    public changeElementModel(props: ChangeElementModelProps): void {
+      this._iModel[_implicitTxn].changeElementModel(props);
     }
   }
 
@@ -3187,14 +3363,26 @@ export namespace IModelDb {
     private _viewStore?: ViewStore.CloudAccess;
     public get hasViewStore(): boolean { return undefined !== this._viewStore; }
 
-    /** @beta */
+    /** The [[ViewStore.CloudAccess]] for this iModel.
+     * @note The iModel owns its ViewStore (whether assigned via this setter or created by [[accessViewStore]]): it is closed when the iModel is closed.
+     * @beta
+     */
     public get viewStore(): ViewStore.CloudAccess {
       if (undefined === this._viewStore)
         throw new IModelError(IModelStatus.BadRequest, "No ViewStore available");
       return this._viewStore;
     }
     public set viewStore(viewStore: ViewStore.CloudAccess) {
+      if (this._viewStore !== undefined && this._viewStore !== viewStore)
+        this._viewStore.close();
       this._viewStore = viewStore;
+    }
+    /** Close the ViewStore for this iModel, if one is open. Called when the iModel is closed.
+     * @internal
+     */
+    public [_close]() {
+      this._viewStore?.close();
+      this._viewStore = undefined;
     }
     /** @beta */
     public async accessViewStore(args: { props?: CloudSqlite.ContainerProps, accessLevel?: BlobContainer.RequestAccessLevel }): Promise<ViewStore.CloudAccess> {
@@ -3217,11 +3405,11 @@ export namespace IModelDb {
       return this._viewStore;
     }
 
-    /** @beta */
+    /**
+     * @beta @deprecated in 5.9.0 - might be removed in next major version. Use EditTxn.saveDefaultViewStore instead, within an explicit EditTxn scope (or via withEditTxn). See EditTxn documentation for migration help.
+     */
     public saveDefaultViewStore(arg: CloudSqlite.ContainerProps): void {
-      const props = { baseUri: arg.baseUri, containerId: arg.containerId, storageType: arg.storageType }; // sanitize to only known properties
-      this._iModel.saveFileProperty(Views.viewStoreProperty, JSON.stringify(props));
-      this._iModel.saveChanges("update default ViewStore");
+      this._iModel[_implicitTxn].saveDefaultViewStore(arg);
     }
 
     /** Query for the array of ViewDefinitionProps of the specified class and matching the specified IsPrivate setting.
@@ -3291,14 +3479,22 @@ export namespace IModelDb {
 
       const props = {} as ViewStateProps;
       props.viewDefinitionProps = loader.loadView();
-      props.categorySelectorProps = loader.loadCategorySelector(props.viewDefinitionProps.categorySelectorId);
-      props.displayStyleProps = loader.loadDisplayStyle(props.viewDefinitionProps.displayStyleId);
-      const modelSelectorId = (props.viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      props.categorySelectorProps = loader.loadCategorySelector(resolveNavPropId(props.viewDefinitionProps.categorySelector, props.viewDefinitionProps.categorySelectorId));
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      props.displayStyleProps = loader.loadDisplayStyle(resolveNavPropId(props.viewDefinitionProps.displayStyle, props.viewDefinitionProps.displayStyleId));
+
+      const spatialViewDefinitionProps = (props.viewDefinitionProps as SpatialViewDefinitionProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const modelSelectorId = resolveNavPropId(spatialViewDefinitionProps.modelSelector, spatialViewDefinitionProps.modelSelectorId);
       if (modelSelectorId !== undefined)
         props.modelSelectorProps = loader.loadModelSelector(modelSelectorId);
 
       const viewClass = iModel.getJsClass(props.viewDefinitionProps.classFullName);
-      const baseModelId = (props.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      const viewDefinitionProps = (props.viewDefinitionProps as ViewDefinition2dProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const baseModelId = resolveNavPropId(viewDefinitionProps.baseModel, viewDefinitionProps.baseModelId);
       if (viewClass.is(SheetViewDefinition)) {
         props.sheetProps = elements.getElementProps<SheetProps>(baseModelId);
         props.sheetAttachments = Array.from(iModel.queryEntityIds({
@@ -3323,7 +3519,9 @@ export namespace IModelDb {
     /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by ViewIdString. */
     public async getViewStateProps(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): Promise<ViewStateProps> {
       const viewStateData = this.loadViewData(viewDefinitionId, options);
-      const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
+      const viewDefinition2dProps = (viewStateData.viewDefinitionProps as ViewDefinition2dProps);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      const baseModelId = resolveNavPropId(viewDefinition2dProps.baseModel, viewDefinition2dProps.baseModelId);
       if (baseModelId) {
         const drawingExtents = await this._iModel.models.queryRange(baseModelId);
         if (!drawingExtents.isNull)
@@ -3368,7 +3566,7 @@ export namespace IModelDb {
 
     /** Set the default view property the iModel.
      * @param viewId The Id of the ViewDefinition to use as the default
-     * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
+     * @deprecated in 4.2.0 - might be removed in next major version. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
      * that might wish to view the contents of the iModel.
      */
     public setDefaultViewId(viewId: Id64String): void {
@@ -3377,7 +3575,7 @@ export namespace IModelDb {
       blob32[0] = Id64.getLowerUint32(viewId);
       blob32[1] = Id64.getUpperUint32(viewId);
       const blob8 = new Uint8Array(blob32.buffer);
-      this._iModel.saveFileProperty(spec, undefined, blob8);
+      this._iModel[_implicitTxn].saveFileProperty(spec, undefined, blob8);
     }
   }
 
@@ -3584,7 +3782,7 @@ export class BriefcaseDb extends IModelDb {
 
     // attempt to release locks must happen after changes are undone successfully
     Logger.logInfo(loggerCategory, "Releasing locks after discarding changes");
-    await this.locks.releaseAllLocks();
+    await this.locks.abandonAllLocks();
   }
 
   /**
@@ -3637,7 +3835,7 @@ export class BriefcaseDb extends IModelDb {
         executeUpgrade();
         await withBriefcaseDb(briefcase, async (db) => {
           db[_nativeDb].schemaSyncPush(schemaSyncDbUri);
-          db.saveChanges();
+          db[_nativeDb].saveChanges();
         });
         syncAccess.synchronizeWithCloud();
       });
@@ -3792,6 +3990,19 @@ export class BriefcaseDb extends IModelDb {
           return "foreign key";
       }
     };
+
+    // `dgn_Domain` holds one bookkeeping row per BIS domain present in the briefcase. The row is
+    // created automatically as soon as the domain's schema is imported, so merging a changeset
+    // that registers a domain inserts a row that was just created locally. Both rows describe the
+    // same domain and the incoming one is authoritative, so this duplicate insert is never fatal.
+    // Only a primary key collision on an insert is benign - an update or delete whose "before"
+    // values do not match (`DbConflictCause.Data`) describes a real divergence and must not be
+    // silently discarded here.
+    if (args.tableName === "dgn_Domain" && args.cause === DbConflictCause.Conflict && args.opcode === DbOpcode.Insert) {
+      Logger.logWarning(category, `${interpretConflictCause(args.cause)} conflict on dgn_Domain - resolved by replacing the existing row with the incoming row`);
+      args.dump();
+      return DbConflictResolution.Replace;
+    }
 
     if (args.cause === DbConflictCause.Data && !args.indirect) {
       /*
@@ -3991,7 +4202,70 @@ export class BriefcaseDb extends IModelDb {
     return this[_nativeDb].getAllChangesetHealthData() as ChangesetHealthStats[];
   }
 
-  /** Revert timeline changes and then push resulting changeset */
+  /**
+   * Whether file-based transactions are enabled for this briefcase.
+   *
+   * When enabled, transaction data is stored in separate temporary `.txn` files rather than in the
+   * briefcase's internal transaction table. This avoids SQLite blob size limits and reduces memory
+   * pressure for very large changesets, at the cost of additional disk I/O.
+   * @see [[enableFileBasedTxns]] to enable, [[disableFileBasedTxns]] to disable.
+   * @internal
+   */
+  public get isFileBasedTxnsEnabled(): boolean {
+    return this[_nativeDb].queryLocalValue("fileBasedTxns") === "1";
+  }
+
+  /**
+   * Enable file-based transactions for this briefcase.
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   * @internal
+   */
+  public enableFileBasedTxns(): void {
+    this._setFileBasedTxnsSetting(true);
+  }
+
+  /**
+   * Disable file-based transactions for this briefcase, reverting to the default storage mode
+   * (transactions stored within the briefcase's internal transaction table).
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   * @internal
+   */
+  public disableFileBasedTxns(): void {
+    this._setFileBasedTxnsSetting(false);
+  }
+
+  private _setFileBasedTxnsSetting(enabled: boolean): void {
+    if (this.isFileBasedTxnsEnabled === enabled)
+      return;
+
+    const nativeDb = this[_nativeDb];
+    if (nativeDb.hasUnsavedChanges())
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot change file-based transactions setting while there are unsaved changes");
+
+    if (nativeDb.hasPendingTxns())
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot change file-based transactions setting while there are pending transactions");
+
+    if (enabled)
+      nativeDb.saveLocalValue("fileBasedTxns", "1");
+    else
+      nativeDb.deleteLocalValue("fileBasedTxns");
+  }
+
+  /**
+   * Revert timeline changes and push the resulting changeset.
+   *
+   * Pulls the latest changes, acquires the schema lock, reverts the inclusive range of
+   * changesets `[toIndex..current]`, and pushes the revert as a new changeset. On failure,
+   * follow the behavior specified by `arg.inCaseOfFailure`, which may discard local changes,
+   * retain local changes, or delete the briefcase.
+   *
+   * @param arg - Arguments specifying the target changeset index, push options, access token, and failure handling behavior.
+   * @throws IModelError with [[ChangeSetStatus.ApplyError]] if `toIndex` is not specified.
+   * @throws IModelError with [[ChangeSetStatus.HasUncommittedChanges]] if there are unsaved changes.
+   * @throws IModelError with [[ChangeSetStatus.HasLocalChanges]] if there are pending transactions.
+   */
   public async revertAndPushChanges(arg: RevertChangesArgs): Promise<void> {
     const nativeDb = this[_nativeDb];
     if (arg.toIndex === undefined) {
@@ -4024,11 +4298,15 @@ export class BriefcaseDb extends IModelDb {
       arg.skipSchemaChanges = true;
     }
 
+    // The native side enables file-based txns during revert. Restore the original setting afterward.
+    const wasFileBasedTxnsEnabled = this.isFileBasedTxnsEnabled;
+    const preRevertIndex = this.changeset.index;
+
     try {
       await BriefcaseManager.revertTimelineChanges(this, arg);
-      this.saveChanges("Revert changes");
+      nativeDb.saveChanges("Revert changes");
       if (!arg.description) {
-        arg.description = `Reverted changes from ${this.changeset.index} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
+        arg.description = `Reverted changes from ${preRevertIndex} to ${arg.toIndex}${arg.skipSchemaChanges ? " (schema changes skipped)" : ""}`;
       }
       const pushArgs = {
         description: arg.description,
@@ -4042,12 +4320,47 @@ export class BriefcaseDb extends IModelDb {
       await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
       this.clearCaches();
     } catch (err) {
-      if (!arg.retainLocks) {
-        await this.locks.releaseAllLocks();
-        throw err;
+      const failureAction = arg.inCaseOfFailure ?? "revert";
+      try {
+        switch (failureAction) {
+          case "revert":
+            // Restore the briefcase to its pre-revert state: save any unsaved changes into txns,
+            // reverse all txns, then delete them.
+            nativeDb.saveChanges();
+            if (nativeDb.hasPendingTxns())
+              nativeDb.reverseAll();
+            nativeDb.deleteAllTxns();
+            break;
+          case "delete":
+            // Clear local changes first so lock release can succeed.
+            nativeDb.abandonChanges();
+            nativeDb.deleteAllTxns();
+            if (!arg.retainLocks)
+              await this.locks.releaseAllLocks();
+            const filePath = this.pathName;
+            this.close();
+            await BriefcaseManager.deleteBriefcaseFiles(filePath, arg.accessToken);
+            break;
+          case "retain":
+            // Keep local changes as-is for caller inspection/recovery.
+            nativeDb.saveChanges();
+            break;
+        }
+      } catch (cleanupErr) {
+        Logger.logError(loggerCategory, `Failed to clean up after revert error (action=${failureAction}): ${String(cleanupErr)}`);
       }
+
+      if (!arg.retainLocks && this.isOpen) {
+        try {
+          await this.locks.releaseAllLocks();
+        } catch (lockErr) {
+          Logger.logError(loggerCategory, `Failed to release locks after revert failure (action=${failureAction}): ${String(lockErr)}`);
+        }
+      }
+      throw err;
     } finally {
-      this.abandonChanges();
+      if (this.isOpen && !wasFileBasedTxnsEnabled && !nativeDb.hasPendingTxns() && !nativeDb.hasUnsavedChanges())
+        this.disableFileBasedTxns();
     }
   }
 
@@ -4082,10 +4395,15 @@ export class BriefcaseDb extends IModelDb {
 
   public override close(options?: CloseIModelArgs) {
     if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
-      this.abandonChanges();
+      this[_nativeDb].abandonChanges();
     }
     super.close(options);
     this.onClosed.raiseEvent();
+  }
+
+  /** Convert this briefcase to a JSON representation. */
+  public override toJSON(): BriefcaseConnectionProps {
+    return { ...super.toJSON(), briefcaseId: this.briefcaseId };
   }
 }
 
@@ -4321,11 +4639,12 @@ export class SnapshotDb extends IModelDb {
     if (this._restartDefaultTxnTimer)
       clearTimeout(this._restartDefaultTxnTimer);
 
+
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this[_nativeDb].createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views");
       } else {
-        this.saveChanges();
+        this[_nativeDb].saveChanges();
       }
     }
   }
@@ -4353,6 +4672,21 @@ export class StandaloneDb extends BriefcaseDb {
   protected override get useLockServer() { return false; } // standalone iModels have no lock server
   public static override findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
+  }
+
+  /**
+   * @internal
+   * Called during close of the StandaloneDb. It will delete any pending txns.
+  */
+  protected override beforeClose(): void {
+    super.beforeClose();
+    if (this.isReadonly || !this.txns.hasLocalChanges)
+      return;
+
+    const nativeDb = this[_nativeDb];
+    nativeDb.saveChanges();
+    nativeDb.deleteAllTxns();
+    nativeDb.saveChanges();
   }
 
   public static override tryFindByKey(key: string): StandaloneDb | undefined {
@@ -4412,7 +4746,7 @@ export class StandaloneDb extends BriefcaseDb {
     if (BentleyStatus.SUCCESS !== result)
       throw new IModelError(result, "Error creating class views");
     else
-      this.saveChanges();
+      this[_nativeDb].saveChanges();
   }
 
   /** Open a standalone iModel file.

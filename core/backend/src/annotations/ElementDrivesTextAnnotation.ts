@@ -6,14 +6,16 @@
  * @module Elements
  */
 
-import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
-import { ElementDrivesElement } from "../Relationship";
-import { IModelDb } from "../IModelDb";
-import { Element } from "../Element";
-import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { QueryBinder, RelatedElement, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { ECVersion } from "@itwin/ecschema-metadata";
+import { Element } from "../Element";
+import { IModelDb } from "../IModelDb";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
+import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
+import { _implicitTxn } from "../internal/Symbols";
+import { ElementDrivesElement, OnDependencyArg } from "../Relationship";
+import { EditTxn } from "../EditTxn";
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
@@ -73,29 +75,8 @@ export interface EvaluateFieldsArgs {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   public static override get className(): string { return "ElementDrivesTextAnnotation"; }
 
-  /** @internal */
-  public static override onRootChanged(props: RelationshipProps, iModel: IModelDb): void {
-    updateElementFields(props, iModel, false);
-  }
-
-  /** @internal */
-  public static override onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void {
-    updateElementFields(props, iModel, true);
-  }
-
-  /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.
-   * If not, the schema should be updated before inserting any [FieldRun]($common)s, or those runs will not
-   * update when the source element changes.
-   */
-  public static isSupportedForIModel(iModel: IModelDb): boolean {
-    return iModel.meetsMinimumSchemaVersion("BisCore", minBisCoreVersion);
-  }
-
-  /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
-   * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
-   * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
-   */
-  public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void {
+  private static updateFieldDependenciesImpl(txn: EditTxn, annotationElementId: Id64String): void {
+    const iModel = txn.iModel;
     const annotationElement = iModel.elements.tryGetElement<Element>(annotationElementId);
     if (!annotationElement || !isITextAnnotation(annotationElement)) {
       return;
@@ -107,11 +88,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
         return false;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return iModel.withPreparedStatement("SELECT CodeValue FROM BisCore.Element WHERE ECInstanceId=?", (stmt) => {
-        stmt.bindId(1, id);
-        return DbResult.BE_SQLITE_ROW === stmt.step();
-      });
+      return iModel.withQueryReader("SELECT CodeValue FROM BisCore.Element WHERE ECInstanceId=?", (reader): boolean => {
+        return reader.step();
+      }, new QueryBinder().bindId(1, id));
     }
 
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
@@ -131,37 +110,79 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     if (haveFields) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
-      updateAllFields(annotationElementId, iModel)
+      updateAllFields(annotationElementId, txn);
     }
 
     const staleRelationships = new Set<Id64String>();
     if (this.isSupportedForIModel(iModel)) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      annotationElement.iModel.withPreparedStatement(`SELECT ECInstanceId, SourceECInstanceId FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=${annotationElement.id}`, (stmt) => {
-        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-          const relationshipId = stmt.getValue(0).getId();
-          const sourceId = stmt.getValue(1).getId();
-          if (sourceToRelationship.has(sourceId)) {
-            sourceToRelationship.set(sourceId, relationshipId);
-          } else {
-            staleRelationships.add(relationshipId);
+      annotationElement.iModel.withQueryReader(
+        "SELECT ECInstanceId, SourceECInstanceId FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=:targetId",
+        (reader) => {
+          for (const row of reader) {
+            const relationshipId: Id64String = row[0];
+            const sourceId: Id64String = row[1];
+            if (sourceToRelationship.has(sourceId)) {
+              sourceToRelationship.set(sourceId, relationshipId);
+            } else {
+              staleRelationships.add(relationshipId);
+            }
           }
-        }
-      });
+        },
+        new QueryBinder().bindId("targetId", annotationElement.id),
+      );
     }
 
     for (const [sourceId, relationshipId] of sourceToRelationship) {
       if (relationshipId === null) {
-        ElementDrivesTextAnnotation.create(annotationElement.iModel, sourceId, annotationElement.id).insert();
+        txn.insertRelationship(ElementDrivesTextAnnotation.create(annotationElement.iModel, sourceId, annotationElement.id).toJSON());
       }
     }
 
     if (staleRelationships.size > 0) {
-      const staleRelationshipProps = Array.from(staleRelationships).map(relationshipId =>
+      const staleRelationshipProps = Array.from(staleRelationships).map((relationshipId) =>
         annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId)
       );
-      annotationElement.iModel.relationships.deleteInstances(staleRelationshipProps);
+      txn.deleteRelationships(staleRelationshipProps);
     }
+  }
+
+  /** @internal */
+  public static override onRootChangedArg(arg: OnDependencyArg): void {
+    updateElementFields(arg.props, arg.indirectEditTxn, false);
+  }
+
+  /** @internal */
+  public static override onDeletedDependencyArg(arg: OnDependencyArg): void {
+    updateElementFields(arg.props, arg.indirectEditTxn, true);
+  }
+
+  /** Returns true if `iModel` contains a version of the BisCore schema new enough to support this relationship.
+   * If not, the schema should be updated before inserting any [FieldRun]($common)s, or those runs will not
+   * update when the source element changes.
+   */
+  public static isSupportedForIModel(iModel: IModelDb): boolean {
+    return iModel.meetsMinimumSchemaVersion("BisCore", minBisCoreVersion);
+  }
+
+  /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
+   * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
+   * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use ElementDrivesTextAnnotation.updateFieldDependencies(txn, ...) instead.
+   */
+  public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
+
+  /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
+   * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
+   * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
+   */
+  public static updateFieldDependencies(txn: EditTxn, annotationElementId: Id64String): void;
+  public static updateFieldDependencies(arg1: EditTxn | Id64String, arg2: Id64String | IModelDb): void {
+    if (arg1 instanceof EditTxn) {
+      this.updateFieldDependenciesImpl(arg1, arg2 as Id64String);
+      return;
+    }
+
+    this.updateFieldDependenciesImpl((arg2 as IModelDb)[_implicitTxn], arg1);
   }
 
   /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).

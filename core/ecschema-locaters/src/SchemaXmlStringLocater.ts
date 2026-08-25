@@ -49,7 +49,7 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
     await this.getSchemaInfo(schemaKey, matchType, context);
 
     const schema = await context.getCachedSchema(schemaKey, matchType);
-    return schema as Schema;
+    return schema;
   }
 
   /**

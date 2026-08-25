@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 
 describe("SchemaDesignPerf Polymorphic query", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "PolymorphicPerformance");
@@ -134,33 +134,34 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_flat_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas([st]);
         // first create Elements and then Relationship
-        const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
+        const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
         // create base class elements
-        for (let i = 0; i < flatSeedCount; ++i) {
-          let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestPolySchema:testElement");
-          let geomElement = seedIModel.elements.createElement(elementProps);
-          setPropVal(geomElement, "propBase", "Base Value");
-          let id = seedIModel.elements.insertElement(geomElement.toJSON());
-          assert.isTrue(Id64.isValidId64(id), "insert failed");
-          // create elements of Child up to required level
-          for (let j = 0; j < hCount; ++j) {
-            const className: string = `child${j.toString()}`;
-            elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestPolySchema:${className}`);
-            geomElement = seedIModel.elements.createElement(elementProps);
+        withEditTxn(seedIModel, (txn) => {
+          for (let i = 0; i < flatSeedCount; ++i) {
+            let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestPolySchema:testElement");
+            let geomElement = seedIModel.elements.createElement(elementProps);
             setPropVal(geomElement, "propBase", "Base Value");
-            setPropVal(geomElement, "propChild", "Child Value");
-            id = seedIModel.elements.insertElement(geomElement.toJSON());
+            let id = txn.insertElement(geomElement.toJSON());
             assert.isTrue(Id64.isValidId64(id), "insert failed");
+            // create elements of Child up to required level
+            for (let j = 0; j < hCount; ++j) {
+              const className: string = `child${j.toString()}`;
+              elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestPolySchema:${className}`);
+              geomElement = seedIModel.elements.createElement(elementProps);
+              setPropVal(geomElement, "propBase", "Base Value");
+              setPropVal(geomElement, "propChild", "Child Value");
+              id = txn.insertElement(geomElement.toJSON());
+              assert.isTrue(Id64.isValidId64(id), "insert failed");
+            }
           }
-        }
+        }); // auto-saves
         assert.equal(getCount(seedIModel, "TestPolySchema:TestElement"), ((hCount + 1) * flatSeedCount));
-        seedIModel.saveChanges();
         seedIModel.close();
         await IModelHost.shutdown();
       }
@@ -174,33 +175,34 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       const seedIModel2 = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_multi_${multiHierarchyCount.toString()}.bim`), { rootSubject: { name: "PerfTest" } });
       await seedIModel2.importSchemas([st2]);
       // first create Elements and then Relationship
-      const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel2, Code.createEmpty(), true);
+      const [, newModelId] = withEditTxn(seedIModel2, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel2, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = SpatialCategory.insert(seedIModel2, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+        spatialCategoryId = withEditTxn(seedIModel2, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
       seedIModel2[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       assert.isDefined(seedIModel2.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
       // create base class elements
-      for (let i = 0; i < multiSeedCount; ++i) {
-        let elementProps = createElemProps(seedIModel2, newModelId, spatialCategoryId, "TestPolySchema:testElement");
-        let geomElement = seedIModel2.elements.createElement(elementProps);
-        setPropVal(geomElement, "propBase", "Base Value");
-        let id = seedIModel2.elements.insertElement(geomElement.toJSON());
-        assert.isTrue(Id64.isValidId64(id), "insert failed");
-        // create elements of Child up to required level
-        for (let j = 0; j < multiHierarchyCount; ++j) {
-          const className: string = `child${j.toString()}`;
-          elementProps = createElemProps(seedIModel2, newModelId, spatialCategoryId, `TestPolySchema:${className}`);
-          geomElement = seedIModel2.elements.createElement(elementProps);
+      withEditTxn(seedIModel2, (txn) => {
+        for (let i = 0; i < multiSeedCount; ++i) {
+          let elementProps = createElemProps(seedIModel2, newModelId, spatialCategoryId, "TestPolySchema:testElement");
+          let geomElement = seedIModel2.elements.createElement(elementProps);
           setPropVal(geomElement, "propBase", "Base Value");
-          setPropVals(geomElement, j + 1, "propChild");
-          id = seedIModel2.elements.insertElement(geomElement.toJSON());
+          let id = txn.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert failed");
+          // create elements of Child up to required level
+          for (let j = 0; j < multiHierarchyCount; ++j) {
+            const className: string = `child${j.toString()}`;
+            elementProps = createElemProps(seedIModel2, newModelId, spatialCategoryId, `TestPolySchema:${className}`);
+            geomElement = seedIModel2.elements.createElement(elementProps);
+            setPropVal(geomElement, "propBase", "Base Value");
+            setPropVals(geomElement, j + 1, "propChild");
+            id = txn.insertElement(geomElement.toJSON());
+            assert.isTrue(Id64.isValidId64(id), "insert failed");
+          }
         }
-      }
+      }); // auto-saves
       assert.equal(getCount(seedIModel2, "TestPolySchema:TestElement"), ((multiHierarchyCount + 1) * multiSeedCount));
-      seedIModel2.saveChanges();
       seedIModel2.close();
       await IModelHost.shutdown();
     }
@@ -246,7 +248,6 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       }
       reporter.addEntry("PolyPerfTest", "PolymorphicFlatRead", "Execution time(s)", totalTime / fhCount, { sCount: flatSeedCount, hCount: fhCount });
 
-      perfimodel.saveChanges();
       perfimodel.close();
     }
   });
@@ -284,7 +285,6 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     reporter.addEntry("PolyPerfTest", "PolymorphicMultiRead", "Execution time(s)", totalTime / (multiHierarchyCount - 1), { sCount: multiSeedCount, hCount: multiHierarchyCount, level: "Child" });
     reporter.addEntry("PolyPerfTest", "PolymorphicMultiRead", "Execution time(s)", parentTime, { sCount: multiSeedCount, hCount: multiHierarchyCount, level: "Base" });
 
-    perfimodel.saveChanges();
     perfimodel.close();
   });
 

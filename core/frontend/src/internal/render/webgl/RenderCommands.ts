@@ -280,7 +280,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   public getCommands(pass: RenderPass): DrawCommands {
-    let idx = pass as number;
+    let idx = pass;
     assert(idx < this._commands.length);
     if (idx >= this._commands.length)
       idx -= 1;
@@ -289,7 +289,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   public replaceCommands(pass: RenderPass, cmds: DrawCommands): void {
-    const idx = pass as number;
+    const idx = pass;
     this._commands[idx].splice(0);
     this._commands[idx] = cmds;
   }

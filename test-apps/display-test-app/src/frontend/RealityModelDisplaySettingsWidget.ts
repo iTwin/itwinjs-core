@@ -9,7 +9,6 @@ import {
   ContextRealityModelState, IModelApp, ScreenViewport, SpatialModelState, Tool, Viewport,
 } from "@itwin/core-frontend";
 import {
-  ComboBoxEntry,
   convertHexToRgb, createCheckBox, createColorInput, createComboBox, createRadioBox, createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
@@ -441,7 +440,7 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
     }
     // create list of entries
     const entries = this._realityModels.map((realityModel, i) => {
-      return ({ name: realityModel.modelName, value: i } as ComboBoxEntry);
+      return ({ name: realityModel.modelName, value: i });
     });
 
     clearElement(this._realityModelListDiv);

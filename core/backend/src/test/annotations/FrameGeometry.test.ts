@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CurvePrimitive, Geometry, Point3d, Range2d, Transform, Vector3d } from "@itwin/core-geometry";
+import { CurvePrimitive, Geometry, Path, Point3d, Range2d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, GeometryParams, textAnnotationFrameShapes, TextFrameStyleProps } from "@itwin/core-common";
 import { appendFrameToBuilder, computeFrame } from "../../annotations/FrameGeometry";
 import { Id64 } from "@itwin/core-bentley";
@@ -46,6 +46,7 @@ describe("FrameGeometry", () => {
       const result = appendFrameToBuilder(builder, frame, defaultRange, defaultTransform, defaultParams);
       expect(result).to.be.true;
       expect(builder.geometries.length).to.be.equal(2);
+      expect(builder.geometries[1] instanceof Path).to.be.true; // The second geometry should be the outline geometry, which is a Path
     });
 
     it("should set fill and border colors from frame", () => {

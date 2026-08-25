@@ -1,6 +1,238 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 26 Feb 2026 22:18:10 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Aug 2026 15:47:07 GMT and should not be manually modified.
+
+## 5.12.4
+Tue, 18 Aug 2026 15:45:35 GMT
+
+_Version update only_
+
+## 5.12.3
+Mon, 17 Aug 2026 11:29:39 GMT
+
+_Version update only_
+
+## 5.12.2
+Mon, 10 Aug 2026 20:38:45 GMT
+
+_Version update only_
+
+## 5.12.1
+Mon, 10 Aug 2026 19:07:26 GMT
+
+_Version update only_
+
+## 5.12.0
+Mon, 03 Aug 2026 12:25:49 GMT
+
+### Updates
+
+- Stopped using deprecated QueryRowFormat.UseJsPropertyNames in DrawingViewState, IModelConnection, and ViewCreator2d ECSQL queries.
+- Removed AccuDraw's manual bearing north-correction, now redundant since `@itwin/core-quantity` applies it automatically. Fixes a double-conversion bug in plane-fixed bearing mode.
+- Added IpcApp.handle and IpcHandler to support backend-to-frontend IPC calls.
+- Clarify/document/prove support for the KHR_mesh_primitive_restart glTF extension for line strip primitives.
+- Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pushChanges
+- Add filtering support to SchemaView and improve performance.
+
+## 5.11.3
+Wed, 15 Jul 2026 19:40:44 GMT
+
+_Version update only_
+
+## 5.11.2
+Fri, 10 Jul 2026 12:20:31 GMT
+
+_Version update only_
+
+## 5.11.1
+Wed, 08 Jul 2026 19:03:45 GMT
+
+_Version update only_
+
+## 5.11.0
+Fri, 03 Jul 2026 13:05:21 GMT
+
+### Updates
+
+- Add CesiumAccessClient interface to allow applications to plug in custom Cesium Ion authentication, with CesiumIonClient as the built-in fallback.
+- Stop clearing SubCategoriesCache on subcategory insert; reload instead
+- QuantityTypeFormatsProvider.getFormat now honors the requested UnitSystemKey instead of always using the active system, and QuantityFormatter.getSpecsByName accepts an optional options argument to query a non-active unit system.
+- ECSqlReader now returns no rows instead of throwing when an IModelConnection is closed before query iteration.
+- Deprecate legacy quantity description classes and add createQuantityDescription as the migration path for tool settings and other appui-based property flows, with guidance for the SurveyLengthDescription exception.
+- Move focus Home after installing LookAndMoveTool so keyboard navigation works through the existing focus handling.
+- NativeApp.startup now always reports the initial connectivity to the backend. Previously, if if `window.navigator.onLine` was false at startup, setConnectivity was never called, leaving the backend incorrectly assuming it was online.
+- Added `GraphicalEditingScope.dynamicGraphicsAbsolutePositionThreshold` to configure the world-space coordinate magnitude (default 10km) beyond which graphics for elements modified during the scope use `rtcCenter` centering instead of absolute float32 positions, preventing precision artifacts like jagged curves for projects far from the coordinate system origin.
+- Fixed non-planar globe map tiles disappearing in narrow top-down views by using tile surface corners & max projected tile size to determine LOD.
+- Reality model tiles whose content is plain-text JSON glTF (a `.gltf` file) are now rendered, with their externally-referenced textures (e.g. `.webp` images) resolved against the tile's content URL. Previously such tiles were silently discarded, or rendered untextured/white.
+- Remove dormant internal Azure Maps imagery provider code from core frontend.
+- Deprecate Bing Maps imagery format and provider. `MapLayerOptions.BingMaps` is retained (non-deprecated) for elevation and location services.
+- Deprecate BingElevationProvider and BingLocationProvider; add ElevationProvider, GeoidProvider, and LocationProvider interfaces
+
+## 5.10.3
+Tue, 16 Jun 2026 12:58:32 GMT
+
+### Updates
+
+- NativeApp.startup now always reports the initial connectivity to the backend. Previously, if if `window.navigator.onLine` was false at startup, setConnectivity was never called, leaving the backend incorrectly assuming it was online.
+
+## 5.10.2
+Thu, 11 Jun 2026 21:09:38 GMT
+
+_Version update only_
+
+## 5.10.1
+Mon, 08 Jun 2026 18:45:58 GMT
+
+### Updates
+
+- QuantityTypeFormatsProvider.getFormat now honors the requested UnitSystemKey instead of always using the active system, and QuantityFormatter.getSpecsByName accepts an optional options argument to query a non-active unit system.
+
+## 5.10.0
+Wed, 03 Jun 2026 20:19:46 GMT
+
+### Updates
+
+- Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model.
+- QuantityFormatter now defaults to BasicUnitsProvider from @itwin/core-quantity, which provides a comprehensive unit set generated from the BIS units-schema package, replacing the previous limited internal provider.
+- Fixed non-planar globe map tiles disappearing in narrow top-down views by using tile surface corners & max projected tile size to determine LOD.
+- Fix FormatSpecHandle stale state during onFormattingReady
+- Use units schema 01.00.10
+- Added `IModelConnection.getSchemaView()` function, which provides access to iModel's `SchemaView` - a lightweight, read-only, synchronous API for navigating schema metadata - classes, properties, relationships, enumerations, etc.
+
+## 5.9.5
+Mon, 01 Jun 2026 17:34:00 GMT
+
+_Version update only_
+
+## 5.9.4
+Tue, 19 May 2026 19:45:27 GMT
+
+_Version update only_
+
+## 5.9.3
+Fri, 15 May 2026 11:25:54 GMT
+
+### Updates
+
+- Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model.
+
+## 5.9.2
+Fri, 08 May 2026 20:36:41 GMT
+
+### Updates
+
+- Fix FormatSpecHandle stale state during onFormattingReady
+
+## 5.9.1
+Tue, 05 May 2026 17:43:30 GMT
+
+_Version update only_
+
+## 5.9.0
+Mon, 04 May 2026 16:32:08 GMT
+
+### Minor changes
+
+- Quantity Formatter: readiness events, serialized reload queue, multi-system caching, composite-keyed registry, FormatSpecHandle, listener leak fix.
+
+### Updates
+
+- Improved `PerModelCategoryVisibility` performance in some cases more than 10x.
+- QuantityFormatter now defaults to BasicUnitsProvider from @itwin/core-quantity, which provides a comprehensive unit set generated from the BIS units-schema package, replacing the previous limited internal provider.
+- Add new ViewState.getRealityModelTreeRefs method
+- added EditTxn apis
+- Added async versions of Txn reverse and reinstate operations, and added support for abandoning locks when reversing Txns.
+- Fix event listener leak in LayerTileTreeReferenceHandler
+
+## 5.8.5
+Thu, 14 May 2026 19:12:21 GMT
+
+### Updates
+
+- Fix crash in BackgroundMapGeometry.getFrustumIntersectionDepthRange when an iModel without an ecefLocation has a global context reality model.
+
+## 5.8.4
+Thu, 23 Apr 2026 18:05:14 GMT
+
+_Version update only_
+
+## 5.8.3
+Thu, 23 Apr 2026 14:52:42 GMT
+
+_Version update only_
+
+## 5.8.2
+Thu, 16 Apr 2026 11:05:01 GMT
+
+_Version update only_
+
+## 5.8.1
+Fri, 10 Apr 2026 13:02:00 GMT
+
+_Version update only_
+
+## 5.8.0
+Thu, 02 Apr 2026 18:19:33 GMT
+
+### Minor changes
+
+- Add support for the proposed BENTLEY_materials_line_style glTF extension, including line width and custom line-pattern rendering for glTF line primitives.
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Support geometry collection for reality meshes with glTF tiles
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+- New LockService interface and new BriefcaseConnection.locks property
+- Update measure tool to fallback to QuantityType
+- Fix crash when QuantityFormatter.setUnitsProvider is called after IModelApp shutdown — ToolAdmin no longer emits activeToolChanged with an undefined tool.
+- Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3).
+- Add support for WMTS sparse tilesets
+
+## 5.7.3
+Tue, 24 Mar 2026 14:29:17 GMT
+
+### Updates
+
+- Revert metric LengthEngineering default format back to meters (meter4) from millimeters (millimeter3).
+
+## 5.7.2
+Thu, 12 Mar 2026 14:12:44 GMT
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+
+## 5.7.1
+Mon, 09 Mar 2026 14:41:48 GMT
+
+### Updates
+
+- Add support for WMTS sparse tilesets
+
+## 5.7.0
+Tue, 03 Mar 2026 18:21:20 GMT
+
+### Updates
+
+- Add lifecycle events for pull merge.
+- Add `color` property to focused inputs
+- Support geometry collection for reality meshes with glTF tiles
+- Swap deprecated calls to logException for new logError
+- Default engineering length quantities to 3 decimal places and millimeters for metric. 2 decimal places and feet for imperial.
+- Add new parameter to Viewport.changeCategoryDisplay for batch notification of categories being added.
+- Support BENTLEY_materials_planar_fill in glTF parsing and rendering.
+- Refactored queryExtents API to optimize performance.
+
+## 5.6.3
+Mon, 09 Mar 2026 22:09:11 GMT
+
+### Updates
+
+- Fix default KOQ -> QuantityType map value for CivilUnits.LENGTH
+- Fix reality data not being reprojected correctly when its CRS is different than iModel
+- Add support for WMTS sparse tilesets
 
 ## 5.6.2
 Thu, 26 Feb 2026 22:14:46 GMT

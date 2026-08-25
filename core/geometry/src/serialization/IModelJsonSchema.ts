@@ -135,7 +135,7 @@ export namespace IModelJson {
     // cspell:word bagof
     /**
      * A collection of curves with no required structure or connections
-     * @deprecated in 5.0 - will not be removed until after 2026-06-13. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
+     * @deprecated in 5.0 - might be removed in next major version. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
     */
     bagofCurves?: [CurveCollectionProps];
     /** A collection of curves with no required structure or connections. */
@@ -263,12 +263,12 @@ export namespace IModelJson {
 
     /**
      * Optional section x-axis.
-     * @deprecated in 5.0 - will not be removed until after 2026-06-13. This property has never been written. Optional axes are specified by an AxesProps.
+     * @deprecated in 5.0 - might be removed in next major version. This property has never been written. Optional axes are specified by an AxesProps.
      */
     vectorX?: XYZProps;
     /**
      * Optional section y-axis.
-     * @deprecated in 5.0 - will not be removed until after 2026-06-13. This property has never been written. Optional axes are specified by an AxesProps.
+     * @deprecated in 5.0 - might be removed in next major version. This property has never been written. Optional axes are specified by an AxesProps.
      */
     vectorY?: XYZProps;
 
@@ -1467,20 +1467,15 @@ export namespace IModelJson {
       const xySameLength = Geometry.isSameCoordinate(xMag, yMag);
       const axisVector = Vector3d.createStartEnd(centerA, centerB);
 
-      // special case of cylinder
-      if (Geometry.isSameCoordinate(radiusA, radiusB)
-        && vectorX.isPerpendicularTo(axisVector)
-        && vectorY.isPerpendicularTo(axisVector)
-        && xySameLength
-        && Geometry.isSameCoordinate(xMag, 1.0)) {
-        return {
-          cylinder: {
-            capped: data.capped,
-            start: centerA.toJSON(),
-            end: centerB.toJSON(),
-            radius: radiusA,
-          },
+      const cylinderRadius = data.cylinderRadius();
+      if (cylinderRadius > 0) {
+        const cylinderProps: CylinderProps = {
+          capped: data.capped,
+          start: centerA.toJSON(),
+          end: centerB.toJSON(),
+          radius: cylinderRadius,
         };
+        return { cylinder: cylinderProps };
       }
 
       const coneProps: ConeProps = {

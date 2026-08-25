@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LabelDefinition } from "@itwin/presentation-common";
+import { Field, Item, LabelDefinition, RelationshipPath, SingleElementPropertiesRequestOptions, Value } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { describeContentTestSuite, getFieldLabels } from "./Utils.js";
+import { assert } from "@itwin/core-bentley";
 
 describeContentTestSuite("Element properties", ({ getDefaultSuiteIModel }) => {
   it("gets element properties with default content parser", async () => {
@@ -146,7 +147,7 @@ describeContentTestSuite("Element properties", ({ getDefaultSuiteIModel }) => {
     });
   });
 
-  it("gets element properties with custom content parser", async () => {
+  it("gets element properties with simple content parser", async () => {
     const imodel = await getDefaultSuiteIModel();
     const result = await Presentation.presentation.getElementProperties({
       imodel,
@@ -159,6 +160,74 @@ describeContentTestSuite("Element properties", ({ getDefaultSuiteIModel }) => {
     expect(result).deep.eq({
       fieldsCount: 20,
       label: LabelDefinition.fromLabelString("TestClass [0-2P]"),
+    });
+  });
+
+  it("gets element properties with complex content parser", async () => {
+    type ValueType =
+      | Value
+      | { from: { source: string; relationship: string; direction: "forward" | "backward"; target: string }[]; values: Record<string, ValueType>[] };
+    const contentParser: SingleElementPropertiesRequestOptions<unknown, Record<string, ValueType>>["contentParser"] = (descriptor, item) => {
+      const values: Record<string, ValueType> = {};
+      function applyPrefix(fieldName: string, prefix?: string, index?: number) {
+        return prefix ? `${prefix}${typeof index === "number" ? `[${index}]` : ""}.${fieldName}` : fieldName;
+      }
+      function visitFields(fields: Field[], currValues: Item["values"], valueNamePrefix?: string | undefined, valueIndex?: number) {
+        for (const field of fields) {
+          const fieldValue = currValues[field.name];
+          if (field.isNestedContentField()) {
+            assert(Value.isNestedContent(fieldValue));
+            const prefix = applyPrefix(
+              RelationshipPath.reverse(field.pathToPrimaryClass)
+                .flatMap((step) => [`${step.isForwardRelationship ? "" : "!"}${step.relationshipInfo.name}`, step.targetClassInfo.name])
+                .join("->"),
+              valueNamePrefix,
+              valueIndex,
+            );
+            fieldValue.forEach((nestedItem, nestedItemIndex) =>
+              visitFields(field.nestedFields, nestedItem.values, prefix, fieldValue.length > 1 ? nestedItemIndex : undefined),
+            );
+          } else if (field.isPropertiesField()) {
+            values[applyPrefix(field.properties[0].property.name, valueNamePrefix, valueIndex)] = Value.isNavigationValue(fieldValue)
+              ? fieldValue.id
+              : fieldValue;
+          } else {
+            values[applyPrefix(field.name, valueNamePrefix, valueIndex)] = fieldValue;
+          }
+        }
+      }
+      visitFields(descriptor.fields, item.values);
+      return values;
+    };
+
+    const imodel = await getDefaultSuiteIModel();
+    const result = await Presentation.presentation.getElementProperties({
+      imodel,
+      elementId: "0x61",
+      contentParser,
+    });
+    expect(result).deep.eq({
+      ["Model"]: "0x1c",
+      ["UserLabel"]: "TestClass",
+      ["Category"]: "0x17",
+      ["CodeValue"]: undefined,
+      ["Boolean_Property"]: false,
+      ["Boolean_Property_2"]: true,
+      ["String_Property_1"]: "Lithuania",
+      ["String_Property_2"]: "Žydrūnas Ilgauskas",
+      ["String_Property_3"]: "Star Wars - Return of the Jedi",
+      ["String_Property_4"]: "Qui-gon Jinn",
+      ["StringA"]: "°×Æò³",
+      ["Integer_1"]: 55,
+      ["Integer_2"]: 600,
+      ["Integer_3"]: 1111111111,
+      ["Integer_4"]: -2244,
+      ["Decimal_1"]: 1e-7,
+      ["Decimal_2"]: 99.01,
+      ["Decimal_3"]: 1000000.001,
+      ["PicklistColor"]: 4,
+      ["!BisCore:ModelContainsElements->BisCore:Model->BisCore:ModelModelsElement->BisCore:ISubModeledElement->BisCore:ElementHasLinks->BisCore:RepositoryLink.Url"]: "file:///d|/temp/properties_60instanceswithurl2.dgn",
+      ["!BisCore:ModelContainsElements->BisCore:Model->BisCore:ModelModelsElement->BisCore:ISubModeledElement->BisCore:ElementHasLinks->BisCore:RepositoryLink.UserLabel"]: "Properties_60InstancesWithUrl2.dgn",
     });
   });
 });

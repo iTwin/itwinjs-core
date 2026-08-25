@@ -11,13 +11,14 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, ITwinError, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch, wrapTimerCallback,
 } from "@itwin/core-bentley";
 import { CloudSqliteError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { RpcTrace } from "./rpc/tracing";
+import { getOnlineStatus } from "./internal/OnlineStatus";
 
 import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
@@ -55,13 +56,16 @@ export namespace CloudSqlite {
 
   /**
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
-   * If the service is unavailable or returns an error, an empty token is returned.
+   * If the backend is considered offline, this returns an empty token without calling the service.
    */
   export async function requestToken(args: RequestTokenArgs): Promise<AccessToken> {
     // allow the userToken to be supplied via args. If not supplied, or blank, use the backend's accessToken. If that fails, use the value from the current RPC request
     let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
     if (userToken === "")
       userToken = RpcTrace.currentActivity?.accessToken ?? "";
+    if (!getOnlineStatus())
+      return "";
+
     const response = await getBlobService().requestToken({ ...args, userToken });
     return response?.token ?? "";
   }
@@ -69,6 +73,7 @@ export namespace CloudSqlite {
   interface CloudContainerInternal extends CloudContainer {
     timer?: NodeJS.Timeout;
     refreshPromise?: Promise<void>;
+    refreshGeneration: number;
     lockExpireSeconds: number;
     writeLockHeldBy?: string;
   }
@@ -97,6 +102,7 @@ export namespace CloudSqlite {
     // when the object is cloned (e.g. when included in an exception across processes).
     addHiddenProperty(container, "timer");
     addHiddenProperty(container, "refreshPromise");
+    addHiddenProperty(container, "refreshGeneration", 0);
 
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
     container.lockExpireSeconds = args.lockExpireSeconds ?? 60 * 60; // default is 1 hour
@@ -104,7 +110,10 @@ export namespace CloudSqlite {
     // don't refresh tokens for public containers or if refreshSeconds<=0
     if (!args.isPublic && refreshSeconds > 0) {
       const tokenProps = { baseUri: args.baseUri, containerId: args.containerId, accessLevel: args.accessLevel };
-      const doRefresh = async () => {
+      // `generation` is bumped on every connect/disconnect. A refresh only applies its result, clears/reschedules its timer, if the
+      // generation it captured when scheduled is still current - this stops a refresh already in flight when disconnect (and possibly
+      // reconnect) happens from clobbering a newer refresh's token/promise or rearming a live timer after it should have stopped.
+      const doRefresh = async (generation: number) => {
         let newToken: AccessToken | undefined;
         const url = `[${tokenProps.baseUri}/${tokenProps.containerId}]`;
         try {
@@ -113,18 +122,25 @@ export namespace CloudSqlite {
         } catch (err: any) {
           logError(`Error refreshing token for container ${url}: ${err.message}`);
         }
-        container.accessToken = newToken ?? "";
+        if (container.refreshGeneration === generation)
+          container.accessToken = newToken ?? "";
       };
-      const tokenRefreshFn = () => {
+      const tokenRefreshFn = (generation: number) => {
         container.timer = setTimeout(async () => {
-          container.refreshPromise = doRefresh(); // this promise is stored on the container so it can be awaited in tests
+          container.refreshPromise = doRefresh(generation); // this promise is stored on the container so it can be awaited in tests
           await container.refreshPromise;
-          container.refreshPromise = undefined;
-          tokenRefreshFn(); // schedule next refresh
-        }, refreshSeconds * 1000).unref(); // unref so it doesn't keep the process alive
+          if (container.refreshGeneration === generation) {
+            container.refreshPromise = undefined;
+            tokenRefreshFn(generation); // schedule next refresh
+          }
+        }, refreshSeconds * 1000);
       };
-      addHiddenProperty(container, "onConnected", tokenRefreshFn); // schedule the first refresh when the container is connected
+      addHiddenProperty(container, "onConnected", () => { // schedule the first refresh when the container is connected
+        const generation = ++container.refreshGeneration;
+        tokenRefreshFn(generation);
+      });
       addHiddenProperty(container, "onDisconnect", () => { // clear the refresh timer when the container is disconnected
+        ++container.refreshGeneration;
         if (container.timer !== undefined) {
           clearTimeout(container.timer);
           container.timer = undefined;
@@ -496,7 +512,7 @@ export namespace CloudSqlite {
    * Notes:
    * - all methods and accessors of this interface (other than `initializeContainer`) require that the `connect` method be successfully called first.
    * Otherwise they will throw an exception or return meaningless values.
-   * - before a SQLiteDb in a container may be opened for write access, the container's write lock must be held (see [[acquireWriteLock]].)
+   * - before a SQLiteDb in a container may be opened for write access, the container's write lock must be held (see [[acquireWriteLock]]).
    * - a single CloudContainer may hold more than one SQLiteDb, but often they are 1:1.
    * - the write lock is per-Container, not per-SQLiteDb (which is the reason they are often 1:1)
    * - the accessToken (a SAS key) member provides time limited, restricted, access to the container. It must be refreshed before it expires.
@@ -694,6 +710,16 @@ export namespace CloudSqlite {
   }
 
   /**
+   * Determine if error is a "transfer already completed" error.
+   * @param err Any thrown error
+   * @returns true if the error is a "transfer already completed" error, or false otherwise.
+   * @internal
+   */
+  function isTransferAlreadyCompletedError(err: any): boolean {
+    return ITwinError.isError(err, "imodel-native", "BadArg") && err.message === "transfer already completed";
+  }
+
+  /**
    * Clean any unused deleted blocks from cloud storage. Unused deleted blocks can accumulate in cloud storage in a couple of ways:
    * 1) When a database is updated, a subset of its blocks are replaced by new versions, sometimes leaving the originals unused.
    * 2) A database is deleted with [[CloudContainer.deleteDatabase]]
@@ -704,19 +730,35 @@ export namespace CloudSqlite {
    */
   export async function cleanDeletedBlocks(container: CloudContainer, options: CleanDeletedBlocksOptions): Promise<void> {
     let timer: NodeJS.Timeout | undefined;
+    const intervalPromises = new Set<Promise<void>>();
     try {
       const cleanJob = new NativeLibrary.nativeLib.CancellableCloudSqliteJob("cleanup", container, options);
       let total = 0;
       const onProgress = options?.onProgress;
       if (onProgress) {
-        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = cleanJob.getProgress();
-          total = progress.total;
-          const result = await onProgress(progress.loaded, progress.total);
-          if (result === 1)
-            cleanJob.stopAndSaveProgress();
-          else if (result !== 0)
-            cleanJob.cancelTransfer();
+        timer = setInterval(() => { // set an interval timer to show progress every 250ms
+          void wrapTimerCallback(intervalPromises, async () => {
+            try {
+              const progress = cleanJob.getProgress();
+              total = progress.total;
+              const result = await onProgress(progress.loaded, progress.total);
+              if (result === 1)
+                cleanJob.stopAndSaveProgress();
+              else if (result !== 0)
+                cleanJob.cancelTransfer();
+            } catch (err: any) {
+              if (timer) {
+                clearInterval(timer);
+                timer = undefined;
+              }
+              // A race condition exists where cleanJob has completed but the timer has not yet been cleared, or it
+              // completes while we are waiting on the onProgress callback. If this happens, we will get an error from any
+              // function call made to cleanJob after the job is done. In that case, just ignore the error.
+              if (isTransferAlreadyCompletedError(err))
+                return;
+              throw err;
+            }
+          });
         }, 250);
       }
       await cleanJob.promise;
@@ -731,6 +773,12 @@ export namespace CloudSqlite {
       if (timer)
         clearInterval(timer);
     }
+    // Note: if an error is thrown before we get here then we don't care about any possible errors from the interval
+    // callbacks, so we don't await the promises in that case. If we do get here, then we want to await any remaining
+    // promises to ensure all callbacks have completed before this function returns.
+    if (intervalPromises.size > 0) {
+      await Promise.all(intervalPromises);
+    }
   }
 
   /** @internal */
@@ -739,16 +787,32 @@ export namespace CloudSqlite {
       mkdirSync(dirname(props.localFileName), { recursive: true }); // make sure the directory exists before starting download
 
     let timer: NodeJS.Timeout | undefined;
+    const intervalPromises = new Set<Promise<void>>();
     try {
       const transfer = new NativeLibrary.nativeLib.CancellableCloudSqliteJob(direction, container, props);
       let total = 0;
       const onProgress = props.onProgress;
       if (onProgress) {
-        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = transfer.getProgress();
-          total = progress.total;
-          if (onProgress(progress.loaded, progress.total))
-            transfer.cancelTransfer();
+        timer = setInterval(() => { // set an interval timer to show progress every 250ms
+          void wrapTimerCallback(intervalPromises, async () => {
+            try {
+              const progress = transfer.getProgress();
+              total = progress.total;
+              if (onProgress(progress.loaded, progress.total))
+                transfer.cancelTransfer();
+            } catch (err: any) {
+              if (timer) {
+                clearInterval(timer);
+                timer = undefined;
+              }
+              // A race condition exists where transfer has completed but the timer has not yet been cleared. If this
+              // happens, we will get an error from any function call made to transfer after the job is done. In that
+              // case, just ignore the error.
+              if (isTransferAlreadyCompletedError(err))
+                return;
+              throw err;
+            }
+          });
         }, 250);
       }
       await transfer.promise;
@@ -761,7 +825,12 @@ export namespace CloudSqlite {
     } finally {
       if (timer)
         clearInterval(timer);
-
+    }
+    // Note: if an error is thrown before we get here then we don't care about any possible errors from the interval
+    // callbacks, so we don't await the promises in that case. If we do get here, then we want to await any remaining
+    // promises to ensure all callbacks have completed before this function returns.
+    if (intervalPromises.size > 0) {
+      await Promise.all(intervalPromises);
     }
   }
 

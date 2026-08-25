@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------------------------------
+﻿/*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
@@ -8,7 +8,7 @@ import * as path from "path";
 import { Guid, ProcessDetector } from "@itwin/core-bentley";
 import { CatalogIModel } from "@itwin/core-common";
 import { CatalogConnection } from "@itwin/core-frontend";
-import { coreFullStackTestIpc } from "../Editing";
+import { coreFullStackTestCommandIpc, coreFullStackTestIpc, saveBriefcaseChanges } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 // this test is only applicable for NativeApp frontend
@@ -115,8 +115,8 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       // Now add an element to v1.0.1
       const dictModelId = await v101db.models.getDictionaryModel();
-      const cat1 = await coreFullStackTestIpc.createAndInsertSpatialCategory(v101db.key, dictModelId, "Category 1", { color: 1 });
-      await v101db.saveChanges();
+      const cat1 = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(v101db.key, dictModelId, "Category 1", { color: 1 });
+      await saveBriefcaseChanges(v101db);
       await v101db.close();
       // this uploads the changes and makes them available to others
       await CatalogConnection.releaseWriteLock({ containerId });
@@ -133,8 +133,8 @@ if (ProcessDetector.isElectronAppFrontend) {
       expect(info.version).equal("2.0.0");
 
       // now add another element to 2.0.0. This version of the catalogDb will have both spatial categories.
-      const cat2 = await coreFullStackTestIpc.createAndInsertSpatialCategory(v20db.key, dictModelId, "Category 2", { color: 2 });
-      await v20db.saveChanges();
+      const cat2 = await coreFullStackTestCommandIpc.createAndInsertSpatialCategory(v20db.key, dictModelId, "Category 2", { color: 2 });
+      await saveBriefcaseChanges(v20db);
       await v20db.close();
       await CatalogConnection.releaseWriteLock({ containerId });
 
@@ -190,3 +190,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
   });
 }
+
+
+
+

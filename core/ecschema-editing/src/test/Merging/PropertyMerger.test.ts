@@ -1425,7 +1425,7 @@ describe("Property merger tests", () => {
                   label: "None",
                 },
               ],
-            } as any,
+            },
           },
           {
             changeType: "modify",

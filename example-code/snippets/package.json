@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite-blob --blobPort 10001 --silent --loose --location ./lib/test/azuriteStorage",
+    "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite-blob --skipApiVersionCheck --blobPort 10001 --silent --loose --location ./lib/test/azuriteStorage",
     "build": "tsc 1>&2",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json ../../generated-docs",
     "copy:assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
@@ -35,13 +35,13 @@
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/map-layers-formats": "workspace:*",
     "@itwin/service-authorization": "^2.0.0",
-    "@xmldom/xmldom": "~0.8.10",
+    "@xmldom/xmldom": "~0.8.13",
     "azurite": "^3.35.0",
     "fs-extra": "^8.1.0",
     "get-system-fonts": "^2.0.2"
   },
   "devDependencies": {
-    "@bentley/units-schema": "^1.0.9",
+    "@bentley/units-schema": "^1.0.11",
     "@bentley/formats-schema": "^1.0.0",
     "@bentley/aec-units-schema": "^1.0.3",
     "@itwin/build-tools": "workspace:*",
@@ -71,7 +71,10 @@
     "spec": [
       "lib/**/*.test.js"
     ],
-    "require": ["lib/setup.js", "source-map-support/register"],
+    "require": [
+      "lib/setup.js",
+      "source-map-support/register"
+    ],
     "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporter-options": "mochaFile=lib/test/junit_results.xml",
     "timeout": 999999

@@ -43,7 +43,10 @@ export class ProjectExtentsExample {
       high.height = Math.max(high.height, geoPt.height);
     }
 
-    return { min: low!, max: high! };
+    if (undefined === low || undefined === high)
+      throw new Error("Unable to determine project extents cartographic range.");
+
+    return { min: low, max: high };
   }
 
   // __PUBLISH_EXTRACT_END__

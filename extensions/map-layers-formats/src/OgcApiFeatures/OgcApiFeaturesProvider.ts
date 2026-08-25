@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
+import { base64StringToUint8Array, BentleyError, expectDefined, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
 import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
 import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
@@ -137,7 +137,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       layerId = this._settings.subLayers[0].id;
     }
 
-    const readCollectionsPage = (data: any) => {
+    const readCollectionsPage = (data: any, baseUrl: string) => {
       const collection = data.collections.find((col: any)=> col.id === layerId);
       const collectionLinks = collection?.links;
       if (!collectionLinks) {
@@ -147,7 +147,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       }
       const collectionLink = collectionLinks.find((link: any)=> link.rel.includes("collection") && link.type === "application/json",
       );
-      this._collectionUrl  = collectionLink.href;
+      this._collectionUrl  = new URL(collectionLink.href, baseUrl).toString();
     };
 
     const layerIdMismatch = () => {
@@ -156,16 +156,19 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       throw new Error(msg);
     };
     let collectionMetadata: any;
-    let json = await this.fetchMetadata(this._settings.url);
+    let collectionResponseUrl: string = this._settings.url;
+    const { json: initialJson, responseUrl: initialResponseUrl } = await this.fetchMetadata(this._settings.url);
+    let json = initialJson;
     if (json?.type === "FeatureCollection") {
       // We landed on the items page, we need to look for the collection metadata url
       if (Array.isArray(json.links)) {
         const collectionLink = json.links.find((link: any)=> link.rel.includes("collection") && link.type === "application/json");
-        this._collectionUrl  = collectionLink.href;
+        this._collectionUrl  = new URL(collectionLink.href, initialResponseUrl).toString();
       }
     } else if (json.itemType === "feature") {
       // We landed on a specific collection page.
       collectionMetadata = json;
+      collectionResponseUrl = initialResponseUrl;
 
       // Check if the collection id matches at least one sub-layer
       if (this._settings.subLayers && this._settings.subLayers.length > 0) {
@@ -180,7 +183,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     } else if (Array.isArray(json.collections)) {
       // We landed in the "Collections" page
       // Find to find the specified layer id among the available collections
-      readCollectionsPage(json);
+      readCollectionsPage(json, initialResponseUrl);
     }  else if (Array.isArray(json.links)) {
       // This might be the main landing page
       // We need to find the the "Collections" page
@@ -190,15 +193,18 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
         throw new ServerError(IModelStatus.ValidationFailed, "");
       }
 
-      json =  await this.fetchMetadata(collectionsLink.href);
+      const collectionsHref = new URL(collectionsLink.href, initialResponseUrl).toString();
+      const collectionsResult = await this.fetchMetadata(collectionsHref);
+      json = collectionsResult.json;
       if (Array.isArray(json.collections)) {
-        readCollectionsPage(json);
+        readCollectionsPage(json, collectionsResult.responseUrl);
       }
     }
 
     // Read collection metadata
-    if (!collectionMetadata)
-      collectionMetadata = await this.fetchMetadata(this._collectionUrl);
+    if (!collectionMetadata) {
+      ({ json: collectionMetadata, responseUrl: collectionResponseUrl } = await this.fetchMetadata(this._collectionUrl));
+    }
 
     if (layerId !== undefined && layerId !== collectionMetadata.id) {
       layerIdMismatch();
@@ -219,11 +225,11 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     if (Array.isArray(collectionMetadata?.links)) {
       // Items links (Mandatory)
       const itemsLink = collectionMetadata.links.find((link: any)=> link.rel.includes("items") && link.type === "application/geo+json");
-      itemsHref = itemsLink.href;
+      itemsHref = new URL(itemsLink.href, collectionResponseUrl).toString();
 
       // Queryables link (Optional)
       const queryablesLink = collectionMetadata.links.find((link: any)=> link.rel.includes("queryables") && link.type === "application/schema+json");
-      queryablesHref = queryablesLink.href;
+      queryablesHref = queryablesLink ? new URL(queryablesLink.href, collectionResponseUrl).toString() : undefined;
 
     }
 
@@ -235,7 +241,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       throw new Error(msg);
     }
     if (queryablesHref)
-      this._queryables = await this.fetchMetadata(queryablesHref);
+      this._queryables = (await this.fetchMetadata(queryablesHref)).json;
 
     if (!this._forceTileMode) {
       const status = await this.fetchAllItems();
@@ -247,10 +253,11 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     await this._defaultSymbol.initialize(); // images must be loaded upfront
   }
 
-  private async fetchMetadata(url: string): Promise<any> {
+  private async fetchMetadata(url: string): Promise<{ json: any; responseUrl: string }> {
     const tmpUrl = this.appendCustomParams(url);
     const response = await this.makeRequest(tmpUrl);
-    return response.json();
+    const json = await response.json();
+    return { json, responseUrl: response.url || tmpUrl };
   }
 
   private async fetchAllItems() {
@@ -270,14 +277,16 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       let response = await this.makeTileRequest(tmpUrl, timeout);
       let json = await response.json();
       data = json;
-      // Follow "next" link if any
+      // Follow "next" link if any, resolving each href against the URL that served it
+      let pageResponseUrl = response.url || tmpUrl;
       let nextLink = json.links?.find((link: any)=>link.rel === "next");
       while (nextLink && (Date.now() - fetchBegin) < timeout && success) {
-        tmpUrl = this.appendCustomParams(nextLink.href);
+        tmpUrl = this.appendCustomParams(new URL(nextLink.href, pageResponseUrl).toString());
         response = await this.makeTileRequest(tmpUrl, this._staticModeFetchTimeout);
+        pageResponseUrl = response.url || tmpUrl;
         json = await response.json();
         if (json?.features)
-          data!.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
+          data.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
         else
           success = false;
         nextLink = json.links?.find((link: any)=>link.rel === "next");
@@ -416,7 +425,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
 
       this._spatialIdx?.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
         (index: number) => {
-          filteredData.features.push(this._staticData!.features[index]);
+          filteredData.features.push(expectDefined(this._staticData).features[index]);
           return true;
         });
 
@@ -475,13 +484,13 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       if (this._drawDebugInfo)
         this.drawTileDebugInfo(row, column, zoomLevel, ctx);
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
+      Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${BentleyError.getErrorMessage(e)}`);
     }
 
     try {
       return this.createImageSourceFromDataURL(canvas.toDataURL("image/png"), ImageSourceFormat.Png);
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);
+      Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${BentleyError.getErrorMessage(e)}`);
     }
 
     return undefined;
@@ -540,4 +549,3 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     featureInfos );
   }
 }
-

@@ -197,6 +197,8 @@ export interface GltfMeshPrimitive extends GltfProperty {
     KHR_draco_mesh_compression?: DracoMeshCompression;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_mesh_features?: MeshFeatures;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    BENTLEY_materials_line_style?: GltfPrimitiveLineStyleExtension;
   };
 }
 
@@ -210,6 +212,13 @@ export interface GltfMesh extends GltfChildOfRootProperty {
   /** For morph targets - currently unsupported. */
   weights?: number[];
   extensions?: GltfExtensions & {
+    /** The [EXT_mesh_primitive_restart](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/EXT_mesh_primitive_restart) extension
+     * describes groups of primitives that can be combined into a single draw call, using a "combined" index accessor containing primitive restart values
+     * to separate the individual primitives.
+     * It is superseded by [KHR_mesh_primitive_restart](https://github.com/KhronosGroup/glTF/pull/2569), which has no JSON payload at any level. A primitive's
+     * own indices accessor may contain restart values inline (the maximum value for the accessor's component type), with the extension declared in the
+     * asset's `extensionsUsed` and `extensionsRequired` arrays. See [[GltfReader.readPolylines]] for the handling of inline restart values.
+     */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_mesh_primitive_restart?: {
       primitiveGroups: Array<{
@@ -488,6 +497,17 @@ export interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
 }
 
 /** @internal */
+export interface GltfMaterialLineStyleExtension extends GltfProperty {
+  width?: number;
+  pattern?: number;
+}
+
+/** @internal */
+export interface GltfPrimitiveLineStyleExtension extends GltfProperty {
+  cumulativeDistance?: number;
+}
+
+/** @internal */
 export type GltfAlphaMode = "OPAQUE" | "MASK" | "BLEND";
 
 /** @internal */
@@ -504,7 +524,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
   doubleSided?: boolean;
   extensions?: GltfExtensions & {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    BENTLEY_materials_point_style?: { diameter: number };
+    BENTLEY_materials_point_style?: { diameter: number; };
     /** The BENTLEY_materials_planar_fill extension allows customization of planar polygon fill behavior for CAD-style visualization.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -541,6 +561,8 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
         [k: string]: unknown;
       };
     };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    BENTLEY_materials_line_style?: GltfMaterialLineStyleExtension;
   };
 }
 

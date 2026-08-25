@@ -26,7 +26,7 @@ Example: A FormatSet with `name: "metric"` might have `label: "Metric"` in Engli
 
 ### unitSystem
 
-The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system for the format set. Supported values:
+The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system preference group for the format set. Each key maps to one or more EC `UnitSystem` elements in priority order — see [Unit Systems and UnitSystemKey](./Units.md#unit-systems-and-unitsystemkey) for the full mapping. Supported values:
 
 - `"metric"` - International System of Units
 - `"imperial"` - Imperial units (UK system)
@@ -161,6 +161,8 @@ The table below lists common measurements with their typical KindOfQuantity and 
 | Length (Engineering) | AecUnits.LENGTH | Units.M |
 | Bearing | CivilUnits.BEARING | Units.RAD |
 | Time | DefaultToolsUnits.TIME | Units.S |
+
+> For `Bearing`/`Azimuth` format types specifically, double-check which of these two the KindOfQuantity actually persists: `Units.RAD` (an `ANGLE`-phenomenon unit) is treated as a raw mathematical angle and gets auto-converted to true-azimuth convention, while a `HORIZONTAL_DIRECTION`-phenomenon unit (e.g. `Units.HORIZONTAL_DIR_RAD`) is already true-azimuth and is left as-is. See [Bearing and Azimuth Format](./Formats.md#bearing-and-azimuth-format).
 
 ## FormatSet Storage and Loading
 

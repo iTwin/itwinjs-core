@@ -23,6 +23,7 @@ import {
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
+import { ContextRealityModelState } from "./ContextRealityModelState";
 import { CoordSystem } from "./CoordSystem";
 import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -756,11 +757,13 @@ export abstract class Viewport implements Disposable, TileUser {
     this.view.displayStyle.settings.dropModelAppearanceOverride(id);
   }
 
-  /** Some changes may or may not require us to invalidate the scene.
+  /** Some changes do not alter the set of graphics being displayed (the "scene") but may alter the visibility of objects within those graphics.
+   * Under certain circumstances, we may want to recreate the scene after such changes.
    * Specifically, when shadows are enabled or we are displaying view attachments, the following changes may affect the visibility or transparency of elements or features:
    * - Viewed categories and subcategories;
    * - Always/never drawn elements
    * - Symbology overrides.
+   * Cached decorations will also be invalidated in case they depend on object visibility.
    */
   private maybeInvalidateScene(): void {
     // When shadows are being displayed and the set of displayed categories changes, we must invalidate the scene so that shadows will be regenerated.
@@ -770,7 +773,12 @@ export abstract class Viewport implements Disposable, TileUser {
 
     if (this.view.displayStyle.wantShadows || this.view.isSheetView())
       this.invalidateScene();
+
+    this.onSceneVisibilityChanged();
   }
+
+  /** @internal Invoked by [[maybeInvalidateScene]] when the visibility of objects in the scene may have changed, but the scene itself has not changed. */
+  protected onSceneVisibilityChanged() { }
 
   /** Enable or disable display of elements belonging to a set of categories specified by Id.
    * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
@@ -803,8 +811,11 @@ export abstract class Viewport implements Disposable, TileUser {
       if (true === enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
 
-      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded)
+      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded) {
         this._changeFlags.setViewedCategories();
+        this.maybeInvalidateScene();
+        IModelApp.requestNextAnimation();
+      }
     });
   }
 
@@ -1174,7 +1185,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.detachFromView();
   }
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -1207,6 +1218,14 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateSubCategories(this.view.categorySelector.categories, undefined);
   }
 
+  private getSubCategoryReloadCategoryIds(): Id64Set {
+    const categoryIds = Id64.toIdSet(this.view.categorySelector.categories);
+    for (const { categoryId } of this.perModelCategoryVisibility)
+      categoryIds.add(categoryId);
+
+    return categoryIds;
+  }
+
   private registerViewListeners(): void {
     const view = this.view;
     const removals = this._detachFromView;
@@ -1221,6 +1240,10 @@ export abstract class Viewport implements Disposable, TileUser {
       this._changeFlags.setViewedCategories();
       this.updateSubCategories(view.categorySelector.categories, undefined);
       this.maybeInvalidateScene();
+    }));
+
+    removals.push(this.iModel.subcategories.addChangedListener(() => {
+      this.updateSubCategories(this.getSubCategoryReloadCategoryIds(), undefined);
     }));
 
     removals.push(view.onDisplayStyleChanged.addListener((newStyle) => {
@@ -1284,7 +1307,12 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onInvisibleChanged.addListener(invalidateControllerAndDisplayStyleChanged));
     removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
-    removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onChanged.addListener((previousModel, _newModel) => {
+      displayStyleChanged();
+      // When a reality model is removed or replaced, detach its layer listeners to prevent leaks.
+      if (previousModel instanceof ContextRealityModelState)
+        previousModel.detachLayerListeners();
+    }));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
       displayStyleChanged();
@@ -1399,6 +1427,14 @@ export abstract class Viewport implements Disposable, TileUser {
   private detachFromDisplayStyle(): void {
     this._detachFromDisplayStyle.forEach((f) => f());
     this._detachFromDisplayStyle.length = 0;
+
+    // Detach layer listeners from reality model tree refs to prevent leaks.
+    if (this._view) {
+      for (const model of this.displayStyle.settings.contextRealityModels.models) {
+        if (model instanceof ContextRealityModelState)
+          model.detachLayerListeners();
+      }
+    }
 
     if (this._mapTiledGraphicsProvider) {
       this._mapTiledGraphicsProvider.detachFromDisplayStyle();
@@ -1621,12 +1657,12 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   protected * tiledGraphicsProviderRefs(): Iterable<TileTreeReference> {
     for (const provider of this.tiledGraphicsProviders) {
-      yield * TiledGraphicsProvider.getTileTreeRefs(provider, this);
+      yield* TiledGraphicsProvider.getTileTreeRefs(provider, this);
     }
   }
 
   /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[mapTileTreeRefs]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[mapTileTreeRefs]] instead.
    */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
@@ -1640,7 +1676,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
 
   /** Apply a function to every [[TileTreeReference]] displayed by this viewport.
-   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[getTileTreeRefs]] instead.
+   * @deprecated in 5.0 - might be removed in next major version. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     for (const ref of this.getTileTreeRefs()) {
@@ -1650,9 +1686,9 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Iterate over every [[TileTreeReference]] displayed by this viewport. */
   public * getTileTreeRefs(): Iterable<TileTreeReference> {
-    yield * this.view.getTileTreeRefs();
-    yield * this.mapTileTreeRefs;
-    yield * this.tiledGraphicsProviderRefs();
+    yield* this.view.getTileTreeRefs();
+    yield* this.mapTileTreeRefs;
+    yield* this.tiledGraphicsProviderRefs();
   }
 
   /**
@@ -2377,11 +2413,11 @@ export abstract class Viewport implements Disposable, TileUser {
 
     switch (this.view.getGridOrientation()) {
       case GridOrientationType.View: {
-        const center = this.view.getCenter();
-        this.toViewOrientation(center);
-        this.toViewOrientation(origin);
+        const center = this.npcToView(NpcCenter);
+        rMatrix.setFrom(this.rotation);
+        rMatrix.multiplyVectorInPlace(origin);
         origin.z = center.z;
-        this.fromViewOrientation(origin);
+        rMatrix.multiplyTransposeVectorInPlace(origin);
         break;
       }
 
@@ -2412,28 +2448,28 @@ export abstract class Viewport implements Disposable, TileUser {
     eyeVec.normalizeInPlace();
     linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
 
-    // // get origin and point in view coordinate system
-    const pointView = point.clone();
-    const originView = origin.clone();
-    this.toViewOrientation(pointView);
-    this.toViewOrientation(originView);
+    // Get origin and point in the grid's local coordinate system.
+    const pointGrid = point.clone();
+    const originGrid = origin.clone();
+    rMatrix.multiplyXYZtoXYZ(pointGrid, pointGrid);
+    rMatrix.multiplyXYZtoXYZ(originGrid, originGrid);
 
     // subtract off the origin
-    pointView.y -= originView.y;
-    pointView.x -= originView.x;
+    pointGrid.y -= originGrid.y;
+    pointGrid.x -= originGrid.x;
 
     // round off the remainder to the grid distances
     const gridSpacing = this.view.getGridSpacing();
-    pointView.x = Viewport.roundGrid(pointView.x, gridSpacing.x);
-    pointView.y = Viewport.roundGrid(pointView.y, gridSpacing.y);
+    pointGrid.x = Viewport.roundGrid(pointGrid.x, gridSpacing.x);
+    pointGrid.y = Viewport.roundGrid(pointGrid.y, gridSpacing.y);
 
     // add the origin back in
-    pointView.x += originView.x;
-    pointView.y += originView.y;
+    pointGrid.x += originGrid.x;
+    pointGrid.y += originGrid.y;
 
     // go back to root coordinate system
-    this.fromViewOrientation(pointView);
-    point.setFrom(pointView);
+    rMatrix.multiplyTransposeVectorInPlace(pointGrid);
+    point.setFrom(pointGrid);
   }
 
   /** @internal */
@@ -2771,7 +2807,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
   * When using this overload, the returned image will not include canvas decorations if only one viewport is active.
   * If multiple viewports are active, the returned image will always include canvas decorations.
-  * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the overload accepting a ReadImageToCanvasOptions.
+  * @deprecated in 5.0 - might be removed in next major version. Use the overload accepting a ReadImageToCanvasOptions.
   */
   public readImageToCanvas(): HTMLCanvasElement;
 
@@ -3181,6 +3217,15 @@ export class ScreenViewport extends Viewport {
 
     // When the scene is invalidated, so are all cached decorations - they will be regenerated.
     this._decorationCache.clear();
+  }
+
+  /** @internal */
+  protected override onSceneVisibilityChanged(): void {
+    super.onSceneVisibilityChanged();
+
+    // Cached decorations may be associated with objects in the scene whose visibility has changed. Give them the opportunity to react.
+    this._decorationCache.clear();
+    this.invalidateDecorations();
   }
 
   /** Forces removal of a specific decorator's cached decorations from this viewport, if they exist.

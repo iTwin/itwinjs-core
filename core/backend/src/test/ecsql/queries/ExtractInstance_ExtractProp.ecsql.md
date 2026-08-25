@@ -1,9 +1,9 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](../../../../LICENSE.md) for license terms and full copyright notice.
 
-# Testing point2d for ConcurrentQuery
+# Testing point2d for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT $ -> p2d from aps.TestElement limit 2
@@ -76,10 +76,10 @@ SELECT $ -> p2d from aps.TestElement limit 2
 ]
 ```
 
-# Testing Point3d for ConcurrentQuery
+# Testing Point3d for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT $ -> p3d from aps.TestElement limit 2
@@ -152,10 +152,10 @@ SELECT $ -> p3d from aps.TestElement limit 2
 ]
 ```
 
-# Testing Integers for ConcurrentQuery
+# Testing Integers for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT $ -> i from aps.TestElement limit 2
@@ -188,10 +188,10 @@ SELECT $ -> i from aps.TestElement limit 2
 | 100 |
 | 101 |
 
-# Testing double prop using alias for ConcurrentQuery
+# Testing double prop using alias for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT $ -> d double_prop from aps.TestElement limit 2
@@ -224,10 +224,10 @@ SELECT $ -> d double_prop from aps.TestElement limit 2
 | 0.1 |
 | 1.1 |
 
-# Testing long prop using alias for ConcurrentQuery
+# Testing long prop using alias for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT $ -> l long_prop from aps.TestElement limit 2
@@ -260,10 +260,10 @@ SELECT $ -> l long_prop from aps.TestElement limit 2
 | 1000 |
 | 1001 |
 
-# Testing string prop using alias for ConcurrentQuery
+# Testing string prop using alias for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT $ -> s string_prop from aps.TestElement limit 2
@@ -296,10 +296,10 @@ SELECT $ -> s string_prop from aps.TestElement limit 2
 | str0 |
 | str1 |
 
-# Testing date time prop using alias for ConcurrentQuery
+# Testing date time prop using alias for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT $ -> dt dateTime_prop from aps.TestElement limit 2
@@ -332,10 +332,10 @@ SELECT $ -> dt dateTime_prop from aps.TestElement limit 2
 | 2017-01-01T00:00:00.000 |
 | 2010-01-01T11:11:11.000 |
 
-# Testing binary prop using alias for ConcurrentQuery
+# Testing binary prop using alias for QueryReaders
 
 - dataset: AllProperties.bim
-- mode: ConcurrentQuery
+- mode: QueryReader
 
 ```sql
 SELECT $ -> bin binary_Prop from aps.TestElement limit 2

@@ -295,6 +295,51 @@ SELECT te.ECInstanceId, d.Alias FROM aps.TestElement te CROSS JOIN meta.ECSchema
 | 0x14         | bisCA |
 
 
+# CROSS JOIN with ON clause (single table filter)
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT te.ECInstanceId, d.Alias FROM aps.TestElement te CROSS JOIN meta.ECSchemaDef d ON d.Alias = 'aps' LIMIT 3;
+```
+
+| className            | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
+| -------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                      | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+| ECDbMeta:ECSchemaDef | Alias        | false     | 1     | alias    | Alias        | undefined    | string   | String | Alias              |
+
+| ECInstanceId | Alias |
+| ------------ | ----- |
+| 0x14         | aps   |
+| 0x15         | aps   |
+| 0x16         | aps   |
+
+# CROSS JOIN with ON clause as join condition
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.ECInstanceId,
+  te.i
+FROM
+  aps.TestElement te
+  CROSS JOIN aps.IPrimitive p ON te.ECInstanceId = p.ECInstanceId
+LIMIT
+  3
+```
+
+| className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|                          | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+| AllProperties:IPrimitive | i            | false     | 1     | i        | i            | undefined    | int      | Int  | i                  |
+
+| ECInstanceId | i   |
+| ------------ | --- |
+| 0x14         | 100 |
+| 0x15         | 101 |
+| 0x16         | 102 |
+
 # NATURAL JOIN
 
 - dataset: AllProperties.bim

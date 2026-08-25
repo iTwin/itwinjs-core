@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
-import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@itwin/core-backend";
+import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, withEditTxn } from "@itwin/core-backend";
 import {
   AxisAlignedBox3d, Cartographic, IModel, PersistentBackgroundMapProps, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
 } from "@itwin/core-common";
@@ -55,7 +55,9 @@ class RealityModelTileUtils {
     }
 
     let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
-    const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
+    const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume);
+    if (undefined === range)
+      throw new TypeError("Unable to determine range from the root bounding volume.");
     if (undefined === rootTransform)
       rootTransform = Transform.createIdentity();
 
@@ -101,13 +103,15 @@ export async function insertClassifiedRealityModel(url: string, classifierModelI
 
   const classifier = { modelId: classifierModelId, name, flags: classificationFlags, isActive: true, expand: 1.0 };
   const realityModel = { tilesetUrl: url, name, classifiers: [classifier] };
-  const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name, { viewFlags, backgroundMap, contextRealityModels: [realityModel] });
 
   const projectExtents = Range3d.createFrom(iModelDb.projectExtents);
-  let range;
+  let range: Range3d;
   try {
     const ecefRange = await RealityModelTileUtils.rangeFromUrl(url);
-    range = iModelDb.getEcefTransform().inverse()!.multiplyRange(ecefRange);
+    const worldToEcef = iModelDb.getEcefTransform().inverse();
+    if (undefined === worldToEcef)
+      throw new TypeError("Unable to determine the iModel ECEF transform.");
+    range = worldToEcef.multiplyRange(ecefRange);
   } catch {
     range = projectExtents;
     range.low.z = -200.0;
@@ -115,9 +119,12 @@ export async function insertClassifiedRealityModel(url: string, classifierModelI
   }
   projectExtents.low.z = Math.min(range.low.z, projectExtents.low.z);
   projectExtents.high.z = Math.max(range.high.z, projectExtents.high.z);
-  iModelDb.updateProjectExtents(projectExtents);
 
-  const modelSelectorId: Id64String = ModelSelector.insert(iModelDb, IModel.dictionaryId, name, []);
-  const categorySelectorId: Id64String = CategorySelector.insert(iModelDb, IModel.dictionaryId, name, [classifierCategoryId]);
-  OrthographicViewDefinition.insert(iModelDb, IModel.dictionaryId, name, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+  await withEditTxn(iModelDb, "insert classified reality model", async (txn) => {
+    const displayStyleId = DisplayStyle3d.insert(txn, IModel.dictionaryId, name, { viewFlags, backgroundMap, contextRealityModels: [realityModel] });
+    txn.updateProjectExtents(projectExtents);
+    const modelSelectorId: Id64String = ModelSelector.insert(txn, IModel.dictionaryId, name, []);
+    const categorySelectorId: Id64String = CategorySelector.insert(txn, IModel.dictionaryId, name, [classifierCategoryId]);
+    OrthographicViewDefinition.insert(txn, IModel.dictionaryId, name, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+  });
 }

@@ -164,7 +164,7 @@ export enum ShowSignOption {
 
 /**
  * @beta
- * @deprecated in 4.10 - will not be removed until after 2026-06-13. ScientificType is now a string enum and doesn't need a serialization method. You can access the enum directly.
+ * @deprecated in 4.10 - might be removed in next major version. ScientificType is now a string enum and doesn't need a serialization method. You can access the enum directly.
 */
 export function scientificTypeToString(scientificType: ScientificType): string {
   return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
@@ -189,7 +189,7 @@ export function parseRatioType(ratioType: string, formatName: string): RatioType
     if (RatioType.hasOwnProperty(key)) {
       const enumValue = RatioType[key as keyof typeof RatioType];
       if (enumValue.toLowerCase() === normalizedValue) {
-        return enumValue as RatioType;
+        return enumValue;
       }
     }
   }
@@ -203,7 +203,7 @@ export function parseRatioFormatType(ratioFormatType: string, formatName: string
     if (RatioFormatType.hasOwnProperty(key)) {
       const enumValue = RatioFormatType[key as keyof typeof RatioFormatType];
       if (enumValue.toLowerCase() === normalizedValue)
-        return enumValue as RatioFormatType;
+        return enumValue;
     }
   }
   throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioFormatType' attribute.`);
@@ -223,7 +223,7 @@ export function parseShowSignOption(showSignOption: string, formatName: string):
 
 /**
  * @beta
- * @deprecated in 4.10 - will not be removed until after 2026-06-13. ShowSignOption is now a string enum and doesn't need a serialization method. You can access the enum directly.
+ * @deprecated in 4.10 - might be removed in next major version. ShowSignOption is now a string enum and doesn't need a serialization method. You can access the enum directly.
 */
 export function showSignOptionToString(showSign: ShowSignOption): string {
   switch (showSign) {
@@ -321,7 +321,7 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
 }
 
 /** @beta
- *  @deprecated in 4.10 - will not be removed until after 2026-06-13. FormatType is now a string enum and doesn't need a serialization method. You can access the enum directly.
+ *  @deprecated in 4.10 - might be removed in next major version. FormatType is now a string enum and doesn't need a serialization method. You can access the enum directly.
 */
 export function formatTypeToString(type: FormatType): string {
   switch (type) {

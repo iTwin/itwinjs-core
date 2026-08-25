@@ -53,4 +53,3 @@
 - [Ruleset Supplementation](./advanced/RulesetSupplementation.md)
 - [Default BIS Presentation Rules](./advanced/DefaultBisRules.md)
 - [Performance Tips](./advanced/Performance.md)
-- [Testing](./advanced/Testing.md)

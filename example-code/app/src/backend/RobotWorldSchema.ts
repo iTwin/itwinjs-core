@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SpatialCategory } from "@itwin/core-backend";
+import { ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SpatialCategory, withEditTxn } from "@itwin/core-backend";
 import { IModelStatus } from "@itwin/core-bentley";
 import { ColorByName, IModelError, SubCategoryAppearance } from "@itwin/core-common";
 import * as _schemaNames from "../common/RobotWorldSchema";
@@ -52,7 +52,11 @@ export class RobotWorld extends Schema {
     // Must import the schema. The schema must be installed alongside the app in its
     // assets directory. Note that, for portability, make sure the case of
     // the filename is correct!
-    await iModelDb.importSchemas([path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml")]);
+    const appAssetsDir = IModelHost.appAssetsDir;
+    if (!appAssetsDir)
+      throw new IModelError(IModelStatus.BadRequest, "importSchema failed because appAssetsDir is undefined");
+
+    await iModelDb.importSchemas([path.join(appAssetsDir, "RobotWorld.ecschema.xml")]);
 
     // This is the right time to create definitions, such as Categories, that will
     // be used with the classes in this schema.
@@ -61,13 +65,10 @@ export class RobotWorld extends Schema {
   // __PUBLISH_EXTRACT_END__
 
   public static bootStrapDefinitions(iModelDb: IModelDb) {
-    // Insert some pre-defined categories
-    if (true) {
-      SpatialCategory.insert(iModelDb, IModelDb.dictionaryId, _schemaNames.Class.Robot, new SubCategoryAppearance({ color: ColorByName.silver }));
-    }
-    if (true) {
-      SpatialCategory.insert(iModelDb, IModelDb.dictionaryId, _schemaNames.Class.Barrier, new SubCategoryAppearance({ color: ColorByName.brown }));
-    }
+    withEditTxn(iModelDb, "bootstrap robot world definitions", (txn) => {
+      SpatialCategory.insert(txn, IModelDb.dictionaryId, _schemaNames.Class.Robot, new SubCategoryAppearance({ color: ColorByName.silver }));
+      SpatialCategory.insert(txn, IModelDb.dictionaryId, _schemaNames.Class.Barrier, new SubCategoryAppearance({ color: ColorByName.brown }));
+    });
   }
 
   // Look up the category to use for instances of the specified class

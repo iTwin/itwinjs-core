@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
+import { withEditTxn } from "../../EditTxn";
 import {
   AreaPattern,
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
@@ -83,7 +84,7 @@ type GeomStreamEntry =
 function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] & { viewIndependent: boolean } {
   const result: GeomStreamEntry[] = [];
   for (const entry of iter) {
-    const symb: Symbology =  { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
+    const symb: Symbology = { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
 
     if (undefined !== entry.geomParams.lineColor)
       symb.color = entry.geomParams.lineColor;
@@ -150,32 +151,34 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     });
 
     GenericSchema.registerSchema();
-    const partitionId = imodel.elements.insertElement({
-      classFullName: PhysicalPartition.classFullName,
-      model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      code: PhysicalPartition.createCode(imodel, IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
+    withEditTxn(imodel, (txn) => {
+      const partitionId = txn.insertElement({
+        classFullName: PhysicalPartition.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+        code: PhysicalPartition.createCode(imodel, IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
+      });
+
+      expect(Id64.isValidId64(partitionId)).to.be.true;
+      const model = imodel.models.createModel({
+        classFullName: PhysicalModel.classFullName,
+        modeledElement: { id: partitionId },
+      });
+
+      expect(model).instanceOf(PhysicalModel);
+
+      modelId = txn.insertModel(model.toJSON());
+      expect(Id64.isValidId64(modelId)).to.be.true;
+
+      categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "ctgry", { color: ColorDef.blue.toJSON() });
+      expect(Id64.isValidId64(categoryId)).to.be.true;
+      blueSubCategoryId = IModel.getDefaultSubCategoryId(categoryId);
+      redSubCategoryId = SubCategory.insert(txn, categoryId, "red", { color: ColorDef.red.toJSON() });
+      expect(Id64.isValidId64(redSubCategoryId)).to.be.true;
+
+      materialId = RenderMaterialElement.insert(txn, IModel.dictionaryId, "mat", { paletteName: "pal" });
+      expect(Id64.isValidId64(materialId)).to.be.true;
     });
-
-    expect(Id64.isValidId64(partitionId)).to.be.true;
-    const model = imodel.models.createModel({
-      classFullName: PhysicalModel.classFullName,
-      modeledElement: { id: partitionId },
-    });
-
-    expect(model).instanceOf(PhysicalModel);
-
-    modelId = imodel.models.insertModel(model.toJSON());
-    expect(Id64.isValidId64(modelId)).to.be.true;
-
-    categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "ctgry", { color: ColorDef.blue.toJSON() });
-    expect(Id64.isValidId64(categoryId)).to.be.true;
-    blueSubCategoryId = IModel.getDefaultSubCategoryId(categoryId);
-    redSubCategoryId = SubCategory.insert(imodel, categoryId, "red", { color: ColorDef.red.toJSON() });
-    expect(Id64.isValidId64(redSubCategoryId)).to.be.true;
-
-    materialId = RenderMaterialElement.insert(imodel, IModel.dictionaryId, "mat", { paletteName: "pal" });
-    expect(Id64.isValidId64(materialId)).to.be.true;
   });
 
   afterEach(() => {
@@ -194,7 +197,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       geom: writer.builder.geometryStream,
     };
 
-    const partId = imodel.elements.insertElement(props);
+    const partId = withEditTxn(imodel, (txn) => txn.insertElement(props));
     expect(Id64.isValidId64(partId)).to.be.true;
     return partId;
   }
@@ -215,11 +218,11 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       geom: writer.builder.geometryStream,
       placement: {
         origin: [0, 0, 0],
-        angles: { },
+        angles: {},
       },
     };
 
-    const elemId = imodel.elements.insertElement(props);
+    const elemId = withEditTxn(imodel, (txn) => txn.insertElement(props));
     expect(Id64.isValidId64(elemId)).to.be.true;
     return elemId;
   }
@@ -312,7 +315,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     const part1 = insertGeometryPart([
       { pos: 1 },
       { color: ColorDef.green },
-      { pos: 1.5},
+      { pos: 1.5 },
     ]);
 
     const part2 = insertGeometryPart([
@@ -354,7 +357,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: blueSubCategoryId },
       { pos: -1 },
       { categoryId, subCategoryId: redSubCategoryId },
-      { low: 1},
+      { low: 1 },
       { pos: 1 },
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.green },
       { low: 1.5 },
@@ -379,7 +382,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: redSubCategoryId, materialId: "0" },
       { low: 3.5 },
       { pos: 3.5 },
-      {categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white, materialId },
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white, materialId },
       { low: -4 },
       { pos: -4 },
     ]);

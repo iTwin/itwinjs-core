@@ -35,8 +35,7 @@ import { StrokeOptions } from "./StrokeOptions";
  *   * endPoint
  * * The segment is parameterized with fraction 0 at the start and fraction 1 at the end, i.e. each of these
  * equivalent forms maps fraction `f` to a point `X(f)`:
- * ```
- * equation
+ * ```equation
  *  X(f) = P_0 + f*(P_1 - P_0)\newline
  *  X(f) = (1-f)*P_0 + f*P_1
  * ```
@@ -109,6 +108,13 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public override endPoint(result?: Point3d): Point3d {
     if (result) { result.setFrom(this._point1); return result; }
     return this._point1.clone();
+  }
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Always `false` for `LineSegment3d`.
+   */
+  public override isPhysicallyClosedCurve(_tolerance: number = Geometry.smallMetricDistance, _xyOnly: boolean = false): boolean {
+    return false;
   }
   /** Return the point and derivative vector at fractional position along the line segment. */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
@@ -470,7 +476,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Returns a (high accuracy) range of the curve between fractional positions
-   * * Default implementation returns teh range of the curve from clonePartialCurve
+   * * Default implementation returns the range of the curve from clonePartialCurve
    */
   public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     // (This is cheap -- don't bother testing for fraction0===fraction1)

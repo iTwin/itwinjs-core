@@ -1,5 +1,34 @@
 import os, re, subprocess, sys, string
 
+
+def strip_yaml_frontmatter(file_path):
+  with open(file_path, 'r') as f:
+    content = f.read()
+
+  # Remove only leading YAML frontmatter (--- ... ---) from delta-doc markdown.
+  lines = content.splitlines(keepends=True)
+  if not lines or lines[0].strip() != "---":
+    return
+
+  closing_line = None
+  for i in range(1, len(lines)):
+    if lines[i].strip() == "---":
+      closing_line = i
+      break
+
+  if closing_line is None:
+    return
+
+  body_start = closing_line + 1
+  if body_start < len(lines) and lines[body_start].strip() == "":
+    body_start += 1
+
+  stripped = "".join(lines[body_start:])
+
+  if stripped != content:
+    with open(file_path, 'w') as f:
+      f.write(stripped)
+
 def getSHAFromTag(tag):
   cmd = ['git', 'rev-list', '-n', '1', tag]
   proc = subprocess.Popen(" ".join(cmd), stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
@@ -145,6 +174,7 @@ def createRelease(tag):
     if not os.path.exists(fileName):
       print("changehistory {0} could not be found.. exiting".format(currentVer))
       return
+    strip_yaml_frontmatter(fileName)
     replace_image_links(fileName)
     convert_markdown_headings_to_html(fileName)
 

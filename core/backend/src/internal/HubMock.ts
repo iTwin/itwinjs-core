@@ -17,28 +17,40 @@ import { CheckpointProps, DownloadRequest, MockCheckpoint, ProgressFunction, Pro
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { LocalHub } from "../LocalHub";
-import { TokenArg } from "../IModelDb";
-import { _getHubAccess, _mockCheckpoint, _setHubAccess } from "./Symbols";
+import { SnapshotDb, TokenArg } from "../IModelDb";
+import { _getHubAccess, _mockCheckpoint, _nativeDb, _setHubAccess } from "./Symbols";
 import { BriefcaseManager } from "../BriefcaseManager";
-import * as path from "path";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)
     throw new Error("Call HubMock.startup first");
 }
 
-function doDownload(args: { iModelId: string, changeset: ChangesetIndexOrId, targetFile: string }) {
+// Used by mockAttach: copies the nearest *prior* checkpoint (never newer) so the
+// returned file is already at or before the requested version.
+function doDownloadPrior(args: { iModelId: string, changeset: ChangesetIndexOrId, targetFile: string }) {
   HubMock.findLocalHub(args.iModelId).downloadCheckpoint(args);
 }
+
+// Used by mockDownload: copies the *nearest* checkpoint (forward or backward).
+// When the nearest is newer than the requested version, CheckpointManager.updateToRequestedVersion
+// will reverse it to the requested version via BriefcaseManager.pullAndApplyChangesets.
+function doDownloadNearest(args: { iModelId: string, changeset: ChangesetIndexOrId, targetFile: string }) {
+  const hub = HubMock.findLocalHub(args.iModelId);
+  const requestedIndex = hub.getIndexFromChangeset(args.changeset);
+  const nearest = hub.queryNearestCheckpoint(requestedIndex);
+  IModelJsFs.copySync(join(hub.checkpointDir, hub.checkpointNameFromIndex(nearest)), args.targetFile);
+}
+
 const mockCheckpoint: MockCheckpoint = {
   mockAttach: (checkpoint: CheckpointProps) => {
-    const targetFile = path.join(BriefcaseManager.getBriefcaseBasePath(checkpoint.iModelId), `${checkpoint.changeset.index}.bim`);
-    doDownload({ ...checkpoint, targetFile })
+    const targetFile = join(BriefcaseManager.getBriefcaseBasePath(checkpoint.iModelId), `${checkpoint.changeset.index}.bim`);
+    doDownloadPrior({ ...checkpoint, targetFile });
     return targetFile;
   },
 
   mockDownload: (request: DownloadRequest) => {
-    doDownload({ ...request.checkpoint, targetFile: request.localFile });
+    doDownloadNearest({ ...request.checkpoint, targetFile: request.localFile });
   }
 };
 
@@ -74,11 +86,22 @@ const mockCheckpoint: MockCheckpoint = {
  *
  * @internal
  */
+/** Options for [[HubMock.startup]]. @internal */
+export interface HubMockStartupOptions {
+  /**
+   * When `true`, every successful [[HubMock.pushChangeset]] call automatically uploads a V1 checkpoint
+   * (the current briefcase `.bim` file) for the tip changeset index into [[LocalHub]].
+   * This lets tests download a tip checkpoint and reverse changesets from it.
+   */
+  createTipCheckpointOnPush?: boolean;
+}
+
 export class HubMock {
   private static mockRoot: LocalDirName | undefined;
   private static hubs = new Map<string, LocalHub>();
   private static _saveHubAccess: BackendHubAccess | undefined;
   private static _iTwinId: GuidString | undefined;
+  private static _createTipCheckpointOnPush = false;
 
   /** Determine whether a test us currently being run under HubMock */
   public static get isValid() { return undefined !== this.mockRoot; }
@@ -92,7 +115,7 @@ export class HubMock {
    * @param mockName a unique name (e.g. "MyTest") for this HubMock to disambiguate tests when more than one is simultaneously active.
    * It is used to create a private directory used by the HubMock for a test. That directory is removed when [[shutdown]] is called.
    */
-  public static startup(mockName: LocalDirName, outputDir: string) {
+  public static startup(mockName: LocalDirName, outputDir: string, options?: HubMockStartupOptions) {
     if (this.isValid)
       throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
 
@@ -104,6 +127,7 @@ export class HubMock {
 
     IModelHost[_setHubAccess](this);
     HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
+    this._createTipCheckpointOnPush = options?.createTipCheckpointOnPush ?? false;
 
     V2CheckpointManager[_mockCheckpoint] = mockCheckpoint;
   }
@@ -116,6 +140,7 @@ export class HubMock {
       return;
 
     V2CheckpointManager[_mockCheckpoint] = undefined;
+    this._createTipCheckpointOnPush = false;
 
     HubMock._iTwinId = undefined;
     for (const hub of this.hubs)
@@ -232,7 +257,46 @@ export class HubMock {
   }
 
   public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps }): Promise<ChangesetIndex> {
-    return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
+    const csIndex = this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
+    if (this._createTipCheckpointOnPush)
+      await this.createTipCheckpoint(arg.iModelId);
+    return csIndex;
+  }
+
+  /**
+   * Build and upload a V1 checkpoint at the current tip changeset of the given iModel.
+   *
+   * The checkpoint is constructed by copying the nearest prior checkpoint from [[LocalHub]] as a
+   * starting base, then applying all subsequent changesets forward to the latest index via
+   * [[BriefcaseManager.pullAndApplyChangesets]].  The result is registered in [[LocalHub]] so that
+   * [[V2CheckpointManager]] (mock path) can serve it to consumers.
+   *
+   * When [[HubMockStartupOptions.createTipCheckpointOnPush]] is `true` this is called automatically
+   * after every successful [[pushChangeset]].  Tests can also call it explicitly to create a single
+   * checkpoint at the tip after all changesets have been pushed.
+   */
+  public static async createTipCheckpoint(iModelId: GuidString): Promise<void> {
+    const hub = this.findLocalHub(iModelId);
+    const csIndex = hub.latestChangesetIndex;
+    // Find the nearest checkpoint that precedes the new tip and use it as the base.
+    const prevIndex = hub.queryPreviousCheckpoint(csIndex);
+    const prevCheckpointFile = join(hub.checkpointDir, hub.checkpointNameFromIndex(prevIndex));
+    const tempFile = join(hub.rootDir, `checkpoint-building-${csIndex}.bim`);
+    IModelJsFs.copySync(prevCheckpointFile, tempFile);
+  try {
+    const db = SnapshotDb.openForApplyChangesets(tempFile);
+    try {
+      await BriefcaseManager.pullAndApplyChangesets(db, { accessToken: "", toIndex: csIndex });
+      db[_nativeDb].saveChanges();
+    } finally {
+      db.close();
+    }
+
+    hub.uploadCheckpoint({ changesetIndex: csIndex, localFile: tempFile });
+  } finally {
+    if (IModelJsFs.existsSync(tempFile))
+      IModelJsFs.removeSync(tempFile);
+  }
   }
 
   public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
@@ -252,12 +316,21 @@ export class HubMock {
     hub.releaseAllLocks({ briefcaseId: arg.briefcaseId, changesetIndex: hub.getIndexFromChangeset(arg.changeset) });
   }
 
+  public static async abandonAllLocks(arg: BriefcaseIdArg): Promise<void> {
+    const hub = this.findLocalHub(arg.iModelId);
+    hub.abandonAllLocks(arg);
+  }
+
   public static async queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
     return [];
   }
 
   public static async acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void> {
     this.findLocalHub(arg.iModelId).acquireLocks(locks, arg);
+  }
+
+  public static async abandonLocks(arg: BriefcaseIdArg, locks: LockMap): Promise<void> {
+    this.findLocalHub(arg.iModelId).abandonLocks(locks, arg);
   }
 
   public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {

@@ -32,7 +32,7 @@ function stubJsonFetch(json: string) {
       },
       status: 200,
     } as unknown;   // By using unknown type, I can define parts of Response I really need
-    return (test as Response);
+    return (test);
   });
 }
 

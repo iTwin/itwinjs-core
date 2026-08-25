@@ -72,31 +72,36 @@ export class LayerTileTreeReferenceHandler {
     }
   }
 
+  public detachFromDisplayStyle(): void {
+    this._detachFromDisplayStyle.forEach((f) => f());
+    this._detachFromDisplayStyle.length = 0;
+  }
+
   public initializeLayers(context: SceneContext): boolean {
     // Map tiles handle refresh logic differently
     if(!this._mapTile){
       const removals = this._detachFromDisplayStyle;
-      const mapImagery = context.viewport.displayStyle.settings.mapImagery;
       if (0 === removals.length) {
         removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
           this.setBaseLayerSettings(imagery.backgroundBase);
           this.setLayerSettings(imagery.backgroundLayers);
         }));
+        removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
+          if(compareMapLayer(previousViewState, vp.view)){
+            const currentImagery = vp.displayStyle.settings.mapImagery;
+            this.setBaseLayerSettings(currentImagery.backgroundBase);
+            this.setLayerSettings(currentImagery.backgroundLayers);
+          }
+        }));
+        removals.push(context.viewport.onViewedModelsChanged.addListener((viewport) => {
+          const currentImagery = viewport.displayStyle.settings.mapImagery;
+          if (currentImagery.backgroundLayers.length > 0) {
+            this.setBaseLayerSettings(currentImagery.backgroundBase);
+            this.setLayerSettings(currentImagery.backgroundLayers);
+            viewport.invalidateScene();
+          }
+        }));
       }
-      removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
-        if(compareMapLayer(previousViewState, vp.view)){
-          this.setBaseLayerSettings(mapImagery.backgroundBase);
-          this.setLayerSettings(mapImagery.backgroundLayers);
-        }
-      }));
-      removals.push(context.viewport.onViewedModelsChanged.addListener((viewport) => {
-        const layers = viewport.displayStyle.settings.mapImagery.backgroundLayers;
-        if (layers.length > 0) {
-          this.setBaseLayerSettings(mapImagery.backgroundBase);
-          this.setLayerSettings(mapImagery.backgroundLayers);
-          viewport.invalidateScene();
-        }
-      }));
     }
 
     let hasLoadedTileTree = false;

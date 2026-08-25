@@ -15,7 +15,9 @@ import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "../Entity";
+
 import * as semver from "semver";
+
 
 /** The version of the JSON stored in `TextAnnotation2d/3dProps.textAnnotationData` used by the code.
  * Uses the same semantics as [ECVersion]($ecschema-metadata).
@@ -282,13 +284,13 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.iModel.getIndirectTxn(), arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.iModel.getIndirectTxn(), arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -469,13 +471,13 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.iModel.getIndirectTxn(), arg.id);
   }
 
   /** @internal */
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.iModel.getIndirectTxn(), arg.id);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -551,28 +553,45 @@ function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks:
 */
 // 1.0.1 - Added terminatorShapes for leaders
 // 1.0.2 - Changed margins to be fractions of text height instead of absolute values
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
+// 1.0.3 - Added new leader style properties for targetPoint feature (showLeaders,showTerminators,showTargetPoint,targetPointShape,targetPointOffsetFactor)
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.3";
 
 function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>): TextStyleSettingsProps {
-  if (oldData.version === TEXT_STYLE_SETTINGS_JSON_VERSION) return oldData.data;
+  const data = oldData.data;
+  const version = oldData.version;
+  if (version === TEXT_STYLE_SETTINGS_JSON_VERSION) return data;
 
   // Migrate from 1.0.0 to 1.0.1
-  if (oldData.data.leader && !oldData.data.leader.terminatorShape) {
-    oldData.data.leader.terminatorShape = TextStyleSettings.defaultProps.leader.terminatorShape;
+  if (semver.lt(version, "1.0.1")) {
+    if (data.leader && !data.leader.terminatorShape) {
+      data.leader.terminatorShape = TextStyleSettings.defaultProps.leader.terminatorShape;
+    }
   }
   // Migrate from 1.0.1 to 1.0.2.
-  if (oldData.version === "1.0.1") {
+  if (semver.lt(version, "1.0.2")) {
     // In 1.0.2, margins are specified as a fraction of text height instead of absolute values.
-    const textHeight = oldData.data.textHeight ?? TextStyleSettings.defaultProps.textHeight;
-    const margins = oldData.data.margins ?? TextStyleSettings.defaultProps.margins;
-    oldData.data.margins = {
+    const textHeight = data.textHeight ?? TextStyleSettings.defaultProps.textHeight;
+    const margins = data.margins ?? TextStyleSettings.defaultProps.margins;
+    data.margins = {
       top: (margins.top ?? TextStyleSettings.defaultProps.margins.top) / textHeight,
       bottom: (margins.bottom ?? TextStyleSettings.defaultProps.margins.bottom) / textHeight,
       left: (margins.left ?? TextStyleSettings.defaultProps.margins.left) / textHeight,
       right: (margins.right ?? TextStyleSettings.defaultProps.margins.right) / textHeight,
     };
   }
-  return oldData.data;
+
+  // Migrate from 1.0.2 to 1.0.3.
+  if (semver.lt(version, "1.0.3")) {
+    if (data.leader) {
+      data.leader.showLeaders = data.leader?.showLeaders ?? TextStyleSettings.defaultProps.leader.showLeaders;
+      data.leader.showTerminators = data.leader?.showTerminators ?? TextStyleSettings.defaultProps.leader.showTerminators;
+      data.leader.showTargetPoint = data.leader?.showTargetPoint ?? TextStyleSettings.defaultProps.leader.showTargetPoint;
+      data.leader.targetPointShape = data.leader?.targetPointShape ?? TextStyleSettings.defaultProps.leader.targetPointShape;
+      data.leader.targetPointOffsetFactor = data.leader?.targetPointOffsetFactor ?? TextStyleSettings.defaultProps.leader.targetPointOffsetFactor;
+    }
+
+  }
+  return data;
 
 }
 
@@ -669,7 +688,7 @@ export class AnnotationTextStyle extends DefinitionElement {
    */
   protected static override onInsert(arg: OnElementPropsArg): void {
     super.onInsert(arg);
-    this.validateSettings(arg.props as AnnotationTextStyleProps);
+    this.validateSettings(arg.props);
   }
 
   /**
@@ -679,7 +698,7 @@ export class AnnotationTextStyle extends DefinitionElement {
    */
   protected static override onUpdate(arg: OnElementPropsArg): void {
     super.onUpdate(arg);
-    this.validateSettings(arg.props as AnnotationTextStyleProps);
+    this.validateSettings(arg.props);
   }
 
   private static validateSettings(props: AnnotationTextStyleProps): void {
@@ -767,7 +786,8 @@ export class AnnotationTextStyle extends DefinitionElement {
 
     // Copy the style into the target iModel and remap its Id.
     const dstStyleProps = await context.cloneElement(srcStyle);
-    dstStyleId = context.targetDb.elements.insertElement(dstStyleProps);
+    dstStyleId = context.targetDb.getIndirectTxn().insertElement(dstStyleProps);
+    assert(undefined !== dstStyleId);
     context.remapElement(sourceTextStyleId, dstStyleId);
     return dstStyleId;
   }

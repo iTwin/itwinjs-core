@@ -7,17 +7,19 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, IModelStatus, Logger, LogLevel, OpenMode, PickAsyncMethods } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  BriefcaseConnectionProps,
+  ChangesetIndex, ChangesetIndexAndId, createIpcDispatcher, createIpcProxy, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, ReinstateTxnArgs, RemoveFunction, ReverseTxnArgs, SnapshotOpenOptions,
+  StandaloneOpenOptions, TileTreeContentIds, TxnNotifications, unwrapIpcInvokeReturn,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { IModelNative } from "./internal/NativePlatform";
-import { _nativeDb } from "./internal/Symbols";
+import { _implicitTxn, _nativeDb } from "./internal/Symbols";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
@@ -86,6 +88,74 @@ export class IpcHost {
     this.ipc.removeListener(iTwinChannel(channel), listener);
   }
 
+  private static _nextInvokeId = 0;
+  private static _pendingInvokes = new Map<number, () => void>();
+
+  /**
+   * Send a message to the frontend via `channel` and expect a result asynchronously. The handler must be established on the frontend via [[IpcApp.handle]]
+   * @param channel The name of the channel for the method.
+   * @note `args` are serialized with the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), so only
+   * primitive types and `ArrayBuffers` are allowed.
+   * @note The returned Promise rejects if [[shutdown]] is called before the frontend responds.
+   * @beta
+   */
+  public static async invoke(channel: string, ...args: any[]): Promise<any> {
+    // Electron has no main->renderer `invoke` (see https://www.electronjs.org/docs/latest/tutorial/ipc#pattern-3-main-to-renderer),
+    // so we synthesize request/response from the universally-available `send`/`addListener` primitives: push the request via
+    // `send` together with a unique per-request response channel, and resolve when the frontend handler replies on that channel.
+    const requestId = ++this._nextInvokeId % Number.MAX_SAFE_INTEGER;
+    const responseChannel = iTwinChannel(`${channel}-invoke_response-${requestId}`);
+
+    return new Promise((resolve, reject) => {
+      let removeListener: RemoveFunction = () => { };
+      const cleanup = () => {
+        removeListener();
+        this._pendingInvokes.delete(requestId);
+      };
+
+      removeListener = this.ipc.addListener(responseChannel, (_evt: Event, result: any) => {
+        cleanup();
+        resolve(result);
+      });
+
+      // allow [[shutdown]] to reject any in-flight invoke rather than leaking its listener forever.
+      this._pendingInvokes.set(requestId, () => {
+        cleanup();
+        reject(new Error(`IpcHost was shut down before the frontend responded on channel "${channel}"`));
+      });
+
+      try {
+        this.send(channel, responseChannel, ...args);
+      } catch (err) {
+        // `send` can throw synchronously (e.g. a destroyed Electron window, or a closed websocket). Without this,
+        // the listener and _pendingInvokes entry registered above would leak for the life of the process.
+        cleanup();
+        reject(err instanceof Error ? err : new Error(String(err)));
+      }
+    });
+  }
+
+  /**
+   * Call a method on the frontend through an Ipc channel.
+   * @param channelName the channel registered by the frontend handler.
+   * @param methodName the name of a method implemented by the frontend handler.
+   * @param args arguments to `methodName`
+   * @returns a Promise with the return value from `methodName`
+   */
+  private static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
+    const retVal = await this.invoke(channelName, methodName, ...args) as IpcInvokeReturn;
+    return unwrapIpcInvokeReturn(retVal);
+  }
+
+  /**
+   * Create a type safe Proxy object to make IPC calls to a registered frontend interface.
+   * @param channelName the channel registered by the frontend handler.
+   * @beta
+   */
+  public static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K> {
+    return createIpcProxy<K>(async (methodName: string, ...args: any[]) => IpcHost.callIpcChannel(channelName, methodName, ...args));
+  }
+
   private static notify(channel: string, briefcase: BriefcaseDb | StandaloneDb, methodName: string, ...args: any[]) {
     if (this.isValid)
       return this.send(`${channel}/${briefcase.key}`, methodName, ...args);
@@ -126,6 +196,13 @@ export class IpcHost {
   /** Shutdown IpcHost backend. Also calls [[IModelHost.shutdown]] */
   public static async shutdown(): Promise<void> {
     this._ipc = undefined;
+
+    // reject any in-flight invokes so their callers don't hang forever after the socket is gone.
+    const pending = [...this._pendingInvokes.values()];
+    this._pendingInvokes.clear();
+    for (const rejectPending of pending)
+      rejectPending();
+
     await IModelHost.shutdown();
   }
 }
@@ -160,37 +237,8 @@ export abstract class IpcHandler {
    */
   public static register(): RemoveFunction {
     const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
-    const prohibitedFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
-
-    return IpcHost.handle(impl.channelName, async (_evt: Event, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
-      try {
-        if (prohibitedFunctions.includes(funcName))
-          throw new Error(`Method "${funcName}" not available for channel: ${impl.channelName}`);
-
-        const func = (impl as any)[funcName];
-        if (typeof func !== "function")
-          throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
-
-        return { result: await func.call(impl, ...args) };
-      } catch (err: unknown) {
-
-        if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
-          return { error: err as any };
-
-        const ret = { error: { ...err } };
-        ret.error.message = err.message; // NB: .message, and .stack members of Error are not enumerable, so spread operator above does not copy them.
-        if (!IpcHost.noStack)
-          ret.error.stack = err.stack;
-
-        if (err instanceof BentleyError) {
-          ret.error.iTwinErrorId = err.iTwinErrorId;
-          if (err.hasMetaData)
-            ret.error.loggingMetadata = err.loggingMetadata;
-          delete ret.error._metaData;
-        }
-        return ret;
-      }
-    });
+    const dispatch = createIpcDispatcher(impl, impl.channelName, () => !IpcHost.noStack);
+    return IpcHost.handle(impl.channelName, async (_evt: Event, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => dispatch(funcName, ...args));
   }
 }
 
@@ -225,7 +273,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
     return IModelDb.findByKey(key)[_nativeDb].cancelElementGraphicsRequests(requestIds);
   }
-  public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
+  public async openBriefcase(args: OpenBriefcaseProps): Promise<BriefcaseConnectionProps> {
     const db = await BriefcaseDb.open(args);
     return db.toJSON();
   }
@@ -248,10 +296,10 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     IModelDb.findByKey(key).close();
   }
   public async saveChanges(key: string, description?: string): Promise<void> {
-    IModelDb.findByKey(key).saveChanges(description);
+    IModelDb.findByKey(key)[_implicitTxn].saveChanges(description);
   }
   public async abandonChanges(key: string): Promise<void> {
-    IModelDb.findByKey(key).abandonChanges();
+    IModelDb.findByKey(key)[_implicitTxn].abandonChanges();
   }
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();
@@ -317,16 +365,31 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 
   public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reverseTxns(numOperations);
+    return BriefcaseDb.findByKey(key).txns.reverseTxns(numOperations);
   }
+
+  public async reverseTxnsAsync(key: string, numOperations: number, args?: ReverseTxnArgs): Promise<void> {
+    return BriefcaseDb.findByKey(key).txns.reverseTxnsAsync(numOperations, args);
+  }
+
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reverseAll();
+    return BriefcaseDb.findByKey(key).txns.reverseAll();
   }
+
+  public async reverseAllTxnsAsync(key: string, args?: ReverseTxnArgs): Promise<void> {
+    return BriefcaseDb.findByKey(key).txns.reverseAllTxnsAsync(args);
+  }
+
   public async reinstateTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key)[_nativeDb].reinstateTxn();
+    return BriefcaseDb.findByKey(key).txns.reinstateTxn();
   }
+
+  public async reinstateTxnAsync(key: string, args?: ReinstateTxnArgs): Promise<void> {
+    return BriefcaseDb.findByKey(key).txns.reinstateTxnAsync(args);
+  }
+
   public async restartTxnSession(key: string): Promise<void> {
-    return IModelDb.findByKey(key)[_nativeDb].restartTxnSession();
+    return IModelDb.findByKey(key).restartTxnSession();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {

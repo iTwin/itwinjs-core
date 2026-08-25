@@ -22,7 +22,6 @@ import { TransitionConditionalProperties } from "./TransitionConditionalProperti
 
 import type { Vector3d } from "../../geometry3d/Point3dVector3d";
 import type { Ray3d } from "../../geometry3d/Ray3d";
-
 /**
  * This is the set of valid type names for "integrated" spirals.
  * * Behavior is expressed by a `NormalizedTransition` snap function.
@@ -110,6 +109,13 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   }
   public get spiralType(): string {
     return this._spiralType;
+  }
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Always `false` for `TransitionSpiral3d`.
+   */
+  public override isPhysicallyClosedCurve(_tolerance: number = Geometry.smallMetricDistance, _xyOnly: boolean = false): boolean {
+    return false;
   }
   /** Return 1/r with convention that exact zero input returns 0 (straight line, zero curvature, infinite radius). */
   public static radiusToCurvature(radius: number): number {

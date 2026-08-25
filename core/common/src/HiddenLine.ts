@@ -53,14 +53,13 @@ export namespace HiddenLine {
     public readonly width?: number;
 
     private constructor(json?: StyleProps, hidden?: true) {
-      if (JsonUtils.isEmptyObjectOrUndefined(json)) {
+      if (!json || JsonUtils.isEmptyObjectOrUndefined(json)) {
         if (hidden)
           this.pattern = LinePixels.HiddenLine;
 
         return;
       }
 
-      json = json as StyleProps; // per JsonUtils.isEmptyObjectOrUndefined()
       if (undefined !== json.color && false !== json.ovrColor)
         this.color = ColorDef.fromJSON(json.color);
 

@@ -9,7 +9,7 @@
 import { CompressedId64Set, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Matrix3d, Matrix3dProps, Point3d, Range3d, Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
-import { BRepEntity, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, FilePropertyProps, GeometricElementProps, GeometryPartProps, IModelError } from "@itwin/core-common";
+import { BRepEntity, EcefLocationProps, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, FilePropertyProps, GeometricElementProps, GeometryPartProps, IModelError } from "@itwin/core-common";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds, FlatBufferGeometryFilter } from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
@@ -34,9 +34,10 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   public async deleteElements(ids: CompressedId64Set): Promise<IModelStatus> {
     const idSet = CompressedId64Set.decompressSet(ids);
     await this.iModel.locks.acquireLocks({ exclusive: idSet });
+    this.beginEditing();
 
     for (const id of idSet)
-      this.iModel.elements.deleteElement(id);
+      this.txn.deleteElement(id);
 
     return IModelStatus.Success;
   }
@@ -44,6 +45,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   public async transformPlacement(ids: CompressedId64Set, transProps: TransformProps): Promise<IModelStatus> {
     const idSet = CompressedId64Set.decompressSet(ids);
     await this.iModel.locks.acquireLocks({ exclusive: idSet });
+    this.beginEditing();
 
     const transform = Transform.fromJSON(transProps);
 
@@ -54,7 +56,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
         continue; // Ignore assembly parents w/o geometry, etc...
 
       element.placement.multiplyTransform(transform);
-      this.iModel.elements.updateElement(element.toJSON());
+      this.txn.updateElement(element.toJSON());
     }
 
     return IModelStatus.Success;
@@ -63,6 +65,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   public async rotatePlacement(ids: CompressedId64Set, matrixProps: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus> {
     const idSet = CompressedId64Set.decompressSet(ids);
     await this.iModel.locks.acquireLocks({ exclusive: idSet });
+    this.beginEditing();
 
     const matrix = Matrix3d.fromJSON(matrixProps);
 
@@ -76,7 +79,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
       const transform = Transform.createFixedPointAndMatrix(fixedPoint, matrix);
 
       element.placement.multiplyTransform(transform);
-      this.iModel.elements.updateElement(element.toJSON());
+      this.txn.updateElement(element.toJSON());
     }
 
     return IModelStatus.Success;
@@ -84,14 +87,16 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 
   public async insertGeometricElement(props: GeometricElementProps): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
+    this.beginEditing();
 
-    return this.iModel.elements.insertElement(props);
+    return this.txn.insertElement(props);
   }
 
   public async insertGeometryPart(props: GeometryPartProps): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
+    this.beginEditing();
 
-    return this.iModel.elements.insertElement(props);
+    return this.txn.insertElement(props);
   }
 
   public async updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void> {
@@ -108,11 +113,12 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Element id required for update");
 
     await this.iModel.locks.acquireLocks({ exclusive: props.id });
+    this.beginEditing();
 
     if (undefined !== data)
       props.elementGeometryBuilderParams = { entryArray: data.entryArray, viewIndependent: data.viewIndependent };
 
-    this.iModel.elements.updateElement(props);
+    this.txn.updateElement(props);
   }
 
   public async requestElementGeometry(elementId: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined> {
@@ -196,31 +202,29 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid project extents");
 
     await this.iModel.acquireSchemaLock();
-
-    this.iModel.updateProjectExtents(newExtents);
+    this.beginEditing();
+    this.txn.updateProjectExtents(newExtents);
 
     // Set source from calculated to user so connectors preserve the change.
     const unitsProps: FilePropertyProps = { name: "Units", namespace: "dgn_Db" };
     const unitsStr = this.iModel.queryFilePropertyString(unitsProps);
+    if (undefined === unitsStr)
+      return;
 
-    if (undefined !== unitsStr) {
-      const unitsVal = JSON.parse(unitsStr);
-      const calculated = 1;
-
-      if (calculated !== unitsVal.extentsSource) {
-        unitsVal.extentsSource = calculated;
-        this.iModel.saveFileProperty(unitsProps, JSON.stringify(unitsVal));
-      }
+    const unitsVal = JSON.parse(unitsStr);
+    const calculated = 1;
+    if (calculated !== unitsVal.extentsSource) {
+      unitsVal.extentsSource = calculated;
+      this.txn.saveFileProperty(unitsProps, JSON.stringify(unitsVal));
     }
   }
 
   public async updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void> {
     await this.iModel.acquireSchemaLock();
+    this.beginEditing();
 
-    // Clear GCS that caller already determined was invalid...
-    this.iModel.deleteFileProperty({ name: "DgnGCS", namespace: "dgn_Db" });
-
-    const newEcefLocation = new EcefLocation(ecefLocation);
-    this.iModel.updateEcefLocation(newEcefLocation);
+    // Clear GCS that caller already determined was invalid.
+    this.txn.saveFileProperty({ name: "DgnGCS", namespace: "dgn_Db" }, undefined);
+    this.txn.updateEcefLocation(ecefLocation);
   }
 }

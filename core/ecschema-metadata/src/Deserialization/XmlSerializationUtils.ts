@@ -7,7 +7,7 @@ import { PrimitiveType, primitiveTypeToString } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { ArrayProperty, EnumerationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
+import { ArrayProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
 import { Schema } from "../Metadata/Schema";
 
 /**
@@ -111,7 +111,7 @@ export namespace XmlSerializationUtils {
   export async function writePrimitiveProperty(propertyClass: PrimitiveOrEnumPropertyBase, propertyValue: any, propertyElement: Element): Promise<void> {
     let primitiveType: PrimitiveType;
     if (propertyClass.isEnumeration()) {
-      const enumeration = await (propertyClass as EnumerationProperty).enumeration;
+      const enumeration = await (propertyClass).enumeration;
       if (!enumeration)
         throw new ECSchemaError(ECSchemaStatus.ClassNotFound, `The enumeration on property class '${propertyClass.fullName}' could not be found in the current schema context.`);
 

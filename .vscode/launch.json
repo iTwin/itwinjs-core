@@ -627,7 +627,7 @@
       ]
     },
     {
-      "name": "[perftests] Changeset PerfTests (Offline)",
+      "name": "[perftests] Sqlite Changeset Reader and ChangesetECAdaptor PerfTests (Offline)",
       "presentation": {
         "group": "Perftests"
       },
@@ -637,7 +637,24 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "perftest:changesetPerformance"
+        "perftest:sqliteChangesetReaderAndChangesetECAdaptorPerformance"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[perftests] ChangesetReader PerfTests (Offline)",
+      "presentation": {
+        "group": "Perftests"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:changesetReaderPerformance"
       ],
       "outFiles": [
         "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
@@ -1228,7 +1245,7 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "run",
-        "webpackTestWorker"
+        "build:test-worker"
       ],
     }
   ],
@@ -1243,7 +1260,7 @@
         "Attach to Vitest Browser",
         "Run Vitest Browser"
       ],
-      "preLaunchTask": "Run webpack for frontend test worker",
+      "preLaunchTask": "Build frontend test worker",
       "stopAll": true
     },
     {

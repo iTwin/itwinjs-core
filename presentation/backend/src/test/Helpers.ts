@@ -17,6 +17,7 @@ export function stubECSqlReader<TRow extends object>(rows: TRow[]): ECSqlReader 
     return {
       ...rows[stepsCount],
       toRow: () => rows[stepsCount],
+      toArray: () => Object.values(rows[stepsCount]),
     } as unknown as QueryRowProxy;
   };
   const next = async (): Promise<IteratorResult<QueryRowProxy, any>> => {

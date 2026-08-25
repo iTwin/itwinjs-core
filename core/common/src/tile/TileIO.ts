@@ -46,7 +46,7 @@ export function isKnownTileFormat(format: number) {
  * @internal
  */
 export function tileFormatFromNumber(formatNumber: number): TileFormat {
-  const format = formatNumber as TileFormat;
+  const format = formatNumber;
   return isKnownTileFormat(format) ? format : TileFormat.Unknown;
 }
 

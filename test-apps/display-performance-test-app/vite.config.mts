@@ -80,12 +80,12 @@ export default defineConfig(() => {
         // plugin to convert CommonJS modules to ESM, so they can be included in bundle
         include: [
           /core\/electron/, // prevent error in ElectronApp
-          /core\/mobile/, // prevent error in MobileApp
           /node_modules/, // prevent errors from dependencies
         ],
         transformMixedEsModules: true, // transforms require statements
       },
       rollupOptions: {
+        external: ["electron"],
         input: path.resolve(__dirname, "index.html"),
         // run `rushx build --stats` to view stats
         plugins: [
@@ -108,7 +108,18 @@ export default defineConfig(() => {
       },
     },
     plugins: [
-      ignore(["electron"]), // equivalent to webpack externals
+      // Externalize electron in both dev and build — resolves to window['electron']
+      {
+        name: "vite-plugin-electron-external",
+        resolveId(id) {
+          if (id === "electron") return "\0electron-external";
+        },
+        load(id) {
+          if (id === "\0electron-external")
+            return "export default window['electron'];";
+        },
+      },
+      ignore(["electron"]), // equivalent to webpack externals (build only fallback)
       // copy static assets to .static-assets folder
       copy({
         targets: [
@@ -135,8 +146,6 @@ export default defineConfig(() => {
         ...packageAliases,
         "@itwin/core-electron/lib/cjs/ElectronFrontend":
           "@itwin/core-electron/src/ElectronFrontend.ts",
-        "@itwin/core-mobile/lib/cjs/MobileFrontend":
-          "@itwin/core-mobile/src/MobileFrontend.ts",
         "../../package.json": "../package.json", // in core-frontend
       },
     },
@@ -145,12 +154,25 @@ export default defineConfig(() => {
       // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
         "@itwin/core-electron/lib/cjs/ElectronFrontend", // import from module error
-        "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
       ],
       exclude: [
+        "electron",
         "@itwin/core-frontend", //prevents import not resolved errors
         "@itwin/core-common", //prevents rpc errors
       ],
+      esbuildOptions: {
+        plugins: [
+          {
+            name: "externalize-electron",
+            setup(build) {
+              build.onResolve({ filter: /^electron$/ }, () => ({
+                path: "electron",
+                external: true,
+              }));
+            },
+          },
+        ],
+      },
     },
   };
 });

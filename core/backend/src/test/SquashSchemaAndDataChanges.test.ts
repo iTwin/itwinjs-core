@@ -13,6 +13,7 @@ import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import * as chai from "chai";
 import { TestUtils } from "./TestUtils";
+import { EditTxn, withEditTxn } from "../EditTxn";
 
 const schemas = {
   /** Base schema v01.00.00 with classes A, C, D */
@@ -178,19 +179,20 @@ describe("SquashSchemaAndDataChanges", () => {
   const createModelAndCategory = async (db: BriefcaseDb) => {
     const modelCode = IModelTestUtils.getUniqueModelCode(db, "DrawingModel");
     await db.locks.acquireLocks({ shared: IModel.dictionaryId });
-    const [, newDrawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(db, modelCode);
-    const newDrawingCategoryId = DrawingCategory.insert(
-      db,
-      IModel.dictionaryId,
-      "DrawingCategory",
-      new SubCategoryAppearance()
-    );
-    db.saveChanges();
-    return [newDrawingModelId, newDrawingCategoryId];
+    return withEditTxn(db, (txn) => {
+      const [, newDrawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(txn, modelCode);
+      const newDrawingCategoryId = DrawingCategory.insert(
+        txn,
+        IModel.dictionaryId,
+        "DrawingCategory",
+        new SubCategoryAppearance()
+      );
+      return [newDrawingModelId, newDrawingCategoryId] as const;
+    });
   };
 
   const insertElement = (
-    briefcase: BriefcaseDb,
+    txn: EditTxn,
     className: string,
     properties: Record<string, any>
   ): Id64String => {
@@ -201,8 +203,8 @@ describe("SquashSchemaAndDataChanges", () => {
       code: Code.createEmpty(),
       ...properties,
     };
-    const element = briefcase.elements.createElement(elementProps);
-    return briefcase.elements.insertElement(element.toJSON());
+    const element = txn.iModel.elements.createElement(elementProps);
+    return txn.insertElement(element.toJSON());
   }
 
   before(async () => {
@@ -218,7 +220,6 @@ describe("SquashSchemaAndDataChanges", () => {
 
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    imodel.saveChanges();
     [drawingModelId, drawingCategoryId] = await createModelAndCategory(imodel);
     await imodel.importSchemaStrings([schemas.v01x00x00, schemas.v01x00x01AddPropC2]);
     await imodel.pushChanges({ description: "create model and category and imported schemas" });
@@ -235,24 +236,29 @@ describe("SquashSchemaAndDataChanges", () => {
     await TestUtils.startBackend(); // restart normal backend so subsequent test suites aren't left without IModelHost
   });
 
-  it("should throw error if tried to import schema while unsaved changes are present", async () => {
+  it("should allow schema import while an EditTxn is active", async () => {
     await imodel.locks.acquireLocks({ shared: drawingModelId });
-    insertElement(imodel, "TestDomain:C", {
-      propA: "local_value_a",
-      propC: "local_value_c",
-    });
-
-    await chai.expect(imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA])).to.be.rejectedWith("Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
-    await imodel.discardChanges();
+    const txn = new EditTxn(imodel, "schema and data changes unsaved state");
+    txn.start();
+    try {
+      txn.saveChanges("prepare for schema import");
+      await imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA]);
+      chai.assert(imodel.containsClass("TestDomain:C"));
+    } finally {
+      if (txn.isActive)
+        txn.end("abandon");
+    }
   });
 
   it("should squash schema and data changes if useSemanticRebase flag is on", async () => {
     await imodel.locks.acquireLocks({ shared: drawingModelId });
-    insertElement(imodel, "TestDomain:C", {
+    const txn = new EditTxn(imodel, "squash schema and data changes");
+    txn.start();
+    insertElement(txn, "TestDomain:C", {
       propA: "local_value_a",
       propC: "local_value_c",
     });
-    imodel.saveChanges("local data change");
+    txn.saveChanges("local data change");
     await imodel.importSchemaStrings([schemas.v01x00x02MovePropCToA]); // transforming data change
 
     const lastTxnProps = imodel.txns.getLastSavedTxnProps();
@@ -271,6 +277,7 @@ describe("SquashSchemaAndDataChanges", () => {
     chai.assert(thirdLastTxnProps?.type === "Data");
     chai.assert(thirdLastTxnProps?.prevId === undefined);
 
-    await imodel.discardChanges();
+    if (txn.isActive)
+      txn.end("abandon");
   });
 });

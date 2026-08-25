@@ -52,10 +52,40 @@ The persistence unit is defined by the [KindOfQuantity]($docs/bis/ec/kindofquant
 | VOLUME | Units.CUB_M (cubic meters) |
 | TIME | Units.S (seconds) |
 
+## Unit Systems and UnitSystemKey
+
+EC schemas define a rich set of `UnitSystem` elements (SI, IMPERIAL, USCUSTOM, USSURVEY, INTERNATIONAL, FINANCE, CGS, MARITIME, and others). At the application level, iTwin.js groups these into four user-facing preference groups via [UnitSystemKey]($quantity):
+
+| UnitSystemKey    | Description              | EC UnitSystems matched (highest priority first) |
+| ---------------- | ------------------------ | ----------------------------------------------- |
+| `"metric"`       | International System     | SI / METRIC, INTERNATIONAL, FINANCE             |
+| `"imperial"`     | Imperial (UK)            | IMPERIAL, USCUSTOM, INTERNATIONAL, FINANCE      |
+| `"usCustomary"`  | US Customary             | USCUSTOM, INTERNATIONAL, FINANCE                |
+| `"usSurvey"`     | US Survey                | USSURVEY, USCUSTOM, INTERNATIONAL, FINANCE      |
+
+When a [SchemaFormatsProvider]($ecschema-metadata) resolves a format for a [KindOfQuantity]($docs/bis/ec/kindofquantity/), it walks the active `UnitSystemKey`'s priority list and returns the first matching presentation format. This means that a single `UnitSystemKey` can match formats from several EC `UnitSystem` elements, providing sensible fallback behavior (e.g., the "metric" group falls back through INTERNATIONAL and FINANCE if a KindOfQuantity does not define an SI-specific format).
+
+EC `UnitSystem` elements not covered by any preference group (e.g. CGS, MARITIME, INDUSTRIAL) will only appear if a KindOfQuantity explicitly references them. Applications that need these systems should implement a custom [FormatsProvider]($quantity).
+
+### Setting the Active Unit System
+
+The active unit system determines which formats are used throughout the application:
+
+```ts
+// Set the active unit system
+await IModelApp.quantityFormatter.setActiveUnitSystem("metric");
+
+// Get the current unit system
+const system = IModelApp.quantityFormatter.activeUnitSystem; // "metric"
+```
+
+For more details on unit system configuration, see [Providers — Configuring Unit System](../usage/Providers.md#configuring-unit-system).
+
 ## See Also
 
 - [Formats](./Formats.md) - How formats reference and use units
 - [EC Phenomenon](../../bis/ec/ec-phenomenon.md) - Phenomenon definitions and dimensional derivations
+- [EC UnitSystem](../../bis/ec/ec-unitsystem.md) - EC schema UnitSystem element reference
 - [Format Sets](./FormatSets.md) - Application-level format persistence
 - [Providers](../usage/Providers.md) - Implementing and registering units providers
 - [Unit Conversion](../usage/UnitConversion.md) - How unit conversions are performed

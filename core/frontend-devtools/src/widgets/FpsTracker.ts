@@ -7,6 +7,7 @@
  * @module Widgets
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { PerformanceMetrics, Target, Viewport } from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 
@@ -57,7 +58,7 @@ export class FpsTracker {
   }
 
   private updateFPS(): void {
-    const metrics = this._metrics!;
+    const metrics = expectDefined(this._metrics, "FPS tracker metrics are not initialized.");
     const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);
     this._label.innerText = `FPS: ${fps}`;
   }

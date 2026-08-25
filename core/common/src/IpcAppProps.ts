@@ -12,9 +12,9 @@ import { OpenBriefcaseProps, OpenCheckpointArgs } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
 import { ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetProps } from "./ChangesetProps";
 import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
+import { BriefcaseConnectionProps, EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
-import { TxnProps } from "./TxnProps";
+import { ReinstateTxnArgs, ReverseTxnArgs, TxnProps } from "./TxnProps";
 
 /** Options for pulling changes into iModel.
  * @internal
@@ -159,7 +159,7 @@ export interface IpcAppFunctions {
   log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
 
   /** see BriefcaseConnection.openFile */
-  openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
+  openBriefcase: (args: OpenBriefcaseProps) => Promise<BriefcaseConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
   openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
@@ -168,9 +168,15 @@ export interface IpcAppFunctions {
   openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.close */
   closeIModel: (key: string) => Promise<void>;
-  /** see BriefcaseConnection.saveChanges */
+  /**
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use methods on EditCommand instead.
+   * see BriefcaseConnection.saveChanges
+   */
   saveChanges: (key: string, description?: string) => Promise<void>;
-  /** see BriefcaseConnection.abandonChanges */
+  /**
+   * @deprecated in 5.9.0 - will not be removed until after 2027-05-04. Use methods on EditCommand instead.
+   * see BriefcaseConnection.abandonChanges
+   */
   abandonChanges: (key: string) => Promise<void>;
   /** see BriefcaseTxns.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;
@@ -203,6 +209,9 @@ export interface IpcAppFunctions {
   reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
   reverseAllTxn: (key: string) => Promise<IModelStatus>;
   reinstateTxn: (key: string) => Promise<IModelStatus>;
+  reverseTxnsAsync: (key: string, numOperations: number, args?: ReverseTxnArgs) => Promise<void>;
+  reverseAllTxnsAsync: (key: string, args?: ReverseTxnArgs) => Promise<void>;
+  reinstateTxnAsync: (key: string, args?: ReinstateTxnArgs) => Promise<void>;
   restartTxnSession: (key: string) => Promise<void>;
 
   /** Query the number of concurrent threads supported by the host's IO or CPU thread pool. */

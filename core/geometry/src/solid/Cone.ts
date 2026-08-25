@@ -296,6 +296,29 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
       this._localToWorld.multiplyVectorXYZ(drdv * cosTheta, drdv * sinTheta, 1.0),
       result);
   }
+  /** Return true if the solid's local z-axis is not perpendicular to its local xy-plane. */
+  public override get isSkew(): boolean {
+    return !this._localToWorld.matrix.columnZ().isParallelTo(this._localToWorld.matrix.columnXCrossColumnY(), true, true);
+  }
+  /**
+   * Test if this cone is a cylinder.
+   * * A cone is cylindrical if both conditions hold:
+   *   1. cross sections are circles of equal radius
+   *   2. axis is perpendicular to cross sections
+   * * Radii within [[Geometry.smallMetricDistance]] are considered equal.
+   * @param allowSkew whether to test the first condition only. Default value is `false`: test both conditions.
+   * @return cross sectional radius > 0 if cylindrical cone; otherwise 0 for non-cylindrical or degenerate cone.
+   */
+  public cylinderRadius(allowSkew: boolean = false): number {
+    let radius = 0;
+    if (allowSkew || !this.isSkew) {
+      const magX = this._localToWorld.matrix.columnXMagnitude();
+      const magY = this._localToWorld.matrix.columnYMagnitude();
+      if (Geometry.isSameCoordinate(magX, magY) && Geometry.isSameCoordinate(this._radiusA, this._radiusB))
+        radius = Math.abs(magX * this._radiusA);
+    }
+    return radius;
+  }
   /**
    * @return true if this is a closed volume.
    */

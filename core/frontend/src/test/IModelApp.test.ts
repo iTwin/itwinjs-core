@@ -2,17 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterAll, afterEach, beforeAll, describe, expect, it} from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { EmptyLocalization } from "@itwin/core-common";
+import { BasicUnitsProvider, UnitConversionProps, UnitProps } from "@itwin/core-quantity";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../internal/render/MockRender";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
-import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
-import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
+import { LookAndMoveTool, PanViewTool, RotateViewTool } from "../tools/ViewTool";
+import { BentleyStatus, DbResult, IModelStatus, Logger } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -188,5 +190,296 @@ describe("IModelApp startup tests", () => {
     await IModelApp.startup();
     expect(IModelApp.publicPath).toBe("");
     await IModelApp.shutdown();
+  });
+});
+
+describe("LookAndMoveTool keyboard focus", () => {
+  afterEach(async () => {
+    document.body.focus();
+
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("moves focus Home after installation", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+    button.focus();
+    expect(document.activeElement).toBe(button);
+
+    try {
+      // Exercise the normal tool install pipeline (onInstall, onPostInstall, etc.) rather than invoking onPostInstall directly.
+      if (await IModelApp.tools.run(LookAndMoveTool.toolId))
+        expect(document.activeElement).toBe(document.body);
+    } finally {
+      button.remove();
+    }
+  });
+});
+
+/**
+ * A UnitsProvider that is NOT a BasicUnitsProvider (bypasses the early-exit in resetToUseInternalUnitsProvider)
+ * but still delegates to BasicUnitsProvider for correct behaviour.
+ */
+class NonBundledUnitsProvider {
+  private readonly _delegate = new BasicUnitsProvider();
+  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+    return this._delegate.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
+  }
+  public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
+    return this._delegate.getUnitsByFamily(phenomenon);
+  }
+  public async findUnitByName(name: string): Promise<UnitProps> {
+    return this._delegate.findUnitByName(name);
+  }
+  public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
+    return this._delegate.getConversion(fromUnit, toUnit);
+  }
+}
+
+describe("Shutdown hardening — ToolAdmin and QuantityFormatter", () => {
+  afterEach(async () => {
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("startPrimitiveTool does not emit activeToolChanged after toolAdmin.onShutDown clears _idleTool", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    // Simulate the race: onShutDown has cleared _idleTool but IModelApp is still initialised.
+    IModelApp.toolAdmin.onShutDown();
+
+    let toolChangedEmitted = false;
+    const removeListener = IModelApp.toolAdmin.activeToolChanged.addListener(() => { toolChangedEmitted = true; });
+
+    // Must not throw and must not fire activeToolChanged (no valid idle tool exists).
+    await IModelApp.toolAdmin.startPrimitiveTool(undefined);
+
+    expect(toolChangedEmitted).toBe(false);
+    removeListener();
+  });
+
+  it("setUnitsProvider does not call startDefaultTool after IModelApp.shutdown", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+    const toolAdmin = IModelApp.toolAdmin;
+    const formatter = IModelApp.quantityFormatter;
+
+    // Install a non-default provider so resetToUseInternalUnitsProvider won't early-exit.
+    await formatter.setUnitsProvider(new NonBundledUnitsProvider());
+
+    await IModelApp.shutdown();
+
+    const startDefaultSpy = vi.spyOn(toolAdmin, "startDefaultTool");
+
+    // Simulates the race: async units-provider reset fires after IModelApp has shut down.
+    await formatter.resetToUseInternalUnitsProvider();
+
+    // startDefaultTool must NOT be called — IModelApp is no longer initialised.
+    expect(startDefaultSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("Undo/redo edit command cleanup", () => {
+  afterEach(async () => {
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("undo finishes active edit command before reversing txns", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const reverseSingleTxnAsync = vi.fn(async () => { });
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
+    const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
+      view: {
+        iModel: {
+          isReadonly: false,
+          isBriefcaseConnection: () => true,
+          txns: { reverseSingleTxnAsync },
+        },
+      },
+    } as any);
+
+    expect(await toolAdmin.doUndoOperation()).toBe(true);
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(reverseSingleTxnAsync).toHaveBeenCalledOnce();
+    expect(finishCommand.mock.invocationCallOrder[0]).toBeLessThan(reverseSingleTxnAsync.mock.invocationCallOrder[0]);
+
+    selectedViewSpy.mockRestore();
+    activeToolSpy.mockRestore();
+  });
+
+  it("redo uses notifications and skips txn when finishCommand fails", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const reinstateTxnAsync = vi.fn(async () => { });
+    const activeToolSpy = vi.spyOn(toolAdmin, "activeTool", "get").mockReturnValue(undefined);
+    const selectedViewSpy = vi.spyOn(IModelApp.viewManager, "selectedView", "get").mockReturnValue({
+      view: {
+        iModel: {
+          isReadonly: false,
+          isBriefcaseConnection: () => true,
+          txns: { reinstateTxnAsync },
+        },
+      },
+    } as any);
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    expect(await toolAdmin.doRedoOperation()).toBe(false);
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(reinstateTxnAsync).not.toHaveBeenCalled();
+    expect(outputMessageSpy).toHaveBeenCalledOnce();
+
+    selectedViewSpy.mockRestore();
+    activeToolSpy.mockRestore();
+    outputMessageSpy.mockRestore();
+  });
+});
+
+describe("callOnCleanup edit command cleanup", () => {
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("uses setPrimitiveTool path to cleanup primitive and finish edit command without notification", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const primitiveCleanup = vi.fn(async () => { });
+    (toolAdmin as any)._primitiveTool = { onCleanup: primitiveCleanup };
+
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(primitiveCleanup).toHaveBeenCalledOnce();
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(finishCommand.mock.invocationCallOrder[0]).toBeLessThan(primitiveCleanup.mock.invocationCallOrder[0]);
+    expect((toolAdmin as any)._primitiveTool).toBeUndefined();
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+  });
+
+  it("finishes edit command directly when no primitive tool is active", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._primitiveTool = undefined;
+
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const setPrimitiveToolSpy = vi.spyOn(toolAdmin, "setPrimitiveTool");
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(setPrimitiveToolSpy).not.toHaveBeenCalled();
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+  });
+
+  it("logs and suppresses notification when edit command finish throws during no-primitive cleanup", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._primitiveTool = undefined;
+
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const logSpy = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+    const outputMessageSpy = vi.spyOn(IModelApp.notifications, "outputMessage").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(outputMessageSpy).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledOnce();
+  });
+
+  it("observes rejected edit command when view cleanup also throws", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._viewTool = { onCleanup: vi.fn(async () => { throw new Error("view cleanup failed"); }) };
+
+    const finishCommand = vi.fn(async () => { throw new Error("Command is busy"); });
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const logSpy = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(logSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("clears stale primitive tool when primitive cleanup throws", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    (toolAdmin as any)._primitiveTool = {
+      onCleanup: vi.fn(async () => { throw new Error("cleanup failed"); }),
+    };
+
+    const finishCommand = vi.fn(async () => "done");
+    toolAdmin.setEditCommandHandler({ finishCommand });
+
+    const logSpy = vi.spyOn(Logger, "logError").mockImplementation(() => { });
+
+    await toolAdmin.callOnCleanup();
+
+    expect((toolAdmin as any)._primitiveTool).toBeUndefined();
+    expect(finishCommand).toHaveBeenCalledOnce();
+    expect(logSpy).toHaveBeenCalledOnce();
+  });
+
+  it("does not overwrite a replacement primitive tool after delayed cleanup", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    let releaseCleanup: (() => void) | undefined;
+    const cleanupReleased = new Promise<void>((resolve) => releaseCleanup = resolve);
+    const oldTool = { onCleanup: vi.fn(async () => cleanupReleased) };
+    const replacementTool = { onCleanup: vi.fn(async () => { }) };
+    (toolAdmin as any)._primitiveTool = oldTool;
+
+    const transition = toolAdmin.setPrimitiveTool(undefined);
+    await Promise.resolve();
+    (toolAdmin as any)._primitiveTool = replacementTool;
+
+    releaseCleanup?.();
+    await transition;
+
+    expect((toolAdmin as any)._primitiveTool).toBe(replacementTool);
+  });
+
+  it("installs replacement primitive tool after cleaning up old tool", async () => {
+    await IModelApp.startup({ localization: new EmptyLocalization() });
+
+    const toolAdmin = IModelApp.toolAdmin;
+    const oldTool = { onCleanup: vi.fn(async () => { }) };
+    const replacementTool = { onCleanup: vi.fn(async () => { }) };
+    (toolAdmin as any)._primitiveTool = oldTool;
+
+    await toolAdmin.setPrimitiveTool(replacementTool as any);
+
+    expect(oldTool.onCleanup).toHaveBeenCalledOnce();
+    expect((toolAdmin as any)._primitiveTool).toBe(replacementTool);
   });
 });

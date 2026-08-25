@@ -6,6 +6,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { Guid, Id64String } from "@itwin/core-bentley";
 import { Code, ElementProps, IModel } from "@itwin/core-common";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import { BriefcaseDb, ChannelControl, ChannelUpgradeContext, DataTransformationStrategy, IModelDb, IModelJsFs, PostImportContext, StandaloneDb } from "../../core-backend";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -152,7 +153,7 @@ describe("Schema Import Callbacks", () => {
         intProp: 42,
       };
 
-      const elementId1 = imodel.elements.insertElement(elementProps);
+      const elementId1 = withEditTxn(imodel, (txn) => txn.insertElement(elementProps));
 
       // Now import updated schema and transform the element
       interface CachedElements {
@@ -161,38 +162,40 @@ describe("Schema Import Callbacks", () => {
 
       const elementIds: Id64String[] = [elementId1];
 
-      await imodel.importSchemaStrings([testSchemaV101()], {
-        schemaImportCallbacks: {
-          preSchemaImportCallback: async (context) => {
-            // Create another element before the schema import
-            assert.equal(elementIds.length, 1);
-            const element = context.iModel.elements.getElementProps<TestInitialElementProps>(elementIds[0]);
-            assert.isDefined(element.stringProp);
-            assert.isDefined(element.intProp);
+      await withEditTxn(imodel, "cache callback writes", async (txn) => {
+        await imodel.importSchemaStrings([testSchemaV101()], {
+          schemaImportCallbacks: {
+            preSchemaImportCallback: async (context) => {
+              // Create another element before the schema import
+              assert.equal(elementIds.length, 1);
+              const element = context.iModel.elements.getElementProps<TestInitialElementProps>(elementIds[0]);
+              assert.isDefined(element.stringProp);
+              assert.isDefined(element.intProp);
 
-            elementProps.stringProp = "original value of second element";
-            elementProps.intProp = 84;
-            elementIds.push(imodel.elements.insertElement(elementProps));
+              elementProps.stringProp = "original value of second element";
+              elementProps.intProp = 84;
+              elementIds.push(txn.insertElement(elementProps));
 
-            const cached: CachedElements = { ids: elementIds };
+              const cached: CachedElements = { ids: elementIds };
 
-            return {
-              transformStrategy: DataTransformationStrategy.InMemory,
-              cachedData: cached,
-            };
+              return {
+                transformStrategy: DataTransformationStrategy.InMemory,
+                cachedData: cached,
+              };
+            },
+            postSchemaImportCallback: async (context: PostImportContext) => {
+              // Use cached data to update element with new property
+              assert.isDefined(context.resources.cachedData?.ids);
+              const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(context.resources.cachedData!.ids[1]);
+              assert.isDefined(updatedElementProps.stringProp);
+              assert.isDefined(updatedElementProps.intProp);
+              assert.isUndefined(updatedElementProps.newProp);
+              updatedElementProps.stringProp = "modified in postImport";
+              updatedElementProps.newProp = `New Prop Added`;
+              txn.updateElement<TestUpdatedElementProps>(updatedElementProps);
+            },
           },
-          postSchemaImportCallback: async (context: PostImportContext) => {
-            // Use cached data to update element with new property
-            assert.isDefined(context.resources.cachedData?.ids);
-            const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(context.resources.cachedData!.ids[1]);
-            assert.isDefined(updatedElementProps.stringProp);
-            assert.isDefined(updatedElementProps.intProp);
-            assert.isUndefined(updatedElementProps.newProp);
-            updatedElementProps.stringProp = "modified in postImport";
-            updatedElementProps.newProp = `New Prop Added`;
-            context.iModel.elements.updateElement<TestUpdatedElementProps>(updatedElementProps);
-          },
-        },
+        });
       });
 
       // Verify the transformation
@@ -240,30 +243,31 @@ describe("Schema Import Callbacks", () => {
         intProp: 123,
       };
 
-      const elementId = imodel.elements.insertElement(elementProps);
-      imodel.saveChanges("Insert element before schema upgrade");
+      const elementId = withEditTxn(imodel, "Insert element before schema upgrade", (txn) => txn.insertElement(elementProps));
 
       // Import updated schema with snapshot strategy
       let originalStringValue: string | undefined;
 
-      await imodel.importSchemaStrings([testSchemaV101()], {
-        schemaImportCallbacks: {
-          preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
-          postSchemaImportCallback: async (context) => {
-            assert.isDefined(context.resources.snapshot);
-            assert.equal(context.resources.snapshot?.getSchemaProps("TestSchema").version, "01.00.00");
-            assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.01");
+      await withEditTxn(imodel, "snapshot callback writes", async (txn) => {
+        await imodel.importSchemaStrings([testSchemaV101()], {
+          schemaImportCallbacks: {
+            preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
+            postSchemaImportCallback: async (context) => {
+              assert.isDefined(context.resources.snapshot);
+              assert.equal(context.resources.snapshot?.getSchemaProps("TestSchema").version, "01.00.00");
+              assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.01");
 
-            // Read original value from snapshot
-            const snapshotElementProps = context.resources.snapshot!.elements.getElementProps<TestInitialElementProps>(elementId);
-            originalStringValue = snapshotElementProps.stringProp;
+              // Read original value from snapshot
+              const snapshotElementProps = context.resources.snapshot!.elements.getElementProps<TestInitialElementProps>(elementId);
+              originalStringValue = snapshotElementProps.stringProp;
 
-            // Update element in main iModel with new property based on snapshot data
-            const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
-            updatedElementProps.newProp = `Original was: ${originalStringValue}`;
-            context.iModel.elements.updateElement(updatedElementProps);
+              // Update element in main iModel with new property based on snapshot data
+              const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+              updatedElementProps.newProp = `Original was: ${originalStringValue}`;
+              txn.updateElement(updatedElementProps);
+            },
           },
-        },
+        });
       });
 
       assert.equal(originalStringValue, "snapshot test");
@@ -301,7 +305,7 @@ describe("Schema Import Callbacks", () => {
               assert.isUndefined(context.resources.snapshot);
             },
           },
-        })
+        });
         assert.fail("Should have thrown error");
       } catch (err: any) {
         expect(err.message).to.equal("Failed to execute preSchemaImportCallback: InMemory transform strategy requires cachedData to be provided.");
@@ -324,25 +328,26 @@ describe("Schema Import Callbacks", () => {
 
       assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.00");
 
-      const elementId = imodel.elements.insertElement(elementProps);
-      imodel.saveChanges("Insert test element");
+      const elementId = withEditTxn(imodel, "Insert test element", (txn) => txn.insertElement(elementProps));
 
       // Try to import with failing callback
       try {
-        await imodel.importSchemaStrings([testSchemaV101()], {
-          schemaImportCallbacks: {
-            postSchemaImportCallback: async (context) => {
-              // Make a change
-              const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
-              updatedElementProps.intProp += 1;
-              updatedElementProps.stringProp = "should be reverted";
-              updatedElementProps.newProp = "should be reverted";
-              context.iModel.elements.updateElement(updatedElementProps);
+        await withEditTxn(imodel, "failing callback writes", async (txn) => {
+          await imodel.importSchemaStrings([testSchemaV101()], {
+            schemaImportCallbacks: {
+              postSchemaImportCallback: async (context) => {
+                // Make a change
+                const updatedElementProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+                updatedElementProps.intProp += 1;
+                updatedElementProps.stringProp = "should be reverted";
+                updatedElementProps.newProp = "should be reverted";
+                txn.updateElement(updatedElementProps);
 
-              // Then throw error
-              throw new Error("Intentional callback failure");
+                // Then throw error
+                throw new Error("Intentional callback failure");
+              },
             },
-          },
+          });
         });
         assert.fail("Should have thrown error");
       } catch (err: any) {
@@ -522,25 +527,26 @@ describe("Schema Import Callbacks", () => {
         intProp: 100,
       };
 
-      const elementId = imodel.elements.insertElement(elementProps);
-      imodel.saveChanges("Create test element");
+      const elementId = withEditTxn(imodel, "Create test element", (txn) => txn.insertElement(elementProps));
 
       // Now REMOVE the shared channel permission
       imodel.channels.removeAllowedChannel("shared");
 
       // Try to import schema and modify element - should fail
       try {
-        await imodel.importSchemaStrings([testSchemaV101()], {
-          schemaImportCallbacks: {
-            preSchemaImportCallback: async (context) => {
-              // This should throw because shared channel is not allowed
-              const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
-              updatedProps.newProp = "This should fail";
-              context.iModel.elements.updateElement(updatedProps); // Should throw here
+        await withEditTxn(imodel, "channel validation pre import", async (txn) => {
+          await imodel.importSchemaStrings([testSchemaV101()], {
+            schemaImportCallbacks: {
+              preSchemaImportCallback: async (context) => {
+                // This should throw because shared channel is not allowed
+                const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+                updatedProps.newProp = "This should fail";
+                txn.updateElement(updatedProps); // Should throw here
 
-              return { transformStrategy: DataTransformationStrategy.None };
-            }
-          },
+                return { transformStrategy: DataTransformationStrategy.None };
+              }
+            },
+          });
         });
         assert.fail("Should have thrown ChannelConstraintViolation");
       } catch (err: any) {
@@ -561,24 +567,25 @@ describe("Schema Import Callbacks", () => {
         intProp: 100,
       };
 
-      const elementId = imodel.elements.insertElement(elementProps);
-      imodel.saveChanges("Create test element");
+      const elementId = withEditTxn(imodel, "Create test element", (txn) => txn.insertElement(elementProps));
 
       // Now REMOVE the shared channel permission
       imodel.channels.removeAllowedChannel("shared");
 
       // Try to import schema and modify element - should fail
       try {
-        await imodel.importSchemaStrings([testSchemaV101()], {
-          schemaImportCallbacks: {
-            preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.None }),
-            postSchemaImportCallback: async (context) => {
-              // This should throw because shared channel is not allowed
-              const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
-              updatedProps.newProp = "This should fail";
-              context.iModel.elements.updateElement(updatedProps); // Should throw here
+        await withEditTxn(imodel, "channel validation post import", async (txn) => {
+          await imodel.importSchemaStrings([testSchemaV101()], {
+            schemaImportCallbacks: {
+              preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.None }),
+              postSchemaImportCallback: async (context) => {
+                // This should throw because shared channel is not allowed
+                const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+                updatedProps.newProp = "This should fail";
+                txn.updateElement(updatedProps); // Should throw here
+              },
             },
-          },
+          });
         });
         assert.fail("Should have thrown ChannelConstraintViolation");
       } catch (err: any) {
@@ -606,27 +613,28 @@ describe("Schema Import Callbacks", () => {
         intProp: 123,
       };
 
-      const elementId = imodel.elements.insertElement(elementProps);
-      imodel.saveChanges("Create test element");
+      const elementId = withEditTxn(imodel, "Create test element", (txn) => txn.insertElement(elementProps));
 
       // Disable channel before schema import with snapshot
       imodel.channels.removeAllowedChannel("shared");
 
       try {
-        await imodel.importSchemaStrings([testSchemaV101()], {
-          schemaImportCallbacks: {
-            preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
-            postSchemaImportCallback: async (context) => {
-              // Can read from snapshot (it's read-only, no channel check)
-              const snapshotProps = context.resources.snapshot!.elements.getElementProps<TestInitialElementProps>(elementId);
-              assert.equal(snapshotProps.stringProp, "snapshot test");
+        await withEditTxn(imodel, "channel validation snapshot import", async (txn) => {
+          await imodel.importSchemaStrings([testSchemaV101()], {
+            schemaImportCallbacks: {
+              preSchemaImportCallback: async () => ({ transformStrategy: DataTransformationStrategy.Snapshot }),
+              postSchemaImportCallback: async (context) => {
+                // Can read from snapshot (it's read-only, no channel check)
+                const snapshotProps = context.resources.snapshot!.elements.getElementProps<TestInitialElementProps>(elementId);
+                assert.equal(snapshotProps.stringProp, "snapshot test");
 
-              // But can't modify in main iModel without channel permission
-              const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
-              updatedProps.newProp = "This should fail";
-              context.iModel.elements.updateElement(updatedProps); // Should throw
+                // But can't modify in main iModel without channel permission
+                const updatedProps = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+                updatedProps.newProp = "This should fail";
+                txn.updateElement(updatedProps); // Should throw
+              },
             },
-          },
+          });
         });
         assert.fail("Should have thrown ChannelConstraintViolation");
       } catch (err: any) {
@@ -807,18 +815,19 @@ describe("Schema Import Callbacks", () => {
       return aspects[0].asAny.version;
     }
 
-    function setChannelVersion(iModel: IModelDb, version: string): void {
+    function setChannelVersion(txn: EditTxn, version: string): void {
+      const iModel = txn.iModel;
       const aspects = iModel.elements.getAspects(channelRootId, "BisCore:ChannelRootAspect");
       assert.equal(aspects.length, 1, "Should have exactly one ChannelRootAspect");
 
       const aspect = aspects[0];
       aspect.asAny.version = version;
-      iModel.elements.updateAspect(aspect.toJSON());
+      txn.updateAspect(aspect.toJSON());
     }
 
     // Code that simulates a channel upgrade.
     // This simulates elements being moved to different models as per the new channel organization.
-    const channelUpgradeCallback = async (context: ChannelUpgradeContext) => {
+    const channelUpgradeCallback = (txn: EditTxn) => async (context: ChannelUpgradeContext) => {
       (context.data.elementIds as Id64String[]).forEach((id) => {
         const elementProps = context.iModel.elements.getElementProps<TestInitialElementProps>(id);
         if (elementProps.stringProp === "Material1") {
@@ -828,11 +837,10 @@ describe("Schema Import Callbacks", () => {
         } else if (elementProps.stringProp === "Category1") {
           elementProps.modelName = "StyleModel";
         }
-        context.iModel.elements.updateElement(elementProps);
+        txn.updateElement(elementProps);
       });
-      setChannelVersion(context.iModel, "1.0.1");
+      setChannelVersion(txn, "1.0.1");
       assert.equal(getChannelVersion(context.iModel), "1.0.1");
-      context.iModel.saveChanges();
     };
 
     it("need for channel reorganization before schema import", async () => {
@@ -844,15 +852,16 @@ describe("Schema Import Callbacks", () => {
       imodel.channels.addAllowedChannel(channelKey);
 
       // Create a channel
-      channelRootId = imodel.channels.insertChannelSubject({
+      channelRootId = withEditTxn(imodel, (txn) => imodel.channels.insertChannelSubject({
         subjectName: "Test Channel",
         channelKey,
-      });
+        txn,
+      }));
 
       assert.isUndefined(getChannelVersion(imodel), "Version should be undefined initially");
 
       // Set version to 1.0.0
-      setChannelVersion(imodel, "1.0.0");
+      withEditTxn(imodel, (txn) => setChannelVersion(txn, "1.0.0"));
 
       // Enable shared channel and create elements
       imodel.channels.addAllowedChannel("shared");
@@ -870,42 +879,43 @@ describe("Schema Import Callbacks", () => {
           intProp: 100 + index * 100,
           modelName: "DefinitionModel"
         };
-        elementIds.push(imodel.elements.insertElement(elementProps));
+        elementIds.push(withEditTxn(imodel, (txn) => txn.insertElement(elementProps)));
       }
-      imodel.saveChanges("Create elements in a single model under the root channel structure");
 
       // Scenario: Let's assume schema has evolved and v1.0.1 expects elements to be in their dedicated models (i.e. it relies on channel v1.0.1)
       // The post schema upgrade code will look for elements in their own models.
       // If the channel is still in version 1.0.0, the callback will obviously fail.
-      await imodel.importSchemaStrings([testSchemaV101()], {
-        data: { elementIds },
-        channelUpgrade: {
-          channelKey,
-          fromVersion: "1.0.0",
-          toVersion: "1.0.1",
-          callback: channelUpgradeCallback,
-        },
-        schemaImportCallbacks: {
-          preSchemaImportCallback: async () => {
-            return {
-              transformStrategy: DataTransformationStrategy.InMemory,
-              cachedData: {
-                elementIds,
-              },
-            };
+      await withEditTxn(imodel, "channel reorganization callback writes", async (txn) => {
+        await imodel.importSchemaStrings([testSchemaV101()], {
+          data: { elementIds },
+          channelUpgrade: {
+            channelKey,
+            fromVersion: "1.0.0",
+            toVersion: "1.0.1",
+            callback: channelUpgradeCallback(txn),
           },
-          postSchemaImportCallback: async (context) => {
-            // Now schema v1.0.1 expects elements to be in their dedicated models.
-            const elementIdList = context.resources.cachedData!.elementIds as Id64String[];
-            assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.01");
-            assert.equal(getChannelVersion(context.iModel), "1.0.1");
+          schemaImportCallbacks: {
+            preSchemaImportCallback: async () => {
+              return {
+                transformStrategy: DataTransformationStrategy.InMemory,
+                cachedData: {
+                  elementIds,
+                },
+              };
+            },
+            postSchemaImportCallback: async (context) => {
+              // Now schema v1.0.1 expects elements to be in their dedicated models.
+              const elementIdList = context.resources.cachedData!.elementIds as Id64String[];
+              assert.equal(imodel.getSchemaProps("TestSchema").version, "01.00.01");
+              assert.equal(getChannelVersion(context.iModel), "1.0.1");
 
-            elementIdList.forEach((elementId: Id64String) => {
-              const elementProps = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
-              assert.notEqual(elementProps.modelName, "DefinitionModel", "Element should have been moved to new model as part of the channel upgrade");
-            });
+              elementIdList.forEach((elementId: Id64String) => {
+                const elementProps = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+                assert.notEqual(elementProps.modelName, "DefinitionModel", "Element should have been moved to new model as part of the channel upgrade");
+              });
+            },
           },
-        },
+        });
       });
     });
   });
@@ -932,10 +942,11 @@ describe("Schema Import Callbacks", () => {
       briefcaseDb.channels.addAllowedChannel(channelKey);
 
       if (briefcaseDb.channels.queryChannelRoot(channelKey) === undefined) {
-        briefcaseDb.channels.insertChannelSubject({
+        withEditTxn(briefcaseDb, (txn) => briefcaseDb.channels.insertChannelSubject({
           subjectName: "Test Channel",
           channelKey,
-        });
+          txn,
+        }));
       }
 
       const model = briefcaseDb.models.getModel(IModel.dictionaryId);
@@ -947,8 +958,7 @@ describe("Schema Import Callbacks", () => {
         intProp: 100,
       };
 
-      const elementId = briefcaseDb.elements.insertElement(elementProps);
-      briefcaseDb.saveChanges("Create test element");
+      const elementId = withEditTxn(briefcaseDb, "Create test element", (txn) => txn.insertElement(elementProps));
       await briefcaseDb.pushChanges({ description: "Create test element" });
 
       return [briefcaseDb, elementId];
@@ -959,41 +969,42 @@ describe("Schema Import Callbacks", () => {
 
       // Try to modify without acquiring locks in the callback
       try {
-        await briefcaseDb.importSchemaStrings([testSchemaV101()], {
-          channelUpgrade: {
-            channelKey,
-            fromVersion: "1.0.0",
-            toVersion: "1.0.1",
-            callback: async (context) => {
-              // Intentionally NOT acquiring locks
-              const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
-              props.stringProp = "should fail";
-              context.iModel.elements.updateElement(props);
-              context.iModel.saveChanges("Should fail");
+        await withEditTxn(briefcaseDb, "channel upgrade without locks", async (txn) => {
+          await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+            channelUpgrade: {
+              channelKey,
+              fromVersion: "1.0.0",
+              toVersion: "1.0.1",
+              callback: async (context) => {
+                // Intentionally NOT acquiring locks
+                const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+                props.stringProp = "should fail";
+                txn.updateElement(props);
+              },
             },
-          },
+          });
         });
         assert.fail("Should have thrown error about missing locks");
       } catch (err: any) {
         assert.equal(err.iTwinErrorId.key.name, "Lock Not Held");
-        briefcaseDb.abandonChanges();
       }
 
       // Try again with locks
       try {
-        await briefcaseDb.importSchemaStrings([testSchemaV101()], {
-          channelUpgrade: {
-            channelKey,
-            fromVersion: "1.0.0",
-            toVersion: "1.0.1",
-            callback: async (context) => {
-              await context.iModel.locks.acquireLocks({ exclusive: elementId });
-              const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
-              props.stringProp = "updated with locks";
-              context.iModel.elements.updateElement(props);
-              context.iModel.saveChanges("Updated with locks");
+        await withEditTxn(briefcaseDb, "channel upgrade with locks", async (txn) => {
+          await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+            channelUpgrade: {
+              channelKey,
+              fromVersion: "1.0.0",
+              toVersion: "1.0.1",
+              callback: async (context) => {
+                await context.iModel.locks.acquireLocks({ exclusive: elementId });
+                const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+                props.stringProp = "updated with locks";
+                txn.updateElement(props);
+              },
             },
-          },
+          });
         });
       } catch (err: any) {
         assert.fail(`Should not have thrown error when locks are acquired: ${err.message}`);
@@ -1006,38 +1017,40 @@ describe("Schema Import Callbacks", () => {
 
       // Try to modify without acquiring locks in the callback
       try {
-        await briefcaseDb.importSchemaStrings([testSchemaV101()], {
-          schemaImportCallbacks: {
-            preSchemaImportCallback: async (context) => {
-              // Intentionally NOT acquiring locks
-              const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
-              props.stringProp = "should fail";
-              context.iModel.elements.updateElement(props);
+        await withEditTxn(briefcaseDb, "pre import without locks", async (txn) => {
+          await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+            schemaImportCallbacks: {
+              preSchemaImportCallback: async (context) => {
+                // Intentionally NOT acquiring locks
+                const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+                props.stringProp = "should fail";
+                txn.updateElement(props);
 
-              return { transformStrategy: DataTransformationStrategy.None };
+                return { transformStrategy: DataTransformationStrategy.None };
+              },
             },
-          },
+          });
         });
         assert.fail("Should have thrown error about missing locks");
       } catch (err: any) {
         assert.equal(err.name, "Lock Not Held");
-        briefcaseDb.abandonChanges();
       }
 
       // Try again with locks
       try {
-        await briefcaseDb.importSchemaStrings([testSchemaV101()], {
-          schemaImportCallbacks: {
-            preSchemaImportCallback: async (context) => {
-              await context.iModel.locks.acquireLocks({ exclusive: elementId });
-              const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
-              props.stringProp = "should fail";
-              context.iModel.elements.updateElement(props);
-              context.iModel.saveChanges("Should fail");
+        await withEditTxn(briefcaseDb, "pre import with locks", async (txn) => {
+          await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+            schemaImportCallbacks: {
+              preSchemaImportCallback: async (context) => {
+                await context.iModel.locks.acquireLocks({ exclusive: elementId });
+                const props = context.iModel.elements.getElementProps<TestInitialElementProps>(elementId);
+                props.stringProp = "should fail";
+                txn.updateElement(props);
 
-              return { transformStrategy: DataTransformationStrategy.None };
+                return { transformStrategy: DataTransformationStrategy.None };
+              },
             },
-          },
+          });
         });
       } catch (err: any) {
         assert.fail(`Should not have thrown error when locks are acquired: ${err.message}`);
@@ -1050,17 +1063,19 @@ describe("Schema Import Callbacks", () => {
 
       let postImportCalled = false;
 
-      await briefcaseDb.importSchemaStrings([testSchemaV101()], {
-        schemaImportCallbacks: {
-          postSchemaImportCallback: async (context) => {
-            postImportCalled = true;
+      await withEditTxn(briefcaseDb, "post import with schema lock", async (txn) => {
+        await briefcaseDb.importSchemaStrings([testSchemaV101()], {
+          schemaImportCallbacks: {
+            postSchemaImportCallback: async (context) => {
+              postImportCalled = true;
 
-            // Schema lock is already held at this point
-            const props = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
-            props.newProp = "added in postImport with schema lock held";
-            context.iModel.elements.updateElement(props);
+              // Schema lock is already held at this point
+              const props = context.iModel.elements.getElementProps<TestUpdatedElementProps>(elementId);
+              props.newProp = "added in postImport with schema lock held";
+              txn.updateElement(props);
+            },
           },
-        },
+        });
       });
 
       assert.isTrue(postImportCalled, "Post-import callback should have been called");
@@ -1070,3 +1085,4 @@ describe("Schema Import Callbacks", () => {
     });
   });
 });
+

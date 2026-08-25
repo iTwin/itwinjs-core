@@ -194,6 +194,11 @@ export abstract class CurveCollection extends GeometryQuery {
     for (const curve of this.children)
       curve.reverseInPlace();
   }
+  /** Call [[reverseInPlace]] and return the instance. */
+  public reverse(): this {
+    this.reverseInPlace();
+    return this;
+  }
   /**
    * Return the max gap between adjacent primitives in Path and Loop collections.
    * * In a Path, gaps are computed between consecutive primitives.
@@ -272,25 +277,34 @@ export abstract class CurveCollection extends GeometryQuery {
     return this.isAnyRegionType;
   }
   /**
-   * Return true for a `Path`, i.e. a chain of curves joined head-to-tail
-   * @see isPath
+   * Return true for a `Path`, i.e. a chain of curves joined head-to-tail.
+   * * This is NOT a test for (lack of) physical closure.
+   * @see [[isPath]], [[CurveChain.isPhysicallyClosedCurve]]
    */
   public get isOpenPath(): boolean {
     return this.dgnBoundaryType() === 1;
   }
-  /** Type guard for Path */
+  /**
+   * Type guard for Path.
+   * * This is NOT a test for (lack of) physical closure.
+   * @see [[CurveChain.isPhysicallyClosedCurve]]
+   */
   public isPath(): this is Path {
     return this.isOpenPath;
   }
   /**
    * Return true for a single-loop planar region type, i.e. `Loop`.
-   * * This is NOT a test for physical closure of a `Path`.
-   * @see isLoop
+   * * This is NOT a test for physical closure.
+   * @see [[isLoop]], [[CurveChain.isPhysicallyClosedCurve]]
    */
   public get isClosedPath(): boolean {
     return this.dgnBoundaryType() === 2;
   }
-  /** Type guard for Loop */
+  /**
+   * Type guard for Loop.
+   * * This is NOT a test for physical closure.
+   * @see [[CurveChain.isPhysicallyClosedCurve]]
+   */
   public isLoop(): this is Loop {
     return this.isClosedPath;
   }

@@ -239,9 +239,9 @@ export class ViewCreator2d {
   private async _addSheetViewProps(modelId: Id64String, props: ViewStateProps) {
     let width = 0;
     let height = 0;
-    for await (const row of this._imodel.createQueryReader(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ?`, QueryBinder.from([modelId]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      width = row.width as number;
-      height = row.height as number;
+    for await (const row of this._imodel.createQueryReader(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ?`, QueryBinder.from([modelId]), { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+      width = row.Width as number;
+      height = row.Height as number;
       break;
     }
     const sheetProps: SheetProps = {
@@ -292,7 +292,7 @@ export class ViewCreator2d {
    */
   private async _getViewDefinitionsIdForModel(modelId: Id64String): Promise<Id64String | undefined> {
 
-    const query = `SELECT ECInstanceId from Bis.ViewDefinition2D WHERE BaseModel.Id = ${modelId} AND isPrivate = false LIMIT 1`;
+    const query = `SELECT ECInstanceId as id from Bis.ViewDefinition2D WHERE BaseModel.Id = ${modelId} AND isPrivate = false LIMIT 1`;
     const viewDefinitionsId = await this._executeQuery(query);
 
     return (viewDefinitionsId.length) > 0 ? viewDefinitionsId[0] : undefined;
@@ -303,7 +303,7 @@ export class ViewCreator2d {
    */
   private async _getAllCategories(): Promise<Id64Array> {
 
-    const query = "SELECT ECInstanceId from BisCore.DrawingCategory";
+    const query = "SELECT ECInstanceId as id from BisCore.DrawingCategory";
     const categories = await this._executeQuery(query);
 
     return categories;
@@ -315,7 +315,7 @@ export class ViewCreator2d {
    */
   private async _getSheetAttachments(modelId: string): Promise<Id64Array> {
 
-    const query = `SELECT ECInstanceId FROM Bis.ViewAttachment WHERE Model.Id = ${modelId}`;
+    const query = `SELECT ECInstanceId as id FROM Bis.ViewAttachment WHERE Model.Id = ${modelId}`;
     const attachments = await this._executeQuery(query);
 
     return attachments;
@@ -327,7 +327,7 @@ export class ViewCreator2d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    for await (const row of this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+    for await (const row of this._imodel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }))
       rows.push(row.id);
 
     return rows;

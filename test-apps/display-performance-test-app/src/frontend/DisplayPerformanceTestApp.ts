@@ -144,19 +144,30 @@ export class DisplayPerfTestApp {
 async function signIn(): Promise<void> {
   if (import.meta.env.IMJS_OIDC_HEADLESS)
     return;
+  const clientId = requireEnv(import.meta.env.IMJS_OIDC_CLIENT_ID, "IMJS_OIDC_CLIENT_ID");
   let authorizationClient;
   if (ProcessDetector.isElectronAppFrontend)
     authorizationClient = new ElectronRendererAuthorization({
-      clientId: import.meta.env.IMJS_OIDC_CLIENT_ID!,
+      clientId,
     });
-  else
+  else {
+    const scope = requireEnv(import.meta.env.IMJS_OIDC_SCOPE, "IMJS_OIDC_SCOPE");
+    const redirectUri = requireEnv(import.meta.env.IMJS_OIDC_REDIRECT_URI, "IMJS_OIDC_REDIRECT_URI");
     authorizationClient = new BrowserAuthorizationClient({
-      clientId: import.meta.env.IMJS_OIDC_CLIENT_ID!,
-      scope: import.meta.env.IMJS_OIDC_SCOPE!,
-      redirectUri: import.meta.env.IMJS_OIDC_REDIRECT_URI!,
+      clientId,
+      scope,
+      redirectUri,
     });
+  }
   await authorizationClient.signIn();
   IModelApp.authorizationClient = authorizationClient;
+}
+
+function requireEnv(value: string | undefined, name: string): string {
+  if (value === undefined)
+    throw new Error(`Missing required environment variable: ${name}`);
+
+  return value;
 }
 
 async function main() {

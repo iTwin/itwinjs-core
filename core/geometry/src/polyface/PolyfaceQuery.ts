@@ -502,18 +502,19 @@ export class PolyfaceQuery {
    */
   public static dihedralAngleSummary(source: Polyface | PolyfaceVisitor, ignoreBoundaries: boolean = false): number {
     // more info can be found at geometry/internaldocs/Polyface.md
+    // visit all facets and collect normals and edges
     const edges = new IndexedEdgeMatcher();
     const vertices = source instanceof Polyface ? source.data.point : undefined;
     const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
     visitor.setNumWrap(1);
-    const centroidNormal: Ray3d[] = [];
+    const facetNormals: Ray3d[] = [];
     let normalCounter = 0;
     for (visitor.reset(); visitor.moveToNextFacet();) {
       const numEdges = visitor.pointCount - 1;
       const normal = PolygonOps.centroidAreaNormal(visitor.point);
       if (normal === undefined)
         return -2;
-      centroidNormal.push(normal);
+      facetNormals.push(normal);
       for (let i = 0; i < numEdges; i++) {
         const edge = edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), normalCounter);
         if (!vertices) // decorate if we don't have vertices to query later
@@ -529,21 +530,23 @@ export class PolyfaceQuery {
     edges.sortAndCollectClusters(manifoldClusters, ignoreBoundaries ? undefined : badClusters, undefined, badClusters);
     if (badClusters.length > 0)
       return -2;
-    // find angle between facet centroid normals (dihedral angles)
+    // find angle between facet normals (dihedral angles)
     let numPositive = 0;
     let numPlanar = 0;
     let numNegative = 0;
     const edgeVector = Vector3d.create();
     for (const cluster of manifoldClusters) {
       if (Array.isArray(cluster) && cluster.length === 2) {
-        const sideA = cluster[0];
-        const sideB = cluster[1];
-        if (vertices)
-          vertices.vectorIndexIndex(sideA.startVertex, sideA.endVertex, edgeVector);
-        else
+        const sideA = cluster[0]; // edge on facetA
+        const sideB = cluster[1]; // edge on facetB
+        if (vertices) {
+          if (!vertices.vectorIndexIndex(sideA.startVertex, sideA.endVertex, edgeVector))
+            return -2;
+        } else {
           edgeVector.setFrom((sideA as any).edgeVector);
-        const facetNormalA = centroidNormal[sideA.facetIndex].direction;
-        const facetNormalB = centroidNormal[sideB.facetIndex].direction;
+        }
+        const facetNormalA = facetNormals[sideA.facetIndex].direction;
+        const facetNormalB = facetNormals[sideB.facetIndex].direction;
         const dihedralAngle = facetNormalA.signedAngleTo(facetNormalB, edgeVector);
         if (dihedralAngle.isAlmostZero)
           numPlanar++;
@@ -563,20 +566,20 @@ export class PolyfaceQuery {
     return -2;
   }
   /**
- * Test for convex volume by dihedral angle tests on all edges.
- * * This tests if all dihedral angles of the mesh are positive.
- * * In a closed solid, this is a strong test for overall mesh convexity with outward facing normals.
- * * See [[dihedralAngleSummary]] for the definition of "dihedral angle".
- * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected
- * component, such as a pyramid with no underside.
- * * It is not a correct test if there are multiple, disjoint components.
- * * Take the above-mentioned pyramid with no underside.
- * * Within the same mesh, have a second pyramid placed to the side, still facing upward.
- * * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
- * @param source mesh.
- * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
- * @returns true if all dihedral angles of the mesh are positive.
- */
+   * Test for convex volume by dihedral angle tests on all edges.
+   * * This tests if all dihedral angles of the mesh are positive.
+   * * In a closed solid, this is a strong test for overall mesh convexity with outward facing normals.
+   * * See [[dihedralAngleSummary]] for the definition of "dihedral angle".
+   * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected
+   * component, such as a pyramid with no underside.
+   * * It is not a correct test if there are multiple, disjoint components.
+   * * Take the above-mentioned pyramid with no underside.
+   * * Within the same mesh, have a second pyramid placed to the side, still facing upward.
+   * * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
+   * @param source mesh.
+   * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
+   * @returns true if all dihedral angles of the mesh are positive.
+   */
   public static isConvexByDihedralAngleCount(source: Polyface | PolyfaceVisitor, ignoreBoundaries: boolean = false): boolean {
     return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }
@@ -1420,7 +1423,7 @@ export class PolyfaceQuery {
     );
     return builder.claimPolyface(true);
   }
-  /** @deprecated in 4.7.0 - will not be removed until after 2026-06-13. Use [[sweepLineStringToFacetsXYReturnSweptFacets]] instead. */
+  /** @deprecated in 4.7.0 - might be removed in next major version. Use [[sweepLineStringToFacetsXYReturnSweptFacets]] instead. */
   public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
     return this.sweepLineStringToFacetsXYReturnSweptFacets(linestringPoints, polyface);
   }
@@ -1522,7 +1525,7 @@ export class PolyfaceQuery {
     * * Return collected line segments.
     * * This calls [[sweepLineStringToFacets]] with options created by
     *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);`
-    * @deprecated in 4.7.0 - will not be removed until after 2026-06-13. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
+    * @deprecated in 4.7.0 - might be removed in next major version. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
     */
   public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
     const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);
@@ -1532,7 +1535,7 @@ export class PolyfaceQuery {
    * Find segments (within the linestring) which project to facets.
    * * Return chains.
    * * This calls [[sweepLineStringToFacets]] with default options.
-   * @deprecated in 4.7.0 - will not be removed until after 2026-06-13. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
+   * @deprecated in 4.7.0 - might be removed in next major version. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
    */
   public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
     return PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface) as LineString3d[];

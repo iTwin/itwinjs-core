@@ -324,7 +324,7 @@ export class Logger {
    * @param category  The category of the message.
    * @param err  The exception object.
    * @param log The logger output function to use - defaults to Logger.logError
-   * @deprecated in 5.6. Use logError(category, error, metaData) instead, which will log exceptions in the same way but is more flexible and easier to use.
+   * @deprecated in 5.6 - will not be removed until after 2027-03-03. Use logError(category, error, metaData) instead, which will log exceptions in the same way but is more flexible and easier to use.
    */
   public static logException(category: string, err: any, log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData)): void {
     log(category, Logger.getExceptionMessage(err), () => {
@@ -414,7 +414,7 @@ export class PerfLogger implements Disposable {
     this.logMessage();
   }
 
-  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - might be removed in next major version. Use [Symbol.dispose] instead. */
   public dispose(): void {
     this[Symbol.dispose]();
   }

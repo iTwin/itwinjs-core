@@ -17,10 +17,10 @@ const multiSnapModes = [
   SnapMode.Bisector,
 ];
 
-const multiSnapMode = -1;
+const multiSnapMode: number = -1;
 
 function changeSnapModes(value: SnapMode): void {
-  if (multiSnapMode !== (value as number)) {
+  if (multiSnapMode !== value) {
     DisplayTestApp.setActiveSnapMode(value);
   } else {
     DisplayTestApp.setActiveSnapModes(multiSnapModes);

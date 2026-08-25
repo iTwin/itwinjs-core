@@ -21,7 +21,7 @@ import { SweepContour } from "./SweepContour";
 
 /**
  * Type for a function argument taking 2 curves and returning another curve or failing with undefined.
- * * This is used (for instance) by `RuleSweep.mutatePartners`.
+ * * This is used (for instance) by [[RuledSweep.mutatePartners]].
  * @public
  */
 export type CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined;

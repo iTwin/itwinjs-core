@@ -35,7 +35,7 @@ IModelHost.startup().then(async () => {
       console.log("Failed to create bim file");
     } else {
       const inputDirName = path.isAbsolute(directoryTail) ? directoryTail : `..\\..\\core\\geometry\\src\\test\\output\\${directoryTail}\\`;
-      const modelGroups = importer.importFilesFromDirectory(inputDirName);
+      const modelGroups = await importer.importFilesFromDirectory(inputDirName);
       let numModel = 0;
       for (const group of modelGroups) {
         numModel += group.modelNames.length;

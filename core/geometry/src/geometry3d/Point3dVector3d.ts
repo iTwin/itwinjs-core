@@ -1283,7 +1283,7 @@ export class Vector3d extends XYZ {
    */
   public tryNormalizeInPlace(smallestMagnitude: number = Geometry.smallFraction): boolean {
     const a = this.magnitude();
-    if (a < smallestMagnitude || a === 0.0)
+    if (a <= Math.abs(smallestMagnitude))
       return false;
     this.scaleInPlace(1.0 / a);
     return true;

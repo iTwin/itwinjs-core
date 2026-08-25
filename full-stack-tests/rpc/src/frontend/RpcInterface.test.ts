@@ -34,7 +34,7 @@ describe("RpcInterface", () => {
 
   const initializeLocalInterface = () => {
     RpcManager.registerImpl(LocalInterface, class extends RpcInterface {
-      public async op(): Promise<void> { return undefined as any; }
+      public async op(): Promise<void> { return undefined; }
     });
 
     RpcManager.initializeInterface(LocalInterface);

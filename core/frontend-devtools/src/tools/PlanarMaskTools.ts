@@ -166,7 +166,8 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
       const sourceId = hit.sourceId;
       if (!this._acceptedElementIds.has(sourceId)) {
         this._acceptedElementIds.add(sourceId);
-        this._acceptedModelIds.add(hit.modelId!);
+        if (undefined !== hit.modelId)
+          this._acceptedModelIds.add(hit.modelId);
         if (hit.subCategoryId)
           this._acceptedSubCategoryIds.add(hit.subCategoryId);
         this.applyMask(vp);

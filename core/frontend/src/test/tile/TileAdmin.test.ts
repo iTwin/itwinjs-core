@@ -11,8 +11,9 @@ import { ScreenViewport, Viewport } from "../../Viewport";
 import { MockRender } from "../../internal/render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import { GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "../../tile/internal";
+import { computeCesiumTokenTimeoutInterval, getCesiumAccessClient, getCesiumOSMBuildingsUrl, getCesiumTerrainProvider, GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
+import { CesiumAccessClient, CesiumAssetEndpoint } from "../../CesiumAccessClient";
 
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {
@@ -603,6 +604,156 @@ describe("TileAdmin", () => {
       await MockRender.App.shutdown();
       expect(IModelApp.tileAdmin.totalTileContentBytes).toEqual(0);
       expect(isLinked(tile)).toBe(false);
+    });
+  });
+
+  describe("canAccessCesium", () => {
+    const mockCesiumAccess: CesiumAccessClient = {
+      async getAssetEndpoint(_assetId: string): Promise<CesiumAssetEndpoint> {
+        return { accessToken: "token", url: "https://example.com/" };
+      },
+    };
+
+    it("returns false when neither cesiumIonKey nor cesiumAccess is configured", () => {
+      const admin = new TileAdmin(false, undefined, undefined);
+      expect(admin.canAccessCesium).toBe(false);
+    });
+
+    it("returns true when cesiumIonKey is configured", () => {
+      const admin = new TileAdmin(false, undefined, { cesiumIonKey: "my-ion-key" });
+      expect(admin.canAccessCesium).toBe(true);
+    });
+
+    it("returns true when cesiumAccess is configured", () => {
+      const admin = new TileAdmin(false, undefined, { cesiumAccess: mockCesiumAccess });
+      expect(admin.canAccessCesium).toBe(true);
+    });
+
+    it("returns true when both cesiumIonKey and cesiumAccess are configured", () => {
+      const admin = new TileAdmin(false, undefined, { cesiumIonKey: "my-ion-key", cesiumAccess: mockCesiumAccess });
+      expect(admin.canAccessCesium).toBe(true);
+    });
+  });
+
+  describe("getCesiumAccessClient", () => {
+    afterEach(async () => {
+      if (IModelApp.initialized)
+        await MockRender.App.shutdown();
+    });
+
+    it("returns a default client fallback when only cesiumIonKey is configured", async () => {
+      await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "my-ion-key" } });
+      // getCesiumAccessClient returns cesiumAccess ?? new CesiumIonClient() internally.
+      // With no cesiumAccess registered, it must hand back a usable fallback client (not undefined).
+      expect(IModelApp.tileAdmin.cesiumAccess).toBeUndefined();
+      const client = getCesiumAccessClient();
+      expect(client).toBeDefined();
+      // The fallback must implement the CesiumAccessClient contract.
+      expect(typeof client.getAssetEndpoint).toBe("function");
+    });
+
+    it("returns the registered cesiumAccess client when configured", async () => {
+      const mockAccess: CesiumAccessClient = {
+        async getAssetEndpoint(_assetId: string): Promise<CesiumAssetEndpoint> {
+          return { accessToken: "token", url: "https://example.com" };
+        },
+      };
+      await MockRender.App.startup({ tileAdmin: { cesiumAccess: mockAccess } });
+      expect(getCesiumAccessClient()).toBe(mockAccess);
+    });
+
+    it("cesiumAccess takes precedence over cesiumIonKey when both are configured", async () => {
+      const mockAccess: CesiumAccessClient = {
+        async getAssetEndpoint(_assetId: string): Promise<CesiumAssetEndpoint> {
+          return { accessToken: "token", url: "https://example.com" };
+        },
+      };
+      await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "my-ion-key", cesiumAccess: mockAccess } });
+      // getCesiumAccessClient() must return the registered client, not a CesiumIonClient fallback
+      expect(getCesiumAccessClient()).toBe(mockAccess);
+    });
+  });
+
+  describe("getCesiumOSMBuildingsUrl", () => {
+    afterEach(async () => {
+      if (IModelApp.initialized)
+        await MockRender.App.shutdown();
+    });
+
+    it("returns undefined when no Cesium access is configured", async () => {
+      await MockRender.App.startup({ tileAdmin: {} });
+      expect(getCesiumOSMBuildingsUrl()).toBeUndefined();
+    });
+
+    it("returns a keyless URL when only cesiumIonKey is configured", async () => {
+      await MockRender.App.startup({ tileAdmin: { cesiumIonKey: "my-ion-key" } });
+      const url = getCesiumOSMBuildingsUrl();
+      expect(url).toBeDefined();
+      // URL is always keyless — key is resolved internally by CesiumIonClient at fetch time
+      expect(url).toMatch(/^\$CesiumIonAsset=\d+:$/);
+    });
+
+    it("returns a keyless URL when cesiumAccess is configured", async () => {
+      const mockAccess: CesiumAccessClient = {
+        async getAssetEndpoint(_assetId: string): Promise<CesiumAssetEndpoint> {
+          return { accessToken: "token", url: "https://example.com/" };
+        },
+      };
+      await MockRender.App.startup({ tileAdmin: { cesiumAccess: mockAccess } });
+      const url = getCesiumOSMBuildingsUrl();
+      expect(url).toBeDefined();
+      // keyless: ends with colon and empty key
+      expect(url).toMatch(/^\$CesiumIonAsset=\d+:$/);
+    });
+  });
+
+  describe("computeCesiumTokenTimeoutInterval", () => {
+    const defaultMs = 30 * 60 * 1000;
+    const minMs = 60 * 1000;
+
+    it("falls back to the default interval when expiry is unknown", () => {
+      expect(computeCesiumTokenTimeoutInterval(undefined).milliseconds).toEqual(defaultMs);
+    });
+
+    it("falls back to the default interval when expiry is an invalid Date", () => {
+      // An invalid Date's getTime() is NaN; without a guard this would disable refresh entirely.
+      expect(computeCesiumTokenTimeoutInterval(new Date("not-a-date")).milliseconds).toEqual(defaultMs);
+    });
+
+    it("clamps an already-expired token to the minimum interval", () => {
+      expect(computeCesiumTokenTimeoutInterval(new Date(Date.now() - 60_000)).milliseconds).toEqual(minMs);
+    });
+
+    it("clamps a near-immediate expiry to the minimum interval", () => {
+      // Without clamping this would re-resolve the endpoint on essentially every tile read.
+      expect(computeCesiumTokenTimeoutInterval(new Date(Date.now() + 100)).milliseconds).toEqual(minMs);
+    });
+
+    it("honors a valid future expiry", () => {
+      const tenMinutes = 10 * 60 * 1000;
+      const result = computeCesiumTokenTimeoutInterval(new Date(Date.now() + tenMinutes)).milliseconds;
+      // Allow a small tolerance for the elapsed time between Date.now() calls.
+      expect(result).toBeGreaterThan(tenMinutes - 5_000);
+      expect(result).toBeLessThanOrEqual(tenMinutes);
+    });
+  });
+
+  describe("getCesiumTerrainProvider", () => {
+    afterEach(async () => {
+      if (IModelApp.initialized)
+        await MockRender.App.shutdown();
+    });
+
+    const terrainOpts = { exaggeration: 1, wantSkirts: false, wantNormals: false };
+
+    it("returns undefined when the access client cannot resolve an endpoint", async () => {
+      const mockAccess: CesiumAccessClient = {
+        async getAssetEndpoint(): Promise<CesiumAssetEndpoint | undefined> {
+          return undefined;
+        },
+      };
+      await MockRender.App.startup({ tileAdmin: { cesiumAccess: mockAccess } });
+      expect(await getCesiumTerrainProvider(terrainOpts)).toBeUndefined();
     });
   });
 });

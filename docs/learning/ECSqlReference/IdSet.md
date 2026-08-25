@@ -1,6 +1,6 @@
 # IdSet Virtual Table
 
-`IdSet` is an ECSQl built in virtual table which takes in a valid JSON array string of hex or decimal ids and stores the ids as a virtual table. It can be used as an alternative to `InVirtualSet`. The column retuned by `IdSet` virtual table will always be named `id` by default but can be aliased as per choice. `IdSet` virtual table is defined under the schema named `ECVLib`. But schema name is optional in case of Table Valued Functions so `IdSet` virtual table works fine even when the schema named `ECVLib` is not mentioned in the ECSql query. It is an experimental feature, so the ECSql Option `ENABLE_EXPERIMENTAL_FEATURES` should be passed with the query in order for it to work.
+`IdSet` is an ECSQL built in virtual table which takes in a valid JSON array string of hex or decimal ids and stores the ids as a virtual table. It can be used as an alternative to `InVirtualSet`. The column retuned by `IdSet` virtual table will always be named `id` by default but can be aliased as per choice. `IdSet` virtual table is defined under the schema named `ECVLib`. But schema name is optional in case of Table Valued Functions so `IdSet` virtual table works fine even when the schema named `ECVLib` is not mentioned in the ECSql query. It is an experimental feature, so the ECSql Option `ENABLE_EXPERIMENTAL_FEATURES` should be passed with the query in order for it to work.
 
 ## Syntax
 
@@ -12,6 +12,15 @@ OR
 
 ```sql
 SELECT i FROM aps.TestElement, IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+It is also possible to reuse the same `IdSet` in statements that contain UNIONs by using [CTEs](./CTE.md):
+
+```sql
+WITH my_cte AS (SELECT id FROM IdSet(?) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES)
+    SELECT true as is3d, gel.Model.id as modelId FROM BisCore.GeometricElement3d gel, my_cte WHERE gel.ECInstanceId = my_cte.id
+    UNION ALL
+    SELECT false as is3d, gel.Model.id as modelId FROM BisCore.GeometricElement2d gel, my_cte WHERE gel.ECInstanceId = my_cte.id
 ```
 
 ## Arguments accepted

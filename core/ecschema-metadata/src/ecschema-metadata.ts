@@ -40,7 +40,6 @@ export * from "./PropertyTypes";
 export * from "./SchemaJsonLocater";
 export * from "./SchemaKey";
 export * from "./SchemaLoader";
-export * from "./UnitConversion/UnitConversion";
 export * from "./UnitConversion/UnitConverter";
 export * from "./UnitProvider/SchemaUnitProvider";
 export * from "./Validation/SchemaWalker";
@@ -49,8 +48,17 @@ export * from "./Formatting/SchemaFormatsProvider";
 export * from "./Formatting/FormatSetFormatsProvider";
 export * from "./IncrementalLoading/ECSqlSchemaLocater";
 export * from "./IncrementalLoading/IncrementalSchemaLocater";
-export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";
+export { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
 export { SchemaGraph } from "./utils/SchemaGraph";
+export * from "./SchemaView/SchemaViewBinaryReader";
+export * from "./SchemaView/SchemaView";
+export * from "./SchemaView/SchemaViewBuilder";
+export * from "./SchemaView/SchemaViewInterfaces";
+export * from "./SchemaView/SchemaManifest";
+export * from "./SchemaView/SchemaViewManager";
+export * from "./Localization/LocalizationTypes";
+export * from "./Localization/LocalizationProvider";
+export * from "./Localization/SchemaLocalization";
 
 /** @docs-package-description
  * The ecschema-metadata package contains classes for working with ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).

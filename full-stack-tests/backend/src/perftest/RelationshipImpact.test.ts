@@ -10,8 +10,8 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, RelationshipProps, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { _nativeDb, ECSqlStatement, EditTxn, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 describe("SchemaDesignPerf Relationship Comparison", () => {
@@ -107,13 +107,13 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     }
     return schemaPath;
   }
-  function insertElement(imodel: IModelDb, mId: Id64String, cId: Id64String, cName: string): Id64String {
-    const elementProps = createElemProps(imodel, mId, cId, cName);
-    const geomElement = imodel.elements.createElement(elementProps);
+  function insertElement(txn: EditTxn, mId: Id64String, cId: Id64String, cName: string): Id64String {
+    const elementProps = createElemProps(txn.iModel, mId, cId, cName);
+    const geomElement = txn.iModel.elements.createElement(elementProps);
     setPropVal(geomElement, "propBase", "Test Value");
     const cType: string = cName.substring(cName.length - 1);
     setPropVal(geomElement, `propChild${cType}`, `${cType} Value`);
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = txn.insertElement(geomElement.toJSON());
     assert.isTrue(Id64.isValidId64(id), "insert failed");
     return id;
   }
@@ -155,39 +155,40 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
       await seedIModel.importSchemas([st]);
       seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
       // first create Elements and then Relationship
-      const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
+      const [, newModelId] = withEditTxn(seedIModel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+        spatialCategoryId = withEditTxn(seedIModel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-      for (let i = 0; i < seedCount; ++i) {
-        const idC = insertElement(seedIModel, newModelId, spatialCategoryId, "TestRelationSchema:ChildC");
-        const idD = insertElement(seedIModel, newModelId, spatialCategoryId, "TestRelationSchema:ChildD");
-        // Link Table Relationship
-        const props: RelationshipProps = {
-          classFullName: "TestRelationSchema:CIsRelatedToD",
-          sourceId: idC,
-          targetId: idD,
-        };
-        (props as any).propRel = "Relationship Value";
-        const relId = seedIModel.relationships.insertInstance(props);
-        assert.isTrue(Id64.isValidId64(relId), "relationship insert failed");
+      withEditTxn(seedIModel, (txn) => {
+        for (let i = 0; i < seedCount; ++i) {
+          const idC = insertElement(txn, newModelId, spatialCategoryId, "TestRelationSchema:ChildC");
+          const idD = insertElement(txn, newModelId, spatialCategoryId, "TestRelationSchema:ChildD");
+          // Link Table Relationship
+          const props: RelationshipProps = {
+            classFullName: "TestRelationSchema:CIsRelatedToD",
+            sourceId: idC,
+            targetId: idD,
+          };
+          (props as any).propRel = "Relationship Value";
+          const relId = txn.insertRelationship(props);
+          assert.isTrue(Id64.isValidId64(relId), "relationship insert failed");
 
-        // NavProp Elements
-        const idB = insertElement(seedIModel, newModelId, spatialCategoryId, "TestRelationSchema:ChildB");
-        const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
-        const elemRef = new RelatedElement({ id: idB, relClassName: "TestRelationSchema:ADrivesB" });
-        (elementProps as any).childB = elemRef;
-        const geomElement = seedIModel.elements.createElement(elementProps);
-        setPropVal(geomElement, "propBase", "Test Value");
-        setPropVal(geomElement, "propChildA", "A Value");
-        const id3 = seedIModel.elements.insertElement(geomElement.toJSON());
-        assert.isTrue(Id64.isValidId64(id3), "insert failed");
+          // NavProp Elements
+          const idB = insertElement(txn, newModelId, spatialCategoryId, "TestRelationSchema:ChildB");
+          const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
+          const elemRef = new RelatedElement({ id: idB, relClassName: "TestRelationSchema:ADrivesB" });
+          (elementProps as any).childB = elemRef;
+          const geomElement = seedIModel.elements.createElement(elementProps);
+          setPropVal(geomElement, "propBase", "Test Value");
+          setPropVal(geomElement, "propChildA", "A Value");
+          const id3 = txn.insertElement(geomElement.toJSON());
+          assert.isTrue(Id64.isValidId64(id3), "insert failed");
 
-        validateRel(seedIModel, idC, idD);
-      }
+          validateRel(seedIModel, idC, idD);
+        }
+      }); // auto-saves
       verifyCounts(seedIModel, seedCount);
-      seedIModel.saveChanges();
       seedIModel.close();
       await IModelHost.shutdown();
     }
@@ -206,50 +207,51 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
   });
 
   it("Insert", async () => {
-    let totalTimeLink = 0.0;
-    let totalTimeNav = 0.0;
     const seedFileName = path.join(outDir, "relationship.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship_Insert.bim");
     const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
+    const [, newModelId] = withEditTxn(perfimodel, (txn) => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(txn, Code.createEmpty(), true));
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
     if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      spatialCategoryId = withEditTxn(perfimodel, (txn) => SpatialCategory.insert(txn, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })));
 
-    for (let i = 0; i < opCount; ++i) {
-      // LinkTable
-      const idC = insertElement(perfimodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildC");
-      const startTime = new Date().getTime();
-      const idD = insertElement(perfimodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildD");
-      const props: RelationshipProps = {
-        classFullName: "TestRelationSchema:CIsRelatedToD",
-        sourceId: idC,
-        targetId: idD,
-      };
-      (props as any).propRel = "Relationship Value";
-      const relId = perfimodel.relationships.insertInstance(props);
-      assert.isTrue(Id64.isValidId64(relId), "relationship insert failed");
-      const endTime = new Date().getTime();
-      totalTimeLink = totalTimeLink + ((endTime - startTime) / 1000.0);
+    const { totalTimeLink, totalTimeNav } = withEditTxn(perfimodel, (txn) => {
+      let timeLink = 0.0, timeNav = 0.0;
+      for (let i = 0; i < opCount; ++i) {
+        // LinkTable
+        const idC = insertElement(txn, newModelId, spatialCategoryId, "TestRelationSchema:ChildC");
+        const startTime = new Date().getTime();
+        const idD = insertElement(txn, newModelId, spatialCategoryId, "TestRelationSchema:ChildD");
+        const props: RelationshipProps = {
+          classFullName: "TestRelationSchema:CIsRelatedToD",
+          sourceId: idC,
+          targetId: idD,
+        };
+        (props as any).propRel = "Relationship Value";
+        const relId = txn.insertRelationship(props);
+        assert.isTrue(Id64.isValidId64(relId), "relationship insert failed");
+        const endTime = new Date().getTime();
+        timeLink = timeLink + ((endTime - startTime) / 1000.0);
 
-      // NavProp
-      const idB = insertElement(perfimodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildB");
-      const startTime1 = new Date().getTime();
-      const elementProps = createElemProps(perfimodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
-      const elemRef = new RelatedElement({ id: idB, relClassName: "TestRelationSchema:ADrivesB" });
-      (elementProps as any).childB = elemRef;
-      const geomElement = perfimodel.elements.createElement(elementProps);
-      setPropVal(geomElement, "propBase", "Test Value");
-      setPropVal(geomElement, "propChildA", "A Value");
-      const idA = perfimodel.elements.insertElement(geomElement.toJSON());
-      assert.isTrue(Id64.isValidId64(idA), "insert failed");
-      const endTime1 = new Date().getTime();
-      totalTimeNav = totalTimeNav + ((endTime1 - startTime1) / 1000.0);
+        // NavProp
+        const idB = insertElement(txn, newModelId, spatialCategoryId, "TestRelationSchema:ChildB");
+        const startTime1 = new Date().getTime();
+        const elementProps = createElemProps(perfimodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
+        const elemRef = new RelatedElement({ id: idB, relClassName: "TestRelationSchema:ADrivesB" });
+        (elementProps as any).childB = elemRef;
+        const geomElement = perfimodel.elements.createElement(elementProps);
+        setPropVal(geomElement, "propBase", "Test Value");
+        setPropVal(geomElement, "propChildA", "A Value");
+        const idA = txn.insertElement(geomElement.toJSON());
+        assert.isTrue(Id64.isValidId64(idA), "insert failed");
+        const endTime1 = new Date().getTime();
+        timeNav = timeNav + ((endTime1 - startTime1) / 1000.0);
 
-      // Validation
-      validateRel(perfimodel, idC, idD);
-    }
-    perfimodel.saveChanges();
+        // Validation
+        validateRel(perfimodel, idC, idD);
+      }
+      return { totalTimeLink: timeLink, totalTimeNav: timeNav };
+    }); // auto-saves
     verifyCounts(perfimodel, seedCount + opCount);
     perfimodel.close();
 
@@ -292,7 +294,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const endTime1 = new Date().getTime();
     const elapsedTimeNav = (endTime1 - startTime1) / 1000.0;
 
-    perfimodel.saveChanges();
+
     perfimodel.close();
 
     reporter.addEntry("RelPerfTest", "RelationshipRead", "Execution time(s)", elapsedTimeLink, { count: opCount, sCount: seedCount, relType: "LinkTable" });
@@ -305,42 +307,44 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
 
     const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-    let minId: number = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildC");
-    const elementIdIncrement = 4; // we add 4 elements each time
-    const startTime = new Date().getTime();
-    for (let i = 0; i < opCount; ++i) {
-      try {
-        const sId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
-        // Need improvement. Currently assuming that they were added one after another so have next Id.
-        const tId: Id64String = Id64.fromLocalAndBriefcaseIds(((minId + elementIdIncrement * i) + 1), 0);
-        const rel = perfimodel.relationships.getInstance("TestRelationSchema:CIsRelatedToD", { sourceId: sId, targetId: tId });
-        rel.delete();
-      } catch {
-        assert.isTrue(false);
+    const { elapsedTimeLink, elapsedTimeNav } = withEditTxn(perfimodel, (txn) => {
+      let minId: number = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildC");
+      const elementIdIncrement = 4; // we add 4 elements each time
+      const startTime = new Date().getTime();
+      for (let i = 0; i < opCount; ++i) {
+        try {
+          const sId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
+          // Need improvement. Currently assuming that they were added one after another so have next Id.
+          const tId: Id64String = Id64.fromLocalAndBriefcaseIds(((minId + elementIdIncrement * i) + 1), 0);
+          const rel = perfimodel.relationships.getInstance("TestRelationSchema:CIsRelatedToD", { sourceId: sId, targetId: tId });
+          rel.delete(txn);
+        } catch {
+          assert.isTrue(false);
+        }
       }
-    }
-    const endTime = new Date().getTime();
-    const elapsedTimeLink = (endTime - startTime) / 1000.0;
-    assert.equal(getCount(perfimodel, "TestRelationSchema:CIsRelatedToD"), seedCount - opCount);
+      const endTime = new Date().getTime();
+      const timeLink = (endTime - startTime) / 1000.0;
+      assert.equal(getCount(perfimodel, "TestRelationSchema:CIsRelatedToD"), seedCount - opCount);
 
-    // NavProp element. Set NavProp to null and update.
-    minId = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildA");
-    const startTime1 = new Date().getTime();
-    for (let i = 0; i < opCount; ++i) {
-      try {
-        const elId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
-        const editElem: any = perfimodel.elements.getElement(elId);
-        editElem.childB = null;
-        perfimodel.elements.updateElement(editElem);
-      } catch {
-        assert.isTrue(false);
+      // NavProp element. Set NavProp to null and update.
+      minId = PerfTestUtility.getMinId(perfimodel, "TestRelationSchema:ChildA");
+      const startTime1 = new Date().getTime();
+      for (let i = 0; i < opCount; ++i) {
+        try {
+          const elId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
+          const editElem: any = perfimodel.elements.getElement(elId);
+          editElem.childB = null;
+          txn.updateElement(editElem);
+        } catch {
+          assert.isTrue(false);
+        }
       }
-    }
-    const endTime1 = new Date().getTime();
-    const elapsedTimeNav = (endTime1 - startTime1) / 1000.0;
+      const endTime1 = new Date().getTime();
+      const timeNav = (endTime1 - startTime1) / 1000.0;
+      return { elapsedTimeLink: timeLink, elapsedTimeNav: timeNav };
+    }); // auto-saves
     // assert.equal(getCount(perfimodel, "TestRelationSchema:ADrivesB"), seedCount - opCount);
 
-    perfimodel.saveChanges();
     perfimodel.close();
 
     reporter.addEntry("RelPerfTest", "RelationshipDelete", "Execution time(s)", elapsedTimeLink, { count: opCount, sCount: seedCount, relType: "LinkTable" });

@@ -12,6 +12,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { HubMock } from "../../internal/HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
 import { _nativeDb, ChannelControl } from "../../core-backend";
+import { withEditTxn } from "../../EditTxn";
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();
@@ -77,7 +78,7 @@ describe("BriefcaseManager", async () => {
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2Dup);
       assert.fail("iModel2Dup failure should fail due to already being closed when iModel2 closed");
     } catch (err: any) {
-      assert.isTrue(err.message.includes("db is not open"), "iModel2Dup failure must be due to db not being open");
+      assert.isTrue(err.message.includes("db not open"), "iModel2Dup failure must be due to db not being open");
     }
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
   });
@@ -160,11 +161,8 @@ describe("BriefcaseManager", async () => {
     iModelPullAndPush.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
     rootEl.userLabel = `${rootEl.userLabel}changed`;
-    iModelPullAndPush.elements.updateElement(rootEl.toJSON());
+    withEditTxn(iModelPullAndPush, (txn) => txn.updateElement(rootEl.toJSON()));
 
-    assert.isTrue(iModelPullAndPush[_nativeDb].hasUnsavedChanges());
-    assert.isFalse(iModelPullAndPush[_nativeDb].hasPendingTxns());
-    iModelPullAndPush.saveChanges();
     assert.isFalse(iModelPullAndPush[_nativeDb].hasUnsavedChanges());
     assert.isTrue(iModelPullAndPush[_nativeDb].hasPendingTxns());
 

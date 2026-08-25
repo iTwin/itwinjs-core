@@ -31,7 +31,7 @@ export class SavedViewsFetcher {
       viewProps: sv.savedView.savedViewData.legacyView,
       elementOverrides: undefined, // api does not provide this
       selectedElements: undefined, // api does not provide this
-    } as ViewStateSpec));
+    }));
 
     this._cache[iModelId] = viewStateSpecs;
     return viewStateSpecs;

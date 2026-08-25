@@ -8,6 +8,7 @@
 import {
   assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64, Id64Array, Id64String, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";
+import { CesiumAccessClient } from "../CesiumAccessClient";
 import {
   BackendError, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
   IModelTileTreeProps, RenderSchedule, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
@@ -161,8 +162,16 @@ export class TileAdmin {
   public readonly contextPreloadParentDepth: number;
   /** @internal */
   public readonly contextPreloadParentSkip: number;
-  /** @beta */
+  /** The Cesium Ion API key supplied via [[TileAdmin.Props.cesiumIonKey]], used by the built-in client to
+   * authenticate directly with Cesium Ion. See [[canAccessCesium]] to test whether any Cesium access is configured.
+   * @beta
+   */
   public readonly cesiumIonKey?: string;
+  /** The custom [[CesiumAccessClient]] registered via [[TileAdmin.Props.cesiumAccess]], used to resolve Cesium
+   * asset endpoints. When defined, it takes precedence over [[cesiumIonKey]].
+   * @beta
+   */
+  public readonly cesiumAccess?: CesiumAccessClient;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _totalElided = 0;
   private _rpcInitialized = false;
@@ -208,6 +217,14 @@ export class TileAdmin {
     };
   }
 
+  /** Returns `true` if any Cesium access is configured — that is, if a custom [[CesiumAccessClient]] has been
+   * registered via [[TileAdmin.Props.cesiumAccess]], or if [[cesiumIonKey]] is set.
+   * @beta
+   */
+  public get canAccessCesium(): boolean {
+    return this.cesiumAccess !== undefined || this.cesiumIonKey !== undefined;
+  }
+
   /** Resets the cumulative (per-session) statistics like totalCompletedRequests, totalEmptyTiles, etc. */
   public resetStatistics(): void {
     this.channels.resetStatistics();
@@ -249,6 +266,7 @@ export class TileAdmin {
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
     this.cesiumIonKey = options.cesiumIonKey;
+    this.cesiumAccess = options.cesiumAccess;
     this._cloudStorage = options.tileStorage;
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
@@ -1262,6 +1280,15 @@ export namespace TileAdmin {
      * @public
      */
     cesiumIonKey?: string;
+
+    /** Client that resolves Cesium asset endpoints for apps that need to authenticate via a custom resolver,
+     * such as the [iTwin Platform Cesium Curated Content API](https://developer.bentley.com/apis/cesium-curated-content/overview/).
+     * When supplied, this takes precedence over [[cesiumIonKey]].
+     *
+     * @see [[TileAdmin.canAccessCesium]]
+     * @beta
+     */
+    cesiumAccess?: CesiumAccessClient;
 
     /** If true, when applying a schedule script to a view, ordinary tiles will be requested and then reprocessed on the frontend to align with the script's
      * animation nodes. This permits the use of schedule scripts not stored in the iModel and improves utilization of the tile cache for animated views.

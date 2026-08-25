@@ -8,16 +8,16 @@ import { existsSync } from "fs";
 import { Suite } from "mocha";
 import { join } from "path";
 import { OpenMode } from "@itwin/core-bentley";
-import { IModelHost } from "../IModelHost";
 import { PropertyStore } from "../PropertyStore";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestUtils } from "./TestUtils";
 
 describe("PropertyDb", function (this: Suite) {
   this.timeout(0);
 
   const outputDir = KnownTestLocations.outputDir;
 
-  before(async () => IModelHost.startup());
+  before(async () => TestUtils.startBackend());
 
   it("save and load properties", async () => {
     const dbName = join(outputDir, "properties.db");

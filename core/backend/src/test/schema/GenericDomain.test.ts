@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { withEditTxn } from "../../EditTxn";
 import {
   CategoryProps, Code, DefinitionElementProps, ElementProps, GeometricElement3dProps, IModel, PhysicalElementProps, PhysicalTypeProps,
   TypeDefinitionElementProps,
 } from "@itwin/core-common";
 import {
   DefinitionModel, DocumentListModel, ECSqlStatement, GenericDocument, GenericGraphicalModel3d, GenericGraphicalType2d, GenericPhysicalMaterial,
-  GenericPhysicalType, GenericSchema, Graphic3d, Group, GroupModel, IModelDb, IModelJsFs, PhysicalElementIsOfPhysicalMaterial,
-  PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalTypeIsOfPhysicalMaterial, SnapshotDb, SpatialCategory,
+  GenericPhysicalType, GenericSchema, Graphic3d, GraphicalPartition3d, Group, GroupInformationPartition, GroupModel, IModelDb, IModelJsFs,
+  PhysicalElementIsOfPhysicalMaterial, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalTypeIsOfPhysicalMaterial,
+  SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -39,119 +41,138 @@ describe("Generic Domain", () => {
       createClassViews: true,
     });
 
-    // Create and populate a DefinitionModel
-    const definitionModelId: Id64String = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Test DefinitionModel");
-    assert.isTrue(Id64.isValidId64(definitionModelId));
+    withEditTxn(iModelDb, (txn) => {
+      // Create and populate a DefinitionModel
+      const definitionModelId: Id64String = DefinitionModel.insert(txn, IModel.rootSubjectId, "Test DefinitionModel");
+      assert.isTrue(Id64.isValidId64(definitionModelId));
 
-    // Insert a SpatialCategory
-    const spatialCategoryProps: CategoryProps = {
-      classFullName: SpatialCategory.classFullName,
-      model: definitionModelId,
-      code: SpatialCategory.createCode(iModelDb, definitionModelId, "Test SpatialCategory"),
-    };
-    const spatialCategoryId: Id64String = iModelDb.elements.insertElement(spatialCategoryProps);
-    assert.isTrue(Id64.isValidId64(spatialCategoryId));
-
-    // Insert a GenericGraphicalType2d
-    const graphicalTypeProps: TypeDefinitionElementProps = {
-      classFullName: GenericGraphicalType2d.classFullName,
-      model: definitionModelId,
-      code: Code.createEmpty(),
-      userLabel: `${GenericGraphicalType2d.className}`,
-    };
-    const graphicalTypeId: Id64String = iModelDb.elements.insertElement(graphicalTypeProps);
-    assert.isTrue(Id64.isValidId64(graphicalTypeId));
-
-    // Insert a GenericPhysicalMaterial
-    const physicalMaterialProps: DefinitionElementProps = {
-      classFullName: GenericPhysicalMaterial.classFullName,
-      model: definitionModelId,
-      code: Code.createEmpty(),
-      userLabel: `${GenericPhysicalMaterial.className}`,
-    };
-    const physicalMaterialId: Id64String = iModelDb.elements.insertElement(physicalMaterialProps);
-    assert.isTrue(Id64.isValidId64(physicalMaterialId));
-
-    // Insert a GenericPhysicalType
-    const physicalTypeProps: PhysicalTypeProps = {
-      classFullName: GenericPhysicalType.classFullName,
-      model: definitionModelId,
-      code: Code.createEmpty(),
-      userLabel: `${GenericPhysicalType.className}`,
-      physicalMaterial: new PhysicalTypeIsOfPhysicalMaterial(physicalMaterialId),
-    };
-    const physicalTypeId: Id64String = iModelDb.elements.insertElement(physicalTypeProps);
-    assert.isTrue(Id64.isValidId64(physicalTypeId));
-
-    // Create and populate a PhysicalModel
-    const physicalModelId: Id64String = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "Test PhysicalModel");
-    assert.isTrue(Id64.isValidId64(physicalModelId));
-
-    for (let i = 0; i < 3; i++) {
-      const physicalObjectProps: PhysicalElementProps = {
-        classFullName: PhysicalObject.classFullName,
-        model: physicalModelId,
-        category: spatialCategoryId,
-        code: Code.createEmpty(),
-        userLabel: `${PhysicalObject.className}${i}`,
-        physicalMaterial: new PhysicalElementIsOfPhysicalMaterial(physicalMaterialId),
-        typeDefinition: new PhysicalElementIsOfType(physicalTypeId),
+      // Insert a SpatialCategory
+      const spatialCategoryProps: CategoryProps = {
+        classFullName: SpatialCategory.classFullName,
+        model: definitionModelId,
+        code: SpatialCategory.createCode(iModelDb, definitionModelId, "Test SpatialCategory"),
       };
-      const physicalObjectId: Id64String = iModelDb.elements.insertElement(physicalObjectProps);
-      assert.isTrue(Id64.isValidId64(physicalObjectId));
-    }
-    assert.equal(3, count(iModelDb, PhysicalObject.classFullName));
+      const spatialCategoryId: Id64String = txn.insertElement(spatialCategoryProps);
+      assert.isTrue(Id64.isValidId64(spatialCategoryId));
 
-    // Create and populate a Generic:GroupModel
-    const groupModelId: Id64String = GroupModel.insert(iModelDb, IModel.rootSubjectId, "Test GroupModel");
-    assert.isTrue(Id64.isValidId64(groupModelId));
-
-    for (let i = 0; i < 4; i++) {
-      const groupProps: ElementProps = {
-        classFullName: Group.classFullName,
-        model: groupModelId,
+      // Insert a GenericGraphicalType2d
+      const graphicalTypeProps: TypeDefinitionElementProps = {
+        classFullName: GenericGraphicalType2d.classFullName,
+        model: definitionModelId,
         code: Code.createEmpty(),
-        userLabel: `${Group.className}${i}`,
+        userLabel: `${GenericGraphicalType2d.className}`,
       };
-      const groupId: Id64String = iModelDb.elements.insertElement(groupProps);
-      assert.isTrue(Id64.isValidId64(groupId));
-    }
-    assert.equal(4, count(iModelDb, `${Group.schema.schemaName}:[${Group.className}]`)); // GROUP is a reserved word in SQL
+      const graphicalTypeId: Id64String = txn.insertElement(graphicalTypeProps);
+      assert.isTrue(Id64.isValidId64(graphicalTypeId));
 
-    // Create and populate a Generic:GraphicalModel3d
-    const graphicalModelId: Id64String = GenericGraphicalModel3d.insert(iModelDb, IModel.rootSubjectId, "Test GraphicalModel3d");
-    assert.isTrue(Id64.isValidId64(graphicalModelId));
-
-    for (let i = 0; i < 5; i++) {
-      const graphicProps: GeometricElement3dProps = {
-        classFullName: Graphic3d.classFullName,
-        model: graphicalModelId,
-        category: spatialCategoryId,
+      // Insert a GenericPhysicalMaterial
+      const physicalMaterialProps: DefinitionElementProps = {
+        classFullName: GenericPhysicalMaterial.classFullName,
+        model: definitionModelId,
         code: Code.createEmpty(),
-        userLabel: `${Graphic3d.className}${i}`,
+        userLabel: `${GenericPhysicalMaterial.className}`,
       };
-      const graphicId: Id64String = iModelDb.elements.insertElement(graphicProps);
-      assert.isTrue(Id64.isValidId64(graphicId));
-    }
-    assert.equal(5, count(iModelDb, Graphic3d.classFullName));
+      const physicalMaterialId: Id64String = txn.insertElement(physicalMaterialProps);
+      assert.isTrue(Id64.isValidId64(physicalMaterialId));
 
-    // Create and populate a DocumentListModel
-    const documentListModelId: Id64String = DocumentListModel.insert(iModelDb, IModel.rootSubjectId, "Test DocumentListModel");
-    assert.isTrue(Id64.isValidId64(documentListModelId));
-
-    for (let i = 0; i < 2; i++) {
-      const documentProps: ElementProps = {
-        classFullName: GenericDocument.classFullName,
-        model: documentListModelId,
+      // Insert a GenericPhysicalType
+      const physicalTypeProps: PhysicalTypeProps = {
+        classFullName: GenericPhysicalType.classFullName,
+        model: definitionModelId,
         code: Code.createEmpty(),
-        userLabel: `${GenericDocument.className}${i}`,
+        userLabel: `${GenericPhysicalType.className}`,
+        physicalMaterial: new PhysicalTypeIsOfPhysicalMaterial(physicalMaterialId),
       };
-      const graphicId: Id64String = iModelDb.elements.insertElement(documentProps);
-      assert.isTrue(Id64.isValidId64(graphicId));
-    }
-    assert.equal(2, count(iModelDb, GenericDocument.classFullName));
+      const physicalTypeId: Id64String = txn.insertElement(physicalTypeProps);
+      assert.isTrue(Id64.isValidId64(physicalTypeId));
 
-    iModelDb.saveChanges("Insert Generic elements");
+      // Create and populate a PhysicalModel
+      const physicalModelId: Id64String = PhysicalModel.insert(txn, IModel.rootSubjectId, "Test PhysicalModel");
+      assert.isTrue(Id64.isValidId64(physicalModelId));
+
+      for (let i = 0; i < 3; i++) {
+        const physicalObjectProps: PhysicalElementProps = {
+          classFullName: PhysicalObject.classFullName,
+          model: physicalModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          userLabel: `${PhysicalObject.className}${i}`,
+          physicalMaterial: new PhysicalElementIsOfPhysicalMaterial(physicalMaterialId),
+          typeDefinition: new PhysicalElementIsOfType(physicalTypeId),
+        };
+        const physicalObjectId: Id64String = txn.insertElement(physicalObjectProps);
+        assert.isTrue(Id64.isValidId64(physicalObjectId));
+      }
+      assert.equal(3, count(iModelDb, PhysicalObject.classFullName));
+
+      // Create and populate a Generic:GroupModel
+      const groupPartitionId = txn.insertElement({
+        classFullName: GroupInformationPartition.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+        code: GroupInformationPartition.createCode(iModelDb, IModel.rootSubjectId, "Test GroupModel"),
+      });
+      const groupModelId: Id64String = txn.insertModel({
+        classFullName: GroupModel.classFullName,
+        modeledElement: { id: groupPartitionId },
+      });
+      assert.isTrue(Id64.isValidId64(groupModelId));
+
+      for (let i = 0; i < 4; i++) {
+        const groupProps: ElementProps = {
+          classFullName: Group.classFullName,
+          model: groupModelId,
+          code: Code.createEmpty(),
+          userLabel: `${Group.className}${i}`,
+        };
+        const groupId: Id64String = txn.insertElement(groupProps);
+        assert.isTrue(Id64.isValidId64(groupId));
+      }
+      assert.equal(4, count(iModelDb, `${Group.schema.schemaName}:[${Group.className}]`)); // GROUP is a reserved word in SQL
+
+      // Create and populate a Generic:GraphicalModel3d
+      const graphicalPartitionId = txn.insertElement({
+        classFullName: GraphicalPartition3d.classFullName,
+        model: IModel.repositoryModelId,
+        parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+        code: GraphicalPartition3d.createCode(iModelDb, IModel.rootSubjectId, "Test GraphicalModel3d"),
+      });
+      const graphicalModelId: Id64String = txn.insertModel({
+        classFullName: GenericGraphicalModel3d.classFullName,
+        modeledElement: { id: graphicalPartitionId },
+      });
+      assert.isTrue(Id64.isValidId64(graphicalModelId));
+
+      for (let i = 0; i < 5; i++) {
+        const graphicProps: GeometricElement3dProps = {
+          classFullName: Graphic3d.classFullName,
+          model: graphicalModelId,
+          category: spatialCategoryId,
+          code: Code.createEmpty(),
+          userLabel: `${Graphic3d.className}${i}`,
+        };
+        const graphicId: Id64String = txn.insertElement(graphicProps);
+        assert.isTrue(Id64.isValidId64(graphicId));
+      }
+      assert.equal(5, count(iModelDb, Graphic3d.classFullName));
+
+      // Create and populate a DocumentListModel
+      const documentListModelId: Id64String = DocumentListModel.insert(txn, IModel.rootSubjectId, "Test DocumentListModel");
+      assert.isTrue(Id64.isValidId64(documentListModelId));
+
+      for (let i = 0; i < 2; i++) {
+        const documentProps: ElementProps = {
+          classFullName: GenericDocument.classFullName,
+          model: documentListModelId,
+          code: Code.createEmpty(),
+          userLabel: `${GenericDocument.className}${i}`,
+        };
+        const graphicId: Id64String = txn.insertElement(documentProps);
+        assert.isTrue(Id64.isValidId64(graphicId));
+      }
+      assert.equal(2, count(iModelDb, GenericDocument.classFullName));
+    });
+
     iModelDb.close();
   });
 });

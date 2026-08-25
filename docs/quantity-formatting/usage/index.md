@@ -30,9 +30,11 @@ Deep dive into FormatterSpec and ParserSpec usage, parser behavior and error han
 
 **For All Developers** - Understanding the conversion layer is not mandatory, but it is informative, and it helps developers who want to retrieve unit conversions values.
 
-Understand how UnitConversionSpec works and how unit conversions are performed between persistence units and display units during formatting and parsing operations.
+Understand both provider-backed unit conversion workflows and the synchronous built-in [UnitConversions]($quantity) helpers used between persistence units and display units during formatting and parsing operations.
 
 ## Additional Resources
+
+- **[QuantityFormatter Lifecycle & Integration](./QuantityFormatterAdvanced.md)** - Readiness signals, spec provider integration for domain teams, multi-system access, and auto-refreshing FormatSpecHandle
 
 - **[QuantityFormatting (Outdated)](./QuantityFormatting-old.md)** - Previous documentation version for frontend iTwin applications, retained for reference
 

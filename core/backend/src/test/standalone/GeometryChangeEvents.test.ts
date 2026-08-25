@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { withEditTxn } from "../../EditTxn";
 import {
   Code, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, SubCategoryAppearance,
 } from "@itwin/core-common";
@@ -29,9 +30,10 @@ describe("Model geometry changes", () => {
     StandaloneDb.upgradeStandaloneSchemas(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    modelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
-    categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
-    imodel.saveChanges("set up");
+    withEditTxn(imodel, "set up", (txn) => {
+      modelId = PhysicalModel.insert(txn, IModel.rootSubjectId, "TestModel");
+      categoryId = SpatialCategory.insert(txn, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+    });
     imodel[_nativeDb].deleteAllTxns();
     imodel.txns.onGeometryChanged.addListener((props) => lastChanges = props);
   });
@@ -99,32 +101,27 @@ describe("Model geometry changes", () => {
       geom: builder.geometryStream,
     };
 
-    const elemId0 = imodel.elements.insertElement(props);
-    imodel.saveChanges("insert elem 0");
+    const elemId0 = withEditTxn(imodel, "insert elem 0", (txn) => txn.insertElement(props));
     expectChanges({ modelId, inserted: [elemId0] });
 
     // Modify the element without touching its geometry.
     props.userLabel = "new label";
     props.id = elemId0;
-    imodel.elements.updateElement(props);
-    imodel.saveChanges("change label");
+    withEditTxn(imodel, "change label", (txn) => txn.updateElement(props));
     expectNoChanges();
 
     // Modify the element's geometry.
     props.placement = { origin: new Point3d(2, 1, 0), angles: new YawPitchRollAngles() };
-    imodel.elements.updateElement(props);
-    imodel.saveChanges("change placement");
+    withEditTxn(imodel, "change placement", (txn) => txn.updateElement(props));
     expectChanges({ modelId, updated: [elemId0] });
 
     // Insert another element.
     props.id = undefined;
-    const elemId1 = imodel.elements.insertElement(props);
-    imodel.saveChanges("insert elem 1");
+    const elemId1 = withEditTxn(imodel, "insert elem 1", (txn) => txn.insertElement(props));
     expectChanges({ modelId, inserted: [elemId1] });
 
     // Delete an element.
-    imodel.elements.deleteElement(elemId0);
-    imodel.saveChanges("delete elem 0");
+    withEditTxn(imodel, "delete elem 0", (txn) => txn.deleteElement(elemId0));
     expectChanges({ modelId, deleted: [elemId0] });
 
     // Stop tracking geometry changes
@@ -134,8 +131,7 @@ describe("Model geometry changes", () => {
     // Modify element's geometry.
     props.id = elemId1;
     props.placement = { origin: new Point3d(2, 10, 0), angles: new YawPitchRollAngles() };
-    imodel.elements.updateElement(props);
-    imodel.saveChanges("change placement again without tracking");
+    withEditTxn(imodel, "change placement again without tracking", (txn) => txn.updateElement(props));
     expectNoChanges();
 
     // Restart tracking and undo everything.

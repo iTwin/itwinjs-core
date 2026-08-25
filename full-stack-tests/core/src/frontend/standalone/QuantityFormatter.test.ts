@@ -30,8 +30,7 @@ describe("QuantityFormatter", () => {
 
   it("QuantityFormatter initialized properly using units schema from iModel", async () => {
     const quantityFormatter = new QuantityFormatter();
-    quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
-    await quantityFormatter.onInitialized();
+    await quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
     const spec = quantityFormatter.findFormatterSpecByQuantityType("QuantityTypeEnumValue-1");
     assert(spec !== undefined);
   });
