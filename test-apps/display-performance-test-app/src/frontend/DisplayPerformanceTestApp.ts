@@ -6,7 +6,7 @@ import { ProcessDetector } from "@itwin/core-bentley";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration,
 } from "@itwin/core-common";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";

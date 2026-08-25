@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import { GuidString, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/ElectronFrontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";

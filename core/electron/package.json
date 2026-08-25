@@ -2,10 +2,41 @@
   "name": "@itwin/core-electron",
   "version": "5.13.0-dev.18",
   "description": "iTwin.js ElectronHost and ElectronApp",
+  "exports": {
+    "./ElectronFrontend": {
+      "types": "./lib/cjs/ElectronFrontend.d.ts",
+      "import": "./lib/esm/ElectronFrontend.js",
+      "require": "./lib/cjs/ElectronFrontend.js"
+    },
+    "./ElectronBackend": {
+      "types": "./lib/cjs/ElectronBackend.d.ts",
+      "import": "./lib/cjs/ElectronBackend.js",
+      "require": "./lib/cjs/ElectronBackend.js"
+    },
+    "./ElectronPreload": {
+      "types": "./lib/cjs/backend/ElectronPreload.d.ts",
+      "import": "./lib/cjs/backend/ElectronPreload.js",
+      "require": "./lib/cjs/backend/ElectronPreload.js"
+    },
+    "./lib/cjs/*.js": "./lib/cjs/*.js",
+    "./lib/cjs/*": {
+      "types": "./lib/cjs/*.d.ts",
+      "default": "./lib/cjs/*.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "ElectronFrontend": ["lib/cjs/ElectronFrontend.d.ts"],
+      "ElectronBackend": ["lib/cjs/ElectronBackend.d.ts"],
+      "ElectronPreload": ["lib/cjs/backend/ElectronPreload.d.ts"]
+    }
+  },
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s webpack:test && npm run -s copy:test-assets",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s webpack:test && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm && node -e \"require('node:fs').writeFileSync('lib/esm/package.json', JSON.stringify({ type: 'module' }) + '\\n')\"",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "docs": "betools docs --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./core-electron.ts --onlyJson",

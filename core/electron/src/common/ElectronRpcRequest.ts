@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { RpcProtocolEvent, RpcRequest, RpcRequestFulfillment } from "@itwin/core-common";
-import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
+import { ElectronRpcProtocol } from "./ElectronRpcProtocol.js";
 
 /** @internal */
 export class ElectronRpcRequest extends RpcRequest {
