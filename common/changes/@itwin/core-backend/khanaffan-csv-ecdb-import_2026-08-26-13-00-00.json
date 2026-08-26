@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added beta ECDb APIs for atomically importing in-memory CSV rows or streaming CSV files.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
