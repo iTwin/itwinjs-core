@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { ClipStyle, HiddenLine, ModelClipGroups, ViewFlagOverrides } from "@itwin/core-common";
+import { ModelClipGroups, ViewFlags } from "@itwin/core-common";
 import { _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { ViewState, ViewState2d } from "../ViewState";
@@ -15,17 +15,21 @@ import { SpatialViewState } from "../SpatialViewState";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
+import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
+import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
 
-  #viewFlagOverrides: ViewFlagOverrides = { };
   #alwaysDrawnExclusive = false;
-  #clipStyle?: ClipStyle;
+  #resolvedViewFlags: ViewFlags;
 
   protected readonly _refs: IModelDisplayReferences;
+  protected readonly _ovrs: IModelDisplayOverrides;
 
   protected abstract get _view(): ViewState;
+
+  public abstract readonly overrides: IModelDisplayOverrides;
 
   public readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();
@@ -35,13 +39,41 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public readonly onViewFlagOverridesChanged = new BeEvent<() => void>;
   public readonly onIsAlwaysDrawnExclusiveChanged = new BeEvent<() => void>;
   public readonly onClipStyleChanged = new BeEvent<() => void>;
+  public readonly onActiveViewFlagsChanged = new BeEvent<() => void>();
+  public readonly onActiveClipStyleChanged = new BeEvent<() => void>();
 
-  public constructor(view: ViewState, refs: IModelDisplayReferences) {
+  public constructor(view: ViewState, refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides) {
     this._refs = refs;
+    this._ovrs = ovrs;
+
+    this.#resolvedViewFlags = view.viewFlags.override(ovrs.viewFlags);
+
     this.perModelCategoryVisibility = PerModelCategoryVisibility.Overrides.create({
       iModel: view.iModel,
       queue: this._refs.subcategories,
     });
+
+    const updateViewFlags = () => {
+      this.#resolvedViewFlags = this._view.viewFlags.override(this.overrides.viewFlags);
+      this.onActiveViewFlagsChanged.raiseEvent();
+    };
+
+    // ###TODO handle event listener cleanup...
+    view.displayStyle.settings.onViewFlagsChanged.addListener(() => updateViewFlags());
+
+    ovrs.onViewFlagsChanged.addListener(() => updateViewFlags);
+
+    // ###TODO we gotta handle cases where somebody does view.displayStyle = someNewStyle too...
+    // Which means we also gotta clean up these listeners when that happens so we're not listening to stale events
+    // e.g. if the display style gets attached to a *different* view.
+    // Nobody sane will do that, but our API allows it (I guess we're not sane).
+    view.displayStyle.settings.onClipStyleChanged.addListener(() => {
+      if (undefined === this.overrides.clipStyle) {
+        this.onActiveClipStyleChanged.raiseEvent();
+      }
+    });
+
+    ovrs.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
   }
 
   public get iModel() { return this._view.iModel; }
@@ -52,15 +84,6 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   public get isLoadingComplete() { return this._view.areAllTileTreesLoaded; }
   public get tileTreeRefs() { return this._view.getTileTreeRefs(); }
-
-  public get viewFlagOverrides() {
-    return this.#viewFlagOverrides;
-  }
-
-  public set viewFlagOverrides(ovrs: ViewFlagOverrides) {
-    this.#viewFlagOverrides = { ...ovrs };
-    this.onViewFlagOverridesChanged.raiseEvent();
-  }
 
   public get subCategoryOverrides() {
     return this._view.displayStyle.settings.subCategoryOverrides;
@@ -80,14 +103,13 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
       this.onIsAlwaysDrawnExclusiveChanged.raiseEvent();
     }
   }
-  
-  public get clipStyle() {
-    return this.#clipStyle;
+
+  public get activeClipStyle() {
+    return this.overrides.clipStyle ?? this._view.displayStyle.settings.clipStyle;
   }
 
-  public set clipStyle(style: ClipStyle | undefined) {
-    this.#clipStyle = style;
-    this.onClipStyleChanged.raiseEvent();
+  public get activeViewFlags() {
+    return this.#resolvedViewFlags;
   }
 }
 
@@ -98,9 +120,15 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
     return this.#view;
   }
 
+  public override get overrides() {
+    return this._ovrs;
+  }
+
   public constructor(view: ViewState2d, refs: IModelDisplayReferences2d) {
-    super(view, refs);
+    super(view, refs, createIModelDisplayOverrides());
     this.#view = view;
+
+    this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
   }
 
   public override is2d(): this is IModelDisplayReference2d {
@@ -114,22 +142,31 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
 
 class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelDisplayReference {
   #view: SpatialViewState;
-  #hiddenLineSettings?: HiddenLine.Settings;
 
   protected override get _view(): SpatialViewState {
     return this.#view;
   }
 
-  public readonly onHiddenLineSettingsChanged = new BeEvent<() => void>();
+  public override get overrides() {
+    return this._ovrs as SpatialIModelDisplayOverrides;
+  }
+
   public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
+  public readonly onActiveHiddenLineSettingsChanged = new BeEvent<() => void>();
 
   public constructor(view: SpatialViewState, refs: SpatialIModelDisplayReferences) {
-    super(view, refs);
+    super(view, refs, createSpatialIModelDisplayOverrides());
     this.#view = view;
 
     view.details.onModelClipGroupsChanged.addListener(
       () => this.onModelClipGroupsChanged.raiseEvent()
     );
+
+    this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
+
+    view.displayStyle.settings.onHiddenLineSettingsChanged.addListener(() => {
+      this.onActiveHiddenLineSettingsChanged.raiseEvent();
+    });
   }
 
   public get viewedModels() {
@@ -144,17 +181,6 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     return this._view.displayStyle.settings.realityModelDisplaySettings;
   }
 
-  public get hiddenLineSettings() {
-    return this.#hiddenLineSettings;
-  }
-
-  public set hiddenLineSettings(hline: HiddenLine.Settings | undefined) {
-    if (hline !== this.#hiddenLineSettings) {
-      this.#hiddenLineSettings = hline;
-      this.onHiddenLineSettingsChanged.raiseEvent();
-    }
-  }
-
   public get planProjectionSettings() {
     // ###TODO
     return this._view.displayStyle.settings.planProjectionSettings as unknown as any;
@@ -166,6 +192,10 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
   public set modelClipGroups(groups: ModelClipGroups) {
     this._view.details.modelClipGroups = groups;
+  }
+
+  public get activeHiddenLineSettings() {
+    return this.overrides.hiddenLineSettings ?? this._view.displayStyle.settings.hiddenLineSettings;
   }
 }
 

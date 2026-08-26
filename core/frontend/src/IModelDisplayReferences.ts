@@ -9,16 +9,16 @@
 import { Id64String } from "@itwin/core-bentley";
 import { _implementationProhibited } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
-import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
+import { IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { ClipStyle, HiddenLine, ModelClipGroups, ViewFlagOverrides } from "@itwin/core-common";
+import { ModelClipGroups } from "@itwin/core-common";
+import { IModelDisplayOverridesProps, SpatialIModelDisplayOverridesProps } from "./IModelDisplayOverrides";
 
 export interface LinkIModelArgs {
   iModel: IModelConnection;
   viewedCategories?: Iterable<Id64String>;
   excludedElements?: Iterable<Id64String>;
-  viewFlagOverrides?: ViewFlagOverrides;
-  clipStyle?: ClipStyle;
+  overrides?: IModelDisplayOverridesProps;
 }
 
 export interface LinkIModel2dArgs extends LinkIModelArgs {
@@ -28,8 +28,8 @@ export interface LinkIModel2dArgs extends LinkIModelArgs {
 export interface LinkSpatialIModelArgs extends LinkIModelArgs {
   viewedModel?: never;
   viewedModels?: Iterable<Id64String>;
-  hiddenLineSettings?: HiddenLine.Settings;
   modelClipGroups?: ModelClipGroups;
+  overrides?: SpatialIModelDisplayOverridesProps;
 }
 
 export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReference2d> {

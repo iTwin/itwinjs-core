@@ -59,7 +59,7 @@ class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewSt
   }
 
   protected override createLinkedRef(args: LinkIModel2dArgs): IModelDisplayReference2d {
-    return createLinkedIModelDisplayReference2d(this, args)
+    return createLinkedIModelDisplayReference2d(this, args, this._view)
   }
 
   public readonly is2d = true;
@@ -75,7 +75,7 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
   }
 
   protected override createLinkedRef(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference {
-    return createLinkedSpatialIModelDisplayReference(this, args);
+    return createLinkedSpatialIModelDisplayReference(this, args, this._view);
   }
 
   public readonly isSpatial = true;

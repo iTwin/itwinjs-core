@@ -10,9 +10,10 @@ import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-b
 import { _implementationProhibited } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { TileTreeReference } from "./tile/internal";
-import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlagOverrides } from "@itwin/core-common";
+import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
+import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
 
 export interface IModelDisplayReference {
   readonly [_implementationProhibited]: unknown;
@@ -26,9 +27,6 @@ export interface IModelDisplayReference {
   readonly isLoadingComplete: boolean;
   readonly tileTreeRefs: Iterable<TileTreeReference>;
 
-  viewFlagOverrides: ViewFlagOverrides;
-  readonly onViewFlagOverridesChanged: BeEvent<() => void>;
-
   // ###TODO renderTimeline, scheduleScriptProps
 
   readonly subCategoryOverrides: ObservableMap<Id64String, SubCategoryOverride>;
@@ -41,10 +39,15 @@ export interface IModelDisplayReference {
   isAlwaysDrawnExclusive: boolean;
   readonly onIsAlwaysDrawnExclusiveChanged: BeEvent<() => void>;
 
-  clipStyle: ClipStyle | undefined;
-  readonly onClipStyleChanged: BeEvent<() => void>;
-
   readonly featureOverrideProviders: ObservableSet<FeatureOverrideProvider>;
+
+  readonly overrides: IModelDisplayOverrides;
+
+  readonly activeClipStyle: ClipStyle;
+  readonly onActiveClipStyleChanged: BeEvent<() => void>;
+
+  readonly activeViewFlags: ViewFlags;
+  readonly onActiveViewFlagsChanged: BeEvent<() => void>;
 }
 
 export interface IModelDisplayReference2d extends IModelDisplayReference {
@@ -59,12 +62,14 @@ export interface SpatialIModelDisplayReference extends IModelDisplayReference {
 
   // ###TODO contour settings - they refer to elements by Id.
 
-  hiddenLineSettings: HiddenLine.Settings | undefined;
-  readonly onHiddenLineSettingsChanged: BeEvent<() => void>;
-
   readonly planProjectionSettings: ObservableMap<Id64String, PlanProjectionSettings>;
 
   modelClipGroups: ModelClipGroups;
   readonly onModelClipGroupsChanged: BeEvent<() => void>;
+
+  readonly overrides: SpatialIModelDisplayOverrides;
+
+  readonly activeHiddenLineSettings: HiddenLine.Settings;
+  readonly onActiveHiddenLineSettingsChanged: BeEvent<() => void>;
 }
 
