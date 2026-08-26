@@ -12,6 +12,7 @@ import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType } from "@i
 import { FormattingSpecArgs } from "@itwin/core-quantity";
 import type { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
+import { specKey } from "./specKey";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
@@ -648,7 +649,7 @@ export function collectFieldFormattingRequirements(textBlock: TextBlock, iModel:
       continue;
     }
     for (const args of collectFieldRequirements(child, iModel)) {
-      const key = `${args.name}|${args.persistenceUnitName}`;
+      const key = specKey(args);
       if (!seen.has(key)) {
         seen.set(key, args);
       }

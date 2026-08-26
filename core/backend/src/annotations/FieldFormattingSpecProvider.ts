@@ -13,6 +13,7 @@ import {
 } from "@itwin/core-quantity";
 import { FormatSet, FormatSetFormatsProvider, SchemaFormatsProvider, SchemaItem, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { IModelDb } from "../IModelDb";
+import { specKey } from "../internal/annotations/specKey";
 
 /** Describes a [FormatterSpec]($core-quantity) that a [FieldRun]($common) asked for but which
  * [[FieldFormattingSpecProvider]] had not pre-warmed, recorded by
@@ -25,13 +26,6 @@ export interface UnresolvedFieldFormat extends FormattingSpecArgs {
    * not need this to act on a miss.
    */
   formatSet?: string;
-}
-
-/** Identifies one cached spec. `system` participates because a [FormattingSpecArgs]($core-quantity)
- * may request a unit system other than the provider's default.
- */
-function specKey(args: FormattingSpecArgs): string {
-  return `${args.name}|${args.persistenceUnitName}|${args.system ?? ""}`;
 }
 
 /** Maps the `"alias:UnitName"` form that `meta.KindOfQuantityDef.PersistenceUnit` stores — and
@@ -110,6 +104,12 @@ async function buildSpecEntry(
  * presentation format rather than dropping to the raw string.
  */
 class FieldSpecBucket implements FormattingSpecProvider {
+  /** Never raised by this class. [FormattingSpecProvider]($core-quantity) requires it, but a
+   * bucket is warmed as one step of [[FieldFormattingSpecProvider.warmUp]], which warms every
+   * bucket and then raises its own event once. Raising here too would emit N+1 times per warm,
+   * and the intermediate raises would announce readiness while sibling buckets are still
+   * unwarmed.
+   */
   public readonly onFormattingReady = new BeUnorderedUiEvent<void>();
   private readonly _specs = new Map<string, FormattingSpecEntry>();
 
@@ -181,8 +181,6 @@ class FieldSpecBucket implements FormattingSpecProvider {
         this._specs.set(key, entry);
       }
     }
-
-    this.onFormattingReady.raiseEvent();
   }
 }
 
