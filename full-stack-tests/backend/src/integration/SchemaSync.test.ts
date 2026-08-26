@@ -163,8 +163,6 @@ describe("Schema synchronization", function (this: Suite) {
     b1.close();
     b2.close();
     b3.close();
-
-    HubMock.shutdown();
   });
 
   // The third briefcase only derives its tables from ec_, while data is inserted between the two schema changes.
@@ -331,8 +329,6 @@ describe("Schema synchronization", function (this: Suite) {
     b1.close();
     b2.close();
     b3.close();
-
-    HubMock.shutdown();
   });
 
   // Both domain schemas share a referenced schema, so the sync database must preserve one reference row and id.
@@ -558,7 +554,6 @@ describe("Schema synchronization", function (this: Suite) {
       withEditTxn(b, () => { });
       b.close();
     });
-    HubMock.shutdown();
   });
 
   // The override must leave a briefcase with committed local work governed by its original container.
@@ -945,7 +940,6 @@ describe("Schema synchronization", function (this: Suite) {
       withEditTxn(b, () => { });
       b.close();
     });
-    HubMock.shutdown();
   });
   // B2 remains on the old profile and replays the profile/domain upgrade changesets from the timeline.
   // Its bis_* tables therefore have to be reconciled by replay, with the same data as the in-place upgrader.
@@ -1336,7 +1330,6 @@ describe("Schema synchronization", function (this: Suite) {
       withEditTxn(b, () => { });
       b.close();
     });
-    HubMock.shutdown();
   });
   // B2 is downloaded only after the profile and domain upgrade, so it replays the complete history from the timeline.
   // Comparing it with the in-place upgrader covers the fresh-briefcase path that never held the old profile.
@@ -1584,7 +1577,6 @@ describe("Schema synchronization", function (this: Suite) {
       withEditTxn(b, () => { });
       b.close();
     });
-    HubMock.shutdown();
   });
 
   // A deletion reports a different upgrade status from a transform, yet its upgrade still needs the exclusive schema lock.
@@ -2273,7 +2265,6 @@ describe("Schema synchronization", function (this: Suite) {
     b1.close();
     b2.close();
     b3.close();
-    HubMock.shutdown();
   });
 
   // Revert is forced to skip schema rows on a sync-enabled file, so the watching briefcase must see the

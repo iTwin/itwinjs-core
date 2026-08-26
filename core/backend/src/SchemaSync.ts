@@ -7,11 +7,12 @@
  * @module SQLiteDb
  */
 
+import * as semver from "semver";
 import { CloudSqlite } from "./CloudSqlite";
-import { VersionedSqliteDb } from "./SQLiteDb";
+import { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
-import { BentleyError, ChangeSetStatus, DbResult, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
-import { IModelError, LocalFileName } from "@itwin/core-common";
+import { BentleyError, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
+import { BriefcaseIdValue, Code, ElementReservationError, FilePropertyProps, IModelError, LocalFileName } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import type { BlobContainer } from "./BlobContainerService";
 import { IModelNative } from "./internal/NativePlatform";
@@ -33,11 +34,167 @@ export namespace SchemaSync {
       return "stop";
     },
   };
+  const reservedElementsTableName = "reserved_elements";
+  const maxLocalIdExclusive = 0x10000000000; // 2^40
+  const idSequenceProp: FilePropertyProps = { namespace: "schemasync", name: "nextReservedElementLocalId" };
+
+  /** Identifies an element to be reserved in a `SchemaSyncDb`. @internal */
+  export interface ProposedElementReservation {
+    readonly federationGuid: GuidString;
+    readonly ecClassId: Id64String;
+    readonly code: Code;
+    readonly isCategory?: boolean;
+  }
+
+  /** An element reservation that has been persisted in a `SchemaSyncDb`. @internal */
+  export interface ReservedElement extends ProposedElementReservation {
+    readonly elementId: Id64String;
+  }
+
+  export interface ReadMethods {
+    /** Look up an existing element reservation by federationGuid. */
+    findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
+  }
+
+  export interface WriteMethods {
+    /** Reserve the specified elements in the `SchemaSyncDb`. Throws if any requested reservation conflicts with an existing reservation. */
+    reserveElements(identities: ProposedElementReservation[]): Promise<void>;
+  }
 
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
-  export class SchemaSyncDb extends VersionedSqliteDb {
-    public override readonly myVersion = "4.0.0";
-    protected override createDDL() { }
+  export class SchemaSyncDb extends VersionedSqliteDb implements ReadMethods, WriteMethods {
+    private _supportsReservations?: boolean;
+    public override readonly myVersion = "5.0.0";
+    protected override createDDL() {
+      this.ensureReservedElementsTable();
+    }
+
+    public override openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer) {
+      super.openDb(dbName, openMode, container);
+      this._supportsReservations = semver.lte(this.myVersion, semver.minVersion(this.getRequiredVersions().readVersion) ?? "0.0.0");
+    }
+
+    private ensureReservedElementsTable(): void {
+      if (this._supportsReservations)
+        return;
+
+      this.executeSQL(`
+        CREATE TABLE IF NOT EXISTS ${reservedElementsTableName} (
+          federationGuid BLOB    PRIMARY KEY,
+          elementId      INTEGER NOT NULL UNIQUE,
+          ecClassId      INTEGER NOT NULL,
+          codeSpecId     INTEGER NOT NULL,
+          codeScope      TEXT NOT NULL,
+          codeValue      TEXT COLLATE NOCASE
+        )`);
+      this.executeSQL(`CREATE UNIQUE INDEX IF NOT EXISTS idx_reserved_elem_code  ON ${reservedElementsTableName}(codeSpecId, codeScope, codeValue)`);
+      const minVersion = `^${this.myVersion}`;
+      this.setRequiredVersions({ readVersion: minVersion, writeVersion: minVersion });
+      this._supportsReservations = true;
+    }
+
+    public findReservedElement(federationGuid: GuidString): ReservedElement | undefined {
+      if (!this._supportsReservations)
+        return undefined;
+
+      return this.withPreparedSqliteStatement(
+        `SELECT elementId, ecClassId, codeSpecId, codeScope, codeValue FROM ${reservedElementsTableName} WHERE federationGuid=?`,
+        (stmt) => {
+          stmt.bindGuid(1, federationGuid);
+          if (!stmt.nextRow())
+            return undefined;
+
+          return {
+            federationGuid,
+            elementId: stmt.getValueId(0),
+            ecClassId: stmt.getValueId(1),
+            code: new Code({
+              spec: stmt.getValueId(2),
+              scope: stmt.getValueString(3),
+              value: stmt.getValueStringMaybe(4),
+            }),
+          };
+        },
+      );
+    }
+
+    private insertReservedElement(id: ProposedElementReservation, elementId: Id64String): void {
+      this.withPreparedSqliteStatement(
+        `INSERT INTO ${reservedElementsTableName} (federationGuid, elementId, ecClassId, codeSpecId, codeScope, codeValue) VALUES (?, ?, ?, ?, ?, ?)`,
+        (stmt) => {
+          stmt.bindGuid(1, id.federationGuid);
+          stmt.bindId(2, elementId);
+          stmt.bindId(3, id.ecClassId);
+          stmt.bindId(4, id.code.spec);
+          stmt.bindString(5, id.code.scope);
+          if (id.code.value === "")
+            stmt.bindNull(6);
+          else
+            stmt.bindString(6, id.code.value);
+          stmt.stepForWrite();
+        },
+      );
+    }
+
+    public async reserveElements(elements: ProposedElementReservation[]): Promise<void> {
+      this.ensureReservedElementsTable();
+
+      // Insert new reservations as we go, so later entries in `elements` can dedupe against earlier ones
+      // through the shared (still-uncommitted) transaction. The caller commits on success and abandons on error.
+      let nextLocalId = this.getNextReservedElementLocalId();
+      const firstLocalId = nextLocalId;
+
+      for (const def of elements) {
+        if (!def.federationGuid || !Guid.isGuid(def.federationGuid)) {
+          ElementReservationError.throwError("invalid-reservation", {
+            message: "Element reservation requires an explicit, valid federationGuid",
+          });
+        }
+
+        // Identity is always the federationGuid. If a reservation already exists for it, it must match exactly.
+        const existing = this.findReservedElement(def.federationGuid);
+        if (existing) {
+          if (!this.existingMatches(existing, def)) {
+            ElementReservationError.throwError("reservation-conflict", {
+              message: `Element reservation conflict for federationGuid ${existing.federationGuid}: existing row does not match requested class/code`,
+              federationGuid: existing.federationGuid,
+            });
+          }
+          continue;
+        }
+
+        const elementId = Id64.fromLocalAndBriefcaseIds(nextLocalId, BriefcaseIdValue.SchemaSyncElementReserved);
+        this.insertReservedElement(def, elementId);
+        // skip a local id for each reserved category because category inserts always trigger a second insert for default subcategory
+        nextLocalId += def.isCategory ? 2 : 1;
+        if (nextLocalId >= maxLocalIdExclusive) {
+          this.abandonChanges();
+          ElementReservationError.throwError("id-sequence-exhausted", { message: `SchemaSync reserved-element local-id sequence exhausted` });
+        }
+      }
+
+      if (nextLocalId !== firstLocalId)
+        this.setNextReservedElementLocalId(nextLocalId);
+    }
+
+    private existingMatches(existing: ProposedElementReservation, id: ProposedElementReservation): boolean {
+      return existing.federationGuid === id.federationGuid
+        && existing.ecClassId === id.ecClassId
+        && existing.code.equals(id.code);
+    }
+
+    private getNextReservedElementLocalId(): number {
+      const stored = this[_nativeDb].queryFileProperty(idSequenceProp, true) as string | undefined;
+      const current = stored ? Number(stored) : 1;
+      if (!Number.isInteger(current) || current < 1)
+        ElementReservationError.throwError("corrupt-reservation-data", { message: `Corrupt SchemaSync reserved-element local-id counter: '${stored}'` });
+
+      return current;
+    }
+
+    private setNextReservedElementLocalId(next: number): void {
+      this[_nativeDb].saveFileProperty(idSequenceProp, String(next));
+    }
   }
 
   const syncProperty = { namespace: "itwinjs", name: "SchemaSync" };
@@ -117,16 +274,24 @@ export namespace SchemaSync {
     return readLocalSyncProps(arg).containerProps;
   }
 
-  async function getCloudAccess(arg: IModelOrFileName): Promise<CloudAccess> {
+  const sharedAccessByContainer = new Map<string, CloudAccess>();
+
+  export async function getCloudAccess(arg: IModelOrFileName): Promise<CloudAccess> {
     const { containerProps, testCacheName } = readLocalSyncProps(arg);
     if (undefined === containerProps)
       throw new IModelError(DbResult.BE_SQLITE_NOTFOUND, "iModel does not have a SchemaSyncDb");
+
+    const sharedAccessKey = JSON.stringify(containerProps) + (testCacheName ?? "");
+    const cached = sharedAccessByContainer.get(sharedAccessKey);
+    if (cached)
+      return cached;
 
     const accessToken = await CloudSqlite.requestToken(containerProps);
     const access = new CloudAccess({ ...containerProps, accessToken });
     Object.assign(access.lockParams, lockParams);
     if (testCacheName)
       access.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: testCacheName }));
+    sharedAccessByContainer.set(sharedAccessKey, access);
     return access;
   }
 
@@ -143,7 +308,7 @@ export namespace SchemaSync {
    * that briefcase before its schema changes are pushed.
    */
   export async function withLockedAccess(iModel: IModelOrFileName, args: WithLockedAccessArgs, operation: (access: CloudAccess) => Promise<void>): Promise<void> {
-    const access = await getCloudAccess(iModel);
+    const access = await SchemaSync.getCloudAccess(iModel);
     try {
       await access.withLockedDb(args, async () => operation(access));
     } finally {
@@ -265,6 +430,8 @@ export namespace SchemaSync {
     } finally {
       iModel[_implicitTxn].abandonChanges();
     }
+
+    await iModel.initializeSharedElementReservations();
   }
 
   /** Arguments for [[enableForIModel]]. */
@@ -301,7 +468,7 @@ export namespace SchemaSync {
   }
 
   /** Provides access to a cloud-based `SchemaSyncDb` to hold ECSchemas.  */
-  export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+  export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb, ReadMethods, WriteMethods> {
     public constructor(props: CloudSqlite.ContainerAccessProps) {
       super({ dbType: SchemaSyncDb, props, dbName: defaultDbName });
     }
@@ -328,4 +495,3 @@ export namespace SchemaSync {
     }
   }
 }
-

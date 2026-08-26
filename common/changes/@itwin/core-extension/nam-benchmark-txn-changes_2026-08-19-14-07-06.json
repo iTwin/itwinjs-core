@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-extension",
+      "comment": "Update the @itwin/core-extension type declarations to re-export TxnEntityMetadata from @itwin/core-common.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-extension"
+}
