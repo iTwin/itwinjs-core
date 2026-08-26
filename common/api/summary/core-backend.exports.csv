@@ -638,6 +638,7 @@ public;class;SubjectOwnsSubjects
 beta;class;SynchronizationConfigLink
 beta;class;SynchronizationConfigProcessesSources
 beta;class;SynchronizationConfigSpecifiesRootSources
+beta;namespace;SynchronousChannel
 beta;type;SynchronousQueryOptions
 beta;class;TemplateRecipe2d
 beta;class;TemplateRecipe3d
