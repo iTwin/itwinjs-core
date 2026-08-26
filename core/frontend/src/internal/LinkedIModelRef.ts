@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
-import { _getModelClip, _implementationProhibited, _mapImagery, _scheduleScriptReference } from "../common/internal/Symbols";
+import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
+import { _getModelClip, _implementationProhibited, _scheduleScriptReference } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
@@ -47,10 +47,6 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public readonly modelAppearanceOverrides = new ObservableMap<Id64String, FeatureAppearance>;
 
   public readonly [_scheduleScriptReference] = undefined; // ###TODO
-
-  public get [_mapImagery]() {
-    return this._view.displayStyle.settings.mapImagery;
-  }
 
   public readonly onPerModelCategoryVisibilityChanged = new BeEvent<() => void>;
   public readonly onIsAlwaysDrawnExclusiveChanged = new BeEvent<() => void>;

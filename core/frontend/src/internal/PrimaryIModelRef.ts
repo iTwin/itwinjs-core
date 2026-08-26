@@ -7,7 +7,7 @@
  */
 
 import { ModelClipGroups, ViewFlags } from "@itwin/core-common";
-import { _getModelClip, _implementationProhibited, _mapImagery, _scheduleScriptReference } from "../common/internal/Symbols";
+import { _getModelClip, _implementationProhibited, _scheduleScriptReference } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
 import { BeEvent, Id64String, ObservableSet } from "@itwin/core-bentley";
@@ -109,10 +109,6 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   public get [_scheduleScriptReference]() {
     return this._view[_scheduleScriptReference];
-  }
-
-  public get [_mapImagery]() {
-    return this._view.displayStyle.settings.mapImagery;
   }
 
   public get modelDisplayTransformProvider() {
