@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "ChangesetECAdaptor now rejects property access strings containing `constructor` or `prototype`, in addition to `__proto__`, and only traverses own properties, preventing a malicious changeset from polluting `Object.prototype`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

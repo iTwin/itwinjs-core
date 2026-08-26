@@ -2,6 +2,18 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.12.5",
+      "tag": "@itwin/core-frontend_v5.12.5",
+      "date": "Tue, 25 Aug 2026 21:22:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.12.4",
       "tag": "@itwin/core-frontend_v5.12.4",
       "date": "Tue, 18 Aug 2026 15:45:35 GMT",
@@ -48,6 +60,18 @@
           },
           {
             "comment": "Add filtering support to SchemaView and improve performance."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.11.4",
+      "tag": "@itwin/core-frontend_v5.11.4",
+      "date": "Tue, 25 Aug 2026 19:54:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric."
           }
         ]
       }
