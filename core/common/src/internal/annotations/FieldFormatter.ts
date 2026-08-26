@@ -105,17 +105,8 @@ function formatDateTime(v: FieldPrimitiveValue, o?: DateTimeFieldFormatOptions):
  * [[QuantityFieldFormatOptions]] for the priority contract.
  */
 function formatPointBasic(v: FieldPrimitiveValue): string | undefined {
-  if (typeof v === "object" && "x" in v && "y" in v) {
-    const parts = [v.x, v.y];
-    const z = (v as any).z;
-    if (undefined !== z) {
-      parts.push(z);
-    }
-
-    return `(${parts.join(", ")})`;
-  }
-
-  return undefined;
+  const magnitudes = getCoordinateMagnitudes(v);
+  return magnitudes ? `(${magnitudes.join(", ")})` : undefined;
 }
 
 /** Formats `value` through the per-type entry in the built-in formatter table (see [[formatters]]),
@@ -182,12 +173,17 @@ export function collectFieldQuantityPairs(args: {
   return pairs;
 }
 
+/** The `x`, `y` and (when present) `z` components of a coordinate value, or `undefined` if `v` is
+ * not one. Shared by both coordinate paths — the raw [[formatPointBasic]] fallback and the
+ * spec-driven [[applySpecToFieldValue]] — so the two cannot disagree about what counts as a
+ * coordinate or about whether a point carries a `z`.
+ */
 function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
   if (typeof v !== "object" || !("x" in v) || !("y" in v)) {
     return undefined;
   }
   const parts = [v.x, v.y];
-  const z = (v as any).z;
+  const z = "z" in v ? v.z : undefined;
   if (undefined !== z) {
     parts.push(z);
   }
