@@ -46,7 +46,7 @@ class LinkedIModelRef implements IModelDisplayReference {
   protected constructor(args: LinkIModelArgs, refs: IModelDisplayReferences) {
     this.iModel = args.iModel;
     this._refs = refs;
-    this.perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides({
+    this.perModelCategoryVisibility = PerModelCategoryVisibility.Overrides.create({
       iModel: args.iModel,
       queue: this._refs.subcategories,
     });

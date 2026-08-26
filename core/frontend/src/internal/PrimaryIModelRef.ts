@@ -38,7 +38,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   public constructor(view: ViewState, refs: IModelDisplayReferences) {
     this._refs = refs;
-    this.perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides({
+    this.perModelCategoryVisibility = PerModelCategoryVisibility.Overrides.create({
       iModel: view.iModel,
       queue: this._refs.subcategories,
     });

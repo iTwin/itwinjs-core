@@ -63,6 +63,12 @@ export namespace PerModelCategoryVisibility {
     readonly onChanged: BeEvent<() => void>;
   }
 
+  export namespace Overrides {
+    export function create(args: CreateOverridesArgs): Overrides {
+      return new PerModelCategoryVisibilityOverrides(args);
+    }
+  }
+
   /** Describes a set of [[PerModelCategoryVisibility.Overrides]].
    * @see [[PerModelCategoryVisibility.Overrides.setOverrides]].
    * @beta
@@ -81,8 +87,14 @@ export namespace PerModelCategoryVisibility {
     queue: SubCategoriesCache.Queue;
   }
 
-  export function createOverrides(args: Viewport | CreateOverridesArgs): PerModelCategoryVisibility.Overrides {
-    return new PerModelCategoryVisibilityOverrides(args);
+  /** @deprecated Nobody needs this. */
+  export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides {
+    const pmcv = new PerModelCategoryVisibilityOverrides({
+      iModel: viewport.iModel,
+      queue: viewport.subcategories,
+    });
+    pmcv.onChanged.addListener(() => viewport.setViewedCategoriesPerModelChanged());
+    return pmcv;
   }
 }
 type Writeable<T extends object> = { -readonly [P in keyof T]: T[P] };
@@ -100,16 +112,7 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
 
   public readonly onChanged = new BeEvent<() => void>();
 
-  public constructor(args: Viewport | PerModelCategoryVisibility.CreateOverridesArgs) {
-    if (args instanceof Viewport) {
-      const vp = args;
-      this.onChanged.addListener(() => vp.setViewedCategoriesPerModelChanged());
-      args = {
-        iModel: args.iModel,
-        queue: args.subcategories,
-      }
-    }
-
+  public constructor(args: PerModelCategoryVisibility.CreateOverridesArgs) {
     this._iModel = args.iModel;
     this._queue = args.queue;
   }
