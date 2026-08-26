@@ -256,13 +256,14 @@ describe("Schema synchronization concurrency", function (this: Suite) {
 
       const beforeB1 = await takeElementCensus(b1, [classes[0]]);
       const beforeB2 = await takeElementCensus(b2, [classes[1]]);
+      const expectedCensus = { ...beforeB1, ...beforeB2 };
       await pushChangesWithPull(b1, accessTokens[0], "push schema A and data");
       await pushChangesWithPull(b2, accessTokens[1], "push schema B and data");
       await b1.pullChanges({ accessToken: accessTokens[0] });
       await b2.pullChanges({ accessToken: accessTokens[1] });
 
-      expectCensusPreserved(beforeB1, await takeElementCensus(b1, [classes[0], classes[1]]), "after rebasing b1 data");
-      expectCensusPreserved(beforeB2, await takeElementCensus(b2, [classes[0], classes[1]]), "after rebasing b2 data");
+      expectCensusPreserved(expectedCensus, await takeElementCensus(b1, classes), "after rebasing b1 data");
+      expectCensusPreserved(expectedCensus, await takeElementCensus(b2, classes), "after rebasing b2 data");
       assertClassesPresent(b1, classes);
       assertClassesPresent(b2, classes);
       expectMetadataTablesIdentical(b1, b2, "after concurrent imports with data", { a: "b1", b: "b2" });

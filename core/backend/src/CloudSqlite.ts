@@ -934,11 +934,12 @@ export namespace CloudSqlite {
     } catch (e) {
       try {
         args.container.abandonChanges();  // if operation threw, abandon all changes
+        containerInternal.writeLockHeldBy = undefined;
       } catch (abandonError) {
-        // abandonChanges throws when the container is locked, which would replace the error the caller needs to see.
+        // Keep the ownership marker when abandonment fails because the native write lock remains held.
+        // Preserve the operation error, which is the one the caller can act on.
         logError(`abandonChanges failed while handling an error: ${BentleyError.getErrorMessage(abandonError)}`);
       }
-      containerInternal.writeLockHeldBy = undefined;
       throw e;
     }
   }

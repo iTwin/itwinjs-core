@@ -3915,14 +3915,14 @@ export class BriefcaseDb extends IModelDb {
         const schemaSyncDbUri = syncAccess.getUri();
         executeUpgrade();
         await withBriefcaseDb(briefcase, async (db) => {
-          // A profile upgrade runs on the file itself, so the sync db learns about it by being rebuilt from
-          // the result. That discards whatever the sync db held beyond this briefcase, which is why the
-          // changeset has to be pushed before the container lock is released.
           db[_nativeDb].schemaSyncOverwrite(schemaSyncDbUri);
           db[_nativeDb].saveChanges();
         });
+
+        // Publish the sync db before the changeset while retaining both locks.
+        syncAccess.closeDb();
+        await syncAccess.container.uploadChanges();
         await push();
-        syncAccess.synchronizeWithCloud();
       });
     } else {
       executeUpgrade();
@@ -3949,10 +3949,7 @@ export class BriefcaseDb extends IModelDb {
     // - release schema lock
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
 
-    // With schema sync the upgrade rebuilds the sync db from this briefcase, which discards rows no
-    // briefcase holds yet. That is only sound under the exclusive schema lock: it cannot be acquired
-    // while anyone else holds a lock, so nobody can be sitting on an unpushed import whose rows are
-    // about to go. Take it up front rather than only when a data transform turns out to be needed.
+    // schemaSyncOverwrite can discard unpushed imports, so hold the exclusive lock across both upgrades.
     if (SchemaSync.isEnabled(briefcase)) {
       try {
         await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
@@ -4487,22 +4484,11 @@ export class BriefcaseDb extends IModelDb {
     BriefcaseManager.deleteRebaseFolders(this);
   }
 
-  /** Import schemas that [[importSchemas]] refuses, under the exclusive schema lock.
+  /** Import schemas that [[importSchemas]] refuses because they move or delete data.
    *
-   * The upgrade tier of the two-tier surface. [[importSchemas]] is the update tier: it takes a shared
-   * lock, never moves or destroys data, and leaves the result local for the caller to push. This one
-   * takes the exclusive schema lock, allows the import to move and destroy data, and pushes before it
-   * returns. Use it when [[importSchemas]] rejects with `BE_SQLITE_ERROR_DataTransformRequired` or
-   * `BE_SQLITE_ERROR_DataDeletionRequired` ([DbResult]($core-bentley)).
-   *
-   * Takes the exclusive schema lock, pulls to the tip, imports, then pushes the changeset and uploads
-   * the sync db before releasing either lock. With schema sync enabled the result cannot be kept
-   * local: the sync db is rebuilt from this briefcase, so a caller who abandoned instead of pushing
-   * would leave every other briefcase taking its layout decisions from a file that never existed.
-   * @note The briefcase must have no local changes. Acquiring the exclusive lock fails while anyone
-   * else holds a lock, so no other briefcase can be sitting on unpushed changes either.
-   * @see [[BriefcaseDb.upgradeSchemas]] (static) for the profile and domain schemas the software
-   * supplies, which follows the same protocol at a different scope.
+   * Takes the exclusive schema lock, pulls to the tip, imports, updates the sync db, and pushes before returning.
+   * @note The briefcase must have no local changes.
+   * @see [[BriefcaseDb.upgradeSchemas]] (static) for upgrading the software's profile and domain schemas.
    * @alpha
    */
   public async upgradeSchemas(schemaFileNames: LocalFileName[], arg: UpgradeSchemasArgs): Promise<void> {
@@ -4546,34 +4532,41 @@ export class BriefcaseDb extends IModelDb {
       return;
     }
 
-    // Both stores have to land or neither may. An upgrade rebuilds the sync db from this briefcase, so a
-    // sync db the timeline never learned about describes columns no briefcase has, and the next update
-    // import adopts a layout nobody can read. The container goes first because it is the one that can still
-    // be taken back: nothing else can touch it while this briefcase holds the exclusive schema lock, so a
-    // failed push is compensated by rolling the briefcase back and mirroring the pre-upgrade state up again.
+    // Publish the sync db first. If the changeset push fails, restore both stores while the locks are held.
     let txnBeforeUpgrade: TxnIdString | undefined;
-    await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema upgrade" }, async (syncAccess) => {
-      this.saveSchemaChanges();
-      txnBeforeUpgrade = this.txns.getCurrentTxnId();
-      try {
-        nativeImportOp(schemas, {
-          schemaLockHeld: true,
-          ecSchemaXmlContext: arg.ecSchemaXmlContext?.nativeContext,
-          schemaSyncDbUri: syncAccess.getUri(),
-        });
-      } catch (err: any) {
-        this.abandonSchemaChanges();
-        throw new IModelError(err.errorNumber, err.message);
-      }
+    try {
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema upgrade" }, async (syncAccess) => {
+        this.saveSchemaChanges();
+        txnBeforeUpgrade = this.txns.getCurrentTxnId();
+        try {
+          nativeImportOp(schemas, {
+            schemaLockHeld: true,
+            ecSchemaXmlContext: arg.ecSchemaXmlContext?.nativeContext,
+            schemaSyncDbUri: syncAccess.getUri(),
+          });
+        } catch (err: any) {
+          this.abandonSchemaChanges();
+          throw new IModelError(err.errorNumber, err.message);
+        }
 
-      this.clearCaches();
-    });
+        this.clearCaches();
+        syncAccess.closeDb();
+        await syncAccess.container.uploadChanges();
+      });
+    } catch (err) {
+      try {
+        await this.restoreAfterFailedUpgrade(txnBeforeUpgrade);
+      } catch (restoreErr) {
+        Logger.logError(loggerCategory, `Could not restore the briefcase and sync db after the container publication failed: ${BentleyError.getErrorMessage(restoreErr)}`);
+      }
+      throw err;
+    }
 
     try {
       await this.pushChanges(arg);
     } catch (err: any) {
       try {
-        await this.restoreSyncDbAfterFailedUpgradePush(txnBeforeUpgrade);
+        await this.restoreAfterFailedUpgrade(txnBeforeUpgrade);
       } catch (restoreErr) {
         // The push error is the one the caller can act on, so it is the one that gets thrown.
         Logger.logError(loggerCategory, `Could not put the sync db back after a failed upgrade push: ${BentleyError.getErrorMessage(restoreErr)}. Retry the push - the sync db and this briefcase agree, the timeline does not.`);
@@ -4582,14 +4575,8 @@ export class BriefcaseDb extends IModelDb {
     }
   }
 
-  /** Undo an upgrade that reached the sync db but not the timeline: roll the briefcase back to `txnBeforeUpgrade`
-   * and mirror that state over the sync db, so the two agree on what the timeline holds.
-   *
-   * Skipped when the briefcase cannot be rolled back. The reversal is txn-based, so it does not undo DDL -
-   * an upgrade that dropped a table has nothing to put the reversed rows into. Leaving both stores at the
-   * upgraded state is then the better answer, because retrying the push still resolves it.
-   */
-  private async restoreSyncDbAfterFailedUpgradePush(txnBeforeUpgrade: TxnIdString | undefined): Promise<void> {
+  /** Restore the briefcase and sync db after publishing either half of an upgrade fails. */
+  private async restoreAfterFailedUpgrade(txnBeforeUpgrade: TxnIdString | undefined): Promise<void> {
     if (undefined === txnBeforeUpgrade || this.txns.getCurrentTxnId() === txnBeforeUpgrade)
       return;
 

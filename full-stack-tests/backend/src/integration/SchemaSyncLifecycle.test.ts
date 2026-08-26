@@ -668,10 +668,15 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
   // changes when the locked operation throws, which reverts the cache to the last uploaded state - the
   // ids this import took are handed out again to whoever asks next.
   const containerLockFailureMessage = "simulated failure before the container write lock was released";
-  const failInsideTheContainerLock = (): void => {
+  const failInsideTheContainerLock = (once = false): void => {
     const realWithWriteLock = CloudSqlite.withWriteLock;
+    let shouldFail = true;
     sinon.stub(CloudSqlite, "withWriteLock").callsFake(async (args, operation) => {
-      await realWithWriteLock(args, async () => {
+      if (!shouldFail)
+        return realWithWriteLock(args, operation);
+
+      shouldFail = !once;
+      return realWithWriteLock(args, async () => {
         await operation();
         throw new Error(containerLockFailureMessage);
       });
@@ -780,6 +785,18 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
       await assertThrowsAsyncContaining(
         async () => importTinySchema(b1, widened),
         "Use BriefcaseDb.upgradeSchemas");
+
+      // A failure while publishing the container restores both stores before the error reaches the caller.
+      // Fail only the first lock operation so the compensating mirror can acquire the container lock.
+      failInsideTheContainerLock(true);
+      await assertThrowsAsync(
+        async () => b1.upgradeSchemaStrings([tinySchemaToXml(widened)], { accessToken, description: "the upgrade whose container failed" }),
+        containerLockFailureMessage,
+      );
+      sinon.restore();
+      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 0, "the briefcase kept the upgrade after the container failure");
+      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 0, "the sync db kept the upgrade after its publication failed");
+      assert.isFalse(b1.txns.hasLocalChanges, "the failed container publication left local changes behind");
 
       // Under the exclusive schema lock nothing can make the push fail but the transport, so that is
       // what gets injected.
@@ -1277,13 +1294,31 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
         "Cannot enable SchemaSync while there are local changes",
       );
 
+      let createContainer = sinon.stub(SchemaSync.CloudAccess, "createNewContainer").rejects(new Error("container should not be created"));
+      await assertThrowsAsync(
+        async () => SchemaSync.enableForIModel({ iModel: b1 }),
+        "Cannot enable SchemaSync while there are local changes",
+      );
+      sinon.assert.notCalled(createContainer);
+      createContainer.restore();
+
       await b1.pushChanges({ accessToken, description: "schema before enable" });
       await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+
+      createContainer = sinon.stub(SchemaSync.CloudAccess, "createNewContainer").rejects(new Error("container should not be created"));
+      await assertThrowsAsync(
+        async () => SchemaSync.enableForIModel({ iModel: b1 }),
+        "Local db already initialized to schema sync (container-id: sync-life-5)",
+      );
+      sinon.assert.notCalled(createContainer);
+      createContainer.restore();
+
       await assertThrowsAsync(
         async () => SchemaSync.initializeForIModel({ iModel: b2, containerProps }),
         "pull is required to obtain lock",
       );
     } finally {
+      sinon.restore();
       b1.close();
       b2.close();
     }

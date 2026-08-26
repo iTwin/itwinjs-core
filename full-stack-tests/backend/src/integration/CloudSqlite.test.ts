@@ -208,6 +208,24 @@ describe("CloudSqlite", () => {
     container.disconnect({ detach: true });
   });
 
+  it("retains write lock ownership when error cleanup fails", async () => {
+    const container = testContainers[0];
+    container.connect(caches[1]);
+    const abandonChanges = sinon.stub(container, "abandonChanges").throws(new Error("simulated cleanup failure"));
+    try {
+      await expect(CloudSqlite.withWriteLock({ user: user1, container }, async () => {
+        throw new Error("original operation error");
+      })).eventually.rejectedWith("original operation error");
+
+      expect(container.hasWriteLock).to.be.true;
+      expect(CloudSqlite.getWriteLockHeldBy(container)).to.equal(user1);
+    } finally {
+      abandonChanges.restore();
+      CloudSqlite.releaseWriteLock(container);
+      container.disconnect({ detach: true });
+    }
+  });
+
   it("LogLevel.Trace should set LogMask to ALL", async () => {
     const testContainer0 = testContainers[0];
     const shouldLogToConsole = process.env.ITWINJS_BACKEND_INTEGRATION_TEST_LOG_TO_CONSOLE === "1";
@@ -709,7 +727,7 @@ describe("CloudSqlite", () => {
       await clock.nextAsync();
       await firstProgressStarted;
       clock.reset();
-      await finalProgressCalled;
+      await Promise.race([finalProgressCalled, cleanDeletedBlocks]);
       releaseFirstProgress();
       await cleanDeletedBlocks;
       await new Promise((resolve) => setImmediate(resolve));

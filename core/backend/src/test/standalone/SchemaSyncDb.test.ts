@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Guid, Id64, OpenMode } from "@itwin/core-bentley";
+import { Guid, Id64, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseIdValue, Code, ElementReservationError } from "@itwin/core-common";
 import { expect } from "chai";
 import { IModelJsFs, SchemaSync } from "../../core-backend";

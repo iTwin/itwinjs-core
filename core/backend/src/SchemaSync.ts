@@ -386,22 +386,28 @@ export namespace SchemaSync {
     overrideContainer?: boolean;
   }
 
-  /** Enable schema sync for an iModel, seeding the container from this briefcase.
-   * @note The sync db becomes a mirror of this briefcase's metadata, so the briefcase must be level with
-   * the timeline: the exclusive schema lock is taken so nobody else can be holding changes, local changes
-   * are refused, and the briefcase is pulled to the tip before the container is written.
-   */
-  export async function initializeForIModel(arg: InitializeForIModelArgs): Promise<void> {
-    const props = { baseUri: arg.containerProps.baseUri, containerId: arg.containerProps.containerId, storageType: arg.containerProps.storageType }; // sanitize to only known properties
-    const iModel = arg.iModel;
+  /** Refuse initialization before a caller provisions a container, then hold the exclusive schema lock and pull to the tip. */
+  async function prepareToInitializeForIModel(iModel: IModelDb, overrideContainer: boolean): Promise<BriefcaseDb | undefined> {
     const briefcase = iModel instanceof BriefcaseDb ? iModel : undefined;
     if (briefcase && (iModel[_nativeDb].hasUnsavedChanges() || briefcase.txns.hasLocalChanges))
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot enable SchemaSync while there are local changes");
 
-    await iModel.acquireSchemaLock();
-    if (briefcase)
-      await briefcase.pullChanges();
+    const assertContainerCanBeInitialized = () => {
+      const localInfo = iModel[_nativeDb].schemaSyncGetLocalDbInfo();
+      if (localInfo && !overrideContainer)
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Local db already initialized to schema sync (container-id: ${localInfo.id})`);
+    };
 
+    assertContainerCanBeInitialized();
+    await iModel.acquireSchemaLock();
+    await briefcase?.pullChanges();
+    assertContainerCanBeInitialized();
+    return briefcase;
+  }
+
+  async function initializeAfterPreflight(arg: InitializeForIModelArgs, briefcase: BriefcaseDb | undefined): Promise<void> {
+    const props = { baseUri: arg.containerProps.baseUri, containerId: arg.containerProps.containerId, storageType: arg.containerProps.storageType }; // sanitize to only known properties
+    const iModel = arg.iModel;
     const description = arg.overrideContainer
       ? `Overriding SchemaSync for iModel with container-id: ${props.containerId}`
       : `Enable SchemaSync for iModel with container-id: ${props.containerId}`;
@@ -424,14 +430,21 @@ export namespace SchemaSync {
       }
 
       // Upload the initialized container before publishing the property that tells every briefcase to use it.
-      // If the push fails, this briefcase keeps the local txn and exclusive schema lock so the push can be retried;
-      // an initialized container that no timeline points at is safe.
+      // If the push fails, this briefcase keeps the local txn and exclusive schema lock so the push can be retried.
       await briefcase?.pushChanges({ description });
     } finally {
       iModel[_implicitTxn].abandonChanges();
     }
 
     await iModel.initializeSharedElementReservations();
+  }
+
+  /** Enable schema sync for an iModel, seeding the container from this briefcase.
+   * @note Takes the exclusive schema lock, refuses local changes, and pulls the briefcase to the tip before writing the container.
+   */
+  export async function initializeForIModel(arg: InitializeForIModelArgs): Promise<void> {
+    const briefcase = await prepareToInitializeForIModel(arg.iModel, arg.overrideContainer ?? false);
+    await initializeAfterPreflight(arg, briefcase);
   }
 
   /** Arguments for [[enableForIModel]]. */
@@ -455,9 +468,13 @@ export namespace SchemaSync {
    * every operation that changes how a file is governed uses it.
    */
   export async function enableForIModel(arg: EnableForIModelArgs): Promise<CloudSqlite.ContainerProps> {
+    if (undefined === arg.containerProps && undefined === arg.iModel.iTwinId)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot create a SchemaSync container for an iModel that has no iTwin");
+
+    const briefcase = await prepareToInitializeForIModel(arg.iModel, arg.overrideContainer ?? false);
     const containerProps = arg.containerProps
       ?? await createContainerForIModel({ iModel: arg.iModel, label: arg.label, description: arg.description });
-    await initializeForIModel({ iModel: arg.iModel, containerProps, overrideContainer: arg.overrideContainer });
+    await initializeAfterPreflight({ iModel: arg.iModel, containerProps, overrideContainer: arg.overrideContainer }, briefcase);
     return containerProps;
   }
 
