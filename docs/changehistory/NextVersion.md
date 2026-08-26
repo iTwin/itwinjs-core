@@ -140,6 +140,8 @@ See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--
 
 [FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value can now be rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation.
 
+A property resolves to `"quantity"` if it is numeric (`double`, `int` or `long`); `point2d` and `point3d` resolve to `"coordinate"`. Classifying a property as `"quantity"` only decides whether the formatting pipeline is consulted for it — a value that resolves no format, because neither the property nor the field names a KindOfQuantity, still renders as a bare number, so counts and identifiers are unaffected. Note that an `int` property carrying a KindOfQuantity previously rendered as a bare number and now renders as a formatted quantity: one persisting 2500 mm under a KindOfQuantity presenting metres changes from `2500` to `2.5 m`.
+
 Formatting stays on the backend (text layout is a backend concern). Field evaluation itself is **synchronous**, because it has to run inside the `TxnManager` update callbacks that recompute cached content when a source element changes. Everything asynchronous — resolving formats, loading units, building [FormatterSpec]($core-quantity)s — happens once, up front, when an application adopts a [FormatSet]($ecschema-metadata) for an iModel.
 
 #### Configuring a FieldRun
