@@ -15,6 +15,7 @@ publish: false
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-electron](#itwincore-electron)
     - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
+    - [Process-specific Electron ESM/CommonJS entry points](#process-specific-electron-esmcommonjs-entry-points)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Invalidate decorations when element visibility changes](#invalidate-decorations-when-element-visibility-changes)
     - [OPC point clouds without a vertical datum are now placed using orthometric heights](#opc-point-clouds-without-a-vertical-datum-are-now-placed-using-orthometric-heights)
@@ -101,6 +102,24 @@ See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--
 `ElectronApp.shutdown()` disposes any in-flight RPC requests. A response for one of those requests could still arrive from the backend afterwards, and the frontend transport would then dereference the missing request and throw, surfacing as an unhandled rejection while the application was tearing down. Such a response is now ignored instead.
 
 Applications that shut down while requests are outstanding no longer need to filter these errors out of their shutdown paths.
+
+### Process-specific Electron ESM/CommonJS entry points
+
+Use the process-specific entry points when importing from `@itwin/core-electron`:
+
+```ts
+import { ElectronApp } from "@itwin/core-electron/ElectronFrontend";
+import { ElectronHost } from "@itwin/core-electron/ElectronBackend";
+```
+
+For CommonJS applications, use the same entry-point names with `require`:
+
+```js
+const { ElectronApp } = require("@itwin/core-electron/ElectronFrontend");
+const { ElectronHost } = require("@itwin/core-electron/ElectronBackend");
+```
+
+`ElectronFrontend` resolves to the ESM build for `import` and to the CommonJS build for `require`. `ElectronBackend` resolves to the CommonJS build for both. The package now uses an exports map, so subpaths that are not listed are not supported; in particular, `lib/esm/*` paths and `ElectronPreload` are not public package entry points. The existing `@itwin/core-electron/lib/cjs/*` wildcard paths remain available in this release for compatibility with legacy consumers and will be removed in iTwin.js 6.0. New code should use the process-specific entry points. The Electron preload script remains an internal implementation detail configured by `ElectronHost`.
 
 ## @itwin/core-frontend
 

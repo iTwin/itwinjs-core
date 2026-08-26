@@ -10,8 +10,6 @@ The __@itwin/core-electron__ package contains the electron utilities to write an
 
 Import the renderer API from `@itwin/core-electron/ElectronFrontend` and the main-process API from `@itwin/core-electron/ElectronBackend`. The renderer entry resolves to the ESM build for `import` and to CommonJS for `require`; its relative imports are explicit so Node ESM and browser bundlers can resolve it. The main-process entry remains CommonJS in both cases.
 
-The preload remains a CommonJS file. Use `require.resolve("@itwin/core-electron/ElectronPreload")` when constructing a `BrowserWindow` if an application needs to reference it directly.
-
 ## Documentation
 
 See the [iTwin.js](https://www.itwinjs.org) documentation for more information.
