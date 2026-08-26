@@ -521,6 +521,17 @@ describe("InteractiveRebase", () => {
     const localElement2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(localId);
     chai.expect(localElement2.federationGuid).not.to.equal(guid);
     chai.expect(localElement2.federationGuid).not.to.equal(localElement.federationGuid);
+
+    // A new unique constraint violation record should be added.
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(2);
+    chai.expect(conflict.uniqueConstraintViolations[1].uniqueConstraintProperties.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[1].uniqueConstraintProperties).to.include("federationGuid");
+    chai.expect(conflict.uniqueConstraintViolations[1].conflictingRow.federationGuid).to.equal(conflict.ours!.federationGuid);
+
+    // Accepting "theirs" will delete our new element
+    conflict.acceptTheirs();
+    const localElement3 = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(localId);
+    chai.expect(localElement3).to.be.undefined;
   });
 
   it("can present a conflict where a locally-updated row triggers a unique constraint violation", async () => {

@@ -706,19 +706,42 @@ export class InteractiveRebase {
       return;
     }
 
-    try {
-      this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: !fullReplace });
-    } catch (err: any) {
-      if (err.errorNumber === DbResult.BE_SQLITE_NOTFOUND) {
-        // Row does not exist - try inserting it.
-        this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
-        return;
-      }
-      throw err;
-    }
+    this.writeConflictResolution(conflict as RebaseConflictImpl, props, fullReplace, 0);
 
     // TODO: too heavy-handed?
     this._db.clearCaches();
+  }
+
+  /** Writes a resolved conflict's properties, resolving any UNIQUE constraint violation the write provokes the
+   * same way the initial replay does: record the violation on the conflict, pick a non-colliding value for one
+   * of the constrained properties, and retry. Re-applying "our" values necessarily reintroduces whatever
+   * violation they caused in the first place, so this must not escape as an exception.
+   */
+  private writeConflictResolution(conflict: RebaseConflictImpl, props: RebaseConflictProperties, fullReplace: boolean, attempt: number): void {
+    try {
+      try {
+        this._db[_nativeDb].updateInstance(props, { useJsNames: true, useIncrementalUpdate: !fullReplace });
+      } catch (err: any) {
+        if (err.errorNumber !== DbResult.BE_SQLITE_NOTFOUND)
+          throw err;
+        // Row does not exist - try inserting it.
+        this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
+      }
+    } catch (err: any) {
+      if (err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_UNIQUE && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY)
+        throw err;
+      if (attempt >= MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS)
+        throw err;
+
+      const conflictDetail = err.conflictDetail as UniqueConstraintConflictDetail | undefined;
+      conflict.addUniqueConstraintViolation(conflictDetail);
+
+      const fixedProps = this.fixUniqueConstraintViolation(props, conflictDetail?.uniqueConstraintProperties, conflict.id);
+      if (fixedProps === undefined)
+        throw err;
+
+      this.writeConflictResolution(conflict, fixedProps, fullReplace, attempt + 1);
+    }
   }
 
   /**
@@ -1006,7 +1029,7 @@ class RebaseConflictImpl implements RebaseConflict {
     if (detail === undefined) {
       // Native could not map the violated index back to EC properties. Still surface the conflict.
       if (conflict.uniqueConstraintViolations.length === 0) {
-        conflict.uniqueConstraintViolations.push({ uniqueConstraintProperties: [], conflictingRow: {} });
+        conflict.addUniqueConstraintViolation(undefined);
       }
       return;
     }
@@ -1018,14 +1041,31 @@ class RebaseConflictImpl implements RebaseConflict {
       other.uniqueConstraintProperties.length === uniqueConstraintProperties.length &&
       other.uniqueConstraintProperties.every((prop, i) => prop === uniqueConstraintProperties[i]);
     if (!conflict.uniqueConstraintViolations.some(isSameIndex)) {
-      conflict.uniqueConstraintViolations.push({
-        uniqueConstraintProperties,
-        conflictingRow: classDef.deserialize({
-          row: detail.conflictingRow ?? {},
-          iModel: rebase.iModel
-        }),
-      });
+      conflict.addUniqueConstraintViolation(detail);
     }
+  }
+
+  /** Appends a UNIQUE constraint violation, without the de-duplication that [[recordUniqueConstraint]] applies:
+   * re-applying a resolution can legitimately re-violate a constraint that was already reported and fixed.
+   */
+  public addUniqueConstraintViolation(detail: UniqueConstraintConflictDetail | undefined): void {
+    if (detail === undefined) {
+      // Native could not map the violated index back to EC properties. Still surface the conflict.
+      this.uniqueConstraintViolations.push({ uniqueConstraintProperties: [], conflictingRow: {} });
+      return;
+    }
+
+    const classDef = this._rebase.iModel.getJsClass<typeof Element>(this.classFullName);
+    const uniqueConstraintProperties: string[] = [];
+    addPropsAccessStrings(uniqueConstraintProperties, classDef, detail.uniqueConstraintProperties);
+
+    this.uniqueConstraintViolations.push({
+      uniqueConstraintProperties,
+      conflictingRow: classDef.deserialize({
+        row: detail.conflictingRow ?? {},
+        iModel: this._rebase.iModel
+      }),
+    });
   }
 
   public acceptOurs(properties?: string[]): void {
