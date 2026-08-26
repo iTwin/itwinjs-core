@@ -597,6 +597,35 @@ describe("Field format resolution example", () => {
     expect(omitted.cachedContent).to.equal("1076.39 ft2");
   });
 
+  it("routes a colon-separated KindOfQuantity name to the FormatSet that defines it in dot-separated form", async () => {
+    // Pins an agreement between two packages. Warming a bucket asks "does this FormatSet define
+    // the key" and looking a format up asks "give me the format for the key" -- the first is
+    // answered by `FieldSpecBucket.definesOwnFormat`, the second by
+    // `FormatSetFormatsProvider.getFormat` in ecschema-metadata, and each normalizes the name
+    // itself. `SchemaItem.parseFullName` accepts `schemaName:itemName` (the form the node addon
+    // emits) as well as `schemaName.itemName`, so a set keyed in dot form must answer a field
+    // that names its KoQ in colon form.
+    //
+    // If those two normalizations ever diverge, the bucket skips warming a key its own set does
+    // define, and the field silently resolves through the *default* bucket instead -- no throw,
+    // and nothing on `misses`, because a spec did resolve. This test is the tripwire: it fails
+    // with the adopted set's "250 cm" rather than the alternate's "[alt]ft".
+    // Persisted on the element: lengthProp 2.5 m
+    const block = TextBlock.create();
+    const colonNamed = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example:LENGTH", persistenceUnit: "Units.M" });
+    const dotNamed = appendField(block, "lengthProp", { formatSet: ALT_SET, kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
+
+    await render(block, {
+      // Defines the same key, so an under-warmed alternate bucket resolves here and produces a
+      // plausible-looking string instead of an obvious failure.
+      adopted: toFormatSet("Adopted", { "Example.LENGTH": decimalFormat("Units.CM", "cm", 2) }),
+      byId: [{ id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) }],
+    });
+
+    expect(colonNamed.cachedContent).to.equal("8.202 [alt]ft");
+    expect(colonNamed.cachedContent).to.equal(dotNamed.cachedContent);
+  });
+
   it("resolves a key only the alternate FormatSet defines only when the field names that set", async () => {
     // The complement of the fallthrough above: the adopted bucket cannot see into the alternate
     // one. An unregistered id lands on the adopted bucket, so it fails the same way naming
