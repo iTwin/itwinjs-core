@@ -35,7 +35,6 @@ export interface IModelDisplayReference {
   readonly modelAppearanceOverrides: ObservableMap<Id64String, FeatureAppearance>;
 
   readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
-  readonly onPerModelCategoryVisibilityChanged: BeEvent<() => void>;
 
   readonly neverDrawnElements: ObservableSet<Id64String>;
   readonly alwaysDrawnElements: ObservableSet<Id64String>;

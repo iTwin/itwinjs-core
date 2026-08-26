@@ -6,10 +6,11 @@
  * @module Views
  */
 
-import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Viewport } from "./Viewport";
+import { SubCategoriesCache } from "./SubCategoriesCache";
 
 /** Per-model category visibility permits the visibility of categories within a [[Viewport]] displaying a [[SpatialViewState]] to be overridden in
  * the context of individual [[GeometricModelState]]s.
@@ -59,6 +60,7 @@ export namespace PerModelCategoryVisibility {
     [Symbol.iterator]: () => Iterator<OverrideEntry>;
     /** Populate the symbology overrides based on the per-model category visibility. */
     addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
+    readonly onChanged: BeEvent<() => void>;
   }
 
   /** Describes a set of [[PerModelCategoryVisibility.Overrides]].
@@ -74,8 +76,13 @@ export namespace PerModelCategoryVisibility {
     visOverride: PerModelCategoryVisibility.Override;
   }
 
-  export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides {
-    return new PerModelCategoryVisibilityOverrides(viewport);
+  export interface CreateOverridesArgs {
+    iModel: IModelConnection;
+    queue: SubCategoriesCache.Queue;
+  }
+
+  export function createOverrides(args: Viewport | CreateOverridesArgs): PerModelCategoryVisibility.Overrides {
+    return new PerModelCategoryVisibilityOverrides(args);
   }
 }
 type Writeable<T extends object> = { -readonly [P in keyof T]: T[P] };
@@ -88,12 +95,24 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
   private readonly _map = new Map<Id64String, ModelEntry>();
   /** Flat set of all override entries, providing O(1) iteration via [Symbol.iterator]. Kept in sync with `_map`. */
   private readonly _set = new Set<WriteableOverrideEntry>();
-  private readonly _vp: Viewport;
+  private readonly _iModel: IModelConnection;
+  private readonly _queue: SubCategoriesCache.Queue;
 
-  public constructor(vp: Viewport) {
-    this._vp = vp;
+  public readonly onChanged = new BeEvent<() => void>();
+
+  public constructor(args: Viewport | PerModelCategoryVisibility.CreateOverridesArgs) {
+    if (args instanceof Viewport) {
+      const vp = args;
+      this.onChanged.addListener(() => vp.setViewedCategoriesPerModelChanged());
+      args = {
+        iModel: args.iModel,
+        queue: args.subcategories,
+      }
+    }
+
+    this._iModel = args.iModel;
+    this._queue = args.queue;
   }
-
 
   public [Symbol.iterator](): Iterator<PerModelCategoryVisibility.OverrideEntry> {
     return this._set[Symbol.iterator]();
@@ -176,7 +195,7 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
   public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibility.Props[], iModel?: IModelConnection): Promise<void> {
     let anyChanged = false;
     const catIdsToLoad: string[] = [];
-    const iModelToUse = iModel ? iModel : this._vp.iModel;
+    const iModelToUse = iModel ? iModel : this._iModel;
     for (const override of perModelCategoryVisibility) {
       // The caller may pass a single categoryId as a string, if we don't convert this to an array we will iterate
       // over each individual character of that string, which is not the desired behavior.
@@ -185,9 +204,9 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
         anyChanged = true;
     }
     if (anyChanged) {
-      this._vp.setViewedCategoriesPerModelChanged();
+      this.onChanged.raiseEvent();
       if (catIdsToLoad.length !== 0) {
-        this._vp.subcategories.push(iModelToUse.subcategories, catIdsToLoad, () => this._vp.setViewedCategoriesPerModelChanged());
+        this._queue.push(iModelToUse.subcategories, catIdsToLoad, () => this.onChanged.raiseEvent());
       }
     }
   }
@@ -201,11 +220,11 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
     }
 
     if (changed) {
-      this._vp.setViewedCategoriesPerModelChanged();
+      this.onChanged.raiseEvent();
 
       if (override !== PerModelCategoryVisibility.Override.None) {
         // Ensure subcategories loaded.
-        this._vp.subcategories.push(this._vp.iModel.subcategories, categoryIds, () => this._vp.setViewedCategoriesPerModelChanged());
+        this._queue.push(this._iModel.subcategories, categoryIds, () => this.onChanged.raiseEvent());
       }
     }
   }
@@ -215,7 +234,7 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
       if (this._map.size > 0) {
         this._map.clear();
         this._set.clear();
-        this._vp.setViewedCategoriesPerModelChanged();
+        this.onChanged.raiseEvent();
       }
       return;
     }
@@ -233,12 +252,12 @@ class PerModelCategoryVisibilityOverrides implements PerModelCategoryVisibility.
       this._map.delete(modelId);
     }
     if (changed) {
-      this._vp.setViewedCategoriesPerModelChanged();
+      this.onChanged.raiseEvent();
     }
   }
 
   public addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
-    const cache = this._vp.iModel.subcategories;
+    const cache = this._iModel.subcategories;
 
     for (const ovr of this._set) {
       const subcats = cache.getSubCategories(ovr.categoryId);

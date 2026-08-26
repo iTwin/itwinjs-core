@@ -14,6 +14,7 @@ import { BeEvent, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { SpatialViewState } from "../SpatialViewState";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
+import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -25,14 +26,21 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   protected abstract get _view(): ViewState;
   protected readonly _subcategories = new SubCategoriesCache.Queue();
 
+  public readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();
   public readonly alwaysDrawnElements = new ObservableSet<Id64String>();
   public readonly featureOverrideProviders = new ObservableSet<FeatureOverrideProvider>();
 
   public readonly onViewFlagOverridesChanged = new BeEvent<() => void>;
-  public readonly onPerModelCategoryVisibilityChanged = new BeEvent<() => void>;
   public readonly onIsAlwaysDrawnExclusiveChanged = new BeEvent<() => void>;
   public readonly onClipStyleChanged = new BeEvent<() => void>;
+
+  public constructor(view: ViewState) {
+    this.perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides({
+      iModel: view.iModel,
+      queue: this._subcategories, // ###TODO should have one queue for all references?
+    });
+  }
 
   public get iModel() { return this._view.iModel; }
   public get viewedCategories() { return this._view.categorySelector.observableCategories; }
@@ -59,10 +67,6 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public get modelAppearanceOverrides() {
     return this._view.displayStyle.settings.modelAppearanceOverrides;
   } 
-
-  public get perModelCategoryVisibility() {
-    return { } as unknown as any; // ###TODO
-  }
 
   public get isAlwaysDrawnExclusive() {
     return this.#alwaysDrawnExclusive;
@@ -93,7 +97,7 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
   }
 
   public constructor(view: ViewState2d) {
-    super();
+    super(view);
     this.#view = view;
   }
 
@@ -118,7 +122,7 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
 
   public constructor(view: SpatialViewState) {
-    super();
+    super(view);
     this.#view = view;
 
     view.details.onModelClipGroupsChanged.addListener(
