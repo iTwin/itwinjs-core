@@ -52,12 +52,12 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   readonly isSpatial: true;
   readonly is2d?: never;
 
-  readonly primary: IModelDisplayReference2d;
-  readonly linked: Iterable<IModelDisplayReference2d>;
+  readonly primary: SpatialIModelDisplayReference;
+  readonly linked: Iterable<SpatialIModelDisplayReference>;
   readonly subcategories: SubCategoriesCache.Queue;
 
-  link(args: LinkIModel2dArgs): IModelDisplayReference2d;
-  unlink(ref: IModelDisplayReference2d): void;
+  link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference;
+  unlink(ref: SpatialIModelDisplayReference): void;
 }
 
 export type IModelDisplayReferences = IModelDisplayReferences2d | SpatialIModelDisplayReferences;

@@ -11,10 +11,10 @@ import { _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { ViewState, ViewState2d } from "../ViewState";
 import { BeEvent, Id64String, ObservableSet } from "@itwin/core-bentley";
-import { SubCategoriesCache } from "../SubCategoriesCache";
 import { SpatialViewState } from "../SpatialViewState";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
+import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -23,8 +23,9 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   #alwaysDrawnExclusive = false;
   #clipStyle?: ClipStyle;
 
+  protected readonly _refs: IModelDisplayReferences;
+
   protected abstract get _view(): ViewState;
-  protected readonly _subcategories = new SubCategoriesCache.Queue();
 
   public readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();
@@ -35,10 +36,11 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public readonly onIsAlwaysDrawnExclusiveChanged = new BeEvent<() => void>;
   public readonly onClipStyleChanged = new BeEvent<() => void>;
 
-  public constructor(view: ViewState) {
+  public constructor(view: ViewState, refs: IModelDisplayReferences) {
+    this._refs = refs;
     this.perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides({
       iModel: view.iModel,
-      queue: this._subcategories, // ###TODO should have one queue for all references?
+      queue: this._refs.subcategories,
     });
   }
 
@@ -96,8 +98,8 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
     return this.#view;
   }
 
-  public constructor(view: ViewState2d) {
-    super(view);
+  public constructor(view: ViewState2d, refs: IModelDisplayReferences2d) {
+    super(view, refs);
     this.#view = view;
   }
 
@@ -121,8 +123,8 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   public readonly onHiddenLineSettingsChanged = new BeEvent<() => void>();
   public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
 
-  public constructor(view: SpatialViewState) {
-    super(view);
+  public constructor(view: SpatialViewState, refs: SpatialIModelDisplayReferences) {
+    super(view, refs);
     this.#view = view;
 
     view.details.onModelClipGroupsChanged.addListener(
@@ -167,6 +169,10 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   }
 }
 
-export function createPrimaryIModelDisplayReference(view: ViewState2d | SpatialViewState): IModelDisplayReference {
-  return view.is2d() ? new PrimaryIModelRef2d(view) : new PrimarySpatialIModelRef(view);
+export function createPrimaryIModelDisplayReference2d(view: ViewState2d, refs: IModelDisplayReferences2d): IModelDisplayReference2d {
+  return new PrimaryIModelRef2d(view, refs);
+}
+
+export function createPrimarySpatialIModelDisplayReference(view: SpatialViewState, refs: SpatialIModelDisplayReferences): SpatialIModelDisplayReference {
+  return new PrimarySpatialIModelRef(view, refs);
 }

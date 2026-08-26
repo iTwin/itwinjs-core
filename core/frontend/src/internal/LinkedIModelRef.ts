@@ -12,7 +12,8 @@ import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayR
 import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
-import { IModelConnection } from "../IModelConnection";
+import { IModelDisplayReferences, IModelDisplayReferences2d, LinkIModel2dArgs, LinkIModelArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
+import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 
 class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -22,11 +23,14 @@ class LinkedIModelRef implements IModelDisplayReference {
   #clipStyle?: ClipStyle;
   readonly #excludedElements: Set<Id64String>;
 
+  protected readonly _refs: IModelDisplayReferences;
+
   protected readonly _subcategories = new SubCategoriesCache.Queue();
 
   public readonly iModel;
   public readonly viewedCategories = new ObservableSet<Id64String>();
 
+  public readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();
   public readonly alwaysDrawnElements = new ObservableSet<Id64String>();
   public readonly featureOverrideProviders = new ObservableSet<FeatureOverrideProvider>();
@@ -39,8 +43,14 @@ class LinkedIModelRef implements IModelDisplayReference {
   public readonly onIsAlwaysDrawnExclusiveChanged = new BeEvent<() => void>;
   public readonly onClipStyleChanged = new BeEvent<() => void>;
 
-  protected constructor(args: CreateLinkedIModelRefArgs) {
+  protected constructor(args: LinkIModelArgs, refs: IModelDisplayReferences) {
     this.iModel = args.iModel;
+    this._refs = refs;
+    this.perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides({
+      iModel: args.iModel,
+      queue: this._refs.subcategories,
+    });
+
     this.viewedCategories.addAll(args.viewedCategories ?? []);
     this.#excludedElements = new Set<Id64String>(args.excludedElements ?? []);
     this.#viewFlagOverrides = { ...args.viewFlagOverrides };
@@ -66,8 +76,6 @@ class LinkedIModelRef implements IModelDisplayReference {
     this.#viewFlagOverrides = ovrs;
     this.onViewFlagOverridesChanged.raiseEvent();
   }
-
-  public readonly perModelCategoryVisibility = { } as unknown as any; // ###TODO
 
   public get isAlwaysDrawnExclusive() {
     return this.#alwaysDrawnExclusive;
@@ -95,8 +103,8 @@ class LinkedIModelRef implements IModelDisplayReference {
 class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReference2d {
   public readonly viewedModel: Id64String;
 
-  public constructor(args: CreateLinkedIModelRef2dArgs) {
-    super(args);
+  public constructor(args: LinkIModel2dArgs, refs: IModelDisplayReferences2d) {
+    super(args, refs);
     this.viewedModel = args.viewedModel;
   }
 }
@@ -113,8 +121,8 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   public readonly onHiddenLineSettingsChanged = new BeEvent<() => void>();
   public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
 
-  public constructor(args: CreateLinkedSpatialIModelRefArgs) {
-    super(args);
+  public constructor(args: LinkSpatialIModelArgs, refs: SpatialIModelDisplayReferences) {
+    super(args, refs);
     this.#hline = args.hiddenLineSettings;
     this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
 
@@ -142,28 +150,10 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   }
 }
 
-export interface CreateLinkedIModelRefArgs {
-  iModel: IModelConnection;
-  viewedCategories?: Iterable<Id64String>;
-  excludedElements?: Iterable<Id64String>;
-  viewFlagOverrides?: ViewFlagOverrides;
-  clipStyle?: ClipStyle;
+export function createLinkedIModelDisplayReference2d(refs: IModelDisplayReferences2d, args: LinkIModel2dArgs): IModelDisplayReference2d {
+  return new LinkedIModelRef2d(args, refs);
 }
 
-export interface CreateLinkedIModelRef2dArgs extends CreateLinkedIModelRefArgs {
-  viewedModel: Id64String;
-}
-
-export interface CreateLinkedSpatialIModelRefArgs extends CreateLinkedIModelRefArgs {
-  viewedModel?: never;
-  viewedModels?: Iterable<Id64String>;
-  hiddenLineSettings?: HiddenLine.Settings;
-  modelClipGroups?: ModelClipGroups;
-}
-
-export function createLinkedIModelDisplayReference(args: CreateLinkedIModelRef2dArgs | CreateLinkedSpatialIModelRefArgs): IModelDisplayReference {
-  if (undefined !== args.viewedModel)
-    return new LinkedIModelRef2d(args);
-
-  return new LinkedSpatialIModelRef(args);
+export function createLinkedSpatialIModelDisplayReference(refs: SpatialIModelDisplayReferences, args: LinkSpatialIModelArgs): SpatialIModelDisplayReference {
+  return new LinkedSpatialIModelRef(args, refs);
 }
