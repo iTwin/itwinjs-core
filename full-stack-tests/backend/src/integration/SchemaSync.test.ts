@@ -39,14 +39,6 @@ describe("Schema synchronization", function (this: Suite) {
       HubMock.shutdown();
   });
 
-  const synchronizeSchemas = async (iModel: IModelDb) => {
-    await SchemaSync.withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
-      const uri = syncAccess.getUri();
-      iModel[_nativeDb].schemaSyncPull(uri);
-      iModel.clearCaches();
-    });
-  };
-
   const imodelJsCoreDirname = path.join(__dirname, `../../../../..`);
 
   const readOverflowElementIds = (db: IModelDb): string[] => {
@@ -132,14 +124,7 @@ describe("Schema synchronization", function (this: Suite) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
-    // pull schema change into b2 from shared schema channel
-    await withEditTxn(b2, async () => synchronizeSchemas(b2));
-
-    // ensure b2 have class and its properties
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
-
-    // add new properties in b2
+    // Add properties in b2. The sync db already contains b1's unpushed import, so this composes both updates.
     const schema2 = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestSchema1" alias="ts" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
@@ -157,8 +142,8 @@ describe("Schema synchronization", function (this: Suite) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
-    // pull schema change into b1 from shared schema channel
-    await withEditTxn(b1, async () => synchronizeSchemas(b1));
+    // Re-importing adopts the sync db's existing answer without a whole-file pull.
+    await b1.importSchemaStrings([schema2]);
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -318,13 +303,6 @@ describe("Schema synchronization", function (this: Suite) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
-    // pull schema change into b2 from shared schema channel
-    await withEditTxn(b2, async () => synchronizeSchemas(b2));
-
-    // ensure b2 have class and its properties
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
-
     // import same schema from another briefcase
     await b2.importSchemaStrings([schema1]);
 
@@ -332,8 +310,8 @@ describe("Schema synchronization", function (this: Suite) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
-    // pull schema change into b1 from shared schema channel
-    await withEditTxn(b1, async () => synchronizeSchemas(b1));
+    // Re-importing the same version adopts the shared answer without a whole-file pull.
+    await b1.importSchemaStrings([schema1]);
 
     // ensure b1 have class and its properties
     // eslint-disable-next-line @typescript-eslint/no-deprecated
