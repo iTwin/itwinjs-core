@@ -7,7 +7,7 @@
  */
 
 import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
-import { _implementationProhibited } from "../common/internal/Symbols";
+import { _getModelClip, _implementationProhibited, _scheduleScriptReference } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
@@ -15,9 +15,11 @@ import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { IModelDisplayReferences, IModelDisplayReferences2d, LinkIModel2dArgs, LinkIModelArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
-import { ViewState, ViewState2d } from "../ViewState";
+import { ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialViewState } from "../SpatialViewState";
+import { RenderClipVolume } from "../render/RenderClipVolume";
+import { IModelApp } from "../core-frontend";
 
 abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -25,6 +27,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   #alwaysDrawnExclusive = false;
   readonly #excludedElements: Set<Id64String>;
   #resolvedViewFlags: ViewFlags;
+  #modelDisplayTransformProvider?: ModelDisplayTransformProvider;
 
   protected readonly _refs: IModelDisplayReferences;
   protected readonly _ovrs: IModelDisplayOverrides;
@@ -43,8 +46,11 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public readonly subCategoryOverrides = new ObservableMap<Id64String, SubCategoryOverride>;
   public readonly modelAppearanceOverrides = new ObservableMap<Id64String, FeatureAppearance>;
 
+  public readonly [_scheduleScriptReference] = undefined; // ###TODO
+
   public readonly onPerModelCategoryVisibilityChanged = new BeEvent<() => void>;
   public readonly onIsAlwaysDrawnExclusiveChanged = new BeEvent<() => void>;
+  public readonly onModelDisplayTransformProviderChanged = new BeEvent<() => void>;
   public readonly onActiveViewFlagsChanged = new BeEvent<() => void>();
   public readonly onActiveClipStyleChanged = new BeEvent<() => void>();
 
@@ -111,6 +117,17 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     }
   }
 
+  public get modelDisplayTransformProvider() {
+    return this.#modelDisplayTransformProvider;
+  }
+
+  public set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) {
+    if (provider !== this.#modelDisplayTransformProvider) {
+      this.#modelDisplayTransformProvider = provider;
+      this.onModelDisplayTransformProviderChanged.raiseEvent();
+    }
+  }
+
   public get activeClipStyle() {
     return this.overrides.clipStyle ?? this._view.displayStyle.settings.clipStyle;
   }
@@ -133,6 +150,7 @@ class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReferenc
 
 class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDisplayReference {
   #modelClipGroups: ModelClipGroups;
+  readonly #modelClips: Array<RenderClipVolume | undefined> = [];
 
   private get _spatialView() {
     return this._view as SpatialViewState;
@@ -161,6 +179,8 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     view.displayStyle.settings.onHiddenLineSettingsChanged.addListener(() => {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
+
+    this.updateModelClips();
   }
 
   public get modelClipGroups() {
@@ -170,6 +190,21 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   public set modelClipGroups(groups: ModelClipGroups) {
     this.#modelClipGroups = groups;
     this.onModelClipGroupsChanged.raiseEvent();
+  }
+
+  private updateModelClips(): void {
+    this.#modelClips.length = 0;
+    for (const group of this.modelClipGroups.groups) {
+      const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
+      this.#modelClips.push(clip);
+    }
+  }
+
+  public [_getModelClip](modelId: Id64String) {
+    // Comment from ViewState3d.getModelClip:
+    // ###TODO: ViewFlags.clipVolume is for the *view clip* only. Some tiles will want to ignore *all* clips (i.e., section-cut tiles).
+    const index = this.modelClipGroups.findGroupIndex(modelId);
+    return -1 !== index ? this.#modelClips[index] : undefined;
   }
 
   public get activeHiddenLineSettings() {

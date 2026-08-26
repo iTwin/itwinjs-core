@@ -7,9 +7,9 @@
  */
 
 import { ModelClipGroups, ViewFlags } from "@itwin/core-common";
-import { _implementationProhibited } from "../common/internal/Symbols";
+import { _getModelClip, _implementationProhibited, _scheduleScriptReference } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
-import { ViewState, ViewState2d } from "../ViewState";
+import { ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
 import { BeEvent, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { SpatialViewState } from "../SpatialViewState";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
@@ -38,6 +38,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   public readonly onViewFlagOverridesChanged = new BeEvent<() => void>;
   public readonly onIsAlwaysDrawnExclusiveChanged = new BeEvent<() => void>;
+  public readonly onModelDisplayTransformProviderChanged = new BeEvent<() => void>;
   public readonly onClipStyleChanged = new BeEvent<() => void>;
   public readonly onActiveViewFlagsChanged = new BeEvent<() => void>();
   public readonly onActiveClipStyleChanged = new BeEvent<() => void>();
@@ -74,6 +75,8 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     });
 
     ovrs.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
+
+    view.onModelDisplayTransformProviderChanged.addListener(() => this.onModelDisplayTransformProviderChanged.raiseEvent());
   }
 
   public get iModel() { return this._view.iModel; }
@@ -102,6 +105,18 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
       this.#alwaysDrawnExclusive = exclusive;
       this.onIsAlwaysDrawnExclusiveChanged.raiseEvent();
     }
+  }
+
+  public get [_scheduleScriptReference]() {
+    return this._view[_scheduleScriptReference];
+  }
+
+  public get modelDisplayTransformProvider() {
+    return this._view.modelDisplayTransformProvider;
+  }
+
+  public set modelDisplayTransformProvider(provider: ModelDisplayTransformProvider | undefined) {
+    this._view.modelDisplayTransformProvider = provider;
   }
 
   public get activeClipStyle() {
@@ -192,6 +207,10 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
   public set modelClipGroups(groups: ModelClipGroups) {
     this._view.details.modelClipGroups = groups;
+  }
+
+  public [_getModelClip](modelId: Id64String) {
+    return this._view.getModelClip(modelId);
   }
 
   public get activeHiddenLineSettings() {
