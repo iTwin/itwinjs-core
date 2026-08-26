@@ -18,6 +18,8 @@ import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
 import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
+import { SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
+import { createSpatialIModelDisplayReferences } from "./internal/IModelDisplayReferencesImpl";
 
 /** Options supplied to [[SpatialViewState.computeFitRange]].
  * @public
@@ -38,6 +40,8 @@ export class SpatialViewState extends ViewState3d {
   private readonly _treeRefs: SpatialTileTreeReferences;
   private _modelSelector: ModelSelectorState;
   private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
+
+  public readonly iModelRefs: SpatialIModelDisplayReferences;
 
   /** An event raised when the set of models viewed by this view changes, *only* if the view is attached to a [[Viewport]].
    * @public
@@ -107,6 +111,7 @@ export class SpatialViewState extends ViewState3d {
       this._modelSelector = arg3.modelSelector.clone();
 
     this._treeRefs = SpatialTileTreeReferences.create(this);
+    this.iModelRefs = createSpatialIModelDisplayReferences(this);
   }
 
   public override isSpatialView(): this is SpatialViewState { return true; }

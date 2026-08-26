@@ -43,6 +43,8 @@ import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
 import { _scheduleScriptReference } from "./common/internal/Symbols";
+import { IModelDisplayReferences, IModelDisplayReferences2d } from "./IModelDisplayReferences";
+import { createIModelDisplayReferences2d } from "./internal/IModelDisplayReferencesImpl";
 
 /** Describes a reality model visible in a [[ViewState]], providing its [[TileTreeReference]] along with
  * display metadata such as its name and description.
@@ -248,6 +250,8 @@ export abstract class ViewState extends ElementState {
   private _categorySelector: CategorySelectorState;
   private _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
+
+  public abstract get iModelRefs(): IModelDisplayReferences;
 
   /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]]. */
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
@@ -2383,6 +2387,8 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   protected _treeRef?: TileTreeReference;
 
+  public readonly iModelRefs: IModelDisplayReferences2d;
+
   /** @internal */
   protected get _tileTreeRef(): TileTreeReference | undefined {
     if (undefined === this._treeRef) {
@@ -2404,6 +2410,8 @@ export abstract class ViewState2d extends ViewState {
     this._baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
 
     this._details = new ViewDetails(this.jsonProperties);
+
+    this.iModelRefs = createIModelDisplayReferences2d(this);
   }
 
   public override toJSON(): ViewDefinition2dProps {

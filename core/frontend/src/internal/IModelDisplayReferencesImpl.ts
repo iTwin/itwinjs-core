@@ -55,7 +55,7 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
 
 class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewState2d, LinkIModel2dArgs> implements IModelDisplayReferences2d {
   protected override createPrimaryRef(view: ViewState2d): IModelDisplayReference2d {
-    return createPrimaryIModelDisplayReference2d(view)
+    return createPrimaryIModelDisplayReference2d(view, this)
   }
 
   protected override createLinkedRef(args: LinkIModel2dArgs): IModelDisplayReference2d {
@@ -71,7 +71,7 @@ class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewSt
 
 class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReference, SpatialViewState, LinkSpatialIModelArgs> implements SpatialIModelDisplayReferences {
   protected override createPrimaryRef(view: SpatialViewState): SpatialIModelDisplayReference {
-    return createPrimarySpatialIModelDisplayReference(view);
+    return createPrimarySpatialIModelDisplayReference(view, this);
   }
 
   protected override createLinkedRef(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference {
