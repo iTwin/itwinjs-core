@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add TxnChangedEntity.metadata to TxnManager.onElementsChanged and onModelsChanged via TxnChangedEntitiesWithMetadata while preserving TxnChangedEntities compatibility; document the backend/frontend payload differences.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
