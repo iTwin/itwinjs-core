@@ -2009,6 +2009,24 @@ export interface CreateTerminatorGeometryArgs {
 }
 
 // @beta
+export interface CSVColumnMapping {
+    columnIndex: number;
+    propertyName: string;
+}
+
+// @beta
+export interface CSVFileImportOptions extends CSVImportOptions {
+    hasHeader?: boolean;
+}
+
+// @beta
+export interface CSVImportOptions {
+    className: string;
+    mapping: readonly CSVColumnMapping[];
+    nullValue?: string;
+}
+
+// @beta
 export interface CustomHandledProperty {
     readonly propertyName: string;
     readonly source: "Class" | "Computed";
@@ -2450,6 +2468,10 @@ export class ECDb implements Disposable {
     // @internal
     getCachedStatementCount(): number;
     getSchemaProps(name: string): ECSchemaProps;
+    // @beta
+    importCSVData(rows: readonly (readonly string[])[], options: CSVImportOptions): number;
+    // @beta
+    importCSVFile(csvFilePath: string, options: CSVFileImportOptions): number;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
     readonly onBeforeClose: BeEvent<() => void>;

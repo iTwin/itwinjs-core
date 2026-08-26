@@ -13,6 +13,7 @@ publish: false
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
     - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
+    - [Import CSV data into ECDb](#import-csv-data-into-ecdb)
   - [@itwin/core-common](#itwincore-common)
     - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-electron](#itwincore-electron)
@@ -129,6 +130,25 @@ SELECT * FROM bis.Element WHERE CodeValue IS json_extract(JsonProperties, '$.cod
 ```
 
 See the [ECSQL operators reference](../learning/ECSqlReference/Operators.md#is--is-not-operator-null-safe-comparison) for more details.
+
+### Import CSV data into ECDb
+
+CSV data can be imported into an ECClass from in-memory string rows or streamed from a file. Both beta APIs return the number of inserted rows:
+
+```ts
+const options = {
+  className: "Example.Person",
+  mapping: [
+    { columnIndex: 0, propertyName: "Name" },
+    { columnIndex: 1, propertyName: "Age" },
+  ],
+};
+
+ecdb.importCSVData([["Alice", "42"], ["Bob", "37"]], options);
+ecdb.importCSVFile(csvFilePath, { ...options, hasHeader: true });
+```
+
+[ECDb.importCSVData]($backend) uses V8 serialization to cross the JavaScript-to-native boundary once. [ECDb.importCSVFile]($backend) reads and parses the file in native code; its path must be accessible to the backend process. Both reuse one ECSQL statement, convert each CSV string according to its mapped EC property type, ignore unmapped columns, and roll back the complete import if parsing, conversion, or insertion fails.
 
 ## @itwin/core-common
 
