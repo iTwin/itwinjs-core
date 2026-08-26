@@ -2394,7 +2394,7 @@ export abstract class ViewState2d extends ViewState {
     if (undefined === this._treeRef) {
       const model = this.getViewedModel();
       if (undefined !== model)
-        this._treeRef = model.createTileTreeReference(this);
+        this._treeRef = model.createTileTreeReference(this.iModelRefs.primary); // ###TODO move this to the IModelDisplayReference object
     }
 
     return this._treeRef;

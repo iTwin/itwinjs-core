@@ -9,15 +9,13 @@ import { compareNumbers, comparePossiblyUndefined, compareStrings, compareString
 import {
   BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagsProperties,
 } from "@itwin/core-common";
-import { DisplayStyleState } from "../../DisplayStyleState";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { GeometricModelState } from "../../ModelState";
 import { SceneContext } from "../../ViewContext";
-import { ViewState } from "../../ViewState";
 import { ActiveSpatialClassifier, SpatialClassifiersState } from "../../SpatialClassifiersState";
 import {
-  DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, RealityModelSource, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
 import { _scheduleScriptReference } from "../../common/internal/Symbols";
 
@@ -95,12 +93,12 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
 class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private _id: ClassifierTreeId;
   private readonly _classifiers: SpatialClassifiersState;
-  private readonly _source: ViewState | DisplayStyleState;
+  private readonly _source: RealityModelSource;
   private readonly _iModel: IModelConnection;
   private readonly _classifiedTree: TileTreeReference;
   private _owner: TileTreeOwner;
 
-  public constructor(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
+  public constructor(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: RealityModelSource) {
     super();
     this._id = createClassifierId(classifiers.active, source);
     this._source = source;
@@ -183,11 +181,11 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 
 }
 
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
+export function createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: RealityModelSource): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
 }
 
-function createClassifierId(classifier: SpatialClassifier | undefined, source: ViewState | DisplayStyleState | undefined): ClassifierTreeId {
+function createClassifierId(classifier: SpatialClassifier | undefined, source: RealityModelSource): ClassifierTreeId {
   const disablePolyfaceDecimation = IModelApp.tileAdmin.disablePolyfaceDecimation;
   if (undefined === classifier)
     return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined, disablePolyfaceDecimation };

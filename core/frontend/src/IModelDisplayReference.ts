@@ -16,12 +16,13 @@ import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
 import { ModelDisplayTransformProvider } from "./ViewState";
 import { RenderClipVolume } from "./core-frontend";
-import { IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
+import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
 
 export interface IModelDisplayReference {
   readonly [_implementationProhibited]: unknown;
 
   readonly iModel: IModelConnection;
+  readonly parent: IModelDisplayReferences;
   readonly viewedCategories: ObservableSet<Id64String>;
 
   readonly isSpatial: () => this is SpatialIModelDisplayReference;

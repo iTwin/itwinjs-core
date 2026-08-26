@@ -110,8 +110,8 @@ export class SpatialViewState extends ViewState3d {
     if (arg3 instanceof SpatialViewState) // from clone
       this._modelSelector = arg3.modelSelector.clone();
 
-    this._treeRefs = SpatialTileTreeReferences.create(this);
     this.iModelRefs = createSpatialIModelDisplayReferences(this);
+    this._treeRefs = SpatialTileTreeReferences.create(this.iModelRefs.primary); // ###TODO move these to the IModelDisplayReference object.
   }
 
   public override isSpatialView(): this is SpatialViewState { return true; }
