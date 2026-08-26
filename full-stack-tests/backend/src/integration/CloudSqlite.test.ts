@@ -661,83 +661,69 @@ describe("CloudSqlite", () => {
   it("slow cleanDeletedBlocks onProgress should not cause race condition", async () => {
     const { container } = await prepareDbForCleaningBlocks("clean-blocks-cache-race-condition");
 
+    let notifyFirstProgressStarted!: () => void;
+    const firstProgressStarted = new Promise<void>((resolve) => notifyFirstProgressStarted = resolve);
+    let releaseFirstProgress!: () => void;
+    const firstProgressCanFinish = new Promise<void>((resolve) => releaseFirstProgress = resolve);
+    let notifyFinalProgress!: () => void;
+    const finalProgressCalled = new Promise<void>((resolve) => notifyFinalProgress = resolve);
+
     let progressCalled = false;
     let progressWaited = false;
     const onProgress = async () => {
       if (!progressCalled) {
         progressCalled = true;
-        await BeDuration.wait(2000); // simulate a long onProgress callback that takes 2000ms to complete.
-        // await new Promise((resolve) => clock.setTimeout(resolve, 2000)); // simulate a long onProgress callback that takes 2000ms to complete.
-        progressWaited = true; // We have to wait for onProgress to finish before we can be sure that cleanDeletedBlocks
-                               // didn't throw an error after our return.
-        return 2; // return a number greater than 1 to abort the cleanDeletedBlocks operation.
+        notifyFirstProgressStarted();
+        await firstProgressCanFinish;
+        progressWaited = true;
+        return 2;
       }
-      return 0; // return 0 to not abort the cleanDeletedBlocks operation.
+
+      // cleanDeletedBlocks invokes onProgress directly after the native job completes. The fake
+      // interval is stopped after its first call, so this signals that returning 2 from the pending
+      // interval callback will race with an already-completed job.
+      notifyFinalProgress();
+      return 0;
     };
 
-    // In the past, cleanDeletedBlocks would occasionally throw an error inside a setInterval handler. This is because a
-    // race condition could cause the handler to still be called after cleanDeletedBlocks had already resolved and
-    // cleaned up its resources, including the container it was operating on. If the handler was called after
-    // cleanDeletedBlocks had resolved, or if onProgress took a long time and returned non-zero, then it would try to
-    // access the container that was already cleaned up, which would cause an error to be thrown. This race condition
-    // could be forced by having a slow onProgress handler return non-zero. This test makes sure that even if onProgress
-    // is slow, we don't have unhandled rejections or uncaught exceptions. The race condition was fixed, but we don't
-    // want to accidentally regress it, so this test will stay.
-    //
-    // Note: we would like to add a similar test for transferDb, but the progress callback for transferDb is not async,
-    // so there is no way to simulate a long onProgress callback that would cause the race condition.
-    const unhandledRejections: Array<any> = [];
-    const rejectionHandler = (reason: any) => {
-      unhandledRejections.push(reason);
-    };
+    // A pending interval callback used to call cancelTransfer after the native cleanup job completed
+    // and its resources were released. cleanDeletedBlocks must wait for that callback and ignore the
+    // resulting "transfer already completed" error without producing an unhandled rejection.
+    const unhandledRejections: unknown[] = [];
+    const rejectionHandler = (reason: unknown) => unhandledRejections.push(reason);
     process.on("unhandledRejection", rejectionHandler);
 
-    // Capture uncaught exceptions
     const uncaughtExceptions: Error[] = [];
-    const exceptionHandler = (error: Error) => {
-      uncaughtExceptions.push(error);
-    };
+    const exceptionHandler = (error: Error) => uncaughtExceptions.push(error);
     process.on("uncaughtException", exceptionHandler);
 
-    // Faking the interval setup in cleanDeletedBlocks.
-    const clock = sinon.useFakeTimers({ toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1 });
+    // Trigger exactly one interval callback and hold it until the native job's final progress call.
+    // This avoids relying on the cleanup finishing within an arbitrary wall-clock delay.
+    const clock = sinon.useFakeTimers({ toFake: ["setInterval"] });
 
     try {
-      let resolved = false;
-      let cleanDeletedBlocksError: any;
-      CloudSqlite.cleanDeletedBlocks(container, { nSeconds: 0, findOrphanedBlocks: true, onProgress }).then(() => {
-        resolved = true;
-      }).catch((err) => {
-        resolved = true;
-        cleanDeletedBlocksError = err;
-      });
+      let cleanDeletedBlocksError: Error | undefined;
+      const cleanDeletedBlocks = CloudSqlite.cleanDeletedBlocks(container, { nSeconds: 0, findOrphanedBlocks: true, onProgress })
+        .catch((error: unknown) => cleanDeletedBlocksError = error instanceof Error ? error : new Error(String(error)));
 
-      while (!resolved || !progressWaited) {
-        await clock.tickAsync(250);
-        await new Promise((resolve) => clock.setTimeout(resolve, 1));
-      }
-      // Give a bit more time for any async errors to surface
-      await clock.tickAsync(100);
-      await new Promise((resolve) => setImmediate(resolve));
+      await clock.nextAsync();
+      await firstProgressStarted;
       clock.reset();
-      clock.restore();
+      await finalProgressCalled;
+      releaseFirstProgress();
+      await cleanDeletedBlocks;
+      await new Promise((resolve) => setImmediate(resolve));
 
-      if (cleanDeletedBlocksError) {
-        throw cleanDeletedBlocksError; // cleanDeletedBlocks should not throw an error, even if onProgress is slow and returns non-zero.
-      }
+      if (cleanDeletedBlocksError)
+        throw cleanDeletedBlocksError;
 
-      // Check for unhandled errors
-      if (unhandledRejections.length > 0) {
-        throw new Error(`Unhandled rejection detected: ${unhandledRejections[0]}`);
-      }
-      if (uncaughtExceptions.length > 0) {
-        throw new Error(`Uncaught exception detected: ${uncaughtExceptions[0].message}`);
-      }
-
+      expect(progressWaited).to.be.true;
+      expect(unhandledRejections).to.be.empty;
+      expect(uncaughtExceptions).to.be.empty;
       container.checkForChanges();
-      expect(container.garbageBlocks).to.be.equal(0); // we should have successfully cleaned our garbage blocks, because of slow onProgress.
-
+      expect(container.garbageBlocks).to.equal(0);
     } finally {
+      releaseFirstProgress();
       clock.restore();
       process.off("unhandledRejection", rejectionHandler);
       process.off("uncaughtException", exceptionHandler);
