@@ -712,7 +712,9 @@ export class InteractiveRebase {
       if (err.errorNumber === DbResult.BE_SQLITE_NOTFOUND) {
         // Row does not exist - try inserting it.
         this._db[_nativeDb].insertInstance(props, { forceUseId: true, useJsNames: true });
+        return;
       }
+      throw err;
     }
 
     // TODO: too heavy-handed?

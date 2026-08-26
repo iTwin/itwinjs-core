@@ -349,6 +349,25 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.original!.somePoint).to.deep.equal({ x: 1.23, y: 4.56 });
     chai.expect(conflict.ours!.foo).to.equal("User2");
     chai.expect(conflict.ours!["somePoint"]).to.deep.equal({ x: 3.0, y: 4.0 });
+
+    // In most cases we try to let "our" changes stand. But not here.
+    // If "they" deleted the element, we let the delete stand by default. Deleting the
+    // element could lead to foreign key constraint problems. However, we need to deal
+    // with that possibility whether we modified the referenced instance or not.
+    const values = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(values).to.be.undefined;
+
+    // We can resurrect it by accepting "ours".
+    conflict.acceptOurs();
+    const oursValues = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(oursValues).to.not.be.undefined;
+    chai.expect(oursValues!.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(oursValues!.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
+
+    // Accepting theirs deletes it again
+    conflict.acceptTheirs();
+    const theirsValues = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(theirsValues).to.be.undefined;
   });
 
   it("can present a conflict where local and upstream both insert a row with the same primary key", async () => {
@@ -492,9 +511,16 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
     chai.expect(conflict.ours!.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
 
+    // By default, the conflicting element is assigned a new federationGuid to resolve the conflict.
     const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(localId);
     chai.expect(localElement.federationGuid).not.to.equal(guid);
     chai.expect(localElement.federationGuid).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
+
+    // Accepting "ours" will cause the conflict resolution to re-run, resulting in another new GUID.
+    conflict.acceptOurs();
+    const localElement2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(localId);
+    chai.expect(localElement2.federationGuid).not.to.equal(guid);
+    chai.expect(localElement2.federationGuid).not.to.equal(localElement.federationGuid);
   });
 
   it("can present a conflict where a locally-updated row triggers a unique constraint violation", async () => {
