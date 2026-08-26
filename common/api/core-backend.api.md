@@ -64,6 +64,7 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
+import { DefinitionSetProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
 import { DisplayStyle3dSettings } from '@itwin/core-common';
 import { DisplayStyle3dSettingsProps } from '@itwin/core-common';
@@ -93,6 +94,7 @@ import { ElementLoadOptions } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
 import { EntityClass } from '@itwin/ecschema-metadata';
+import { EntityIdAndClassId } from '@itwin/core-common';
 import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
@@ -295,6 +297,7 @@ import { ThumbnailFormatProps } from '@itwin/core-common';
 import { ThumbnailProps } from '@itwin/core-common';
 import type { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
+import { TxnEntityMetadata } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
@@ -1992,7 +1995,18 @@ export interface CreateSheetViewDefinitionArgs {
 }
 
 // @beta
-export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number): boolean;
+export function createTerminatorGeometry(args: CreateTerminatorGeometryArgs): boolean;
+
+// @beta
+export interface CreateTerminatorGeometryArgs {
+    builder: ElementGeometry.Builder;
+    dir: Vector3d;
+    isArrow?: boolean;
+    params: GeometryParams;
+    point: Point3d;
+    textHeight: number;
+    textStyleSettings: TextStyleSettings;
+}
 
 // @beta
 export interface CustomHandledProperty {
@@ -2070,8 +2084,19 @@ export class DefinitionPartition extends InformationPartitionElement {
 
 // @public @preview
 export abstract class DefinitionSet extends DefinitionElement {
+    protected constructor(props: DefinitionSetProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): DefinitionSetProps;
+    // @beta
+    rank?: Rank;
+    // @beta
+    static serialize(props: DefinitionSetProps, iModel: IModelDb): ECSqlRow;
+    // (undocumented)
+    toJSON(): DefinitionSetProps;
 }
 
 // @beta
@@ -3746,7 +3771,8 @@ export abstract class GeometricElement2d extends GeometricElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): GeometricElement2dProps;
     // (undocumented)
-    placement: Placement2d;
+    get placement(): Placement2d;
+    set placement(value: Placement2d);
     // @beta
     static serialize(props: GeometricElement2dProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
@@ -3774,7 +3800,8 @@ export abstract class GeometricElement3d extends GeometricElement {
     // @beta
     static deserialize(props: DeserializeEntityArgs): GeometricElement3dProps;
     // (undocumented)
-    placement: Placement3d;
+    get placement(): Placement3d;
+    set placement(value: Placement3d);
     // @beta
     static serialize(props: GeometricElement3dProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
@@ -4097,7 +4124,7 @@ export abstract class IModelDb extends IModel {
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
-    // @internal
+    // @beta
     getIndirectTxn(): EditTxn;
     // @internal
     getInstanceArgs(instanceId?: Id64String, baseClassName?: string, federationGuid?: GuidString, code?: CodeProps): IModelJsNative.ResolveInstanceKeyArgs;
@@ -4116,6 +4143,8 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
+    // @internal (undocumented)
+    initializeSharedElementReservations(): Promise<void>;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
     // @beta
@@ -4180,6 +4209,10 @@ export abstract class IModelDb extends IModel {
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
     requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
+    // @beta
+    get reservations(): SynchronousChannel.Reservations;
+    // @internal (undocumented)
+    protected _reservations?: SynchronousChannel.Reservations;
     // @internal (undocumented)
     restartDefaultTxn(): void;
     // @internal (undocumented)
@@ -4270,6 +4303,8 @@ export namespace IModelDb {
         insertAspect(aspectProps: ElementAspectProps): Id64String;
         // @deprecated
         insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
+        // @beta
+        queryAspects(options: QueryAspectOptions): AsyncIterableIterator<ElementAspect>;
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
@@ -4339,6 +4374,8 @@ export namespace IModelDb {
     // @preview
     export class Views {
         // @internal
+        [_close](): void;
+        // @internal
         constructor(_iModel: IModelDb);
         // @beta (undocumented)
         accessViewStore(args: {
@@ -4357,7 +4394,7 @@ export namespace IModelDb {
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
         // @deprecated
         setDefaultViewId(viewId: Id64String): void;
-        // @beta (undocumented)
+        // @beta
         get viewStore(): ViewStore.CloudAccess;
         set viewStore(viewStore: ViewStore.CloudAccess);
     }
@@ -4713,6 +4750,8 @@ export interface InlineGeometryPartsResult {
 export interface InsertElementOptions {
     // @beta
     forceUseId?: boolean;
+    // @internal
+    skipReservationCheck?: boolean;
 }
 
 // @beta
@@ -5582,6 +5621,7 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
 
 // @beta
 export interface OnElementPropsArg extends OnElementArg {
+    options?: InsertElementOptions;
     props: ElementProps;
 }
 
@@ -5906,6 +5946,15 @@ export interface PushChangesArgs extends TokenArg {
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
     retainLocks?: true;
+}
+
+// @beta
+export interface QueryAspectOptions {
+    aspectClassFullName?: string;
+    elementIds: Id64Arg;
+    excludedAspectClassFullNames?: ReadonlySet<string>;
+    groupByOwner?: boolean;
+    usePrimaryConn?: boolean;
 }
 
 // @beta
@@ -6305,14 +6354,48 @@ export class Schemas {
 
 // @internal (undocumented)
 export namespace SchemaSync {
-    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb, ReadMethods, WriteMethods> {
         constructor(props: CloudSqlite.ContainerAccessProps);
         // (undocumented)
         getUri(): string;
         static initializeDb(props: CloudSqlite.ContainerProps): Promise<void>;
     }
+    export interface ProposedElementReservation {
+        // (undocumented)
+        readonly code: Code;
+        // (undocumented)
+        readonly ecClassId: Id64String;
+        // (undocumented)
+        readonly federationGuid: GuidString;
+        // (undocumented)
+        readonly isCategory?: boolean;
+    }
+    // (undocumented)
+    export interface ReadMethods {
+        findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
+    }
+    export interface ReservedElement extends ProposedElementReservation {
+        // (undocumented)
+        readonly elementId: Id64String;
+    }
+    export class SchemaSyncDb extends VersionedSqliteDb implements ReadMethods, WriteMethods {
+        // (undocumented)
+        protected createDDL(): void;
+        // (undocumented)
+        findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
+        // (undocumented)
+        readonly myVersion = "4.1.0";
+        // (undocumented)
+        openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
+        // (undocumented)
+        reserveElements(elements: ProposedElementReservation[]): Promise<void>;
+    }
     const // (undocumented)
     setTestCache: (iModel: IModelDb, cacheName?: string) => void;
+    const // (undocumented)
+    getCloudAccess: (arg: IModelDb | {
+        readonly fileName: LocalFileName;
+    }) => Promise<CloudAccess>;
     const // (undocumented)
     withLockedAccess: (iModel: IModelDb | {
         readonly fileName: LocalFileName;
@@ -6334,11 +6417,9 @@ export namespace SchemaSync {
         containerProps: CloudSqlite.ContainerProps;
         overrideContainer?: boolean;
     }) => Promise<void>;
-    export class SchemaSyncDb extends VersionedSqliteDb {
-        // (undocumented)
-        protected createDDL(): void;
-        // (undocumented)
-        readonly myVersion = "4.0.0";
+    // (undocumented)
+    export interface WriteMethods {
+        reserveElements(identities: ProposedElementReservation[]): Promise<void>;
     }
 }
 
@@ -7330,6 +7411,29 @@ export class SynchronizationConfigSpecifiesRootSources extends SynchronizationCo
     static get className(): string;
 }
 
+// @beta
+export namespace SynchronousChannel {
+    export interface Reservations {
+        // @internal
+        [_close]: () => void;
+        // @internal (undocumented)
+        readonly [_implementationProhibited]: unknown;
+        // @internal
+        [_onReservedElementInsert]: (arg: OnElementPropsArg) => void;
+        // @internal
+        readonly isServerBased: boolean;
+        needsElementReservation(federationGuid: GuidString): boolean;
+        reserveElements(args: ReserveElementsArgs): Promise<void>;
+    }
+    export interface ReserveElementsArgs {
+        elements: Iterable<{
+            federationGuid: GuidString;
+            classFullName: string;
+            code?: CodeProps;
+        }>;
+    }
+}
+
 // @beta (undocumented)
 export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota">;
 
@@ -7373,7 +7477,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.3";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
@@ -7614,6 +7718,21 @@ export interface TxnChangedEntities {
 }
 
 // @public @preview
+export interface TxnChangedEntitiesWithMetadata extends TxnChangedEntities {
+    readonly deletes: TxnChangedEntityIterable;
+    readonly inserts: TxnChangedEntityIterable;
+    readonly updates: TxnChangedEntityIterable;
+}
+
+// @public @preview
+export interface TxnChangedEntity extends EntityIdAndClassId {
+    readonly metadata: TxnEntityMetadata;
+}
+
+// @public @preview
+export type TxnChangedEntityIterable = Iterable<Readonly<TxnChangedEntity>>;
+
+// @public @preview
 export type TxnIdString = string;
 
 // @public @preview
@@ -7685,7 +7804,7 @@ export class TxnManager {
     protected _onCommitted(): void;
     // @internal (undocumented)
     protected _onDeletedDependency(props: RelationshipProps): void;
-    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
     // @internal
     protected _onEndValidate(): void;
     // @internal (undocumented)
@@ -7697,7 +7816,7 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
-    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -7800,7 +7919,6 @@ export class V2CheckpointManager {
         dbName: string;
         container: CloudSqlite.CloudContainer | undefined;
     }>;
-    // (undocumented)
     static cleanup(): void;
     // (undocumented)
     static readonly cloudCacheName = "Checkpoints";

@@ -21,15 +21,10 @@ import {
   Ruleset,
   RulesetVariable,
 } from "@itwin/presentation-common";
-
-/** @internal */
-export function parseFullClassName(fullClassName: string): [string, string] {
-  const [schemaName, className] = fullClassName.split(/[:\.]/);
-  return [schemaName, className];
-}
+import { parseFullClassName } from "@itwin/presentation-shared";
 
 function getECSqlName(fullClassName: string) {
-  const [schemaName, className] = parseFullClassName(fullClassName);
+  const { schemaName, className } = parseFullClassName(fullClassName);
   return `[${schemaName}].[${className}]`;
 }
 
@@ -158,7 +153,7 @@ function createElementIdsECExpressionFilter(batch: Array<{ from: Id64String; to:
 }
 
 function createClassContentRuleset(fullClassName: string): Ruleset {
-  const [schemaName, className] = parseFullClassName(fullClassName);
+  const { schemaName, className } = parseFullClassName(fullClassName);
   return {
     id: `content/class-descriptor/${fullClassName}`,
     rules: [
@@ -293,7 +288,7 @@ export async function getElementsCount(db: IModelDb, classNames: string[]) {
         Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`,
       );
     }
-    return `e.ECClassId IS (${classNames.join(",")})`;
+    return `e.ECClassId IS (${classNames.map(getECSqlName).join(",")})`;
   })();
   const query = `
     SELECT COUNT(e.ECInstanceId) AS elementCount

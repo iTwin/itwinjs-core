@@ -255,7 +255,7 @@ export namespace PropertyStore {
      * @note the current user must have administrator rights to create containers.
      */
     public static async createNewContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps> {
-      const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" } });
+      const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "propertystore" } });
       await this.initializeDb({ props });
       return props;
     }

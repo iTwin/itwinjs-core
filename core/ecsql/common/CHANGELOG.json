@@ -2,6 +2,48 @@
   "name": "@itwin/ecsql-common",
   "entries": [
     {
+      "version": "5.12.5",
+      "tag": "@itwin/ecsql-common_v5.12.5",
+      "date": "Tue, 25 Aug 2026 21:22:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.12.4",
+      "tag": "@itwin/ecsql-common_v5.12.4",
+      "date": "Tue, 18 Aug 2026 15:45:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.12.3",
+      "tag": "@itwin/ecsql-common_v5.12.3",
+      "date": "Mon, 17 Aug 2026 11:29:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.12.2",
+      "tag": "@itwin/ecsql-common_v5.12.2",
+      "date": "Mon, 10 Aug 2026 20:38:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.12.1",
+      "tag": "@itwin/ecsql-common_v5.12.1",
+      "date": "Mon, 10 Aug 2026 19:07:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.12.0",
+      "tag": "@itwin/ecsql-common_v5.12.0",
+      "date": "Mon, 03 Aug 2026 12:25:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.11.4",
+      "tag": "@itwin/ecsql-common_v5.11.4",
+      "date": "Tue, 25 Aug 2026 19:54:22 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.11.3",
       "tag": "@itwin/ecsql-common_v5.11.3",
       "date": "Wed, 15 Jul 2026 19:40:44 GMT",

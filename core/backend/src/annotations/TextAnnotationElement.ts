@@ -553,28 +553,45 @@ function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks:
 */
 // 1.0.1 - Added terminatorShapes for leaders
 // 1.0.2 - Changed margins to be fractions of text height instead of absolute values
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.2";
+// 1.0.3 - Added new leader style properties for targetPoint feature (showLeaders,showTerminators,showTargetPoint,targetPointShape,targetPointOffsetFactor)
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.3";
 
 function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>): TextStyleSettingsProps {
-  if (oldData.version === TEXT_STYLE_SETTINGS_JSON_VERSION) return oldData.data;
+  const data = oldData.data;
+  const version = oldData.version;
+  if (version === TEXT_STYLE_SETTINGS_JSON_VERSION) return data;
 
   // Migrate from 1.0.0 to 1.0.1
-  if (oldData.data.leader && !oldData.data.leader.terminatorShape) {
-    oldData.data.leader.terminatorShape = TextStyleSettings.defaultProps.leader.terminatorShape;
+  if (semver.lt(version, "1.0.1")) {
+    if (data.leader && !data.leader.terminatorShape) {
+      data.leader.terminatorShape = TextStyleSettings.defaultProps.leader.terminatorShape;
+    }
   }
   // Migrate from 1.0.1 to 1.0.2.
-  if (oldData.version === "1.0.1") {
+  if (semver.lt(version, "1.0.2")) {
     // In 1.0.2, margins are specified as a fraction of text height instead of absolute values.
-    const textHeight = oldData.data.textHeight ?? TextStyleSettings.defaultProps.textHeight;
-    const margins = oldData.data.margins ?? TextStyleSettings.defaultProps.margins;
-    oldData.data.margins = {
+    const textHeight = data.textHeight ?? TextStyleSettings.defaultProps.textHeight;
+    const margins = data.margins ?? TextStyleSettings.defaultProps.margins;
+    data.margins = {
       top: (margins.top ?? TextStyleSettings.defaultProps.margins.top) / textHeight,
       bottom: (margins.bottom ?? TextStyleSettings.defaultProps.margins.bottom) / textHeight,
       left: (margins.left ?? TextStyleSettings.defaultProps.margins.left) / textHeight,
       right: (margins.right ?? TextStyleSettings.defaultProps.margins.right) / textHeight,
     };
   }
-  return oldData.data;
+
+  // Migrate from 1.0.2 to 1.0.3.
+  if (semver.lt(version, "1.0.3")) {
+    if (data.leader) {
+      data.leader.showLeaders = data.leader?.showLeaders ?? TextStyleSettings.defaultProps.leader.showLeaders;
+      data.leader.showTerminators = data.leader?.showTerminators ?? TextStyleSettings.defaultProps.leader.showTerminators;
+      data.leader.showTargetPoint = data.leader?.showTargetPoint ?? TextStyleSettings.defaultProps.leader.showTargetPoint;
+      data.leader.targetPointShape = data.leader?.targetPointShape ?? TextStyleSettings.defaultProps.leader.targetPointShape;
+      data.leader.targetPointOffsetFactor = data.leader?.targetPointOffsetFactor ?? TextStyleSettings.defaultProps.leader.targetPointOffsetFactor;
+    }
+
+  }
+  return data;
 
 }
 
