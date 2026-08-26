@@ -134,6 +134,16 @@ class FieldSpecBucket implements FormattingSpecProvider {
    * [FormatSetFormatsProvider]($ecschema-metadata) applies before its lookup. A `string` entry
    * counts: it is a reference this set chose to define, even if resolving it ends up
    * delegating.
+   *
+   * This duplicates `FormatSetFormatsProvider.getFormat`'s normalization because that class
+   * exposes no "does this set define the key" query, and its own lookup cannot answer the
+   * question -- it consults the fallback provider and resolves string references, both of which
+   * would report `true` for keys that are not this set's own business. Should the two ever
+   * diverge, this bucket would skip warming a key its FormatSet does define and the field would
+   * silently resolve through the fallback bucket instead -- no throw, and nothing on
+   * [[FieldFormattingSpecProvider.misses]], because a spec still resolves. `FieldFormat.test.ts`
+   * "routes a colon-separated KindOfQuantity name to the FormatSet that defines it in
+   * dot-separated form" pins the agreement so CI catches that rather than a user.
    */
   private definesOwnFormat(name: string): boolean {
     if (!this._formatSet) {
