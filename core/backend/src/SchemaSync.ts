@@ -302,11 +302,6 @@ export namespace SchemaSync {
     user?: string;
   }
 
-  /** @note A schema import can commit its local adopt before releasing this lock uploads the container.
-   * Exception handling rolls that adopt back, but process termination cannot. After such a termination,
-   * recover under the exclusive schema lock by discarding the local import or rebuilding the sync db from
-   * that briefcase before its schema changes are pushed.
-   */
   export async function withLockedAccess(iModel: IModelOrFileName, args: WithLockedAccessArgs, operation: (access: CloudAccess) => Promise<void>): Promise<void> {
     const access = await SchemaSync.getCloudAccess(iModel);
     try {
@@ -502,9 +497,7 @@ export namespace SchemaSync {
       return super._initializeDb({ props, dbType: SchemaSyncDb, dbName: defaultDbName });
     }
 
-    /** Create and initialize a new BlobContainer to hold a `SchemaSyncDb`.
-     * @note the current user must have administrator rights to create containers.
-     */
+    /** Create and initialize a new `schema-sync` BlobContainer to hold a `SchemaSyncDb`. */
     public static async createNewContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps> {
       const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType } });
       await this.initializeDb(props);

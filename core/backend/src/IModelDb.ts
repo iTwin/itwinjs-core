@@ -1552,12 +1552,9 @@ export abstract class IModelDb extends IModel {
       if (this[_nativeDb].getITwinId() !== Guid.empty)
         await this.locks.acquireLocks({ shared: IModel.repositoryModelId });
 
-      // Adopting the sync db's rows commits as it goes - attaching and detaching the sync db both
-      // commit, and SQLite allows neither inside a transaction - so abandoning unsaved changes cannot
-      // undo it. Anything that fails after that point, and the container upload during lock release is
-      // the one to worry about, has to put the briefcase back. Left alone, the next pushChanges would
-      // publish ec_ rows carrying ids the sync db has no record of, and the sync db would hand those
-      // same ids to somebody else.
+      // The native import adopts rows from the attached SchemaSyncDb. Attach and detach commit
+      // implicitly, so abandoning changes cannot undo the adoption. A later failure must roll the
+      // briefcase back before those ec_ rows can be pushed.
       let txnBeforeAdopt: TxnIdString | undefined;
       // Set once the caller's own work is committed. Getting a token or the container write lock happens
       // before that, and abandonSchemaChanges discards every unsaved change rather than only this import's,
@@ -4484,9 +4481,9 @@ export class BriefcaseDb extends IModelDb {
     BriefcaseManager.deleteRebaseFolders(this);
   }
 
-  /** Import schemas that [[importSchemas]] refuses because they move or delete data.
+  /** Import schemas while allowing changes that move or delete data.
    *
-   * Takes the exclusive schema lock, pulls to the tip, imports, updates the sync db, and pushes before returning.
+   * Takes the exclusive schema lock, pulls to the tip, imports, updates the sync db, and pushes the result.
    * @note The briefcase must have no local changes.
    * @see [[BriefcaseDb.upgradeSchemas]] (static) for upgrading the software's profile and domain schemas.
    * @alpha
@@ -4569,7 +4566,7 @@ export class BriefcaseDb extends IModelDb {
         await this.restoreAfterFailedUpgrade(txnBeforeUpgrade);
       } catch (restoreErr) {
         // The push error is the one the caller can act on, so it is the one that gets thrown.
-        Logger.logError(loggerCategory, `Could not put the sync db back after a failed upgrade push: ${BentleyError.getErrorMessage(restoreErr)}. Retry the push - the sync db and this briefcase agree, the timeline does not.`);
+        Logger.logError(loggerCategory, `Could not put the sync db back after a failed upgrade push: ${BentleyError.getErrorMessage(restoreErr)}. The iModel timeline has no changeset for this upgrade; verify the local briefcase and sync db before retrying.`);
       }
       throw err;
     }
@@ -4587,7 +4584,7 @@ export class BriefcaseDb extends IModelDb {
     await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "restore schema sync db" }, async (syncAccess) => {
       const status = this[_nativeDb].cancelTo(txnBeforeUpgrade, true);
       if (IModelStatus.Success !== status) {
-        Logger.logError(loggerCategory, `An upgrade reached the sync db but not the timeline, and the briefcase could not be rolled back (${IModelStatus[status] ?? status}). Retry the push - the sync db and this briefcase agree, the timeline does not.`);
+        Logger.logError(loggerCategory, `An upgrade reached the sync db but not the timeline, and the briefcase could not be rolled back (${IModelStatus[status] ?? status}). Retry the push - the local briefcase and sync db are upgraded, but no changeset was pushed to the iModel timeline.`);
         return;
       }
 

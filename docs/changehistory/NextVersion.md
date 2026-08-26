@@ -7,6 +7,7 @@ publish: false
   - [@itwin/core-common](#itwincore-common)
     - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
     - [Class metadata in transaction change events](#class-metadata-in-transaction-change-events)
+    - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-backend](#itwincore-backend)
     - [Reserving elements for concurrent creation](#reserving-elements-for-concurrent-creation)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
@@ -14,8 +15,6 @@ publish: false
     - [Stream element aspects for multiple elements](#stream-element-aspects-for-multiple-elements)
     - [ECSQL `IS` / `IS NOT` operator now works between two operands](#ecsql-is--is-not-operator-now-works-between-two-operands)
     - [Schema sync rework](#schema-sync-rework)
-  - [@itwin/core-common](#itwincore-common-1)
-    - [Rank support for DefinitionSet](#rank-support-for-definitionset)
   - [@itwin/core-electron](#itwincore-electron)
     - [Late RPC responses are ignored during shutdown](#late-rpc-responses-are-ignored-during-shutdown)
   - [@itwin/core-frontend](#itwincore-frontend)
@@ -43,6 +42,10 @@ The shared [TxnEntityMetadata]($common) contract is now exported from `@itwin/co
 The frontend [BriefcaseTxns]($frontend) events continue to supply [TxnEntityChanges]($frontend), which has its own metadata and filtering API. The backend and frontend payloads describe the same transaction activity but are different types and should be documented and used separately.
 
 The existing `TxnEntityMetadata` export from `@itwin/core-frontend` is deprecated; import [TxnEntityMetadata]($common) from `@itwin/core-common` instead.
+
+### Rank support for DefinitionSet
+
+[BisCore:DefinitionSet]($docs/bis/domains/BisCore.ecschema.md) (the base class of [DefinitionContainer]($backend) and [DefinitionGroup]($backend)) has a `Rank` property, but the iTwin.js API had no counterpart for it - `Rank` was only exposed for [Category]($backend)/[SubCategory]($backend). The new `@beta` [DefinitionSetProps.rank]($common) property (and the corresponding [DefinitionSet.rank]($backend) member) close that gap, using the same [Rank]($common) enum already used by `CategoryProps.rank`. `rank` is persisted when inserting or updating a `DefinitionContainer` or `DefinitionGroup`, and is read back correctly through [IModelDb.Elements.getElementProps]($backend) and [DefinitionSet.toJSON]($backend).
 
 ## @itwin/core-backend
 
@@ -138,12 +141,6 @@ Schema sync lets the briefcases of one iModel import ECSchemas without taking th
 Updates no longer automatically end up in other users' briefcases when they import schemas. Instead, they only pick the references closure of what they import, so updates only hit when a briefcase pushes.
 
 A change that would move or destroy existing data is now refused with `BE_SQLITE_ERROR_DataTransformRequired` or the new `BE_SQLITE_ERROR_DataDeletionRequired`; the new `@alpha` `BriefcaseDb.upgradeSchemas` runs those under the exclusive schema lock and lands the changeset and the sync db together. iModels without schema sync are unaffected.
-
-## @itwin/core-common
-
-### Rank support for DefinitionSet
-
-[BisCore:DefinitionSet]($docs/bis/domains/BisCore.ecschema.md) (the base class of [DefinitionContainer]($backend) and [DefinitionGroup]($backend)) has a `Rank` property, but the iTwin.js API had no counterpart for it - `Rank` was only exposed for [Category]($backend)/[SubCategory]($backend). The new `@beta` [DefinitionSetProps.rank]($common) property (and the corresponding [DefinitionSet.rank]($backend) member) close that gap, using the same [Rank]($common) enum already used by `CategoryProps.rank`. `rank` is persisted when inserting or updating a `DefinitionContainer` or `DefinitionGroup`, and is read back correctly through [IModelDb.Elements.getElementProps]($backend) and [DefinitionSet.toJSON]($backend).
 
 ## @itwin/core-electron
 
