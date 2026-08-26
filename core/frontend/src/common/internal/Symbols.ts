@@ -19,7 +19,8 @@ export const _branch = Symbol.for(sym("branch"));
 /** @internal */
 export const _callIpcChannel = Symbol.for(sym("callIpcChannel"));
 export const _featureTable = Symbol.for(sym("featureTable"));
-export const _getModelClip = Symbol.for(sym("getModelClip"))
+export const _getModelClip = Symbol.for(sym("getModelClip"));
+export const _mapImagery = Symbol.for(sym("mapImagery"));
 export const _nodes = Symbol.for(sym("nodes"));
 export const _onScheduleScriptReferenceChanged = Symbol.for(sym("onScheduleScriptReferenceChanged"));
 export const _requestSnap = Symbol.for(sym("requestSnap"));

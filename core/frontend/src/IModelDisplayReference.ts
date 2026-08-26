@@ -7,10 +7,10 @@
  */
 
 import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
-import { _getModelClip, _implementationProhibited, _scheduleScriptReference } from "./common/internal/Symbols";
+import { _getModelClip, _implementationProhibited, _mapImagery, _scheduleScriptReference } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { TileTreeReference } from "./tile/internal";
-import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { ClipStyle, FeatureAppearance, HiddenLine, MapImagerySettings, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
@@ -46,6 +46,8 @@ export interface IModelDisplayReference {
 
   readonly [_scheduleScriptReference]: RenderSchedule.ScriptReference | undefined;
   // ###TODO get/set scheduleScript with changed event
+
+  readonly [_mapImagery]: MapImagerySettings;
 
   readonly overrides: IModelDisplayOverrides;
 
