@@ -70,6 +70,8 @@ const exampleSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
   <KindOfQuantity typeName="AREA_PROP" displayLabel="Area" persistenceUnit="u:SQ_M" relativeError="0.0001" presentationUnits="f:DefaultRealU(4)[u:SQ_M]"/>
   <KindOfQuantity typeName="SLOPE_PROP" displayLabel="Slope" persistenceUnit="u:M_PER_M" relativeError="0.0001" presentationUnits="f:DefaultRealU(4)[u:M_PER_M]"/>
 
+  <KindOfQuantity typeName="INT_LENGTH_PROP" displayLabel="Integer Length" persistenceUnit="u:MM" relativeError="0.0001" presentationUnits="f:DefaultRealU(4)[u:M]"/>
+
   <KindOfQuantity typeName="SCHEMA_LENGTH" displayLabel="Schema Length" persistenceUnit="u:M" relativeError="0.0001" presentationUnits="f:DefaultRealU(2)[u:M]"/>
   <KindOfQuantity typeName="SCHEMA_AREA" displayLabel="Schema Area" persistenceUnit="u:SQ_M" relativeError="0.0001" presentationUnits="f:DefaultRealU(2)[u:SQ_M]"/>
   <KindOfQuantity typeName="SCHEMA_ANGLE" displayLabel="Schema Angle" persistenceUnit="u:ARC_DEG" relativeError="0.0001" presentationUnits="f:DefaultRealU(2)[u:ARC_DEG]"/>
@@ -84,6 +86,8 @@ const exampleSchemaXml = `<?xml version="1.0" encoding="UTF-8"?>
     <ECProperty propertyName="angleProp" typeName="double"/>
     <ECProperty propertyName="ratioProp" typeName="double"/>
     <ECProperty propertyName="point" typeName="point3d"/>
+    <ECProperty propertyName="intLengthProp" typeName="int" kindOfQuantity="INT_LENGTH_PROP"/>
+    <ECProperty propertyName="intCountProp" typeName="int"/>
   </ECEntityClass>
 </ECSchema>
 `;
@@ -95,6 +99,8 @@ interface ExampleElementProps extends PhysicalElementProps {
   angleProp: number;
   ratioProp: number;
   point: XYAndZ;
+  intLengthProp: number;
+  intCountProp: number;
 }
 
 class ExampleElement extends PhysicalElement {
@@ -105,6 +111,8 @@ class ExampleElement extends PhysicalElement {
   declare public angleProp: number;
   declare public ratioProp: number;
   declare public point: XYAndZ;
+  declare public intLengthProp: number;
+  declare public intCountProp: number;
 }
 
 class FieldExampleSchema extends Schema {
@@ -150,6 +158,8 @@ describe("Field format resolution example", () => {
         angleProp: 90,            // deg  -> 1.5708 rad
         ratioProp: 0.9,           // one
         point: { x: 1, y: 2, z: 3 },
+        intLengthProp: 2500,      // mm, int-typed -> 2.5 m
+        intCountProp: 42,         // no KoQ; a count, not a measure
         placement: { origin: new Point3d(0, 0, 0), angles: new YawPitchRollAngles() },
       };
       elementId = txn.insertElement(props);
@@ -201,6 +211,32 @@ describe("Field format resolution example", () => {
     ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
     return provider;
   }
+
+  it("formats integer-valued properties as quantities, leaving those that resolve no format raw", async () => {
+    // Classifying a numeric property as "quantity" only decides whether the KoQ/units pipeline is
+    // consulted; it is not a claim that the value is a measure. A count that names no
+    // KindOfQuantity anywhere resolves no spec and falls back to the same bare `toString()` the
+    // "string" formatter would have produced, so the classification costs it nothing -- while
+    // leaving the field-level override hatch open for callers who do declare one.
+    //
+    // Persisted on the element: intLengthProp 2500 (mm, int), intCountProp 42 (no KoQ)
+    const block = TextBlock.create();
+    const measured = appendField(block, "intLengthProp");
+    const counted = appendField(block, "intCountProp");
+    const overridden = appendField(block, "intCountProp", { kindOfQuantity: "FieldExample.SCHEMA_LENGTH", persistenceUnit: "Units.M" });
+
+    await render(block);
+
+    // The property's own KoQ persists millimetres and presents metres: converted, not relabelled.
+    expect(measured.cachedContent).to.equal("2.5 m");
+
+    // Nothing names a KindOfQuantity, so no spec resolves and the count renders with no stray unit.
+    expect(counted.cachedContent).to.equal("42");
+
+    // Same property, but the field declares both halves of the override, which is the documented
+    // way to format a property that carries no KindOfQuantity of its own.
+    expect(overridden.cachedContent).to.equal("42.0 m");
+  });
 
   it("renders a field with no format options from the property's own KindOfQuantity, and raw where it has none", async () => {
     // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,

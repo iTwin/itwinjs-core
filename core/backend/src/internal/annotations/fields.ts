@@ -401,18 +401,21 @@ function determineFieldPropertyType(prop: Property): FieldPropertyType | undefin
       case PrimitiveType.DateTime:
         return "datetime";
       case PrimitiveType.Double:
-        return "quantity";
+      case PrimitiveType.Integer:
       case PrimitiveType.Long:
-        // Long properties represent quantities only when they carry a KindOfQuantity
-        // (many Longs are identifiers, not measures). Without one, format as a string.
-        return prop.kindOfQuantity ? "quantity" : "string";
+        // Any numeric property is a potential quantity. Classifying one as "quantity" is not an
+        // assertion that it *is* a measure -- it only decides whether the KoQ/units pipeline is
+        // consulted (see formatFieldValueWithProvider). A number that resolves no spec, because
+        // neither the property nor the field names a KindOfQuantity, falls back to the exact same
+        // `toString()` the "string" formatter would have produced. So counts and identifiers still
+        // render bare, while a caller that declares `formatOptions.quantity` on one keeps the
+        // documented override escape hatch that doubles already enjoy.
+        return "quantity";
       case PrimitiveType.Point2d:
       case PrimitiveType.Point3d:
         return "coordinate";
       case PrimitiveType.Binary:
         return prop.extendedTypeName === "BeGuid" ? "string" : undefined;
-      case PrimitiveType.Integer:
-        return "string";
       default:
         return undefined;
     }

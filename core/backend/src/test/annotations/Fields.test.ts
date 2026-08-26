@@ -475,7 +475,10 @@ describe("Field evaluation", () => {
 
     it("deduces type for primitive properties", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      expect(getPropertyType(propertyHost, "intProp")).to.equal("string");
+      // "quantity" here is a routing decision, not a claim that this count is a measure: intProp
+      // names no KindOfQuantity, so it resolves no format and still renders as a bare "100".
+      // Classifying it this way is what lets a field supply its own KindOfQuantity to format it.
+      expect(getPropertyType(propertyHost, "intProp")).to.equal("quantity");
       expect(getPropertyType(propertyHost, "point")).to.equal("coordinate");
       expect(getPropertyType(propertyHost, { propertyName: "strings", accessors: [0] })).to.equal("string");
       expect(getPropertyType(propertyHost, "intEnum")).to.equal("int-enum");
