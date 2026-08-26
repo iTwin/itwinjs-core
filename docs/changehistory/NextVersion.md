@@ -144,6 +144,8 @@ A property resolves to `"quantity"` if it is numeric (`double`, `int` or `long`)
 
 Formatting stays on the backend (text layout is a backend concern). Field evaluation itself is **synchronous**, because it has to run inside the `TxnManager` update callbacks that recompute cached content when a source element changes. Everything asynchronous — resolving formats, loading units, building [FormatterSpec]($core-quantity)s — happens once, up front, when an application adopts a [FormatSet]($ecschema-metadata) for an iModel.
 
+Because the formatting types are part of this API, `@itwin/core-quantity` is now a **peer dependency** of both `@itwin/core-common` and `@itwin/core-backend`. Applications that depend on either package but did not already list `@itwin/core-quantity` must add it, at the same version as the rest of their iTwin.js core packages.
+
 #### Configuring a FieldRun
 
 Field-level formatting is configured via a new [QuantityFieldFormatOptions]($common) block on [FieldFormatOptions]($common):
