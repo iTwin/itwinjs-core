@@ -5,7 +5,7 @@
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { commonSetup } from "./CommonBackendSetup";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/backend";
 import { setupIpcTestElectron } from "./ipc";
 
 async function init() {

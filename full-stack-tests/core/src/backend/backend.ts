@@ -13,7 +13,7 @@ import {
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, ChannelControlError, Code, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, GeometricModel2dProps, IModel, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/backend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";

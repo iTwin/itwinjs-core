@@ -5,7 +5,7 @@
 import * as path from "path";
 import { app } from "electron";
 import { assert, Id64String } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/core-electron/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/backend";
 import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";

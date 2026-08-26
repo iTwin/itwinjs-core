@@ -8,7 +8,7 @@ The __@itwin/core-electron__ package contains the electron utilities to write an
 
 ## Process-specific entry points
 
-Import the renderer API from `@itwin/core-electron/ElectronFrontend` and the main-process API from `@itwin/core-electron/ElectronBackend`. The renderer entry resolves to the ESM build for `import` and to CommonJS for `require`; its relative imports are explicit so Node ESM and browser bundlers can resolve it. The main-process entry remains CommonJS in both cases.
+Import the renderer API from `@itwin/core-electron/frontend` and the main-process API from `@itwin/core-electron/backend`. The renderer entry resolves to the ESM build for `import` and to CommonJS for `require`; its relative imports are explicit so Node ESM and browser bundlers can resolve it. The main-process entry remains CommonJS in both cases.
 
 ## Documentation
 

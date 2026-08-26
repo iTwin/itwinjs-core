@@ -150,18 +150,18 @@ Applications that shut down while requests are outstanding no longer need to fil
 Use the process-specific entry points when importing from `@itwin/core-electron`:
 
 ```ts
-import { ElectronApp } from "@itwin/core-electron/ElectronFrontend";
-import { ElectronHost } from "@itwin/core-electron/ElectronBackend";
+import { ElectronApp } from "@itwin/core-electron/frontend";
+import { ElectronHost } from "@itwin/core-electron/backend";
 ```
 
-For CommonJS applications, use the same entry-point names with `require`:
+For CommonJS applications, use the same entry-point paths with `require`:
 
 ```js
-const { ElectronApp } = require("@itwin/core-electron/ElectronFrontend");
-const { ElectronHost } = require("@itwin/core-electron/ElectronBackend");
+const { ElectronApp } = require("@itwin/core-electron/frontend");
+const { ElectronHost } = require("@itwin/core-electron/backend");
 ```
 
-`ElectronFrontend` resolves to the ESM build for `import` and to the CommonJS build for `require`. `ElectronBackend` resolves to the CommonJS build for both. The package now uses an exports map, so subpaths that are not listed are not supported; in particular, `lib/esm/*` paths and `ElectronPreload` are not public package entry points. The existing `@itwin/core-electron/lib/cjs/*` wildcard paths remain available in this release for compatibility with legacy consumers and will be removed in iTwin.js 6.0. New code should use the process-specific entry points. The Electron preload script remains an internal implementation detail configured by `ElectronHost`.
+`frontend` resolves to the ESM build for `import` and to the CommonJS build for `require`. `backend` resolves to the CommonJS build for both. The package now uses an exports map, so subpaths that are not listed are not supported; in particular, `lib/esm/*` paths and `ElectronPreload` are not public package entry points. The existing `@itwin/core-electron/lib/cjs/*` wildcard paths remain available in this release for compatibility with legacy consumers and will be removed in iTwin.js 6.0. New code should use the process-specific entry points. The Electron preload script remains an internal implementation detail configured by `ElectronHost`.
 
 ## @itwin/core-frontend
 

@@ -16,7 +16,7 @@ import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
 import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/internal/webgl";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/frontend";
 import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";

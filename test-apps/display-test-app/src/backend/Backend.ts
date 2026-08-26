@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Guid, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
-import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { appendTextAnnotationGeometry, BriefcaseDb, Drawing, ElementDrivesTextAnnotation, IModelDb, IModelHost, IModelHostOptions, IpcHost, layoutTextBlock, LocalhostIpcHost, RenderPriority, SnapshotDb, TextStyleResolver } from "@itwin/core-backend";
