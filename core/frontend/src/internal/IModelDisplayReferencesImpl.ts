@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { _implementationProhibited } from "../common/internal/Symbols";
+import { _backingView, _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { IModelDisplayReferences2d, LinkIModel2dArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { SpatialViewState } from "../SpatialViewState";
@@ -18,7 +18,7 @@ import { createPrimarySpatialIModelDisplayReference, createPrimaryIModelDisplayR
 abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewState, A extends LinkIModel2dArgs | LinkSpatialIModelArgs> {
   public readonly [_implementationProhibited] = undefined;
 
-  protected readonly _view: V;
+  public readonly [_backingView]: V;
 
   protected abstract createPrimaryRef(view: V): R;
   protected abstract createLinkedRef(args: A): R;
@@ -28,7 +28,7 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
   public readonly subcategories = new SubCategoriesCache.Queue();
 
   protected constructor(view: V) {
-    this._view = view;
+    this[_backingView] = view;
     this.primary = this.createPrimaryRef(view);
   }
 
@@ -54,12 +54,12 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
 }
 
 class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewState2d, LinkIModel2dArgs> implements IModelDisplayReferences2d {
-  protected override createPrimaryRef(view: ViewState2d): IModelDisplayReference2d {
-    return createPrimaryIModelDisplayReference2d(view, this)
+  protected override createPrimaryRef(): IModelDisplayReference2d {
+    return createPrimaryIModelDisplayReference2d(this)
   }
 
   protected override createLinkedRef(args: LinkIModel2dArgs): IModelDisplayReference2d {
-    return createLinkedIModelDisplayReference2d(this, args, this._view)
+    return createLinkedIModelDisplayReference2d(this, args)
   }
 
   public readonly is2d = true;
@@ -70,12 +70,12 @@ class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewSt
 }
 
 class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReference, SpatialViewState, LinkSpatialIModelArgs> implements SpatialIModelDisplayReferences {
-  protected override createPrimaryRef(view: SpatialViewState): SpatialIModelDisplayReference {
-    return createPrimarySpatialIModelDisplayReference(view, this);
+  protected override createPrimaryRef(): SpatialIModelDisplayReference {
+    return createPrimarySpatialIModelDisplayReference(this);
   }
 
   protected override createLinkedRef(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference {
-    return createLinkedSpatialIModelDisplayReference(this, args, this._view);
+    return createLinkedSpatialIModelDisplayReference(this, args);
   }
 
   public readonly isSpatial = true;

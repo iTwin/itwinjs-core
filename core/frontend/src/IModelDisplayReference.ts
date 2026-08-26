@@ -16,6 +16,7 @@ import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
 import { ModelDisplayTransformProvider } from "./ViewState";
 import { RenderClipVolume } from "./core-frontend";
+import { IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
 
 export interface IModelDisplayReference {
   readonly [_implementationProhibited]: unknown;
@@ -57,10 +58,14 @@ export interface IModelDisplayReference {
 }
 
 export interface IModelDisplayReference2d extends IModelDisplayReference {
+  readonly parent: IModelDisplayReferences2d;
+
   readonly viewedModel: Id64String;
 }
 
 export interface SpatialIModelDisplayReference extends IModelDisplayReference {
+  readonly parent: SpatialIModelDisplayReferences;
+
   readonly viewedModels: ObservableSet<Id64String>;
 
   readonly planarClipMasks: ObservableMap<Id64String, PlanarClipMaskSettings>;

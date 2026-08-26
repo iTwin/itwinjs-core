@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
-import { _getModelClip, _implementationProhibited, _scheduleScriptReference } from "../common/internal/Symbols";
+import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { _backingView, _getModelClip, _implementationProhibited, _scheduleScriptReference } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
@@ -15,7 +15,7 @@ import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { IModelDisplayReferences, IModelDisplayReferences2d, LinkIModel2dArgs, LinkIModelArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
-import { ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
+import { ModelDisplayTransformProvider } from "../ViewState";
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialViewState } from "../SpatialViewState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -29,12 +29,10 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   #resolvedViewFlags: ViewFlags;
   #modelDisplayTransformProvider?: ModelDisplayTransformProvider;
 
-  protected readonly _refs: IModelDisplayReferences;
   protected readonly _ovrs: IModelDisplayOverrides;
-  protected readonly _view: ViewState;
-
   protected readonly _subcategories = new SubCategoriesCache.Queue();
 
+  public abstract readonly parent: IModelDisplayReferences;
   public readonly iModel;
   public readonly viewedCategories = new ObservableSet<Id64String>();
 
@@ -56,18 +54,17 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
   public abstract readonly overrides: IModelDisplayOverrides;
 
-  protected constructor(args: LinkIModelArgs, refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides, view: ViewState) {
+  protected constructor(args: LinkIModelArgs, refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides) {
     this.iModel = args.iModel;
-    this._refs = refs;
     this._ovrs = ovrs;
-    this._view = view;
 
+    const view = refs[_backingView];
     this.#resolvedViewFlags = view.viewFlags.override(ovrs.viewFlags);
     this.#excludedElements = new Set<Id64String>(args.excludedElements ?? []);
 
     this.perModelCategoryVisibility = PerModelCategoryVisibility.Overrides.create({
       iModel: args.iModel,
-      queue: this._refs.subcategories,
+      queue: refs.subcategories,
     });
 
     this.viewedCategories.addAll(args.viewedCategories ?? []);
@@ -129,7 +126,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   }
 
   public get activeClipStyle() {
-    return this.overrides.clipStyle ?? this._view.displayStyle.settings.clipStyle;
+    return this.overrides.clipStyle ?? this.parent[_backingView].displayStyle.settings.clipStyle;
   }
 
   public get activeViewFlags() {
@@ -139,11 +136,13 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
 class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReference2d {
   public readonly viewedModel: Id64String;
+  public readonly parent: IModelDisplayReferences2d;
 
   public override get overrides() { return this._ovrs; }
 
-  public constructor(args: LinkIModel2dArgs, refs: IModelDisplayReferences2d, view: ViewState) {
-    super(args, refs, createIModelDisplayOverrides(args.overrides), view);
+  public constructor(args: LinkIModel2dArgs, refs: IModelDisplayReferences2d) {
+    super(args, refs, createIModelDisplayOverrides(args.overrides));
+    this.parent = refs;
     this.viewedModel = args.viewedModel;
   }
 }
@@ -153,9 +152,10 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   readonly #modelClips: Array<RenderClipVolume | undefined> = [];
 
   private get _spatialView() {
-    return this._view as SpatialViewState;
+    return this.parent[_backingView] as SpatialViewState;
   }
 
+  public readonly parent: SpatialIModelDisplayReferences;
   public readonly viewedModels = new ObservableSet<Id64String>();
   public readonly planarClipMasks = new ObservableMap<Id64String, PlanarClipMaskSettings>();
   public readonly realityModelDisplaySettings = new ObservableMap<Id64String, RealityModelDisplaySettings>();
@@ -168,15 +168,16 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     return this._ovrs as SpatialIModelDisplayOverrides;
   }
 
-  public constructor(args: LinkSpatialIModelArgs, refs: SpatialIModelDisplayReferences, view: SpatialViewState) {
-    super(args, refs, createSpatialIModelDisplayOverrides(args.overrides), view);
+  public constructor(args: LinkSpatialIModelArgs, refs: SpatialIModelDisplayReferences) {
+    super(args, refs, createSpatialIModelDisplayOverrides(args.overrides));
+    this.parent = refs;
     this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
 
     this.viewedModels.addAll(args.viewedModels ?? []);
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
 
-    view.displayStyle.settings.onHiddenLineSettingsChanged.addListener(() => {
+    refs[_backingView].displayStyle.settings.onHiddenLineSettingsChanged.addListener(() => {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
 
@@ -212,10 +213,10 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   }
 }
 
-export function createLinkedIModelDisplayReference2d(refs: IModelDisplayReferences2d, args: LinkIModel2dArgs, view: ViewState2d): IModelDisplayReference2d {
-  return new LinkedIModelRef2d(args, refs, view);
+export function createLinkedIModelDisplayReference2d(refs: IModelDisplayReferences2d, args: LinkIModel2dArgs): IModelDisplayReference2d {
+  return new LinkedIModelRef2d(args, refs);
 }
 
-export function createLinkedSpatialIModelDisplayReference(refs: SpatialIModelDisplayReferences, args: LinkSpatialIModelArgs, view: SpatialViewState): SpatialIModelDisplayReference {
-  return new LinkedSpatialIModelRef(args, refs, view);
+export function createLinkedSpatialIModelDisplayReference(refs: SpatialIModelDisplayReferences, args: LinkSpatialIModelArgs): SpatialIModelDisplayReference {
+  return new LinkedSpatialIModelRef(args, refs);
 }

@@ -7,12 +7,14 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { _implementationProhibited } from "./common/internal/Symbols";
+import { _backingView, _implementationProhibited } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { ModelClipGroups } from "@itwin/core-common";
 import { IModelDisplayOverridesProps, SpatialIModelDisplayOverridesProps } from "./IModelDisplayOverrides";
+import { ViewState2d } from "./ViewState";
+import { SpatialViewState } from "./SpatialViewState";
 
 export interface LinkIModelArgs {
   iModel: IModelConnection;
@@ -35,6 +37,8 @@ export interface LinkSpatialIModelArgs extends LinkIModelArgs {
 export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReference2d> {
   readonly [_implementationProhibited]: unknown;
 
+  readonly [_backingView]: ViewState2d;
+
   readonly is2d: true;
   readonly isSpatial?: never;
 
@@ -48,6 +52,8 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
 
 export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDisplayReference> {
   readonly [_implementationProhibited]: unknown;
+
+  readonly [_backingView]: SpatialViewState;
 
   readonly isSpatial: true;
   readonly is2d?: never;

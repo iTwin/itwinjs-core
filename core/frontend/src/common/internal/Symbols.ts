@@ -14,6 +14,7 @@ function sym(name: string): string {
 }
 
 export const _accumulator = Symbol.for(sym("accumulator"));
+export const _backingView = Symbol.for(sym("backingView"));
 export const _batch = Symbol.for(sym("batch"));
 export const _branch = Symbol.for(sym("branch"));
 /** @internal */
