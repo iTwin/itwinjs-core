@@ -462,7 +462,6 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   protected _changeFlags = new MutableChangeFlags();
   private _selectionSetDirty = true;
-  private readonly _perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   private _tileSizeModifier?: number;
 
   /** @internal */
@@ -1170,7 +1169,6 @@ export abstract class Viewport implements Disposable, TileUser {
     this._target = target;
     target.assignFrameStatsCollector(this._frameStatsCollector);
     this._viewportId = TileUser.generateId();
-    this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
     IModelApp.tileAdmin.registerUser(this);
   }
 
@@ -1546,14 +1544,16 @@ export abstract class Viewport implements Disposable, TileUser {
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
   /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
-  public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
+  public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides {
+    return this.view.iModelRefs.primary.perModelCategoryVisibility;
+  }
 
   /** Adds visibility overrides for any subcategories whose visibility differs from that defined by the view's
    * category selector in the context of specific models.
    * @internal
    */
   public addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
-    this._perModelCategoryVisibility.addOverrides(fs, ovrs);
+    this.perModelCategoryVisibility.addOverrides(fs, ovrs);
   }
 
   /** Add a [[FeatureOverrideProvider]] to customize the appearance of [[Feature]]s within the viewport.
