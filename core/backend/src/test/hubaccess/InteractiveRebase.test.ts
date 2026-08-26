@@ -509,12 +509,12 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.ours!.federationGuid).not.to.be.undefined;
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
-    chai.expect(conflict.ours!.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
+    chai.expect(conflict.ours!.federationGuid).to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.federationGuid);
 
     // By default, the conflicting element is assigned a new federationGuid to resolve the conflict.
     const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(localId);
     chai.expect(localElement.federationGuid).not.to.equal(guid);
-    chai.expect(localElement.federationGuid).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
+    chai.expect(localElement.federationGuid).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.federationGuid);
     chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.property).to.equal("federationGuid");
     chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal(localElement.federationGuid);
 
@@ -528,7 +528,7 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
-    chai.expect(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid).to.equal(conflict.ours!.federationGuid);
+    chai.expect(conflict.uniqueConstraintViolations[0].conflictingInstance.federationGuid).to.equal(conflict.ours!.federationGuid);
     chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal(localElement2.federationGuid);
 
     // Accepting "theirs" will delete our new element
@@ -587,12 +587,12 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
-    chai.expect(conflict.original?.code.scope).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.scope);
-    chai.expect(conflict.original?.code.spec).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec);
-    chai.expect(conflict.original?.code.value).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
-    chai.expect(conflict.ours!.code.scope).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.scope);
-    chai.expect(conflict.ours!.code.spec).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec);
-    chai.expect(conflict.ours!.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
+    chai.expect(conflict.original?.code.scope).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.scope);
+    chai.expect(conflict.original?.code.spec).not.to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.spec);
+    chai.expect(conflict.original?.code.value).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.value);
+    chai.expect(conflict.ours!.code.scope).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.scope);
+    chai.expect(conflict.ours!.code.spec).to.deep.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.spec);
+    chai.expect(conflict.ours!.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.value);
 
     const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(localElement.code.value).to.equal("SomeValue (Conflict)");
@@ -708,12 +708,12 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
 
     // The conflicting row should include the changed codeValue property
-    chai.expect(conflict.original?.code.value).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
-    chai.expect(conflict.ours!.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.code.value);
+    chai.expect(conflict.original?.code.value).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.value);
+    chai.expect(conflict.ours!.code.value).to.equal(conflict.uniqueConstraintViolations[0].conflictingInstance.code.value);
 
     // And it should also contain the unchanged codeSpec and codeScope properties, which are part of the unique constraint.
-    chai.expect(conflict.uniqueConstraintViolations[0].conflictingRow.code.spec).to.equal(IModel.dictionaryId);
-    chai.expect(conflict.uniqueConstraintViolations[0].conflictingRow.code.scope).to.equal(IModel.dictionaryId);
+    chai.expect(conflict.uniqueConstraintViolations[0].conflictingInstance.code.spec).to.equal(IModel.dictionaryId);
+    chai.expect(conflict.uniqueConstraintViolations[0].conflictingInstance.code.scope).to.equal(IModel.dictionaryId);
   });
 
   it("reports a UNIQUE constraint conflict triggered by applying a conflicting data change", async () => {

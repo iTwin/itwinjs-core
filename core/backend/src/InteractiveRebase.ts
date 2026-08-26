@@ -158,7 +158,7 @@ export interface RebaseConflictProperties {
 export interface UniqueConstraintViolation {
   /**
    * The properties that are part of the UNIQUE constraint that is violated, as access strings into
-   * {@link conflictingRow}, e.g. `code.value`.
+   * {@link conflictingInstance}, e.g. `code.value`.
    */
   uniqueConstraintProperties: string[];
 
@@ -166,7 +166,7 @@ export interface UniqueConstraintViolation {
    * The instance that is causing the UNIQUE constraint violation. This is the instance that was
    * inserted or updated by the incoming (their) changes, which conflicts with the local (our) changes.
    */
-  conflictingRow: RebaseConflictProperties;
+  conflictingInstance: RebaseConflictProperties;
 
   /**
    * The substitution that was automatically applied to one of the {@link uniqueConstraintProperties} so that
@@ -175,7 +175,7 @@ export interface UniqueConstraintViolation {
    * This is `undefined` if no substitution could be found, in which case our change was not applied at all.
    */
   appliedFix?: {
-    /** The property whose value was substituted, as an access string into {@link conflictingRow}, e.g. `code.value`. */
+    /** The property whose value was substituted, as an access string into {@link conflictingInstance}, e.g. `code.value`. */
     property: string;
     /** The value assigned to {@link property} in place of the value that collided. */
     value: string;
@@ -189,7 +189,7 @@ export interface UniqueConstraintViolation {
 interface UniqueConstraintConflictDetail {
   kind: "UniqueConstraint";
   uniqueConstraintProperties: string[];
-  conflictingRow?: RebaseConflictProperties;
+  conflictingInstance?: RebaseConflictProperties;
 }
 
 /** The result of [[InteractiveRebase.fixUniqueConstraintViolation]]: the properties to write, plus which property
@@ -1096,14 +1096,14 @@ class RebaseConflictImpl implements RebaseConflict {
       other.uniqueConstraintProperties.length === uniqueConstraintProperties.length &&
       other.uniqueConstraintProperties.every((prop, i) => prop === uniqueConstraintProperties[i]));
 
-    const conflictingRow = classDef.deserialize({ row: detail?.conflictingRow ?? {}, iModel: this._rebase.iModel });
+    const conflictingInstance = classDef.deserialize({ row: detail?.conflictingInstance ?? {}, iModel: this._rebase.iModel });
     if (existing !== undefined) {
-      existing.conflictingRow = conflictingRow;
+      existing.conflictingInstance = conflictingInstance;
       existing.appliedFix = undefined;
       return existing;
     }
 
-    const violation: UniqueConstraintViolation = { uniqueConstraintProperties, conflictingRow };
+    const violation: UniqueConstraintViolation = { uniqueConstraintProperties, conflictingInstance: conflictingInstance };
     this.uniqueConstraintViolations.push(violation);
     return violation;
   }

@@ -16,7 +16,7 @@ export interface ConflictEcRow {
 }
 export interface UniqueConstraintViolation {
   uniqueConstraintProperties: string[];
-  conflictingRow: ConflictEcRow;
+  conflictingInstance: ConflictEcRow;
 }
 
 export interface ConflictEcChange {
