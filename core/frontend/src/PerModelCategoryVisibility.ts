@@ -91,7 +91,7 @@ export namespace PerModelCategoryVisibility {
   export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides {
     const pmcv = new PerModelCategoryVisibilityOverrides({
       iModel: viewport.iModel,
-      queue: viewport.subcategories,
+      queue: viewport.view.iModelRefs.subcategories,
     });
     pmcv.onChanged.addListener(() => viewport.setViewedCategoriesPerModelChanged());
     return pmcv;

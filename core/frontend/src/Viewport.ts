@@ -48,7 +48,6 @@ import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./internal/render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
-import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
@@ -464,9 +463,6 @@ export abstract class Viewport implements Disposable, TileUser {
   private _selectionSetDirty = true;
   private _tileSizeModifier?: number;
 
-  /** @internal */
-  public readonly subcategories = new SubCategoriesCache.Queue();
-
   /** Time the current flash started. */
   private _flashUpdateTime?: BeTimePoint;
   /** Current flash intensity from [0..this.flashSettings.maxIntensity] */
@@ -806,7 +802,7 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean | undefined): void {
-    this.subcategories.push(this.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
+    this.view.iModelRefs.subcategories.push(this.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
       if (true === enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
 
@@ -1177,7 +1173,7 @@ export abstract class Viewport implements Disposable, TileUser {
       return;
 
     this._target = dispose(this._target);
-    this.subcategories[Symbol.dispose]();
+    // ###TODO? this.subcategories[Symbol.dispose]();
     IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
     this.detachFromView();
