@@ -515,6 +515,8 @@ describe("InteractiveRebase", () => {
     const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(localId);
     chai.expect(localElement.federationGuid).not.to.equal(guid);
     chai.expect(localElement.federationGuid).not.to.equal(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid);
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.property).to.equal("federationGuid");
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal(localElement.federationGuid);
 
     // Accepting "ours" will cause the conflict resolution to re-run, resulting in another new GUID.
     conflict.acceptOurs();
@@ -522,16 +524,18 @@ describe("InteractiveRebase", () => {
     chai.expect(localElement2.federationGuid).not.to.equal(guid);
     chai.expect(localElement2.federationGuid).not.to.equal(localElement.federationGuid);
 
-    // A new unique constraint violation record should be added.
-    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(2);
-    chai.expect(conflict.uniqueConstraintViolations[1].uniqueConstraintProperties.length).to.equal(1);
-    chai.expect(conflict.uniqueConstraintViolations[1].uniqueConstraintProperties).to.include("federationGuid");
-    chai.expect(conflict.uniqueConstraintViolations[1].conflictingRow.federationGuid).to.equal(conflict.ours!.federationGuid);
+    // The same constraint was violated again, so the existing record is refreshed rather than duplicated.
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("federationGuid");
+    chai.expect(conflict.uniqueConstraintViolations[0].conflictingRow.federationGuid).to.equal(conflict.ours!.federationGuid);
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal(localElement2.federationGuid);
 
     // Accepting "theirs" will delete our new element
     conflict.acceptTheirs();
     const localElement3 = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(localId);
     chai.expect(localElement3).to.be.undefined;
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
   });
 
   it("can present a conflict where a locally-updated row triggers a unique constraint violation", async () => {
@@ -592,6 +596,27 @@ describe("InteractiveRebase", () => {
 
     const localElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(localElement.code.value).to.equal("SomeValue (Conflict)");
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.property).to.equal("code.value");
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal("SomeValue (Conflict)");
+
+    // Accepting a property that the automatic fix did not touch leaves the fix - and its record - in place.
+    conflict.acceptOurs(["userLabel"]);
+    chai.expect(briefcase2.elements.getElementProps(id).code.value).to.equal("SomeValue (Conflict)");
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.value).to.equal("SomeValue (Conflict)");
+
+    // Accepting the fixed-up property itself supersedes the record, which the re-triggered violation replaces.
+    conflict.acceptOurs(["code.value"]);
+    chai.expect(briefcase2.elements.getElementProps(id).code.value).to.equal("SomeValue (Conflict)");
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].appliedFix?.property).to.equal("code.value");
+
+    // "They" never touched this element, so accepting theirs reverts our change rather than deleting it.
+    conflict.acceptTheirs();
+    const theirsElement = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(theirsElement.code.value).to.equal(conflict.original!.code.value);
+    chai.expect(theirsElement.userLabel).to.be.undefined;
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
   });
 
   it("can present a conflict where a partial update of a code triggers a unique constraint violation", async () => {

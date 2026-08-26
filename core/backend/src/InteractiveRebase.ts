@@ -63,7 +63,8 @@ export interface RebaseConflict {
    * This is the state of the instance in the database just before applying our local changes.
    *
    * This property will be undefined if the instance does not exist prior to our changes, either
-   * because it was deleted or because it never existed.
+   * because it was deleted or because it never existed. In both cases {@link acceptTheirs} deletes
+   * the instance, since "their" version of it is that it does not exist.
    */
   theirs: RebaseConflictProperties | undefined;
 
@@ -116,7 +117,13 @@ export interface RebaseConflict {
   differentProperties: string[];
 
   /**
-   * The UNIQUE constraints that are violated after our change.
+   * The UNIQUE constraints that our change violated, along with the substitution that was automatically applied
+   * to each so that our change could be applied anyway.
+   *
+   * This describes the instance's current state rather than a history: calling {@link acceptOurs} or
+   * {@link acceptTheirs} discards the entries whose substituted property the resolution overwrites, and records
+   * whatever violations the resolution provokes in their place. Entries obtained before such a call must not be
+   * held onto across it.
    */
   uniqueConstraintViolations: UniqueConstraintViolation[];
 
@@ -160,6 +167,19 @@ export interface UniqueConstraintViolation {
    * inserted or updated by the incoming (their) changes, which conflicts with the local (our) changes.
    */
   conflictingRow: RebaseConflictProperties;
+
+  /**
+   * The substitution that was automatically applied to one of the {@link uniqueConstraintProperties} so that
+   * our change could be applied without violating the constraint.
+   *
+   * This is `undefined` if no substitution could be found, in which case our change was not applied at all.
+   */
+  appliedFix?: {
+    /** The property whose value was substituted, as an access string into {@link conflictingRow}, e.g. `code.value`. */
+    property: string;
+    /** The value assigned to {@link property} in place of the value that collided. */
+    value: string;
+  };
 }
 
 /** The `conflictDetail` that native attaches to the error thrown by `insertInstance`/`updateInstance` when the
@@ -170,6 +190,15 @@ interface UniqueConstraintConflictDetail {
   kind: "UniqueConstraint";
   uniqueConstraintProperties: string[];
   conflictingRow?: RebaseConflictProperties;
+}
+
+/** The result of [[InteractiveRebase.fixUniqueConstraintViolation]]: the properties to write, plus which property
+ * it substituted and the value it chose. `property` is an ECSql instance access string, not a props access string.
+ */
+interface UniqueConstraintFix {
+  props: RebaseConflictProperties;
+  property: string;
+  value: string;
 }
 
 export interface TxnRebaseGroup {
@@ -550,19 +579,26 @@ export class InteractiveRebase {
       } else {
         // Some other UNIQUE index (not the primary key) was violated.
         const conflictDetail = err.conflictDetail as UniqueConstraintConflictDetail | undefined;
-        RebaseConflictImpl.recordUniqueConstraint(this, this._conflicts, oldProps, newProps!, conflictDetail);
+        // The write failed, so the row as it currently stands is still "their" version of it. For an insert
+        // there is no such row - they have no version of this instance at all - so `theirs` stays undefined.
+        const theirRow = isInsert ? undefined : this.tryReadCurrentInstance(id, classFullName);
+        const violation = RebaseConflictImpl.recordUniqueConstraint(this, this._conflicts, oldProps, newProps!, theirRow, conflictDetail);
 
         // Fix this UNIQUE constraint violation by changing the value of one of the properties involved in the constraint until we
         // find a value that doesn't collide.
-        const fixedProps = this.fixUniqueConstraintViolation(newProps!, conflictDetail?.uniqueConstraintProperties, oldProps?.id);
+        const fix = this.fixUniqueConstraintViolation(newProps!, conflictDetail?.uniqueConstraintProperties, oldProps?.id);
 
         // Apply the updated row, which may trigger further conflicts (e.g. UNIQUE constraint violations).
-        if (fixedProps !== undefined) {
-          this.applyOrRecordConstraintConflict(id, classFullName, oldProps, fixedProps, () => {
+        if (fix !== undefined) {
+          violation.appliedFix = {
+            property: this._db.getJsClass<typeof Element>(classFullName).toPropsAccessString(fix.property),
+            value: fix.value,
+          };
+          this.applyOrRecordConstraintConflict(id, classFullName, oldProps, fix.props, () => {
             if (oldProps === undefined) {
-              this._db[_nativeDb].insertInstance(fixedProps, { forceUseId: true, useJsNames: true });
+              this._db[_nativeDb].insertInstance(fix.props, { forceUseId: true, useJsNames: true });
             } else {
-              this._db[_nativeDb].updateInstance(fixedProps, { useJsNames: true });
+              this._db[_nativeDb].updateInstance(fix.props, { useJsNames: true });
             }
           });
         }
@@ -571,7 +607,11 @@ export class InteractiveRebase {
     }
   }
 
-  private fixUniqueConstraintViolation(props: RebaseConflictProperties, uniqueConstraintProperties: string[] | undefined, excludeId?: Id64String): RebaseConflictProperties | undefined {
+  /** Finds a value for one of `uniqueConstraintProperties` that doesn't collide with any existing row, returning
+   * `props` with that substitution applied plus a description of the substitution itself (in ECSql instance
+   * access strings, as `uniqueConstraintProperties` are). Returns `undefined` if no such value could be found.
+   */
+  private fixUniqueConstraintViolation(props: RebaseConflictProperties, uniqueConstraintProperties: string[] | undefined, excludeId?: Id64String): UniqueConstraintFix | undefined {
     if (uniqueConstraintProperties === undefined || uniqueConstraintProperties.length === 0)
       return undefined;
 
@@ -620,7 +660,7 @@ export class InteractiveRebase {
       setPropertyValue(fixedProps, accessString, replacement);
       const hasConflict = this.hasUniqueConstraintConflict(fixedProps, uniqueConstraintProperties, excludeId);
       if (!hasConflict)
-        return fixedProps;
+        return { props: fixedProps, property: accessString, value: replacement };
     }
 
     return undefined;
@@ -698,15 +738,18 @@ export class InteractiveRebase {
    * that `props` fully replaces the instance rather than incrementally updating it.
    * @internal
    */
-  public applyConflictResolution(conflict: RebaseConflict, props: RebaseConflictProperties | undefined, fullReplace: boolean = false): void {
+  public applyConflictResolution(conflict: RebaseConflict, props: RebaseConflictProperties | undefined, fullReplace: boolean = false, properties?: string[]): void {
+    const conflictImpl = conflict as RebaseConflictImpl;
     if (props === undefined) {
       const key = { id: conflict.id, classFullName: conflict.classFullName };
       this._db[_nativeDb].deleteInstance(key, { useJsNames: true });
+      conflictImpl.clearSupersededUniqueConstraintViolations(undefined);
       this._db.clearCaches();
       return;
     }
 
-    this.writeConflictResolution(conflict as RebaseConflictImpl, props, fullReplace, 0);
+    conflictImpl.clearSupersededUniqueConstraintViolations(properties);
+    this.writeConflictResolution(conflictImpl, props, fullReplace, 0);
 
     // TODO: too heavy-handed?
     this._db.clearCaches();
@@ -734,13 +777,17 @@ export class InteractiveRebase {
         throw err;
 
       const conflictDetail = err.conflictDetail as UniqueConstraintConflictDetail | undefined;
-      conflict.addUniqueConstraintViolation(conflictDetail);
+      const violation = conflict.upsertUniqueConstraintViolation(conflictDetail);
 
-      const fixedProps = this.fixUniqueConstraintViolation(props, conflictDetail?.uniqueConstraintProperties, conflict.id);
-      if (fixedProps === undefined)
+      const fix = this.fixUniqueConstraintViolation(props, conflictDetail?.uniqueConstraintProperties, conflict.id);
+      if (fix === undefined)
         throw err;
 
-      this.writeConflictResolution(conflict, fixedProps, fullReplace, attempt + 1);
+      violation.appliedFix = {
+        property: this._db.getJsClass<typeof Element>(conflict.classFullName).toPropsAccessString(fix.property),
+        value: fix.value,
+      };
+      this.writeConflictResolution(conflict, fix.props, fullReplace, attempt + 1);
     }
   }
 
@@ -931,7 +978,7 @@ function applyResolution(
     }
   }
 
-  rebase.applyConflictResolution(conflict, updateProps, fullReplace);
+  rebase.applyConflictResolution(conflict, updateProps, fullReplace, properties);
 }
 
 /** Implements {@link RebaseConflict} and provides the `record*` helpers used to build up a conflict for a
@@ -1014,7 +1061,7 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   /** Our change (insert or update) violated a UNIQUE constraint against some other, unrelated instance. */
-  public static recordUniqueConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, detail?: UniqueConstraintConflictDetail): void {
+  public static recordUniqueConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, theirs: RebaseConflictProperties | undefined, detail?: UniqueConstraintConflictDetail): UniqueConstraintViolation {
     const instanceId = ours.id ?? original?.id;
     const classFullName = ours.classFullName ?? original?.classFullName;
     const conflict = this.getOrCreate(rebase, conflicts, instanceId, classFullName);
@@ -1024,48 +1071,56 @@ class RebaseConflictImpl implements RebaseConflict {
     if (original !== undefined) {
       conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
     }
+    if (theirs !== undefined && conflict.theirs === undefined) {
+      conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
+    }
     conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
 
-    if (detail === undefined) {
-      // Native could not map the violated index back to EC properties. Still surface the conflict.
-      if (conflict.uniqueConstraintViolations.length === 0) {
-        conflict.addUniqueConstraintViolation(undefined);
-      }
-      return;
-    }
-
-    const uniqueConstraintProperties: string[] = [];
-    addPropsAccessStrings(uniqueConstraintProperties, classDef, detail.uniqueConstraintProperties);
-
-    const isSameIndex = (other: UniqueConstraintViolation) =>
-      other.uniqueConstraintProperties.length === uniqueConstraintProperties.length &&
-      other.uniqueConstraintProperties.every((prop, i) => prop === uniqueConstraintProperties[i]);
-    if (!conflict.uniqueConstraintViolations.some(isSameIndex)) {
-      conflict.addUniqueConstraintViolation(detail);
-    }
+    return conflict.upsertUniqueConstraintViolation(detail);
   }
 
-  /** Appends a UNIQUE constraint violation, without the de-duplication that [[recordUniqueConstraint]] applies:
-   * re-applying a resolution can legitimately re-violate a constraint that was already reported and fixed.
+  /** Returns the entry describing `detail`'s constraint, creating it if this is the first time that constraint has
+   * been violated for this instance. Re-violating an already-recorded constraint refreshes the existing entry
+   * rather than appending, since {@link uniqueConstraintViolations} describes the instance's current state.
    */
-  public addUniqueConstraintViolation(detail: UniqueConstraintConflictDetail | undefined): void {
-    if (detail === undefined) {
-      // Native could not map the violated index back to EC properties. Still surface the conflict.
-      this.uniqueConstraintViolations.push({ uniqueConstraintProperties: [], conflictingRow: {} });
-      return;
+  public upsertUniqueConstraintViolation(detail: UniqueConstraintConflictDetail | undefined): UniqueConstraintViolation {
+    const classDef = this._rebase.iModel.getJsClass<typeof Element>(this.classFullName);
+
+    const uniqueConstraintProperties: string[] = [];
+    if (detail !== undefined) {
+      addPropsAccessStrings(uniqueConstraintProperties, classDef, detail.uniqueConstraintProperties);
+    }
+    // An empty list means native could not map the violated index back to EC properties. Surface the conflict anyway.
+
+    const existing = this.uniqueConstraintViolations.find((other) =>
+      other.uniqueConstraintProperties.length === uniqueConstraintProperties.length &&
+      other.uniqueConstraintProperties.every((prop, i) => prop === uniqueConstraintProperties[i]));
+
+    const conflictingRow = classDef.deserialize({ row: detail?.conflictingRow ?? {}, iModel: this._rebase.iModel });
+    if (existing !== undefined) {
+      existing.conflictingRow = conflictingRow;
+      existing.appliedFix = undefined;
+      return existing;
     }
 
-    const classDef = this._rebase.iModel.getJsClass<typeof Element>(this.classFullName);
-    const uniqueConstraintProperties: string[] = [];
-    addPropsAccessStrings(uniqueConstraintProperties, classDef, detail.uniqueConstraintProperties);
+    const violation: UniqueConstraintViolation = { uniqueConstraintProperties, conflictingRow };
+    this.uniqueConstraintViolations.push(violation);
+    return violation;
+  }
 
-    this.uniqueConstraintViolations.push({
-      uniqueConstraintProperties,
-      conflictingRow: classDef.deserialize({
-        row: detail.conflictingRow ?? {},
-        iModel: this._rebase.iModel
-      }),
-    });
+  /** Discards the violations that `properties` (all of them, when it is undefined or empty) is about to overwrite,
+   * so that {@link uniqueConstraintViolations} keeps describing the substitutions currently in effect. A violation
+   * whose substituted property is left untouched still holds, and one that was never fixed describes a write that
+   * was abandoned, so it is dropped and re-reported if it recurs.
+   */
+  public clearSupersededUniqueConstraintViolations(properties: string[] | undefined): void {
+    const survives = (violation: UniqueConstraintViolation) =>
+      violation.appliedFix !== undefined && properties !== undefined && properties.length > 0 && !properties.includes(violation.appliedFix.property);
+
+    for (let i = this.uniqueConstraintViolations.length - 1; i >= 0; --i) {
+      if (!survives(this.uniqueConstraintViolations[i]))
+        this.uniqueConstraintViolations.splice(i, 1);
+    }
   }
 
   public acceptOurs(properties?: string[]): void {
