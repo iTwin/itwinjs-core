@@ -7,7 +7,7 @@ import { statSync } from "fs";
 import { assert } from "chai";
 import * as sinon from "sinon";
 import { Suite } from "mocha";
-import { BriefcaseDb, CloudSqlite, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, CloudSqlite, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
 import { DbResult } from "@itwin/core-bentley";
@@ -15,7 +15,7 @@ import {
   assertThrowsAsync, assertThrowsAsyncContaining, countSyncDbItemRows, createTestIModel, enableSchemaSync, expectCensusPreserved,
   expectMetadataTablesIdentical, expectNoForeignKeyViolations, expectPhysicalSchemaIdentical, extendedIt, importTinySchema, initializeContainer,
   insertDrawingModelAndCategory, insertGeometricElement2d, openTestBriefcase, queryPropNames, querySchemaSyncDataVer, readElementProp,
-  readSyncDbDataVer, reopenTestBriefcase, takeElementCensus, TinyClass, TinyProp, TinySchema, tinySchemaToXml,
+  readSyncDb, readSyncDbDataVer, reopenTestBriefcase, takeElementCensus, TinyClass, TinyProp, TinySchema, tinySchemaToXml,
 } from "./SchemaSyncTestUtils";
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 import { AzuriteTest } from "./AzuriteTest";
@@ -683,6 +683,25 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
     });
   };
 
+  const failNextContainerUpload = (): void => {
+    const realWithWriteLock = CloudSqlite.withWriteLock;
+    let shouldFail = true;
+    sinon.stub(CloudSqlite, "withWriteLock").callsFake(async (args, operation) => realWithWriteLock(args, async () => {
+      if (!shouldFail)
+        return operation();
+
+      const uploadStub = sinon.stub(args.container, "uploadChanges").callsFake(async () => {
+        shouldFail = false;
+        throw new Error(containerLockFailureMessage);
+      });
+      try {
+        return await operation();
+      } finally {
+        uploadStub.restore();
+      }
+    }));
+  };
+
   it("a schema import that fails before the container is uploaded takes the sync db back with it", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-19" });
     const accessToken = "sync life container rollback token";
@@ -736,9 +755,9 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
     }
   });
 
-  // An upgrade publishes the briefcase changeset before the sync db. If the container upload fails,
-  // the timeline remains authoritative and the stale schema portion of the sync db must be rebuilt.
-  it("an upgrade publishes its changeset before the sync db", async () => {
+  // The sync db is the recoverable half of an upgrade, so publish it before attempting the Hub push.
+  // A failed push leaves the sync db ahead of the timeline for the explicit repair operation to fix.
+  it("an upgrade publishes the sync db before its changeset", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-20" });
     const accessToken = "sync life upgrade rollback token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life upgrade rollback", accessToken });
@@ -784,32 +803,138 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
         async () => importTinySchema(b1, widened),
         "Use BriefcaseDb.upgradeSchemas");
 
-      // Fail after the locked operation has pushed, but before releasing the container write lock uploads its changes.
-      failInsideTheContainerLock(true);
+      failNextContainerUpload();
       await assertThrowsAsync(
         async () => b1.upgradeSchemaStrings([tinySchemaToXml(widened)], { accessToken, description: "the upgrade whose container failed" }),
         containerLockFailureMessage,
       );
       sinon.restore();
 
-      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 1, "the briefcase did not keep the published upgrade");
-      assert.isFalse(b1.txns.hasLocalChanges, "the published upgrade left local changes behind");
-      assert.notEqual(b1.changeset.id, changesetBeforeTheFailure, "the upgrade did not reach the timeline");
-      assert.equal(readElementProp(b1, holderId, "label"), "written before the failed upgrade");
+      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 1, "the briefcase did not keep the local upgrade");
+      assert.isTrue(b1.txns.hasLocalChanges, "the failed container upload discarded the local upgrade");
+      assert.equal(b1.changeset.id, changesetBeforeTheFailure, "the failed container upload reached the timeline");
+      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 0, "the failed upload reached the sync db");
+      assert.equal(await readSyncDbDataVer(b1), dataVerBeforeTheFailure, "the failed upload moved the sync db data version");
 
-      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 0, "the failed container publication reached the sync db");
-      assert.equal(await readSyncDbDataVer(b1), dataVerBeforeTheFailure, "the failed container publication moved the sync db data version");
+      await b1.discardChanges({ retainLocks: true });
+      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 0, "discarding the failed upgrade left its metadata behind");
+
+      sinon.stub(b1, "pushChanges").rejects(new Error("simulated failure pushing the upgrade"));
+      await assertThrowsAsync(
+        async () => b1.upgradeSchemaStrings([tinySchemaToXml(widened)], { accessToken, description: "the upgrade whose push failed" }),
+        "simulated failure pushing the upgrade",
+      );
+      sinon.restore();
+
+      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 1, "the briefcase did not keep the unpushed upgrade");
+      assert.isTrue(b1.txns.hasLocalChanges, "the failed push discarded the local upgrade");
+      assert.equal(b1.changeset.id, changesetBeforeTheFailure, "the failed push reached the timeline");
+      assert.equal(readElementProp(b1, holderId, "label"), "written before the failed upgrade");
+      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 1, "the upgrade was not published to the sync db before the push");
+      assert.notEqual(await readSyncDbDataVer(b1), dataVerBeforeTheFailure, "the published upgrade did not move the sync db data version");
 
       await b2.pullChanges({ accessToken });
-      assert.equal(countMetadataItemRows(b2, "ec_Property", "p20"), 1, "the second briefcase did not receive the published upgrade");
+      assert.equal(countMetadataItemRows(b2, "ec_Property", "p20"), 0, "the second briefcase received the changeset whose push failed");
       assert.equal(readElementProp(b2, holderId, "label"), "written before the failed upgrade");
-      expectMetadataTablesIdentical(b1, b2, "after pulling the upgrade whose sync db publication failed", { a: "b1", b: "b2" });
-      expectPhysicalSchemaIdentical(b1, b2, "after pulling the upgrade whose sync db publication failed");
-      expectNoForeignKeyViolations(b1, "after the sync db publication failed");
+      expectNoForeignKeyViolations(b1, "after the upgrade push failed");
     } finally {
       sinon.restore();
       b1.close();
       b2.close();
+    }
+  });
+
+  it("repairs schema metadata without changing the source briefcase or reservation state", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-repair-1" });
+    const accessToken = "sync life repair token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life repair", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLifeRepair1b1" });
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLifeRepair1b2" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      await b2.pullChanges({ accessToken });
+      await importTinySchema(b1, lifecycleSchema);
+      await b1.pushChanges({ accessToken, description: "schema before repair" });
+
+      const b2Changeset = b2.changeset.id;
+      await assertThrowsAsync(
+        async () => SchemaSync.repairForIModel({ iModel: b2 }),
+        "not at the tip of the iModel timeline",
+      );
+      assert.equal(b2.changeset.id, b2Changeset, "tip validation pulled the source briefcase");
+      assert.isFalse(b2.txns.hasLocalChanges, "tip validation changed the source briefcase");
+      assert.isFalse(b2.holdsSchemaLock, "failed tip validation kept the schema lock");
+
+      const sourceChangeset = b1.changeset.id;
+      const sourceTxn = b1.txns.getCurrentTxnId();
+      const sourceDataVer = querySchemaSyncDataVer(b1);
+      assert.isDefined(sourceDataVer);
+
+      await SchemaSync.withLockedAccess(b1, { operationName: "corrupt schema metadata" }, async (access) => {
+        const syncDb = access.getCloudDb();
+        syncDb.executeSQL("UPDATE ec_Schema SET Description='damaged' WHERE Name='SchemaSyncLifecycle'");
+        syncDb[_nativeDb].saveFileProperty(
+          { namespace: "ec_Db", name: "syncDbInfo" },
+          JSON.stringify({ dataVer: "0xffff", id: containerProps.containerId }),
+        );
+        syncDb[_nativeDb].saveFileProperty(
+          { namespace: "schemasync", name: "nextReservedElementLocalId" },
+          "42",
+        );
+      });
+
+      await SchemaSync.repairForIModel({ iModel: b1 });
+
+      assert.equal(b1.changeset.id, sourceChangeset, "repair changed the source briefcase changeset");
+      assert.equal(b1.txns.getCurrentTxnId(), sourceTxn, "repair changed the source briefcase transaction");
+      assert.equal(querySchemaSyncDataVer(b1), sourceDataVer, "repair changed the source briefcase data version");
+      assert.isFalse(b1.txns.hasLocalChanges, "repair left local changes in the source briefcase");
+      assert.isFalse(b1.holdsSchemaLock, "repair kept the schema lock");
+
+      const repaired = await readSyncDb(b1, (syncDb) => ({
+        description: syncDb.withSqliteStatement("SELECT Description FROM ec_Schema WHERE Name='SchemaSyncLifecycle'", (stmt) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          return stmt.getValueString(0);
+        }),
+        dataVer: JSON.parse(syncDb[_nativeDb].queryFileProperty({ namespace: "ec_Db", name: "syncDbInfo" }, true) as string).dataVer,
+        nextReservedElementLocalId: syncDb[_nativeDb].queryFileProperty({ namespace: "schemasync", name: "nextReservedElementLocalId" }, true),
+      }));
+      assert.notEqual(repaired.description, "damaged", "repair kept the corrupted schema metadata");
+      assert.equal(repaired.dataVer, sourceDataVer, "repair did not restore the source data version");
+      assert.equal(repaired.nextReservedElementLocalId, "42", "repair changed the reservation allocation counter");
+    } finally {
+      b1.close();
+      b2.close();
+    }
+  });
+
+  it("can repair schema profile table definitions before repairing metadata", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-repair-2" });
+    const accessToken = "sync life profile repair token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life profile repair", accessToken });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLifeRepair2b1" });
+
+    try {
+      await enableSchemaSync(b1, containerProps);
+      await importTinySchema(b1, lifecycleSchema);
+      await b1.pushChanges({ accessToken, description: "schema before profile repair" });
+
+      await SchemaSync.withLockedAccess(b1, { operationName: "corrupt schema profile" }, async (access) => {
+        access.getCloudDb().executeSQL("ALTER TABLE ec_Schema ADD COLUMN RepairJunk TEXT");
+      });
+
+      await assertThrowsAsync(async () => SchemaSync.repairForIModel({ iModel: b1 }));
+      await SchemaSync.repairForIModel({ iModel: b1, scope: "schemaMetadataAndProfile" });
+
+      const hasJunkColumn = await readSyncDb(b1, (syncDb) => syncDb.withSqliteStatement(
+        "SELECT 1 FROM pragma_table_info('ec_Schema') WHERE name='RepairJunk'",
+        (stmt) => stmt.step() === DbResult.BE_SQLITE_ROW,
+      ));
+      assert.isFalse(hasJunkColumn, "profile repair kept the unexpected ec_Schema column");
+      assert.isFalse(b1.txns.hasLocalChanges, "profile repair changed the source briefcase");
+    } finally {
+      b1.close();
     }
   });
 

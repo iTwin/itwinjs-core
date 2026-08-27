@@ -699,7 +699,7 @@ export abstract class IModelDb extends IModel {
           try {
             db[_nativeDb].abandonChanges();
             db.close();
-          } catch { }
+          } catch { return; }
         });
       });
     }
@@ -3509,7 +3509,7 @@ export namespace IModelDb {
       ids.forEach((id) => {
         try {
           props.push(imodel.elements.getElementProps<ViewDefinitionProps>(id));
-        } catch { }
+        } catch { return; }
       });
 
       return props;
@@ -3534,7 +3534,7 @@ export namespace IModelDb {
             if (!finished)
               break;
           }
-        } catch { }
+        } catch { continue; }
       }
 
       return finished;
@@ -3889,6 +3889,8 @@ export class BriefcaseDb extends IModelDb {
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
     super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
+    // Native invokes this private callback dynamically through the object registered by IModelDb.
+    void this.onChangesetConflict;
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
     this.makeLockControl();
@@ -3918,8 +3920,9 @@ export class BriefcaseDb extends IModelDb {
           db[_nativeDb].saveChanges();
         });
 
-        // Push before returning; releasing the container write lock publishes the sync db.
+        // Publish the sync db before the changeset while retaining both locks.
         syncAccess.closeDb();
+        await syncAccess.container.uploadChanges();
         await push();
       });
     } else {
@@ -4545,6 +4548,7 @@ export class BriefcaseDb extends IModelDb {
 
       this.clearCaches();
       syncAccess.closeDb();
+      await syncAccess.container.uploadChanges();
       await this.pushChanges(arg);
     });
   }

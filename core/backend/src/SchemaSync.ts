@@ -484,6 +484,63 @@ export namespace SchemaSync {
     await initializeAfterPreflight(arg, briefcase);
   }
 
+  /** The part of a SchemaSyncDb to restore from an authoritative briefcase. @alpha */
+  export type RepairScope = "schemaMetadata" | "schemaMetadataAndProfile";
+
+  const nativeRepairScope: Record<RepairScope, number> = {
+    schemaMetadata: 0,
+    schemaMetadataAndProfile: 1,
+  };
+
+  /** Arguments for [[repairForIModel]]. @alpha */
+  export interface RepairForIModelArgs {
+    /** A clean SchemaSync-enabled briefcase at the tip of the iModel timeline. */
+    iModel: BriefcaseDb;
+    /** Include the schema-owned EC, BeSQLite, and DgnDb profile table definitions. */
+    scope?: RepairScope;
+  }
+
+  /** Restore the schema-owned portion of the SchemaSyncDb from a briefcase at the tip of the timeline.
+   *
+   * This operation takes the exclusive schema lock and refuses to pull or modify the briefcase. Element
+   * reservations and all other target-only state in the SchemaSyncDb are preserved.
+   * @alpha
+   */
+  export async function repairForIModel(arg: RepairForIModelArgs): Promise<void> {
+    const iModel = arg.iModel;
+    if (!isEnabled(iModel))
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot repair SchemaSync because it is not enabled for this iModel");
+
+    if (iModel[_nativeDb].hasUnsavedChanges() || iModel.txns.hasLocalChanges)
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot repair SchemaSync while there are local changes");
+
+    if (!iModel.locks.isServerBased)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot repair SchemaSync without server-based locking");
+
+    if (arg.scope !== undefined && arg.scope !== "schemaMetadata" && arg.scope !== "schemaMetadataAndProfile")
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Unknown SchemaSync repair scope");
+
+    const schemaLockWasHeld = iModel.holdsSchemaLock;
+    if (!schemaLockWasHeld)
+      await iModel.acquireSchemaLock();
+    try {
+      const briefcaseManagerModule = await import("./BriefcaseManager");
+      const latestChangeset = await briefcaseManagerModule.BriefcaseManager.getLatestChangeset({ iModelId: iModel.iModelId });
+      if (latestChangeset.id !== iModel.changeset.id)
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot repair SchemaSync from a briefcase that is not at the tip of the iModel timeline");
+
+      const repairScope = nativeRepairScope[arg.scope ?? "schemaMetadata"];
+      await withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "repair schema sync" }, async (syncAccess) => {
+        const nativeDb = iModel[_nativeDb] as IModelJsNative.DgnDb & { schemaSyncRepair(syncDbUri: string, scope: number): void };
+        nativeDb.schemaSyncRepair(syncAccess.getUri(), repairScope);
+      });
+      Logger.logInfo("SchemaSync", `Repaired SchemaSyncDb from changeset ${iModel.changeset.id || "0"}`);
+    } finally {
+      if (!schemaLockWasHeld)
+        await iModel.locks.abandonAllLocks();
+    }
+  }
+
   /** Arguments for [[enableForIModel]]. */
   export interface EnableForIModelArgs {
     iModel: IModelDb;
