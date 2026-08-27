@@ -738,11 +738,10 @@ describe("Field format resolution example", () => {
     }
   });
 
-  it("raises onFormattingReady only on the provider, not on the per-FormatSet buckets it warms", async () => {
-    // Every bucket is itself a FormattingSpecProvider carrying the same event, so a warm could
-    // raise N+1 times across N+1 event objects. Only the provider-level event is raised. The
-    // bucket raises would announce "caches reloaded" while sibling buckets were still unwarmed,
-    // so a listener holding a bucket could observe a half-warmed provider.
+  it("raises onFormattingReady once per warm, however many FormatSet buckets it warmed", async () => {
+    // Warming visits the default bucket plus one per registered FormatSet. Readiness is a
+    // property of the provider as a whole, so it is announced once, after every bucket is warm --
+    // never per bucket, which would announce readiness while siblings were still unwarmed.
     const block = TextBlock.create();
     appendField(block, "lengthProp", { kindOfQuantity: "Example.LENGTH", persistenceUnit: "Units.M" });
 
@@ -760,17 +759,9 @@ describe("Field format resolution example", () => {
     const providerReady = sinon.spy();
     provider.onFormattingReady.addListener(providerReady);
 
-    // The buckets are only reachable through `getProviderFor`, which is how a consumer would
-    // come to hold one -- and therefore how a spurious raise would become observable.
-    const bucketReady = sinon.spy();
-    for (const id of [undefined, ADOPTED_SET, ALT_SET]) {
-      provider.getProviderFor(id).onFormattingReady.addListener(bucketReady);
-    }
-
     await provider.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }));
 
     expect(providerReady.callCount).to.equal(1);
-    expect(bucketReady.callCount).to.equal(0);
   });
 
   it("does nothing when a field names a FormatSet but no KindOfQuantity and no persistence unit", async () => {    // A FormatSet is only ever reached through a KoQ key, so naming one on its own is inert.
