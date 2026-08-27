@@ -520,15 +520,21 @@ export namespace SchemaSync {
     if (arg.scope !== undefined && arg.scope !== "schemaMetadata" && arg.scope !== "schemaMetadataAndProfile")
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Unknown SchemaSync repair scope");
 
+    const briefcaseManagerModule = await import("./BriefcaseManager");
+    const assertBriefcaseIsAtTip = async () => {
+      const latestChangeset = await briefcaseManagerModule.BriefcaseManager.getLatestChangeset({ iModelId: iModel.iModelId });
+      if (latestChangeset.id !== iModel.changeset.id)
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot repair SchemaSync from a briefcase that is not at the tip of the iModel timeline");
+    };
+
+    // Avoid asking Hub for an exclusive lock it cannot grant to a briefcase that first needs to pull.
+    await assertBriefcaseIsAtTip();
     const schemaLockWasHeld = iModel.holdsSchemaLock;
     if (!schemaLockWasHeld)
       await iModel.acquireSchemaLock();
     try {
-      const briefcaseManagerModule = await import("./BriefcaseManager");
-      const latestChangeset = await briefcaseManagerModule.BriefcaseManager.getLatestChangeset({ iModelId: iModel.iModelId });
-      if (latestChangeset.id !== iModel.changeset.id)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot repair SchemaSync from a briefcase that is not at the tip of the iModel timeline");
-
+      // Close the race between the preflight query and acquiring the exclusive lock.
+      await assertBriefcaseIsAtTip();
       const repairScope = nativeRepairScope[arg.scope ?? "schemaMetadata"];
       await withLockedAccess(iModel, { openMode: OpenMode.Readonly, operationName: "repair schema sync" }, async (syncAccess) => {
         const nativeDb = iModel[_nativeDb] as IModelJsNative.DgnDb & { schemaSyncRepair(syncDbUri: string, scope: number): void };

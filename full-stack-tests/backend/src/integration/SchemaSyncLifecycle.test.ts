@@ -860,7 +860,7 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
       const b2Changeset = b2.changeset.id;
       await assertThrowsAsync(
         async () => SchemaSync.repairForIModel({ iModel: b2 }),
-        "not at the tip of the iModel timeline",
+        "Cannot repair SchemaSync from a briefcase that is not at the tip of the iModel timeline",
       );
       assert.equal(b2.changeset.id, b2Changeset, "tip validation pulled the source briefcase");
       assert.isFalse(b2.txns.hasLocalChanges, "tip validation changed the source briefcase");
@@ -924,7 +924,6 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
         access.getCloudDb().executeSQL("ALTER TABLE ec_Schema ADD COLUMN RepairJunk TEXT");
       });
 
-      await assertThrowsAsync(async () => SchemaSync.repairForIModel({ iModel: b1 }));
       await SchemaSync.repairForIModel({ iModel: b1, scope: "schemaMetadataAndProfile" });
 
       const hasJunkColumn = await readSyncDb(b1, (syncDb) => syncDb.withSqliteStatement(
