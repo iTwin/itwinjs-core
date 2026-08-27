@@ -335,6 +335,7 @@ beta;interface;FieldPropertyPath
 beta;type;FieldPropertyType
 beta;class;FieldRun
 beta;interface;FieldRunProps
+internal;interface;FieldSpecProvider
 internal;interface;FieldValue
 public;interface;FilePropertyProps
 public;enum;FillDisplay

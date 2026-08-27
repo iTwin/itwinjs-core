@@ -107,6 +107,7 @@ import { ExternalSourceAttachmentProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentRole } from '@itwin/core-common';
 import { ExternalSourceProps } from '@itwin/core-common';
 import { FieldRun } from '@itwin/core-common';
+import { FieldSpecProvider } from '@itwin/core-common';
 import { FilePropertyProps } from '@itwin/core-common';
 import { FontFace as FontFace_2 } from '@itwin/core-common';
 import { FontFamilyDescriptor } from '@itwin/core-common';
@@ -118,8 +119,6 @@ import { FontType } from '@itwin/core-common';
 import { FormatSet } from '@itwin/ecschema-metadata';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { FormattingSpecArgs } from '@itwin/core-quantity';
-import { FormattingSpecEntry } from '@itwin/core-quantity';
-import { FormattingSpecProvider } from '@itwin/core-quantity';
 import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -3544,14 +3543,14 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
 }
 
 // @beta
-export class FieldFormattingSpecProvider implements FormattingSpecProvider {
+export class FieldFormattingSpecProvider {
     clearMisses(): void;
     static collectSchemaFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[];
     static create(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined;
     // @internal
-    getProviderFor(formatSet: string | undefined): FormattingSpecProvider;
-    getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined;
+    getProviderFor(formatSet: string | undefined): FieldSpecProvider;
     get misses(): UnresolvedFieldFormat[];
     readonly onFormattingReady: BeUnorderedUiEvent<void>;
     // @internal
