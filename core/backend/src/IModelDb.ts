@@ -4487,7 +4487,7 @@ export class BriefcaseDb extends IModelDb {
 
   /** Import schemas while allowing changes that move or delete data.
    *
-   * Takes the exclusive schema lock, pulls to the tip, imports, updates the sync db, and pushes the result.
+   * Takes the exclusive schema lock, requires the briefcase to be at the timeline tip, imports, updates the sync db, and pushes the result.
    * @note The briefcase must have no local changes.
    * @see [[BriefcaseDb.upgradeSchemas]] (static) for upgrading the software's profile and domain schemas.
    * @alpha
