@@ -216,9 +216,8 @@ export interface FieldFormattingSpecProviderArgs {
   requirements: FormattingSpecArgs[];
 }
 
-/** A per-[IModelDb]($backend) [FormattingSpecProvider]($core-quantity) that resolves
- * [FieldRun]($common) quantity formats **synchronously** from a cache built ahead of time by
- * [[warmUp]].
+/** A per-[IModelDb]($backend) cache of [FormatterSpec]($core-quantity)s that resolves
+ * [FieldRun]($common) quantity formats **synchronously**, built ahead of time by [[warmUp]].
  *
  * One provider holds **every** FormatSet an iModel uses, not one per FormatSet: the adopted
  * [[FieldFormattingSpecProviderArgs.formatSet]] plus any number of additional
@@ -371,9 +370,8 @@ export class FieldFormattingSpecProvider {
     }
   }
 
-  /** Returns the [FormattingSpecProvider]($core-quantity) that formats fields declaring
-   * `formatSet`. Fields with no `formatSet`, or naming one this provider wasn't given, resolve
-   * against the iModel's schema formats.
+  /** Returns the bucket that formats fields declaring `formatSet`. Fields with no `formatSet`, or
+   * naming one this provider wasn't given, resolve against the iModel's schema formats.
    * @internal
    */
   public getProviderFor(formatSet: string | undefined): FieldSpecProvider {
@@ -408,8 +406,8 @@ export class FieldFormattingSpecProvider {
    * default: this provider never discovers requirements by walking the iModel.
    */
   public async warmUp(requirements: FormattingSpecArgs[]): Promise<void> {
-    // The default bucket first: every other bucket falls back to it, so warming it up front
-    // means a fallback lookup is never a miss that a later bucket would have covered.
+    // Warm the default bucket first so the cache is populated in resolution order. Ordering is not
+    // load-bearing: no bucket reads another's cache while warming.
     for (const bucket of [this._default, ...this._buckets.values()]) {
       await bucket.warmUp(requirements, this._unitsProvider);
     }
