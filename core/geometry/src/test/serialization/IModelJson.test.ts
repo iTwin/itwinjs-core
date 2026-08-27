@@ -496,7 +496,7 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
       ck.testExactNumber(2, parity.children.length, "parityRegion has 2 loops");
       for (let i = 0; i < parity.children.length; ++i) {
         if (ck.testTrue(parity.children[i] instanceof Loop, `parityRegion child ${i} is a Loop`))
-          ck.testExactNumber(3, parity.children[i].children!.length, `parityRegion loop ${i} has 3 primitives`);
+          ck.testExactNumber(3, parity.children[i].children.length, `parityRegion loop ${i} has 3 primitives`);
       }
     }
 
@@ -528,7 +528,7 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
       ck.testExactNumber(2, contours.length, "sweep has 2 contours");
       for (let i = 0; i < contours.length; ++i) {
         if (ck.testTrue(contours[i].curves instanceof Loop, `contour ${i} is a Loop`))
-          ck.testExactNumber(3, contours[i].curves.children!.length, `contour ${i} loop has 3 primitives`);
+          ck.testExactNumber(3, contours[i].curves.children.length, `contour ${i} loop has 3 primitives`);
       }
     }
     expect(ck.getNumErrors()).toBe(0);
