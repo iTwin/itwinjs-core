@@ -20,16 +20,20 @@ import { EditTxn } from "../EditTxn";
 import { FieldFormattingSpecProvider, FieldFormattingSpecProviderArgs } from "./FieldFormattingSpecProvider";
 
 /** Process-wide registry of pre-warmed [[FieldFormattingSpecProvider]]s, keyed by
- * [IModelDb.key]($backend). Populated by [[ElementDrivesTextAnnotation.registerFieldFormattingProvider]]
+ * [IModel.key]($common). Populated by [[ElementDrivesTextAnnotation.registerFieldFormattingProvider]]
  * and consulted by [[ElementDrivesTextAnnotation.evaluateFields]] and the `TxnManager`
  * field-update callbacks.
  *
- * Keyed by iModel so that a provider is reachable for *every* field of that iModel — including
- * fields declaring no [QuantityFieldFormatOptions.formatSet]($common), which resolve against
- * the iModel's schema formats. Never swept automatically: hosts must call
- * [[ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]] on iModel close. Provider
- * lifetime is deliberately the host's to manage — a host may want a provider to outlive a
- * particular [IModelDb]($backend) instance, and iTwin.js cannot know that.
+ * A registry rather than a member on [IModelDb]($backend): that would put a `@beta` annotations
+ * concern on one of the most widely consumed classes in the API, and would point `IModelDb` at
+ * this feature instead of the other way around. The cost is lifetime — nothing sweeps this map,
+ * so hosts must call [[ElementDrivesTextAnnotation.unregisterFieldFormattingProvider]] on iModel
+ * close. That is deliberate either way: a host may want a provider to outlive a particular
+ * [IModelDb]($backend) instance, and iTwin.js cannot know that.
+ *
+ * One entry serves *every* field of an iModel, including fields declaring no
+ * [QuantityFieldFormatOptions.formatSet]($common), which resolve against the iModel's schema
+ * formats.
  */
 const fieldFormattingProviders = new Map<string, FieldFormattingSpecProvider>();
 
@@ -247,9 +251,6 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * result of its own query for annotations in scope. Prefer
    * [[collectFieldFormattingRequirements]] when the unit of work is a whole
    * [TextBlock]($common), since it deduplicates for you.
-   *
-   * A near-miss does not render unformatted — it lets evaluation resolve a *different*
-   * (KindOfQuantity, persistence unit) pair and scale the value by the wrong unit.
    * @beta
    */
   public static getFieldFormattingRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
@@ -299,7 +300,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    *
    * Skipping that has two costs. The provider captures the iModel's
    * [SchemaContext]($ecschema-metadata), so a stale registration pins it — and the closed
-   * `IModelDb` behind it — alive for the lifetime of the process. And while [IModelDb.key]($common)
+   * `IModelDb` behind it — alive for the lifetime of the process. And while [IModel.key]($common)
    * is a fresh GUID on each open by default (making a stale entry merely unreachable), a host that
    * supplies its own stable `key` when opening will land on that entry again on reopen and format
    * against a *closed* schema context, which surfaces as a confusing schema error from inside a
