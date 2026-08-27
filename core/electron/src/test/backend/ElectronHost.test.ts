@@ -206,15 +206,23 @@ async function testWindowSizeSettings() {
   // when the restored bounds arrive and win the last debounced write.
   await waitForStableBounds(window);
 
-  const width = 250;
-  const height = 251;
-  window.setSize(width, height);
-  assert(await waitUntil(() => savedSizeAndPos()?.width === width && savedSizeAndPos()?.height === height));
+  // A fractionally-scaled display rounds through physical pixels, so the realized bounds can differ from
+  // the requested bounds by a pixel or two. What must hold is that the saved state converges on whatever
+  // the window actually reports.
+  const savedMatchesWindow = () => {
+    const saved = savedSizeAndPos();
+    const bounds = window.getBounds();
+    return saved !== undefined && saved.width === bounds.width && saved.height === bounds.height
+      && saved.x === bounds.x && saved.y === bounds.y;
+  };
 
-  const x = 50;
-  const y = 75;
-  window.setPosition(x, y);
-  assert(await waitUntil(() => savedSizeAndPos()?.x === x && savedSizeAndPos()?.y === y));
+  window.setSize(250, 251);
+  assert(await waitUntil(() => window.getBounds().width !== expectedBounds.width && window.getBounds().height !== expectedBounds.height));
+  assert(await waitUntil(savedMatchesWindow));
+
+  window.setPosition(50, 75);
+  assert(await waitUntil(() => window.getBounds().x !== expectedBounds.x && window.getBounds().y !== expectedBounds.y));
+  assert(await waitUntil(savedMatchesWindow));
 }
 
 /** Longer than `ElectronHost`'s 200ms window state debounce, so a stable sample means nothing is pending. */
