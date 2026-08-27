@@ -1168,8 +1168,9 @@ export class TxnManager {
       }
 
       // Skip PRIMARY KEY conflicts for inserted rows that were pre-reserved via SchemaSync - these are the same shared element.
-      const isReserved = (id: any) => typeof (id) === "string" && Id64.getBriefcaseId(id) === BriefcaseIdValue.SchemaSyncElementReserved;
-      if (args.opcode === "Inserted" && args.getPrimaryKeyValues().every(isReserved)) {
+      const isReserved = (id: unknown) => typeof id === "string" && Id64.getBriefcaseId(id) === BriefcaseIdValue.SchemaSyncElementReserved;
+      const pkValues = args.getPrimaryKeyValues();
+      if (args.opcode === "Inserted" && pkValues.length > 0 && pkValues.every(isReserved)) {
         return DbConflictResolution.Skip;
       }
     }
