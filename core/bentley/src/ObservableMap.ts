@@ -25,6 +25,8 @@ export class ObservableMap<K, V> extends Map<K, V> {
   public readonly onBatchAdded = new BeEvent<() => void>();
   /** Emitted after multiple entries are deleted from this map via [[deleteAll]]. */
   public readonly onBatchDeleted = new BeEvent<() => void>();
+  /** Emitted after any change to the contents of this map. */
+  public readonly onChanged = new BeEvent<() => void>();
 
   /** Construct a new ObservableMap.
    * @param elements Optional elements with which to populate the new map.
@@ -36,8 +38,10 @@ export class ObservableMap<K, V> extends Map<K, V> {
     this.set = (key: K, value: V) => {
       const had = super.has(key);
       const ret = super.set(key, value);
-      if (!had)
+      if (!had) {
         this.onAdded.raiseEvent(key, value);
+        this.onChanged.raiseEvent();
+      }
 
       return ret;
     };
@@ -48,8 +52,10 @@ export class ObservableMap<K, V> extends Map<K, V> {
    */
   public override delete(key: K): boolean {
     const ret = super.delete(key);
-    if (ret)
+    if (ret) {
       this.onDeleted.raiseEvent(key);
+      this.onChanged.raiseEvent();
+    }
 
     return ret;
   }
@@ -61,6 +67,7 @@ export class ObservableMap<K, V> extends Map<K, V> {
     if (0 !== this.size) {
       super.clear();
       this.onCleared.raiseEvent();
+      this.onChanged.raiseEvent();
     }
   }
 
@@ -74,8 +81,10 @@ export class ObservableMap<K, V> extends Map<K, V> {
     for (const [key, value] of items)
       super.set(key, value);
 
-    if (this.size !== prevSize)
+    if (this.size !== prevSize) {
       this.onBatchAdded.raiseEvent();
+      this.onChanged.raiseEvent();
+    }
 
     return this.size - prevSize;
   }
@@ -90,8 +99,10 @@ export class ObservableMap<K, V> extends Map<K, V> {
     for (const key of keys)
       super.delete(key);
 
-    if (this.size !== prevSize)
+    if (this.size !== prevSize) {
       this.onBatchDeleted.raiseEvent();
+      this.onChanged.raiseEvent();
+    }
 
     return prevSize - this.size;
   }

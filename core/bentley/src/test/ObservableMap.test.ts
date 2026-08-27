@@ -9,6 +9,7 @@ class Listener {
   private _added = false;
   private _deleted = false;
   private _cleared = false;
+  private _changed = false;
   private _addCount = 0;
   private _deleteCount = 0;
   private _batchAddCount = 0;
@@ -18,12 +19,13 @@ class Listener {
     map.onAdded.addListener((_, __) => { this._added = true; this._addCount++; });
     map.onDeleted.addListener((_) => { this._deleted = true; this._deleteCount++; });
     map.onCleared.addListener(() => this._cleared = true);
+    map.onChanged.addListener(() => { this._changed = true; });
     map.onBatchAdded.addListener(() => this._batchAddCount++);
     map.onBatchDeleted.addListener(() => this._batchDeleteCount++);
   }
 
   private clear() {
-    this._added = this._deleted = this._cleared = false;
+    this._added = this._deleted = this._cleared = this._changed = false;
     this._addCount = this._deleteCount = this._batchAddCount = this._batchDeleteCount = 0;
   }
 
@@ -33,6 +35,8 @@ class Listener {
     expect(this._added).to.equal(added);
     expect(this._deleted).to.equal(deleted);
     expect(this._cleared).to.equal(cleared);
+    const deducedChanged = added || deleted || cleared;
+    expect(this._changed).to.equal(deducedChanged);
     this.clear();
   }
 
@@ -43,6 +47,8 @@ class Listener {
     expect(this._batchDeleteCount).to.equal(batchDeleteCount);
     expect(this._addCount).to.equal(0);
     expect(this._deleteCount).to.equal(0);
+    const deducedChanged = batchAddCount > 0 || batchDeleteCount > 0;
+    expect(this._changed).to.equal(deducedChanged);
     this.clear();
   }
 
@@ -76,7 +82,7 @@ describe("ObservableMap", () => {
     const elems: Array<readonly [string, string]> = [["a", "1"], ["b", "2"], ["c", "3"]];
     const observable = new ObservableMap<string, string>(elems);
     const map = new Map<string, string>(elems);
-    expect(observable).to.deep.equal(map);
+    expect(Array.from(observable.entries())).to.deep.equal(Array.from(map.entries()));
   });
 
   it("setAll should raise onBatchAdded only once", () => {

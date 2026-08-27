@@ -24,6 +24,8 @@ export class ObservableSet<T> extends Set<T> {
   public readonly onBatchAdded = new BeEvent<() => void>();
   /** Emitted after multiple items are deleted from this set via [[deleteAll]]. */
   public readonly onBatchDeleted = new BeEvent<() => void>();
+  /** Emitted after any change to the contents of this set. */
+  public readonly onChanged = new BeEvent<() => void>();
 
   /** Construct a new ObservableSet.
    * @param elements Optional elements with which to populate the new set.
@@ -35,8 +37,10 @@ export class ObservableSet<T> extends Set<T> {
     this.add = (item: T) => {
       const prevSize = this.size;
       const ret = super.add(item);
-      if (this.size !== prevSize)
+      if (this.size !== prevSize) {
         this.onAdded.raiseEvent(item);
+        this.onChanged.raiseEvent();
+      }
 
       return ret;
     };
@@ -47,8 +51,10 @@ export class ObservableSet<T> extends Set<T> {
    */
   public override delete(item: T): boolean {
     const ret = super.delete(item);
-    if (ret)
+    if (ret) {
       this.onDeleted.raiseEvent(item);
+      this.onChanged.raiseEvent();
+    }
 
     return ret;
   }
@@ -60,6 +66,7 @@ export class ObservableSet<T> extends Set<T> {
     if (0 !== this.size) {
       super.clear();
       this.onCleared.raiseEvent();
+      this.onChanged.raiseEvent();
     }
   }
 
@@ -73,8 +80,10 @@ export class ObservableSet<T> extends Set<T> {
     for (const item of items)
       super.add(item);
 
-    if (this.size !== prevSize)
+    if (this.size !== prevSize) {
       this.onBatchAdded.raiseEvent();
+      this.onChanged.raiseEvent();
+    }
 
     return this.size - prevSize;
   }
@@ -89,8 +98,10 @@ export class ObservableSet<T> extends Set<T> {
     for (const item of items)
       super.delete(item);
 
-    if (this.size !== prevSize)
+    if (this.size !== prevSize) {
       this.onBatchDeleted.raiseEvent();
+      this.onChanged.raiseEvent();
+    }
 
     return prevSize - this.size;
   }
