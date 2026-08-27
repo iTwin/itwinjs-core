@@ -665,8 +665,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.2
       electron:
-        specifier: ^43.0.0
-        version: 43.1.1
+        specifier: ^44.0.0
+        version: 44.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -1655,8 +1655,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/geometry
       electron:
-        specifier: ^43.0.0
-        version: 43.1.1
+        specifier: ^44.0.0
+        version: 44.0.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -2350,8 +2350,8 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.23.1
-        version: 0.23.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.1.1)
+        specifier: ^0.23.3
+        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
@@ -2386,8 +2386,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.2(chai@4.5.0)
       electron:
-        specifier: ^43.0.0
-        version: 43.1.1
+        specifier: ^44.0.0
+        version: 44.0.0
       fs-extra:
         specifier: ^8.1.0
         version: 8.1.0
@@ -2841,8 +2841,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/express-server
       electron:
-        specifier: ^43.0.0
-        version: 43.1.1
+        specifier: ^44.0.0
+        version: 44.0.0
       express:
         specifier: ^4.22.1
         version: 4.22.2
@@ -3461,8 +3461,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/quantity
       '@itwin/electron-authorization':
-        specifier: ^0.23.1
-        version: 0.23.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.1.1)
+        specifier: ^0.23.3
+        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
       '@itwin/frontend-tiles':
         specifier: workspace:*
         version: link:../../extensions/frontend-tiles
@@ -3534,8 +3534,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       electron:
-        specifier: ^43.0.0
-        version: 43.1.1
+        specifier: ^44.0.0
+        version: 44.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -3651,8 +3651,8 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.23.1
-        version: 0.23.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.1.1)
+        specifier: ^0.23.3
+        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
       '@itwin/frontend-devtools':
         specifier: workspace:*
         version: link:../../core/frontend-devtools
@@ -3745,8 +3745,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       electron:
-        specifier: ^43.0.0
-        version: 43.1.1
+        specifier: ^44.0.0
+        version: 44.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -4148,8 +4148,8 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       electron:
-        specifier: ^43.0.0
-        version: 43.1.1
+        specifier: ^44.0.0
+        version: 44.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.39.5
@@ -5033,12 +5033,12 @@ packages:
   '@itwin/core-bentley@5.12.3':
     resolution: {integrity: sha512-SfpoRyBVgmsx9xyVVZTQVj3Cu2YmZ/GulL24SG6Cvd/LtRGdCOF9WegnOXRK3Ya519d0hYwBfCh220kgbk+Kdw==}
 
-  '@itwin/electron-authorization@0.23.1':
-    resolution: {integrity: sha512-yRPAhJNxIA5491P4Xdc4iQQuQPjpKHTN15bqkCaj93lqUX/T/ULDps/LLSHwIJy7gF6JCKot7Uq971aqqd9MMA==}
+  '@itwin/electron-authorization@0.23.3':
+    resolution: {integrity: sha512-67QCVdCkTWcekq8Cn6+R/7Mcbzq1oxsIKdmkACyfWsXVwTG0lq1zCOvup5ZVKKrE8uS9VFyLP3odtibkpIQHDw==}
     peerDependencies:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      electron: '>=35.0.0 <44.0.0'
+      electron: '>=35.0.0 <45.0.0'
 
   '@itwin/eslint-plugin@6.1.0':
     resolution: {integrity: sha512-4HDfTmenGSQfL8o8Cr1tKavF2ZQsKEjF31e8pZUPv4QMUZCTr5Gt+lALNLPO4huRJo9e5rasUB/vq0MCBD0t4Q==}
@@ -6994,8 +6994,8 @@ packages:
   electron-to-chromium@1.5.408:
     resolution: {integrity: sha512-SLoprcYpJ/OH2v2ps0+N5biv9H4/KBT3+YmmDew64TwK5y9j2wv7pMOFY7IorVkyMtEyLSCRlXKLsNlakeAlPw==}
 
-  electron@43.1.1:
-    resolution: {integrity: sha512-I5c5vfuVvaXpWx3IZdwvXgxQW44+e7OP1wXGVQkogLeSFSkUZ6sLCcWV05AdEcs65AO5tAIJJwbp7ixw+LdarA==}
+  electron@44.0.0:
+    resolution: {integrity: sha512-FkTqPrFPZYljdPI5b7KORGsJTd6FgUQDefl5MrU3Xz9R87pAj9JLreIjDqcRN8hJIkFHIou0o8kKzvcpT9qiRQ==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -11308,12 +11308,12 @@ snapshots:
 
   '@itwin/core-bentley@5.12.3': {}
 
-  '@itwin/electron-authorization@0.23.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.1.1)':
+  '@itwin/electron-authorization@0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)':
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@openid/appauth': 1.3.2
-      electron: 43.1.1
+      electron: 44.0.0
       electron-store: 8.2.0
       username: 7.0.0
     transitivePeerDependencies:
@@ -13532,7 +13532,7 @@ snapshots:
 
   electron-to-chromium@1.5.408: {}
 
-  electron@43.1.1:
+  electron@44.0.0:
     dependencies:
       '@electron-internal/extract-zip': 1.0.5
       '@electron/get': 3.1.0
