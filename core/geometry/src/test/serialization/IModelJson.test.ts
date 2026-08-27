@@ -360,6 +360,134 @@ describe("BoxProps", () => {
   });
 });
 
+// These unit tests are designed to fail at compilation if previous incorrect TypeScript type definitions
+// are reintroduced in core/geometry/src/serialization/IModelJsonSchema.ts. For more info see
+// https://github.com/iTwin/itwinjs-core/issues/8253 and https://github.com/iTwin/itwinjs-core/pull/9665
+describe("IModelJsonSchemaWrongTypeDefinitions", () => {
+  it("BSplineSurfaceProps", () => {
+    const ck = new Checker();
+    const props: IModelJson.BSplineSurfaceProps = {
+      orderU: 3,
+      orderV: 3,
+      points: [
+        [[0, 0, 0], [1, 0, 0], [2, 0, 0]],
+        [[0, 1, 0], [1, 1, 1], [2, 1, 0]],
+        [[0, 2, 0], [1, 2, 0], [2, 2, 0]],
+      ],
+      uKnots: [0, 0, 0, 1, 1, 1],
+      vKnots: [0, 0, 0, 1, 1, 1],
+    };
+    ck.testExactNumber(3, props.points.length, "points has 3 rows");
+    ck.testExactNumber(3, props.points[0].length, "row 0 has 3 control points");
+    ck.testExactNumber(3, props.points[0][0].length, "control point has 3 coordinates");
+    ck.testExactNumber(6, props.uKnots.length, "uKnots has 6 entries");
+    ck.testExactNumber(6, props.vKnots.length, "vKnots has 6 entries");
+
+    const surface = IModelJson.Reader.parse({ bsurf: props });
+    ck.testDefined(surface, "BSplineSurfaceProps with multi-element points, uKnots, vKnots parses at runtime");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("BcurveProps", () => {
+    const ck = new Checker();
+    const props: IModelJson.BcurveProps = {
+      points: [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]],
+      knots: [0, 0, 0, 0, 1, 1, 1, 1],
+      order: 4,
+    };
+    ck.testExactNumber(4, props.points.length, "points has 4 control points");
+    ck.testExactNumber(8, props.knots.length, "knots has 8 entries");
+
+    const curve = IModelJson.Reader.parse({ bcurve: props });
+    ck.testDefined(curve, "BcurveProps with multi-element points and knots parses at runtime");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("CurveCollectionProps", () => {
+    // cspell:word bagof
+    const ck = new Checker();
+    const seg1: IModelJson.CurvePrimitiveProps = { lineSegment: [[0, 0, 0], [1, 0, 0]] };
+    const seg2: IModelJson.CurvePrimitiveProps = { lineSegment: [[1, 0, 0], [2, 0, 0]] };
+
+    const pathProps: IModelJson.CurveCollectionProps = { path: [seg1, seg2] };
+    const bagOfCurvesProps: IModelJson.CurveCollectionProps = { bagOfCurves: [seg1, seg2] };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const bagofCurvesProps: IModelJson.CurveCollectionProps = { bagofCurves: [{ path: [seg1, seg2] }, { path: [seg1, seg2] }] };
+
+    ck.testExactNumber(2, pathProps.path!.length, "path has 2 primitives");
+    ck.testExactNumber(2, bagOfCurvesProps.bagOfCurves!.length, "bagOfCurves has 2 members");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    ck.testExactNumber(2, bagofCurvesProps.bagofCurves!.length, "bagofCurves has 2 members");
+
+    ck.testDefined(IModelJson.Reader.parse(pathProps), "path parses at runtime");
+    ck.testDefined(IModelJson.Reader.parse(bagOfCurvesProps), "bagOfCurves parses at runtime");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("PlanarRegionProps", () => {
+    const ck = new Checker();
+    const seg1: IModelJson.CurvePrimitiveProps = { lineSegment: [[0, 0, 0], [1, 0, 0]] };
+    const seg2: IModelJson.CurvePrimitiveProps = { lineSegment: [[1, 0, 0], [1, 1, 0]] };
+    const seg3: IModelJson.CurvePrimitiveProps = { lineSegment: [[1, 1, 0], [0, 0, 0]] };
+
+    const loopProps: IModelJson.PlanarRegionProps = { loop: [seg1, seg2, seg3] };
+    const parityProps: IModelJson.PlanarRegionProps = {
+      parityRegion: [{ loop: [seg1, seg2, seg3] }, { loop: [seg1, seg2, seg3] }],
+    };
+    const unionProps: IModelJson.PlanarRegionProps = { unionRegion: [loopProps, loopProps] };
+
+    ck.testExactNumber(3, loopProps.loop!.length, "loop has 3 primitives");
+    ck.testExactNumber(2, parityProps.parityRegion!.length, "parityRegion has 2 loops");
+    ck.testExactNumber(3, parityProps.parityRegion![0].loop.length, "inner loop has 3 primitives");
+    ck.testExactNumber(2, unionProps.unionRegion!.length, "unionRegion has 2 regions");
+
+    ck.testDefined(IModelJson.Reader.parse(loopProps), "loop parses at runtime");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("RuledSweepProps", () => {
+    const ck = new Checker();
+    const seg1: IModelJson.CurvePrimitiveProps = { lineSegment: [[0, 0, 0], [1, 0, 0]] };
+    const seg2: IModelJson.CurvePrimitiveProps = { lineSegment: [[1, 0, 0], [1, 1, 0]] };
+    const seg3: IModelJson.CurvePrimitiveProps = { lineSegment: [[1, 1, 0], [0, 0, 0]] };
+    const contour1: IModelJson.CurveCollectionProps = { loop: [seg1, seg2, seg3] };
+    const contour2: IModelJson.CurveCollectionProps = { loop: [seg1, seg2, seg3] };
+
+    const props: IModelJson.RuledSweepProps = { contour: [contour1, contour2] };
+    ck.testExactNumber(2, props.contour.length, "contour has 2 cross-sections");
+
+    ck.testDefined(IModelJson.Reader.parse({ ruledSweep: props }), "ruledSweep parses at runtime");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("IndexedMeshProps", () => {
+    const ck = new Checker();
+    const props: IModelJson.IndexedMeshProps = {
+      point: [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]],
+      normal: [[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]],
+      param: [[0, 0], [1, 0], [0, 1], [1, 1]],
+      color: [0xff0000, 0x00ff00, 0x0000ff, 0xffffff],
+      pointIndex: [1, 2, 3, 0, 1, 3, 4, 0],
+      paramIndex: [1, 2, 3, 0, 1, 3, 4, 0],
+      normalIndex: [1, 2, 3, 0, 1, 3, 4, 0],
+      colorIndex: [1, 2, 3, 0, 1, 3, 4, 0],
+      edgeMateIndex: [-1, -1, -1, -1, -1, -1, -1, -1],
+    };
+    ck.testExactNumber(4, props.point.length, "point has 4 vertices");
+    ck.testExactNumber(4, props.normal!.length, "normal has 4 entries");
+    ck.testExactNumber(4, props.param!.length, "param has 4 entries");
+    ck.testExactNumber(4, props.color!.length, "color has 4 entries");
+    ck.testExactNumber(8, props.pointIndex.length, "pointIndex has 8 entries");
+    ck.testExactNumber(8, props.paramIndex!.length, "paramIndex has 8 entries");
+    ck.testExactNumber(8, props.normalIndex!.length, "normalIndex has 8 entries");
+    ck.testExactNumber(8, props.colorIndex!.length, "colorIndex has 8 entries");
+    ck.testExactNumber(8, props.edgeMateIndex!.length, "edgeMateIndex has 8 entries");
+
+    ck.testDefined(IModelJson.Reader.parse({ indexedMesh: props }), "indexedMesh parses at runtime");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
+
 describe("ParseCurveCollections", () => {
   it("BSplinePathRegression", () => {
     const ck = new Checker();

@@ -135,7 +135,8 @@ export namespace IModelJson {
     // cspell:word bagof
     /**
      * A collection of curves with no required structure or connections
-     * @deprecated in 5.0 - might be removed in next major version. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
+     * @deprecated in 5.0 - might be removed in next major version. Instead use bagOfCurves,
+     * which has correct capitalization and type. The old name has never been persisted.
     */
     bagofCurves?: CurveCollectionProps[];
     /** A collection of curves with no required structure or connections. */
