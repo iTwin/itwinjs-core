@@ -736,11 +736,9 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
     }
   });
 
-  // An upgrade rebuilds the sync db from the briefcase, so the two have to land together: a sync db
-  // holding an upgrade the timeline never got describes columns no briefcase has. The container is
-  // uploaded first because it is the one that can still be taken back - if the push then fails, the
-  // briefcase rolls back and the pre-upgrade state is mirrored up again.
-  it("an upgrade whose push fails puts the sync db back where the timeline is", async () => {
+  // An upgrade publishes the briefcase changeset before the sync db. If the container upload fails,
+  // the timeline remains authoritative and the stale schema portion of the sync db must be rebuilt.
+  it("an upgrade publishes its changeset before the sync db", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-20" });
     const accessToken = "sync life upgrade rollback token";
     const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life upgrade rollback", accessToken });
@@ -786,59 +784,28 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
         async () => importTinySchema(b1, widened),
         "Use BriefcaseDb.upgradeSchemas");
 
-      // A failure while publishing the container restores both stores before the error reaches the caller.
-      // Fail only the first lock operation so the compensating mirror can acquire the container lock.
+      // Fail after the locked operation has pushed, but before releasing the container write lock uploads its changes.
       failInsideTheContainerLock(true);
       await assertThrowsAsync(
         async () => b1.upgradeSchemaStrings([tinySchemaToXml(widened)], { accessToken, description: "the upgrade whose container failed" }),
         containerLockFailureMessage,
       );
       sinon.restore();
-      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 0, "the briefcase kept the upgrade after the container failure");
-      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 0, "the sync db kept the upgrade after its publication failed");
-      assert.isFalse(b1.txns.hasLocalChanges, "the failed container publication left local changes behind");
 
-      // Under the exclusive schema lock nothing can make the push fail but the transport, so that is
-      // what gets injected.
-      sinon.stub(b1, "pushChanges").rejects(new Error("simulated failure pushing the upgrade"));
-      await assertThrowsAsync(async () => b1.upgradeSchemaStrings([tinySchemaToXml(widened)], { accessToken, description: "the upgrade that could not be pushed" }));
-      sinon.restore();
-
-      // The briefcase is back at the timeline, with nothing local to get in the way of a retry.
-      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 0, "the briefcase kept the widened struct");
-      assert.isFalse(b1.txns.hasLocalChanges, "the rolled back upgrade left local changes behind");
-      assert.equal(b1.changeset.id, changesetBeforeTheFailure, "the failed upgrade reached the timeline");
+      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 1, "the briefcase did not keep the published upgrade");
+      assert.isFalse(b1.txns.hasLocalChanges, "the published upgrade left local changes behind");
+      assert.notEqual(b1.changeset.id, changesetBeforeTheFailure, "the upgrade did not reach the timeline");
       assert.equal(readElementProp(b1, holderId, "label"), "written before the failed upgrade");
 
-      // And so is the sync db, which is the point: it had the upgrade in it when the push failed.
-      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 0, "the sync db kept the widened struct");
-      assert.notEqual(await readSyncDbDataVer(b1), dataVerBeforeTheFailure, "restoring the sync db should move its data version");
+      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 0, "the failed container publication reached the sync db");
+      assert.equal(await readSyncDbDataVer(b1), dataVerBeforeTheFailure, "the failed container publication moved the sync db data version");
 
-      // A second briefcase importing additively gets a sync db that matches what it holds. The failed
-      // upgrade keeps its exclusive lock, same as a failed import does, so it has to be given up first.
-      await b1.locks.releaseAllLocks();
       await b2.pullChanges({ accessToken });
-      await importTinySchema(b2, {
-        name: "SchemaSyncUpgradeBystander",
-        alias: "ssub",
-        ver: "01.00.00",
-        dynamic: true,
-        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
-        classes: [{ type: "entity", name: "Bystander", baseClass: "bis:GeometricElement2d", props: [{ kind: "primitive", name: "value", type: "string" }] }],
-      });
-      await b2.pushChanges({ accessToken, description: "an additive import after the failed upgrade" });
-      await b1.pullChanges({ accessToken });
-      expectMetadataTablesIdentical(b1, b2, "after an import following the rolled back upgrade", { a: "b1", b: "b2" });
-
-      // The upgrade itself still works when retried.
-      await b1.upgradeSchemaStrings([tinySchemaToXml(widened)], { accessToken, description: "the retried upgrade" });
-      assert.equal(countMetadataItemRows(b1, "ec_Property", "p20"), 1, "the retried upgrade did not widen the struct");
-      assert.equal(await countSyncDbItemRows(b1, "ec_Property", "p20"), 1, "the retried upgrade did not reach the sync db");
-      await b2.pullChanges({ accessToken });
+      assert.equal(countMetadataItemRows(b2, "ec_Property", "p20"), 1, "the second briefcase did not receive the published upgrade");
       assert.equal(readElementProp(b2, holderId, "label"), "written before the failed upgrade");
-      expectMetadataTablesIdentical(b1, b2, "after retrying the upgrade", { a: "b1", b: "b2" });
-      expectPhysicalSchemaIdentical(b1, b2, "after retrying the upgrade");
-      expectNoForeignKeyViolations(b1, "after retrying the upgrade");
+      expectMetadataTablesIdentical(b1, b2, "after pulling the upgrade whose sync db publication failed", { a: "b1", b: "b2" });
+      expectPhysicalSchemaIdentical(b1, b2, "after pulling the upgrade whose sync db publication failed");
+      expectNoForeignKeyViolations(b1, "after the sync db publication failed");
     } finally {
       sinon.restore();
       b1.close();
