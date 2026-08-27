@@ -324,7 +324,7 @@ describe("SchemaSync element reservations (concurrent users)", function (this: S
       await b2.pushChanges({ accessToken: "token 2", description: "insert Shared-Def" });
 
       // Both briefcases converge on the single shared element with no id/code conflict.
-      await b1.pullChanges({ accessToken: "token 2" });
+      await b1.pullChanges({ accessToken: "token 1" });
       expect(b1.elements.tryGetElementProps(idOnB1)).to.not.be.undefined;
       expect(b2.elements.tryGetElementProps(idOnB2)).to.not.be.undefined;
     });
