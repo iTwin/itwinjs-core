@@ -95,7 +95,7 @@ async function buildSpec(
   // UnitsProvider.getConversion reports this by returning the identity conversion tagged
   // `error: true`, and its contract requires callers to check that flag before applying the
   // result. FormatterSpec.getUnitConversions only logs a warning and keeps the identity
-  // conversion, so without this check a length persisted in metres would render through an
+  // conversion, so without this check a length persisted in meters would render through an
   // angle format as "2.5 deg" -- relabelled rather than converted.
   if (formatterSpec.unitConversions.some((conversion) => conversion.conversion.error)) {
     return undefined;
