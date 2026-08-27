@@ -77,6 +77,9 @@ async function buildSpec(
 
   let persistenceUnit: UnitProps | undefined;
   try {
+    // The provider built in the constructor reports an unknown unit as an invalid BadUnit rather
+    // than throwing, so `isValid` below is what actually rejects. The catch is defensive: nothing
+    // in the UnitsProvider contract forbids throwing.
     persistenceUnit = await unitsProvider.findUnitByName(args.persistenceUnitName);
   } catch {
     return undefined;
