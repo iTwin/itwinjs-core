@@ -48,6 +48,8 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
 
   link(args: LinkIModel2dArgs): IModelDisplayReference2d;
   unlink(ref: IModelDisplayReference2d): void;
+
+  // ###TODO access to timePoint for schedule scripts?
 }
 
 export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDisplayReference> {
