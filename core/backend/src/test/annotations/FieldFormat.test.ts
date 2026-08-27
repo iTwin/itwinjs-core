@@ -227,7 +227,7 @@ describe("Field format resolution example", () => {
 
     await render(block);
 
-    // The property's own KoQ persists millimetres and presents metres: converted, not relabelled.
+    // The property's own KoQ persists millimeters and presents meters: converted, not relabelled.
     expect(measured.cachedContent).to.equal("2.5 m");
 
     // Nothing names a KindOfQuantity, so no spec resolves and the count renders with no stray unit.
@@ -373,7 +373,7 @@ describe("Field format resolution example", () => {
   it("does not format a valid persistence-unit override through the property's unit when it was never warmed", async () => {
     // The sharp edge this whole rule exists for. The field says the 2.5 stored on lengthProp is
     // 2.5 *feet*. Only the property's own (LENGTH_PROP, Units.M) pair is warmed. Formatting the
-    // 2.5 through that metre pair would render "2.5 m" -- a plausible-looking, durable, 3.28x
+    // 2.5 through that meter pair would render "2.5 m" -- a plausible-looking, durable, 3.28x
     // wrong answer that the caller has no way to detect. It must go raw and be reported instead.
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
@@ -398,7 +398,7 @@ describe("Field format resolution example", () => {
 
     const provider = await renderWarmedFor(block, [{ name: "FieldExample.LENGTH_PROP", persistenceUnitName: "Units.FT" }]);
 
-    // LENGTH_PROP presents in metres to 4 places, so 2.5 ft renders as its metre equivalent.
+    // LENGTH_PROP presents in meters to 4 places, so 2.5 ft renders as its meter equivalent.
     expect(claimsFeet.cachedContent).to.equal("0.762 m");
     expect(provider.misses).to.be.empty;
   });
@@ -487,7 +487,7 @@ describe("Field format resolution example", () => {
     });
 
     // Each value is converted out of its persistence unit into the adopted format's unit -- the
-    // schema's own metre/square-metre/degree presentations no longer apply.
+    // schema's own meter/square-meter/degree presentations no longer apply.
     expect(length.cachedContent).to.equal("250 cm");
     expect(area.cachedContent).to.equal("1076.39 ft2");
     expect(slope.cachedContent).to.equal("100 :1");
