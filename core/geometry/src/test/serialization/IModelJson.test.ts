@@ -5,17 +5,24 @@
 import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { BSplineCurve3dBase } from "../../bspline/BSplineCurve";
+import { BSplineSurface3d, UVSelect } from "../../bspline/BSplineSurface";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
+import { UnionRegion } from "../../curve/UnionRegion";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { DeepCompare } from "../../serialization/DeepCompare";
 import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
+import { RuledSweep } from "../../solid/RuledSweep";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
@@ -361,8 +368,7 @@ describe("BoxProps", () => {
 });
 
 // These unit tests are designed to fail at compilation if previous incorrect TypeScript type definitions
-// are reintroduced in core/geometry/src/serialization/IModelJsonSchema.ts. For more info see
-// https://github.com/iTwin/itwinjs-core/issues/8253 and https://github.com/iTwin/itwinjs-core/pull/9665
+// are reintroduced in core/geometry/src/serialization/IModelJsonSchema.ts.
 describe("IModelJsonSchemaWrongTypeDefinitions", () => {
   it("BSplineSurfaceProps", () => {
     const ck = new Checker();
@@ -374,17 +380,26 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
         [[0, 1, 0], [1, 1, 1], [2, 1, 0]],
         [[0, 2, 0], [1, 2, 0], [2, 2, 0]],
       ],
-      uKnots: [0, 0, 0, 1, 1, 1],
-      vKnots: [0, 0, 0, 1, 1, 1],
+      uKnots: [0, 0, 1, 1],
+      vKnots: [0, 0, 1, 1],
     };
     ck.testExactNumber(3, props.points.length, "points has 3 rows");
     ck.testExactNumber(3, props.points[0].length, "row 0 has 3 control points");
     ck.testExactNumber(3, props.points[0][0].length, "control point has 3 coordinates");
-    ck.testExactNumber(6, props.uKnots.length, "uKnots has 6 entries");
-    ck.testExactNumber(6, props.vKnots.length, "vKnots has 6 entries");
+    ck.testExactNumber(4, props.uKnots.length, "uKnots has 4 entries");
+    ck.testExactNumber(4, props.vKnots.length, "vKnots has 4 entries");
 
     const surface = IModelJson.Reader.parse({ bsurf: props });
-    ck.testDefined(surface, "BSplineSurfaceProps with multi-element points, uKnots, vKnots parses at runtime");
+    if (ck.testTrue(surface instanceof BSplineSurface3d, "parsed geometry is a BSplineSurface3d")) {
+      const surf = surface as BSplineSurface3d;
+      ck.testExactNumber(3, surf.numPolesUV(UVSelect.uDirection), "surface has 3 poles in u");
+      ck.testExactNumber(3, surf.numPolesUV(UVSelect.vDirection), "surface has 3 poles in v");
+      ck.testExactNumber(9, surf.numPolesTotal(), "surface has 9 total poles");
+      ck.testExactNumber(3, surf.orderUV(UVSelect.uDirection), "surface has orderU 3");
+      ck.testExactNumber(3, surf.orderUV(UVSelect.vDirection), "surface has orderV 3");
+      ck.testExactNumber(4, surf.knots[UVSelect.uDirection].knots.length, "surface has 4 u knots");
+      ck.testExactNumber(4, surf.knots[UVSelect.vDirection].knots.length, "surface has 4 v knots");
+    }
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -392,14 +407,19 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
     const ck = new Checker();
     const props: IModelJson.BcurveProps = {
       points: [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]],
-      knots: [0, 0, 0, 0, 1, 1, 1, 1],
+      knots: [0, 0, 0, 1, 1, 1],
       order: 4,
     };
     ck.testExactNumber(4, props.points.length, "points has 4 control points");
-    ck.testExactNumber(8, props.knots.length, "knots has 8 entries");
+    ck.testExactNumber(6, props.knots.length, "knots has 6 entries");
 
     const curve = IModelJson.Reader.parse({ bcurve: props });
-    ck.testDefined(curve, "BcurveProps with multi-element points and knots parses at runtime");
+    if (ck.testTrue(curve instanceof BSplineCurve3dBase, "parsed geometry is a BSplineCurve3dBase")) {
+      const bcurve = curve as BSplineCurve3dBase;
+      ck.testExactNumber(4, bcurve.numPoles, "curve has 4 poles");
+      ck.testExactNumber(4, bcurve.order, "curve has order 4");
+      ck.testExactNumber(6, bcurve.knotsRef.length, "curve has 6 knots");
+    }
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -410,17 +430,38 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
     const seg2: IModelJson.CurvePrimitiveProps = { lineSegment: [[1, 0, 0], [2, 0, 0]] };
 
     const pathProps: IModelJson.CurveCollectionProps = { path: [seg1, seg2] };
-    const bagOfCurvesProps: IModelJson.CurveCollectionProps = { bagOfCurves: [seg1, seg2] };
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const bagofCurvesProps: IModelJson.CurveCollectionProps = { bagofCurves: [{ path: [seg1, seg2] }, { path: [seg1, seg2] }] };
-
+    const bagOfCurvesProps1: IModelJson.CurveCollectionProps = { bagOfCurves: [seg1, seg2] };
+    const bagOfCurvesProps2: IModelJson.CurveCollectionProps = { bagOfCurves: [seg1, { path: [seg1, seg2] }] };
     ck.testExactNumber(2, pathProps.path!.length, "path has 2 primitives");
-    ck.testExactNumber(2, bagOfCurvesProps.bagOfCurves!.length, "bagOfCurves has 2 members");
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    ck.testExactNumber(2, bagofCurvesProps.bagofCurves!.length, "bagofCurves has 2 members");
+    ck.testExactNumber(2, bagOfCurvesProps1.bagOfCurves!.length, "bagOfCurves1 has 2 primitive members");
+    ck.testExactNumber(2, bagOfCurvesProps2.bagOfCurves!.length, "bagOfCurves2 has 2 members (1 primitive, 1 nested collection)");
 
-    ck.testDefined(IModelJson.Reader.parse(pathProps), "path parses at runtime");
-    ck.testDefined(IModelJson.Reader.parse(bagOfCurvesProps), "bagOfCurves parses at runtime");
+    const parsedPath = IModelJson.Reader.parse(pathProps);
+    if (ck.testTrue(parsedPath instanceof Path, "parsed path is a Path")) {
+      const path = parsedPath as Path;
+      ck.testExactNumber(2, path.children.length, "path has 2 children");
+      ck.testTrue(path.children[0] instanceof LineSegment3d, "path child 0 is a LineSegment3d");
+      ck.testTrue(path.children[1] instanceof LineSegment3d, "path child 1 is a LineSegment3d");
+    }
+
+    const parsedBag1 = IModelJson.Reader.parse(bagOfCurvesProps1);
+    if (ck.testTrue(parsedBag1 instanceof BagOfCurves, "parsed bagOfCurves1 is a BagOfCurves")) {
+      const bag = parsedBag1 as BagOfCurves;
+      ck.testExactNumber(2, bag.children.length, "bagOfCurves1 has 2 children");
+      ck.testTrue(bag.children[0] instanceof LineSegment3d, "bagOfCurves1 child 0 is a LineSegment3d");
+      ck.testTrue(bag.children[1] instanceof LineSegment3d, "bagOfCurves1 child 1 is a LineSegment3d");
+    }
+
+    const parsedBag2 = IModelJson.Reader.parse(bagOfCurvesProps2);
+    if (ck.testTrue(parsedBag2 instanceof BagOfCurves, "parsed bagOfCurves2 is a BagOfCurves")) {
+      const bag = parsedBag2 as BagOfCurves;
+      ck.testExactNumber(2, bag.children.length, "bagOfCurves2 has 2 children");
+      ck.testTrue(bag.children[0] instanceof LineSegment3d, "bagOfCurves2 child 0 is a LineSegment3d");
+      if (ck.testTrue(bag.children[1] instanceof Path, "bagOfCurves2 child 1 is a nested Path")) {
+        const nestedPath = bag.children[1] as Path;
+        ck.testExactNumber(2, nestedPath.children.length, "nested Path has 2 children");
+      }
+    }
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -441,7 +482,31 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
     ck.testExactNumber(3, parityProps.parityRegion![0].loop.length, "inner loop has 3 primitives");
     ck.testExactNumber(2, unionProps.unionRegion!.length, "unionRegion has 2 regions");
 
-    ck.testDefined(IModelJson.Reader.parse(loopProps), "loop parses at runtime");
+    const parsedLoop = IModelJson.Reader.parse(loopProps);
+    if (ck.testTrue(parsedLoop instanceof Loop, "parsed loop is a Loop")) {
+      const loop = parsedLoop as Loop;
+      ck.testExactNumber(3, loop.children.length, "loop has 3 children");
+      for (let i = 0; i < loop.children.length; ++i)
+        ck.testTrue(loop.children[i] instanceof LineSegment3d, `loop child ${i} is a LineSegment3d`);
+    }
+
+    const parsedParity = IModelJson.Reader.parse(parityProps);
+    if (ck.testTrue(parsedParity instanceof ParityRegion, "parsed parityRegion is a ParityRegion")) {
+      const parity = parsedParity as ParityRegion;
+      ck.testExactNumber(2, parity.children.length, "parityRegion has 2 loops");
+      for (let i = 0; i < parity.children.length; ++i) {
+        if (ck.testTrue(parity.children[i] instanceof Loop, `parityRegion child ${i} is a Loop`))
+          ck.testExactNumber(3, parity.children[i].children!.length, `parityRegion loop ${i} has 3 primitives`);
+      }
+    }
+
+    const parsedUnion = IModelJson.Reader.parse(unionProps);
+    if (ck.testTrue(parsedUnion instanceof UnionRegion, "parsed unionRegion is a UnionRegion")) {
+      const union = parsedUnion as UnionRegion;
+      ck.testExactNumber(2, union.children.length, "unionRegion has 2 loops");
+      for (let i = 0; i < union.children.length; ++i)
+        ck.testTrue(union.children[i] instanceof Loop, `unionRegion child ${i} is a Loop`);
+    }
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -456,7 +521,16 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
     const props: IModelJson.RuledSweepProps = { contour: [contour1, contour2] };
     ck.testExactNumber(2, props.contour.length, "contour has 2 cross-sections");
 
-    ck.testDefined(IModelJson.Reader.parse({ ruledSweep: props }), "ruledSweep parses at runtime");
+    const parsed = IModelJson.Reader.parse({ ruledSweep: props });
+    if (ck.testTrue(parsed instanceof RuledSweep, "parsed geometry is a RuledSweep")) {
+      const sweep = parsed as RuledSweep;
+      const contours = sweep.sweepContoursRef();
+      ck.testExactNumber(2, contours.length, "sweep has 2 contours");
+      for (let i = 0; i < contours.length; ++i) {
+        if (ck.testTrue(contours[i].curves instanceof Loop, `contour ${i} is a Loop`))
+          ck.testExactNumber(3, contours[i].curves.children!.length, `contour ${i} loop has 3 primitives`);
+      }
+    }
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -483,7 +557,15 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
     ck.testExactNumber(8, props.colorIndex!.length, "colorIndex has 8 entries");
     ck.testExactNumber(8, props.edgeMateIndex!.length, "edgeMateIndex has 8 entries");
 
-    ck.testDefined(IModelJson.Reader.parse({ indexedMesh: props }), "indexedMesh parses at runtime");
+    const parsed = IModelJson.Reader.parse({ indexedMesh: props });
+    if (ck.testTrue(parsed instanceof IndexedPolyface, "parsed geometry is an IndexedPolyface")) {
+      const mesh = parsed as IndexedPolyface;
+      ck.testExactNumber(4, mesh.pointCount, "mesh has 4 points");
+      ck.testExactNumber(4, mesh.normalCount, "mesh has 4 normals");
+      ck.testExactNumber(4, mesh.paramCount, "mesh has 4 params");
+      ck.testExactNumber(4, mesh.colorCount, "mesh has 4 colors");
+      ck.testExactNumber(2, mesh.facetCount, "mesh has 2 facets");
+    }
     expect(ck.getNumErrors()).toBe(0);
   });
 });
