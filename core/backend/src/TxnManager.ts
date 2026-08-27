@@ -10,7 +10,7 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnEntityMetadata, TxnProps } from "@itwin/core-common";
+import { BriefcaseIdValue, ChangesetIdWithIndex, ChangesetIndexAndId, ChangesetProps, EntityIdAndClassId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata, ReinstateTxnArgs, ReverseTxnArgs, TxnEntityMetadata, TxnProps } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb } from "./IModelDb";
 import { Element } from "./Element";
@@ -1164,6 +1164,12 @@ export class TxnManager {
 
     if (args.cause === "Conflict") {
       if (args.tableName.startsWith("ec_")) {
+        return DbConflictResolution.Skip;
+      }
+
+      // Skip PRIMARY KEY conflicts for inserted rows that were pre-reserved via SchemaSync - these are the same shared element.
+      const isReserved = (id: any) => typeof (id) === "string" && Id64.getBriefcaseId(id) === BriefcaseIdValue.SchemaSyncElementReserved;
+      if (args.opcode === "Inserted" && args.getPrimaryKeyValues().every(isReserved)) {
         return DbConflictResolution.Skip;
       }
     }

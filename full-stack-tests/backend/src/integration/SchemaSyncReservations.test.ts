@@ -318,6 +318,147 @@ describe("SchemaSync element reservations (concurrent users)", function (this: S
       await b2.reservations.reserveElements({ elements: [catReservation(b2, guid, "Shared-Def")] });
       const idOnB2 = await insertReservedCategory(b2, guid, "Shared-Def");
       expect(idOnB2).to.equal(idOnB1);
+
+      // Both briefcases now have the same reserved id for the shared definition - no conflicts should occur.
+      await b1.pushChanges({ accessToken: "token 1", description: "insert Shared-Def" });
+      await b2.pushChanges({ accessToken: "token 2", description: "insert Shared-Def" });
+
+      // Both briefcases converge on the single shared element with no id/code conflict.
+      await b1.pullChanges({ accessToken: "token 2" });
+      expect(b1.elements.tryGetElementProps(idOnB1)).to.not.be.undefined;
+      expect(b2.elements.tryGetElementProps(idOnB2)).to.not.be.undefined;
+    });
+
+    it("resolves a shared definition when the briefcases push in the opposite order", async () => {
+      const ctx = await createTestIModel();
+      const b1 = await openBriefcase(ctx, "token 1", "briefcase1");
+      const b2 = await openBriefcase(ctx, "token 2", "briefcase2");
+      await enableSchemaSyncOnFirst(b1, ctx);
+      await enableSchemaSyncViaPull(b2, "token 2");
+
+      const guid = Guid.createValue();
+
+      // Both briefcases reserve + insert the same definition offline; they resolve the same reserved id.
+      await b1.reservations.reserveElements({ elements: [catReservation(b1, guid, "Shared-Def")] });
+      const sharedId = await insertReservedCategory(b1, guid, "Shared-Def");
+      await b2.reservations.reserveElements({ elements: [catReservation(b2, guid, "Shared-Def")] });
+      expect(await insertReservedCategory(b2, guid, "Shared-Def")).to.equal(sharedId);
+
+      // Opposite of the previous test: b2 pushes first, then b1 rebases its identical insert on top.
+      // Whichever briefcase pushes second hits the benign reserved-id PRIMARY KEY conflict that is skipped.
+      await b2.pushChanges({ accessToken: "token 2", description: "insert Shared-Def" });
+      await b1.pushChanges({ accessToken: "token 1", description: "insert Shared-Def" });
+
+      // Both briefcases converge on the single shared element with no id/code conflict.
+      await b2.pullChanges({ accessToken: "token 2" });
+      expect(b1.elements.tryGetElementProps(sharedId)).to.not.be.undefined;
+      expect(b2.elements.tryGetElementProps(sharedId)).to.not.be.undefined;
+    });
+
+    it("merges concurrent inserts of multiple shared definitions", async () => {
+      const ctx = await createTestIModel();
+      const b1 = await openBriefcase(ctx, "token 1", "briefcase1");
+      const b2 = await openBriefcase(ctx, "token 2", "briefcase2");
+      await enableSchemaSyncOnFirst(b1, ctx);
+      await enableSchemaSyncViaPull(b2, "token 2");
+
+      const defs = [0, 1, 2].map((i) => ({ guid: Guid.createValue(), name: `Multi-Def-${i}` }));
+
+      // Both briefcases reserve + insert the SAME batch of definitions, offline from each other.
+      await b1.reservations.reserveElements({ elements: defs.map((d) => catReservation(b1, d.guid, d.name)) });
+      await b2.reservations.reserveElements({ elements: defs.map((d) => catReservation(b2, d.guid, d.name)) });
+
+      const ids: Id64String[] = [];
+      for (const d of defs)
+        ids.push(await insertReservedCategory(b1, d.guid, d.name));
+      for (let i = 0; i < defs.length; i++)
+        expect(await insertReservedCategory(b2, defs[i].guid, defs[i].name)).to.equal(ids[i]);
+
+      await b1.pushChanges({ accessToken: "token 1", description: "b1 insert batch" });
+      // b2 rebases its identical batch on top of b1's; every reserved-id insert conflict is skipped.
+      await b2.pushChanges({ accessToken: "token 2", description: "b2 insert batch" });
+
+      await b1.pullChanges({ accessToken: "token 1" });
+      for (const id of ids) {
+        expect(isReservedId(id)).to.be.true;
+        expect(b1.elements.tryGetElementProps(id)).to.not.be.undefined;
+        expect(b2.elements.tryGetElementProps(id)).to.not.be.undefined;
+      }
+    });
+
+    it("keeps independently-reserved definitions while skipping the shared reserved-id conflict", async () => {
+      const ctx = await createTestIModel();
+      const b1 = await openBriefcase(ctx, "token 1", "briefcase1");
+      const b2 = await openBriefcase(ctx, "token 2", "briefcase2");
+      await enableSchemaSyncOnFirst(b1, ctx);
+      await enableSchemaSyncViaPull(b2, "token 2");
+
+      const shared = Guid.createValue();
+      const ownB1 = Guid.createValue();
+      const ownB2 = Guid.createValue();
+
+      // Both briefcases reserve the shared definition; each also reserves its own distinct one.
+      await b1.reservations.reserveElements({ elements: [catReservation(b1, shared, "Shared"), catReservation(b1, ownB1, "Own-B1")] });
+      await b2.reservations.reserveElements({ elements: [catReservation(b2, shared, "Shared"), catReservation(b2, ownB2, "Own-B2")] });
+
+      const sharedIdB1 = await insertReservedCategory(b1, shared, "Shared");
+      const ownIdB1 = await insertReservedCategory(b1, ownB1, "Own-B1");
+      await b1.pushChanges({ accessToken: "token 1", description: "b1 shared + own" });
+
+      const sharedIdB2 = await insertReservedCategory(b2, shared, "Shared");
+      const ownIdB2 = await insertReservedCategory(b2, ownB2, "Own-B2");
+      expect(sharedIdB2).to.equal(sharedIdB1);
+      expect(ownIdB2).to.not.equal(ownIdB1);
+
+      // b2 rebases: the shared reserved-id insert conflicts (skipped), while its own insert lands cleanly.
+      await b2.pushChanges({ accessToken: "token 2", description: "b2 shared + own" });
+
+      // Every definition survives on both briefcases: the shared one and each briefcase's own.
+      await b1.pullChanges({ accessToken: "token 1" });
+      for (const id of [sharedIdB1, ownIdB1, ownIdB2]) {
+        expect(b1.elements.tryGetElementProps(id)).to.not.be.undefined;
+        expect(b2.elements.tryGetElementProps(id)).to.not.be.undefined;
+      }
+    });
+
+    it("aborts the rebase when two briefcases mint the same ordinary (unreserved) ElementId", async () => {
+      // Reservations exist precisely to hand out globally-unique ids. When that coordination is bypassed
+      // and two briefcases independently force the SAME ordinary ElementId, the second push must NOT be
+      // silently skipped the way a reserved-id conflict is - it is a genuine divergence, so the rebase aborts.
+      const ctx = await createTestIModel();
+      const b1 = await openBriefcase(ctx, "token 1", "briefcase1");
+      const b2 = await openBriefcase(ctx, "token 2", "briefcase2");
+      await enableSchemaSyncOnFirst(b1, ctx);
+      await enableSchemaSyncViaPull(b2, "token 2");
+
+      // An ordinary id outside the reserved range (briefcase id 500 is never assigned to these briefcases).
+      const collidingId = Id64.fromLocalAndBriefcaseIds(1, 500);
+      expect(isReservedId(collidingId)).to.be.false;
+
+      // No federationGuid => no reservation gate; forceUseId pins both inserts to the same id.
+      const insertForcedLineStyle = async (bc: BriefcaseDb, name: string): Promise<void> => {
+        await bc.locks.acquireLocks({ shared: IModel.dictionaryId });
+        withEditTxn(bc, (txn) => txn.insertElement({
+          classFullName: LineStyle.classFullName,
+          model: IModel.dictionaryId,
+          code: LineStyle.createCode(bc, IModel.dictionaryId, name),
+          id: collidingId,
+        }, { forceUseId: true }));
+      };
+
+      await insertForcedLineStyle(b1, "Collide-A");
+      await b1.pushChanges({ accessToken: "token 1", description: "b1 insert" });
+
+      await insertForcedLineStyle(b2, "Collide-B");
+
+      // b2 rebases its insert on top of b1's; the non-reserved PRIMARY KEY conflict aborts the rebase.
+      let error: Error | undefined;
+      try {
+        await b2.pushChanges({ accessToken: "token 2", description: "b2 insert" });
+      } catch (e) {
+        error = e as Error;
+      }
+      expect(error?.message).to.equal("PRIMARY KEY insert conflict. Aborting rebase.");
     });
   });
 
