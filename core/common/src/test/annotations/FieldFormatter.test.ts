@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BeEvent, BeUnorderedUiEvent } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 import {
-  BasicUnitsProvider, Format, FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, FormatterSpec, FormattingSpecEntry,
-  FormattingSpecProvider, ParserSpec, Units,
+  BasicUnitsProvider, Format, FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, FormatterSpec, Units,
 } from "@itwin/core-quantity";
-import { collectFieldQuantityPairs, FieldValue, formatFieldValue as fmtFldVal, formatFieldValueWithSpecProvider } from "../../internal/annotations/FieldFormatter";
+import { collectFieldQuantityPairs, FieldSpecProvider, FieldValue, formatFieldValue as fmtFldVal, formatFieldValueWithSpecProvider } from "../../internal/annotations/FieldFormatter";
 import type { FieldFormatOptions, FieldPrimitiveValue, FieldPropertyType } from "../../core-common";
 
 function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
@@ -222,10 +221,10 @@ describe("Spec-provider field formatting", () => {
     formats: Record<string, FormatDefinition>,
     value: FieldValue,
     options?: FieldFormatOptions,
-  ): Promise<FormattingSpecProvider> {
+  ): Promise<FieldSpecProvider> {
     const formatsProvider = createFakeFormatsProvider(formats);
     const unitsProvider = new BasicUnitsProvider();
-    const specs = new Map<string, FormattingSpecEntry>();
+    const specs = new Map<string, FormatterSpec>();
 
     const candidates = collectFieldQuantityPairs({
       overrideName: options?.quantity?.kindOfQuantity,
@@ -251,16 +250,15 @@ describe("Spec-provider field formatting", () => {
       }
 
       const candidateFormat = await Format.createFromJSON("fieldFormat", unitsProvider, formatProps);
-      specs.set(`${candidate.name}|${candidate.persistenceUnitName}`, {
-        formatterSpec: await FormatterSpec.create("fieldFormat", candidateFormat, unitsProvider, persistenceUnit),
-        parserSpec: await ParserSpec.create(candidateFormat, unitsProvider, persistenceUnit),
-      });
+      specs.set(
+        `${candidate.name}|${candidate.persistenceUnitName}`,
+        await FormatterSpec.create("fieldFormat", candidateFormat, unitsProvider, persistenceUnit),
+      );
     }
 
     return {
-      getSpecsByNameAndUnit: (args) => specs.get(`${args.name}|${args.persistenceUnitName}`),
+      getFormatterSpec: (args) => specs.get(`${args.name}|${args.persistenceUnitName}`),
       formatQuantity: (magnitude, spec) => spec.applyFormatting(magnitude),
-      onFormattingReady: new BeUnorderedUiEvent<void>(),
     };
   }
 

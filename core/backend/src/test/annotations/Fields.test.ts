@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, formatFieldValueWithSpecProvider, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
-import { FormatDefinition, FormatterSpec, FormattingSpecEntry, FormattingSpecProvider } from "@itwin/core-quantity";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldSpecProvider, FieldValue, formatFieldValueWithSpecProvider, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
+import { FormatDefinition, FormatterSpec } from "@itwin/core-quantity";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
-import { BeUnorderedUiEvent, DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -835,9 +835,8 @@ describe("Field evaluation", () => {
     it("renders a numeric leaf as its raw value when the field supplies an incomplete key", () => {
       // The user-visible half of the contract: "quantity" with no resolvable (KoQ, unit) pair is
       // indistinguishable from the plain string rendering, and records no pre-warm miss.
-      const provider: FormattingSpecProvider = {
-        onFormattingReady: new BeUnorderedUiEvent(),
-        getSpecsByNameAndUnit: () => undefined,
+      const provider: FieldSpecProvider = {
+        getFormatterSpec: () => undefined,
         formatQuantity: (m) => `FORMATTED:${m}`,
       };
 
@@ -1025,17 +1024,16 @@ describe("Field evaluation", () => {
     });
 
     it("routes quantity formatting through provider.formatQuantity, not spec.applyFormatting", () => {
-      // Regression: the sync path must honor the FormattingSpecProvider contract by rendering
+      // Regression: the sync path must honor the FieldSpecProvider contract by rendering
       // magnitudes via `provider.formatQuantity(magnitude, spec)`, so caller-side hooks
       // (caching, telemetry, per-call substitution) apply. Directly calling
       // `spec.applyFormatting` would bypass those hooks silently. Exercised directly against the
       // internal helper with a hand-rolled provider so the two entry points differ observably.
       const fakeSpec = { applyFormatting: (m: number) => `SPEC:${m}` } as unknown as FormatterSpec;
-      const provider: FormattingSpecProvider = {
-        onFormattingReady: new BeUnorderedUiEvent(),
-        getSpecsByNameAndUnit(args) {
+      const provider: FieldSpecProvider = {
+        getFormatterSpec(args) {
           if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
-            return { formatterSpec: fakeSpec } as FormattingSpecEntry;
+            return fakeSpec;
           }
           return undefined;
         },
@@ -1052,11 +1050,10 @@ describe("Field evaluation", () => {
       // Same as above but for coordinate values — every component should render via
       // `provider.formatQuantity`, not `spec.applyFormatting`.
       const fakeSpec = { applyFormatting: (m: number) => `SPEC:${m}` } as unknown as FormatterSpec;
-      const provider: FormattingSpecProvider = {
-        onFormattingReady: new BeUnorderedUiEvent(),
-        getSpecsByNameAndUnit(args) {
+      const provider: FieldSpecProvider = {
+        getFormatterSpec(args) {
           if (args.name === "Fields.LENGTH" && args.persistenceUnitName === "Units.M") {
-            return { formatterSpec: fakeSpec } as FormattingSpecEntry;
+            return fakeSpec;
           }
           return undefined;
         },

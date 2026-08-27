@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { FormatterSpec, FormattingSpecArgs, FormattingSpecProvider } from "@itwin/core-quantity";
+import { FormatterSpec, FormattingSpecArgs } from "@itwin/core-quantity";
 import { DateTimeFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 
 /** A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -193,8 +193,8 @@ function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
 /** Renders a quantity or coordinate [[FieldValue]] with `formatMagnitude` and wraps the result
  * with prefix/suffix/case. Coordinates render each component and join them as `(x, y[, z])`.
  *
- * Callers route `formatMagnitude` through [FormattingSpecProvider.formatQuantity]($core-quantity)
- * rather than [FormatterSpec.applyFormatting]($core-quantity) directly, so provider-side hooks
+ * Callers route `formatMagnitude` through [[FieldSpecProvider.formatQuantity]] rather than
+ * [FormatterSpec.applyFormatting]($core-quantity) directly, so provider-side hooks
  * (caching, telemetry, per-call KoQ substitution) are honored.
  */
 function applySpecToFieldValue(
@@ -218,6 +218,21 @@ function applySpecToFieldValue(
   return formatString(formatted, options);
 }
 
+/** The provider capability that synchronous field evaluation needs: look up an
+ * already-warmed [FormatterSpec]($core-quantity), and format a magnitude through it.
+ *
+ * Deliberately narrower than [FormattingSpecProvider]($core-quantity), whose
+ * [FormattingSpecEntry]($core-quantity) also carries a [ParserSpec]($core-quantity) — nothing on
+ * this path parses, so a provider built solely to format fields need not produce one.
+ * @internal
+ */
+export interface FieldSpecProvider {
+  /** Returns the pre-warmed spec for `args`, or `undefined` if it was never warmed. */
+  getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined;
+  /** Applies `formatSpec` to `magnitude`. */
+  formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+}
+
 /** Looks up an already-warmed [FormatterSpec]($core-quantity) for `value` from `provider`,
  * walking the shared [[collectFieldQuantityPairs]] candidates in priority order so that
  * evaluation consults exactly the requirements pre-warm produced.
@@ -228,7 +243,7 @@ function applySpecToFieldValue(
 function lookupSyncSpec(
   quantityOptions: QuantityFieldFormatOptions | undefined,
   value: FieldValue,
-  provider: FormattingSpecProvider,
+  provider: FieldSpecProvider,
 ): { spec?: FormatterSpec, candidates: FormattingSpecArgs[] } {
   const candidates = collectFieldQuantityPairs({
     overrideName: quantityOptions?.kindOfQuantity,
@@ -237,7 +252,7 @@ function lookupSyncSpec(
     propertyPersistence: value.persistenceUnitFullName,
   });
   for (const candidate of candidates) {
-    const spec = provider.getSpecsByNameAndUnit(candidate)?.formatterSpec;
+    const spec = provider.getFormatterSpec(candidate);
     if (spec) {
       return { spec, candidates };
     }
@@ -245,10 +260,9 @@ function lookupSyncSpec(
   return { candidates };
 }
 
-/** Formats `"quantity"` and `"coordinate"` values via a caller-supplied
- * [FormattingSpecProvider]($core-quantity) whose [FormatterSpec]($core-quantity)s were resolved
- * ahead of time. This is what keeps field evaluation synchronous on the txn-callback path,
- * which cannot await.
+/** Formats `"quantity"` and `"coordinate"` values via a caller-supplied [[FieldSpecProvider]]
+ * whose [FormatterSpec]($core-quantity)s were resolved ahead of time. This is what keeps field
+ * evaluation synchronous on the txn-callback path, which cannot await.
  *
  * Callers routing by [QuantityFieldFormatOptions.formatSet]($common) are expected to select the
  * matching provider before calling this function.
@@ -263,7 +277,7 @@ function lookupSyncSpec(
 export function formatFieldValueWithSpecProvider(
   value: FieldValue,
   options: FieldFormatOptions | undefined,
-  provider: FormattingSpecProvider,
+  provider: FieldSpecProvider,
   onUnresolved?: (candidates: FormattingSpecArgs[]) => void,
 ): string | undefined {
   if (value.type !== "quantity" && value.type !== "coordinate") {

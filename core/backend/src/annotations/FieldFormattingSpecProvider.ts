@@ -8,11 +8,12 @@
 
 import { BeUnorderedUiEvent } from "@itwin/core-bentley";
 import {
-  createUnitsProvider, Format, FormatsProvider, FormatterSpec, FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParserSpec,
+  createUnitsProvider, Format, FormatsProvider, FormatterSpec, FormattingSpecArgs,
   UnitProps,
   UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import { FormatSet, FormatSetFormatsProvider, SchemaFormatsProvider, SchemaItem, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { FieldSpecProvider } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 import { specKey } from "../internal/annotations/specKey";
 
@@ -54,17 +55,21 @@ function readUnitFullNames(iModel: IModelDb): Map<string, string> {
   return map;
 }
 
-/** Builds the [FormatterSpec]($core-quantity) / [ParserSpec]($core-quantity) pair for one
- * requirement, or `undefined` when the format fails to resolve, the persistence unit fails to
- * resolve, or the two cannot be converted between. All three must succeed — a format that cannot
- * convert the persisted magnitude is not usable, so the caller falls back as it would for any
- * other unresolved override.
+/** Builds the [FormatterSpec]($core-quantity) for one requirement, or `undefined` when the
+ * format fails to resolve, the persistence unit fails to resolve, or the two cannot be converted
+ * between. All three must succeed — a format that cannot convert the persisted magnitude is not
+ * usable, so the caller falls back as it would for any other unresolved override.
+ *
+ * Only a formatter is built, never the matching [ParserSpec]($core-quantity): field evaluation
+ * only ever formats, so parsing every warmed requirement would spend roughly half the warm-up on
+ * a path that does not exist. Applications that need to parse can build one from the same
+ * [Format]($core-quantity) themselves.
  */
-async function buildSpecEntry(
+async function buildSpec(
   args: FormattingSpecArgs,
   formatsProvider: FormatsProvider,
   unitsProvider: UnitsProvider,
-): Promise<FormattingSpecEntry | undefined> {
+): Promise<FormatterSpec | undefined> {
   const formatProps = await formatsProvider.getFormat(args.name, args.system);
   if (!formatProps) {
     return undefined;
@@ -93,10 +98,7 @@ async function buildSpecEntry(
     return undefined;
   }
 
-  return {
-    formatterSpec,
-    parserSpec: await ParserSpec.create(format, unitsProvider, persistenceUnit),
-  };
+  return formatterSpec;
 }
 
 /** The pre-warmed specs backing a single FormatSet, or — for the default bucket — the iModel's
@@ -104,15 +106,8 @@ async function buildSpecEntry(
  * naming a FormatSet that lacks an entry for its KindOfQuantity still resolves the schema
  * presentation format rather than dropping to the raw string.
  */
-class FieldSpecBucket implements FormattingSpecProvider {
-  /** Never raised by this class. [FormattingSpecProvider]($core-quantity) requires it, but a
-   * bucket is warmed as one step of [[FieldFormattingSpecProvider.warmUp]], which warms every
-   * bucket and then raises its own event once. Raising here too would emit N+1 times per warm,
-   * and the intermediate raises would announce readiness while sibling buckets are still
-   * unwarmed.
-   */
-  public readonly onFormattingReady = new BeUnorderedUiEvent<void>();
-  private readonly _specs = new Map<string, FormattingSpecEntry>();
+class FieldSpecBucket implements FieldSpecProvider {
+  private readonly _specs = new Map<string, FormatterSpec>();
 
   public constructor(
     private readonly _formatsProvider: FormatsProvider,
@@ -123,8 +118,8 @@ class FieldSpecBucket implements FormattingSpecProvider {
     private readonly _formatSet: FormatSet | undefined = undefined,
   ) { }
 
-  public getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined {
-    return this._specs.get(specKey(args)) ?? this._fallback?.getSpecsByNameAndUnit(args);
+  public getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined {
+    return this._specs.get(specKey(args)) ?? this._fallback?.getFormatterSpec(args);
   }
 
   public formatQuantity(magnitude: number, formatSpec: FormatterSpec): string {
@@ -160,7 +155,7 @@ class FieldSpecBucket implements FormattingSpecProvider {
    *
    * A requirement this bucket's FormatSet does not define is skipped outright. Such a lookup
    * would delegate to the fallback bucket's own formats provider and produce a spec equal to
-   * the one the fallback already caches, which [[getSpecsByNameAndUnit]] finds anyway — so
+   * the one the fallback already caches, which [[getFormatterSpec]] finds anyway — so
    * building it here would only duplicate that entry. Skipping matters because the work
    * avoided is not just the spec construction: for a schema-backed KindOfQuantity it also
    * avoids re-walking the schema's presentation formats, which
@@ -177,9 +172,9 @@ class FieldSpecBucket implements FormattingSpecProvider {
         continue;
       }
 
-      const entry = await buildSpecEntry(args, this._formatsProvider, unitsProvider);
-      if (entry) {
-        this._specs.set(key, entry);
+      const spec = await buildSpec(args, this._formatsProvider, unitsProvider);
+      if (spec) {
+        this._specs.set(key, spec);
       }
     }
   }
@@ -260,7 +255,7 @@ export interface FieldFormattingSpecProviderArgs {
  * warm, and register one in a single call — normally when the iModel opens.
  * @beta
  */
-export class FieldFormattingSpecProvider implements FormattingSpecProvider {
+export class FieldFormattingSpecProvider {
   /** Raised after each [[warmUp]] completes. */
   public readonly onFormattingReady = new BeUnorderedUiEvent<void>();
   /** The unit system used to select presentation formats from the iModel's schemas. */
@@ -397,15 +392,15 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
    * against the iModel's schema formats.
    * @internal
    */
-  public getProviderFor(formatSet: string | undefined): FormattingSpecProvider {
+  public getProviderFor(formatSet: string | undefined): FieldSpecProvider {
     return (formatSet ? this._buckets.get(formatSet) : undefined) ?? this._default;
   }
 
   /** Looks up a spec in the schema-backed default bucket. Fields routed to a FormatSet are
    * resolved through [[getProviderFor]] instead.
    */
-  public getSpecsByNameAndUnit(args: FormattingSpecArgs): FormattingSpecEntry | undefined {
-    return this._default.getSpecsByNameAndUnit(args);
+  public getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined {
+    return this._default.getFormatterSpec(args);
   }
 
   /** Applies `formatSpec` to `magnitude`. */
@@ -418,7 +413,7 @@ export class FieldFormattingSpecProvider implements FormattingSpecProvider {
    *
    * Each FormatSet bucket is warmed only with the requirements its own FormatSet defines.
    * Anything else it would have resolved by falling through to the default bucket, which
-   * [[getSpecsByNameAndUnit]] does at lookup time anyway, so warming it per bucket would just
+   * [[getFormatterSpec]] does at lookup time anyway, so warming it per bucket would just
    * duplicate the default's entry. Requirements already cached are skipped, making repeated
    * calls cheap.
    *
