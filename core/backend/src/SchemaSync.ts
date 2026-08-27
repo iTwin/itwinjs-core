@@ -274,7 +274,14 @@ export namespace SchemaSync {
     return readLocalSyncProps(arg).containerProps;
   }
 
-  const sharedAccessByContainer = new Map<string, CloudAccess>();
+  interface SharedCloudAccess {
+    access: CloudAccess;
+    key: string;
+    referenceCount: number;
+  }
+
+  const sharedAccessByContainer = new Map<string, SharedCloudAccess | Promise<SharedCloudAccess>>();
+  const sharedAccessByInstance = new WeakMap<CloudAccess, SharedCloudAccess>();
 
   export async function getCloudAccess(arg: IModelOrFileName): Promise<CloudAccess> {
     const { containerProps, testCacheName } = readLocalSyncProps(arg);
@@ -282,17 +289,52 @@ export namespace SchemaSync {
       throw new IModelError(DbResult.BE_SQLITE_NOTFOUND, "iModel does not have a SchemaSyncDb");
 
     const sharedAccessKey = JSON.stringify(containerProps) + (testCacheName ?? "");
-    const cached = sharedAccessByContainer.get(sharedAccessKey);
-    if (cached)
-      return cached;
+    let shared = sharedAccessByContainer.get(sharedAccessKey);
+    if (undefined === shared) {
+      const pending = (async () => {
+        const accessToken = await CloudSqlite.requestToken(containerProps);
+        const access = new CloudAccess({ ...containerProps, accessToken });
+        Object.assign(access.lockParams, lockParams);
+        if (testCacheName)
+          access.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: testCacheName }));
 
-    const accessToken = await CloudSqlite.requestToken(containerProps);
-    const access = new CloudAccess({ ...containerProps, accessToken });
-    Object.assign(access.lockParams, lockParams);
-    if (testCacheName)
-      access.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: testCacheName }));
-    sharedAccessByContainer.set(sharedAccessKey, access);
-    return access;
+        const created = { access, key: sharedAccessKey, referenceCount: 0 };
+        sharedAccessByInstance.set(access, created);
+        return created;
+      })();
+      sharedAccessByContainer.set(sharedAccessKey, pending);
+      try {
+        shared = await pending;
+        if (sharedAccessByContainer.get(sharedAccessKey) === pending)
+          sharedAccessByContainer.set(sharedAccessKey, shared);
+      } catch (error) {
+        if (sharedAccessByContainer.get(sharedAccessKey) === pending)
+          sharedAccessByContainer.delete(sharedAccessKey);
+        throw error;
+      }
+    } else if (shared instanceof Promise) {
+      shared = await shared;
+    }
+
+    ++shared.referenceCount;
+    return shared.access;
+  }
+
+  /** Release an access obtained through [[getCloudAccess]]. */
+  export function releaseCloudAccess(access: CloudAccess): void {
+    const shared = sharedAccessByInstance.get(access);
+    if (undefined === shared) {
+      access.close();
+      return;
+    }
+
+    if (--shared.referenceCount > 0)
+      return;
+
+    sharedAccessByInstance.delete(access);
+    if (sharedAccessByContainer.get(shared.key) === shared)
+      sharedAccessByContainer.delete(shared.key);
+    access.close();
   }
 
   /** Arguments for [[withLockedAccess]]. */
@@ -307,7 +349,7 @@ export namespace SchemaSync {
     try {
       await access.withLockedDb(args, async () => operation(access));
     } finally {
-      access.close();
+      releaseCloudAccess(access);
     }
   }
 
