@@ -14,7 +14,8 @@ the app supplies it, either directly on the layer's settings or through a resolv
 class MapLayerResource {
   /** e.g. { Authorization: "Bearer ..." } */
   headers?: Record<string, string>;
-  /** Appended to every request. Runtime-only successor of settings.unsavedQueryParams. */
+  /** Appended to every request. Runtime-only successor of settings.unsavedQueryParams,
+   * which will be deprecated. */
   queryParameters?: Record<string, string>;
   /** Cesium contract: inspect the failure, optionally mutate this resource
    * (e.g. refresh the Authorization header), return true to retry the request. */
@@ -27,9 +28,13 @@ class MapLayerResource {
 
 Two rules define its place in the API:
 
-1. **It is never serialized.** `ImageMapLayerSettings` remains the only persisted description of a
-   layer (url, formatId, name, `savedQueryParams`, …). Everything on a `MapLayerResource` is
-   runtime-only — that's what makes it safe to put credentials on it.
+1. **It is never serialized — not even partially.** `ImageMapLayerSettings` remains the only
+   persisted description of a layer (url, formatId, name, `savedQueryParams`, …). Query parameters
+   that must round-trip belong on the settings; parameters on the resource are runtime-only.
+   This is deliberate: choosing which object a value goes on *is* choosing whether it persists,
+   and keeping the boundary at the class level (rather than per field) is what makes it safe to
+   put credentials on a resource. Per-field serialization was considered and rejected — its
+   failure mode is a token silently written into the view JSON.
 2. **The engine reads it live.** Assign or replace it at any time; the next request uses it.
 
 ## Integration
@@ -151,9 +156,12 @@ doubt, leave the default; the cost of a wrong `true` is a little performance, th
   persisted layer id (`id?: string` on `CommonMapLayerProps`, minted at creation) at some point.
   Unlike the rejected *resource/behavior* id, a pure identity id is safe to persist: it claims
   "same layer as before," not "how to authenticate it."
-- Supersedes: `settings.unsavedQueryParams` (→ `queryParameters`), `applyToRequest`/
-  `isAuthenticationError` on the access client (transitional — see below), and prototype
-  step 1's per-format `setAccessClientResolver` (→ the single `resourceResolver` slot).
+- Supersedes: `settings.unsavedQueryParams` (→ `queryParameters`, deprecate once the resource
+  ships), `settings.userName`/`password` (→ a Basic `Authorization` header on the resource —
+  **eventual** deprecation only: the ArcGIS legacy-token flow, `validateSource`/`MapLayerSource`
+  surface and the widget's credentials dialog consume these fields and must migrate first),
+  `applyToRequest`/`isAuthenticationError` on the access client (transitional — see below), and
+  prototype step 1's per-format `setAccessClientResolver` (→ the single `resourceResolver` slot).
 - **Transitional `applyToRequest` (parent branch `MichelD/MapLayerAuthHeader`):** its TSDoc and
   docs state the redirect/SSO/cache policies unconditionally — qualify the *mechanism* sentences
   with "by default" before any opt-out ships (guarantee sentences about secrets stay absolute).
