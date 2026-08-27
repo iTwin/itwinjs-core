@@ -23,10 +23,7 @@ import { specKey } from "../internal/annotations/specKey";
  * @beta
  */
 export interface UnresolvedFieldFormat extends FormattingSpecArgs {
-  /** The [QuantityFieldFormatOptions.formatSet]($common) of the field that missed, if it declared
-   * one. Diagnostic only: [[FieldFormattingSpecProvider.warmUp]] warms every bucket, so it does
-   * not need this to act on a miss.
-   */
+  /** The [QuantityFieldFormatOptions.formatSet]($common) key of the field that missed. */
   formatSet?: string;
 }
 
@@ -40,7 +37,7 @@ export interface UnresolvedFieldFormat extends FormattingSpecArgs {
 function readUnitFullNames(iModel: IModelDb): Map<string, string> {
   const map = new Map<string, string>();
   iModel.withQueryReader(
-    "SELECT s.Alias, s.Name, u.Name FROM meta.UnitDef u JOIN meta.ECSchemaDef s ON u.Schema.Id = s.ECInstanceId",
+    "SELECT schemaDef.Alias, schemaDef.Name, unitDef.Name FROM meta.UnitDef unitDef JOIN meta.ECSchemaDef schemaDef ON unitDef.Schema.Id = schemaDef.ECInstanceId",
     (reader) => {
       for (const row of reader) {
         const [alias, schemaName, unitName] = [row[0] as string, row[1] as string, row[2] as string];
@@ -77,9 +74,9 @@ async function buildSpec(
 
   let persistenceUnit: UnitProps | undefined;
   try {
-    // The provider built in the constructor reports an unknown unit as an invalid BadUnit rather
-    // than throwing, so `isValid` below is what actually rejects. The catch is defensive: nothing
-    // in the UnitsProvider contract forbids throwing.
+    // The [BasicUnitsProvider]($core-quantity) built in the constructor (via [createUnitsProvider]($core-quantity))
+    // reports an unknown unit as an invalid BadUnit rather than throwing, so `isValid` below is
+    // what actually rejects. The catch is defensive: nothing in the UnitsProvider contract forbids throwing.
     persistenceUnit = await unitsProvider.findUnitByName(args.persistenceUnitName);
   } catch {
     return undefined;
@@ -159,10 +156,7 @@ class FieldSpecBucket implements FieldSpecProvider {
    * A requirement this bucket's FormatSet does not define is skipped outright. Such a lookup
    * would delegate to the fallback bucket's own formats provider and produce a spec equal to
    * the one the fallback already caches, which [[getFormatterSpec]] finds anyway — so
-   * building it here would only duplicate that entry. Skipping matters because the work
-   * avoided is not just the spec construction: for a schema-backed KindOfQuantity it also
-   * avoids re-walking the schema's presentation formats, which
-   * [SchemaFormatsProvider]($ecschema-metadata) redoes on every call.
+   * building it here would only duplicate that entry.
    */
   public async warmUp(requirements: FormattingSpecArgs[], unitsProvider: UnitsProvider): Promise<void> {
     for (const args of requirements) {
@@ -303,8 +297,7 @@ export class FieldFormattingSpecProvider {
    *
    * @note Applications registering the provider for an iModel should call
    * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend) instead, which
-   * creates, warms and registers in one step. Use this directly only for a provider that is not
-   * registered against an iModel.
+   * creates, warms and registers in one step.
    * @beta
    */
   public static async create(args: FieldFormattingSpecProviderArgs): Promise<FieldFormattingSpecProvider> {
@@ -313,30 +306,18 @@ export class FieldFormattingSpecProvider {
     return provider;
   }
 
-  /** Enumerates one [FormattingSpecArgs]($core-quantity) for every
-   * [KindOfQuantity]($ecschema-metadata) declared by `iModel`'s schemas whose persistence unit
-   * resolves, giving applications a schema-derived starting set to pass to [[warmUp]] or to
+  /** Enumerates one [FormattingSpecArgs]($core-quantity) per [KindOfQuantity]($ecschema-metadata)
+   * declared by `iModel`'s schemas whose persistence unit resolves — a schema-derived starting
+   * set to pass to [[warmUp]] or to
    * [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend).
    *
-   * Cost is bounded by the schemas, not by the data: it is two metadata queries and does not
-   * grow with the number of annotations, elements or fields in the iModel. That makes it safe
-   * to call on open. The trade is that it warms every declared KindOfQuantity whether or not
-   * anything references it, so on an iModel with many schemas it builds specs that go unused.
+   * Two metadata queries, bounded by the schemas rather than by the data, so it is safe to call
+   * on open. The trade is that it warms every declared KindOfQuantity, referenced or not.
    *
-   * **This is a floor, not a ceiling.** It covers only pairs a *property* declares. It cannot
-   * see:
-   *  - a [FieldRun]($common) whose `formatOptions.quantity.persistenceUnit` overrides the
-   *    property's persistence unit — the overriding pair may name a unit no property declares;
-   *  - a `"coordinate"` field, or a field on a property with no KindOfQuantity, where both
-   *    halves of the key come from the field's own overrides.
-   *
-   * Leaving those unwarmed is not a cosmetic shortfall: evaluation resolves the *property's*
-   * pair instead and scales the value by the wrong unit. Applications that let fields override
-   * quantity formatting must therefore supplement this with requirements gathered from the
-   * fields themselves — via
+   * This is intended for the iModel level. Use
    * [ElementDrivesTextAnnotation.collectFieldFormattingRequirements]($backend) or
-   * [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend) — and should treat
-   * [[misses]] as the check that they have.
+   * [ElementDrivesTextAnnotation.getFieldFormattingRequirements]($backend) to gather requirements
+   * for [FieldRun]($common)s with overrides.
    * @beta
    */
   public static collectSchemaFormattingRequirements(iModel: IModelDb): FormattingSpecArgs[] {
