@@ -1200,8 +1200,9 @@ export class RegionOps {
         });
       }
     }
+    const radianTolerance = 10000 * Geometry.smallAngleRadians; // be generous, and rely on curvature to break ties
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);
-    const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance);
+    const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance, radianTolerance);
     if (addBridges && hasOpenCurve)
       RegionOps.removeExtraneousBridgeEdges(graph);
     const areaTol = this.computeMinimumArea(tolerance);

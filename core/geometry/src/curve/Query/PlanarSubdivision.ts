@@ -104,6 +104,7 @@ export class PlanarSubdivision {
     primitives: CurvePrimitive[],
     allPairs: CurveLocationDetailPair[],
     mergeTolerance: number = Geometry.smallMetricDistance,
+    radianTolerance: number = Geometry.smallAngleRadians,
   ): HalfEdgeGraph {
     // map from key CurvePrimitive to CurveLocationDetailPair
     const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();
@@ -152,7 +153,7 @@ export class PlanarSubdivision {
       this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0, mergeTolerance);
     }
     // every edge got its sortAngle defined by addHalfEdge
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0, mergeTolerance);
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0, mergeTolerance, radianTolerance);
     return graph;
   }
 
