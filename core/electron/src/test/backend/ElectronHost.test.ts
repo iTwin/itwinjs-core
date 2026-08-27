@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import type { BrowserWindow } from "electron";
 import * as path from "path";
 import { assert } from "chai";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
@@ -201,6 +202,10 @@ async function testWindowSizeSettings() {
   window.unmaximize();
   assert(await waitUntil(() => savedMaximized() === window.isMaximized()));
 
+  // Windows restores from maximized asynchronously. A resize issued before that settles is overwritten
+  // when the restored bounds arrive and win the last debounced write.
+  await waitForStableBounds(window);
+
   const width = 250;
   const height = 251;
   window.setSize(width, height);
@@ -212,15 +217,31 @@ async function testWindowSizeSettings() {
   assert(await waitUntil(() => savedSizeAndPos()?.x === x && savedSizeAndPos()?.y === y));
 }
 
+/** Longer than `ElectronHost`'s 200ms window state debounce, so a stable sample means nothing is pending. */
+const settleInterval = BeDuration.fromMilliseconds(400);
+
 /**
- * Polls `condition` until it holds, for up to ~1.25 seconds.
+ * Polls `condition` until it holds, for up to ~5 seconds.
  * @note `ElectronHost` persists window state from a debounced handler, so the settings file lags the window.
  */
 async function waitUntil(condition: () => boolean): Promise<boolean> {
-  for (let i = 0; i < 25 && !condition(); ++i)
+  for (let i = 0; i < 100 && !condition(); ++i)
     await BeDuration.wait(50);
 
   return condition();
+}
+
+/** Waits until the window reports the same bounds across a full settle interval, for up to ~4 seconds. */
+async function waitForStableBounds(window: BrowserWindow): Promise<void> {
+  let previous = "";
+  for (let i = 0; i < 10; ++i) {
+    const current = JSON.stringify(window.getBounds());
+    if (current === previous)
+      return;
+
+    previous = current;
+    await settleInterval.wait();
+  }
 }
 
 function assertElectronHostNotInitialized() {
