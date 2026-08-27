@@ -496,7 +496,7 @@ export namespace SchemaSync {
   export interface RepairForIModelArgs {
     /** A clean SchemaSync-enabled briefcase at the tip of the iModel timeline. */
     iModel: BriefcaseDb;
-    /** Include the schema-owned EC, BeSQLite, and DgnDb profile table definitions. */
+    /** Include the schema-owned EC and BeSQLite profile table definitions. */
     scope?: RepairScope;
   }
 

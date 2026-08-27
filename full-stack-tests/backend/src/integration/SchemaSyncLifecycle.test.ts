@@ -920,6 +920,15 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
       await importTinySchema(b1, lifecycleSchema);
       await b1.pushChanges({ accessToken, description: "schema before profile repair" });
 
+      const dgnProfileObjectCount = await readSyncDb(b1, (syncDb) => syncDb.withSqliteStatement(
+        "SELECT count(*) FROM sqlite_master WHERE name GLOB 'dgn_*'",
+        (stmt) => {
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+          return stmt.getValue(0).getInteger();
+        },
+      ));
+      assert.equal(dgnProfileObjectCount, 0, "the ECDb-based sync db contains DgnDb profile objects");
+
       await SchemaSync.withLockedAccess(b1, { operationName: "corrupt schema profile" }, async (access) => {
         access.getCloudDb().executeSQL("ALTER TABLE ec_Schema ADD COLUMN RepairJunk TEXT");
       });
