@@ -9,6 +9,7 @@
 import { BeUnorderedUiEvent } from "@itwin/core-bentley";
 import {
   createUnitsProvider, Format, FormatsProvider, FormatterSpec, FormattingSpecArgs, FormattingSpecEntry, FormattingSpecProvider, ParserSpec,
+  UnitProps,
   UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import { FormatSet, FormatSetFormatsProvider, SchemaFormatsProvider, SchemaItem, SchemaUnitProvider } from "@itwin/ecschema-metadata";
@@ -69,7 +70,7 @@ async function buildSpecEntry(
     return undefined;
   }
 
-  let persistenceUnit;
+  let persistenceUnit: UnitProps | undefined;
   try {
     persistenceUnit = await unitsProvider.findUnitByName(args.persistenceUnitName);
   } catch {
