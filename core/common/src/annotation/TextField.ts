@@ -104,7 +104,7 @@ export interface DateTimeFieldFormatOptions {
  * magnitude is displayed, so falling back to the property's KoQ yields a different-looking but
  * still correct number. [[persistenceUnit]], by contrast, is a statement about what the stored
  * magnitude *means*: a field declaring `persistenceUnit: "Units.FT"` asserts that the `2.5` on
- * the property is 2.5 feet. Formatting that 2.5 through the property's metre-based pair would
+ * the property is 2.5 feet. Formatting that 2.5 through the property's meter-based pair would
  * render it as 2.5 m — a silently wrong value, off by the conversion factor. So when
  * [[persistenceUnit]] disagrees with the property's persistence unit, there is no fallback:
  * either the requested pair is pre-warmed, or the field renders its raw value and the shortfall
