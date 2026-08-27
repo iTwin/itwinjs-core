@@ -257,6 +257,8 @@ export interface IntegrityCheckOptions {
     checkSchemaLoad?: boolean;
     /** If true, checks if all child rows have a corresponding parent row. */
     checkMissingChildRows?: boolean;
+    /** If true, checks if a class maps every inherited property to the same column as each of its base classes. */
+    checkDivergedPropMaps?: boolean;
   }
 }
 
