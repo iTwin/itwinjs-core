@@ -1412,14 +1412,9 @@ export class ObservableMap<K, V> extends Map<K, V> {
     clear(): void;
     delete(key: K): boolean;
     deleteAll(keys: Iterable<K>): number;
-    readonly onAdded: BeEvent<(key: K, value: V) => void>;
-    readonly onBatchAdded: BeEvent<() => void>;
-    readonly onBatchDeleted: BeEvent<() => void>;
     readonly onChanged: BeEvent<() => void>;
-    readonly onCleared: BeEvent<() => void>;
-    readonly onDeleted: BeEvent<(key: K) => void>;
     set(key: K, value: V): this;
-    setAll(items: Iterable<readonly [K, V]>): number;
+    setAll(items: Iterable<readonly [K, V]>): void;
 }
 
 // @public

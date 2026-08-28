@@ -6,56 +6,16 @@ import { describe, expect, it } from "vitest";
 import { ObservableMap } from "../core-bentley";
 
 class Listener {
-  private _added = false;
-  private _deleted = false;
-  private _cleared = false;
-  private _changed = false;
-  private _addCount = 0;
-  private _deleteCount = 0;
-  private _batchAddCount = 0;
-  private _batchDeleteCount = 0;
+  private _changedCount = 0;
 
   public constructor(map: ObservableMap<string, any>) {
-    map.onAdded.addListener((_, __) => { this._added = true; this._addCount++; });
-    map.onDeleted.addListener((_) => { this._deleted = true; this._deleteCount++; });
-    map.onCleared.addListener(() => this._cleared = true);
-    map.onChanged.addListener(() => { this._changed = true; });
-    map.onBatchAdded.addListener(() => this._batchAddCount++);
-    map.onBatchDeleted.addListener(() => this._batchDeleteCount++);
+    map.onChanged.addListener(() => { this._changedCount++; });
   }
 
-  private clear() {
-    this._added = this._deleted = this._cleared = this._changed = false;
-    this._addCount = this._deleteCount = this._batchAddCount = this._batchDeleteCount = 0;
-  }
+  private clear() { this._changedCount = 0; }
 
-  public expect(added: boolean, deleted: boolean, cleared: boolean, func: () => void): void {
-    this.clear();
-    func();
-    expect(this._added).to.equal(added);
-    expect(this._deleted).to.equal(deleted);
-    expect(this._cleared).to.equal(cleared);
-    const deducedChanged = added || deleted || cleared;
-    expect(this._changed).to.equal(deducedChanged);
-    this.clear();
-  }
-
-  public expectBatch(batchAddCount: number, batchDeleteCount: number, func: () => void): void {
-    this.clear();
-    func();
-    expect(this._batchAddCount).to.equal(batchAddCount);
-    expect(this._batchDeleteCount).to.equal(batchDeleteCount);
-    expect(this._addCount).to.equal(0);
-    expect(this._deleteCount).to.equal(0);
-    const deducedChanged = batchAddCount > 0 || batchDeleteCount > 0;
-    expect(this._changed).to.equal(deducedChanged);
-    this.clear();
-  }
-
-  public expectNone(func: () => void) { this.expect(false, false, false, func); }
-  public expectAdd(func: () => void) { this.expect(true, false, false, func); }
-  public expectDelete(func: () => void) { this.expect(false, true, false, func); }
-  public expectClear(func: () => void) { this.expect(false, false, true, func); }
+  public expectNone(func: () => void) { this.clear(); func(); expect(this._changedCount).to.equal(0); }
+  public expectCount(count: number, func: () => void) { this.clear(); func(); expect(this._changedCount).to.equal(count); }
 }
 
 describe("ObservableMap", () => {
@@ -68,12 +28,12 @@ describe("ObservableMap", () => {
       map.delete("abc");
     });
 
-    listener.expectAdd(() => map.set("abc", "1"));
-    listener.expectAdd(() => map.set("def", "2"));
-    listener.expectAdd(() => map.set("abc", "3")); // updating an existing key
-    listener.expectAdd(() => map.set("abc", "3")); // no special case for updating an existing key to its existing value.
-    listener.expectDelete(() => map.delete("def"));
-    listener.expectClear(() => map.clear());
+    listener.expectCount(1, () => map.set("abc", "1"));
+    listener.expectCount(1, () => map.set("def", "2"));
+    listener.expectCount(1, () => map.set("abc", "3")); // updating an existing key
+    listener.expectCount(1, () => map.set("abc", "3")); // no suppression for setting same value
+    listener.expectCount(1, () => map.delete("def"));
+    listener.expectCount(1, () => map.clear());
   });
 
   it("should construct from iterable", () => {
@@ -86,13 +46,13 @@ describe("ObservableMap", () => {
     expect(Array.from(observable.entries())).to.deep.equal(Array.from(map.entries()));
   });
 
-  it("setAll should raise onBatchAdded only once", () => {
+  it("setAll should raise onChanged only once", () => {
     const map = new ObservableMap<string, string>();
     const listener = new Listener(map);
 
-    listener.expectBatch(1, 0, () => {
-      const count = map.setAll([["a", "1"], ["b", "2"], ["c", "3"]]);
-      expect(count).to.equal(3);
+    listener.expectCount(1, () => {
+      map.setAll([["a", "1"], ["b", "2"], ["c", "3"]]);
+      expect(map.size).to.equal(3);
     });
     expect(map.size).to.equal(3);
   });
@@ -101,39 +61,28 @@ describe("ObservableMap", () => {
     const map = new ObservableMap<string, string>();
     const listener = new Listener(map);
 
-    listener.expectBatch(0, 0, () => {
-      const count = map.setAll([]);
-      expect(count).to.equal(0);
+    listener.expectNone(() => {
+      map.setAll([]);
+      expect(map.size).to.equal(0);
     });
   });
 
-  it("setAll should not raise event when all keys already exist", () => {
+  it("setAll should raise event when updating existing keys' values", () => {
     const map = new ObservableMap<string, string>([["a", "1"], ["b", "2"]]);
     const listener = new Listener(map);
 
-    listener.expectBatch(0, 0, () => {
-      const count = map.setAll([["a", "1"], ["b", "2"]]);
-      expect(count).to.equal(0);
+    listener.expectCount(1, () => {
+      map.setAll([["a", "1"], ["b", "2"]]);
+      expect(map.size).to.equal(2);
     });
     expect(map.size).to.equal(2);
   });
 
-  it("setAll should count only newly added items", () => {
-    const map = new ObservableMap<string, string>([["a", "1"]]);
-    const listener = new Listener(map);
-
-    listener.expectBatch(1, 0, () => {
-      const count = map.setAll([["a", "1"], ["b", "2"], ["c", "3"]]);
-      expect(count).to.equal(2);
-    });
-    expect(map.size).to.equal(3);
-  });
-
-  it("deleteAll should raise onBatchDeleted only once", () => {
+  it("deleteAll should raise onChanged only once", () => {
     const map = new ObservableMap<string, string>([["a", "1"], ["b", "2"], ["c", "3"]]);
     const listener = new Listener(map);
 
-    listener.expectBatch(0, 1, () => {
+    listener.expectCount(1, () => {
       const count = map.deleteAll(["a", "b", "c"]);
       expect(count).to.equal(3);
     });
@@ -144,7 +93,7 @@ describe("ObservableMap", () => {
     const map = new ObservableMap<string, string>([["a", "1"]]);
     const listener = new Listener(map);
 
-    listener.expectBatch(0, 0, () => {
+    listener.expectNone(() => {
       const count = map.deleteAll([]);
       expect(count).to.equal(0);
     });
@@ -155,7 +104,7 @@ describe("ObservableMap", () => {
     const map = new ObservableMap<string, string>([["a", "1"]]);
     const listener = new Listener(map);
 
-    listener.expectBatch(0, 0, () => {
+    listener.expectNone(() => {
       const count = map.deleteAll(["x", "y"]);
       expect(count).to.equal(0);
     });
@@ -166,11 +115,21 @@ describe("ObservableMap", () => {
     const map = new ObservableMap<string, string>([["a", "1"], ["b", "2"]]);
     const listener = new Listener(map);
 
-    listener.expectBatch(0, 1, () => {
+    listener.expectCount(1, () => {
       const count = map.deleteAll(["a", "x"]);
       expect(count).to.equal(1);
     });
     expect(map.size).to.equal(1);
     expect(map.has("b")).to.be.true;
+  });
+
+  it("clear should only raise an event if the map is not empty", () => {
+    const map = new ObservableMap<string, string>();
+    const listener = new Listener(map);
+
+    listener.expectCount(0, () => map.clear());
+    listener.expectCount(1, () => map.set("a", "1"));
+    listener.expectCount(1, () => map.clear());
+    listener.expectCount(0, () => map.clear());
   });
 });
