@@ -9,7 +9,7 @@ import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
-import { Code, GeometricElement2dProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ElementAspectProps, GeometricElement2dProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements } from "../../core-backend";
 import { Point2d, XYProps } from "@itwin/core-geometry";
 import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
@@ -30,6 +30,19 @@ describe("InteractiveRebase", () => {
     somePoint: XYProps;
   }
 
+  interface SomeUniqueAspectProps extends ElementAspectProps {
+    aspectValue: string;
+    aspectNumber: number;
+  }
+
+  const uniqueAspectClassFullName = "irt:SomeUniqueAspect";
+
+  const getUniqueAspect = (iModel: BriefcaseDb, elementId: Id64String) => {
+    const aspects = iModel.elements.getAspects(elementId, uniqueAspectClassFullName);
+    chai.expect(aspects.length).to.equal(1);
+    return aspects[0].toJSON() as SomeUniqueAspectProps;
+  };
+
   before(async () => {
     HubMock.startup("InteractiveRebase", KnownTestLocations.outputDir);
 
@@ -48,6 +61,11 @@ describe("InteractiveRebase", () => {
               <BaseClass>bis:GraphicalElement2d</BaseClass>
               <ECProperty propertyName="Foo" typeName="string" />
               <ECProperty propertyName="SomePoint" typeName="point2d" />
+          </ECEntityClass>
+          <ECEntityClass typeName="SomeUniqueAspect">
+            <BaseClass>bis:ElementUniqueAspect</BaseClass>
+            <ECProperty propertyName="AspectValue" typeName="string" />
+            <ECProperty propertyName="AspectNumber" typeName="int" />
           </ECEntityClass>
       </ECSchema>`;
 
@@ -872,5 +890,98 @@ describe("InteractiveRebase", () => {
     chai.expect(conflict.brokenRelationships.length).to.equal(1);
     chai.expect(conflict.brokenRelationships[0].navigationProperty).to.equal("parent");
     chai.expect(conflict.brokenRelationships[0].relationshipClass.fullName).to.equal("BisCore:ElementOwnsChildElements");
+  });
+
+  it("should report an aspect conflict when both users update the same aspect property", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User1";
+      txn.updateAspect(aspect);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User2";
+      txn.updateAspect(aspect);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 updates aspect" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.conflictingProperties).to.include("aspectValue");
+    chai.expect(conflict.original).to.not.be.undefined;
+    chai.expect(conflict.ours).to.not.be.undefined;
+    chai.expect(conflict.theirs).to.not.be.undefined;
+
+    chai.expect(conflict.original!.aspectValue).to.equal("Initial");
+    chai.expect(conflict.ours!.aspectValue).to.equal("User2");
+    chai.expect(conflict.theirs!.aspectValue).to.equal("User1");
+
+    let aspect = getUniqueAspect(briefcase2, id);
+    chai.expect(aspect.aspectValue).to.equal("User2");
+
+    conflict.acceptTheirs(["aspectValue"]);
+    aspect = getUniqueAspect(briefcase2, id);
+    chai.expect(aspect.aspectValue).to.equal("User1");
+
+    conflict.acceptOurs(["aspectValue"]);
+    aspect = getUniqueAspect(briefcase2, id);
+    chai.expect(aspect.aspectValue).to.equal("User2");
+  });
+
+  it("should not report an aspect conflict when users update different aspect properties", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User1";
+      txn.updateAspect(aspect);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectNumber = 2;
+      txn.updateAspect(aspect);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 updates aspect value" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(0);
+
+    const aspect = getUniqueAspect(briefcase2, id);
+    chai.expect(aspect.aspectValue).to.equal("User1");
+    chai.expect(aspect.aspectNumber).to.equal(2);
   });
 });
