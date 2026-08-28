@@ -212,10 +212,14 @@ describe("Spec-provider field formatting", () => {
     };
   }
 
-  /** Mirrors what `FieldFormattingSpecProvider` does in `core-backend`: resolve every candidate
-   * a value/options pair can produce, ahead of time, so that formatting itself is synchronous.
+  /** Stands in for `FieldFormattingSpecProvider` in `core-backend`: resolve every candidate a
+   * value/options pair can produce, ahead of time, so that formatting itself is synchronous.
    * Candidates that resolve no format or no persistence unit are simply absent from the cache,
    * which is what drives the raw-string fallbacks asserted below.
+   *
+   * The cache key here is only (name, persistence unit); the backend's `specKey` also includes the
+   * unit system, but it lives in `core-backend` and cannot be imported from here. No test below
+   * varies the system, so the two agree in practice.
    */
   async function warmProvider(
     formats: Record<string, FormatDefinition>,
@@ -447,7 +451,6 @@ describe("Spec-provider field formatting", () => {
     });
   });
 });
-
 
 describe("collectFieldQuantityPairs candidate priority", () => {
   const PROPERTY_PAIR = { name: "P.KOQ", persistenceUnitName: "Units.M" };
