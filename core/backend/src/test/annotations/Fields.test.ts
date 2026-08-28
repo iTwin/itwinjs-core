@@ -475,7 +475,7 @@ describe("Field evaluation", () => {
 
     it("deduces type for primitive properties", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      // "quantity" here is a routing decision, not a claim that this count is a measure: intProp
+      // "quantity" here is a routing decision, not a claim that this count has units: intProp
       // names no KindOfQuantity, so it resolves no format and still renders as a bare "100".
       // Classifying it this way is what lets a field supply its own KindOfQuantity to format it.
       expect(getPropertyType(propertyHost, "intProp")).to.equal("quantity");

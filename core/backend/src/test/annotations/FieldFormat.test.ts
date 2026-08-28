@@ -159,7 +159,7 @@ describe("Field format resolution example", () => {
         ratioProp: 0.9,           // one
         point: { x: 1, y: 2, z: 3 },
         intLengthProp: 2500,      // mm, int-typed -> 2.5 m
-        intCountProp: 42,         // no KoQ; a count, not a measure
+        intCountProp: 42,         // no KoQ; a count, not something with units
         placement: { origin: new Point3d(0, 0, 0), angles: new YawPitchRollAngles() },
       };
       elementId = txn.insertElement(props);
@@ -214,7 +214,7 @@ describe("Field format resolution example", () => {
 
   it("formats integer-valued properties as quantities, leaving those that resolve no format raw", async () => {
     // Classifying a numeric property as "quantity" only decides whether the KoQ/units pipeline is
-    // consulted; it is not a claim that the value is a measure. A count that names no
+    // consulted; it is not a claim that the value has units. A count that names no
     // KindOfQuantity anywhere resolves no spec and falls back to the same bare `toString()` the
     // "string" formatter would have produced, so the classification costs it nothing -- while
     // leaving the field-level override hatch open for callers who do declare one.

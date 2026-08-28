@@ -413,7 +413,7 @@ function determineFieldPropertyType(prop: Property): FieldPropertyType | undefin
       case PrimitiveType.Integer:
       case PrimitiveType.Long:
         // Any numeric property is a potential quantity. Classifying one as "quantity" is not an
-        // assertion that it *is* a measure -- it only decides whether the KoQ/units pipeline is
+        // assertion that it *has* units -- it only decides whether the KoQ/units pipeline is
         // consulted (see formatFieldValueWithProvider). A number that resolves no spec, because
         // neither the property nor the field names a KindOfQuantity, falls back to the exact same
         // `toString()` the "string" formatter would have produced. So counts and identifiers still
