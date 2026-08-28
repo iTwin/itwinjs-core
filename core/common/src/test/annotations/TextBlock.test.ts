@@ -547,10 +547,10 @@ describe("TextBlock", () => {
 describe("FieldRun", () => {
   it("persists quantity override keys under their public property names", () => {
     // Applications locate annotations carrying quantity overrides with a substring query against
-    // the persisted TextAnnotationData (see "Deciding what to warm" in the 5.4 change history).
-    // Such a query fails by returning *zero rows*, which is indistinguishable from "this iModel
-    // has no overrides" and silently leaves those requirements unwarmed — so renaming either key
-    // must break here rather than in a consumer's query.
+    // the persisted TextAnnotationData (see the "Deciding what to warm" section of the release
+    // notes). Such a query fails by returning *zero rows*, which is indistinguishable from "this
+    // iModel has no overrides" and silently leaves those requirements unwarmed — so renaming
+    // either key must break here rather than in a consumer's query.
     const json = JSON.stringify(FieldRun.create({
       propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
       propertyPath: { propertyName: "someProperty" },
