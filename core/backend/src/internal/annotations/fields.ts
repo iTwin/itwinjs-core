@@ -607,12 +607,12 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldT
  * [[QuantityFieldFormatOptions]] for the priority contract and the coordinate/no-KoQ caveat.
  *
  * This is the single source of the `field -> (KoQ, persistenceUnit)` mapping. Pre-warm and
- * evaluation must agree on it exactly: a requirement keyed on a pair the runtime never walks
- * warms a spec nothing looks up, so the field still renders raw and reports a miss even though
- * warm-up succeeded. That agreement is enforced here by construction — both paths share
- * `collectFieldQuantityPairs`, and the metadata walk shares `advanceSchemaCursor` with the
- * runtime value walk — which is why this computation stays in core even though callers choose
- * for themselves which fields to ask about.
+ * evaluation must agree on it exactly: a requirement that differs from the candidate the
+ * runtime actually walks does not merely fail to format, it lets the runtime resolve a
+ * *different* pair and scale the value by the wrong unit. That agreement is enforced here by
+ * construction — both paths share `collectFieldQuantityPairs`, and the metadata walk shares
+ * `advanceSchemaCursor` with the runtime value walk — which is why this computation stays in
+ * core even though callers choose for themselves which fields to ask about.
  * @internal
  */
 export function collectFieldRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
