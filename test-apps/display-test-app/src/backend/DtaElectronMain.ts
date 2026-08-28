@@ -13,7 +13,7 @@ import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
 import { Placement2dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
-import { clearFieldFormattingDemoMissesForIModel, deleteText, deleteTextStyle, disableFieldFormattingDemoForIModel, enableFieldFormattingDemoForIModel, getFieldFormattingDemoMissesForIModel, getText, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
+import { clearFieldFormattingDemoMissesForIModel, deleteText, deleteTextStyle, disableFieldFormattingDemoForIModel, enableFieldFormattingDemoForIModel, getFieldFormattingDemoMissesForIModel, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -67,10 +67,6 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async deleteText(iModelKey: string, elementId: Id64String): Promise<void> {
     return deleteText(iModelKey, elementId);
-  }
-
-  public async getText(iModelKey: string, elementId: Id64String): Promise<{ annotationProps: TextAnnotationProps, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String } | undefined> {
-    return getText(iModelKey, elementId);
   }
 
   public async setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void> {
