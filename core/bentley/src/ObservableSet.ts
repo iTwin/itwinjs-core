@@ -31,19 +31,26 @@ export class ObservableSet<T> extends Set<T> {
    * @param elements Optional elements with which to populate the new set.
    */
   public constructor(elements?: Iterable<T> | undefined) {
-    // NB: Set constructor will invoke add(). Do not override until initialized.
-    super(elements);
+    // IMPORTANT: do not pass `elements` to `super()`. It will invoke `add` which is overridden to invoke `onAdded.raiseEvent`, but
+    // `onAdded` is not initialized until `super()` returns.
+    super();
 
-    this.add = (item: T) => {
-      const prevSize = this.size;
-      const ret = super.add(item);
-      if (this.size !== prevSize) {
-        this.onAdded.raiseEvent(item);
-        this.onChanged.raiseEvent();
-      }
+    if (elements)
+      this.addAll(elements);
+  }
 
-      return ret;
-    };
+  /** Invokes [Set.add](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/add), raising
+   * the [[onAdded]] event if the item was not already present in the set.
+   */
+  public override add(item: T): this {
+    const prevSize = this.size;
+    const ret = super.add(item);
+    if (this.size !== prevSize) {
+      this.onAdded.raiseEvent(item);
+      this.onChanged.raiseEvent();
+    }
+
+    return ret;
   }
 
   /** Invokes [Set.delete](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/delete), raising

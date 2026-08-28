@@ -70,7 +70,8 @@ describe("ObservableMap", () => {
 
     listener.expectAdd(() => map.set("abc", "1"));
     listener.expectAdd(() => map.set("def", "2"));
-    listener.expectNone(() => map.set("abc", "3"));
+    listener.expectAdd(() => map.set("abc", "3")); // updating an existing key
+    listener.expectAdd(() => map.set("abc", "3")); // no special case for updating an existing key to its existing value.
     listener.expectDelete(() => map.delete("def"));
     listener.expectClear(() => map.clear());
   });

@@ -32,19 +32,23 @@ export class ObservableMap<K, V> extends Map<K, V> {
    * @param elements Optional elements with which to populate the new map.
    */
   public constructor(elements?: Iterable<readonly [K, V]> | undefined) {
-    // NB: Map constructor will invoke set(). Do not override until initialized.
-    super(elements);
+    // IMPORTANT: do not pass `elements` to `super()`. It will invoke `set` which is overridden to invoke `onAdded.raiseEvent`, but
+    // `onAdded` is not initialized until `super()` returns.
+    super();
 
-    this.set = (key: K, value: V) => {
-      const had = super.has(key);
-      const ret = super.set(key, value);
-      if (!had) {
-        this.onAdded.raiseEvent(key, value);
-        this.onChanged.raiseEvent();
-      }
+    if (elements)
+      this.setAll(elements);
+  }
 
-      return ret;
-    };
+  /** Invokes [Map.set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/set), raising
+   * the [[onAdded]] event.
+   */
+  public override set(key: K, value: V): this {
+    const ret = super.set(key, value);
+    this.onAdded.raiseEvent(key, value);
+    this.onChanged.raiseEvent();
+
+    return ret;
   }
 
   /** Invokes [Map.delete](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/delete), raising
