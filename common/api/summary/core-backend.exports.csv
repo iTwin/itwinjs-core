@@ -539,6 +539,9 @@ public;class;SchemaMap
 internal;type;SchemaMatchType
 public;class;Schemas
 internal;namespace;SchemaSync
+alpha;function;repairForIModel
+alpha;interface;RepairForIModelArgs
+alpha;type;RepairScope
 public;class;SectionCallout
 public;class;SectionDrawing
 preview;class;SectionDrawing

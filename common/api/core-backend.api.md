@@ -6372,7 +6372,6 @@ export namespace SchemaSync {
         getUri(): string;
         static initializeDb(props: CloudSqlite.ContainerProps): Promise<void>;
     }
-    const containerType = "schema-sync";
     export function createContainerForIModel(arg: CreateContainerForIModelArgs): Promise<CloudSqlite.ContainerProps>;
     export interface CreateContainerForIModelArgs {
         // (undocumented)
@@ -6389,6 +6388,7 @@ export namespace SchemaSync {
         scope: BlobContainer.Scope;
     }
     export function enableForIModel(arg: EnableForIModelArgs): Promise<CloudSqlite.ContainerProps>;
+    const containerType = "schema-sync";
     export interface EnableForIModelArgs {
         containerProps?: CloudSqlite.ContainerProps;
         // (undocumented)
@@ -6399,6 +6399,7 @@ export namespace SchemaSync {
         label?: string;
         overrideContainer?: boolean;
     }
+    // (undocumented)
     export function getCloudAccess(arg: IModelOrFileName): Promise<CloudAccess>;
     export type IModelOrFileName = IModelDb | {
         readonly fileName: LocalFileName;
@@ -6427,6 +6428,16 @@ export namespace SchemaSync {
     export interface ReadMethods {
         findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
     }
+    export function releaseCloudAccess(access: CloudAccess): void;
+    // @alpha
+    export function repairForIModel(arg: RepairForIModelArgs): Promise<void>;
+    // @alpha
+    export interface RepairForIModelArgs {
+        iModel: BriefcaseDb;
+        scope?: RepairScope;
+    }
+    // @alpha
+    export type RepairScope = "schemaMetadata" | "schemaMetadataAndProfile";
     export function requiresUpgrade(error: unknown): boolean;
     export interface ReservedElement extends ProposedElementReservation {
         // (undocumented)
@@ -6445,10 +6456,6 @@ export namespace SchemaSync {
         reserveElements(elements: ProposedElementReservation[]): Promise<void>;
     }
     // (undocumented)
-    export interface WriteMethods {
-        reserveElements(identities: ProposedElementReservation[]): Promise<void>;
-    }
-    // (undocumented)
     export function setTestCache(iModel: IModelDb, cacheName?: string): void;
     export function updateDbSchema(iModel: IModelDb): void;
     // (undocumented)
@@ -6460,6 +6467,10 @@ export namespace SchemaSync {
         operationName: string;
         // (undocumented)
         user?: string;
+    }
+    // (undocumented)
+    export interface WriteMethods {
+        reserveElements(identities: ProposedElementReservation[]): Promise<void>;
     }
 }
 
