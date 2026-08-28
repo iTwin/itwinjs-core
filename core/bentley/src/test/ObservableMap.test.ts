@@ -114,6 +114,32 @@ describe("ObservableMap", () => {
     expect(changedCount).to.equal(1);
   });
 
+  it("setAll should not let listener mutation change whether the current event is raised", () => {
+    const map = new ObservableMap<string, string>([["a", "1"]]);
+    let listenerInvocations = 0;
+    let reentrant = false;
+    map.onChanged.addListener(() => {
+      if (reentrant)
+        return;
+
+      reentrant = true;
+      listenerInvocations++;
+      map.delete("a");
+      map.set("b", "2");
+      reentrant = false;
+    });
+    let changedEventCount = 0;
+    map.onChanged.addListener(() => ++changedEventCount);
+
+    map.setAll([["a", "3"], ["c", "4"]]);
+
+    expect(listenerInvocations).to.equal(1);
+    expect(changedEventCount).to.equal(3);
+    expect(map.get("b")).to.equal("2");
+    expect(map.get("c")).to.equal("4");
+    expect(map.has("a")).to.be.false;
+  });
+
   it("deleteAll should raise onChanged only once", () => {
     const map = new ObservableMap<string, string>([["a", "1"], ["b", "2"], ["c", "3"]]);
     const listener = new Listener(map);

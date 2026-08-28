@@ -85,11 +85,16 @@ export class ObservableSet<T> extends Set<T> {
    */
   public addAll(items: Iterable<T>): number {
     const prevSize = this.size;
+    let addedAny = false;
     try {
-      for (const item of items)
+      for (const item of items) {
+        const prevSetSize = this.size;
         super.add(item);
+        if (this.size !== prevSetSize)
+          addedAny = true;
+      }
     } finally {
-      if (this.size !== prevSize) {
+      if (addedAny) {
         this.onBatchAdded.raiseEvent();
         this.onChanged.raiseEvent();
       }
@@ -105,11 +110,16 @@ export class ObservableSet<T> extends Set<T> {
    */
   public deleteAll(items: Iterable<T>): number {
     const prevSize = this.size;
+    let deletedAny = false;
     try {
-      for (const item of items)
+      for (const item of items) {
+        const prevSetSize = this.size;
         super.delete(item);
+        if (this.size !== prevSetSize)
+          deletedAny = true;
+      }
     } finally {
-      if (this.size !== prevSize) {
+      if (deletedAny) {
         this.onBatchDeleted.raiseEvent();
         this.onChanged.raiseEvent();
       }

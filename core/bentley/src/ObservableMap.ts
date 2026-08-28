@@ -77,8 +77,7 @@ export class ObservableMap<K, V> extends Map<K, V> {
     let changed = false;
     try {
       for (const [key, value] of items) {
-        const shouldSet = !this.has(key) || !Object.is(this.get(key), value);
-        if (shouldSet) {
+        if (!this.has(key) || !Object.is(this.get(key), value)) {
           super.set(key, value);
           changed = true;
         }
@@ -97,11 +96,14 @@ export class ObservableMap<K, V> extends Map<K, V> {
    */
   public deleteAll(keys: Iterable<K>): number {
     const prevSize = this.size;
+    let deletedAny = false;
     try {
-      for (const key of keys)
-        super.delete(key);
+      for (const key of keys) {
+        if (super.delete(key))
+          deletedAny = true;
+      }
     } finally {
-      if (this.size !== prevSize) {
+      if (deletedAny) {
         this.onChanged.raiseEvent();
       }
     }

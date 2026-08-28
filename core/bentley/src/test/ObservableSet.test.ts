@@ -155,6 +155,32 @@ describe("ObservableSet", () => {
     expect(changedCount).to.equal(1);
   });
 
+  it("addAll should not let listener mutation change whether the current event is raised", () => {
+    const set = new ObservableSet<string>(["a"]);
+    let batchAddedCount = 0;
+    let changedCount = 0;
+    let reentrant = false;
+    set.onBatchAdded.addListener(() => {
+      if (reentrant)
+        return;
+
+      reentrant = true;
+      batchAddedCount++;
+      set.delete("a");
+      set.add("b");
+      reentrant = false;
+    });
+    set.onChanged.addListener(() => changedCount++);
+
+    set.addAll(["a", "c"]);
+
+    expect(batchAddedCount).to.equal(1);
+    expect(changedCount).to.equal(3);
+    expect(set.has("a")).to.be.false;
+    expect(set.has("b")).to.be.true;
+    expect(set.has("c")).to.be.true;
+  });
+
   it("deleteAll should raise onBatchDeleted only once", () => {
     const set = new ObservableSet<string>(["a", "b", "c"]);
     const listener = new Listener(set);
@@ -225,6 +251,32 @@ describe("ObservableSet", () => {
     expect(set.has("a")).to.be.false;
     expect(batchDeletedCount).to.equal(1);
     expect(changedCount).to.equal(1);
+  });
+
+  it("deleteAll should not let listener mutation change whether the current event is raised", () => {
+    const set = new ObservableSet<string>(["a", "b"]);
+    let batchDeletedCount = 0;
+    let changedCount = 0;
+    let reentrant = false;
+    set.onBatchDeleted.addListener(() => {
+      if (reentrant)
+        return;
+
+      reentrant = true;
+      batchDeletedCount++;
+      set.add("c");
+      set.delete("b");
+      reentrant = false;
+    });
+    set.onChanged.addListener(() => changedCount++);
+
+    set.deleteAll(["a", "b"]);
+
+    expect(batchDeletedCount).to.equal(1);
+    expect(changedCount).to.equal(2);
+    expect(set.has("a")).to.be.false;
+    expect(set.has("b")).to.be.false;
+    expect(set.has("c")).to.be.true;
   });
 
   it("subclasses can override `add`", () => {
