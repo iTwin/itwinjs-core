@@ -10,7 +10,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
 import { Code, GeometricElement2dProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { BriefcaseDb, ChannelControl, DrawingCategory } from "../../core-backend";
+import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements } from "../../core-backend";
 import { Point2d, XYProps } from "@itwin/core-geometry";
 import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
@@ -738,6 +738,7 @@ describe("InteractiveRebase", () => {
         id,
         foo: "User1",
         somePoint: new Point2d(1.0, 2.0),
+        userLabel: "Wat" // non-conflicting property
       });
     });
 
@@ -765,13 +766,14 @@ describe("InteractiveRebase", () => {
     const conflict = interactive.conflicts[0];
     chai.expect(conflict.id).to.equal(id);
 
-    chai.expect(conflict.differentProperties.length).to.equal(6);
+    chai.expect(conflict.differentProperties.length).to.equal(7);
     chai.expect(conflict.differentProperties).to.include("code.scope");
     chai.expect(conflict.differentProperties).to.include("code.spec");
     chai.expect(conflict.differentProperties).to.include("code.value");
     chai.expect(conflict.differentProperties).to.include("lastMod");
     chai.expect(conflict.differentProperties).to.include("foo");
     chai.expect(conflict.differentProperties).to.include("somePoint");
+    chai.expect(conflict.differentProperties).to.include("userLabel");
 
     chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
     chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
@@ -793,40 +795,82 @@ describe("InteractiveRebase", () => {
     chai.expect(valuesInitial.code.scope).to.equal(code.scope);
     chai.expect(valuesInitial.code.value).to.equal("SomeValue (Conflict)");
 
-    // We can explicitly accept "theirs" instead.
+    // We can explicitly accept "theirs" instead. At which point there is no UNIQUE constraint violation anymore.
     conflict.acceptTheirs();
     const valuesTheirs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(valuesTheirs.foo).to.equal("User1");
     chai.expect(valuesTheirs.code.value).to.equal("");
-    // chai.expect(Point2d.fromJSON(valuesTheirs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
-    // // UserLabel does not conflict, so our value is maintained.
-    // chai.expect(valuesTheirs.userLabel).to.equal("Wat");
+    chai.expect(Point2d.fromJSON(valuesTheirs.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+    chai.expect(valuesTheirs.userLabel).to.equal("Wat");
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
 
-    // // And then switch back to "ours" again.
-    // conflict.acceptOurs();
-    // const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
-    // chai.expect(valuesOurs.foo).to.equal("User2");
-    // chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(3.0, 4.0))).to.be.true;
-    // chai.expect(valuesOurs.userLabel).to.equal("Wat");
+    // And then switch back to "ours" again. The violation should be back.
+    conflict.acceptOurs();
+    const valuesOurs = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesOurs.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesOurs.somePoint).isExactEqual(new Point2d(1.23, 4.56))).to.be.true;
+    chai.expect(valuesOurs.userLabel).to.be.undefined;
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties.length).to.equal(3);
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.scope");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.spec");
+    chai.expect(conflict.uniqueConstraintViolations[0].uniqueConstraintProperties).to.include("code.value");
 
-    // // We can accept a subset of properties
-    // conflict.acceptTheirs(["somePoint"]);
-    // const valuesTheirsSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
-    // chai.expect(valuesTheirsSubset1.foo).to.equal("User2");
-    // chai.expect(Point2d.fromJSON(valuesTheirsSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+    // We can accept a subset of properties
+    conflict.acceptTheirs(["somePoint"]);
+    const valuesTheirsSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirsSubset1.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesTheirsSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    // conflict.acceptTheirs(["foo"]);
-    // const valuesTheirsSubset2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
-    // chai.expect(valuesTheirsSubset2.foo).to.equal("User1");
-    // chai.expect(Point2d.fromJSON(valuesTheirsSubset2.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+    conflict.acceptTheirs(["foo"]);
+    const valuesTheirsSubset2 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesTheirsSubset2.foo).to.equal("User1");
+    chai.expect(Point2d.fromJSON(valuesTheirsSubset2.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    // conflict.acceptOurs(["foo"]);
-    // const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
-    // chai.expect(valuesOursSubset1.foo).to.equal("User2");
-    // chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
+    conflict.acceptOurs(["foo"]);
+    const valuesOursSubset1 = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(valuesOursSubset1.foo).to.equal("User2");
+    chai.expect(Point2d.fromJSON(valuesOursSubset1.somePoint).isExactEqual(new Point2d(1.0, 2.0))).to.be.true;
 
-    // // acceptOurs and acceptTheirs should throw if we try to accept a property that is not in conflictingProperties.
-    // chai.expect(() => conflict.acceptOurs(["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
-    // chai.expect(() => conflict.acceptTheirs(["userLabel"])).to.throw(`Property userLabel is not a conflicting property for instance ${id}`);
+    // Accepting their code.value will clear the UNIQUE constraint violation.
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(1);
+    conflict.acceptTheirs(["code.value"]);
+    chai.expect(conflict.uniqueConstraintViolations.length).to.equal(0);
+  });
+
+  it("reports a foreign key constraint violation when we add an element to a parent they deleted", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    const childId = await withEditTxn(briefcase2, async (txn) => {
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Child",
+        somePoint: new Point2d(5.0, 6.0),
+        parent: new ElementOwnsChildElements(id)
+      } as SomeGraphicalElementProps);
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    // Pull changes into briefcase2, which will create a conflict on the element.
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    const moreGroups = interactive.nextGroup();
+    chai.expect(moreGroups).to.be.false;
+
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.id).to.equal(childId);
+
+    chai.expect(conflict.brokenRelationships.length).to.equal(1);
+    chai.expect(conflict.brokenRelationships[0].navigationProperty).to.equal("parent");
+    chai.expect(conflict.brokenRelationships[0].relationshipClass.fullName).to.equal("BisCore:ElementOwnsChildElements");
   });
 });

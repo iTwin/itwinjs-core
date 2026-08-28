@@ -9,8 +9,8 @@
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { EditTxn } from "./EditTxn";
 import { assert, DbResult, Guid, Id64, Id64String, IModelStatus, ITwinError } from "@itwin/core-bentley";
-import { ElementProps, IModelError, QueryBinder, TxnProps } from "@itwin/core-common";
-import { SchemaView, SchemaViewPrimitiveType } from "@itwin/ecschema-metadata";
+import { ECJsNames, ElementProps, IModelError, QueryBinder, TxnProps } from "@itwin/core-common";
+import { SchemaView, SchemaViewPrimitiveType, StrengthDirection } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { getChangedProperties, RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
@@ -128,6 +128,12 @@ export interface RebaseConflict {
   uniqueConstraintViolations: UniqueConstraintViolation[];
 
   /**
+   * The relationships that are broken by our change. A relationship is broken if the instance that it points to
+   * does not exist, either because it was deleted by the incoming (their) changes or because it never existed.
+   */
+  brokenRelationships: BrokenRelationship[];
+
+  /**
    * Accepts the local (our) vesion of the instance.
    *
    * @param properties The properties for which to accept "our" value. If not specified, or if
@@ -180,6 +186,18 @@ export interface UniqueConstraintViolation {
     /** The value assigned to {@link property} in place of the value that collided. */
     value: string;
   };
+}
+
+export interface BrokenRelationship {
+  /**
+   * The class of the relationship that is broken.
+   */
+  relationshipClass: SchemaView.RelationshipClass;
+
+  /**
+   * The navigation property on the instance that is broken, as an access string into {@link ours}, e.g., `parent`.
+   */
+  navigationProperty: string;
 }
 
 /** The `conflictDetail` that native attaches to the error thrown by `insertInstance`/`updateInstance` when the
@@ -560,8 +578,11 @@ export class InteractiveRebase {
       return apply();
     } catch (err: any) {
       if (err.errorNumber === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY) {
-        // TODO: report a foreign-key constraint conflict once native exposes conflict-row counts for
-        // direct instance writes (see interactive-rebase-instance-conflict-native-spec.md, "Change 2").
+        const targetProps = newProps ?? oldProps;
+        const brokenRelationships = targetProps !== undefined ? this.findBrokenRelationships(targetProps) : [];
+        const isInsert = oldProps === undefined;
+        const theirRow = isInsert ? undefined : this.tryReadCurrentInstance(id, classFullName);
+        RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, oldProps, newProps, theirRow, brokenRelationships);
         return undefined;
       }
       if (err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_UNIQUE && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY) {
@@ -727,6 +748,74 @@ export class InteractiveRebase {
     } catch {
       return undefined;
     }
+  }
+
+  private findBrokenRelationships(props: RebaseConflictProperties): BrokenRelationship[] {
+    const classFullName = props.classFullName;
+    if (typeof classFullName !== "string")
+      return [];
+
+    const schemaClassDef = this._schemaView.findClass(classFullName);
+    if (schemaClassDef === undefined)
+      return [];
+
+    let jsClassDef: typeof Element | undefined;
+    try {
+      jsClassDef = this._db.getJsClass<typeof Element>(classFullName);
+    } catch {
+      // Ignore if class is not registered in JS
+    }
+
+    const broken: BrokenRelationship[] = [];
+    for (const prop of schemaClassDef.getProperties()) {
+      if (!prop.isNavigation())
+        continue;
+
+      // 1. Convert the ECProperty name (e.g. "Parent") to the JS property name used on `props` (e.g. "parent")
+      // using standard `ECJsNames.toJsName`.
+      const jsName = ECJsNames.toJsName(prop.name);
+      const navValue = getPropertyValue(props, jsName);
+      const navId = typeof navValue === "string" ? navValue : (typeof navValue?.id === "string" ? navValue.id : undefined);
+      if (typeof navId !== "string" || !Id64.isValidId64(navId))
+        continue;
+
+      // 2. Translate `jsName` (instance access string) to the access string into `ours` (deserialized props).
+      const propsAccessString = jsClassDef ? jsClassDef.toPropsAccessString(jsName) : jsName;
+
+      // 3. Determine the targeted constraint based on the navigation property's relationship direction:
+      // - Forward direction points to the relationship's target constraint.
+      // - Backward direction points to the relationship's source constraint.
+      const relConstraint = prop.direction === StrengthDirection.Backward
+        ? prop.relationshipClass.source
+        : prop.relationshipClass.target;
+      const targetClass = relConstraint?.abstractConstraint?.fullName
+        ?? relConstraint?.constraintClasses[0]?.fullName
+        ?? "BisCore:Element";
+
+      // 4. Query whether the target instance exists. We attempt the query against the resolved constraint class first.
+      // If that query throws an exception (e.g. if the constraint class cannot be directly queried in ECSQL),
+      // we attempt a fallback check against "BisCore:Element" before concluding the relationship is broken.
+      let exists = false;
+      try {
+        const binder = new QueryBinder().bindId(1, navId);
+        exists = this._db.withQueryReader(`SELECT 1 FROM ${targetClass} WHERE ECInstanceId = ? LIMIT 1`, (reader) => reader.step(), binder);
+      } catch {
+        try {
+          const binder = new QueryBinder().bindId(1, navId);
+          exists = this._db.withQueryReader(`SELECT 1 FROM BisCore:Element WHERE ECInstanceId = ? LIMIT 1`, (reader) => reader.step(), binder);
+        } catch {
+          exists = false;
+        }
+      }
+
+      if (!exists) {
+        broken.push({
+          relationshipClass: prop.relationshipClass,
+          navigationProperty: propsAccessString,
+        });
+      }
+    }
+    return broken;
   }
 
   /**
@@ -997,6 +1086,7 @@ class RebaseConflictImpl implements RebaseConflict {
   public readonly conflictingProperties: string[] = [];
   public readonly differentProperties: string[] = [];
   public readonly uniqueConstraintViolations: UniqueConstraintViolation[] = [];
+  public readonly brokenRelationships: BrokenRelationship[] = [];
 
   private constructor(private readonly _rebase: InteractiveRebase, id: Id64String, classFullName: string) {
     this.id = id;
@@ -1077,6 +1167,33 @@ class RebaseConflictImpl implements RebaseConflict {
     conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
 
     return conflict.upsertUniqueConstraintViolation(detail);
+  }
+
+  /** Our change (insert or update) violated a FOREIGN KEY constraint, e.g. referencing a deleted instance. */
+  public static recordForeignKeyConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties | undefined, theirs: RebaseConflictProperties | undefined, brokenRelationships: BrokenRelationship[]): RebaseConflictImpl {
+    const instanceId = ours?.id ?? original?.id ?? theirs?.id;
+    const classFullName = ours?.classFullName ?? original?.classFullName ?? theirs?.classFullName;
+    const conflict = this.getOrCreate(rebase, conflicts, instanceId!, classFullName!);
+
+    const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
+
+    if (original !== undefined) {
+      conflict.original = classDef.deserialize({ row: original, iModel: rebase.iModel });
+    }
+    if (theirs !== undefined && conflict.theirs === undefined) {
+      conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
+    }
+    if (ours !== undefined) {
+      conflict.ours = classDef.deserialize({ row: ours, iModel: rebase.iModel });
+    }
+
+    for (const broken of brokenRelationships) {
+      if (!conflict.brokenRelationships.some((b) => b.navigationProperty === broken.navigationProperty && b.relationshipClass === broken.relationshipClass)) {
+        conflict.brokenRelationships.push(broken);
+      }
+    }
+
+    return conflict;
   }
 
   /** Returns the entry describing `detail`'s constraint, creating it if this is the first time that constraint has
