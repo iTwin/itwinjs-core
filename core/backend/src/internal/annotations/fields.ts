@@ -92,9 +92,18 @@ interface SchemaCursor {
   readonly ecClass: AnyClass;
 }
 
+/** The per-evaluation state [[updateField]] needs: which element's fields to recompute, how to
+ * read a field's property value, and how to format quantities.
+ */
 export interface UpdateFieldsContext {
+  /** When set, only fields whose [FieldPropertyHost.elementId]($common) matches are recomputed —
+   * an edit to one source element leaves the annotation's other fields untouched.
+   */
   readonly hostElementId: Id64String | undefined;
 
+  /** Reads the value a field points at, or `undefined` if it cannot be resolved — including
+   * every field when the source element was deleted.
+   */
   getProperty(field: FieldRun): FieldValue | undefined;
 
   /** Resolves `"quantity"` and `"coordinate"` values through pre-warmed
@@ -481,7 +490,6 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   return true;
 }
 
-
 /** Re-evaluates every [FieldRun]($common) in `textBlock` synchronously and returns the number
  * whose cached display string changed. Fields targeting an element other than
  * `context.hostElementId` (when set) are skipped.
@@ -599,12 +607,12 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldT
  * [[QuantityFieldFormatOptions]] for the priority contract and the coordinate/no-KoQ caveat.
  *
  * This is the single source of the `field -> (KoQ, persistenceUnit)` mapping. Pre-warm and
- * evaluation must agree on it exactly: a requirement that differs from the candidate the
- * runtime actually walks does not merely fail to format, it lets the runtime resolve a
- * *different* pair and scale the value by the wrong unit. That agreement is enforced here by
- * construction — both paths share `collectFieldQuantityPairs`, and the metadata walk shares
- * `advanceSchemaCursor` with the runtime value walk — which is why this computation stays in
- * core even though callers choose for themselves which fields to ask about.
+ * evaluation must agree on it exactly: a requirement keyed on a pair the runtime never walks
+ * warms a spec nothing looks up, so the field still renders raw and reports a miss even though
+ * warm-up succeeded. That agreement is enforced here by construction — both paths share
+ * `collectFieldQuantityPairs`, and the metadata walk shares `advanceSchemaCursor` with the
+ * runtime value walk — which is why this computation stays in core even though callers choose
+ * for themselves which fields to ask about.
  * @internal
  */
 export function collectFieldRequirements(field: FieldRun, iModel: IModelDb): FormattingSpecArgs[] {
