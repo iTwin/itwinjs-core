@@ -52,8 +52,9 @@ const UNREGISTERED_SET = "unregistered-set";
  * Two families of KindOfQuantity live here:
  *
  *  - `*_PROP` are attached to properties. They give the property-side candidate something to
- *    resolve, and are deliberately never defined by a FormatSet in any test below, so a field
- *    that names nothing exercises the schema.
+ *    resolve, and are left undefined by the FormatSets in most tests below, so a field that names
+ *    nothing exercises the schema. "routes a field with no KindOfQuantity override through a
+ *    FormatSet keyed on the property's own KindOfQuantity" is the deliberate exception.
  *  - `SCHEMA_*` are declared but never attached. Tests name them to force the
  *    FormatSet -> SchemaFormatsProvider fallthrough.
  *
@@ -766,8 +767,36 @@ describe("Field format resolution example", () => {
     expect(providerReady.callCount).to.equal(1);
   });
 
-  it("does nothing when a field names a FormatSet but no KindOfQuantity and no persistence unit", async () => {
-    // A FormatSet is only ever reached through a KoQ key, so naming one on its own is inert.
+  it("routes a field with no KindOfQuantity override through a FormatSet keyed on the property's own KindOfQuantity", async () => {
+    // The shape a deployment is most likely to take: FormatSets keyed on the KindOfQuantities the
+    // schemas already declare, and fields that carry no overrides at all -- at most a FormatSet id
+    // to pick a presentation. Nothing here names a KoQ, so every candidate's `name` is the
+    // property's own `FieldExample.LENGTH_PROP`, supplied by the property-side pair. A FormatSet
+    // that defines that key is therefore reached without the field mentioning it.
+    //
+    // This is what makes `FieldSpecBucket.definesOwnFormat` load-bearing rather than incidental:
+    // it is asked about the property's KoQ, not only about an override.
+    // Persisted on the element: lengthProp 2.5 m
+    const block = TextBlock.create();
+    const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET });
+    const namesNothing = appendField(block, "lengthProp");
+
+    await render(block, {
+      adopted: toFormatSet("Adopted", { "FieldExample.LENGTH_PROP": decimalFormat("Units.CM", "cm", 2) }),
+      byId: [{ id: ALT_SET, formatSet: toFormatSet("Alternate", { "FieldExample.LENGTH_PROP": decimalFormat("Units.FT", "[alt]ft", 3) }) }],
+    });
+
+    // Both are routed by their FormatSet, and neither falls back to the schema's own
+    // presentation format for LENGTH_PROP, which would render "2.5 m".
+    expect(namesAlternate.cachedContent).to.equal("8.202 [alt]ft");
+    expect(namesNothing.cachedContent).to.equal("250 cm");
+  });
+
+  it("does nothing when a field names a FormatSet whose formats it shares no key with", async () => {
+    // The complement of the test above. Naming a FormatSet does not by itself select anything:
+    // routing happens on the candidate's KoQ name, which here is the property's own
+    // `FieldExample.LENGTH_PROP` -- a key neither set defines. So both fields land on the
+    // schema's presentation format, and naming the alternate set changes nothing.
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET });
