@@ -1405,8 +1405,24 @@ export type NonFunctionPropertyNamesOf<T> = {
 }[keyof T];
 
 // @public
+export class ObservableMap<K, V> extends Map<K, V> {
+    // @internal (undocumented)
+    get [Symbol.toStringTag](): string;
+    constructor(elements?: Iterable<readonly [K, V]> | undefined);
+    clear(): void;
+    delete(key: K): boolean;
+    deleteAll(keys: Iterable<K>): number;
+    readonly onChanged: BeEvent<() => void>;
+    set(key: K, value: V): this;
+    setAll(items: Iterable<readonly [K, V]>): void;
+}
+
+// @public
 export class ObservableSet<T> extends Set<T> {
+    // @internal (undocumented)
+    get [Symbol.toStringTag](): string;
     constructor(elements?: Iterable<T> | undefined);
+    add(item: T): this;
     addAll(items: Iterable<T>): number;
     clear(): void;
     delete(item: T): boolean;
@@ -1414,6 +1430,7 @@ export class ObservableSet<T> extends Set<T> {
     readonly onAdded: BeEvent<(item: T) => void>;
     readonly onBatchAdded: BeEvent<() => void>;
     readonly onBatchDeleted: BeEvent<() => void>;
+    readonly onChanged: BeEvent<() => void>;
     readonly onCleared: BeEvent<() => void>;
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
