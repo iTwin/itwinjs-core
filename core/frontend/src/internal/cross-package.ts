@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-export { _backingView, _callIpcChannel, _getModelClip, _scheduleScriptReference } from "../common/internal/Symbols";
+export { _callIpcChannel, _scheduleScriptReference } from "../common/internal/Symbols";
 export { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 export { GltfDataType, type GltfMeshPrimitive } from "../common/gltf/GltfSchema";
 export { OnScreenTarget, Target } from "./render/webgl/Target";
@@ -52,6 +52,7 @@ export {
  LayerTileTreeHandler, type MapLayerTreeSetting, LayerTileTreeReferenceHandler
 } from "../tile/internal";
 export { GoogleMapsDecorator, LogoDecoration } from "./GoogleMapsDecorator";
+export { _backingView, _getModelClip } from "../common/internal/Symbols";
 
 // Used by display-test-app which currently builds using both ESModules and CommonJS.
 // Remove once CommonJS is dropped.
@@ -63,3 +64,6 @@ export { type RenderPlan } from "./render/RenderPlan";
 export { type RenderAreaPattern } from "./render/RenderAreaPattern";
 export { type RenderGeometry } from "./render/RenderGeometry";
 export { _implementationProhibited } from "../common/internal/Symbols";
+
+// Used by hypermodeling-frontend
+export { createIModelDisplayReferences2d } from "./IModelDisplayReferencesImpl";

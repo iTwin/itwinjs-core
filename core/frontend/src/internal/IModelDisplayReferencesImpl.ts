@@ -85,6 +85,7 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
   }
 }
 
+/** @internal */
 export function createIModelDisplayReferences2d(view: ViewState2d): IModelDisplayReferences2d {
   return new DisplayRefs2dImpl(view);
 }
