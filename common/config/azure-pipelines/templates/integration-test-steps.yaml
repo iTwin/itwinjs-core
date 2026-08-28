@@ -19,19 +19,16 @@ steps:
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 
-  - script: |
-      # full-stack-tests/backend/package.json
-      node ./common/scripts/install-run-rush build -v --to backend-integration-tests
-      # full-stack-tests/core/package.json
-      node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
-      # full-stack-tests/ecschema-rpc-interface/package.json
-      node ./common/scripts/install-run-rush build -v --to @itwin/ecschema-rpcinterface-tests
-      # full-stack-tests/rpc/package.json
-      node ./common/scripts/install-run-rush build -v --to rpc-full-stack-tests
-      # full-stack-tests/rpc-interface/package.json
-      node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
-
-      node ./common/scripts/install-run-rush webpack:test -v
+  # Build every package needed by the integration test suites in a single Rush
+  # invocation. Each frontend test package (and @itwin/core-electron) already runs
+  # webpack:test as part of its normal build script, so no separate webpack pass is needed.
+  - script: >
+      node ./common/scripts/install-run-rush build -v
+      --to backend-integration-tests
+      --to core-full-stack-tests
+      --to @itwin/ecschema-rpcinterface-tests
+      --to rpc-full-stack-tests
+      --to rpcinterface-full-stack-tests
     displayName: "Rush build"
 
   # Electron 42+ no longer downloads the binary during npm install (postinstall removed).
