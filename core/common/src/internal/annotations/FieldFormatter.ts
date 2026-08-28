@@ -27,8 +27,8 @@ export interface FieldValue {
   type: FieldPropertyType;
   /** Property-side [KindOfQuantity]($ecschema-metadata) full name (e.g. `"AecUnits.LENGTH"`),
    * if any. Consulted as the property-side fallback candidate when
-   * [[QuantityFieldFormatOptions.kindOfQuantity]] is unset or does not resolve in the active
-   * [FormatsProvider]($core-quantity) — see [[collectFieldQuantityPairs]].
+   * [[QuantityFieldFormatOptions.kindOfQuantity]] is unset, or when the override's pair has no
+   * pre-warmed [FormatterSpec]($core-quantity) — see [[collectFieldQuantityPairs]].
    */
   kindOfQuantityFullName?: string;
   /** Property-side persistence-unit full name (e.g. `"Units.M"`), if derivable from the
@@ -194,8 +194,9 @@ function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
  * with prefix/suffix/case. Coordinates render each component and join them as `(x, y[, z])`.
  *
  * Callers route `formatMagnitude` through [[FieldSpecProvider.formatQuantity]] rather than
- * [FormatterSpec.applyFormatting]($core-quantity) directly, so provider-side hooks
- * (caching, telemetry, per-call KoQ substitution) are honored.
+ * [FormatterSpec.applyFormatting]($core-quantity) directly so that the provider owns the
+ * application of the spec; this function only decides which magnitudes to feed it and how to
+ * assemble the result.
  */
 function applySpecToFieldValue(
   value: FieldValue,
