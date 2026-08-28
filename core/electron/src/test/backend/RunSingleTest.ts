@@ -14,20 +14,13 @@ import { TestResult, testSuites } from "./ElectronBackendTests";
  * and test must be defined in [testSuites].
  */
 async function run() {
-  // Tests that never start ElectronHost can finish before Chromium is done initializing. Tearing the main
-  // process down at that point aborts it (STATUS_BREAKPOINT on Windows), so wait for the app and let
-  // Electron own the exit.
-  await app.whenReady();
-
   const suiteTitle = process.env.ELECTRON_SUITE_TITLE;
   const testTitle = process.env.ELECTRON_TEST_TITLE;
 
   const suiteToRun = testSuites.find((suite) => suite.title === suiteTitle);
   const testToRun = suiteToRun?.tests.find((test) => test.title === testTitle);
-  if (testToRun === undefined) {
-    app.exit(TestResult.InvalidArguments);
-    return;
-  }
+  if (testToRun === undefined)
+    return exit(TestResult.InvalidArguments);
 
   let exitCode = TestResult.Success;
   try {
@@ -37,6 +30,16 @@ async function run() {
     exitCode = TestResult.Failure;
   }
 
+  return exit(exitCode);
+}
+
+/** Tests that never start `ElectronHost` can finish before Chromium is done initializing. Tearing the main
+ * process down at that point aborts it (STATUS_BREAKPOINT on Windows), so wait for the app before exiting.
+ * @note This must not be awaited before the test runs: `ElectronHost.startup` registers privileged schemes
+ * only while the app is not yet ready.
+ */
+async function exit(exitCode: number): Promise<void> {
+  await app.whenReady();
   app.exit(exitCode);
 }
 
