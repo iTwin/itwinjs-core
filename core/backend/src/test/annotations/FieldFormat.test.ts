@@ -382,7 +382,6 @@ describe("Field format resolution example", () => {
     const provider = await renderWarmedFor(block, [{ name: "FieldExample.LENGTH_PROP", persistenceUnitName: "Units.M" }]);
 
     expect(claimsFeet.cachedContent).to.equal("2.5");
-    expect(claimsFeet.cachedContent).to.not.equal("2.5 m");
     expect(provider.misses.some((m) => m.name === "FieldExample.LENGTH_PROP" && m.persistenceUnitName === "Units.FT")).to.be.true;
     // ...and specifically not as the property pair, which is the fallback that must not have run.
     expect(provider.misses.some((m) => m.persistenceUnitName === "Units.M")).to.be.false;
@@ -405,7 +404,10 @@ describe("Field format resolution example", () => {
 
   it("falls back to the property's own format when the KindOfQuantity does not exist", async () => {
     // The other leg fails this time -- a KoQ no FormatSet and no schema defines, paired with a
-    // perfectly good unit. Indistinguishable in output from the failed-unit case above.
+    // perfectly good unit. The counterpart to the failed-unit case above, and deliberately not
+    // the same outcome: a unit override makes a claim about the stored magnitude, so failing it
+    // forfeits the property-side pair, while a KoQ override only chooses a presentation, so
+    // failing it still falls back to the property's own format.
     // Persisted on the element: lengthProp 2.5 m, areaProp 100 m², slopeProp 0.01 m/m, angleProp 90°,
     // ratioProp 0.9 (dimensionless), point (1, 2, 3) m
     const block = TextBlock.create();
@@ -764,7 +766,8 @@ describe("Field format resolution example", () => {
     expect(providerReady.callCount).to.equal(1);
   });
 
-  it("does nothing when a field names a FormatSet but no KindOfQuantity and no persistence unit", async () => {    // A FormatSet is only ever reached through a KoQ key, so naming one on its own is inert.
+  it("does nothing when a field names a FormatSet but no KindOfQuantity and no persistence unit", async () => {
+    // A FormatSet is only ever reached through a KoQ key, so naming one on its own is inert.
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const namesAlternate = appendField(block, "lengthProp", { formatSet: ALT_SET });
