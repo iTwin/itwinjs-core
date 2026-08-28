@@ -172,4 +172,22 @@ describe("ObservableSet", () => {
     expect(set.size).to.equal(1);
     expect(set.has("b")).to.be.true;
   });
+
+
+  it("subclasses can override `add`", () => {
+    class MySet extends ObservableSet<string> {
+      public myAddWasCalled = false;
+
+      public override add(value: string): this {
+        const ret = super.add(value);
+        this.myAddWasCalled = true;
+        return ret;
+      }
+    }
+
+    const set = new MySet();
+    expect(set.myAddWasCalled).to.be.false;
+    set.add("stuff");
+    expect(set.myAddWasCalled).to.be.true;
+  });
 });
