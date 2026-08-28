@@ -3915,6 +3915,10 @@ export class BriefcaseDb extends IModelDb {
       await SchemaSync.withLockedAccess(briefcase, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         executeUpgrade();
+        // Overwriting advances the SchemaSync data version, so a no-op upgrade must not call it.
+        if (!wasChanges)
+          return;
+
         await withBriefcaseDb(briefcase, async (db) => {
           db[_nativeDb].schemaSyncOverwrite(schemaSyncDbUri);
           db[_nativeDb].saveChanges();
@@ -3953,7 +3957,12 @@ export class BriefcaseDb extends IModelDb {
     // schemaSyncOverwrite can discard unpushed imports, so hold the exclusive lock across both upgrades.
     if (SchemaSync.isEnabled(briefcase)) {
       try {
-        await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+        await withBriefcaseDb(briefcase, async (db) => {
+          if (!db.locks.isServerBased)
+            throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot upgrade schemas with SchemaSync without server-based locking");
+
+          await db.acquireSchemaLock();
+        });
         await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
         await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
       } finally {
@@ -4523,6 +4532,9 @@ export class BriefcaseDb extends IModelDb {
 
     if (this[_nativeDb].hasUnsavedChanges() || this.txns.hasLocalChanges)
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot upgrade schemas while there are local changes");
+
+    if (SchemaSync.isEnabled(this) && !this.locks.isServerBased)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot upgrade schemas with SchemaSync without server-based locking");
 
     await this.acquireSchemaLock();
     await this.pullChanges({ accessToken: arg.accessToken });

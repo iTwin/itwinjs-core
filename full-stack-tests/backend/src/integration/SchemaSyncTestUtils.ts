@@ -200,7 +200,7 @@ export interface TestIModel {
 }
 
 /** Start HubMock and create an empty iModel in it. The caller's suite is responsible for HubMock.shutdown. */
-export async function createTestIModel(args: { iModelName: string, accessToken?: AccessToken }): Promise<TestIModel> {
+export async function createTestIModel(args: { iModelName: string, accessToken?: AccessToken, noLocks?: true }): Promise<TestIModel> {
   const iTwinId = Guid.createValue();
   HubMock.startup("test", KnownTestLocations.outputDir);
   const version0 = IModelTestUtils.prepareOutputFile("schemaSync", `${args.iModelName}.bim`);
@@ -210,6 +210,7 @@ export async function createTestIModel(args: { iModelName: string, accessToken?:
     iTwinId,
     version0,
     iModelName: args.iModelName,
+    noLocks: args.noLocks,
   });
   return { iTwinId, iModelId };
 }

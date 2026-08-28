@@ -426,6 +426,9 @@ export namespace SchemaSync {
   /** Refuse initialization before a caller provisions a container, then hold the exclusive schema lock and pull to the tip. */
   async function prepareToInitializeForIModel(iModel: IModelDb, overrideContainer: boolean): Promise<BriefcaseDb | undefined> {
     const briefcase = iModel instanceof BriefcaseDb ? iModel : undefined;
+    if (briefcase && !briefcase.locks.isServerBased)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot enable SchemaSync without server-based locking");
+
     if (briefcase && (iModel[_nativeDb].hasUnsavedChanges() || briefcase.txns.hasLocalChanges))
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot enable SchemaSync while there are local changes");
 
@@ -478,6 +481,7 @@ export namespace SchemaSync {
 
   /** Enable schema sync for an iModel, seeding the container from this briefcase.
    * @note Takes the exclusive schema lock, refuses local changes, and pulls the briefcase to the tip before writing the container.
+   * If this operation fails after acquiring the schema lock, it leaves the lock held.
    */
   export async function initializeForIModel(arg: InitializeForIModelArgs): Promise<void> {
     const briefcase = await prepareToInitializeForIModel(arg.iModel, arg.overrideContainer ?? false);
@@ -565,7 +569,8 @@ export namespace SchemaSync {
    * has seeded.
    * @returns the container props recorded on the iModel.
    * @note Takes the exclusive schema lock and pushes, same protocol as [[BriefcaseDb.upgradeSchemas]] -
-   * every operation that changes how a file is governed uses it.
+   * every operation that changes how a file is governed uses it. If this operation fails after acquiring the schema lock,
+   * it leaves the lock held.
    */
   export async function enableForIModel(arg: EnableForIModelArgs): Promise<CloudSqlite.ContainerProps> {
     if (undefined === arg.containerProps && undefined === arg.iModel.iTwinId)

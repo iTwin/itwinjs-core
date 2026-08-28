@@ -7,10 +7,10 @@ import { statSync } from "fs";
 import { assert } from "chai";
 import * as sinon from "sinon";
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, CloudSqlite, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseLocalValue, BriefcaseManager, CloudSqlite, IModelDb, IModelHost, SchemaSync, SnapshotDb } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { IModelTestUtils, KnownTestLocations, withEditTxn } from "@itwin/core-backend/lib/cjs/test";
-import { DbResult } from "@itwin/core-bentley";
+import { DbResult, Guid } from "@itwin/core-bentley";
 import {
   assertThrowsAsync, assertThrowsAsyncContaining, countSyncDbItemRows, createTestIModel, enableSchemaSync, expectCensusPreserved,
   expectMetadataTablesIdentical, expectNoForeignKeyViolations, expectPhysicalSchemaIdentical, extendedIt, importTinySchema, initializeContainer,
@@ -1337,6 +1337,89 @@ describe("Schema synchronization lifecycle", function (this: Suite) {
     } finally {
       b1.close();
       b2.close();
+    }
+  });
+
+  it("refuses to enable schema sync without server-based locking", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-no-locks" });
+    const accessToken = "sync life no locks token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life no locks", accessToken, noLocks: true });
+    const b1 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLifeNoLocks" });
+
+    try {
+      assert.isFalse(b1.locks.isServerBased);
+      await assertThrowsAsync(
+        async () => SchemaSync.initializeForIModel({ iModel: b1, containerProps }),
+        "Cannot enable SchemaSync without server-based locking",
+      );
+    } finally {
+      b1.close();
+    }
+  });
+
+  it("refuses schema sync upgrades without server-based locking", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-no-lock-upgrade" });
+    const accessToken = "sync life no lock upgrade token";
+    const { iTwinId, iModelId } = await createTestIModel({ iModelName: "sync life no lock upgrade", accessToken });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ iTwinId, iModelId, accessToken });
+    let b1 = await BriefcaseDb.open(briefcaseProps);
+    SchemaSync.setTestCache(b1, "syncLifeNoLockUpgrade");
+
+    try {
+      await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+      b1[_nativeDb].saveLocalValue(BriefcaseLocalValue.NoLocking, "true");
+      b1[_nativeDb].saveChanges();
+      b1.close();
+      b1 = await BriefcaseDb.open(briefcaseProps);
+      assert.isFalse(b1.locks.isServerBased);
+
+      await assertThrowsAsync(
+        async () => b1.upgradeSchemaStrings(["not reached"], { accessToken, description: "not reached" }),
+        "Cannot upgrade schemas with SchemaSync without server-based locking",
+      );
+
+      b1.close();
+      await assertThrowsAsync(
+        async () => BriefcaseDb.upgradeSchemas(briefcaseProps),
+        "Cannot upgrade schemas with SchemaSync without server-based locking",
+      );
+    } finally {
+      b1.close();
+    }
+  });
+
+  it("does not leave the sync db ahead when a profile upgrade is followed by a no-op domain upgrade", async () => {
+    const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "sync-life-profile-only" });
+    const accessToken = "sync life profile only token";
+    const iTwinId = Guid.createValue();
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "sync life profile only.bim");
+    const seed = SnapshotDb.createEmpty(version0, { rootSubject: { name: "sync life profile only" } });
+    seed[_nativeDb].executeSql("UPDATE be_Prop SET StrData='{\"major\":4,\"minor\":0,\"sub1\":0,\"sub2\":4}' WHERE Namespace='ec_Db' AND Name='SchemaVersion'");
+    seed[_nativeDb].saveChanges();
+    seed.close();
+
+    const iModelId = await HubMock.createNewIModel({ accessToken, iTwinId, version0, iModelName: "sync life profile only" });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ iTwinId, iModelId, accessToken });
+    let b1 = await BriefcaseDb.open(briefcaseProps);
+    SchemaSync.setTestCache(b1, "syncLifeProfileOnlyB1");
+    const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken, cacheName: "syncLifeProfileOnlyB2" });
+
+    try {
+      await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
+      await b2.pullChanges({ accessToken });
+
+      b1.close();
+      await BriefcaseDb.upgradeSchemas(briefcaseProps);
+      b1 = await BriefcaseDb.open(briefcaseProps);
+      SchemaSync.setTestCache(b1, "syncLifeProfileOnlyB1");
+      await b2.pullChanges({ accessToken });
+
+      assert.isFalse(b1.txns.hasLocalChanges, "the no-op domain upgrade left a local data-version transaction");
+      assert.equal(querySchemaSyncDataVer(b2), await readSyncDbDataVer(b2), "the sync db advanced beyond the published profile upgrade");
+    } finally {
+      b2.close();
+      b1.close();
     }
   });
 

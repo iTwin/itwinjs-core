@@ -947,6 +947,7 @@ describe("Schema synchronization", function (this: Suite) {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "schema-front-door-4" });
     const accessToken1 = "schema front door 4 user 1";
     const accessToken2 = "schema front door 4 user 2";
+    const accessToken3 = "schema front door 4 user 3";
     HubMock.startup("test", KnownTestLocations.outputDir);
     const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4001.bim") }, OpenMode.ReadWrite);
     const version0 = testFile.getFilePath();
@@ -956,6 +957,7 @@ describe("Schema synchronization", function (this: Suite) {
     const b1Props = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken: accessToken1 });
     let b1 = await BriefcaseDb.open(b1Props);
     const b2 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken2, cacheName: "schemaFrontDoor4b2" });
+    const b3 = await openTestBriefcase({ iTwinId, iModelId, accessToken: accessToken3, cacheName: "schemaFrontDoor4b3" });
     SchemaSync.setTestCache(b1, "schemaFrontDoor4b1");
 
     try {
@@ -976,19 +978,35 @@ describe("Schema synchronization", function (this: Suite) {
       await b1.pushChanges({ accessToken: accessToken1, description: "front door 4 initial schema" });
       await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
       await b2.pullChanges({ accessToken: accessToken2 });
+      await b3.pullChanges({ accessToken: accessToken3 });
 
       const place = await insertDrawingModelAndCategory(b1, "FrontDoorProfile401");
       const elementId = await insertGeometricElement2d(b1, { ...place, classFullName: "FrontDoorProfile401:Pipe", props: { p0: "profile data" } });
       await b1.pushChanges({ accessToken: accessToken1, description: "front door 4 data" });
       await b2.pullChanges({ accessToken: accessToken2 });
+      await b3.pullChanges({ accessToken: accessToken3 });
       const beforeB1 = await takeElementCensus(b1, ["FrontDoorProfile401:Pipe"]);
       const beforeB2 = await takeElementCensus(b2, ["FrontDoorProfile401:Pipe"]);
+
+      assert.equal(b3[_nativeDb].executeSql("ALTER TABLE ec_Schema ADD COLUMN OriginalECXmlVersionMajor TEXT"), DbResult.BE_SQLITE_OK);
+      b3[_nativeDb].saveChanges();
+      assert.isFalse(b3.txns.hasLocalChanges, "direct profile damage created a local transaction");
+      const b3ChangesetBeforeUpgrade = b3.changeset;
 
       b1.close();
       await BriefcaseDb.upgradeSchemas(b1Props);
       b1 = await BriefcaseDb.open(b1Props);
       SchemaSync.setTestCache(b1, "schemaFrontDoor4b1");
       await b2.pullChanges({ accessToken: accessToken2 });
+
+      let damagedProfilePullError: unknown;
+      try {
+        await b3.pullChanges({ accessToken: accessToken3 });
+      } catch (error) {
+        damagedProfilePullError = error;
+      }
+      assert.isDefined(damagedProfilePullError, "pull accepted a failed profile-table DDL statement");
+      assert.deepEqual(b3.changeset, b3ChangesetBeforeUpgrade, "failed profile upgrade advanced the briefcase");
 
       const afterB1 = await takeElementCensus(b1, ["FrontDoorProfile401:Pipe"]);
       const afterB2 = await takeElementCensus(b2, ["FrontDoorProfile401:Pipe"]);
@@ -1005,6 +1023,7 @@ describe("Schema synchronization", function (this: Suite) {
       expectNoForeignKeyViolations(b1, "4.0.0.1 profile upgrade in-place");
       expectNoForeignKeyViolations(b2, "4.0.0.1 profile upgrade replay");
     } finally {
+      b3.close();
       b2.close();
       b1.close();
     }
