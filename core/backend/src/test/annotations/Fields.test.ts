@@ -645,49 +645,6 @@ describe("Field evaluation", () => {
       expect(content).to.equal("1000 mm");
     });
 
-    it("still uses the property's KindOfQuantity when only persistenceUnit is overridden", async () => {
-      // Regression: setting `formatOptions.quantity.persistenceUnit` alone must not suppress the
-      // property's own KindOfQuantity — the two overrides are independent.
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: {
-          quantity: {
-            persistenceUnit: "Units.M",
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field, { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) });
-
-      expect(updatedCount).to.equal(1);
-      // lengthProp = 2.5 m persisted; property KoQ Fields.LENGTH still drives format lookup;
-      // the adopted FormatSet's mm format converts to 2500 mm.
-      expect(content).to.equal("2500 mm");
-    });
-
-    it("falls back to the property's KindOfQuantity when the override KoQ isn't in the FormatSet", async () => {
-      // The caller pins a preferred KoQ (Missing.KOQ) but the adopted FormatSet only knows about
-      // the property's KoQ (Fields.LENGTH). The formatter should use the property-side pair
-      // rather than dropping to raw output.
-      const field = FieldRun.create({
-        propertyHost: { ...propertyHost, elementId: sourceElementId },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: {
-          quantity: {
-            kindOfQuantity: "Missing.KOQ",
-          },
-        },
-        cachedContent: "old",
-      });
-
-      const { updatedCount, content } = await runEvaluate(field, { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) });
-
-      expect(updatedCount).to.equal(1);
-      expect(content).to.equal("2500 mm");
-    });
-
     it("marks the field invalid when a quantity property value is missing", async () => {
       const field = FieldRun.create({
         propertyHost: { ...propertyHost, elementId: sourceElementId },
@@ -705,26 +662,6 @@ describe("Field evaluation", () => {
 
       expect(updatedCount).to.equal(1);
       expect(content).to.equal(FieldRun.invalidContentIndicator);
-    });
-
-    it("resolves KoQ formats from the adopted FormatSet", async () => {
-      // The field declares no formatOptions at all: the adopted set is keyed on the property's
-      // own KindOfQuantity, which is how an application supplying standard KoQ keys expects a
-      // plain field to pick up its presentation.
-      const block = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        cachedContent: "old",
-      });
-      block.appendRun(field);
-
-      await register(block, { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) });
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-      expect(updated).to.equal(1);
-      // lengthProp = 2.5 m -> 2500 mm via the adopted FormatSet.
-      expect(field.cachedContent).to.equal("2500 mm");
     });
   });
 
@@ -954,11 +891,10 @@ describe("Field evaluation", () => {
   });
 
   describe("registerFieldFormattingProvider (sync path)", () => {
-    // Ids referenced by fields via formatOptions.quantity.formatSet and supplied per-field
-    // through the `formatSets` array at registration time. PRIMARY is the "normal" FormatSet
-    // under test; SECONDARY exercises multi-FormatSet routing.
+    // Id referenced by fields via formatOptions.quantity.formatSet and supplied through the
+    // `formatSets` array at registration time. Multi-FormatSet routing is covered by
+    // FieldFormat.test.ts.
     const PRIMARY_FORMAT_SET = "0x111";
-    const SECONDARY_FORMAT_SET = "0x222";
 
     // Registers a provider for `imodel` with the given per-field FormatSets, pre-warmed for the
     // single (Fields.LENGTH, Units.M) requirement the length-field tests use.
@@ -1053,57 +989,6 @@ describe("Field evaluation", () => {
       expect(result).to.equal("(PROVIDER:1, PROVIDER:2, PROVIDER:3)");
     });
 
-    it("falls back to the raw string when neither the FormatSet nor the schema resolves a format", async () => {
-      // A genuine raw fallback: the point property has no KoQ, and the override KoQ resolves in
-      // neither the (empty) FormatSet nor the iModel's schemas. The field drops to its raw
-      // representation and the shortfall is recorded as a miss.
-      const block = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "point" },
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET, kindOfQuantity: "Missing.KOQ", persistenceUnit: "Units.M" } },
-        cachedContent: "old",
-      });
-      block.appendRun(field);
-
-      const provider = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        iModel: imodel,
-        formatSets: [{ id: PRIMARY_FORMAT_SET, formatSet: toFormatSet("Empty") }],
-        requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
-      });
-
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-      expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("(1, 2, 3)");
-      expect(Array.from(provider.misses).some((m) => m.name === "Missing.KOQ" && m.persistenceUnitName === "Units.M")).to.be.true;
-    });
-
-    it("falls through to the schema format when a field's FormatSet lacks an entry for its KoQ", async () => {
-      // A field naming a FormatSet whose formats lack its KindOfQuantity still resolves the
-      // schema presentation format rather than dropping to the raw string.
-      const block = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: SECONDARY_FORMAT_SET } },
-        cachedContent: "old",
-      });
-      block.appendRun(field);
-
-      await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        iModel: imodel,
-        formatSets: [{ id: SECONDARY_FORMAT_SET, formatSet: toFormatSet("Empty") }],
-        requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
-      });
-
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-      expect(updated).to.equal(1);
-      // Fields.LENGTH schema presentation: 2.5 m -> "2.5 m".
-      expect(field.cachedContent).to.equal("2.5 m");
-    });
-
     it("preserves prior behavior when no provider is registered", () => {
       // Sanity check: no provider registered -> raw string formatting as before.
       const textBlock = TextBlock.create();
@@ -1170,59 +1055,6 @@ describe("Field evaluation", () => {
 
       ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
       expect(ElementDrivesTextAnnotation.getFieldFormattingProvider(imodel)).to.be.undefined;
-    });
-
-    it("routes each field to the FormatSet identified by formatOptions.quantity.formatSet", async () => {
-      // Supply two FormatSets under distinct ids and confirm each field picks the one that
-      // matches its formatOptions.quantity.formatSet.
-      await registerSets([
-        { id: PRIMARY_FORMAT_SET, formats: { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) } },
-        { id: SECONDARY_FORMAT_SET, formats: { "Fields.LENGTH": decimalFormat("Units.CM", "cm", 2) } },
-      ]);
-
-      const block = TextBlock.create();
-      const primaryField = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: PRIMARY_FORMAT_SET } },
-        cachedContent: "old",
-      });
-      const secondaryField = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        formatOptions: { quantity: { formatSet: SECONDARY_FORMAT_SET } },
-        cachedContent: "old",
-      });
-      block.appendRun(primaryField);
-      block.appendRun(secondaryField);
-
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-      expect(updated).to.equal(2);
-      expect(primaryField.cachedContent).to.equal("2500 mm");
-      expect(secondaryField.cachedContent).to.equal("250 cm");
-    });
-
-    it("falls through to the adopted FormatSet when a field's formatSet is unset", async () => {
-      // A field with no formatSet routes to the adopted (default) FormatSet rather than raw.
-      await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        iModel: imodel,
-        formatSet: toFormatSet("TestSet", { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) }),
-        requirements: [{ name: "Fields.LENGTH", persistenceUnitName: "Units.M" }],
-      });
-
-      const block = TextBlock.create();
-      const field = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "lengthProp" },
-        cachedContent: "old",
-      });
-      block.appendRun(field);
-
-      const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
-
-      expect(updated).to.equal(1);
-      expect(field.cachedContent).to.equal("2500 mm");
     });
 
     it("records a miss when a field's requirement was never pre-warmed, then formats after warmUp", async () => {
