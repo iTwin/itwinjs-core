@@ -1406,7 +1406,7 @@ export type NonFunctionPropertyNamesOf<T> = {
 
 // @public
 export class ObservableMap<K, V> extends Map<K, V> {
-    // (undocumented)
+    // @internal (undocumented)
     get [Symbol.toStringTag](): string;
     constructor(elements?: Iterable<readonly [K, V]> | undefined);
     clear(): void;
@@ -1424,7 +1424,7 @@ export class ObservableMap<K, V> extends Map<K, V> {
 
 // @public
 export class ObservableSet<T> extends Set<T> {
-    // (undocumented)
+    // @internal (undocumented)
     get [Symbol.toStringTag](): string;
     constructor(elements?: Iterable<T> | undefined);
     add(item: T): this;

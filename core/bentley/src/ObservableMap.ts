@@ -13,6 +13,7 @@ import { BeEvent } from "./BeEvent";
  * @public
  */
 export class ObservableMap<K, V> extends Map<K, V> {
+  /** @internal */
   public override get [Symbol.toStringTag]() { return "ObservableMap"; }
 
   /** Emitted after a key/value pair is added to this map. */

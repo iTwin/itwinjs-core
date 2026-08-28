@@ -12,6 +12,7 @@ import { BeEvent } from "./BeEvent";
  * @public
  */
 export class ObservableSet<T> extends Set<T> {
+  /** @internal */
   public override get [Symbol.toStringTag]() { return "ObservableSet"; }
 
   /** Emitted after `item` is added to this set. */
