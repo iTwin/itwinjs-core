@@ -126,15 +126,15 @@ export interface DateTimeFieldFormatOptions {
  * These property names are also the **persisted** form: a [[FieldRun]] serializes them verbatim
  * into its element's `TextAnnotationData`. Applications may therefore rely on the literal strings
  * `"kindOfQuantity"` and `"persistenceUnit"` when querying for annotations carrying quantity
- * overrides — for example to decide what to pre-warm. See the "Deciding what to warm" section of
- * the 5.4 change history.
+ * overrides — for example to decide what to pre-warm.
  * @beta
  */
 export interface QuantityFieldFormatOptions {
   /** Full name of a [Unit]($ecschema-metadata) (e.g. `"Units.M"`) used as the persistence unit
    * when constructing a [FormatterSpec]($core-quantity); overrides the property's persistence
    * unit. Coordinate values whose EC property has no [KindOfQuantity]($ecschema-metadata)
-   * require this to be set explicitly (e.g. `Units.LENGTH.M` for BIS geometry — see
+   * require this to be set explicitly (for BIS geometry, always stored in meters, that is
+   * `"Units.M"` — available as the `Units.LENGTH.M` constant from `@itwin/core-quantity`; see
    * `docs/bis/guide/other-topics/units.md`) for an override to take effect. See the interface
    * JSDoc for the full resolution priority.
    */
