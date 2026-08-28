@@ -35,10 +35,15 @@ export class ObservableMap<K, V> extends Map<K, V> {
    * the [[onChanged]] event.
    */
   public override set(key: K, value: V): this {
-    const ret = super.set(key, value);
-    this.onChanged.raiseEvent();
+    const valueChanged = !this.has(key) || !Object.is(this.get(key), value);
+    if (valueChanged)
+      super.set(key, value);
 
-    return ret;
+    if (valueChanged) {
+      this.onChanged.raiseEvent();
+    }
+
+    return this;
   }
 
   /** Invokes [Map.delete](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/delete), raising
@@ -68,13 +73,16 @@ export class ObservableMap<K, V> extends Map<K, V> {
    * @param items The entries to add or update.
    */
   public setAll(items: Iterable<readonly [K, V]>): void {
-    let anyEntries = false;
+    let changed = false;
     for (const [key, value] of items) {
-      anyEntries = true;
-      super.set(key, value);
+      const shouldSet = !this.has(key) || !Object.is(this.get(key), value);
+      if (shouldSet) {
+        super.set(key, value);
+        changed = true;
+      }
     }
 
-    if (anyEntries) {
+    if (changed) {
       this.onChanged.raiseEvent();
     }
   }

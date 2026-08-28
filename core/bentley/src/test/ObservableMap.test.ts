@@ -31,7 +31,7 @@ describe("ObservableMap", () => {
     listener.expectCount(1, () => map.set("abc", "1"));
     listener.expectCount(1, () => map.set("def", "2"));
     listener.expectCount(1, () => map.set("abc", "3")); // updating an existing key
-    listener.expectCount(1, () => map.set("abc", "3")); // no suppression for setting same value
+    listener.expectNone(() => map.set("abc", "3")); // same value should not emit
     listener.expectCount(1, () => map.delete("def"));
     listener.expectCount(1, () => map.clear());
   });
@@ -67,11 +67,23 @@ describe("ObservableMap", () => {
     });
   });
 
-  it("setAll should raise event when updating existing keys' values", () => {
+  it("setAll should raise event when updating existing keys' values to different values", () => {
     const map = new ObservableMap<string, string>([["a", "1"], ["b", "2"]]);
     const listener = new Listener(map);
 
     listener.expectCount(1, () => {
+      map.setAll([["a", "3"], ["b", "2"]]);
+      expect(map.size).to.equal(2);
+    });
+    expect(map.size).to.equal(2);
+    expect(map.get("a")).to.equal("3");
+  });
+
+  it("setAll should not raise event when all values are unchanged", () => {
+    const map = new ObservableMap<string, string>([["a", "1"], ["b", "2"]]);
+    const listener = new Listener(map);
+
+    listener.expectNone(() => {
       map.setAll([["a", "1"], ["b", "2"]]);
       expect(map.size).to.equal(2);
     });
