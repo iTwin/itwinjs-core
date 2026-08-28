@@ -454,9 +454,9 @@ describe("Field format resolution example", () => {
 
     await render(block);
 
-    expect(angle.cachedContent).to.equal(angleBaseline.cachedContent);
-    expect(ratio.cachedContent).to.equal(ratioBaseline.cachedContent);
-    expect(point.cachedContent).to.equal(pointBaseline.cachedContent);
+    expect(angle.cachedContent).to.equal(angleBaseline.cachedContent);  // both "90"
+    expect(ratio.cachedContent).to.equal(ratioBaseline.cachedContent);  // both "0.9"
+    expect(point.cachedContent).to.equal(pointBaseline.cachedContent);  // both "(1, 2, 3)"
 
     // The KoQ-carrying three no longer fall back to their property format.
     expect(length.cachedContent).to.equal("2.5");
@@ -556,12 +556,12 @@ describe("Field format resolution example", () => {
     await render(block, { adopted, byId: [{ id: ADOPTED_SET, formatSet: adopted }] });
 
     expect(namesNothing.cachedContent).to.equal("250 cm");
-    expect(namesAdopted.cachedContent).to.equal(namesNothing.cachedContent);
-    expect(namesUnregistered.cachedContent).to.equal(namesNothing.cachedContent);
+    expect(namesAdopted.cachedContent).to.equal(namesNothing.cachedContent);  // both "250 cm"
+    expect(namesUnregistered.cachedContent).to.equal(namesNothing.cachedContent);  // both "250 cm"
 
     expect(koqLessNamesNothing.cachedContent).to.equal("1.5708 rad");
-    expect(koqLessNamesAdopted.cachedContent).to.equal(koqLessNamesNothing.cachedContent);
-    expect(koqLessNamesUnregistered.cachedContent).to.equal(koqLessNamesNothing.cachedContent);
+    expect(koqLessNamesAdopted.cachedContent).to.equal(koqLessNamesNothing.cachedContent);  // both "1.5708 rad"
+    expect(koqLessNamesUnregistered.cachedContent).to.equal(koqLessNamesNothing.cachedContent);  // both "1.5708 rad"
   });
 
   it("uses an alternate FormatSet's format when the field names it, in preference to the adopted one", async () => {
@@ -661,7 +661,7 @@ describe("Field format resolution example", () => {
     });
 
     expect(colonNamed.cachedContent).to.equal("8.202 [alt]ft");
-    expect(colonNamed.cachedContent).to.equal(dotNamed.cachedContent);
+    expect(colonNamed.cachedContent).to.equal(dotNamed.cachedContent);  // both "8.202 [alt]ft"
   });
 
   it("resolves a key only the alternate FormatSet defines only when the field names that set", async () => {
@@ -687,7 +687,7 @@ describe("Field format resolution example", () => {
 
     // Neither the adopted set nor the schema defines this key, so the property's own KoQ decides.
     expect(namesNothing.cachedContent).to.equal("2.5 m");
-    expect(namesUnregistered.cachedContent).to.equal(namesNothing.cachedContent);
+    expect(namesUnregistered.cachedContent).to.equal(namesNothing.cachedContent);  // both "2.5 m"
   });
 
   it("reaches the schema from a named alternate FormatSet when neither set defines the key", async () => {
@@ -778,7 +778,7 @@ describe("Field format resolution example", () => {
       byId: [{ id: ALT_SET, formatSet: toFormatSet("Alternate", { "Example.LENGTH": decimalFormat("Units.FT", "[alt]ft", 3) }) }],
     });
 
-    expect(namesAlternate.cachedContent).to.equal(noOptions.cachedContent);
+    expect(namesAlternate.cachedContent).to.equal(noOptions.cachedContent);  // both "2.5 m"
     expect(namesAlternate.cachedContent).to.equal("2.5 m");
   });
 
@@ -802,7 +802,7 @@ describe("Field format resolution example", () => {
     expect(crossed.cachedContent).to.equal("2.5 m");
     // Stated as an equality too, so the test keeps meaning "fell back to the baseline" rather
     // than "happens to equal this literal" if the seed value ever changes.
-    expect(crossed.cachedContent).to.equal(baseline.cachedContent);
+    expect(crossed.cachedContent).to.equal(baseline.cachedContent);  // both "2.5 m"
   });
 
   it("degrades only the offending field when applying a format throws", async () => {
@@ -831,7 +831,7 @@ describe("Field format resolution example", () => {
 
     expect(() => ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block })).to.not.throw();
 
-    expect(thrower.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    expect(thrower.cachedContent).to.equal(FieldRun.invalidContentIndicator);  // "####"
     // The fields on either side of the failure still resolved and still persisted.
     expect(before.cachedContent).to.equal("100.0 m²");
     expect(after.cachedContent).to.equal("0.01 m/m");
