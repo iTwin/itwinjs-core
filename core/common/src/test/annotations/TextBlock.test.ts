@@ -549,16 +549,17 @@ describe("FieldRun", () => {
     // Applications locate annotations carrying quantity overrides with a substring query against
     // the persisted TextAnnotationData (see the "Deciding what to warm" section of the release
     // notes). Such a query fails by returning *zero rows*, which is indistinguishable from "this
-    // iModel has no overrides" and silently leaves those requirements unwarmed — so renaming
-    // either key must break here rather than in a consumer's query.
+    // iModel has no overrides" and silently leaves those requirements unwarmed — so renaming any
+    // of these keys must break here rather than in a consumer's query.
     const json = JSON.stringify(FieldRun.create({
       propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
       propertyPath: { propertyName: "someProperty" },
-      formatOptions: { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M" } },
+      formatOptions: { quantity: { kindOfQuantity: "AecUnits.LENGTH", persistenceUnit: "Units.M", formatSet: "0x1" } },
     }).toJSON());
 
     expect(json).to.contain(`"kindOfQuantity"`);
     expect(json).to.contain(`"persistenceUnit"`);
+    expect(json).to.contain(`"formatSet"`);
   });
 
   describe("create", () => {
