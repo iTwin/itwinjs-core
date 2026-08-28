@@ -255,8 +255,8 @@ export const DEMO_ALT_SEED_FORMATS: { readonly [name: string]: FormatProps } = {
 
 /** Persistence unit each seed expects to be compiled against, across both demo FormatSets.
  * Seeds not listed here default to the `defaultPersistenceUnitName` passed to
- * [[demoSeedRequirements]] (`Units.M`). Required for any seed whose composite unit belongs to
- * a phenomenon other than LENGTH.
+ * [[demoSeedRequirements]] ([[DEFAULT_SEED_PERSISTENCE_UNIT]]). Required for any seed whose
+ * composite unit belongs to a phenomenon other than LENGTH.
  */
 const DEMO_SEED_PERSISTENCE_UNITS: { readonly [name: string]: string } = {
   "Demo.AREA_M2": "Units.SQ_M",
@@ -304,6 +304,9 @@ export const DEMO_ALT_FORMAT_SET: FormatSet = {
   formats: DEMO_ALT_SEED_FORMATS,
 };
 
+/** Persistence unit assumed for any seed absent from [[DEMO_SEED_PERSISTENCE_UNITS]]. */
+const DEFAULT_SEED_PERSISTENCE_UNIT = "Units.M";
+
 /** Every key defined by either demo FormatSet, paired with the persistence unit it must be
  * compiled against, so the demo formats are usable as `kindOfQuantity` overrides even for
  * properties the iModel has never seen.
@@ -312,11 +315,11 @@ export const DEMO_ALT_FORMAT_SET: FormatSet = {
  * alt-only key reaches the alt bucket only if it is in the requirement set handed to
  * [FieldFormattingSpecProvider.warmUp]($backend).
  */
-function demoSeedRequirements(defaultPersistenceUnitName: string = "Units.M"): FormattingSpecArgs[] {
+function demoSeedRequirements(): FormattingSpecArgs[] {
   const names = new Set([...Object.keys(DEMO_SEED_FORMATS), ...Object.keys(DEMO_ALT_SEED_FORMATS)]);
   return Array.from(names, (name) => ({
     name,
-    persistenceUnitName: DEMO_SEED_PERSISTENCE_UNITS[name] ?? defaultPersistenceUnitName,
+    persistenceUnitName: DEMO_SEED_PERSISTENCE_UNITS[name] ?? DEFAULT_SEED_PERSISTENCE_UNIT,
   }));
 }
 
@@ -336,6 +339,10 @@ const TEXT_ANNOTATION_DATA_CLASSES = ["BisCore.TextAnnotation2d", "BisCore.TextA
  * *superset* of "some field overrides its format" — the substring could equally appear in
  * literal text — which is the safe direction to err in, since the block walk below decides for
  * real and over-matching only costs time.
+ *
+ * `formatSet`, the third key, is deliberately absent: it selects *which* FormatSet resolves a
+ * field, not which (KindOfQuantity, persistence unit) pair the field needs. A field naming only a
+ * FormatSet still requires its property's own pair, which the schema sweep already supplies.
  */
 const OVERRIDE_JSON_PREDICATE = `TextAnnotationData LIKE '%"kindOfQuantity"%' OR TextAnnotationData LIKE '%"persistenceUnit"%'`;
 
@@ -345,18 +352,20 @@ const OVERRIDE_JSON_PREDICATE = `TextAnnotationData LIKE '%"kindOfQuantity"%' OR
  * This is the half of the requirement set that [FieldFormattingSpecProvider.collectSchemaFormattingRequirements]($backend)
  * cannot supply. Schema enumeration sees only pairs a *property* declares; a field may name a
  * persistence unit no property in the iModel declares, and that pair is reachable no other way.
- * Missing it is not a cosmetic shortfall — evaluation falls back to the property's own pair and
- * scales the value by the wrong unit, so the field renders a plausible but **numerically wrong**
- * number, which the txn callback then persists into `cachedContent`.
+ * Missing it is not a cosmetic shortfall. A field that renames the persistence unit gets no
+ * property-side fallback — falling back there would format the magnitude as though it were in the
+ * property's unit — so the field renders its raw value and the pair lands on
+ * [FieldFormattingSpecProvider.misses]($backend). The txn callback then persists that raw string
+ * into `cachedContent`.
  *
  * Core deliberately does not do this: which annotations are in scope is an application question
  * (a drawing? a sheet? the whole briefcase?), and the app already owns the FormatSets that the
  * requirements resolve against. DTA answers "the whole briefcase" because it is a test app. A
  * real application would more likely scope this to the model or view being opened.
  *
- * Cost is proportional to the number of *matching* annotations rather than to how many exist:
- * the substring test runs inside SQLite, so annotations that override nothing never reach
- * JavaScript. Only the second pass below pays per element, and in practice it matches nothing.
+ * Pass 1's substring test runs inside SQLite, so annotations that override nothing never reach
+ * JavaScript. Pass 2 has no column to filter on and so constructs every element it selects, but
+ * it selects none in a stock briefcase: no class outside the two above implements the mixin.
  */
 function collectAnnotationOverrideRequirements(iModel: IModelDb): FormattingSpecArgs[] {
   if (!ElementDrivesTextAnnotation.isSupportedForIModel(iModel))
