@@ -785,7 +785,7 @@ describe("Field format resolution example", () => {
     // as it would for any other unresolved format -- here, to the schema's own presentation format.
     // Without that check the magnitude would be relabelled rather than converted ("2.5 deg"),
     // because UnitsProvider.getConversion reports the mismatch by returning the *identity*
-    // conversion tagged `error: true`. See buildSpecEntry in FieldFormattingSpecProvider.ts.
+    // conversion tagged `error: true`. See buildSpec in FieldFormattingSpecProvider.ts.
     // Persisted on the element: lengthProp 2.5 m
     const block = TextBlock.create();
     const crossed = appendField(block, "lengthProp", { kindOfQuantity: "Example.ANGLE", persistenceUnit: "Units.M" });

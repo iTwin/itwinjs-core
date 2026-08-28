@@ -140,9 +140,9 @@ export function isKnownFieldPropertyType(type: string): type is FieldPropertyTyp
  * across a `kindOfQuantity`-only override is safe by comparison, since that changes presentation
  * rather than meaning.
  *
- * Shared by the runtime formatter path (`lookupSyncSpec`) and by
- * `computeFieldFormattingRequirement` in `core-backend`'s `fields.ts` (via `cross-package.ts`),
- * so pre-warm enumerates exactly the candidates the runtime iterates.
+ * Shared by the runtime formatter path (`lookupSyncSpec`) and by `collectFieldRequirements` in
+ * `core-backend`'s `fields.ts` (via `cross-package.ts`), so pre-warm enumerates exactly the
+ * candidates the runtime iterates.
  * @internal
  */
 export function collectFieldQuantityPairs(args: {
