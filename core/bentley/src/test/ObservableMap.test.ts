@@ -90,6 +90,30 @@ describe("ObservableMap", () => {
     expect(map.size).to.equal(2);
   });
 
+  it("setAll should raise event if iteration throws after a change", () => {
+    const map = new ObservableMap<string, string>();
+    let changedCount = 0;
+    map.onChanged.addListener(() => changedCount++);
+    const throwing = {
+      [Symbol.iterator]() {
+        let index = 0;
+        return {
+          next() {
+            if (index === 0) {
+              index++;
+              return { value: ["a", "1"] as const, done: false };
+            }
+            throw new Error("fail");
+          },
+        };
+      },
+    };
+
+    expect(() => map.setAll(throwing as Iterable<readonly [string, string]>)).to.throw("fail");
+    expect(map.get("a")).to.equal("1");
+    expect(changedCount).to.equal(1);
+  });
+
   it("deleteAll should raise onChanged only once", () => {
     const map = new ObservableMap<string, string>([["a", "1"], ["b", "2"], ["c", "3"]]);
     const listener = new Listener(map);

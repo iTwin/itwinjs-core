@@ -32,7 +32,7 @@ export class ObservableMap<K, V> extends Map<K, V> {
   }
 
   /** Invokes [Map.set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/set), raising
-   * the [[onChanged]] event.
+   * the [[onChanged]] event unless `key` is already present with the same `value`.
    */
   public override set(key: K, value: V): this {
     const valueChanged = !this.has(key) || !Object.is(this.get(key), value);
@@ -68,22 +68,25 @@ export class ObservableMap<K, V> extends Map<K, V> {
     }
   }
 
-  /** Add or update multiple entries in the map, raising [[onChanged]] only once after all items are set.
+  /** Add or update multiple entries in the map, raising [[onChanged]] only once after all items are set, if the contents of
+   * the map changed as a result.
    * This is more efficient than calling [[set]] in a loop when listeners need not be notified of each individual change.
    * @param items The entries to add or update.
    */
   public setAll(items: Iterable<readonly [K, V]>): void {
     let changed = false;
-    for (const [key, value] of items) {
-      const shouldSet = !this.has(key) || !Object.is(this.get(key), value);
-      if (shouldSet) {
-        super.set(key, value);
-        changed = true;
+    try {
+      for (const [key, value] of items) {
+        const shouldSet = !this.has(key) || !Object.is(this.get(key), value);
+        if (shouldSet) {
+          super.set(key, value);
+          changed = true;
+        }
       }
-    }
-
-    if (changed) {
-      this.onChanged.raiseEvent();
+    } finally {
+      if (changed) {
+        this.onChanged.raiseEvent();
+      }
     }
   }
 
@@ -94,11 +97,13 @@ export class ObservableMap<K, V> extends Map<K, V> {
    */
   public deleteAll(keys: Iterable<K>): number {
     const prevSize = this.size;
-    for (const key of keys)
-      super.delete(key);
-
-    if (this.size !== prevSize) {
-      this.onChanged.raiseEvent();
+    try {
+      for (const key of keys)
+        super.delete(key);
+    } finally {
+      if (this.size !== prevSize) {
+        this.onChanged.raiseEvent();
+      }
     }
 
     return prevSize - this.size;

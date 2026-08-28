@@ -128,6 +128,33 @@ describe("ObservableSet", () => {
     expect(set.size).to.equal(3);
   });
 
+  it("addAll should raise events if iteration throws after a change", () => {
+    const set = new ObservableSet<string>();
+    let batchAddedCount = 0;
+    let changedCount = 0;
+    set.onBatchAdded.addListener(() => batchAddedCount++);
+    set.onChanged.addListener(() => changedCount++);
+    const throwing = {
+      [Symbol.iterator]() {
+        let index = 0;
+        return {
+          next() {
+            if (index === 0) {
+              index++;
+              return { value: "a", done: false };
+            }
+            throw new Error("fail");
+          },
+        };
+      },
+    };
+
+    expect(() => set.addAll(throwing as Iterable<string>)).to.throw("fail");
+    expect(set.has("a")).to.be.true;
+    expect(batchAddedCount).to.equal(1);
+    expect(changedCount).to.equal(1);
+  });
+
   it("deleteAll should raise onBatchDeleted only once", () => {
     const set = new ObservableSet<string>(["a", "b", "c"]);
     const listener = new Listener(set);
@@ -173,6 +200,32 @@ describe("ObservableSet", () => {
     expect(set.has("b")).to.be.true;
   });
 
+  it("deleteAll should raise events if iteration throws after a change", () => {
+    const set = new ObservableSet<string>(["a", "b"]);
+    let batchDeletedCount = 0;
+    let changedCount = 0;
+    set.onBatchDeleted.addListener(() => batchDeletedCount++);
+    set.onChanged.addListener(() => changedCount++);
+    const throwing = {
+      [Symbol.iterator]() {
+        let index = 0;
+        return {
+          next() {
+            if (index === 0) {
+              index++;
+              return { value: "a", done: false };
+            }
+            throw new Error("fail");
+          },
+        };
+      },
+    };
+
+    expect(() => set.deleteAll(throwing as Iterable<string>)).to.throw("fail");
+    expect(set.has("a")).to.be.false;
+    expect(batchDeletedCount).to.equal(1);
+    expect(changedCount).to.equal(1);
+  });
 
   it("subclasses can override `add`", () => {
     class MySet extends ObservableSet<string> {
