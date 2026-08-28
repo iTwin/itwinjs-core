@@ -216,12 +216,20 @@ async function testWindowSizeSettings() {
       && saved.x === bounds.x && saved.y === bounds.y;
   };
 
+  const boundsBeforeResize = window.getBounds();
   window.setSize(250, 251);
-  assert(await waitUntil(() => window.getBounds().width !== expectedBounds.width && window.getBounds().height !== expectedBounds.height));
+  assert(await waitUntil(() => {
+    const bounds = window.getBounds();
+    return bounds.width !== boundsBeforeResize.width || bounds.height !== boundsBeforeResize.height;
+  }));
   assert(await waitUntil(savedMatchesWindow));
 
+  const boundsBeforeMove = window.getBounds();
   window.setPosition(50, 75);
-  assert(await waitUntil(() => window.getBounds().x !== expectedBounds.x && window.getBounds().y !== expectedBounds.y));
+  assert(await waitUntil(() => {
+    const bounds = window.getBounds();
+    return bounds.x !== boundsBeforeMove.x || bounds.y !== boundsBeforeMove.y;
+  }));
   assert(await waitUntil(savedMatchesWindow));
 }
 
@@ -239,7 +247,7 @@ async function waitUntil(condition: () => boolean): Promise<boolean> {
   return condition();
 }
 
-/** Waits until the window reports the same bounds across a full settle interval, for up to ~4 seconds. */
+/** Waits until the window reports the same bounds across a full settle interval, throwing if it doesn't within ~4 seconds. */
 async function waitForStableBounds(window: BrowserWindow): Promise<void> {
   let previous = "";
   for (let i = 0; i < 10; ++i) {
@@ -250,6 +258,8 @@ async function waitForStableBounds(window: BrowserWindow): Promise<void> {
     previous = current;
     await settleInterval.wait();
   }
+
+  throw new Error("Window bounds did not stabilize");
 }
 
 function assertElectronHostNotInitialized() {
