@@ -217,7 +217,9 @@ async function testWindowSizeSettings() {
   };
 
   const boundsBeforeResize = window.getBounds();
-  window.setSize(250, 251);
+  const targetWidth = boundsBeforeResize.width === 250 ? 300 : 250;
+  const targetHeight = boundsBeforeResize.height === 251 ? 301 : 251;
+  window.setSize(targetWidth, targetHeight);
   assert(await waitUntil(() => {
     const bounds = window.getBounds();
     return bounds.width !== boundsBeforeResize.width || bounds.height !== boundsBeforeResize.height;
@@ -225,7 +227,11 @@ async function testWindowSizeSettings() {
   assert(await waitUntil(savedMatchesWindow));
 
   const boundsBeforeMove = window.getBounds();
-  window.setPosition(50, 75);
+  // The OS chooses the initial position, so pick a target it can't already be at - otherwise setPosition
+  // is a no-op and the "window changed" assertion below can never be satisfied.
+  const targetX = boundsBeforeMove.x === 50 ? 100 : 50;
+  const targetY = boundsBeforeMove.y === 75 ? 150 : 75;
+  window.setPosition(targetX, targetY);
   assert(await waitUntil(() => {
     const bounds = window.getBounds();
     return bounds.x !== boundsBeforeMove.x || bounds.y !== boundsBeforeMove.y;
