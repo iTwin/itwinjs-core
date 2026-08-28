@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "Improved dihedralAngleSummary docs",
+      "comment": "Fixed wrong type definitions in IModelJsonSchema.ts",
       "type": "none"
     }
   ],
