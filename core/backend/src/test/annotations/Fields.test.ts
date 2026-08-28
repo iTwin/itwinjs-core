@@ -706,24 +706,11 @@ describe("Field evaluation", () => {
       expect(updatedCount).to.equal(1);
       expect(content).to.equal(FieldRun.invalidContentIndicator);
     });
-  });
-
-  describe("evaluateFields (adopted FormatSet)", () => {
-    async function register(block: TextBlock, formats: Record<string, FormatDefinition> = {}): Promise<FieldFormattingSpecProvider> {
-      return ElementDrivesTextAnnotation.registerFieldFormattingProvider({
-        iModel: imodel,
-        formatSet: toFormatSet("TestSet", formats),
-        requirements: ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel: imodel, block }),
-      });
-    }
-
-    afterEach(() => {
-      ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(imodel);
-    });
 
     it("resolves KoQ formats from the adopted FormatSet", async () => {
-      const inlineFormat = decimalFormat("Units.MM", "mm", 2);
-
+      // The field declares no formatOptions at all: the adopted set is keyed on the property's
+      // own KindOfQuantity, which is how an application supplying standard KoQ keys expects a
+      // plain field to pick up its presentation.
       const block = TextBlock.create();
       const field = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -732,7 +719,7 @@ describe("Field evaluation", () => {
       });
       block.appendRun(field);
 
-      await register(block, { "Fields.LENGTH": inlineFormat });
+      await register(block, { "Fields.LENGTH": decimalFormat("Units.MM", "mm", 2) });
       const updated = ElementDrivesTextAnnotation.evaluateFields({ iModel: imodel, block });
 
       expect(updated).to.equal(1);
@@ -1024,11 +1011,11 @@ describe("Field evaluation", () => {
     });
 
     it("routes quantity formatting through provider.formatQuantity, not spec.applyFormatting", () => {
-      // Regression: the sync path must honor the FieldSpecProvider contract by rendering
-      // magnitudes via `provider.formatQuantity(magnitude, spec)`, so caller-side hooks
-      // (caching, telemetry, per-call substitution) apply. Directly calling
-      // `spec.applyFormatting` would bypass those hooks silently. Exercised directly against the
-      // internal helper with a hand-rolled provider so the two entry points differ observably.
+      // Regression: the sync path must render magnitudes via `provider.formatQuantity(magnitude,
+      // spec)` rather than calling `spec.applyFormatting` itself, so that applying a spec stays
+      // the provider's job and an implementation is free to do more than pass through. Exercised
+      // directly against the internal helper with a hand-rolled provider whose two entry points
+      // return observably different strings.
       const fakeSpec = { applyFormatting: (m: number) => `SPEC:${m}` } as unknown as FormatterSpec;
       const provider: FieldSpecProvider = {
         getFormatterSpec(args) {
