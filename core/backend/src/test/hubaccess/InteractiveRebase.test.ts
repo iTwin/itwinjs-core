@@ -9,8 +9,8 @@ import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
-import { Code, ElementAspectProps, GeometricElement2dProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements } from "../../core-backend";
+import { Code, ElementAspectProps, GeometricElement2dProps, IModel, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
+import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
 import { Point2d, XYProps } from "@itwin/core-geometry";
 import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
@@ -983,5 +983,331 @@ describe("InteractiveRebase", () => {
     const aspect = getUniqueAspect(briefcase2, id);
     chai.expect(aspect.aspectValue).to.equal("User1");
     chai.expect(aspect.aspectNumber).to.equal(2);
+  });
+
+  it("should report an aspect conflict when we update an aspect they deleted", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      txn.deleteAspect(aspect.id!);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User2";
+      txn.updateAspect(aspect);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 deletes aspect" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.original).to.not.be.undefined;
+    chai.expect(conflict.theirs).to.be.undefined;
+    chai.expect(conflict.ours).to.not.be.undefined;
+    chai.expect(conflict.conflictingProperties).to.have.length(0);
+    chai.expect(conflict.ourModifiedProperties).to.include("aspectValue");
+
+    chai.expect(briefcase2.elements.getAspects(id, uniqueAspectClassFullName)).to.have.length(0);
+    conflict.acceptOurs();
+    const aspect = getUniqueAspect(briefcase2, id);
+    chai.expect(aspect.aspectValue).to.equal("User2");
+  });
+
+  it("should report an aspect conflict when they update an aspect we deleted", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User1";
+      txn.updateAspect(aspect);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      txn.deleteAspect(aspect.id!);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 updates aspect" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    chai.expect(interactive.conflicts.length).to.equal(1);
+
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict.original).to.not.be.undefined;
+    chai.expect(conflict.theirs).to.not.be.undefined;
+    chai.expect(conflict.ours).to.be.undefined;
+    chai.expect(conflict.conflictingProperties).to.have.length(0);
+    chai.expect(conflict.theirModifiedProperties).to.include("aspectValue");
+
+    chai.expect(briefcase2.elements.getAspects(id, uniqueAspectClassFullName)).to.have.length(0);
+    conflict.acceptTheirs();
+    const aspect = getUniqueAspect(briefcase2, id);
+    chai.expect(aspect.aspectValue).to.equal("User1");
+  });
+
+  it("should report an aspect update when our element deletion cascades to the aspect", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User1";
+      txn.updateAspect(aspect);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 updates aspect" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    const conflict = interactive.conflicts.find((entry) => entry.classFullName === uniqueAspectClassFullName);
+    chai.expect(conflict).to.not.be.undefined;
+    if (!conflict) return;
+
+    chai.expect(conflict.original).to.not.be.undefined;
+    chai.expect(conflict.theirs).to.not.be.undefined;
+    chai.expect(conflict.ours).to.be.undefined;
+    chai.expect(conflict.theirModifiedProperties).to.include("aspectValue");
+
+    conflict.acceptTheirs();
+    const element = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(element).to.not.be.undefined;
+    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
+  });
+
+  it("should restore an element and its aspect when accepting our aspect update after they deleted the element", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User2";
+      txn.updateAspect(aspect);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 deletes element" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    const conflict = interactive.conflicts.find((entry) => entry.classFullName === uniqueAspectClassFullName);
+    chai.expect(conflict).to.not.be.undefined;
+    if (!conflict) return;
+
+    chai.expect(conflict.original).to.not.be.undefined;
+    chai.expect(conflict.theirs).to.be.undefined;
+    chai.expect(conflict.ours).to.not.be.undefined;
+    chai.expect(conflict.ourModifiedProperties).to.include("aspectValue");
+
+    conflict.acceptOurs();
+    const element = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(element).to.not.be.undefined;
+    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User2");
+  });
+
+  it("should restore an edited aspect when accepting theirs after our element deletion", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User1";
+      txn.updateAspect(aspect);
+      txn.updateElement({ id, userLabel: "User1" });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 updates element and aspect" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "irt:SomeGraphicalElement");
+    chai.expect(conflict).to.not.be.undefined;
+    if (!conflict) return;
+
+    conflict.acceptTheirs();
+    chai.expect(briefcase2.elements.getElementProps(id).userLabel).to.equal("User1");
+    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
+  });
+
+  it("merges an ON DELETE SET NULL side effect without reporting a broken relationship", async () => {
+    const typeCode = Code.createEmpty();
+    typeCode.value = "SomeGraphicalType";
+
+    const [typeId, otherId] = await withEditTxn(briefcase1, async (txn) => {
+      const newTypeId = txn.insertElement({
+        classFullName: GenericGraphicalType2d.classFullName,
+        model: IModel.dictionaryId,
+        code: typeCode,
+      } as TypeDefinitionElementProps);
+      txn.updateElement<SomeGraphicalElementProps>({
+        id,
+        typeDefinition: { id: newTypeId, relClassName: "BisCore:GraphicalElement2dIsOfType" },
+      });
+      // Second element exists only to force a genuine conflict, so that a real rebase runs
+      // instead of the incoming changeset fast-forwarding.
+      const newOtherId = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Original",
+        somePoint: new Point2d(9.0, 9.0),
+      } as SomeGraphicalElementProps);
+      return [newTypeId, newOtherId];
+    });
+
+    await briefcase1.pushChanges({ description: "Add type definition" });
+    await briefcase2.pullChanges();
+
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).typeDefinition?.id).to.equal(typeId);
+
+    // They set a property on the referencing element that we never touch.
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, userLabel: "TheirLabel" });
+      txn.updateElement<SomeGraphicalElementProps>({ id: otherId, foo: "User1" });
+    });
+
+    // We delete the type definition, which SET NULLs TypeDefinitionId on the referencing element.
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(typeId);
+      txn.updateElement<SomeGraphicalElementProps>({ id: otherId, foo: "User2" });
+    });
+
+    briefcase2.clearCaches();
+    chai.expect(briefcase2.elements.tryGetElementProps(typeId)).to.be.undefined;
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).typeDefinition).to.be.undefined;
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    // The SET NULL is applied to the referencing element as an ordinary property update, so it
+    // merges property-wise and is never surfaced as a conflict or a broken relationship.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    chai.expect(interactive.conflicts[0].id).to.equal(otherId);
+    chai.expect(interactive.conflicts[0].brokenRelationships.length).to.equal(0);
+    chai.expect(interactive.conflicts.some((c) => c.id === id)).to.be.false;
+
+    briefcase2.clearCaches();
+    const final = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
+    chai.expect(final.typeDefinition).to.be.undefined;
+    chai.expect(final.userLabel).to.equal("TheirLabel");
+    chai.expect(briefcase2.elements.tryGetElementProps(typeId)).to.be.undefined;
+  });
+
+  it("should restore an edited aspect when accepting ours after they deleted the element", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User2";
+      txn.updateAspect(aspect);
+      txn.updateElement({ id, userLabel: "User2" });
+    });
+
+    await briefcase1.pushChanges({ description: "User1 deletes element" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "irt:SomeGraphicalElement");
+    chai.expect(conflict).to.not.be.undefined;
+    if (!conflict) return;
+
+    conflict.acceptOurs();
+    chai.expect(briefcase2.elements.getElementProps(id).userLabel).to.equal("User2");
+    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User2");
   });
 });
