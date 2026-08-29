@@ -18,6 +18,7 @@ import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDispla
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialTileTreeReferences } from "./cross-package";
+import { TileTreeReference } from "../tile/internal";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -87,7 +88,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public is2d(): this is IModelDisplayReference2d { return false }
 
   public get isLoadingComplete() { return this._view.areAllTileTreesLoaded; }
-  public get tileTreeRefs() { return this._view.getTileTreeRefs(); }
+  public abstract get tileTreeRefs(): Iterable<TileTreeReference>;
 
   public get subCategoryOverrides() {
     return this._view.displayStyle.settings.subCategoryOverrides;
@@ -153,6 +154,10 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
     return true;
   }
 
+  public override get tileTreeRefs() {
+    return []; // ###TODO
+  }
+
   public get viewedModel() {
     return this._view.baseModelId;
   }
@@ -189,6 +194,10 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     this._view.displayStyle.settings.onHiddenLineSettingsChanged.addListener(() => {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
+  }
+
+  public override get tileTreeRefs(): Iterable<TileTreeReference> {
+    return this[_treeRefs];
   }
 
   public get viewedModels() {

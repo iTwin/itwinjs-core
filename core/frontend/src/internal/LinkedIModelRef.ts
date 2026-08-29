@@ -19,7 +19,8 @@ import { ModelDisplayTransformProvider } from "../ViewState";
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialViewState } from "../SpatialViewState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
-import { AttachToViewportArgs, IModelApp, SpatialTileTreeReferences } from "../core-frontend";
+import { AttachToViewportArgs, IModelApp } from "../core-frontend";
+import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 
 abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -33,6 +34,8 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   protected readonly _subcategories = new SubCategoriesCache.Queue();
 
   public abstract readonly parent: IModelDisplayReferences;
+  public abstract get tileTreeRefs(): Iterable<TileTreeReference>;
+
   public readonly iModel;
   public readonly viewedCategories = new ObservableSet<Id64String>();
 
@@ -99,10 +102,6 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     return false; // ###TODO
   }
 
-  public get tileTreeRefs() {
-    return []; // ###TODO
-  }
-
   public get isAlwaysDrawnExclusive() {
     return this.#alwaysDrawnExclusive;
   }
@@ -148,6 +147,10 @@ class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReferenc
     this.parent = refs;
     this.viewedModel = args.viewedModel;
   }
+
+  public override get tileTreeRefs() {
+    return []; // ###TODO
+  }
 }
 
 class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDisplayReference {
@@ -171,6 +174,10 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
 
   public override get overrides() {
     return this._ovrs as SpatialIModelDisplayOverrides;
+  }
+
+  public override get tileTreeRefs() {
+    return this[_treeRefs];
   }
 
   public constructor(args: LinkSpatialIModelArgs, refs: SpatialIModelDisplayReferences) {
