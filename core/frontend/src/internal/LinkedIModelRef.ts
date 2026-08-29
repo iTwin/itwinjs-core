@@ -7,7 +7,7 @@
  */
 
 import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
-import { _backingView, _getModelClip, _implementationProhibited, _scheduleScriptReference } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
@@ -19,7 +19,7 @@ import { ModelDisplayTransformProvider } from "../ViewState";
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialViewState } from "../SpatialViewState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
-import { IModelApp } from "../core-frontend";
+import { AttachToViewportArgs, IModelApp, SpatialTileTreeReferences } from "../core-frontend";
 
 abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -132,6 +132,9 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public get activeViewFlags() {
     return this.#resolvedViewFlags;
   }
+
+  public [_attachToViewport](_args: AttachToViewportArgs): void { }
+  public [_detachFromViewport](): void { }
 }
 
 class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReference2d {
@@ -156,6 +159,8 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   }
 
   public readonly parent: SpatialIModelDisplayReferences;
+  public readonly [_treeRefs]: SpatialTileTreeReferences;
+
   public readonly viewedModels = new ObservableSet<Id64String>();
   public readonly planarClipMasks = new ObservableMap<Id64String, PlanarClipMaskSettings>();
   public readonly realityModelDisplaySettings = new ObservableMap<Id64String, RealityModelDisplaySettings>();
@@ -171,6 +176,8 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   public constructor(args: LinkSpatialIModelArgs, refs: SpatialIModelDisplayReferences) {
     super(args, refs, createSpatialIModelDisplayOverrides(args.overrides));
     this.parent = refs;
+    this[_treeRefs] = SpatialTileTreeReferences.create(this);
+
     this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
 
     this.viewedModels.addAll(args.viewedModels ?? []);
@@ -210,6 +217,16 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
 
   public get activeHiddenLineSettings() {
     return this.overrides.hiddenLineSettings ?? this._spatialView.displayStyle.settings.hiddenLineSettings;
+  }
+
+  public override [_attachToViewport](args: AttachToViewportArgs): void {
+    super[_attachToViewport](args);
+    this[_treeRefs].attachToViewport(args);
+  }
+
+  public override [_detachFromViewport](): void {
+    this[_treeRefs].detachFromViewport();
+    super[_detachFromViewport]();
   }
 }
 

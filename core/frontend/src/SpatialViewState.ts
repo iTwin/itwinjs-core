@@ -20,6 +20,7 @@ import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 import { SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
 import { createSpatialIModelDisplayReferences } from "./internal/IModelDisplayReferencesImpl";
+import { _treeRefs } from "./common/internal/Symbols";
 
 /** Options supplied to [[SpatialViewState.computeFitRange]].
  * @public
@@ -37,7 +38,10 @@ export interface ComputeSpatialViewFitRangeOptions {
 export class SpatialViewState extends ViewState3d {
   public static override get className() { return "SpatialViewDefinition"; }
 
-  private readonly _treeRefs: SpatialTileTreeReferences;
+  private get _treeRefs(): SpatialTileTreeReferences {
+    return this.iModelRefs.primary[_treeRefs];
+  }
+
   private _modelSelector: ModelSelectorState;
   private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
 
@@ -111,7 +115,6 @@ export class SpatialViewState extends ViewState3d {
       this._modelSelector = arg3.modelSelector.clone();
 
     this.iModelRefs = createSpatialIModelDisplayReferences(this);
-    this._treeRefs = SpatialTileTreeReferences.create(this.iModelRefs.primary); // ###TODO move these to the IModelDisplayReference object.
   }
 
   public override isSpatialView(): this is SpatialViewState { return true; }

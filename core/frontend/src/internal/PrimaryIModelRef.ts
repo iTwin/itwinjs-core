@@ -7,9 +7,9 @@
  */
 
 import { ModelClipGroups, ViewFlags } from "@itwin/core-common";
-import { _backingView, _getModelClip, _implementationProhibited, _scheduleScriptReference } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
-import { ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
+import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
 import { BeEvent, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { SpatialViewState } from "../SpatialViewState";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
@@ -17,6 +17,7 @@ import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
+import { SpatialTileTreeReferences } from "./cross-package";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -126,6 +127,9 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public get activeViewFlags() {
     return this.#resolvedViewFlags;
   }
+
+  [_attachToViewport](_args: AttachToViewportArgs): void { }
+  [_detachFromViewport](): void { }
 }
 
 class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayReference2d {
@@ -161,6 +165,8 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
   public readonly parent: SpatialIModelDisplayReferences;
 
+  public readonly [_treeRefs]: SpatialTileTreeReferences;
+
   public override get overrides() {
     return this._ovrs as SpatialIModelDisplayOverrides;
   }
@@ -171,6 +177,8 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   public constructor(refs: SpatialIModelDisplayReferences) {
     super(refs, createSpatialIModelDisplayOverrides());
     this.parent = refs;
+
+    this[_treeRefs] = SpatialTileTreeReferences.create(this);
 
     this._view.details.onModelClipGroupsChanged.addListener(
       () => this.onModelClipGroupsChanged.raiseEvent()
@@ -214,6 +222,16 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
   public get activeHiddenLineSettings() {
     return this.overrides.hiddenLineSettings ?? this._view.displayStyle.settings.hiddenLineSettings;
+  }
+
+  public override [_attachToViewport](args: AttachToViewportArgs): void {
+    super[_attachToViewport](args);
+    this[_treeRefs].attachToViewport(args);
+  }
+
+  public override [_detachFromViewport](): void {
+    this[_treeRefs].detachFromViewport();
+    super[_detachFromViewport]();
   }
 }
 

@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
-import { _getModelClip, _implementationProhibited, _scheduleScriptReference } from "./common/internal/Symbols";
+import { _attachToViewport, _detachFromViewport, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { TileTreeReference } from "./tile/internal";
 import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
@@ -15,7 +15,7 @@ import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
 import { ModelDisplayTransformProvider } from "./ViewState";
-import { RenderClipVolume } from "./core-frontend";
+import { AttachToViewportArgs, RenderClipVolume, SpatialTileTreeReferences } from "./core-frontend";
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
 
 export interface IModelDisplayReference {
@@ -56,6 +56,9 @@ export interface IModelDisplayReference {
 
   readonly activeViewFlags: ViewFlags;
   readonly onActiveViewFlagsChanged: BeEvent<() => void>;
+
+  readonly [_attachToViewport]: (args: AttachToViewportArgs) => void;
+  readonly [_detachFromViewport]: () => void;
 }
 
 export interface IModelDisplayReference2d extends IModelDisplayReference {
@@ -81,6 +84,8 @@ export interface SpatialIModelDisplayReference extends IModelDisplayReference {
   [_getModelClip](modelId: Id64String): RenderClipVolume | undefined;
 
   readonly overrides: SpatialIModelDisplayOverrides;
+
+  readonly [_treeRefs]: SpatialTileTreeReferences;
 
   readonly activeHiddenLineSettings: HiddenLine.Settings;
   readonly onActiveHiddenLineSettingsChanged: BeEvent<() => void>;
