@@ -16,7 +16,6 @@ export class ObservableMap<K, V> extends Map<K, V> {
   /** @internal */
   public override get [Symbol.toStringTag]() { return "ObservableMap"; }
 
-(??)
   /** Emitted after any change to the contents of this map. */
   public readonly onChanged = new BeEvent<() => void>();
 
@@ -53,7 +52,6 @@ export class ObservableMap<K, V> extends Map<K, V> {
   public override delete(key: K): boolean {
     const ret = super.delete(key);
     if (ret) {
-(??)
       this.onChanged.raiseEvent();
     }
 
@@ -66,7 +64,6 @@ export class ObservableMap<K, V> extends Map<K, V> {
   public override clear(): void {
     if (0 !== this.size) {
       super.clear();
-(??)
       this.onChanged.raiseEvent();
     }
   }
@@ -90,7 +87,6 @@ export class ObservableMap<K, V> extends Map<K, V> {
         this.onChanged.raiseEvent();
       }
     }
-(??)
   }
 
   /** Delete multiple keys from the map, raising [[onChanged]] only once after all keys are deleted.
