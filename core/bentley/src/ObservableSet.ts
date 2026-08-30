@@ -12,6 +12,7 @@ import { BeEvent } from "./BeEvent";
  * @public
  */
 export class ObservableSet<T> extends Set<T> {
+  /** @internal */
   public override get [Symbol.toStringTag]() { return "ObservableSet"; }
 
   /** Emitted after `item` is added to this set. */
@@ -84,12 +85,19 @@ export class ObservableSet<T> extends Set<T> {
    */
   public addAll(items: Iterable<T>): number {
     const prevSize = this.size;
-    for (const item of items)
-      super.add(item);
-
-    if (this.size !== prevSize) {
-      this.onBatchAdded.raiseEvent();
-      this.onChanged.raiseEvent();
+    let addedAny = false;
+    try {
+      for (const item of items) {
+        const prevSetSize = this.size;
+        super.add(item);
+        if (this.size !== prevSetSize)
+          addedAny = true;
+      }
+    } finally {
+      if (addedAny) {
+        this.onBatchAdded.raiseEvent();
+        this.onChanged.raiseEvent();
+      }
     }
 
     return this.size - prevSize;
@@ -102,12 +110,19 @@ export class ObservableSet<T> extends Set<T> {
    */
   public deleteAll(items: Iterable<T>): number {
     const prevSize = this.size;
-    for (const item of items)
-      super.delete(item);
-
-    if (this.size !== prevSize) {
-      this.onBatchDeleted.raiseEvent();
-      this.onChanged.raiseEvent();
+    let deletedAny = false;
+    try {
+      for (const item of items) {
+        const prevSetSize = this.size;
+        super.delete(item);
+        if (this.size !== prevSetSize)
+          deletedAny = true;
+      }
+    } finally {
+      if (deletedAny) {
+        this.onBatchDeleted.raiseEvent();
+        this.onChanged.raiseEvent();
+      }
     }
 
     return prevSize - this.size;
