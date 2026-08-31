@@ -455,11 +455,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-<<<<<<< HEAD
 				version = 5.13.24;
-=======
-				version = 5.14.7;
->>>>>>> 439f997 (Schema Sync v2 "upstream" - update/upgrade split and update skips over extra sync db changes (#9604))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

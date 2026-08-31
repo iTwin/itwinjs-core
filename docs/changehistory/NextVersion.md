@@ -4,7 +4,6 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
-<<<<<<< HEAD
   - [@itwin/core-common](#itwincore-common)
     - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
     - [Class metadata in transaction change events](#class-metadata-in-transaction-change-events)
@@ -193,19 +192,3 @@ The behavior of [IModelApp.makeLogoCard]($frontend) itself is unchanged: string 
 ### Simplifying filleted line strings
 
 The [CurveFactory.createFilletsInLineString]($core-geometry) options bundle [CreateFilletsInLineStringOptions]($core-geometry) has a new optional property `CreateFilletsInLineStringOptions.simplifyPath` defaulting to `false`. When set to `true`, the output [Path]($core-geometry) is simplified by removing small segments less than the `CreateFilletsInLineStringOptions.closureTolerance` in length, and by merging adjacent arcs where possible. This is particularly helpful in cleaning up an output `Path` containing fillets that entirely consume an input line string edge (or nearly so).
-=======
-  - [@itwin/core-backend](#itwincore-backend)
-    - [Schema sync rework](#schema-sync-rework)
-
-## @itwin/core-backend
-
-### Schema sync rework
-
-Schema sync lets the briefcases of one iModel import ECSchemas without taking the exclusive schema lock. This new version explicitly splits between updates, which update the sync db, and upgrades which rewrite the sync db and push it with the briefcase at the same time via the new `BriefcaseDb.upgradeSchemas` API.
-
-Updates no longer automatically end up in other users' briefcases when they import schemas. Instead, they only pick the reference closure of what they import, so updates only hit when a briefcase pushes.
-
-A change that would move or destroy existing data is now refused with `BE_SQLITE_ERROR_DataTransformRequired` or the new `BE_SQLITE_ERROR_DataDeletionRequired`; the new `@alpha` `BriefcaseDb.upgradeSchemas` runs those under the exclusive schema lock and lands the changeset and the sync db together. iModels without schema sync are unaffected.
-
-SchemaSync databases now require version 5.0.0. Existing version 4 containers are outside this compatibility boundary and cannot be opened by this release.
->>>>>>> 439f997 (Schema Sync v2 "upstream" - update/upgrade split and update skips over extra sync db changes (#9604))
