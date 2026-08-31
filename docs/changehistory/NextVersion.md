@@ -111,10 +111,10 @@ Applications that shut down while requests are outstanding no longer need to fil
 
 Map layers previously supported only HTTP Basic credentials, custom query parameters, and ArcGIS-style tokens (a token appended as a query parameter by a [MapLayerAccessClient]($frontend)). Services requiring any other scheme - most commonly an `Authorization` or API-key header, e.g. when map services are exposed through an authenticating proxy - could not be consumed.
 
-[MapLayerAccessClient]($frontend) now extends a new `@beta` contract, [MapLayerRequestAuthenticator]($frontend), giving the hosting application full control over how requests are authenticated for a given map-layer format:
+[MapLayerAccessClient]($frontend) now extends a new `@beta` contract, [MapLayerRequestShaper]($frontend), giving the hosting application full control over the query parameters and headers of every request made for a given map-layer format — authentication being the most common use:
 
-- `applyToRequest` is invoked immediately before every request made for a layer of the registered format - tiles, tooltips, capabilities, service metadata, and source validation, across WMS, WMTS, TileURL, ArcGIS, ArcGIS Feature, and OGC API Features layers - and may mutate the request's query parameters and headers in place ([MapLayerAuthRequest]($frontend)). The request's target cannot be changed.
-- `isAuthenticationError` lets the client recognize authentication failures using its protocol's own convention ([MapLayerAuthResponse]($frontend)); the layer then transitions to [MapLayerImageryProviderStatus]($frontend).`RequireAuth`. When omitted, HTTP 401/403 responses are treated as authentication failures.
+- `applyToRequest` is invoked immediately before every request made for a layer of the registered format - tiles, tooltips, capabilities, service metadata, and source validation, across WMS, WMTS, TileURL, ArcGIS, ArcGIS Feature, and OGC API Features layers - and may mutate the request's query parameters and headers in place ([MapLayerRequest]($frontend)). The request's target cannot be changed.
+- [MapLayerRequestShaper.classifyResponse]($frontend) lets the client recognize failures using its protocol's own convention ([MapLayerResponse]($frontend)); returning `"authentication"` transitions the layer to [MapLayerImageryProviderStatus]($frontend).`RequireAuth`. When omitted, HTTP 401/403 responses are treated as authentication failures.
 
 ```ts
 IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", {
@@ -127,7 +127,7 @@ Both members are optional, and the feature is fully backward compatible — noth
 
 - **No access client, or a client without `applyToRequest`** (including `ArcGisAccessClient` from `@itwin/map-layers-auth`): behavior is unchanged. Requests are issued exactly as before, and authentication failures are detected by the existing status-code checks (e.g. HTTP 401).
 - **A client implementing `applyToRequest` only**: its shaped requests are classified by a default rule — HTTP 401 or 403 transitions the layer to `RequireAuth`.
-- **A client also implementing `isAuthenticationError`**: it becomes the sole authority for its shaped requests; the default status-code rule no longer applies to them.
+- **A client also implementing `classifyResponse`**: it becomes the sole authority for its shaped requests; the default status-code rule no longer applies to them.
 
 Because the access client is registered per session rather than persisted in [ImageMapLayerSettings]($common), no secret is ever serialized into display styles or saved views, and restored views authenticate without per-layer re-injection. Requests shaped by `applyToRequest` are treated like credentialed requests by [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) (redirects refused while the restriction is enabled), never trigger the NTLM/Negotiate SSO retry, and bypass URL-keyed capability/service-metadata caches so authenticated responses are not shared across differing authentication contexts.
 

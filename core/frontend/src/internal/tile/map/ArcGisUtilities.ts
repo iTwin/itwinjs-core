@@ -274,7 +274,7 @@ export class ArcGisUtilities {
    * @throws [[MapLayerUntrustedOriginError]] if an NTLM/Negotiate challenge could not be answered because
    * the URL's origin is not trusted (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]);
    * [[MapLayerAuthenticationFailedError]] if the request was shaped by the format's access client and classified
-   * as an authentication failure (see [[MapLayerRequestAuthenticator.isAuthenticationError]]);
+   * as an authentication failure (see [[MapLayerRequestShaper.classifyResponse]]);
    * all other errors are caught and reported by returning `undefined`.
    */
 

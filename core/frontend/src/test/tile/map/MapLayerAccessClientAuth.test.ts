@@ -5,7 +5,7 @@
 
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ArcGisUtilities, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequestAuthenticator, MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
+import { ArcGisUtilities, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequestShaper, MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { WmsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmsMapLayerImageryProvider";
 import { WmtsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmtsMapLayerImageryProvider";
@@ -88,18 +88,21 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(requested.origin).toEqual("https://maps.example.com");
   });
 
-  it("supports a standalone MapLayerRequestAuthenticator implementation composed into an access client", async () => {
+  it("supports a standalone MapLayerRequestShaper implementation composed into an access client", async () => {
     // A hosting application can author the request-shaping contract on its own, then compose it
     // into the client it registers - e.g. a proxy that requires a per-request signature.
-    const proxyAuthenticator: MapLayerRequestAuthenticator = {
+    const proxyShaper: MapLayerRequestShaper = {
       applyToRequest: ({ url, searchParams, headers }) => {
         headers.set("Authorization", "Bearer proxy-jwt");
         headers.set("X-Correlation-Id", "abc-123");
         searchParams.set("sig", `signed(${new URL(url).pathname})`);
       },
-      isAuthenticationError: ({ response }) => response.status === 407 || response.status === 401,
+      classifyResponse: ({ response }) => (response.status === 407 || response.status === 401) ? "authentication" : undefined,
     };
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", { getAccessToken: async () => undefined, ...proxyAuthenticator });
+    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", {
+      getAccessToken: async () => undefined,
+      ...proxyShaper,
+    });
 
     const provider = createProvider();
     await provider.makeTileRequest(tileUrl);
@@ -199,13 +202,13 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
-  it("lets isAuthenticationError classify protocol-specific failures", async () => {
+  it("lets classifyResponse recognize protocol-specific failures", async () => {
     // An HTTP 200 whose body carries an embedded error code (e.g. ArcGIS-style).
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ error: { code: 499 } }), { status: 200 }));
     IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      isAuthenticationError: async ({ response }) => {
+      classifyResponse: async ({ response }) => {
         const json = await response.clone().json();
-        return json?.error?.code === 499;
+        return json?.error?.code === 499 ? "authentication" : undefined;
       },
     }));
     const provider = createProvider();
@@ -216,10 +219,10 @@ describe("MapLayerAccessClient request shaping", () => {
     expect((await tileResponse.json())?.error?.code).toEqual(499);
   });
 
-  it("lets isAuthenticationError override the default 401 classification", async () => {
+  it("lets classifyResponse override the default 401 classification", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
     IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      isAuthenticationError: () => false,
+      classifyResponse: () => undefined,
     }));
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
@@ -294,13 +297,13 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
-  it("consults isAuthenticationError for capabilities requests during initialize", async () => {
+  it("consults classifyResponse for capabilities requests during initialize", async () => {
     // A failure convention the default 401/403 rule cannot see: HTTP 200 with an error body.
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ error: "TOKEN_EXPIRED" }), { status: 200 }));
     IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      isAuthenticationError: async ({ response }) => {
+      classifyResponse: async ({ response }) => {
         const json = await response.clone().json().catch(() => undefined);
-        return json?.error === "TOKEN_EXPIRED";
+        return json?.error === "TOKEN_EXPIRED" ? "authentication" : undefined;
       },
     }));
     const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl }));
@@ -368,10 +371,10 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(validation.status).toEqual(MapLayerSourceStatus.RequireAuth);
   });
 
-  it("uses the client's isAuthenticationError to classify shaped ArcGIS provider responses", async () => {
+  it("uses the client's classifyResponse to classify shaped ArcGIS provider responses", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 407 }));
     IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient({
-      isAuthenticationError: ({ response }) => response.status === 407,
+      classifyResponse: ({ response }) => response.status === 407 ? "authentication" : undefined,
     }));
     const provider = new ArcGISMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" }));
 

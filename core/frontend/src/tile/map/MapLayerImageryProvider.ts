@@ -388,8 +388,8 @@ export abstract class MapLayerImageryProvider {
     return { mapLayerUrl: new URL(this._settings.url), userName: this._settings.userName, password: this._settings.password };
   }
 
-  /** Gives the access client registered for this layer's format the opportunity to authenticate the outgoing
-   * request via [[MapLayerAccessClient.applyToRequest]], mutating the URL's query parameters and `headers` in place.
+  /** Gives the access client registered for this layer's format the opportunity to shape the outgoing
+   * request via [[MapLayerRequestShaper.applyToRequest]], mutating the URL's query parameters and `headers` in place.
    * @returns true if the request was shaped by the access client.
    * @internal
    */
@@ -398,7 +398,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** Returns true if the given response represents an authentication failure for a request shaped by
-   * [[MapLayerAccessClient.applyToRequest]]. Delegates to [[MapLayerAccessClient.isAuthenticationError]] when
+   * [[MapLayerRequestShaper.applyToRequest]]. Delegates to [[MapLayerRequestShaper.classifyResponse]] when
    * defined; otherwise treats HTTP 401/403 as authentication failures.
    * @internal
    */

@@ -6037,7 +6037,7 @@ export class MapFeatureInfoRecord extends PropertyRecord {
 }
 
 // @beta (undocumented)
-export interface MapLayerAccessClient extends MapLayerRequestAuthenticator {
+export interface MapLayerAccessClient extends MapLayerRequestShaper {
     // (undocumented)
     getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
     // (undocumented)
@@ -6069,21 +6069,6 @@ export interface MapLayerAccessTokenParams {
 export interface MapLayerAuthenticationInfo {
     // (undocumented)
     tokenEndpoint?: MapLayerTokenEndpoint;
-}
-
-// @beta
-export interface MapLayerAuthRequest {
-    context: MapLayerAccessTokenParams;
-    headers: Headers;
-    readonly layerUrl: string;
-    searchParams: URLSearchParams;
-    readonly url: string;
-}
-
-// @beta
-export interface MapLayerAuthResponse {
-    context: MapLayerAccessTokenParams;
-    response: Response;
 }
 
 // @beta
@@ -6337,9 +6322,27 @@ export interface MapLayerOptions {
 }
 
 // @beta
-export interface MapLayerRequestAuthenticator {
-    applyToRequest?(request: MapLayerAuthRequest): Promise<void> | void;
-    isAuthenticationError?(response: MapLayerAuthResponse): Promise<boolean> | boolean;
+export interface MapLayerRequest {
+    context: MapLayerAccessTokenParams;
+    headers: Headers;
+    readonly layerUrl: string;
+    searchParams: URLSearchParams;
+    readonly url: string;
+}
+
+// @beta
+export type MapLayerRequestFailure = "authentication";
+
+// @beta
+export interface MapLayerRequestShaper {
+    applyToRequest?(request: MapLayerRequest): Promise<void> | void;
+    classifyResponse?(response: MapLayerResponse): Promise<MapLayerRequestFailure | undefined> | MapLayerRequestFailure | undefined;
+}
+
+// @beta
+export interface MapLayerResponse {
+    context: MapLayerAccessTokenParams;
+    response: Response;
 }
 
 // @beta

@@ -293,12 +293,12 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.RequireAuth);
   });
 
-  it("uses the client's isAuthenticationError to classify shaped validation responses", async () => {
+  it("uses the client's classifyResponse to classify shaped validation responses", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
     registry.setAccessClient(OgcApiFeaturesMapLayerFormat.formatId, {
       getAccessToken: async () => undefined,
       applyToRequest: ({ headers }) => headers.set("Authorization", "Bearer secret-jwt"),
-      isAuthenticationError: ({ response }) => response.status === 407,
+      classifyResponse: ({ response }) => response.status === 407 ? "authentication" : undefined,
     });
     stubFetch({}, { [sourceUrl]: 407 });
 

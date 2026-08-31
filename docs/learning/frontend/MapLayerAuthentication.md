@@ -18,10 +18,10 @@ While token acquisition is pure OAuth2, the token's *delivery* follows the ESRI 
 
 ## Request-shaping authentication
 
-Some services use authentication schemes the OAuth facility above cannot express: an HTTP header such as `Authorization: Bearer …` or an API-key header (required for example by services exposed through an authenticating proxy), a custom query parameter under the hosting application's control, or a computed request signature. For these, an access client implements the [MapLayerRequestAuthenticator]($frontend) contract, which gives the hosting application full control over both the headers and the query parameters of each outgoing request, and applies to **every** map-layer format:
+Some services use authentication schemes the OAuth facility above cannot express: an HTTP header such as `Authorization: Bearer …` or an API-key header (required for example by services exposed through an authenticating proxy), a custom query parameter under the hosting application's control, or a computed request signature. For these, an access client implements the [MapLayerRequestShaper]($frontend) contract, which gives the hosting application full control over both the headers and the query parameters of each outgoing request, and applies to **every** map-layer format. The contract itself is not authentication-specific — it can just as well inject non-authenticating values such as correlation headers or API-version parameters — but shaped requests are always handled with the care credentials require (see [Interaction with other mechanisms](#interaction-with-other-mechanisms)):
 
-- [MapLayerRequestAuthenticator.applyToRequest]($frontend) is invoked immediately before every request made for a layer of the registered format — tiles, tooltips, capabilities, service metadata, and source validation — and may mutate the request's query parameters and headers in place. The request's target (origin and path) cannot be changed.
-- [MapLayerRequestAuthenticator.isAuthenticationError]($frontend) is invoked after each request that `applyToRequest` shaped, letting the client recognize authentication failures using whatever convention its protocol uses. When omitted, HTTP 401/403 responses are treated as authentication failures.
+- [MapLayerRequestShaper.applyToRequest]($frontend) is invoked immediately before every request made for a layer of the registered format — tiles, tooltips, capabilities, service metadata, and source validation — and may mutate the request's query parameters and headers in place. The request's target (origin and path) cannot be changed.
+- [MapLayerRequestShaper.classifyResponse]($frontend) is invoked after each request that `applyToRequest` shaped, letting the client recognize failures using whatever convention its protocol uses; returning `"authentication"` marks the request as an authentication failure. When omitted, HTTP 401/403 responses are treated as authentication failures.
 
 > **CORS**: in a browser, injecting a non-safelisted header (including `Authorization`) makes cross-origin requests subject to a CORS preflight — the map service (or the proxy in front of it) must list that header in its `Access-Control-Allow-Headers` response, or every request will be blocked by the browser before it is sent. Query parameters are not subject to this requirement.
 
@@ -32,7 +32,7 @@ const proxyAccessClient: MapLayerAccessClient = {
   // Not used by this client; required member of MapLayerAccessClient.
   getAccessToken: async () => undefined,
 
-  applyToRequest: (request: MapLayerAuthRequest) => {
+  applyToRequest: (request: MapLayerRequest) => {
     // The full request URL is provided for routing decisions; a client serving several
     // services can decide per request which credentials apply, or none at all.
     if (new URL(request.url).origin !== "https://proxy.example.com")
@@ -44,13 +44,13 @@ const proxyAccessClient: MapLayerAccessClient = {
     // request.searchParams.set("signature", sign(request.url));
   },
 
-  isAuthenticationError: async (response: MapLayerAuthResponse) => {
+  classifyResponse: async (response: MapLayerResponse) => {
     // Recognize failures using the service's own convention. Clone before reading the
     // body so it remains available to the provider.
     if (response.response.status === 401 || response.response.status === 403)
-      return true;
+      return "authentication";
     const json = await response.response.clone().json().catch(() => undefined);
-    return json?.error?.code === "TOKEN_EXPIRED";
+    return json?.error?.code === "TOKEN_EXPIRED" ? "authentication" : undefined;
   },
 };
 
@@ -59,7 +59,7 @@ IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", proxyAccessClient);
 
 ### One credential per layer
 
-The access client is registered per format, but [MapLayerAuthRequest.layerUrl]($frontend) identifies the layer each request is made for. Unlike `request.url`, it is stable across every request kind (tiles, tooltips, capabilities, service metadata), so a single client can serve any number of layers of its format, each with its own credentials:
+The access client is registered per format, but [MapLayerRequest.layerUrl]($frontend) identifies the layer each request is made for. Unlike `request.url`, it is stable across every request kind (tiles, tooltips, capabilities, service metadata), so a single client can serve any number of layers of its format, each with its own credentials:
 
 ```ts
 // Layer URL → token, obtained and refreshed by the hosting application through its own channels.
@@ -67,7 +67,7 @@ const tokensByLayer = new Map<string, string>();
 
 IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", {
   getAccessToken: async () => undefined,
-  applyToRequest: (request: MapLayerAuthRequest) => {
+  applyToRequest: (request: MapLayerRequest) => {
     const token = tokensByLayer.get(request.layerUrl);
     if (token !== undefined)
       request.headers.set("Authorization", `Bearer ${token}`);
@@ -75,7 +75,7 @@ IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", {
 });
 ```
 
-When `isAuthenticationError` reports a failure (or a shaped request receives a 401/403 by default), the layer's provider transitions to the [MapLayerImageryProviderStatus]($frontend) member `RequireAuth` and raises [MapLayerImageryProvider.onStatusChanged]($frontend), which applications can use to prompt the user to re-authenticate. How the provider behaves afterwards varies by format: the ArcGIS providers stop requesting tiles while in `RequireAuth`, while the other formats keep requesting new tiles — each still passing through `applyToRequest`, so a client that has silently refreshed its token keeps the layer alive without intervention. Applications should keep monitoring this event even with an access client in place: a client that refreshes its tokens proactively inside `applyToRequest` can make the event rare, but it remains the only signal for failures the client cannot fix silently (revoked access, expired refresh token), and other statuses such as `UntrustedOrigin` flow through it as well.
+When `classifyResponse` reports an authentication failure (or a shaped request receives a 401/403 by default), the layer's provider transitions to the [MapLayerImageryProviderStatus]($frontend) member `RequireAuth` and raises [MapLayerImageryProvider.onStatusChanged]($frontend), which applications can use to prompt the user to re-authenticate. How the provider behaves afterwards varies by format: the ArcGIS providers stop requesting tiles while in `RequireAuth`, while the other formats keep requesting new tiles — each still passing through `applyToRequest`, so a client that has silently refreshed its token keeps the layer alive without intervention. Applications should keep monitoring this event even with an access client in place: a client that refreshes its tokens proactively inside `applyToRequest` can make the event rare, but it remains the only signal for failures the client cannot fix silently (revoked access, expired refresh token), and other statuses such as `UntrustedOrigin` flow through it as well.
 
 Once the application has re-established authentication, it must detach and re-attach the layer so that a fresh provider is created: a provider whose initialization failed never obtained the service's capabilities, and tiles that already failed are not re-requested. The same applies to a layer restored from a saved view before its access client was registered — once the client is in place, re-attach the layer.
 
@@ -90,4 +90,4 @@ Authentication material is deliberately kept out of [ImageMapLayerSettings]($com
 - **Origin trust and redirects** — requests shaped by `applyToRequest` are treated like credentialed requests by [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend): while the restriction is enabled they are issued with `redirect: "error"`, so the injected values cannot silently reach an unlisted origin through a redirect. See [Map-layer security](./MapLayersAndBasemaps.md#map-layer-security).
 - **SSO** — a shaped request never triggers the NTLM/Negotiate retry with browser credentials; the access client is the authentication authority for its format. Consequently, layers served by a Windows-Authentication-protected service cannot be used on a format with a shaping client registered: their 401 challenge is classified as an authentication failure (`RequireAuth`) instead of being answered with browser credentials. This applies even to requests the client chooses not to modify.
 - **Caching** — when a registered client defines `applyToRequest`, the URL-keyed capability and service-metadata caches are bypassed for that format, so authenticated responses are never shared across differing authentication contexts. This applies to all requests of that format, including those the client chooses not to shape.
-- **Backward compatibility** — the contract is strictly opt-in. Without a registered client, or with a client that does not implement `applyToRequest` (such as `ArcGisAccessClient`), requests and failure detection are exactly as in previous releases, driven by the pre-existing status-code checks. Implementing `applyToRequest` opts the shaped requests into the default 401/403 classification above, and implementing `isAuthenticationError` replaces that default entirely.
+- **Backward compatibility** — the contract is strictly opt-in. Without a registered client, or with a client that does not implement `applyToRequest` (such as `ArcGisAccessClient`), requests and failure detection are exactly as in previous releases, driven by the pre-existing status-code checks. Implementing `applyToRequest` opts the shaped requests into the default 401/403 classification above, and implementing `classifyResponse` replaces that default entirely.

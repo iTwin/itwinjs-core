@@ -390,8 +390,6 @@ beta;interface;MapLayerAccessClient
 beta;interface;MapLayerAccessToken
 beta;interface;MapLayerAccessTokenParams
 beta;interface;MapLayerAuthenticationInfo
-beta;interface;MapLayerAuthRequest
-beta;interface;MapLayerAuthResponse
 beta;interface;MapLayerFeature
 beta;interface;MapLayerFeatureAttribute
 beta;interface;MapLayerFeatureGeometry
@@ -405,7 +403,10 @@ public;enum;MapLayerImageryProviderStatus
 public;interface;MapLayerIndex
 internal;interface;MapLayerInfoFromTileTree
 public;interface;MapLayerOptions
-beta;interface;MapLayerRequestAuthenticator
+beta;interface;MapLayerRequest
+beta;type;MapLayerRequestFailure
+beta;interface;MapLayerRequestShaper
+beta;interface;MapLayerResponse
 beta;interface;MapLayerScaleRangeVisibility
 public;class;MapLayerSource
 public;interface;MapLayerSourceProps

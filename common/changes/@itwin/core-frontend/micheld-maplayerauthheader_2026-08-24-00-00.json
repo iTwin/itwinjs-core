@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Map-layer access clients can now fully control request authentication: the new MapLayerRequestAuthenticator contract (extended by MapLayerAccessClient) lets a client mutate each request's headers and query parameters via applyToRequest (e.g. inject an Authorization header for services behind an authenticating proxy) and classify authentication failures via isAuthenticationError. Applies to tiles, tooltips, capabilities, service metadata and source validation across all map-layer formats; shaped requests follow the trusted-origins redirect policy, never trigger SSO retries, and bypass URL-keyed metadata caches. Also fixed: WMS/WMTS GetCapabilities requests issued when a layer initializes now include the layer's custom query parameters, matching source validation.",
+      "comment": "Map-layer access clients can now fully control outgoing requests: the new MapLayerRequestShaper contract (extended by MapLayerAccessClient) lets a client mutate each request's headers and query parameters via applyToRequest (e.g. inject an Authorization header for services behind an authenticating proxy) and classify failures via classifyResponse (e.g. as authentication failures). Applies to tiles, tooltips, capabilities, service metadata and source validation across all map-layer formats; shaped requests follow the trusted-origins redirect policy, never trigger SSO retries, and bypass URL-keyed metadata caches. Also fixed: WMS/WMTS GetCapabilities requests issued when a layer initializes now include the layer's custom query parameters, matching source validation.",
       "type": "none"
     }
   ],
