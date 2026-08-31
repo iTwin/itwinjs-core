@@ -28,8 +28,8 @@ importers:
         specifier: ^12.28.0
         version: 12.33.0
       '@bentley/imodeljs-native':
-        specifier: 5.13.18
-        version: 5.13.18
+        specifier: 5.14.7
+        version: 5.14.7
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.1.3
@@ -802,8 +802,8 @@ importers:
         specifier: ^3.3.0
         version: 3.6.1
       wms-capabilities:
-        specifier: 0.4.0
-        version: 0.4.0
+        specifier: 0.6.0
+        version: 0.6.0
     devDependencies:
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
@@ -4657,8 +4657,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.13.18':
-    resolution: {integrity: sha512-DuJsNJBQfu3GFGZu0kWRPDKvC3FP1x7bIFWY6KXDZliZwA843w9mRbdrwtmnUf/MJguaNGYWPfnAlF4/dJYmCw==}
+  '@bentley/imodeljs-native@5.14.7':
+    resolution: {integrity: sha512-BmM7+//1G2EnJaiIlK8LKpMdvdjZghlhyo6IHuiNnLRLStYQtEfJ0mIRfj/p86CSaqLa2zmwRtokTc+z3SswOA==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -10431,8 +10431,8 @@ packages:
   wkx@0.5.0:
     resolution: {integrity: sha512-Xng/d4Ichh8uN4l0FToV/258EjMGU9MGcA0HV2d9B/ZpZB3lqQm7nkOdZdm5GhKtLLhAE7PiVQwN4eN+2YJJUg==}
 
-  wms-capabilities@0.4.0:
-    resolution: {integrity: sha512-dGe1SQ4GySIfsmGF+yk07QRsed0DgJJkPpimbmehE9nGXLqIGhbpi6pNk71YENqupLPSqcABDrKZ1UqepOhCyA==}
+  wms-capabilities@0.6.0:
+    resolution: {integrity: sha512-yTbtesuSyKkHhw1TUX4VklXEkbQByc+hyo7TWq1sGjBA6tQ+XN32w546TPDTzROuwFTE/Dcq5F5FN4aA9nesaQ==}
     hasBin: true
 
   word-wrap@1.2.5:
@@ -10978,7 +10978,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.13.18': {}
+  '@bentley/imodeljs-native@5.14.7': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -17430,9 +17430,7 @@ snapshots:
     dependencies:
       '@types/node': 20.17.58
 
-  wms-capabilities@0.4.0:
-    dependencies:
-      minimist: 1.2.8
+  wms-capabilities@0.6.0: {}
 
   word-wrap@1.2.5: {}
 

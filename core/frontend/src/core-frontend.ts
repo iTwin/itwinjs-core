@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import type { TxnEntityMetadata as _TxnEntityMetadata } from "@itwin/core-common";
+
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
@@ -110,9 +112,13 @@ export type {
   TxnEntityChangeType,
   TxnEntityChanges,
   TxnEntityChangesFilterOptions,
-  TxnEntityMetadata,
   TxnEntityMetadataCriterion,
 } from "./TxnEntityChanges";
+/** Deprecated frontend alias for the common TxnEntityMetadata interface.
+ * @public
+ * @deprecated in 5.13.0. Use [TxnEntityMetadata]($common) from @itwin/core-common instead.
+ */
+export type TxnEntityMetadata = _TxnEntityMetadata;
 export {
   type TileTreeDiscloser, DisclosedTileTreeSet,
   type ReadGltfGraphicsArgs, type GltfGraphic, type GltfTemplate, readGltfGraphics, readGltfTemplate, readGltf,

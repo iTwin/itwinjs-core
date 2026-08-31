@@ -160,7 +160,7 @@ export namespace WmsCapability {
       this.title = _json.Title;
       this.queryable = _json.queryable ? true : false;
       this.cartoRange = rangeFromJSON(_json);
-      this.ownCrs = capabilities.isVersion13 ? _json.CRS : _json.SRS;
+      this.ownCrs = initArray<string>(capabilities.isVersion13 ? _json.CRS : _json.SRS) ?? [];
       const crs = new Set<string>(this.ownCrs);
       if (parent) {
         getParentCrs(parent, crs);
@@ -189,11 +189,33 @@ export class WmsCapabilities {
   public get featureInfoSupported() { return undefined !== this._json.Capability?.Request?.GetFeatureInfo; }
   public get featureInfoFormats(): string[] | undefined { return Array.isArray(this._json.Capability?.Request?.GetFeatureInfo?.Format) ? this._json.Capability?.Request?.GetFeatureInfo?.Format : undefined; }
   constructor(private _json: any) {
-    this.version = _json.version;
-    this.isVersion13 = _json.version !== undefined && 0 === _json.version.indexOf("1.3");
-    this.service = new WmsCapability.Service(_json.Service);
-    if (_json.Capability)
+    if (!_json || typeof _json !== "object" || (_json.Service === undefined && _json.Capability === undefined))
+      throw new Error("Invalid WMS GetCapabilities response");
+
+    this.version = typeof _json.version === "string" ? _json.version : undefined;
+    this.isVersion13 = this.version !== undefined && this.version.startsWith("1.3");
+    this.service = new WmsCapability.Service(_json.Service ?? {});
+    if (_json.Capability?.Layer)
       this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
+  }
+
+  /** Parse a GetCapabilities XML response, returning undefined if it is not a valid WMS capabilities document. */
+  private static tryParse(xmlCapabilities: string): WmsCapabilities | undefined {
+    // Validate the document is actually rooted at a WMS capabilities element before parsing:
+    // wms-capabilities happily parses any root and recognizes direct Service/Capability children.
+    // WMS 1.3.0 uses WMS_Capabilities; WMS 1.0.0-1.1.1 uses WMT_MS_Capabilities.
+    const doc = new DOMParser().parseFromString(xmlCapabilities, "text/xml");
+    const rootName = doc.documentElement?.localName;
+    if (rootName !== "WMS_Capabilities" && rootName !== "WMT_MS_Capabilities")
+      return undefined; // Not a WMS GetCapabilities document
+    if (doc.getElementsByTagName("parsererror").length > 0)
+      return undefined; // XML parse error (browsers embed a parsererror element)
+
+    try {
+      return new WmsCapabilities(new WMS(undefined, DOMParser).parse(xmlCapabilities));
+    } catch {
+      return undefined; // Degenerate capabilities document
+    }
   }
 
   public static async create(url: string, options?: WmsCapabilitiesCreateOptions): Promise<WmsCapabilities | undefined> {
@@ -221,7 +243,10 @@ export class WmsCapabilities {
     if (!xmlCapabilities)
       return undefined;
 
-    const capabilities = new WmsCapabilities(new WMS().parse(xmlCapabilities));
+    const capabilities = WmsCapabilities.tryParse(xmlCapabilities);
+    if (capabilities === undefined)
+      return undefined;
+
     if (!credentials && !clientShapesRequests) {
       // Avoid caching protected data
       WmsCapabilities._capabilitiesCache.set(url, capabilities);
