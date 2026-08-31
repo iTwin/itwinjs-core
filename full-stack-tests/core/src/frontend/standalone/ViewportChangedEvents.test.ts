@@ -395,9 +395,6 @@ describe("Viewport changed events", async () => {
     const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedModels, ViewportState.Scene, func);
     const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
 
-    expectNoChange(() => view.modelSelector = view.modelSelector);
-    expectChange(() => view.modelSelector = view.modelSelector.clone());
-
     const models = view.modelSelector.models;
     expectChange(() => models.add("0xabc"));
     expectNoChange(() => models.add("0xabc"));
@@ -458,9 +455,6 @@ describe("Viewport changed events", async () => {
     using mon = new ViewportChangedHandler(vp);
     const expectChange = (func: () => void) => mon.expect(ChangeFlag.ViewedCategories, undefined, func);
     const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
-
-    expectChange(() => vp.view.categorySelector = vp.view.categorySelector.clone());
-    expectNoChange(() => vp.view.categorySelector = vp.view.categorySelector);
 
     const categories = vp.view.categorySelector.categories;
     expectChange(() => categories.add("0x123"));
@@ -712,14 +706,14 @@ describe("Viewport changed events", async () => {
             ++numLoaded;
         }
 
-        if (numLoaded === expectedCount && vp.subcategories.isEmpty) {
+        if (numLoaded === expectedCount && vp.iModelRefs.subcategories.isEmpty) {
           break;
         }
 
         await BeDuration.wait(50);
       }
 
-      expect(vp.subcategories.isEmpty).to.be.true;
+      expect(vp.iModelRefs.subcategories.isEmpty).to.be.true;
       expect(numLoaded).to.equal(expectedCount);
 
       for (const catId of Id64.iterable(catIds))

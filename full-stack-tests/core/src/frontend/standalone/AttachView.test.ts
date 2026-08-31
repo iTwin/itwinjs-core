@@ -107,9 +107,6 @@ describe("ViewState attached to Viewport", async () => {
     view.onViewedCategoriesChanged.addListener(() => categoriesChanged = true);
     view.onViewedModelsChanged.addListener(() => modelsChanged = true);
     view.onDisplayStyleChanged.addListener(() => styleChanged = true);
-
-    view.categorySelector = view.categorySelector.clone();
-    view.modelSelector = view.modelSelector.clone();
     view.displayStyle = view.displayStyle.clone();
     expectChanges(false, false, false);
 
@@ -124,8 +121,6 @@ describe("ViewState attached to Viewport", async () => {
     expectChanges(true, true, false);
 
     reset();
-    view.categorySelector = view.categorySelector.clone();
-    view.modelSelector = view.modelSelector.clone();
     view.displayStyle = view.displayStyle.clone();
     expectChanges(true, true, true);
 
@@ -139,55 +134,13 @@ describe("ViewState attached to Viewport", async () => {
     vp[Symbol.dispose]();
     view.modelSelector.models.add("0xa");
     view.categorySelector.categories.add("0xb");
-    view.categorySelector = view.categorySelector.clone();
-    view.modelSelector = view.modelSelector.clone();
     view.displayStyle = view.displayStyle.clone();
     expectChanges(false, false, false);
 
     vp = ScreenViewport.create(div, view);
     view.modelSelector.models.add("0xa");
     view.categorySelector.categories.add("0xb");
-    view.categorySelector = view.categorySelector.clone();
-    view.modelSelector = view.modelSelector.clone();
     view.displayStyle = view.displayStyle.clone();
     expectChanges(true, true, true);
-  });
-
-  it("should re-target event listeners when category or model selector changes", async () => {
-    let categoriesChanged = false;
-    let modelsChanged = false;
-    const reset = () => categoriesChanged = modelsChanged = false;
-    const expectChanges = (categories: boolean, models: boolean) => {
-      expect(categoriesChanged).to.equal(categories);
-      expect(modelsChanged).to.equal(models);
-    };
-
-    const view = await loadView();
-    vp = ScreenViewport.create(div, view);
-    view.onViewedCategoriesChanged.addListener(() => categoriesChanged = true);
-    view.onViewedModelsChanged.addListener(() => modelsChanged = true);
-
-    const categories1 = view.categorySelector;
-    const models1 = view.modelSelector;
-    categories1.categories.add("0x1");
-    models1.models.add("0x2");
-    expectChanges(true, true);
-
-    reset();
-    const categories2 = categories1.clone();
-    const models2 = models1.clone();
-    view.categorySelector = categories2;
-    view.modelSelector = models2;
-    expectChanges(true, true);
-
-    reset();
-    categories1.categories.add("0x3");
-    models1.models.add("0x4");
-    expectChanges(false, false);
-
-    reset();
-    categories2.categories.add("0x3");
-    models2.models.add("0x4");
-    expectChanges(true, true);
   });
 });

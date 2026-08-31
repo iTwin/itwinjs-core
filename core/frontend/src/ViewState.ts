@@ -247,7 +247,7 @@ export abstract class ViewState extends ElementState {
   public description?: string;
   public isPrivate?: boolean;
   private readonly _gridDecorator: GridDecorator;
-  private _categorySelector: CategorySelectorState;
+  private readonly _categorySelector: CategorySelectorState;
   private _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
 
@@ -269,21 +269,6 @@ export abstract class ViewState extends ElementState {
   /** Selects the categories that are display by this ViewState. */
   public get categorySelector(): CategorySelectorState {
     return this._categorySelector;
-  }
-
-  public set categorySelector(selector: CategorySelectorState) {
-    if (selector === this._categorySelector)
-      return;
-
-    const isAttached = this.isAttachedToViewport;
-    this.unregisterCategorySelectorListeners();
-
-    this._categorySelector = selector;
-
-    if (isAttached) {
-      this.registerCategorySelectorListeners();
-      this.onViewedCategoriesChanged.raiseEvent();
-    }
   }
 
   /** The style that controls how the contents of the view are displayed. */
@@ -936,9 +921,6 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
     this.setOrigin(origin);
   }
-
-  /** Set the CategorySelector for this view. */
-  public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
   /** get the auxiliary coordinate system state object for this ViewState. */
   public get auxiliaryCoordinateSystem(): AuxCoordSystemState {
