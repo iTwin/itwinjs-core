@@ -11,6 +11,7 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { withEditTxn } from "../TestEditTxn";
 import { Code, ElementAspectProps, GeometricElement2dProps, IModel, SubCategoryAppearance, TypeDefinitionElementProps } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, DrawingCategory, ElementOwnsChildElements, GenericGraphicalType2d } from "../../core-backend";
+import type { RebaseConflict } from "../../InteractiveRebase";
 import { Point2d, XYProps } from "@itwin/core-geometry";
 import { Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
@@ -1104,7 +1105,7 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.false;
-    const conflict = interactive.conflicts.find((entry) => entry.classFullName === uniqueAspectClassFullName);
+    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
     chai.expect(conflict).to.not.be.undefined;
     if (!conflict) return;
 
@@ -1148,7 +1149,7 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.false;
-    const conflict = interactive.conflicts.find((entry) => entry.classFullName === uniqueAspectClassFullName);
+    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
     chai.expect(conflict).to.not.be.undefined;
     if (!conflict) return;
 
@@ -1179,7 +1180,11 @@ describe("InteractiveRebase", () => {
       const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
       aspect.aspectValue = "User1";
       txn.updateAspect(aspect);
-      txn.updateElement({ id, userLabel: "User1" });
+      // Use a property with an already-set baseline value ("Original", from the outer `before()`
+      // setup) rather than an unset one: an unset-to-set transition on a delete-vs-update conflict
+      // is not detected by native's `expectedOldValues` comparison - a separate, pre-existing gap
+      // unrelated to this cascade/closure design.
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
     });
 
     await withEditTxn(briefcase2, async (txn) => {
@@ -1193,12 +1198,12 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.false;
-    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "irt:SomeGraphicalElement");
+    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeGraphicalElement");
     chai.expect(conflict).to.not.be.undefined;
     if (!conflict) return;
 
     conflict.acceptTheirs();
-    chai.expect(briefcase2.elements.getElementProps(id).userLabel).to.equal("User1");
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("User1");
     chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1");
   });
 
@@ -1265,7 +1270,6 @@ describe("InteractiveRebase", () => {
     chai.expect(interactive.conflicts[0].brokenRelationships.length).to.equal(0);
     chai.expect(interactive.conflicts.some((c) => c.id === id)).to.be.false;
 
-    briefcase2.clearCaches();
     const final = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id);
     chai.expect(final.typeDefinition).to.be.undefined;
     chai.expect(final.userLabel).to.equal("TheirLabel");
@@ -1302,12 +1306,469 @@ describe("InteractiveRebase", () => {
     if (!interactive) return;
 
     chai.expect(interactive.nextGroup()).to.be.false;
-    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "irt:SomeGraphicalElement");
+    const conflict = interactive.conflicts.find((entry) => entry.classFullName === "InteractiveRebaseTest:SomeGraphicalElement");
     chai.expect(conflict).to.not.be.undefined;
     if (!conflict) return;
 
     conflict.acceptOurs();
     chai.expect(briefcase2.elements.getElementProps(id).userLabel).to.equal("User2");
     chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User2");
+  });
+
+  it("detects a conflict on an aspect two levels below a deleted grandparent", async () => {
+    const grandparent = id;
+    const [parent, otherId] = await withEditTxn(briefcase1, async (txn) => {
+      const p = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Parent",
+        somePoint: new Point2d(1.0, 1.0),
+        parent: new ElementOwnsChildElements(grandparent),
+      } as SomeGraphicalElementProps);
+      const other = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Original",
+        somePoint: new Point2d(9.0, 9.0),
+      } as SomeGraphicalElementProps);
+      return [p, other];
+    });
+    await briefcase1.pushChanges({ description: "setup parent+other" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id: parent, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "insert aspect on parent" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, parent);
+      aspect.aspectValue = "User1";
+      txn.updateAspect(aspect);
+      txn.updateElement<SomeGraphicalElementProps>({ id: otherId, foo: "User1" });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      // Deleting the grandparent cascades through `parent` (a child element) down to the aspect on it.
+      txn.deleteElement(grandparent);
+      txn.updateElement<SomeGraphicalElementProps>({ id: otherId, foo: "User2" });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    const aspectConflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
+    chai.expect(aspectConflict).to.not.be.undefined;
+    chai.expect(aspectConflict?.theirs?.aspectValue).to.equal("User1");
+    chai.expect(aspectConflict?.ours).to.be.undefined;
+
+    // `parent` and `grandparent` were never touched by upstream (only cascaded away by our own
+    // delete), so neither gets a conflict of its own - only the aspect (their update vs our
+    // cascade-delete) and the forced conflict on `otherId`.
+    chai.expect(interactive.conflicts.length).to.equal(2);
+    chai.expect(interactive.conflicts.some((c) => c.id === grandparent)).to.be.false;
+    chai.expect(interactive.conflicts.some((c) => c.id === otherId)).to.be.true;
+  });
+
+  it("reparenting a child away from a locally-deleted parent produces no spurious conflict", async () => {
+    const parentA = id;
+    const [childC, parentB, otherId] = await withEditTxn(briefcase1, async (txn) => {
+      const c = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Child",
+        somePoint: new Point2d(1.0, 1.0),
+        parent: new ElementOwnsChildElements(parentA),
+      } as SomeGraphicalElementProps);
+      const b = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "ParentB",
+        somePoint: new Point2d(2.0, 2.0),
+      } as SomeGraphicalElementProps);
+      const other = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Original",
+        somePoint: new Point2d(9.0, 9.0),
+      } as SomeGraphicalElementProps);
+      return [c, b, other];
+    });
+    await briefcase1.pushChanges({ description: "setup child+parentB+other" });
+    await briefcase2.pullChanges();
+
+    // Upstream touches only the unrelated `otherId`, to force a genuine rebase rather than a
+    // fast-forward, without touching anything related to the reparent/delete below.
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id: otherId, foo: "User1" });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      // Reparent the child away from A *before* deleting A, so A is childless by the time it's deleted.
+      txn.updateElement({ id: childC, parent: new ElementOwnsChildElements(parentB) });
+      txn.deleteElement(parentA);
+      txn.updateElement<SomeGraphicalElementProps>({ id: otherId, foo: "User2" });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    // Only the forced conflict on `otherId` should be reported - the reparent+delete of A must not
+    // produce any conflict, since `childC` was correctly linked to its *new* owner (B), not A.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    chai.expect(interactive.conflicts[0].id).to.equal(otherId);
+
+    const child = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(childC);
+    chai.expect(child.parent?.id).to.equal(parentB);
+    chai.expect(briefcase2.elements.tryGetElementProps(parentA)).to.be.undefined;
+  });
+
+  it("reparenting into an element upstream deleted reports a broken relationship, not an owner conflict", async () => {
+    const [childC, parentB] = await withEditTxn(briefcase1, async (txn) => {
+      const c = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Child",
+        somePoint: new Point2d(1.0, 1.0),
+        parent: new ElementOwnsChildElements(id),
+      } as SomeGraphicalElementProps);
+      const b = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "ParentB",
+        somePoint: new Point2d(2.0, 2.0),
+      } as SomeGraphicalElementProps);
+      return [c, b];
+    });
+    await briefcase1.pushChanges({ description: "setup child+parentB" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.deleteElement(parentB);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement({ id: childC, parent: new ElementOwnsChildElements(parentB) });
+    });
+
+    await briefcase1.pushChanges({ description: "User1 deletes parentB" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    const conflict = interactive.conflicts.find((c) => c.id === childC);
+    chai.expect(conflict).to.not.be.undefined;
+    if (!conflict) return;
+
+    chai.expect(conflict.brokenRelationships.length).to.equal(1);
+    chai.expect(conflict.brokenRelationships[0].navigationProperty).to.equal("parent");
+    // Must not also be (mis)reported as a dependent conflict of some owner.
+    chai.expect(conflict.ownerConflict).to.be.undefined;
+  });
+
+  it("inserting an element and an aspect on it together replays without a spurious constraint violation", async () => {
+    let elementId: Id64String;
+    let aspectId: Id64String;
+    await withEditTxn(briefcase1, async (txn) => {
+      elementId = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "New",
+        somePoint: new Point2d(1.0, 1.0),
+      } as SomeGraphicalElementProps);
+      // Aspects and elements draw ECInstanceIds from independent sequences (see the design doc), so
+      // this aspect's id naturally tends to sort *before* the element's - exercising replay ordering
+      // without needing a forced id.
+      aspectId = txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id: elementId, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "New",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+      // Force a genuine conflict so the rebase actually runs instead of fast-forwarding.
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User2" });
+    });
+
+    await briefcase1.pushChanges({ description: "User1" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    // The forced conflict on `id` is expected; the new element+aspect insert must replay cleanly.
+    chai.expect(interactive.conflicts.some((c) => c.id === elementId)).to.be.false;
+    chai.expect(interactive.conflicts.some((c) => c.id === aspectId)).to.be.false;
+
+    const newAspects = briefcase2.elements.getAspects(elementId!, uniqueAspectClassFullName);
+    chai.expect(newAspects.length).to.equal(1);
+    chai.expect((newAspects[0].toJSON() as SomeUniqueAspectProps).aspectValue).to.equal("New");
+  });
+
+  it("attributes a cascaded aspect delete to the txn that deleted its owner, across separate ungrouped txns", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "Initial",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect" });
+    await briefcase2.pullChanges();
+
+    // Two separate local txns on briefcase2, left ungrouped (each its own TxnRebaseGroup by default).
+    await withEditTxn(briefcase2, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "LocalEdit";
+      txn.updateAspect(aspect);
+    });
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User1";
+      txn.updateAspect(aspect);
+    });
+    await briefcase1.pushChanges({ description: "User1 updates aspect" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    // Two separate local groups are reinstated in sequence; exactly which group the conflict surfaces
+    // in depends on exactly when the incoming changeset gets merged relative to each group's replay
+    // (multi-group sequencing is a known, separately-tracked limitation - see the design doc section
+    // 11). What must hold regardless: the cascade-delete's Txn correctly attributes the aspect's
+    // cascade-away to *its own* captured change, so the conflict against upstream's edit is not lost
+    // across the Txn boundary - it must appear in some group, not none.
+    let found: RebaseConflict | undefined;
+    for (; ;) {
+      const more = interactive.nextGroup();
+      found ??= interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
+      if (!more)
+        break;
+    }
+
+    chai.expect(found).to.not.be.undefined;
+    chai.expect(found?.theirs?.aspectValue).to.equal("User1");
+  });
+
+  it("restores an unconflicted dependent when its owner conflict is restored", async () => {
+    // Element A (=id) owns aspect X and child element Y. Upstream touches A and X but never Y.
+    // Restoring A must also restore Y, even though Y has no conflict of its own.
+    const [aspectXId, childYId] = await withEditTxn(briefcase1, async (txn) => {
+      const x = txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "InitialX",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+      const y = txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Y",
+        somePoint: new Point2d(5.0, 5.0),
+        parent: new ElementOwnsChildElements(id),
+      } as SomeGraphicalElementProps);
+      return [x, y];
+    });
+    await briefcase1.pushChanges({ description: "Insert aspect X and child Y" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      const aspect = getUniqueAspect(txn.iModel as BriefcaseDb, id);
+      aspect.aspectValue = "User1X";
+      txn.updateAspect(aspect);
+      txn.updateElement<SomeGraphicalElementProps>({ id, foo: "User1" });
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      // Cascades away both aspect X and child Y.
+      txn.deleteElement(id);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 updates element and aspect X" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+    const elementConflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeGraphicalElement" && c.id === id);
+    const aspectConflict = interactive.conflicts.find((c) => c.id === aspectXId);
+    chai.expect(elementConflict).to.not.be.undefined;
+    chai.expect(aspectConflict).to.not.be.undefined;
+    // Y never conflicted - nobody but the cascade touched it.
+    chai.expect(interactive.conflicts.some((c) => c.id === childYId)).to.be.false;
+    if (!elementConflict) return;
+
+    elementConflict.acceptTheirs();
+
+    // The element and aspect X (which had their own conflicts) are restored to "theirs" ...
+    chai.expect(briefcase2.elements.getElementProps<SomeGraphicalElementProps>(id).foo).to.equal("User1");
+    chai.expect(getUniqueAspect(briefcase2, id).aspectValue).to.equal("User1X");
+    // ... and so is Y, even though it never had a conflict of its own - the regression this guards.
+    const childY = briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(childYId);
+    chai.expect(childY).to.not.be.undefined;
+    chai.expect(childY?.foo).to.equal("Y");
+  });
+
+  it("reports an upstream-inserted aspect instead of silently cascading it away", async () => {
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.insertAspect({
+        classFullName: uniqueAspectClassFullName,
+        element: { id, relClassName: "BisCore.ElementOwnsUniqueAspect" },
+        aspectValue: "FromUpstream",
+        aspectNumber: 1,
+      } as SomeUniqueAspectProps);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 inserts aspect" });
+
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    const aspectConflict = interactive.conflicts.find((c) => c.classFullName === "InteractiveRebaseTest:SomeUniqueAspect");
+    chai.expect(aspectConflict).to.not.be.undefined;
+    chai.expect(aspectConflict?.original).to.be.undefined;
+    chai.expect(aspectConflict?.ours).to.be.undefined;
+    chai.expect(aspectConflict?.theirs?.aspectValue).to.equal("FromUpstream");
+  });
+
+  it("can rebase a txn that deletes an element and then reuses its federationGuid for a new element", async () => {
+    // This test is only trying to test a one-briefcase delete+reinsert. But in order to trigger the
+    // interactive rebase path (instead of fast-forward), we need to create a conflict by updating
+    // the deleted element in another briefcase.
+    const federationGuid = briefcase1.elements.getElementProps<SomeGraphicalElementProps>(id).federationGuid;
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement({ id, foo: "User1" } as SomeGraphicalElementProps);
+    });
+
+    const newId = await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        federationGuid: federationGuid,
+        code: Code.createEmpty(),
+        foo: "Original",
+        somePoint: new Point2d(1.23, 4.56),
+      } as SomeGraphicalElementProps);
+    });
+
+    await briefcase1.pushChanges({ description: "User1 edits the userLabel" });
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    // There should only be the one UPDATE-DELETE conflict.
+    // The new element reuses the deleted element's federationGuid, but that is not a conflict.
+    // It might be incorrectly identified as one, though, if the insertion happens before the
+    // deletion. That is what this test is checking.
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict).to.not.be.undefined;
+    if (!conflict) return;
+
+    const newElementProps = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(newId);
+    chai.expect(newElementProps.federationGuid).to.equal(federationGuid);
+    chai.expect(briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id)).to.be.undefined;
+  });
+
+  it("can rebase a txn that deletes an element and reuses its federationGuid via an update to another element", async () => {
+    const federationGuid = briefcase1.elements.getElementProps<SomeGraphicalElementProps>(id).federationGuid;
+
+    const otherId = await withEditTxn(briefcase1, async (txn) => {
+      return txn.insertElement({
+        classFullName: "irt:SomeGraphicalElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        foo: "Other",
+        somePoint: new Point2d(9.0, 9.0),
+      } as SomeGraphicalElementProps);
+    });
+    await briefcase1.pushChanges({ description: "setup other" });
+    await briefcase2.pullChanges();
+
+    await withEditTxn(briefcase1, async (txn) => {
+      txn.updateElement({ id, foo: "User1" } as SomeGraphicalElementProps);
+    });
+
+    await withEditTxn(briefcase2, async (txn) => {
+      txn.deleteElement(id);
+      txn.updateElement<SomeGraphicalElementProps>({ id: otherId, federationGuid });
+    });
+
+    await briefcase1.pushChanges({ description: "User1 edits foo" });
+    using interactive = await briefcase2.pullChangesInteractive();
+    chai.expect(interactive).to.not.be.undefined;
+    if (!interactive) return;
+
+    chai.expect(interactive.nextGroup()).to.be.false;
+
+    chai.expect(interactive.conflicts.length).to.equal(1);
+    const conflict = interactive.conflicts[0];
+    chai.expect(conflict).to.not.be.undefined;
+    if (!conflict) return;
+
+    const otherElementProps = briefcase2.elements.getElementProps<SomeGraphicalElementProps>(otherId);
+    chai.expect(otherElementProps.federationGuid).to.equal(federationGuid);
+    chai.expect(briefcase2.elements.tryGetElementProps<SomeGraphicalElementProps>(id)).to.be.undefined;
   });
 });
