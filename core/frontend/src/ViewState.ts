@@ -399,6 +399,22 @@ export abstract class ViewState extends ElementState {
     await Promise.all(promises);
   }
 
+  public async cloneWithDisplayStyle(style: DisplayStyleState): Promise<this> {
+    if (style.iModel !== this.iModel)
+      throw new Error("Display style must be from the same iModel as the view");
+
+    const viewDim = this.is3d() ? "3D" : "2D";
+    const styleDim = style.is3d() ? "3D" : "2D";
+    if (viewDim !== styleDim)
+      throw new Error(`Cannot assign a ${styleDim} display style to a ${viewDim} view`);
+
+    const props = this.toProps();
+    props.displayStyleProps = style.toJSON();
+    const view = await this.iModel.views.convertViewStatePropsToViewState(props);
+    assert(view.classFullName === this.classFullName);
+    return view as this;
+  }
+
   protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     if (hydrateResponse.acsElementProps)
       this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
