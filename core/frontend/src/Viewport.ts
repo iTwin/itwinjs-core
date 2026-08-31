@@ -643,9 +643,6 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** See [[ViewState.displayStyle]] */
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
-  public set displayStyle(style: DisplayStyleState) {
-    this.view.displayStyle = style;
-  }
 
   /** Selectively override aspects of this viewport's display style.
    * @see [DisplayStyleSettings.applyOverrides]($common)

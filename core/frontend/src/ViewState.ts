@@ -248,7 +248,7 @@ export abstract class ViewState extends ElementState {
   public isPrivate?: boolean;
   private readonly _gridDecorator: GridDecorator;
   private readonly _categorySelector: CategorySelectorState;
-  private _displayStyle: DisplayStyleState;
+  private readonly _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
 
   public abstract get iModelRefs(): IModelDisplayReferences;
@@ -274,16 +274,6 @@ export abstract class ViewState extends ElementState {
   /** The style that controls how the contents of the view are displayed. */
   public get displayStyle(): DisplayStyleState {
     return this._displayStyle;
-  }
-
-  public set displayStyle(style: DisplayStyleState) {
-    if (style === this.displayStyle)
-      return;
-
-    if (this.isAttachedToViewport)
-      this.onDisplayStyleChanged.raiseEvent(style);
-
-    this._displayStyle = style;
   }
 
   /** @internal */
@@ -848,8 +838,6 @@ export abstract class ViewState extends ElementState {
   /** Returns the default extent limits for this ViewState. These limits are used if the [[extentLimits]] have not been explicitly overridden.
    */
   public abstract get defaultExtentLimits(): ExtentLimits;
-
-  public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
 
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
@@ -1831,11 +1819,6 @@ export abstract class ViewState3d extends ViewState {
   /** The style that controls how the contents of the view are displayed. */
   public override get displayStyle(): DisplayStyle3dState {
     return this.getDisplayStyle3d();
-  }
-
-  public override set displayStyle(style: DisplayStyle3dState) {
-    assert(style instanceof DisplayStyle3dState);
-    super.displayStyle = style;
   }
 
   /** The style that controls how the contents of the view are displayed.

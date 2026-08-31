@@ -151,12 +151,11 @@ describe("Viewport changed events", async () => {
       vp.displayStyle.viewFlags = new ViewFlags();
     });
 
+    const vpStyle = vp.displayStyle;
     // Modify display style through Viewport API.
     vp.saveViewUndo();
     mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-      const newStyle = vp.displayStyle.clone();
-      newStyle.backgroundColor = ColorDef.red;
-      vp.displayStyle = newStyle;
+      vpStyle.backgroundColor = ColorDef.red;
     });
 
     // Change ClipStyle
@@ -165,9 +164,7 @@ describe("Viewport changed events", async () => {
     // Modify view flags through Viewport's displayStyle property.
     vp.saveViewUndo();
     mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-      const newStyle = vp.displayStyle.clone();
-      newStyle.viewFlags = newStyle.viewFlags.with("constructions", !newStyle.viewFlags.constructions);
-      vp.displayStyle = newStyle;
+      vpStyle.viewFlags = vpStyle.viewFlags.with("constructions", !vpStyle.viewFlags.constructions);
     });
 
     vp.saveViewUndo();
@@ -179,9 +176,7 @@ describe("Viewport changed events", async () => {
     // Override by replacing display style on Viewport
     vp.saveViewUndo();
     mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
-      const style = vp.displayStyle.clone();
-      style.overrideSubCategory("0x123", ovr);
-      vp.displayStyle = style;
+      vpStyle.overrideSubCategory("0x123", ovr);
     });
 
     // Apply same override via Viewport method. Does not check if override actually differs.
@@ -205,9 +200,6 @@ describe("Viewport changed events", async () => {
     const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
     const expectChange = (func: () => void) => mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, func);
     const expectOverrideChange = (func: () => void) => mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, func);
-
-    expectNoChange(() => view.displayStyle = view.displayStyle);
-    expectOverrideChange(() => view.displayStyle = view.displayStyle.clone());
 
     const style = view.getDisplayStyle3d();
     const settings = style.settings;
@@ -638,36 +630,6 @@ describe("Viewport changed events", async () => {
         };
       },
     });
-  });
-
-  it("should be dispatched to two views sharing the same display style", async () => {
-    const v1 = await testBim.views.load("0x34") as SpatialViewState;
-    const v2 = v1.clone();
-    v2.displayStyle = v1.displayStyle;
-
-    const div2 = document.createElement("div");
-    div2.style.width = div2.style.height = "50px";
-    document.body.appendChild(div2);
-
-    vp = ScreenViewport.create(viewDiv, v1);
-    const vp2 = ScreenViewport.create(div2, v2);
-
-    vp.renderFrame();
-    vp2.renderFrame();
-    expect(vp.renderPlanValid).to.be.true;
-    expect(vp2.renderPlanValid).to.be.true;
-
-    vp.viewFlags = vp.viewFlags.with("transparency", !vp.viewFlags.transparency);
-    expect(vp.renderPlanValid).to.be.false;
-    expect(vp2.renderPlanValid).to.be.false;
-
-    vp.renderFrame();
-    vp2.renderFrame();
-    expect(vp.renderPlanValid).to.be.true;
-    expect(vp2.renderPlanValid).to.be.true;
-
-    vp2[Symbol.dispose]();
-    document.body.removeChild(div2);
   });
 
   it("should load subcategories for all displayed categories", async () => {
