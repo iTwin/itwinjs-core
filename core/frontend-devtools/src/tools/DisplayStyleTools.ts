@@ -44,8 +44,8 @@ export abstract class DisplayStyleTool extends Tool {
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && await this.execute(vp))
-      vp.displayStyle = vp.view.displayStyle;
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()))
+      await this.execute(vp);
 
     return true;
   }
