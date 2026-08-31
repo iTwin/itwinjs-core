@@ -369,6 +369,7 @@ export enum DbResult {
     BE_SQLITE_ERROR_BadDbProfile = 100663306,
     BE_SQLITE_ERROR_ChangeTrackError = 218103818,
     BE_SQLITE_ERROR_CouldNotAcquireLocksOrCodes = 352321546,
+    BE_SQLITE_ERROR_DataDeletionRequired = 402653194,
     BE_SQLITE_ERROR_DataTransformRequired = 385875978,
     BE_SQLITE_ERROR_FileExists = 16777226,
     BE_SQLITE_ERROR_FileNotFound = 67108874,
@@ -1405,8 +1406,24 @@ export type NonFunctionPropertyNamesOf<T> = {
 }[keyof T];
 
 // @public
+export class ObservableMap<K, V> extends Map<K, V> {
+    // @internal (undocumented)
+    get [Symbol.toStringTag](): string;
+    constructor(elements?: Iterable<readonly [K, V]> | undefined);
+    clear(): void;
+    delete(key: K): boolean;
+    deleteAll(keys: Iterable<K>): number;
+    readonly onChanged: BeEvent<() => void>;
+    set(key: K, value: V): this;
+    setAll(items: Iterable<readonly [K, V]>): void;
+}
+
+// @public
 export class ObservableSet<T> extends Set<T> {
+    // @internal (undocumented)
+    get [Symbol.toStringTag](): string;
     constructor(elements?: Iterable<T> | undefined);
+    add(item: T): this;
     addAll(items: Iterable<T>): number;
     clear(): void;
     delete(item: T): boolean;
@@ -1414,6 +1431,7 @@ export class ObservableSet<T> extends Set<T> {
     readonly onAdded: BeEvent<(item: T) => void>;
     readonly onBatchAdded: BeEvent<() => void>;
     readonly onBatchDeleted: BeEvent<() => void>;
+    readonly onChanged: BeEvent<() => void>;
     readonly onCleared: BeEvent<() => void>;
     readonly onDeleted: BeEvent<(item: T) => void>;
 }

@@ -21,6 +21,7 @@ class SchemaSyncReservations implements SynchronousChannel.Reservations {
   public get isServerBased() { return true; }
   private readonly _iModel: IModelDb;
   private readonly _schemaSync: SchemaSync.CloudAccess;
+  private _isClosed = false;
 
   private constructor(iModel: IModelDb, schemaSync: SchemaSync.CloudAccess) {
     this._iModel = iModel;
@@ -29,13 +30,22 @@ class SchemaSyncReservations implements SynchronousChannel.Reservations {
 
   public static async create(iModel: IModelDb): Promise<SchemaSyncReservations> {
     const schemaSync = await SchemaSync.getCloudAccess(iModel);
-    schemaSync.synchronizeWithCloud();
-    return new SchemaSyncReservations(iModel, schemaSync);
+    try {
+      schemaSync.synchronizeWithCloud();
+      return new SchemaSyncReservations(iModel, schemaSync);
+    } catch (error) {
+      SchemaSync.releaseCloudAccess(schemaSync);
+      throw error;
+    }
   }
 
   public [_close](): void {
+    if (this._isClosed)
+      return;
+
+    this._isClosed = true;
     try {
-      this._schemaSync.close();
+      SchemaSync.releaseCloudAccess(this._schemaSync);
     } catch {
       // best-effort cleanup; never throw out of close hooks
     }
