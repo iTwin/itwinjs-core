@@ -539,6 +539,9 @@ public;class;SchemaMap
 internal;type;SchemaMatchType
 public;class;Schemas
 internal;namespace;SchemaSync
+alpha;function;repairForIModel
+alpha;interface;RepairForIModelArgs
+alpha;type;RepairScope
 public;class;SectionCallout
 public;class;SectionDrawing
 preview;class;SectionDrawing
@@ -685,6 +688,7 @@ public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
+alpha;interface;UpgradeSchemasArgs
 public;class;UrlLink
 preview;class;UrlLink
 public;interface;V2CheckpointAccessProps

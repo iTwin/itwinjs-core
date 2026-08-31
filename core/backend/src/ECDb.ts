@@ -191,6 +191,7 @@ export class ECDb implements Disposable {
   public dropSchemas(schemaNames: string[]): void {
     if (schemaNames.length === 0)
       return;
+    // SchemaSync.isEnabled() should be used, but ECDb is not an iModelDb so it has no container props
     if (this[_nativeDb].schemaSyncEnabled())
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot drop schemas when schema sync is enabled");
 
