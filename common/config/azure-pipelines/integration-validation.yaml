@@ -16,6 +16,7 @@ schedules:
 variables:
   - group: iTwin.js non-secret config variables
   - group: iTwin.js Integration Test Users
+  - group: Rush Build Cache SAS Token
 
 jobs:
   - job: Integration_Tests_Full
