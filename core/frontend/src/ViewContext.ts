@@ -30,6 +30,7 @@ import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator
 import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
 import { GraphicType } from "./common/render/GraphicType";
 import { RenderTextureDrape } from "./internal/render/RenderTextureDrape";
+import { IModelDisplayReference } from "./core-frontend";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -373,6 +374,7 @@ export class SceneContext extends RenderContext {
   private _missingChildTiles = false;
   /** The graphics comprising the scene. */
   public readonly scene = new Scene();
+  public readonly iModelRef: IModelDisplayReference;
 
   /** @internal */
   public readonly missingTiles = new Set<Tile>();
@@ -390,8 +392,37 @@ export class SceneContext extends RenderContext {
   private _viewingSpace?: ViewingSpace;
   private _graphicType: TileGraphicType = TileGraphicType.Scene;
 
-  public constructor(vp: Viewport, frustum?: Frustum) {
-    super(vp, frustum);
+  public constructor(vp: Viewport, frustum?: Frustum);
+
+  /** @internal */
+  public constructor(args: {
+    viewport: Viewport,
+    frustum?: Frustum,
+    iModelRef?: IModelDisplayReference,
+  });
+
+  /** @internal */
+  public constructor(
+    arg0: {
+      viewport: Viewport,
+      frustum?: Frustum,
+      iModelRef?: IModelDisplayReference,
+    } | Viewport,
+    arg1?: Frustum
+  ) {
+    let frustum, viewport, iModelRef;
+    if (arg0 instanceof Viewport) {
+      viewport = arg0;
+      frustum = arg1;
+    } else {
+      ({ viewport, frustum, iModelRef } = arg0);
+    }
+
+    if (!iModelRef)
+      iModelRef = viewport.iModelRefs.primary;
+
+    super(viewport, frustum);
+    this.iModelRef = iModelRef;
   }
 
   /** The viewed volume containing the scene. */

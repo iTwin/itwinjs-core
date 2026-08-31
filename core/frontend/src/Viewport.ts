@@ -68,6 +68,7 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
+import { IModelDisplayReferences } from "./IModelDisplayReferences";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -1465,6 +1466,10 @@ export abstract class Viewport implements Disposable, TileUser {
   /** The ViewState for this Viewport */
   public get view(): ViewState {
     return this._view;
+  }
+
+  public get iModelRefs(): IModelDisplayReferences {
+    return this._view.iModelRefs;
   }
 
   /** @internal */
