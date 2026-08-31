@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import type { BrowserWindow } from "electron";
 import * as path from "path";
 import { assert } from "chai";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
@@ -201,26 +202,70 @@ async function testWindowSizeSettings() {
   window.unmaximize();
   assert(await waitUntil(() => savedMaximized() === window.isMaximized()));
 
-  const width = 250;
-  const height = 251;
-  window.setSize(width, height);
-  assert(await waitUntil(() => savedSizeAndPos()?.width === width && savedSizeAndPos()?.height === height));
+  // Windows restores from maximized asynchronously. A resize issued before that settles is overwritten
+  // when the restored bounds arrive and win the last debounced write.
+  await waitForStableBounds(window);
 
-  const x = 50;
-  const y = 75;
-  window.setPosition(x, y);
-  assert(await waitUntil(() => savedSizeAndPos()?.x === x && savedSizeAndPos()?.y === y));
+  // A fractionally-scaled display rounds through physical pixels, so the realized bounds can differ from
+  // the requested bounds by a pixel or two. What must hold is that the saved state converges on whatever
+  // the window actually reports.
+  const savedMatchesWindow = () => {
+    const saved = savedSizeAndPos();
+    const bounds = window.getBounds();
+    return saved !== undefined && saved.width === bounds.width && saved.height === bounds.height
+      && saved.x === bounds.x && saved.y === bounds.y;
+  };
+
+  const boundsBeforeResize = window.getBounds();
+  const targetWidth = boundsBeforeResize.width === 250 ? 300 : 250;
+  const targetHeight = boundsBeforeResize.height === 251 ? 301 : 251;
+  window.setSize(targetWidth, targetHeight);
+  assert(await waitUntil(() => {
+    const bounds = window.getBounds();
+    return bounds.width !== boundsBeforeResize.width || bounds.height !== boundsBeforeResize.height;
+  }));
+  assert(await waitUntil(savedMatchesWindow));
+
+  const boundsBeforeMove = window.getBounds();
+  // The OS chooses the initial position, so pick a target it can't already be at - otherwise setPosition
+  // is a no-op and the "window changed" assertion below can never be satisfied.
+  const targetX = boundsBeforeMove.x === 50 ? 100 : 50;
+  const targetY = boundsBeforeMove.y === 75 ? 150 : 75;
+  window.setPosition(targetX, targetY);
+  assert(await waitUntil(() => {
+    const bounds = window.getBounds();
+    return bounds.x !== boundsBeforeMove.x || bounds.y !== boundsBeforeMove.y;
+  }));
+  assert(await waitUntil(savedMatchesWindow));
 }
 
+/** Longer than `ElectronHost`'s 200ms window state debounce, so a stable sample means nothing is pending. */
+const settleInterval = BeDuration.fromMilliseconds(400);
+
 /**
- * Polls `condition` until it holds, for up to ~1.25 seconds.
+ * Polls `condition` until it holds, for up to ~5 seconds.
  * @note `ElectronHost` persists window state from a debounced handler, so the settings file lags the window.
  */
 async function waitUntil(condition: () => boolean): Promise<boolean> {
-  for (let i = 0; i < 25 && !condition(); ++i)
+  for (let i = 0; i < 100 && !condition(); ++i)
     await BeDuration.wait(50);
 
   return condition();
+}
+
+/** Waits until the window reports the same bounds across a full settle interval, throwing if it doesn't within ~4 seconds. */
+async function waitForStableBounds(window: BrowserWindow): Promise<void> {
+  let previous = "";
+  for (let i = 0; i < 10; ++i) {
+    const current = JSON.stringify(window.getBounds());
+    if (current === previous)
+      return;
+
+    previous = current;
+    await settleInterval.wait();
+  }
+
+  throw new Error("Window bounds did not stabilize");
 }
 
 function assertElectronHostNotInitialized() {
