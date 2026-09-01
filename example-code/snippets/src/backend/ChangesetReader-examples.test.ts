@@ -311,31 +311,6 @@ describe("ChangesetReader Examples", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  it("rowOption useJsName and changeFetchedPropNames uses original EC names", () => {
-    // __PUBLISH_EXTRACT_START__ ChangesetReader.UseJsNameAndChangeFetchedPropNames
-    using reader = ChangesetReader.openFile({
-      db,
-      fileName: insertChangesetPath,
-      rowOptions: { useJsName: true }, // property keys are camelCase
-    });
-    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
-    while (reader.step()) pcu.appendFrom(reader);
-
-    for (const instance of pcu.instances) {
-      // Property keys on the instance object use JS names (camelCase):
-      expect(instance.id).to.exist;           // ECInstanceId → id
-      expect(instance.className).to.exist;    // ECClassId → className (resolved)
-
-      // changeFetchedPropNames always stores the original EC schema names,
-      // regardless of useJsName. Always query it with the schema-level name:
-      const changed = instance.$meta.changeFetchedPropNames;
-      if (changed.includes("Tags"))       // ✅ original EC name — correct
-        expect(instance.tags).to.exist;
-      // changed.includes("tags")         // ❌ never true — JS name is wrong here
-    }
-    // __PUBLISH_EXTRACT_END__
-  });
-
   it("rowOption abbreviateBlobs false — full binary values", () => {
     // __PUBLISH_EXTRACT_START__ ChangesetReader.RowOptionsAbbreviateBlobs
     using reader = ChangesetReader.openFile({
@@ -403,28 +378,6 @@ describe("ChangesetReader Examples", () => {
     // __PUBLISH_EXTRACT_END__
     void changed;
     void spillReader;
-  });
-
-  it("useJsName row option", () => {
-    // __PUBLISH_EXTRACT_START__ ChangesetReader.UseJsName
-    using reader = ChangesetReader.openFile({
-      db,
-      fileName: insertChangesetPath,
-      rowOptions: { useJsName: true },
-    });
-    using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
-    while (reader.step()) pcu.appendFrom(reader);
-
-    for (const instance of pcu.instances) {
-      // Property keys on the instance use camelCase JS names:
-      expect(instance.id).to.exist;        // ECInstanceId → id
-      expect(instance.className).to.exist; // ECClassId → className (resolved to full class name)
-      // Navigation property sub-keys also use camelCase:
-      // instance.category → { id: "0x...", relClassName: "BisCore.GeometricElement2dIsInCategory" }
-      // Array property names are also camelCased:
-      // instance.tags → ["alpha", "beta"]  (Tags → tags)
-    }
-    // __PUBLISH_EXTRACT_END__
   });
 
   it("Instance_Key mode — only ECInstanceId and ECClassId", () => {

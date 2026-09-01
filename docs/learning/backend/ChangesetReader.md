@@ -63,7 +63,7 @@ The names in `changeFetchedPropNames` follow these rules based on the property k
 | **Compound member inside a struct** — **all components changed** | `"StructProp.MemberName"` | `"CustomStruct.Myp2d"` |
 | **Compound member inside a struct** — **only some components changed** | `"StructProp.MemberName.Component"` | `"CustomStruct.Myp2d.X"` (when only X changed for a `Point2d` property `"Myp2d"` inside struct `"CustomStruct"`) |
 
-> **Note:** `changeFetchedPropNames` always contains the **original EC property names** (e.g. `"LastMod"`, `"Model.Id"`, `"StructProp.X"`) regardless of how `rowOptions` are configured. Even with `useJsName: true`, `changeFetchedPropNames.includes("LastMod")` is correct — **not** `includes("lastMod")`.
+> **Note:** `changeFetchedPropNames` always contains the **original EC property names** (e.g. `"LastMod"`, `"Model.Id"`, `"StructProp.X"`) regardless of how `rowOptions` are configured.
 
 #### Null-valued properties — listed in `changeFetchedPropNames` but absent from the instance object
 
@@ -230,7 +230,6 @@ assert.strictEqual(instance.$meta.propFilter, PropertyFilter.InstanceKey);
 | `abbreviateBlobs: true` (or omitted) | Binary properties summarized as `{ bytes: N }` — this is the default behavior |
 | `abbreviateBlobs: false` | Binary properties returned as full `Uint8Array` instead of the default `{ bytes: N }` summary |
 | `classIdsToClassNames: true` | `ECClassId` and `RelECClassId` values converted from hex strings to fully-qualified names (e.g. `"BisCore.DrawingModel"`) |
-| `useJsName: true` | All property keys and struct sub-keys returned in camelCase (`id`, `className`, `lastMod`, `structProp.x`, etc.). Navigation property sub-keys use `{ id, relClassName }` instead of `{ Id, RelECClassId }`. `ECClassId` and nav-prop class identifiers are automatically resolved to class names. |
 
 The active `rowOptions` object is stored on every instance's `$meta.rowOptions` for inspection.
 
@@ -240,31 +239,11 @@ The active `rowOptions` object is stored on every instance's `$meta.rowOptions` 
 [[include:ChangesetReader.RowOptionsClassNames]]
 ```
 
-### Example — `useJsName`
-
-```ts
-[[include:ChangesetReader.UseJsName]]
-```
-
 ### Example — reading full binary blobs
 
 ```ts
 [[include:ChangesetReader.RowOptionsAbbreviateBlobs]]
 ```
-
----
-
-## `changeFetchedPropNames` always uses original EC property names
-
-`$meta.changeFetchedPropNames` always contains the **original EC property names** regardless of any `rowOptions` in effect. The `useJsName` row option renames the keys on the returned instance object to use JS names, but it does **not** affect the names stored in `changeFetchedPropNames`.
-
-This means you must always check `changeFetchedPropNames` using the schema-level EC property name, not the JS name:
-
-```ts
-[[include:ChangesetReader.UseJsNameAndChangeFetchedPropNames]]
-```
-
-In short: use `useJsName` names when reading property values off the instance, but always use the original EC schema names when querying `changeFetchedPropNames`.
 
 ---
 

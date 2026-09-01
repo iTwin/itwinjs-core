@@ -43,12 +43,6 @@ export interface RowFormatOptions {
    * to fully-qualified class names (e.g. `"BisCore.DrawingModel"`).
    */
   classIdsToClassNames?: boolean;
-  /**
-   * When `true`, all property keys and struct sub-keys are returned in camelCase
-   * (e.g. `id`, `className`, `lastMod`). Navigation property sub-keys use
-   * `{ id, relClassName }` instead of `{ Id, RelECClassId }`.
-   */
-  useJsName?: boolean;
 }
 
 // ---------------------------------------------------------------------------
