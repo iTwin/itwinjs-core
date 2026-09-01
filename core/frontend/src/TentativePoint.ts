@@ -15,7 +15,8 @@ import { BeButton, BeButtonEvent } from "./tools/Tool";
 import { ViewHandleType, ViewManip } from "./tools/ViewTool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { expectDefined } from "@itwin/core-bentley";
+import { expectDefined, Id64 } from "@itwin/core-bentley";
+import { GeometryClass } from "@itwin/core-common";
 
 /**
  * @public
@@ -246,7 +247,13 @@ export class TentativePoint {
               viewport: vp,
               hitSource: HitSource.TentativeSnap,
               hitPoint: point,
-              sourceId: "",
+              feature: {
+                elementId: Id64.invalid,
+                subCategoryId: Id64.invalid,
+                modelId: Id64.invalid,
+                geometryClass: GeometryClass.Primary,
+                iModelRef: vp.iModelRefs.primary,
+              },
               priority: HitPriority.Unknown,
               distXY: 0,
               distFraction: 0,

@@ -14,6 +14,7 @@ import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { GraphicType } from "./common/render/GraphicType";
+import { IModelFeature } from "./IModelDisplayReference";
 
 /**
  * @public
@@ -160,28 +161,13 @@ export interface HitDetailProps {
   readonly hitSource: HitSource;
   /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
   readonly hitPoint: Point3d;
-  /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
-  readonly sourceId: Id64String;
+  readonly feature: IModelFeature;
   /** The hit geometry priority/classification. */
   readonly priority: HitPriority;
   /** The xy distance to the hit in view coordinates. */
   readonly distXY: number;
   /** The distance in view coordinates between the hit and the near plane. */
   readonly distFraction: number;
-  /** The [SubCategory]($backend) to which the hit geometry belongs. */
-  readonly subCategoryId?: Id64String;
-  /** The class of the hit geometry. */
-  readonly geometryClass?: GeometryClass;
-  /** The Id of the [[ModelState]] from which the hit originated. */
-  readonly modelId?: string;
-  /** The IModelConnection from which the hit originated.
-   * This should almost always be left undefined, unless the hit is known to have originated from an iModel
-   * other than the one associated with the viewport.
-   * @internal
-   */
-  readonly sourceIModel?: IModelConnection;
-  /** @internal */
-  readonly transformFromSourceIModel?: Transform;
   /** @internal chiefly for debugging */
   readonly tileId?: string;
   /** True if the hit originated from a reality model classifier.
@@ -210,8 +196,9 @@ export class HitDetail {
   public get hitSource(): HitSource { return this._props.hitSource; }
   /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
   public get hitPoint(): Point3d { return this._props.hitPoint; }
+  public get feature(): IModelFeature { return this._props.feature; }
   /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
-  public get sourceId(): Id64String { return this._props.sourceId; }
+  public get sourceId(): Id64String { return this._props.feature.elementId; }
   /** The hit geometry priority/classification. */
   public get priority(): HitPriority { return this._props.priority; }
   /** The xy distance to the hit in view coordinates. */
@@ -219,19 +206,11 @@ export class HitDetail {
   /** The distance in view coordinates between the hit and the near plane. */
   public get distFraction(): number { return this._props.distFraction; }
   /** The [SubCategory]($backend) to which the hit geometry belongs. */
-  public get subCategoryId(): Id64String | undefined { return this._props.subCategoryId; }
+  public get subCategoryId(): Id64String | undefined { return this._props.feature.subCategoryId; }
   /** The class of the hit geometry. */
-  public get geometryClass(): GeometryClass | undefined { return this._props.geometryClass; }
+  public get geometryClass(): GeometryClass | undefined { return this._props.feature.geometryClass; }
   /** The Id of the [[ModelState]] from which the hit originated. */
-  public get modelId(): string | undefined { return this._props.modelId; }
-  /** The IModelConnection from which the hit originated.
-   * This should almost always be left undefined, unless the hit is known to have originated from an iModel
-   * other than the one associated with the viewport.
-   * @internal
-   */
-  public get sourceIModel(): IModelConnection | undefined { return this._props.sourceIModel; }
-  /** @internal */
-  public get transformFromSourceIModel(): Transform | undefined { return this._props.transformFromSourceIModel; }
+  public get modelId(): string | undefined { return this._props.feature.modelId; }
   /** @internal chiefly for debugging */
   public get tileId(): string | undefined { return this._props.tileId; }
   /** True if the hit originated from a reality model classifier.
@@ -249,57 +228,24 @@ export class HitDetail {
   public get path(): HitPath | undefined { return this._props.path; }
 
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
-  public constructor(props: HitDetailProps);
+  public constructor(props: HitDetailProps) {
+    // Ignore an empty path.
+    const path = props.path?.sectionDrawingAttachment || props.path?.viewAttachment ? props.path : undefined;
 
-  /** @deprecated in 4.1 - might be removed in next major version. Use the overload that takes a [[HitDetailProps]]. */
-  public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
-
-  /** @internal */
-  public constructor(arg0: Point3d | HitDetailProps, viewport?: ScreenViewport, hitSource?: HitSource, hitPoint?: Point3d, sourceId?: string, priority?: HitPriority, distXY?: number, distFraction?: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
-    if (arg0 instanceof Point3d) {
-      assert(undefined !== viewport && undefined !== hitSource && undefined !== hitPoint && undefined !== sourceId);
-      assert(undefined !== priority && undefined !== distXY && undefined !== distFraction);
-
-      this._props = {
-        testPoint: arg0,
-        viewport,
-        hitSource,
-        hitPoint,
-        sourceId,
-        priority,
-        distXY,
-        distFraction,
-        subCategoryId,
-        geometryClass,
-        modelId,
-        sourceIModel,
-        tileId,
-        isClassifier,
-      };
-    } else {
-      // Ignore an empty path.
-      const path = arg0.path?.sectionDrawingAttachment || arg0.path?.viewAttachment ? arg0.path : undefined;
-
-      // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
-      this._props = {
-        testPoint: arg0.testPoint,
-        viewport: arg0.viewport,
-        hitSource: arg0.hitSource,
-        hitPoint: arg0.hitPoint,
-        sourceId: arg0.sourceId,
-        priority: arg0.priority,
-        distXY: arg0.distXY,
-        distFraction: arg0.distFraction,
-        subCategoryId: arg0.subCategoryId,
-        geometryClass: arg0.geometryClass,
-        modelId: arg0.modelId,
-        sourceIModel: arg0.sourceIModel,
-        transformFromSourceIModel: arg0.transformFromSourceIModel,
-        tileId: arg0.tileId,
-        isClassifier: arg0.isClassifier,
-        path,
-      };
-    }
+    // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
+    this._props = {
+      testPoint: props.testPoint,
+      viewport: props.viewport,
+      hitSource: props.hitSource,
+      hitPoint: props.hitPoint,
+      feature: { ...props.feature },
+      priority: props.priority,
+      distXY: props.distXY,
+      distFraction: props.distFraction,
+      tileId: props.tileId,
+      isClassifier: props.isClassifier,
+      path,
+    };
   }
 
   /** Get the type of HitDetail.
@@ -346,7 +292,7 @@ export class HitDetail {
    * This HitDetail's element, subcategory, and model Ids are defined in the context of this IModelConnection.
    */
   public get iModel(): IModelConnection {
-    return this.sourceIModel ?? this.viewport.iModel;
+    return this.feature.iModelRef.iModel;
   }
 
   /** Returns true if this hit originated from an [[IModelConnection]] other than the one associated with the [[Viewport]].

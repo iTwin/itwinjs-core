@@ -709,7 +709,6 @@ class PixelBuffer implements Pixel.Buffer {
   }
 
 
-  private readonly _invalidPixelData = new Pixel.Data();
   public getPixel(x: number, y: number): Pixel.Data {
     const px = this._invalidPixelData;
     const index = this.getPixelIndex(x, y);

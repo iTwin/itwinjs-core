@@ -7,9 +7,9 @@
  */
 
 import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
-import { _attachToViewport, _backingView, _detachFromViewport, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
-import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
+import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { IModelDisplayReferences, IModelDisplayReferences2d, LinkIModel2dArgs, LinkIModelArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
@@ -37,6 +37,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public abstract readonly parent: IModelDisplayReferences;
   public abstract get tileTreeRefs(): Iterable<TileTreeReference>;
 
+  public readonly [_guid]: string;
   public readonly iModel;
   public readonly linearTransformToParent: Transform;
   public readonly viewedCategories = new ObservableSet<Id64String>();
@@ -62,6 +63,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   protected constructor(args: LinkIModelArgs, refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides) {
     this.iModel = args.iModel;
     this._ovrs = ovrs;
+    this[_guid] = Guid.createValue();
 
     const view = refs[_backingView];
     this.#resolvedViewFlags = view.viewFlags.override(ovrs.viewFlags);

@@ -12,6 +12,7 @@ import { ViewRect } from "../common/ViewRect";
 import { SpatialViewState } from "../SpatialViewState";
 import { Pixel } from "../render/Pixel";
 import { createBlankConnection } from "./createBlankConnection";
+import { IModelFeature } from "../IModelDisplayReference";
 
 /** Options for openBlankViewport.
  * @internal
@@ -94,7 +95,7 @@ export async function testBlankViewportAsync(args: TestBlankViewportAsyncOptions
   return await result;
 }
 
-function compareFeatures(lhs?: Feature, rhs?: Feature): number {
+function compareFeatures(lhs?: IModelFeature, rhs?: IModelFeature): number {
   if (undefined === lhs && undefined === rhs)
     return 0;
   else if (undefined === lhs)
@@ -102,7 +103,7 @@ function compareFeatures(lhs?: Feature, rhs?: Feature): number {
   else if (undefined === rhs)
     return 1;
   else
-    return lhs.compare(rhs);
+    return IModelFeature.compare(lhs, rhs);
 }
 
 function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {

@@ -6,11 +6,11 @@
  * @module Views
  */
 
-import { BeEvent, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
-import { _attachToViewport, _detachFromViewport, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
+import { BeEvent, compareStrings, GuidString, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
+import { _attachToViewport, _detachFromViewport, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { TileTreeReference } from "./tile/internal";
-import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
@@ -19,9 +19,20 @@ import { AttachToViewportArgs, RenderClipVolume, SpatialTileTreeReferences } fro
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
 import { Transform } from "@itwin/core-geometry";
 
+export interface IModelFeature extends ModelFeature {
+  iModelRef: IModelDisplayReference;
+}
+
+export namespace IModelFeature {
+  export function compare(lhs: IModelFeature, rhs: IModelFeature): number {
+    return ModelFeature.compare(lhs, rhs) || compareStrings(lhs.iModelRef[_guid], rhs.iModelRef[_guid]);
+  }
+}
+
 export interface IModelDisplayReference {
   readonly [_implementationProhibited]: unknown;
 
+  readonly [_guid]: GuidString;
   readonly iModel: IModelConnection;
   readonly parent: IModelDisplayReferences;
   readonly linearTransformToParent: Transform;
