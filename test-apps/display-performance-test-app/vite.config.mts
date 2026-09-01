@@ -80,7 +80,6 @@ export default defineConfig(() => {
         // plugin to convert CommonJS modules to ESM, so they can be included in bundle
         include: [
           /core\/electron/, // prevent error in ElectronApp
-          /core\/mobile/, // prevent error in MobileApp
           /node_modules/, // prevent errors from dependencies
         ],
         transformMixedEsModules: true, // transforms require statements
@@ -147,8 +146,6 @@ export default defineConfig(() => {
         ...packageAliases,
         "@itwin/core-electron/lib/cjs/ElectronFrontend":
           "@itwin/core-electron/src/ElectronFrontend.ts",
-        "@itwin/core-mobile/lib/cjs/MobileFrontend":
-          "@itwin/core-mobile/src/MobileFrontend.ts",
         "../../package.json": "../package.json", // in core-frontend
       },
     },
@@ -157,7 +154,6 @@ export default defineConfig(() => {
       // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
         "@itwin/core-electron/lib/cjs/ElectronFrontend", // import from module error
-        "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
       ],
       exclude: [
         "electron",

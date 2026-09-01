@@ -1406,14 +1406,24 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     vFractionToRadius(v: number): number;
 }
 
-// @public
-export class ConsolidateAdjacentCurvePrimitivesOptions {
+// @public @deprecated
+export class ConsolidateAdjacentCurvePrimitivesOptions implements ConsolidateAdjacentPrimitivesOptions {
     colinearPointTolerance: number;
     consolidateCompatibleArcs: boolean;
     consolidateLinearGeometry: boolean;
     consolidateLoopSeam?: boolean;
     disableLinearCompression?: boolean;
     duplicatePointTolerance: number;
+}
+
+// @public
+export interface ConsolidateAdjacentPrimitivesOptions {
+    colinearPointTolerance?: number;
+    consolidateCompatibleArcs?: boolean;
+    consolidateLinearGeometry?: boolean;
+    consolidateLoopSeam?: boolean;
+    disableLinearCompression?: boolean;
+    duplicatePointTolerance?: number;
 }
 
 // @public
@@ -1590,6 +1600,7 @@ export interface CreateFilletsInLineStringOptions {
     cuspSegments?: boolean;
     cuspTolerance?: number;
     filletClosure?: boolean;
+    simplifyPath?: boolean;
 }
 
 // @public
@@ -2746,9 +2757,9 @@ export namespace IModelJson {
     }
     export interface BcurveProps {
         closed?: boolean;
-        knots: [number];
+        knots: number[];
         order: number;
-        points: [XYZProps];
+        points: XYZProps[];
     }
     export interface BoxProps extends AxesProps {
         // @internal
@@ -2767,9 +2778,9 @@ export namespace IModelJson {
         closedV?: boolean;
         orderU: number;
         orderV: number;
-        points: [[[number]]];
-        uKnots: [number];
-        vKnots: [number];
+        points: number[][][];
+        uKnots: number[];
+        vKnots: number[];
     }
     export interface ConeProps extends AxesProps {
         capped?: boolean;
@@ -2784,10 +2795,10 @@ export namespace IModelJson {
         vectorY?: XYZProps;
     }
     export interface CurveCollectionProps extends PlanarRegionProps {
-        bagOfCurves?: [CurveCollectionProps | CurvePrimitiveProps];
+        bagOfCurves?: (CurveCollectionProps | CurvePrimitiveProps)[];
         // @deprecated
-        bagofCurves?: [CurveCollectionProps];
-        path?: [CurvePrimitiveProps];
+        bagofCurves?: CurveCollectionProps[];
+        path?: CurvePrimitiveProps[];
     }
     export interface CurvePrimitiveProps {
         arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
@@ -2811,17 +2822,17 @@ export namespace IModelJson {
     }
     export interface IndexedMeshProps {
         auxData?: AuxDataProps;
-        color?: [number];
-        colorIndex?: [number];
-        edgeMateIndex?: [number];
+        color?: number[];
+        colorIndex?: number[];
+        edgeMateIndex?: number[];
         expectedClosure?: number;
-        normal?: [XYZProps];
-        normalIndex?: [number];
+        normal?: XYZProps[];
+        normalIndex?: number[];
         numPerFace?: number;
-        param?: [XYProps];
-        paramIndex?: [number];
-        point: [XYZProps];
-        pointIndex: [number];
+        param?: XYProps[];
+        paramIndex?: number[];
+        point: XYZProps[];
+        pointIndex: number[];
         tags?: TaggedNumericDataProps;
         twoSided?: boolean;
     }
@@ -2831,11 +2842,11 @@ export namespace IModelJson {
         vector: XYZProps;
     }
     export interface PlanarRegionProps {
-        loop?: [CurvePrimitiveProps];
-        parityRegion?: [{
-            loop: [CurvePrimitiveProps];
-        }];
-        unionRegion?: [PlanarRegionProps];
+        loop?: CurvePrimitiveProps[];
+        parityRegion?: {
+            loop: CurvePrimitiveProps[];
+        }[];
+        unionRegion?: PlanarRegionProps[];
     }
     export interface PointProps {
         point?: XYZProps;
@@ -2874,7 +2885,7 @@ export namespace IModelJson {
     }
     export interface RuledSweepProps {
         capped?: boolean;
-        contour: [CurveCollectionProps];
+        contour: CurveCollectionProps[];
     }
     export interface SolidPrimitiveProps {
         box?: BoxProps;
@@ -3439,6 +3450,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     isAlmostEqual(other: GeometryQuery): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: PlaneAltitudeEvaluator): boolean;
+    isPhysicallyClosedCurve(_tolerance?: number, _xyOnly?: boolean): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     get point0Ref(): Point3d;
     get point1Ref(): Point3d;
@@ -5256,6 +5268,8 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     static createXYXYXY<T extends Range2d>(xA: number, yA: number, xB: number, yB: number, xC: number, yC: number, result?: T): T;
     diagonal(result?: Vector2d): Vector2d;
     diagonalFractionToPoint(fraction: number, result?: Point2d): Point2d;
+    diagonalLength(): number;
+    diagonalLengthSquared(): number;
     distanceToPoint(point: XAndY): number;
     distanceToRange(other: LowAndHighXY): number;
     expandInPlace(delta: number): void;
@@ -5326,6 +5340,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     static createXYZXYZOrCorrectToNull<T extends Range3d>(xA: number, yA: number, zA: number, xB: number, yB: number, zB: number, result?: T): T;
     diagonal(result?: Vector3d): Vector3d;
     diagonalFractionToPoint(fraction: number, result?: Point3d): Point3d;
+    diagonalLength(ignoreZ?: boolean): number;
+    diagonalLengthSquared(ignoreZ?: boolean): number;
     distanceToPoint(point: XYAndZ): number;
     distanceToPointXY(point: XAndY): number;
     distanceToRange(other: Range3d): number;
@@ -5594,7 +5610,7 @@ export class RegionOps {
     static computeXYAreaMoments(region: AnyRegion): MomentData | undefined;
     static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
     static computeXYZWireMomentSums(curve: AnyCurve): MomentData | undefined;
-    static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
+    static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentPrimitivesOptions): void;
     static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[], tolerance?: number, addBridges?: boolean): SignedLoops[];
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistanceOrOptions: number | JointOptions): CurveChain | undefined;
@@ -6191,6 +6207,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     protected _designProperties: TransitionConditionalProperties | undefined;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     static interpolateCurvatureR0R1(r0: number, fraction: number, r1: number): number;
+    isPhysicallyClosedCurve(_tolerance?: number, _xyOnly?: boolean): boolean;
     get localToWorld(): Transform;
     protected _localToWorld: Transform;
     projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;

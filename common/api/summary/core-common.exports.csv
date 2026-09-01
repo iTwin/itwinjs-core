@@ -216,6 +216,7 @@ beta;enum;DefaultSupportedTypes
 internal;const;defaultTileOptions
 public;interface;DefinitionElementProps
 preview;interface;DefinitionElementProps
+beta;interface;DefinitionSetProps
 public;interface;DeletedElementGeometryChange
 public;interface;DeprecatedBackgroundMapProps
 internal;class;DevToolsRpcInterface
@@ -288,6 +289,8 @@ beta;interface;ElementMeshRequestProps
 public;interface;ElementPlanarClipMaskArgs
 public;interface;ElementProps
 preview;interface;ElementProps
+beta;interface;ElementReservationError
+beta;namespace;ElementReservationError
 public;interface;EmphasizeElementsProps
 public;class;EmptyLocalization
 public;interface;EntityIdAndClassId
@@ -939,6 +942,8 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 beta;class;TabRun
 beta;interface;TabRunProps
+beta;type;TargetPointShape
+beta;const;targetPointShapes
 beta;type;TerminatorShape
 beta;const;terminatorShapes
 public;enum;TerrainHeightOriginMode
@@ -1030,6 +1035,7 @@ public;class;Tween
 public;type;TweenCallback
 public;class;Tweens
 public;enum;TxnAction
+public;interface;TxnEntityMetadata
 internal;interface;TxnNotifications
 alpha;interface;TxnProps
 alpha;type;TxnType

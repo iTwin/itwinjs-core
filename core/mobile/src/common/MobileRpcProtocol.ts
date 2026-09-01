@@ -104,7 +104,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private connect(port: number, reset: boolean) {
-    const socket = new WebSocket(`ws://localhost:${port}`);
+    const socket = new WebSocket(`ws://127.0.0.1:${port}`);
     socket.binaryType = "arraybuffer";
     this.connectMessageHandler(socket);
     this.connectOpenHandler(socket, reset);

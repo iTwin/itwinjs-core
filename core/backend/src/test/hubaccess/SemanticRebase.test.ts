@@ -13,6 +13,7 @@ import { EditTxn, withEditTxn } from "../../EditTxn";
 import { HubMock } from "../../internal/HubMock";
 import { EntityClass } from "@itwin/ecschema-metadata";
 import { TestUtils } from "../TestUtils";
+import { semanticRebaseExtendedDescribe, semanticRebaseExtendedIt } from "./SemanticRebaseTestUtils";
 
 function startTestTxn(iModel: BriefcaseDb, description = "semantic rebase"): EditTxn {
   const txn = new EditTxn(iModel, description);
@@ -830,7 +831,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(element2.propC).to.equal("value_c2", "Element 2 propC should be unchanged");
   });
 
-  it("local trivial schema changes onto incoming trivial schema changes (local newer)", async () => {
+  semanticRebaseExtendedIt("local trivial schema changes onto incoming trivial schema changes (local newer)", async () => {
     t = await TestIModel.initialize("TrivialSchemaLocalNewer");
     const localTxn = startTestTxn(t.local, "local trivial schema changes onto incoming trivial schema changes local newer local");
     const farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming trivial schema changes local newer far");
@@ -866,7 +867,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Local schema (newer) should be preserved");
   });
 
-  it("local trivial schema changes onto incoming trivial schema changes (incoming newer)", async () => {
+  semanticRebaseExtendedIt("local trivial schema changes onto incoming trivial schema changes (incoming newer)", async () => {
     t = await TestIModel.initialize("TrivialSchemaIncomingNewer");
     const localTxn = startTestTxn(t.local, "local trivial schema changes onto incoming trivial schema changes incoming newer local");
     const farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming trivial schema changes incoming newer far");
@@ -902,7 +903,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Incoming schema (newer) should win, local should not override");
   });
 
-  it("local trivial schema changes onto incoming identical schema changes with data changes on both sides", async () => {
+  semanticRebaseExtendedIt("local trivial schema changes onto incoming identical schema changes with data changes on both sides", async () => {
     t = await TestIModel.initialize("TrivialSchemaIdenticalWithData");
     const localTxn = startTestTxn(t.local, "local trivial schema changes onto incoming identical schema changes with data local");
     let farTxn = startTestTxn(t.far, "local trivial schema changes onto incoming identical schema changes with data far");
@@ -968,7 +969,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(localElement.propC2).to.equal("local_value_c2", "Local element propC2 should be preserved");
   });
 
-  it("both add different properties, increment to same version number", async () => {
+  semanticRebaseExtendedIt("both add different properties, increment to same version number", async () => {
     t = await TestIModel.initialize("TrivialSchemaIncompatible");
     const localTxn = startTestTxn(t.local, "both add different properties increment to same version local");
     const farTxn = startTestTxn(t.far, "both add different properties increment to same version far");
@@ -985,7 +986,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.01", "Schema should be v01.00.01");
   });
 
-  it("both add compatible properties, local version number higher", async () => {
+  semanticRebaseExtendedIt("both add compatible properties, local version number higher", async () => {
     t = await TestIModel.initialize("CompatibleSchemaLocalHigher");
     const localTxn = startTestTxn(t.local, "both add compatible properties local version higher local");
     const farTxn = startTestTxn(t.far, "both add compatible properties local version higher far");
@@ -1011,7 +1012,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(await classD!.getProperty("PropD2")).to.exist;
   });
 
-  it("both add compatible properties, incoming version number higher", async () => {
+  semanticRebaseExtendedIt("both add compatible properties, incoming version number higher", async () => {
     t = await TestIModel.initialize("CompatibleSchemaIncomingHigher");
     const localTxn = startTestTxn(t.local, "both add compatible properties incoming version higher local");
     const farTxn = startTestTxn(t.far, "both add compatible properties incoming version higher far");
@@ -1051,7 +1052,7 @@ describe("Semantic Rebase", function (this: Suite) {
     await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("ECSchema Upgrade failed");
   });
 
-  it("both add same but incompatible property, incoming version number higher", async () => {
+  semanticRebaseExtendedIt("both add same but incompatible property, incoming version number higher", async () => {
     t = await TestIModel.initialize("TrivialSchemaIncompatible");
     const localTxn = startTestTxn(t.local, "both add same but incompatible property incoming version higher local");
     const farTxn = startTestTxn(t.far, "both add same but incompatible property incoming version higher far");
@@ -1067,7 +1068,7 @@ describe("Semantic Rebase", function (this: Suite) {
     await chai.expect(pullChanges(localTxn)).to.be.rejectedWith("ECSchema Upgrade failed");
   });
 
-  it("local transforming schema change onto incoming trivial schema change", async () => {
+  semanticRebaseExtendedIt("local transforming schema change onto incoming trivial schema change", async () => {
     t = await TestIModel.initialize("LocalTransformIncomingTrivial");
     const farTxn = startTestTxn(t.far, "local transforming schema change onto incoming trivial schema change far");
     const localTxn = startTestTxn(t.local, "local transforming schema change onto incoming trivial schema change local");
@@ -1122,7 +1123,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(localElement.propC).to.equal("local_value_c", "Local element propC should be preserved after transform");
   });
 
-  it("local trivial schema change onto incoming transforming schema change", async () => {
+  semanticRebaseExtendedIt("local trivial schema change onto incoming transforming schema change", async () => {
     t = await TestIModel.initialize("LocalTrivialIncomingTransform");
     const farTxn = startTestTxn(t.far, "local trivial schema change onto incoming transforming schema change far");
     const localTxn = startTestTxn(t.local, "local trivial schema change onto incoming transforming schema change local");
@@ -1301,7 +1302,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
   });
 
-  it("Incoming data update onto local transforming schema change", async () => {
+  semanticRebaseExtendedIt("Incoming data update onto local transforming schema change", async () => {
     t = await TestIModel.initialize("IncomingDataLocalTransform");
     const farTxn = startTestTxn(t.far, "Incoming data update onto local transforming schema change far");
     const localTxn = startTestTxn(t.local, "Incoming data update onto local transforming schema change local");
@@ -1349,7 +1350,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
   });
 
-  it("Check if associated rebase folders get deleted when a briefcase is deleted or not", async () => {
+  semanticRebaseExtendedIt("Check if associated rebase folders get deleted when a briefcase is deleted or not", async () => {
     t = await TestIModel.initialize("IncomingDataLocalTransform");
     // Must close briefcases before deleting their files - on Windows, open files are locked by the OS.
     // Save paths before closing since pathName getter throws on closed dbs.
@@ -1365,7 +1366,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(IModelJsFs.existsSync(farRebasePath)).to.be.false; // after briefcase deletion the rebase folder should also be deleted
   });
 
-  it("local multiple data transactions onto incoming transforming schema change", async () => {
+  semanticRebaseExtendedIt("local multiple data transactions onto incoming transforming schema change", async () => {
     t = await TestIModel.initialize("LocalMultipleDataIncomingTransform");
     let farTxn = startTestTxn(t.far, "local multiple data transactions onto incoming transforming schema change far");
     let localTxn = startTestTxn(t.local, "local multiple data transactions onto incoming transforming schema change local");
@@ -1417,7 +1418,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Schema should be transformed to v01.00.02");
   });
 
-  it("local transforming schema change onto incoming multiple data transactions", async () => {
+  semanticRebaseExtendedIt("local transforming schema change onto incoming multiple data transactions", async () => {
     t = await TestIModel.initialize("LocalTransformIncomingMultipleData");
     let farTxn = startTestTxn(t.far, "local transforming schema change onto incoming multiple data transactions far");
     let localTxn = startTestTxn(t.local, "local transforming schema change onto incoming multiple data transactions local");
@@ -1469,7 +1470,7 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(schema.version).to.equal("01.00.02", "Local schema transformation should be preserved");
   });
 
-  it("bulk local elements survive semantic rebase with incoming transforming schema change", async function () {
+  semanticRebaseExtendedIt("bulk local elements survive semantic rebase with incoming transforming schema change", async function () {
     const runBulkRebaseTest = async (count: number) => {
       t = await TestIModel.initialize(`BulkElements${count}`);
       const farTxn = startTestTxn(t.far, `${count} elements rebase far`);
@@ -1508,7 +1509,7 @@ describe("Semantic Rebase", function (this: Suite) {
     await runBulkRebaseTest(101);
   });
 
-  it("should fail when importing schema with unsaved data changes", async () => {
+  semanticRebaseExtendedIt("should fail when importing schema with unsaved data changes", async () => {
     t = await TestIModel.initialize("UnsavedDataChangesSchemaImport");
     const localTxn = startTestTxn(t.local, "should fail when importing schema with unsaved data changes local");
 
@@ -1536,7 +1537,7 @@ describe("Semantic Rebase", function (this: Suite) {
 /**
  * Test suite for tests related to rebase logic with schema changes (for indirect changes) that require data transformations.
  */
-describe("Semantic Rebase with indirect changes", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase with indirect changes", function (this: Suite) {
   this.timeout(90000); // operations can be slow
   let t: TestIModel | undefined;
 
@@ -1883,7 +1884,7 @@ describe("Semantic Rebase with indirect changes", function (this: Suite) {
 /**
  * Test suite for data conflicts, conflict handlers, lifecycle events, and mixed schema+conflict scenarios during semantic rebase.
  */
-describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Data Correctness Under Conflict", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2157,7 +2158,7 @@ describe("Semantic Rebase - Data Correctness Under Conflict", function (this: Su
  * Multi-step schema upgrade chains.
  * Tests scenarios where one or both sides import schemas in multiple sequential steps before the rebase.
  */
-describe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2385,7 +2386,7 @@ describe("Semantic Rebase - Multi-Step Schema Upgrade Chains", function (this: S
  * ElementAspect changes during semantic rebase.
  * Tests that aspect insert/update/delete operations are correctly captured and reinstated.
  */
-describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2644,7 +2645,7 @@ describe("Semantic Rebase - ElementAspect Changes", function (this: Suite) {
  * Property type variations during semantic rebase.
  * Ensures int, double, and boolean property values are preserved correctly through rebase.
  */
-describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Property Type Variations", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2870,7 +2871,7 @@ describe("Semantic Rebase - Property Type Variations", function (this: Suite) {
  * Both sides delete the same element.
  * Edge case where both local and far delete the same element independently.
  */
-describe("Semantic Rebase - Both Sides Delete Same Element", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Both Sides Delete Same Element", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -2941,7 +2942,7 @@ describe("Semantic Rebase - Both Sides Delete Same Element", function (this: Sui
  * Three-briefcase scenarios.
  * Tests interactions when three separate briefcases are involved in schema+data operations.
  */
-describe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3075,7 +3076,7 @@ describe("Semantic Rebase - Three Briefcase Scenarios", function (this: Suite) {
  * Tests that semantic rebase state is handled correctly when the local briefcase
  * pulls multiple times before pushing, accumulating rebase operations.
  */
-describe("Semantic Rebase - Multiple Pulls Without Push", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Multiple Pulls Without Push", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3179,7 +3180,7 @@ describe("Semantic Rebase - Multiple Pulls Without Push", function (this: Suite)
  * New class addition to schema.
  * Tests that newly added entity classes and their instances survive semantic rebase.
  */
-describe("Semantic Rebase - New Class Addition to Schema", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - New Class Addition to Schema", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3334,7 +3335,7 @@ describe("Semantic Rebase - New Class Addition to Schema", function (this: Suite
  * Guard conditions and error paths for semantic rebase.
  * Tests boundary conditions like importing schema while rebasing, concurrent pull attempts, etc.
  */
-describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Guard Conditions and Error Paths", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3477,7 +3478,7 @@ describe("Semantic Rebase - Guard Conditions and Error Paths", function (this: S
  * Tests scenarios where local txns contain a mix of insert, update, and delete operations
  * that need to be correctly captured and reinstated during semantic rebase.
  */
-describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3683,7 +3684,7 @@ describe("Semantic Rebase - Complex Insert-Update-Delete Sequences", function (t
  * Cleanup and folder lifecycle edge cases.
  * Tests that rebase folder state is correctly managed in unusual lifecycle scenarios.
  */
-describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite) {
   this.timeout(90000);
   let t: TestIModel | undefined;
 
@@ -3802,7 +3803,7 @@ describe("Semantic Rebase - Cleanup and Folder Lifecycle", function (this: Suite
 
 });
 
-describe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
+semanticRebaseExtendedDescribe("Semantic Rebase - Multi-Pull Verification", function (this: Suite) {
   this.timeout(120000);
   let t: TestIModel | undefined;
 

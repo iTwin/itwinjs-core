@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-markup",
-  "version": "5.12.0-dev.15",
+  "version": "5.14.0-dev.4",
   "description": "iTwin.js markup package",
   "main": "lib/cjs/core-markup.js",
   "module": "lib/esm/core-markup.js",
@@ -63,15 +63,10 @@
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.5.0",
-    "mocha": "^11.1.0",
-    "nyc": "^17.1.0",
+    "glob": "^13.0.6",
     "rimraf": "^6.0.1",
     "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
     "webpack": "^5.97.1"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

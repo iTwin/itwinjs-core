@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelStatus } from "@itwin/core-bentley";
+import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 
@@ -72,6 +72,12 @@ export const integrityCheckTypeMap = {
     sqlCommand: "check_missing_child_rows",
     sqlQuery: `PRAGMA integrity_check(check_missing_child_rows) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
   },
+  checkDivergedPropMaps: {
+    name: "Check Diverged Property Maps",
+    resultType: "CheckDivergedPropMapsResultRow",
+    sqlCommand: "check_diverged_prop_maps",
+    sqlQuery: `PRAGMA integrity_check(check_diverged_prop_maps) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`,
+  },
 } as const;
 
 /**
@@ -91,6 +97,7 @@ interface IntegrityCheckResultTypeMap {
   checkDataSchema: CheckDataSchemaResultRow;
   checkSchemaLoad: CheckSchemaLoadResultRow;
   checkMissingChildRows: CheckMissingChildRowsResultRow;
+  checkDivergedPropMaps: CheckDivergedPropMapsResultRow;
 }
 
 /** Checks the Map to give the return type of a specific integrity check */
@@ -212,6 +219,20 @@ export interface CheckMissingChildRowsResultRow {
 }
 
 /**
+ * Return type for Check Diverged Property Maps integrity check
+ */
+export interface CheckDivergedPropMapsResultRow {
+  sno: number;
+  derivedClassId: Id64String;
+  derivedClassName: string;
+  baseClassId: Id64String;
+  baseClassName: string;
+  propertyName: string;
+  baseColumn: string;
+  divergedColumn: string;
+}
+
+/**
  * Return type for integrity check results, including the check name, whether it passed, and the specific results (if any)
  */
 export interface IntegrityCheckResult {
@@ -259,7 +280,7 @@ export async function performQuickIntegrityCheck(iModel: IModelDb): Promise<Quic
   const integrityCheckQuery = "PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES";
   const integrityCheckResults: QuickIntegrityCheckResultRow[] = [];
   for await (const row of iModel.createQueryReader(integrityCheckQuery, undefined, { usePrimaryConn: true })) {
-    integrityCheckResults.push({ check: getIntegrityCheckName(row.check), passed: row.result, elapsedSeconds: row.elapsed_sec});
+    integrityCheckResults.push({ check: getIntegrityCheckName(row.check), passed: row.result, elapsedSeconds: row.elapsed_sec });
   };
   return integrityCheckResults;
 }
@@ -282,6 +303,7 @@ export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "ch
 export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkDataSchema"): Promise<IntegrityCheckResultRow<"checkDataSchema">[]>;
 export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkSchemaLoad"): Promise<IntegrityCheckResultRow<"checkSchemaLoad">[]>;
 export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkMissingChildRows"): Promise<IntegrityCheckResultRow<"checkMissingChildRows">[]>;
+export async function performSpecificIntegrityCheck(iModel: IModelDb, check: "checkDivergedPropMaps"): Promise<IntegrityCheckResultRow<"checkDivergedPropMaps">[]>;
 export async function performSpecificIntegrityCheck<K extends IntegrityCheckKey>(iModel: IModelDb, check: K): Promise<IntegrityCheckResultRow<K>[]>;
 export async function performSpecificIntegrityCheck(iModel: IModelDb, check: IntegrityCheckKey): Promise<IntegrityCheckResultRow<IntegrityCheckKey>[]> {
   switch (check) {
@@ -352,6 +374,13 @@ export async function performSpecificIntegrityCheck(iModel: IModelDb, check: Int
       const results: CheckMissingChildRowsResultRow[] = [];
       for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkMissingChildRows.sqlQuery, undefined, { usePrimaryConn: true })) {
         results.push({ sno: row.sno, class: row.class, id: row.id, classId: row.class_id, missingRowInTables: row.MissingRowInTables });
+      }
+      return results;
+    }
+    case "checkDivergedPropMaps": {
+      const results: CheckDivergedPropMapsResultRow[] = [];
+      for await (const row of iModel.createQueryReader(integrityCheckTypeMap.checkDivergedPropMaps.sqlQuery, undefined, { usePrimaryConn: true })) {
+        results.push({ sno: row.sno, derivedClassId: row.derivedClassId, derivedClassName: row.derivedClassName, baseClassId: row.baseClassId, baseClassName: row.baseClassName, propertyName: row.propertyName, baseColumn: row.baseColumn, divergedColumn: row.divergedColumn });
       }
       return results;
     }
