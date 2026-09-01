@@ -152,10 +152,19 @@ export class ToggleSecondaryIModelTool extends Tool {
     let iModel;
     try {
       iModel = await BriefcaseConnection.openFile( { fileName, key: fileName });
+
+      const viewedCategories = [];
+      for await (const row of iModel.createQueryReader("SELECT ECInstanceId FROM BisCore.SpatialCategory"))
+        viewedCategories.push(row.id);
+
+      const viewedModels = [];
+      for await (const row of iModel.createQueryReader("SELECT ECInstanceId FROM BisCore.SpatialModel"))
+        viewedModels.push(row.id);
+
       vp.view.iModelRefs.link({
         iModel,
-        viewedCategories: [],
-        viewedModels: [],
+        viewedCategories,
+        viewedModels,
         overrides: {
         },
       })
