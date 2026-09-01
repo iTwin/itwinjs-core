@@ -1873,7 +1873,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.invalidateController();
 
     const isMapLayerChanged = undefined !== prevView && compareMapLayer(prevView, view);
-    this.target.reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
+    this.target.reset(isMapLayerChanged, view.iModelRefs.primary);
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);

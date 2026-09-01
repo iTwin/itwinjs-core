@@ -344,7 +344,7 @@ export class Branch extends Graphic {
   public readonly viewAttachmentId?: Id64String;
   public readonly inSectionDrawingAttachment?: boolean;
   public disableClipStyle?: true;
-  public readonly iModelRef?: IModelDisplayReference;
+  public iModelRef?: IModelDisplayReference;
   public contourLine?: ContourDisplay;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
@@ -476,9 +476,10 @@ export class AnimationTransformBranch extends Graphic {
 
 /** @internal */
 export class WorldDecorations extends Branch {
-  public constructor(viewFlags: ViewFlags) {
+  public constructor(viewFlags: ViewFlags, iModelRef: IModelDisplayReference) {
     super(new GraphicBranch(), Transform.identity, viewFlags);
 
+    this.iModelRef = iModelRef;
     // World decorations ignore all the symbology overrides for the "scene" geometry...
     this.branch.symbologyOverrides = new FeatureSymbology.Overrides();
     // Make all subcategories visible.

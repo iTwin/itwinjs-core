@@ -205,14 +205,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get analysisFraction(): number { return this._analysisFraction; }
   public set analysisFraction(fraction: number) { this._analysisFraction = fraction; }
 
-  public get primaryIModelRef(): IModelDisplayReference {
-    assert(undefined !== this._viewport);
-    return this._viewport.view.iModelRefs.primary;
-  }
-
   public override get animationBranches(): AnimationBranchStates | undefined {
     return this._animationBranches;
   }
+
   public override set animationBranches(branches: AnimationBranchStates | undefined) {
     this.disposeAnimationBranches();
     this._animationBranches = branches;
@@ -248,7 +244,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         shadows: false,
       });
 
-      this._worldDecorations = new WorldDecorations(vf);
+      const iModelRef = this.currentBranch.iModelRef;
+      assert(undefined !== iModelRef);
+      this._worldDecorations = new WorldDecorations(vf, iModelRef);
     }
 
     this._worldDecorations.init(decs);
@@ -566,14 +564,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
-  public override reset(_realityMapLayerChanged?: boolean): void {
+  public override reset(realityMapLayerChanged?: boolean, primaryIModelRef?: IModelDisplayReference): void {
+    this.currentBranch.iModelRef = primaryIModelRef;
     this.graphics[Symbol.dispose]();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
 
     // Ensure that only necessary classifiers are removed. If the reality map layer has not changed,
     // removing all classifiers would result in the loss of draping effects without triggering a refresh.
-    if (_realityMapLayerChanged) {
+    if (realityMapLayerChanged) {
       this.changePlanarClassifiers(undefined);
     } else if (this._planarClassifiers) {
         const filteredClassifiers = new Map(

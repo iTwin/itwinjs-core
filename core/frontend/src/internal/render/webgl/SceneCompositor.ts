@@ -773,7 +773,9 @@ class PixelBuffer implements Pixel.Buffer {
   }
 
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {
-    this._scratchFeature = IModelFeature.create(compositor.target.primaryIModelRef);
+    const iModelRef = compositor.target.currentBranch.iModelRef;
+    assert(undefined !== iModelRef);
+    this._scratchFeature = IModelFeature.create(iModelRef);
     this._rect = rect.clone();
     this._selector = selector;
     this._batchState = compositor.target.uniforms.batch.state;

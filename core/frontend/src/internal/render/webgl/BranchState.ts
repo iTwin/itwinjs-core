@@ -31,7 +31,7 @@ export interface BranchStateOptions {
   readonly secondaryClassifiers?: PlanarClassifier[];
   readonly textureDrape?: TextureDrape;
   readonly edgeSettings: EdgeSettings;
-  readonly iModelRef?: IModelDisplayReference;
+  iModelRef?: IModelDisplayReference;
   /** Whether the graphics in this branch are 2d or 3d.
    * Sometimes we draw 3d orthographic views in the context of a 2d view (e.g., sheet view attachments).
    * Currently this only affects the logic for discarding surfaces (in 2d, we relay on display priority to enforce draw order between different elements;
@@ -69,6 +69,7 @@ export class BranchState {
   public get textureDrape() { return this._opts.textureDrape; }
   public get edgeSettings() { return this._opts.edgeSettings; }
   public get iModelRef() { return this._opts.iModelRef; }
+  public set iModelRef(ref: IModelDisplayReference | undefined) { this._opts.iModelRef = ref; }
   public get is3d() { return this._opts.is3d; }
   public get frustumScale() { return expectDefined(this._opts.frustumScale); }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
