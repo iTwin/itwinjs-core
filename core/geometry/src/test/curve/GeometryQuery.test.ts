@@ -4,27 +4,39 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
+import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH } from "../../bspline/BSplineSurface";
+import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveCollection } from "../../curve/CurveCollection";
+import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { PointString3d } from "../../curve/PointString3d";
 import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 import { StrokeCountSection } from "../../curve/Query/StrokeCountChain";
-import { StrokeOptions } from "../../curve/StrokeOptions";
 import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GeometryHandler, NullGeometryHandler, RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { IndexedPolyface } from "../../polyface/Polyface";
-import { Sample } from "../GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";
@@ -33,11 +45,7 @@ import { RuledSweep } from "../../solid/RuledSweep";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
-import { Range1d } from "../../geometry3d/Range";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Loop } from "../../curve/Loop";
-import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
-import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
+import { Sample } from "../GeometrySamples";
 
 /** Like  NullGeometryHandler, but allow various CurveCollections to flow to base class, where they reach handleCurveCollection. */
 export class MinimalGeometryHandler extends GeometryHandler {
@@ -126,6 +134,61 @@ describe("GeometryQuery", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
+  it("ScaledTolerance", () => {
+    const ck = new Checker();
+    // fillet arc from OS+: tangent to line at arc start point
+    const ls = LineString3d.create([[705560.2639031233, 4269299.373370663], [705560.2639031233, 4269238.413370663]]);
+    const arc = Arc3d.create(Point3d.create(705567.8839031233, 4269260.717979588), Vector3d.create(7.619999999999999), Vector3d.create(0, 7.619999999999999), AngleSweep.createStartEndDegrees(180, 90));
+
+    const verifyIntersection = (pairs: CurveLocationDetailPair[], knownIntersect: Point3d): boolean => {
+      let minDistXY = Geometry.largeCoordinateResult;
+      for (const pair of pairs) {
+        const dist = knownIntersect.distanceXY(pair.detailB.point);
+        if (dist < minDistXY)
+          minDistXY = dist;
+      }
+    return Geometry.isSmallRelative(minDistXY);
+    }
+
+    // proof that large coords need larger tolerance to compute intersections accurately
+    const knownIntersection = arc.startPoint();
+    const tol0 = 1.0e-8; // leads to double root and 3e-5 error
+    const intersections0 = CurveCurve.intersectionXYPairs(ls, false, arc, false, tol0);
+    ck.testFalse(verifyIntersection(intersections0, knownIntersection), "Expect poor accuracy of computed intersection with overly tight tolerance");
+    const tol1 = GeometryQuery.scaleToleranceForGeometry([ls, arc], tol0, { xyOnly: true }); // increased tol (1e-4) leads to 0 error
+    ck.testLE(tol0, tol1, "Scaled tolerance should be larger than original");
+    const intersections1 = CurveCurve.intersectionXYPairs(ls, false, arc, false, tol1);
+    ck.testTrue(verifyIntersection(intersections1, knownIntersection), "Expect excellent accuracy of computed intersection with scaled tolerance");
+
+    // spin the geometry out of horizontal plane
+    const fromHorizontal = Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationVectorToVector(arc.perpendicularVector, Vector3d.create(-3, -7, 5)));
+    const toHorizontal = fromHorizontal.inverse()!;
+    const toHorizontal4d = Matrix4d.createTransform(toHorizontal);
+    const ls0 = ls.cloneTransformed(fromHorizontal);
+    const arc0 = arc.cloneTransformed(fromHorizontal);
+    const knownIntersection0 = arc0.startPoint();
+
+    // repeat the tests on the rotated geometry
+    const tol2 = tol0; // leads to 1e-5 error
+    const intersections2 = CurveCurve.intersectionProjectedXYPairs(toHorizontal4d, ls0, false, arc0, false, tol2);
+    ck.testFalse(verifyIntersection(intersections2, knownIntersection0), "Expect poor accuracy of computed intersection with overly tight tolerance");
+    const tol3 = GeometryQuery.scaleToleranceForGeometry([ls0, arc0], tol2, { xyOnly: true, transform: toHorizontal }); // leads to 0 error
+    ck.testCoordinate(tol1, tol3, "Scaled tolerance should be invariant after transform to horizontal plane");
+    ck.testLE(tol2, tol3, "Scaled tolerance should be larger than original");
+    const intersections3 = CurveCurve.intersectionProjectedXYPairs(toHorizontal4d, ls0, false, arc0, false, tol3);
+    ck.testTrue(verifyIntersection(intersections3, knownIntersection0), "Expect excellent accuracy of computed intersection with scaled tolerance");
+
+    // cover the other scaled tol constructor
+    // This demonstrates that using the default 1e-6 tolerance for operations on the OS+ geometry above is equivalent
+    // to imposing an operational relative error on the order of 1e-13, one 10-billionth, which is ridiculously tight.
+    const absTol = GeometryQuery.computeScaledTolerance([ls, arc], { relativeTolerance: 1.0e-13, xyOnly: true, });
+    const absTol0 = GeometryQuery.computeScaledTolerance([ls0, arc0], { minimumTolerance: 1.0e-15, relativeTolerance: 1.0e-13, xyOnly: true, transform: toHorizontal });
+    ck.testCoordinate(absTol, absTol0, "Constructed absolute tolerance should be invariant after transform to horizontal plane");
+    if (ck.testTrue(absTol > 0, "Computed tolerance should be positive"))
+      ck.testExactNumber(-6, Math.trunc(Math.log10(absTol)), "Computed tol has expected exponent.");
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 describe("CylindricalRangeQuery", () => {
