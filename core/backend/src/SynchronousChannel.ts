@@ -38,7 +38,7 @@ export namespace SynchronousChannel {
    * changes between briefcases, allowing users to concurrently add and use identical dependencies (e.g., component definitions, schemas, etc.) without introducing conflicts.
    *
    * @note A reserved element is a *shared* element: every briefcase that inserts it must insert the **exact same element**. The reservation assigns a single shared
-   * [ElementId]($common) that all briefcases use, and when multiple briefcases push their inserts they are merged together as one row rather than producing a conflict.
+   * ElementId that all briefcases use, and when multiple briefcases push their inserts they are merged together as one row rather than producing a conflict.
    * Because these duplicate inserts are silently collapsed, the property values written by each briefcase are **not** reconciled — if two briefcases insert the same reserved
    * element with *different* contents, one briefcase's values win arbitrarily and the other's changes will be lost. Callers are therefore responsible for ensuring that every
    * insert of a given reserved element has the same property values across all briefcases.  Only use reservations for content that is deterministically identical everywhere.
