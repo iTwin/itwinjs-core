@@ -21,6 +21,7 @@ import { SpatialViewState } from "../SpatialViewState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { AttachToViewportArgs, IModelApp } from "../core-frontend";
 import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
+import { Transform } from "@itwin/core-geometry";
 
 abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -37,6 +38,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public abstract get tileTreeRefs(): Iterable<TileTreeReference>;
 
   public readonly iModel;
+  public readonly linearTransformToParent: Transform;
   public readonly viewedCategories = new ObservableSet<Id64String>();
 
   public readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
@@ -64,6 +66,16 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     const view = refs[_backingView];
     this.#resolvedViewFlags = view.viewFlags.override(ovrs.viewFlags);
     this.#excludedElements = new Set<Id64String>(args.excludedElements ?? []);
+
+    let linearTf;
+    if (this.iModel.ecefLocation?.isValid && refs.primary.iModel.ecefLocation?.isValid) {
+      const toEcef = this.iModel.ecefLocation.getTransform();
+      const parentTf = refs.primary.iModel.getEcefTransform().inverse();
+      if (parentTf)
+        linearTf = parentTf.multiplyTransformTransform(toEcef);
+    }
+
+    this.linearTransformToParent = linearTf ?? Transform.identity;
 
     this.perModelCategoryVisibility = PerModelCategoryVisibility.Overrides.create({
       iModel: args.iModel,

@@ -19,6 +19,7 @@ import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModel
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialTileTreeReferences } from "./cross-package";
 import { TileTreeReference } from "../tile/internal";
+import { Transform } from "@itwin/core-geometry";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -33,6 +34,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public abstract readonly parent: IModelDisplayReferences;
   public abstract readonly overrides: IModelDisplayOverrides;
 
+  public readonly linearTransformToParent = Transform.identity;
   public readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();
   public readonly alwaysDrawnElements = new ObservableSet<Id64String>();

@@ -17,12 +17,14 @@ import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelD
 import { ModelDisplayTransformProvider } from "./ViewState";
 import { AttachToViewportArgs, RenderClipVolume, SpatialTileTreeReferences } from "./core-frontend";
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
+import { Transform } from "@itwin/core-geometry";
 
 export interface IModelDisplayReference {
   readonly [_implementationProhibited]: unknown;
 
   readonly iModel: IModelConnection;
   readonly parent: IModelDisplayReferences;
+  readonly linearTransformToParent: Transform;
   readonly viewedCategories: ObservableSet<Id64String>;
 
   readonly isSpatial: () => this is SpatialIModelDisplayReference;
