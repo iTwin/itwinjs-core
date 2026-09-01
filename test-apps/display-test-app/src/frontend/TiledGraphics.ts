@@ -10,6 +10,7 @@ import {
 import { DisplayTestApp } from "./App";
 import { Transform } from "@itwin/core-geometry";
 
+/*
 class Reference extends TileTreeReference {
   private readonly _ref: TileTreeReference;
   private readonly _provider: Provider;
@@ -94,7 +95,7 @@ function computeTransformFromSecondaryIModel(args: { primary: IModelConnection, 
 
 const providersByViewport = new Map<Viewport, Provider>();
 
-/** A simple proof-of-concept for drawing tiles from a different IModelConnection into a Viewport. */
+// A simple proof-of-concept for drawing tiles from a different IModelConnection into a Viewport.
 export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise<void> {
   const existing = providersByViewport.get(vp);
   if (undefined !== existing) {
@@ -131,5 +132,37 @@ export class ToggleSecondaryIModelTool extends Tool {
 
     await toggleExternalTiledGraphicsProvider(vp);
     return true;
+  }
+}
+*/
+
+export class ToggleSecondaryIModelTool extends Tool {
+  public static override toolId = "ToggleSecondaryIModel";
+
+  public override async run(): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp || !vp.view.iModelRefs.isSpatial) {
+      return false;
+    }
+
+    const fileName = await DisplayTestApp.surface.selectFileName();
+    if (undefined === fileName)
+      return false;
+
+    let iModel;
+    try {
+      iModel = await BriefcaseConnection.openFile( { fileName, key: fileName });
+      vp.view.iModelRefs.link({
+        iModel,
+        viewedCategories: [],
+        viewedModels: [],
+        overrides: {
+        },
+      })
+      return true;
+    } catch (err: any) {
+      alert(err.toString());
+      return false;
+    }
   }
 }
