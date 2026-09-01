@@ -50,7 +50,7 @@ import { Path } from "./Path";
 import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
 import { CurveSplitContext } from "./Query/CurveSplitContext";
 import { PointInOnOutContext } from "./Query/InOutTests";
-import { PlanarSubdivision } from "./Query/PlanarSubdivision";
+import { CreateRegionInFaceOptions, PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupMember, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { StrokeOptions } from "./StrokeOptions";
@@ -516,7 +516,7 @@ export class RegionOps {
     context.graph.clearMask(visitMask | outMask);
     const areaTol = this.computeMinimumArea(mergeTolerance);
     const z = RegionOps.getZCoordinate(operation === RegionBinaryOpType.BMinusA ? loopsB : loopsA);
-    const options: PlanarSubdivision.CreateRegionInFaceOptions = { compress: true, closureTol: mergeTolerance, bridgeMask, visitMask, z };
+    const options: CreateRegionInFaceOptions = { compress: true, closureTol: mergeTolerance, bridgeMask, visitMask, z };
     let numFacesIn = 0;
     context.runClassificationSweep(
       operation,
