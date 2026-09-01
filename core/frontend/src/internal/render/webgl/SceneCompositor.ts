@@ -45,6 +45,7 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
 import { FrustumUniformType } from "./FrustumUniforms";
+import { IModelDisplayReference } from "../../../core-frontend";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -617,8 +618,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 
 interface BatchInfo {
   featureTable: RenderFeatureTable;
-  iModel?: IModelConnection;
-  transformFromIModel?: Transform;
+  iModelRef?: IModelDisplayReference;
   tileId?: string;
   viewAttachmentId?: Id64String;
   inSectionDrawingAttachment?: boolean;
@@ -669,8 +669,7 @@ class PixelBuffer implements Pixel.Buffer {
       if (undefined !== batch) {
         return {
           featureTable: batch.featureTable,
-          iModel: batch.batchIModel,
-          transformFromIModel: batch.transformFromBatchIModel,
+          iModelRef: batch.iModelRef,
           tileId: batch.tileId,
           viewAttachmentId: batch.viewAttachmentId,
           inSectionDrawingAttachment: batch.inSectionDrawingAttachment,
@@ -763,11 +762,10 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let featureTable, iModel, transformToIModel, tileId, viewAttachmentId, inSectionDrawingAttachment;
+    let featureTable, iModelRef, tileId, viewAttachmentId, inSectionDrawingAttachment;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
-      iModel = batchInfo.iModel;
-      transformToIModel = batchInfo.transformFromIModel;
+      iModelRef = batchInfo.iModelRef;
       tileId = batchInfo.tileId;
       viewAttachmentId = batchInfo.viewAttachmentId;
       inSectionDrawingAttachment = batchInfo.inSectionDrawingAttachment;
@@ -779,8 +777,7 @@ class PixelBuffer implements Pixel.Buffer {
       type: geometryType,
       planarity,
       batchType: featureTable?.type,
-      iModel,
-      transformFromIModel: transformToIModel,
+      iModelRef,
       tileId,
       viewAttachmentId,
       inSectionDrawingAttachment,
@@ -1797,7 +1794,7 @@ class Compositor extends SceneCompositor {
       transform: Transform.createIdentity(),
       clipVolume: top.clipVolume,
       planarClassifier: top.planarClassifier,
-      iModel: top.iModel,
+      iModelRef: top.iModelRef,
       is3d: top.is3d,
       edgeSettings: top.edgeSettings,
       contourLine: top.contourLine,

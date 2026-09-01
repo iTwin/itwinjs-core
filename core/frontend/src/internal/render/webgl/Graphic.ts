@@ -9,7 +9,6 @@
 import { assert, dispose, Id64String } from "@itwin/core-bentley";
 import { ContourDisplay, ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBranch";
 import { GraphicList, RenderGraphic } from "../../../render/RenderGraphic";
@@ -29,6 +28,7 @@ import { BranchState } from "./BranchState";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { Contours } from "./Contours";
 import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
+import { IModelDisplayReference } from "../../../IModelDisplayReference";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -82,8 +82,7 @@ export class GraphicOwner extends Graphic {
  */
 export interface BatchContext {
   batchId: number;
-  iModel?: IModelConnection;
-  transformFromIModel?: Transform;
+  iModelRef?: IModelDisplayReference;
   viewAttachmentId?: Id64String;
   inSectionDrawingAttachment?: boolean;
 }
@@ -252,23 +251,20 @@ export class Batch extends Graphic {
 
   /** The following are valid only during a draw and reset afterward. */
   public get batchId() { return this._context.batchId; }
-  public get batchIModel() { return this._context.iModel; }
-  public get transformFromBatchIModel() { return this._context.transformFromIModel; }
+  public get iModelRef() { return this._context.iModelRef; }
   public get viewAttachmentId() { return this._context.viewAttachmentId; }
   public get inSectionDrawingAttachment() { return this._context.inSectionDrawingAttachment; }
 
   public setContext(batchId: number, branch: BranchState) {
     this._context.batchId = batchId;
-    this._context.iModel = branch.iModel;
-    this._context.transformFromIModel = branch.transformFromIModel;
+    this._context.iModelRef = branch.iModelRef;
     this._context.viewAttachmentId = branch.viewAttachmentId;
     this._context.inSectionDrawingAttachment = branch.inSectionDrawingAttachment;
   }
 
   public resetContext() {
     this._context.batchId = 0;
-    this._context.iModel = undefined;
-    this._context.transformFromIModel = undefined;
+    this._context.iModelRef = undefined;
     this._context.viewAttachmentId = undefined;
     this._context.inSectionDrawingAttachment = undefined;
   }
@@ -342,14 +338,13 @@ export class Branch extends Graphic {
   public readonly textureDrape?: TextureDrape;
   public readonly layerClassifiers?: Map<number, PlanarClassifier>;
   public readonly edgeSettings?: EdgeSettings;
-  public readonly iModel?: IModelConnection; // used chiefly for readPixels to identify context of picked Ids.
   public readonly frustum?: GraphicBranchFrustum;
   public readonly appearanceProvider?: FeatureAppearanceProvider;
   public readonly secondaryClassifiers?: PlanarClassifier[];
   public readonly viewAttachmentId?: Id64String;
   public readonly inSectionDrawingAttachment?: boolean;
   public disableClipStyle?: true;
-  public readonly transformFromExternalIModel?: Transform;
+  public readonly iModelRef?: IModelDisplayReference;
   public contourLine?: ContourDisplay;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
@@ -365,12 +360,11 @@ export class Branch extends Graphic {
 
     this.appearanceProvider = opts.appearanceProvider;
     this.clips = opts.clipVolume as ClipVolume | undefined;
-    this.iModel = opts.iModel;
+    this.iModelRef = opts.iModelRef;
     this.frustum = opts.frustum;
     this.viewAttachmentId = opts.viewAttachmentId;
     this.inSectionDrawingAttachment = opts.inSectionDrawingAttachment;
     this.disableClipStyle = opts.disableClipStyle;
-    this.transformFromExternalIModel = opts.transformFromIModel;
     this.contourLine = opts.contours;
 
     if (opts.hline)

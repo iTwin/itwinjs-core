@@ -67,8 +67,6 @@ export interface TileDrawArgParams {
   boundingRange?: Range3d;
   /** @alpha */
   maximumScreenSpaceError?: number;
-  /** @alpha */
-  transformFromIModel?: Transform;
 }
 
 /**
@@ -131,8 +129,6 @@ export class TileDrawArgs {
   public readonly groupNodeId?: number;
   /** @alpha */
   public maximumScreenSpaceError;
-  /** @alpha */
-  public transformFromIModel?: Transform;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -277,7 +273,6 @@ export class TileDrawArgs {
     this.groupNodeId = params.groupNodeId;
     this.boundingRange = params.boundingRange;
     this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
-    this.transformFromIModel = params.transformFromIModel;
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
@@ -361,8 +356,7 @@ export class TileDrawArgs {
       return undefined;
 
     const opts: GraphicBranchOptions = {
-      iModel: this.tree.iModel,
-      transformFromIModel: this.transformFromIModel,
+      iModelRef: this.context.iModelRef,
       clipVolume: this.clipVolume,
       classifierOrDrape: this.planarClassifier ?? this.drape,
       appearanceProvider: this.appearanceProvider,
