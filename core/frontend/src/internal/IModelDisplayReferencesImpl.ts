@@ -6,6 +6,7 @@
  * @module Views
  */
 
+import { BeEvent } from "@itwin/core-bentley";
 import { _backingView, _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { IModelDisplayReferences2d, LinkIModel2dArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
@@ -23,6 +24,9 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
   protected abstract createPrimaryRef(view: V): R;
   protected abstract createLinkedRef(args: A): R;
 
+  public abstract onLinked: BeEvent<(ref: IModelDisplayReference) => void>;
+  public abstract onUnlinked: BeEvent<(ref: IModelDisplayReference) => void>;
+
   public readonly primary: R;
   public readonly linked: R[] = [];
   public readonly subcategories = new SubCategoriesCache.Queue();
@@ -35,6 +39,7 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
   public link(args: A): R {
     const ref = this.createLinkedRef(args);
     this.linked.push(ref);
+    this.onLinked.raiseEvent(ref);
     return ref;
   }
 
@@ -43,6 +48,7 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
     if (index !== -1) {
       // ###TODO dispose
       this.linked.splice(index, 1);
+      this.onUnlinked.raiseEvent(ref);
     }
   }
 
@@ -64,6 +70,9 @@ class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewSt
 
   public readonly is2d = true;
 
+  public readonly onLinked = new BeEvent<(ref: IModelDisplayReference2d) => void>;
+  public readonly onUnlinked = new BeEvent<(ref: IModelDisplayReference2d) => void>;
+
   public constructor(view: ViewState2d) {
     super(view);
   }
@@ -79,6 +88,9 @@ class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReferen
   }
 
   public readonly isSpatial = true;
+
+  public readonly onLinked = new BeEvent<(ref: SpatialIModelDisplayReference) => void>;
+  public readonly onUnlinked = new BeEvent<(ref: SpatialIModelDisplayReference) => void>;
 
   public constructor(view: SpatialViewState) {
     super(view);

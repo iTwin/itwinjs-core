@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { _backingView, _implementationProhibited } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
@@ -46,6 +46,9 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
   readonly linked: Iterable<IModelDisplayReference2d>;
   readonly subcategories: SubCategoriesCache.Queue;
 
+  readonly onLinked: BeEvent<(ref: IModelDisplayReference2d) => void>;
+  readonly onUnlinked: BeEvent<(ref: IModelDisplayReference2d) => void>;
+
   link(args: LinkIModel2dArgs): IModelDisplayReference2d;
   unlink(ref: IModelDisplayReference2d): void;
 
@@ -63,6 +66,9 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   readonly primary: SpatialIModelDisplayReference;
   readonly linked: Iterable<SpatialIModelDisplayReference>;
   readonly subcategories: SubCategoriesCache.Queue;
+
+  readonly onLinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
+  readonly onUnlinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
 
   link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference;
   unlink(ref: SpatialIModelDisplayReference): void;
