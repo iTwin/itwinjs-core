@@ -6,11 +6,11 @@
  * @module Views
  */
 
-import { BeEvent, compareStrings, GuidString, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
+import { BeEvent, compareStrings, GuidString, Id64, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { _attachToViewport, _detachFromViewport, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { TileTreeReference } from "./tile/internal";
-import { ClipStyle, FeatureAppearance, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
@@ -26,6 +26,16 @@ export interface IModelFeature extends ModelFeature {
 export namespace IModelFeature {
   export function compare(lhs: IModelFeature, rhs: IModelFeature): number {
     return ModelFeature.compare(lhs, rhs) || compareStrings(lhs.iModelRef[_guid], rhs.iModelRef[_guid]);
+  }
+
+  export function create(iModelRef: IModelDisplayReference): IModelFeature {
+    return {
+      modelId: Id64.invalid,
+      elementId: Id64.invalid,
+      subCategoryId: Id64.invalid,
+      geometryClass: GeometryClass.Primary,
+      iModelRef,
+    };
   }
 }
 

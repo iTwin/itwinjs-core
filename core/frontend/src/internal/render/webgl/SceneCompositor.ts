@@ -45,7 +45,7 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
 import { FrustumUniformType } from "./FrustumUniforms";
-import { IModelDisplayReference } from "../../../core-frontend";
+import { IModelDisplayReference, IModelFeature } from "../../../core-frontend";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -631,7 +631,7 @@ class PixelBuffer implements Pixel.Buffer {
   private readonly _featureId?: Uint32Array;
   private readonly _depthAndOrder?: Uint32Array;
   private readonly _batchState: BatchState;
-  private readonly _scratchModelFeature = ModelFeature.create();
+  private readonly _scratchFeature: IModelFeature;
 
   private get _numPixels(): number { return this._rect.width * this._rect.height; }
 
@@ -653,31 +653,21 @@ class PixelBuffer implements Pixel.Buffer {
     return pixelIndex < data.length ? data[pixelIndex] : undefined;
   }
 
-  private getFeature(pixelIndex: number, result: ModelFeature): ModelFeature | undefined {
-    const featureId = this.getFeatureId(pixelIndex);
-    return undefined !== featureId ? this._batchState.getFeature(featureId, result) : undefined;
-  }
+  private getPixelFeatureInfo(pixelIndex: number, outFeature: IModelFeature): BatchInfo | undefined {
+    const featureId = undefined !== this._featureId ? this.getPixel32(this._featureId, pixelIndex) : undefined;
+    if (undefined === featureId || undefined === this._batchState.getFeature(featureId, outFeature))
+      return undefined;
 
-  private getFeatureId(pixelIndex: number): number | undefined {
-    return undefined !== this._featureId ? this.getPixel32(this._featureId, pixelIndex) : undefined;
-  }
+    const batch = this._batchState.find(featureId);
+    if (undefined === batch)
+      return undefined;
 
-  private getBatchInfo(pixelIndex: number): BatchInfo | undefined {
-    const featureId = this.getFeatureId(pixelIndex);
-    if (undefined !== featureId) {
-      const batch = this._batchState.find(featureId);
-      if (undefined !== batch) {
-        return {
-          featureTable: batch.featureTable,
-          iModelRef: batch.iModelRef,
-          tileId: batch.tileId,
-          viewAttachmentId: batch.viewAttachmentId,
-          inSectionDrawingAttachment: batch.inSectionDrawingAttachment,
-        };
-      }
-    }
-
-    return undefined;
+    return {
+      featureTable: batch.featureTable,
+      tileId: batch.tileId,
+      viewAttachmentId: batch.viewAttachmentId,
+      inSectionDrawingAttachment: batch.inSectionDrawingAttachment,
+    };
   }
 
   private readonly _scratchUint32Array = new Uint32Array(1);
@@ -709,6 +699,7 @@ class PixelBuffer implements Pixel.Buffer {
   }
 
 
+  private readonly _invalidPixelData = new Pixel.Data();
   public getPixel(x: number, y: number): Pixel.Data {
     const px = this._invalidPixelData;
     const index = this.getPixelIndex(x, y);
@@ -721,8 +712,7 @@ class PixelBuffer implements Pixel.Buffer {
     let planarity = px.planarity;
 
     const haveFeatureIds = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature);
-    const feature = haveFeatureIds ? this.getFeature(index, this._scratchModelFeature) : undefined;
-    const batchInfo = haveFeatureIds ? this.getBatchInfo(index) : undefined;
+    const batchInfo = haveFeatureIds ? this.getPixelFeatureInfo(index, this._scratchFeature) : undefined;
     if (Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
       const depthAndOrder = this.getPixel32(this._depthAndOrder, index);
       if (undefined !== depthAndOrder) {
@@ -771,12 +761,11 @@ class PixelBuffer implements Pixel.Buffer {
     }
 
     return new Pixel.Data({
-      feature,
+      feature: this._scratchFeature,
       distanceFraction,
       type: geometryType,
       planarity,
       batchType: featureTable?.type,
-      iModelRef,
       tileId,
       viewAttachmentId,
       inSectionDrawingAttachment,
@@ -784,6 +773,7 @@ class PixelBuffer implements Pixel.Buffer {
   }
 
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {
+    this._scratchFeature = IModelFeature.create(compositor.target.primaryIModelRef);
     this._rect = rect.clone();
     this._selector = selector;
     this._batchState = compositor.target.uniforms.batch.state;

@@ -65,6 +65,7 @@ import { FrameStatsCollector } from "../FrameStatsCollector";
 import { ActiveSpatialClassifier } from "../../../SpatialClassifiersState";
 import { AnimationNodeId } from "../../../common/internal/render/AnimationNodeId";
 import { _implementationProhibited } from "../../../common/internal/Symbols";
+import { IModelDisplayReference } from "../../../IModelDisplayReference";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -203,6 +204,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get analysisFraction(): number { return this._analysisFraction; }
   public set analysisFraction(fraction: number) { this._analysisFraction = fraction; }
+
+  public get primaryIModelRef(): IModelDisplayReference {
+    assert(undefined !== this._viewport);
+    return this._viewport.view.iModelRefs.primary;
+  }
 
   public override get animationBranches(): AnimationBranchStates | undefined {
     return this._animationBranches;

@@ -5,7 +5,7 @@
 
 import { expect } from "vitest";
 import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
-import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
+import { ColorDef, Feature, FeatureProps, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewRect } from "../common/ViewRect";
@@ -253,8 +253,8 @@ export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNo
   return set;
 }
 
-export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): SortedArray<Feature> {
-  const features = new SortedArray<Feature>((lhs, rhs) => lhs.compare(rhs));
+export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): SortedArray<FeatureProps> {
+  const features = new SortedArray<FeatureProps>((lhs, rhs) => Feature.compare(lhs, rhs));
   processPixels(vp, (pixel) => {
     if (pixel.feature) {
       features.insert(pixel.feature);

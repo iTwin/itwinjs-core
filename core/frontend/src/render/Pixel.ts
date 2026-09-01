@@ -9,7 +9,7 @@
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, GeometryClass, ModelFeature } from "@itwin/core-common";
 import { HitPath, HitPriority } from "../HitDetail";
-import { IModelDisplayReference, IModelFeature } from "../IModelDisplayReference";
+import { IModelFeature } from "../IModelDisplayReference";
 import type { Viewport } from "../Viewport";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
