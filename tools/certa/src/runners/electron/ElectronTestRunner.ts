@@ -22,6 +22,13 @@ export class ElectronTestRunner {
     if (config.debug)
       app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
 
+    // On macOS, Electron's safeStorage is backed by the login Keychain. Any code under test that uses it
+    // (e.g. @itwin/electron-authorization, which caches OIDC discovery metadata since 0.23.2) triggers a modal
+    // password prompt, which blocks indefinitely on headless CI agents. Chromium's mock keychain keeps
+    // safeStorage functional without touching the real Keychain.
+    if (process.platform === "darwin")
+      app.commandLine.appendSwitch("use-mock-keychain");
+
     // Chromium no longer fallbacks to SwiftShader by default when no GPU is available, so we need to explicitly enable it.
     // Since headless Electron tests run with xvfb, GPU is not reachable even if it is available on the host machine.
     // More info: https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/gpu/swiftshader.md
