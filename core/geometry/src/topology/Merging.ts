@@ -476,7 +476,7 @@ export class HalfEdgeGraphMerge {
               //  * far vertex is clustered (exactly equal)
               //  * near vertex curvatures are same (toleranced)
               // Note that near vertex is already clustered.
-              if (Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB)) {
+              if (Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB, radianTol)) {
                 const nodeA1 = nodeA.faceSuccessor;
                 const nodeB1 = nodeB.edgeMate;
                 if (nodeA1.isEqualXY(nodeB1)) {
