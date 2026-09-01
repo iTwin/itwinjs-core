@@ -1532,6 +1532,106 @@ describe("Semantic Rebase", function (this: Suite) {
     chai.expect(t.local.isOpen).to.be.true;
   });
 
+  it("navigation property (parent) with explicit relationship class survives trivial schema rebase", async () => {
+    t = await TestIModel.initialize("ClassIdNavTrivial");
+    const localTxn = startTestTxn(t.local, "nav parent trivial local");
+    const farTxn = startTestTxn(t.far, "nav parent trivial far");
+
+    // Far imports a trivial additive schema change and pushes it (incoming change to rebase onto).
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    await pushChanges(farTxn, "add PropC2 to class C");
+
+    // Local inserts (unpushed) a parent element and a child whose `parent` navigation property
+    // carries an explicit relationship class (RelECClassId). These inserts are the changes that
+    // get captured and reinstated during the rebase.
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const parentId = t.insertElement(localTxn, "TestDomain:A", { propA: "parent_a" });
+    const childId = t.insertElement(localTxn, "TestDomain:C", {
+      propA: "child_a",
+      propC: "child_c",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    });
+    localTxn.saveChanges("local insert parent + child");
+
+    // Local pulls and rebases its local inserts onto the incoming schema change.
+    await pullChanges(localTxn);
+    t.local.clearCaches();
+
+    // The navigation property (id + relClassName) captured from the insert must survive the rebase.
+    const child = t.getElementProps(t.local, childId);
+    chai.expect(child.parent).to.not.be.undefined;
+    chai.expect(child.parent.id).to.equal(parentId, "parent navigation id must be preserved");
+    chai.expect(child.parent.relClassName.replace(":", ".")).to.equal(
+      "BisCore.ElementOwnsChildElements",
+      "parent navigation relationship class name must be preserved",
+    );
+    chai.expect(child.classFullName).to.equal("TestDomain:C", "child classFullName must be preserved");
+    chai.expect(child.propA).to.equal("child_a", "propA must be preserved");
+    chai.expect(child.propC).to.equal("child_c", "propC must be preserved");
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.01");
+  });
+
+  it("navigation property + multi-class ECClassId survive transforming schema rebase", async () => {
+    t = await TestIModel.initialize("ClassIdNavTransforming");
+    let localTxn = startTestTxn(t.local, "nav parent transforming local");
+    let farTxn = startTestTxn(t.far, "nav parent transforming far");
+
+    // Baseline: bump both briefcases to v01.00.01 so the incoming transforming change (v01.00.02
+    // MovePropCToA) applies cleanly on top of it.
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    await pushChanges(localTxn, "baseline v01.00.01");
+    localTxn = startTestTxn(t.local, "nav parent transforming local");
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "nav parent transforming far");
+
+    // Local inserts a parent (class A) and children of classes C and D, with explicit parent
+    // relationship classes, then makes them local (unpushed) changes.
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const parentId = t.insertElement(localTxn, "TestDomain:A", { propA: "parent_a" });
+    const cChildId = t.insertElement(localTxn, "TestDomain:C", {
+      propA: "c_a",
+      propC: "c_c",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    });
+    const dChildId = t.insertElement(localTxn, "TestDomain:D", {
+      propA: "d_a",
+      propD: "d_d",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    });
+    localTxn.saveChanges("local insert parent + C + D children");
+
+    // Far pushes a transforming schema change (moves PropC from C to A).
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+    await pushChanges(farTxn, "far transforming schema v01.00.02");
+
+    // Local pulls and rebases its local inserts onto the transforming schema change.
+    await pullChanges(localTxn);
+    t.local.clearCaches();
+
+    // ECClassId of each element (a class-id-typed value) must resolve to the correct class name.
+    const cChild = t.getElementProps(t.local, cChildId);
+    chai.expect(cChild.classFullName).to.equal("TestDomain:C", "C child classFullName must be preserved");
+    chai.expect(cChild.propC).to.equal("c_c", "propC value must survive column migration C→A");
+    chai.expect(cChild.parent.id).to.equal(parentId, "C child parent id must be preserved");
+    chai.expect(cChild.parent.relClassName.replace(":", ".")).to.equal("BisCore.ElementOwnsChildElements");
+
+    const dChild = t.getElementProps(t.local, dChildId);
+    chai.expect(dChild.classFullName).to.equal("TestDomain:D", "D child classFullName must be preserved");
+    chai.expect(dChild.propD).to.equal("d_d");
+    chai.expect(dChild.parent.id).to.equal(parentId, "D child parent id must be preserved");
+
+    // ECSql resolves ECClassId to the correct class names after rebase.
+    const rows = await TestIModel.queryToMap(
+      t.local,
+      `SELECT ECInstanceId, ec_className(ECClassId) AS className FROM TestDomain.A`,
+    );
+    chai.expect(rows.get(cChildId)?.className).to.include("C");
+    chai.expect(rows.get(dChildId)?.className).to.include("D");
+
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02");
+  });
+
 });
 
 /**
@@ -4220,137 +4320,3 @@ semanticRebaseExtendedDescribe("Semantic Rebase - Multi-Pull Verification", func
     chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02", "Schema must be v02 after pull #3");
   });
 });
-
-/**
- * Class-id / class-name preservation through semantic rebase.
- *
- * These tests specifically stress instance data whose values are class-id-typed:
- *  - navigation properties carry a `RelECClassId` (converted to a relationship class name), and
- *  - every element carries an `ECClassId` (converted to a class name).
- *
- * The semantic-rebase capture/replay must round-trip these class-id-bearing values across a schema
- * change that can remap class ids. Instance patches must therefore carry class *names* (not stale
- * hex class ids). Inspired by the class-id conversion coverage in ChangesetReader.test.ts.
- */
-describe("Semantic Rebase - Class Id / Class Name Preservation", function (this: Suite) {
-  this.timeout(90000);
-  let t: TestIModel | undefined;
-
-  before(async () => {
-    await TestUtils.shutdownBackend();
-    await TestUtils.startBackend({ useSemanticRebase: true });
-  });
-
-  afterEach(() => {
-    if (t) {
-      t.shutdown();
-      t = undefined;
-    }
-  });
-
-  after(async () => {
-    await TestUtils.shutdownBackend();
-    await TestUtils.startBackend();
-  });
-
-  it("navigation property (parent) with explicit relationship class survives trivial schema rebase", async () => {
-    t = await TestIModel.initialize("ClassIdNavTrivial");
-    const localTxn = startTestTxn(t.local, "nav parent trivial local");
-    const farTxn = startTestTxn(t.far, "nav parent trivial far");
-
-    // Far imports a trivial additive schema change and pushes it (incoming change to rebase onto).
-    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
-    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
-    await pushChanges(farTxn, "add PropC2 to class C");
-
-    // Local inserts (unpushed) a parent element and a child whose `parent` navigation property
-    // carries an explicit relationship class (RelECClassId). These inserts are the changes that
-    // get captured and reinstated during the rebase.
-    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
-    const parentId = t.insertElement(localTxn, "TestDomain:A", { propA: "parent_a" });
-    const childId = t.insertElement(localTxn, "TestDomain:C", {
-      propA: "child_a",
-      propC: "child_c",
-      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
-    });
-    localTxn.saveChanges("local insert parent + child");
-
-    // Local pulls and rebases its local inserts onto the incoming schema change.
-    await pullChanges(localTxn);
-    t.local.clearCaches();
-
-    // The navigation property (id + relClassName) captured from the insert must survive the rebase.
-    const child = t.getElementProps(t.local, childId);
-    chai.expect(child.parent).to.not.be.undefined;
-    chai.expect(child.parent.id).to.equal(parentId, "parent navigation id must be preserved");
-    chai.expect(child.parent.relClassName.replace(":", ".")).to.equal(
-      "BisCore.ElementOwnsChildElements",
-      "parent navigation relationship class name must be preserved",
-    );
-    chai.expect(child.classFullName).to.equal("TestDomain:C", "child classFullName must be preserved");
-    chai.expect(child.propA).to.equal("child_a", "propA must be preserved");
-    chai.expect(child.propC).to.equal("child_c", "propC must be preserved");
-    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.01");
-  });
-
-  it("navigation property + multi-class ECClassId survive transforming schema rebase", async () => {
-    t = await TestIModel.initialize("ClassIdNavTransforming");
-    let localTxn = startTestTxn(t.local, "nav parent transforming local");
-    let farTxn = startTestTxn(t.far, "nav parent transforming far");
-
-    // Baseline: bump both briefcases to v01.00.01 so the incoming transforming change (v01.00.02
-    // MovePropCToA) applies cleanly on top of it.
-    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
-    await pushChanges(localTxn, "baseline v01.00.01");
-    localTxn = startTestTxn(t.local, "nav parent transforming local");
-    await pullChanges(farTxn);
-    farTxn = startTestTxn(t.far, "nav parent transforming far");
-
-    // Local inserts a parent (class A) and children of classes C and D, with explicit parent
-    // relationship classes, then makes them local (unpushed) changes.
-    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
-    const parentId = t.insertElement(localTxn, "TestDomain:A", { propA: "parent_a" });
-    const cChildId = t.insertElement(localTxn, "TestDomain:C", {
-      propA: "c_a",
-      propC: "c_c",
-      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
-    });
-    const dChildId = t.insertElement(localTxn, "TestDomain:D", {
-      propA: "d_a",
-      propD: "d_d",
-      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
-    });
-    localTxn.saveChanges("local insert parent + C + D children");
-
-    // Far pushes a transforming schema change (moves PropC from C to A).
-    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
-    await pushChanges(farTxn, "far transforming schema v01.00.02");
-
-    // Local pulls and rebases its local inserts onto the transforming schema change.
-    await pullChanges(localTxn);
-    t.local.clearCaches();
-
-    // ECClassId of each element (a class-id-typed value) must resolve to the correct class name.
-    const cChild = t.getElementProps(t.local, cChildId);
-    chai.expect(cChild.classFullName).to.equal("TestDomain:C", "C child classFullName must be preserved");
-    chai.expect(cChild.propC).to.equal("c_c", "propC value must survive column migration C→A");
-    chai.expect(cChild.parent.id).to.equal(parentId, "C child parent id must be preserved");
-    chai.expect(cChild.parent.relClassName.replace(":", ".")).to.equal("BisCore.ElementOwnsChildElements");
-
-    const dChild = t.getElementProps(t.local, dChildId);
-    chai.expect(dChild.classFullName).to.equal("TestDomain:D", "D child classFullName must be preserved");
-    chai.expect(dChild.propD).to.equal("d_d");
-    chai.expect(dChild.parent.id).to.equal(parentId, "D child parent id must be preserved");
-
-    // ECSql resolves ECClassId to the correct class names after rebase.
-    const rows = await TestIModel.queryToMap(
-      t.local,
-      `SELECT ECInstanceId, ec_className(ECClassId) AS className FROM TestDomain.A`,
-    );
-    chai.expect(rows.get(cChildId)?.className).to.include("C");
-    chai.expect(rows.get(dChildId)?.className).to.include("D");
-
-    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02");
-  });
-});
-
