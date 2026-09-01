@@ -720,6 +720,14 @@ class SpatialRefs implements SpatialTileTreeReferences {
     this._sectionCut = this.getSectionCutFromView();
     if (excludedModels)
       this._excludedModels = new Set(excludedModels);
+
+    iModelRef.iModel.models.load(iModelRef.viewedModels);
+
+    iModelRef.viewedModels.onChanged.addListener(() => {
+      // ###TODO this is only supposed to be done while attached to a viewport
+      iModelRef.iModel.models.load(iModelRef.viewedModels);
+      this.update();
+    });
   }
 
   public update(): void {
