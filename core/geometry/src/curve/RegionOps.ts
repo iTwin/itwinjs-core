@@ -1178,6 +1178,7 @@ export class RegionOps {
     tolerance: number = Geometry.smallMetricDistance,
     addBridges: boolean = true,
   ): SignedLoops[] {
+    tolerance = GeometryQuery.scaleToleranceForGeometry(curvesAndRegions, tolerance, { xyOnly: true });
     let primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
     primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     let hasOpenCurve = false;
