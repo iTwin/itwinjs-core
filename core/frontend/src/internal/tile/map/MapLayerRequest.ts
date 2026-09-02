@@ -51,7 +51,7 @@ export async function fetchMapLayerRequest(args: {
   const headers = args.baseHeaders ?? new Headers();
   // searchParams is a live view: handler mutations are reflected on `url`, and re-read on every send.
   const request: MapLayerRequest = {
-    url: args.url.toString(),
+    get url() { return args.url.toString(); },
     layerUrl: args.layerUrl,
     formatId: args.formatId,
     searchParams: args.url.searchParams,

@@ -13,7 +13,7 @@
  * @beta
  */
 export interface MapLayerRequest {
-  /** The request URL, for inspection only (e.g. routing decisions); mutations to [[searchParams]] are not reflected. */
+  /** The current request URL — what [[MapLayerFetchNext]] will send — reflecting any mutations made to [[searchParams]]. */
   readonly url: string;
   /** The URL of the map-layer source this request is made for, as configured on the layer's settings.
    * Unlike [[url]], it is stable across every request kind (tiles, tooltips, capabilities, service metadata),

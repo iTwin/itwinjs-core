@@ -110,6 +110,20 @@ describe("map-layer fetch handler", () => {
     expect(seenFormatId).toEqual("WMS");
   });
 
+  it("reflects query-parameter mutations in request.url so a handler can sign what it sends", async () => {
+    let signedUrl: string | undefined;
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
+      request.searchParams.set("clientParam", "clientParamValue");
+      signedUrl = request.url;
+      return next();
+    });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(signedUrl).toEqual(getRequestUrl());
+    expect(new URL(signedUrl!).searchParams.get("clientParam")).toEqual("clientParamValue");
+  });
+
   it("passes the layer's settings URL as layerUrl on capabilities requests too", async () => {
     const seenLayerUrls: string[] = [];
     IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async ({ layerUrl }, next) => {
