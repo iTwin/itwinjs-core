@@ -573,6 +573,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
       case DbResult.BE_SQLITE_IOERR_DELETE_NOENT: return "BE_SQLITE_IOERR_DELETE_NOENT";
 
       case DbResult.BE_SQLITE_ERROR_DataTransformRequired: return "Schema update require to transform data";
+      case DbResult.BE_SQLITE_ERROR_DataDeletionRequired: return "Schema update would destroy existing data";
       case DbResult.BE_SQLITE_ERROR_FileExists: return "File Exists";
       case DbResult.BE_SQLITE_ERROR_AlreadyOpen: return "Already Open";
       case DbResult.BE_SQLITE_ERROR_NoPropertyTable: return "No Property Table";

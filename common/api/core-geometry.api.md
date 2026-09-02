@@ -2760,9 +2760,9 @@ export namespace IModelJson {
     }
     export interface BcurveProps {
         closed?: boolean;
-        knots: [number];
+        knots: number[];
         order: number;
-        points: [XYZProps];
+        points: XYZProps[];
     }
     export interface BoxProps extends AxesProps {
         // @internal
@@ -2781,9 +2781,9 @@ export namespace IModelJson {
         closedV?: boolean;
         orderU: number;
         orderV: number;
-        points: [[[number]]];
-        uKnots: [number];
-        vKnots: [number];
+        points: number[][][];
+        uKnots: number[];
+        vKnots: number[];
     }
     export interface ConeProps extends AxesProps {
         capped?: boolean;
@@ -2798,10 +2798,10 @@ export namespace IModelJson {
         vectorY?: XYZProps;
     }
     export interface CurveCollectionProps extends PlanarRegionProps {
-        bagOfCurves?: [CurveCollectionProps | CurvePrimitiveProps];
+        bagOfCurves?: (CurveCollectionProps | CurvePrimitiveProps)[];
         // @deprecated
-        bagofCurves?: [CurveCollectionProps];
-        path?: [CurvePrimitiveProps];
+        bagofCurves?: CurveCollectionProps[];
+        path?: CurvePrimitiveProps[];
     }
     export interface CurvePrimitiveProps {
         arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
@@ -2825,17 +2825,17 @@ export namespace IModelJson {
     }
     export interface IndexedMeshProps {
         auxData?: AuxDataProps;
-        color?: [number];
-        colorIndex?: [number];
-        edgeMateIndex?: [number];
+        color?: number[];
+        colorIndex?: number[];
+        edgeMateIndex?: number[];
         expectedClosure?: number;
-        normal?: [XYZProps];
-        normalIndex?: [number];
+        normal?: XYZProps[];
+        normalIndex?: number[];
         numPerFace?: number;
-        param?: [XYProps];
-        paramIndex?: [number];
-        point: [XYZProps];
-        pointIndex: [number];
+        param?: XYProps[];
+        paramIndex?: number[];
+        point: XYZProps[];
+        pointIndex: number[];
         tags?: TaggedNumericDataProps;
         twoSided?: boolean;
     }
@@ -2845,11 +2845,11 @@ export namespace IModelJson {
         vector: XYZProps;
     }
     export interface PlanarRegionProps {
-        loop?: [CurvePrimitiveProps];
-        parityRegion?: [{
-            loop: [CurvePrimitiveProps];
-        }];
-        unionRegion?: [PlanarRegionProps];
+        loop?: CurvePrimitiveProps[];
+        parityRegion?: {
+            loop: CurvePrimitiveProps[];
+        }[];
+        unionRegion?: PlanarRegionProps[];
     }
     export interface PointProps {
         point?: XYZProps;
@@ -2888,7 +2888,7 @@ export namespace IModelJson {
     }
     export interface RuledSweepProps {
         capped?: boolean;
-        contour: [CurveCollectionProps];
+        contour: CurveCollectionProps[];
     }
     export interface SolidPrimitiveProps {
         box?: BoxProps;
