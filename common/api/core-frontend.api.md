@@ -6148,7 +6148,7 @@ export class MapLayerFormatRegistry {
     isSsoAllowed(url: string): boolean;
     // @internal
     logUntrustedOriginUse(url: string, settingsUrl?: string): void;
-    // @internal
+    // @beta
     get mapLayerFetchHandler(): MapLayerFetchHandler | undefined;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;

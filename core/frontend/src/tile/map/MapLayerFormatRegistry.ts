@@ -192,16 +192,29 @@ export class MapLayerFormatRegistry {
 
   /** Sets the [[MapLayerFetchHandler]] wrapping every map-layer network request — tiles, tooltips,
    * capabilities, service metadata, and source validation, across every format. There is at most one
-   * handler per session, owned by the hosting application: setting a new one replaces the previous one,
-   * and passing `undefined` restores the default behavior.
+   * handler per session, owned by the hosting application: setting a new one replaces the previous one
+   * (a warning is logged, since the replaced handler no longer runs), and passing `undefined` restores
+   * the default behavior. A layer of the application that must coexist with a handler registered by
+   * another layer can read [[mapLayerFetchHandler]] and register a composition of both.
    * @beta
    */
   public setMapLayerFetchHandler(handler: MapLayerFetchHandler | undefined): void {
+    if (undefined !== this._fetchHandler && undefined !== handler && handler !== this._fetchHandler)
+      Logger.logWarning(loggerCategory, "setMapLayerFetchHandler is replacing a previously registered handler, which no longer runs; compose with mapLayerFetchHandler to chain instead.");
+
     this._fetchHandler = handler;
   }
 
-  /** The registered [[MapLayerFetchHandler]], if any.
-   * @internal
+  /** The registered [[MapLayerFetchHandler]], if any. Lets a layered application compose a new handler
+   * with a previously registered one instead of silently replacing it:
+   * ```ts
+   * const previous = registry.mapLayerFetchHandler;
+   * registry.setMapLayerFetchHandler(
+   *   previous
+   *     ? (request, next) => myHandler(request, async () => previous(request, next))
+   *     : myHandler);
+   * ```
+   * @beta
    */
   public get mapLayerFetchHandler(): MapLayerFetchHandler | undefined {
     return this._fetchHandler;

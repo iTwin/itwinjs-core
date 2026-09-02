@@ -70,6 +70,21 @@ Registering a handler means owning authentication for the requests it manages �
 
 A handler that fetches on its own instead of calling `next()` bypasses these protections entirely; it then owns transport security for that request.
 
+### Layered applications
+
+There is deliberately a single handler slot: composing security-relevant middleware requires someone to decide ordering and header conflicts, and that someone is the hosting application. When one layer of the application (e.g. a platform package) has already registered a handler and another layer needs its own, the second layer should compose with the existing one rather than replace it — [MapLayerFormatRegistry.setMapLayerFetchHandler]($frontend) logs a warning when it silently discards a previously registered handler:
+
+```ts
+const previous = IModelApp.mapLayerFormatRegistry.mapLayerFetchHandler;
+IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(
+  previous
+    // myHandler runs first (outermost); `previous` becomes its `next`, keeping both behaviors.
+    ? (request, next) => myHandler(request, async () => previous(request, next))
+    : myHandler);
+```
+
+The composing layer decides consciously whether it wraps outside (sees the request first, the response last) or inside the existing handler — the same responsibility a .NET host takes when assembling a `DelegatingHandler` chain. Handlers meant to be composed should tolerate running more than once per request (an outer handler's retry re-invokes the inner one) and use `headers.set` rather than `append` so repeated runs stay idempotent.
+
 ### One credential per layer
 
 The handler is global, but [MapLayerRequest.layerUrl]($frontend) identifies the layer each request is made for. Unlike `request.url`, it is stable across every request kind (tiles, tooltips, capabilities, service metadata), so a single handler can serve any number of layers, each with its own credentials:

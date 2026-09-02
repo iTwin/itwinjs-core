@@ -315,6 +315,27 @@ describe("map-layer fetch handler", () => {
     expect(new URL(getRequestUrl()).searchParams.get("clientParam")).toBeNull();
   });
 
+  it("lets a second application layer compose with a previously registered handler", async () => {
+    const registry = IModelApp.mapLayerFormatRegistry;
+    // Layer 1 (e.g. a platform package) registers its handler first.
+    registry.setMapLayerFetchHandler(async (request, next) => {
+      request.headers.set("X-Platform", "layer1");
+      return next();
+    });
+    // Layer 2 wraps it instead of replacing it, per the documented pattern.
+    const previous = registry.mapLayerFetchHandler!;
+    registry.setMapLayerFetchHandler(async (request, next) => {
+      request.headers.set("Authorization", "Bearer layer2-jwt");
+      return previous(request, next);
+    });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer layer2-jwt");
+    expect(getRequestHeaders()?.get("X-Platform")).toEqual("layer1");
+  });
+
   it("shapes tooltip requests too", async () => {
     fetchMock.mockResolvedValue(new Response("tooltip text", { status: 200 }));
     setCredentialedHandler();
