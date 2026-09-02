@@ -148,7 +148,7 @@ describe("GeometryQuery", () => {
           minDistXY = dist;
       }
     return Geometry.isSmallRelative(minDistXY);
-    }
+    };
 
     // proof that large coords need larger tolerance to compute intersections accurately
     const knownIntersection = arc.startPoint();
