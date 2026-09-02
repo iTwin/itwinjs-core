@@ -2815,7 +2815,7 @@ describe("RegionOps.tolerance", () => {
   });
 
   it("constructAllXYRegionLoops.Topology", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const verifyAstroidArcsIntersectAtEnds = (ls: LineString3d[], arcs: Arc3d[], tol: number, testArcArc: boolean, prefix: string): boolean => {
