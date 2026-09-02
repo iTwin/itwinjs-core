@@ -86,16 +86,16 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
   /** The default send for [[fetch]]: legacy redirect policy and origin-trust checks for one target.
    * The NTLM/SSO retry applies only when `allowSsoRetry` (the initial request of an operation), and
-   * never to sends issued through a fetch handler.
+   * never to sends a fetch handler modified.
    */
   private async sendArcGisRequest(sendArgs: MapLayerSendArgs, allowSsoRetry: boolean, options?: RequestInit): Promise<Response> {
     const includeCredentials = this.includeUserCredentials(sendArgs.url);
-    const credentialed = sendArgs.viaHandler;
+    const credentialed = sendArgs.credentialed;
     let rsp = await fetch(sendArgs.url, {
       ...options,
       headers: sendArgs.headers ?? options?.headers,
       credentials: includeCredentials ? "include" : undefined,
-      // Sends issued through a fetch handler get the same redirect policy as credentialed ones.
+      // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
       redirect: (includeCredentials || credentialed) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
     });
 

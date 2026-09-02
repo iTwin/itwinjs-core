@@ -41,13 +41,14 @@ export interface MapLayerRequest {
  * May be called several times by a handler (e.g. to retry after refreshing a token); each call re-reads
  * the request's current query parameters and headers.
  *
- * Because only the handler knows whether it injected secrets, every send it issues is treated as a
- * credentialed request: redirects are refused while
- * [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (so injected values cannot
+ * Because only the handler knows whether a value it injected is a secret, every send whose headers or query
+ * parameters differ from what the framework built is treated as a credentialed request: redirects are refused
+ * while [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (so injected values cannot
  * silently reach an unlisted origin through a redirect), and an NTLM/Negotiate 401 challenge is never
- * answered with browser credentials (SSO) — layers served by Windows-Authentication-protected services
- * therefore cannot be combined with a fetch handler. The framework keeps protecting the credentials it
- * supplies itself (settings-derived basic auth, browser SSO identity) on every send.
+ * answered with browser credentials (SSO). A send the handler passes through unmodified keeps the default
+ * behavior in full — including the SSO retry — so a handler serving one format does not degrade layers of the
+ * others (e.g. those served by Windows-Authentication-protected services). The framework keeps protecting the
+ * credentials it supplies itself (settings-derived basic auth, browser SSO identity) on every send.
  * @beta
  */
 export type MapLayerFetchNext = () => Promise<Response>;

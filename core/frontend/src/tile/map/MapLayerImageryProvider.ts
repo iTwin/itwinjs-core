@@ -507,17 +507,17 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** The default send for [[makeRequest]]: legacy redirect policy, NTLM/SSO handling and origin-trust
-   * checks for one request. The SSO retry never applies to sends issued through a fetch handler.
+   * checks for one request. The SSO retry never applies to sends a fetch handler modified.
    */
   private async sendDefaultRequest(sendArgs: MapLayerSendArgs, hasCreds: boolean, hasSettingsCreds: boolean, timeoutMs?: number): Promise<Response> {
     const requestUrl = sendArgs.url;
     const includeCredentials = this.includeUserCredentials(requestUrl);
-    const credentialed = sendArgs.viaHandler;
+    const credentialed = sendArgs.credentialed;
     const opts: RequestInit = {
       method: "GET",
       headers: sendArgs.headers,
       credentials: includeCredentials ? "include" : undefined,
-      // Sends issued through a fetch handler get the same redirect policy as credentialed ones.
+      // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
       redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
     };
 
@@ -609,7 +609,7 @@ export abstract class MapLayerImageryProvider {
     try {
       return urlObj
         ? await fetchMapLayerRequest({ url: urlObj, formatId: this._settings.formatId, layerUrl: this._settings.url, baseHeaders: headers, send })
-        : await send({ viaHandler: false, headers, url });
+        : await send({ credentialed: false, headers, url });
     } catch (error) {
       if (error instanceof MapLayerAuthenticationFailedError)
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
@@ -671,7 +671,7 @@ export abstract class MapLayerImageryProvider {
     const send = async (sendArgs: MapLayerSendArgs): Promise<Response> => {
       const requestUrl = sendArgs.url;
       const includeCredentials = this.includeUserCredentials(requestUrl);
-      const credentialed = sendArgs.viaHandler;
+      const credentialed = sendArgs.credentialed;
       const rsp = await fetch(requestUrl, {
         method: "GET",
         headers: sendArgs.headers,
@@ -687,7 +687,7 @@ export abstract class MapLayerImageryProvider {
     try {
       response = urlObj
         ? await fetchMapLayerRequest({ url: urlObj, formatId: this._settings.formatId, layerUrl: this._settings.url, baseHeaders: headers, send })
-        : await send({ viaHandler: false, headers, url });
+        : await send({ credentialed: false, headers, url });
     } catch (error) {
       // Never degrade to an unauthenticated request or reject (getToolTip callers do not catch); skip the tooltip.
       if (this.hasFetchHandler)

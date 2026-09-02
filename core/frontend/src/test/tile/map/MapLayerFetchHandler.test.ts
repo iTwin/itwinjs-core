@@ -151,9 +151,9 @@ describe("map-layer fetch handler", () => {
     expect(getRequestInit()?.redirect).toBeUndefined();
   });
 
-  it("treats pass-through handler sends as credentialed under the trusted-origins restriction", async () => {
+  it("treats any header the handler adds as credentialing the send under the trusted-origins restriction", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
-    // Only the handler knows whether it injected secrets, so every send it issues is protected.
+    // The framework cannot tell a secret from a benign header, so every modification is protected.
     IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
       request.headers.set("X-Correlation-Id", "abc-123");
       return next();
@@ -163,6 +163,36 @@ describe("map-layer fetch handler", () => {
 
     expect(getRequestHeaders()?.get("X-Correlation-Id")).toEqual("abc-123");
     expect(getRequestInit()?.redirect).toEqual("error");
+  });
+
+  it("treats a query parameter the handler adds as credentialing the send under the trusted-origins restriction", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    fetchMock.mockResolvedValue(ntlmChallengeResponse());
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
+      request.searchParams.set("signature", "abc");
+      return next();
+    });
+    const provider = createProvider();
+    const response = await provider.makeRequest(tileUrl);
+
+    expect(getRequestInit()?.redirect).toEqual("error");
+    expect(fetchMock).toHaveBeenCalledTimes(1);   // no SSO retry either
+    expect(response.status).toEqual(401);
+  });
+
+  it("keeps the default redirect policy for sends the handler passes through unmodified", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    // A handler serving one format must not degrade layers of the others.
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
+      if (request.formatId === "ArcGIS")
+        request.headers.set("Authorization", "Bearer secret-jwt");
+      return next();
+    });
+    const provider = createProvider();   // WMS
+    await provider.makeRequest(tileUrl);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getRequestInit()?.redirect).toBeUndefined();
   });
 
   it("does not retry with SSO credentials after an NTLM challenge on a handled send", async () => {
@@ -175,7 +205,7 @@ describe("map-layer fetch handler", () => {
     expect(response.status).toEqual(401);
   });
 
-  it("never retries with SSO credentials while a handler is registered, even for pass-through sends", async () => {
+  it("never retries with SSO credentials on a send the handler modified, whatever the header", async () => {
     fetchMock.mockResolvedValue(ntlmChallengeResponse());
     IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
       request.headers.set("X-Correlation-Id", "abc-123");
@@ -184,10 +214,46 @@ describe("map-layer fetch handler", () => {
     const provider = createProvider();
     const response = await provider.makeRequest(tileUrl);
 
-    // The handler is the authentication authority: the 401 NTLM challenge is never answered with
-    // browser credentials.
+    // The handler is the authentication authority for requests it touches: the 401 NTLM challenge is
+    // never answered with browser credentials.
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(response.status).toEqual(401);
+  });
+
+  it("still answers an NTLM challenge with SSO credentials for sends the handler passes through unmodified", async () => {
+    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse());
+    fetchMock.mockResolvedValueOnce(okResponse());
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
+      if (request.formatId === "ArcGIS")
+        request.headers.set("Authorization", "Bearer secret-jwt");
+      return next();
+    });
+    const provider = createProvider();   // WMS: Windows-Authentication layers keep working alongside the handler
+    const response = await provider.makeRequest(tileUrl);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(getRequestInit(1)?.credentials).toEqual("include");
+    expect(response.status).toEqual(200);
+  });
+
+  it("credentials only the sends made after the handler modified the request", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(okResponse());
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
+      let response = await next();   // try anonymously first
+      if (response.status === 401) {
+        request.headers.set("Authorization", "Bearer secret-jwt");
+        response = await next();
+      }
+      return response;
+    });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(getRequestInit(0)?.redirect).toBeUndefined();
+    expect(getRequestInit(1)?.redirect).toEqual("error");
   });
 
   it("transitions to RequireAuth when the handler throws MapLayerAuthenticationFailedError", async () => {
