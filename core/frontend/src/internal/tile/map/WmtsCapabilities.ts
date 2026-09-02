@@ -8,6 +8,7 @@
 
 import { expectDefined } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
+import { IModelApp } from "../../../IModelApp";
 import { MapCartoRectangle, WmsCapabilitiesCreateOptions, WmsUtilities } from "../../../tile/internal";
 
 enum OwsConstants {
@@ -554,11 +555,11 @@ export class WmtsCapabilities {
   }
 
   public static async create(url: string, options?: WmsCapabilitiesCreateOptions): Promise<WmtsCapabilities | undefined> {
-    const { credentials, ignoreCache, queryParams, accessClient, layerUrl } = options ?? {};
-    // The cache is keyed by URL only, so responses shaped by an access client (e.g. header-authenticated)
-    // must not be shared with or served from differently-authenticated requests.
-    const clientShapesRequests = undefined !== accessClient?.applyToRequest;
-    if (!ignoreCache && !clientShapesRequests) {
+    const { credentials, ignoreCache, queryParams, formatId, layerUrl } = options ?? {};
+    // The cache is keyed by URL only, so responses shaped by request listeners (e.g.
+    // header-authenticated) must not be shared with or served from differently-shaped requests.
+    const requestsShaped = IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners ?? false;
+    if (!ignoreCache && !requestsShaped) {
       const cached = WmtsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
         return cached;
@@ -574,12 +575,12 @@ export class WmtsCapabilities {
       });
     }
 
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, accessClient, layerUrl: layerUrl ?? url });
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, formatId: formatId ?? "WMTS", layerUrl: layerUrl ?? url });
     if (!xmlCapabilities)
       return undefined;
 
     const capabilities = WmtsCapabilities.createFromXml(xmlCapabilities);
-    if (capabilities && !credentials && !clientShapesRequests)
+    if (capabilities && !credentials && !requestsShaped)
       WmtsCapabilities._capabilitiesCache.set(url, capabilities);
 
     return capabilities;

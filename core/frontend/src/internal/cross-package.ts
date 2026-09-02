@@ -17,10 +17,8 @@ export { PrimitiveVisibility, type RenderTargetDebugControl } from "./render/Ren
 
 // Used by frontend-tiles, map-layers-formats, frontend-dev-tools
 export {
- accessClientRedirect,
  acquireImdlDecoder,
  appendQueryParams,
- applyAccessClientToRequest,
  ArcGisErrorCode,
  ArcGisGeometryReaderJSON,
  type ArcGisGetServiceJsonArgs,
@@ -44,11 +42,13 @@ export {
  ImageryMapTileTree,
  type ImdlDecoder,
  ImdlReader,
- isAccessClientAuthFailure,
+ isMapLayerAuthFailure,
  type MapLayerInfoFromTileTree,
  MapTileTreeReference,
  RealityModelTileUtils,
  RealityTileLoader,
+ shapedRequestRedirect,
+ shapeMapLayerRequest,
  SpatialTileTreeReferences,
  type WGS84Extent,
  WmsUtilities,

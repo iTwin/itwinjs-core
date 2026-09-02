@@ -5,7 +5,7 @@
 
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ArcGisUtilities, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequestShaper, MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
+import { ArcGisUtilities, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { WmsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmsMapLayerImageryProvider";
 import { WmtsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmtsMapLayerImageryProvider";
@@ -37,15 +37,14 @@ function createProvider(props?: { userName?: string, password?: string }): TestI
   return new TestImageryProvider(settings, false);
 }
 
-function makeAccessClient(overrides?: Partial<MapLayerAccessClient>): MapLayerAccessClient {
-  return {
-    getAccessToken: async () => undefined,
-    applyToRequest: ({ searchParams, headers }) => {
-      searchParams.set("clientParam", "clientParamValue");
-      headers.set("Authorization", "Bearer secret-jwt");
-    },
-    ...overrides,
-  };
+/** Registers a request listener injecting a header and a query parameter, declared as injecting
+ * credentials — the typical authenticating listener.
+ */
+function addCredentialedListener(): void {
+  IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener((request) => {
+    request.searchParams.set("clientParam", "clientParamValue");
+    request.headers.set("Authorization", "Bearer secret-jwt");
+  }, { injectsCredentials: true });
 }
 
 function okResponse(): Response {
@@ -56,7 +55,7 @@ function ntlmChallengeResponse(): Response {
   return new Response(null, { status: 401, headers: { "WWW-Authenticate": "NTLM" } });
 }
 
-describe("MapLayerAccessClient request shaping", () => {
+describe("map-layer request/response events", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
@@ -76,8 +75,8 @@ describe("MapLayerAccessClient request shaping", () => {
   const getRequestInit = (callIndex = 0): RequestInit | undefined => fetchMock.mock.calls[callIndex][1] as RequestInit | undefined;
   const getRequestHeaders = (callIndex = 0): Headers | undefined => getRequestInit(callIndex)?.headers as Headers | undefined;
 
-  it("applies headers and query parameters from applyToRequest to tile requests", async () => {
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+  it("applies headers and query parameters from request listeners to tile requests", async () => {
+    addCredentialedListener();
     const provider = createProvider();
     await provider.makeTileRequest(tileUrl);
 
@@ -88,20 +87,16 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(requested.origin).toEqual("https://maps.example.com");
   });
 
-  it("supports a standalone MapLayerRequestShaper implementation composed into an access client", async () => {
-    // A hosting application can author the request-shaping contract on its own, then compose it
-    // into the client it registers - e.g. a proxy that requires a per-request signature.
-    const proxyShaper: MapLayerRequestShaper = {
-      applyToRequest: ({ url, searchParams, headers }) => {
-        headers.set("Authorization", "Bearer proxy-jwt");
-        headers.set("X-Correlation-Id", "abc-123");
-        searchParams.set("sig", `signed(${new URL(url).pathname})`);
-      },
-      classifyResponse: ({ response }) => (response.status === 407 || response.status === 401) ? "authentication" : undefined,
-    };
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", {
-      getAccessToken: async () => undefined,
-      ...proxyShaper,
+  it("supports paired request and response listeners, like a delegating message handler", async () => {
+    // A proxy that requires a per-request signature and reports failures with its own status code.
+    const registry = IModelApp.mapLayerFormatRegistry;
+    registry.addMapLayerRequestListener((request) => {
+      request.headers.set("Authorization", "Bearer proxy-jwt");
+      request.headers.set("X-Correlation-Id", "abc-123");
+      request.searchParams.set("sig", `signed(${new URL(request.url).pathname})`);
+    }, { injectsCredentials: true });
+    registry.addMapLayerResponseListener((rsp) => {
+      rsp.failure = (rsp.response.status === 407 || rsp.response.status === 401) ? "authentication" : undefined;
     });
 
     const provider = createProvider();
@@ -124,30 +119,46 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
-  it("provides the complete request URL and layer context to applyToRequest", async () => {
+  it("awaits listeners in registration order", async () => {
+    const registry = IModelApp.mapLayerFormatRegistry;
+    registry.addMapLayerRequestListener(async (request) => {
+      await Promise.resolve();  // asynchronous listeners must complete before the next one runs
+      request.headers.set("Authorization", "Bearer first");
+    }, { injectsCredentials: false });
+    registry.addMapLayerRequestListener((request) => {
+      // The second listener observes the first one's mutation.
+      expect(request.headers.get("Authorization")).toEqual("Bearer first");
+      request.headers.set("Authorization", "Bearer second");
+    }, { injectsCredentials: false });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer second");
+  });
+
+  it("provides the complete request URL, format and layer context to listeners", async () => {
     let seenUrl: string | undefined;
     let seenLayerUrl: string | undefined;
+    let seenFormatId: string | undefined;
     let seenContextUrl: string | undefined;
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      applyToRequest: ({ url, layerUrl, context }) => {
-        seenUrl = url;
-        seenLayerUrl = layerUrl;
-        seenContextUrl = context.mapLayerUrl.toString();
-      },
-    }));
+    IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(({ url, layerUrl, formatId, context }) => {
+      seenUrl = url;
+      seenLayerUrl = layerUrl;
+      seenFormatId = formatId;
+      seenContextUrl = context.mapLayerUrl.toString();
+    }, { injectsCredentials: false });
     const provider = createProvider();
     await provider.makeRequest(`${tileUrl}?embedded=1`);
 
     expect(seenUrl).toEqual(`${tileUrl}?embedded=1`);
     expect(seenLayerUrl).toEqual(settingsUrl);
+    expect(seenFormatId).toEqual("WMS");
     expect(seenContextUrl).toEqual(settingsUrl);
   });
 
   it("passes the layer's settings URL as layerUrl on capabilities requests too", async () => {
     const seenLayerUrls: string[] = [];
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      applyToRequest: ({ layerUrl }) => { seenLayerUrls.push(layerUrl); },
-    }));
+    IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(({ layerUrl }) => { seenLayerUrls.push(layerUrl); }, { injectsCredentials: false });
     // A settings URL whose query is stripped from the GetCapabilities request URL.
     const urlWithQuery = `${settingsUrl}?embedded=1`;
     const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: urlWithQuery }));
@@ -157,35 +168,46 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(seenLayerUrls).toEqual([urlWithQuery]);
   });
 
-  it("applies client headers on top of basic-auth credentials", async () => {
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+  it("applies listener headers on top of basic-auth credentials", async () => {
+    addCredentialedListener();
     const provider = createProvider({ userName: "user", password: "pwd" });
     await provider.makeRequest(tileUrl);
 
-    // The client has full control: its Authorization header wins over settings-derived basic auth.
+    // Listeners have full control: their Authorization header wins over settings-derived basic auth.
     expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer secret-jwt");
   });
 
-  it("refuses redirects on client-shaped requests while the trusted-origins restriction is enabled", async () => {
+  it("refuses redirects on credentialed shaped requests while the trusted-origins restriction is enabled", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+    addCredentialedListener();
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
     expect(getRequestInit()?.redirect).toEqual("error");
   });
 
-  it("follows redirects on client-shaped requests while the restriction is disabled", async () => {
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+  it("follows redirects on credentialed shaped requests while the restriction is disabled", async () => {
+    addCredentialedListener();
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
     expect(getRequestInit()?.redirect).toBeUndefined();
   });
 
-  it("does not retry with SSO credentials after an NTLM challenge on a client-shaped request", async () => {
+  it("does not restrict redirects when no credentialed listener is registered", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    // A listener injecting only non-secret values registers with injectsCredentials: false.
+    IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(({ headers }) => headers.set("X-Correlation-Id", "abc-123"), { injectsCredentials: false });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(getRequestHeaders()?.get("X-Correlation-Id")).toEqual("abc-123");
+    expect(getRequestInit()?.redirect).toBeUndefined();
+  });
+
+  it("does not retry with SSO credentials after an NTLM challenge on a credentialed shaped request", async () => {
     fetchMock.mockResolvedValue(ntlmChallengeResponse());
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+    addCredentialedListener();
     const provider = createProvider();
     const response = await provider.makeRequest(tileUrl);
 
@@ -193,24 +215,34 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(response.status).toEqual(401);
   });
 
-  it("transitions to RequireAuth on 401/403 for client-shaped requests by default", async () => {
+  it("still retries with SSO credentials when no credentialed listener is registered", async () => {
+    fetchMock.mockResolvedValue(ntlmChallengeResponse());
+    IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(({ headers }) => headers.set("X-Correlation-Id", "abc-123"), { injectsCredentials: false });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    // The 401 NTLM challenge is answered with a browser-credentials retry, as without listeners.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(getRequestInit(1)?.credentials).toEqual("include");
+  });
+
+  it("transitions to RequireAuth on 401/403 for credentialed shaped requests by default", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+    addCredentialedListener();
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
-  it("lets classifyResponse recognize protocol-specific failures", async () => {
+  it("lets response listeners recognize protocol-specific failures", async () => {
     // An HTTP 200 whose body carries an embedded error code (e.g. ArcGIS-style).
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ error: { code: 499 } }), { status: 200 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      classifyResponse: async ({ response }) => {
-        const json = await response.clone().json();
-        return json?.error?.code === 499 ? "authentication" : undefined;
-      },
-    }));
+    IModelApp.mapLayerFormatRegistry.addMapLayerResponseListener(async (rsp) => {
+      const json = await rsp.response.clone().json();
+      if (json?.error?.code === 499)
+        rsp.failure = "authentication";
+    });
     const provider = createProvider();
     const tileResponse = await provider.makeRequest(tileUrl);
 
@@ -219,29 +251,46 @@ describe("MapLayerAccessClient request shaping", () => {
     expect((await tileResponse.json())?.error?.code).toEqual(499);
   });
 
-  it("lets classifyResponse override the default 401 classification", async () => {
+  it("prefills failure with the default classification and lets listeners clear it", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      classifyResponse: () => undefined,
-    }));
+    addCredentialedListener();
+    const seenFailures: Array<string | undefined> = [];
+    IModelApp.mapLayerFormatRegistry.addMapLayerResponseListener((rsp) => {
+      seenFailures.push(rsp.failure);
+      rsp.failure = undefined;    // suppress the default 401 classification
+    });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(seenFailures).toEqual(["authentication"]);
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
+  });
+
+  it("lets response listeners classify responses to unshaped requests", async () => {
+    // Response listeners see every map-layer response, even without any request listener.
+    fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
+    IModelApp.mapLayerFormatRegistry.addMapLayerResponseListener((rsp) => {
+      if (rsp.response.status === 401)
+        rsp.failure = "authentication";
+    });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
+  });
+
+  it("does not apply the default 401 classification when no credentialed listener is registered", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
+    IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(({ headers }) => headers.set("X-Correlation-Id", "abc-123"), { injectsCredentials: false });
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
   });
 
-  it("does not classify failures for requests that were not client-shaped", async () => {
-    fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
-    // Client without applyToRequest: legacy behavior, no classification.
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({ applyToRequest: undefined }));
-    const provider = createProvider();
-    await provider.makeRequest(tileUrl);
-
-    expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
-  });
-
-  it("does not alter requests when the registered client has no applyToRequest (backward compatibility)", async () => {
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({ applyToRequest: undefined }));
+  it("stops shaping requests once a listener is removed", async () => {
+    const removeListener = IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(({ headers }) => headers.set("Authorization", "Bearer secret-jwt"), { injectsCredentials: true });
+    removeListener();
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
@@ -250,7 +299,7 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(getRequestHeaders()).toBeUndefined();
   });
 
-  it("does not alter requests when no access client is registered for the format", async () => {
+  it("does not alter requests when no listener is registered", async () => {
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
@@ -260,7 +309,7 @@ describe("MapLayerAccessClient request shaping", () => {
 
   it("shapes tooltip requests too", async () => {
     fetchMock.mockResolvedValue(new Response("tooltip text", { status: 200 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+    addCredentialedListener();
     const provider = createProvider();
     const strings: string[] = [];
     await provider.testToolTipFromUrl(strings, `${settingsUrl}/getFeatureInfo`);
@@ -271,7 +320,7 @@ describe("MapLayerAccessClient request shaping", () => {
 
   it("shapes WMS capabilities requests and transitions to RequireAuth on 401 during initialize", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+    addCredentialedListener();
     const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl });
     settings.unsavedQueryParams = { custom: "1" };
     const provider = new WmsMapLayerImageryProvider(settings);
@@ -282,37 +331,36 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(requested.searchParams.get("clientParam")).toEqual("clientParamValue");
     // Settings custom params must reach the capabilities request made by initialize, like on the validate path.
     expect(requested.searchParams.get("custom")).toEqual("1");
-    // Client shaping must not disturb the protocol parameters of the capabilities request.
+    // Listener shaping must not disturb the protocol parameters of the capabilities request.
     expect(requested.searchParams.get("request")).toEqual("GetCapabilities");
     expect(requested.searchParams.get("service")).toEqual("WMS");
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
-  it("transitions to RequireAuth on 403 during initialize when requests are client-shaped", async () => {
+  it("transitions to RequireAuth on 403 during initialize when requests are shaped with credentials", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+    addCredentialedListener();
     const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl }));
     await provider.initialize();
 
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
-  it("consults classifyResponse for capabilities requests during initialize", async () => {
+  it("consults response listeners for capabilities requests during initialize", async () => {
     // A failure convention the default 401/403 rule cannot see: HTTP 200 with an error body.
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ error: "TOKEN_EXPIRED" }), { status: 200 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      classifyResponse: async ({ response }) => {
-        const json = await response.clone().json().catch(() => undefined);
-        return json?.error === "TOKEN_EXPIRED" ? "authentication" : undefined;
-      },
-    }));
+    IModelApp.mapLayerFormatRegistry.addMapLayerResponseListener(async (rsp) => {
+      const json = await rsp.response.clone().json().catch(() => undefined);
+      if (json?.error === "TOKEN_EXPIRED")
+        rsp.failure = "authentication";
+    });
     const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl }));
     await provider.initialize();
 
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
-  it("keeps throwing on 403 during initialize when no client shapes requests", async () => {
+  it("keeps throwing on 403 during initialize when no listener is registered", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
     const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl }));
     await expect(provider.initialize()).rejects.toThrow();
@@ -323,7 +371,7 @@ describe("MapLayerAccessClient request shaping", () => {
   it("transitions a WMTS layer to RequireAuth when its shaped capabilities request fails", async () => {
     // The initialize failure-conversion block is duplicated in the WMTS provider; guard it separately.
     fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMTS", makeAccessClient());
+    addCredentialedListener();
     const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMTS", name: "TestLayer", url: settingsUrl });
     settings.unsavedQueryParams = { custom: "1" };
     const provider = new WmtsMapLayerImageryProvider(settings);
@@ -338,9 +386,9 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
-  it("applies access client auth to ArcGIS service metadata requests", async () => {
+  it("shapes ArcGIS service metadata requests", async () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify({}), { headers: { "content-type": "application/json" } }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient());
+    addCredentialedListener();
 
     await ArcGisUtilities.getServiceJson({ url: "https://arcgis.example.com/MapServer", formatId: "ArcGIS" });
 
@@ -352,7 +400,7 @@ describe("MapLayerAccessClient request shaping", () => {
 
   it("transitions an ArcGIS layer to RequireAuth when its shaped service metadata request fails", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient());
+    addCredentialedListener();
     const provider = new ArcGISMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" }));
 
     // Must not throw: the tile tree is kept alive so the application can offer re-authentication.
@@ -363,7 +411,7 @@ describe("MapLayerAccessClient request shaping", () => {
 
   it("reports RequireAuth from ArcGIS source validation when the shaped metadata request fails", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient());
+    addCredentialedListener();
     const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" })!;
 
     const validation = await ArcGisUtilities.validateSource({ source, capabilitiesFilter: ["Map"] });
@@ -371,11 +419,12 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(validation.status).toEqual(MapLayerSourceStatus.RequireAuth);
   });
 
-  it("uses the client's classifyResponse to classify shaped ArcGIS provider responses", async () => {
+  it("uses response listeners to classify ArcGIS provider responses", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 407 }));
-    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient({
-      classifyResponse: ({ response }) => response.status === 407 ? "authentication" : undefined,
-    }));
+    IModelApp.mapLayerFormatRegistry.addMapLayerResponseListener((rsp) => {
+      if (rsp.response.status === 407)
+        rsp.failure = "authentication";
+    });
     const provider = new ArcGISMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" }));
 
     await (provider as any).fetch(new URL("https://arcgis.example.com/MapServer/tile/0/0/0"), { method: "GET" });
@@ -383,9 +432,9 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
-  it("applies access client auth to ArcGIS provider requests", async () => {
+  it("shapes ArcGIS provider requests", async () => {
     fetchMock.mockResolvedValue(okResponse());
-    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient());
+    addCredentialedListener();
     const provider = new ArcGISMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" }));
 
     await (provider as any).fetch(new URL("https://arcgis.example.com/MapServer/tile/0/0/0"), { method: "GET" });
@@ -395,7 +444,7 @@ describe("MapLayerAccessClient request shaping", () => {
   });
 
   it("preserves settings custom query parameters on shaped tile requests", async () => {
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+    addCredentialedListener();
     const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl });
     settings.savedQueryParams = { saved: "1" };
     settings.unsavedQueryParams = { unsaved: "2" };
@@ -413,7 +462,7 @@ describe("MapLayerAccessClient request shaping", () => {
 
   it("preserves settings custom query parameters on shaped ArcGIS provider requests", async () => {
     fetchMock.mockResolvedValue(okResponse());
-    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient());
+    addCredentialedListener();
     const settings = ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" });
     settings.unsavedQueryParams = { custom: "1" };
     const provider = new ArcGISMapLayerImageryProvider(settings);
@@ -429,8 +478,9 @@ describe("MapLayerAccessClient request shaping", () => {
   it("preserves custom query parameters on shaped WMS capabilities validation requests", async () => {
     // MapLayerImageryFormats.validate passes source.collectQueryParams() to create().
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
+    addCredentialedListener();
 
-    await expect(WmsCapabilities.create(settingsUrl, { ignoreCache: true, queryParams: { custom: "1" }, accessClient: makeAccessClient() }))
+    await expect(WmsCapabilities.create(settingsUrl, { ignoreCache: true, queryParams: { custom: "1" } }))
       .rejects.toBeInstanceOf(MapLayerAuthenticationFailedError);
 
     const requested = new URL(getRequestUrl());
@@ -443,8 +493,9 @@ describe("MapLayerAccessClient request shaping", () => {
   it("preserves custom query parameters on shaped WMTS capabilities validation requests", async () => {
     // The queryParams merge is duplicated in WmtsCapabilities.create; guard it separately.
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
+    addCredentialedListener();
 
-    await expect(WmtsCapabilities.create(settingsUrl, { ignoreCache: true, queryParams: { custom: "1" }, accessClient: makeAccessClient() }))
+    await expect(WmtsCapabilities.create(settingsUrl, { ignoreCache: true, queryParams: { custom: "1" } }))
       .rejects.toBeInstanceOf(MapLayerAuthenticationFailedError);
 
     const requested = new URL(getRequestUrl());
@@ -454,25 +505,21 @@ describe("MapLayerAccessClient request shaping", () => {
     expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer secret-jwt");
   });
 
-  it("propagates applyToRequest failures instead of issuing the request unshaped", async () => {
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      applyToRequest: ({ headers }) => {
-        headers.set("Authorization", "Bearer partial");
-        throw new Error("token service unreachable");
-      },
-    }));
+  it("propagates listener failures instead of issuing the request unshaped", async () => {
+    IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(({ headers }) => {
+      headers.set("Authorization", "Bearer partial");
+      throw new Error("token service unreachable");
+    }, { injectsCredentials: true });
     const provider = createProvider();
 
     await expect(provider.makeRequest(tileUrl)).rejects.toThrow("token service unreachable");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("skips the tooltip request when applyToRequest fails", async () => {
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient({
-      applyToRequest: () => {
-        throw new Error("token service unreachable");
-      },
-    }));
+  it("skips the tooltip request when a listener fails", async () => {
+    IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(() => {
+      throw new Error("token service unreachable");
+    }, { injectsCredentials: true });
     const provider = createProvider();
     const strings: string[] = [];
     // Must neither reject (getToolTip callers do not catch) nor fall back to an unshaped request.
@@ -483,7 +530,7 @@ describe("MapLayerAccessClient request shaping", () => {
   });
 
   it("issues a non-absolute URL unshaped rather than failing", async () => {
-    IModelApp.mapLayerFormatRegistry.setAccessClient("WMS", makeAccessClient());
+    addCredentialedListener();
     const provider = createProvider();
     await provider.makeRequest("relative/tile/0/0/0");
 
@@ -493,7 +540,7 @@ describe("MapLayerAccessClient request shaping", () => {
 
   it("re-shapes and protects the ArcGIS HTML-fallback request and classifies its response", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
-    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", makeAccessClient());
+    addCredentialedListener();
     fetchMock.mockResolvedValueOnce(new Response("<html></html>", { status: 200, headers: { "content-type": "text/html" } }));
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
     const provider = new ArcGISMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" }));

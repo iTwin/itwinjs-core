@@ -7,7 +7,6 @@
  */
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
 import {
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
@@ -69,7 +68,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
         credentials: (userName && password ? {user: userName, password} : undefined),
         ignoreCache,
         queryParams: source.collectQueryParams(),
-        accessClient: IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId),
+        formatId: source.formatId,
       });
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
@@ -159,7 +158,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
         credentials: (userName && password ? {user: userName, password} : undefined),
         ignoreCache,
         queryParams: source.collectQueryParams(),
-        accessClient: IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId),
+        formatId: source.formatId,
       });
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };

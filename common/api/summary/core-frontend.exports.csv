@@ -1,6 +1,5 @@
 sep=;
 Release Tag;API Item Type;API Item Name
-internal;function;accessClientRedirect
 public;class;AccuDraw
 beta;class;AccuDrawChangeModeTool
 internal;class;AccudrawData
@@ -44,7 +43,6 @@ deprecated;class;AngleDescription
 internal;enum;AnimationNodeId
 public;interface;Animator
 internal;function;appendQueryParams
-internal;function;applyAccessClientToRequest
 internal;enum;ArcGisErrorCode
 internal;class;ArcGisGeometryReaderJSON
 internal;interface;ArcGisGetServiceJsonArgs
@@ -346,9 +344,9 @@ public;class;IntersectDetail
 public;class;IpcApp
 public;interface;IpcAppOptions
 beta;class;IpcHandler
-internal;function;isAccessClientAuthFailure
 public;const;isCheckboxFormatPropEditorSpec
 public;function;isCustomQuantityTypeDefinition
+internal;function;isMapLayerAuthFailure
 public;const;isTextInputFormatPropEditorSpec
 public;const;isTextSelectFormatPropEditorSpec
 public;enum;ItemField
@@ -405,8 +403,10 @@ internal;interface;MapLayerInfoFromTileTree
 public;interface;MapLayerOptions
 beta;interface;MapLayerRequest
 beta;type;MapLayerRequestFailure
-beta;interface;MapLayerRequestShaper
+beta;type;MapLayerRequestListener
+beta;interface;MapLayerRequestListenerOptions
 beta;interface;MapLayerResponse
+beta;type;MapLayerResponseListener
 beta;interface;MapLayerScaleRangeVisibility
 public;class;MapLayerSource
 public;interface;MapLayerSourceProps
@@ -617,6 +617,8 @@ internal;function;setBasicAuthorization
 internal;function;setRequestTimeout
 public;class;SetupCameraTool
 public;class;SetupWalkCameraTool
+internal;function;shapedRequestRedirect
+internal;function;shapeMapLayerRequest
 public;class;SheetModelState
 public;class;SheetViewState
 internal;interface;SkyBoxDecorations

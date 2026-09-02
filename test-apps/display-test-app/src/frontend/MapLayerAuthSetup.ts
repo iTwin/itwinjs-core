@@ -34,11 +34,11 @@ function configureTrustedCredentialsOrigins(configuration: DtaConfiguration): vo
   }
 }
 
-/** Registers a simple access client injecting a fixed header (e.g. "Authorization=Bearer ...")
- * and/or query parameters into every map-layer request of the formats listed in
- * IMJS_MAP_LAYER_AUTH_FORMATS. See README.md.
+/** Registers a [[MapLayerFormatRegistry.addMapLayerRequestListener]] listener injecting a fixed header
+ * (e.g. "Authorization=Bearer ...") and/or query parameters into every map-layer request of the
+ * formats listed in IMJS_MAP_LAYER_AUTH_FORMATS. See README.md.
  */
-function configureAuthAccessClient(configuration: DtaConfiguration): void {
+function configureAuthRequestListener(configuration: DtaConfiguration): void {
   if (!configuration.mapLayerAuthHeader && !configuration.mapLayerAuthQueryParams)
     return;
 
@@ -70,32 +70,32 @@ function configureAuthAccessClient(configuration: DtaConfiguration): void {
   const formats = (configuration.mapLayerAuthFormats ?? "").split(",").map((entry) => entry.trim()).filter((entry) => entry.length > 0);
   if (formats.length === 0) {
     // eslint-disable-next-line no-console
-    console.warn("IMJS_MAP_LAYER_AUTH_FORMATS must list the map-layer format ids (e.g. \"WMS,ArcGIS\") the access client applies to; no access client registered.");
+    console.warn("IMJS_MAP_LAYER_AUTH_FORMATS must list the map-layer format ids (e.g. \"WMS,ArcGIS\") the request listener applies to; no listener registered.");
     return;
   }
 
   for (const formatId of formats) {
-    const registered = IModelApp.mapLayerFormatRegistry.setAccessClient(formatId, {
-      getAccessToken: async () => undefined,
-      applyToRequest: ({ headers, searchParams }) => {
-        if (header)
-          headers.set(header[0], header[1]);
-        for (const [name, value] of queryParams)
-          searchParams.set(name, value);
-      },
-    });
-    if (!registered) {
+    if (!IModelApp.mapLayerFormatRegistry.isRegistered(formatId)) {
       // eslint-disable-next-line no-console
       console.warn(`IMJS_MAP_LAYER_AUTH_FORMATS: no map-layer format registered with id "${formatId}".`);
     }
   }
+
+  IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener((request) => {
+    if (!formats.includes(request.formatId))
+      return;
+    if (header)
+      request.headers.set(header[0], header[1]);
+    for (const [name, value] of queryParams)
+      request.searchParams.set(name, value);
+  }, { injectsCredentials: true });   // the injected values are (test) credentials
 }
 
 /** Applies the map-layer security/authentication configuration derived from environment variables.
- * Must be called after IModelApp startup and after every map-layer format the access client targets
+ * Must be called after IModelApp startup and after every map-layer format the request listener targets
  * (including the MapLayersFormats extension formats) has been registered.
  */
 export function configureMapLayerAuth(configuration: DtaConfiguration): void {
   configureTrustedCredentialsOrigins(configuration);
-  configureAuthAccessClient(configuration);
+  configureAuthRequestListener(configuration);
 }

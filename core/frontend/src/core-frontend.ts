@@ -156,7 +156,7 @@ export {
   ImageryMapLayerFormat,
   MapLayerFormat, type ValidateSourceArgs, type MapLayerFormatType, type MapLayerSourceValidation, type MapLayerOptions, MapLayerFormatRegistry,
   type MapLayerTokenEndpoint, type MapLayerAuthenticationInfo, type MapLayerAccessToken, type MapLayerAccessTokenParams, type MapLayerAccessClient,
-  type MapLayerRequest, type MapLayerResponse, type MapLayerRequestFailure, type MapLayerRequestShaper,
+  type MapLayerRequest, type MapLayerResponse, type MapLayerRequestFailure, type MapLayerRequestListener, type MapLayerResponseListener, type MapLayerRequestListenerOptions,
   type MapFeatureInfoOptions, MapFeatureInfoRecord, type MapFeatureInfo, type MapLayerFeatureInfo, type MapSubLayerFeatureInfo, type MapLayerFeature, type MapLayerFeatureGeometry, type MapLayerFeatureAttribute, MapLayerFeatureRecord,
   MapCartoRectangle,
   ImageryMapLayerTreeReference,

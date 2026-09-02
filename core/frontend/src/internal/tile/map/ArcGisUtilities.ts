@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { accessClientRedirect, applyAccessClientToRequest, isAccessClientAuthFailure, MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthenticationFailedError, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
+import { isMapLayerAuthFailure, MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthenticationFailedError, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, shapedRequestRedirect, shapeMapLayerRequest, ValidateSourceArgs} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { headersIncludeAuthMethod } from "../../../request/utils";
 
@@ -273,18 +273,18 @@ export class ArcGisUtilities {
    * @param requireToken Flag to indicate if a token is required
    * @throws [[MapLayerUntrustedOriginError]] if an NTLM/Negotiate challenge could not be answered because
    * the URL's origin is not trusted (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]);
-   * [[MapLayerAuthenticationFailedError]] if the request was shaped by the format's access client and classified
-   * as an authentication failure (see [[MapLayerRequestShaper.classifyResponse]]);
+   * [[MapLayerAuthenticationFailedError]] if the response was classified as an authentication failure
+   * (registered via [[MapLayerFormatRegistry.addMapLayerResponseListener]]);
    * all other errors are caught and reported by returning `undefined`.
    */
 
   public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
     const {url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
     const accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(formatId);
-    // The cache is keyed by URL only, so responses shaped by an access client (e.g. header-authenticated)
-    // must not be shared with or served from differently-authenticated requests.
-    const clientShapesRequests = undefined !== accessClient?.applyToRequest;
-    if (!ignoreCache && !clientShapesRequests) {
+    // The cache is keyed by URL only, so responses shaped by request listeners (e.g.
+    // header-authenticated) must not be shared with or served from differently-shaped requests.
+    const requestsShaped = IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners ?? false;
+    if (!ignoreCache && !requestsShaped) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)
         return cached;
@@ -305,12 +305,13 @@ export class ArcGisUtilities {
       return tmpUrl;
     };
 
-    // Give the format's access client full control over the outgoing request (e.g. an Authorization header).
-    const applyClientAuth = async (urlObj: URL): Promise<Headers | undefined> => {
-      if (!clientShapesRequests)
+    // Give registered request listeners full control over the outgoing request (e.g. an Authorization header).
+    let containsCredentials = false;
+    const applyRequestShaping = async (urlObj: URL): Promise<Headers | undefined> => {
+      if (!requestsShaped)
         return undefined;
       const headers = new Headers();
-      await applyAccessClientToRequest(urlObj, headers, { mapLayerUrl: new URL(url), userName, password }, accessClient);
+      containsCredentials = await shapeMapLayerRequest(urlObj, headers, formatId, { mapLayerUrl: new URL(url), userName, password });
       return headers;
     };
 
@@ -325,11 +326,10 @@ export class ArcGisUtilities {
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
         }
       }
-      let requestHeaders = await applyClientAuth(tmpUrl);
-      // Client-shaped requests carry secrets too, so they get the same redirect policy as credentialed ones.
-      const clientRedirect = clientShapesRequests ? accessClientRedirect() : undefined;
-      let response = await fetch(tmpUrl, { method: "GET", headers: requestHeaders, redirect: clientRedirect });
-      if (response.status === 401 && !requireToken && !clientShapesRequests && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
+      let requestHeaders = await applyRequestShaping(tmpUrl);
+      // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
+      let response = await fetch(tmpUrl, { method: "GET", headers: requestHeaders, redirect: containsCredentials ? shapedRequestRedirect() : undefined });
+      if (response.status === 401 && !requireToken && !containsCredentials && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
         // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
         const challengedUrl = response.url || tmpUrl.toString();
         if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(challengedUrl))
@@ -354,22 +354,23 @@ export class ArcGisUtilities {
         if (accessClient) {
           tmpUrl = createUrlObj();
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
-          requestHeaders = await applyClientAuth(tmpUrl);
-          response = await fetch(tmpUrl.toString(), { method: "GET", headers: requestHeaders, redirect: clientRedirect });
+          requestHeaders = await applyRequestShaping(tmpUrl);
+          response = await fetch(tmpUrl.toString(), { method: "GET", headers: requestHeaders, redirect: containsCredentials ? shapedRequestRedirect() : undefined });
           errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
       }
 
-      // Let the access client classify authentication failures for the requests it shaped (default: 401/403),
-      // mirroring WmsUtilities.fetchXml, so callers can transition to RequireAuth rather than a generic failure.
-      if (clientShapesRequests && await isAccessClientAuthFailure(response, { mapLayerUrl: new URL(url), userName, password }, accessClient))
+      // Classify the final response (default rule: 401/403 on a request carrying listener-injected
+      // credentials), mirroring WmsUtilities.fetchXml, so callers can transition to RequireAuth rather
+      // than a generic failure.
+      if (await isMapLayerAuthFailure(response, formatId, { mapLayerUrl: new URL(url), userName, password }, containsCredentials))
         throw new MapLayerAuthenticationFailedError(response.url || tmpUrl.toString());
 
       const json = await response.json();
       const info = {content: json, accessTokenRequired};
-      // Cache the response only if it doesn't contain any error, and never when the request was shaped by an
-      // access client (the cache is keyed by URL only, so protected data must not be cached).
-      if (!clientShapesRequests)
+      // Cache the response only if it doesn't contain any error, and never when the request was shaped by
+      // request listeners (the cache is keyed by URL only, so protected data must not be cached).
+      if (!requestsShaped)
         ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? info : undefined));
       return info;  // Always return json, even though it contains an error code.
 

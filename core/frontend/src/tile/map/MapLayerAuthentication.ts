@@ -7,7 +7,6 @@
  */
 
 import { BeEvent, Listener } from "@itwin/core-bentley";
-import type { MapLayerRequestShaper } from "./MapLayerRequestShaper";
 
 /** @beta */
 export interface MapLayerTokenEndpoint {
@@ -42,7 +41,7 @@ export interface MapLayerAccessTokenParams {
 }
 
 /** @beta */
-export interface MapLayerAccessClient extends MapLayerRequestShaper {
+export interface MapLayerAccessClient {
   getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
   getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
   invalidateToken?(token: MapLayerAccessToken): boolean;

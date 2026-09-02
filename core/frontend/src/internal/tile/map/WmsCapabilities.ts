@@ -8,6 +8,7 @@
 
 import { MapSubLayerProps } from "@itwin/core-common";
 import WMS from "wms-capabilities";
+import { IModelApp } from "../../../IModelApp";
 import { MapCartoRectangle, WmsCapabilitiesCreateOptions, WmsUtilities } from "../../../tile/internal";
 
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
@@ -219,11 +220,11 @@ export class WmsCapabilities {
   }
 
   public static async create(url: string, options?: WmsCapabilitiesCreateOptions): Promise<WmsCapabilities | undefined> {
-    const { credentials, ignoreCache, queryParams, accessClient, layerUrl } = options ?? {};
-    // The cache is keyed by URL only, so responses shaped by an access client (e.g. header-authenticated)
-    // must not be shared with or served from differently-authenticated requests.
-    const clientShapesRequests = undefined !== accessClient?.applyToRequest;
-    if (!ignoreCache && !clientShapesRequests) {
+    const { credentials, ignoreCache, queryParams, formatId, layerUrl } = options ?? {};
+    // The cache is keyed by URL only, so responses shaped by request listeners (e.g.
+    // header-authenticated) must not be shared with or served from differently-shaped requests.
+    const requestsShaped = IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners ?? false;
+    if (!ignoreCache && !requestsShaped) {
       const cached = WmsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
         return cached;
@@ -238,7 +239,7 @@ export class WmsCapabilities {
           tmpUrl.searchParams.append(paramKey, queryParams[paramKey]);
       });
     }
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, accessClient, layerUrl: layerUrl ?? url });
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, formatId: formatId ?? "WMS", layerUrl: layerUrl ?? url });
 
     if (!xmlCapabilities)
       return undefined;
@@ -247,7 +248,7 @@ export class WmsCapabilities {
     if (capabilities === undefined)
       return undefined;
 
-    if (!credentials && !clientShapesRequests) {
+    if (!credentials && !requestsShaped) {
       // Avoid caching protected data
       WmsCapabilities._capabilitiesCache.set(url, capabilities);
     }

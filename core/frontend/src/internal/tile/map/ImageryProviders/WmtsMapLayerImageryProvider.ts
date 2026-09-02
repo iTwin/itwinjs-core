@@ -45,7 +45,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       this._capabilities = await WmtsCapabilities.create(this._baseUrl, {
         credentials,
         queryParams: this._settings.collectQueryParams(),
-        accessClient: this.accessClient,
+        formatId: this._settings.formatId,
         layerUrl: this._settings.url,
       });
       this.initPreferredTileMatrixSet();

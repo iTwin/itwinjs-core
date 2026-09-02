@@ -62,9 +62,9 @@ export interface DtaStringConfiguration {
   frontendTilesUrlTemplate?: string; // if set, specifies url for @itwin/frontend-tiles to obtain tile trees for spatial views.  See README.md
   authServerAllowlist?: string; // default is undefined; comma-separated list of servers for which Chromium may perform integrated authentication (Kerberos/NTLM SSO), e.g. "*.example.com". Electron only.
   mapLayerTrustedCredentialsOrigins?: string; // default is undefined; comma-separated list of exact origins (scheme + host + port, e.g. "https://maps.corp.example.com") trusted to receive map-layer credentials. When set, enables MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins.
-  mapLayerAuthHeader?: string; // default is undefined; a "Header-Name=value" pair injected into every map-layer request via a MapLayerAccessClient. See README.md.
-  mapLayerAuthQueryParams?: string; // default is undefined; comma-separated "name=value" pairs injected into every map-layer request via a MapLayerAccessClient. See README.md.
-  mapLayerAuthFormats?: string; // default is undefined; comma-separated list of map-layer format ids the IMJS_MAP_LAYER_AUTH_HEADER/IMJS_MAP_LAYER_AUTH_QUERY_PARAMS access client is registered for. Required for the access client to be registered.
+  mapLayerAuthHeader?: string; // default is undefined; a "Header-Name=value" pair injected into every map-layer request via a map-layer request listener. See README.md.
+  mapLayerAuthQueryParams?: string; // default is undefined; comma-separated "name=value" pairs injected into every map-layer request via a map-layer request listener. See README.md.
+  mapLayerAuthFormats?: string; // default is undefined; comma-separated list of map-layer format ids the IMJS_MAP_LAYER_AUTH_HEADER/IMJS_MAP_LAYER_AUTH_QUERY_PARAMS listener applies to. Required for the listener to be registered.
 }
 
 export interface DtaNumberConfiguration {

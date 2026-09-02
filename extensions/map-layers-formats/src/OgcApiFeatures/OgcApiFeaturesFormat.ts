@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { accessClientRedirect, appendQueryParams, applyAccessClientToRequest, ImageryMapLayerFormat, IModelApp, isAccessClientAuthFailure, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
+import { appendQueryParams, ImageryMapLayerFormat, IModelApp, isMapLayerAuthFailure, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, shapedRequestRedirect, shapeMapLayerRequest, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
@@ -28,18 +28,18 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         headers,
       };
 
-      // Give the format's access client full control over each outgoing request (e.g. an Authorization header).
-      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId);
-      const clientShapesRequests = undefined !== accessClient?.applyToRequest;
+      // Give registered request listeners full control over each outgoing request (e.g. an Authorization header).
+      const requestsShaped = IModelApp.mapLayerFormatRegistry.hasMapLayerRequestListeners;
+      let containsCredentials = false;
 
       // Classify HTTP failures before parsing JSON, using the final response URL to enforce origin trust after redirects.
       const classifyResponseFailure = async (httpResponse: Response, requestedUrl: string): Promise<MapLayerSourceValidation | undefined> => {
-        // The access client is the authentication authority for the requests it shaped (default: 401/403).
-        if (clientShapesRequests) {
-          if (await isAccessClientAuthFailure(httpResponse, { mapLayerUrl: new URL(source.url), userName, password }, accessClient))
-            return { status: MapLayerSourceStatus.RequireAuth };
+        // Response listeners see every response; the default rule classifies 401/403 on requests
+        // carrying listener-injected credentials.
+        if (await isMapLayerAuthFailure(httpResponse, source.formatId, { mapLayerUrl: new URL(source.url), userName, password }, containsCredentials))
+          return { status: MapLayerSourceStatus.RequireAuth };
+        if (containsCredentials)
           return httpResponse.ok ? undefined : { status: MapLayerSourceStatus.InvalidUrl };
-        }
 
         if (httpResponse.ok)
           return undefined;
@@ -65,13 +65,13 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url, source.url);
 
       const applyClientAuth = async (requestUrl: string, baseOpts: RequestInit): Promise<{ url: string, opts: RequestInit }> => {
-        if (!accessClient?.applyToRequest)
+        if (!requestsShaped)
           return { url: requestUrl, opts: baseOpts };
         const urlObj = new URL(requestUrl);
         const clientHeaders = new Headers(baseOpts.headers);
-        await applyAccessClientToRequest(urlObj, clientHeaders, { mapLayerUrl: new URL(source.url), userName, password }, accessClient);
-        // Client-shaped requests carry secrets too, so they get the same redirect policy as credentialed ones.
-        return { url: urlObj.toString(), opts: { ...baseOpts, headers: clientHeaders, redirect: accessClientRedirect() } };
+        containsCredentials = await shapeMapLayerRequest(urlObj, clientHeaders, source.formatId, { mapLayerUrl: new URL(source.url), userName, password });
+        // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
+        return { url: urlObj.toString(), opts: { ...baseOpts, headers: clientHeaders, redirect: containsCredentials ? shapedRequestRedirect() : baseOpts.redirect } };
       };
 
       const landingRequest = await applyClientAuth(url, allowLandingCredentials ? opts : { method: "GET" });

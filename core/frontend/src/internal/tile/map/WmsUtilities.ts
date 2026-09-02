@@ -7,21 +7,21 @@ import { IModelApp } from "../../../IModelApp";
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
 import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
 import {
-  accessClientRedirect, applyAccessClientToRequest, isAccessClientAuthFailure, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerUntrustedOriginError,
+  isMapLayerAuthFailure, MapLayerAuthenticationFailedError, MapLayerUntrustedOriginError, shapedRequestRedirect, shapeMapLayerRequest,
 } from "../../../tile/internal";
 
 /** @packageDocumentation
  * @module Tiles
  */
 
-/** Options for a capabilities/XML request that an access client may authenticate.
+/** Options for a capabilities/XML request that registered map-layer request listeners may shape.
  * @internal
  */
 export interface WmsFetchOptions {
   credentials?: RequestBasicCredentials;
-  /** The format's registered access client, given control over the outgoing request. */
-  accessClient?: MapLayerAccessClient;
-  /** The map-layer source URL identifying the layer to the access client. Defaults to the request URL,
+  /** The id of the map-layer format the request is made for, identifying it to the request/response listeners. */
+  formatId?: string;
+  /** The map-layer source URL identifying the layer to the listeners. Defaults to the request URL,
    * which callers should avoid: capabilities request URLs differ from the layer's. */
   layerUrl?: string;
 }
@@ -47,7 +47,7 @@ export class WmsUtilities {
  * @param url server URL to address the request
  */
   public static async fetchXml(url: string, options?: WmsFetchOptions): Promise<string> {
-    const { credentials, accessClient, layerUrl } = options ?? {};
+    const { credentials, formatId, layerUrl } = options ?? {};
 
     let headers: Headers|undefined;
     if (credentials && credentials.user && credentials.password) {
@@ -62,40 +62,41 @@ export class WmsUtilities {
       }
     }
 
-    // Give the format's access client full control over the outgoing request (e.g. an Authorization header).
+    // Give registered request listeners full control over the outgoing request (e.g. an Authorization header).
     let requestUrl = url;
-    let clientAuthApplied = false;
+    let containsCredentials = false;
     const context = { mapLayerUrl: new URL(layerUrl ?? url), userName: credentials?.user, password: credentials?.password };
-    if (accessClient?.applyToRequest) {
+    if (IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners) {
       const urlObj = new URL(url);
       headers = headers ?? new Headers();
-      clientAuthApplied = await applyAccessClientToRequest(urlObj, headers, context, accessClient);
+      containsCredentials = await shapeMapLayerRequest(urlObj, headers, formatId ?? "", context);
       requestUrl = urlObj.toString();
     }
 
-    const response = await fetch(requestUrl, {
+    let response = await fetch(requestUrl, {
       method: "GET",
       headers,
-      // Client-shaped requests carry secrets too, so they get the same redirect policy as credentialed ones.
-      redirect: clientAuthApplied ? accessClientRedirect() : undefined,
+      // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
+      redirect: containsCredentials ? shapedRequestRedirect() : undefined,
     });
 
-    // The shaping client is the authority on what a failed authentication looks like; classify before the
-    // generic non-200 handling so callers can transition to RequireAuth rather than a generic failure.
-    if (clientAuthApplied) {
-      if (await isAccessClientAuthFailure(response, context, accessClient))
-        throw new MapLayerAuthenticationFailedError(requestUrl);
+    // A request carrying listener-injected credentials never falls back to the legacy basic-auth /
+    // NTLM-SSO handling: the injecting listener is the authentication authority for it.
+    if (!containsCredentials)
+      response = await WmsUtilities.handleLegacyChallenges(response, requestUrl, credentials, headers);
 
-      if (response.status !== 200)
-        throw new HttpResponseError(response.status, await response.text());
-      return response.text();
-    }
+    // Classify the final (post-retry) response before the generic non-200 handling so callers can
+    // transition to RequireAuth rather than a generic failure.
+    if (await isMapLayerAuthFailure(response, formatId ?? "", context, containsCredentials))
+      throw new MapLayerAuthenticationFailedError(requestUrl);
 
-    return WmsUtilities.handleUnshapedResponse(response, requestUrl, credentials, headers);
+    if (response.status !== 200)
+      throw new HttpResponseError(response.status, await response.text());
+    return response.text();
   }
 
-  /** Legacy (no access client) response handling: basic-auth/untrusted-origin classification and the SSO retry. */
-  private static async handleUnshapedResponse(firstResponse: Response, url: string, credentials?: RequestBasicCredentials, headers?: Headers): Promise<string> {
+  /** Legacy (no injected credentials) challenge handling: basic-auth/untrusted-origin classification and the SSO retry. */
+  private static async handleLegacyChallenges(firstResponse: Response, url: string, credentials?: RequestBasicCredentials, headers?: Headers): Promise<Response> {
     let response = firstResponse;
     if (!headers && credentials && credentials.user && credentials.password && (response.status === 401 || response.status === 403)) {
       throw new MapLayerUntrustedOriginError(url);
@@ -116,8 +117,6 @@ export class WmsUtilities {
       });
     }
 
-    if (response.status !== 200)
-      throw new HttpResponseError(response.status, await response.text());
-    return response.text();
+    return response;
   }
 }

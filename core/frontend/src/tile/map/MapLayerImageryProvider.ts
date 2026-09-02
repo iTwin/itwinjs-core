@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { appendQueryParams, applyAccessClientToRequest, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, isAccessClientAuthFailure, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerAccessTokenParams, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, isMapLayerAuthFailure, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerAccessTokenParams, MapLayerFeatureInfo, MapTilingScheme, QuadId, shapeMapLayerRequest, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 import { DecorateContext } from "../../ViewContext";
@@ -388,22 +388,28 @@ export abstract class MapLayerImageryProvider {
     return { mapLayerUrl: new URL(this._settings.url), userName: this._settings.userName, password: this._settings.password };
   }
 
-  /** Gives the access client registered for this layer's format the opportunity to shape the outgoing
-   * request via [[MapLayerRequestShaper.applyToRequest]], mutating the URL's query parameters and `headers` in place.
-   * @returns true if the request was shaped by the access client.
+  /** True while any [[MapLayerFormatRegistry.addMapLayerRequestListener]] listener is registered.
    * @internal
    */
-  protected async applyAccessClientAuth(url: URL, headers: Headers): Promise<boolean> {
-    return applyAccessClientToRequest(url, headers, this.accessTokenParams, this.accessClient);
+  protected get requestsAreShaped(): boolean {
+    return IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners ?? false;
   }
 
-  /** Returns true if the given response represents an authentication failure for a request shaped by
-   * [[MapLayerRequestShaper.applyToRequest]]. Delegates to [[MapLayerRequestShaper.classifyResponse]] when
-   * defined; otherwise treats HTTP 401/403 as authentication failures.
+  /** Submits the outgoing request to the registered request listeners, giving them the opportunity to
+   * shape it by mutating the URL's query parameters and `headers` in place.
+   * @returns true if the request was shaped by a listener registered with `injectsCredentials`.
    * @internal
    */
-  protected async isAccessClientAuthFailure(response: Response): Promise<boolean> {
-    return isAccessClientAuthFailure(response, this.accessTokenParams, this.accessClient);
+  protected async shapeRequest(url: URL, headers: Headers): Promise<boolean> {
+    return shapeMapLayerRequest(url, headers, this._settings.formatId, this.accessTokenParams);
+  }
+
+  /** Classifies the given response by submitting it to the registered response listeners. Without
+   * listeners, HTTP 401/403 on a credentialed request is an authentication failure.
+   * @internal
+   */
+  protected async isAuthFailure(response: Response, containsCredentials: boolean): Promise<boolean> {
+    return isMapLayerAuthFailure(response, this._settings.formatId, this.accessTokenParams, containsCredentials);
   }
 
   /** Returns true if the given URL has the same origin as this layer's settings URL.
@@ -547,21 +553,21 @@ export abstract class MapLayerImageryProvider {
       }
     }
 
-    // Give the format's registered access client full control over the outgoing request (e.g. an Authorization
-    // header for a service behind an authenticating proxy). Applied last so its headers take precedence.
+    // Give registered request listeners full control over the outgoing request (e.g. an Authorization
+    // header for a service behind an authenticating proxy). Applied last so their headers take precedence.
     let requestUrl = url;
-    let clientAuthApplied = false;
-    if (this.accessClient?.applyToRequest) {
+    let containsCredentials = false;
+    if (this.requestsAreShaped) {
       let urlObj: URL | undefined;
       try {
         urlObj = new URL(url);
       } catch {
         // Not a parseable absolute URL; let fetch fail (or succeed) on the original request unshaped.
       }
-      // applyToRequest failures propagate: the request must never silently degrade to an unauthenticated one.
+      // Listener failures propagate: the request must never silently degrade to an unauthenticated one.
       if (urlObj) {
         headers = headers ?? new Headers();
-        clientAuthApplied = await this.applyAccessClientAuth(urlObj, headers);
+        containsCredentials = await this.shapeRequest(urlObj, headers);
         requestUrl = urlObj.toString();
       }
     }
@@ -571,8 +577,8 @@ export abstract class MapLayerImageryProvider {
       method: "GET",
       headers,
       credentials: includeCredentials ? "include" : undefined,
-      // Client-shaped requests carry secrets too, so they get the same redirect policy as credentialed ones.
-      redirect: (includeCredentials || clientAuthApplied) ? this.credentialedRedirect : undefined,
+      // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
+      redirect: (includeCredentials || containsCredentials) ? this.credentialedRedirect : undefined,
     };
 
     if (timeoutMs !== undefined)
@@ -580,7 +586,7 @@ export abstract class MapLayerImageryProvider {
 
     response = await fetch(requestUrl, opts);
 
-    if (includeCredentials || clientAuthApplied)
+    if (includeCredentials || containsCredentials)
       this.checkCredentialedRedirect(requestUrl, response);
 
     // fetch follows redirects transparently, so all trust decisions below target the final
@@ -591,7 +597,7 @@ export abstract class MapLayerImageryProvider {
           && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
           && !includeCredentials
           && !hasCreds
-          && !clientAuthApplied
+          && !containsCredentials
     ) {
       if (this.isSsoAllowed(challengedUrl)) {
         // Removed the previous headers and make sure "include" credentials is set
@@ -620,7 +626,8 @@ export abstract class MapLayerImageryProvider {
       this.reportBlockedOrigin(challengedUrl);
     }
 
-    if (clientAuthApplied && await this.isAccessClientAuthFailure(response))
+    // Classify the final (post-retry) response; response listeners see every response.
+    if (await this.isAuthFailure(response, containsCredentials))
       this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 
     return response;
@@ -667,8 +674,8 @@ export abstract class MapLayerImageryProvider {
     }
 
     let requestUrl = url;
-    let clientAuthApplied = false;
-    if (this.accessClient?.applyToRequest) {
+    let containsCredentials = false;
+    if (this.requestsAreShaped) {
       let urlObj: URL | undefined;
       try {
         urlObj = new URL(url);
@@ -678,10 +685,10 @@ export abstract class MapLayerImageryProvider {
       if (urlObj) {
         headers = headers ?? new Headers();
         try {
-          clientAuthApplied = await this.applyAccessClientAuth(urlObj, headers);
+          containsCredentials = await this.shapeRequest(urlObj, headers);
         } catch (error) {
           // Never degrade to an unauthenticated request; skip the tooltip instead.
-          Logger.logWarning(loggerCategory, `Access client applyToRequest failed for tooltip request: ${BentleyError.getErrorMessage(error)}`);
+          Logger.logWarning(loggerCategory, `Map-layer request listener failed for tooltip request: ${BentleyError.getErrorMessage(error)}`);
           return;
         }
         requestUrl = urlObj.toString();
@@ -694,9 +701,9 @@ export abstract class MapLayerImageryProvider {
         method: "GET",
         headers,
         credentials: includeCredentials ? "include" : undefined,
-        redirect: (includeCredentials || clientAuthApplied) ? this.credentialedRedirect : undefined,
+        redirect: (includeCredentials || containsCredentials) ? this.credentialedRedirect : undefined,
       });
-      if (includeCredentials || clientAuthApplied)
+      if (includeCredentials || containsCredentials)
         this.checkCredentialedRedirect(requestUrl, response);
       let text = await response.text();
       if (text) {

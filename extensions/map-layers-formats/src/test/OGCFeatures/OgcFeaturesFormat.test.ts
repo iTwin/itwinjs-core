@@ -248,19 +248,16 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
   });
 
-  it("applies access client headers and query parameters to both validation requests", async () => {
+  it("applies listener headers and query parameters to both validation requests", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setAccessClient(OgcApiFeaturesMapLayerFormat.formatId, {
-      getAccessToken: async () => undefined,
-      applyToRequest: ({ searchParams, headers }) => {
-        searchParams.set("clientParam", "clientParamValue");
-        headers.set("Authorization", "Bearer secret-jwt");
-      },
-    });
+    registry.addMapLayerRequestListener(({ searchParams, headers }) => {
+      searchParams.set("clientParam", "clientParamValue");
+      headers.set("Authorization", "Bearer secret-jwt");
+    }, { injectsCredentials: true });
     const source = createSource();
     source.savedQueryParams = { saved: "1" };
     source.unsavedQueryParams = { unsaved: "2" };
-    // Settings custom params are appended first, then the access client shapes the request.
+    // Settings custom params are appended first, then request listeners shape the request.
     const shapedLanding = `${sourceUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
     const shapedCollections = `${sameOriginCollectionsUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
     stubFetch({
@@ -272,33 +269,32 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
     expect(fetchCalls.length).to.equals(2);
     expect(fetchCalls[0].url).to.equals(shapedLanding);
-    // The access client has full control: its Authorization header wins over settings-derived basic auth.
+    // Listeners have full control: their Authorization header wins over settings-derived basic auth.
     expect(getAuthorization(fetchCalls[0].init)).to.equals("Bearer secret-jwt");
     expect(fetchCalls[1].url).to.equals(shapedCollections);
     expect(getAuthorization(fetchCalls[1].init)).to.equals("Bearer secret-jwt");
     expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
   });
 
-  it("reports RequireAuth for a shaped validation request rejected with 403", async () => {
+  it("reports RequireAuth for a credentialed shaped validation request rejected with 403", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setAccessClient(OgcApiFeaturesMapLayerFormat.formatId, {
-      getAccessToken: async () => undefined,
-      applyToRequest: ({ headers }) => headers.set("Authorization", "Bearer secret-jwt"),
-    });
+    registry.addMapLayerRequestListener((request) => {
+      request.headers.set("Authorization", "Bearer secret-jwt");
+    }, { injectsCredentials: true });
     stubFetch({}, { [sourceUrl]: 403 });
 
     const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
 
-    // The access client is the authentication authority for shaped requests: RequireAuth, not InvalidCredentials.
+    // The injecting listener is the authentication authority: RequireAuth, not InvalidCredentials.
     expect(validation.status).to.equals(MapLayerSourceStatus.RequireAuth);
   });
 
-  it("uses the client's classifyResponse to classify shaped validation responses", async () => {
+  it("uses response listeners to classify shaped validation responses", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setAccessClient(OgcApiFeaturesMapLayerFormat.formatId, {
-      getAccessToken: async () => undefined,
-      applyToRequest: ({ headers }) => headers.set("Authorization", "Bearer secret-jwt"),
-      classifyResponse: ({ response }) => response.status === 407 ? "authentication" : undefined,
+    registry.addMapLayerRequestListener(({ headers }) => headers.set("Authorization", "Bearer secret-jwt"), { injectsCredentials: true });
+    registry.addMapLayerResponseListener((rsp) => {
+      if (rsp.response.status === 407)
+        rsp.failure = "authentication";
     });
     stubFetch({}, { [sourceUrl]: 407 });
 

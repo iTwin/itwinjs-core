@@ -108,25 +108,25 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         password: this._settings.password });
     }
 
-    // Give the format's access client full control over the outgoing request (e.g. an Authorization header).
-    // Applied after all provider query params so the client sees the complete request.
-    // Guarded so the common no-client path stays synchronous up to the fetch call.
-    let clientAuthApplied = false;
+    // Give registered request listeners full control over the outgoing request (e.g. an Authorization header).
+    // Applied after all provider query params so listeners see the complete request.
+    // Guarded so the common no-listener path stays synchronous up to the fetch call.
+    let containsCredentials = false;
     const baseHeaders = options?.headers;
-    if (this.accessClient?.applyToRequest) {
+    if (this.requestsAreShaped) {
       const clientHeaders = new Headers(baseHeaders);
-      clientAuthApplied = await this.applyAccessClientAuth(urlObj, clientHeaders);
+      containsCredentials = await this.shapeRequest(urlObj, clientHeaders);
       options = { ...options, headers: clientHeaders };
     }
 
     // Shapes each follow-up request independently, with fresh headers and the same redirect policy as the
     // initial request, so injected values are neither accumulated nor exposed to cross-origin redirects.
     const shapedFetch = async (target: URL): Promise<Response> => {
-      if (!clientAuthApplied)
+      if (!this.requestsAreShaped)
         return fetch(target.toString(), options);
       const headers = new Headers(baseHeaders);
-      await this.applyAccessClientAuth(target, headers);
-      return fetch(target.toString(), { ...options, headers, redirect: this.credentialedRedirect ?? options?.redirect });
+      containsCredentials = await this.shapeRequest(target, headers);
+      return fetch(target.toString(), { ...options, headers, redirect: containsCredentials ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect });
     };
 
     // We want to complete the first request before letting other requests go;
@@ -143,14 +143,14 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       response = await fetch(urlObj, {
         ...options,
         credentials: includeCredentials ?  "include" : undefined,
-        // Client-shaped requests carry secrets too, so they get the same redirect policy as credentialed ones.
-        redirect: (includeCredentials || clientAuthApplied) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
+        // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
+        redirect: (includeCredentials || containsCredentials) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
       });
 
-      if (includeCredentials || clientAuthApplied)
+      if (includeCredentials || containsCredentials)
         this.checkCredentialedRedirect(requestUrl, response);
 
-      if (response.status === 401 && !this._lastAccessToken && !clientAuthApplied && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
+      if (response.status === 401 && !this._lastAccessToken && !containsCredentials && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
         // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
         const challengedUrl = response.url || requestUrl;
         if (this.isSsoAllowed(challengedUrl)) {
@@ -234,7 +234,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       throw new Error("fetch call failed");
 
     // Classify the final response - initial, fallback or token-retry - once all retries are done.
-    if (clientAuthApplied && await this.isAccessClientAuthFailure(response))
+    if (await this.isAuthFailure(response, containsCredentials))
       this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 
     return response;

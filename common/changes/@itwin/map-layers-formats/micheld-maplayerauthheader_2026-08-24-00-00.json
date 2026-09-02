@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers-formats",
-      "comment": "OGC API Features validation and ArcGIS Feature requests now honor a MapLayerAccessClient's applyToRequest (custom authentication headers/query parameters); ArcGIS Feature extent requests bypass their URL-keyed cache when requests are shaped by an access client.",
+      "comment": "OGC API Features validation and ArcGIS Feature requests now honor map-layer request listeners registered via MapLayerFormatRegistry.addMapLayerRequestListener (custom authentication headers/query parameters); ArcGIS Feature extent requests bypass their URL-keyed cache while request listeners are registered.",
       "type": "none"
     }
   ],

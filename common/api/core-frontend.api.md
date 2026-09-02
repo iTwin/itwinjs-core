@@ -366,9 +366,6 @@ import { XYAndZ } from '@itwin/core-geometry';
 import { XYZ } from '@itwin/core-geometry';
 import { XYZProps } from '@itwin/core-geometry';
 
-// @internal
-export function accessClientRedirect(): RequestRedirect | undefined;
-
 // @public
 export class AccuDraw {
     // @internal (undocumented)
@@ -1256,9 +1253,6 @@ export interface Animator {
 export function appendQueryParams(url: string, queryParams?: {
     [key: string]: string;
 }): string;
-
-// @internal
-export function applyAccessClientToRequest(url: URL, headers: Headers, context: MapLayerAccessTokenParams, accessClient?: MapLayerAccessClient): Promise<boolean>;
 
 // @internal
 export enum ArcGisErrorCode {
@@ -5638,14 +5632,14 @@ export abstract class IpcHandler {
     static register(): RemoveFunction;
 }
 
-// @internal
-export function isAccessClientAuthFailure(response: Response, context: MapLayerAccessTokenParams, accessClient?: MapLayerAccessClient): Promise<boolean>;
-
 // @public
 export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
 
 // @public
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
+
+// @internal
+export function isMapLayerAuthFailure(response: Response, formatId: string, context: MapLayerAccessTokenParams, containsCredentials: boolean): Promise<boolean>;
 
 // @public
 export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
@@ -6038,7 +6032,7 @@ export class MapFeatureInfoRecord extends PropertyRecord {
 }
 
 // @beta (undocumented)
-export interface MapLayerAccessClient extends MapLayerRequestShaper {
+export interface MapLayerAccessClient {
     // (undocumented)
     getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
     // (undocumented)
@@ -6117,6 +6111,10 @@ export class MapLayerFormat {
 // @public
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
+    // @beta
+    addMapLayerRequestListener(listener: MapLayerRequestListener, options: MapLayerRequestListenerOptions): () => void;
+    // @beta
+    addMapLayerResponseListener(listener: MapLayerResponseListener): () => void;
     // (undocumented)
     get configOptions(): MapLayerOptions;
     // @internal (undocumented)
@@ -6126,6 +6124,10 @@ export class MapLayerFormatRegistry {
     // @beta (undocumented)
     getAccessClient(formatId: string): MapLayerAccessClient | undefined;
     // @internal
+    get hasMapLayerRequestListeners(): boolean;
+    // @internal
+    get hasMapLayerResponseListeners(): boolean;
+    // @internal
     isCredentialsSharingAllowed(url: string, settingsUrl: string): boolean;
     // (undocumented)
     isRegistered(formatId: string): boolean;
@@ -6133,6 +6135,10 @@ export class MapLayerFormatRegistry {
     isSsoAllowed(url: string): boolean;
     // @internal
     logUntrustedOriginUse(url: string, settingsUrl?: string): void;
+    // @internal
+    raiseMapLayerRequest(request: MapLayerRequest): Promise<boolean>;
+    // @internal
+    raiseMapLayerResponse(response: MapLayerResponse): Promise<void>;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // @beta
@@ -6163,8 +6169,6 @@ export abstract class MapLayerImageryProvider {
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
     // @internal
     protected appendCustomParams(url: string): string;
-    // @internal
-    protected applyAccessClientAuth(url: URL, headers: Headers): Promise<boolean>;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     get blockedOrigins(): ReadonlyArray<string>;
@@ -6226,7 +6230,7 @@ export abstract class MapLayerImageryProvider {
     protected includeUserCredentials(url: string): boolean;
     initialize(): Promise<void>;
     // @internal
-    protected isAccessClientAuthFailure(response: Response): Promise<boolean>;
+    protected isAuthFailure(response: Response, containsCredentials: boolean): Promise<boolean>;
     // @internal
     protected isCredentialsSharingAllowed(url: string): boolean;
     // @internal
@@ -6262,6 +6266,8 @@ export abstract class MapLayerImageryProvider {
     protected recordSsoSucceeded(url: string): void;
     // @internal
     protected reportBlockedOrigin(url: string): void;
+    // @internal
+    protected get requestsAreShaped(): boolean;
     resetStatus(): void;
     // @internal (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
@@ -6269,6 +6275,8 @@ export abstract class MapLayerImageryProvider {
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
+    // @internal
+    protected shapeRequest(url: URL, headers: Headers): Promise<boolean>;
     // @public @preview
     get status(): MapLayerImageryProviderStatus;
     // @public
@@ -6325,6 +6333,7 @@ export interface MapLayerOptions {
 // @beta
 export interface MapLayerRequest {
     context: MapLayerAccessTokenParams;
+    readonly formatId: string;
     headers: Headers;
     readonly layerUrl: string;
     searchParams: URLSearchParams;
@@ -6335,16 +6344,24 @@ export interface MapLayerRequest {
 export type MapLayerRequestFailure = "authentication";
 
 // @beta
-export interface MapLayerRequestShaper {
-    applyToRequest?(request: MapLayerRequest): Promise<void> | void;
-    classifyResponse?(response: MapLayerResponse): Promise<MapLayerRequestFailure | undefined> | MapLayerRequestFailure | undefined;
+export type MapLayerRequestListener = (request: MapLayerRequest) => Promise<void> | void;
+
+// @beta
+export interface MapLayerRequestListenerOptions {
+    injectsCredentials: boolean;
 }
 
 // @beta
 export interface MapLayerResponse {
     context: MapLayerAccessTokenParams;
+    failure?: MapLayerRequestFailure;
+    readonly formatId: string;
+    readonly layerUrl: string;
     response: Response;
 }
+
+// @beta
+export type MapLayerResponseListener = (response: MapLayerResponse) => Promise<void> | void;
 
 // @beta
 export interface MapLayerScaleRangeVisibility {
@@ -10105,6 +10122,12 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     // (undocumented)
     viewport?: ScreenViewport;
 }
+
+// @internal
+export function shapedRequestRedirect(): RequestRedirect | undefined;
+
+// @internal
+export function shapeMapLayerRequest(url: URL, headers: Headers, formatId: string, context: MapLayerAccessTokenParams): Promise<boolean>;
 
 // @public
 export class SheetModelState extends GeometricModel2dState {
