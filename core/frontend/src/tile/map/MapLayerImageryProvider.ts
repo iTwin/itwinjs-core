@@ -506,6 +506,69 @@ export abstract class MapLayerImageryProvider {
       this.logUntrustedOriginUse(response.url);   // no-op when the restriction is enabled
   }
 
+  /** The default send for [[makeRequest]]: legacy redirect policy, NTLM/SSO handling and origin-trust
+   * checks for one request. The SSO retry never applies to sends issued through a fetch handler.
+   */
+  private async sendDefaultRequest(sendArgs: MapLayerSendArgs, hasCreds: boolean, hasSettingsCreds: boolean, timeoutMs?: number): Promise<Response> {
+    const requestUrl = sendArgs.url;
+    const includeCredentials = this.includeUserCredentials(requestUrl);
+    const credentialed = sendArgs.credentialed;
+    const opts: RequestInit = {
+      method: "GET",
+      headers: sendArgs.headers,
+      credentials: includeCredentials ? "include" : undefined,
+      // Sends issued through a fetch handler get the same redirect policy as credentialed ones.
+      redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
+    };
+
+    if (timeoutMs !== undefined)
+      setRequestTimeout(opts, timeoutMs);
+
+    let rsp = await fetch(requestUrl, opts);
+
+    if (includeCredentials || credentialed)
+      this.checkCredentialedRedirect(requestUrl, rsp);
+
+    // fetch follows redirects transparently, so all trust decisions below target the final
+    // (post-redirect) URL reported by the response, not the URL we asked for.
+    const challengedUrl = rsp.url || requestUrl;
+
+    if (rsp.status === 401
+          && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])
+          && !includeCredentials
+          && !hasCreds
+          && !credentialed
+    ) {
+      if (this.isSsoAllowed(challengedUrl)) {
+        // Removed the previous headers and make sure "include" credentials is set
+        opts.headers = undefined;
+        opts.credentials = "include";
+        // A Negotiate/NTLM handshake is normally a same-URL 401 round-trip, but in legacy mode we preserve
+        // the previous behavior and allow the browser to follow redirects after the authenticated retry.
+        opts.redirect = IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined;
+        this.logUntrustedOriginUse(challengedUrl);
+
+        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
+        rsp = await fetch(challengedUrl, opts);
+        if (rsp.status === 200) {
+          this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
+        }
+      } else {
+        this.reportBlockedOrigin(challengedUrl);
+      }
+    } else if ((rsp.status === 401 || rsp.status === 403) && hasSettingsCreds && !this.isCredentialsSharingAllowed(challengedUrl)) {
+      // Some servers answer an unauthenticated request with 403 (Forbidden) rather than a 401 challenge;
+      // since this request could not present its credentials to the challenging origin, either status most
+      // likely results from that. The permission is recomputed for the challenged URL rather than reusing the
+      // decision made for the requested one: `fetch` strips the Authorization header when it follows a
+      // cross-origin redirect, so a trusted request can still arrive unauthenticated at an untrusted origin,
+      // and conversely a request that started out untrusted may end up at an origin that is trusted.
+      this.reportBlockedOrigin(challengedUrl);
+    }
+
+    return rsp;
+  }
+
   /** @internal */
   public async makeRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
 
@@ -541,66 +604,7 @@ export abstract class MapLayerImageryProvider {
         headers = headers ?? new Headers();
     }
 
-    // The site's default send: redirect policy, SSO handling and origin-trust checks.
-    const send = async (sendArgs: MapLayerSendArgs): Promise<Response> => {
-      const requestUrl = sendArgs.url;
-      const includeCredentials = this.includeUserCredentials(requestUrl);
-      const credentialed = sendArgs.credentialed;
-      const opts: RequestInit = {
-        method: "GET",
-        headers: sendArgs.headers,
-        credentials: includeCredentials ? "include" : undefined,
-        // Sends issued through a fetch handler get the same redirect policy as credentialed ones.
-        redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
-      };
-
-      if (timeoutMs !== undefined)
-        setRequestTimeout(opts, timeoutMs);
-
-      let rsp = await fetch(requestUrl, opts);
-
-      if (includeCredentials || credentialed)
-        this.checkCredentialedRedirect(requestUrl, rsp);
-
-      // fetch follows redirects transparently, so all trust decisions below target the final
-      // (post-redirect) URL reported by the response, not the URL we asked for.
-      const challengedUrl = rsp.url || requestUrl;
-
-      if (rsp.status === 401
-            && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])
-            && !includeCredentials
-            && !hasCreds
-            && !credentialed
-      ) {
-        if (this.isSsoAllowed(challengedUrl)) {
-          // Removed the previous headers and make sure "include" credentials is set
-          opts.headers = undefined;
-          opts.credentials = "include";
-          // A Negotiate/NTLM handshake is normally a same-URL 401 round-trip, but in legacy mode we preserve
-          // the previous behavior and allow the browser to follow redirects after the authenticated retry.
-          opts.redirect = IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined;
-          this.logUntrustedOriginUse(challengedUrl);
-
-          // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-          rsp = await fetch(challengedUrl, opts);
-          if (rsp.status === 200) {
-            this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
-          }
-        } else {
-          this.reportBlockedOrigin(challengedUrl);
-        }
-      } else if ((rsp.status === 401 || rsp.status === 403) && hasSettingsCreds && !this.isCredentialsSharingAllowed(challengedUrl)) {
-        // Some servers answer an unauthenticated request with 403 (Forbidden) rather than a 401 challenge;
-        // since this request could not present its credentials to the challenging origin, either status most
-        // likely results from that. The permission is recomputed for the challenged URL rather than reusing the
-        // decision made for the requested one: `fetch` strips the Authorization header when it follows a
-        // cross-origin redirect, so a trusted request can still arrive unauthenticated at an untrusted origin,
-        // and conversely a request that started out untrusted may end up at an origin that is trusted.
-        this.reportBlockedOrigin(challengedUrl);
-      }
-
-      return rsp;
-    };
+    const send = async (sendArgs: MapLayerSendArgs) => this.sendDefaultRequest(sendArgs, hasCreds, hasSettingsCreds, timeoutMs);
 
     try {
       return urlObj

@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSendArgs, MapLayerUntrustedOriginError } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -84,6 +84,60 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     return metadata;
   }
 
+  /** The default send for [[fetch]]: legacy redirect policy and origin-trust checks for one target.
+   * The NTLM/SSO retry applies only when `allowSsoRetry` (the initial request of an operation), and
+   * never to sends issued through a fetch handler.
+   */
+  private async sendArcGisRequest(sendArgs: MapLayerSendArgs, allowSsoRetry: boolean, options?: RequestInit): Promise<Response> {
+    const includeCredentials = this.includeUserCredentials(sendArgs.url);
+    const credentialed = sendArgs.credentialed;
+    let rsp = await fetch(sendArgs.url, {
+      ...options,
+      headers: sendArgs.headers ?? options?.headers,
+      credentials: includeCredentials ? "include" : undefined,
+      // Sends issued through a fetch handler get the same redirect policy as credentialed ones.
+      redirect: (includeCredentials || credentialed) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
+    });
+
+    if (includeCredentials || credentialed)
+      this.checkCredentialedRedirect(sendArgs.url, rsp);
+
+    if (allowSsoRetry && rsp.status === 401 && !this._lastAccessToken && !credentialed && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
+      // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
+      const challengedUrl = rsp.url || sendArgs.url;
+      if (this.isSsoAllowed(challengedUrl)) {
+        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
+        this.logUntrustedOriginUse(challengedUrl);
+        rsp = await fetch(challengedUrl, {
+          ...options,
+          credentials: "include",
+          redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
+        });
+        if (rsp.status === 200) {
+          this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
+        }
+      } else {
+        this.reportBlockedOrigin(challengedUrl);
+      }
+    }
+
+    return rsp;
+  }
+
+  /** Routes one request - initial, HTML fallback or token retry - through the registered fetch handler
+   * (if any), with fresh headers per request so injected values are neither accumulated nor exposed to
+   * cross-origin redirects.
+   */
+  private async requestViaHandler(target: URL, allowSsoRetry: boolean, options?: RequestInit): Promise<Response> {
+    return fetchMapLayerRequest({
+      url: target,
+      formatId: this._settings.formatId,
+      layerUrl: this._settings.url,
+      baseHeaders: this.hasFetchHandler ? new Headers(options?.headers) : undefined,
+      send: async (sendArgs) => this.sendArcGisRequest(sendArgs, allowSsoRetry, options),
+    });
+  }
+
   /**
    * Make a request to an ArcGIS service using the provided URL and init parameters.
    * @param url URL to query
@@ -108,55 +162,6 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         password: this._settings.password });
     }
 
-    // Routes each request - initial, HTML fallback or token retry - through the registered fetch handler
-    // (if any), with fresh headers per request so injected values are neither accumulated nor exposed to
-    // cross-origin redirects. The NTLM/SSO retry applies only to the initial request, and never to sends
-    // declared as carrying handler-injected credentials.
-    const baseHeaders = options?.headers;
-    const requestViaHandler = async (target: URL, allowSsoRetry: boolean): Promise<Response> => {
-      return fetchMapLayerRequest({
-        url: target,
-        formatId: this._settings.formatId,
-        layerUrl: this._settings.url,
-        baseHeaders: this.hasFetchHandler ? new Headers(baseHeaders) : undefined,
-        send: async (sendArgs) => {
-          const includeCredentials = this.includeUserCredentials(sendArgs.url);
-          const credentialed = sendArgs.credentialed;
-          let rsp = await fetch(sendArgs.url, {
-            ...options,
-            headers: sendArgs.headers ?? baseHeaders,
-            credentials: includeCredentials ? "include" : undefined,
-            // Sends issued through a fetch handler get the same redirect policy as credentialed ones.
-            redirect: (includeCredentials || credentialed) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
-          });
-
-          if (includeCredentials || credentialed)
-            this.checkCredentialedRedirect(sendArgs.url, rsp);
-
-          if (allowSsoRetry && rsp.status === 401 && !this._lastAccessToken && !credentialed && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
-            // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
-            const challengedUrl = rsp.url || sendArgs.url;
-            if (this.isSsoAllowed(challengedUrl)) {
-              // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
-              this.logUntrustedOriginUse(challengedUrl);
-              rsp = await fetch(challengedUrl, {
-                ...options,
-                credentials: "include",
-                redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
-              });
-              if (rsp.status === 200) {
-                this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
-              }
-            } else {
-              this.reportBlockedOrigin(challengedUrl);
-            }
-          }
-
-          return rsp;
-        },
-      });
-    };
-
     // We want to complete the first request before letting other requests go;
     // this done to avoid flooding server with requests missing credentials
     if (!this._firstRequestPromise)
@@ -166,7 +171,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
     let response: Response|undefined;
     try {
-      response = await requestViaHandler(urlObj, true);
+      response = await this.requestViaHandler(urlObj, true, options);
 
       if ((this._lastAccessToken && response.status === 400)
        || response.headers.get("content-type")?.toLowerCase().includes("htm")) {
@@ -178,7 +183,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         if (this._lastAccessToken && this._accessTokenRequired)
           tmpUrl.searchParams.append("token", this._lastAccessToken.token);
         tmpUrl.searchParams.append("f","json");
-        response = await requestViaHandler(tmpUrl, false);
+        response = await this.requestViaHandler(tmpUrl, false, options);
       }
 
       errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
@@ -205,7 +210,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
           }
 
           // Make a second attempt with refreshed token
-          response = await requestViaHandler(urlObj2, false);
+          response = await this.requestViaHandler(urlObj2, false, options);
           errorCode  = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
 
