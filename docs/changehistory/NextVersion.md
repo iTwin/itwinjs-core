@@ -4,10 +4,8 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
-  - [@itwin/core-common](#itwincore-common)
-    - [QueryBinder.bindIdSet now throws on invalid ids](#querybinderbindidset-now-throws-on-invalid-ids)
-    - [Class metadata in transaction change events](#class-metadata-in-transaction-change-events)
   - [@itwin/core-backend](#itwincore-backend)
+    - [Schema sync rework](#schema-sync-rework)
     - [Reserving elements for concurrent creation](#reserving-elements-for-concurrent-creation)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
@@ -46,13 +44,17 @@ The existing `TxnEntityMetadata` export from `@itwin/core-frontend` is deprecate
 
 ## @itwin/core-backend
 
+### Schema sync rework
+
+Schema sync lets the briefcases of one iModel import ECSchemas without taking the exclusive schema lock. This new version explicitly splits between updates, which update the sync db, and upgrades which rewrite the sync db and push it with the briefcase at the same time via the new `BriefcaseDb.upgradeSchemas` API.
+
+Updates no longer automatically end up in other users' briefcases when they import schemas. Instead, they only pick the reference closure of what they import, so updates only hit when a briefcase pushes.
+
+A change that would move or destroy existing data is now refused with `BE_SQLITE_ERROR_DataTransformRequired` or the new `BE_SQLITE_ERROR_DataDeletionRequired`; the new `@alpha` `BriefcaseDb.upgradeSchemas` runs those under the exclusive schema lock and lands the changeset and the sync db together. iModels without schema sync are unaffected.
+
+SchemaSync databases now require version 5.0.0. Existing version 4 containers are outside this compatibility boundary and cannot be opened by this release.
+
 ### Reserving elements for concurrent creation
-
-A new `@beta` synchronous coordination channel, [IModelDb.reservations]($backend), lets multiple briefcases concurrently create elements that share a stable identity without producing duplicate or conflicting elements once their changesets merge. It is the first of a planned family of [SynchronousChannel]($backend) coordination surfaces.
-
-**Who is affected:** only iModels that have SchemaSync enabled. When SchemaSync is not enabled, [IModelDb.reservations]($backend) is a no-op and element inserts behave exactly as before — no action is required.
-
-**New rule:** when SchemaSync is enabled and you are not holding the Schema Lock, **any element inserted with an explicitly-set `federationGuid` must first be reserved**. This covers shared definitions (e.g. categories, line styles) as well as the non-definition template elements contained in component recipes. Elements inserted without an explicit `federationGuid` are unaffected.
 
 Reserve the elements you intend to create, then insert them normally:
 

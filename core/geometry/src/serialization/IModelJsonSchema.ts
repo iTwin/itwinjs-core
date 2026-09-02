@@ -114,11 +114,11 @@ export namespace IModelJson {
     /** polynomial order (one more than degree) in the v parameter direction */
     orderV: number;
     /** Square grid of control points (aka poles) in row major order (row is along the u direction) */
-    points: [[[number]]];   // each inner array is xyz or xyzw for a single control point. each middle array is a row of control points.
+    points: number[][][];   // each inner array is xyz or xyzw for a single control point. each middle array is a row of control points.
     /** Array of knots for the u direction bspline */
-    uKnots: [number];
+    uKnots: number[];
     /** Array of knots for the v direction bspline */
-    vKnots: [number];
+    vKnots: number[];
     /** optional flag for periodic data in the u parameter direction */
     closedU?: boolean;
     /** optional flag for periodic data in the v parameter direction */
@@ -131,15 +131,16 @@ export namespace IModelJson {
    */
   export interface CurveCollectionProps extends PlanarRegionProps {
     /** A sequence of curves joined head to tail. */
-    path?: [CurvePrimitiveProps];
+    path?: CurvePrimitiveProps[];
     // cspell:word bagof
     /**
      * A collection of curves with no required structure or connections
-     * @deprecated in 5.0 - might be removed in next major version. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
+     * @deprecated in 5.0 - might be removed in next major version. Instead use bagOfCurves,
+     * which has correct capitalization and type. The old name has never been persisted.
     */
-    bagofCurves?: [CurveCollectionProps];
+    bagofCurves?: CurveCollectionProps[];
     /** A collection of curves with no required structure or connections. */
-    bagOfCurves?: [CurveCollectionProps | CurvePrimitiveProps];
+    bagOfCurves?: (CurveCollectionProps | CurvePrimitiveProps)[];
   }
 
   /**
@@ -150,16 +151,16 @@ export namespace IModelJson {
     /** `{loop:...}`
      * * A sequence of curves which connect head to tail, with the final connecting back to the first
      */
-    loop?: [CurvePrimitiveProps];
+    loop?: CurvePrimitiveProps[];
     /** `{parityRegion:...}`
      * * A collection of loops, with composite inside/outside determined by parity rules.
      * * (The single outer boundary with one or more holes is a parityRegion)
      */
-    parityRegion?: [{ loop: [CurvePrimitiveProps] }];
+    parityRegion?: { loop: CurvePrimitiveProps[] }[];
     /** `{unionRegion:...}`
      * * A collection of loops and parityRegions
      */
-    unionRegion?: [PlanarRegionProps];
+    unionRegion?: PlanarRegionProps[];
   }
   /**
    * Interface for solid primitives: box, sphere, cylinder, cone, torusPipe, linear sweep, rotational sweep, ruled sweep.
@@ -327,7 +328,7 @@ export namespace IModelJson {
    */
   export interface RuledSweepProps {
     /** An array of swept curves or regions. */
-    contour: [CurveCollectionProps];
+    contour: CurveCollectionProps[];
     /** Optional capping flag. */
     capped?: boolean;
   }
@@ -372,9 +373,9 @@ export namespace IModelJson {
    */
   export interface BcurveProps {
     /** control points */
-    points: [XYZProps];
+    points: XYZProps[];
     /** knots. */
-    knots: [number];
+    knots: number[];
     /** order of polynomial
      * * The order is the number of basis functions that are in effect at any knot value.
      * * The order is the number of points that affect the curve at any knot value,
@@ -557,22 +558,22 @@ export namespace IModelJson {
    */
   export interface IndexedMeshProps {
     /** vertex coordinates */
-    point: [XYZProps];
+    point: XYZProps[];
     /** surface normals */
-    normal?: [XYZProps];
+    normal?: XYZProps[];
     /** texture space (uv parameter) coordinates */
-    param?: [XYProps];
+    param?: XYProps[];
     /** 32 bit color values */
-    color?: [number];
+    color?: number[];
 
     /** SIGNED ONE BASED ZERO TERMINATED array of point indices. */
-    pointIndex: [number];
+    pointIndex: number[];
     /** ONE BASED ZERO TERMINATED array of param indices.  ZERO is terminator for single facet. */
-    paramIndex?: [number];
+    paramIndex?: number[];
     /** ONE BASED ZERO TERMINATED array of normal indices. ZERO is terminator for single facet. */
-    normalIndex?: [number];
+    normalIndex?: number[];
     /** ONE BASED ZERO TERMINATED array of color indices. ZERO is terminator for single facet. */
-    colorIndex?: [number];
+    colorIndex?: number[];
 
     /**
      * Optional fixed block size for indices.
@@ -595,7 +596,7 @@ export namespace IModelJson {
      * Optional edge -> edgeMate map, parallel to the other index arrays.
      * * Each entry is a zero-based index, or -1 face loop terminator, or -2 to indicate "no edge mate".
      */
-    edgeMateIndex?: [number];
+    edgeMateIndex?: number[];
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`

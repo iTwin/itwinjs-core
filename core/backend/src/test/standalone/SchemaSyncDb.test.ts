@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Guid, Id64, OpenMode } from "@itwin/core-bentley";
+import { Guid, Id64, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseIdValue, Code, ElementReservationError } from "@itwin/core-common";
 import { expect } from "chai";
 import { IModelJsFs, SchemaSync } from "../../core-backend";
@@ -38,12 +38,7 @@ describe("SchemaSyncDb", () => {
     IModelJsFs.removeSync(schemaDbFileName);
   });
 
-  // This is a little gross, but the easiest way to test upgrading from v4.0
-  function simulatePreviousDbSchema() {
-    let res = schemaDb.executeSQL("DROP TABLE reserved_elements");
-    expect(res).to.equal(DbResult.BE_SQLITE_DONE);
-    res = schemaDb.executeSQL("DELETE FROM be_Prop WHERE namespace='schemasync'");
-    expect(res).to.equal(DbResult.BE_SQLITE_DONE);
+  function simulateVersion4Db() {
     schemaDb.setRequiredVersions({ readVersion: "^4.0.0", writeVersion: "^4.0.0" });
     schemaDb.saveChanges();
   }
@@ -87,28 +82,11 @@ describe("SchemaSyncDb", () => {
       expect(elementIdCol.notnull).to.equal(1);
     });
 
-    it("lazily updates to new schema just before reserving elements", async () => {
-      simulatePreviousDbSchema();
+    it("refuses a database from the previous major version", () => {
+      simulateVersion4Db();
       schemaDb.closeDb();
-      schemaDb.openDb(schemaDbFileName, OpenMode.ReadWrite);
 
-      expect(getTableInfo("reserved_elements")).to.be.empty;
-      expect(readNextLocalId()).to.equal(1);
-      let version = schemaDb.getRequiredVersions();
-      expect(version.readVersion).to.equal("^4.0.0");
-      expect(version.writeVersion).to.equal("^4.0.0");
-
-      await schemaDb.reserveElements([{
-        federationGuid: Guid.createValue(),
-        ecClassId: "0x1",
-        code: Code.fromJSON({ spec: "0x1", scope: "0x2", value: "foo" })
-      }]);
-
-      expect(getTableInfo("reserved_elements")).to.not.be.empty;
-      expect(readNextLocalId()).to.equal(2);
-      version = schemaDb.getRequiredVersions();
-      expect(version.readVersion).to.equal("^4.1.0");
-      expect(version.writeVersion).to.equal("^4.1.0");
+      expect(() => schemaDb.openDb(schemaDbFileName, OpenMode.ReadWrite)).to.throw();
     });
   });
 
