@@ -7,7 +7,7 @@
  */
 
 import { ModelClipGroups, ViewFlags } from "@itwin/core-common";
-import { _attachToViewport, _backingView, _detachFromViewport, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
 import { BeEvent, Guid, Id64String, ObservableSet } from "@itwin/core-bentley";
@@ -36,6 +36,8 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   public readonly [_guid]: string;
   public readonly linearTransformToParent = Transform.identity;
+
+  public get [_excludedElements]() { return this._view.displayStyle.settings.excludedElementIds; }
 
   public readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();

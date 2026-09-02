@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, compareStrings, GuidString, Id64, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
-import { _attachToViewport, _detachFromViewport, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
+import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { TileTreeReference } from "./tile/internal";
 import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
@@ -59,6 +59,7 @@ export interface IModelDisplayReference {
 
   readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
 
+  readonly [_excludedElements]?: Iterable<Id64String>;
   readonly neverDrawnElements: ObservableSet<Id64String>;
   readonly alwaysDrawnElements: ObservableSet<Id64String>;
   isAlwaysDrawnExclusive: boolean;

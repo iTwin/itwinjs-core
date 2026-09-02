@@ -7,7 +7,7 @@
  */
 
 import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
-import { _attachToViewport, _backingView, _detachFromViewport, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
@@ -27,7 +27,6 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
 
   #alwaysDrawnExclusive = false;
-  readonly #excludedElements: Set<Id64String>;
   #resolvedViewFlags: ViewFlags;
   #modelDisplayTransformProvider?: ModelDisplayTransformProvider;
 
@@ -43,6 +42,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public readonly viewedCategories = new ObservableSet<Id64String>();
 
   public readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
+  public readonly [_excludedElements]?: Iterable<Id64String>;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();
   public readonly alwaysDrawnElements = new ObservableSet<Id64String>();
   public readonly featureOverrideProviders = new ObservableSet<FeatureOverrideProvider>();
@@ -67,7 +67,8 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
     const view = refs[_backingView];
     this.#resolvedViewFlags = view.viewFlags.override(ovrs.viewFlags);
-    this.#excludedElements = new Set<Id64String>(args.excludedElements ?? []);
+    if (args.excludedElements)
+      this[_excludedElements] = new Set<Id64String>(args.excludedElements);
 
     let linearTf;
     if (this.iModel.ecefLocation?.isValid && refs.primary.iModel.ecefLocation?.isValid) {
