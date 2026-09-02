@@ -289,7 +289,16 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
-    return super.computeTransform(tree);
+    const primary = this.iModelRef.parent.primary;
+    const secondary = this.iModelRef;
+    if (primary === secondary || !primary.iModel.ecefLocation?.isValid || !secondary.iModel.ecefLocation?.isValid)
+      return super.computeTransform(tree);
+
+    const treeToWorld = tree.iModelTransform;
+    const secondaryToEcef = secondary.iModel.ecefLocation.getTransform();
+    const ecefTf = secondaryToEcef.multiplyTransformTransform(treeToWorld);
+    const worldTf = primary.iModel.getEcefTransform().inverse();
+    return worldTf ? worldTf.multiplyTransformTransform(ecefTf, ecefTf) : treeToWorld.clone();
   }
 
   protected override computeTransform(tree: TileTree): Transform {
