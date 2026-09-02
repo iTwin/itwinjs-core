@@ -39,7 +39,7 @@ export interface RowFormatOptions {
    */
   abbreviateBlobs?: boolean;
   /**
-   * When `true`, `ECClassId` and `RelECClassId` values are converted from hex strings
+   * When `true`, all classId values are converted from hex strings
    * to fully-qualified class names (e.g. `"BisCore.DrawingModel"`).
    */
   classIdsToClassNames?: boolean;
@@ -89,10 +89,14 @@ export interface ChangeMeta {
  * @beta
  */
 export interface ChangeInstance {
-  /** Metadata describing the origin and identity of this change. */
-  $meta: ChangeMeta;
+  /** ECInstanceId of this instance. */
+  ECInstanceId: string;
+  /** ECClassId of this instance. */
+  ECClassId: string;
   /** EC property bag (ECClassId, ECInstanceId, user-defined properties, ...). */
   [key: string]: any;
+  /** Metadata describing the origin and identity of this change. */
+  $meta: ChangeMeta;
 }
 
 /**

@@ -305,7 +305,7 @@ describe("ChangesetReader Examples", () => {
     for (const instance of pcu.instances) {
       // ECClassId is now a fully-qualified name instead of a hex string
       expect(instance.ECClassId).to.exist; // e.g. "ExSnippets.Widget"
-      // Navigation property class identifiers are also resolved:
+      // All classId values are also resolved to fully-qualified class names:
       // instance.Category → { Id: "0x...", RelECClassId: "BisCore.GeometricElement2dIsInCategory" }
     }
     // __PUBLISH_EXTRACT_END__

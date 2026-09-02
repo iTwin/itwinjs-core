@@ -6,7 +6,9 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
-    - [ChangesetReader row options](#changesetreader-row-options)
+    - [ChangesetReader changes](#changesetreader-changes)
+      - [ChangesetReader row options](#changesetreader-row-options)
+      - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
 
 ## @itwin/core-backend
 
@@ -20,6 +22,12 @@ A change that would move or destroy existing data is now refused with `BE_SQLITE
 
 SchemaSync databases now require version 5.0.0. Existing version 4 containers are outside this compatibility boundary and cannot be opened by this release.
 
-### ChangesetReader row options
+### ChangesetReader changes
+
+#### ChangesetReader row options
 
 The `useJsName` option has been removed from the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). EC property values are now always returned using their original EC property names; use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
+
+#### ChangeInstance ECInstanceId and ECClassId
+
+The `@beta` [ChangeInstance]($backend) interface produced by [ChangesetReader]($backend) now declares `ECInstanceId` and `ECClassId` as explicit `string` properties. They were previously only reachable through the interface's index signature, so no runtime behavior changes — the values were always present — but consumers now get proper typing and IntelliSense when accessing `instance.ECInstanceId` and `instance.ECClassId`.

@@ -20,9 +20,16 @@ After draining the reader, `pcu.instances` yields one entry per (ECInstanceId + 
 
 ### [ChangeInstance]($backend) shape
 
-Every instance has an `$meta` property plus the EC property bag:
+Every instance exposes its `ECInstanceId` and `ECClassId` directly, an `$meta` property, and the EC property bag:
 
 ```ts
+interface ChangeInstance {
+  ECInstanceId: string;      // ECInstanceId of this instance
+  ECClassId: string;         // ECClassId of this instance
+  [key: string]: any;        // EC property bag (user-defined properties, ...)
+  $meta: ChangeMeta;         // metadata describing the origin and identity of this change
+}
+
 interface ChangeMeta {
   op: "Inserted" | "Updated" | "Deleted";
   stage: "New" | "Old";
@@ -229,7 +236,7 @@ assert.strictEqual(instance.$meta.propFilter, PropertyFilter.InstanceKey);
 |---|---|
 | `abbreviateBlobs: true` (or omitted) | Binary properties summarized as `{ bytes: N }` — this is the default behavior |
 | `abbreviateBlobs: false` | Binary properties returned as full `Uint8Array` instead of the default `{ bytes: N }` summary |
-| `classIdsToClassNames: true` | `ECClassId` and `RelECClassId` values converted from hex strings to fully-qualified names (e.g. `"BisCore.DrawingModel"`) |
+| `classIdsToClassNames: true` | All classId values converted from hex strings to fully-qualified names (e.g. `"BisCore.DrawingModel"`) |
 
 The active `rowOptions` object is stored on every instance's `$meta.rowOptions` for inspection.
 
