@@ -65,7 +65,8 @@ export type MapLayerFetchNext = () => Promise<Response>;
  * - throw [[MapLayerAuthenticationFailedError]] to report an unrecoverable authentication failure,
  *   transitioning the layer to [[MapLayerImageryProviderStatus.RequireAuth]].
  *
- * Invoked on the hot path of tile loading; handlers should be fast and cache their tokens internally.
+ * Invoked on the hot path of tile loading; handlers should be fast, cache their tokens internally, and
+ * coalesce concurrent refreshes (many tile requests observe an expired token at the same time).
  * While a handler is registered, URL-keyed capability/service-metadata caches are bypassed so that
  * customized responses are never shared across differing request contexts. Note that a single logical
  * operation may invoke the handler more than once (e.g. the ArcGIS providers issue fallback and

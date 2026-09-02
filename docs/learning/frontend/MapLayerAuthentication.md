@@ -31,13 +31,25 @@ There is at most one handler per session, owned by the hosting application — s
 - return its own `Response` without calling `next()` (short-circuit);
 - throw [MapLayerAuthenticationFailedError]($frontend) to report an unrecoverable authentication failure.
 
-The handler runs on the hot path of tile loading; it should be fast and cache its tokens internally. A single logical operation may invoke it more than once (e.g. the ArcGIS providers issue fallback and token-retry requests); each network request passes through the handler individually.
+The handler runs on the hot path of tile loading; it should be fast and cache its tokens internally. Tile requests are issued concurrently, so when a token expires many of them observe the `401` at the same time — a handler that refreshes on `401` must coalesce those refreshes into a single in-flight operation (as `myTokenCache` does below), or it will hammer the token endpoint and may invalidate the token it just obtained. A single logical operation may invoke the handler more than once (e.g. the ArcGIS providers issue fallback and token-retry requests); each network request passes through the handler individually.
 
 > **CORS**: in a browser, injecting a non-safelisted header (including `Authorization`) makes cross-origin requests subject to a CORS preflight — the map service (or the proxy in front of it) must list that header in its `Access-Control-Allow-Headers` response, or every request will be blocked by the browser before it is sent. Query parameters are not subject to this requirement.
 
 A complete handler authenticating layers behind a proxy, with transparent token refresh:
 
 ```ts
+// Coalesces concurrent refreshes: every caller observing the same expired token awaits one refresh.
+const myTokenCache = {
+  current: "",
+  refreshing: undefined as Promise<void> | undefined,
+  async refresh(expired: string): Promise<void> {
+    if (this.current !== expired)
+      return;                     // another caller already refreshed it
+    this.refreshing ??= acquireToken().then((token) => { this.current = token; }).finally(() => this.refreshing = undefined);
+    return this.refreshing;
+  },
+};
+
 IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request: MapLayerRequest, next: MapLayerFetchNext) => {
   // The full request URL and format id are provided for routing decisions; a handler serving several
   // services can decide per request which credentials apply, or none at all.
@@ -45,13 +57,14 @@ IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request: MapLaye
     return next();  // not ours: issue the request unmodified, with the default behavior
 
   // The hosting application obtains and refreshes this token through its own channels.
-  request.headers.set("Authorization", `Bearer ${myTokenCache.current}`);
+  const token = myTokenCache.current;
+  request.headers.set("Authorization", `Bearer ${token}`);
   // Query-parameter based schemes are supported the same way:
   // request.searchParams.set("signature", sign(request.url));
 
   let response = await next();
   if (response.status === 401) {
-    await myTokenCache.refresh();
+    await myTokenCache.refresh(token);
     request.headers.set("Authorization", `Bearer ${myTokenCache.current}`);
     response = await next();                                // transparent retry - no RequireAuth
   }
@@ -115,5 +128,5 @@ Authentication material is deliberately kept out of [ImageMapLayerSettings]($com
 - **Coexistence with OAuth-based auth** — both facilities operate independently. An ArcGIS layer using `ArcGisAccessClient` still has every request routed through the handler, letting it manage requests to a proxy origin while OAuth tokens keep flowing for every other origin.
 - **Origin trust and redirects** — every send the handler modified is treated like a credentialed request by [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend): while the restriction is enabled it is issued with `redirect: "error"`, so handler-injected values cannot silently reach an unlisted origin through a redirect. Sends passed through unmodified follow the default redirect policy. See [Map-layer security](./MapLayersAndBasemaps.md#map-layer-security).
 - **SSO** — a send the handler modified never triggers the NTLM/Negotiate retry with browser credentials; the handler is the authentication authority for every request it touches. Sends passed through unmodified keep the SSO retry, so layers served by Windows-Authentication-protected services keep working alongside a handler that leaves their requests alone.
-- **Caching** — while a handler is registered, the URL-keyed capability and service-metadata caches are bypassed, so customized responses are never shared across differing request contexts. This applies to all requests, including those the handler passes through unmodified.
+- **Caching** — while a handler is registered, the URL-keyed capability and service-metadata caches are bypassed, so customized responses are never shared across differing request contexts. This applies to all requests, including those the handler passes through unmodified: every source validation and provider initialization then re-issues its `GetCapabilities` / service-metadata request, a deliberate simplification whose cost is one extra request per layer attach.
 - **Backward compatibility** — the handler is strictly opt-in. Without one, requests and failure detection are exactly as in previous releases, driven by the pre-existing status-code checks. With one, the framework applies no default failure classification to responses the handler returns; recognizing failures — by status code or protocol-specific convention (e.g. an error embedded in a `200` body) — and throwing [MapLayerAuthenticationFailedError]($frontend) is the handler's job.
