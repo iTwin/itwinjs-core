@@ -37,7 +37,7 @@ A new `@beta` extension point, [MapLayerFormatRegistry.setMapLayerFetchHandler](
 ```ts
 IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
   if (request.formatId !== "WMS")
-    return next();
+    return next();  // not ours: issue the request unmodified, with the default behavior
   request.headers.set("Authorization", `Bearer ${tokens.current}`);
   let response = await next();
   if (response.status === 401) {

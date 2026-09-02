@@ -42,7 +42,7 @@ IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request: MapLaye
   // The full request URL and format id are provided for routing decisions; a handler serving several
   // services can decide per request which credentials apply, or none at all.
   if (new URL(request.url).origin !== "https://proxy.example.com")
-    return next();
+    return next();  // not ours: issue the request unmodified, with the default behavior
 
   // The hosting application obtains and refreshes this token through its own channels.
   request.headers.set("Authorization", `Bearer ${myTokenCache.current}`);
