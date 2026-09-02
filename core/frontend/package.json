@@ -94,8 +94,8 @@
   "dependencies": {
     "@itwin/core-i18n": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
-    "@loaders.gl/core": "~4.3.4",
-    "@loaders.gl/draco": "~4.3.4",
+    "@loaders.gl/core": "^4.4.5",
+    "@loaders.gl/draco": "^4.4.5",
     "fuse.js": "^3.3.0",
     "wms-capabilities": "0.6.0"
   }
