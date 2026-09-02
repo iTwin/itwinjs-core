@@ -44,7 +44,7 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
 
   readonly primary: IModelDisplayReference2d;
   readonly linked: Iterable<IModelDisplayReference2d>;
-  readonly subcategories: SubCategoriesCache.Queue;
+  readonly subcategories: SubCategoriesCache.Queue; // ###TODO may be able to remove the need for this.
 
   readonly onLinked: BeEvent<(ref: IModelDisplayReference2d) => void>;
   readonly onUnlinked: BeEvent<(ref: IModelDisplayReference2d) => void>;
@@ -52,7 +52,7 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
   link(args: LinkIModel2dArgs): IModelDisplayReference2d;
   unlink(ref: IModelDisplayReference2d): void;
 
-  // ###TODO access to timePoint for schedule scripts?
+  // ###TODO access to timePoint for schedule scripts
 }
 
 export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDisplayReference> {
@@ -74,4 +74,12 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   unlink(ref: SpatialIModelDisplayReference): void;
 }
 
+/** Represents the set of [[IModelConnection]]'s displayed by a [[ViewState]] within a [[Viewport]].
+ * A view always has exactly one "primary" iModel reference, which cannot be changed.
+ * Any number of additional iModel references can be freely linked to and unlinked from the view.
+ * The primary iModel determines the coordinate system for the view; the contents of all linked iModels
+ * are transformed into the primary iModel's coordinate space.
+ * @see [[ViewState.iModelRefs]] to inspect or modify the iModel references associated with a view.
+ * @beta
+ */
 export type IModelDisplayReferences = IModelDisplayReferences2d | SpatialIModelDisplayReferences;

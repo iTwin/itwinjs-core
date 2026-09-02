@@ -10,10 +10,16 @@ import { BeEvent } from "@itwin/core-bentley";
 import { _implementationProhibited } from "./common/internal/Symbols";
 import { ClipStyle, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 
+/** Selectively overrides applied to a view's [[DisplayStyleState]] when displaying
+ * a specific [[IModelDisplayReference]].
+ * @beta
+ */
 export interface IModelDisplayOverrides {
   readonly [_implementationProhibited]: unknown;
+
   viewFlags: ViewFlagOverrides;
   readonly onViewFlagsChanged: BeEvent<() => void>;
+
   clipStyle?: ClipStyle;
   readonly onClipStyleChanged: BeEvent<() => void>;
 }
