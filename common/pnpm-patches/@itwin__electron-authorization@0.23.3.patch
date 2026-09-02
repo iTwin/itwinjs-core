@@ -1,0 +1,116 @@
+diff --git a/lib/cjs/main/OidcDiscoveryCache.d.ts b/lib/cjs/main/OidcDiscoveryCache.d.ts
+index 95457b142e178320fdd16c726090d191f4250cc8..8a374e13c4fb7f61f04fbdd87b30b3c624d45a27 100644
+--- a/lib/cjs/main/OidcDiscoveryCache.d.ts
++++ b/lib/cjs/main/OidcDiscoveryCache.d.ts
+@@ -9,7 +9,5 @@ export declare class OidcDiscoveryCache {
+     private load;
+     private save;
+     private validate;
+-    private encrypt;
+-    private decrypt;
+ }
+ //# sourceMappingURL=OidcDiscoveryCache.d.ts.map
+\ No newline at end of file
+diff --git a/lib/cjs/main/OidcDiscoveryCache.js b/lib/cjs/main/OidcDiscoveryCache.js
+index bcfc90dbd532ee24587b428a2b5e21c9f86d505d..158b60c3cc96f2e933153a00028027def86ba9f1 100644
+--- a/lib/cjs/main/OidcDiscoveryCache.js
++++ b/lib/cjs/main/OidcDiscoveryCache.js
+@@ -10,7 +10,7 @@ exports.OidcDiscoveryCache = void 0;
+  */
+ const core_bentley_1 = require("@itwin/core-bentley");
+ const appauth_1 = require("@openid/appauth");
+-const electron_1 = require("electron");
++// safeStorage import removed: the OIDC discovery document is public data and needs no OS credential storage.
+ const constants_js_1 = require("../common/constants.js");
+ const Store = require("electron-store"); // eslint-disable-line @typescript-eslint/no-require-imports, @typescript-eslint/naming-convention
+ // NOTE: this logic is almost identical to the logic in the node-cli OidcDiscoveryCache.
+@@ -54,8 +54,7 @@ class OidcDiscoveryCache {
+         if (!this._store.has(this._cacheKey))
+             return undefined;
+         try {
+-            const encrypted = this._store.get(this._cacheKey);
+-            const cached = JSON.parse(await this.decrypt(encrypted));
++            const cached = this._store.get(this._cacheKey);
+             if (cached.version !== cacheVersion) {
+                 this._store.delete(this._cacheKey);
+                 return undefined;
+@@ -76,7 +75,7 @@ class OidcDiscoveryCache {
+     }
+     async save(cached) {
+         try {
+-            this._store.set(this._cacheKey, await this.encrypt(JSON.stringify(cached)));
++            this._store.set(this._cacheKey, cached);
+         }
+         catch {
+             // Discovery caching is an optimization; failure to persist must not prevent authorization.
+@@ -99,12 +98,6 @@ class OidcDiscoveryCache {
+         validateEndpoints(requiredEndpoints, issuer, false);
+         validateEndpoints(optionalEndpoints, issuer, true);
+     }
+-    async encrypt(value) {
+-        return electron_1.safeStorage.encryptString(value);
+-    }
+-    async decrypt(value) {
+-        return electron_1.safeStorage.decryptString(Buffer.from(value));
+-    }
+ }
+ exports.OidcDiscoveryCache = OidcDiscoveryCache;
+ /**
+diff --git a/lib/esm/main/OidcDiscoveryCache.d.ts b/lib/esm/main/OidcDiscoveryCache.d.ts
+index 95457b142e178320fdd16c726090d191f4250cc8..8a374e13c4fb7f61f04fbdd87b30b3c624d45a27 100644
+--- a/lib/esm/main/OidcDiscoveryCache.d.ts
++++ b/lib/esm/main/OidcDiscoveryCache.d.ts
+@@ -9,7 +9,5 @@ export declare class OidcDiscoveryCache {
+     private load;
+     private save;
+     private validate;
+-    private encrypt;
+-    private decrypt;
+ }
+ //# sourceMappingURL=OidcDiscoveryCache.d.ts.map
+\ No newline at end of file
+diff --git a/lib/esm/main/OidcDiscoveryCache.js b/lib/esm/main/OidcDiscoveryCache.js
+index e722a5b1923164dcaed94a09ccc5b1d980900a56..fa8f3074e653a3ec9f4c821371ef1f4e6990f305 100644
+--- a/lib/esm/main/OidcDiscoveryCache.js
++++ b/lib/esm/main/OidcDiscoveryCache.js
+@@ -7,7 +7,7 @@
+  */
+ import { Logger } from "@itwin/core-bentley";
+ import { AuthorizationServiceConfiguration } from "@openid/appauth";
+-import { safeStorage } from "electron";
++// safeStorage import removed: the OIDC discovery document is public data and needs no OS credential storage.
+ import { electronAuthLoggerCategory } from "../common/constants.js";
+ const Store = require("electron-store"); // eslint-disable-line @typescript-eslint/no-require-imports, @typescript-eslint/naming-convention
+ // NOTE: this logic is almost identical to the logic in the node-cli OidcDiscoveryCache.
+@@ -51,8 +51,7 @@ export class OidcDiscoveryCache {
+         if (!this._store.has(this._cacheKey))
+             return undefined;
+         try {
+-            const encrypted = this._store.get(this._cacheKey);
+-            const cached = JSON.parse(await this.decrypt(encrypted));
++            const cached = this._store.get(this._cacheKey);
+             if (cached.version !== cacheVersion) {
+                 this._store.delete(this._cacheKey);
+                 return undefined;
+@@ -73,7 +72,7 @@ export class OidcDiscoveryCache {
+     }
+     async save(cached) {
+         try {
+-            this._store.set(this._cacheKey, await this.encrypt(JSON.stringify(cached)));
++            this._store.set(this._cacheKey, cached);
+         }
+         catch {
+             // Discovery caching is an optimization; failure to persist must not prevent authorization.
+@@ -96,12 +95,6 @@ export class OidcDiscoveryCache {
+         validateEndpoints(requiredEndpoints, issuer, false);
+         validateEndpoints(optionalEndpoints, issuer, true);
+     }
+-    async encrypt(value) {
+-        return safeStorage.encryptString(value);
+-    }
+-    async decrypt(value) {
+-        return safeStorage.decryptString(Buffer.from(value));
+-    }
+ }
+ /**
+  * Encode a string to be used as a cache key, returning a value with only alphanumeric, dash and underscore characters.

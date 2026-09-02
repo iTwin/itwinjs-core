@@ -18,6 +18,11 @@ overrides:
 
 pnpmfileChecksum: sha256-E1T7OJ3DLTjpDqf4RdJzK9VDtAxgm4gDEQCLYdHD8nI=
 
+patchedDependencies:
+  '@itwin/electron-authorization@0.23.3':
+    hash: c9a480c532cc802b485fe4a5da8ff4e402070ed232a83ed022ce604fd3332acd
+    path: patches/@itwin__electron-authorization@0.23.3.patch
+
 importers:
 
   .: {}
@@ -2351,7 +2356,7 @@ importers:
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
         specifier: ^0.23.3
-        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
+        version: 0.23.3(patch_hash=c9a480c532cc802b485fe4a5da8ff4e402070ed232a83ed022ce604fd3332acd)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
@@ -3462,7 +3467,7 @@ importers:
         version: link:../../core/quantity
       '@itwin/electron-authorization':
         specifier: ^0.23.3
-        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
+        version: 0.23.3(patch_hash=c9a480c532cc802b485fe4a5da8ff4e402070ed232a83ed022ce604fd3332acd)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
       '@itwin/frontend-tiles':
         specifier: workspace:*
         version: link:../../extensions/frontend-tiles
@@ -3652,7 +3657,7 @@ importers:
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
         specifier: ^0.23.3
-        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
+        version: 0.23.3(patch_hash=c9a480c532cc802b485fe4a5da8ff4e402070ed232a83ed022ce604fd3332acd)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
       '@itwin/frontend-devtools':
         specifier: workspace:*
         version: link:../../core/frontend-devtools
@@ -11308,7 +11313,7 @@ snapshots:
 
   '@itwin/core-bentley@5.12.3': {}
 
-  '@itwin/electron-authorization@0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)':
+  '@itwin/electron-authorization@0.23.3(patch_hash=c9a480c532cc802b485fe4a5da8ff4e402070ed232a83ed022ce604fd3332acd)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)':
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
