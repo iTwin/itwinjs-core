@@ -20,7 +20,9 @@ export namespace SynchronousChannel {
    * @beta
    */
   export interface ReserveElementsArgs {
-    /** The elements to reserve. The whole batch succeeds or fails together. */
+    /** The elements to reserve. The whole batch succeeds or fails together.
+     * @note Every element listed here becomes a *shared* element that must be inserted identically by every briefcase. See the note on [[SynchronousChannel.Reservations]].
+     */
     elements: Iterable<{
       /** The federationGuid that stably identifies this element across briefcases. Reservations always require an explicit federationGuid. */
       federationGuid: GuidString;
@@ -34,6 +36,12 @@ export namespace SynchronousChannel {
    * Interface used to ***reserve*** elements with shared identities as part of [coordinating simultaneous edits]($docs/learning/backend/ConcurrencyControl.md) from multiple briefcases.
    * Unlike **locks** (via [[LockControl]]), which block users from making conflicting changes to existing elements, **reservations** can be used to communicate "in-flight"
    * changes between briefcases, allowing users to concurrently add and use identical dependencies (e.g., component definitions, schemas, etc.) without introducing conflicts.
+   *
+   * @note A reserved element is a *shared* element: every briefcase that inserts it must insert the **exact same element**. The reservation assigns a single shared
+   * ElementId that all briefcases use, and when multiple briefcases push their inserts they are merged together as one row rather than producing a conflict.
+   * Because these duplicate inserts are silently collapsed, the property values written by each briefcase are **not** reconciled — if two briefcases insert the same reserved
+   * element with *different* contents, one briefcase's values win arbitrarily and the other's changes will be lost. Callers are therefore responsible for ensuring that every
+   * insert of a given reserved element has the same property values across all briefcases.  Only use reservations for content that is deterministically identical everywhere.
    * @see [[IModelDb.reservations]] to access the reservations for an iModel.
    * @beta
    */
@@ -66,6 +74,8 @@ export namespace SynchronousChannel {
 
     /**
      * Acquire reservations for one or more elements from the reservation service, if required and not already reserved by another user.
+     * @note Reserving an element establishes a shared identity that every briefcase must insert *identically*. See the note on [[SynchronousChannel.Reservations]] for why divergent
+     * inserts of the same reserved element are unsafe.
      * @throws Error if the requested elements are inconsistent with existing reservations, or if any other error occurs while updating the reservations.
      */
     reserveElements(args: ReserveElementsArgs): Promise<void>;
