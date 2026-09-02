@@ -22,6 +22,7 @@ export * from "./JsonSchema";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
+export * from "./ObservableMap";
 export * from "./ObservableSet";
 export * from "./OneAtATimeAction";
 export * from "./OrderedId64Iterable";
