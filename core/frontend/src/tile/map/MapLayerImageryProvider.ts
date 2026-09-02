@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, isMapLayerAuthFailure, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerFeatureInfo, MapTilingScheme, QuadId, shapeMapLayerRequest, WebMercatorTilingScheme } from "../internal";
+import { appendQueryParams, dispatchMapLayerRequest, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, isMapLayerAuthFailure, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 import { DecorateContext } from "../../ViewContext";
@@ -384,17 +384,17 @@ export abstract class MapLayerImageryProvider {
   /** True while any [[MapLayerFormatRegistry.addMapLayerRequestListener]] listener is registered.
    * @internal
    */
-  protected get requestsAreShaped(): boolean {
+  protected get hasRequestListeners(): boolean {
     return IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners ?? false;
   }
 
   /** Submits the outgoing request to the registered request listeners, giving them the opportunity to
-   * shape it by mutating the URL's query parameters and `headers` in place.
-   * @returns true if the request was shaped by a listener registered with `injectsCredentials`.
+   * mutate the URL's query parameters and `headers` in place.
+   * @returns true if the request was submitted to a listener registered with `injectsCredentials`.
    * @internal
    */
-  protected async shapeRequest(url: URL, headers: Headers): Promise<boolean> {
-    return shapeMapLayerRequest(url, headers, this._settings.formatId, this._settings.url);
+  protected async dispatchRequest(url: URL, headers: Headers): Promise<boolean> {
+    return dispatchMapLayerRequest(url, headers, this._settings.formatId, this._settings.url);
   }
 
   /** Classifies the given response by submitting it to the registered response listeners. Without
@@ -550,7 +550,7 @@ export abstract class MapLayerImageryProvider {
     // header for a service behind an authenticating proxy). Applied last so their headers take precedence.
     let requestUrl = url;
     let containsCredentials = false;
-    if (this.requestsAreShaped) {
+    if (this.hasRequestListeners) {
       let urlObj: URL | undefined;
       try {
         urlObj = new URL(url);
@@ -560,7 +560,7 @@ export abstract class MapLayerImageryProvider {
       // Listener failures propagate: the request must never silently degrade to an unauthenticated one.
       if (urlObj) {
         headers = headers ?? new Headers();
-        containsCredentials = await this.shapeRequest(urlObj, headers);
+        containsCredentials = await this.dispatchRequest(urlObj, headers);
         requestUrl = urlObj.toString();
       }
     }
@@ -668,7 +668,7 @@ export abstract class MapLayerImageryProvider {
 
     let requestUrl = url;
     let containsCredentials = false;
-    if (this.requestsAreShaped) {
+    if (this.hasRequestListeners) {
       let urlObj: URL | undefined;
       try {
         urlObj = new URL(url);
@@ -678,7 +678,7 @@ export abstract class MapLayerImageryProvider {
       if (urlObj) {
         headers = headers ?? new Headers();
         try {
-          containsCredentials = await this.shapeRequest(urlObj, headers);
+          containsCredentials = await this.dispatchRequest(urlObj, headers);
         } catch (error) {
           // Never degrade to an unauthenticated request; skip the tooltip instead.
           Logger.logWarning(loggerCategory, `Map-layer request listener failed for tooltip request: ${BentleyError.getErrorMessage(error)}`);

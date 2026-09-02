@@ -221,10 +221,10 @@ export class WmsCapabilities {
 
   public static async create(url: string, options?: WmsCapabilitiesCreateOptions): Promise<WmsCapabilities | undefined> {
     const { credentials, ignoreCache, queryParams, formatId, layerUrl } = options ?? {};
-    // The cache is keyed by URL only, so responses shaped by request listeners (e.g.
-    // header-authenticated) must not be shared with or served from differently-shaped requests.
-    const requestsShaped = IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners ?? false;
-    if (!ignoreCache && !requestsShaped) {
+    // The cache is keyed by URL only, so responses customized by request listeners (e.g.
+    // header-authenticated) must not be shared with or served from differently-customized requests.
+    const hasRequestListeners = IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners ?? false;
+    if (!ignoreCache && !hasRequestListeners) {
       const cached = WmsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)
         return cached;
@@ -248,7 +248,7 @@ export class WmsCapabilities {
     if (capabilities === undefined)
       return undefined;
 
-    if (!credentials && !requestsShaped) {
+    if (!credentials && !hasRequestListeners) {
       // Avoid caching protected data
       WmsCapabilities._capabilitiesCache.set(url, capabilities);
     }

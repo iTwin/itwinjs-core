@@ -84,7 +84,7 @@ export type MapLayerResponseListener = (response: MapLayerResponse) => Promise<v
  */
 export interface MapLayerRequestListenerOptions {
   /** Whether the listener injects secrets (an `Authorization` header, an API key, a signed query parameter)
-   * into the requests it shapes. Every request submitted to a listener registered with `true` receives
+   * into the requests submitted to it. Every request submitted to a listener registered with `true` receives
    * credentialed-request handling: redirects are refused while
    * [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (so the injected values cannot
    * silently reach an unlisted origin), an NTLM/Negotiate 401 challenge is never answered with browser

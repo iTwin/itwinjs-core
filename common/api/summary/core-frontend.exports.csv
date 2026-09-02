@@ -130,6 +130,7 @@ internal;function;createSpatialTileTreeReferences
 public;interface;CreateTextureArgs
 public;interface;CreateTextureFromSourceArgs
 beta;function;createWorkerProxy
+internal;function;credentialedRequestRedirect
 internal;class;CurrentInputState
 public;enum;CurrentState
 public;interface;CustomFormatPropEditorSpec
@@ -150,6 +151,7 @@ public;enum;DepthPointSource
 public;interface;DepthRangeNpc
 internal;class;DevTools
 public;class;DisclosedTileTreeSet
+internal;function;dispatchMapLayerRequest
 public;class;DisplayStyle2dState
 public;class;DisplayStyle3dState
 public;class;DisplayStyleState
@@ -617,8 +619,6 @@ internal;function;setBasicAuthorization
 internal;function;setRequestTimeout
 public;class;SetupCameraTool
 public;class;SetupWalkCameraTool
-internal;function;shapedRequestRedirect
-internal;function;shapeMapLayerRequest
 public;class;SheetModelState
 public;class;SheetViewState
 internal;interface;SkyBoxDecorations

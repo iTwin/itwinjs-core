@@ -257,7 +257,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     const source = createSource();
     source.savedQueryParams = { saved: "1" };
     source.unsavedQueryParams = { unsaved: "2" };
-    // Settings custom params are appended first, then request listeners shape the request.
+    // Settings custom params are appended first, then request listeners customize the request.
     const shapedLanding = `${sourceUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
     const shapedCollections = `${sameOriginCollectionsUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
     stubFetch({

@@ -10,13 +10,13 @@ import { IModelApp } from "../../../IModelApp";
 import { MapLayerRequest, MapLayerRequestFailure, MapLayerResponse } from "../../../tile/internal";
 
 /** Submits an outgoing map-layer request to the listeners registered via
- * [[MapLayerFormatRegistry.addMapLayerRequestListener]], giving them the opportunity to shape it by
- * mutating the URL's query parameters and `headers` in place.
- * @returns true if the request was shaped by a listener registered with
+ * [[MapLayerFormatRegistry.addMapLayerRequestListener]], giving them the opportunity to mutate the URL's
+ * query parameters and `headers` in place.
+ * @returns true if the request was submitted to a listener registered with
  * [[MapLayerRequestListenerOptions.injectsCredentials]].
  * @internal
  */
-export async function shapeMapLayerRequest(url: URL, headers: Headers, formatId: string, layerUrl: string): Promise<boolean> {
+export async function dispatchMapLayerRequest(url: URL, headers: Headers, formatId: string, layerUrl: string): Promise<boolean> {
   const registry = IModelApp.mapLayerFormatRegistry;
   if (!registry?.hasMapLayerRequestListeners)
     return false;
@@ -51,12 +51,12 @@ export async function isMapLayerAuthFailure(response: Response, formatId: string
   return "authentication" === args.failure;
 }
 
-/** The redirect policy for a request shaped by a listener registered with
+/** The redirect policy for a request submitted to a listener registered with
  * [[MapLayerRequestListenerOptions.injectsCredentials]]: refused while
  * [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled, so the injected values cannot
  * silently reach an unlisted origin through a redirect.
  * @internal
  */
-export function shapedRequestRedirect(): RequestRedirect | undefined {
+export function credentialedRequestRedirect(): RequestRedirect | undefined {
   return IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined;
 }

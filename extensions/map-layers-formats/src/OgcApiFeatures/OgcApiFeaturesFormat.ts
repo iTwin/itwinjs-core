@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { appendQueryParams, ImageryMapLayerFormat, IModelApp, isMapLayerAuthFailure, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, shapedRequestRedirect, shapeMapLayerRequest, ValidateSourceArgs } from "@itwin/core-frontend";
+import { appendQueryParams, credentialedRequestRedirect, dispatchMapLayerRequest, ImageryMapLayerFormat, IModelApp, isMapLayerAuthFailure, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
@@ -29,7 +29,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       };
 
       // Give registered request listeners full control over each outgoing request (e.g. an Authorization header).
-      const requestsShaped = IModelApp.mapLayerFormatRegistry.hasMapLayerRequestListeners;
+      const hasRequestListeners = IModelApp.mapLayerFormatRegistry.hasMapLayerRequestListeners;
       let containsCredentials = false;
 
       // Classify HTTP failures before parsing JSON, using the final response URL to enforce origin trust after redirects.
@@ -65,13 +65,13 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url, source.url);
 
       const applyClientAuth = async (requestUrl: string, baseOpts: RequestInit): Promise<{ url: string, opts: RequestInit }> => {
-        if (!requestsShaped)
+        if (!hasRequestListeners)
           return { url: requestUrl, opts: baseOpts };
         const urlObj = new URL(requestUrl);
         const clientHeaders = new Headers(baseOpts.headers);
-        containsCredentials = await shapeMapLayerRequest(urlObj, clientHeaders, source.formatId, source.url);
+        containsCredentials = await dispatchMapLayerRequest(urlObj, clientHeaders, source.formatId, source.url);
         // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
-        return { url: urlObj.toString(), opts: { ...baseOpts, headers: clientHeaders, redirect: containsCredentials ? shapedRequestRedirect() : baseOpts.redirect } };
+        return { url: urlObj.toString(), opts: { ...baseOpts, headers: clientHeaders, redirect: containsCredentials ? credentialedRequestRedirect() : baseOpts.redirect } };
       };
 
       const landingRequest = await applyClientAuth(url, allowLandingCredentials ? opts : { method: "GET" });

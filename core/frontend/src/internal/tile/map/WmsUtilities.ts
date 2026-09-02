@@ -7,14 +7,14 @@ import { IModelApp } from "../../../IModelApp";
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
 import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
 import {
-  isMapLayerAuthFailure, MapLayerAuthenticationFailedError, MapLayerUntrustedOriginError, shapedRequestRedirect, shapeMapLayerRequest,
+  credentialedRequestRedirect, dispatchMapLayerRequest, isMapLayerAuthFailure, MapLayerAuthenticationFailedError, MapLayerUntrustedOriginError,
 } from "../../../tile/internal";
 
 /** @packageDocumentation
  * @module Tiles
  */
 
-/** Options for a capabilities/XML request that registered map-layer request listeners may shape.
+/** Options for a capabilities/XML request that registered map-layer request listeners may customize.
  * @internal
  */
 export interface WmsFetchOptions {
@@ -69,7 +69,7 @@ export class WmsUtilities {
     if (IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners) {
       const urlObj = new URL(url);
       headers = headers ?? new Headers();
-      containsCredentials = await shapeMapLayerRequest(urlObj, headers, formatId ?? "", layer);
+      containsCredentials = await dispatchMapLayerRequest(urlObj, headers, formatId ?? "", layer);
       requestUrl = urlObj.toString();
     }
 
@@ -77,7 +77,7 @@ export class WmsUtilities {
       method: "GET",
       headers,
       // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
-      redirect: containsCredentials ? shapedRequestRedirect() : undefined,
+      redirect: containsCredentials ? credentialedRequestRedirect() : undefined,
     });
 
     // A request carrying listener-injected credentials never falls back to the legacy basic-auth /

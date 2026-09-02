@@ -113,19 +113,19 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     // Guarded so the common no-listener path stays synchronous up to the fetch call.
     let containsCredentials = false;
     const baseHeaders = options?.headers;
-    if (this.requestsAreShaped) {
+    if (this.hasRequestListeners) {
       const clientHeaders = new Headers(baseHeaders);
-      containsCredentials = await this.shapeRequest(urlObj, clientHeaders);
+      containsCredentials = await this.dispatchRequest(urlObj, clientHeaders);
       options = { ...options, headers: clientHeaders };
     }
 
     // Shapes each follow-up request independently, with fresh headers and the same redirect policy as the
     // initial request, so injected values are neither accumulated nor exposed to cross-origin redirects.
     const shapedFetch = async (target: URL): Promise<Response> => {
-      if (!this.requestsAreShaped)
+      if (!this.hasRequestListeners)
         return fetch(target.toString(), options);
       const headers = new Headers(baseHeaders);
-      containsCredentials = await this.shapeRequest(target, headers);
+      containsCredentials = await this.dispatchRequest(target, headers);
       return fetch(target.toString(), { ...options, headers, redirect: containsCredentials ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect });
     };
 

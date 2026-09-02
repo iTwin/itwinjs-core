@@ -2373,6 +2373,9 @@ export interface CreateTextureFromSourceArgs {
 // @beta
 export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T>;
 
+// @internal
+export function credentialedRequestRedirect(): RequestRedirect | undefined;
+
 // @internal (undocumented)
 export class CurrentInputState {
     // (undocumented)
@@ -2653,6 +2656,9 @@ export class DisclosedTileTreeSet implements Iterable<TileTree> {
     has(tree: TileTree): boolean;
     get size(): number;
 }
+
+// @internal
+export function dispatchMapLayerRequest(url: URL, headers: Headers, formatId: string, layerUrl: string): Promise<boolean>;
 
 // @public
 export class DisplayStyle2dState extends DisplayStyleState {
@@ -6184,6 +6190,8 @@ export abstract class MapLayerImageryProvider {
     protected readonly defaultMaximumZoomLevel = 22;
     // @internal
     protected readonly defaultMinimumZoomLevel = 0;
+    // @internal
+    protected dispatchRequest(url: URL, headers: Headers): Promise<boolean>;
     // @internal (undocumented)
     protected get _filterByCartoRange(): boolean;
     // @internal (undocumented)
@@ -6222,6 +6230,8 @@ export abstract class MapLayerImageryProvider {
     getPotentialChildIds(quadId: QuadId): QuadId[];
     // @internal
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
+    // @internal
+    protected get hasRequestListeners(): boolean;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
     // @internal
@@ -6264,8 +6274,6 @@ export abstract class MapLayerImageryProvider {
     protected recordSsoSucceeded(url: string): void;
     // @internal
     protected reportBlockedOrigin(url: string): void;
-    // @internal
-    protected get requestsAreShaped(): boolean;
     resetStatus(): void;
     // @internal (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
@@ -6273,8 +6281,6 @@ export abstract class MapLayerImageryProvider {
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // @internal
-    protected shapeRequest(url: URL, headers: Headers): Promise<boolean>;
     // @public @preview
     get status(): MapLayerImageryProviderStatus;
     // @public
@@ -10118,12 +10124,6 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     // (undocumented)
     viewport?: ScreenViewport;
 }
-
-// @internal
-export function shapedRequestRedirect(): RequestRedirect | undefined;
-
-// @internal
-export function shapeMapLayerRequest(url: URL, headers: Headers, formatId: string, layerUrl: string): Promise<boolean>;
 
 // @public
 export class SheetModelState extends GeometricModel2dState {
