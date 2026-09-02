@@ -14,7 +14,7 @@ import { MapLayerRequest } from "../../../tile/internal";
  */
 export interface MapLayerSendArgs {
   /** True when the send was issued through a fetch handler, opting it into credentialed-request handling. */
-  credentialed: boolean;
+  viaHandler: boolean;
   /** The request headers, including any handler mutations; undefined when the site sends without headers. */
   headers?: Headers;
   /** The request URL, including any handler mutations to the query parameters. */
@@ -39,7 +39,7 @@ export async function fetchMapLayerRequest(args: {
 }): Promise<Response> {
   const handler = IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler;
   if (!handler)
-    return args.send({ credentialed: false, headers: args.baseHeaders, url: args.url.toString() });
+    return args.send({ viaHandler: false, headers: args.baseHeaders, url: args.url.toString() });
 
   const headers = args.baseHeaders ?? new Headers();
   // searchParams is a live view: handler mutations are reflected on `url`, and re-read on every send.
@@ -50,7 +50,7 @@ export async function fetchMapLayerRequest(args: {
     searchParams: args.url.searchParams,
     headers,
   };
-  return handler(request, async () => args.send({ credentialed: true, headers, url: args.url.toString() }));
+  return handler(request, async () => args.send({ viaHandler: true, headers, url: args.url.toString() }));
 }
 
 /** The redirect policy for a send issued through a fetch handler (see [[MapLayerFetchNext]]): refused while

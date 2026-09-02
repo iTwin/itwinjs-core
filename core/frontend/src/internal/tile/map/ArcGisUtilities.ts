@@ -316,8 +316,8 @@ export class ArcGisUtilities {
         baseHeaders: hasFetchHandler ? new Headers() : undefined,
         send: async (sendArgs) => {
           // Sends declared as carrying handler-injected secrets get the same redirect policy as credentialed ones.
-          let rsp = await fetch(sendArgs.url, { method: "GET", headers: sendArgs.headers, redirect: sendArgs.credentialed ? credentialedRequestRedirect() : undefined });
-          if (allowSsoRetry && rsp.status === 401 && !requireToken && !sendArgs.credentialed && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
+          let rsp = await fetch(sendArgs.url, { method: "GET", headers: sendArgs.headers, redirect: sendArgs.viaHandler ? credentialedRequestRedirect() : undefined });
+          if (allowSsoRetry && rsp.status === 401 && !requireToken && !sendArgs.viaHandler && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
             // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
             const challengedUrl = rsp.url || sendArgs.url;
             if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(challengedUrl))

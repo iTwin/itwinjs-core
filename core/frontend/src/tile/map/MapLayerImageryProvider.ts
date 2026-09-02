@@ -512,7 +512,7 @@ export abstract class MapLayerImageryProvider {
   private async sendDefaultRequest(sendArgs: MapLayerSendArgs, hasCreds: boolean, hasSettingsCreds: boolean, timeoutMs?: number): Promise<Response> {
     const requestUrl = sendArgs.url;
     const includeCredentials = this.includeUserCredentials(requestUrl);
-    const credentialed = sendArgs.credentialed;
+    const credentialed = sendArgs.viaHandler;
     const opts: RequestInit = {
       method: "GET",
       headers: sendArgs.headers,
@@ -609,7 +609,7 @@ export abstract class MapLayerImageryProvider {
     try {
       return urlObj
         ? await fetchMapLayerRequest({ url: urlObj, formatId: this._settings.formatId, layerUrl: this._settings.url, baseHeaders: headers, send })
-        : await send({ credentialed: false, headers, url });
+        : await send({ viaHandler: false, headers, url });
     } catch (error) {
       if (error instanceof MapLayerAuthenticationFailedError)
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
@@ -671,7 +671,7 @@ export abstract class MapLayerImageryProvider {
     const send = async (sendArgs: MapLayerSendArgs): Promise<Response> => {
       const requestUrl = sendArgs.url;
       const includeCredentials = this.includeUserCredentials(requestUrl);
-      const credentialed = sendArgs.credentialed;
+      const credentialed = sendArgs.viaHandler;
       const rsp = await fetch(requestUrl, {
         method: "GET",
         headers: sendArgs.headers,
@@ -687,7 +687,7 @@ export abstract class MapLayerImageryProvider {
     try {
       response = urlObj
         ? await fetchMapLayerRequest({ url: urlObj, formatId: this._settings.formatId, layerUrl: this._settings.url, baseHeaders: headers, send })
-        : await send({ credentialed: false, headers, url });
+        : await send({ viaHandler: false, headers, url });
     } catch (error) {
       // Never degrade to an unauthenticated request or reject (getToolTip callers do not catch); skip the tooltip.
       if (this.hasFetchHandler)

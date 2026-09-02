@@ -6355,9 +6355,9 @@ export interface MapLayerScaleRangeVisibility {
 
 // @internal
 export interface MapLayerSendArgs {
-    credentialed: boolean;
     headers?: Headers;
     url: string;
+    viaHandler: boolean;
 }
 
 // @public

@@ -64,7 +64,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
           baseHeaders: baseOpts.headers ? new Headers(baseOpts.headers) : undefined,
           send: async (sendArgs) =>
             // Sends issued through a fetch handler get the same redirect policy as credentialed ones.
-            fetch(sendArgs.url, { ...baseOpts, headers: sendArgs.headers, redirect: sendArgs.credentialed ? credentialedRequestRedirect() : baseOpts.redirect }),
+            fetch(sendArgs.url, { ...baseOpts, headers: sendArgs.headers, redirect: sendArgs.viaHandler ? credentialedRequestRedirect() : baseOpts.redirect }),
         });
       };
 

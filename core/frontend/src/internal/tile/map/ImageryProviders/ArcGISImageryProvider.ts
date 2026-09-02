@@ -90,7 +90,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
    */
   private async sendArcGisRequest(sendArgs: MapLayerSendArgs, allowSsoRetry: boolean, options?: RequestInit): Promise<Response> {
     const includeCredentials = this.includeUserCredentials(sendArgs.url);
-    const credentialed = sendArgs.credentialed;
+    const credentialed = sendArgs.viaHandler;
     let rsp = await fetch(sendArgs.url, {
       ...options,
       headers: sendArgs.headers ?? options?.headers,

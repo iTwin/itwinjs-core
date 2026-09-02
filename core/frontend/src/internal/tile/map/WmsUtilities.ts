@@ -75,17 +75,17 @@ export class WmsUtilities {
         method: "GET",
         headers: sendArgs.headers,
         // Sends declared as carrying handler-injected secrets get the same redirect policy as credentialed ones.
-        redirect: sendArgs.credentialed ? credentialedRequestRedirect() : undefined,
+        redirect: sendArgs.viaHandler ? credentialedRequestRedirect() : undefined,
       });
 
       // A send issued through a fetch handler never falls back to the legacy basic-auth / NTLM-SSO
       // handling: the handler is the authentication authority for it.
-      return sendArgs.credentialed ? rsp : WmsUtilities.handleLegacyChallenges(rsp, sendArgs.url, credentials, sendArgs.headers);
+      return sendArgs.viaHandler ? rsp : WmsUtilities.handleLegacyChallenges(rsp, sendArgs.url, credentials, sendArgs.headers);
     };
 
     const response = urlObj
       ? await fetchMapLayerRequest({ url: urlObj, formatId: formatId ?? "", layerUrl: layerUrl ?? url, baseHeaders: headers, send })
-      : await send({ credentialed: false, headers, url });
+      : await send({ viaHandler: false, headers, url });
 
     if (response.status !== 200)
       throw new HttpResponseError(response.status, await response.text());
