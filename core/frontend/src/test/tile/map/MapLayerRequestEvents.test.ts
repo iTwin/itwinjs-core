@@ -140,12 +140,10 @@ describe("map-layer request/response events", () => {
     let seenUrl: string | undefined;
     let seenLayerUrl: string | undefined;
     let seenFormatId: string | undefined;
-    let seenContextUrl: string | undefined;
-    IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(({ url, layerUrl, formatId, context }) => {
+    IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener(({ url, layerUrl, formatId }) => {
       seenUrl = url;
       seenLayerUrl = layerUrl;
       seenFormatId = formatId;
-      seenContextUrl = context.mapLayerUrl.toString();
     }, { injectsCredentials: false });
     const provider = createProvider();
     await provider.makeRequest(`${tileUrl}?embedded=1`);
@@ -153,7 +151,6 @@ describe("map-layer request/response events", () => {
     expect(seenUrl).toEqual(`${tileUrl}?embedded=1`);
     expect(seenLayerUrl).toEqual(settingsUrl);
     expect(seenFormatId).toEqual("WMS");
-    expect(seenContextUrl).toEqual(settingsUrl);
   });
 
   it("passes the layer's settings URL as layerUrl on capabilities requests too", async () => {

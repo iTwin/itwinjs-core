@@ -311,7 +311,7 @@ export class ArcGisUtilities {
       if (!requestsShaped)
         return undefined;
       const headers = new Headers();
-      containsCredentials = await shapeMapLayerRequest(urlObj, headers, formatId, { mapLayerUrl: new URL(url), userName, password });
+      containsCredentials = await shapeMapLayerRequest(urlObj, headers, formatId, url);
       return headers;
     };
 
@@ -363,7 +363,7 @@ export class ArcGisUtilities {
       // Classify the final response (default rule: 401/403 on a request carrying listener-injected
       // credentials), mirroring WmsUtilities.fetchXml, so callers can transition to RequireAuth rather
       // than a generic failure.
-      if (await isMapLayerAuthFailure(response, formatId, { mapLayerUrl: new URL(url), userName, password }, containsCredentials))
+      if (await isMapLayerAuthFailure(response, formatId, url, containsCredentials))
         throw new MapLayerAuthenticationFailedError(response.url || tmpUrl.toString());
 
       const json = await response.json();

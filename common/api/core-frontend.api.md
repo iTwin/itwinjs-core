@@ -5639,7 +5639,7 @@ export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) 
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
 
 // @internal
-export function isMapLayerAuthFailure(response: Response, formatId: string, context: MapLayerAccessTokenParams, containsCredentials: boolean): Promise<boolean>;
+export function isMapLayerAuthFailure(response: Response, formatId: string, layerUrl: string, containsCredentials: boolean): Promise<boolean>;
 
 // @public
 export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
@@ -6162,8 +6162,6 @@ export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
     // @internal
     protected get accessClient(): MapLayerAccessClient | undefined;
-    // @internal
-    protected get accessTokenParams(): MapLayerAccessTokenParams;
     addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     // @deprecated (undocumented)
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
@@ -6332,7 +6330,6 @@ export interface MapLayerOptions {
 
 // @beta
 export interface MapLayerRequest {
-    context: MapLayerAccessTokenParams;
     readonly formatId: string;
     headers: Headers;
     readonly layerUrl: string;
@@ -6353,7 +6350,6 @@ export interface MapLayerRequestListenerOptions {
 
 // @beta
 export interface MapLayerResponse {
-    context: MapLayerAccessTokenParams;
     failure?: MapLayerRequestFailure;
     readonly formatId: string;
     readonly layerUrl: string;
@@ -10127,7 +10123,7 @@ export class SetupWalkCameraTool extends PrimitiveTool {
 export function shapedRequestRedirect(): RequestRedirect | undefined;
 
 // @internal
-export function shapeMapLayerRequest(url: URL, headers: Headers, formatId: string, context: MapLayerAccessTokenParams): Promise<boolean>;
+export function shapeMapLayerRequest(url: URL, headers: Headers, formatId: string, layerUrl: string): Promise<boolean>;
 
 // @public
 export class SheetModelState extends GeometricModel2dState {

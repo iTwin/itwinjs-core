@@ -6,8 +6,6 @@
  * @module MapLayers
  */
 
-import type { MapLayerAccessTokenParams } from "./MapLayerAuthentication";
-
 /** Describes an outgoing map-layer request submitted to the listeners registered via
  * [[MapLayerFormatRegistry.addMapLayerRequestListener]].
  * The request target cannot be changed: only its query parameters and headers may be mutated,
@@ -35,8 +33,6 @@ export interface MapLayerRequest {
   searchParams: URLSearchParams;
   /** The request headers. May be mutated in place (e.g. `headers.set("Authorization", ...)`). */
   headers: Headers;
-  /** Context identifying the layer the request is made for. */
-  context: MapLayerAccessTokenParams;
 }
 
 /** Describes a completed map-layer request submitted to the listeners registered via
@@ -53,8 +49,6 @@ export interface MapLayerResponse {
   readonly layerUrl: string;
   /** The id of the map-layer format the request was made for. See [[MapLayerRequest.formatId]]. */
   readonly formatId: string;
-  /** Context identifying the layer the request was made for. */
-  context: MapLayerAccessTokenParams;
   /** The classification of this response. Arrives prefilled with the default rule — `"authentication"` for
    * an HTTP 401/403 response to a credentialed request (see [[MapLayerRequestListenerOptions.injectsCredentials]]),
    * `undefined` otherwise — and listeners may overwrite it (e.g. a protocol-specific failure embedded in a `200`

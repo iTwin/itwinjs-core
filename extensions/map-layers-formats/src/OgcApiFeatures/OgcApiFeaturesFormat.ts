@@ -36,7 +36,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       const classifyResponseFailure = async (httpResponse: Response, requestedUrl: string): Promise<MapLayerSourceValidation | undefined> => {
         // Response listeners see every response; the default rule classifies 401/403 on requests
         // carrying listener-injected credentials.
-        if (await isMapLayerAuthFailure(httpResponse, source.formatId, { mapLayerUrl: new URL(source.url), userName, password }, containsCredentials))
+        if (await isMapLayerAuthFailure(httpResponse, source.formatId, source.url, containsCredentials))
           return { status: MapLayerSourceStatus.RequireAuth };
         if (containsCredentials)
           return httpResponse.ok ? undefined : { status: MapLayerSourceStatus.InvalidUrl };
@@ -69,7 +69,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
           return { url: requestUrl, opts: baseOpts };
         const urlObj = new URL(requestUrl);
         const clientHeaders = new Headers(baseOpts.headers);
-        containsCredentials = await shapeMapLayerRequest(urlObj, clientHeaders, source.formatId, { mapLayerUrl: new URL(source.url), userName, password });
+        containsCredentials = await shapeMapLayerRequest(urlObj, clientHeaders, source.formatId, source.url);
         // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
         return { url: urlObj.toString(), opts: { ...baseOpts, headers: clientHeaders, redirect: containsCredentials ? shapedRequestRedirect() : baseOpts.redirect } };
       };

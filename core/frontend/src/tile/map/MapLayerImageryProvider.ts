@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, isMapLayerAuthFailure, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerAccessTokenParams, MapLayerFeatureInfo, MapTilingScheme, QuadId, shapeMapLayerRequest, WebMercatorTilingScheme } from "../internal";
+import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, isMapLayerAuthFailure, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerFeatureInfo, MapTilingScheme, QuadId, shapeMapLayerRequest, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 import { DecorateContext } from "../../ViewContext";
@@ -381,13 +381,6 @@ export abstract class MapLayerImageryProvider {
     return IModelApp.mapLayerFormatRegistry?.getAccessClient(this._settings.formatId);
   }
 
-  /** Context identifying this layer, passed to the access client's callbacks.
-   * @internal
-   */
-  protected get accessTokenParams(): MapLayerAccessTokenParams {
-    return { mapLayerUrl: new URL(this._settings.url), userName: this._settings.userName, password: this._settings.password };
-  }
-
   /** True while any [[MapLayerFormatRegistry.addMapLayerRequestListener]] listener is registered.
    * @internal
    */
@@ -401,7 +394,7 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected async shapeRequest(url: URL, headers: Headers): Promise<boolean> {
-    return shapeMapLayerRequest(url, headers, this._settings.formatId, this.accessTokenParams);
+    return shapeMapLayerRequest(url, headers, this._settings.formatId, this._settings.url);
   }
 
   /** Classifies the given response by submitting it to the registered response listeners. Without
@@ -409,7 +402,7 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected async isAuthFailure(response: Response, containsCredentials: boolean): Promise<boolean> {
-    return isMapLayerAuthFailure(response, this._settings.formatId, this.accessTokenParams, containsCredentials);
+    return isMapLayerAuthFailure(response, this._settings.formatId, this._settings.url, containsCredentials);
   }
 
   /** Returns true if the given URL has the same origin as this layer's settings URL.

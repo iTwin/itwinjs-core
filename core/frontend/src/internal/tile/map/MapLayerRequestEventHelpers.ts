@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "../../../IModelApp";
-import { MapLayerAccessTokenParams, MapLayerRequest, MapLayerRequestFailure, MapLayerResponse } from "../../../tile/internal";
+import { MapLayerRequest, MapLayerRequestFailure, MapLayerResponse } from "../../../tile/internal";
 
 /** Submits an outgoing map-layer request to the listeners registered via
  * [[MapLayerFormatRegistry.addMapLayerRequestListener]], giving them the opportunity to shape it by
@@ -16,7 +16,7 @@ import { MapLayerAccessTokenParams, MapLayerRequest, MapLayerRequestFailure, Map
  * [[MapLayerRequestListenerOptions.injectsCredentials]].
  * @internal
  */
-export async function shapeMapLayerRequest(url: URL, headers: Headers, formatId: string, context: MapLayerAccessTokenParams): Promise<boolean> {
+export async function shapeMapLayerRequest(url: URL, headers: Headers, formatId: string, layerUrl: string): Promise<boolean> {
   const registry = IModelApp.mapLayerFormatRegistry;
   if (!registry?.hasMapLayerRequestListeners)
     return false;
@@ -24,11 +24,10 @@ export async function shapeMapLayerRequest(url: URL, headers: Headers, formatId:
   // searchParams is a live view: mutations made by listeners are reflected on `url`.
   const request: MapLayerRequest = {
     url: url.toString(),
-    layerUrl: context.mapLayerUrl.toString(),
+    layerUrl,
     formatId,
     searchParams: url.searchParams,
     headers,
-    context,
   };
   return registry.raiseMapLayerRequest(request);
 }
@@ -39,7 +38,7 @@ export async function shapeMapLayerRequest(url: URL, headers: Headers, formatId:
  * @returns true if the response was classified as an authentication failure.
  * @internal
  */
-export async function isMapLayerAuthFailure(response: Response, formatId: string, context: MapLayerAccessTokenParams, containsCredentials: boolean): Promise<boolean> {
+export async function isMapLayerAuthFailure(response: Response, formatId: string, layerUrl: string, containsCredentials: boolean): Promise<boolean> {
   const failure: MapLayerRequestFailure | undefined =
     (containsCredentials && (response.status === 401 || response.status === 403)) ? "authentication" : undefined;
 
@@ -47,7 +46,7 @@ export async function isMapLayerAuthFailure(response: Response, formatId: string
   if (!registry?.hasMapLayerResponseListeners)
     return "authentication" === failure;
 
-  const args: MapLayerResponse = { response, layerUrl: context.mapLayerUrl.toString(), formatId, context, failure };
+  const args: MapLayerResponse = { response, layerUrl, formatId, failure };
   await registry.raiseMapLayerResponse(args);
   return "authentication" === args.failure;
 }

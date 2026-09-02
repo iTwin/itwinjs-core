@@ -65,11 +65,11 @@ export class WmsUtilities {
     // Give registered request listeners full control over the outgoing request (e.g. an Authorization header).
     let requestUrl = url;
     let containsCredentials = false;
-    const context = { mapLayerUrl: new URL(layerUrl ?? url), userName: credentials?.user, password: credentials?.password };
+    const layer = layerUrl ?? url;
     if (IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners) {
       const urlObj = new URL(url);
       headers = headers ?? new Headers();
-      containsCredentials = await shapeMapLayerRequest(urlObj, headers, formatId ?? "", context);
+      containsCredentials = await shapeMapLayerRequest(urlObj, headers, formatId ?? "", layer);
       requestUrl = urlObj.toString();
     }
 
@@ -87,7 +87,7 @@ export class WmsUtilities {
 
     // Classify the final (post-retry) response before the generic non-200 handling so callers can
     // transition to RequireAuth rather than a generic failure.
-    if (await isMapLayerAuthFailure(response, formatId ?? "", context, containsCredentials))
+    if (await isMapLayerAuthFailure(response, formatId ?? "", layer, containsCredentials))
       throw new MapLayerAuthenticationFailedError(requestUrl);
 
     if (response.status !== 200)
