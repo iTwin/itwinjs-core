@@ -34,11 +34,11 @@ function configureTrustedCredentialsOrigins(configuration: DtaConfiguration): vo
   }
 }
 
-/** Registers a [[MapLayerFormatRegistry.addMapLayerRequestListener]] listener injecting a fixed header
- * (e.g. "Authorization=Bearer ...") and/or query parameters into every map-layer request of the
- * formats listed in IMJS_MAP_LAYER_AUTH_FORMATS. See README.md.
+/** Registers a map-layer fetch handler ([[MapLayerFormatRegistry.setMapLayerFetchHandler]]) injecting a
+ * fixed header (e.g. "Authorization=Bearer ...") and/or query parameters into every map-layer request of
+ * the formats listed in IMJS_MAP_LAYER_AUTH_FORMATS. See README.md.
  */
-function configureAuthRequestListener(configuration: DtaConfiguration): void {
+function configureAuthFetchHandler(configuration: DtaConfiguration): void {
   if (!configuration.mapLayerAuthHeader && !configuration.mapLayerAuthQueryParams)
     return;
 
@@ -70,7 +70,7 @@ function configureAuthRequestListener(configuration: DtaConfiguration): void {
   const formats = (configuration.mapLayerAuthFormats ?? "").split(",").map((entry) => entry.trim()).filter((entry) => entry.length > 0);
   if (formats.length === 0) {
     // eslint-disable-next-line no-console
-    console.warn("IMJS_MAP_LAYER_AUTH_FORMATS must list the map-layer format ids (e.g. \"WMS,ArcGIS\") the request listener applies to; no listener registered.");
+    console.warn("IMJS_MAP_LAYER_AUTH_FORMATS must list the map-layer format ids (e.g. \"WMS,ArcGIS\") the fetch handler applies to; no handler registered.");
     return;
   }
 
@@ -81,21 +81,22 @@ function configureAuthRequestListener(configuration: DtaConfiguration): void {
     }
   }
 
-  IModelApp.mapLayerFormatRegistry.addMapLayerRequestListener((request) => {
+  IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
     if (!formats.includes(request.formatId))
-      return;
+      return next();
     if (header)
       request.headers.set(header[0], header[1]);
     for (const [name, value] of queryParams)
       request.searchParams.set(name, value);
-  }, { injectsCredentials: true });   // the injected values are (test) credentials
+    return next();
+  });
 }
 
 /** Applies the map-layer security/authentication configuration derived from environment variables.
- * Must be called after IModelApp startup and after every map-layer format the request listener targets
+ * Must be called after IModelApp startup and after every map-layer format the fetch handler targets
  * (including the MapLayersFormats extension formats) has been registered.
  */
 export function configureMapLayerAuth(configuration: DtaConfiguration): void {
   configureTrustedCredentialsOrigins(configuration);
-  configureAuthRequestListener(configuration);
+  configureAuthFetchHandler(configuration);
 }

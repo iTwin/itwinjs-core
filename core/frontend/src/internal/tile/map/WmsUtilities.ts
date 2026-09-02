@@ -7,7 +7,7 @@ import { IModelApp } from "../../../IModelApp";
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
 import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
 import {
-  credentialedRequestRedirect, dispatchMapLayerRequest, isMapLayerAuthFailure, MapLayerAuthenticationFailedError, MapLayerUntrustedOriginError,
+  credentialedRequestRedirect, fetchMapLayerRequest, MapLayerSendArgs, MapLayerUntrustedOriginError,
 } from "../../../tile/internal";
 
 /** @packageDocumentation
@@ -62,33 +62,30 @@ export class WmsUtilities {
       }
     }
 
-    // Give registered request listeners full control over the outgoing request (e.g. an Authorization header).
-    let requestUrl = url;
-    let containsCredentials = false;
-    const layer = layerUrl ?? url;
-    if (IModelApp.mapLayerFormatRegistry?.hasMapLayerRequestListeners) {
-      const urlObj = new URL(url);
+    // Route the request through the registered fetch handler (if any). Handler failures — including
+    // MapLayerAuthenticationFailedError — propagate so callers can transition to RequireAuth.
+    let urlObj: URL | undefined;
+    if (undefined !== IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler) {
+      urlObj = new URL(url);
       headers = headers ?? new Headers();
-      containsCredentials = await dispatchMapLayerRequest(urlObj, headers, formatId ?? "", layer);
-      requestUrl = urlObj.toString();
     }
 
-    let response = await fetch(requestUrl, {
-      method: "GET",
-      headers,
-      // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
-      redirect: containsCredentials ? credentialedRequestRedirect() : undefined,
-    });
+    const send = async (sendArgs: MapLayerSendArgs): Promise<Response> => {
+      const rsp = await fetch(sendArgs.url, {
+        method: "GET",
+        headers: sendArgs.headers,
+        // Sends declared as carrying handler-injected secrets get the same redirect policy as credentialed ones.
+        redirect: sendArgs.credentialed ? credentialedRequestRedirect() : undefined,
+      });
 
-    // A request carrying listener-injected credentials never falls back to the legacy basic-auth /
-    // NTLM-SSO handling: the injecting listener is the authentication authority for it.
-    if (!containsCredentials)
-      response = await WmsUtilities.handleLegacyChallenges(response, requestUrl, credentials, headers);
+      // A send issued through a fetch handler never falls back to the legacy basic-auth / NTLM-SSO
+      // handling: the handler is the authentication authority for it.
+      return sendArgs.credentialed ? rsp : WmsUtilities.handleLegacyChallenges(rsp, sendArgs.url, credentials, sendArgs.headers);
+    };
 
-    // Classify the final (post-retry) response before the generic non-200 handling so callers can
-    // transition to RequireAuth rather than a generic failure.
-    if (await isMapLayerAuthFailure(response, formatId ?? "", layer, containsCredentials))
-      throw new MapLayerAuthenticationFailedError(requestUrl);
+    const response = urlObj
+      ? await fetchMapLayerRequest({ url: urlObj, formatId: formatId ?? "", layerUrl: layerUrl ?? url, baseHeaders: headers, send })
+      : await send({ credentialed: false, headers, url });
 
     if (response.status !== 200)
       throw new HttpResponseError(response.status, await response.text());

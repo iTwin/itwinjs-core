@@ -10,7 +10,7 @@ import { assert, expectDefined, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerRequest, MapLayerRequestListener, MapLayerRequestListenerOptions, MapLayerResponse, MapLayerResponseListener, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference, tryGetOrigin } from "../internal";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerFetchHandler, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference, tryGetOrigin } from "../internal";
 const loggerCategory = "MapLayerFormatRegistry";
 
 /**
@@ -102,15 +102,13 @@ export class MapLayerUntrustedOriginError extends Error {
   }
 }
 
-/** Error thrown when a map-layer request was classified as an authentication failure — by a
- * listener registered via [[MapLayerFormatRegistry.addMapLayerResponseListener]], or by the default
- * HTTP 401/403 rule when the request was shaped by a listener registered with
- * [[MapLayerRequestListenerOptions.injectsCredentials]].
- * Thrown by the static map-layer utilities (e.g. capabilities / service-metadata fetches) that have no
- * provider instance on which to report the failure; callers convert it to
- * [[MapLayerImageryProviderStatus.RequireAuth]] (provider initialization) or
- * [[MapLayerSourceStatus.RequireAuth]] (source validation).
- * @internal
+/** Error reporting an unrecoverable authentication failure for a map-layer request.
+ * Thrown by a [[MapLayerFetchHandler]] when it recognizes an authentication failure it cannot fix
+ * silently (e.g. a `401` that survives a token refresh, or a protocol-specific error embedded in a
+ * `200` body); callers convert it to [[MapLayerImageryProviderStatus.RequireAuth]] (tile requests and
+ * provider initialization) or [[MapLayerSourceStatus.RequireAuth]] (source validation), letting the
+ * application prompt for re-authentication.
+ * @beta
  */
 export class MapLayerAuthenticationFailedError extends Error {
   /** The URL of the request that failed to authenticate. */
@@ -190,88 +188,23 @@ export class MapLayerFormatRegistry {
    */
   public restrictCredentialsToTrustedOrigins = false;
 
-  private readonly _requestListeners: { listener: MapLayerRequestListener, injectsCredentials: boolean }[] = [];
-  private readonly _responseListeners: MapLayerResponseListener[] = [];
+  private _fetchHandler?: MapLayerFetchHandler;
 
-  /** Registers a listener invoked immediately before every map-layer network request — tiles, tooltips,
-   * capabilities, service metadata, and source validation, across every format — giving the hosting
-   * application full control over the request: listeners may mutate its query parameters and headers in
-   * place (see [[MapLayerRequest]]). Authentication (e.g. injecting an `Authorization` header) is the most
-   * common use, but any request customization qualifies — correlation headers, API-version parameters,
-   * tenant hints. `options.injectsCredentials` declares whether the listener injects secrets, opting the
-   * requests it shapes into credentialed-request handling
-   * (see [[MapLayerRequestListenerOptions.injectsCredentials]]).
-   *
-   * Listeners may be asynchronous; each is awaited in registration order before the request is issued.
-   * Invoked on the hot path of tile loading; listeners should be fast and cache their tokens internally.
-   * While any listener is registered, URL-keyed capability/service-metadata caches are bypassed so that
-   * shaped responses are never shared across differing request-shaping contexts.
-   * @returns a function that unregisters the listener.
+  /** Sets the [[MapLayerFetchHandler]] wrapping every map-layer network request — tiles, tooltips,
+   * capabilities, service metadata, and source validation, across every format. There is at most one
+   * handler per session, owned by the hosting application: setting a new one replaces the previous one,
+   * and passing `undefined` restores the default behavior.
    * @beta
    */
-  public addMapLayerRequestListener(listener: MapLayerRequestListener, options: MapLayerRequestListenerOptions): () => void {
-    const entry = { listener, injectsCredentials: options.injectsCredentials };
-    this._requestListeners.push(entry);
-    return () => {
-      const index = this._requestListeners.indexOf(entry);
-      if (index >= 0)
-        this._requestListeners.splice(index, 1);
-    };
+  public setMapLayerFetchHandler(handler: MapLayerFetchHandler | undefined): void {
+    this._fetchHandler = handler;
   }
 
-  /** Registers a listener invoked after each completed map-layer request — including responses with a
-   * successful HTTP status, since some protocols embed failures in a `200` response — letting the hosting
-   * application classify the response using whatever convention its service uses (status code, embedded
-   * error body, redirect target). [[MapLayerResponse.failure]] arrives prefilled with the default
-   * classification and listeners may overwrite or clear it; whatever value remains is acted upon
-   * (`"authentication"` transitions the layer to [[MapLayerImageryProviderStatus.RequireAuth]]).
-   *
-   * Listeners may be asynchronous; each is awaited in registration order.
-   * @returns a function that unregisters the listener.
-   * @beta
-   */
-  public addMapLayerResponseListener(listener: MapLayerResponseListener): () => void {
-    this._responseListeners.push(listener);
-    return () => {
-      const index = this._responseListeners.indexOf(listener);
-      if (index >= 0)
-        this._responseListeners.splice(index, 1);
-    };
-  }
-
-  /** True while any map-layer request listener is registered.
+  /** The registered [[MapLayerFetchHandler]], if any.
    * @internal
    */
-  public get hasMapLayerRequestListeners(): boolean {
-    return this._requestListeners.length > 0;
-  }
-
-  /** True while any map-layer response listener is registered.
-   * @internal
-   */
-  public get hasMapLayerResponseListeners(): boolean {
-    return this._responseListeners.length > 0;
-  }
-
-  /** Awaits each request listener in registration order. Listener failures propagate to the caller.
-   * @returns true if any invoked listener was registered with `injectsCredentials`.
-   * @internal
-   */
-  public async raiseMapLayerRequest(request: MapLayerRequest): Promise<boolean> {
-    let injectsCredentials = false;
-    for (const entry of [...this._requestListeners]) {
-      await entry.listener(request);
-      injectsCredentials ||= entry.injectsCredentials;
-    }
-    return injectsCredentials;
-  }
-
-  /** Awaits each response listener in registration order. Listener failures propagate to the caller.
-   * @internal
-   */
-  public async raiseMapLayerResponse(response: MapLayerResponse): Promise<void> {
-    for (const listener of [...this._responseListeners])
-      await listener(response);
+  public get mapLayerFetchHandler(): MapLayerFetchHandler | undefined {
+    return this._fetchHandler;
   }
 
   constructor(opts?: MapLayerOptions) {

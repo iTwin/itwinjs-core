@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { appendQueryParams, credentialedRequestRedirect, dispatchMapLayerRequest, ImageryMapLayerFormat, IModelApp, isMapLayerAuthFailure, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
+import { appendQueryParams, credentialedRequestRedirect, fetchMapLayerRequest, ImageryMapLayerFormat, IModelApp, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
@@ -28,19 +28,8 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         headers,
       };
 
-      // Give registered request listeners full control over each outgoing request (e.g. an Authorization header).
-      const hasRequestListeners = IModelApp.mapLayerFormatRegistry.hasMapLayerRequestListeners;
-      let containsCredentials = false;
-
       // Classify HTTP failures before parsing JSON, using the final response URL to enforce origin trust after redirects.
       const classifyResponseFailure = async (httpResponse: Response, requestedUrl: string): Promise<MapLayerSourceValidation | undefined> => {
-        // Response listeners see every response; the default rule classifies 401/403 on requests
-        // carrying listener-injected credentials.
-        if (await isMapLayerAuthFailure(httpResponse, source.formatId, source.url, containsCredentials))
-          return { status: MapLayerSourceStatus.RequireAuth };
-        if (containsCredentials)
-          return httpResponse.ok ? undefined : { status: MapLayerSourceStatus.InvalidUrl };
-
         if (httpResponse.ok)
           return undefined;
 
@@ -64,18 +53,22 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       if (headers && allowLandingCredentials)
         IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(url, source.url);
 
-      const applyClientAuth = async (requestUrl: string, baseOpts: RequestInit): Promise<{ url: string, opts: RequestInit }> => {
-        if (!hasRequestListeners)
-          return { url: requestUrl, opts: baseOpts };
+      // Routes each validation request through the registered fetch handler (if any); a
+      // MapLayerAuthenticationFailedError thrown by the handler is converted to RequireAuth below.
+      const doRequest = async (requestUrl: string, baseOpts: RequestInit): Promise<Response> => {
         const urlObj = new URL(requestUrl);
-        const clientHeaders = new Headers(baseOpts.headers);
-        containsCredentials = await dispatchMapLayerRequest(urlObj, clientHeaders, source.formatId, source.url);
-        // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
-        return { url: urlObj.toString(), opts: { ...baseOpts, headers: clientHeaders, redirect: containsCredentials ? credentialedRequestRedirect() : baseOpts.redirect } };
+        return fetchMapLayerRequest({
+          url: urlObj,
+          formatId: source.formatId,
+          layerUrl: source.url,
+          baseHeaders: baseOpts.headers ? new Headers(baseOpts.headers) : undefined,
+          send: async (sendArgs) =>
+            // Sends issued through a fetch handler get the same redirect policy as credentialed ones.
+            fetch(sendArgs.url, { ...baseOpts, headers: sendArgs.headers, redirect: sendArgs.credentialed ? credentialedRequestRedirect() : baseOpts.redirect }),
+        });
       };
 
-      const landingRequest = await applyClientAuth(url, allowLandingCredentials ? opts : { method: "GET" });
-      let response = await fetch(landingRequest.url, landingRequest.opts);
+      let response = await doRequest(url, allowLandingCredentials ? opts : { method: "GET" });
       const landingFailure = await classifyResponseFailure(response, url);
       if (landingFailure)
         return landingFailure;
@@ -139,8 +132,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         if (headers && allowCreds)
           IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(collectionsUrl, source.url);
 
-        const collectionsRequest = await applyClientAuth(collectionsUrl, allowCreds ? opts : { method: "GET" });
-        response = await fetch(collectionsRequest.url, collectionsRequest.opts);
+        response = await doRequest(collectionsUrl, allowCreds ? opts : { method: "GET" });
         const collectionsFailure = await classifyResponseFailure(response, collectionsUrl);
         if (collectionsFailure)
           return collectionsFailure;
@@ -156,6 +148,9 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       return { status, subLayers };
 
     } catch (err: any) {
+      // The fetch handler is the authentication authority for the requests it manages.
+      if (err instanceof MapLayerAuthenticationFailedError)
+        return { status: MapLayerSourceStatus.RequireAuth };
       status = MapLayerSourceStatus.InvalidUrl;
       if (err?.status === 401) {
         status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);

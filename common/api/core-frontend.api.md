@@ -2657,9 +2657,6 @@ export class DisclosedTileTreeSet implements Iterable<TileTree> {
     get size(): number;
 }
 
-// @internal
-export function dispatchMapLayerRequest(url: URL, headers: Headers, formatId: string, layerUrl: string): Promise<boolean>;
-
 // @public
 export class DisplayStyle2dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection);
@@ -3465,6 +3462,15 @@ export interface FeatureSymbologyRenderer {
     // (undocumented)
     isAttributeDriven(): this is FeatureAttributeDrivenSymbology;
 }
+
+// @internal
+export function fetchMapLayerRequest(args: {
+    url: URL;
+    formatId: string;
+    layerUrl: string;
+    baseHeaders?: Headers;
+    send: (sendArgs: MapLayerSendArgs) => Promise<Response>;
+}): Promise<Response>;
 
 // @public
 export class FitViewTool extends ViewTool {
@@ -5644,9 +5650,6 @@ export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) 
 // @public
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
 
-// @internal
-export function isMapLayerAuthFailure(response: Response, formatId: string, layerUrl: string, containsCredentials: boolean): Promise<boolean>;
-
 // @public
 export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
 
@@ -6066,6 +6069,12 @@ export interface MapLayerAccessTokenParams {
     userName?: string;
 }
 
+// @beta
+export class MapLayerAuthenticationFailedError extends Error {
+    constructor(url: string);
+    readonly url: string;
+}
+
 // @beta (undocumented)
 export interface MapLayerAuthenticationInfo {
     // (undocumented)
@@ -6100,6 +6109,12 @@ export class MapLayerFeatureRecord {
     static createRecordFromAttribute(attribute: MapLayerFeatureAttribute): PropertyRecord;
 }
 
+// @beta
+export type MapLayerFetchHandler = (request: MapLayerRequest, next: MapLayerFetchNext) => Promise<Response>;
+
+// @beta
+export type MapLayerFetchNext = () => Promise<Response>;
+
 // @public
 export class MapLayerFormat {
     // @beta
@@ -6117,10 +6132,6 @@ export class MapLayerFormat {
 // @public
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
-    // @beta
-    addMapLayerRequestListener(listener: MapLayerRequestListener, options: MapLayerRequestListenerOptions): () => void;
-    // @beta
-    addMapLayerResponseListener(listener: MapLayerResponseListener): () => void;
     // (undocumented)
     get configOptions(): MapLayerOptions;
     // @internal (undocumented)
@@ -6130,10 +6141,6 @@ export class MapLayerFormatRegistry {
     // @beta (undocumented)
     getAccessClient(formatId: string): MapLayerAccessClient | undefined;
     // @internal
-    get hasMapLayerRequestListeners(): boolean;
-    // @internal
-    get hasMapLayerResponseListeners(): boolean;
-    // @internal
     isCredentialsSharingAllowed(url: string, settingsUrl: string): boolean;
     // (undocumented)
     isRegistered(formatId: string): boolean;
@@ -6142,15 +6149,15 @@ export class MapLayerFormatRegistry {
     // @internal
     logUntrustedOriginUse(url: string, settingsUrl?: string): void;
     // @internal
-    raiseMapLayerRequest(request: MapLayerRequest): Promise<boolean>;
-    // @internal
-    raiseMapLayerResponse(response: MapLayerResponse): Promise<void>;
+    get mapLayerFetchHandler(): MapLayerFetchHandler | undefined;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // @beta
     restrictCredentialsToTrustedOrigins: boolean;
     // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
+    // @beta
+    setMapLayerFetchHandler(handler: MapLayerFetchHandler | undefined): void;
     // @beta
     get trustedCredentialsOrigins(): ReadonlyArray<string>;
     set trustedCredentialsOrigins(origins: ReadonlyArray<string>);
@@ -6190,8 +6197,6 @@ export abstract class MapLayerImageryProvider {
     protected readonly defaultMaximumZoomLevel = 22;
     // @internal
     protected readonly defaultMinimumZoomLevel = 0;
-    // @internal
-    protected dispatchRequest(url: URL, headers: Headers): Promise<boolean>;
     // @internal (undocumented)
     protected get _filterByCartoRange(): boolean;
     // @internal (undocumented)
@@ -6231,14 +6236,12 @@ export abstract class MapLayerImageryProvider {
     // @internal
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // @internal
-    protected get hasRequestListeners(): boolean;
+    protected get hasFetchHandler(): boolean;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
     // @internal
     protected includeUserCredentials(url: string): boolean;
     initialize(): Promise<void>;
-    // @internal
-    protected isAuthFailure(response: Response, containsCredentials: boolean): Promise<boolean>;
     // @internal
     protected isCredentialsSharingAllowed(url: string): boolean;
     // @internal
@@ -6344,32 +6347,17 @@ export interface MapLayerRequest {
 }
 
 // @beta
-export type MapLayerRequestFailure = "authentication";
-
-// @beta
-export type MapLayerRequestListener = (request: MapLayerRequest) => Promise<void> | void;
-
-// @beta
-export interface MapLayerRequestListenerOptions {
-    injectsCredentials: boolean;
-}
-
-// @beta
-export interface MapLayerResponse {
-    failure?: MapLayerRequestFailure;
-    readonly formatId: string;
-    readonly layerUrl: string;
-    response: Response;
-}
-
-// @beta
-export type MapLayerResponseListener = (response: MapLayerResponse) => Promise<void> | void;
-
-// @beta
 export interface MapLayerScaleRangeVisibility {
     index: number;
     isOverlay: boolean;
     visibility: MapTileTreeScaleRangeVisibility;
+}
+
+// @internal
+export interface MapLayerSendArgs {
+    credentialed: boolean;
+    headers?: Headers;
+    url: string;
 }
 
 // @public

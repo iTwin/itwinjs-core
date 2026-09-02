@@ -57,7 +57,7 @@ export * from "../internal/tile/ImdlGraphicsCreator";
 export * from "../internal/tile/ImdlParser";
 export * from "../internal/tile/map/ArcGISTileMap";
 export * from "./map/MapLayerAuthentication";
-export * from "./map/MapLayerRequestListeners";
+export * from "./map/MapLayerFetchHandler";
 export * from "./map/MapFeatureInfo";
 export * from "./map/MapLayerFormatRegistry";
 export * from "../internal/tile/map/ArcGisUtilities";

@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -108,25 +108,53 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         password: this._settings.password });
     }
 
-    // Give registered request listeners full control over the outgoing request (e.g. an Authorization header).
-    // Applied after all provider query params so listeners see the complete request.
-    // Guarded so the common no-listener path stays synchronous up to the fetch call.
-    let containsCredentials = false;
+    // Routes each request - initial, HTML fallback or token retry - through the registered fetch handler
+    // (if any), with fresh headers per request so injected values are neither accumulated nor exposed to
+    // cross-origin redirects. The NTLM/SSO retry applies only to the initial request, and never to sends
+    // declared as carrying handler-injected credentials.
     const baseHeaders = options?.headers;
-    if (this.hasRequestListeners) {
-      const clientHeaders = new Headers(baseHeaders);
-      containsCredentials = await this.dispatchRequest(urlObj, clientHeaders);
-      options = { ...options, headers: clientHeaders };
-    }
+    const requestViaHandler = async (target: URL, allowSsoRetry: boolean): Promise<Response> => {
+      return fetchMapLayerRequest({
+        url: target,
+        formatId: this._settings.formatId,
+        layerUrl: this._settings.url,
+        baseHeaders: this.hasFetchHandler ? new Headers(baseHeaders) : undefined,
+        send: async (sendArgs) => {
+          const includeCredentials = this.includeUserCredentials(sendArgs.url);
+          const credentialed = sendArgs.credentialed;
+          let rsp = await fetch(sendArgs.url, {
+            ...options,
+            headers: sendArgs.headers ?? baseHeaders,
+            credentials: includeCredentials ? "include" : undefined,
+            // Sends issued through a fetch handler get the same redirect policy as credentialed ones.
+            redirect: (includeCredentials || credentialed) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
+          });
 
-    // Shapes each follow-up request independently, with fresh headers and the same redirect policy as the
-    // initial request, so injected values are neither accumulated nor exposed to cross-origin redirects.
-    const shapedFetch = async (target: URL): Promise<Response> => {
-      if (!this.hasRequestListeners)
-        return fetch(target.toString(), options);
-      const headers = new Headers(baseHeaders);
-      containsCredentials = await this.dispatchRequest(target, headers);
-      return fetch(target.toString(), { ...options, headers, redirect: containsCredentials ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect });
+          if (includeCredentials || credentialed)
+            this.checkCredentialedRedirect(sendArgs.url, rsp);
+
+          if (allowSsoRetry && rsp.status === 401 && !this._lastAccessToken && !credentialed && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
+            // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
+            const challengedUrl = rsp.url || sendArgs.url;
+            if (this.isSsoAllowed(challengedUrl)) {
+              // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
+              this.logUntrustedOriginUse(challengedUrl);
+              rsp = await fetch(challengedUrl, {
+                ...options,
+                credentials: "include",
+                redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
+              });
+              if (rsp.status === 200) {
+                this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
+              }
+            } else {
+              this.reportBlockedOrigin(challengedUrl);
+            }
+          }
+
+          return rsp;
+        },
+      });
     };
 
     // We want to complete the first request before letting other requests go;
@@ -138,36 +166,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
     let response: Response|undefined;
     try {
-      const requestUrl = urlObj.toString();
-      const includeCredentials = this.includeUserCredentials(requestUrl);
-      response = await fetch(urlObj, {
-        ...options,
-        credentials: includeCredentials ?  "include" : undefined,
-        // Requests carrying listener-injected secrets get the same redirect policy as credentialed ones.
-        redirect: (includeCredentials || containsCredentials) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
-      });
-
-      if (includeCredentials || containsCredentials)
-        this.checkCredentialedRedirect(requestUrl, response);
-
-      if (response.status === 401 && !this._lastAccessToken && !containsCredentials && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-        // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
-        const challengedUrl = response.url || requestUrl;
-        if (this.isSsoAllowed(challengedUrl)) {
-          // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
-          this.logUntrustedOriginUse(challengedUrl);
-          response = await fetch(challengedUrl, {
-            ...options,
-            credentials: "include",
-            redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
-          });
-          if (response.status === 200) {
-            this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
-          }
-        } else {
-          this.reportBlockedOrigin(challengedUrl);
-        }
-      }
+      response = await requestViaHandler(urlObj, true);
 
       if ((this._lastAccessToken && response.status === 400)
        || response.headers.get("content-type")?.toLowerCase().includes("htm")) {
@@ -179,7 +178,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         if (this._lastAccessToken && this._accessTokenRequired)
           tmpUrl.searchParams.append("token", this._lastAccessToken.token);
         tmpUrl.searchParams.append("f","json");
-        response = await shapedFetch(tmpUrl);
+        response = await requestViaHandler(tmpUrl, false);
       }
 
       errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
@@ -206,7 +205,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
           }
 
           // Make a second attempt with refreshed token
-          response = await shapedFetch(urlObj2);
+          response = await requestViaHandler(urlObj2, false);
           errorCode  = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
 
@@ -226,16 +225,16 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
           }
         }
       }
+    } catch (error) {
+      if (error instanceof MapLayerAuthenticationFailedError)
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+      throw error;
     } finally {
       this.onFirstRequestCompleted.raiseEvent();
     }
 
     if (response === undefined)
       throw new Error("fetch call failed");
-
-    // Classify the final response - initial, fallback or token-retry - once all retries are done.
-    if (await this.isAuthFailure(response, containsCredentials))
-      this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 
     return response;
   }

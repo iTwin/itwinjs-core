@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, MapLayerFormatRegistry, MapLayerSource, MapLayerSourceStatus } from "@itwin/core-frontend";
+import { IModelApp, MapLayerAuthenticationFailedError, MapLayerFormatRegistry, MapLayerSource, MapLayerSourceStatus } from "@itwin/core-frontend";
 import { expect } from "chai";
 import sinon from "sinon";
 import { OgcApiFeaturesMapLayerFormat } from "../../OgcApiFeatures/OgcApiFeaturesFormat.js";
@@ -248,12 +248,13 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
   });
 
-  it("applies listener headers and query parameters to both validation requests", async () => {
+  it("applies handler headers and query parameters to both validation requests", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.addMapLayerRequestListener(({ searchParams, headers }) => {
-      searchParams.set("clientParam", "clientParamValue");
-      headers.set("Authorization", "Bearer secret-jwt");
-    }, { injectsCredentials: true });
+    registry.setMapLayerFetchHandler(async (request, next) => {
+      request.searchParams.set("clientParam", "clientParamValue");
+      request.headers.set("Authorization", "Bearer secret-jwt");
+      return next();
+    });
     const source = createSource();
     source.savedQueryParams = { saved: "1" };
     source.unsavedQueryParams = { unsaved: "2" };
@@ -276,25 +277,31 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
   });
 
-  it("reports RequireAuth for a credentialed shaped validation request rejected with 403", async () => {
+  it("reports RequireAuth when the handler classifies a validation request as an authentication failure", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.addMapLayerRequestListener((request) => {
+    registry.setMapLayerFetchHandler(async (request, next) => {
       request.headers.set("Authorization", "Bearer secret-jwt");
-    }, { injectsCredentials: true });
+      const response = await next();
+      if (response.status === 403)
+        throw new MapLayerAuthenticationFailedError(request.url);
+      return response;
+    });
     stubFetch({}, { [sourceUrl]: 403 });
 
     const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
 
-    // The injecting listener is the authentication authority: RequireAuth, not InvalidCredentials.
+    // The fetch handler is the authentication authority: RequireAuth, not InvalidCredentials.
     expect(validation.status).to.equals(MapLayerSourceStatus.RequireAuth);
   });
 
-  it("uses response listeners to classify shaped validation responses", async () => {
+  it("lets the handler classify protocol-specific validation failures", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.addMapLayerRequestListener(({ headers }) => headers.set("Authorization", "Bearer secret-jwt"), { injectsCredentials: true });
-    registry.addMapLayerResponseListener((rsp) => {
-      if (rsp.response.status === 407)
-        rsp.failure = "authentication";
+    registry.setMapLayerFetchHandler(async (request, next) => {
+      request.headers.set("Authorization", "Bearer secret-jwt");
+      const response = await next();
+      if (response.status === 407)
+        throw new MapLayerAuthenticationFailedError(request.url);
+      return response;
     });
     stubFetch({}, { [sourceUrl]: 407 });
 

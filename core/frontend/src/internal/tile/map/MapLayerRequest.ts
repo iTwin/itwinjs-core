@@ -7,54 +7,55 @@
  */
 
 import { IModelApp } from "../../../IModelApp";
-import { MapLayerRequest, MapLayerRequestFailure, MapLayerResponse } from "../../../tile/internal";
+import { MapLayerRequest } from "../../../tile/internal";
 
-/** Submits an outgoing map-layer request to the listeners registered via
- * [[MapLayerFormatRegistry.addMapLayerRequestListener]], giving them the opportunity to mutate the URL's
- * query parameters and `headers` in place.
- * @returns true if the request was submitted to a listener registered with
- * [[MapLayerRequestListenerOptions.injectsCredentials]].
+/** The state a call site's default send receives for each [[MapLayerFetchNext]] invocation.
  * @internal
  */
-export async function dispatchMapLayerRequest(url: URL, headers: Headers, formatId: string, layerUrl: string): Promise<boolean> {
-  const registry = IModelApp.mapLayerFormatRegistry;
-  if (!registry?.hasMapLayerRequestListeners)
-    return false;
+export interface MapLayerSendArgs {
+  /** True when the send was issued through a fetch handler, opting it into credentialed-request handling. */
+  credentialed: boolean;
+  /** The request headers, including any handler mutations; undefined when the site sends without headers. */
+  headers?: Headers;
+  /** The request URL, including any handler mutations to the query parameters. */
+  url: string;
+}
 
-  // searchParams is a live view: mutations made by listeners are reflected on `url`.
+/** Routes an outgoing map-layer request through the [[MapLayerFetchHandler]] registered via
+ * [[MapLayerFormatRegistry.setMapLayerFetchHandler]], if any; otherwise issues the default send directly.
+ * The handler may mutate `url`'s query parameters and `headers`, call `send` any number of times (each
+ * call re-reads their current state), short-circuit with its own response, or throw
+ * [[MapLayerAuthenticationFailedError]].
+ * @internal
+ */
+export async function fetchMapLayerRequest(args: {
+  url: URL;
+  formatId: string;
+  layerUrl: string;
+  /** Pre-populated headers (e.g. settings-derived basic auth), if any. */
+  baseHeaders?: Headers;
+  /** The call site's default send, reading the current request state from the supplied [[MapLayerSendArgs]]. */
+  send: (sendArgs: MapLayerSendArgs) => Promise<Response>;
+}): Promise<Response> {
+  const handler = IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler;
+  if (!handler)
+    return args.send({ credentialed: false, headers: args.baseHeaders, url: args.url.toString() });
+
+  const headers = args.baseHeaders ?? new Headers();
+  // searchParams is a live view: handler mutations are reflected on `url`, and re-read on every send.
   const request: MapLayerRequest = {
-    url: url.toString(),
-    layerUrl,
-    formatId,
-    searchParams: url.searchParams,
+    url: args.url.toString(),
+    layerUrl: args.layerUrl,
+    formatId: args.formatId,
+    searchParams: args.url.searchParams,
     headers,
   };
-  return registry.raiseMapLayerRequest(request);
+  return handler(request, async () => args.send({ credentialed: true, headers, url: args.url.toString() }));
 }
 
-/** Classifies a completed map-layer response by submitting it to the listeners registered via
- * [[MapLayerFormatRegistry.addMapLayerResponseListener]]: [[MapLayerResponse.failure]] is prefilled with
- * the default rule — HTTP 401/403 on a credentialed request — and listeners may overwrite or clear it.
- * @returns true if the response was classified as an authentication failure.
- * @internal
- */
-export async function isMapLayerAuthFailure(response: Response, formatId: string, layerUrl: string, containsCredentials: boolean): Promise<boolean> {
-  const failure: MapLayerRequestFailure | undefined =
-    (containsCredentials && (response.status === 401 || response.status === 403)) ? "authentication" : undefined;
-
-  const registry = IModelApp.mapLayerFormatRegistry;
-  if (!registry?.hasMapLayerResponseListeners)
-    return "authentication" === failure;
-
-  const args: MapLayerResponse = { response, layerUrl, formatId, failure };
-  await registry.raiseMapLayerResponse(args);
-  return "authentication" === args.failure;
-}
-
-/** The redirect policy for a request submitted to a listener registered with
- * [[MapLayerRequestListenerOptions.injectsCredentials]]: refused while
- * [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled, so the injected values cannot
- * silently reach an unlisted origin through a redirect.
+/** The redirect policy for a send issued through a fetch handler (see [[MapLayerFetchNext]]): refused while
+ * [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled, so handler-injected values
+ * cannot silently reach an unlisted origin through a redirect.
  * @internal
  */
 export function credentialedRequestRedirect(): RequestRedirect | undefined {
