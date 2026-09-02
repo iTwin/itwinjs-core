@@ -279,6 +279,39 @@ describe("map-layer fetch handler", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
   });
 
+  it("notifies the user once when the handler reports an authentication failure after tiles had loaded", async () => {
+    const outputMessage = vi.spyOn(IModelApp.notifications, "outputMessage");
+    let failing = false;
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
+      if (failing)
+        throw new MapLayerAuthenticationFailedError(request.url);
+      return next();
+    });
+    fetchMock.mockResolvedValue(new Response(new Uint8Array([1, 2, 3]), { status: 200, headers: { "content-type": "image/png" } }));
+    const provider = createProvider();
+    expect(await provider.loadTile(0, 0, 0)).toBeDefined();
+
+    failing = true;   // e.g. the token was revoked and the refresh failed
+    const tiles = await Promise.all([provider.loadTile(0, 1, 1), provider.loadTile(1, 0, 1), provider.loadTile(1, 1, 1)]);
+
+    expect(tiles).toEqual([undefined, undefined, undefined]);
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
+    expect(outputMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not notify the user when the handler fails before any tile loaded", async () => {
+    // Validation already reported the failure; a second notification would be noise.
+    const outputMessage = vi.spyOn(IModelApp.notifications, "outputMessage");
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request) => {
+      throw new MapLayerAuthenticationFailedError(request.url);
+    });
+    const provider = createProvider();
+
+    expect(await provider.loadTile(0, 0, 0)).toBeUndefined();
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
+    expect(outputMessage).not.toHaveBeenCalled();
+  });
+
   it("lets the handler recognize protocol-specific failures", async () => {
     // An HTTP 200 whose body carries an embedded error code (e.g. ArcGIS-style).
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ error: { code: 499 } }), { status: 200 }));

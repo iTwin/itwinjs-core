@@ -367,6 +367,21 @@ export abstract class MapLayerImageryProvider {
    */
   protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus) { }
 
+  /** Transitions to [[MapLayerImageryProviderStatus.RequireAuth]] after a [[MapLayerFetchHandler]] reported an
+   * unrecoverable authentication failure. The user is notified once per transition, and only if tiles had
+   * loaded before: an initialization failure was already reported through source validation.
+   * @internal
+   */
+  protected reportAuthenticationFailure(): void {
+    const alreadyReported = this._status === MapLayerImageryProviderStatus.RequireAuth;
+    this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+    if (alreadyReported || !this._hasSuccessfullyFetchedTile)
+      return;
+
+    const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+  }
+
   /** @internal */
   protected setRequestAuthorization(headers: Headers) {
     if (this._settings.userName && this._settings.password) {
@@ -612,7 +627,7 @@ export abstract class MapLayerImageryProvider {
         : await send({ credentialed: false, headers, url });
     } catch (error) {
       if (error instanceof MapLayerAuthenticationFailedError)
-        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+        this.reportAuthenticationFailure();
       throw error;
     }
   }

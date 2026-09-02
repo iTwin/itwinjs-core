@@ -6276,6 +6276,8 @@ export abstract class MapLayerImageryProvider {
     // @internal
     protected recordSsoSucceeded(url: string): void;
     // @internal
+    protected reportAuthenticationFailure(): void;
+    // @internal
     protected reportBlockedOrigin(url: string): void;
     resetStatus(): void;
     // @internal (undocumented)

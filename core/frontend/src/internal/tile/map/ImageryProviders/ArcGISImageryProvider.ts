@@ -232,7 +232,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       }
     } catch (error) {
       if (error instanceof MapLayerAuthenticationFailedError)
-        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+        this.reportAuthenticationFailure();
       throw error;
     } finally {
       this.onFirstRequestCompleted.raiseEvent();
