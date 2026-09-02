@@ -964,6 +964,8 @@ export interface ChangeFormatArgs {
 export interface ChangeInstance {
     $meta: ChangeMeta;
     [key: string]: any;
+    ECClassId: string;
+    ECInstanceId: string;
 }
 
 // @beta
@@ -6259,7 +6261,6 @@ export class RoleModel extends Model {
 export interface RowFormatOptions {
     abbreviateBlobs?: boolean;
     classIdsToClassNames?: boolean;
-    useJsName?: boolean;
 }
 
 // @public
