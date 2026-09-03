@@ -9,6 +9,7 @@ publish: false
     - [ChangesetReader changes](#changesetreader-changes)
       - [ChangesetReader row options](#changesetreader-row-options)
       - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
+  - [Electron 44 support](#electron-44-support)
 
 ## @itwin/core-backend
 
@@ -31,3 +32,7 @@ The `useJsName` option has been removed from the `@beta` `RowFormatOptions` used
 #### ChangeInstance ECInstanceId and ECClassId
 
 The `@beta` [ChangeInstance]($backend) interface produced by [ChangesetReader]($backend) now declares `ECInstanceId` and `ECClassId` as explicit `string` properties. They were previously only reachable through the interface's index signature, so no runtime behavior changes — the values were always present — but consumers now get proper typing and IntelliSense when accessing `instance.ECInstanceId` and `instance.ECClassId`.
+
+## Electron 44 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 44](https://www.electronjs.org/blog/electron-44-0).
