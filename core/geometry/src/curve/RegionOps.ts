@@ -50,7 +50,7 @@ import { Path } from "./Path";
 import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
 import { CurveSplitContext } from "./Query/CurveSplitContext";
 import { PointInOnOutContext } from "./Query/InOutTests";
-import { PlanarSubdivision } from "./Query/PlanarSubdivision";
+import { CreateRegionInFaceOptions, PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupMember, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { StrokeOptions } from "./StrokeOptions";
@@ -516,7 +516,7 @@ export class RegionOps {
     context.graph.clearMask(visitMask | outMask);
     const areaTol = this.computeMinimumArea(mergeTolerance);
     const z = RegionOps.getZCoordinate(operation === RegionBinaryOpType.BMinusA ? loopsB : loopsA);
-    const options: PlanarSubdivision.CreateRegionInFaceOptions = { compress: true, closureTol: mergeTolerance, bridgeMask, visitMask, z };
+    const options: CreateRegionInFaceOptions = { compress: true, closureTol: mergeTolerance, bridgeMask, visitMask, z };
     let numFacesIn = 0;
     context.runClassificationSweep(
       operation,
@@ -1178,6 +1178,7 @@ export class RegionOps {
     tolerance: number = Geometry.smallMetricDistance,
     addBridges: boolean = true,
   ): SignedLoops[] {
+    tolerance = GeometryQuery.scaleToleranceForGeometry(curvesAndRegions, tolerance, { xyOnly: true });
     let primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
     primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     let hasOpenCurve = false;
@@ -1200,8 +1201,9 @@ export class RegionOps {
         });
       }
     }
+    const radianTolerance = 10000 * Geometry.smallAngleRadians; // be generous, and rely on curvature to break ties
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);
-    const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance);
+    const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance, radianTolerance);
     if (addBridges && hasOpenCurve)
       RegionOps.removeExtraneousBridgeEdges(graph);
     const areaTol = this.computeMinimumArea(tolerance);

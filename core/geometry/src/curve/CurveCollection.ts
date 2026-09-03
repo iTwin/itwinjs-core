@@ -12,6 +12,7 @@ import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
@@ -386,6 +387,21 @@ export abstract class CurveCollection extends GeometryQuery {
     }
     return undefined;
   };
+  /**
+   * Ask if the curves of the collection are within tolerance of the input plane.
+   * @returns whether the collection is nonempty and its curves lie within tolerance of the plane.
+   */
+  public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
+    if (0 === this.children.length)
+      return false; // punt on empty parent...
+    for (const child of this.children) {
+      if (child instanceof CurveCollection && 0 === child.children.length)
+        continue; // ...but ignore an empty child
+      if (!child.isInPlane(plane))
+        return false;
+    }
+    return true;
+  }
 }
 
 /**
