@@ -6113,7 +6113,12 @@ export class MapLayerFeatureRecord {
 export type MapLayerFetchHandler = (request: MapLayerRequest, next: MapLayerFetchNext) => Promise<Response>;
 
 // @beta
-export type MapLayerFetchNext = () => Promise<Response>;
+export type MapLayerFetchNext = (options?: MapLayerFetchNextOptions) => Promise<Response>;
+
+// @beta
+export interface MapLayerFetchNextOptions {
+    credentialed?: boolean;
+}
 
 // @public
 export class MapLayerFormat {
@@ -6342,9 +6347,9 @@ export interface MapLayerOptions {
 // @beta
 export interface MapLayerRequest {
     readonly formatId: string;
-    headers: Headers;
+    readonly headers: Headers;
     readonly layerUrl: string;
-    searchParams: URLSearchParams;
+    readonly searchParams: URLSearchParams;
     readonly url: string;
 }
 

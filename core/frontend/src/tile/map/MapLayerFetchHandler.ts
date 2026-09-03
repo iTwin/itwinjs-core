@@ -28,11 +28,25 @@ export interface MapLayerRequest {
    * and those appended by the provider (e.g. custom query parameters, protocol parameters). May be mutated in
    * place: `searchParams.set("token", ...)` overrides an existing value, `append` adds one. Mutating parameters
    * the provider relies on may break the request. Mutations made between two [[MapLayerFetchNext]] calls are
-   * reflected in the second request.
+   * reflected in the second request. The reference itself cannot be replaced.
    */
-  searchParams: URLSearchParams;
-  /** The request headers. May be mutated in place (e.g. `headers.set("Authorization", ...)`). */
-  headers: Headers;
+  readonly searchParams: URLSearchParams;
+  /** The request headers, pre-populated with those the framework supplies (e.g. settings-derived basic auth).
+   * May be mutated in place (e.g. `headers.set("Authorization", ...)`); the reference itself cannot be replaced.
+   */
+  readonly headers: Headers;
+}
+
+/** Options a [[MapLayerFetchHandler]] passes to [[MapLayerFetchNext]].
+ * @beta
+ */
+export interface MapLayerFetchNextOptions {
+  /** Whether the send may carry handler-injected credentials. Defaults to `true`: the framework cannot tell a
+   * secret from a benign value, so it protects every handler send unless told otherwise. Pass `false` for a
+   * request the handler leaves untouched (e.g. a format it does not manage), so that request keeps the
+   * default behavior in full — redirect following and the NTLM/Negotiate SSO retry.
+   */
+  credentialed?: boolean;
 }
 
 /** Issues the framework's default send for the current state of a [[MapLayerRequest]] — the equivalent of
@@ -41,17 +55,16 @@ export interface MapLayerRequest {
  * May be called several times by a handler (e.g. to retry after refreshing a token); each call re-reads
  * the request's current query parameters and headers.
  *
- * Because only the handler knows whether a value it injected is a secret, every send whose headers or query
- * parameters differ from what the framework built is treated as a credentialed request: redirects are refused
- * while [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (so injected values cannot
- * silently reach an unlisted origin through a redirect), and an NTLM/Negotiate 401 challenge is never
- * answered with browser credentials (SSO). A send the handler passes through unmodified keeps the default
- * behavior in full — including the SSO retry — so a handler serving one format does not degrade layers of the
- * others (e.g. those served by Windows-Authentication-protected services). The framework keeps protecting the
- * credentials it supplies itself (settings-derived basic auth, browser SSO identity) on every send.
+ * Unless [[MapLayerFetchNextOptions.credentialed]] is `false`, the send is treated as a credentialed request:
+ * redirects are refused while [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (so
+ * injected values cannot silently reach an unlisted origin through a redirect), and an NTLM/Negotiate 401
+ * challenge is never answered with browser credentials (SSO). A handler serving one format should therefore
+ * pass `{ credentialed: false }` for the others, so their layers (e.g. those served by
+ * Windows-Authentication-protected services) are not degraded. The framework keeps protecting the credentials
+ * it supplies itself (settings-derived basic auth, browser SSO identity) on every send.
  * @beta
  */
-export type MapLayerFetchNext = () => Promise<Response>;
+export type MapLayerFetchNext = (options?: MapLayerFetchNextOptions) => Promise<Response>;
 
 /** Wraps every map-layer network request issued through [[MapLayerImageryProvider]] — tiles, tooltips,
  * capabilities, service metadata, and source validation — like a `DelegatingHandler` wraps `HttpClient` sends.
@@ -61,6 +74,7 @@ export type MapLayerFetchNext = () => Promise<Response>;
  *
  * A handler may:
  * - mutate the request's query parameters and headers, then call `next()` for the default behavior;
+ * - pass a request through untouched with `next({ credentialed: false })`, keeping its default behavior in full;
  * - call `next()` several times (e.g. refresh an expired token and retry transparently);
  * - return its own `Response` without calling `next()` (short-circuit);
  * - throw [[MapLayerAuthenticationFailedError]] to report an unrecoverable authentication failure,

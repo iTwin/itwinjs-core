@@ -37,7 +37,7 @@ A new `@beta` extension point, [MapLayerFormatRegistry.setMapLayerFetchHandler](
 ```ts
 IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
   if (request.formatId !== "WMS")
-    return next();  // not ours: issue the request unmodified, with the default behavior
+    return next({ credentialed: false });  // not ours: issue the request untouched, with the default behavior
   request.headers.set("Authorization", `Bearer ${tokens.current}`);
   let response = await next();
   if (response.status === 401) {
@@ -51,7 +51,7 @@ IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) =
 
 There is at most one handler per session, owned by the hosting application; setting a new one replaces the previous one, and passing `undefined` restores the default behavior.
 
-The handler owns authentication for the requests it manages, and only it knows whether a value it injected is a secret - so every send whose headers or query parameters differ from what the framework built is treated as a credentialed request: redirects are refused while [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) is enabled (so injected values cannot silently reach an unlisted origin), and an NTLM/Negotiate 401 challenge is never answered with browser credentials. Sends the handler passes through unmodified keep the default behavior in full, so a handler serving one format does not affect layers of the others (e.g. Windows-Authentication-protected WMS services). The framework keeps protecting the credentials it supplies itself - settings-derived basic auth and the browser's SSO identity - on every send.
+The handler owns authentication for the requests it manages, and only it knows whether a value it injected is a secret - so every send issued through `next()` is treated as a credentialed request: redirects are refused while [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) is enabled (so injected values cannot silently reach an unlisted origin), and an NTLM/Negotiate 401 challenge is never answered with browser credentials. For requests it leaves untouched, the handler passes `next({ credentialed: false })` ([MapLayerFetchNextOptions]($frontend)) and they keep the default behavior in full, so a handler serving one format does not affect layers of the others (e.g. Windows-Authentication-protected WMS services). The framework keeps protecting the credentials it supplies itself - settings-derived basic auth and the browser's SSO identity - on every send.
 
 The feature is fully backward compatible: without a handler, requests and failure detection are exactly as in previous releases, and [MapLayerAccessClient]($frontend) (including `ArcGisAccessClient` from `@itwin/map-layers-auth`) keeps serving the token-based ArcGIS facility unchanged. Because the handler is registered per session rather than persisted in [ImageMapLayerSettings]($common), no secret is ever serialized into display styles or saved views, and restored views authenticate without per-layer re-injection. While a handler is registered, URL-keyed capability/service-metadata caches are bypassed so customized responses are not shared across differing request contexts.
 

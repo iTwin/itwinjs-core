@@ -9,11 +9,6 @@
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerRequest } from "../../../tile/internal";
 
-/** Serializes the mutable state a handler may change; Headers iterate sorted and lower-cased, so equal state yields equal strings. */
-function fingerprint(url: URL, headers: Headers): string {
-  return JSON.stringify([url.search, [...headers]]);
-}
-
 /** Routes an outgoing map-layer request through the [[MapLayerFetchHandler]] registered via
  * [[MapLayerFormatRegistry.setMapLayerFetchHandler]], if any; otherwise issues the default send directly.
  * The handler may mutate the request's query parameters and headers, call `send` any number of times (each
@@ -27,9 +22,9 @@ export async function fetchMapLayerRequest(args: {
   layerUrl: string;
   /** Pre-populated headers (e.g. settings-derived basic auth), if any. */
   headers?: Headers;
-  /** The call site's default send. `credentialed` is true when a fetch handler changed the request's headers or
-   * query parameters since it received it (so the send may carry handler-injected credentials), false when the
-   * request is exactly as the framework built it.
+  /** The call site's default send. `credentialed` is true when the send may carry handler-injected credentials
+   * (every handler send unless it passed [[MapLayerFetchNextOptions.credentialed]] `false`), false when the
+   * request is issued without a handler or the handler declared it untouched.
    */
   send: (request: MapLayerRequest, credentialed: boolean) => Promise<Response>;
 }): Promise<Response> {
@@ -56,9 +51,7 @@ export async function fetchMapLayerRequest(args: {
     searchParams: url.searchParams,
     headers,
   };
-  // A send that is byte-identical to what the framework built carries nothing handler-injected to protect.
-  const baseline = fingerprint(url, headers);
-  return handler(request, async () => args.send(request, fingerprint(url, headers) !== baseline));
+  return handler(request, async (options) => args.send(request, options?.credentialed ?? true));
 }
 
 /** The redirect policy for a send that a fetch handler modified (see [[MapLayerFetchNext]]): refused while

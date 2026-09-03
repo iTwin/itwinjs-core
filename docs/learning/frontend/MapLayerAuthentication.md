@@ -54,7 +54,7 @@ IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request: MapLaye
   // The full request URL and format id are provided for routing decisions; a handler serving several
   // services can decide per request which credentials apply, or none at all.
   if (new URL(request.url).origin !== "https://proxy.example.com")
-    return next();  // not ours: issue the request unmodified, with the default behavior
+    return next({ credentialed: false });  // not ours: issue the request untouched, with the default behavior
 
   // The hosting application obtains and refreshes this token through its own channels.
   const token = myTokenCache.current;
@@ -79,7 +79,7 @@ IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request: MapLaye
 Registering a handler means owning authentication for the requests it manages — the framework applies no default failure classification to responses the handler returns. Two rules keep the split clear:
 
 - **What the framework injects, the framework protects.** Settings-derived basic auth and the browser's SSO identity keep their origin-trust rules ([MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend)) on every send, handler or not.
-- **What the handler injects, the framework cannot recognize** — so every send whose headers or query parameters differ from what the framework built is conservatively treated as a credentialed request: redirects are refused while the trusted-origins restriction is enabled (so injected values cannot silently reach an unlisted origin through a redirect), and an NTLM/Negotiate 401 challenge is never answered with browser credentials (SSO). A send the handler passes through unmodified keeps the default behavior in full, so a handler serving one format does not degrade layers of the others.
+- **What the handler injects, the framework cannot recognize** — so every send issued through `next()` is conservatively treated as a credentialed request: redirects are refused while the trusted-origins restriction is enabled (so injected values cannot silently reach an unlisted origin through a redirect), and an NTLM/Negotiate 401 challenge is never answered with browser credentials (SSO). For a request the handler leaves untouched, it passes `next({ credentialed: false })` ([MapLayerFetchNextOptions]($frontend)) and the request keeps the default behavior in full — this is how a handler serving one format avoids degrading layers of the others.
 
 A handler that fetches on its own instead of calling `next()` bypasses these protections entirely; it then owns transport security for that request.
 
@@ -108,8 +108,9 @@ const tokensByLayer = new Map<string, string>();
 
 IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler((request: MapLayerRequest, next: MapLayerFetchNext) => {
   const token = tokensByLayer.get(request.layerUrl);
-  if (token !== undefined)
-    request.headers.set("Authorization", `Bearer ${token}`);
+  if (token === undefined)
+    return next({ credentialed: false });   // a layer this handler does not manage
+  request.headers.set("Authorization", `Bearer ${token}`);
   return next();
 });
 ```
@@ -122,8 +123,8 @@ Once the application has re-established authentication, it must detach and re-at
 
 - **Ordering** — the handler runs after the provider has fully assembled the request (protocol parameters, custom query parameters from [ImageMapLayerSettings.savedQueryParams]($common)/[ImageMapLayerSettings.unsavedQueryParams]($common), basic-auth headers, and the ArcGIS `token` parameter when applicable), so it sees the complete request and its values take precedence. This precedence is unconditional: nothing prevents a handler from overwriting protocol parameters such as `REQUEST` or `VERSION`, so a handler that injects parameters should use names that cannot collide with the protocols of the formats it targets.
 - **Coexistence with OAuth-based auth** — both facilities operate independently. An ArcGIS layer using `ArcGisAccessClient` still has every request routed through the handler, letting it manage requests to a proxy origin while OAuth tokens keep flowing for every other origin.
-- **Origin trust and redirects** — every send the handler modified is treated like a credentialed request by [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend): while the restriction is enabled it is issued with `redirect: "error"`, so handler-injected values cannot silently reach an unlisted origin through a redirect. Sends passed through unmodified follow the default redirect policy. See [Map-layer security](./MapLayersAndBasemaps.md#map-layer-security).
-- **SSO** — a send the handler modified never triggers the NTLM/Negotiate retry with browser credentials; the handler is the authentication authority for every request it touches. Sends passed through unmodified keep the SSO retry, so layers served by Windows-Authentication-protected services keep working alongside a handler that leaves their requests alone.
-- **Caching** — while a handler is registered, the URL-keyed capability and service-metadata caches are bypassed, so customized responses are never shared across differing request contexts. This applies to all requests, including those the handler passes through unmodified: every source validation and provider initialization then re-issues its `GetCapabilities` / service-metadata request, a deliberate simplification whose cost is one extra request per layer attach.
+- **Origin trust and redirects** — every send issued through `next()` is treated like a credentialed request by [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) unless the handler passes `{ credentialed: false }`: while the restriction is enabled it is issued with `redirect: "error"`, so handler-injected values cannot silently reach an unlisted origin through a redirect. See [Map-layer security](./MapLayersAndBasemaps.md#map-layer-security).
+- **SSO** — a credentialed send never triggers the NTLM/Negotiate retry with browser credentials; the handler is the authentication authority for every request it manages. Sends declared `{ credentialed: false }` keep the SSO retry, so layers served by Windows-Authentication-protected services keep working alongside a handler that leaves their requests alone.
+- **Caching** — while a handler is registered, the URL-keyed capability and service-metadata caches are bypassed, so customized responses are never shared across differing request contexts. This applies to all requests, including those the handler passes through untouched: every source validation and provider initialization then re-issues its `GetCapabilities` / service-metadata request, a deliberate simplification whose cost is one extra request per layer attach.
 - **Google Maps** — tile requests are routed through the handler, but the session-creation (`createSession`) and viewport-info (attribution) requests issued by `@itwin/map-layers-formats` are not: they target Google's fixed endpoints with the layer's own API key, so there is no proxy or alternate credential for a handler to apply. Applications implementing their own `GoogleMapsSessionManager` own those requests entirely.
 - **Backward compatibility** — the handler is strictly opt-in. Without one, requests and failure detection are exactly as in previous releases, driven by the pre-existing status-code checks. With one, the framework applies no default failure classification to responses the handler returns; recognizing failures — by status code or protocol-specific convention (e.g. an error embedded in a `200` body) — and throwing [MapLayerAuthenticationFailedError]($frontend) is the handler's job.
