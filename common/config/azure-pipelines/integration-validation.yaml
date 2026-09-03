@@ -16,6 +16,8 @@ schedules:
 variables:
   - group: iTwin.js non-secret config variables
   - group: iTwin.js Integration Test Users
+  - name: ITWIN_INCLUDE_SCHEMASYNC_EXTENDED_TESTS
+    value: "1"
 
 jobs:
   - job: Integration_Tests_Full
@@ -74,3 +76,17 @@ jobs:
       - template: templates/integration-test-steps.yaml
         parameters:
           nodeVersion: $(nodeVersion)
+
+      - script: npm test
+        workingDirectory: "core/backend"
+        env:
+          ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS: "1"
+        displayName: "Run Core Backend Tests"
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Core Backend Test Results"
+        inputs:
+          testResultsFiles: "core/backend/lib/test/junit_results.xml"
+          testRunTitle: "Core Backend - Tests - $(nodeVersion)"
+        condition: succeededOrFailed()

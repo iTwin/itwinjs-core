@@ -2444,8 +2444,10 @@ export abstract class GltfReader {
         "draco_wasm_wrapper.js": `${IModelApp.publicPath}scripts/draco_wasm_wrapper.js`,
         "draco_decoder.wasm": `${IModelApp.publicPath}scripts/draco_decoder.wasm`,
       },
-      worker: false,
-      useLocalLibraries: true,
+      core: {
+        worker: false,
+        useLocalLibraries: true,
+      },
     });
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
