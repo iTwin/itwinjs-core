@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 18 Aug 2026 15:47:07 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Aug 2026 21:23:35 GMT and should not be manually modified.
+
+## 5.12.5
+Tue, 25 Aug 2026 21:22:08 GMT
+
+### Updates
+
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
 
 ## 5.12.4
 Tue, 18 Aug 2026 15:45:35 GMT
@@ -33,6 +40,13 @@ Mon, 03 Aug 2026 12:25:49 GMT
 - Clarify/document/prove support for the KHR_mesh_primitive_restart glTF extension for line strip primitives.
 - Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pushChanges
 - Add filtering support to SchemaView and improve performance.
+
+## 5.11.4
+Tue, 25 Aug 2026 19:54:22 GMT
+
+### Updates
+
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
 
 ## 5.11.3
 Wed, 15 Jul 2026 19:40:44 GMT

@@ -720,7 +720,8 @@ public;type;TxnEntityChangeIterable
 public;interface;TxnEntityChanges
 public;interface;TxnEntityChangesFilterOptions
 public;type;TxnEntityChangeType
-public;interface;TxnEntityMetadata
+public;type;TxnEntityMetadata
+deprecated;type;TxnEntityMetadata
 public;type;TxnEntityMetadataCriterion
 public;interface;Uniform
 public;interface;UniformArrayParams
