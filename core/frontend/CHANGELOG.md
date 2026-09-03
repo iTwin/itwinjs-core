@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 25 Aug 2026 21:23:35 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Sep 2026 18:51:17 GMT and should not be manually modified.
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:56 GMT
+
+### Updates
+
+- EmphasizeElements' default appearance applies even if no elements are emphasized.
+- Fix OPC point clouds whose CRS has no vertical datum displaying offset vertically by the geoid-ellipsoid separation: their heights are now treated as orthometric.
+- Update Units Schema to 01.00.11.
+- Fix changeset not being updated and onChangesetChanged not being fired after BriefcaseConnection.pushChanges
+- Map-layer credentials can now be restricted to trusted origins via the opt-in MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins, and blocked requests are reported through MapLayerImageryProviderStatus.UntrustedOrigin. While the restriction is enabled, requests carrying credentials refuse redirects so that credentials cannot reach an unlisted origin. Server-provided attribution text, ArcGIS identify tooltip fields, and map-layer and reality-model names and properties are now rendered as plain text instead of HTML; WMS GetFeatureInfo responses from trusted origins intentionally keep their rich HTML, so applications must sanitize that content themselves.
+- Handle incompatible format-provider entries during QuantityFormatter registry reload.
+- Deprecate the existing @itwin/core-frontend TxnEntityMetadata export; use TxnEntityMetadata from @itwin/core-common instead. Frontend TxnEntityChange.metadata uses the shared contract.
+- Invalidate cached decorations when always/never-drawn elements change.
+- Upgrade wms-capabilities to 0.6.0 (drops minimist runtime dependency) and harden WMS GetCapabilities XML parsing against malformed and hostile input
 
 ## 5.12.5
 Tue, 25 Aug 2026 21:22:08 GMT
