@@ -2,6 +2,18 @@
   "name": "@itwin/workspace-editor",
   "entries": [
     {
+      "version": "5.13.0",
+      "tag": "@itwin/workspace-editor_v5.13.0",
+      "date": "Thu, 03 Sep 2026 18:49:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Warn when deprecated file resource commands are used and recommend blobs or strings for new resources."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.12.5",
       "tag": "@itwin/workspace-editor_v5.12.5",
       "date": "Tue, 25 Aug 2026 21:22:08 GMT",

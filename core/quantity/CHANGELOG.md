@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Tue, 25 Aug 2026 21:23:35 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Sep 2026 18:49:56 GMT and should not be manually modified.
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:56 GMT
+
+### Updates
+
+- Update Units Schema to 01.00.11.
 
 ## 5.12.5
 Tue, 25 Aug 2026 21:22:08 GMT

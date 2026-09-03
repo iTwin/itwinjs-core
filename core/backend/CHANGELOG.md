@@ -1,6 +1,26 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 25 Aug 2026 21:23:35 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Sep 2026 18:49:55 GMT and should not be manually modified.
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:55 GMT
+
+### Updates
+
+- Add IModelDb.Elements.queryAspects to stream typed ElementAspects for multiple owning elements in one query.
+- ChangesetECAdaptor now rejects property access strings containing `constructor` or `prototype`, in addition to `__proto__`, and only traverses own properties, preventing a malicious changeset from polluting `Object.prototype`.
+- Added tests and documentation for the new ECSQL `IS` / `IS NOT` operator (null-safe comparison between value expressions).
+- IModelDb.close() now closes its ViewStore, and IModelHost.shutdown() now also disconnects V2 checkpoint containers. Separately, non-public containers with token-refresh enabled (`tokenRefreshSeconds > 0`, the default) keep the process alive until disconnected - disconnect any you manage outside `CloudSqlite.CloudCaches` before exiting.
+- Resolve benign duplicate dgn_Domain inserts by keeping the incoming row instead of aborting, so pulling several domain-upgrade changesets in a single pullChanges no longer fails with 'PRIMARY KEY INSERT CONFLICT - rejecting this changeset'.
+- Prevent unsafe WorkspaceDb file extensions from escaping the local cache directory and deprecate file resource APIs in favor of blobs or strings.
+- Add IModelDb.getIndirectTxn as a beta API for performing edits from element, model, and aspect callbacks.
+- fix: `PropertyStore.CloudAccess.createNewContainer` passing invalid containerType value "property-store" — corrected to "propertystore" to match the service
+- fix: Workspace.getWorkspaceDb to reuse a pre-supplied accessToken instead of always requesting a new one
+- Add TxnChangedEntity.metadata to TxnManager.onElementsChanged and onModelsChanged via TxnChangedEntitiesWithMetadata while preserving TxnChangedEntities compatibility; document the backend/frontend payload differences.
+- Added `IModelDb.reservations` (@beta), an opt-in coordination mechanism that lets multiple briefcases concurrently insert elements that share an explicit federationGuid (e.g. shared definitions and component template elements) without producing duplicate or conflicting elements.
+- Added a new check to the integrity check to verify that a class maps every inherited property to the same column as each of its base classes.
+- improve schemasync, split upgrade scenario from regular updates
+- Introduce TextAnnotation leader target point
 
 ## 5.12.5
 Tue, 25 Aug 2026 21:22:08 GMT

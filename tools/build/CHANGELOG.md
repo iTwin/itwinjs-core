@@ -1,6 +1,13 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Tue, 25 Aug 2026 21:23:35 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Sep 2026 18:49:55 GMT and should not be manually modified.
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:55 GMT
+
+### Updates
+
+- Reduced the mocha-reporter handle-leak detection timeout for non-Chrome Node test runs from 30 to 10 seconds; Chrome remains at 30 seconds.
 
 ## 5.12.5
 Tue, 25 Aug 2026 21:22:08 GMT
