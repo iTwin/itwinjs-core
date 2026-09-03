@@ -130,7 +130,7 @@ internal;function;createSpatialTileTreeReferences
 public;interface;CreateTextureArgs
 public;interface;CreateTextureFromSourceArgs
 beta;function;createWorkerProxy
-internal;function;credentialedRequestRedirect
+internal;function;credentialedFetchRedirect
 internal;class;CurrentInputState
 public;enum;CurrentState
 public;interface;CustomFormatPropEditorSpec
@@ -407,7 +407,6 @@ internal;interface;MapLayerInfoFromTileTree
 public;interface;MapLayerOptions
 beta;interface;MapLayerRequest
 beta;interface;MapLayerScaleRangeVisibility
-internal;interface;MapLayerSendArgs
 public;class;MapLayerSource
 public;interface;MapLayerSourceProps
 beta;class;MapLayerSources

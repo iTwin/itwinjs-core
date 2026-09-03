@@ -61,7 +61,7 @@ export * from "./map/MapLayerFetchHandler";
 export * from "./map/MapFeatureInfo";
 export * from "./map/MapLayerFormatRegistry";
 export * from "../internal/tile/map/ArcGisUtilities";
-export * from "../internal/tile/map/MapLayerRequest";
+export * from "../internal/tile/map/MapLayerFetch";
 export * from "../internal/tile/map/WmsUtilities";
 export * from "../internal/tile/map/WmsCapabilities";
 export * from "../internal/tile/map/WmtsCapabilities";

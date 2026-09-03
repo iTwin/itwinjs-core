@@ -79,6 +79,7 @@ describe("map-layer fetch handler", () => {
   const getRequestUrl = (callIndex = 0): string => String(fetchMock.mock.calls[callIndex][0]);
   const getRequestInit = (callIndex = 0): RequestInit | undefined => fetchMock.mock.calls[callIndex][1] as RequestInit | undefined;
   const getRequestHeaders = (callIndex = 0): Headers | undefined => getRequestInit(callIndex)?.headers as Headers | undefined;
+  const getSentHeaderNames = (callIndex = 0): string[] => [...(getRequestHeaders(callIndex) ?? [])].map(([name]) => name);
 
   it("applies headers and query parameters from the handler to tile requests", async () => {
     setCredentialedHandler();
@@ -401,7 +402,7 @@ describe("map-layer fetch handler", () => {
     await provider.makeRequest(tileUrl);
 
     expect(getRequestUrl()).toEqual(tileUrl);
-    expect(getRequestHeaders()).toBeUndefined();
+    expect(getSentHeaderNames()).toEqual([]);
   });
 
   it("restores the default behavior when the handler is cleared", async () => {
@@ -411,7 +412,7 @@ describe("map-layer fetch handler", () => {
     await provider.makeRequest(tileUrl);
 
     expect(getRequestUrl()).toEqual(tileUrl);
-    expect(getRequestHeaders()).toBeUndefined();
+    expect(getSentHeaderNames()).toEqual([]);
   });
 
   it("replaces the previous handler when a new one is set", async () => {
@@ -641,7 +642,7 @@ describe("map-layer fetch handler", () => {
     await provider.makeRequest("relative/tile/0/0/0");
 
     expect(getRequestUrl()).toEqual("relative/tile/0/0/0");
-    expect(getRequestHeaders()).toBeUndefined();
+    expect(getSentHeaderNames()).toEqual([]);
   });
 
   it("issues a non-absolute capabilities URL unhandled rather than failing", async () => {
@@ -650,7 +651,7 @@ describe("map-layer fetch handler", () => {
     await WmsUtilities.fetchXml("relative/wms?REQUEST=GetCapabilities");
 
     expect(getRequestUrl()).toEqual("relative/wms?REQUEST=GetCapabilities");
-    expect(getRequestHeaders()).toBeUndefined();
+    expect(getSentHeaderNames()).toEqual([]);
   });
 
   it("re-invokes the handler for the ArcGIS HTML-fallback request and honors its failure", async () => {

@@ -2374,7 +2374,7 @@ export interface CreateTextureFromSourceArgs {
 export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T>;
 
 // @internal
-export function credentialedRequestRedirect(): RequestRedirect | undefined;
+export function credentialedFetchRedirect(): RequestRedirect | undefined;
 
 // @internal (undocumented)
 export class CurrentInputState {
@@ -3465,11 +3465,11 @@ export interface FeatureSymbologyRenderer {
 
 // @internal
 export function fetchMapLayerRequest(args: {
-    url: URL;
+    url: string;
     formatId: string;
     layerUrl: string;
-    baseHeaders?: Headers;
-    send: (sendArgs: MapLayerSendArgs) => Promise<Response>;
+    headers?: Headers;
+    send: (request: MapLayerRequest, credentialed: boolean) => Promise<Response>;
 }): Promise<Response>;
 
 // @public
@@ -6353,13 +6353,6 @@ export interface MapLayerScaleRangeVisibility {
     index: number;
     isOverlay: boolean;
     visibility: MapTileTreeScaleRangeVisibility;
-}
-
-// @internal
-export interface MapLayerSendArgs {
-    credentialed: boolean;
-    headers?: Headers;
-    url: string;
 }
 
 // @public

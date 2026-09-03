@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { appendQueryParams, fetchMapLayerRequest, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerFeatureInfo, MapLayerSendArgs, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import { appendQueryParams, fetchMapLayerRequest, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerFeatureInfo, MapLayerRequest, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 import { DecorateContext } from "../../ViewContext";
@@ -524,13 +524,12 @@ export abstract class MapLayerImageryProvider {
   /** The default send for [[makeRequest]]: legacy redirect policy, NTLM/SSO handling and origin-trust
    * checks for one request. The SSO retry never applies to sends a fetch handler modified.
    */
-  private async sendDefaultRequest(sendArgs: MapLayerSendArgs, hasCreds: boolean, hasSettingsCreds: boolean, timeoutMs?: number): Promise<Response> {
-    const requestUrl = sendArgs.url;
+  private async sendDefaultRequest(request: MapLayerRequest, credentialed: boolean, hasCreds: boolean, hasSettingsCreds: boolean, timeoutMs?: number): Promise<Response> {
+    const requestUrl = request.url;
     const includeCredentials = this.includeUserCredentials(requestUrl);
-    const credentialed = sendArgs.credentialed;
     const opts: RequestInit = {
       method: "GET",
-      headers: sendArgs.headers,
+      headers: request.headers,
       credentials: includeCredentials ? "include" : undefined,
       // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
       redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
@@ -608,23 +607,14 @@ export abstract class MapLayerImageryProvider {
     // Route the request through the registered fetch handler (if any), which has full control: it may
     // mutate query parameters and headers, retry, or short-circuit. Handler failures propagate: the
     // request must never silently degrade to an unauthenticated one.
-    let urlObj: URL | undefined;
-    if (this.hasFetchHandler) {
-      try {
-        urlObj = new URL(url);
-      } catch {
-        // Not a parseable absolute URL; let fetch fail (or succeed) on the original request unhandled.
-      }
-      if (urlObj)
-        headers = headers ?? new Headers();
-    }
-
-    const send = async (sendArgs: MapLayerSendArgs) => this.sendDefaultRequest(sendArgs, hasCreds, hasSettingsCreds, timeoutMs);
-
     try {
-      return urlObj
-        ? await fetchMapLayerRequest({ url: urlObj, formatId: this._settings.formatId, layerUrl: this._settings.url, baseHeaders: headers, send })
-        : await send({ credentialed: false, headers, url });
+      return await fetchMapLayerRequest({
+        url,
+        formatId: this._settings.formatId,
+        layerUrl: this._settings.url,
+        headers,
+        send: async (request, credentialed) => this.sendDefaultRequest(request, credentialed, hasCreds, hasSettingsCreds, timeoutMs),
+      });
     } catch (error) {
       if (error instanceof MapLayerAuthenticationFailedError)
         this.reportAuthenticationFailure();
@@ -672,37 +662,27 @@ export abstract class MapLayerImageryProvider {
       this.setRequestAuthorization(headers);
     }
 
-    let urlObj: URL | undefined;
-    if (this.hasFetchHandler) {
-      try {
-        urlObj = new URL(url);
-      } catch {
-        // Not a parseable absolute URL; issue the original request unhandled.
-      }
-      if (urlObj)
-        headers = headers ?? new Headers();
-    }
-
-    const send = async (sendArgs: MapLayerSendArgs): Promise<Response> => {
-      const requestUrl = sendArgs.url;
-      const includeCredentials = this.includeUserCredentials(requestUrl);
-      const credentialed = sendArgs.credentialed;
-      const rsp = await fetch(requestUrl, {
-        method: "GET",
-        headers: sendArgs.headers,
-        credentials: includeCredentials ? "include" : undefined,
-        redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
-      });
-      if (includeCredentials || credentialed)
-        this.checkCredentialedRedirect(requestUrl, rsp);
-      return rsp;
-    };
-
     let response: Response;
     try {
-      response = urlObj
-        ? await fetchMapLayerRequest({ url: urlObj, formatId: this._settings.formatId, layerUrl: this._settings.url, baseHeaders: headers, send })
-        : await send({ credentialed: false, headers, url });
+      response = await fetchMapLayerRequest({
+        url,
+        formatId: this._settings.formatId,
+        layerUrl: this._settings.url,
+        headers,
+        send: async (request, credentialed) => {
+          const requestUrl = request.url;
+          const includeCredentials = this.includeUserCredentials(requestUrl);
+          const rsp = await fetch(requestUrl, {
+            method: "GET",
+            headers: request.headers,
+            credentials: includeCredentials ? "include" : undefined,
+            redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
+          });
+          if (includeCredentials || credentialed)
+            this.checkCredentialedRedirect(requestUrl, rsp);
+          return rsp;
+        },
+      });
     } catch (error) {
       // Never degrade to an unauthenticated request or reject (getToolTip callers do not catch); skip the tooltip.
       if (this.hasFetchHandler)
@@ -716,7 +696,7 @@ export abstract class MapLayerImageryProvider {
         // Tooltip content (e.g. WMS GetFeatureInfo responses) is rendered as HTML downstream and may
         // deliberately contain markup; text from origins not trusted for credentials is escaped.
         // fetch follows redirects transparently, so the text may come from a different origin than requested.
-        if (!this.isCredentialsSharingAllowed(response.url || (urlObj?.toString() ?? url)))
+        if (!this.isCredentialsSharingAllowed(response.url || url))
           text = escapeHtml(text);
         strings.push(text);
       }

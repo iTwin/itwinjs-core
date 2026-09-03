@@ -7,7 +7,7 @@ import { IModelApp } from "../../../IModelApp";
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
 import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
 import {
-  credentialedRequestRedirect, fetchMapLayerRequest, MapLayerSendArgs, MapLayerUntrustedOriginError,
+  credentialedFetchRedirect, fetchMapLayerRequest, MapLayerUntrustedOriginError,
 } from "../../../tile/internal";
 
 /** @packageDocumentation
@@ -50,7 +50,8 @@ export class WmsUtilities {
     const { credentials, formatId, layerUrl } = options ?? {};
 
     let headers: Headers|undefined;
-    if (credentials && credentials.user && credentials.password) {
+    const hasCredentials = !!(credentials && credentials.user && credentials.password);
+    if (hasCredentials) {
       // Basic credentials are considered settings-derived credentials for this source. When the registry is
       // enforcing trusted origins, the source URL itself is the only implicitly trusted origin for basic auth;
       // opaque/custom-protocol URLs have no network origin and must therefore be treated as untrusted.
@@ -61,46 +62,40 @@ export class WmsUtilities {
         setBasicAuthorization(headers, credentials);
       }
     }
+    const credentialsWithheld = hasCredentials && headers === undefined;
 
     // Route the request through the registered fetch handler (if any). Handler failures — including
     // MapLayerAuthenticationFailedError — propagate so callers can transition to RequireAuth.
-    let urlObj: URL | undefined;
-    if (undefined !== IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler) {
-      try {
-        urlObj = new URL(url);
-      } catch {
-        // Not a parseable absolute URL; issue the original request unhandled.
-      }
-      if (urlObj)
-        headers = headers ?? new Headers();
-    }
+    const response = await fetchMapLayerRequest({
+      url,
+      formatId: formatId ?? "",
+      layerUrl: layerUrl ?? url,
+      headers,
+      send: async (request, credentialed) => {
+        const rsp = await fetch(request.url, {
+          method: "GET",
+          headers: request.headers,
+          // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
+          redirect: credentialed ? credentialedFetchRedirect() : undefined,
+        });
 
-    const send = async (sendArgs: MapLayerSendArgs): Promise<Response> => {
-      const rsp = await fetch(sendArgs.url, {
-        method: "GET",
-        headers: sendArgs.headers,
-        // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
-        redirect: sendArgs.credentialed ? credentialedRequestRedirect() : undefined,
-      });
-
-      // A send the handler modified never falls back to the legacy basic-auth / NTLM-SSO handling:
-      // the handler is the authentication authority for it.
-      return sendArgs.credentialed ? rsp : WmsUtilities.handleLegacyChallenges(rsp, sendArgs.url, credentials, sendArgs.headers);
-    };
-
-    const response = urlObj
-      ? await fetchMapLayerRequest({ url: urlObj, formatId: formatId ?? "", layerUrl: layerUrl ?? url, baseHeaders: headers, send })
-      : await send({ credentialed: false, headers, url });
+        // A send the handler modified never falls back to the legacy basic-auth / NTLM-SSO handling:
+        // the handler is the authentication authority for it.
+        return credentialed ? rsp : WmsUtilities.handleLegacyChallenges(rsp, request.url, credentials, credentialsWithheld);
+      },
+    });
 
     if (response.status !== 200)
       throw new HttpResponseError(response.status, await response.text());
     return response.text();
   }
 
-  /** Legacy (no injected credentials) challenge handling: basic-auth/untrusted-origin classification and the SSO retry. */
-  private static async handleLegacyChallenges(firstResponse: Response, url: string, credentials?: RequestBasicCredentials, headers?: Headers): Promise<Response> {
+  /** Legacy (no injected credentials) challenge handling: basic-auth/untrusted-origin classification and the SSO retry.
+   * `credentialsWithheld` is true when basic credentials exist but were not attached because the origin is untrusted.
+   */
+  private static async handleLegacyChallenges(firstResponse: Response, url: string, credentials: RequestBasicCredentials | undefined, credentialsWithheld: boolean): Promise<Response> {
     let response = firstResponse;
-    if (!headers && credentials && credentials.user && credentials.password && (response.status === 401 || response.status === 403)) {
+    if (credentialsWithheld && (response.status === 401 || response.status === 403)) {
       throw new MapLayerUntrustedOriginError(url);
     }
     if (!credentials && response.status === 401 && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {

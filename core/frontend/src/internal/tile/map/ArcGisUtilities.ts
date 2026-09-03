@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { credentialedRequestRedirect, fetchMapLayerRequest, MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthenticationFailedError, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
+import { credentialedFetchRedirect, fetchMapLayerRequest, MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthenticationFailedError, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { headersIncludeAuthMethod } from "../../../request/utils";
 
@@ -309,16 +309,15 @@ export class ArcGisUtilities {
     // The NTLM/SSO retry applies only to the initial request, and never to sends the handler modified.
     const requestJson = async (target: URL, allowSsoRetry: boolean): Promise<Response> => {
       return fetchMapLayerRequest({
-        url: target,
+        url: target.toString(),
         formatId,
         layerUrl: url,
-        baseHeaders: hasFetchHandler ? new Headers() : undefined,
-        send: async (sendArgs) => {
+        send: async (request, credentialed) => {
           // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
-          let rsp = await fetch(sendArgs.url, { method: "GET", headers: sendArgs.headers, redirect: sendArgs.credentialed ? credentialedRequestRedirect() : undefined });
-          if (allowSsoRetry && rsp.status === 401 && !requireToken && !sendArgs.credentialed && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
+          let rsp = await fetch(request.url, { method: "GET", headers: request.headers, redirect: credentialed ? credentialedFetchRedirect() : undefined });
+          if (allowSsoRetry && rsp.status === 401 && !requireToken && !credentialed && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
             // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
-            const challengedUrl = rsp.url || sendArgs.url;
+            const challengedUrl = rsp.url || request.url;
             if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(challengedUrl))
               throw new MapLayerUntrustedOriginError(challengedUrl);
 

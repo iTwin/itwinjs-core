@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { appendQueryParams, credentialedRequestRedirect, fetchMapLayerRequest, ImageryMapLayerFormat, IModelApp, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
+import { appendQueryParams, credentialedFetchRedirect, fetchMapLayerRequest, ImageryMapLayerFormat, IModelApp, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider.js";
 
 /** @internal */
@@ -56,15 +56,14 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       // Routes each validation request through the registered fetch handler (if any); a
       // MapLayerAuthenticationFailedError thrown by the handler is converted to RequireAuth below.
       const doRequest = async (requestUrl: string, baseOpts: RequestInit): Promise<Response> => {
-        const urlObj = new URL(requestUrl);
         return fetchMapLayerRequest({
-          url: urlObj,
+          url: requestUrl,
           formatId: source.formatId,
           layerUrl: source.url,
-          baseHeaders: baseOpts.headers ? new Headers(baseOpts.headers) : undefined,
-          send: async (sendArgs) =>
+          headers: new Headers(baseOpts.headers),
+          send: async (request, credentialed) =>
             // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
-            fetch(sendArgs.url, { ...baseOpts, headers: sendArgs.headers, redirect: sendArgs.credentialed ? credentialedRequestRedirect() : baseOpts.redirect }),
+            fetch(request.url, { ...baseOpts, headers: request.headers, redirect: credentialed ? credentialedFetchRedirect() : baseOpts.redirect }),
         });
       };
 

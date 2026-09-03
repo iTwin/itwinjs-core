@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSendArgs, MapLayerUntrustedOriginError } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerUntrustedOriginError } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -88,23 +88,22 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
    * The NTLM/SSO retry applies only when `allowSsoRetry` (the initial request of an operation), and
    * never to sends a fetch handler modified.
    */
-  private async sendArcGisRequest(sendArgs: MapLayerSendArgs, allowSsoRetry: boolean, options?: RequestInit): Promise<Response> {
-    const includeCredentials = this.includeUserCredentials(sendArgs.url);
-    const credentialed = sendArgs.credentialed;
-    let rsp = await fetch(sendArgs.url, {
+  private async sendArcGisRequest(request: MapLayerRequest, credentialed: boolean, allowSsoRetry: boolean, options?: RequestInit): Promise<Response> {
+    const includeCredentials = this.includeUserCredentials(request.url);
+    let rsp = await fetch(request.url, {
       ...options,
-      headers: sendArgs.headers ?? options?.headers,
+      headers: request.headers,
       credentials: includeCredentials ? "include" : undefined,
       // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
       redirect: (includeCredentials || credentialed) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
     });
 
     if (includeCredentials || credentialed)
-      this.checkCredentialedRedirect(sendArgs.url, rsp);
+      this.checkCredentialedRedirect(request.url, rsp);
 
     if (allowSsoRetry && rsp.status === 401 && !this._lastAccessToken && !credentialed && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
       // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
-      const challengedUrl = rsp.url || sendArgs.url;
+      const challengedUrl = rsp.url || request.url;
       if (this.isSsoAllowed(challengedUrl)) {
         // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
         this.logUntrustedOriginUse(challengedUrl);
@@ -130,11 +129,11 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
    */
   private async requestViaHandler(target: URL, allowSsoRetry: boolean, options?: RequestInit): Promise<Response> {
     return fetchMapLayerRequest({
-      url: target,
+      url: target.toString(),
       formatId: this._settings.formatId,
       layerUrl: this._settings.url,
-      baseHeaders: this.hasFetchHandler ? new Headers(options?.headers) : undefined,
-      send: async (sendArgs) => this.sendArcGisRequest(sendArgs, allowSsoRetry, options),
+      headers: new Headers(options?.headers),
+      send: async (request, credentialed) => this.sendArcGisRequest(request, credentialed, allowSsoRetry, options),
     });
   }
 
