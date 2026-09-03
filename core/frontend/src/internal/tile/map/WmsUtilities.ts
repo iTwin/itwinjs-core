@@ -14,14 +14,14 @@ import {
  * @module Tiles
  */
 
-/** Options for a capabilities/XML request that registered map-layer request listeners may customize.
+/** Options for a capabilities/XML request routed through the registered [[MapLayerFetchHandler]], if any.
  * @internal
  */
 export interface WmsFetchOptions {
   credentials?: RequestBasicCredentials;
-  /** The id of the map-layer format the request is made for, identifying it to the request/response listeners. */
+  /** The id of the map-layer format the request is made for, passed to the handler as [[MapLayerRequest.formatId]]. */
   formatId?: string;
-  /** The map-layer source URL identifying the layer to the listeners. Defaults to the request URL,
+  /** The map-layer source URL, passed to the handler as [[MapLayerRequest.layerUrl]]. Defaults to the request URL,
    * which callers should avoid: capabilities request URLs differ from the layer's. */
   layerUrl?: string;
 }

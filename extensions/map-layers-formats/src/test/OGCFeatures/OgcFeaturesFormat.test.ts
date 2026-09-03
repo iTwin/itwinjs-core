@@ -258,7 +258,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     const source = createSource();
     source.savedQueryParams = { saved: "1" };
     source.unsavedQueryParams = { unsaved: "2" };
-    // Settings custom params are appended first, then request listeners customize the request.
+    // Settings custom params are appended first, then the fetch handler customizes the request.
     const shapedLanding = `${sourceUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
     const shapedCollections = `${sameOriginCollectionsUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
     stubFetch({
@@ -270,7 +270,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
     expect(fetchCalls.length).to.equals(2);
     expect(fetchCalls[0].url).to.equals(shapedLanding);
-    // Listeners have full control: their Authorization header wins over settings-derived basic auth.
+    // The handler has full control: its Authorization header wins over settings-derived basic auth.
     expect(getAuthorization(fetchCalls[0].init)).to.equals("Bearer secret-jwt");
     expect(fetchCalls[1].url).to.equals(shapedCollections);
     expect(getAuthorization(fetchCalls[1].init)).to.equals("Bearer secret-jwt");
