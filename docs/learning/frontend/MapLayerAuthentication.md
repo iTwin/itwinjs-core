@@ -118,10 +118,6 @@ When the handler throws [MapLayerAuthenticationFailedError]($frontend), the laye
 
 Once the application has re-established authentication, it must detach and re-attach the layer so that a fresh provider is created: a provider whose initialization failed never obtained the service's capabilities, and tiles that already failed are not re-requested. The same applies to a layer restored from a saved view before the handler was registered — once the handler is in place, re-attach the layer.
 
-### Why a fetch handler rather than settings?
-
-Authentication material is deliberately kept out of [ImageMapLayerSettings]($common): settings are serialized into display styles and saved views, so anything stored there is either persisted (a secret leak) or lost when a view is restored (a broken layer). The handler is registered once per session by the hosting application, is consulted at request time, and can refresh its tokens on its own schedule — a restored view works without any per-layer re-injection.
-
 ### Interaction with other mechanisms
 
 - **Ordering** — the handler runs after the provider has fully assembled the request (protocol parameters, custom query parameters from [ImageMapLayerSettings.savedQueryParams]($common)/[ImageMapLayerSettings.unsavedQueryParams]($common), basic-auth headers, and the ArcGIS `token` parameter when applicable), so it sees the complete request and its values take precedence. This precedence is unconditional: nothing prevents a handler from overwriting protocol parameters such as `REQUEST` or `VERSION`, so a handler that injects parameters should use names that cannot collide with the protocols of the formats it targets.
