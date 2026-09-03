@@ -41,7 +41,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/electron-authorization": "^0.23.3",
+    "@itwin/electron-authorization": "^0.23.4",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/frontend-tiles": "workspace:*",
     "@itwin/imodels-access-backend": "^6.0.2",

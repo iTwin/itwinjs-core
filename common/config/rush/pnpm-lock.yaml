@@ -2350,8 +2350,8 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.23.3
-        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
+        specifier: ^0.23.4
+        version: 0.23.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
@@ -3461,8 +3461,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/quantity
       '@itwin/electron-authorization':
-        specifier: ^0.23.3
-        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
+        specifier: ^0.23.4
+        version: 0.23.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
       '@itwin/frontend-tiles':
         specifier: workspace:*
         version: link:../../extensions/frontend-tiles
@@ -3651,8 +3651,8 @@ importers:
         specifier: workspace:*
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
-        specifier: ^0.23.3
-        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
+        specifier: ^0.23.4
+        version: 0.23.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)
       '@itwin/frontend-devtools':
         specifier: workspace:*
         version: link:../../core/frontend-devtools
@@ -5033,8 +5033,8 @@ packages:
   '@itwin/core-bentley@5.12.3':
     resolution: {integrity: sha512-SfpoRyBVgmsx9xyVVZTQVj3Cu2YmZ/GulL24SG6Cvd/LtRGdCOF9WegnOXRK3Ya519d0hYwBfCh220kgbk+Kdw==}
 
-  '@itwin/electron-authorization@0.23.3':
-    resolution: {integrity: sha512-67QCVdCkTWcekq8Cn6+R/7Mcbzq1oxsIKdmkACyfWsXVwTG0lq1zCOvup5ZVKKrE8uS9VFyLP3odtibkpIQHDw==}
+  '@itwin/electron-authorization@0.23.4':
+    resolution: {integrity: sha512-DUB0cZmDKQHP9pR8xD6NW5ExrM75pecX3tPT+iA1iJWi39wZVhb7o/LJ7jFp/SUZqjgssTNTfU+aBoFidASdJA==}
     peerDependencies:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -11308,7 +11308,7 @@ snapshots:
 
   '@itwin/core-bentley@5.12.3': {}
 
-  '@itwin/electron-authorization@0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)':
+  '@itwin/electron-authorization@0.23.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@44.0.0)':
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
