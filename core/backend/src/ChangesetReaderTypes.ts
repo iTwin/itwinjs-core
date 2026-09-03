@@ -90,9 +90,9 @@ export interface ChangeMeta {
  */
 export interface ChangeInstance {
   /** ECInstanceId of this instance. */
-  ECInstanceId: string;
+  ECInstanceId: string;   // eslint-disable-line @typescript-eslint/naming-convention
   /** ECClassId of this instance. */
-  ECClassId: string;
+  ECClassId: string;     // eslint-disable-line @typescript-eslint/naming-convention
   /** EC property bag (ECClassId, ECInstanceId, user-defined properties, ...). */
   [key: string]: any;
   /** Metadata describing the origin and identity of this change. */

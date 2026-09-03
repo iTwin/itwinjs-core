@@ -4900,7 +4900,7 @@ describe("ChangesetReader: batched stepping behavior", () => {
       using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
       while (reader.step()) pcu.appendFrom(reader);
       for (const inst of pcu.instances)
-        defaultInstances.push(inst.ECInstanceId as string);
+        defaultInstances.push(inst.ECInstanceId);
     }
     defaultInstances.sort();
 
@@ -4911,7 +4911,7 @@ describe("ChangesetReader: batched stepping behavior", () => {
       using pcu = new PartialChangeUnifier(ChangeUnifierCache.createInMemoryCache());
       while (reader.step()) pcu.appendFrom(reader);
       for (const inst of pcu.instances)
-        batchOneInstances.push(inst.ECInstanceId as string);
+        batchOneInstances.push(inst.ECInstanceId);
     }
     batchOneInstances.sort();
 

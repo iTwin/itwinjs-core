@@ -117,7 +117,7 @@ export function setMaxEntitiesPerEvent(max: number): number {
 class TxnEntityMetadataImpl implements TxnEntityMetadata {
   public readonly baseClasses: TxnEntityMetadataImpl[] = [];
 
-  public constructor(public readonly classFullName: string) {}
+  public constructor(public readonly classFullName: string) { }
 
   public is(baseClassFullName: string): boolean {
     return this.classFullName === baseClassFullName || this.baseClasses.some((baseClass) => baseClass.is(baseClassFullName));
@@ -761,7 +761,7 @@ export class RebaseManager {
         break;
       }
       case "Deleted": {
-        const key = { ECInstanceId: props.ECInstanceId, ECClassId: props.ECClassId };
+        const key = { ECInstanceId: props.ECInstanceId, ECClassId: props.ECClassId };   // eslint-disable-line @typescript-eslint/naming-convention
         const isSuccess = nativeDb.deleteInstance(key, { convertClassIdsToClassNames: true });
         if (!isSuccess)
           throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.ECInstanceId}`);
