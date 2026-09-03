@@ -66,8 +66,13 @@ export class WmsUtilities {
     // MapLayerAuthenticationFailedError — propagate so callers can transition to RequireAuth.
     let urlObj: URL | undefined;
     if (undefined !== IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler) {
-      urlObj = new URL(url);
-      headers = headers ?? new Headers();
+      try {
+        urlObj = new URL(url);
+      } catch {
+        // Not a parseable absolute URL; issue the original request unhandled.
+      }
+      if (urlObj)
+        headers = headers ?? new Headers();
     }
 
     const send = async (sendArgs: MapLayerSendArgs): Promise<Response> => {

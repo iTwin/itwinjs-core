@@ -53,10 +53,11 @@ export interface MapLayerRequest {
  */
 export type MapLayerFetchNext = () => Promise<Response>;
 
-/** Wraps every map-layer network request — tiles, tooltips, capabilities, service metadata, and source
- * validation, across every format — like a `DelegatingHandler` wraps `HttpClient` sends. Registered via
- * [[MapLayerFormatRegistry.setMapLayerFetchHandler]]; there is at most one handler per session, owned by
- * the hosting application.
+/** Wraps every map-layer network request issued through [[MapLayerImageryProvider]] — tiles, tooltips,
+ * capabilities, service metadata, and source validation — like a `DelegatingHandler` wraps `HttpClient` sends.
+ * Registered via [[MapLayerFormatRegistry.setMapLayerFetchHandler]]; there is at most one handler per session,
+ * owned by the hosting application. Requests a format issues outside the provider's request path (e.g. through
+ * its own session or token service client) are not routed; that format's documentation states which.
  *
  * A handler may:
  * - mutate the request's query parameters and headers, then call `next()` for the default behavior;

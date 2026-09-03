@@ -147,19 +147,25 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   protected async fetch(url: URL, options?: RequestInit) {
 
     let errorCode: number | undefined;
-    const urlObj = new URL(url);
     const queryParams = this._settings.collectQueryParams();
-    Object.keys(queryParams).forEach((paramKey) => {
-      if (!urlObj.searchParams.has(paramKey))
-        urlObj.searchParams.append(paramKey, queryParams[paramKey]);
-    });
+    const buildRequestUrl = (): URL => {
+      const requestUrl = new URL(url);
+      Object.keys(queryParams).forEach((paramKey) => {
+        if (!requestUrl.searchParams.has(paramKey))
+          requestUrl.searchParams.append(paramKey, queryParams[paramKey]);
+      });
+      return requestUrl;
+    };
+    const accessTokenParams = {
+      mapLayerUrl: new URL(this._settings.url),
+      portal: typeof this._settings.properties?.portal === "string" ? this._settings.properties.portal : undefined,
+      userName: this._settings.userName,
+      password: this._settings.password,
+    };
 
+    const urlObj = buildRequestUrl();
     if (this._accessTokenRequired && this._accessClient) {
-      this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
-        mapLayerUrl: new URL(this._settings.url),
-        portal: typeof this._settings.properties?.portal === "string" ? this._settings.properties.portal : undefined,
-        userName: this._settings.userName,
-        password: this._settings.password });
+      this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, accessTokenParams);
     }
 
     // We want to complete the first request before letting other requests go;
@@ -201,16 +207,17 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
           if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined)
             this._accessClient.invalidateToken(this._lastAccessToken);
 
-          const urlObj2 = new URL(url);
+          // A fresh URL: the expired token must not remain as a first `token` parameter.
+          const retryUrl = buildRequestUrl();
           if (this._accessClient) {
             try {
-              this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
+              this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(retryUrl, this._accessClient, accessTokenParams);
             } catch {
             }
           }
 
           // Make a second attempt with refreshed token
-          response = await this.requestViaHandler(urlObj2, false, options);
+          response = await this.requestViaHandler(retryUrl, false, options);
           errorCode  = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
 

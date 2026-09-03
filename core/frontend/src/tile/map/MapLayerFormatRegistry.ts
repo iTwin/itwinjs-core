@@ -190,11 +190,11 @@ export class MapLayerFormatRegistry {
 
   private _fetchHandler?: MapLayerFetchHandler;
 
-  /** Sets the [[MapLayerFetchHandler]] wrapping every map-layer network request — tiles, tooltips,
-   * capabilities, service metadata, and source validation, across every format. There is at most one
-   * handler per session, owned by the hosting application: setting a new one replaces the previous one
-   * (a warning is logged, since the replaced handler no longer runs), and passing `undefined` restores
-   * the default behavior. A layer of the application that must coexist with a handler registered by
+  /** Sets the [[MapLayerFetchHandler]] wrapping every map-layer network request issued through
+   * [[MapLayerImageryProvider]] — tiles, tooltips, capabilities, service metadata, and source validation.
+   * There is at most one handler per session, owned by the hosting application: setting a new one replaces
+   * the previous one (a warning is logged, since the replaced handler no longer runs), and passing `undefined`
+   * restores the default behavior. A layer of the application that must coexist with a handler registered by
    * another layer can read [[mapLayerFetchHandler]] and register a composition of both.
    * @beta
    */

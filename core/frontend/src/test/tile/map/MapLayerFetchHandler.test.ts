@@ -5,7 +5,7 @@
 
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ArcGisUtilities, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
+import { ArcGisUtilities, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSource, MapLayerSourceStatus, WmsUtilities } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { WmsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmsMapLayerImageryProvider";
 import { WmtsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmtsMapLayerImageryProvider";
@@ -641,6 +641,15 @@ describe("map-layer fetch handler", () => {
     await provider.makeRequest("relative/tile/0/0/0");
 
     expect(getRequestUrl()).toEqual("relative/tile/0/0/0");
+    expect(getRequestHeaders()).toBeUndefined();
+  });
+
+  it("issues a non-absolute capabilities URL unhandled rather than failing", async () => {
+    fetchMock.mockResolvedValue(new Response("<xml/>", { status: 200 }));
+    setCredentialedHandler();
+    await WmsUtilities.fetchXml("relative/wms?REQUEST=GetCapabilities");
+
+    expect(getRequestUrl()).toEqual("relative/wms?REQUEST=GetCapabilities");
     expect(getRequestHeaders()).toBeUndefined();
   });
 
