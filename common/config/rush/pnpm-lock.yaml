@@ -2351,7 +2351,7 @@ importers:
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
         specifier: ^0.23.1
-        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.4.1)
+        version: 0.23.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.4.1)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
@@ -3462,7 +3462,7 @@ importers:
         version: link:../../core/quantity
       '@itwin/electron-authorization':
         specifier: ^0.23.1
-        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.4.1)
+        version: 0.23.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.4.1)
       '@itwin/frontend-tiles':
         specifier: workspace:*
         version: link:../../extensions/frontend-tiles
@@ -3652,7 +3652,7 @@ importers:
         version: link:../../editor/frontend
       '@itwin/electron-authorization':
         specifier: ^0.23.1
-        version: 0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.4.1)
+        version: 0.23.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.4.1)
       '@itwin/frontend-devtools':
         specifier: workspace:*
         version: link:../../core/frontend-devtools
@@ -5041,8 +5041,8 @@ packages:
   '@itwin/core-bentley@5.12.5':
     resolution: {integrity: sha512-MZ/rbMqycDthKLPeDw1VDck2Zr2Js63uTiFDWy3ZcF3qPulzPw71T3Azh5AOBWX6s8adjBsleqzPI09Flavk+w==}
 
-  '@itwin/electron-authorization@0.23.3':
-    resolution: {integrity: sha512-67QCVdCkTWcekq8Cn6+R/7Mcbzq1oxsIKdmkACyfWsXVwTG0lq1zCOvup5ZVKKrE8uS9VFyLP3odtibkpIQHDw==}
+  '@itwin/electron-authorization@0.23.4':
+    resolution: {integrity: sha512-DUB0cZmDKQHP9pR8xD6NW5ExrM75pecX3tPT+iA1iJWi39wZVhb7o/LJ7jFp/SUZqjgssTNTfU+aBoFidASdJA==}
     peerDependencies:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -11289,7 +11289,7 @@ snapshots:
 
   '@itwin/core-bentley@5.12.5': {}
 
-  '@itwin/electron-authorization@0.23.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.4.1)':
+  '@itwin/electron-authorization@0.23.4(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(electron@43.4.1)':
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
