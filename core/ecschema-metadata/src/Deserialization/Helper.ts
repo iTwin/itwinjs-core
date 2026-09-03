@@ -97,10 +97,26 @@ export class SchemaReadHelper<T = unknown> {
     this._schemaInfo = schemaInfo;
 
     // Need to add this schema to the context to be able to locate schemaItems within the context.
-    if (addSchemaToCache && !this._context.schemaExists(schema.schemaKey)) {
-      await this._context.addSchemaPromise(schemaInfo, schema, this.loadSchema(schemaInfo, schema));
+    if (addSchemaToCache) {
+      this.checkForReadVersionConflict(schema.schemaKey);
+      if (!this._context.schemaExists(schema.schemaKey))
+        await this._context.addSchemaPromise(schemaInfo, schema, this.loadSchema(schemaInfo, schema));
     }
     return schemaInfo;
+  }
+
+  /**
+   * Two read-incompatible versions of the same schema can never substitute for one another.
+   * Detect it here and fail with a clear error.
+   * @param schemaKey The exact key of the schema about to be loaded into the context.
+   */
+  private checkForReadVersionConflict(schemaKey: SchemaKey): void {
+    const existingInfo = this._context.getCachedSchemaInfoSync(new SchemaKey(schemaKey.name), SchemaMatchType.Latest);
+    if (existingInfo && existingInfo.schemaKey.readVersion !== schemaKey.readVersion) {
+      throw new ECSchemaError(ECSchemaStatus.DuplicateSchema,
+        `The schema '${schemaKey.toString(true)}' cannot be loaded: the read-incompatible version '${existingInfo.schemaKey.toString(true)}' is already loaded in this context. ` +
+        `A schema graph cannot require two read-incompatible versions of the same schema.`);
+    }
   }
 
   /**
@@ -128,7 +144,7 @@ export class SchemaReadHelper<T = unknown> {
       return loadedSchema;
     }
 
-    const cachedSchema = await this._context.getCachedSchema(schemaInfo.schemaKey, SchemaMatchType.Latest);
+    const cachedSchema = await this._context.getCachedSchema(schemaInfo.schemaKey, SchemaMatchType.LatestReadCompatible);
     if (undefined === cachedSchema)
       throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema, `Could not load schema ${schema.schemaKey.toString()}`);
 
@@ -194,6 +210,7 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     // Need to add this schema to the context to be able to locate schemaItems within the context.
+    this.checkForReadVersionConflict(schema.schemaKey);
     if (!this._context.schemaExists(schema.schemaKey))
       this._context.addSchemaSync(schema);
 
