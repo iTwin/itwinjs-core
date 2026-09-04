@@ -700,6 +700,9 @@ export abstract class MapLayerImageryProvider {
       }));
     } catch (error) {
       // Never degrade to an unauthenticated request or reject (getToolTip callers do not catch); skip the tooltip.
+      // The status transition the handler asked for still applies.
+      if (error instanceof MapLayerAuthenticationFailedError)
+        this.reportAuthenticationFailure();
       if (this.hasFetchHandler)
         Logger.logWarning(loggerCategory, `Map-layer fetch handler failed for tooltip request: ${BentleyError.getErrorMessage(error)}`);
       return;

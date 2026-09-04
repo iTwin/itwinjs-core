@@ -462,6 +462,21 @@ describe("map-layer fetch handler", () => {
     expect(strings).toHaveLength(0);
   });
 
+  it("transitions to RequireAuth when the handler reports an authentication failure on a tooltip request", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
+    setCredentialedHandler({ throwOnAuthStatus: true });
+    const provider = createProvider();
+    const statusEvents: MapLayerImageryProviderStatus[] = [];
+    provider.onStatusChanged.addListener((p) => statusEvents.push(p.status));
+    const strings: string[] = [];
+
+    await provider.testToolTipFromUrl(strings, `${settingsUrl}/getFeatureInfo`);   // still does not reject
+
+    expect(strings).toHaveLength(0);
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
+    expect(statusEvents).toEqual([MapLayerImageryProviderStatus.RequireAuth]);
+  });
+
   it("shapes WMS capabilities requests and transitions to RequireAuth on 401 during initialize", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
     setCredentialedHandler({ throwOnAuthStatus: true });
@@ -516,6 +531,19 @@ describe("map-layer fetch handler", () => {
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
+  });
+
+  it("does not blame settings credentials for a 401 the handler returns as its own during validation", async () => {
+    // The handler replaced the basic-auth header; a 401 it returns says nothing about the settings credentials.
+    fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
+    setCredentialedHandler();
+    const source = MapLayerSource.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl })!;
+    source.userName = "user";
+    source.password = "pwd";
+
+    const validation = await IModelApp.mapLayerFormatRegistry.validateSource({ source, ignoreCache: true });
+
+    expect(validation.status).toEqual(MapLayerSourceStatus.InvalidUrl);
   });
 
   it("transitions a WMTS layer to RequireAuth when its capabilities request fails authentication", async () => {
