@@ -1,7 +1,8 @@
 import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault, withEditTxn } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { prepareFieldFormattingDemoFor, setFieldFormattingDemo } from "./FieldFormattingDemo";
+import { FormatSet } from "@itwin/ecschema-metadata";
+import { prepareFieldFormattingFor, registerFieldFormattingProviderFor } from "./FieldFormattingDemo";
 
 /**
  * Inserts a new text style into the iModel.
@@ -74,7 +75,7 @@ export async function insertText(iModelKey: string, categoryId: Id64String, mode
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
   if (textAnnotationProps) {
-    await prepareFieldFormattingDemoFor(iModel, TextAnnotation.fromJSON(textAnnotationProps).textBlock);
+    await prepareFieldFormattingFor(iModel, TextAnnotation.fromJSON(textAnnotationProps).textBlock);
   }
 
   const annotation2d = TextAnnotation2d.create(
@@ -111,7 +112,7 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
   // a failure here leaves the cached element untouched rather than dirty-but-unwritten.
   await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
   if (textAnnotationProps)
-    await prepareFieldFormattingDemoFor(iModel, TextAnnotation.fromJSON(textAnnotationProps).textBlock);
+    await prepareFieldFormattingFor(iModel, TextAnnotation.fromJSON(textAnnotationProps).textBlock);
 
   if (categoryId)
     text.category = categoryId;
@@ -129,9 +130,11 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
   withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
 }
 
-/** Adopts or unadopts the DTA demo FormatSets for the specified iModel. */
-export async function setFieldFormattingDemoForIModel(iModelKey: string, enabled: boolean): Promise<void> {
-  await setFieldFormattingDemo(BriefcaseDb.findByKey(iModelKey), enabled);
+/** Re-registers the field formatting provider for the specified iModel, or unregisters when
+ * `defaultSet` and `sets` are both absent.
+ */
+export async function registerFieldFormattingProviderForIModel(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): Promise<void> {
+  await registerFieldFormattingProviderFor(BriefcaseDb.findByKey(iModelKey), defaultSet, sets);
 }
 
 /**
