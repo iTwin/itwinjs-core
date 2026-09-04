@@ -115,7 +115,7 @@ export class MapLayerAuthenticationFailedError extends Error {
   public readonly url: string;
 
   constructor(url: string) {
-    super(`Authentication failed for map-layer request '${url}'`);
+    super("Authentication failed for map-layer request");
     this.url = url;
   }
 }
