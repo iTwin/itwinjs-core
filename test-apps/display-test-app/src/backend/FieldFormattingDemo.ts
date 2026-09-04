@@ -8,7 +8,7 @@
  * with the FieldRun formatting pathway exposed by `@itwin/core-backend`.
  *
  * The keyin `dta text demo <on|off>` toggles this integration for the current iModel
- * (see `TextDecoration.ts` and the `enable`/`disableFieldFormattingDemo` IPC methods on
+ * (see `TextDecoration.ts` and the `setFieldFormattingDemo` IPC method on
  * [[DtaIpcInterface]]):
  *   1. `dta text demo on` adopts [[DEMO_FORMAT_SET]] for the iModel via
  *      [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), which
@@ -43,15 +43,11 @@
  * only the formats the alt set itself defines; a field that falls all the way through to the
  * schema still resolves against the adopted set's `"metric"`.
  *
- * `dta text misses` reports requirements that evaluation asked for but that were never
- * pre-warmed, which is what distinguishes "this format did not resolve" from "this format was
- * never warmed" when a field renders as a raw string.
- *
  * This is intentionally minimal - it exists to exercise the pathway from DTA, not to be a
  * production-quality implementation.
  */
 
-import { ElementDrivesTextAnnotation, FieldFormattingSpecProvider, IModelDb, isITextAnnotation, UnresolvedFieldFormat } from "@itwin/core-backend";
+import { ElementDrivesTextAnnotation, FieldFormattingSpecProvider, IModelDb, isITextAnnotation } from "@itwin/core-backend";
 import { BentleyError, Id64String, Logger } from "@itwin/core-bentley";
 import { TextBlock } from "@itwin/core-common";
 import { FormatProps, FormattingSpecArgs } from "@itwin/core-quantity";
@@ -323,9 +319,16 @@ function demoSeedRequirements(): FormattingSpecArgs[] {
   }));
 }
 
-let currentDemo: FieldFormattingSpecProvider | undefined;
-let currentDemoIModel: IModelDb | undefined;
-let currentDemoCloseUnsubscribe: (() => void) | undefined;
+/** Unsubscribes the [IModelDb.onBeforeClose]($backend) teardown installed for each iModel the
+ * demo is enabled on, keyed by [IModelDb.key]($backend).
+ *
+ * The provider itself is deliberately *not* stored here.
+ * [ElementDrivesTextAnnotation]($backend) already owns a per-iModel provider registry, so
+ * duplicating it would just risk the two disagreeing. This map holds only the one thing Core
+ * does not do for us: dropping the registration when the briefcase it was warmed against
+ * closes.
+ */
+const demoCloseUnsubscribers = new Map<string, () => void>();
 
 /** The two BisCore classes that persist their annotation JSON in a `TextAnnotationData`
  * column, and can therefore be pre-filtered in SQLite rather than in JavaScript.
@@ -413,37 +416,41 @@ function collectAnnotationOverrideRequirements(iModel: IModelDb): FormattingSpec
   return Array.from(seen.values());
 }
 
-/** Returns the provider registered by [[enableFieldFormattingDemo]], if any. */
-export function getFieldFormattingDemo(): FieldFormattingSpecProvider | undefined {
-  return currentDemo;
-}
-
 /** Warms the demo provider for the [FieldRun]($common)s in `block`, so the synchronous
  * evaluation that follows finds every spec it needs in cache. A no-op when the demo is off.
  */
 export async function prepareFieldFormattingDemoFor(iModel: IModelDb, block: TextBlock): Promise<void> {
-  if (!currentDemo)
+  const provider = ElementDrivesTextAnnotation.getFieldFormattingProvider(iModel);
+  if (!provider)
     return;
 
-  await currentDemo.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }));
+  await provider.warmUp(ElementDrivesTextAnnotation.collectFieldFormattingRequirements({ iModel, block }));
 }
 
-/** Adopts [[DEMO_FORMAT_SET]] for `iModel`, pre-warming the demo seeds, every KindOfQuantity
- * the iModel's schemas declare, and every pair contributed by an annotation that overrides one.
- * Toggled by the `dta text demo <on|off>` keyin.
+/** Turns the demo on or off for `iModel`, which is what the `dta text demo <on|off>` keyin
+ * drives.
  *
- * The registration is torn down automatically when `iModel` closes (via
+ * Enabling adopts [[DEMO_FORMAT_SET]] for `iModel` and pre-warms the demo seeds, every
+ * KindOfQuantity the iModel's schemas declare, and every pair contributed by an annotation that
+ * overrides one. The registration is torn down automatically when `iModel` closes (via
  * [IModelDb.onBeforeClose]($backend)) so it cannot outlive the briefcase it was warmed against.
  */
-export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void> {
-  // Re-entrancy: tear down any prior registration and its onBeforeClose subscription first
-  // so we never leak a listener if the keyin is invoked twice or across iModels.
-  disableFieldFormattingDemo();
+export async function setFieldFormattingDemo(iModel: IModelDb, enabled: boolean): Promise<void> {
+  if (!enabled) {
+    disableFieldFormattingDemo(iModel);
+    return;
+  }
 
-  currentDemo = await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+  // Register *before* tearing anything down. registerFieldFormattingProvider swaps in the new
+  // provider only once its pre-warm resolves, so re-running `demo on` leaves the previous
+  // registration serving evaluations throughout - and still serving them if warming throws.
+  // Unregistering first would open a window in which the iModel has no provider at all.
+  await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
     iModel,
-    // Both sets are addressable so a field can name either one; the adopted set is listed too
-    // so that naming it explicitly is meaningful rather than an unresolved id.
+    // Adopted, so it applies to every field that names no FormatSet of its own...
+    formatSet: DEMO_FORMAT_SET,
+    // ...and addressable, so naming it explicitly resolves rather than falling through as an
+    // unknown id. The alt set is addressable only.
     formatSets: [
       { id: DEMO_FORMAT_SET_ID, formatSet: DEMO_FORMAT_SET },
       { id: DEMO_ALT_FORMAT_SET_ID, formatSet: DEMO_ALT_FORMAT_SET },
@@ -463,38 +470,23 @@ export async function enableFieldFormattingDemo(iModel: IModelDb): Promise<void>
       ...collectAnnotationOverrideRequirements(iModel),
     ],
   });
-  currentDemoIModel = iModel;
-  currentDemoCloseUnsubscribe = iModel.onBeforeClose.addOnce(() => disableFieldFormattingDemo());
+
+  // Only subscribe once per iModel: `demo on` is re-runnable, and each call would otherwise
+  // stack another listener on the same briefcase.
+  if (!demoCloseUnsubscribers.has(iModel.key))
+    demoCloseUnsubscribers.set(iModel.key, iModel.onBeforeClose.addOnce(() => disableFieldFormattingDemo(iModel)));
 }
 
-/** Returns the requirements the demo provider was asked for during evaluation but had never
- * pre-warmed. A field that renders as a raw string is listed here only if nothing was warmed
- * for it; a field that *was* warmed but whose format or unit failed to resolve is not. That
- * distinction is what makes a raw fallback diagnosable. Surfaced by `dta text misses`.
+/** Unregisters the demo provider for `iModel` and detaches the
+ * [IModelDb.onBeforeClose]($backend) listener that would otherwise fire it. Safe to call when
+ * the demo is not enabled for `iModel`.
  */
-export function getFieldFormattingDemoMisses(): UnresolvedFieldFormat[] {
-  return currentDemo?.misses ?? [];
-}
-
-/** Discards the accumulated [[getFieldFormattingDemoMisses]], so the next evaluation reports
- * only fresh shortfalls. Surfaced by `dta text misses clear`.
- */
-export function clearFieldFormattingDemoMisses(): void {
-  currentDemo?.clearMisses();
-}
-
-/** Unregisters the demo provider previously registered via [[enableFieldFormattingDemo]]
- * and detaches the [IModelDb.onBeforeClose]($backend) listener that would otherwise fire it.
- * Safe to call when no demo is registered.
- */
-export function disableFieldFormattingDemo(): void {
-  if (currentDemoCloseUnsubscribe) {
-    currentDemoCloseUnsubscribe();
-    currentDemoCloseUnsubscribe = undefined;
+function disableFieldFormattingDemo(iModel: IModelDb): void {
+  const unsubscribe = demoCloseUnsubscribers.get(iModel.key);
+  if (unsubscribe) {
+    unsubscribe();
+    demoCloseUnsubscribers.delete(iModel.key);
   }
-  if (currentDemoIModel) {
-    ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(currentDemoIModel);
-    currentDemoIModel = undefined;
-  }
-  currentDemo = undefined;
+
+  ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
 }
