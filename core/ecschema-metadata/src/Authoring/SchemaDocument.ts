@@ -68,12 +68,16 @@ function splitReference(reference: LocalOrFullName): { qualifier?: string, name:
   return { qualifier: reference.substring(0, separator), name: reference.substring(separator + 1) };
 }
 
+/** Marks one cached name as needing a fresh scan of the ordered collection. */
+const staleName = Symbol("Authoring.staleName");
+
 /** Case-folded name lookup over a collection its owner keeps ordered. Built on first use and
  * dropped whenever the collection changes, so an authoring session that edits far more than it
  * reads never pays for an index, and a walk that reads far more than it edits pays once. First
- * occurrence wins, matching the ordered collection's own duplicate rule. */
+ * occurrence wins, matching the ordered collection's own duplicate rule. A rename updates the
+ * common unique-name case in place; only names involved in a possible duplicate are rescanned. */
 class NameLookup<T extends { readonly name: string }> {
-  private _byName?: Map<string, T>;
+  private _byName?: Map<string, T | typeof staleName>;
 
   public constructor(private readonly _entries: ReadonlyArray<T>) { }
 
@@ -82,16 +86,45 @@ class NameLookup<T extends { readonly name: string }> {
     this._byName = undefined;
   }
 
+  /** Updates a built index after `entry` changed its name without changing collection order. */
+  public rename(entry: T, previousName: string): void {
+    if (this._byName === undefined)
+      return;
+    const previousKey = previousName.toLowerCase();
+    const newKey = entry.name.toLowerCase();
+    if (previousKey === newKey)
+      return;
+
+    if (this._byName.get(previousKey) === entry)
+      this._byName.set(previousKey, staleName);
+
+    if (this._byName.has(newKey))
+      this._byName.set(newKey, staleName);
+    else
+      this._byName.set(newKey, entry);
+  }
+
   public get(name: string): T | undefined {
     if (this._byName === undefined) {
-      this._byName = new Map<string, T>();
+      this._byName = new Map<string, T | typeof staleName>();
       for (const entry of this._entries) {
-        const key = entry.name.toLowerCase();
-        if (!this._byName.has(key))
-          this._byName.set(key, entry);
+        const entryKey = entry.name.toLowerCase();
+        if (!this._byName.has(entryKey))
+          this._byName.set(entryKey, entry);
       }
     }
-    return this._byName.get(name.toLowerCase());
+
+    const key = name.toLowerCase();
+    const found = this._byName.get(key);
+    if (found !== staleName)
+      return found;
+
+    const refreshed = this._entries.find((entry) => entry.name.toLowerCase() === key);
+    if (refreshed === undefined)
+      this._byName.delete(key);
+    else
+      this._byName.set(key, refreshed);
+    return refreshed;
   }
 }
 
@@ -101,6 +134,9 @@ const _setOwner = Symbol("Authoring.setOwner");
 
 /** Registers a newly constructed child with its owner. Module-private, same reasoning. */
 const _attach = Symbol("Authoring.attach");
+
+/** Notifies an owner that one of its children changed name. */
+const _nameChanged = Symbol("Authoring.nameChanged");
 
 /** Applies the custom attributes an `init` object carries, in order. */
 function addCustomAttributes(target: CustomAttributeSet, customAttributes: ReadonlyArray<CustomAttributeProps> | undefined): void {
@@ -379,6 +415,11 @@ export class SchemaDocument {
     this._itemLookup.invalidate();
   }
 
+  /** @internal Keeps item lookup in step with an in-place rename. */
+  public [_nameChanged](item: SchemaItem, previousName: string): void {
+    this._itemLookup.rename(item as AnySchemaItem, previousName);
+  }
+
   private _detachItem(item: SchemaItem): void {
     const index = this._items.indexOf(item as AnySchemaItem);
     if (index >= 0)
@@ -458,22 +499,30 @@ export class SchemaDocument {
   }
 
   /** The name of the schema an item reference points at: this document's own name for an
-   * unqualified reference, the schema a matching alias maps to, or the qualifier itself when it is
-   * not an alias this document declares. Answers "which schema" without requiring the schema to be
-   * in the set. */
+   * unqualified reference, the referenced schema name or matching alias, or the qualifier itself
+   * when it is undeclared. Schema names take precedence over aliases with the same spelling.
+   * Answers "which schema" without requiring the schema to be in the set. */
   public resolveSchemaName(reference: LocalOrFullName): string {
     const { qualifier } = splitReference(reference);
-    if (qualifier === undefined || namesEqual(qualifier, this.alias))
+    if (qualifier === undefined || namesEqual(qualifier, this.name))
       return this.name;
-    const referenced = this.references.find((r) => (r.alias !== null && namesEqual(r.alias, qualifier)) || namesEqual(r.name, qualifier));
-    return referenced?.name ?? qualifier;
+
+    // Schema-name qualification is the canonical in-memory form and must win over an alias with
+    // the same spelling (for example, the legacy Units_Schema commonly has alias "Units").
+    const byName = this.references.find((r) => namesEqual(r.name, qualifier));
+    if (byName !== undefined)
+      return byName.name;
+
+    if (namesEqual(qualifier, this.alias))
+      return this.name;
+    const byAlias = this.references.find((r) => r.alias !== null && namesEqual(r.alias, qualifier));
+    return byAlias?.name ?? qualifier;
   }
 
   /** Resolves an item reference to the document that should hold the item, or `undefined` when the
    * schema set does not hold it. An unqualified reference (`"Pump"`) means this document. A
-   * qualified one (`"BisCore:Element"`, `"bis.Element"`) is matched against this document's own
-   * name and alias, then against its reference list by alias and by name, and the resulting schema
-   * name is looked up in the set. */
+   * qualified one (`"BisCore:Element"`, `"bis.Element"`) is matched by schema name first and then
+   * by alias, and the resulting schema name is looked up in the set. */
   public resolveDocument(reference: LocalOrFullName): SchemaDocument | undefined {
     const schemaName = this.resolveSchemaName(reference);
     return namesEqual(schemaName, this.name) ? this : this._schemaSet.getSchema(schemaName);
@@ -983,13 +1032,23 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
     return ca;
   }
 
+  /** Adds or replaces the first instance of the same custom attribute class and returns it. Class
+   * names are compared by resolved identity, as in {@link get}. Replacement preserves the existing
+   * instance and its position; use `add` when duplicate instances are intentional. */
+  public set(customAttribute: CustomAttributeProps): CustomAttribute {
+    const existing = this.get(customAttribute.className);
+    if (existing === undefined)
+      return this.add(customAttribute);
+    existing.values = customAttribute.values ?? {};
+    return existing;
+  }
+
   /** Returns the first instance of the named custom attribute class, or `undefined`. Matching is
-   * case-insensitive and treats the `:` and `.` separators as equivalent, but compares spellings,
-   * not resolved identity: an alias-qualified name (`"bis:HiddenProperty"`) does not match the
-   * schema-name form (`"BisCore:HiddenProperty"`) of the same class. */
+   * case-insensitive, treats the `:` and `.` separators as equivalent, and resolves schema names,
+   * aliases, and an omitted same-schema qualifier to the same class identity. */
   public get(className: string): CustomAttribute | undefined {
-    const key = foldFullName(className);
-    return this._items.find((ca) => foldFullName(ca.className) === key);
+    const key = this._identity(className);
+    return this._items.find((ca) => this._identity(ca.className) === key);
   }
 
   /** True when an instance of the named custom attribute class is present. */
@@ -998,14 +1057,20 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
   }
 
   /** Removes the first instance of the named custom attribute class and returns whether there was
-   * one. To keep it, add it to another container instead, which moves it. */
+   * one. Matching follows {@link get}. To keep it, add it to another container instead, which moves it. */
   public remove(className: string): boolean {
-    const key = foldFullName(className);
-    const idx = this._items.findIndex((ca) => foldFullName(ca.className) === key);
+    const key = this._identity(className);
+    const idx = this._items.findIndex((ca) => this._identity(ca.className) === key);
     if (idx === -1)
       return false;
     this._items.splice(idx, 1);
     return true;
+  }
+
+  private _identity(className: string): string {
+    const document = this._container instanceof SchemaDocument ? this._container : this._container.document;
+    const { name } = splitReference(className);
+    return foldFullName(`${document.resolveSchemaName(className)}:${name}`);
   }
 
   /** The instances as plain objects, so `JSON.stringify` renders the set transparently. */
@@ -1044,19 +1109,32 @@ export abstract class SchemaItem {
   /** Discriminates the item kind. A getter rather than a field: this constructor registers the
    * item with its document, and a subclass field initializer would not have run yet at that point. */
   public abstract get schemaItemType(): ItemKind;
-  /** The invariant item name. Renaming is a document-level operation (not yet modeled). */
-  public readonly name: string;
   /** Optional display label. */
   public label?: string;
   /** Optional description. */
   public description?: string;
 
+  private _name: string;
   private _document: SchemaDocument;
 
   protected constructor(document: SchemaDocument, name: string) {
     this._document = document;
-    this.name = name;
+    this._name = name;
     document[_attach](this);
+  }
+
+  /** The item name. Changing it preserves this object's identity and declaration position and
+   * updates its document's lookup. Stored references to the old name are not rewritten. */
+  public get name(): string {
+    return this._name;
+  }
+
+  public set name(name: string) {
+    if (name === this._name)
+      return;
+    const previousName = this._name;
+    this._name = name;
+    this._document[_nameChanged](this, previousName);
   }
 
   /** The document this item belongs to. Every reference the item holds resolves through this
@@ -1257,6 +1335,11 @@ export abstract class ECClass extends SchemaItem {
   public [_attach](property: Property): void {
     this._properties.push(property as AnyProperty);
     this._propertyLookup.invalidate();
+  }
+
+  /** @internal Keeps property lookup in step with an in-place rename. */
+  public [_nameChanged](property: Property, previousName: string): void {
+    this._propertyLookup.rename(property as AnyProperty, previousName);
   }
 
   private _detachProperty(property: Property): void {
@@ -2267,8 +2350,6 @@ export abstract class Property {
    * {@link SchemaItem.schemaItemType}: the property is registered with its class from this
    * constructor, before a subclass field initializer would have run. */
   public abstract get kind(): PropertyKind;
-  /** The invariant property name. */
-  public readonly name: string;
   /** Optional display label. */
   public label?: string;
   /** Optional description. */
@@ -2287,11 +2368,12 @@ export abstract class Property {
   /** Property-level custom attributes. */
   public readonly customAttributes: CustomAttributeSet;
 
+  private _name: string;
   private _declaringClass: ECClass;
 
   protected constructor(declaringClass: ECClass, name: string, init?: PropertyInit) {
     this._declaringClass = declaringClass;
-    this.name = name;
+    this._name = name;
     this.customAttributes = new CustomAttributeSet(this);
     declaringClass[_attach](this);
     if (init) {
@@ -2303,6 +2385,20 @@ export abstract class Property {
       this.kindOfQuantity = init.kindOfQuantity;
       addCustomAttributes(this.customAttributes, init.customAttributes);
     }
+  }
+
+  /** The property name. Changing it preserves this object's identity and declaration position and
+   * updates its declaring class's lookup. Stored references and derived overrides are not rewritten. */
+  public get name(): string {
+    return this._name;
+  }
+
+  public set name(name: string) {
+    if (name === this._name)
+      return;
+    const previousName = this._name;
+    this._name = name;
+    this._declaringClass[_nameChanged](this, previousName);
   }
 
   /** The class this property belongs to. Changed only by {@link ECClass.movePropertyIn}. */

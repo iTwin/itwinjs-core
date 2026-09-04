@@ -72,6 +72,15 @@ myDomain.removeItem("Pump");                   // returns false now - it is gone
 
 `doc.items` and `class.properties` are read-only for this reason; use the `create*` factories, `moveItemIn` / `movePropertyIn`, and `removeItem` / `removeProperty`.
 
+Items and properties can be renamed in place. Their owner updates its name lookup without moving or replacing the object:
+
+```ts
+pump.name = "CirculationPump";
+serial.name = "SerialCode";
+```
+
+A rename deliberately changes only the declaration. Stored references, derived property overrides, custom attribute values, index definitions, expressions, and ECSQL are not rewritten automatically. A document may also temporarily contain duplicate or invalid names; validation reports them as it does for newly constructed declarations.
+
 ## Composing a schema in code
 
 Factory methods take the mandatory data as positional arguments and everything optional through an `init` object, and return the created object so you can keep working with it - no re-fetching, no casts:
@@ -108,7 +117,7 @@ This is particularly aimed at tests, which today often template raw XML strings:
 
 ## Referring to other items
 
-A reference to another item is stored as a plain string: a bare local name (`"Pump"`, an item in this schema), a full name (`"BisCore:PhysicalElement"`, either separator), or an alias-qualified name (`"bis:PhysicalElement"`, resolved through this document's reference list). That is what serializes, and it is what makes composing a document feel like writing a literal.
+A reference to another item is stored as a plain string: a bare local name (`"Pump"`, an item in this schema), a full name (`"BisCore:PhysicalElement"`, either separator), or an alias-qualified name (`"bis:PhysicalElement"`, resolved through this document's reference list). That is what serializes, and it is what makes composing a document feel like writing a literal. When a schema name and another reference's alias have the same spelling, the schema name wins; schema-name qualification is the canonical authoring form.
 
 Every reference field has a sibling getter that resolves it through the schema set:
 
@@ -258,22 +267,45 @@ Filling a set by hand works when you know what you need. When you do not, `Schem
 
 ```ts
 const source = new Authoring.InMemorySchemaSource();
-source.addDocument(bisCoreDoc); // sources for files / iModels are thin adapters over the same interface
+source.addDocument(bisCoreDoc);
+source.addText(otherSchemaXml, new Authoring.SchemaXmlReader(), "Other.ecschema.xml");
 
 const resolver = new Authoring.SchemaResolver();
 resolver.addSource(source);
 
-const resolution = await resolver.resolve([myDoc]);   // walk myDoc's reference closure
+const resolution = await resolver.resolve([myDoc]);
 if (!resolution.isComplete)
   console.warn([...resolution.issues].map((i) => i.message)); // missing schemas, version conflicts, cycles
 
-await resolution.loadDocuments(set);   // hydrated into the set, in dependency order
+await resolution.loadDocuments(myDoc.schemaSet);   // hydrated into the set, in dependency order
 ```
 
-Three steps, each doing one thing: a `SchemaSource` says what schemas exist and what each declares about itself, `resolve` turns that into a dependency-ordered plan, `loadDocuments` hydrates the plan into a set. Two deliberate improvements over the legacy locater model:
+When composing or transforming a schema, load dependencies before using them. Requirements introduced by the operation itself do not belong to the schema's existing reference closure:
 
-- **All sources form one pool, and the highest compatible version wins** - not first-match-wins across an ordered locater list, where "latest" silently depended on registration order.
-- **Discovery fully precedes loading.** The resolution lists every schema with provenance (`requestedBy`) before anything heavy happens, and conflicts are reported, not silently re-picked.
+```ts
+const set = new Authoring.SchemaSet();
+const prerequisites = await resolver.resolveNames(["BisCore", "ToolingRules"]);
+await prerequisites.loadDocuments(set);             // includes their transitive references
+
+const myDoc = set.createSchema("MyDomain", "md", 1, 0, 0);
+// Compose or read myDoc, then resolve references it already declares.
+const closure = await resolver.resolve([myDoc]);
+await closure.loadDocuments(set);                    // already-loaded same-version schemas are skipped
+```
+
+Three steps, each doing one thing: a `SchemaSource` says what schemas exist and what each declares about itself, `resolve` turns that into a dependency-ordered plan, `loadDocuments` hydrates the plan into a set. Discovery fully precedes loading, so the resolution lists every schema with provenance (`requestedBy`) before anything heavy happens and reports conflicts instead of silently re-picking.
+
+Candidate selection has two explicit modes:
+
+- The default, `HighestVersion`, treats all sources as one pool and picks the highest compatible version. Source order only breaks equal-version ties.
+- `new SchemaResolver(SchemaCandidateSelectionMode.FirstSource)` checks sources in registration order. The first source containing a compatible candidate wins, and its highest compatible version is selected. An incompatible candidate does not prevent trying the next source.
+
+`FirstSource` suits a workflow editing schemas for an existing iModel: register the iModel source first and asset directories afterward. `HighestVersion` suits tools looking for the newest available dependency regardless of where it came from.
+
+The platform-specific sources live with their capabilities:
+
+- `IModelSchemaSource` in `@itwin/core-backend` discovers schemas from an iModel manifest and loads selected schemas through `getSchemaProps`.
+- `SchemaXmlFileSource` in `@itwin/ecschema-locaters` accepts a list of directories, reads only ECXML headers during discovery, and opens selected files again for loading.
 
 ## Custom attributes
 
@@ -319,6 +351,8 @@ Anything else goes in as a literal, which is the same shape the helpers return:
 ```ts
 pump.customAttributes.add({ className: "MyDomain:Reviewed", values: { Reviewer: "rschili", Passed: true } });
 ```
+
+`add()` always appends, so a document can retain duplicate instances from invalid input. Use `set()` when authoring the one instance the EC specification permits; it updates the first matching instance in place or adds one when absent. `get()`, `has()`, `set()`, and `remove()` compare resolved class identity, so `bis:ClassHasHandler`, `BisCore:ClassHasHandler`, and a same-schema unqualified name address the same class.
 
 ## Comparing schemas
 

@@ -6,9 +6,10 @@
 import { describe, expect, it } from "vitest";
 import { SchemaItemType, SchemaMatchType } from "../../ECObjects";
 import * as Authoring from "../../Authoring/SchemaDocument";
+import { SchemaIssueList } from "../../Authoring/SchemaIssues";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
 import { SchemaXmlWriter } from "../../Authoring/SchemaXmlWriter";
-import { InMemorySchemaSource, SchemaResolver } from "../../Authoring/SchemaResolver";
+import { InMemorySchemaSource, SchemaCandidateSelectionMode, SchemaResolver } from "../../Authoring/SchemaResolver";
 import { composeFullDocument } from "./FullDocumentFixture";
 
 describe("SchemaXmlWriter / SchemaXmlReader", () => {
@@ -28,6 +29,19 @@ describe("SchemaXmlWriter / SchemaXmlReader", () => {
     const secondWrite = writer.writeDocument(readBack.document!);
     expect(secondWrite.issues.hasErrors, JSON.stringify(secondWrite.issues)).to.be.false;
     expect(secondWrite.text).to.equal(firstWrite.text);
+  });
+
+  it("prefers a referenced schema name over another reference's same-spelled alias", () => {
+    const set = new Authoring.SchemaSet();
+    const legacyUnits = set.createSchema("Units_Schema", "Units", 1, 0, 0);
+    const units = set.createSchema("Units", "u", 1, 0, 0);
+    const domain = set.createSchema("Domain", "d", 1, 0, 0, { references: [legacyUnits, units] });
+    domain.createEntity("E", { baseClass: "Units:Thing" });
+
+    const result = new SchemaXmlWriter().writeDocument(domain);
+
+    expect(result.issues.hasErrors, JSON.stringify(result.issues)).to.be.false;
+    expect(result.text).to.contain("<BaseClass>u:Thing</BaseClass>");
   });
 
   it("streams the same bytes writeDocument materializes", async () => {
@@ -184,6 +198,121 @@ describe("SchemaResolver", () => {
     const documents = await resolution.loadDocuments(schemaSet);
     expect(documents.map((d) => d.name)).to.deep.equal(["B", "A"]); // roots are not loaded
     expect(documents[0].minorVersion).to.equal(5);
+  });
+
+  it("discovers and loads reusable in-memory schema text", async () => {
+    const source = new InMemorySchemaSource();
+    source.addText(
+      `<ECSchema schemaName="A" alias="a" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2"/>`,
+      new SchemaXmlReader(),
+      "A.ecschema.xml",
+    );
+    const resolver = new SchemaResolver();
+    resolver.addSource(source);
+
+    const resolution = await resolver.resolveNames(["A"]);
+    const set = new Authoring.SchemaSet();
+    const documents = await resolution.loadDocuments(set);
+
+    expect(resolution.isComplete, JSON.stringify(resolution.issues)).to.be.true;
+    expect(documents).to.have.lengthOf(1);
+    expect(set.getSchema("A")?.source).to.equal("A.ecschema.xml");
+  });
+
+  it("resolves named schemas and their transitive references", async () => {
+    const source = new InMemorySchemaSource();
+    source.addDocument(makeDocument("Tooling", 0, [{ name: "Support" }]));
+    source.addDocument(makeDocument("Support", 0));
+    const resolver = new SchemaResolver();
+    resolver.addSource(source);
+
+    const resolution = await resolver.resolveNames(["Tooling"]);
+
+    expect(resolution.isComplete, JSON.stringify(resolution.issues)).to.be.true;
+    expect(resolution.schemas.map((schema) => schema.name)).to.deep.equal(["Support", "Tooling"]);
+  });
+
+  it("reuses one discovery snapshot across resolutions", async () => {
+    let discoveries = 0;
+    const source = new InMemorySchemaSource();
+    source.addDocument(makeDocument("A", 0));
+    const countingSource = {
+      discoverCandidates: async (issues: SchemaIssueList) => {
+        ++discoveries;
+        return source.discoverCandidates(issues);
+      },
+    };
+    const resolver = new SchemaResolver();
+    resolver.addSource(countingSource);
+
+    await resolver.resolveNames(["A"]);
+    await resolver.resolve([makeDocument("Root", 0, [{ name: "A" }])]);
+
+    expect(discoveries).to.equal(1);
+  });
+
+  it("supports highest-version and first-source candidate selection", async () => {
+    const first = new InMemorySchemaSource();
+    first.addDocument(makeDocument("Dependency", 1));
+    const second = new InMemorySchemaSource();
+    second.addDocument(makeDocument("Dependency", 5));
+    const root = makeDocument("Root", 0, [{ name: "Dependency" }]);
+
+    const highest = new SchemaResolver();
+    highest.addSource(first);
+    highest.addSource(second);
+    const highestResolution = await highest.resolve([root]);
+    expect(highestResolution.schemas.find((schema) => schema.name === "Dependency")!.candidate!.header.minorVersion).to.equal(5);
+
+    const firstSource = new SchemaResolver(SchemaCandidateSelectionMode.FirstSource);
+    firstSource.addSource(first);
+    firstSource.addSource(second);
+    const firstResolution = await firstSource.resolve([root]);
+    expect(firstResolution.schemas.find((schema) => schema.name === "Dependency")!.candidate!.header.minorVersion).to.equal(1);
+  });
+
+  it("skips an incompatible first source", async () => {
+    const first = new InMemorySchemaSource();
+    first.addDocument(makeDocument("Dependency", 1));
+    const second = new InMemorySchemaSource();
+    second.addDocument(makeDocument("Dependency", 5));
+    const resolver = new SchemaResolver(SchemaCandidateSelectionMode.FirstSource);
+    resolver.addSource(first);
+    resolver.addSource(second);
+
+    const root = makeDocument("Root", 0, [{ name: "Dependency", minor: 5 }]);
+    const resolution = await resolver.resolve([root], SchemaMatchType.Exact);
+
+    expect(resolution.isComplete, JSON.stringify(resolution.issues)).to.be.true;
+    expect(resolution.schemas.find((schema) => schema.name === "Dependency")!.candidate!.header.minorVersion).to.equal(5);
+  });
+
+  it("does not reload a same-version document already in the target set", async () => {
+    const source = new InMemorySchemaSource();
+    source.addDocument(makeDocument("A", 0));
+    const resolver = new SchemaResolver();
+    resolver.addSource(source);
+    const resolution = await resolver.resolveNames(["A"]);
+    const target = new Authoring.SchemaSet([makeDocument("A", 0)]);
+
+    const loaded = await resolution.loadDocuments(target);
+
+    expect(loaded).to.be.empty;
+    expect(resolution.isComplete).to.be.true;
+  });
+
+  it("reports a conflicting version already in the target set", async () => {
+    const source = new InMemorySchemaSource();
+    source.addDocument(makeDocument("A", 5));
+    const resolver = new SchemaResolver();
+    resolver.addSource(source);
+    const resolution = await resolver.resolveNames(["A"]);
+    const target = new Authoring.SchemaSet([makeDocument("A", 0)]);
+
+    await resolution.loadDocuments(target);
+
+    expect(resolution.isComplete).to.be.false;
+    expect(resolution.issues.errors[0].name).to.equal("schema-name-version-conflict");
   });
 
   it("reports a missing reference as an error", async () => {

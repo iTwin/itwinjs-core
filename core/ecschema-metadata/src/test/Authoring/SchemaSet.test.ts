@@ -152,6 +152,37 @@ describe("SchemaDocument item ownership", () => {
     expect(doc.getItem("pump")).to.equal(replacement);
   });
 
+  it("renames items and properties in place while keeping built lookups current", () => {
+    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+    const pump = doc.createEntity("Pump");
+    const serial = pump.createPrimitive("Serial", PrimitiveType.String);
+    expect(doc.getItem("Pump")).to.equal(pump); // build both lazy indices before renaming
+    expect(pump.getProperty("Serial")).to.equal(serial);
+
+    pump.name = "RenamedPump";
+    serial.name = "RenamedSerial";
+
+    expect(doc.items).to.deep.equal([pump]);
+    expect(pump.properties).to.deep.equal([serial]);
+    expect(doc.getItem("Pump")).to.be.undefined;
+    expect(doc.getItem("renamedpump")).to.equal(pump);
+    expect(pump.getProperty("Serial")).to.be.undefined;
+    expect(pump.getProperty("renamedserial")).to.equal(serial);
+    expect(serial.fullName).to.equal("MyDomain:RenamedPump.RenamedSerial");
+  });
+
+  it("preserves first-occurrence lookup semantics when a duplicate is renamed", () => {
+    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+    const first = doc.createEntity("Pump");
+    const second = doc.createStructClass("PUMP");
+    expect(doc.getItem("pump")).to.equal(first); // build the lookup
+
+    first.name = "FormerPump";
+
+    expect(doc.getItem("pump")).to.equal(second);
+    expect(doc.getItem("FormerPump")).to.equal(first);
+  });
+
   it("resolves a duplicate name to the first item declared, as serialization does", () => {
     const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
     const first = doc.createEntity("Pump");
@@ -196,6 +227,21 @@ describe("Reference resolution", () => {
 
     expect(pump.getBaseClass()).to.equal(bis.getItem("PhysicalElement"));
     expect(domain.resolveSchemaName("bis:PhysicalElement")).to.equal("BisCore");
+  });
+
+  it("prefers a schema name over another reference's same-spelled alias", () => {
+    const set = new SchemaSet();
+    const legacyUnits = set.createSchema("Units_Schema", "Units", 1, 0, 0);
+    legacyUnits.createUnitSystem("Legacy");
+    const units = set.createSchema("Units", "u", 1, 0, 0);
+    const si = units.createUnitSystem("SI");
+    const domain = set.createSchema("MyDomain", "md", 1, 0, 0, {
+      references: [legacyUnits, units],
+    });
+
+    expect(domain.resolveSchemaName("Units:SI")).to.equal("Units");
+    expect(domain.resolveItem("Units:SI")).to.equal(si);
+    expect(domain.resolveSchemaName("u:SI")).to.equal("Units");
   });
 
   it("returns undefined for a reference the set cannot satisfy", () => {

@@ -265,22 +265,19 @@ class ECXmlEmitter {
       return reference; // local name
     const qualifier = reference.substring(0, separatorIndex);
     const itemName = reference.substring(separatorIndex + 1);
-    const qualifierLower = qualifier.toLowerCase();
+    const schemaName = this._document.resolveSchemaName(reference);
 
-    if (qualifierLower === this._document.name.toLowerCase() || qualifierLower === this._document.alias.toLowerCase())
+    if (schemaName.toLowerCase() === this._document.name.toLowerCase())
       return itemName; // reference into this schema - local in XML
 
-    for (const schemaReference of this._document.references) {
-      if (schemaReference.name.toLowerCase() === qualifierLower) {
-        if (schemaReference.alias === null) {
-          this._issues.addWarning("reference-alias-unavailable",
-            `Cannot alias-qualify "${reference}": the reference to schema "${schemaReference.name}" has no alias.`, location);
-          return `${qualifier}:${itemName}`;
-        }
-        return `${schemaReference.alias}:${itemName}`;
+    const schemaReference = this._document.references.find((candidate) => candidate.name.toLowerCase() === schemaName.toLowerCase());
+    if (schemaReference !== undefined) {
+      if (schemaReference.alias === null) {
+        this._issues.addWarning("reference-alias-unavailable",
+          `Cannot alias-qualify "${reference}": the reference to schema "${schemaReference.name}" has no alias.`, location);
+        return `${schemaName}:${itemName}`;
       }
-      if (schemaReference.alias !== null && schemaReference.alias.toLowerCase() === qualifierLower)
-        return `${schemaReference.alias}:${itemName}`; // already alias-qualified
+      return `${schemaReference.alias}:${itemName}`;
     }
 
     this._issues.addWarning("reference-item-unresolved",
@@ -297,16 +294,14 @@ class ECXmlEmitter {
       return { elementName: className, xmlns: this._ownNamespace() };
     const qualifier = className.substring(0, separatorIndex);
     const elementName = className.substring(separatorIndex + 1);
-    const qualifierLower = qualifier.toLowerCase();
+    const schemaName = this._document.resolveSchemaName(className);
 
-    if (qualifierLower === this._document.name.toLowerCase() || qualifierLower === this._document.alias.toLowerCase())
+    if (schemaName.toLowerCase() === this._document.name.toLowerCase())
       return { elementName, xmlns: this._ownNamespace() };
 
-    for (const schemaReference of this._document.references) {
-      const aliasMatches = schemaReference.alias !== null && schemaReference.alias.toLowerCase() === qualifierLower;
-      if (schemaReference.name.toLowerCase() === qualifierLower || aliasMatches)
-        return { elementName, xmlns: `${schemaReference.name}.${this._formatNamespaceVersion(schemaReference.readVersion, schemaReference.writeVersion, schemaReference.minorVersion)}` };
-    }
+    const schemaReference = this._document.references.find((candidate) => candidate.name.toLowerCase() === schemaName.toLowerCase());
+    if (schemaReference !== undefined)
+      return { elementName, xmlns: `${schemaReference.name}.${this._formatNamespaceVersion(schemaReference.readVersion, schemaReference.writeVersion, schemaReference.minorVersion)}` };
 
     this._issues.addWarning("custom-attribute-class-unresolved",
       `The custom attribute class "${className}" does not match this schema or any schema in the reference list; its qualifier is emitted without a version.`, location);

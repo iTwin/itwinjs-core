@@ -28,8 +28,8 @@ import { querySchemaManifest } from "./internal/SchemaManifestQuery";
  *
  * {@link readSchemasFromIModel} runs both for the common cases - everything in the iModel, or a few
  * named schemas plus what they reference. Use {@link IModelSchemaSource} directly when the iModel is
- * one of several places schemas come from; a resolver takes any number of sources and treats them
- * as one pool.
+ * one of several places schemas come from; a resolver can treat several sources as one version
+ * pool or prefer the first source that can satisfy each request.
  */
 
 /** A {@link Authoring.SchemaSource} over the schemas one iModel holds.
@@ -119,8 +119,8 @@ export function readSchemaFromIModel(iModel: IModelDb, schemaName: string, schem
  * @alpha
  */
 export interface ReadSchemasFromIModelOptions {
-  /** The set to read into. A new one is created when this is left out. The set may already hold
-   * schemas; a name it already holds is reported and that schema is not re-read. */
+  /** The set to read into. A new one is created when this is left out. A same-version schema already
+   * in the set satisfies the request and is not re-read; a different existing version is reported. */
   schemaSet?: Authoring.SchemaSet;
   /** Which schemas to read. Every schema in the iModel when left out. Named schemas are read
    * together with everything they reference, transitively. */

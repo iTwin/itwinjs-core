@@ -9,7 +9,7 @@
 import { SchemaMatchType } from "../ECObjects";
 import { ECVersion, SchemaKey } from "../SchemaKey";
 import { SchemaDocument, SchemaSet } from "./SchemaDocument";
-import { SchemaDocumentHeader, SchemaDocumentReadResult } from "./SchemaDocumentIO";
+import { SchemaDocumentHeader, SchemaDocumentReadResult, SchemaDocumentTextReader } from "./SchemaDocumentIO";
 import { SchemaIssueList } from "./SchemaIssues";
 
 /** One schema a source can deliver: its header (obtained by a cheap peek, without loading the
@@ -40,6 +40,18 @@ export interface SchemaSource {
   discoverCandidates(issues: SchemaIssueList): Promise<SchemaCandidate[]>;
 }
 
+/** How a resolver chooses among compatible candidates supplied by several sources.
+ * @alpha
+ */
+export enum SchemaCandidateSelectionMode {
+  /** The first source containing a compatible candidate wins; the highest compatible version from
+   * that source is selected. Source registration order is therefore significant. */
+  FirstSource = "firstSource",
+  /** The highest compatible version across every source wins. Source registration order breaks a
+   * tie between otherwise equal candidates. */
+  HighestVersion = "highestVersion",
+}
+
 /** A source over candidates the caller already holds in memory: pre-read texts (paired with the
  * reader that parses them) or constructed {@link SchemaDocument}s. Also the building block for
  * tests and for adapters that gather candidates by other means.
@@ -47,6 +59,7 @@ export interface SchemaSource {
  */
 export class InMemorySchemaSource implements SchemaSource {
   private readonly _candidates: SchemaCandidate[] = [];
+  private readonly _texts: Array<{ text: string | Uint8Array, reader: SchemaDocumentTextReader, source?: string }> = [];
 
   /** Adds a document already in hand. Serving its header and "load" are both immediate; loading it
    * moves it into the target schema set, since a document belongs to exactly one. */
@@ -66,14 +79,33 @@ export class InMemorySchemaSource implements SchemaSource {
     });
   }
 
-  /** Adds a candidate with an explicit header and deferred load - the adapter hook for callers
-   * that peeked the header themselves (e.g. via a text reader's `readHeader`). */
+  /** Adds reusable in-memory schema text paired with the reader for its format. Its header is read
+   * during discovery and the full document only when selected. Async iterables are intentionally
+   * excluded because discovery and loading need to consume the input independently. */
+  public addText(text: string | Uint8Array, reader: SchemaDocumentTextReader, source?: string): void {
+    this._texts.push({ text, reader, source });
+  }
+
+  /** Adds a candidate with an explicit header and deferred load - the low-level adapter hook for
+   * callers that have their own storage mechanism. */
   public addCandidate(candidate: SchemaCandidate): void {
     this._candidates.push(candidate);
   }
 
-  public async discoverCandidates(_issues: SchemaIssueList): Promise<SchemaCandidate[]> {
-    return [...this._candidates];
+  public async discoverCandidates(issues: SchemaIssueList): Promise<SchemaCandidate[]> {
+    const candidates = [...this._candidates];
+    for (const { text, reader, source } of this._texts) {
+      const result = await reader.readHeader(text, { source });
+      issues.addAll(result.issues);
+      if (result.header === undefined)
+        continue;
+      candidates.push({
+        header: result.header,
+        source,
+        loadDocument: async (schemaSet) => reader.readDocument(text, { schemaSet, source }),
+      });
+    }
+    return candidates;
   }
 }
 
@@ -115,17 +147,30 @@ export class SchemaResolution {
   }
 
   /** Hydrates the full documents of every selected candidate into `schemaSet`, in dependency order,
-   * and returns them. Root entries are skipped - the caller already holds those documents, and
-   * moving them into the set is the caller's decision. Load problems are appended to
+   * and returns the documents newly added to it. Root entries are skipped - the caller already
+   * holds those documents. A same-version document already in the set satisfies the plan and is
+   * skipped; a different existing version is reported as a conflict. Load problems are appended to
    * {@link SchemaResolution.issues}; a candidate whose load produces no document is omitted. */
   public async loadDocuments(schemaSet: SchemaSet): Promise<SchemaDocument[]> {
     const documents: SchemaDocument[] = [];
     for (const resolved of this.schemas) {
       if (resolved.candidate === undefined)
         continue;
+
+      const existing = schemaSet.getSchema(resolved.name);
+      if (existing !== undefined) {
+        const header = resolved.candidate.header;
+        if (existing.readVersion !== header.readVersion || existing.writeVersion !== header.writeVersion || existing.minorVersion !== header.minorVersion) {
+          this.issues.addError("schema-name-version-conflict",
+            `The target schema set already holds ${existing.name}.${existing.readVersion}.${existing.writeVersion}.${existing.minorVersion}; the resolution selected ${header.name}.${header.readVersion}.${header.writeVersion}.${header.minorVersion}.`,
+            existing.name);
+        }
+        continue;
+      }
+
       const result = await resolved.candidate.loadDocument(schemaSet);
       this.issues.addAll(result.issues);
-      if (result.document !== undefined)
+      if (result.document?.schemaSet === schemaSet)
         documents.push(result.document);
     }
     return documents;
@@ -143,6 +188,12 @@ interface ResolutionNode {
   requestedBy: string[];
 }
 
+/** A candidate paired with the registration order of the source that supplied it. */
+interface SourcedCandidate {
+  candidate: SchemaCandidate;
+  sourceIndex: number;
+}
+
 /** Works out which schemas a set of root documents needs, and in what order to load them. The
  * middle of the three discovery steps: a {@link SchemaSource} says what schemas exist and what each
  * one declares about itself, this resolves the reference closure over those headers into a
@@ -150,24 +201,31 @@ interface ResolutionNode {
  * {@link SchemaSet}. Nothing is read until the plan exists, and the plan is inspectable first -
  * which is what the old locater chain, resolving references as it loaded them, could not offer.
  *
- * Selection: among the candidates whose version satisfies a request under the match tolerance, the
- * **highest version across all sources** wins - sources are a pool, not a priority order. Exactly
- * one version of a name participates in a resolution; two requesters whose requests cannot be
- * satisfied by one version is a conflict, reported as an error.
+ * Candidate selection is explicit. The default chooses the highest compatible version across all
+ * sources. {@link SchemaCandidateSelectionMode.FirstSource} instead chooses from the first source
+ * that can satisfy a request, then takes that source's highest compatible version. Exactly one
+ * version of a name participates in a resolution; incompatible requirements are reported.
  * @alpha
  */
 export class SchemaResolver {
   private readonly _sources: SchemaSource[] = [];
+  private _candidateSnapshot?: Promise<{ candidatesByName: Map<string, SourcedCandidate[]>, issues: SchemaIssueList }>;
 
-  /** Adds a source. Order does not grant priority (see selection rule above). */
+  public constructor(private readonly _selectionMode: SchemaCandidateSelectionMode = SchemaCandidateSelectionMode.HighestVersion) { }
+
+  /** Adds a source. Registration order is significant only in
+   * {@link SchemaCandidateSelectionMode.FirstSource} mode and for equal-version ties. Adding a
+   * source invalidates this resolver's cached discovery snapshot. */
   public addSource(source: SchemaSource): void {
     this._sources.push(source);
+    this._candidateSnapshot = undefined;
   }
 
   /** Resolves the reference closure of the given roots. `matchType` is the version tolerance a
-   * candidate must satisfy, defaulting to {@link SchemaMatchType.LatestWriteCompatible} - the
-   * tolerance schema references resolve with today (same read.write, any equal-or-newer minor).
-   * The roots themselves are never looked up in the sources; they are taken as given. */
+   * candidate must satisfy, defaulting to {@link SchemaMatchType.LatestWriteCompatible}. The roots
+   * themselves are never looked up in the sources; they are taken as given. Candidate discovery is
+   * shared by repeated resolutions on this resolver; create a new resolver after source contents
+   * change. */
   public async resolve(roots: ReadonlyArray<SchemaDocumentHeader>, matchType: SchemaMatchType = SchemaMatchType.LatestWriteCompatible): Promise<SchemaResolution> {
     const issues = new SchemaIssueList("discovery");
     const candidatesByName = await this._gatherCandidates(issues);
@@ -183,7 +241,8 @@ export class SchemaResolver {
       nodes.set(key, { name: root.name, header: root, isRoot: true, requestedBy: ["<request>"] });
     }
 
-    return this._walkClosure(nodes, candidatesByName, matchType, issues);
+    this._walkDependencies(nodes, [...nodes.values()], candidatesByName, matchType, issues);
+    return new SchemaResolution(this._orderByDependencies(nodes, issues), issues);
   }
 
   /** Resolves the reference closure of schemas named by `names`, taking every one of them from the
@@ -191,14 +250,26 @@ export class SchemaResolver {
    * asking an iModel or a directory for `["BisCore"]` yields BisCore plus everything it references,
    * dependency-ordered and ready for {@link SchemaResolution.loadDocuments}.
    *
-   * Each name is satisfied by the highest version any source offers, since a bare name carries no
-   * version to match against; from there `matchType` governs the references. A name no source
-   * offers is reported and the rest still resolve. */
+   * A bare name carries no version constraint; the resolver's selection mode chooses among the
+   * available candidates, and `matchType` governs their references. A name no source offers is
+   * reported and the rest still resolve. */
   public async resolveNames(names: ReadonlyArray<string>, matchType: SchemaMatchType = SchemaMatchType.LatestWriteCompatible): Promise<SchemaResolution> {
     const issues = new SchemaIssueList("discovery");
     const candidatesByName = await this._gatherCandidates(issues);
     const nodes = new Map<string, ResolutionNode>();
+    const namedNodes = this._seedNamedSchemas(names, nodes, candidatesByName, issues);
+    this._walkDependencies(nodes, namedNodes, candidatesByName, matchType, issues);
+    return new SchemaResolution(this._orderByDependencies(nodes, issues), issues);
+  }
 
+  /** Adds source-backed roots to an existing request without replacing held roots. */
+  private _seedNamedSchemas(
+    names: ReadonlyArray<string>,
+    nodes: Map<string, ResolutionNode>,
+    candidatesByName: Map<string, SourcedCandidate[]>,
+    issues: SchemaIssueList,
+  ): ResolutionNode[] {
+    const added: ResolutionNode[] = [];
     for (const name of names) {
       const key = name.toLowerCase();
       const existing = nodes.get(key);
@@ -206,40 +277,57 @@ export class SchemaResolver {
         existing.requestedBy.push("<request>");
         continue;
       }
-      const selected = this._highestVersion(candidatesByName.get(key));
+      const selected = this._selectCandidate(candidatesByName.get(key));
       if (selected === undefined) {
-        nodes.set(key, { name, isRoot: false, requestedBy: ["<request>"] });
+        const missing = { name, isRoot: false, requestedBy: ["<request>"] };
+        nodes.set(key, missing);
+        added.push(missing);
         issues.addError("schema-missing", `Schema "${name}" was not found in any source.`);
         continue;
       }
-      nodes.set(key, { name: selected.header.name, header: selected.header, candidate: selected, isRoot: false, requestedBy: ["<request>"] });
+      const node = { name: selected.header.name, header: selected.header, candidate: selected, isRoot: false, requestedBy: ["<request>"] };
+      nodes.set(key, node);
+      added.push(node);
     }
-
-    return this._walkClosure(nodes, candidatesByName, matchType, issues);
+    return added;
   }
 
   /** Every candidate every source offers, grouped by lowercased schema name. */
-  private async _gatherCandidates(issues: SchemaIssueList): Promise<Map<string, SchemaCandidate[]>> {
-    const candidatesByName = new Map<string, SchemaCandidate[]>();
-    for (const source of this._sources) {
+  private async _gatherCandidates(issues: SchemaIssueList): Promise<Map<string, SourcedCandidate[]>> {
+    this._candidateSnapshot ??= this._discoverCandidates();
+    const snapshot = await this._candidateSnapshot;
+    issues.addAll(snapshot.issues);
+    return snapshot.candidatesByName;
+  }
+
+  private async _discoverCandidates(): Promise<{ candidatesByName: Map<string, SourcedCandidate[]>, issues: SchemaIssueList }> {
+    const issues = new SchemaIssueList("discovery");
+    const candidatesByName = new Map<string, SourcedCandidate[]>();
+    for (const [sourceIndex, source] of this._sources.entries()) {
       for (const candidate of await source.discoverCandidates(issues)) {
         const key = candidate.header.name.toLowerCase();
         const group = candidatesByName.get(key);
+        const sourced = { candidate, sourceIndex };
         if (group === undefined)
-          candidatesByName.set(key, [candidate]);
+          candidatesByName.set(key, [sourced]);
         else
-          group.push(candidate);
+          group.push(sourced);
       }
     }
-    return candidatesByName;
+    return { candidatesByName, issues };
   }
 
-  /** Chases the references of every seeded node until the closure is complete, then orders it. */
-  private _walkClosure(nodes: Map<string, ResolutionNode>, candidatesByName: Map<string, SchemaCandidate[]>, matchType: SchemaMatchType, issues: SchemaIssueList): SchemaResolution {
-    // Walk the reference closure breadth-first over headers. The queue is appended to inside the
-    // loop; an array iterator re-reads `length` each step, so those appends are visited. Not
-    // `shift()`, which would make the walk quadratic in the queue length.
-    const pending: ResolutionNode[] = [...nodes.values()];
+  /** Chases references from `pending`, adding every newly selected dependency to the same queue. */
+  private _walkDependencies(
+    nodes: Map<string, ResolutionNode>,
+    pending: ResolutionNode[],
+    candidatesByName: Map<string, SourcedCandidate[]>,
+    matchType: SchemaMatchType,
+    issues: SchemaIssueList,
+  ): void {
+    // The queue is appended to inside the loop; an array iterator re-reads `length` each step, so
+    // those appends are visited. Not `shift()`, which would make the walk quadratic.
+
     for (const node of pending) {
       if (node.header === undefined)
         continue;
@@ -278,36 +366,23 @@ export class SchemaResolver {
         pending.push(newNode); // chase its references in turn
       }
     }
-
-    return new SchemaResolution(this._orderByDependencies(nodes, issues), issues);
   }
 
-  /** The newest of a name's candidates, for a request that carries no version to match against. */
-  private _highestVersion(candidates: SchemaCandidate[] | undefined): SchemaCandidate | undefined {
+  /** Picks the best candidate, optionally constrained by a requested version. */
+  private _selectCandidate(candidates: SourcedCandidate[] | undefined, requestedKey?: SchemaKey, matchType?: SchemaMatchType): SchemaCandidate | undefined {
     let best: SchemaCandidate | undefined;
     let bestKey: SchemaKey | undefined;
-    for (const candidate of candidates ?? []) {
+    let selectedSource: number | undefined;
+    for (const { candidate, sourceIndex } of candidates ?? []) {
       const candidateKey = new SchemaKey(candidate.header.name,
         new ECVersion(candidate.header.readVersion, candidate.header.writeVersion, candidate.header.minorVersion));
-      if (bestKey === undefined || candidateKey.compareByVersion(bestKey) > 0) {
-        best = candidate;
-        bestKey = candidateKey;
-      }
-    }
-    return best;
-  }
-
-  /** Picks the best candidate for a request: filter by match tolerance, then highest version wins. */
-  private _selectCandidate(candidates: SchemaCandidate[] | undefined, requestedKey: SchemaKey, matchType: SchemaMatchType): SchemaCandidate | undefined {
-    if (candidates === undefined)
-      return undefined;
-    let best: SchemaCandidate | undefined;
-    let bestKey: SchemaKey | undefined;
-    for (const candidate of candidates) {
-      const candidateKey = new SchemaKey(candidate.header.name,
-        new ECVersion(candidate.header.readVersion, candidate.header.writeVersion, candidate.header.minorVersion));
-      if (!candidateKey.matches(requestedKey, matchType))
+      if (requestedKey !== undefined && !candidateKey.matches(requestedKey, matchType ?? SchemaMatchType.LatestWriteCompatible))
         continue;
+      if (this._selectionMode === SchemaCandidateSelectionMode.FirstSource) {
+        selectedSource ??= sourceIndex;
+        if (sourceIndex !== selectedSource)
+          continue;
+      }
       if (bestKey === undefined || candidateKey.compareByVersion(bestKey) > 0) {
         best = candidate;
         bestKey = candidateKey;

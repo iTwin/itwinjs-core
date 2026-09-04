@@ -165,17 +165,14 @@ class ECJson32Emitter {
       return `${this._document.name}.${reference}`;
     const qualifier = reference.substring(0, separatorIndex);
     const itemName = reference.substring(separatorIndex + 1);
-    const qualifierLower = qualifier.toLowerCase();
+    const schemaName = this._document.resolveSchemaName(reference);
 
-    if (qualifierLower === this._document.name.toLowerCase() || qualifierLower === this._document.alias.toLowerCase())
+    if (schemaName.toLowerCase() === this._document.name.toLowerCase())
       return `${this._document.name}.${itemName}`;
 
-    for (const schemaReference of this._document.references) {
-      if (schemaReference.name.toLowerCase() === qualifierLower)
-        return `${schemaReference.name}.${itemName}`;
-      if (schemaReference.alias !== null && schemaReference.alias.toLowerCase() === qualifierLower)
-        return `${schemaReference.name}.${itemName}`;
-    }
+    const schemaReference = this._document.references.find((candidate) => candidate.name.toLowerCase() === schemaName.toLowerCase());
+    if (schemaReference !== undefined)
+      return `${schemaReference.name}.${itemName}`;
 
     this._issues.addWarning("reference-item-unresolved",
       `The item reference "${reference}" does not match this schema or any schema in the reference list; emitting it unchanged.`, location);

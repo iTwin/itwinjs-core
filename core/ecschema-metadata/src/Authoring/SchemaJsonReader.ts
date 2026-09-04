@@ -852,19 +852,13 @@ class ECJson32Walker {
     const separatorIndex = reference.search(separatorPattern);
     if (separatorIndex < 0)
       return reference;
-    const qualifier = reference.substring(0, separatorIndex);
     const itemName = reference.substring(separatorIndex + 1);
-    const qualifierLower = qualifier.toLowerCase();
     const document = this._document;
-    if (qualifierLower === document.name.toLowerCase() || qualifierLower === document.alias.toLowerCase())
+    const schemaName = document.resolveSchemaName(reference);
+    if (schemaName.toLowerCase() === document.name.toLowerCase())
       return itemName;
-    for (const schemaReference of document.references) {
-      if (schemaReference.name.toLowerCase() === qualifierLower)
-        return `${schemaReference.name}:${itemName}`;
-      if (schemaReference.alias !== null && schemaReference.alias.toLowerCase() === qualifierLower)
-        return `${schemaReference.name}:${itemName}`;
-    }
-    return reference;
+    const schemaReference = document.references.find((candidate) => candidate.name.toLowerCase() === schemaName.toLowerCase());
+    return schemaReference === undefined ? reference : `${schemaReference.name}:${itemName}`;
   }
 
   private _error(name: string, message: string): void {

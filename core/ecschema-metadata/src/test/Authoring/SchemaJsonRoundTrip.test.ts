@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { SchemaItemType } from "../../ECObjects";
+import { SchemaSet } from "../../Authoring/SchemaDocument";
 import { SchemaJsonReader } from "../../Authoring/SchemaJsonReader";
 import { SchemaJsonWriter } from "../../Authoring/SchemaJsonWriter";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
@@ -28,6 +29,19 @@ describe("SchemaJsonWriter / SchemaJsonReader", () => {
     const secondWrite = writer.writeDocument(readBack.document!);
     expect(secondWrite.issues.hasErrors, JSON.stringify(secondWrite.issues)).to.be.false;
     expect(secondWrite.text).to.equal(firstWrite.text);
+  });
+
+  it("prefers a referenced schema name over another reference's same-spelled alias", () => {
+    const set = new SchemaSet();
+    const legacyUnits = set.createSchema("Units_Schema", "Units", 1, 0, 0);
+    const units = set.createSchema("Units", "u", 1, 0, 0);
+    const domain = set.createSchema("Domain", "d", 1, 0, 0, { references: [legacyUnits, units] });
+    domain.createEntity("E", { baseClass: "Units:Thing" });
+
+    const result = new SchemaJsonWriter().writeDocument(domain);
+
+    expect(result.issues.hasErrors, JSON.stringify(result.issues)).to.be.false;
+    expect(JSON.parse(result.text!).items.E.baseClass).to.equal("Units.Thing");
   });
 
   it("streams the same bytes writeDocument materializes", async () => {

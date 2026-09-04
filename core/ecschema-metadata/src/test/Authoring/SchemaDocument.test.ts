@@ -609,11 +609,30 @@ describe("Authoring.SchemaDocument", () => {
       expect(e.customAttributes.get("MyDomain:Ca")).to.equal(second);
     });
 
-    it("matching compares spellings, not resolved identity: alias-qualified does not match schema-name form", () => {
+    it("gets custom attributes by resolved class identity", () => {
+      const set = new Authoring.SchemaSet();
+      const bis = set.createSchema("BisCore", "bis", 1, 0, 0);
+      const bisClass = bis.createEntity("Element");
+      const local = bisClass.customAttributes.add({ className: "ReservedPropertyNames" });
+      const domain = set.createSchema("Domain", "d", 1, 0, 0, { references: [bis] });
+      const external = domain.createEntity("Thing").customAttributes.add({ className: "bis:ClassHasHandler" });
+
+      expect(bisClass.customAttributes.get("BisCore:ReservedPropertyNames")).to.equal(local);
+      expect(bisClass.customAttributes.has("bis.ReservedPropertyNames")).to.be.true;
+      expect(domain.getEntity("Thing")!.customAttributes.get("BisCore:ClassHasHandler")).to.equal(external);
+      expect(domain.getEntity("Thing")!.customAttributes.remove("BisCore.ClassHasHandler")).to.be.true;
+    });
+
+    it("sets a custom attribute without changing its identity or position", () => {
       const e = new Authoring.SchemaDocument("S", "s", 1, 0, 0).createEntity("E");
-      e.customAttributes.add({ className: "bis:ClassHasHandler" }); // alias-qualified (tolerated on input)
-      expect(e.customAttributes.has("bis.ClassHasHandler")).to.be.true; // separator still folds
-      expect(e.customAttributes.has("BisCore:ClassHasHandler")).to.be.false; // same class, different qualifier - no match
+      const first = e.customAttributes.add({ className: "S:Marker", values: { n: 1 } });
+      const other = e.customAttributes.add({ className: "Other", values: { n: 3 } });
+
+      const updated = e.customAttributes.set({ className: "Marker", values: { n: 2 } });
+
+      expect(updated).to.equal(first);
+      expect(updated.values).to.deep.equal({ n: 2 });
+      expect([...e.customAttributes]).to.deep.equal([first, other]);
     });
 
     it("the set serializes transparently through JSON.stringify", () => {
