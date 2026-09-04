@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { app } from "electron";
+import { promises as fs } from "fs";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
@@ -12,7 +13,7 @@ import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
 import { Placement2dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
-import { deleteText, deleteTextStyle, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
+import { deleteText, deleteTextStyle, insertText, insertTextStyle, setFieldFormattingDemoForIModel, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -70,6 +71,30 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void> {
     return setScaleFactor(iModelKey, modelId, scaleFactor);
+  }
+
+  public async setFieldFormattingDemo(iModelKey: string, enabled: boolean): Promise<void> {
+    return setFieldFormattingDemoForIModel(iModelKey, enabled);
+  }
+
+  public async readTextFile(filePath: string): Promise<string> {
+    return fs.readFile(path.resolve(filePath), "utf8");
+  }
+
+  public async writeTextFile(filePath: string, contents: string, overwrite?: boolean): Promise<void> {
+    const resolved = path.resolve(filePath);
+    await fs.mkdir(path.dirname(resolved), { recursive: true });
+    try {
+      // "wx" fails when the file exists, so the check and the write are one atomic operation.
+      // A mistyped export path is otherwise indistinguishable from an intended overwrite, and
+      // this keyin resolves against the cwd - which is usually a source tree.
+      await fs.writeFile(resolved, contents, { encoding: "utf8", flag: overwrite ? "w" : "wx" });
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "EEXIST")
+        throw new Error(`${resolved} already exists. Re-run with 'force' to overwrite it.`);
+
+      throw err;
+    }
   }
 }
 

@@ -1,6 +1,7 @@
 import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault, withEditTxn } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { prepareFieldFormattingDemoFor, setFieldFormattingDemo } from "./FieldFormattingDemo";
 
 /**
  * Inserts a new text style into the iModel.
@@ -72,6 +73,10 @@ export async function deleteTextStyle(iModelKey: string, name: string): Promise<
 export async function insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<Id64String> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
+  if (textAnnotationProps) {
+    await prepareFieldFormattingDemoFor(iModel, TextAnnotation.fromJSON(textAnnotationProps).textBlock);
+  }
+
   const annotation2d = TextAnnotation2d.create(
     iModel,
     {
@@ -102,6 +107,12 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 
   const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
+  // Acquire locks and warm the formatting provider *before* mutating the in-memory element, so
+  // a failure here leaves the cached element untouched rather than dirty-but-unwritten.
+  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
+  if (textAnnotationProps)
+    await prepareFieldFormattingDemoFor(iModel, TextAnnotation.fromJSON(textAnnotationProps).textBlock);
+
   if (categoryId)
     text.category = categoryId;
 
@@ -115,8 +126,12 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
     text.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId);
   }
 
-  await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
   withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
+}
+
+/** Adopts or unadopts the DTA demo FormatSets for the specified iModel. */
+export async function setFieldFormattingDemoForIModel(iModelKey: string, enabled: boolean): Promise<void> {
+  await setFieldFormattingDemo(BriefcaseDb.findByKey(iModelKey), enabled);
 }
 
 /**

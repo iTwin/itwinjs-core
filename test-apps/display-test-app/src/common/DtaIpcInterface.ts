@@ -75,4 +75,20 @@ export interface DtaIpcInterface {
    * If the model is a DrawingModel, sets the scale factor on the Drawing element.
    */
   setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
+
+  /**
+   * Adopts the DTA demo `FormatSet` for the specified iModel when `enabled`, so every
+   * `"quantity"` / `"coordinate"` FieldRun formats through the demo formats; unregisters it
+   * when not. Resolves once the provider has finished pre-warming, after which all field
+   * evaluation is synchronous.
+   */
+  setFieldFormattingDemo(iModelKey: string, enabled: boolean): Promise<void>;
+
+  /** Reads a UTF-8 text file from the local filesystem. Intended for DTA dev-loop keyins only. */
+  readTextFile(filePath: string): Promise<string>;
+
+  /** Writes `contents` as a UTF-8 text file to the local filesystem. Intended for DTA dev-loop
+   * keyins only. Rejects rather than clobbering an existing file unless `overwrite` is true.
+   */
+  writeTextFile(filePath: string, contents: string, overwrite?: boolean): Promise<void>;
 }

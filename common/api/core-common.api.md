@@ -26,6 +26,8 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DeepReadonlyObject } from '@itwin/core-bentley';
 import { DeepRequiredObject } from '@itwin/core-bentley';
+import { FormatterSpec } from '@itwin/core-quantity';
+import { FormattingSpecArgs } from '@itwin/core-quantity';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
@@ -1499,6 +1501,14 @@ export interface CodeSpecProperties {
     // (undocumented)
     version?: string;
 }
+
+// @internal
+export function collectFieldQuantityPairs(args: {
+    overrideName?: string;
+    overridePersistence?: string;
+    propertyName?: string;
+    propertyPersistence?: string;
+}): FormattingSpecArgs[];
 
 // @public
 export const ColorByName: {
@@ -3717,6 +3727,7 @@ export interface FieldFormatOptions {
     case?: FieldCase;
     dateTime?: DateTimeFieldFormatOptions;
     prefix?: string;
+    quantity?: QuantityFieldFormatOptions;
     suffix?: string;
 }
 
@@ -3768,10 +3779,16 @@ export interface FieldRunProps extends TextBlockComponentProps {
 }
 
 // @internal
+export interface FieldSpecProvider {
+    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
+    getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined;
+}
+
+// @internal
 export interface FieldValue {
-    // (undocumented)
+    kindOfQuantityFullName?: string;
+    persistenceUnitFullName?: string;
     type: FieldPropertyType;
-    // (undocumented)
     value: FieldPrimitiveValue;
 }
 
@@ -3865,8 +3882,11 @@ export enum FontType {
     TrueType = 1
 }
 
-// @internal (undocumented)
+// @internal
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
+
+// @internal
+export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FieldSpecProvider, onUnresolved?: (candidates: FormattingSpecArgs[]) => void): string | undefined;
 
 // @internal (undocumented)
 export interface FormDataCommon {
@@ -5813,7 +5833,7 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
-// @internal (undocumented)
+// @internal
 export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
 
 // @internal
@@ -7839,6 +7859,13 @@ export class QPoint3dList {
     reset(params: QParams3d): void;
     toTypedArray(): Uint16Array;
     unquantize(index: number, out?: Point3d): Point3d;
+}
+
+// @beta
+export interface QuantityFieldFormatOptions {
+    formatSet?: string;
+    kindOfQuantity?: string;
+    persistenceUnit?: string;
 }
 
 // @public

@@ -138,6 +138,7 @@ public;type;CodeScopeProps
 public;namespace;CodeScopeSpec
 public;class;CodeSpec
 public;interface;CodeSpecProperties
+internal;function;collectFieldQuantityPairs
 public;const;ColorByName
 public;class;ColorDef
 public;type;ColorDefProps
@@ -334,6 +335,7 @@ beta;interface;FieldPropertyPath
 beta;type;FieldPropertyType
 beta;class;FieldRun
 beta;interface;FieldRunProps
+internal;interface;FieldSpecProvider
 internal;interface;FieldValue
 public;interface;FilePropertyProps
 public;enum;FillDisplay
@@ -350,6 +352,7 @@ deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;function;formatFieldValue
+internal;function;formatFieldValueWithSpecProvider
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps
@@ -723,6 +726,7 @@ public;interface;QPoint3dBuffer
 public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
+beta;interface;QuantityFieldFormatOptions
 public;namespace;Quantization
 public;class;QueryBinder
 public;interface;QueryLimit
