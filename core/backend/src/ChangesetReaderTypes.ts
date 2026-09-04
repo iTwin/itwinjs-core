@@ -39,16 +39,10 @@ export interface RowFormatOptions {
    */
   abbreviateBlobs?: boolean;
   /**
-   * When `true`, `ECClassId` and `RelECClassId` values are converted from hex strings
+   * When `true`, all classId values are converted from hex strings
    * to fully-qualified class names (e.g. `"BisCore.DrawingModel"`).
    */
   classIdsToClassNames?: boolean;
-  /**
-   * When `true`, all property keys and struct sub-keys are returned in camelCase
-   * (e.g. `id`, `className`, `lastMod`). Navigation property sub-keys use
-   * `{ id, relClassName }` instead of `{ Id, RelECClassId }`.
-   */
-  useJsName?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -95,10 +89,14 @@ export interface ChangeMeta {
  * @beta
  */
 export interface ChangeInstance {
-  /** Metadata describing the origin and identity of this change. */
-  $meta: ChangeMeta;
+  /** ECInstanceId of this instance. */
+  ECInstanceId: string;   // eslint-disable-line @typescript-eslint/naming-convention
+  /** ECClassId of this instance. */
+  ECClassId: string;     // eslint-disable-line @typescript-eslint/naming-convention
   /** EC property bag (ECClassId, ECInstanceId, user-defined properties, ...). */
   [key: string]: any;
+  /** Metadata describing the origin and identity of this change. */
+  $meta: ChangeMeta;
 }
 
 /**

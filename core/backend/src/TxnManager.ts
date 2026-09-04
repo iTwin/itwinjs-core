@@ -117,7 +117,7 @@ export function setMaxEntitiesPerEvent(max: number): number {
 class TxnEntityMetadataImpl implements TxnEntityMetadata {
   public readonly baseClasses: TxnEntityMetadataImpl[] = [];
 
-  public constructor(public readonly classFullName: string) {}
+  public constructor(public readonly classFullName: string) { }
 
   public is(baseClassFullName: string): boolean {
     return this.classFullName === baseClassFullName || this.baseClasses.some((baseClass) => baseClass.is(baseClassFullName));
@@ -746,25 +746,25 @@ export class RebaseManager {
       case "Inserted": {
         if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Inserted' must have props");
-        const options = { forceUseId: true, useJsNames: true };
+        const options = { forceUseId: true, convertClassIdsToClassNames: true };
         const id = nativeDb.insertInstance(props, options);
         if (!Id64.isValidId64(id))
-          throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${props.id}`);
+          throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${props.ECInstanceId}`);
         break;
       }
       case "Updated": {
         if (!props)
           throw new IModelError(IModelStatus.BadRequest, "InstancePatch with op 'Updated' must have props");
-        const isSuccess = nativeDb.updateInstance(props, { useJsNames: true });
+        const isSuccess = nativeDb.updateInstance(props, { convertClassIdsToClassNames: true });
         if (!isSuccess)
-          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.id}`);
+          throw new IModelError(IModelStatus.BadRequest, `Failed to update instance with id ${props.ECInstanceId}`);
         break;
       }
       case "Deleted": {
-        const key = { id: props.id, classFullName: props.className };
-        const isSuccess = nativeDb.deleteInstance(key, { useJsNames: true });
+        const key = { ECInstanceId: props.ECInstanceId, ECClassId: props.ECClassId };   // eslint-disable-line @typescript-eslint/naming-convention
+        const isSuccess = nativeDb.deleteInstance(key, { convertClassIdsToClassNames: true });
         if (!isSuccess)
-          throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.id}`);
+          throw new IModelError(IModelStatus.BadRequest, `Failed to delete instance with id ${props.ECInstanceId}`);
         break;
       }
       default:
@@ -1041,7 +1041,7 @@ export class TxnManager {
     // so using strict mode will cause error in this case when we will try to capture changes for first txn
     // because the number of columns in table A will be different than what it was when the changes were originally made.
     // So to avoid this issue we are not using strict mode here.
-    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { useJsName: true, abbreviateBlobs: false } });
+    using reader = ChangesetReader.openTxn({ db: this._iModel, txnId: id, rowOptions: { classIdsToClassNames: true, abbreviateBlobs: false } });
     using pcu = new PartialChangeUnifier(ChangeUnifierCache.createSqliteBackedCache());
     while (reader.step()) {
       pcu.appendFrom(reader);
