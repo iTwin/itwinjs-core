@@ -51,6 +51,8 @@ export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
  */
 export interface ArcGisGetServiceJsonArgs  {
   url: string;
+  /** Stable map-layer source URL used to identify the request to a fetch handler. Defaults to `url`. */
+  layerUrl?: string;
   formatId: string;
   userName?: string;
   password?: string;
@@ -279,7 +281,7 @@ export class ArcGisUtilities {
    */
 
   public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
-    const {url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
+    const {url, layerUrl = url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
     const accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(formatId);
     // The cache is keyed by URL only, so responses customized by the fetch handler (e.g.
     // header-authenticated) must not be shared with or served from differently-customized requests.
@@ -311,7 +313,7 @@ export class ArcGisUtilities {
       return fetchMapLayerRequest({
         url: target.toString(),
         formatId,
-        layerUrl: url,
+        layerUrl,
         send: async (request, credentialed) => {
           // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
           let rsp = await fetch(request.url, { method: "GET", headers: request.headers, redirect: credentialed ? credentialedFetchRedirect() : undefined });

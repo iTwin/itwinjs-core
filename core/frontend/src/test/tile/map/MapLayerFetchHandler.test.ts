@@ -519,6 +519,23 @@ describe("map-layer fetch handler", () => {
     expect(requested.searchParams.get("f")).toEqual("json");
   });
 
+  it("uses the configured layer URL to identify ArcGIS sublayer metadata requests", async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({}), { headers: { "content-type": "application/json" } }));
+    let seenLayerUrl: string | undefined;
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+      seenLayerUrl = request.layerUrl;
+      return fetchRequest(request);
+    });
+
+    await ArcGisUtilities.getServiceJson({
+      url: "https://arcgis.example.com/MapServer/3",
+      layerUrl: "https://arcgis.example.com/MapServer",
+      formatId: "ArcGIS",
+    });
+
+    expect(seenLayerUrl).toEqual("https://arcgis.example.com/MapServer");
+  });
+
   it("transitions an ArcGIS layer to RequireAuth when its metadata request fails authentication", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
     setCredentialedHandler({ throwOnAuthStatus: true });
