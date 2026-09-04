@@ -51,7 +51,7 @@ function configureAuthFetchHandler(configuration: DtaConfiguration): void {
       return [name, value];
     if (entry.trim()) {
       // eslint-disable-next-line no-console
-      console.warn(`${envVar} entries must be of the form "name=value"; got "${entry}".`);
+      console.warn(`${envVar} entries must be of the form "name=value".`);
     }
     return undefined;
   };
