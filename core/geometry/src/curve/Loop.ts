@@ -9,6 +9,7 @@
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Transform } from "../geometry3d/Transform";
 import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
@@ -31,6 +32,7 @@ export class Loop extends CurveChain {
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof Loop;
   }
+  /** Construct an empty loop. */
   public constructor() {
     super();
   }
@@ -99,6 +101,18 @@ export class Loop extends CurveChain {
     const emptyClone = new Loop();
     emptyClone.isInner = this.isInner;
     return emptyClone;
+  }
+  /** Return a deep copy. */
+  public override clone(): Loop {
+    return super.clone() as Loop;
+  }
+  /** Create a deep copy of transformed curves. */
+  public override cloneTransformed(transform: Transform): Loop {
+    return super.cloneTransformed(transform) as Loop;
+  }
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
+  public override cloneWithExpandedLineStrings(): Loop {
+    return super.cloneWithExpandedLineStrings() as Loop;
   }
   /** Second step of double dispatch:  call `handler.handleLoop(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {

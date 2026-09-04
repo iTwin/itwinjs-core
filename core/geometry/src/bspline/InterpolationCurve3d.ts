@@ -315,15 +315,13 @@ export class InterpolationCurve3d extends ProxyCurve {
    * Transform this [[InterpolationCurve3d]] and its defining data in place
    */
   public tryTransformInPlace(transform: Transform): boolean {
-    const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
-    if (proxyOk) {
-      transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
-      if (this._options.startTangent)
-        transform.multiplyVectorInPlace(this._options.startTangent);
-      if (this._options.endTangent)
-        transform.multiplyVectorInPlace(this._options.endTangent);
-    }
-    return proxyOk;
+    this._proxyCurve.tryTransformInPlace(transform);
+    transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
+    if (this._options.startTangent)
+      transform.multiplyVectorInPlace(this._options.startTangent);
+    if (this._options.endTangent)
+      transform.multiplyVectorInPlace(this._options.endTangent);
+    return true; // we know this succeeds
   }
   /**
    * Find intervals of this CurvePrimitive that are interior to a clipper.
@@ -340,8 +338,8 @@ export class InterpolationCurve3d extends ProxyCurve {
     return new InterpolationCurve3d(this._options.clone(), this._proxyCurve.clone());
   }
   /** Return a transformed clone. */
-  public override cloneTransformed(transform: Transform): InterpolationCurve3d | undefined {
-    return super.cloneTransformed(transform) as InterpolationCurve3d | undefined;
+  public override cloneTransformed(transform: Transform): InterpolationCurve3d {
+    return super.cloneTransformed(transform) as InterpolationCurve3d;
   }
 
   public override isAlmostEqual(other: GeometryQuery): boolean {

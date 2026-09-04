@@ -9,6 +9,7 @@
 
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Transform } from "../geometry3d/Transform";
 import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
@@ -77,6 +78,18 @@ export class Path extends CurveChain {
   /** Clone as a new `Path` with no primitives */
   public cloneEmptyPeer(): Path {
     return new Path();
+  }
+  /** Return a deep copy. */
+  public override clone(): Path {
+    return super.clone() as Path;
+  }
+  /** Create a deep copy of transformed curves. */
+  public override cloneTransformed(transform: Transform): Path {
+    return super.cloneTransformed(transform) as Path;
+  }
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
+  public override cloneWithExpandedLineStrings(): Path {
+    return super.cloneWithExpandedLineStrings() as Path;
   }
   /** Second step of double dispatch: call `handler.handlePath(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {

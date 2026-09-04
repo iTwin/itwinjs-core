@@ -223,8 +223,8 @@ export abstract class CurveCollection extends GeometryQuery {
     return CloneCurvesContext.clone(this) as CurveCollection;
   }
   /** Create a deep copy of transformed curves. */
-  public override cloneTransformed(transform: Transform): CurveCollection | undefined {
-    return CloneCurvesContext.clone(this, transform);
+  public override cloneTransformed(transform: Transform): CurveCollection {
+    return CloneCurvesContext.clone(this, transform) as CurveCollection;
   }
   /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
   public cloneWithExpandedLineStrings(): CurveCollection {
@@ -516,6 +516,19 @@ export abstract class CurveChain extends CurveCollection {
   }
   /** Return a structural clone, with CurvePrimitive objects stroked. */
   public abstract override cloneStroked(options?: StrokeOptions): CurveChain;
+  /** Return a deep copy. */
+  public override clone(): CurveChain {
+    return super.clone() as CurveChain;
+  }
+  /** Create a deep copy of transformed curves. */
+  public override cloneTransformed(transform: Transform): CurveChain {
+    return super.cloneTransformed(transform) as CurveChain;
+  }
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
+  public override cloneWithExpandedLineStrings(): CurveChain {
+    return super.cloneWithExpandedLineStrings() as CurveChain;
+  }
+
   /**
    * Add a child curve.
    * @param child curve to add to the chain. The curve is captured by this instance.
@@ -646,6 +659,18 @@ export class BagOfCurves extends CurveCollection {
   /** Return an empty `BagOfCurves` */
   public cloneEmptyPeer(): BagOfCurves {
     return new BagOfCurves();
+  }
+  /** Return a deep copy. */
+  public override clone(): BagOfCurves {
+    return super.clone() as BagOfCurves;
+  }
+  /** Create a deep copy of transformed curves. */
+  public override cloneTransformed(transform: Transform): BagOfCurves {
+    return super.cloneTransformed(transform) as BagOfCurves;
+  }
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
+  public override cloneWithExpandedLineStrings(): BagOfCurves {
+    return super.cloneWithExpandedLineStrings() as BagOfCurves;
   }
   /** Add a child  */
   public tryAddChild(child: AnyCurve | undefined): boolean {
