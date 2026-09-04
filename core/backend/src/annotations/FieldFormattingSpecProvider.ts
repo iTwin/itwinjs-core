@@ -194,8 +194,8 @@ export interface FieldFormattingSpecProviderArgs {
   /** Additional FormatSets addressable per-field, each paired with the id that
    * [FieldRun]($common)s reference via [QuantityFieldFormatOptions.formatSet]($common).
    * Use these to mix presentations within one iModel — imperial callouts on an otherwise metric
-   * drawing, say. The id must be unique; a field naming an id absent from this list falls back to
-   * [[formatSet]].
+   * drawing, say. The id must be unique; if two entries share an id the last one wins. A field
+   * naming an id absent from this list falls back to [[formatSet]].
    */
   formatSets?: ReadonlyArray<{ id: string, formatSet: FormatSet }>;
   /** Unit system used to pick a KindOfQuantity's presentation format when the schema offers
