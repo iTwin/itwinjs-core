@@ -1,6 +1,15 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Tue, 25 Aug 2026 21:23:35 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Sep 2026 18:51:17 GMT and should not be manually modified.
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:56 GMT
+
+### Updates
+
+- Removed unused 'open' dependency
+- Remove unused '@openid/appauth' and 'username' dependencies
+- Improve Electron window state persistence and RPC shutdown reliability.
 
 ## 5.12.5
 Tue, 25 Aug 2026 21:22:08 GMT
