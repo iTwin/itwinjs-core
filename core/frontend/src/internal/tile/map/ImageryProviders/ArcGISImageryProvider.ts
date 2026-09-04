@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerFetchResult, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerUntrustedOriginError } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -65,6 +65,8 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     } catch (err) {
       if (err instanceof MapLayerUntrustedOriginError)
         this.reportBlockedOrigin(err.url);
+      else if (err instanceof MapLayerAuthenticationFailedError)
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
     }
     if (metadata && metadata.accessTokenRequired) {
       const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);
@@ -82,6 +84,59 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     return metadata;
   }
 
+  /** The default send for [[fetch]]: legacy redirect policy and origin-trust checks for one target.
+   * The NTLM/SSO retry applies only when `allowSsoRetry` (the initial request of an operation), and
+   * never to sends a fetch handler modified.
+   */
+  private async sendArcGisRequest(request: MapLayerRequest, credentialed: boolean, allowSsoRetry: boolean, options?: RequestInit): Promise<Response> {
+    const includeCredentials = this.includeUserCredentials(request.url);
+    let rsp = await fetch(request.url, {
+      ...options,
+      headers: request.headers,
+      credentials: includeCredentials ? "include" : undefined,
+      // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
+      redirect: (includeCredentials || credentialed) ? (this.credentialedRedirect ?? options?.redirect) : options?.redirect,
+    });
+
+    if (includeCredentials || credentialed)
+      this.checkCredentialedRedirect(request.url, rsp);
+
+    if (allowSsoRetry && rsp.status === 401 && !this._lastAccessToken && !credentialed && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
+      // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
+      const challengedUrl = rsp.url || request.url;
+      if (this.isSsoAllowed(challengedUrl)) {
+        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
+        this.logUntrustedOriginUse(challengedUrl);
+        rsp = await fetch(challengedUrl, {
+          ...options,
+          credentials: "include",
+          redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
+        });
+        if (rsp.status === 200) {
+          this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
+        }
+      } else {
+        this.reportBlockedOrigin(challengedUrl);
+      }
+    }
+
+    return rsp;
+  }
+
+  /** Routes one request - initial, HTML fallback or token retry - through the registered fetch handler
+   * (if any), with fresh headers per request so injected values are neither accumulated nor exposed to
+   * cross-origin redirects.
+   */
+  private async requestViaHandler(target: URL, allowSsoRetry: boolean, options?: RequestInit): Promise<MapLayerFetchResult> {
+    return fetchMapLayerRequest({
+      url: target.toString(),
+      formatId: this._settings.formatId,
+      layerUrl: this._settings.url,
+      headers: new Headers(options?.headers),
+      send: async (request, credentialed) => this.sendArcGisRequest(request, credentialed, allowSsoRetry, options),
+    });
+  }
+
   /**
    * Make a request to an ArcGIS service using the provided URL and init parameters.
    * @param url URL to query
@@ -91,19 +146,25 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   protected async fetch(url: URL, options?: RequestInit) {
 
     let errorCode: number | undefined;
-    const urlObj = new URL(url);
     const queryParams = this._settings.collectQueryParams();
-    Object.keys(queryParams).forEach((paramKey) => {
-      if (!urlObj.searchParams.has(paramKey))
-        urlObj.searchParams.append(paramKey, queryParams[paramKey]);
-    });
+    const buildRequestUrl = (): URL => {
+      const requestUrl = new URL(url);
+      Object.keys(queryParams).forEach((paramKey) => {
+        if (!requestUrl.searchParams.has(paramKey))
+          requestUrl.searchParams.append(paramKey, queryParams[paramKey]);
+      });
+      return requestUrl;
+    };
+    const accessTokenParams = {
+      mapLayerUrl: new URL(this._settings.url),
+      portal: typeof this._settings.properties?.portal === "string" ? this._settings.properties.portal : undefined,
+      userName: this._settings.userName,
+      password: this._settings.password,
+    };
 
+    const urlObj = buildRequestUrl();
     if (this._accessTokenRequired && this._accessClient) {
-      this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
-        mapLayerUrl: new URL(this._settings.url),
-        portal: typeof this._settings.properties?.portal === "string" ? this._settings.properties.portal : undefined,
-        userName: this._settings.userName,
-        password: this._settings.password });
+      this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, accessTokenParams);
     }
 
     // We want to complete the first request before letting other requests go;
@@ -114,36 +175,9 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       await this._firstRequestPromise;
 
     let response: Response|undefined;
+    let managedByHandler = false;
     try {
-      const requestUrl = urlObj.toString();
-      const includeCredentials = this.includeUserCredentials(requestUrl);
-      response = await fetch(urlObj, {
-        ...options,
-        credentials: includeCredentials ?  "include" : undefined,
-        redirect: includeCredentials ? this.credentialedRedirect : options?.redirect,
-      });
-
-      if (includeCredentials)
-        this.checkCredentialedRedirect(requestUrl, response);
-
-      if (response.status === 401 && !this._lastAccessToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-        // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
-        const challengedUrl = response.url || requestUrl;
-        if (this.isSsoAllowed(challengedUrl)) {
-          // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
-          this.logUntrustedOriginUse(challengedUrl);
-          response = await fetch(challengedUrl, {
-            ...options,
-            credentials: "include",
-            redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
-          });
-          if (response.status === 200) {
-            this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
-          }
-        } else {
-          this.reportBlockedOrigin(challengedUrl);
-        }
-      }
+      ({ response, managedByHandler } = await this.requestViaHandler(urlObj, true, options));
 
       if ((this._lastAccessToken && response.status === 400)
        || response.headers.get("content-type")?.toLowerCase().includes("htm")) {
@@ -155,7 +189,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         if (this._lastAccessToken && this._accessTokenRequired)
           tmpUrl.searchParams.append("token", this._lastAccessToken.token);
         tmpUrl.searchParams.append("f","json");
-        response = await  fetch(tmpUrl.toString(), options);
+        ({ response, managedByHandler } = await this.requestViaHandler(tmpUrl, false, options));
       }
 
       errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
@@ -173,20 +207,22 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
           if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined)
             this._accessClient.invalidateToken(this._lastAccessToken);
 
-          const urlObj2 = new URL(url);
+          // A fresh URL: the expired token must not remain as a first `token` parameter.
+          const retryUrl = buildRequestUrl();
           if (this._accessClient) {
             try {
-              this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
+              this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(retryUrl, this._accessClient, accessTokenParams);
             } catch {
             }
           }
 
           // Make a second attempt with refreshed token
-          response = await fetch(urlObj2.toString(), options);
+          ({ response, managedByHandler } = await this.requestViaHandler(retryUrl, false, options));
           errorCode  = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
 
-        if (errorCode !== undefined &&
+        // An error code in a response managed by the fetch handler is not classified here.
+        if (!managedByHandler && errorCode !== undefined &&
           (   errorCode === ArcGisErrorCode.TokenRequired
            || errorCode === ArcGisErrorCode.InvalidToken
            || errorCode === ArcGisErrorCode.MissingPermissions
@@ -202,6 +238,10 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
           }
         }
       }
+    } catch (error) {
+      if (error instanceof MapLayerAuthenticationFailedError)
+        this.reportAuthenticationFailure();
+      throw error;
     } finally {
       this.onFirstRequestCompleted.raiseEvent();
     }

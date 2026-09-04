@@ -9,7 +9,7 @@ import { expectDefined, IModelStatus } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, MapSubLayerSettings, ServerError } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import {
-  ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError, QuadId, WmsCapabilities,
+  ImageryMapTileTree, MapCartoRectangle, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError, QuadId, WmsCapabilities,
   WmsCapability, WmsUtilities,
 } from "../../../../tile/internal";
 
@@ -38,7 +38,12 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   public override async initialize(): Promise<void> {
     try {
       const credentials = (this._settings.userName && this._settings.password ? {user: this._settings.userName, password:  this._settings.password} : undefined);
-      this._capabilities = await WmsCapabilities.create(this._baseUrl, credentials);
+      this._capabilities = await WmsCapabilities.create(this._baseUrl, {
+        credentials,
+        queryParams: this._settings.collectQueryParams(),
+        formatId: this._settings.formatId,
+        layerUrl: this._settings.url,
+      });
       if (undefined !== this._capabilities) {
         this._allLayersRange = this._capabilities.cartoRange;
         if (this._capabilities.layer && Array.isArray(this._capabilities.layer.subLayers)) {
@@ -72,7 +77,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       // When credentials will be provided, a new provider will be created, and initialization should be fine.
       if (error instanceof MapLayerUntrustedOriginError) {
         this.reportBlockedOrigin(error.url);
-      } else if (error?.status === 401) {
+      } else if (error instanceof MapLayerAuthenticationFailedError || error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
       } else {
         throw new ServerError(IModelStatus.ValidationFailed, "");

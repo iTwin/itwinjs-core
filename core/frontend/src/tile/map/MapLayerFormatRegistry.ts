@@ -10,7 +10,7 @@ import { assert, expectDefined, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference, tryGetOrigin } from "../internal";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerFetchHandler, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference, tryGetOrigin } from "../internal";
 const loggerCategory = "MapLayerFormatRegistry";
 
 /**
@@ -102,6 +102,24 @@ export class MapLayerUntrustedOriginError extends Error {
   }
 }
 
+/** Error reporting an unrecoverable authentication failure for a map-layer request.
+ * Thrown by a [[MapLayerFetchHandler]] when it recognizes an authentication failure it cannot fix
+ * silently (e.g. a `401` that survives a token refresh, or a protocol-specific error embedded in a
+ * `200` body); callers convert it to [[MapLayerImageryProviderStatus.RequireAuth]] (tile requests and
+ * provider initialization) or [[MapLayerSourceStatus.RequireAuth]] (source validation), letting the
+ * application prompt for re-authentication.
+ * @beta
+ */
+export class MapLayerAuthenticationFailedError extends Error {
+  /** The URL of the request that failed to authenticate. */
+  public readonly url: string;
+
+  constructor(url: string) {
+    super("Authentication failed for map-layer request");
+    this.url = url;
+  }
+}
+
 /** @public */
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;
@@ -169,6 +187,31 @@ export class MapLayerFormatRegistry {
    * @beta
    */
   public restrictCredentialsToTrustedOrigins = false;
+
+  private readonly _fetchHandlers: MapLayerFetchHandler[] = [];
+
+  /** Appends a [[MapLayerFetchHandler]] to the pipeline wrapping every map-layer network request issued through
+   * [[MapLayerImageryProvider]] — tiles, tooltips, capabilities, service metadata, and source validation.
+   * Handlers run in registration order (the first registered is the outermost), each deciding whether to
+   * manage a request or decline it to the next one; several layers of an application can therefore register
+   * their own handler without coordinating. Returns the function that removes the handler.
+   * @beta
+   */
+  public addMapLayerFetchHandler(handler: MapLayerFetchHandler): () => void {
+    this._fetchHandlers.push(handler);
+    return () => {
+      const index = this._fetchHandlers.indexOf(handler);
+      if (index >= 0)
+        this._fetchHandlers.splice(index, 1);
+    };
+  }
+
+  /** The registered [[MapLayerFetchHandler]]s, in pipeline order.
+   * @internal
+   */
+  public get mapLayerFetchHandlers(): ReadonlyArray<MapLayerFetchHandler> {
+    return this._fetchHandlers;
+  }
 
   constructor(opts?: MapLayerOptions) {
     this._configOptions = opts ?? {};

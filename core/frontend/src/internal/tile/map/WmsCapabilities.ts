@@ -7,9 +7,9 @@
  */
 
 import { MapSubLayerProps } from "@itwin/core-common";
-import { RequestBasicCredentials } from "../../../request/Request";
 import WMS from "wms-capabilities";
-import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal";
+import { IModelApp } from "../../../IModelApp";
+import { MapCartoRectangle, WmsCapabilitiesCreateOptions, WmsUtilities } from "../../../tile/internal";
 
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
   return (Array.isArray(json) && json.length === 4) ? MapCartoRectangle.fromDegrees(json[0], json[1], json[2], json[3]) : undefined;
@@ -219,13 +219,8 @@ export class WmsCapabilities {
     }
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}): Promise<WmsCapabilities | undefined> {
-    if (!ignoreCache) {
-      const cached = WmsCapabilities._capabilitiesCache.get(url);
-      if (cached !== undefined)
-        return cached;
-    }
-
+  public static async create(url: string, options?: WmsCapabilitiesCreateOptions): Promise<WmsCapabilities | undefined> {
+    const { credentials, ignoreCache, queryParams, formatId, layerUrl } = options ?? {};
     const tmpUrl = new URL(WmsUtilities.getBaseUrl(url));
     tmpUrl.searchParams.append("request", "GetCapabilities");
     tmpUrl.searchParams.append("service", "WMS");
@@ -235,7 +230,18 @@ export class WmsCapabilities {
           tmpUrl.searchParams.append(paramKey, queryParams[paramKey]);
       });
     }
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials);
+    const cacheKey = tmpUrl.toString();
+    // The cache never contains credentialed results (see the write below), so a credentialed request
+    // must not be served a cached public document either; responses customized by the fetch handler
+    // must not be shared with or served from differently-customized requests.
+    const hasFetchHandler = (IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers.length ?? 0) > 0;
+    if (!ignoreCache && !hasFetchHandler && !credentials) {
+      const cached = WmsCapabilities._capabilitiesCache.get(cacheKey);
+      if (cached !== undefined)
+        return cached;
+    }
+
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, formatId: formatId ?? "WMS", layerUrl: layerUrl ?? url });
 
     if (!xmlCapabilities)
       return undefined;
@@ -244,9 +250,9 @@ export class WmsCapabilities {
     if (capabilities === undefined)
       return undefined;
 
-    if (!credentials) {
+    if (!credentials && !hasFetchHandler) {
       // Avoid caching protected data
-      WmsCapabilities._capabilitiesCache.set(url, capabilities);
+      WmsCapabilities._capabilitiesCache.set(cacheKey, capabilities);
     }
 
     return capabilities;

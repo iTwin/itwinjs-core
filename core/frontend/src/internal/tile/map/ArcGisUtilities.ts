@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
+import { credentialedFetchRedirect, fetchMapLayerRequest, MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthenticationFailedError, MapLayerFetchResult, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { headersIncludeAuthMethod } from "../../../request/utils";
 
@@ -29,15 +29,22 @@ export enum ArcGisErrorCode {
 }
 
 /**
- * Class representing an ArcGIS service metadata.
+ * The result of fetching an ArcGIS service's metadata (see [[ArcGisUtilities.getServiceJson]]): the service's
+ * JSON document in `content`, alongside what the framework determined while obtaining it.
  * @internal
  */
 export interface ArcGISServiceMetadata {
-  /** JSON content from the service */
+  /** The JSON document returned by the service, as-is. */
   content: any;
 
   /** Indicates if an access token is required to access the service */
   accessTokenRequired: boolean;
+
+  /** The ArcGIS error code carried by `content`, if any. Omitted when the response is managed by a fetch handler
+   * (see [[MapLayerFetchResult.managedByHandler]]): the handler then reports failures by throwing
+   * [[MapLayerAuthenticationFailedError]], and the framework applies no classification of its own.
+   */
+  errorCode?: ArcGisErrorCode;
 }
 
 /** Arguments for validating ArcGIS sources * @internal
@@ -51,6 +58,8 @@ export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
  */
 export interface ArcGisGetServiceJsonArgs  {
   url: string;
+  /** Stable map-layer source URL used to identify the request to a fetch handler. Defaults to `url`. */
+  layerUrl?: string;
   formatId: string;
   userName?: string;
   password?: string;
@@ -191,6 +200,8 @@ export class ArcGisUtilities {
     try {
       metadata = await this.getServiceJson({url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams(), ignoreCache});
     } catch (err) {
+      if (err instanceof MapLayerAuthenticationFailedError)
+        return { status: MapLayerSourceStatus.RequireAuth };
       if (err instanceof MapLayerUntrustedOriginError) {
         let blockedOrigin: string | undefined;
         try { blockedOrigin = new URL(err.url).origin; } catch { /* non-hierarchical URL */ }
@@ -201,16 +212,17 @@ export class ArcGisUtilities {
     const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
-    } else if (json.error !== undefined) {
-
+    }
+    const errorCode = metadata?.errorCode;
+    if (errorCode !== undefined) {
       // If we got a 'Token Required' error, lets check what authentification methods this ESRI service offers
       // and return information needed to initiate the authentification process... the end-user
       // will have to provide his credentials before we can fully validate this source.
       // Note: Some servers will throw a error 403 (You do not have permissions to access this resource or perform this operation),
       //       instead of 499 (TokenRequired)
-      if (json.error.code === ArcGisErrorCode.TokenRequired || json.error.code === ArcGisErrorCode.MissingPermissions)  {
+      if (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.MissingPermissions)  {
         return (source.userName || source.password) ? {status: MapLayerSourceStatus.InvalidCredentials} : {status: MapLayerSourceStatus.RequireAuth};
-      } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
+      } else if (errorCode === ArcGisErrorCode.InvalidCredentials)
         return { status: MapLayerSourceStatus.InvalidCredentials};
     }
 
@@ -271,12 +283,18 @@ export class ArcGisUtilities {
    * @param requireToken Flag to indicate if a token is required
    * @throws [[MapLayerUntrustedOriginError]] if an NTLM/Negotiate challenge could not be answered because
    * the URL's origin is not trusted (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]);
+   * [[MapLayerAuthenticationFailedError]] if a registered [[MapLayerFetchHandler]] reported an
+   * authentication failure;
    * all other errors are caught and reported by returning `undefined`.
    */
 
   public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
-    const {url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
-    if (!ignoreCache) {
+    const {url, layerUrl = url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
+    const accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(formatId);
+    // The cache is keyed by URL only, so responses customized by the fetch handler (e.g.
+    // header-authenticated) must not be shared with or served from differently-customized requests.
+    const hasFetchHandler = (IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers.length ?? 0) > 0;
+    if (!ignoreCache && !hasFetchHandler) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)
         return cached;
@@ -297,34 +315,48 @@ export class ArcGisUtilities {
       return tmpUrl;
     };
 
+    // Routes each request through the registered fetch handler (if any); handler failures propagate.
+    // The NTLM/SSO retry applies only to the initial request, and never to sends the handler modified.
+    const requestJson = async (target: URL, allowSsoRetry: boolean): Promise<MapLayerFetchResult> => {
+      return fetchMapLayerRequest({
+        url: target.toString(),
+        formatId,
+        layerUrl,
+        send: async (request, credentialed) => {
+          // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
+          let rsp = await fetch(request.url, { method: "GET", headers: request.headers, redirect: credentialed ? credentialedFetchRedirect() : undefined });
+          if (allowSsoRetry && rsp.status === 401 && !requireToken && !credentialed && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])) {
+            // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
+            const challengedUrl = rsp.url || request.url;
+            if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(challengedUrl))
+              throw new MapLayerUntrustedOriginError(challengedUrl);
+
+            IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(challengedUrl);
+
+            // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
+            rsp = await fetch(challengedUrl, {
+              method: "GET",
+              credentials: "include",
+              redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
+            });
+          }
+          return rsp;
+        },
+      });
+    };
+
     let accessTokenRequired = false;
     try {
       let tmpUrl = createUrlObj();
 
       // In some cases, caller might already know token is required, so append it immediately
       if (requireToken) {
-        const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
         if (accessClient) {
           accessTokenRequired = true;
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
         }
       }
-      let response = await fetch(tmpUrl, { method: "GET" });
-      if (response.status === 401 && !requireToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-        // fetch follows redirects transparently, so trust decisions target the final (post-redirect) URL.
-        const challengedUrl = response.url || tmpUrl.toString();
-        if (!IModelApp.mapLayerFormatRegistry.isSsoAllowed(challengedUrl))
-          throw new MapLayerUntrustedOriginError(challengedUrl);
-
-        IModelApp.mapLayerFormatRegistry.logUntrustedOriginUse(challengedUrl);
-
-        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication).
-        response = await fetch(challengedUrl, {
-          method: "GET",
-          credentials: "include",
-          redirect: IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined,
-        });
-      }
+      let { response, managedByHandler } = await requestJson(tmpUrl, true);
 
       // Append security token when corresponding error code is returned by ArcGIS service
       let errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
@@ -332,25 +364,26 @@ export class ArcGisUtilities {
         && (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.MissingPermissions) ) {
         accessTokenRequired = true;
         // If token required
-        const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
         if (accessClient) {
           tmpUrl = createUrlObj();
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
-          response = await fetch(tmpUrl.toString(), { method: "GET" });
+          ({ response, managedByHandler } = await requestJson(tmpUrl, false));
           errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
       }
 
       const json = await response.json();
-      const info = {content: json, accessTokenRequired};
-      // Cache the response only if it doesn't contain any error.
-      ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? info : undefined));
+      const info: ArcGISServiceMetadata = {content: json, accessTokenRequired, errorCode: managedByHandler ? undefined : errorCode};
+      // Cache the response only if it doesn't contain any error, and never when a fetch handler is
+      // registered (the cache is keyed by URL only, so protected data must not be cached).
+      if (!hasFetchHandler)
+        ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? info : undefined));
       return info;  // Always return json, even though it contains an error code.
 
     } catch (err) {
       ArcGisUtilities._serviceCache.set(url, undefined);
-      if (err instanceof MapLayerUntrustedOriginError)
-        throw err;    // propagate so callers can report the blocked origin
+      if (err instanceof MapLayerUntrustedOriginError || err instanceof MapLayerAuthenticationFailedError)
+        throw err;    // propagate so callers can report the blocked origin / authentication failure
       return undefined;
     }
   }

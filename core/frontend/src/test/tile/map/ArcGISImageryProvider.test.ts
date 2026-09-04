@@ -5,7 +5,7 @@
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ArcGISImageryProvider } from "../../../tile/internal";
+import { ArcGisErrorCode, ArcGISImageryProvider, MapLayerAccessClient, MapLayerImageryProviderStatus } from "../../../tile/internal";
 import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
 import { headersIncludeAuthMethod } from "../../../request/utils";
 
@@ -19,11 +19,45 @@ class TestArcGISProvider extends  ArcGISImageryProvider {
   public override async fetch(url: URL, options?: RequestInit): Promise<Response> {
     return super.fetch(url, options);
   }
+
+  public useAccessClient(accessClient: MapLayerAccessClient): void {
+    this._accessClient = accessClient;
+    this._accessTokenRequired = true;
+  }
 }
 
 describe("ArcGISImageryProvider", () => {
   afterEach(async () => {
     vi.restoreAllMocks();
+  });
+
+  it("retries a legacy-token request with a fresh token on the complete request URL", async () => {
+    const settings = ImageMapLayerSettings.fromJSON(sampleSource);
+    settings.setCredentials("user", "pwd");
+    settings.savedQueryParams = { custom: "1" };
+    const provider = new TestArcGISProvider(settings, true);
+
+    const tokens = ["expired-token", "fresh-token"];
+    const invalidateToken = vi.fn();
+    provider.useAccessClient({
+      getAccessToken: async () => ({ token: tokens.shift() ?? "unexpected" }),
+      invalidateToken,
+    });
+
+    const jsonResponse = (body: object) => new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
+    const fetchStub = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(jsonResponse({ error: { code: ArcGisErrorCode.InvalidToken } }))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }));
+
+    await provider.fetch(new URL(`${settings.url}?f=json`), { method: "GET" });
+
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+    expect(invalidateToken).toHaveBeenCalledWith({ token: "expired-token" });
+    const retried = new URL(fetchStub.mock.calls[1][0] as string);
+    expect(retried.searchParams.getAll("token")).toEqual(["fresh-token"]);
+    expect(retried.searchParams.get("custom")).toEqual("1");
+    expect(retried.searchParams.get("f")).toEqual("json");
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
   });
 
   it("should inject custom parameters before fetch call", async () => {

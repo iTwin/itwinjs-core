@@ -8,8 +8,8 @@
 
 import { expectDefined } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
-import { RequestBasicCredentials } from "../../../request/Request";
-import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal";
+import { IModelApp } from "../../../IModelApp";
+import { MapCartoRectangle, WmsCapabilitiesCreateOptions, WmsUtilities } from "../../../tile/internal";
 
 enum OwsConstants {
   ABSTRACT_XMLTAG = "ows:Abstract",
@@ -554,13 +554,8 @@ export class WmtsCapabilities {
     return new WmtsCapabilities(xmlDoc);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}): Promise<WmtsCapabilities | undefined> {
-    if (!ignoreCache) {
-      const cached = WmtsCapabilities._capabilitiesCache.get(url);
-      if (cached !== undefined)
-        return cached;
-    }
-
+  public static async create(url: string, options?: WmsCapabilitiesCreateOptions): Promise<WmtsCapabilities | undefined> {
+    const { credentials, ignoreCache, queryParams, formatId, layerUrl } = options ?? {};
     const tmpUrl = new URL(WmsUtilities.getBaseUrl(url));
     tmpUrl.searchParams.append("request", "GetCapabilities");
     tmpUrl.searchParams.append("service", "WMTS");
@@ -570,14 +565,24 @@ export class WmtsCapabilities {
           tmpUrl.searchParams.append(paramKey, queryParams[paramKey]);
       });
     }
+    const cacheKey = tmpUrl.toString();
+    // The cache never contains credentialed results (see the write below), so a credentialed request
+    // must not be served a cached public document either; responses customized by the fetch handler
+    // must not be shared with or served from differently-customized requests.
+    const hasFetchHandler = (IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers.length ?? 0) > 0;
+    if (!ignoreCache && !hasFetchHandler && !credentials) {
+      const cached = WmtsCapabilities._capabilitiesCache.get(cacheKey);
+      if (cached !== undefined)
+        return cached;
+    }
 
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials);
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, formatId: formatId ?? "WMTS", layerUrl: layerUrl ?? url });
     if (!xmlCapabilities)
       return undefined;
 
     const capabilities = WmtsCapabilities.createFromXml(xmlCapabilities);
-    if (capabilities)
-      WmtsCapabilities._capabilitiesCache.set(url, capabilities);
+    if (capabilities && !credentials && !hasFetchHandler)
+      WmtsCapabilities._capabilitiesCache.set(cacheKey, capabilities);
 
     return capabilities;
   }

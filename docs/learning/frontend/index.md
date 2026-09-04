@@ -35,6 +35,7 @@ These packages provide the following services:
 - [Formatting Quantities](./QuantityFormatting.md)
 - Writing [Extensions](./Extensions.md) that can load on demand into an iTwin.js frontend application
 - Working with [map layers, basemaps, and Azure Maps](./MapLayersAndBasemaps.md)
+- Authenticating [map-layer requests](./MapLayerAuthentication.md)
 
 ## Web browser compatibility
 

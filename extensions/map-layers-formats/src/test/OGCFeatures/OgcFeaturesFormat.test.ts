@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, MapLayerFormatRegistry, MapLayerSource, MapLayerSourceStatus } from "@itwin/core-frontend";
+import { IModelApp, MapLayerAuthenticationFailedError, MapLayerFormatRegistry, MapLayerSource, MapLayerSourceStatus } from "@itwin/core-frontend";
 import { expect } from "chai";
 import sinon from "sinon";
 import { OgcApiFeaturesMapLayerFormat } from "../../OgcApiFeatures/OgcApiFeaturesFormat.js";
@@ -246,6 +246,119 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     // The resolved link shares the source origin, so credentials remain attached.
     expect(getAuthorization(fetchCalls[1].init)).to.not.be.null;
     expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
+  });
+
+  it("applies handler headers and query parameters to both validation requests", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
+      const searchParams = new URLSearchParams(request.searchParams);
+      searchParams.set("clientParam", "clientParamValue");
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      return fetchRequest({ ...request, searchParams, headers });
+    });
+    const source = createSource();
+    source.savedQueryParams = { saved: "1" };
+    source.unsavedQueryParams = { unsaved: "2" };
+    // Settings custom params are appended first, then the fetch handler customizes the request.
+    const shapedLanding = `${sourceUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
+    const shapedCollections = `${sameOriginCollectionsUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
+    stubFetch({
+      [shapedLanding]: makeLandingPage(sameOriginCollectionsUrl),
+      [shapedCollections]: collectionsDoc,
+    });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source });
+
+    expect(fetchCalls.length).to.equals(2);
+    expect(fetchCalls[0].url).to.equals(shapedLanding);
+    // The handler has full control: its Authorization header wins over settings-derived basic auth.
+    expect(getAuthorization(fetchCalls[0].init)).to.equals("Bearer secret-jwt");
+    expect(fetchCalls[1].url).to.equals(shapedCollections);
+    expect(getAuthorization(fetchCalls[1].init)).to.equals("Bearer secret-jwt");
+    expect(validation.status).to.equals(MapLayerSourceStatus.Valid);
+  });
+
+  it("reports RequireAuth when the handler classifies a validation request as an authentication failure", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      const response = await fetchRequest({ ...request, headers });
+      if (response.status === 403)
+        throw new MapLayerAuthenticationFailedError(request.url);
+      return response;
+    });
+    stubFetch({}, { [sourceUrl]: 403 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    // The fetch handler is the authentication authority: RequireAuth, not InvalidCredentials.
+    expect(validation.status).to.equals(MapLayerSourceStatus.RequireAuth);
+  });
+
+  it("lets the handler classify protocol-specific validation failures", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      const response = await fetchRequest({ ...request, headers });
+      if (response.status === 407)
+        throw new MapLayerAuthenticationFailedError(request.url);
+      return response;
+    });
+    stubFetch({}, { [sourceUrl]: 407 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(validation.status).to.equals(MapLayerSourceStatus.RequireAuth);
+  });
+
+  it("does not classify a 401 the handler returns as its own", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      return fetchRequest({ ...request, headers });
+    });
+    stubFetch({}, { [sourceUrl]: 401 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    // The handler did not throw MapLayerAuthenticationFailedError, so this is a plain failure, not InvalidCredentials.
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidUrl);
+  });
+
+  it("still classifies a 401 when the handler declines the request", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.addMapLayerFetchHandler(async () => undefined);
+    stubFetch({}, { [sourceUrl]: 401 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidCredentials);
+  });
+
+  it("does not report UntrustedOrigin for a 401 the handler returns as its own from an unlisted collections origin", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.restrictCredentialsToTrustedOrigins = true;
+    // The handler authenticates the third-party origin itself; the framework's own credentials are withheld.
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      return fetchRequest({ ...request, headers });
+    });
+    stubFetch(
+      { [sourceUrl]: makeLandingPage(crossOriginCollectionsUrl) },
+      { [crossOriginCollectionsUrl]: 401 },
+    );
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    // The handler did not throw MapLayerAuthenticationFailedError: a plain failure, not an origin-trust problem.
+    expect(getAuthorization(fetchCalls[1].init)).to.equals("Bearer secret-jwt");
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidUrl);
+    expect(validation.blockedOrigin).to.be.undefined;
   });
 
   it("resolves a relative collections link and appends saved and unsaved query params", async () => {

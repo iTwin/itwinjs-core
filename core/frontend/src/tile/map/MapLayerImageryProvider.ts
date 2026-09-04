@@ -6,13 +6,13 @@
  * @module MapLayers
  */
 
-import { assert, BeEvent } from "@itwin/core-bentley";
+import { assert, BeEvent, BentleyError, Logger } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import { appendQueryParams, fetchMapLayerRequest, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAccessClient, MapLayerAuthenticationFailedError, MapLayerFeatureInfo, MapLayerRequest, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 import { DecorateContext } from "../../ViewContext";
@@ -21,6 +21,7 @@ import { DecorateContext } from "../../ViewContext";
 const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
 const doDebugToolTips = false;
+const loggerCategory = "MapLayerImageryProvider";
 
 /** Escapes HTML metacharacters so the text renders literally when assigned to `innerHTML`.
  * Use for any server- or user-supplied string that ends up in the map tooltip, which is rendered
@@ -366,11 +367,40 @@ export abstract class MapLayerImageryProvider {
    */
   protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus) { }
 
+  /** Transitions to [[MapLayerImageryProviderStatus.RequireAuth]] after a [[MapLayerFetchHandler]] reported an
+   * unrecoverable authentication failure. The user is notified once per transition, and only if tiles had
+   * loaded before: an initialization failure was already reported through source validation.
+   * @internal
+   */
+  protected reportAuthenticationFailure(): void {
+    const alreadyReported = this._status === MapLayerImageryProviderStatus.RequireAuth;
+    this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+    if (alreadyReported || !this._hasSuccessfullyFetchedTile)
+      return;
+
+    const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+  }
+
   /** @internal */
   protected setRequestAuthorization(headers: Headers) {
     if (this._settings.userName && this._settings.password) {
       setBasicAuthorization(headers, this._settings.userName, this._settings.password);
     }
+  }
+
+  /** The access client registered for this layer's format, if any.
+   * @internal
+   */
+  protected get accessClient(): MapLayerAccessClient | undefined {
+    return IModelApp.mapLayerFormatRegistry?.getAccessClient(this._settings.formatId);
+  }
+
+  /** True while at least one [[MapLayerFetchHandler]] is registered via [[MapLayerFormatRegistry.addMapLayerFetchHandler]].
+   * @internal
+   */
+  protected get hasFetchHandler(): boolean {
+    return (IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers.length ?? 0) > 0;
   }
 
   /** Returns true if the given URL has the same origin as this layer's settings URL.
@@ -491,10 +521,70 @@ export abstract class MapLayerImageryProvider {
       this.logUntrustedOriginUse(response.url);   // no-op when the restriction is enabled
   }
 
+  /** The default send for [[makeRequest]]: legacy redirect policy, NTLM/SSO handling and origin-trust
+   * checks for one request. The SSO retry never applies to sends a fetch handler modified.
+   */
+  private async sendDefaultRequest(request: MapLayerRequest, credentialed: boolean, hasCreds: boolean, hasSettingsCreds: boolean, timeoutMs?: number): Promise<Response> {
+    const requestUrl = request.url;
+    const includeCredentials = this.includeUserCredentials(requestUrl);
+    const opts: RequestInit = {
+      method: "GET",
+      headers: request.headers,
+      credentials: includeCredentials ? "include" : undefined,
+      // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
+      redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
+    };
+
+    if (timeoutMs !== undefined)
+      setRequestTimeout(opts, timeoutMs);
+
+    let rsp = await fetch(requestUrl, opts);
+
+    if (includeCredentials || credentialed)
+      this.checkCredentialedRedirect(requestUrl, rsp);
+
+    // fetch follows redirects transparently, so all trust decisions below target the final
+    // (post-redirect) URL reported by the response, not the URL we asked for.
+    const challengedUrl = rsp.url || requestUrl;
+
+    if (rsp.status === 401
+          && headersIncludeAuthMethod(rsp.headers, ["ntlm", "negotiate"])
+          && !includeCredentials
+          && !hasCreds
+          && !credentialed
+    ) {
+      if (this.isSsoAllowed(challengedUrl)) {
+        // Removed the previous headers and make sure "include" credentials is set
+        opts.headers = undefined;
+        opts.credentials = "include";
+        // A Negotiate/NTLM handshake is normally a same-URL 401 round-trip, but in legacy mode we preserve
+        // the previous behavior and allow the browser to follow redirects after the authenticated retry.
+        opts.redirect = IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined;
+        this.logUntrustedOriginUse(challengedUrl);
+
+        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
+        rsp = await fetch(challengedUrl, opts);
+        if (rsp.status === 200) {
+          this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
+        }
+      } else {
+        this.reportBlockedOrigin(challengedUrl);
+      }
+    } else if ((rsp.status === 401 || rsp.status === 403) && hasSettingsCreds && !this.isCredentialsSharingAllowed(challengedUrl)) {
+      // Some servers answer an unauthenticated request with 403 (Forbidden) rather than a 401 challenge;
+      // since this request could not present its credentials to the challenging origin, either status most
+      // likely results from that. The permission is recomputed for the challenged URL rather than reusing the
+      // decision made for the requested one: `fetch` strips the Authorization header when it follows a
+      // cross-origin redirect, so a trusted request can still arrive unauthenticated at an untrusted origin,
+      // and conversely a request that started out untrusted may end up at an origin that is trusted.
+      this.reportBlockedOrigin(challengedUrl);
+    }
+
+    return rsp;
+  }
+
   /** @internal */
   public async makeRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
-
-    let response: Response|undefined;
 
     let headers: Headers | undefined;
     let hasCreds = false;
@@ -513,59 +603,38 @@ export abstract class MapLayerImageryProvider {
           this.logUntrustedOriginUse(url);
       }
     }
-    const includeCredentials = this.includeUserCredentials(url);
-    const opts: RequestInit = {
-      method: "GET",
-      headers,
-      credentials: includeCredentials ? "include" : undefined,
-      redirect: includeCredentials ? this.credentialedRedirect : undefined,
-    };
 
-    if (timeoutMs !== undefined)
-      setRequestTimeout(opts, timeoutMs);
-
-    response = await fetch(url, opts);
-
-    if (includeCredentials)
-      this.checkCredentialedRedirect(url, response);
-
-    // fetch follows redirects transparently, so all trust decisions below target the final
-    // (post-redirect) URL reported by the response, not the URL we asked for.
-    const challengedUrl = response.url || url;
-
-    if (response.status === 401
-          && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
-          && !includeCredentials
-          && !hasCreds
-    ) {
-      if (this.isSsoAllowed(challengedUrl)) {
-        // Removed the previous headers and make sure "include" credentials is set
-        opts.headers = undefined;
-        opts.credentials = "include";
-        // A Negotiate/NTLM handshake is normally a same-URL 401 round-trip, but in legacy mode we preserve
-        // the previous behavior and allow the browser to follow redirects after the authenticated retry.
-        opts.redirect = IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins ? "error" : undefined;
-        this.logUntrustedOriginUse(challengedUrl);
-
-        // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(challengedUrl, opts);
-        if (response.status === 200) {
-          this.recordSsoSucceeded(challengedUrl);    // avoid going through 401 challenges over and over for this origin
-        }
-      } else {
-        this.reportBlockedOrigin(challengedUrl);
-      }
-    } else if ((response.status === 401 || response.status === 403) && hasSettingsCreds && !this.isCredentialsSharingAllowed(challengedUrl)) {
-      // Some servers answer an unauthenticated request with 403 (Forbidden) rather than a 401 challenge;
-      // since this request could not present its credentials to the challenging origin, either status most
-      // likely results from that. The permission is recomputed for the challenged URL rather than reusing the
-      // decision made for the requested one: `fetch` strips the Authorization header when it follows a
-      // cross-origin redirect, so a trusted request can still arrive unauthenticated at an untrusted origin,
-      // and conversely a request that started out untrusted may end up at an origin that is trusted.
-      this.reportBlockedOrigin(challengedUrl);
+    // Route the request through the registered fetch handler (if any), which has full control: it may
+    // send a copy with other query parameters and headers, retry, or short-circuit. Handler failures propagate: the
+    // request must never silently degrade to an unauthenticated one.
+    try {
+      const { response, managedByHandler } = await fetchMapLayerRequest({
+        url,
+        formatId: this._settings.formatId,
+        layerUrl: this._settings.url,
+        headers,
+        send: async (request, credentialed) => this.sendDefaultRequest(request, credentialed, hasCreds, hasSettingsCreds, timeoutMs),
+      });
+      if (managedByHandler)
+        this._handlerManagedResponses.add(response);
+      return response;
+    } catch (error) {
+      if (error instanceof MapLayerAuthenticationFailedError)
+        this.reportAuthenticationFailure();
+      throw error;
     }
+  }
 
-    return response;
+  /** Responses of [[makeRequest]] managed by a fetch handler (see [[MapLayerFetchResult.managedByHandler]]). */
+  private readonly _handlerManagedResponses = new WeakSet<Response>();
+
+  /** Returns true if a fetch handler returned this [[makeRequest]] response as its own, in which case the
+   * provider applies none of its default response handling (status-code or protocol-error classification):
+   * the handler reports authentication failures by throwing [[MapLayerAuthenticationFailedError]] instead.
+   * @internal
+   */
+  protected isManagedByHandler(response: Response): boolean {
+    return this._handlerManagedResponses.has(response);
   }
 
   /** Returns a map layer tile at the specified settings. */
@@ -608,16 +677,38 @@ export abstract class MapLayerImageryProvider {
       this.setRequestAuthorization(headers);
     }
 
+    let response: Response;
     try {
-      const includeCredentials = this.includeUserCredentials(url);
-      const response = await fetch(url, {
-        method: "GET",
+      ({ response } = await fetchMapLayerRequest({
+        url,
+        formatId: this._settings.formatId,
+        layerUrl: this._settings.url,
         headers,
-        credentials: includeCredentials ? "include" : undefined,
-        redirect: includeCredentials ? this.credentialedRedirect : undefined,
-      });
-      if (includeCredentials)
-        this.checkCredentialedRedirect(url, response);
+        send: async (request, credentialed) => {
+          const requestUrl = request.url;
+          const includeCredentials = this.includeUserCredentials(requestUrl);
+          const rsp = await fetch(requestUrl, {
+            method: "GET",
+            headers: request.headers,
+            credentials: includeCredentials ? "include" : undefined,
+            redirect: (includeCredentials || credentialed) ? this.credentialedRedirect : undefined,
+          });
+          if (includeCredentials || credentialed)
+            this.checkCredentialedRedirect(requestUrl, rsp);
+          return rsp;
+        },
+      }));
+    } catch (error) {
+      // Never degrade to an unauthenticated request or reject (getToolTip callers do not catch); skip the tooltip.
+      // The status transition the handler asked for still applies.
+      if (error instanceof MapLayerAuthenticationFailedError)
+        this.reportAuthenticationFailure();
+      if (this.hasFetchHandler)
+        Logger.logWarning(loggerCategory, `Map-layer fetch handler failed for tooltip request: ${BentleyError.getErrorMessage(error)}`);
+      return;
+    }
+
+    try {
       let text = await response.text();
       if (text) {
         // Tooltip content (e.g. WMS GetFeatureInfo responses) is rendered as HTML downstream and may
