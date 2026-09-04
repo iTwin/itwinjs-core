@@ -417,6 +417,7 @@ public;interface;MapLayerSourceValidation
 beta;class;MapLayerTileTreeReference
 beta;interface;MapLayerTokenEndpoint
 internal;interface;MapLayerTreeSetting
+internal;class;MapLayerUntrustedOriginError
 beta;interface;MapSubLayerFeatureInfo
 public;class;MapTile
 public;class;MapTileProjection

@@ -49,6 +49,7 @@ export {
  credentialedFetchRedirect,
  fetchMapLayerRequest,
  type MapLayerFetchResult,
+ MapLayerUntrustedOriginError,
  SpatialTileTreeReferences,
  type WGS84Extent,
  WmsUtilities,

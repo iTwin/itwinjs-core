@@ -6518,6 +6518,12 @@ export interface MapLayerTreeSetting {
     tree: ImageryMapTileTree;
 }
 
+// @internal
+export class MapLayerUntrustedOriginError extends Error {
+    constructor(url: string);
+    readonly url: string;
+}
+
 // @beta
 export interface MapSubLayerFeatureInfo {
     displayFieldName?: string;

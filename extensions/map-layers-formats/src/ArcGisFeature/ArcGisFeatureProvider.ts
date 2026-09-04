@@ -5,7 +5,7 @@
 
 import { base64StringToUint8Array, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, setRequestTimeout } from "@itwin/core-frontend";
+import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerAuthenticationFailedError, MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapLayerUntrustedOriginError, QuadId, setRequestTimeout } from "@itwin/core-frontend";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
 import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer.js";
 import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology.js";
@@ -194,6 +194,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
       this._layerMetadata = await this.getLayerMetadata(this._layerId);
       if (!this._layerMetadata) {
+        // By returning (i.e., not throwing), we ensure the tile tree gets created and the current provider is preserved to report status.
+        if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin || this.status === MapLayerImageryProviderStatus.RequireAuth)
+          return;
         Logger.logError(loggerCategory, "Could not layer metadata");
         throw new ServerError(IModelStatus.ValidationFailed, "");
       }
@@ -328,8 +331,12 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         url: url.toString(), layerUrl: this._settings.url, formatId: this._settings.formatId,
         userName: this._settings.userName, password: this._settings.password,
         queryParams: this._settings.collectQueryParams(), requireToken: this._accessTokenRequired});
-    } catch {
-
+    } catch (err) {
+      // Same status transitions as for the root service metadata; anything else yields no metadata.
+      if (err instanceof MapLayerAuthenticationFailedError)
+        this.reportAuthenticationFailure();
+      else if (err instanceof MapLayerUntrustedOriginError)
+        this.reportBlockedOrigin(err.url);
     }
     return metadata?.content;
   }

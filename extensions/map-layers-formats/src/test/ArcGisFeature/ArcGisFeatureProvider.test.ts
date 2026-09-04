@@ -11,7 +11,7 @@ import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import {
   ArcGisGetServiceJsonArgs, ArcGISImageryProvider, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, IModelConnection,
-  MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d,
+  MapLayerAuthenticationFailedError, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d,
 } from "@itwin/core-frontend";
 import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat.js";
@@ -368,6 +368,23 @@ describe("ArcGisFeatureProvider", () => {
     const provider = new ArcGisFeatureProvider(settings);
     const raiseEventSpy = sandbox.spy(provider.onStatusChanged, "raiseEvent");
     await provider.initialize();
+
+    expect(provider.status).to.equals(MapLayerImageryProviderStatus.RequireAuth);
+    expect(raiseEventSpy.calledOnceWith(provider)).to.be.true;
+  });
+
+  it("should update status when the fetch handler reports an authentication failure on sublayer metadata", async () => {
+    // Root service metadata succeeds; the /{layerId} request is what the handler rejects.
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(args: ArcGisGetServiceJsonArgs) {
+      if (args.url === esriFeatureSampleSource.url)
+        return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } };
+      throw new MapLayerAuthenticationFailedError(args.url);
+    });
+    const settings = ImageMapLayerSettings.fromJSON({ ...esriFeatureSampleSource, subLayers: [{ id: 0, name: "layer1", visible: true }] });
+    const provider = new ArcGisFeatureProvider(settings);
+    const raiseEventSpy = sandbox.spy(provider.onStatusChanged, "raiseEvent");
+
+    await provider.initialize();   // must not throw: the tile tree is kept alive to report status
 
     expect(provider.status).to.equals(MapLayerImageryProviderStatus.RequireAuth);
     expect(raiseEventSpy.calledOnceWith(provider)).to.be.true;
