@@ -1,8 +1,7 @@
 import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault, withEditTxn } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { FieldFormattingMiss } from "../common/DtaIpcInterface";
-import { clearFieldFormattingDemoMisses, disableFieldFormattingDemo, enableFieldFormattingDemo, getFieldFormattingDemoMisses, prepareFieldFormattingDemoFor } from "./FieldFormattingDemo";
+import { prepareFieldFormattingDemoFor, setFieldFormattingDemo } from "./FieldFormattingDemo";
 
 /**
  * Inserts a new text style into the iModel.
@@ -130,25 +129,9 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
   withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
 }
 
-/** Adopts the DTA demo FormatSet for the specified iModel. */
-export async function enableFieldFormattingDemoForIModel(iModelKey: string): Promise<void> {
-  const iModel = BriefcaseDb.findByKey(iModelKey);
-  await enableFieldFormattingDemo(iModel);
-}
-
-/** Unregisters the DTA demo FormatSet. */
-export async function disableFieldFormattingDemoForIModel(_iModelKey: string): Promise<void> {
-  disableFieldFormattingDemo();
-}
-
-/** Reports demo-provider requirements that evaluation asked for but that were never warmed. */
-export async function getFieldFormattingDemoMissesForIModel(_iModelKey: string): Promise<FieldFormattingMiss[]> {
-  return getFieldFormattingDemoMisses().map(({ name, persistenceUnitName, system, formatSet }) => ({ name, persistenceUnitName, system, formatSet }));
-}
-
-/** Discards the demo provider's accumulated misses. */
-export async function clearFieldFormattingDemoMissesForIModel(_iModelKey: string): Promise<void> {
-  clearFieldFormattingDemoMisses();
+/** Adopts or unadopts the DTA demo FormatSets for the specified iModel. */
+export async function setFieldFormattingDemoForIModel(iModelKey: string, enabled: boolean): Promise<void> {
+  await setFieldFormattingDemo(BriefcaseDb.findByKey(iModelKey), enabled);
 }
 
 /**
