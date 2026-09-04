@@ -58,7 +58,8 @@ function editFileInPlaceSynchronously(filePath, stringToSearch, stringToReplace)
     const contentToWrite = contentRead.replace(stringToSearch, stringToReplace);
     fs.writeFileSync(filePath, contentToWrite, { encoding: "utf-8" });
   } catch (err) {
-    console.log(`Error while reading or writing to "${filePath}": ${err}`);
+    // Non-fatal, rest of the release process can continue, just surface info for the user to update file manually
+    console.log(`::warning::Failed to edit "${filePath}"; this may need a manual follow-up. ${err}`);
   }
 }
 
