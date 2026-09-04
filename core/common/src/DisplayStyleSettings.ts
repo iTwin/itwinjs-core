@@ -9,7 +9,7 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, expectDefined, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
+  assert, BeEvent, CompressedId64Set, expectDefined, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableMap, OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
@@ -313,7 +313,7 @@ type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr" | "real
  *  - JSON representation kept in sync with changes to map; and
  *  - Events dispatched when map contents change.
  */
-class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
+class OverridesMap<OverrideProps, Override> extends ObservableMap<Id64String, Override> {
   // This is required for mock framework used by ui libraries, which otherwise try to clone this as a standard Map.
   public override get [Symbol.toStringTag]() { return "OverridesMap"; }
 
@@ -459,7 +459,7 @@ export class DisplayStyleSettings {
   /** Planar clip masks to be applied to persistent reality models (@see [SpatialModelState.isRealityModel]($frontend).
    * The key for each entry is the Id of the model to which the mask settings apply.
    */
-  public get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings> {
+  public get planarClipMasks(): ObservableMap<Id64String, PlanarClipMaskSettings> {
     return this._planarClipMasks;
   }
 
@@ -786,7 +786,7 @@ export class DisplayStyleSettings {
   }
 
   /** The overrides applied by this style. */
-  public get subCategoryOverrides(): Map<Id64String, SubCategoryOverride> {
+  public get subCategoryOverrides(): ObservableMap<Id64String, SubCategoryOverride> {
     return this._subCategoryOverrides;
   }
 
@@ -823,7 +823,7 @@ export class DisplayStyleSettings {
   }
 
   /** The overrides applied by this style. */
-  public get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance> {
+  public get modelAppearanceOverrides(): ObservableMap<Id64String, FeatureAppearance> {
     return this._modelAppearanceOverrides;
   }
 
@@ -861,6 +861,10 @@ export class DisplayStyleSettings {
       this._realityModelDisplaySettings.set(modelId, settings);
     else
       this._realityModelDisplaySettings.delete(modelId);
+  }
+
+  public get realityModelDisplaySettings(): ObservableMap<Id64String, RealityModelDisplaySettings> {
+    return this._realityModelDisplaySettings;
   }
 
   /** The set of elements that will not be drawn by this display style.

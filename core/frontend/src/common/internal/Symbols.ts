@@ -14,11 +14,17 @@ function sym(name: string): string {
 }
 
 export const _accumulator = Symbol.for(sym("accumulator"));
+export const _attachToViewport = Symbol.for(sym("attachToViewport"));
+export const _backingView = Symbol.for(sym("backingView"));
 export const _batch = Symbol.for(sym("batch"));
 export const _branch = Symbol.for(sym("branch"));
 /** @internal */
 export const _callIpcChannel = Symbol.for(sym("callIpcChannel"));
+export const _detachFromViewport = Symbol.for(sym("detachFromViewport"));
+export const _excludedElements = Symbol.for(sym("excludedElements"));
 export const _featureTable = Symbol.for(sym("featureTable"));
+export const _getModelClip = Symbol.for(sym("getModelClip"))
+export const _guid = Symbol.for(sym("guid"))
 export const _nodes = Symbol.for(sym("nodes"));
 export const _onScheduleScriptReferenceChanged = Symbol.for(sym("onScheduleScriptReferenceChanged"));
 export const _requestSnap = Symbol.for(sym("requestSnap"));
@@ -28,3 +34,4 @@ export const _scheduleScriptReference = Symbol.for(sym("scheduleScriptReference"
 export const _textures = Symbol.for(sym("textures"));
 export const _transformCenter = Symbol.for(sym("transformCenter"));
 export const _transforms = Symbol.for(sym("transforms"));
+export const _treeRefs = Symbol.for(sym("treeRefs"));

@@ -18,8 +18,12 @@ function createMockViewport(subCategoriesMap?: Map<string, Set<string>>) {
         getSubCategories: (categoryId: string) => subCategoriesMap?.get(categoryId),
       },
     },
-    subcategories: {
-      push: vi.fn(),
+    view: {
+      iModelRefs: {
+        subcategories: {
+          push: vi.fn(),
+        },
+      },
     },
   } as unknown as Viewport;
 }
@@ -188,11 +192,11 @@ describe("PerModelCategoryVisibility", () => {
     it("calls subcategories.push when override is Show or Hide but not when None", () => {
       const { ovrs, vp } = createOverrides();
       ovrs.setOverride("0x1", "0x10", PerModelCategoryVisibility.Override.Show);
-      expect((vp.subcategories.push as ReturnType<typeof vi.fn>).mock.calls.length).toBe(1);
+      expect((vp.view.iModelRefs.subcategories.push as ReturnType<typeof vi.fn>).mock.calls.length).toBe(1);
 
       ovrs.setOverride("0x1", "0x10", PerModelCategoryVisibility.Override.None);
       // push should not be called again for None
-      expect((vp.subcategories.push as ReturnType<typeof vi.fn>).mock.calls.length).toBe(1);
+      expect((vp.view.iModelRefs.subcategories.push as ReturnType<typeof vi.fn>).mock.calls.length).toBe(1);
     });
   });
 
@@ -228,7 +232,7 @@ describe("PerModelCategoryVisibility", () => {
       await ovrs.setOverrides(props, explicitIModel);
 
       // The explicit iModel's subcategories should be passed to push, not the viewport's iModel.subcategories
-      const pushCalls = (vp.subcategories.push as ReturnType<typeof vi.fn>).mock.calls;
+      const pushCalls = (vp.view.iModelRefs.subcategories.push as ReturnType<typeof vi.fn>).mock.calls;
       expect(pushCalls.length).toBe(1);
       expect(pushCalls[0][0]).toBe(explicitIModel.subcategories);
     });
@@ -238,7 +242,7 @@ describe("PerModelCategoryVisibility", () => {
       const props: PerModelCategoryVisibility.Props[] = [{ modelId: "0x1", categoryIds: ["0x10"], visOverride: PerModelCategoryVisibility.Override.Show }];
       await ovrs.setOverrides(props);
 
-      const pushCalls = (vp.subcategories.push as ReturnType<typeof vi.fn>).mock.calls;
+      const pushCalls = (vp.view.iModelRefs.subcategories.push as ReturnType<typeof vi.fn>).mock.calls;
       expect(pushCalls.length).toBe(1);
       // First arg should be viewport's iModel.subcategories
       expect(pushCalls[0][0]).toBe((vp as any).iModel.subcategories);

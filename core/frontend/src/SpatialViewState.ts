@@ -18,6 +18,9 @@ import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
 import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
+import { SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
+import { createSpatialIModelDisplayReferences } from "./internal/IModelDisplayReferencesImpl";
+import { _treeRefs } from "./common/internal/Symbols";
 
 /** Options supplied to [[SpatialViewState.computeFitRange]].
  * @public
@@ -35,9 +38,14 @@ export interface ComputeSpatialViewFitRangeOptions {
 export class SpatialViewState extends ViewState3d {
   public static override get className() { return "SpatialViewDefinition"; }
 
-  private readonly _treeRefs: SpatialTileTreeReferences;
-  private _modelSelector: ModelSelectorState;
+  private get _treeRefs(): SpatialTileTreeReferences {
+    return this.iModelRefs.primary[_treeRefs];
+  }
+
+  private readonly _modelSelector: ModelSelectorState;
   private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
+
+  public readonly iModelRefs: SpatialIModelDisplayReferences;
 
   /** An event raised when the set of models viewed by this view changes, *only* if the view is attached to a [[Viewport]].
    * @public
@@ -46,23 +54,6 @@ export class SpatialViewState extends ViewState3d {
 
   public get modelSelector(): ModelSelectorState {
     return this._modelSelector;
-  }
-
-  public set modelSelector(selector: ModelSelectorState) {
-    if (selector === this.modelSelector)
-      return;
-
-    const isAttached = this.isAttachedToViewport;
-    this.unregisterModelSelectorListeners();
-
-    this._modelSelector = selector;
-
-    if (isAttached) {
-      this.registerModelSelectorListeners();
-      this.onViewedModelsChanged.raiseEvent();
-    }
-
-    this.markModelSelectorChanged();
   }
 
   /** Create a new *blank* SpatialViewState. The returned SpatialViewState will nave non-persistent empty [[CategorySelectorState]] and [[ModelSelectorState]],
@@ -106,7 +97,7 @@ export class SpatialViewState extends ViewState3d {
     if (arg3 instanceof SpatialViewState) // from clone
       this._modelSelector = arg3.modelSelector.clone();
 
-    this._treeRefs = SpatialTileTreeReferences.create(this);
+    this.iModelRefs = createSpatialIModelDisplayReferences(this);
   }
 
   public override isSpatialView(): this is SpatialViewState { return true; }
@@ -210,9 +201,7 @@ export class SpatialViewState extends ViewState3d {
 
   /** @internal */
   public override * getModelTreeRefs(): Iterable<TileTreeReference> {
-    for (const ref of this._treeRefs) {
-      yield ref;
-    }
+    yield * this.iModelRefs.primary.tileTreeRefs;
   }
 
   /** @internal */

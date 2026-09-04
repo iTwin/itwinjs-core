@@ -89,7 +89,7 @@ function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
           subCategoryId: Id64.fromUint32PairObject(feature.subCategoryId),
           geometryClass: feature.geometryClass,
           modelId: Id64.fromUint32PairObject(feature.modelId),
-          iModel: command.batch.batchIModel ?? features.iModel,
+          iModel: command.batch.iModelRef?.iModel ?? features.iModel,
         };
       }
     }

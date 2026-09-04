@@ -36,7 +36,7 @@ describe("IModelTileRequestChannels", () => {
     await imodel.models.load("0x1c");
     const model = imodel.models.getLoaded("0x1c")!.asGeometricModel!;
     const view = fakeViewState(imodel);
-    const ref = model.createTileTreeReference(view);
+    const ref = model.createTileTreeReference(view.iModelRefs.primary);
     const tree = (await ref.treeOwner.loadTree()) as IModelTileTree;
 
     // The root tile marks itself as "ready" immediately. Make it "not loaded" instead.

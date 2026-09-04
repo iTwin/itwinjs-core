@@ -48,7 +48,6 @@ import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./internal/render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
-import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
@@ -69,6 +68,7 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
+import { IModelDisplayReferences } from "./IModelDisplayReferences";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -462,11 +462,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** @internal */
   protected _changeFlags = new MutableChangeFlags();
   private _selectionSetDirty = true;
-  private readonly _perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   private _tileSizeModifier?: number;
-
-  /** @internal */
-  public readonly subcategories = new SubCategoriesCache.Queue();
 
   /** Time the current flash started. */
   private _flashUpdateTime?: BeTimePoint;
@@ -647,9 +643,6 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** See [[ViewState.displayStyle]] */
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
-  public set displayStyle(style: DisplayStyleState) {
-    this.view.displayStyle = style;
-  }
 
   /** Selectively override aspects of this viewport's display style.
    * @see [DisplayStyleSettings.applyOverrides]($common)
@@ -807,7 +800,7 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean | undefined): void {
-    this.subcategories.push(this.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
+    this.view.iModelRefs.subcategories.push(this.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
       if (true === enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
 
@@ -1170,7 +1163,6 @@ export abstract class Viewport implements Disposable, TileUser {
     this._target = target;
     target.assignFrameStatsCollector(this._frameStatsCollector);
     this._viewportId = TileUser.generateId();
-    this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
     IModelApp.tileAdmin.registerUser(this);
   }
 
@@ -1179,7 +1171,7 @@ export abstract class Viewport implements Disposable, TileUser {
       return;
 
     this._target = dispose(this._target);
-    this.subcategories[Symbol.dispose]();
+    // ###TODO? this.subcategories[Symbol.dispose]();
     IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
     this.detachFromView();
@@ -1473,6 +1465,10 @@ export abstract class Viewport implements Disposable, TileUser {
     return this._view;
   }
 
+  public get iModelRefs(): IModelDisplayReferences {
+    return this._view.iModelRefs;
+  }
+
   /** @internal */
   public get pixelsPerInch() {
     // ###TODO? This is apparently unobtainable information in a browser...
@@ -1546,14 +1542,16 @@ export abstract class Viewport implements Disposable, TileUser {
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
   /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
-  public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
+  public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides {
+    return this.view.iModelRefs.primary.perModelCategoryVisibility;
+  }
 
   /** Adds visibility overrides for any subcategories whose visibility differs from that defined by the view's
    * category selector in the context of specific models.
    * @internal
    */
   public addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
-    this._perModelCategoryVisibility.addOverrides(fs, ovrs);
+    this.perModelCategoryVisibility.addOverrides(fs, ovrs);
   }
 
   /** Add a [[FeatureOverrideProvider]] to customize the appearance of [[Feature]]s within the viewport.
@@ -1875,7 +1873,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.invalidateController();
 
     const isMapLayerChanged = undefined !== prevView && compareMapLayer(prevView, view);
-    this.target.reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
+    this.target.reset(isMapLayerChanged, view.iModelRefs.primary);
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);

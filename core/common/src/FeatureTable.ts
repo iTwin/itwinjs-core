@@ -43,29 +43,37 @@ export class Feature {
    * @returns zero if the features are equivalent, a negative value if this feature compares as "less than" `rhs`, or a positive value if this feature compares "greater than" `rhs`.
    */
   public compare(rhs: Feature): number {
-    if (this === rhs)
+    return Feature.compare(this, rhs);
+  }
+}
+
+export interface FeatureProps {
+  elementId: Id64String;
+  subCategoryId: Id64String;
+  geometryClass: GeometryClass;
+}
+
+export namespace Feature {
+  export function compare(lhs: FeatureProps, rhs: FeatureProps): number {
+    if (lhs === rhs)
       return 0;
 
-    let cmp = compareNumbers(this.geometryClass, rhs.geometryClass);
+    let cmp = compareNumbers(lhs.geometryClass, rhs.geometryClass);
     if (0 === cmp) {
-      cmp = compareStrings(this.elementId, rhs.elementId);
+      cmp = compareStrings(lhs.elementId, rhs.elementId);
       if (0 === cmp) {
-        cmp = compareStrings(this.subCategoryId, rhs.subCategoryId);
+        cmp = compareStrings(lhs.subCategoryId, rhs.subCategoryId);
       }
     }
 
     return cmp;
   }
 }
-
 /** A [[Feature]] with a modelId identifying the model containing the feature, obtained from a [[RenderFeatureTable]].
  * @public
  */
-export interface ModelFeature {
+export interface ModelFeature extends FeatureProps {
   modelId: Id64String;
-  elementId: Id64String;
-  subCategoryId: Id64String;
-  geometryClass: GeometryClass;
 }
 
 /** @public */
@@ -80,6 +88,10 @@ export namespace ModelFeature {
       subCategoryId: Id64.invalid,
       geometryClass: GeometryClass.Primary,
     };
+  }
+
+  export function compare(lhs: ModelFeature, rhs: ModelFeature): number {
+    return Feature.compare(lhs, rhs) || compareStrings(lhs.modelId, rhs.modelId);
   }
 
   /** Returns `true` if any of `feature`'s properties differ from the defaults (invalid Ids and [[GeometryClass.Primary]]). */

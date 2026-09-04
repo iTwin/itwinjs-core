@@ -5,13 +5,14 @@
 
 import { expect } from "vitest";
 import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
-import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
+import { ColorDef, Feature, FeatureProps, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewRect } from "../common/ViewRect";
 import { SpatialViewState } from "../SpatialViewState";
 import { Pixel } from "../render/Pixel";
 import { createBlankConnection } from "./createBlankConnection";
+import { IModelFeature } from "../IModelDisplayReference";
 
 /** Options for openBlankViewport.
  * @internal
@@ -94,7 +95,7 @@ export async function testBlankViewportAsync(args: TestBlankViewportAsyncOptions
   return await result;
 }
 
-function compareFeatures(lhs?: Feature, rhs?: Feature): number {
+function compareFeatures(lhs?: IModelFeature, rhs?: IModelFeature): number {
   if (undefined === lhs && undefined === rhs)
     return 0;
   else if (undefined === lhs)
@@ -102,7 +103,7 @@ function compareFeatures(lhs?: Feature, rhs?: Feature): number {
   else if (undefined === rhs)
     return 1;
   else
-    return lhs.compare(rhs);
+    return IModelFeature.compare(lhs, rhs);
 }
 
 function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
@@ -252,8 +253,8 @@ export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNo
   return set;
 }
 
-export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): SortedArray<Feature> {
-  const features = new SortedArray<Feature>((lhs, rhs) => lhs.compare(rhs));
+export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): SortedArray<FeatureProps> {
+  const features = new SortedArray<FeatureProps>((lhs, rhs) => Feature.compare(lhs, rhs));
   processPixels(vp, (pixel) => {
     if (pixel.feature) {
       features.insert(pixel.feature);

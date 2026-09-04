@@ -8,9 +8,9 @@
 
 import { assert, Id64, Id64String, lowerBound } from "@itwin/core-bentley";
 import { ModelFeature } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
 import { BranchStack } from "./BranchStack";
 import { Batch } from "./Graphic";
+import { IModelDisplayReference, IModelFeature } from "../../../IModelDisplayReference";
 
 /**
  * Assigns a transient, unique 32-bit integer ID to each Batch in a RenderCommands.
@@ -38,7 +38,7 @@ export class BatchState {
 
   public get currentBatch(): Batch | undefined { return this._curBatch; }
   public get currentBatchId(): number { return undefined !== this._curBatch ? this._curBatch.batchId : 0; }
-  public get currentBatchIModel(): IModelConnection | undefined { return undefined !== this._curBatch ? this._curBatch.batchIModel : undefined; }
+  public get currentBatchIModelRef(): IModelDisplayReference | undefined { return this._curBatch?.iModelRef }
   public get isEmpty(): boolean { return 0 === this._batches.length; }
 
   public push(batch: Batch, allowAdd: boolean): void {
@@ -74,15 +74,19 @@ export class BatchState {
     return Id64.fromUint32Pair(parts.lower, parts.upper);
   }
 
-  public getFeature(featureId: number, result: ModelFeature): ModelFeature | undefined {
+  public getFeature(featureId: number, result: IModelFeature): IModelFeature | undefined {
     const batch = this.find(featureId);
-    if (undefined === batch)
+    if (undefined === batch || undefined === batch.iModelRef)
       return undefined;
 
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
 
-    return batch.featureTable.findFeature(featureIndex, result);
+    if (undefined === batch.featureTable.findFeature(featureIndex, result))
+      return undefined;
+
+    result.iModelRef = batch.iModelRef;
+    return result;
   }
 
   public get numFeatureIds() { return this.nextBatchId; }

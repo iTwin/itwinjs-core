@@ -43,6 +43,8 @@ import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
 import { _scheduleScriptReference } from "./common/internal/Symbols";
+import { IModelDisplayReferences, IModelDisplayReferences2d } from "./IModelDisplayReferences";
+import { createIModelDisplayReferences2d } from "./internal/IModelDisplayReferencesImpl";
 
 /** Describes a reality model visible in a [[ViewState]], providing its [[TileTreeReference]] along with
  * display metadata such as its name and description.
@@ -245,9 +247,11 @@ export abstract class ViewState extends ElementState {
   public description?: string;
   public isPrivate?: boolean;
   private readonly _gridDecorator: GridDecorator;
-  private _categorySelector: CategorySelectorState;
-  private _displayStyle: DisplayStyleState;
+  private readonly _categorySelector: CategorySelectorState;
+  private readonly _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
+
+  public abstract get iModelRefs(): IModelDisplayReferences;
 
   /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]]. */
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
@@ -267,34 +271,9 @@ export abstract class ViewState extends ElementState {
     return this._categorySelector;
   }
 
-  public set categorySelector(selector: CategorySelectorState) {
-    if (selector === this._categorySelector)
-      return;
-
-    const isAttached = this.isAttachedToViewport;
-    this.unregisterCategorySelectorListeners();
-
-    this._categorySelector = selector;
-
-    if (isAttached) {
-      this.registerCategorySelectorListeners();
-      this.onViewedCategoriesChanged.raiseEvent();
-    }
-  }
-
   /** The style that controls how the contents of the view are displayed. */
   public get displayStyle(): DisplayStyleState {
     return this._displayStyle;
-  }
-
-  public set displayStyle(style: DisplayStyleState) {
-    if (style === this.displayStyle)
-      return;
-
-    if (this.isAttachedToViewport)
-      this.onDisplayStyleChanged.raiseEvent(style);
-
-    this._displayStyle = style;
   }
 
   /** @internal */
@@ -418,6 +397,22 @@ export abstract class ViewState extends ElementState {
       promises.push(subcategories.promise.then((_) => { }));
 
     await Promise.all(promises);
+  }
+
+  public async cloneWithDisplayStyle(style: DisplayStyleState): Promise<this> {
+    if (style.iModel !== this.iModel)
+      throw new Error("Display style must be from the same iModel as the view");
+
+    const viewDim = this.is3d() ? "3D" : "2D";
+    const styleDim = style.is3d() ? "3D" : "2D";
+    if (viewDim !== styleDim)
+      throw new Error(`Cannot assign a ${styleDim} display style to a ${viewDim} view`);
+
+    const props = this.toProps();
+    props.displayStyleProps = style.toJSON();
+    const view = await this.iModel.views.convertViewStatePropsToViewState(props);
+    assert(view.classFullName === this.classFullName);
+    return view as this;
   }
 
   protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
@@ -633,8 +628,24 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public createScene(context: SceneContext): void {
-    for (const ref of this.getTileTreeRefs()) {
+    for (const ref of this.getTileTreeRefs())
       ref.addToScene(context);
+
+    for (const iModelRef of this.iModelRefs.linked) {
+      const linkedContext = new SceneContext({
+        viewport: context.viewport,
+        frustum: context.frustum,
+        iModelRef,
+      });
+
+      for (const treeRef of iModelRef.tileTreeRefs)
+        treeRef.addToScene(linkedContext);
+
+      // ###TODO classifiers, texture drapes
+      for (const listName of ["foreground", "background", "overlay"] as const) {
+        for (const entry of linkedContext.scene[listName])
+          context.scene[listName].push(entry);
+      }
     }
   }
 
@@ -860,8 +871,6 @@ export abstract class ViewState extends ElementState {
    */
   public abstract get defaultExtentLimits(): ExtentLimits;
 
-  public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
-
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
    */
@@ -932,9 +941,6 @@ export abstract class ViewState extends ElementState {
     this.setExtents(extents);
     this.setOrigin(origin);
   }
-
-  /** Set the CategorySelector for this view. */
-  public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
   /** get the auxiliary coordinate system state object for this ViewState. */
   public get auxiliaryCoordinateSystem(): AuxCoordSystemState {
@@ -1847,11 +1853,6 @@ export abstract class ViewState3d extends ViewState {
     return this.getDisplayStyle3d();
   }
 
-  public override set displayStyle(style: DisplayStyle3dState) {
-    assert(style instanceof DisplayStyle3dState);
-    super.displayStyle = style;
-  }
-
   /** The style that controls how the contents of the view are displayed.
    * @see [[ViewState3d.displayStyle]].
    */
@@ -2383,12 +2384,14 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   protected _treeRef?: TileTreeReference;
 
+  public readonly iModelRefs: IModelDisplayReferences2d;
+
   /** @internal */
   protected get _tileTreeRef(): TileTreeReference | undefined {
     if (undefined === this._treeRef) {
       const model = this.getViewedModel();
       if (undefined !== model)
-        this._treeRef = model.createTileTreeReference(this);
+        this._treeRef = model.createTileTreeReference(this.iModelRefs.primary); // ###TODO move this to the IModelDisplayReference object
     }
 
     return this._treeRef;
@@ -2404,6 +2407,8 @@ export abstract class ViewState2d extends ViewState {
     this._baseModelId = Id64.fromJSON(resolveNavPropId(props.baseModel, props.baseModelId));
 
     this._details = new ViewDetails(this.jsonProperties);
+
+    this.iModelRefs = createIModelDisplayReferences2d(this);
   }
 
   public override toJSON(): ViewDefinition2dProps {

@@ -11,13 +11,13 @@ import { Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContourDisplay, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
 } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { ClipVolume } from "./ClipVolume";
 import { Branch } from "./Graphic";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
+import { IModelDisplayReference } from "../../../core-frontend";
 
 /** Options used to construct a BranchState.
  * @internal
@@ -31,9 +31,7 @@ export interface BranchStateOptions {
   readonly secondaryClassifiers?: PlanarClassifier[];
   readonly textureDrape?: TextureDrape;
   readonly edgeSettings: EdgeSettings;
-  /** Used chiefly for readPixels() to identify context of picked Ids when graphics from multiple iModels are displayed together. */
-  readonly iModel?: IModelConnection;
-  readonly transformFromIModel?: Transform;
+  iModelRef?: IModelDisplayReference;
   /** Whether the graphics in this branch are 2d or 3d.
    * Sometimes we draw 3d orthographic views in the context of a 2d view (e.g., sheet view attachments).
    * Currently this only affects the logic for discarding surfaces (in 2d, we relay on display priority to enforce draw order between different elements;
@@ -70,8 +68,8 @@ export class BranchState {
   public get planarClassifier() { return this._opts.planarClassifier; }
   public get textureDrape() { return this._opts.textureDrape; }
   public get edgeSettings() { return this._opts.edgeSettings; }
-  public get iModel() { return this._opts.iModel; }
-  public get transformFromIModel() { return this._opts.transformFromIModel; }
+  public get iModelRef() { return this._opts.iModelRef; }
+  public set iModelRef(ref: IModelDisplayReference | undefined) { this._opts.iModelRef = ref; }
   public get is3d() { return this._opts.is3d; }
   public get frustumScale() { return expectDefined(this._opts.frustumScale); }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
@@ -103,8 +101,7 @@ export class BranchState {
       viewFlags: branch.branch.getViewFlags(prev.viewFlags),
       transform: prev.transform.multiplyTransformTransform(branch.localToWorldTransform),
       symbologyOverrides: branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
-      iModel: branch.iModel ?? prev.iModel,
-      transformFromIModel: branch.transformFromExternalIModel ?? prev.transformFromIModel,
+      iModelRef: branch.iModelRef ?? prev.iModelRef,
       planarClassifier: (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier,
       textureDrape: branch.textureDrape ?? prev.textureDrape,
       clipVolume: branch.clips,

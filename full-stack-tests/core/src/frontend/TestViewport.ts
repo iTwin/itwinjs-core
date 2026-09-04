@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, Id64String, SortedArray } from "@itwin/core-bentley";
+import { comparePossiblyUndefined, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
+  IModelApp, IModelConnection, IModelFeature, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
   ViewState,
 } from "@itwin/core-frontend";
 
@@ -28,7 +28,7 @@ export function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
     if (0 === diff) {
       diff = lhs.planarity - rhs.planarity;
       if (0 === diff) {
-        diff = compareFeatures(lhs.feature, rhs.feature);
+        diff = comparePossiblyUndefined(IModelFeature.compare, lhs.feature, rhs.feature);
       }
     }
   }

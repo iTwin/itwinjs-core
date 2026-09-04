@@ -131,7 +131,7 @@ describe("Tile tolerance", () => {
     expect(model).instanceof(GeometricModelState);
 
     const view = fakeViewState(imodel);
-    const treeRef = model.createTileTreeReference(view);
+    const treeRef = model.createTileTreeReference(view.iModelRefs.primary);
     const tree = (await treeRef.treeOwner.loadTree())!;
     expect(tree).not.to.be.undefined;
 

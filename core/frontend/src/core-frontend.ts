@@ -40,6 +40,7 @@ export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./IModelApp";
 export * from "./IModelConnection";
+export * from "./IModelDisplayReference";
 export * from "./IModelRoutingContext";
 export * from "./IpcApp";
 export * from "./LinePlaneIntersect";

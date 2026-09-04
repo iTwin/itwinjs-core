@@ -11,7 +11,6 @@ import {
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
 import { OffScreenViewport, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../Viewport";
-import { DisplayStyle3dState } from "../DisplayStyleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
@@ -182,9 +181,7 @@ describe("Viewport", () => {
 
         const b = AnalysisStyle.fromJSON({ normalChannelName: "b" });
         expectChangedEvent(b, () => {
-          const style = viewport.displayStyle.clone();
-          style.settings.analysisStyle = b;
-          viewport.displayStyle = style;
+          viewport.displayStyle.settings.analysisStyle = b;
         });
 
         const c = AnalysisStyle.fromJSON({ normalChannelName: "c" });
@@ -223,29 +220,21 @@ describe("Viewport", () => {
     });
 
     afterEach(() => {
-      viewport.view.displayStyle = new DisplayStyle3dState({} as any, viewport.iModel);
-      expectBackgroundMap(false);
-      expectTerrain(false);
       viewport[Symbol.dispose]();
     });
 
     it("updates when display style is assigned to", () => {
-      let style = viewport.displayStyle.clone();
-      style.viewFlags = style.viewFlags.with("backgroundMap", false);
-      viewport.displayStyle = style;
+      viewport.viewFlags = viewport.viewFlags.with("backgroundMap", false);
       expectBackgroundMap(false);
       expectTerrain(false);
 
-      style = style.clone();
+      const style = viewport.displayStyle;
       style.viewFlags = style.viewFlags.with("backgroundMap", true);
       style.settings.applyOverrides({ backgroundMap: { applyTerrain: true } });
-      viewport.displayStyle = style;
       expectBackgroundMap(true);
       expectTerrain(true);
 
-      style = style.clone();
       style.settings.applyOverrides({ backgroundMap: { applyTerrain: false } });
-      viewport.displayStyle = style;
       expectBackgroundMap(true);
       expectTerrain(false);
     });
