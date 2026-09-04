@@ -23,7 +23,7 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 import { FormatSet } from "@itwin/ecschema-metadata";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
-import { prepareFieldFormattingDemoFor } from "./FieldFormattingDemo";
+import { prepareFieldFormattingFor } from "./FieldFormattingDemo";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -203,7 +203,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     // Dynamic geometry is generated for a block that may not be persisted yet, so warm the
     // demo provider for exactly this block before evaluating. Evaluation itself is synchronous
     // and shares one code path with the txn callback, so both render identical strings.
-    await prepareFieldFormattingDemoFor(iModel, textBlock);
+    await prepareFieldFormattingFor(iModel, textBlock);
     ElementDrivesTextAnnotation.evaluateFields({ block: textBlock, iModel });
 
     let scaleFactor = 1;
