@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Add `QuantityFieldFormatOptions` to `FieldFormatOptions`, letting a `FieldRun` override the `KindOfQuantity` and persistence unit used to format its value, and name the `FormatSet` that resolves it. `kindOfQuantity` and `persistenceUnit` are independent overrides, but only `kindOfQuantity` falls back to the property's own value: a `persistenceUnit` naming a different unit than the property's suppresses the property-side fallback entirely, so an unresolvable override renders the raw value rather than a number silently formatted through the wrong unit. `@itwin/core-quantity` is now a peer dependency of this package.",
+      "comment": "Add `QuantityFieldFormatOptions` to `FieldFormatOptions`, letting a `FieldRun` override the KindOfQuantity, persistence unit, and `FormatSet` used to format its value. `@itwin/core-quantity` is now a peer dependency of this package.",
       "type": "none"
     }
   ],
