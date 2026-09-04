@@ -9,12 +9,12 @@
 /** Describes an outgoing map-layer request submitted to the [[MapLayerFetchHandler]] registered via
  * [[MapLayerFormatRegistry.setMapLayerFetchHandler]]. Treat it as an immutable value: to change what is sent,
  * pass a copy with different [[searchParams]] or [[headers]] to [[MapLayerFetchRequest]], e.g.
- * `fetchRequest({ ...request, headers })`. The target (origin and path) is fixed by the framework and cannot be
+ * `fetchRequest({ ...request, headers })`. The target (origin and path) is fixed by us and cannot be
  * changed, so a handler can never (accidentally or otherwise) reroute a request.
  * @beta
  */
 export interface MapLayerRequest {
-  /** The request URL the framework built, including its query parameters. Informational: a handler that changes
+  /** The request URL we built, including its query parameters. Informational: a handler that changes
    * [[searchParams]] does not need to — and cannot — update it.
    */
   readonly url: string;
@@ -33,7 +33,7 @@ export interface MapLayerRequest {
    * Overriding parameters the provider relies on may break the request.
    */
   readonly searchParams: URLSearchParams;
-  /** The request headers the framework supplies (e.g. settings-derived basic auth). To send different headers,
+  /** The request headers we supply (e.g. settings-derived basic auth). To send different headers,
    * pass a copy: `const headers = new Headers(request.headers); headers.set("Authorization", ...)`.
    */
   readonly headers: Headers;
@@ -43,7 +43,7 @@ export interface MapLayerRequest {
  * @beta
  */
 export interface MapLayerFetchRequestOptions {
-  /** Whether the send may carry handler-injected credentials. Defaults to `true`: the framework cannot tell a
+  /** Whether the send may carry handler-injected credentials. Defaults to `true`: we cannot tell a
    * secret from a benign value, so it protects every handler send unless told otherwise. Pass `false` for a
    * request the handler leaves untouched (e.g. a format it does not manage), so that request keeps the
    * default behavior in full — redirect following and the NTLM/Negotiate SSO retry.
@@ -51,7 +51,7 @@ export interface MapLayerFetchRequestOptions {
   credentialed?: boolean;
 }
 
-/** Issues the framework's default send for a [[MapLayerRequest]] — the equivalent of `base.SendAsync(request)`
+/** Issues the default send for a [[MapLayerRequest]] — the equivalent of `base.SendAsync(request)`
  * in an HTTP message-handler pipeline. Applies the site's standard behavior (redirect policy, origin-trust
  * checks, timeouts) and resolves with the response.
  * The request sent is the one passed: its [[MapLayerRequest.searchParams]] and [[MapLayerRequest.headers]] go on
@@ -63,7 +63,7 @@ export interface MapLayerFetchRequestOptions {
  * injected values cannot silently reach an unlisted origin through a redirect), and an NTLM/Negotiate 401
  * challenge is never answered with browser credentials (SSO). A handler serving one format should therefore
  * pass `{ credentialed: false }` for the others, so their layers (e.g. those served by
- * Windows-Authentication-protected services) are not degraded. The framework keeps protecting the credentials
+ * Windows-Authentication-protected services) are not degraded. We keep protecting the credentials
  * it supplies itself (settings-derived basic auth, browser SSO identity) on every send.
  * @beta
  */

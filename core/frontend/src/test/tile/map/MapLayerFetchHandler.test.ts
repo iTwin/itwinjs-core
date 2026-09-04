@@ -178,7 +178,7 @@ describe("map-layer fetch handler", () => {
   it("treats every handler send as credentialed by default under the trusted-origins restriction", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
     fetchMock.mockResolvedValue(ntlmChallengeResponse());
-    // The framework cannot tell a secret from a benign value, so it protects unless told otherwise.
+    // We cannot tell a secret from a benign value, so it protects unless told otherwise.
     IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) =>
       fetchRequest(withHeader(request, "X-Correlation-Id", "abc-123")));
     const provider = createProvider();
@@ -331,7 +331,7 @@ describe("map-layer fetch handler", () => {
   });
 
   it("does not classify 401 responses the handler chooses to return", async () => {
-    // Without a MapLayerAuthenticationFailedError, the framework applies no default classification.
+    // Without a MapLayerAuthenticationFailedError, we apply no default classification.
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
     setCredentialedHandler();
     const provider = createProvider();
