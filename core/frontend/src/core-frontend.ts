@@ -116,7 +116,7 @@ export type {
 } from "./TxnEntityChanges";
 /** Deprecated frontend alias for the common TxnEntityMetadata interface.
  * @public
- * @deprecated in 5.13.0. Use [TxnEntityMetadata]($common) from @itwin/core-common instead.
+ * @deprecated in 5.13.0 - will not be removed until after 2027-09-03. Use [TxnEntityMetadata]($common) from @itwin/core-common instead.
  */
 export type TxnEntityMetadata = _TxnEntityMetadata;
 export {

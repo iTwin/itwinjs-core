@@ -8,6 +8,7 @@ publish: false
     - [Schema sync rework](#schema-sync-rework)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Custom authentication for map-layer requests](#custom-authentication-for-map-layer-requests)
+  - [Electron 44 support](#electron-44-support)
 
 ## @itwin/core-backend
 
@@ -61,3 +62,7 @@ The feature is fully backward compatible: without a handler, requests and failur
 Additionally, WMS and WMTS `GetCapabilities` requests issued when a layer initializes now include the layer's custom query parameters ([ImageMapLayerSettings.savedQueryParams]($common)/[ImageMapLayerSettings.unsavedQueryParams]($common)), matching the source-validation path; previously they were omitted, which could break reloading a layer whose server requires them.
 
 See [Map-layer authentication](../learning/frontend/MapLayerAuthentication.md) for the full behavior and complete samples.
+
+## Electron 44 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 44](https://www.electronjs.org/blog/electron-44-0).
