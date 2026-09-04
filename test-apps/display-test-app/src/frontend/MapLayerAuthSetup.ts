@@ -81,14 +81,16 @@ function configureAuthFetchHandler(configuration: DtaConfiguration): void {
     }
   }
 
-  IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, next) => {
+  IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
     if (!formats.includes(request.formatId))
-      return next({ credentialed: false });
+      return fetchRequest(request, { credentialed: false });
+    const headers = new Headers(request.headers);
     if (header)
-      request.headers.set(header[0], header[1]);
+      headers.set(header[0], header[1]);
+    const searchParams = new URLSearchParams(request.searchParams);
     for (const [name, value] of queryParams)
-      request.searchParams.set(name, value);
-    return next();
+      searchParams.set(name, value);
+    return fetchRequest({ ...request, headers, searchParams });
   });
 }
 

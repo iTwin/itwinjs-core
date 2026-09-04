@@ -605,7 +605,7 @@ export abstract class MapLayerImageryProvider {
     }
 
     // Route the request through the registered fetch handler (if any), which has full control: it may
-    // mutate query parameters and headers, retry, or short-circuit. Handler failures propagate: the
+    // send a copy with other query parameters and headers, retry, or short-circuit. Handler failures propagate: the
     // request must never silently degrade to an unauthenticated one.
     try {
       return await fetchMapLayerRequest({

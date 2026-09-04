@@ -211,7 +211,7 @@ export class MapLayerFormatRegistry {
    * const previous = registry.mapLayerFetchHandler;
    * registry.setMapLayerFetchHandler(
    *   previous
-   *     ? (request, next) => myHandler(request, async () => previous(request, next))
+   *     ? (request, fetchRequest) => myHandler(request, async (req) => previous(req, fetchRequest))
    *     : myHandler);
    * ```
    * @beta

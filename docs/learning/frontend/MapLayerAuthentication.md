@@ -24,11 +24,11 @@ Some services use authentication schemes the OAuth facility above cannot express
 IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(myHandler);
 ```
 
-There is at most one handler per session, owned by the hosting application — setting a new one replaces the previous one, and passing `undefined` restores the default behavior. The handler receives the request ([MapLayerRequest]($frontend)) and a `next` function ([MapLayerFetchNext]($frontend)) issuing the framework's default send — the equivalent of `base.SendAsync()`. It may:
+There is at most one handler per session, owned by the hosting application — setting a new one replaces the previous one, and passing `undefined` restores the default behavior. The handler receives the request ([MapLayerRequest]($frontend)) and a `fetchRequest` function ([MapLayerFetchRequest]($frontend)) issuing the framework's default send for a request — the equivalent of `base.SendAsync(request)`. It may:
 
-- mutate the request's query parameters and headers in place, then call `next()`; the request's target (origin and path) cannot be changed;
-- call `next()` several times — each call re-reads the request's current query parameters and headers, so a handler can refresh an expired token and retry transparently;
-- return its own `Response` without calling `next()` (short-circuit);
+- pass a copy of the request with different query parameters or headers to `fetchRequest` (e.g. `fetchRequest({ ...request, headers })`); the request's target (origin and path) is fixed and cannot be changed;
+- call `fetchRequest` several times, so a handler can refresh an expired token and retry transparently;
+- return its own `Response` without calling `fetchRequest` (short-circuit);
 - throw [MapLayerAuthenticationFailedError]($frontend) to report an unrecoverable authentication failure.
 
 The handler runs on the hot path of tile loading; it should be fast and cache its tokens internally. Tile requests are issued concurrently, so when a token expires many of them observe the `401` at the same time — a handler that refreshes on `401` must coalesce those refreshes into a single in-flight operation (as `myTokenCache` does below), or it will hammer the token endpoint and may invalidate the token it just obtained. A single logical operation may invoke the handler more than once (e.g. the ArcGIS providers issue fallback and token-retry requests); each network request passes through the handler individually.
@@ -50,23 +50,26 @@ const myTokenCache = {
   },
 };
 
-IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request: MapLayerRequest, next: MapLayerFetchNext) => {
+// Returns a copy of the request carrying the given bearer token.
+const withBearer = (request: MapLayerRequest, token: string): MapLayerRequest => {
+  const headers = new Headers(request.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  return { ...request, headers };
+};
+
+IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request: MapLayerRequest, fetchRequest: MapLayerFetchRequest) => {
   // The full request URL and format id are provided for routing decisions; a handler serving several
   // services can decide per request which credentials apply, or none at all.
   if (new URL(request.url).origin !== "https://proxy.example.com")
-    return next({ credentialed: false });  // not ours: issue the request untouched, with the default behavior
+    return fetchRequest(request, { credentialed: false });  // not ours: issue the request untouched, with the default behavior
 
   // The hosting application obtains and refreshes this token through its own channels.
+  // Query-parameter based schemes work the same way with a copy of `request.searchParams`.
   const token = myTokenCache.current;
-  request.headers.set("Authorization", `Bearer ${token}`);
-  // Query-parameter based schemes are supported the same way:
-  // request.searchParams.set("signature", sign(request.url));
-
-  let response = await next();
+  let response = await fetchRequest(withBearer(request, token));
   if (response.status === 401) {
     await myTokenCache.refresh(token);
-    request.headers.set("Authorization", `Bearer ${myTokenCache.current}`);
-    response = await next();                                // transparent retry - no RequireAuth
+    response = await fetchRequest(withBearer(request, myTokenCache.current));  // transparent retry - no RequireAuth
   }
   if (response.status === 401 || response.status === 403)
     throw new MapLayerAuthenticationFailedError(request.url); // unrecoverable: prompt the user
@@ -79,9 +82,9 @@ IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request: MapLaye
 Registering a handler means owning authentication for the requests it manages — the framework applies no default failure classification to responses the handler returns. Two rules keep the split clear:
 
 - **What the framework injects, the framework protects.** Settings-derived basic auth and the browser's SSO identity keep their origin-trust rules ([MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend)) on every send, handler or not.
-- **What the handler injects, the framework cannot recognize** — so every send issued through `next()` is conservatively treated as a credentialed request: redirects are refused while the trusted-origins restriction is enabled (so injected values cannot silently reach an unlisted origin through a redirect), and an NTLM/Negotiate 401 challenge is never answered with browser credentials (SSO). For a request the handler leaves untouched, it passes `next({ credentialed: false })` ([MapLayerFetchNextOptions]($frontend)) and the request keeps the default behavior in full — this is how a handler serving one format avoids degrading layers of the others.
+- **What the handler injects, the framework cannot recognize** — so every send issued through `fetchRequest` is conservatively treated as a credentialed request: redirects are refused while the trusted-origins restriction is enabled (so injected values cannot silently reach an unlisted origin through a redirect), and an NTLM/Negotiate 401 challenge is never answered with browser credentials (SSO). For a request the handler leaves untouched, it passes `fetchRequest(request, { credentialed: false })` ([MapLayerFetchRequestOptions]($frontend)) and the request keeps the default behavior in full — this is how a handler serving one format avoids degrading layers of the others.
 
-A handler that fetches on its own instead of calling `next()` bypasses these protections entirely; it then owns transport security for that request.
+A handler that fetches on its own instead of calling `fetchRequest` bypasses these protections entirely; it then owns transport security for that request.
 
 ### Layered applications
 
@@ -91,12 +94,12 @@ There is deliberately a single handler slot: composing security-relevant middlew
 const previous = IModelApp.mapLayerFormatRegistry.mapLayerFetchHandler;
 IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(
   previous
-    // myHandler runs first (outermost); `previous` becomes its `next`, keeping both behaviors.
-    ? (request, next) => myHandler(request, async () => previous(request, next))
+    // myHandler runs first (outermost); `previous` becomes its `fetchRequest`, keeping both behaviors.
+    ? (request, fetchRequest) => myHandler(request, async (req) => previous(req, fetchRequest))
     : myHandler);
 ```
 
-The composing layer decides consciously whether it wraps outside (sees the request first, the response last) or inside the existing handler — the same responsibility a .NET host takes when assembling a `DelegatingHandler` chain. Handlers meant to be composed should tolerate running more than once per request (an outer handler's retry re-invokes the inner one) and use `headers.set` rather than `append` so repeated runs stay idempotent.
+The composing layer decides consciously whether it wraps outside (sees the request first, the response last) or inside the existing handler — the same responsibility a .NET host takes when assembling a `DelegatingHandler` chain. Because requests are passed along as values, an outer handler hands `previous` the copy it built, and `previous` builds its own copy on top; neither sees the other's changes reverted.
 
 ### One credential per layer
 
@@ -106,12 +109,13 @@ The handler is global, but [MapLayerRequest.layerUrl]($frontend) identifies the 
 // Layer URL → token, obtained and refreshed by the hosting application through its own channels.
 const tokensByLayer = new Map<string, string>();
 
-IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler((request: MapLayerRequest, next: MapLayerFetchNext) => {
+IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler((request: MapLayerRequest, fetchRequest: MapLayerFetchRequest) => {
   const token = tokensByLayer.get(request.layerUrl);
   if (token === undefined)
-    return next({ credentialed: false });   // a layer this handler does not manage
-  request.headers.set("Authorization", `Bearer ${token}`);
-  return next();
+    return fetchRequest(request, { credentialed: false });   // a layer this handler does not manage
+  const headers = new Headers(request.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  return fetchRequest({ ...request, headers });
 });
 ```
 
@@ -123,7 +127,7 @@ Once the application has re-established authentication, it must detach and re-at
 
 - **Ordering** — the handler runs after the provider has fully assembled the request (protocol parameters, custom query parameters from [ImageMapLayerSettings.savedQueryParams]($common)/[ImageMapLayerSettings.unsavedQueryParams]($common), basic-auth headers, and the ArcGIS `token` parameter when applicable), so it sees the complete request and its values take precedence. This precedence is unconditional: nothing prevents a handler from overwriting protocol parameters such as `REQUEST` or `VERSION`, so a handler that injects parameters should use names that cannot collide with the protocols of the formats it targets.
 - **Coexistence with OAuth-based auth** — both facilities operate independently. An ArcGIS layer using `ArcGisAccessClient` still has every request routed through the handler, letting it manage requests to a proxy origin while OAuth tokens keep flowing for every other origin.
-- **Origin trust and redirects** — every send issued through `next()` is treated like a credentialed request by [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) unless the handler passes `{ credentialed: false }`: while the restriction is enabled it is issued with `redirect: "error"`, so handler-injected values cannot silently reach an unlisted origin through a redirect. See [Map-layer security](./MapLayersAndBasemaps.md#map-layer-security).
+- **Origin trust and redirects** — every send issued through `fetchRequest` is treated like a credentialed request by [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) unless the handler passes `{ credentialed: false }`: while the restriction is enabled it is issued with `redirect: "error"`, so handler-injected values cannot silently reach an unlisted origin through a redirect. See [Map-layer security](./MapLayersAndBasemaps.md#map-layer-security).
 - **SSO** — a credentialed send never triggers the NTLM/Negotiate retry with browser credentials; the handler is the authentication authority for every request it manages. Sends declared `{ credentialed: false }` keep the SSO retry, so layers served by Windows-Authentication-protected services keep working alongside a handler that leaves their requests alone.
 - **Caching** — while a handler is registered, the URL-keyed capability and service-metadata caches are bypassed, so customized responses are never shared across differing request contexts. This applies to all requests, including those the handler passes through untouched: every source validation and provider initialization then re-issues its `GetCapabilities` / service-metadata request, a deliberate simplification whose cost is one extra request per layer attach.
 - **Google Maps** — tile requests are routed through the handler, but the session-creation (`createSession`) and viewport-info (attribution) requests issued by `@itwin/map-layers-formats` are not: they target Google's fixed endpoints with the layer's own API key, so there is no proxy or alternate credential for a handler to apply. Applications implementing their own `GoogleMapsSessionManager` own those requests entirely.

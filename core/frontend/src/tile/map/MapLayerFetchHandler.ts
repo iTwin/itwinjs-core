@@ -7,13 +7,16 @@
  */
 
 /** Describes an outgoing map-layer request submitted to the [[MapLayerFetchHandler]] registered via
- * [[MapLayerFormatRegistry.setMapLayerFetchHandler]].
- * The request target cannot be changed: only its query parameters and headers may be mutated,
- * so a handler can never (accidentally or otherwise) reroute the request to a different origin or path.
+ * [[MapLayerFormatRegistry.setMapLayerFetchHandler]]. Treat it as an immutable value: to change what is sent,
+ * pass a copy with different [[searchParams]] or [[headers]] to [[MapLayerFetchRequest]], e.g.
+ * `fetchRequest({ ...request, headers })`. The target (origin and path) is fixed by the framework and cannot be
+ * changed, so a handler can never (accidentally or otherwise) reroute a request.
  * @beta
  */
 export interface MapLayerRequest {
-  /** The current request URL — what [[MapLayerFetchNext]] will send — reflecting any mutations made to [[searchParams]]. */
+  /** The request URL the framework built, including its query parameters. Informational: a handler that changes
+   * [[searchParams]] does not need to — and cannot — update it.
+   */
   readonly url: string;
   /** The URL of the map-layer source this request is made for, as configured on the layer's settings.
    * Unlike [[url]], it is stable across every request kind (tiles, tooltips, capabilities, service metadata),
@@ -25,22 +28,21 @@ export interface MapLayerRequest {
    */
   readonly formatId: string;
   /** The complete query-parameter set of the outgoing request — including parameters embedded in the layer's URL
-   * and those appended by the provider (e.g. custom query parameters, protocol parameters). May be mutated in
-   * place: `searchParams.set("token", ...)` overrides an existing value, `append` adds one. Mutating parameters
-   * the provider relies on may break the request. Mutations made between two [[MapLayerFetchNext]] calls are
-   * reflected in the second request. The reference itself cannot be replaced.
+   * and those appended by the provider (e.g. custom query parameters, protocol parameters). To send different
+   * parameters, pass a copy: `const searchParams = new URLSearchParams(request.searchParams); searchParams.set("token", ...)`.
+   * Overriding parameters the provider relies on may break the request.
    */
   readonly searchParams: URLSearchParams;
-  /** The request headers, pre-populated with those the framework supplies (e.g. settings-derived basic auth).
-   * May be mutated in place (e.g. `headers.set("Authorization", ...)`); the reference itself cannot be replaced.
+  /** The request headers the framework supplies (e.g. settings-derived basic auth). To send different headers,
+   * pass a copy: `const headers = new Headers(request.headers); headers.set("Authorization", ...)`.
    */
   readonly headers: Headers;
 }
 
-/** Options a [[MapLayerFetchHandler]] passes to [[MapLayerFetchNext]].
+/** Options a [[MapLayerFetchHandler]] passes to [[MapLayerFetchRequest]].
  * @beta
  */
-export interface MapLayerFetchNextOptions {
+export interface MapLayerFetchRequestOptions {
   /** Whether the send may carry handler-injected credentials. Defaults to `true`: the framework cannot tell a
    * secret from a benign value, so it protects every handler send unless told otherwise. Pass `false` for a
    * request the handler leaves untouched (e.g. a format it does not manage), so that request keeps the
@@ -49,13 +51,14 @@ export interface MapLayerFetchNextOptions {
   credentialed?: boolean;
 }
 
-/** Issues the framework's default send for the current state of a [[MapLayerRequest]] — the equivalent of
- * `base.SendAsync()` in an HTTP message-handler pipeline. Applies the site's standard behavior (redirect
- * policy, origin-trust checks, timeouts) and resolves with the response.
- * May be called several times by a handler (e.g. to retry after refreshing a token); each call re-reads
- * the request's current query parameters and headers.
+/** Issues the framework's default send for a [[MapLayerRequest]] — the equivalent of `base.SendAsync(request)`
+ * in an HTTP message-handler pipeline. Applies the site's standard behavior (redirect policy, origin-trust
+ * checks, timeouts) and resolves with the response.
+ * The request sent is the one passed: its [[MapLayerRequest.searchParams]] and [[MapLayerRequest.headers]] go on
+ * the wire, while the target (origin and path) is always that of the request the handler received. May be
+ * called several times by a handler (e.g. to retry with a refreshed token).
  *
- * Unless [[MapLayerFetchNextOptions.credentialed]] is `false`, the send is treated as a credentialed request:
+ * Unless [[MapLayerFetchRequestOptions.credentialed]] is `false`, the send is treated as a credentialed request:
  * redirects are refused while [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]] is enabled (so
  * injected values cannot silently reach an unlisted origin through a redirect), and an NTLM/Negotiate 401
  * challenge is never answered with browser credentials (SSO). A handler serving one format should therefore
@@ -64,7 +67,7 @@ export interface MapLayerFetchNextOptions {
  * it supplies itself (settings-derived basic auth, browser SSO identity) on every send.
  * @beta
  */
-export type MapLayerFetchNext = (options?: MapLayerFetchNextOptions) => Promise<Response>;
+export type MapLayerFetchRequest = (request: MapLayerRequest, options?: MapLayerFetchRequestOptions) => Promise<Response>;
 
 /** Wraps every map-layer network request issued through [[MapLayerImageryProvider]] — tiles, tooltips,
  * capabilities, service metadata, and source validation — like a `DelegatingHandler` wraps `HttpClient` sends.
@@ -73,10 +76,11 @@ export type MapLayerFetchNext = (options?: MapLayerFetchNextOptions) => Promise<
  * its own session or token service client) are not routed; that format's documentation states which.
  *
  * A handler may:
- * - mutate the request's query parameters and headers, then call `next()` for the default behavior;
- * - pass a request through untouched with `next({ credentialed: false })`, keeping its default behavior in full;
- * - call `next()` several times (e.g. refresh an expired token and retry transparently);
- * - return its own `Response` without calling `next()` (short-circuit);
+ * - pass a copy of the request with different query parameters or headers to `fetchRequest`;
+ * - pass the request through untouched with `fetchRequest(request, { credentialed: false })`, keeping its default
+ *   behavior in full;
+ * - call `fetchRequest` several times (e.g. refresh an expired token and retry transparently);
+ * - return its own `Response` without calling `fetchRequest` (short-circuit);
  * - throw [[MapLayerAuthenticationFailedError]] to report an unrecoverable authentication failure,
  *   transitioning the layer to [[MapLayerImageryProviderStatus.RequireAuth]].
  *
@@ -88,4 +92,4 @@ export type MapLayerFetchNext = (options?: MapLayerFetchNextOptions) => Promise<
  * token-retry requests); each network request passes through the handler individually.
  * @beta
  */
-export type MapLayerFetchHandler = (request: MapLayerRequest, next: MapLayerFetchNext) => Promise<Response>;
+export type MapLayerFetchHandler = (request: MapLayerRequest, fetchRequest: MapLayerFetchRequest) => Promise<Response>;

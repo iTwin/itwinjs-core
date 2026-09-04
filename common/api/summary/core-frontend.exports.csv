@@ -396,8 +396,8 @@ beta;interface;MapLayerFeatureGeometry
 beta;interface;MapLayerFeatureInfo
 beta;class;MapLayerFeatureRecord
 beta;type;MapLayerFetchHandler
-beta;type;MapLayerFetchNext
-beta;interface;MapLayerFetchNextOptions
+beta;type;MapLayerFetchRequest
+beta;interface;MapLayerFetchRequestOptions
 public;class;MapLayerFormat
 public;class;MapLayerFormatRegistry
 public;type;MapLayerFormatType

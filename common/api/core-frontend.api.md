@@ -6110,13 +6110,13 @@ export class MapLayerFeatureRecord {
 }
 
 // @beta
-export type MapLayerFetchHandler = (request: MapLayerRequest, next: MapLayerFetchNext) => Promise<Response>;
+export type MapLayerFetchHandler = (request: MapLayerRequest, fetchRequest: MapLayerFetchRequest) => Promise<Response>;
 
 // @beta
-export type MapLayerFetchNext = (options?: MapLayerFetchNextOptions) => Promise<Response>;
+export type MapLayerFetchRequest = (request: MapLayerRequest, options?: MapLayerFetchRequestOptions) => Promise<Response>;
 
 // @beta
-export interface MapLayerFetchNextOptions {
+export interface MapLayerFetchRequestOptions {
     credentialed?: boolean;
 }
 

@@ -250,10 +250,12 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
   it("applies handler headers and query parameters to both validation requests", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setMapLayerFetchHandler(async (request, next) => {
-      request.searchParams.set("clientParam", "clientParamValue");
-      request.headers.set("Authorization", "Bearer secret-jwt");
-      return next();
+    registry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+      const searchParams = new URLSearchParams(request.searchParams);
+      searchParams.set("clientParam", "clientParamValue");
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      return fetchRequest({ ...request, searchParams, headers });
     });
     const source = createSource();
     source.savedQueryParams = { saved: "1" };
@@ -279,9 +281,10 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
   it("reports RequireAuth when the handler classifies a validation request as an authentication failure", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setMapLayerFetchHandler(async (request, next) => {
-      request.headers.set("Authorization", "Bearer secret-jwt");
-      const response = await next();
+    registry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      const response = await fetchRequest({ ...request, headers });
       if (response.status === 403)
         throw new MapLayerAuthenticationFailedError(request.url);
       return response;
@@ -296,9 +299,10 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
   it("lets the handler classify protocol-specific validation failures", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setMapLayerFetchHandler(async (request, next) => {
-      request.headers.set("Authorization", "Bearer secret-jwt");
-      const response = await next();
+    registry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      const response = await fetchRequest({ ...request, headers });
       if (response.status === 407)
         throw new MapLayerAuthenticationFailedError(request.url);
       return response;
