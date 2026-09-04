@@ -363,7 +363,7 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should update status when invalid token error from service", async () => {
 
-    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { error: { code: 499 } } }});
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { error: { code: 499 } }, errorCode: 499 }});
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
     const provider = new ArcGisFeatureProvider(settings);
     const raiseEventSpy = sandbox.spy(provider.onStatusChanged, "raiseEvent");

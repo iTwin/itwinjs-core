@@ -489,6 +489,35 @@ describe("map-layer fetch handler", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
   });
 
+  it("does not classify a 401 capabilities response the handler returns as its own", async () => {
+    // The handler is the authority on responses it returns: without a MapLayerAuthenticationFailedError the
+    // 401 is a plain failure, not a RequireAuth transition.
+    fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
+    setCredentialedHandler();
+    const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl }));
+    await expect(provider.initialize()).rejects.toThrow();
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
+  });
+
+  it("still classifies a 401 capabilities response the handler passed through", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => fetchRequest(request, { credentialed: false }));
+    const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl }));
+    await provider.initialize();
+
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
+  });
+
+  it("treats a short-circuited response as the handler's own", async () => {
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async () => new Response(null, { status: 401 }));
+    const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl }));
+    await expect(provider.initialize()).rejects.toThrow();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
+  });
+
   it("transitions a WMTS layer to RequireAuth when its capabilities request fails authentication", async () => {
     // The initialize failure-conversion block is duplicated in the WMTS provider; guard it separately.
     fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
@@ -550,6 +579,31 @@ describe("map-layer fetch handler", () => {
   it("reports RequireAuth from ArcGIS source validation when the metadata request fails authentication", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
     setCredentialedHandler({ throwOnAuthStatus: true });
+    const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" })!;
+
+    const validation = await ArcGisUtilities.validateSource({ source, capabilitiesFilter: ["Map"] });
+
+    expect(validation.status).toEqual(MapLayerSourceStatus.RequireAuth);
+  });
+
+  it("does not classify an ArcGIS error body the handler returns as its own", async () => {
+    const tokenRequired = () => new Response(JSON.stringify({ error: { code: 499 } }), { status: 200, headers: { "content-type": "application/json" } });
+    fetchMock.mockImplementation(async () => tokenRequired());
+    setCredentialedHandler();
+    const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" })!;
+
+    const validation = await ArcGisUtilities.validateSource({ source, capabilitiesFilter: ["Map"] });
+    // Not RequireAuth: the handler did not throw MapLayerAuthenticationFailedError, so the body is just an invalid service document.
+    expect(validation.status).toEqual(MapLayerSourceStatus.InvalidFormat);
+
+    const provider = new ArcGISMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" }));
+    await provider.initialize();
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
+  });
+
+  it("still classifies an ArcGIS error body the handler passed through", async () => {
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ error: { code: 499 } }), { status: 200, headers: { "content-type": "application/json" } }));
+    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => fetchRequest(request, { credentialed: false }));
     const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" })!;
 
     const validation = await ArcGisUtilities.validateSource({ source, capabilitiesFilter: ["Map"] });

@@ -314,6 +314,31 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.RequireAuth);
   });
 
+  it("does not classify a 401 the handler returns as its own", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      return fetchRequest({ ...request, headers });
+    });
+    stubFetch({}, { [sourceUrl]: 401 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    // The handler did not throw MapLayerAuthenticationFailedError, so this is a plain failure, not InvalidCredentials.
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidUrl);
+  });
+
+  it("still classifies a 401 the handler passed through", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.setMapLayerFetchHandler(async (request, fetchRequest) => fetchRequest(request, { credentialed: false }));
+    stubFetch({}, { [sourceUrl]: 401 });
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidCredentials);
+  });
+
   it("resolves a relative collections link and appends saved and unsaved query params", async () => {
     registry.restrictCredentialsToTrustedOrigins = true;
     const source = createSource();

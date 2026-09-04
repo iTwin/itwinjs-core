@@ -67,7 +67,7 @@ export class WmsUtilities {
 
     // Route the request through the registered fetch handler (if any). Handler failures — including
     // MapLayerAuthenticationFailedError — propagate so callers can transition to RequireAuth.
-    const response = await fetchMapLayerRequest({
+    const { response, managedByHandler } = await fetchMapLayerRequest({
       url,
       formatId: formatId ?? "",
       layerUrl: layerUrl ?? url,
@@ -86,8 +86,13 @@ export class WmsUtilities {
       },
     });
 
-    if (response.status !== 200)
+    if (response.status !== 200) {
+      // A status in a response managed by the fetch handler is not an authentication failure (it would have
+      // thrown MapLayerAuthenticationFailedError): report it without a status so callers do not classify it.
+      if (managedByHandler)
+        throw new Error(`Map-layer fetch handler returned status ${response.status} for '${url}'`);
       throw new HttpResponseError(response.status, await response.text());
+    }
     return response.text();
   }
 

@@ -1283,6 +1283,7 @@ export interface ArcGisGetServiceJsonArgs {
     formatId: string;
     // (undocumented)
     ignoreCache?: boolean;
+    layerUrl?: string;
     // (undocumented)
     password?: string;
     // (undocumented)
@@ -1318,6 +1319,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 export interface ArcGISServiceMetadata {
     accessTokenRequired: boolean;
     content: any;
+    errorCode?: ArcGisErrorCode;
 }
 
 // @internal
@@ -3470,7 +3472,7 @@ export function fetchMapLayerRequest(args: {
     layerUrl: string;
     headers?: Headers;
     send: (request: MapLayerRequest, credentialed: boolean) => Promise<Response>;
-}): Promise<Response>;
+}): Promise<MapLayerFetchResult>;
 
 // @public
 export class FitViewTool extends ViewTool {
@@ -6120,6 +6122,13 @@ export interface MapLayerFetchRequestOptions {
     credentialed?: boolean;
 }
 
+// @internal
+export interface MapLayerFetchResult {
+    managedByHandler: boolean;
+    // (undocumented)
+    response: Response;
+}
+
 // @public
 export class MapLayerFormat {
     // @beta
@@ -6249,6 +6258,8 @@ export abstract class MapLayerImageryProvider {
     initialize(): Promise<void>;
     // @internal
     protected isCredentialsSharingAllowed(url: string): boolean;
+    // @internal
+    protected isManagedByHandler(response: Response): boolean;
     // @internal
     protected isSsoAllowed(url: string): boolean;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;

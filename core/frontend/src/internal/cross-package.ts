@@ -48,6 +48,7 @@ export {
  RealityTileLoader,
  credentialedFetchRedirect,
  fetchMapLayerRequest,
+ type MapLayerFetchResult,
  SpatialTileTreeReferences,
  type WGS84Extent,
  WmsUtilities,

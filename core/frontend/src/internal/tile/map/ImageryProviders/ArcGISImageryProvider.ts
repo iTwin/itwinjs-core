@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerUntrustedOriginError } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, fetchMapLayerRequest, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthenticationFailedError, MapLayerFetchResult, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerUntrustedOriginError } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -127,7 +127,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
    * (if any), with fresh headers per request so injected values are neither accumulated nor exposed to
    * cross-origin redirects.
    */
-  private async requestViaHandler(target: URL, allowSsoRetry: boolean, options?: RequestInit): Promise<Response> {
+  private async requestViaHandler(target: URL, allowSsoRetry: boolean, options?: RequestInit): Promise<MapLayerFetchResult> {
     return fetchMapLayerRequest({
       url: target.toString(),
       formatId: this._settings.formatId,
@@ -175,8 +175,9 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       await this._firstRequestPromise;
 
     let response: Response|undefined;
+    let managedByHandler = false;
     try {
-      response = await this.requestViaHandler(urlObj, true, options);
+      ({ response, managedByHandler } = await this.requestViaHandler(urlObj, true, options));
 
       if ((this._lastAccessToken && response.status === 400)
        || response.headers.get("content-type")?.toLowerCase().includes("htm")) {
@@ -188,7 +189,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
         if (this._lastAccessToken && this._accessTokenRequired)
           tmpUrl.searchParams.append("token", this._lastAccessToken.token);
         tmpUrl.searchParams.append("f","json");
-        response = await this.requestViaHandler(tmpUrl, false, options);
+        ({ response, managedByHandler } = await this.requestViaHandler(tmpUrl, false, options));
       }
 
       errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
@@ -216,11 +217,12 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
           }
 
           // Make a second attempt with refreshed token
-          response = await this.requestViaHandler(retryUrl, false, options);
+          ({ response, managedByHandler } = await this.requestViaHandler(retryUrl, false, options));
           errorCode  = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
 
-        if (errorCode !== undefined &&
+        // An error code in a response managed by the fetch handler is not classified here.
+        if (!managedByHandler && errorCode !== undefined &&
           (   errorCode === ArcGisErrorCode.TokenRequired
            || errorCode === ArcGisErrorCode.InvalidToken
            || errorCode === ArcGisErrorCode.MissingPermissions

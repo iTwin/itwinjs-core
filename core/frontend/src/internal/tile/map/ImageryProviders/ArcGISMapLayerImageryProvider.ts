@@ -232,9 +232,10 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     }
 
     const json = metadata.content;
-    if (json?.error?.code === ArcGisErrorCode.TokenRequired
-      || json?.error?.code === ArcGisErrorCode.InvalidToken
-      || json?.error?.code === ArcGisErrorCode.MissingPermissions
+    const errorCode = metadata.errorCode;
+    if (errorCode === ArcGisErrorCode.TokenRequired
+      || errorCode === ArcGisErrorCode.InvalidToken
+      || errorCode === ArcGisErrorCode.MissingPermissions
     ) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {

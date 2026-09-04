@@ -608,18 +608,33 @@ export abstract class MapLayerImageryProvider {
     // send a copy with other query parameters and headers, retry, or short-circuit. Handler failures propagate: the
     // request must never silently degrade to an unauthenticated one.
     try {
-      return await fetchMapLayerRequest({
+      const { response, managedByHandler } = await fetchMapLayerRequest({
         url,
         formatId: this._settings.formatId,
         layerUrl: this._settings.url,
         headers,
         send: async (request, credentialed) => this.sendDefaultRequest(request, credentialed, hasCreds, hasSettingsCreds, timeoutMs),
       });
+      if (managedByHandler)
+        this._handlerManagedResponses.add(response);
+      return response;
     } catch (error) {
       if (error instanceof MapLayerAuthenticationFailedError)
         this.reportAuthenticationFailure();
       throw error;
     }
+  }
+
+  /** Responses of [[makeRequest]] managed by a fetch handler (see [[MapLayerFetchResult.managedByHandler]]). */
+  private readonly _handlerManagedResponses = new WeakSet<Response>();
+
+  /** Returns true if a fetch handler returned this [[makeRequest]] response as its own, in which case the
+   * provider applies none of its default response handling (status-code or protocol-error classification):
+   * the handler reports authentication failures by throwing [[MapLayerAuthenticationFailedError]] instead.
+   * @internal
+   */
+  protected isManagedByHandler(response: Response): boolean {
+    return this._handlerManagedResponses.has(response);
   }
 
   /** Returns a map layer tile at the specified settings. */
@@ -664,7 +679,7 @@ export abstract class MapLayerImageryProvider {
 
     let response: Response;
     try {
-      response = await fetchMapLayerRequest({
+      ({ response } = await fetchMapLayerRequest({
         url,
         formatId: this._settings.formatId,
         layerUrl: this._settings.url,
@@ -682,7 +697,7 @@ export abstract class MapLayerImageryProvider {
             this.checkCredentialedRedirect(requestUrl, rsp);
           return rsp;
         },
-      });
+      }));
     } catch (error) {
       // Never degrade to an unauthenticated request or reject (getToolTip callers do not catch); skip the tooltip.
       if (this.hasFetchHandler)

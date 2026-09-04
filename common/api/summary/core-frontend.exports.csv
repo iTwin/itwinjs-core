@@ -398,6 +398,7 @@ beta;class;MapLayerFeatureRecord
 beta;type;MapLayerFetchHandler
 beta;type;MapLayerFetchRequest
 beta;interface;MapLayerFetchRequestOptions
+internal;interface;MapLayerFetchResult
 public;class;MapLayerFormat
 public;class;MapLayerFormatRegistry
 public;type;MapLayerFormatType
