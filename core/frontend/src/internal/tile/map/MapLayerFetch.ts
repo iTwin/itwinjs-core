@@ -44,7 +44,7 @@ export async function fetchMapLayerRequest(args: {
   const original = parsed;
   const request: MapLayerRequest = { url: original.toString(), layerUrl: args.layerUrl, formatId: args.formatId, searchParams: original.searchParams, headers };
   return handler(request, async (toSend, options) => {
-    // Only the query parameters and headers of the passed request are honored; the target stays the framework's.
+    // Only the query parameters and headers of the passed request are honored; the target stays ours.
     let url = original;
     if (toSend.searchParams !== request.searchParams) {
       url = new URL(original);
