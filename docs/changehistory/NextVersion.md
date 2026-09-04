@@ -28,17 +28,18 @@ SchemaSync databases now require version 5.0.0. Existing version 4 containers ar
 
 Map layers previously supported only HTTP Basic credentials, custom query parameters, and ArcGIS-style tokens (a token appended as a query parameter by a [MapLayerAccessClient]($frontend)). Services requiring any other scheme - most commonly an `Authorization` or API-key header, e.g. when map services are exposed through an authenticating proxy - could not be consumed.
 
-A new `@beta` extension point, [MapLayerFormatRegistry.setMapLayerFetchHandler]($frontend), lets the hosting application wrap every map-layer network request - tiles, tooltips, capabilities, service metadata, and source validation, across WMS, WMTS, TileURL, ArcGIS, ArcGIS Feature, and OGC API Features layers - the way a `DelegatingHandler` wraps `HttpClient` sends in .NET. The [MapLayerFetchHandler]($frontend) receives the request ([MapLayerRequest]($frontend)) and a `fetchRequest` function ([MapLayerFetchRequest]($frontend)) that issues the framework's default send for a request. It may:
+A new `@beta` extension point, [MapLayerFormatRegistry.addMapLayerFetchHandler]($frontend), lets the hosting application wrap every map-layer network request - tiles, tooltips, capabilities, service metadata, and source validation, across WMS, WMTS, TileURL, ArcGIS, ArcGIS Feature, and OGC API Features layers - the way a `DelegatingHandler` wraps `HttpClient` sends in .NET. Handlers form a pipeline owned by the framework, run in registration order. Each [MapLayerFetchHandler]($frontend) receives the request ([MapLayerRequest]($frontend)) and a `fetchRequest` function ([MapLayerFetchRequest]($frontend)) sending a request. It may:
 
-- pass a copy of the request with different query parameters or headers to `fetchRequest` (the request's target cannot be changed);
+- decline a request it does not manage by returning `undefined`: the request is offered unchanged to the next handler, and if every handler declines the framework issues it with the default behavior;
+- pass a copy of the request with different query parameters or headers to `fetchRequest` (the request's target cannot be changed); the remaining handlers may modify it further before it is sent;
 - call `fetchRequest` several times - e.g. refresh an expired token and retry transparently, so the layer never enters `RequireAuth`;
 - return its own `Response` without calling `fetchRequest` (short-circuit);
 - throw [MapLayerAuthenticationFailedError]($frontend) (now `@beta`) to report an unrecoverable authentication failure, transitioning the layer to [MapLayerImageryProviderStatus]($frontend).`RequireAuth`.
 
 ```ts
-IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+const removeHandler = IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRequest) => {
   if (request.formatId !== "WMS")
-    return fetchRequest(request, { credentialed: false });  // not ours: issue the request untouched, with the default behavior
+    return undefined;  // not ours: leave the request to the next handler, or to the default behavior
   const withBearer = (token: string) => {
     const headers = new Headers(request.headers);
     headers.set("Authorization", `Bearer ${token}`);
@@ -53,11 +54,11 @@ IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRe
 });
 ```
 
-There is at most one handler per session, owned by the hosting application; setting a new one replaces the previous one, and passing `undefined` restores the default behavior.
+`addMapLayerFetchHandler` returns the function that removes the handler. Several layers of an application can register their own handler without coordinating.
 
-The handler owns authentication for the requests it manages, and only it knows whether a value it injected is a secret - so every send issued through `fetchRequest` is treated as a credentialed request: redirects are refused while [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) is enabled (so injected values cannot silently reach an unlisted origin), and an NTLM/Negotiate 401 challenge is never answered with browser credentials. For requests it leaves untouched, the handler passes `fetchRequest(request, { credentialed: false })` ([MapLayerFetchRequestOptions]($frontend)) and they keep the default behavior in full, so a handler serving one format does not affect layers of the others (e.g. Windows-Authentication-protected WMS services). The framework keeps protecting the credentials it supplies itself - settings-derived basic auth and the browser's SSO identity - on every send.
+A handler owns authentication for the requests it manages, and only it knows whether a value it injected is a secret - so every send issued through `fetchRequest` is a credentialed request: redirects are refused while [MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]($frontend) is enabled (so injected values cannot silently reach an unlisted origin), and an NTLM/Negotiate 401 challenge is never answered with browser credentials. A request the handler does not manage is declined rather than sent, and keeps the default behavior in full, so a handler serving one format does not affect layers of the others (e.g. Windows-Authentication-protected WMS services); because a request sent by a handler is always issued credentialed, no handler further down the pipeline can downgrade that protection. The framework keeps protecting the credentials it supplies itself - settings-derived basic auth and the browser's SSO identity - on every send.
 
-The feature is fully backward compatible: without a handler, requests and failure detection are exactly as in previous releases, and [MapLayerAccessClient]($frontend) (including `ArcGisAccessClient` from `@itwin/map-layers-auth`) keeps serving the token-based ArcGIS facility unchanged. Because the handler is registered per session rather than persisted in [ImageMapLayerSettings]($common), no secret is ever serialized into display styles or saved views, and restored views authenticate without per-layer re-injection. While a handler is registered, URL-keyed capability/service-metadata caches are bypassed so customized responses are not shared across differing request contexts.
+The feature is fully backward compatible: without a handler, requests and failure detection are exactly as in previous releases, and [MapLayerAccessClient]($frontend) (including `ArcGisAccessClient` from `@itwin/map-layers-auth`) keeps serving the token-based ArcGIS facility unchanged. Because handlers are registered per session rather than persisted in [ImageMapLayerSettings]($common), no secret is ever serialized into display styles or saved views, and restored views authenticate without per-layer re-injection. While a handler is registered, URL-keyed capability/service-metadata caches are bypassed so customized responses are not shared across differing request contexts.
 
 Additionally, WMS and WMTS `GetCapabilities` requests issued when a layer initializes now include the layer's custom query parameters ([ImageMapLayerSettings.savedQueryParams]($common)/[ImageMapLayerSettings.unsavedQueryParams]($common)), matching the source-validation path; previously they were omitted, which could break reloading a layer whose server requires them.
 

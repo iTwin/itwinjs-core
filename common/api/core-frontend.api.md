@@ -6112,15 +6112,10 @@ export class MapLayerFeatureRecord {
 }
 
 // @beta
-export type MapLayerFetchHandler = (request: MapLayerRequest, fetchRequest: MapLayerFetchRequest) => Promise<Response>;
+export type MapLayerFetchHandler = (request: MapLayerRequest, fetchRequest: MapLayerFetchRequest) => Promise<Response | undefined>;
 
 // @beta
-export type MapLayerFetchRequest = (request: MapLayerRequest, options?: MapLayerFetchRequestOptions) => Promise<Response>;
-
-// @beta
-export interface MapLayerFetchRequestOptions {
-    credentialed?: boolean;
-}
+export type MapLayerFetchRequest = (request: MapLayerRequest) => Promise<Response>;
 
 // @internal
 export interface MapLayerFetchResult {
@@ -6146,6 +6141,8 @@ export class MapLayerFormat {
 // @public
 export class MapLayerFormatRegistry {
     constructor(opts?: MapLayerOptions);
+    // @beta
+    addMapLayerFetchHandler(handler: MapLayerFetchHandler): () => void;
     // (undocumented)
     get configOptions(): MapLayerOptions;
     // @internal (undocumented)
@@ -6162,16 +6159,14 @@ export class MapLayerFormatRegistry {
     isSsoAllowed(url: string): boolean;
     // @internal
     logUntrustedOriginUse(url: string, settingsUrl?: string): void;
-    // @beta
-    get mapLayerFetchHandler(): MapLayerFetchHandler | undefined;
+    // @internal
+    get mapLayerFetchHandlers(): ReadonlyArray<MapLayerFetchHandler>;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // @beta
     restrictCredentialsToTrustedOrigins: boolean;
     // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
-    // @beta
-    setMapLayerFetchHandler(handler: MapLayerFetchHandler | undefined): void;
     // @beta
     get trustedCredentialsOrigins(): ReadonlyArray<string>;
     set trustedCredentialsOrigins(origins: ReadonlyArray<string>);

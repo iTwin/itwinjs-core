@@ -283,7 +283,7 @@ export class ArcGisUtilities {
    * @param requireToken Flag to indicate if a token is required
    * @throws [[MapLayerUntrustedOriginError]] if an NTLM/Negotiate challenge could not be answered because
    * the URL's origin is not trusted (see [[MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins]]);
-   * [[MapLayerAuthenticationFailedError]] if the registered [[MapLayerFetchHandler]] reported an
+   * [[MapLayerAuthenticationFailedError]] if a registered [[MapLayerFetchHandler]] reported an
    * authentication failure;
    * all other errors are caught and reported by returning `undefined`.
    */
@@ -293,7 +293,7 @@ export class ArcGisUtilities {
     const accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(formatId);
     // The cache is keyed by URL only, so responses customized by the fetch handler (e.g.
     // header-authenticated) must not be shared with or served from differently-customized requests.
-    const hasFetchHandler = undefined !== IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler;
+    const hasFetchHandler = (IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers.length ?? 0) > 0;
     if (!ignoreCache && !hasFetchHandler) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)

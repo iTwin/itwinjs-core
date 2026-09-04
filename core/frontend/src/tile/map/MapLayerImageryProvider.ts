@@ -396,11 +396,11 @@ export abstract class MapLayerImageryProvider {
     return IModelApp.mapLayerFormatRegistry?.getAccessClient(this._settings.formatId);
   }
 
-  /** True while a [[MapLayerFetchHandler]] is registered via [[MapLayerFormatRegistry.setMapLayerFetchHandler]].
+  /** True while at least one [[MapLayerFetchHandler]] is registered via [[MapLayerFormatRegistry.addMapLayerFetchHandler]].
    * @internal
    */
   protected get hasFetchHandler(): boolean {
-    return undefined !== IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler;
+    return (IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers.length ?? 0) > 0;
   }
 
   /** Returns true if the given URL has the same origin as this layer's settings URL.

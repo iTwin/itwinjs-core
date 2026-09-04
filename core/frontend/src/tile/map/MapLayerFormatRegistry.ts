@@ -188,36 +188,29 @@ export class MapLayerFormatRegistry {
    */
   public restrictCredentialsToTrustedOrigins = false;
 
-  private _fetchHandler?: MapLayerFetchHandler;
+  private readonly _fetchHandlers: MapLayerFetchHandler[] = [];
 
-  /** Sets the [[MapLayerFetchHandler]] wrapping every map-layer network request issued through
+  /** Appends a [[MapLayerFetchHandler]] to the pipeline wrapping every map-layer network request issued through
    * [[MapLayerImageryProvider]] — tiles, tooltips, capabilities, service metadata, and source validation.
-   * There is at most one handler per session, owned by the hosting application: setting a new one replaces
-   * the previous one (a warning is logged, since the replaced handler no longer runs), and passing `undefined`
-   * restores the default behavior. A layer of the application that must coexist with a handler registered by
-   * another layer can read [[mapLayerFetchHandler]] and register a composition of both.
+   * Handlers run in registration order (the first registered is the outermost), each deciding whether to
+   * manage a request or decline it to the next one; several layers of an application can therefore register
+   * their own handler without coordinating. Returns the function that removes the handler.
    * @beta
    */
-  public setMapLayerFetchHandler(handler: MapLayerFetchHandler | undefined): void {
-    if (undefined !== this._fetchHandler && undefined !== handler && handler !== this._fetchHandler)
-      Logger.logWarning(loggerCategory, "setMapLayerFetchHandler is replacing a previously registered handler, which no longer runs; compose with mapLayerFetchHandler to chain instead.");
-
-    this._fetchHandler = handler;
+  public addMapLayerFetchHandler(handler: MapLayerFetchHandler): () => void {
+    this._fetchHandlers.push(handler);
+    return () => {
+      const index = this._fetchHandlers.indexOf(handler);
+      if (index >= 0)
+        this._fetchHandlers.splice(index, 1);
+    };
   }
 
-  /** The registered [[MapLayerFetchHandler]], if any. Lets a layered application compose a new handler
-   * with a previously registered one instead of silently replacing it:
-   * ```ts
-   * const previous = registry.mapLayerFetchHandler;
-   * registry.setMapLayerFetchHandler(
-   *   previous
-   *     ? (request, fetchRequest) => myHandler(request, async (req) => previous(req, fetchRequest))
-   *     : myHandler);
-   * ```
-   * @beta
+  /** The registered [[MapLayerFetchHandler]]s, in pipeline order.
+   * @internal
    */
-  public get mapLayerFetchHandler(): MapLayerFetchHandler | undefined {
-    return this._fetchHandler;
+  public get mapLayerFetchHandlers(): ReadonlyArray<MapLayerFetchHandler> {
+    return this._fetchHandlers;
   }
 
   constructor(opts?: MapLayerOptions) {

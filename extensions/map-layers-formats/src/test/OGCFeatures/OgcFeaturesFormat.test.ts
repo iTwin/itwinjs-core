@@ -250,7 +250,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
   it("applies handler headers and query parameters to both validation requests", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
       const searchParams = new URLSearchParams(request.searchParams);
       searchParams.set("clientParam", "clientParamValue");
       const headers = new Headers(request.headers);
@@ -281,7 +281,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
   it("reports RequireAuth when the handler classifies a validation request as an authentication failure", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
       const headers = new Headers(request.headers);
       headers.set("Authorization", "Bearer secret-jwt");
       const response = await fetchRequest({ ...request, headers });
@@ -299,7 +299,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
   it("lets the handler classify protocol-specific validation failures", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
       const headers = new Headers(request.headers);
       headers.set("Authorization", "Bearer secret-jwt");
       const response = await fetchRequest({ ...request, headers });
@@ -316,7 +316,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
 
   it("does not classify a 401 the handler returns as its own", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
       const headers = new Headers(request.headers);
       headers.set("Authorization", "Bearer secret-jwt");
       return fetchRequest({ ...request, headers });
@@ -329,9 +329,9 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.InvalidUrl);
   });
 
-  it("still classifies a 401 the handler passed through", async () => {
+  it("still classifies a 401 when the handler declines the request", async () => {
     registry.register(OgcApiFeaturesMapLayerFormat);
-    registry.setMapLayerFetchHandler(async (request, fetchRequest) => fetchRequest(request, { credentialed: false }));
+    registry.addMapLayerFetchHandler(async () => undefined);
     stubFetch({}, { [sourceUrl]: 401 });
 
     const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });

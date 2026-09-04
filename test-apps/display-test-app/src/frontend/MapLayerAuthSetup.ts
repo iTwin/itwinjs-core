@@ -34,7 +34,7 @@ function configureTrustedCredentialsOrigins(configuration: DtaConfiguration): vo
   }
 }
 
-/** Registers a map-layer fetch handler ([[MapLayerFormatRegistry.setMapLayerFetchHandler]]) injecting a
+/** Registers a map-layer fetch handler ([[MapLayerFormatRegistry.addMapLayerFetchHandler]]) injecting a
  * fixed header (e.g. "Authorization=Bearer ...") and/or query parameters into every map-layer request of
  * the formats listed in IMJS_MAP_LAYER_AUTH_FORMATS. See README.md.
  */
@@ -81,9 +81,9 @@ function configureAuthFetchHandler(configuration: DtaConfiguration): void {
     }
   }
 
-  IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+  IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRequest) => {
     if (!formats.includes(request.formatId))
-      return fetchRequest(request, { credentialed: false });
+      return undefined;   // not ours: leave the request to the next handler or the default behavior
     const headers = new Headers(request.headers);
     if (header)
       headers.set(header[0], header[1]);

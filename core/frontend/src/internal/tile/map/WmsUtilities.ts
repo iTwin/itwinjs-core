@@ -14,7 +14,7 @@ import {
  * @module Tiles
  */
 
-/** Options for a capabilities/XML request routed through the registered [[MapLayerFetchHandler]], if any.
+/** Options for a capabilities/XML request routed through the registered [[MapLayerFetchHandler]]s, if any.
  * @internal
  */
 export interface WmsFetchOptions {

@@ -5,7 +5,7 @@
 
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ArcGisUtilities, MapLayerAuthenticationFailedError, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerSource, MapLayerSourceStatus, WmsUtilities } from "../../../tile/internal";
+import { ArcGisUtilities, MapLayerAuthenticationFailedError, MapLayerFetchHandler, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerSource, MapLayerSourceStatus, WmsUtilities } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { WmsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmsMapLayerImageryProvider";
 import { WmtsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmtsMapLayerImageryProvider";
@@ -51,18 +51,25 @@ function withParam(request: MapLayerRequest, name: string, value: string): MapLa
   return { ...request, searchParams };
 }
 
+function addHandler(handler: MapLayerFetchHandler): () => void {
+  return IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(handler);
+}
+
 /** Registers a fetch handler injecting a header and a query parameter — the typical authenticating
  * handler. When `throwOnAuthStatus` is set, statuses 401/403 are reported as authentication failures,
  * transitioning layers to RequireAuth.
  */
-function setCredentialedHandler(opts?: { throwOnAuthStatus?: boolean }): void {
-  IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+function setCredentialedHandler(opts?: { throwOnAuthStatus?: boolean }): () => void {
+  return addHandler(async (request, fetchRequest) => {
     const response = await fetchRequest(withHeader(withParam(request, "clientParam", "clientParamValue"), "Authorization", "Bearer secret-jwt"));
     if (opts?.throwOnAuthStatus && (response.status === 401 || response.status === 403))
       throw new MapLayerAuthenticationFailedError(request.url);
     return response;
   });
 }
+
+/** A handler that manages no request. */
+const decliningHandler: MapLayerFetchHandler = async () => undefined;
 
 function okResponse(): Response {
   return new Response(null, { status: 200 });
@@ -109,7 +116,7 @@ describe("map-layer fetch handler", () => {
     let seenUrl: string | undefined;
     let seenLayerUrl: string | undefined;
     let seenFormatId: string | undefined;
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    addHandler(async (request, fetchRequest) => {
       seenUrl = request.url;
       seenLayerUrl = request.layerUrl;
       seenFormatId = request.formatId;
@@ -124,7 +131,7 @@ describe("map-layer fetch handler", () => {
   });
 
   it("sends the query parameters of the request copy passed to fetchRequest", async () => {
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) =>
+    addHandler(async (request, fetchRequest) =>
       fetchRequest(withParam(request, "clientParam", "clientParamValue")));
     const provider = createProvider();
     await provider.makeRequest(`${tileUrl}?f=json`);
@@ -136,7 +143,7 @@ describe("map-layer fetch handler", () => {
 
   it("passes the layer's settings URL as layerUrl on capabilities requests too", async () => {
     const seenLayerUrls: string[] = [];
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    addHandler(async (request, fetchRequest) => {
       seenLayerUrls.push(request.layerUrl);
       return fetchRequest(request);
     });
@@ -175,11 +182,11 @@ describe("map-layer fetch handler", () => {
     expect(getRequestInit()?.redirect).toBeUndefined();
   });
 
-  it("treats every handler send as credentialed by default under the trusted-origins restriction", async () => {
+  it("treats every handler send as credentialed under the trusted-origins restriction", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
     fetchMock.mockResolvedValue(ntlmChallengeResponse());
-    // We cannot tell a secret from a benign value, so it protects unless told otherwise.
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) =>
+    // We cannot tell a secret from a benign value, so every send is protected.
+    addHandler(async (request, fetchRequest) =>
       fetchRequest(withHeader(request, "X-Correlation-Id", "abc-123")));
     const provider = createProvider();
     const response = await provider.makeRequest(tileUrl);
@@ -190,21 +197,21 @@ describe("map-layer fetch handler", () => {
     expect(response.status).toEqual(401);
   });
 
-  it("treats an untouched pass-through as credentialed when the handler does not say otherwise", async () => {
+  it("treats a send of the unchanged request as credentialed too", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => fetchRequest(request));
+    addHandler(async (request, fetchRequest) => fetchRequest(request));
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
     expect(getRequestInit()?.redirect).toEqual("error");
   });
 
-  it("keeps the default redirect policy for sends the handler declares not credentialed", async () => {
+  it("keeps the default redirect policy for requests the handler declines", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
     // A handler serving one format must not degrade layers of the others.
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    addHandler(async (request, fetchRequest) => {
       if (request.formatId !== "ArcGIS")
-        return fetchRequest(request, { credentialed: false });
+        return undefined;
       return fetchRequest(withHeader(request, "Authorization", "Bearer secret-jwt"));
     });
     const provider = createProvider();   // WMS
@@ -224,12 +231,12 @@ describe("map-layer fetch handler", () => {
     expect(response.status).toEqual(401);
   });
 
-  it("still answers an NTLM challenge with SSO credentials for sends the handler declares not credentialed", async () => {
+  it("still answers an NTLM challenge with SSO credentials for requests the handler declines", async () => {
     fetchMock.mockResolvedValueOnce(ntlmChallengeResponse());
     fetchMock.mockResolvedValueOnce(okResponse());
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    addHandler(async (request, fetchRequest) => {
       if (request.formatId !== "ArcGIS")
-        return fetchRequest(request, { credentialed: false });
+        return undefined;
       return fetchRequest(withHeader(request, "Authorization", "Bearer secret-jwt"));
     });
     const provider = createProvider();   // WMS: Windows-Authentication layers keep working alongside the handler
@@ -240,12 +247,12 @@ describe("map-layer fetch handler", () => {
     expect(response.status).toEqual(200);
   });
 
-  it("applies the credentialed flag per send", async () => {
+  it("protects each send of a handler, including a first anonymous attempt", async () => {
     IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
     fetchMock.mockResolvedValueOnce(okResponse());
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
-      let response = await fetchRequest(request, { credentialed: false });   // try anonymously first
+    addHandler(async (request, fetchRequest) => {
+      let response = await fetchRequest(request);   // try anonymously first
       if (response.status === 401)
         response = await fetchRequest(withHeader(request, "Authorization", "Bearer secret-jwt"));
       return response;
@@ -254,12 +261,12 @@ describe("map-layer fetch handler", () => {
     await provider.makeRequest(tileUrl);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(getRequestInit(0)?.redirect).toBeUndefined();
+    expect(getRequestInit(0)?.redirect).toEqual("error");
     expect(getRequestInit(1)?.redirect).toEqual("error");
   });
 
   it("honors the query parameters and headers of a request copy, but never its target", async () => {
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) =>
+    addHandler(async (request, fetchRequest) =>
       fetchRequest({ ...withHeader(withParam(request, "token", "abc"), "Authorization", "Bearer secret-jwt"), url: "https://evil.example.net/steal" }));
     const provider = createProvider();
     await provider.makeRequest(`${tileUrl}?f=json`);
@@ -283,7 +290,7 @@ describe("map-layer fetch handler", () => {
   it("notifies the user once when the handler reports an authentication failure after tiles had loaded", async () => {
     const outputMessage = vi.spyOn(IModelApp.notifications, "outputMessage");
     let failing = false;
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    addHandler(async (request, fetchRequest) => {
       if (failing)
         throw new MapLayerAuthenticationFailedError(request.url);
       return fetchRequest(request);
@@ -303,7 +310,7 @@ describe("map-layer fetch handler", () => {
   it("does not notify the user when the handler fails before any tile loaded", async () => {
     // Validation already reported the failure; a second notification would be noise.
     const outputMessage = vi.spyOn(IModelApp.notifications, "outputMessage");
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request) => {
+    addHandler(async (request) => {
       throw new MapLayerAuthenticationFailedError(request.url);
     });
     const provider = createProvider();
@@ -316,7 +323,7 @@ describe("map-layer fetch handler", () => {
   it("lets the handler recognize protocol-specific failures", async () => {
     // An HTTP 200 whose body carries an embedded error code (e.g. ArcGIS-style).
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ error: { code: 499 } }), { status: 200 }));
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    addHandler(async (request, fetchRequest) => {
       const response = await fetchRequest(request);
       // Clone before reading the body so it remains available to the provider.
       const json = await response.clone().json().catch(() => undefined);
@@ -348,7 +355,7 @@ describe("map-layer fetch handler", () => {
       return sentAuth.length === 1 ? new Response(null, { status: 401 }) : okResponse();
     });
     let token = "expired-jwt";
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    addHandler(async (request, fetchRequest) => {
       let rsp = await fetchRequest(withHeader(request, "Authorization", `Bearer ${token}`));
       if (rsp.status === 401) {
         token = "refreshed-jwt";   // refreshed through the application's own channels
@@ -369,7 +376,7 @@ describe("map-layer fetch handler", () => {
   it("sends the query parameters of each request copy passed between two sends", async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
     fetchMock.mockResolvedValueOnce(okResponse());
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    addHandler(async (request, fetchRequest) => {
       let response = await fetchRequest(withParam(request, "sig", "first"));
       if (response.status === 401)
         response = await fetchRequest(withParam(request, "sig", "second"));
@@ -383,7 +390,7 @@ describe("map-layer fetch handler", () => {
   });
 
   it("lets the handler short-circuit without reaching the network", async () => {
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async () => new Response("cached", { status: 200 }));
+    addHandler(async () => new Response("cached", { status: 200 }));
     const provider = createProvider();
     const response = await provider.makeRequest(tileUrl);
 
@@ -399,9 +406,9 @@ describe("map-layer fetch handler", () => {
     expect(getSentHeaderNames()).toEqual([]);
   });
 
-  it("restores the default behavior when the handler is cleared", async () => {
-    setCredentialedHandler();
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(undefined);
+  it("restores the default behavior when the handler is removed", async () => {
+    const remove = setCredentialedHandler();
+    remove();
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
@@ -409,33 +416,149 @@ describe("map-layer fetch handler", () => {
     expect(getSentHeaderNames()).toEqual([]);
   });
 
-  it("replaces the previous handler when a new one is set", async () => {
-    setCredentialedHandler();
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) =>
-      fetchRequest(withHeader(request, "Authorization", "Bearer replacement-jwt")));
+  it("removes only the handler whose remover is called", async () => {
+    const remove = addHandler(async (request, fetchRequest) => fetchRequest(withHeader(request, "X-First", "1")));
+    addHandler(async (request, fetchRequest) => fetchRequest(withHeader(request, "X-Second", "2")));
+    remove();
+    remove();   // idempotent
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer replacement-jwt");
-    expect(new URL(getRequestUrl()).searchParams.get("clientParam")).toBeNull();
+    expect(getSentHeaderNames()).toEqual(["x-second"]);
   });
 
-  it("lets a second application layer compose with a previously registered handler", async () => {
-    const registry = IModelApp.mapLayerFormatRegistry;
-    // Layer 1 (e.g. a platform package) registers its handler first.
-    registry.setMapLayerFetchHandler(async (request, fetchRequest) =>
-      fetchRequest(withHeader(request, "X-Platform", "layer1")));
-    // Layer 2 wraps it instead of replacing it, per the documented pattern.
-    const previous = registry.mapLayerFetchHandler!;
-    registry.setMapLayerFetchHandler(async (request, fetchRequest) =>
-      previous(withHeader(request, "Authorization", "Bearer layer2-jwt"), fetchRequest));
+  it("runs handlers in registration order, the first registered being the outermost", async () => {
+    const order: string[] = [];
+    addHandler(async (request, fetchRequest) => {
+      order.push("outer:before");
+      const response = await fetchRequest(withHeader(request, "X-Outer", "1"));
+      order.push("outer:after");
+      return response;
+    });
+    addHandler(async (request, fetchRequest) => {
+      order.push("inner");
+      return fetchRequest(withHeader(request, "X-Inner", "2"));
+    });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(order).toEqual(["outer:before", "inner", "outer:after"]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getRequestHeaders()?.get("X-Outer")).toEqual("1");
+    expect(getRequestHeaders()?.get("X-Inner")).toEqual("2");
+  });
+
+  it("lets several application layers register handlers without coordinating", async () => {
+    // Layer 1 (e.g. a platform package) and layer 2 (the application) each manage their own concern.
+    addHandler(async (request, fetchRequest) => fetchRequest(withHeader(request, "X-Platform", "layer1")));
+    addHandler(async (request, fetchRequest) => fetchRequest(withHeader(request, "Authorization", "Bearer layer2-jwt")));
     const provider = createProvider();
     await provider.makeRequest(tileUrl);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer layer2-jwt");
     expect(getRequestHeaders()?.get("X-Platform")).toEqual("layer1");
+  });
+
+  it("offers a declined request unchanged to the next handler", async () => {
+    let seenByInner: MapLayerRequest | undefined;
+    addHandler(decliningHandler);
+    addHandler(async (request, fetchRequest) => {
+      seenByInner = request;
+      return fetchRequest(request);
+    });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(seenByInner?.url).toEqual(tileUrl);
+    expect(seenByInner?.formatId).toEqual("WMS");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("issues the original request with the default behavior when every handler declines", async () => {
+    fetchMock.mockResolvedValueOnce(ntlmChallengeResponse());
+    fetchMock.mockResolvedValueOnce(okResponse());
+    addHandler(decliningHandler);
+    addHandler(decliningHandler);
+    const provider = createProvider();
+    const response = await provider.makeRequest(tileUrl);
+
+    // No headers added, and the SSO retry, exactly as without handlers.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(getSentHeaderNames(0)).toEqual([]);
+    expect(getRequestInit(1)?.credentials).toEqual("include");
+    expect(response.status).toEqual(200);
+  });
+
+  it("keeps a request credentialed when the handlers downstream of its sender decline it", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    fetchMock.mockResolvedValue(ntlmChallengeResponse());
+    // The outer handler injects a secret; the inner one does not manage WMS and declines.
+    addHandler(async (request, fetchRequest) => fetchRequest(withHeader(request, "Authorization", "Bearer secret-jwt")));
+    addHandler(async (request) => request.formatId === "ArcGIS" ? new Response(null, { status: 200 }) : undefined);
+    const provider = createProvider();   // WMS
+    await provider.makeRequest(tileUrl);
+
+    // The inner decline must not downgrade the protection of the value the outer handler injected.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer secret-jwt");
+    expect(getRequestInit()?.redirect).toEqual("error");
+  });
+
+  it("sends a request credentialed when an inner handler manages it after the outer declined", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    addHandler(decliningHandler);
+    addHandler(async (request, fetchRequest) => fetchRequest(withHeader(request, "Authorization", "Bearer secret-jwt")));
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer secret-jwt");
+    expect(getRequestInit()?.redirect).toEqual("error");
+  });
+
+  it("recomputes the URL offered to the next handler from the sender's query parameters", async () => {
+    let seenByInner: MapLayerRequest | undefined;
+    addHandler(async (request, fetchRequest) => fetchRequest(withParam(request, "token", "abc")));
+    addHandler(async (request, fetchRequest) => {
+      seenByInner = request;
+      return fetchRequest(request);
+    });
+    const provider = createProvider();
+    await provider.makeRequest(`${tileUrl}?f=json`);
+
+    const seenUrl = new URL(seenByInner!.url);
+    expect(seenUrl.searchParams.get("f")).toEqual("json");
+    expect(seenUrl.searchParams.get("token")).toEqual("abc");
+    expect(new URL(getRequestUrl()).searchParams.get("token")).toEqual("abc");
+  });
+
+  it("lets an inner handler short-circuit a request sent by the outer one", async () => {
+    let outerGot: Response | undefined;
+    addHandler(async (request, fetchRequest) => {
+      outerGot = await fetchRequest(withHeader(request, "Authorization", "Bearer secret-jwt"));
+      return outerGot;
+    });
+    addHandler(async () => new Response("cached", { status: 200 }));
+    const provider = createProvider();
+    const response = await provider.makeRequest(tileUrl);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(response).toBe(outerGot);
+    expect(await response.text()).toEqual("cached");
+  });
+
+  it("propagates an authentication failure reported by an inner handler", async () => {
+    addHandler(async (request, fetchRequest) => fetchRequest(request));
+    addHandler(async (request) => {
+      throw new MapLayerAuthenticationFailedError(request.url);
+    });
+    const provider = createProvider();
+
+    await expect(provider.makeRequest(tileUrl)).rejects.toBeInstanceOf(MapLayerAuthenticationFailedError);
+    expect(provider.status).toEqual(MapLayerImageryProviderStatus.RequireAuth);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("shapes tooltip requests too", async () => {
@@ -450,7 +573,7 @@ describe("map-layer fetch handler", () => {
   });
 
   it("skips the tooltip request when the handler fails", async () => {
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async () => {
+    addHandler(async () => {
       throw new Error("token service unreachable");
     });
     const provider = createProvider();
@@ -515,9 +638,9 @@ describe("map-layer fetch handler", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
   });
 
-  it("still classifies a 401 capabilities response the handler passed through", async () => {
+  it("still classifies a 401 capabilities response when the handler declines the request", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => fetchRequest(request, { credentialed: false }));
+    addHandler(decliningHandler);
     const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl }));
     await provider.initialize();
 
@@ -525,7 +648,7 @@ describe("map-layer fetch handler", () => {
   });
 
   it("treats a short-circuited response as the handler's own", async () => {
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async () => new Response(null, { status: 401 }));
+    addHandler(async () => new Response(null, { status: 401 }));
     const provider = new WmsMapLayerImageryProvider(ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl }));
     await expect(provider.initialize()).rejects.toThrow();
 
@@ -579,7 +702,7 @@ describe("map-layer fetch handler", () => {
   it("uses the configured layer URL to identify ArcGIS sublayer metadata requests", async () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify({}), { headers: { "content-type": "application/json" } }));
     let seenLayerUrl: string | undefined;
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => {
+    addHandler(async (request, fetchRequest) => {
       seenLayerUrl = request.layerUrl;
       return fetchRequest(request);
     });
@@ -629,9 +752,9 @@ describe("map-layer fetch handler", () => {
     expect(provider.status).toEqual(MapLayerImageryProviderStatus.Valid);
   });
 
-  it("still classifies an ArcGIS error body the handler passed through", async () => {
+  it("still classifies an ArcGIS error body when the handler declines the request", async () => {
     fetchMock.mockImplementation(async () => new Response(JSON.stringify({ error: { code: 499 } }), { status: 200, headers: { "content-type": "application/json" } }));
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async (request, fetchRequest) => fetchRequest(request, { credentialed: false }));
+    addHandler(decliningHandler);
     const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" })!;
 
     const validation = await ArcGisUtilities.validateSource({ source, capabilitiesFilter: ["Map"] });
@@ -713,7 +836,7 @@ describe("map-layer fetch handler", () => {
   });
 
   it("propagates handler failures instead of issuing the request unauthenticated", async () => {
-    IModelApp.mapLayerFormatRegistry.setMapLayerFetchHandler(async () => {
+    addHandler(async () => {
       throw new Error("token service unreachable");
     });
     const provider = createProvider();

@@ -234,7 +234,7 @@ export class WmsCapabilities {
     // The cache never contains credentialed results (see the write below), so a credentialed request
     // must not be served a cached public document either; responses customized by the fetch handler
     // must not be shared with or served from differently-customized requests.
-    const hasFetchHandler = undefined !== IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler;
+    const hasFetchHandler = (IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers.length ?? 0) > 0;
     if (!ignoreCache && !hasFetchHandler && !credentials) {
       const cached = WmsCapabilities._capabilitiesCache.get(cacheKey);
       if (cached !== undefined)
