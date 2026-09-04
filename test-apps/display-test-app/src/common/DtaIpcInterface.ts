@@ -6,6 +6,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { DisplayStyle3dProps, Placement2dProps, SpatialViewDefinitionProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
 import { TransformProps } from "@itwin/core-geometry";
+import { FormatSet } from "@itwin/ecschema-metadata";
 
 export const dtaChannel = "display-test-app/dta";
 
@@ -77,12 +78,18 @@ export interface DtaIpcInterface {
   setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
 
   /**
-   * Adopts the DTA demo `FormatSet` for the specified iModel when `enabled`, so every
-   * `"quantity"` / `"coordinate"` FieldRun formats through the demo formats; unregisters it
-   * when not. Resolves once the provider has finished pre-warming, after which all field
-   * evaluation is synchronous.
+   * Re-registers the field formatting provider for the specified iModel from `defaultSet`,
+   * `sets`, and everything previously imported for it - so importing a second FormatSet builds
+   * up a routing table rather than replacing the first. Pre-warms a formatter for every
+   * KindOfQuantity the iModel's schemas declare, then resolves; after which all field evaluation
+   * is synchronous.
+   *
+   * `defaultSet` is *adopted*: it applies to every FieldRun that names no FormatSet. Each entry
+   * of `sets` is addressable under its `id` by a FieldRun's `formatSet` option. Re-supplying the
+   * default, or an id, replaces it. Supplying neither unregisters and discards everything
+   * imported so far.
    */
-  setFieldFormattingDemo(iModelKey: string, enabled: boolean): Promise<void>;
+  registerFieldFormattingProvider(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): Promise<void>;
 
   /** Reads a UTF-8 text file from the local filesystem. Intended for DTA dev-loop keyins only. */
   readTextFile(filePath: string): Promise<string>;

@@ -3,128 +3,48 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  BaselineShift,
-  ColorDef,
-  FieldFormatOptions,
-  FieldRun,
-  FractionRun,
-  LeaderTextPointOptions,
-  LineBreakRun,
-  List,
-  ListMarker,
-  ListMarkerEnumerator,
-  Paragraph,
-  Placement2dProps,
-  Run,
-  TabRun,
-  TargetPointShape,
-  TerminatorShape,
-  TextAnnotation,
-  TextAnnotationAnchor,
-  TextAnnotationFrameShape,
-  TextAnnotationLeader,
-  TextAnnotationProps,
-  TextBlock,
-  TextBlockMargins,
-  TextBlockProps,
-  TextFrameStyleProps,
-  TextJustification,
-  TextLeaderStyleProps,
-  TextRun,
-  TextStyleSettingsProps,
-} from "@itwin/core-common";
-import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority,  readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
+import { Placement2dProps, TextAnnotation, TextAnnotationAnchor, TextAnnotationProps } from "@itwin/core-common";
+import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
+import { FormatSet } from "@itwin/ecschema-metadata";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Point3d } from "@itwin/core-geometry";
 import { dtaIpc } from "./App";
 
-// Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
-// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint, subscriptscale, superscriptscale, insertstyle, updatestyle, deletestyle, applystyle, docheight, textheight, formatmode
-
+/** Renders a [TextAnnotation]($common) loaded from a JSON fixture as a decoration graphic.
+ *
+ * The annotation is authored offline and loaded whole rather than assembled command by command:
+ * a fixture round-trips exactly, can be checked in next to the test it supports, and does not
+ * need a keyin for every property the annotation schema grows.
+ */
 class TextEditor implements Decorator {
-  // Geometry properties
   private _iModel?: IModelConnection;
   private _entityId: Id64String = Id64.invalid;
   private _graphic?: RenderGraphicOwner;
+
   public categoryId: Id64String = Id64.invalid;
   public modelId: Id64String = Id64.invalid;
   public defaultTextStyleId: Id64String = Id64.invalid;
-
-  // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
-  public rotation = 0;
-  public offset = { x: 0, y: 0 };
-  public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
-  public leaders: TextAnnotationLeader[] = [];
   public debugAnchorPointAndRange = false;
 
-  // Properties applied to the entire document
-  public get documentStyle(): Pick<
-    TextStyleSettingsProps,
-    "textHeight" |
-    "widthFactor" |
-    "lineSpacingFactor" |
-    "margins" |
-    "frame" |
-    "leader" |
-    "justification"> {
-    return this.textBlock.styleOverrides;
-  }
+  /** The anchor DTA assumes when an imported annotation does not specify one.
+   *
+   * Core defaults to top-left, which would hang the text down and to the right of the origin
+   * `init` picked. Centering on the anchor point instead puts the text where the view is
+   * actually looking, which is what makes `init` and `center` land it on screen.
+   */
+  private static readonly _defaultAnchor: TextAnnotationAnchor = { horizontal: "center", vertical: "middle" };
+
+  public annotation: TextAnnotation = TextAnnotation.fromJSON({ anchor: TextEditor._defaultAnchor });
 
   public get annotationProps(): TextAnnotationProps {
-    const annotation = TextAnnotation.fromJSON({
-      textBlock: this.textBlock.toJSON(),
-      anchor: this.anchor,
-      orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
-      offset: this.offset,
-      leaders: this.leaders
-    });
-
-    return annotation.toJSON();
+    return this.annotation.toJSON();
   }
 
   public get placementProps(): Placement2dProps {
-    return {
-      origin: this.origin,
-      angle: 0,
-    };
+    return { origin: this.origin, angle: 0 };
   }
-
-  private pathToLastChild(): (Run | Paragraph | List)[] {
-    const pathToChild: (Run | Paragraph | List)[] = [];
-    let current: Run | Paragraph | List | undefined = this.textBlock.children[this.textBlock.children.length - 1];
-    while (current) {
-      pathToChild.push(current);
-
-      current = (current.type === "paragraph" || current.type === "list") && current.children.length !== 0 ? current.children[current.children.length - 1] : undefined;
-    }
-    return pathToChild;
-  }
-
-  private appendRunToLastChild(run: Run) {
-    if (this.textBlock.children.length === 0) {
-      this.textBlock.appendParagraph();
-    }
-
-    const pathToChild: (Paragraph | List)[] = this.pathToLastChild().filter((component) => component.type === "paragraph" || component.type === "list");
-    const last = pathToChild[pathToChild.length - 1];
-
-    if (last.type === "paragraph") {
-      last.children.push(run);
-    } else {
-      last.children.push(Paragraph.create({ styleOverrides: { font: { name: this.runStyle.font?.name ?? "Arial" } } }));
-      last.children[last.children.length - 1].children.push(run);
-    }
-    return last;
-  }
-
-  // Properties to be applied to the next run
-  public runStyle: Omit<TextStyleSettingsProps, "widthFactor" | "lineSpacingFactor"> = { font: { name: "Arial" } };
-  public baselineShift: BaselineShift = "none";
-
-  public textBlock = TextBlock.create();
 
   public init(iModel: IModelConnection, category: Id64String): void {
     this.clear();
@@ -142,136 +62,18 @@ class TextEditor implements Decorator {
     this._iModel = undefined;
     this._graphic?.disposeGraphic();
     this._graphic = undefined;
-    this.textBlock = TextBlock.create();
+
+    this.annotation = TextAnnotation.fromJSON({ anchor: TextEditor._defaultAnchor });
     this.defaultTextStyleId = Id64.invalid;
     this.origin.setZero();
-    this.rotation = 0;
-    this.offset.x = this.offset.y = 0;
-    this.anchor = { horizontal: "center", vertical: "middle" };
     this.debugAnchorPointAndRange = false;
-    this.runStyle = { font: { name: "Arial" } };
-    this.baselineShift = "none";
-    this.leaders = [];
   }
 
-  public appendText(content: string, overrides?: TextStyleSettingsProps): void {
-    this.appendRunToLastChild(TextRun.create({
-      styleOverrides: { ...this.runStyle, ...overrides },
-      content,
-      baselineShift: this.baselineShift,
-    }));
-  }
-
-  public appendFraction(numerator: string, denominator: string): void {
-    this.appendRunToLastChild(FractionRun.create({
-      styleOverrides: this.runStyle,
-      numerator,
-      denominator,
-    }));
-  }
-
-  public appendField(args: {
-    elementId: string,
-    schemaName: string,
-    className: string,
-    propertyName: string,
-    formatOptions?: FieldFormatOptions,
-  }): void {
-    const { elementId, schemaName, className, propertyName, formatOptions } = args;
-    this.appendRunToLastChild(FieldRun.create({
-      propertyHost: { elementId, schemaName, className },
-      propertyPath: { propertyName },
-      formatOptions,
-      styleOverrides: { ...this.runStyle },
-    }));
-  }
-
-  public appendTab(spaces?: number): void {
-    this.appendRunToLastChild(
-      TabRun.create({
-        styleOverrides: { tabInterval: spaces },
-      }),
-    );
-  }
-
-  public appendBreak(): void {
-    this.appendRunToLastChild(LineBreakRun.create({
-      styleOverrides: this.runStyle,
-    }));
-  }
-
-  public appendList(index: number = 0, listMarker?: ListMarker): void {
-    const list = List.create({ styleOverrides: { font: { name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle, listMarker } });
-
-    const path = this.pathToLastChild().filter(component => component.type === "paragraph");
-    const child = path[index];
-    child?.children.push(list);
-  }
-
-  public appendListItem(index: number = 0): void {
-    const lists = this.pathToLastChild().filter(component => component.type === "list");
-    const list = lists[index];
-    const item = Paragraph.create({ styleOverrides: { font: { name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle } });
-    list?.children.push(item);
-  }
-
-  public appendParagraph(): void {
-    this.textBlock.appendParagraph({ styleOverrides: this.runStyle });
-  }
-
-  public setIndentation(indentation: number): void {
-    const currentParagraph = this.textBlock.children[this.textBlock.children.length - 1];
-
-    if (!currentParagraph) return;
-    currentParagraph.styleOverrides = {
-      ...currentParagraph.styleOverrides,
-      indentation,
-    };
-
-    this.runStyle.indentation = indentation;
-  }
-
-  public setDocumentWidth(width: number): void {
-    this.textBlock.width = width;
-  }
-
-  public justify(justification: TextJustification): void {
-    this.documentStyle.justification = justification;
-  }
-
-  public setMargins(margins: TextBlockMargins): void {
-    this.documentStyle.margins = {
-      left: margins.left ?? 0,
-      right: margins.right ?? 0,
-      top: margins.top ?? 0,
-      bottom: margins.bottom ?? 0,
-    };
-  }
-
-  public setLeaderProps() {
-    this.leaders.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachment: { mode: "Nearest" } });
-  }
-
-  public setLeaderStartPoint(leader: TextAnnotationLeader, angle: number) {
-    const point = Point3d.createZero();
-    const distance = 10;
-    const angleRadians = Angle.createDegrees(angle);
-    const directionVector = Vector3d.createPolar(distance, angleRadians);
-    leader.startPoint = point.plus(directionVector);
-  }
-
-  public setLeaderKeyPoint(leader: TextAnnotationLeader, curveIndex: number, fraction: number) {
-    leader.attachment = { mode: "KeyPoint", curveIndex, fraction };
-  }
-  public setLeaderTextPoint(leader: TextAnnotationLeader, arg: LeaderTextPointOptions) {
-    leader.attachment = { mode: "TextPoint", position: arg };
-  }
-  public setLeaderNearest(leader: TextAnnotationLeader) {
-    leader.attachment = { mode: "Nearest" };
-  }
-
-  public setTextBlock(props: TextBlockProps) {
-    this.textBlock = TextBlock.create(props);
+  public setAnnotation(props: TextAnnotationProps): void {
+    // A fixture that says nothing about anchoring gets DTA's centered default rather than
+    // Core's top-left, so an imported annotation lands where `init` centered the editor. A
+    // fixture that does specify an anchor is honored exactly as written.
+    this.annotation = TextAnnotation.fromJSON({ anchor: TextEditor._defaultAnchor, ...props });
   }
 
   /**
@@ -286,7 +88,7 @@ class TextEditor implements Decorator {
       throw new Error("Invoke `dta text init` first");
     }
 
-    if (this.textBlock.isEmpty || this.textBlock.isWhitespace) {
+    if (this.annotation.textBlock.isEmpty || this.annotation.textBlock.isWhitespace) {
       return;
     }
 
@@ -332,59 +134,17 @@ export class TextDecorationTool extends Tool {
 
   private static readonly _helpEntries: ReadonlyArray<readonly [string, string]> = [
     ["help", "Print this help message."],
-    ["init [category] [defaultTextStyleId]", "Initialize the editor. Uses the first category in the view if omitted. **REQUIRED** before any other commands. The defaultTextStyleId is optional. Text will be centered in the view."],
+    ["init [category] [defaultTextStyleId]", "Initialize the editor. Uses the first category in the view if omitted. **REQUIRED** before any other commands. Text will be centered in the view."],
     ["clear", "Reset the editor and remove the decoration."],
-    ["anchor <left|center|right|top|middle|bottom>", "Set the horizontal or vertical anchor."],
-    ["applystyle <styleId>", "Apply the given default text style id and clear overrides."],
-    ["bold", "Toggle bold for subsequent runs."],
-    ["break", "Append a line break."],
-    ["center", "Set the annotation origin to the view center."],
-    ["color <colorString>", "Set run color (e.g. red, #ff0000)."],
-    ["debug", "Toggle drawing of the anchor point and range."],
-    ["delete <annotationId>", "Delete the given annotation element."],
-    ["deletestyle <name>", "Delete a text style by name."],
-    ["demo <on|off>", "Adopt/unadopt the DTA demo FormatSets for the current iModel."],
-    ["docheight <n>", "Set document text height."],
-    ["export <path> [force]", "Write the current text block to <path> as JSON. Refuses to overwrite an existing file unless 'force' is passed."],
-    ["field <fieldPropsJson>", "Append a field run. JSON with elementId, schemaName, className, propertyName, and optional formatOptions. Use single quotes instead of double quotes in the JSON."],
-    ["font <name>", "Set the font for subsequent runs."],
-    ["fraction <numerator> <denominator>", "Append a stacked fraction run."],
-    ["fractionscale <n>", "Set stacked-fraction scale."],
-    ["fractiontype <horizontal|diagonal>", "Set stacked-fraction type."],
-    ["frame <shape|fillColor|borderColor|borderWeight> <value>", "Configure the frame style."],
-    ["import <path>", "Load a text block from a JSON file at <path> and set it as the current block."],
-    ["indent <n>", "Set indentation of the current paragraph."],
+    ["center", "Move the annotation to the center of the current view. `init` does this once; re-run after panning or zooming."],
+    ["import annotation <path>", "Load TextAnnotationProps from a JSON file and display it."],
+    ["import formatset <path> [id]", "Load a FormatSet from a JSON file and register it for the current iModel. Adopted by default, or addressable under [id]."],
+    ["import formatset off", "Unregister every FormatSet previously imported for the current iModel."],
+    ["export annotation <path> [force]", "Write the current TextAnnotationProps to <path>. Refuses to overwrite an existing file unless 'force' is passed."],
     ["insert", "Insert the current annotation into the iModel (2d views only)."],
-    ["insertstyle <name>", "Insert a new text style using the current run/document style."],
-    ["italic", "Toggle italic for subsequent runs."],
-    ["json [propsJson]", "Set the text block from JSON, or log the current text block if omitted."],
-    ["justify <left|center|right>", "Set document justification."],
-    ["leader keypoint <curveIndex> <fraction>", "Attach the latest leader to a curve key point."],
-    ["leader nearest", "Attach the latest leader to the nearest point."],
-    ["leader new", "Append a new leader."],
-    ["leader start <angleDeg>", "Set the start point of the latest leader."],
-    ["leader terminatorShape <shape>", "Set the leader terminator shape."],
-    ["leader textpoint <position>", "Attach the latest leader to a text point."],
-    ["list <enumerator> <terminator> <case> [index]", "Append a list to the paragraph at [index]. Use \"none\" to omit a value."],
-    ["list-item [index]", "Append an item to the list at [index]."],
-    ["log", "Log the current annotation to the console."],
-    ["margin <left|right|top|bottom|all|horizontal|vertical> <n>", "Set document margins."],
-    ["offset <x> <y>", "Set annotation offset."],
-    ["paragraph", "Append a new paragraph."],
-    ["rotation <deg>", "Set annotation rotation in degrees."],
-    ["scale <factor>", "Set the annotation scale factor for the current model."],
-    ["shift <none|superscript|subscript>", "Set baseline shift for subsequent runs."],
-    ["spacing <n>", "Set document line spacing factor."],
-    ["subscriptscale <n>", "Set subscript scale."],
-    ["superscriptscale <n>", "Set superscript scale."],
-    ["tab [spaces]", "Append a tab run with an optional tab interval."],
-    ["text <content>", "Append a text run."],
-    ["textheight <n>", "Set text height for subsequent runs."],
-    ["underline", "Toggle underline for subsequent runs."],
-    ["update <annotationId>", "Update the given annotation element with the current state."],
-    ["updatestyle <name>", "Update an existing text style using the current run/document style."],
-    ["width <n>", "Set the document width (for word wrap)."],
-    ["widthfactor <n>", "Set document width factor."],
+    ["update <annotationId>", "Update the given annotation element with the current annotation."],
+    ["delete <annotationId>", "Delete the given annotation element."],
+    ["debug", "Toggle drawing of the anchor point and range."],
   ];
 
   private static printHelp(): void {
@@ -428,6 +188,8 @@ export class TextDecorationTool extends Tool {
         }
 
         editor.init(vp.iModel, category);
+        // Centered so the annotation is on screen the moment it is created. `dta text center`
+        // repeats this, since the annotation keeps its world origin when the view moves.
         editor.origin = vp.view.getCenter();
         const defaultStyleId = inArgs[2];
         if (defaultStyleId) {
@@ -438,259 +200,60 @@ export class TextDecorationTool extends Tool {
       case "center":
         editor.origin = vp.view.getCenter();
         break;
-      case "rotation":
-        editor.rotation = Number(arg);
-        break;
-      case "offset":
-        if (inArgs.length !== 3) {
-          throw new Error("Expected x and y");
-        }
-
-        editor.offset.x = Number(arg);
-        editor.offset.y = Number(inArgs[2]);
-        break;
-      case "font":
-        editor.runStyle.font = { name: arg };
-        break;
-      case "text":
-        editor.appendText(arg);
-        break;
-      case "fraction":
-        if (inArgs.length !== 3) {
-          throw new Error("Expected numerator and denominator");
-        }
-        editor.appendFraction(inArgs[1], inArgs[2]);
-        break;
-      case "field": {
-        if (!arg) {
-          throw new Error("Expected JSON blob with elementId, schemaName, className, propertyName, and optional formatOptions");
-        }
-        const fieldProps = JSON.parse(arg.replaceAll("'", "\"")) as {
-          elementId: string,
-          schemaName: string,
-          className: string,
-          propertyName: string,
-          formatOptions?: FieldFormatOptions,
-        };
-        editor.appendField(fieldProps);
-        break;
-      }
-      case "break":
-        editor.appendBreak();
-        break;
-      case "tab": {
-        const spaces = inArgs[1] ? parseFloat(inArgs[1]) : undefined;
-        editor.appendTab(spaces);
-        break;
-      }
-      case "paragraph":
-        editor.appendParagraph();
-        break;
-      case "color":
-        editor.runStyle.color = ColorDef.fromString(arg).toJSON();
-        break;
-      case "docheight":
-        editor.documentStyle.textHeight = Number.parseFloat(arg);
-        break;
-      case "textheight":
-        editor.runStyle.textHeight = Number.parseFloat(arg);
-        break;
-      case "widthfactor":
-        editor.documentStyle.widthFactor = Number.parseFloat(arg);
-        break;
-      case "width":
-        editor.setDocumentWidth(Number.parseFloat(arg));
-        break;
-      case "justify": {
-        const just = arg.toLowerCase();
-        switch (just) {
-          case "left":
-          case "center":
-          case "right":
-            editor.justify(just);
-            break;
-          default:
-            throw new Error("Expected left, right, or center");
-        }
-        break;
-      }
-      case "indent": {
-        const indentation = Number.parseFloat(arg);
-        editor.setIndentation(indentation);
-        break;
-      }
-      case "spacing":
-        editor.documentStyle.lineSpacingFactor = Number.parseFloat(arg);
-        break;
-      case "bold":
-        editor.runStyle.isBold = !editor.runStyle.isBold;
-        break;
-      case "italic":
-        editor.runStyle.isItalic = !editor.runStyle.isItalic;
-        break;
-      case "underline":
-        editor.runStyle.isUnderlined = !editor.runStyle.isUnderlined;
-        break;
-      case "fractionscale":
-        editor.runStyle.stackedFractionScale = Number.parseFloat(arg);
-        break;
-      case "fractiontype": {
-        const type = arg.toLowerCase();
-        switch (type) {
-          case "horizontal":
-          case "diagonal":
-            editor.runStyle.stackedFractionType = type;
-            break;
-          default:
-            throw new Error("Expected horizontal or diagonal");
-        }
-        break;
-      }
-      case "subscriptscale": {
-        const subScale = Number.parseFloat(arg);
-        if (isNaN(subScale)) {
-          throw new Error("Expected a number for subscript scale");
-        }
-        editor.runStyle.subScriptScale = subScale;
-        break;
-      }
-      case "superscriptscale": {
-        const superScale = Number.parseFloat(arg);
-        if (isNaN(superScale)) {
-          throw new Error("Expected a number for superscript scale");
-        }
-        editor.runStyle.superScriptScale = superScale;
-        break;
-      }
-      case "shift": {
-        const shift = arg.toLowerCase();
-        switch (shift) {
-          case "none":
-          case "superscript":
-          case "subscript":
-            editor.baselineShift = shift;
-            break;
-          default:
-            throw new Error("Expected none, superscript, or subscript");
-        }
-        break;
-      }
-      case "anchor": {
-        const val = arg.toLowerCase();
-        switch (val) {
-          case "left":
-          case "center":
-          case "right":
-            editor.anchor.horizontal = val;
-            break;
-          case "top":
-          case "middle":
-          case "bottom":
-            editor.anchor.vertical = val;
-            break;
-          default:
-            throw new Error("Expected top, middle, bottom, left, center, or right");
-        }
-        break;
-      }
-      case "margin": {
-        const marginLocation = inArgs[1].toLowerCase();
-        const val = Number(inArgs[2]);
-        if (isNaN(val)) {
-          throw new Error("Expected margin location followed by a number. Margin location can be left, right, top, bottom, all, horizontal, or vertical");
-        }
-
-        switch (marginLocation) {
-          case "left":
-          case "right":
-          case "top":
-          case "bottom":
-            editor.setMargins({ [marginLocation]: val });
-            break;
-          case "all":
-            editor.setMargins({ left: val, right: val, top: val, bottom: val });
-            break;
-          case "horizontal":
-            editor.setMargins({ left: val, right: val });
-            break;
-          case "vertical":
-            editor.setMargins({ top: val, bottom: val });
-            break;
-          default:
-            throw new Error("Expected left, right, top, bottom, all, horizontal, or vertical");
-        }
-        break;
-      }
-      case "debug": {
+      case "debug":
         editor.debugAnchorPointAndRange = !editor.debugAnchorPointAndRange;
         break;
-      }
-      case "log": {
-        // Log the current text block to the console
-        const anno = TextAnnotation.fromJSON(editor.annotationProps);
-        // eslint-disable-next-line no-console
-        console.log(anno.textBlock.stringify({ paragraphBreak: "\n", lineBreak: "\n" }));
-        // eslint-disable-next-line no-console
-        console.log("Object > ", anno);
-        // eslint-disable-next-line no-console
-        console.log("Props > ", editor.annotationProps);
-        break;
-      }
-      case "frame": {
-        const key = inArgs[1];
-        const val = inArgs[2];
-        const frame: TextFrameStyleProps = editor.documentStyle.frame ?? { shape: "none" };
-        if (key === "fillColor") frame.fillColor = (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined;
-        else if (key === "borderColor") frame.borderColor = val ? ColorDef.fromString(val).toJSON() : undefined;
-        else if (key === "borderWeight") frame.borderWeight = Number(val);
-        else if (key === "shape") frame.shape = val as TextAnnotationFrameShape;
-        else throw new Error("Expected shape, fillColor, borderColor, borderWeight");
-        editor.documentStyle.frame = frame;
+      case "import": {
+        const what = arg?.toLowerCase();
+        const path = inArgs[2];
 
-        break;
-      }
-      case "insertstyle": {
-        if (!arg) {
-          throw new Error("Expected style name");
+        if (what === "annotation") {
+          if (!path) {
+            throw new Error("Expected a file path to a JSON file containing TextAnnotationProps");
+          }
+          editor.setAnnotation(JSON.parse(await dtaIpc.readTextFile(path)) as TextAnnotationProps);
+          break;
         }
-        const style: TextStyleSettingsProps = { ...editor.documentStyle, ...editor.runStyle };
-        const styleId = await dtaIpc.insertTextStyle(
-          vp.iModel.key,
-          arg,
-          style,
-        );
 
+        if (what === "formatset") {
+          if (path === "off") {
+            await dtaIpc.registerFieldFormattingProvider(vp.iModel.key);
+            // eslint-disable-next-line no-console
+            console.log(`Unregistered all FormatSets for iModel ${vp.iModel.key}`);
+            return true;
+          }
+
+          if (!path) {
+            throw new Error("Expected a file path to a JSON file containing a FormatSet, or 'off'");
+          }
+
+          const formatSet = JSON.parse(await dtaIpc.readTextFile(path)) as FormatSet;
+          const id = inArgs[3];
+          // An id makes the set addressable by a FieldRun's `formatSet` option; without one it
+          // is adopted as the iModel's default. Importing twice with different ids builds up the
+          // set of addressable FormatSets, which is what exercises per-field routing.
+          await dtaIpc.registerFieldFormattingProvider(vp.iModel.key, id ? undefined : formatSet, id ? [{ id, formatSet }] : undefined);
+          // eslint-disable-next-line no-console
+          console.log(`Registered FormatSet '${formatSet.name}'${id ? ` as '${id}'` : " (adopted)"} for iModel ${vp.iModel.key}`);
+          return true;
+        }
+
+        throw new Error("Expected 'annotation' or 'formatset'");
+      }
+      case "export": {
+        if (arg?.toLowerCase() !== "annotation") {
+          throw new Error("Expected 'annotation'");
+        }
+
+        const path = inArgs[2];
+        if (!path) {
+          throw new Error("Expected a file path to write the current TextAnnotationProps to");
+        }
+
+        await dtaIpc.writeTextFile(path, `${JSON.stringify(editor.annotationProps, undefined, 2)}\n`, inArgs[3] === "force");
         // eslint-disable-next-line no-console
-        console.log(`Inserted text style with id ${styleId} and name ${arg}`);
-
+        console.log(`Wrote annotation to ${path}`);
         return true;
-      }
-      case "updatestyle": {
-        if (!arg) {
-          throw new Error("Expected style name");
-        }
-        const style: TextStyleSettingsProps = { ...editor.documentStyle, ...editor.runStyle };
-        await dtaIpc.updateTextStyle(
-          vp.iModel.key,
-          arg,
-          style,
-        );
-        return true;
-      }
-      case "deletestyle": {
-        if (!arg) {
-          throw new Error("Expected style name");
-        }
-        await dtaIpc.deleteTextStyle(
-          vp.iModel.key,
-          arg,
-        );
-        return true;
-      }
-      case "applystyle": {
-        editor.defaultTextStyleId = arg;
-        editor.textBlock.clearStyleOverrides();
-        break;
       }
       case "insert": {
         assert(vp.view.is2d() === true, "View is not 2d");
@@ -729,153 +292,8 @@ export class TextDecorationTool extends Tool {
           throw new Error("Expected annotation ID");
         }
 
-        await dtaIpc.deleteText(
-          vp.iModel.key,
-          arg
-        );
-
+        await dtaIpc.deleteText(vp.iModel.key, arg);
         return true;
-      }
-      case "scale": {
-        if (!arg) {
-          throw new Error("Expected scale factor");
-        }
-
-        const scaleFactor = Number(arg);
-        if (isNaN(scaleFactor)) {
-          throw new Error("Expected a number for scale factor");
-        }
-
-        await dtaIpc.setScaleFactor(
-          vp.iModel.key,
-          editor.modelId,
-          scaleFactor
-        );
-
-        break;
-      }
-      case "demo": {
-        if (arg !== "on" && arg !== "off") {
-          throw new Error("Expected on or off");
-        }
-        await dtaIpc.setFieldFormattingDemo(vp.iModel.key, arg === "on");
-        // eslint-disable-next-line no-console
-        console.log(`DTA demo FormatSet ${arg === "off" ? "unregistered" : "registered"} for iModel ${vp.iModel.key}`);
-        return true;
-      }
-      case "list": { // args are enumerator, terminator, case, index
-
-        let enumerator = inArgs[1];
-        if (enumerator !== "none" && enumerator in ListMarkerEnumerator) enumerator = (ListMarkerEnumerator as any)[enumerator];
-
-        const terminator = inArgs[2] === "none" ? undefined : inArgs[2] as "period" | "parenthesis";
-        const listCase = inArgs[3] === "none" ? undefined : inArgs[3] as "lower" | "upper";
-
-        const index = inArgs[4] !== undefined ? parseInt(inArgs[4], 10) : undefined;
-        editor.appendList(index, { enumerator, terminator, case: listCase });
-        break;
-      }
-      case "list-item": {
-        const index = inArgs[1] !== undefined ? parseInt(inArgs[1], 10) : undefined;
-        editor.appendListItem(index);
-        break;
-      }
-      case "leader":
-        const command = inArgs[1];
-        const value = inArgs[2];
-        if (command === "new") {
-          editor.setLeaderProps();
-        } else {
-          if (editor.leaders && editor.leaders.length > 0) {
-            const latestLeaderIndex = editor.leaders.length - 1;
-            if (command === "start") editor.setLeaderStartPoint(editor.leaders[latestLeaderIndex], Number(value));
-            else if (command === "keypoint") {
-              const curveIndex = inArgs[2];
-              const fraction = inArgs[3];
-              editor.setLeaderKeyPoint(editor.leaders[latestLeaderIndex], Number(curveIndex), Number(fraction));
-            } else if (command === "nearest") editor.setLeaderNearest(editor.leaders[latestLeaderIndex]);
-            else if (command === "textpoint") {
-              const position = inArgs[2] as LeaderTextPointOptions;
-              editor.setLeaderTextPoint(editor.leaders[latestLeaderIndex], position);
-            } else if (command === "terminatorShape") {
-              const shape = inArgs[2] as TerminatorShape;
-              const leaderStyle: TextLeaderStyleProps = editor.documentStyle.leader ?? {};
-              leaderStyle.terminatorShape = shape;
-              editor.documentStyle.leader = leaderStyle;
-            } else if (command === "showTargetPoint") {
-              const showTargetPoint = inArgs[2] === "true";
-              editor.leaders[latestLeaderIndex].styleOverrides = {
-                ...editor.leaders[latestLeaderIndex].styleOverrides,
-                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, showTargetPoint },
-              };
-            } else if (command === "targetPointShape") {
-              const shape = inArgs[2] as TargetPointShape;
-              editor.leaders[latestLeaderIndex].styleOverrides = {
-                ...editor.leaders[latestLeaderIndex].styleOverrides,
-                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, targetPointShape: shape },
-              };
-            } else if (command === "showLeaders") {
-              const showLeaders = inArgs[2] === "true";
-              editor.leaders[latestLeaderIndex].styleOverrides = {
-                ...editor.leaders[latestLeaderIndex].styleOverrides,
-                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, showLeaders },
-              };
-            } else if (command === "showTerminators") {
-              const showTerminators = inArgs[2] === "true";
-              editor.leaders[latestLeaderIndex].styleOverrides = {
-                ...editor.leaders[latestLeaderIndex].styleOverrides,
-                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, showTerminators },
-              };
-            } else if (command === "targetPointOffsetFactor") {
-              const targetPointOffsetFactor = Number(inArgs[2]);
-              editor.leaders[latestLeaderIndex].styleOverrides = {
-                ...editor.leaders[latestLeaderIndex].styleOverrides,
-                leader: { ...editor.leaders[latestLeaderIndex].styleOverrides?.leader, targetPointOffsetFactor },
-              };
-            } else throw new Error("Expected start, keypoint, nearest, textpoint, terminatorShape, showTargetPoint, targetPointShape, showLeaders, showTerminators, targetPointOffsetFactor");
-          } else {
-            throw new Error("No leaders created. Use dta text leader new.");
-          }
-
-        }
-        break;
-      case "json": {
-
-        const rawProps = inArgs[1]?.replaceAll("'", "\"")?.replaceAll("\\'", "'"); // Remove escape characters for easier copy/paste into command line.
-        const props = rawProps && (JSON.parse(rawProps) as TextBlockProps);
-
-        if (props) {
-          editor.setTextBlock(props);
-        } else {
-          const textBlockJsonString = JSON.stringify(editor.annotationProps.textBlock).replaceAll("'", "\\'").replaceAll("\"", "'");
-          // eslint-disable-next-line no-console
-          console.log(editor.annotationProps.textBlock);
-          // eslint-disable-next-line no-console
-          console.log(textBlockJsonString);
-        }
-
-        break;
-      }
-
-      case "import": {
-        if (!arg) {
-          throw new Error("Expected a file path to a JSON file containing TextBlockProps");
-        }
-        const contents = await dtaIpc.readTextFile(arg);
-        const props = JSON.parse(contents) as TextBlockProps;
-        editor.setTextBlock(props);
-        break;
-      }
-
-      case "export": {
-        if (!arg) {
-          throw new Error("Expected a file path to write the current TextBlock JSON to");
-        }
-        const contents = `${JSON.stringify(editor.annotationProps.textBlock, undefined, 2)}\n`;
-        await dtaIpc.writeTextFile(arg, contents, inArgs[2] === "force");
-        // eslint-disable-next-line no-console
-        console.log(`Wrote text block to ${arg}`);
-        break;
       }
       default:
         throw new Error(`unrecognized command ${cmd}`);
@@ -883,9 +301,5 @@ export class TextDecorationTool extends Tool {
 
     await editor.update();
     return true;
-  }
-
-  public override async run(): Promise<boolean> {
-    throw new Error("handled in parseAndRun");
   }
 }
