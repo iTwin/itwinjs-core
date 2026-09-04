@@ -221,15 +221,6 @@ export class WmsCapabilities {
 
   public static async create(url: string, options?: WmsCapabilitiesCreateOptions): Promise<WmsCapabilities | undefined> {
     const { credentials, ignoreCache, queryParams, formatId, layerUrl } = options ?? {};
-    // The cache is keyed by URL only, so responses customized by the fetch handler (e.g.
-    // header-authenticated) must not be shared with or served from differently-customized requests.
-    const hasFetchHandler = undefined !== IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler;
-    if (!ignoreCache && !hasFetchHandler) {
-      const cached = WmsCapabilities._capabilitiesCache.get(url);
-      if (cached !== undefined)
-        return cached;
-    }
-
     const tmpUrl = new URL(WmsUtilities.getBaseUrl(url));
     tmpUrl.searchParams.append("request", "GetCapabilities");
     tmpUrl.searchParams.append("service", "WMS");
@@ -239,6 +230,17 @@ export class WmsCapabilities {
           tmpUrl.searchParams.append(paramKey, queryParams[paramKey]);
       });
     }
+    const cacheKey = tmpUrl.toString();
+    // The cache never contains credentialed results (see the write below), so a credentialed request
+    // must not be served a cached public document either; responses customized by the fetch handler
+    // must not be shared with or served from differently-customized requests.
+    const hasFetchHandler = undefined !== IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandler;
+    if (!ignoreCache && !hasFetchHandler && !credentials) {
+      const cached = WmsCapabilities._capabilitiesCache.get(cacheKey);
+      if (cached !== undefined)
+        return cached;
+    }
+
     const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, formatId: formatId ?? "WMS", layerUrl: layerUrl ?? url });
 
     if (!xmlCapabilities)
@@ -250,7 +252,7 @@ export class WmsCapabilities {
 
     if (!credentials && !hasFetchHandler) {
       // Avoid caching protected data
-      WmsCapabilities._capabilitiesCache.set(url, capabilities);
+      WmsCapabilities._capabilitiesCache.set(cacheKey, capabilities);
     }
 
     return capabilities;

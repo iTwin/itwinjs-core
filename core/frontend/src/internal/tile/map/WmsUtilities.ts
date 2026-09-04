@@ -55,7 +55,8 @@ export class WmsUtilities {
       // Basic credentials are considered settings-derived credentials for this source. When the registry is
       // enforcing trusted origins, the source URL itself is the only implicitly trusted origin for basic auth;
       // opaque/custom-protocol URLs have no network origin and must therefore be treated as untrusted.
-      const allowBasicAuth = !IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins
+      // Optional chaining: some callers run before IModelApp startup.
+      const allowBasicAuth = !IModelApp.mapLayerFormatRegistry?.restrictCredentialsToTrustedOrigins
         || IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(url, url);
       if (allowBasicAuth) {
         headers = new Headers();

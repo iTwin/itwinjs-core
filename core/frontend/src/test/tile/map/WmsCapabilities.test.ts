@@ -92,6 +92,30 @@ describe("WmsCapabilities", () => {
     expect(firstCall[0]).toEqual(`${sampleUrl}?request=GetCapabilities&service=WMS&${params.toString()}`);
   });
 
+  it("caches GetCapabilities responses separately for distinct custom parameters", async () => {
+    const response = await fetch(`/assets/wms_capabilities/mapproxy_111.xml`);
+    const text = await response.text();
+    const fetchStub = fakeTextFetch(text);
+    const sampleUrl = "https://fake/wms-capabilities-cache";
+
+    await WmsCapabilities.create(sampleUrl, { queryParams: { apiKey: "first" } });
+    await WmsCapabilities.create(sampleUrl, { queryParams: { apiKey: "second" } });
+
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not serve a cached public document to a credentialed request", async () => {
+    const response = await fetch(`/assets/wms_capabilities/mapproxy_111.xml`);
+    const text = await response.text();
+    const fetchStub = fakeTextFetch(text);
+    const sampleUrl = "https://fake/wms-credentialed-cache";
+
+    await WmsCapabilities.create(sampleUrl);   // cached anonymously
+    await WmsCapabilities.create(sampleUrl, { credentials: { user: "user", password: "pwd" } });
+
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+  });
+
   it("should handle invalid range with -Infinity values", async () => {
     const response = await fetch(`/assets/wms_capabilities/mapproxy_invalid_range_130.xml`);
     const text = await response.text();

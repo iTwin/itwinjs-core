@@ -422,6 +422,18 @@ describe("WmtsCapabilities1", () => {
     expect(firstCall[0]).toEqual(`${sampleUrl}?request=GetCapabilities&service=WMTS&${searchParams.toString()}`);
   });
 
+  it("caches GetCapabilities responses separately for distinct custom parameters", async () => {
+    const response = await fetch(`/assets/wmts_capabilities/USGSHydroCached_capabilities.xml`);
+    const text = await response.text();
+    const fetchStub = fakeTextFetch(text);
+    const sampleUrl = "https://fake/wmts-capabilities-cache";
+
+    await WmtsCapabilities.create(sampleUrl, { queryParams: { apiKey: "first" } });
+    await WmtsCapabilities.create(sampleUrl, { queryParams: { apiKey: "second" } });
+
+    expect(fetchStub).toHaveBeenCalledTimes(2);
+  });
+
 });
 
 
