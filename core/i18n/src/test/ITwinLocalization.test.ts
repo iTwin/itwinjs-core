@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import type { BackendModule, ReadCallback } from "i18next";
+import { Logger } from "@itwin/core-bentley";
 import { Localization } from "@itwin/core-common";
 import { ITwinLocalization } from "../ITwinLocalization";
 
@@ -1101,6 +1103,39 @@ describe("ITwinLocalization", () => {
 
       assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("Test"));
       assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
+    });
+
+    it("attributes errors from concurrent namespace loads to the namespace that failed", async () => {
+      const pendingLoads = new Map<string, ReadCallback>();
+      const backend: BackendModule = {
+        type: "backend",
+        init: () => { },
+        read: (_language, namespace, callback) => pendingLoads.set(namespace, callback),
+      };
+      itwinLocalization = new ITwinLocalization({
+        backendPlugin: backend,
+        initOptions: { lng: "en", fallbackLng: false },
+      });
+      await itwinLocalization.initialize([]);
+
+      const loggedErrors: string[] = [];
+      const originalLogError = Logger.logError;
+      Logger.logError = (_category, message) => loggedErrors.push(String(message));
+      try {
+        const loadedPromise = itwinLocalization.registerNamespace("Loaded");
+        const missingPromise = itwinLocalization.registerNamespace("Missing");
+        assert.sameMembers([...pendingLoads.keys()], ["Loaded", "Missing"]);
+
+        pendingLoads.get("Missing")!(new Error("Missing namespace"), false);
+        await missingPromise;
+        pendingLoads.get("Loaded")!(null, { key: "value" });
+        await loadedPromise;
+
+        assert.deepEqual(loggedErrors, ["No resources for namespace Missing could be loaded"]);
+        assert.isTrue(itwinLocalization.i18next.hasResourceBundle("en", "Loaded"));
+      } finally {
+        Logger.logError = originalLogError;
+      }
     });
   });
 
