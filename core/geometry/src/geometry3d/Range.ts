@@ -685,6 +685,12 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       return 0.0;
     return Math.max(this.low.maxAbs(), this.high.maxAbs());
   }
+  /** Return the largest absolute value among the x and y coordinates in the box corners. */
+  public maxAbsXY(): number {
+    if (this.isNull)
+      return 0.0;
+    return Math.max(this.low.maxAbsXY(), this.high.maxAbsXY());
+  }
   /** Returns true if the x direction size is nearly zero */
   public get isAlmostZeroX(): boolean {
     return Geometry.isSmallMetricDistance(this.xLength());

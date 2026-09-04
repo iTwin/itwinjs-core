@@ -1,6 +1,13 @@
 # Change Log - @itwin/workspace-editor
 
-This log was last generated on Tue, 25 Aug 2026 21:23:35 GMT and should not be manually modified.
+This log was last generated on Thu, 03 Sep 2026 18:51:17 GMT and should not be manually modified.
+
+## 5.13.0
+Thu, 03 Sep 2026 18:49:55 GMT
+
+### Updates
+
+- Warn when deprecated file resource commands are used and recommend blobs or strings for new resources.
 
 ## 5.12.5
 Tue, 25 Aug 2026 21:22:08 GMT
