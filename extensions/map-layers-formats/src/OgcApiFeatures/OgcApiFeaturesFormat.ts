@@ -33,7 +33,9 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         if (httpResponse.ok)
           return undefined;
 
-        if (httpResponse.status === 401 || httpResponse.status === 403) {
+        // A handler-managed response gets none of the legacy origin/authentication classification: an
+        // authentication failure would have been thrown as MapLayerAuthenticationFailedError.
+        if (!managedByHandler && (httpResponse.status === 401 || httpResponse.status === 403)) {
           const challengedUrl = httpResponse.url || requestedUrl;
           if (!IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(challengedUrl, source.url)) {
             let blockedOrigin: string | undefined;
@@ -41,10 +43,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
             return { status: MapLayerSourceStatus.UntrustedOrigin, blockedOrigin };
           }
 
-          // A status in a response managed by the fetch handler is not an authentication failure (it would have
-          // thrown MapLayerAuthenticationFailedError).
-          if (!managedByHandler)
-            return { status: (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth };
+          return { status: (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth };
         }
 
         return { status: MapLayerSourceStatus.InvalidUrl };

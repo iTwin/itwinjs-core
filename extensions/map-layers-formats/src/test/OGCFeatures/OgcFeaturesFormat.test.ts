@@ -339,6 +339,28 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
     expect(validation.status).to.equals(MapLayerSourceStatus.InvalidCredentials);
   });
 
+  it("does not report UntrustedOrigin for a 401 the handler returns as its own from an unlisted collections origin", async () => {
+    registry.register(OgcApiFeaturesMapLayerFormat);
+    registry.restrictCredentialsToTrustedOrigins = true;
+    // The handler authenticates the third-party origin itself; the framework's own credentials are withheld.
+    registry.addMapLayerFetchHandler(async (request, fetchRequest) => {
+      const headers = new Headers(request.headers);
+      headers.set("Authorization", "Bearer secret-jwt");
+      return fetchRequest({ ...request, headers });
+    });
+    stubFetch(
+      { [sourceUrl]: makeLandingPage(crossOriginCollectionsUrl) },
+      { [crossOriginCollectionsUrl]: 401 },
+    );
+
+    const validation = await OgcApiFeaturesMapLayerFormat.validate({ source: createSource() });
+
+    // The handler did not throw MapLayerAuthenticationFailedError: a plain failure, not an origin-trust problem.
+    expect(getAuthorization(fetchCalls[1].init)).to.equals("Bearer secret-jwt");
+    expect(validation.status).to.equals(MapLayerSourceStatus.InvalidUrl);
+    expect(validation.blockedOrigin).to.be.undefined;
+  });
+
   it("resolves a relative collections link and appends saved and unsaved query params", async () => {
     registry.restrictCredentialsToTrustedOrigins = true;
     const source = createSource();
