@@ -94,6 +94,7 @@ import { ElementLoadOptions } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
 import { EntityClass } from '@itwin/ecschema-metadata';
+import { EntityIdAndClassId } from '@itwin/core-common';
 import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
@@ -296,6 +297,7 @@ import { ThumbnailFormatProps } from '@itwin/core-common';
 import { ThumbnailProps } from '@itwin/core-common';
 import type { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
+import { TxnEntityMetadata } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { TxnProps } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
@@ -644,13 +646,15 @@ export class BriefcaseDb extends IModelDb {
     pullChanges(arg?: PullChangesArgs): Promise<void>;
     pushChanges(arg: PushChangesArgs): Promise<void>;
     revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
-    // @internal (undocumented)
-    get skipSyncSchemasOnPullAndPush(): boolean;
     toJSON(): BriefcaseConnectionProps;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
     static upgradeSchemas(briefcase: OpenBriefcaseArgs): Promise<void>;
+    // @alpha
+    upgradeSchemas(schemaFileNames: LocalFileName[], arg: UpgradeSchemasArgs): Promise<void>;
+    // @alpha
+    upgradeSchemaStrings(serializedXmlSchemas: string[], arg: UpgradeSchemasArgs): Promise<void>;
     protected get useLockServer(): boolean;
 }
 
@@ -4043,9 +4047,13 @@ export abstract class IModelDb extends IModel {
     });
     // @deprecated
     abandonChanges(): void;
+    // @internal
+    protected abandonSchemaChanges(): void;
     acquireSchemaLock(): Promise<void>;
     // @beta
     analyze(): void;
+    // @internal
+    protected assertCanImportSchemas(): void;
     attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
@@ -4137,10 +4145,14 @@ export abstract class IModelDb extends IModel {
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
+    // @internal
+    protected importSchemasInternal<T extends LocalFileName[] | string[]>(schemas: T, options: SchemaImportOptions | undefined, nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void): Promise<void>;
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[], options?: SchemaImportOptions): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
+    // @internal (undocumented)
+    initializeSharedElementReservations(): Promise<void>;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
     // @beta
@@ -4205,6 +4217,10 @@ export abstract class IModelDb extends IModel {
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
     requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
+    // @beta
+    get reservations(): SynchronousChannel.Reservations;
+    // @internal (undocumented)
+    protected _reservations?: SynchronousChannel.Reservations;
     // @internal (undocumented)
     restartDefaultTxn(): void;
     // @internal (undocumented)
@@ -4217,6 +4233,8 @@ export abstract class IModelDb extends IModel {
     saveChanges(args: SaveChangesArgs): void;
     // @deprecated
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
+    // @internal
+    protected saveSchemaChanges(args?: string): void;
     // @beta @deprecated
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     // @preview
@@ -4742,6 +4760,8 @@ export interface InlineGeometryPartsResult {
 export interface InsertElementOptions {
     // @beta
     forceUseId?: boolean;
+    // @internal
+    skipReservationCheck?: boolean;
 }
 
 // @beta
@@ -4781,6 +4801,7 @@ export interface IntegrityCheckOptions {
         checkDataSchema?: boolean;
         checkSchemaLoad?: boolean;
         checkMissingChildRows?: boolean;
+        checkDivergedPropMaps?: boolean;
     };
 }
 
@@ -5611,6 +5632,7 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
 
 // @beta
 export interface OnElementPropsArg extends OnElementArg {
+    options?: InsertElementOptions;
     props: ElementProps;
 }
 
@@ -6343,40 +6365,112 @@ export class Schemas {
 
 // @internal (undocumented)
 export namespace SchemaSync {
-    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb> {
+    export class CloudAccess extends CloudSqlite.DbAccess<SchemaSyncDb, ReadMethods, WriteMethods> {
         constructor(props: CloudSqlite.ContainerAccessProps);
+        static createNewContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps>;
         // (undocumented)
         getUri(): string;
         static initializeDb(props: CloudSqlite.ContainerProps): Promise<void>;
     }
-    const // (undocumented)
-    setTestCache: (iModel: IModelDb, cacheName?: string) => void;
-    const // (undocumented)
-    withLockedAccess: (iModel: IModelDb | {
-        readonly fileName: LocalFileName;
-    }, args: {
-        operationName: string;
-        openMode?: OpenMode;
-        user?: string;
-    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
-    const // (undocumented)
-    withReadonlyAccess: (iModel: IModelDb | {
-        readonly fileName: LocalFileName;
-    }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
-    const // (undocumented)
-    isEnabled: (iModel: IModelDb) => boolean;
-    const pull: (iModel: IModelDb) => Promise<void>;
-    const // (undocumented)
-    initializeForIModel: (arg: {
+    export function createContainerForIModel(arg: CreateContainerForIModelArgs): Promise<CloudSqlite.ContainerProps>;
+    export interface CreateContainerForIModelArgs {
+        // (undocumented)
+        description?: string;
+        // (undocumented)
         iModel: IModelDb;
-        containerProps: CloudSqlite.ContainerProps;
+        // (undocumented)
+        label?: string;
+    }
+    export interface CreateNewContainerProps {
+        // (undocumented)
+        metadata: Omit<BlobContainer.Metadata, "containerType">;
+        // (undocumented)
+        scope: BlobContainer.Scope;
+    }
+    export function enableForIModel(arg: EnableForIModelArgs): Promise<CloudSqlite.ContainerProps>;
+    const containerType = "schema-sync";
+    export interface EnableForIModelArgs {
+        containerProps?: CloudSqlite.ContainerProps;
+        // (undocumented)
+        description?: string;
+        // (undocumented)
+        iModel: IModelDb;
+        // (undocumented)
+        label?: string;
         overrideContainer?: boolean;
-    }) => Promise<void>;
-    export class SchemaSyncDb extends VersionedSqliteDb {
+    }
+    // (undocumented)
+    export function getCloudAccess(arg: IModelOrFileName): Promise<CloudAccess>;
+    export type IModelOrFileName = IModelDb | {
+        readonly fileName: LocalFileName;
+    };
+    export function initializeForIModel(arg: InitializeForIModelArgs): Promise<void>;
+    export interface InitializeForIModelArgs {
+        // (undocumented)
+        containerProps: CloudSqlite.ContainerProps;
+        // (undocumented)
+        iModel: IModelDb;
+        overrideContainer?: boolean;
+    }
+    export function isEnabled(arg: IModelOrFileName): boolean;
+    export interface ProposedElementReservation {
+        // (undocumented)
+        readonly code: Code;
+        // (undocumented)
+        readonly ecClassId: Id64String;
+        // (undocumented)
+        readonly federationGuid: GuidString;
+        // (undocumented)
+        readonly isCategory?: boolean;
+    }
+    export function queryContainerProps(arg: IModelOrFileName): CloudSqlite.ContainerProps | undefined;
+    // (undocumented)
+    export interface ReadMethods {
+        findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
+    }
+    export function releaseCloudAccess(access: CloudAccess): void;
+    // @alpha
+    export function repairForIModel(arg: RepairForIModelArgs): Promise<void>;
+    // @alpha
+    export interface RepairForIModelArgs {
+        iModel: BriefcaseDb;
+        scope?: RepairScope;
+    }
+    // @alpha
+    export type RepairScope = "schemaMetadata" | "schemaMetadataAndProfile";
+    export function requiresUpgrade(error: unknown): boolean;
+    export interface ReservedElement extends ProposedElementReservation {
+        // (undocumented)
+        readonly elementId: Id64String;
+    }
+    export class SchemaSyncDb extends VersionedSqliteDb implements ReadMethods, WriteMethods {
         // (undocumented)
         protected createDDL(): void;
         // (undocumented)
-        readonly myVersion = "4.0.0";
+        findReservedElement(federationGuid: GuidString): ReservedElement | undefined;
+        // (undocumented)
+        readonly myVersion = "5.0.0";
+        // (undocumented)
+        openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
+        // (undocumented)
+        reserveElements(elements: ProposedElementReservation[]): Promise<void>;
+    }
+    // (undocumented)
+    export function setTestCache(iModel: IModelDb, cacheName?: string): void;
+    export function updateDbSchema(iModel: IModelDb): void;
+    // (undocumented)
+    export function withLockedAccess(iModel: IModelOrFileName, args: WithLockedAccessArgs, operation: (access: CloudAccess) => Promise<void>): Promise<void>;
+    export interface WithLockedAccessArgs {
+        // (undocumented)
+        openMode?: OpenMode;
+        // (undocumented)
+        operationName: string;
+        // (undocumented)
+        user?: string;
+    }
+    // (undocumented)
+    export interface WriteMethods {
+        reserveElements(identities: ProposedElementReservation[]): Promise<void>;
     }
 }
 
@@ -7368,6 +7462,29 @@ export class SynchronizationConfigSpecifiesRootSources extends SynchronizationCo
     static get className(): string;
 }
 
+// @beta
+export namespace SynchronousChannel {
+    export interface Reservations {
+        // @internal
+        [_close]: () => void;
+        // @internal (undocumented)
+        readonly [_implementationProhibited]: unknown;
+        // @internal
+        [_onReservedElementInsert]: (arg: OnElementPropsArg) => void;
+        // @internal
+        readonly isServerBased: boolean;
+        needsElementReservation(federationGuid: GuidString): boolean;
+        reserveElements(args: ReserveElementsArgs): Promise<void>;
+    }
+    export interface ReserveElementsArgs {
+        elements: Iterable<{
+            federationGuid: GuidString;
+            classFullName: string;
+            code?: CodeProps;
+        }>;
+    }
+}
+
 // @beta (undocumented)
 export type SynchronousQueryOptions = Omit<QueryOptions, "suppressLogErrors" | "includeMetaData" | "limit" | "priority" | "restartToken" | "delay" | "usePrimaryConn" | "quota">;
 
@@ -7652,6 +7769,21 @@ export interface TxnChangedEntities {
 }
 
 // @public @preview
+export interface TxnChangedEntitiesWithMetadata extends TxnChangedEntities {
+    readonly deletes: TxnChangedEntityIterable;
+    readonly inserts: TxnChangedEntityIterable;
+    readonly updates: TxnChangedEntityIterable;
+}
+
+// @public @preview
+export interface TxnChangedEntity extends EntityIdAndClassId {
+    readonly metadata: TxnEntityMetadata;
+}
+
+// @public @preview
+export type TxnChangedEntityIterable = Iterable<Readonly<TxnChangedEntity>>;
+
+// @public @preview
 export type TxnIdString = string;
 
 // @public @preview
@@ -7723,7 +7855,7 @@ export class TxnManager {
     protected _onCommitted(): void;
     // @internal (undocumented)
     protected _onDeletedDependency(props: RelationshipProps): void;
-    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onElementsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
     // @internal
     protected _onEndValidate(): void;
     // @internal (undocumented)
@@ -7735,7 +7867,7 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
-    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    readonly onModelsChanged: BeEvent<(changes: TxnChangedEntitiesWithMetadata) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -7801,6 +7933,12 @@ export interface UpdateModelOptions extends ModelProps {
 
 // @beta
 export function upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[];
+
+// @alpha
+export interface UpgradeSchemasArgs extends PushChangesArgs {
+    // @internal
+    ecSchemaXmlContext?: ECSchemaXmlContext;
+}
 
 // @public @preview
 export class UrlLink extends LinkElement {
