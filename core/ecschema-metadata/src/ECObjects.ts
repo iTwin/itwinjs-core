@@ -17,17 +17,34 @@ if (!(Symbol as any).asyncIterator) {
 }
 
 /**
- * Identifies a class as abstract or sealed
+ * Identifies a class as abstract or sealed.
  *
+ * The values match ec_Class.Modifier in ECDb (None=0, Abstract=1, Sealed=2).
  * @public @preview
  */
 export enum ECClassModifier {
   /* normal, instantiable class, can be subclassed */
-  None,
+  None = 0,
   /* abstract class, cannot be instantiated, can be subclassed */
-  Abstract,
+  Abstract = 1,
   /* sealed class, instantiable class, cannot be subclassed */
-  Sealed,
+  Sealed = 2,
+}
+
+/**
+ * Identifies a class as abstract or sealed; matches ec_Class.Modifier values.
+ *
+ * The un-prefixed name used as shared vocabulary by the SchemaView read model and the SchemaDocument
+ * authoring model, consistent with {@link ClassType} and {@link PropertyKind}. Its values are bound to
+ * {@link ECClassModifier} so the two cannot drift apart. The duplication with `ECClassModifier` is known:
+ * both have been released and cannot easily be consolidated without a deprecation cycle, so they coexist
+ * as distinct types with shared values.
+ * @beta
+ */
+export enum ClassModifier {
+  None = ECClassModifier.None,
+  Abstract = ECClassModifier.Abstract,
+  Sealed = ECClassModifier.Sealed,
 }
 
 /**
@@ -86,6 +103,37 @@ export enum PrimitiveType {
   Point3d = 0x801,
   String = 0x901,
   IGeometry = 0xa01,
+}
+
+/** Identifies the category of an EC class. Matches ec_Class.Type values in ECDb.
+ *
+ * Shared EC vocabulary consumed by both the SchemaView read model and the SchemaDocument
+ * authoring model, so it lives here next to the other EC enums rather than under either.
+ * @beta
+ */
+export enum ClassType {
+  Entity = 0,
+  Relationship = 1,
+  Struct = 2,
+  CustomAttribute = 3,
+  /** Not stored in ec_Class.Type - synthesized from IsMixin CA during cache population. */
+  Mixin = 4,
+  /** Synthesized from the QueryView custom attribute. */
+  View = 5,
+}
+
+/** Identifies the kind of an EC property. Matches ec_Property.Kind values.
+ *
+ * Shared EC vocabulary consumed by both the SchemaView read model and the SchemaDocument
+ * authoring model, so it lives here next to the other EC enums rather than under either.
+ * @beta
+ */
+export enum PropertyKind {
+  Primitive = 0,
+  Struct = 1,
+  PrimitiveArray = 2,
+  StructArray = 3,
+  Navigation = 4,
 }
 
 /**

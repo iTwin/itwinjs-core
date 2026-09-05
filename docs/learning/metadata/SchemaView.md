@@ -81,7 +81,7 @@ Classes expose their type (entity, relationship, struct, mixin, custom attribute
 
 ## Working with properties
 
-Properties include inherited properties from base classes and mixins, in base-first declaration order. Each property exposes its kind (primitive, struct, array, navigation) and type-specific attributes.
+Properties include inherited properties from base classes and mixins, in base-first declaration order. A property a derived class overrides appears once, at the overriding class's own position, matching native ecobjects and the column order of an ECSQL `SELECT *`. Each property exposes its kind (primitive, struct, array, navigation) and type-specific attributes.
 
 ```ts
 [[include:SchemaView.properties]]
