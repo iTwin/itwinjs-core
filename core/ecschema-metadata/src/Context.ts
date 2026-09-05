@@ -191,6 +191,19 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   /**
+    * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
+    * Does not await partially loaded schemas.
+    * @param schemaKey The SchemaKey describing the schema to get from the cache.
+    * @param matchType The match type to use when locating the schema
+    */
+  public getSchemaInfoSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): SchemaInfo | undefined {
+    if (this.count === 0)
+      return undefined;
+
+    return this.findEntry(schemaKey, matchType)?.schemaInfo;
+  }
+
+  /**
    * Gets the schema which matches the provided SchemaKey.  If the schema is partially loaded an exception will be thrown.
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
@@ -411,6 +424,17 @@ export class SchemaContext {
    */
   public getCachedSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Schema | undefined {
     return this._knownSchemas.getSchemaSync(schemaKey, matchType);
+  }
+
+  /**
+   * Attempts to get a SchemaInfo from the context's cache.
+   * Returns the info even if the schema is only partially loaded.
+   * @param schemaKey The SchemaKey to identify the Schema.
+   * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
+   * @internal
+   */
+  public getCachedSchemaInfoSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): SchemaInfo | undefined {
+    return this._knownSchemas.getSchemaInfoSync(schemaKey, matchType);
   }
 
   /**

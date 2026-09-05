@@ -8,15 +8,15 @@ import { DOMParser } from "@xmldom/xmldom";
 import { SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { JsonParser } from "../../Deserialization/JsonParser";
-import { SchemaItemType } from "../../ECObjects";
-import { ECSchemaError } from "../../Exception";
+import { SchemaItemType, SchemaMatchType } from "../../ECObjects";
+import { ECSchemaError, ECSchemaStatus } from "../../Exception";
 import { AnyClass } from "../../Interfaces";
 import { NavigationProperty } from "../../Metadata/Property";
 import { Schema } from "../../Metadata/Schema";
 import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { deserializeInfoXml, deserializeXml, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
-import { ECSchemaNamespaceUris, Mixin, RelationshipClass } from "../../ecschema-metadata";
+import { ECSchemaNamespaceUris, ECVersion, Mixin, RelationshipClass, SchemaKey } from "../../ecschema-metadata";
 import { expectAsyncToThrow } from "../TestUtils/AssertionHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -1245,5 +1245,97 @@ describe("Full Schema Deserialization", () => {
       await expect(context.getCachedSchema(schema.schemaKey)).resolves.toBeUndefined();
     });
 
+    const refSchemaV1Xml = `<?xml version="1.0" encoding="utf-8"?>
+    <ECSchema xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2" schemaName="RefSchema" version="01.00.00" alias="ref">
+      <ECEntityClass typeName="OldClass" modifier="None"/>
+    </ECSchema>`;
+
+    const refSchemaV2Xml = `<?xml version="1.0" encoding="utf-8"?>
+    <ECSchema xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2" schemaName="RefSchema" version="02.00.00" alias="ref">
+      <ECEntityClass typeName="NewClass" modifier="None"/>
+      <ECEntityClass typeName="UserOfNewClass" modifier="None">
+        <BaseClass>NewClass</BaseClass>
+      </ECEntityClass>
+    </ECSchema>`;
+
+    it.only("must not retrieve the in-flight schema by name-only match (async)", async () => {
+      const context = new SchemaContext();
+
+      const schemaV1 = await deserializeXml(refSchemaV1Xml, context);
+      assert.isDefined(schemaV1);
+      assert.strictEqual(schemaV1.schemaKey.version.toString(), "01.00.00");
+
+      // Deserialize a read-incompatible 2.0.0 of the same schema into the same context.
+      // Either a distinct 2.0.0 schema is produced, or a clear version-conflict error is thrown.
+      let schemaV2;
+      try {
+        schemaV2 = await deserializeXml(refSchemaV2Xml, context);
+      } catch (e: any) {
+        expect(e.message).to.not.match(/Unable to locate SchemaItem/);
+        expect(e).to.be.instanceOf(ECSchemaError);
+        expect((e as ECSchemaError).errorNumber).to.equal(ECSchemaStatus.DuplicateSchema);
+        expect(e.message).to.match(/read-incompatible version/);
+        expect(e.message).to.include("RefSchema.02.00.00");
+        expect(e.message).to.include("RefSchema.01.00.00");
+        // The previously cached 1.0.0 schema must be unchanged.
+        assert.isDefined(await schemaV1.getItem("OldClass"));
+        assert.isUndefined(await schemaV1.getItem("NewClass"));
+        return;
+      }
+
+      assert.isDefined(schemaV2);
+      expect(schemaV2.schemaKey.version.toString(), "the 2.0.0 XML must not be bound to the cached 1.0.0 schema").to.equal("02.00.00");
+      assert.isDefined(await schemaV2.getItem("NewClass"));
+      assert.isDefined(await schemaV2.getItem("UserOfNewClass"));
+
+      // The previously cached 1.0.0 schema must be unchanged.
+      assert.isDefined(await schemaV1.getItem("OldClass"));
+      assert.isUndefined(await schemaV1.getItem("NewClass"));
+    });
+
+    it.only("must not retrieve the in-flight schema by name-only match (sync)", () => {
+      const context = new SchemaContext();
+
+      const schemaV1 = deserializeXmlSync(refSchemaV1Xml, context);
+      assert.strictEqual(schemaV1.schemaKey.version.toString(), "01.00.00");
+
+      let schemaV2;
+      try {
+        schemaV2 = deserializeXmlSync(refSchemaV2Xml, context);
+      } catch (e: any) {
+        expect(e.message).to.not.match(/Unable to locate SchemaItem/);
+        expect(e).to.be.instanceOf(ECSchemaError);
+        expect((e as ECSchemaError).errorNumber).to.equal(ECSchemaStatus.DuplicateSchema);
+        expect(e.message).to.match(/read-incompatible version/);
+        assert.isUndefined(schemaV1.getItemSync("NewClass"));
+        return;
+      }
+
+      expect(schemaV2.schemaKey.version.toString()).to.equal("02.00.00");
+      assert.isDefined(schemaV2.getItemSync("NewClass"));
+      assert.isUndefined(schemaV1.getItemSync("NewClass"));
+    });
+
+    it.only("both read-incompatible versions must remain independently retrievable by exact match", async () => {
+      const context = new SchemaContext();
+      await deserializeXml(refSchemaV1Xml, context);
+
+      try {
+        await deserializeXml(refSchemaV2Xml, context);
+      } catch (e: any) {
+        // if the context rejects the conflict outright, it must be the typed conflict error
+        expect(e).to.be.instanceOf(ECSchemaError);
+        expect((e as ECSchemaError).errorNumber).to.equal(ECSchemaStatus.DuplicateSchema);
+        return;
+      }
+
+      const v1 = await context.getCachedSchema(new SchemaKey("RefSchema", new ECVersion(1, 0, 0)), SchemaMatchType.Exact);
+      const v2 = await context.getCachedSchema(new SchemaKey("RefSchema", new ECVersion(2, 0, 0)), SchemaMatchType.Exact);
+      assert.isDefined(v1, "RefSchema 1.0.0 should be retrievable by exact match");
+      assert.isDefined(v2, "RefSchema 2.0.0 should be retrievable by exact match");
+      assert.notStrictEqual(v1, v2, "the two versions must be distinct schema objects");
+      assert.isDefined(await v1.getItem("OldClass"));
+      assert.isDefined(await v2.getItem("NewClass"));
+    });
   });
 });
