@@ -2774,6 +2774,256 @@ describe("PresentationManager", () => {
         expect(result).to.deep.eq(expectedResponse);
       });
 
+      it("returns single element properties filtered by fieldsSelector (include)", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, elementKey);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet([elementKey])),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+              fieldsSelector: {
+                type: "include" as const,
+                fields: [{ type: FieldDescriptorType.Name, fieldName: "field1" }],
+              },
+            },
+            rulesetId: "ElementProperties",
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        const category = createTestCategoryDescription({ label: "Test Category" });
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            categories: [category],
+            fields: [
+              createTestSimpleContentField({
+                name: "field1",
+                label: "Field 1",
+                category,
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                field1: "value1",
+              },
+              displayValues: {},
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: SingleElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock as unknown as IModelDb,
+          elementId: elementKey.id,
+          fieldsSelector: (_descriptor) => ({
+            type: "include",
+            fields: [{ type: FieldDescriptorType.Name, fieldName: "field1" }],
+          }),
+        };
+        const expectedResponse: ElementProperties = {
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Field 1"]: {
+                  type: "primitive",
+                  value: "value1",
+                },
+              },
+            },
+          },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
+      });
+
+      it("returns single element properties filtered by fieldsSelector (exclude)", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, elementKey);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet([elementKey])),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+              fieldsSelector: {
+                type: "exclude" as const,
+                fields: [{ type: FieldDescriptorType.Name, fieldName: "field2" }],
+              },
+            },
+            rulesetId: "ElementProperties",
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        const category = createTestCategoryDescription({ label: "Test Category" });
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            categories: [category],
+            fields: [
+              createTestSimpleContentField({
+                name: "field1",
+                label: "Field 1",
+                category,
+              }),
+              createTestSimpleContentField({
+                name: "field3",
+                label: "Field 3",
+                category,
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                field1: "value1",
+                field3: "value3",
+              },
+              displayValues: {},
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: SingleElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock as unknown as IModelDb,
+          elementId: elementKey.id,
+          fieldsSelector: (_descriptor) => ({
+            type: "exclude",
+            fields: [{ type: FieldDescriptorType.Name, fieldName: "field2" }],
+          }),
+        };
+        const expectedResponse: ElementProperties = {
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Field 1"]: {
+                  type: "primitive",
+                  value: "value1",
+                },
+                ["Field 3"]: {
+                  type: "primitive",
+                  value: "value3",
+                },
+              },
+            },
+          },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
+      });
+
+      it("returns all fields when fieldsSelector returns undefined", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, elementKey);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet([elementKey])),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+            omitFormattedValues: true,
+          },
+        };
+
+        // what the addon returns
+        const category = createTestCategoryDescription({ label: "Test Category" });
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            categories: [category],
+            fields: [
+              createTestSimpleContentField({
+                name: "field1",
+                label: "Field 1",
+                category,
+              }),
+              createTestSimpleContentField({
+                name: "field2",
+                label: "Field 2",
+                category,
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                field1: "value1",
+                field2: "value2",
+              },
+              displayValues: {},
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: SingleElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock as unknown as IModelDb,
+          elementId: elementKey.id,
+          fieldsSelector: () => undefined,
+        };
+        const expectedResponse: ElementProperties = {
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Field 1"]: {
+                  type: "primitive",
+                  value: "value1",
+                },
+                ["Field 2"]: {
+                  type: "primitive",
+                  value: "value2",
+                },
+              },
+            },
+          },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
+      });
+
       function setupIModelForBatchedElementIdsQuery(ids: Id64String[]) {
         imodelMock.createQueryReader
           .withArgs(sinon.match((query: string) => query.trimStart().startsWith("SELECT COUNT(e.ECInstanceId)")))
