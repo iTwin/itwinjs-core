@@ -964,8 +964,6 @@ export interface ChangeFormatArgs {
 export interface ChangeInstance {
     $meta: ChangeMeta;
     [key: string]: any;
-    ECClassId: string;
-    ECInstanceId: string;
 }
 
 // @beta
@@ -3666,7 +3664,7 @@ export interface GcsDbProps extends WorkspaceDbCloudProps {
 }
 
 // @internal
-export function generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise<Uint8Array | undefined>;
+export function generateElementGraphics(_request: ElementGraphicsRequestProps, _iModel: IModelDb): Promise<Uint8Array | undefined>;
 
 // @public
 export class GenericDocument extends Document_2 {
@@ -6261,6 +6259,8 @@ export class RoleModel extends Model {
 export interface RowFormatOptions {
     abbreviateBlobs?: boolean;
     classIdsToClassNames?: boolean;
+    // @deprecated
+    useJsName?: boolean;
 }
 
 // @public
