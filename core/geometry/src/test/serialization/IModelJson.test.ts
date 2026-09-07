@@ -516,6 +516,15 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
       if (ck.testTrue(union.children[1] instanceof ParityRegion, `unionRegion child 1 is a ParityRegion`))
         ck.testExactNumber(2, union.children[1].children.length, "unionRegion's parityRegion has 2 loops");
     }
+
+    // user test
+    const myLoop = Loop.create(Arc3d.createXYEllipse(Point3d.createZero(), 1, 1));
+    myLoop.isInner = true;
+    const serializedLoop = IModelJson.Writer.toIModelJson(myLoop);
+    const parsedLoop = IModelJson.Reader.parse(serializedLoop);
+    if (ck.testType(parsedLoop, Loop, "Loop round-trips thru JSON to a Loop"))
+      ck.testTrue(parsedLoop.isInner, "round-tripped Loop is marked as inner");
+
     expect(ck.getNumErrors()).toBe(0);
   });
 
