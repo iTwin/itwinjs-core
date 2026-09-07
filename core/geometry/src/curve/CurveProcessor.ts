@@ -6,14 +6,14 @@
  * @module Curve
  */
 
-import { assert } from "@itwin/core-bentley";
-import { BagOfCurves, CurveCollection } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyCurve } from "./CurveTypes";
-import { Loop } from "./Loop";
-import { ParityRegion } from "./ParityRegion";
-import { Path } from "./Path";
-import { UnionRegion } from "./UnionRegion";
+
+import type { BagOfCurves, CurveCollection } from "./CurveCollection";
+import type { AnyCurve } from "./CurveTypes";
+import type { Loop } from "./Loop";
+import type { ParityRegion } from "./ParityRegion";
+import type { Path } from "./Path";
+import type { UnionRegion } from "./UnionRegion";
 
 /** base class for detailed traversal of curve artifacts.
  * * This recurses to children in the quickest way (no records of path)
@@ -52,12 +52,10 @@ export abstract class RecursiveCurveProcessor {
   public announceUnionRegion(data: UnionRegion, _indexInParent: number = -1): void {
     let i = 0;
     for (const child of data.children) {
-      if (child instanceof Loop)
+      if (child.curveCollectionType === "loop")
         this.announceLoop(child, i++);
-      else if (child instanceof ParityRegion)
-        this.announceParityRegion(child, i++);
       else
-        assert(false, "Invalid UnionRegion child skipped");
+        this.announceParityRegion(child, i++);
     }
   }
 
@@ -128,12 +126,10 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
     this.enter(data);
     let i = 0;
     for (const child of data.children) {
-      if (child instanceof Loop)
+      if (child.curveCollectionType === "loop")
         this.announceLoop(child, i++);
-      else if (child instanceof ParityRegion)
-        this.announceParityRegion(child, i++);
       else
-        assert(false, "Invalid UnionRegion child skipped");
+        this.announceParityRegion(child, i++);
     }
     this.leave();
   }

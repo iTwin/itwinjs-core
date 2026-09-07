@@ -10,11 +10,12 @@
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Transform } from "../geometry3d/Transform";
 import { CurveCollection } from "./CurveCollection";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { Loop } from "./Loop";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { RecursiveCurveProcessor } from "./CurveProcessor";
 
 /**
  * * A `ParityRegion` is a collection of `Loop` objects.

@@ -9,12 +9,13 @@
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Transform } from "../geometry3d/Transform";
 import { CurveCollection } from "./CurveCollection";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { RecursiveCurveProcessor } from "./CurveProcessor";
 
 /**
  * * A `UnionRegion` is a collection of other planar region types -- `Loop` and `ParityRegion`.

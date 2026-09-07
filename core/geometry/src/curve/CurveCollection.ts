@@ -20,7 +20,6 @@ import { Transform } from "../geometry3d/Transform";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive, TangentOptions } from "./CurvePrimitive";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve, type AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
@@ -35,6 +34,7 @@ import { LineString3d } from "./LineString3d";
 import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
 
+import type { RecursiveCurveProcessor } from "./CurveProcessor";
 import type { Path } from "./Path";
 import type { Loop } from "./Loop";
 

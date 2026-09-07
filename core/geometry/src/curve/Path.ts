@@ -13,10 +13,11 @@ import { Transform } from "../geometry3d/Transform";
 import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { RecursiveCurveProcessor } from "./CurveProcessor";
 
 /**
  * * A `Path` object is a collection of curves that join head-to-tail to form a path.
