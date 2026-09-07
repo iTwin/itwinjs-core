@@ -70,8 +70,6 @@ export abstract class CurveCollection extends GeometryQuery {
   public readonly geometryCategory = "curveCollection";
   /** Type discriminator. */
   public abstract readonly curveCollectionType: CurveCollectionType;
-  /** Flag for inner loop status. Only used by `Loop`. */
-  public isInner: boolean = false;
   /** Return the curve children. */
   public abstract override get children(): AnyCurve[];
   /** Return the sum of the lengths of all contained curves. */

@@ -27,8 +27,14 @@ import type { RecursiveCurveProcessor } from "./CurveProcessor";
 export class Loop extends CurveChain {
   /** String name for schema properties */
   public readonly curveCollectionType = "loop";
-  /** Tag value that can be set to true for user code to mark inner and outer loops. */
-  public override isInner: boolean = false;
+  /**
+   * Flag for inner loop status (default value is `false`).
+   * * Typical usage is to set to `true` on hole `Loop`s in a `ParityRegion` to distinguish them from the outer `Loop`.
+   * * This property is only set by the user, and does not affect region processing.
+   * * This property is propagated through [[clone]] and JSON/FlatBuffer de/serialization.
+   * * For best de/serialization results, avoid setting to `false` on multiple `Loop`s of a `ParityRegion`.
+   */
+  public isInner: boolean = false;
   /** Test if `other` is a `Loop` */
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof Loop;
@@ -118,6 +124,12 @@ export class Loop extends CurveChain {
   /** Second step of double dispatch:  call `handler.handleLoop(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleLoop(this);
+  }
+  /** Test for near equality */
+  public override isAlmostEqual(other: GeometryQuery): boolean {
+    if (!super.isAlmostEqual(other))
+      return false;
+    return this.isInner === (other as Loop).isInner;
   }
 }
 
