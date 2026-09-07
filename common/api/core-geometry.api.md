@@ -11,14 +11,12 @@ export class AkimaCurve3d extends ProxyCurve {
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): AkimaCurve3d;
     cloneProps(): AkimaCurve3dProps;
-    cloneTransformed(transform: Transform): AkimaCurve3d | undefined;
+    cloneTransformed(transform: Transform): AkimaCurve3d;
     copyFitPointsFloat64Array(): Float64Array;
     static create(options: AkimaCurve3dOptions | AkimaCurve3dProps): AkimaCurve3d | undefined;
     static createCapture(options: AkimaCurve3dOptions): AkimaCurve3d | undefined;
-    // (undocumented)
-    readonly curvePrimitiveType = "interpolationCurve";
+    readonly curvePrimitiveType = "akimaCurve";
     dispatchToGeometryHandler(handler: GeometryHandler): any;
-    // (undocumented)
     isAlmostEqual(other: GeometryQuery): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     get proxyCurve(): BSplineCurve3d;
@@ -30,12 +28,10 @@ export class AkimaCurve3d extends ProxyCurve {
 // @public
 export class AkimaCurve3dOptions {
     constructor(fitPoints?: Point3d[]);
-    // (undocumented)
     static areAlmostEqual(dataA: AkimaCurve3dOptions | undefined, dataB: AkimaCurve3dOptions | undefined): boolean;
     clone(): AkimaCurve3dOptions;
     cloneAsAkimaCurve3dProps(): AkimaCurve3dProps;
     static create(source: AkimaCurve3dProps): AkimaCurve3dOptions;
-    // (undocumented)
     fitPoints: Point3d[];
 }
 
@@ -216,7 +212,7 @@ export type AnyChain = CurvePrimitive | Path | BagOfCurves | Loop;
 export type AnyCurve = CurvePrimitive | CurveCollection;
 
 // @public
-export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d;
+export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BSplineCurve3dH | BezierCurve3d | BezierCurve3dH | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d;
 
 // @public
 export type AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd;
@@ -426,8 +422,11 @@ export class BagOfCurves extends CurveCollection {
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
     get children(): AnyCurve[];
     protected _children: AnyCurve[];
+    clone(): BagOfCurves;
     cloneEmptyPeer(): BagOfCurves;
     cloneStroked(options?: StrokeOptions): BagOfCurves;
+    cloneTransformed(transform: Transform): BagOfCurves;
+    cloneWithExpandedLineStrings(): BagOfCurves;
     static create(...data: AnyCurve[]): BagOfCurves;
     readonly curveCollectionType = "bagOfCurves";
     dgnBoundaryType(): number;
@@ -1579,8 +1578,8 @@ export class ConvexPolygon2d {
 
 // @public
 export class CoordinateXYZ extends GeometryQuery {
-    clone(): GeometryQuery | undefined;
-    cloneTransformed(transform: Transform): GeometryQuery | undefined;
+    clone(): GeometryQuery;
+    cloneTransformed(transform: Transform): GeometryQuery;
     static create(point: Point3d): CoordinateXYZ;
     static createXYZ(x?: number, y?: number, z?: number): CoordinateXYZ;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -1608,7 +1607,10 @@ export abstract class CurveChain extends CurveCollection {
     protected constructor();
     childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined;
     get children(): CurvePrimitive[];
+    clone(): CurveChain;
     abstract cloneStroked(options?: StrokeOptions): CurveChain;
+    cloneTransformed(transform: Transform): CurveChain;
+    cloneWithExpandedLineStrings(): CurveChain;
     protected _curves: CurvePrimitive[];
     cyclicCurvePrimitive(index: number, cyclic?: boolean): CurvePrimitive | undefined;
     endPoint(result?: Point3d): Point3d | undefined;
@@ -1632,7 +1634,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation?: boolean): number | undefined;
     clone(options?: StrokeOptions): CurveChainWithDistanceIndex;
     clonePartialCurve(fractionA: number | CurveLocationDetail, fractionB: number | CurveLocationDetail, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
-    cloneTransformed(transform: Transform, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
+    cloneTransformed(transform: Transform, options?: StrokeOptions): CurveChainWithDistanceIndex;
     closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     closestPointXY(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
@@ -1684,7 +1686,7 @@ export abstract class CurveCollection extends GeometryQuery {
     clone(): CurveCollection;
     abstract cloneEmptyPeer(): CurveCollection;
     abstract cloneStroked(options?: StrokeOptions): CurveCollection;
-    cloneTransformed(transform: Transform): CurveCollection | undefined;
+    cloneTransformed(transform: Transform): CurveCollection;
     cloneWithExpandedLineStrings(): CurveCollection;
     closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     closestPointXY(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
@@ -1701,7 +1703,6 @@ export abstract class CurveCollection extends GeometryQuery {
     isAnyRegion(): this is AnyRegion;
     get isAnyRegionType(): boolean;
     get isClosedPath(): boolean;
-    isInner: boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isLoop(): this is Loop;
     get isOpenPath(): boolean;
@@ -1894,7 +1895,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     abstract clone(): CurvePrimitive;
     clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined;
-    abstract cloneTransformed(transform: Transform): CurvePrimitive | undefined;
+    abstract cloneTransformed(transform: Transform): CurvePrimitive;
     closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     closestPointXY(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined;
@@ -2048,7 +2049,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     refreshComputedProperties(): void;
     reverseInPlace(): void;
     startPoint(result?: Point3d): Point3d;
-    tryTransformInPlace(transformA: Transform): boolean;
+    tryTransformInPlace(transform: Transform): boolean;
 }
 
 // @public
@@ -2439,7 +2440,7 @@ export abstract class GeometryHandler {
 export abstract class GeometryQuery {
     static areAlmostEqual(a: GeometryQuery | undefined, b: GeometryQuery | undefined): boolean;
     get children(): GeometryQuery[] | undefined;
-    abstract clone(): GeometryQuery | undefined;
+    abstract clone(): GeometryQuery;
     abstract cloneTransformed(transform: Transform): GeometryQuery | undefined;
     static computeScaledTolerance(geom: GeometryQuery | GeometryQuery[], options?: ScaledToleranceOptions): number;
     abstract dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -2844,12 +2845,14 @@ export namespace IModelJson {
         contour: CurveCollectionProps;
         vector: XYZProps;
     }
-    export interface PlanarRegionProps {
-        loop?: CurvePrimitiveProps[];
-        parityRegion?: {
-            loop: CurvePrimitiveProps[];
-        }[];
-        unionRegion?: PlanarRegionProps[];
+    export interface LoopProps {
+        isInner?: boolean;
+        loop: CurvePrimitiveProps[];
+    }
+    export interface ParityRegionProps {
+        parityRegion: LoopProps[];
+    }
+    export interface PlanarRegionProps extends Partial<LoopProps>, Partial<ParityRegionProps>, Partial<UnionRegionProps> {
     }
     export interface PointProps {
         point?: XYZProps;
@@ -2864,7 +2867,7 @@ export namespace IModelJson {
         static parseBsurf(data?: any): BSplineSurface3d | BSplineSurface3dH | undefined;
         static parseConeProps(json?: ConeProps): Cone | undefined;
         static parseCoordinate(data?: any): CoordinateXYZ | undefined;
-        static parseCurveCollectionMembers(result: CurveCollection, data?: any): CurveCollection | undefined;
+        static parseCurveCollectionMembers(result: CurveCollection, data?: any, isInner?: boolean): CurveCollection | undefined;
         static parseCylinderProps(json?: CylinderProps): Cone | undefined;
         static parseIndexedMesh(data?: any): IndexedPolyface | undefined;
         static parseInterpolationCurve(data?: any): InterpolationCurve3d | undefined;
@@ -2931,6 +2934,9 @@ export namespace IModelJson {
         startBearing?: AngleProps;
         startRadius?: number;
         type?: string;
+    }
+    export interface UnionRegionProps {
+        unionRegion: (LoopProps | ParityRegionProps)[];
     }
     export class Writer extends GeometryHandler {
         emit(data: any): any;
@@ -3247,7 +3253,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     reverseInPlace(): void;
     setFrom(other: IntegratedSpiral3d): IntegratedSpiral3d;
     startPoint(result?: Point3d): Point3d;
-    tryTransformInPlace(transformA: Transform): boolean;
+    tryTransformInPlace(transform: Transform): boolean;
 }
 
 // @public
@@ -3258,14 +3264,12 @@ export class InterpolationCurve3d extends ProxyCurve {
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): InterpolationCurve3d;
     cloneProps(): InterpolationCurve3dProps;
-    cloneTransformed(transform: Transform): InterpolationCurve3d | undefined;
+    cloneTransformed(transform: Transform): InterpolationCurve3d;
     copyFitPointsFloat64Array(): Float64Array;
     static create(options: InterpolationCurve3dOptions | InterpolationCurve3dProps): InterpolationCurve3d | undefined;
     static createCapture(options: InterpolationCurve3dOptions): InterpolationCurve3d | undefined;
-    // (undocumented)
     readonly curvePrimitiveType = "interpolationCurve";
     dispatchToGeometryHandler(handler: GeometryHandler): any;
-    // (undocumented)
     isAlmostEqual(other: GeometryQuery): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     get options(): InterpolationCurve3dOptions;
@@ -3278,7 +3282,6 @@ export class InterpolationCurve3d extends ProxyCurve {
 // @public
 export class InterpolationCurve3dOptions {
     constructor(fitPoints?: Point3d[], knots?: number[]);
-    // (undocumented)
     static areAlmostEqual(dataA: InterpolationCurve3dOptions | undefined, dataB: InterpolationCurve3dOptions | undefined): boolean;
     captureOptionalProps(order: number | undefined, closed: boolean | undefined, isChordLenKnots: number | undefined, isColinearTangents: number | undefined, isChordLenTangent: number | undefined, isNaturalTangents: number | undefined, startTangent: Vector3d | undefined, endTangent: Vector3d | undefined): void;
     clone(): InterpolationCurve3dOptions;
@@ -3621,14 +3624,18 @@ export class LongitudeLatitudeNumber implements BeJSONFunctions {
 export class Loop extends CurveChain {
     constructor();
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
+    clone(): Loop;
     cloneEmptyPeer(): Loop;
     cloneStroked(options?: StrokeOptions): Loop;
+    cloneTransformed(transform: Transform): Loop;
+    cloneWithExpandedLineStrings(): Loop;
     static create(...curves: CurvePrimitive[]): Loop;
     static createArray(curves: CurvePrimitive[]): Loop;
     static createPolygon(points: IndexedXYZCollection | Point3d[]): Loop;
     readonly curveCollectionType = "loop";
     dgnBoundaryType(): number;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
+    isAlmostEqual(other: GeometryQuery): boolean;
     isInner: boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
 }
@@ -4241,6 +4248,8 @@ export class ParityRegion extends CurveCollection {
     clone(): ParityRegion;
     cloneEmptyPeer(): ParityRegion;
     cloneStroked(options?: StrokeOptions): ParityRegion;
+    cloneTransformed(transform: Transform): ParityRegion;
+    cloneWithExpandedLineStrings(): ParityRegion;
     static create(...data: Loop[]): ParityRegion;
     static createLoops(data?: Loop | Loop[] | Loop[][]): Loop | ParityRegion;
     readonly curveCollectionType = "parityRegion";
@@ -4262,8 +4271,11 @@ export class PascalCoefficients {
 export class Path extends CurveChain {
     constructor();
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
+    clone(): Path;
     cloneEmptyPeer(): Path;
     cloneStroked(options?: StrokeOptions): Path;
+    cloneTransformed(transform: Transform): Path;
+    cloneWithExpandedLineStrings(): Path;
     static create(...curves: Array<CurvePrimitive | Point3d[]>): Path;
     static createArray(curves: CurvePrimitive[]): Path;
     readonly curveCollectionType = "path";
@@ -5138,7 +5150,7 @@ export abstract class ProxyCurve extends CurvePrimitive {
     constructor(proxyCurve: CurvePrimitive);
     abstract clone(): ProxyCurve;
     clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
-    cloneTransformed(transform: Transform): ProxyCurve | undefined;
+    cloneTransformed(transform: Transform): ProxyCurve;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     // (undocumented)
@@ -5552,7 +5564,7 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
     announceParityRegion(data: ParityRegion, _indexInParent?: number): void;
     announcePath(data: Path, indexInParent?: number): void;
     announceUnexpected(_data: AnyCurve, _indexInParent: number): void;
-    announceUnionRegion(data: UnionRegion, indexInParent?: number): void;
+    announceUnionRegion(data: UnionRegion, _indexInParent?: number): void;
     enter(data: CurveCollection): void;
     leave(): CurveCollection | undefined;
     protected _stack: CurveCollection[];
@@ -6359,8 +6371,11 @@ export class UnionRegion extends CurveCollection {
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
     get children(): Array<ParityRegion | Loop>;
     protected _children: Array<ParityRegion | Loop>;
+    clone(): UnionRegion;
     cloneEmptyPeer(): UnionRegion;
     cloneStroked(options?: StrokeOptions): UnionRegion;
+    cloneTransformed(transform: Transform): UnionRegion;
+    cloneWithExpandedLineStrings(): UnionRegion;
     static create(...data: Array<ParityRegion | Loop>): UnionRegion;
     readonly curveCollectionType = "unionRegion";
     dgnBoundaryType(): number;
