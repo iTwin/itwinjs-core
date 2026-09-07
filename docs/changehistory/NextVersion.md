@@ -6,6 +6,8 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
+  - [@itwin/core-geometry](#itwincore-geometry)
+    - [`PlanarRegionProps` refactor](#planarregionprops-refactor)
   - [Electron 44 support](#electron-44-support)
 
 ## @itwin/core-backend
@@ -20,6 +22,20 @@ A change that would move or destroy existing data is now refused with `BE_SQLITE
 
 SchemaSync databases now require version 5.0.0. Existing version 4 containers are outside this compatibility boundary and cannot be opened by this release.
 
+## @itwin/core-geometry
+
+### `PlanarRegionProps` refactor
+
+The flag `Loop.isInner` did not always survive round-trip through JSON or FlatBuffers due to an oversight. To address this, the `CurveCollection` class and `PlanarRegionProps` schema were slightly refactored.
+
+`CurveCollection.isInner` is now moved to `Loop.isInner`, as `Loop` is the only subclass of `CurveCollection` for which this flag is relevant. As this flag is only set by user code, does not effect region processing, and was previously accessible to `Loop`, this should not break existing code.
+
+`IModelJson.PlanarRegionProps` has been refactored to extend 3 new interfaces: `LoopProps` (which includes `isInner`), `ParityRegionProps`, and `UnionProps`. This has 3 effects:
+  - `PlanarRegionProps.isInner` is a new optional property. In concert with the existing `PlanarRegionProps.loop` property, a `ParityRegionProps` can now specify a `Loop` that has been marked "inner" by the user.
+  - `PlanarRegionProps.parityRegion` is now an array of `LoopProps`, thus each of its entries now inherits an `isInner` property, allowing the specification of the common solid-with-holes type of parity region.
+  - `PlanarRegionProps.unionRegion` is now an array of `LoopProps | ParityRegionProps`, which explicitly disallows illegal nested `UnionRegion`s. Previously, this property could specify a nested union because it was an array of `PlanarRegionProps`. Regions code consistently assumes that `UnionRegion`s are not nested for efficiency.
+
 ## Electron 44 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 44](https://www.electronjs.org/blog/electron-44-0).
+
