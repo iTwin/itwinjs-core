@@ -169,6 +169,7 @@ export class ChangesetReader implements Disposable, ChangeSource {
     return {
       abbreviateBlobs: opts.abbreviateBlobs,
       classIdsToClassNames: opts.classIdsToClassNames,
+      useJsName: opts.useJsName,
     };
   }
 
