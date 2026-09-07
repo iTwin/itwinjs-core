@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Removed \"useJsName\" from \"RowFormatOptions\" which is used by \"ChangesetReader\" api. Also, \"ChangeInstance\" which structures an EC instance produced by \"ChangesetReader\" api now gets explicit ECInstanceId and ECClassId props.",
+      "comment": "Deprecated \"useJsName\" from \"RowFormatOptions\" which is used by \"ChangesetReader\" api.",
       "type": "none"
     }
   ],

@@ -27,11 +27,7 @@ SchemaSync databases now require version 5.0.0. Existing version 4 containers ar
 
 #### ChangesetReader row options
 
-The `useJsName` option has been removed from the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). EC property keys are now always returned using their original EC property names; use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
-
-#### ChangeInstance ECInstanceId and ECClassId
-
-The `@beta` [ChangeInstance]($backend) interface produced by [ChangesetReader]($backend) now declares `ECInstanceId` and `ECClassId` as explicit `string` properties. They were previously only reachable through the interface's index signature, so no runtime behavior changes — the values were always present — but consumers now get proper typing and IntelliSense when accessing `instance.ECInstanceId` and `instance.ECClassId`.
+The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). Use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
 
 ## Electron 44 support
 
