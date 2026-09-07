@@ -82,9 +82,8 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
   if (path3) {
     const length3 = path3.sumLengths();
     ck.testCoordinate(length1, length3, "length of clone(transform), transformInPlace");
-    const path5 = collection.cloneTransformed(scaleTransform)!;
+    const path5 = collection.cloneTransformed(scaleTransform);
     path5.sumLengths();
-
   }
 
   ck.testCoordinate(length0 * scaleFactor, length1, "scaled length");
@@ -286,9 +285,9 @@ describe("CurveCollection", () => {
 
     const emptyCollection = BagOfCurves.create();
     const inPlaneCollection = loopXY.clone();
-    const inPlaneCollectionWithEmptyChild = ParityRegion.create(loopXY.clone() as Loop, Loop.create());
+    const inPlaneCollectionWithEmptyChild = ParityRegion.create(loopXY.clone(), Loop.create());
     const inPlaneCollectionWithEmptyChild2 = UnionRegion.create(inPlaneCollectionWithEmptyChild.clone(), Loop.create());
-    const outOfPlanePlanarCollection = inPlaneCollection.cloneTransformed(Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1, -1, -1), Angle.createDegrees(37))))!;
+    const outOfPlanePlanarCollection = inPlaneCollection.cloneTransformed(Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1, -1, -1), Angle.createDegrees(37))));
     const nonPlanarCollection = Path.create(lineXY.clone(), LineSegment3d.createXYZXYZ(0, 1, 0, 1, 1, 1));
 
     const xyPlane = Plane3dByOriginAndUnitNormal.createXYPlane();
