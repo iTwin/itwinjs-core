@@ -76,7 +76,7 @@ The policy is fixed when the iModel is created in iModelHub, via the `noLocks` p
 | **Locking (default)** | Locks *must* be held before elements/models are changed. The editing APIs check locks as each change is made, so two briefcases cannot concurrently change the same element. |
 | **No locks** (`noLocks: true`) | No locks are required or acquired. Simultaneous edits are reconciled by [change merging / rebase](./PullMerge.md). |
 
-> **`noLocks` is experimental.** Its conflict-resolution behavior is not yet a complete replacement for the default locking policy and it is not recommended for production applications. Reservations—not `noLocks`—are the mechanism for concurrent creation of shared definitions and component elements.
+> ⚠️ **`noLocks` is experimental.** Its conflict-resolution behavior is not yet a complete replacement for the default locking policy. **Do NOT use this in production applications.** Reservations—not `noLocks`—are the mechanism for concurrent creation of shared definitions and component elements.
 
 Every [BriefcaseDb]($backend) exposes [BriefcaseDb.locks]($backend), a [LockControl]($backend) implementation chosen automatically when the briefcase is opened:
 
