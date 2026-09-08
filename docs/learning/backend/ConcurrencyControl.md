@@ -78,7 +78,7 @@ The policy is fixed when the iModel is created in iModelHub, via the `noLocks` p
 
 > ⚠️ **`noLocks` is experimental.** Its conflict-resolution behavior is not yet a complete replacement for the default locking policy. **Do NOT use this in production applications.** Reservations—not `noLocks`—are the mechanism for concurrent creation of shared definitions and component elements.
 
-Every [BriefcaseDb]($backend) exposes [BriefcaseDb.locks]($backend), a [LockControl]($backend) implementation chosen automatically when the briefcase is opened:
+Every [IModelDb]($backend) exposes [IModelDb.locks]($backend), a [LockControl]($backend) implementation chosen automatically when the iModel is opened:
 
 ```mermaid
 flowchart LR
