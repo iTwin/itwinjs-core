@@ -81,9 +81,11 @@ The policy is fixed when the iModel is created in iModelHub, via the `noLocks` p
 Every [BriefcaseDb]($backend) exposes [BriefcaseDb.locks]($backend), a [LockControl]($backend) implementation chosen automatically when the briefcase is opened:
 
 ```mermaid
-flowchart TD
-    A["BriefcaseDb opened"] --> B{"open for write?"}
-    B -- no --> N["No-op LockControl<br/>(locks are never required)"]
+flowchart LR
+    X["IModelDb opened"] --> A{"is BriefcaseDb?"}
+    A -- no --> N["No-op LockControl<br/>(locks are never required)"]
+    A -- yes --> B{"open for write?"}
+    B -- no --> N
     B -- yes --> C{"briefcaseId assigned?"}
     C -- no --> N
     C -- yes --> D{"iModel created<br/>with noLocks?"}
