@@ -424,7 +424,7 @@ Note that re-acquiring an abandoned lock can fail: another briefcase may have ta
 
 - **Codes.** General element-code uniqueness is coordinated separately by reserving codes — see [Reserving Codes](./ReserveCodes.md) and [CodeService](./CodeService.md). A reservation also checks the non-empty Code attached to a reserved identity, but holding a lock alone does not reserve a code.
 - **Channels.** [Channels](./Channel.md) restrict *which* parts of an iModel a given application is allowed to write, which is an orthogonal (and additional) check to locks.
-- **Access control.** Whether a user may edit at all is decided by iTwin permissions, not by this document.
+- **Access control.** Whether a user may edit at all is decided by [iModel permissions](https://developer.bentley.com/apis/imodels-v2/operations/get-imodel-permissions/), not by anything in this document.
 
 ## Practical guidance
 
