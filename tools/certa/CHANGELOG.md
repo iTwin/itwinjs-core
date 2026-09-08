@@ -1,6 +1,13 @@
 # Change Log - @itwin/certa
 
-This log was last generated on Thu, 03 Sep 2026 18:49:55 GMT and should not be manually modified.
+This log was last generated on Tue, 08 Sep 2026 18:43:29 GMT and should not be manually modified.
+
+## 5.13.1
+Tue, 08 Sep 2026 18:43:29 GMT
+
+### Updates
+
+- Clean up the Chrome test webserver when browser tests fail
 
 ## 5.13.0
 Thu, 03 Sep 2026 18:49:55 GMT
