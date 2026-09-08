@@ -175,8 +175,8 @@ graph TD
 
 Two rules follow from this hierarchy, and they are the source of most "why did I need *that* lock?" questions:
 
-1. **Locking downward is implicit.** Holding the exclusive lock on an element implicitly gives you the exclusive lock on all its children, and holding the exclusive lock on a model's element gives you exclusive control of everything in that model. `holdsExclusiveLock` walks up through models and parents to discover this.
-2. **Locking upward is automatic.** Requesting any lock on an element also requires shared locks on its model and parent, recursively, up to the root. [LockControl.acquireLocks]($backend) computes and requests those extra shared locks for you — you don't have to list them.
+1. **Exclusive locking downward is implicit.** Holding the exclusive lock on an element implicitly gives you the exclusive lock on all its children, and holding the exclusive lock on a model's element gives you exclusive control of everything in that model. `holdsExclusiveLock` and `checkExclusiveLock` each walk up through models and parents to discover this.
+2. **Shared locking upward is automatic.** Requesting any lock on an element also requires shared locks on its model and parent, recursively, up to the root. [LockControl.acquireLocks]($backend) computes and requests those extra shared locks for you — you don't have to list them.
 
 So this single call:
 
