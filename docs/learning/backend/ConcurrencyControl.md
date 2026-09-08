@@ -239,7 +239,7 @@ The rule is deliberately broader than definition elements: **when Schema Sync is
 | Coordination model | Serialize competing writers | Let many briefcases create the same thing |
 | Applies to | Models and elements | Elements inserted with an explicit `federationGuid` |
 | Enabled by | The default locking policy | Schema Sync |
-| API | [BriefcaseDb.locks]($backend) | [IModelDb.reservations]($backend) |
+| API | [IModelDb.locks]($backend) | [IModelDb.reservations]($backend) |
 
 Inserting a reserved element still follows the normal locking rules. For example, inserting a shared definition into the dictionary model requires a shared lock on [IModel.dictionaryId]($common). The reservation prevents an identity conflict; the lock protects the containing model while it changes.
 
