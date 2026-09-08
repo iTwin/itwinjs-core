@@ -167,7 +167,9 @@ export namespace FeatureSymbology {
       if (script)
         script.addSymbologyOverrides(this, /* ###TODO timePoint */ 0);
 
-      // ###TODO requires Viewport ref.addFeatureOverrides(this);
+      for (const provider of ref.featureOverrideProviders)
+        provider.addFeatureOverrides(this, ref)
+
       ref.perModelCategoryVisibility.addOverrides(this, this._modelSubCategoryOverrides);
 
       this._initSubCategoryOverrides(ref.subCategoryOverrides);
