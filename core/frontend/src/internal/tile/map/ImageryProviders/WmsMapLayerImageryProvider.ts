@@ -43,6 +43,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
         queryParams: this._settings.collectQueryParams(),
         formatId: this._settings.formatId,
         layerUrl: this._settings.url,
+        layerProperties: this._settings.properties,
       });
       if (undefined !== this._capabilities) {
         this._allLayersRange = this._capabilities.cartoRange;

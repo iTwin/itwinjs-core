@@ -60,7 +60,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   protected async getServiceJson() {
     let metadata: ArcGISServiceMetadata|undefined;
     try {
-      metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
+      metadata = await ArcGisUtilities.getServiceJson({url: this._settings.url, layerProperties: this._settings.properties, formatId: this._settings.formatId, userName: this._settings.userName, password: this._settings.password, queryParams: this._settings.collectQueryParams()});
 
     } catch (err) {
       if (err instanceof MapLayerUntrustedOriginError)
@@ -132,6 +132,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       url: target.toString(),
       formatId: this._settings.formatId,
       layerUrl: this._settings.url,
+      layerProperties: this._settings.properties,
       headers: new Headers(options?.headers),
       send: async (request, credentialed) => this.sendArcGisRequest(request, credentialed, allowSsoRetry, options),
     });

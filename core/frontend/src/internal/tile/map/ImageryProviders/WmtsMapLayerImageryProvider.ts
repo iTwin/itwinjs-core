@@ -47,6 +47,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
         queryParams: this._settings.collectQueryParams(),
         formatId: this._settings.formatId,
         layerUrl: this._settings.url,
+        layerProperties: this._settings.properties,
       });
       this.initPreferredTileMatrixSet();
       this.initPreferredStyle();

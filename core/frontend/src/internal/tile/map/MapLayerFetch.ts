@@ -8,6 +8,7 @@
 
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerRequest } from "../../../tile/internal";
+import type { MapLayerProviderProperties } from "@itwin/core-common";
 
 /** The outcome of [[fetchMapLayerRequest]].
  * @internal
@@ -35,6 +36,8 @@ export async function fetchMapLayerRequest(args: {
   url: string;
   formatId: string;
   layerUrl: string;
+  /** The layer's provider-specific settings properties, exposed as [[MapLayerRequest.layerProperties]]. */
+  layerProperties?: MapLayerProviderProperties;
   /** Pre-populated headers (e.g. settings-derived basic auth), if any. */
   headers?: Headers;
   /** The call site's default send. `credentialed` is true when the send may carry handler-injected credentials
@@ -44,6 +47,7 @@ export async function fetchMapLayerRequest(args: {
   send: (request: MapLayerRequest, credentialed: boolean) => Promise<Response>;
 }): Promise<MapLayerFetchResult> {
   const headers = args.headers ?? new Headers();
+  const { layerUrl, layerProperties, formatId } = args;
   // Snapshot: registrations changing while a handler awaits must not shift the pipeline of a request in flight.
   const handlers = [...(IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers ?? [])];
   let parsed: URL | undefined;
@@ -56,13 +60,13 @@ export async function fetchMapLayerRequest(args: {
   }
 
   if (!parsed) {
-    const unhandled = await args.send({ url: args.url, layerUrl: args.layerUrl, formatId: args.formatId, searchParams: new URLSearchParams(), headers }, false);
+    const unhandled = await args.send({ url: args.url, layerUrl, layerProperties, formatId, searchParams: new URLSearchParams(), headers }, false);
     return { response: unhandled, managedByHandler: false };
   }
 
   const original = parsed;
   const originalSearch = original.searchParams.toString();
-  const request: MapLayerRequest = { url: original.toString(), layerUrl: args.layerUrl, formatId: args.formatId, searchParams: original.searchParams, headers };
+  const request: MapLayerRequest = { url: original.toString(), layerUrl, layerProperties, formatId, searchParams: original.searchParams, headers };
   // Copies the mutable fields (Headers/URLSearchParams are not made immutable by `readonly`), so a handler that
   // mutates its request in place and then declines cannot leak the mutation to the next handler or to the default
   // send; the URL is recomputed from the copied query parameters, the target staying ours.
@@ -73,7 +77,7 @@ export async function fetchMapLayerRequest(args: {
       url = new URL(original);
       url.search = searchParams.toString();
     }
-    return { url: url.toString(), layerUrl: args.layerUrl, formatId: args.formatId, searchParams, headers: new Headers(source.headers) };
+    return { url: url.toString(), layerUrl, layerProperties, formatId, searchParams, headers: new Headers(source.headers) };
   };
   // Offers the request to handlers[index..]: a declined request goes unchanged to the next handler; a request a
   // handler sends is offered to the remaining ones, then issued credentialed.

@@ -184,6 +184,7 @@ import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { Map4d } from '@itwin/core-geometry';
 import { MapLayerKey } from '@itwin/core-common';
 import { MapLayerProps } from '@itwin/core-common';
+import { MapLayerProviderProperties } from '@itwin/core-common';
 import { MapLayerSettings } from '@itwin/core-common';
 import { MapSubLayerProps } from '@itwin/core-common';
 import { MassPropertiesOperation } from '@itwin/core-common';
@@ -1283,6 +1284,7 @@ export interface ArcGisGetServiceJsonArgs {
     formatId: string;
     // (undocumented)
     ignoreCache?: boolean;
+    layerProperties?: MapLayerProviderProperties;
     layerUrl?: string;
     // (undocumented)
     password?: string;
@@ -3470,6 +3472,7 @@ export function fetchMapLayerRequest(args: {
     url: string;
     formatId: string;
     layerUrl: string;
+    layerProperties?: MapLayerProviderProperties;
     headers?: Headers;
     send: (request: MapLayerRequest, credentialed: boolean) => Promise<Response>;
 }): Promise<MapLayerFetchResult>;
@@ -6354,6 +6357,7 @@ export interface MapLayerOptions {
 export interface MapLayerRequest {
     readonly formatId: string;
     readonly headers: Headers;
+    readonly layerProperties?: MapLayerProviderProperties;
     readonly layerUrl: string;
     readonly searchParams: URLSearchParams;
     readonly url: string;
@@ -6834,7 +6838,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): -1 | 0;
+    get rootLevel(): 0 | -1;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;

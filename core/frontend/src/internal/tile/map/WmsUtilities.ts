@@ -6,6 +6,7 @@
 import { IModelApp } from "../../../IModelApp";
 import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
 import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
+import type { MapLayerProviderProperties } from "@itwin/core-common";
 import {
   credentialedFetchRedirect, fetchMapLayerRequest, MapLayerUntrustedOriginError,
 } from "../../../tile/internal";
@@ -24,6 +25,8 @@ export interface WmsFetchOptions {
   /** The map-layer source URL, passed to the handler as [[MapLayerRequest.layerUrl]]. Defaults to the request URL,
    * which callers should avoid: capabilities request URLs differ from the layer's. */
   layerUrl?: string;
+  /** The layer's provider-specific settings properties, passed to the handler as [[MapLayerRequest.layerProperties]]. */
+  layerProperties?: MapLayerProviderProperties;
 }
 
 /** Options for [[WmsCapabilities.create]] and [[WmtsCapabilities.create]].
@@ -47,7 +50,7 @@ export class WmsUtilities {
  * @param url server URL to address the request
  */
   public static async fetchXml(url: string, options?: WmsFetchOptions): Promise<string> {
-    const { credentials, formatId, layerUrl } = options ?? {};
+    const { credentials, formatId, layerUrl, layerProperties } = options ?? {};
 
     let headers: Headers|undefined;
     const hasCredentials = !!(credentials && credentials.user && credentials.password);
@@ -71,6 +74,7 @@ export class WmsUtilities {
       url,
       formatId: formatId ?? "",
       layerUrl: layerUrl ?? url,
+      layerProperties,
       headers,
       send: async (request, credentialed) => {
         const rsp = await fetch(request.url, {

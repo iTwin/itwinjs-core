@@ -612,6 +612,7 @@ export abstract class MapLayerImageryProvider {
         url,
         formatId: this._settings.formatId,
         layerUrl: this._settings.url,
+        layerProperties: this._settings.properties,
         headers,
         send: async (request, credentialed) => this.sendDefaultRequest(request, credentialed, hasCreds, hasSettingsCreds, timeoutMs),
       });
@@ -683,6 +684,7 @@ export abstract class MapLayerImageryProvider {
         url,
         formatId: this._settings.formatId,
         layerUrl: this._settings.url,
+        layerProperties: this._settings.properties,
         headers,
         send: async (request, credentialed) => {
           const requestUrl = request.url;

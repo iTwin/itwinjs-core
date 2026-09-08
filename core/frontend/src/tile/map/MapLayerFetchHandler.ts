@@ -6,6 +6,8 @@
  * @module MapLayers
  */
 
+import type { MapLayerProviderProperties } from "@itwin/core-common";
+
 /** Describes an outgoing map-layer request submitted to the [[MapLayerFetchHandler]]s registered via
  * [[MapLayerFormatRegistry.addMapLayerFetchHandler]]. Treat it as an immutable value: to change what is sent,
  * pass a copy with different [[searchParams]] or [[headers]] to [[MapLayerFetchRequest]], e.g.
@@ -25,6 +27,10 @@ export interface MapLayerRequest {
    * making it the key to use when a handler manages distinct values (e.g. credentials) for several layers.
    */
   readonly layerUrl: string;
+  /** The provider-specific properties of the layer's settings ([ImageMapLayerSettings.properties]($common)), if any;
+   * lets a handler identify a layer when [[layerUrl]] is not enough. Undefined for source-validation requests.
+   */
+  readonly layerProperties?: MapLayerProviderProperties;
   /** The id of the map-layer format the request is made for (e.g. "WMS", "ArcGIS"), letting a handler
    * restrict itself to the formats it manages.
    */

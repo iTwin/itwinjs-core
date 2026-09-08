@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
+import { EmptyLocalization, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ArcGisUtilities, MapLayerAuthenticationFailedError, MapLayerFetchHandler, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerSource, MapLayerSourceStatus, WmsUtilities } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
@@ -139,6 +139,25 @@ describe("map-layer fetch handler", () => {
     const requested = new URL(getRequestUrl());
     expect(requested.searchParams.get("f")).toEqual("json");
     expect(requested.searchParams.get("clientParam")).toEqual("clientParamValue");
+  });
+
+  it("exposes the layer's provider properties to the handler on tile and capabilities requests", async () => {
+    const seen: Array<MapLayerProviderProperties | undefined> = [];
+    addHandler(async (request, fetchRequest) => {
+      seen.push(request.layerProperties);
+      return fetchRequest(request);
+    });
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl, properties: { tenant: "acme", layerId: 7 } });
+    const provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();   // capabilities request
+    await provider.makeRequest(tileUrl);
+
+    expect(seen).toHaveLength(2);
+    expect(seen[0]).toEqual({ tenant: "acme", layerId: 7 });
+    expect(seen[1]).toEqual({ tenant: "acme", layerId: 7 });
+    // Undefined when the layer has none.
+    await createProvider().makeRequest(tileUrl);
+    expect(seen[2]).toBeUndefined();
   });
 
   it("passes the layer's settings URL as layerUrl on capabilities requests too", async () => {

@@ -555,7 +555,7 @@ export class WmtsCapabilities {
   }
 
   public static async create(url: string, options?: WmsCapabilitiesCreateOptions): Promise<WmtsCapabilities | undefined> {
-    const { credentials, ignoreCache, queryParams, formatId, layerUrl } = options ?? {};
+    const { credentials, ignoreCache, queryParams, formatId, layerUrl, layerProperties } = options ?? {};
     const tmpUrl = new URL(WmsUtilities.getBaseUrl(url));
     tmpUrl.searchParams.append("request", "GetCapabilities");
     tmpUrl.searchParams.append("service", "WMTS");
@@ -576,7 +576,7 @@ export class WmtsCapabilities {
         return cached;
     }
 
-    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, formatId: formatId ?? "WMTS", layerUrl: layerUrl ?? url });
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), { credentials, formatId: formatId ?? "WMTS", layerUrl: layerUrl ?? url, layerProperties });
     if (!xmlCapabilities)
       return undefined;
 

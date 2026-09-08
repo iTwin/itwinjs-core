@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
-import { MapSubLayerProps } from "@itwin/core-common";
+import { MapLayerProviderProperties, MapSubLayerProps } from "@itwin/core-common";
 import { credentialedFetchRedirect, fetchMapLayerRequest, MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthenticationFailedError, MapLayerFetchResult, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, MapLayerUntrustedOriginError, ValidateSourceArgs} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { headersIncludeAuthMethod } from "../../../request/utils";
@@ -60,6 +60,8 @@ export interface ArcGisGetServiceJsonArgs  {
   url: string;
   /** Stable map-layer source URL used to identify the request to a fetch handler. Defaults to `url`. */
   layerUrl?: string;
+  /** The layer's provider-specific settings properties, exposed to a fetch handler as [[MapLayerRequest.layerProperties]]. */
+  layerProperties?: MapLayerProviderProperties;
   formatId: string;
   userName?: string;
   password?: string;
@@ -289,7 +291,7 @@ export class ArcGisUtilities {
    */
 
   public static async getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata|undefined> {
-    const {url, layerUrl = url, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
+    const {url, layerUrl = url, layerProperties, formatId, userName, password, queryParams, ignoreCache, requireToken} = args;
     const accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(formatId);
     // The cache is keyed by URL only, so responses customized by the fetch handler (e.g.
     // header-authenticated) must not be shared with or served from differently-customized requests.
@@ -322,6 +324,7 @@ export class ArcGisUtilities {
         url: target.toString(),
         formatId,
         layerUrl,
+        layerProperties,
         send: async (request, credentialed) => {
           // Sends the handler modified may carry injected secrets: same redirect policy as credentialed ones.
           let rsp = await fetch(request.url, { method: "GET", headers: request.headers, redirect: credentialed ? credentialedFetchRedirect() : undefined });
