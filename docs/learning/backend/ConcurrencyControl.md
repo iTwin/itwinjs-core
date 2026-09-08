@@ -429,7 +429,7 @@ Note that re-acquiring an abandoned lock can fail: another briefcase may have ta
 ## Practical guidance
 
 - **Always pull before you lock.** This is the safe workflow: the server checks freshness per lock, so a stale briefcase is refused with `PullIsRequired` — sometimes because of an ancestor element you never asked about.
-- **Reserve before inserting an explicit federation GUID.** When Schema Sync is enabled, batch reservations before acquiring locks and starting the editing transaction.
+- **Reserve before inserting an explicit federation GUID.** Batch reservations before acquiring locks and starting the editing transaction.
 - **Lock at the right granularity.** For bulk edits, take the exclusive lock on the model rather than on each element; for edits to a large assembly, one lock on a common parent covers them all.
 - **Acquire locks in one call where possible.** `acquireLocks({ shared: [...], exclusive: [...] })` is atomic, so a batch either fully succeeds or leaves you holding nothing new — which avoids partially-locked states and reduces deadlock-like stalls between briefcases.
 - **Keep the schema lock for as short a time as possible.** While you hold it, every other briefcase in the iModel is blocked from acquiring anything. Push and release immediately after the import.
