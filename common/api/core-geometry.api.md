@@ -1702,6 +1702,7 @@ export abstract class CurveCollection extends GeometryQuery {
     get isAnyRegionType(): boolean;
     get isClosedPath(): boolean;
     isInner: boolean;
+    isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isLoop(): this is Loop;
     get isOpenPath(): boolean;
     isPath(): this is Path;
@@ -2440,12 +2441,14 @@ export abstract class GeometryQuery {
     get children(): GeometryQuery[] | undefined;
     abstract clone(): GeometryQuery | undefined;
     abstract cloneTransformed(transform: Transform): GeometryQuery | undefined;
+    static computeScaledTolerance(geom: GeometryQuery | GeometryQuery[], options?: ScaledToleranceOptions): number;
     abstract dispatchToGeometryHandler(handler: GeometryHandler): any;
     abstract extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     abstract readonly geometryCategory: GeometryQueryCategory;
     isAlmostEqual(other: GeometryQuery): boolean;
     abstract isSameGeometryClass(other: GeometryQuery): boolean;
     range(transform?: Transform, result?: Range3d): Range3d;
+    static scaleToleranceForGeometry(geom: GeometryQuery | GeometryQuery[], distanceTolerance: number, options?: ScaledToleranceOptions): number;
     abstract tryTransformInPlace(transform: Transform): boolean;
     tryTranslateInPlace(dx: number, dy?: number, dz?: number): boolean;
 }
@@ -2757,9 +2760,9 @@ export namespace IModelJson {
     }
     export interface BcurveProps {
         closed?: boolean;
-        knots: [number];
+        knots: number[];
         order: number;
-        points: [XYZProps];
+        points: XYZProps[];
     }
     export interface BoxProps extends AxesProps {
         // @internal
@@ -2778,9 +2781,9 @@ export namespace IModelJson {
         closedV?: boolean;
         orderU: number;
         orderV: number;
-        points: [[[number]]];
-        uKnots: [number];
-        vKnots: [number];
+        points: number[][][];
+        uKnots: number[];
+        vKnots: number[];
     }
     export interface ConeProps extends AxesProps {
         capped?: boolean;
@@ -2795,10 +2798,10 @@ export namespace IModelJson {
         vectorY?: XYZProps;
     }
     export interface CurveCollectionProps extends PlanarRegionProps {
-        bagOfCurves?: [CurveCollectionProps | CurvePrimitiveProps];
+        bagOfCurves?: (CurveCollectionProps | CurvePrimitiveProps)[];
         // @deprecated
-        bagofCurves?: [CurveCollectionProps];
-        path?: [CurvePrimitiveProps];
+        bagofCurves?: CurveCollectionProps[];
+        path?: CurvePrimitiveProps[];
     }
     export interface CurvePrimitiveProps {
         arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
@@ -2822,17 +2825,17 @@ export namespace IModelJson {
     }
     export interface IndexedMeshProps {
         auxData?: AuxDataProps;
-        color?: [number];
-        colorIndex?: [number];
-        edgeMateIndex?: [number];
+        color?: number[];
+        colorIndex?: number[];
+        edgeMateIndex?: number[];
         expectedClosure?: number;
-        normal?: [XYZProps];
-        normalIndex?: [number];
+        normal?: XYZProps[];
+        normalIndex?: number[];
         numPerFace?: number;
-        param?: [XYProps];
-        paramIndex?: [number];
-        point: [XYZProps];
-        pointIndex: [number];
+        param?: XYProps[];
+        paramIndex?: number[];
+        point: XYZProps[];
+        pointIndex: number[];
         tags?: TaggedNumericDataProps;
         twoSided?: boolean;
     }
@@ -2842,11 +2845,11 @@ export namespace IModelJson {
         vector: XYZProps;
     }
     export interface PlanarRegionProps {
-        loop?: [CurvePrimitiveProps];
-        parityRegion?: [{
-            loop: [CurvePrimitiveProps];
-        }];
-        unionRegion?: [PlanarRegionProps];
+        loop?: CurvePrimitiveProps[];
+        parityRegion?: {
+            loop: CurvePrimitiveProps[];
+        }[];
+        unionRegion?: PlanarRegionProps[];
     }
     export interface PointProps {
         point?: XYZProps;
@@ -2885,7 +2888,7 @@ export namespace IModelJson {
     }
     export interface RuledSweepProps {
         capped?: boolean;
-        contour: [CurveCollectionProps];
+        contour: CurveCollectionProps[];
     }
     export interface SolidPrimitiveProps {
         box?: BoxProps;
@@ -5390,6 +5393,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     localXYZToWorld(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d | undefined;
     low: Point3d;
     maxAbs(): number;
+    maxAbsXY(): number;
     maxLength(): number;
     rectangleXY(zFraction?: number, upwardNormal?: boolean, addClosure?: boolean): Point3d[] | undefined;
     scaleAboutCenterInPlace(scaleFactor: number): void;
@@ -5697,6 +5701,14 @@ export class RuledSweep extends SolidPrimitive {
     readonly solidPrimitiveType = "ruledSweep";
     sweepContoursRef(): SweepContour[];
     tryTransformInPlace(transform: Transform): boolean;
+}
+
+// @public
+export interface ScaledToleranceOptions {
+    minimumTolerance?: number;
+    relativeTolerance?: number;
+    transform?: Transform;
+    xyOnly?: boolean;
 }
 
 // @public
@@ -6685,6 +6697,7 @@ export class XYZ implements XYAndZ {
     magnitudeSquaredXY(): number;
     magnitudeXY(): number;
     maxAbs(): number;
+    maxAbsXY(): number;
     maxDiff(other: XYAndZ): number;
     scaledVectorTo(other: XYAndZ, scale: number, result?: Vector3d): Vector3d;
     scaleInPlace(scale: number): this;

@@ -6,6 +6,7 @@
  * @module Curve
  */
 import { BSpline2dNd } from "../bspline/BSplineSurface";
+import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
@@ -45,6 +46,21 @@ export type GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollec
  * @public
  */
 export type AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd;
+
+/**
+ * Options bundle for [[GeometryQuery.computeScaledTolerance]] and [[GeometryQuery.scaleToleranceForGeometry]].
+ * @public
+ */
+export interface ScaledToleranceOptions {
+  /** Optional transform to apply to geometry before computing its size. */
+  transform?: Transform;
+  /** Relative tolerance by which to scale the computed geometry size. Default is [[Geometry.smallMetricDistance]]. */
+  relativeTolerance?: number;
+  /** Smallest tolerance to return. Default is [[Geometry.smallMetricDistanceSquared]]. */
+  minimumTolerance?: number;
+  /** Whether to ignore z-coordinates when computing the geometry size. */
+  xyOnly?: boolean;
+}
 
 /**
  * Queries to be supported by Curve, Surface, and Solid objects.
@@ -137,4 +153,57 @@ export abstract class GeometryQuery {
    * @param handler handler to be called by the particular geometry class
    */
   public abstract dispatchToGeometryHandler(handler: GeometryHandler): any;
+
+  /**
+   * Compute a distance tolerance appropriate for comparing the coordinates of `geom`.
+   * * The formula is `absTol = minTol + relTol * geomSize`, where `geomSize` is the largest absolute coordinate of
+   * the geometry range.
+   * * Scaling tolerances by geometry size helps account for the decreased floating point resolution between large
+   * coordinates. While using such scaled tolerances can enable more tolerance-sensitive constructions to succeed on
+   * far-flung geometries, on extremely small geometries at extremely large coordinate magnitudes, geometric
+   * constructions are generally more accurate when applied to the geometry temporarily translated to the origin.
+   * @param geom geometry to measure
+   * @param options bundle of options
+   * @returns the computed absolute tolerance
+   * @see [[scaleToleranceForGeometry]]
+   */
+  public static computeScaledTolerance(geom: GeometryQuery | GeometryQuery[], options?: ScaledToleranceOptions): number {
+    const relTol = Math.abs(options?.relativeTolerance ?? Geometry.smallMetricDistance);
+    const minTol = Math.abs(options?.minimumTolerance ?? Geometry.smallMetricDistanceSquared);
+    const geomRange = Range3d.createNull();
+    (Array.isArray(geom) ? geom : [geom]).forEach((g: GeometryQuery) => g.extendRange(geomRange, options?.transform));
+    const geomSize = geomRange.isNull ? 0 : options?.xyOnly ? geomRange.maxAbsXY() : geomRange.maxAbs();
+    return minTol + relTol * geomSize;
+  }
+
+  /**
+   * Scale the given distance tolerance as appropriate for comparing the coordinates of `geom`.
+   * * Scaling tolerances by geometry size helps account for the decreased floating point resolution between large
+   * coordinates. While using such scaled tolerances can enable more tolerance-sensitive constructions to succeed on
+   * far-flung geometries, on extremely small geometries at extremely large coordinate magnitudes, geometric
+   * constructions are generally more accurate when applied to the geometry temporarily translated to the origin.
+   * @param geom geometry to measure
+   * @param distanceTolerance positive input distance tolerance to examine
+   * @param options bundle of options (`minimumTolerance` and `relativeTolerance` are ignored)
+   * @return a distance tolerance >= `distanceTolerance`
+   * @see [[computeScaledTolerance]]
+   */
+  public static scaleToleranceForGeometry(geom: GeometryQuery | GeometryQuery[], distanceTolerance: number, options?: ScaledToleranceOptions): number {
+    if (distanceTolerance > 0) {
+      const geomRange = Range3d.createNull();
+      (Array.isArray(geom) ? geom : [geom]).forEach((g: GeometryQuery) => g.extendRange(geomRange, options?.transform));
+      if (!geomRange.isNull) {
+        const geomSize = options?.xyOnly ? geomRange.maxAbsXY() : geomRange.maxAbs();
+        if (geomSize > 0) {
+          // HEURISTIC: truncate the fractional part of a coordinate's base-10 significand to maxDigits digits.
+          // Adding the tolerance to this number should change the significand; otherwise, it's too small.
+          const maxDigits = 10; // comfortably far from IEEE double's 15 guaranteed fractional digits
+          const requiredDigitsForTol = Math.floor(Math.log10(geomSize / distanceTolerance));
+          if (requiredDigitsForTol > maxDigits)
+            distanceTolerance *= Math.pow(10, requiredDigitsForTol - maxDigits);
+        }
+      }
+    }
+    return distanceTolerance;
+  }
 }

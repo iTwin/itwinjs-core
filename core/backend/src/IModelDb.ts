@@ -55,7 +55,7 @@ import { SchemaSync } from "./SchemaSync";
 import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
-import { TxnManager } from "./TxnManager";
+import { TxnIdString, TxnManager } from "./TxnManager";
 import { BulkDeleteElementsArgs, BulkDeleteElementsResult, EditTxn } from "./EditTxn";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
@@ -68,8 +68,10 @@ import { LockControl } from "./LockControl";
 import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
+import { createNoOpReservations } from "./internal/NoReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
+import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaManifest, type SchemaManifestReferenceRow, type SchemaManifestSchemaRow, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
@@ -78,6 +80,7 @@ import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater
 import { ECSqlRowExecutor, releaseECSqlStatement } from "./ECSqlRowExecutor";
 import { IntegrityCheckKey, IntegrityCheckResult, integrityCheckTypeMap, performQuickIntegrityCheck, performSpecificIntegrityCheck } from "./internal/IntegrityCheck";
 import { ECSqlSyncReader, SynchronousQueryOptions } from "./ECSqlSyncReader";
+import { SynchronousChannel } from "./SynchronousChannel";
 
 // spell:ignore fontid fontmap
 
@@ -141,6 +144,13 @@ export interface InsertElementOptions {
    * @beta
    */
   forceUseId?: boolean;
+
+  /** If true, bypass the shared-element reservation check that otherwise requires an element inserted with an explicitly-set `federationGuid` to have been
+   * [reserved]($docs/learning/backend/ConcurrencyControl.md) first when SchemaSync is enabled. Intended only for trusted bulk inserters (e.g. the iModel transformer
+   * and connectors) that use other locking strategies to avoid conflicts.
+   * @internal
+   */
+  skipReservationCheck?: boolean;
 }
 
 /** Options for [[EditTxn.changeElementParent]].
@@ -247,6 +257,8 @@ export interface IntegrityCheckOptions {
     checkSchemaLoad?: boolean;
     /** If true, checks if all child rows have a corresponding parent row. */
     checkMissingChildRows?: boolean;
+    /** If true, checks if a class maps every inherited property to the same column as each of its base classes. */
+    checkDivergedPropMaps?: boolean;
   }
 }
 
@@ -285,6 +297,17 @@ export interface SchemaImportOptions<T = any> {
    * @beta
    */
   data?: T
+}
+
+/** Arguments for [[BriefcaseDb.upgradeSchemas]] and [[BriefcaseDb.upgradeSchemaStrings]].
+ * @alpha
+ */
+export interface UpgradeSchemasArgs extends PushChangesArgs {
+  /**
+   * An [[ECSchemaXmlContext]] to use instead of building a default one.
+   * @internal
+   */
+  ecSchemaXmlContext?: ECSchemaXmlContext;
 }
 
 /** @internal */
@@ -506,6 +529,9 @@ export abstract class IModelDb extends IModel {
   protected _locks?: LockControl = createNoOpLockControl();
 
   /** @internal */
+  protected _reservations?: SynchronousChannel.Reservations = createNoOpReservations();
+
+  /** @internal */
   protected _codeService?: CodeService;
 
   /**
@@ -539,6 +565,19 @@ export abstract class IModelDb extends IModel {
 
   /** The [[LockControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
   public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
+  /** @beta The [[SynchronousChannel.Reservations]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
+  public get reservations(): SynchronousChannel.Reservations { return this._reservations!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
+  /** @internal */
+  public async initializeSharedElementReservations(): Promise<void> {
+    this._reservations?.[_close]();
+
+    if (SchemaSync.isEnabled(this))
+      this._reservations = await createSchemaSyncReservations(this);
+    else
+      this._reservations = createNoOpReservations();
+  }
 
   /** Provides methods for interacting with [font-related information]($docs/learning/backend/Fonts.md) stored in this iModel.
    * @beta
@@ -660,7 +699,7 @@ export abstract class IModelDb extends IModel {
           try {
             db[_nativeDb].abandonChanges();
             db.close();
-          } catch { }
+          } catch { return; }
         });
       });
     }
@@ -726,12 +765,18 @@ export abstract class IModelDb extends IModel {
     this.views[_close]();
     this.locks[_close]();
     this._locks = undefined;
+    this.reservations[_close]();
+    this._reservations = undefined;
     this._codeService?.close();
     this._codeService = undefined;
     this[_nativeDb].closeFile();
   }
 
-  private saveSchemaChanges(args?: string): void {
+  /**
+   * Save any unsaved schema changes in this iModel.
+   * @internal
+  */
+  protected saveSchemaChanges(args?: string): void {
     if (!this[_nativeDb].hasUnsavedChanges())
       return;
 
@@ -739,7 +784,11 @@ export abstract class IModelDb extends IModel {
     saveArgs === undefined ? this[_nativeDb].saveChanges() : this[_nativeDb].saveChanges(JSON.stringify(saveArgs));
   }
 
-  private abandonSchemaChanges(): void {
+  /**
+   * Abandon any unsaved schema changes in this iModel.
+   * @internal
+   */
+  protected abandonSchemaChanges(): void {
     if (!this[_nativeDb].hasUnsavedChanges())
       return;
 
@@ -1355,7 +1404,7 @@ export abstract class IModelDb extends IModel {
   public async dropSchemas(schemaNames: string[]): Promise<void> {
     if (schemaNames.length === 0)
       return;
-    if (this[_nativeDb].schemaSyncEnabled())
+    if (SchemaSync.isEnabled(this))
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot drop schemas when schema sync is enabled");
     if (this[_nativeDb].hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot drop schemas with unsaved changes");
@@ -1446,31 +1495,41 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Shared implementation for importing schemas from file or string. */
-  private async importSchemasInternal<T extends LocalFileName[] | string[]>(
+  /** Refuse a schema import this briefcase is in no state to run. Shared by [[importSchemas]] and
+   * [[BriefcaseDb.upgradeSchemas]], which reach the native importer by different routes.
+   * @internal
+   */
+  protected assertCanImportSchemas(): void {
+    if (!this.isBriefcaseDb())
+      return;
+
+    if (this.txns.rebaser.isRebasing) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+    }
+    if (this.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
+    }
+
+    // Additional checks when semantic rebase is enabled
+    if (IModelHost.useSemanticRebase) {
+      if (this[_nativeDb].hasUnsavedChanges()) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
+      }
+      if (SchemaSync.isEnabled(this)) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
+      }
+    }
+  }
+
+  /** Shared implementation for importing schemas from file or string.
+   * @internal
+   */
+  protected async importSchemasInternal<T extends LocalFileName[] | string[]>(
     schemas: T,
     options: SchemaImportOptions | undefined,
     nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
   ): Promise<void> {
-    // BriefcaseDb-specific validation checks
-    if (this.isBriefcaseDb()) {
-      if (this.txns.rebaser.isRebasing) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
-      }
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
-      }
-
-      // Additional checks when semantic rebase is enabled
-      if (IModelHost.useSemanticRebase) {
-        if (this[_nativeDb].hasUnsavedChanges()) {
-          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas with unsaved changes when useSemanticRebase flag is on");
-        }
-        if (this[_nativeDb].schemaSyncEnabled()) {
-          throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas when schema sync is enabled and also useSemanticRebase flag is on");
-        }
-      }
-    }
+    this.assertCanImportSchemas();
 
     if (options?.channelUpgrade) {
       const channelUpgrade = options.channelUpgrade;
@@ -1490,28 +1549,53 @@ export abstract class IModelDb extends IModel {
       preSchemaImportCallbackResult = await this.preSchemaImportCallback(options.schemaImportCallbacks, { iModel: this, data: options.data, schemaData: schemas });
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    if (this[_nativeDb].schemaSyncEnabled()) {
-      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
-        const schemaSyncDbUri = syncAccess.getUri();
-        this.saveSchemaChanges();
+    if (SchemaSync.isEnabled(this)) {
+      // The shared lock lets concurrent updates through while blocking anyone taking the exclusive lock for an upgrade.
+      if (this[_nativeDb].getITwinId() !== Guid.empty)
+        await this.locks.acquireLocks({ shared: IModel.repositoryModelId });
 
-        try {
-          nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-        } catch (outerErr: any) {
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonSchemaChanges();
-            if (this[_nativeDb].getITwinId() !== Guid.empty)
-              await this.acquireSchemaLock();
-            try {
-              nativeImportOp(schemas, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-            } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
-            }
-          } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
+      // The native import adopts rows from the attached SchemaSyncDb. Attach and detach commit
+      // implicitly, so abandoning changes cannot undo the adoption. A later failure must roll the
+      // briefcase back before those ec_ rows can be pushed.
+      let txnBeforeAdopt: TxnIdString | undefined;
+      // Set once the caller's own work is committed. Getting a token or the container write lock happens
+      // before that, and abandonSchemaChanges discards every unsaved change rather than only this import's,
+      // so abandoning on a failure from that window would throw away work the import never touched.
+      let callerChangesSaved = false;
+      try {
+        await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+          const schemaSyncDbUri = syncAccess.getUri();
+          this.saveSchemaChanges();
+          callerChangesSaved = true;
+          // After saveSchemaChanges, so rolling back cannot reach the caller's own work.
+          if (this.isBriefcaseDb())
+            txnBeforeAdopt = this.txns.getCurrentTxnId();
+
+          try {
+            nativeImportOp(schemas, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
+          } catch (err: any) {
+            if (SchemaSync.requiresUpgrade(err))
+              throw new IModelError(err.errorNumber, `${err.message} - this schema change needs the upgrade path. Use BriefcaseDb.upgradeSchemas, which takes the exclusive schema lock and pushes the result.`);
+
+            throw new IModelError(err.errorNumber, err.message);
           }
+        });
+      } catch (err: any) {
+        if (callerChangesSaved)
+          this.abandonSchemaChanges();
+        if (this.isBriefcaseDb() && undefined !== txnBeforeAdopt && this.txns.getCurrentTxnId() !== txnBeforeAdopt) {
+          // Saving the adopt's txn started a new undo session, because schema changes are kept out of the
+          // user's undo stack, so this reverses across that boundary. The changes themselves reverse like
+          // any other - a rebase does it to every local txn on every pull. It does not reverse DDL: a table
+          // or column the adopt created stays behind with no ec_ row describing it, which is the state a
+          // briefcase already tolerates, and the next successful import finds the table up to date and
+          // carries on. Cancel rather than reverse, so the rows cannot come back through undo either.
+          const status = this[_nativeDb].cancelTo(txnBeforeAdopt, true);
+          if (IModelStatus.Success !== status)
+            Logger.logError(loggerCategory, `Failed to roll back the adopted schema rows after a failed import: ${IModelStatus[status] ?? status}`);
         }
-      });
+        throw err;
+      }
     } else {
       const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
         schemaLockHeld: true,
@@ -3425,7 +3509,7 @@ export namespace IModelDb {
       ids.forEach((id) => {
         try {
           props.push(imodel.elements.getElementProps<ViewDefinitionProps>(id));
-        } catch { }
+        } catch { return; }
       });
 
       return props;
@@ -3450,7 +3534,7 @@ export namespace IModelDb {
             if (!finished)
               break;
           }
-        } catch { }
+        } catch { continue; }
       }
 
       return finished;
@@ -3710,11 +3794,6 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
-  private _skipSyncSchemasOnPullAndPush?: true;
-
-  /** @internal */
-  public get skipSyncSchemasOnPullAndPush() { return this._skipSyncSchemasOnPullAndPush ?? false; }
-
   /**
    * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
    * Throw an exception to stop the open.
@@ -3810,6 +3889,8 @@ export class BriefcaseDb extends IModelDb {
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
     super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
+    // Native invokes this private callback dynamically through the object registered by IModelDb.
+    void this.onChangesetConflict;
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
     this.makeLockControl();
@@ -3823,28 +3904,35 @@ export class BriefcaseDb extends IModelDb {
       wasChanges = nativeDb.hasPendingTxns();
       nativeDb.closeFile();
     };
+    const push = async () => {
+      if (wasChanges)
+        await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
+    };
 
-    const isSchemaSyncEnabled = await withBriefcaseDb(briefcase, async (db) => {
-      await SchemaSync.pull(db);
-      return db[_nativeDb].schemaSyncEnabled();
-    }) as boolean;
-
-    if (isSchemaSyncEnabled) {
+    // Asked of the closed file, so an iModel without schema sync never gets opened for this.
+    if (SchemaSync.isEnabled(briefcase)) {
+      await withBriefcaseDb(briefcase, async (db) => SchemaSync.updateDbSchema(db));
       await SchemaSync.withLockedAccess(briefcase, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
         const schemaSyncDbUri = syncAccess.getUri();
         executeUpgrade();
+        // Overwriting advances the SchemaSync data version, so a no-op upgrade must not call it.
+        if (!wasChanges)
+          return;
+
         await withBriefcaseDb(briefcase, async (db) => {
-          db[_nativeDb].schemaSyncPush(schemaSyncDbUri);
+          db[_nativeDb].schemaSyncOverwrite(schemaSyncDbUri);
           db[_nativeDb].saveChanges();
         });
-        syncAccess.synchronizeWithCloud();
+
+        // Publish the sync db before the changeset while retaining both locks.
+        syncAccess.closeDb();
+        await syncAccess.container.uploadChanges();
+        await push();
       });
     } else {
       executeUpgrade();
+      await push();
     }
-
-    if (wasChanges)
-      await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
   }
 
   /** Upgrades the schemas in the iModel based on the current version of the software. Follows a sequence of operations -
@@ -3865,6 +3953,24 @@ export class BriefcaseDb extends IModelDb {
     // - push changes
     // - release schema lock
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
+
+    // schemaSyncOverwrite can discard unpushed imports, so hold the exclusive lock across both upgrades.
+    if (SchemaSync.isEnabled(briefcase)) {
+      try {
+        await withBriefcaseDb(briefcase, async (db) => {
+          if (!db.locks.isServerBased)
+            throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot upgrade schemas with SchemaSync without server-based locking");
+
+          await db.acquireSchemaLock();
+        });
+        await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
+        await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
+      } finally {
+        await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
+      }
+      return;
+    }
+
     try {
       await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
     } catch (error: any) {
@@ -3931,6 +4037,7 @@ export class BriefcaseDb extends IModelDb {
 
     // load all of the settings from workspaces
     await briefcaseDb.loadWorkspaceSettings();
+    await briefcaseDb.initializeSharedElementReservations();
 
     if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
@@ -4182,10 +4289,13 @@ export class BriefcaseDb extends IModelDb {
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
-      if (!this.skipSyncSchemasOnPullAndPush)
-        await SchemaSync.pull(this);
+      SchemaSync.updateDbSchema(this);
       this.initializeIModelDb("pullMerge");
     });
+
+    // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
+    if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
+      await this.initializeSharedElementReservations();
 
     this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
   }
@@ -4278,23 +4388,10 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot revert with pending txns");
     }
 
-    const skipSchemaSyncPull = async <T>(func: () => Promise<T>) => {
-      if (nativeDb.schemaSyncEnabled()) {
-        this._skipSyncSchemasOnPullAndPush = true;
-        try {
-          return await func();
-        } finally {
-          this._skipSyncSchemasOnPullAndPush = undefined;
-        }
-      } else {
-        return func();
-      }
-    };
     this.clearCaches();
-    await skipSchemaSyncPull(async () => this.pullChanges({ ...arg, toIndex: undefined }));
+    await this.pullChanges({ ...arg, toIndex: undefined });
     await this.acquireSchemaLock();
-
-    if (nativeDb.schemaSyncEnabled()) {
+    if (SchemaSync.isEnabled(this)) {
       arg.skipSchemaChanges = true;
     }
 
@@ -4317,7 +4414,7 @@ export class BriefcaseDb extends IModelDb {
         pushRetryDelay: arg.pushRetryDelay,
         retainLocks: arg.retainLocks,
       };
-      await skipSchemaSyncPull(async () => this.pushChanges(pushArgs));
+      await this.pushChanges(pushArgs);
       this.clearCaches();
     } catch (err) {
       const failureAction = arg.inCaseOfFailure ?? "revert";
@@ -4389,8 +4486,83 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
+    // If this pull enabled or disabled SchemaSync for this briefcase, its reservations must now be re-initialized
+    if (this.reservations.isServerBased !== SchemaSync.isEnabled(this))
+      await this.initializeSharedElementReservations();
+
     this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
     BriefcaseManager.deleteRebaseFolders(this);
+  }
+
+  /** Import schemas while allowing changes that move or delete data.
+   *
+   * Takes the exclusive schema lock, requires the briefcase to be at the timeline tip, imports, updates the sync db, and pushes the result.
+   * @note The briefcase must have no local changes.
+   * @see [[BriefcaseDb.upgradeSchemas]] (static) for upgrading the software's profile and domain schemas.
+   * @alpha
+   */
+  public async upgradeSchemas(schemaFileNames: LocalFileName[], arg: UpgradeSchemasArgs): Promise<void> {
+    return this.upgradeSchemasInternal(
+      schemaFileNames,
+      arg,
+      (schemas, importOptions) => this[_nativeDb].importSchemas(schemas, importOptions),
+    );
+  }
+
+  /** The [[importSchemaStrings]] counterpart of [[upgradeSchemas]].
+   * @alpha
+   */
+  public async upgradeSchemaStrings(serializedXmlSchemas: string[], arg: UpgradeSchemasArgs): Promise<void> {
+    return this.upgradeSchemasInternal(
+      serializedXmlSchemas,
+      arg,
+      (schemas, importOptions) => this[_nativeDb].importXmlSchemas(schemas, importOptions),
+    );
+  }
+
+  private async upgradeSchemasInternal<T extends LocalFileName[] | string[]>(
+    schemas: T,
+    arg: UpgradeSchemasArgs,
+    nativeImportOp: (schemas: T, importOptions: IModelJsNative.SchemaImportOptions) => void,
+  ): Promise<void> {
+    if (schemas.length === 0)
+      return;
+
+    this.assertCanImportSchemas();
+
+    if (this[_nativeDb].hasUnsavedChanges() || this.txns.hasLocalChanges)
+      throw new IModelError(ChangeSetStatus.HasLocalChanges, "Cannot upgrade schemas while there are local changes");
+
+    if (SchemaSync.isEnabled(this) && !this.locks.isServerBased)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot upgrade schemas with SchemaSync without server-based locking");
+
+    await this.acquireSchemaLock();
+    await this.pullChanges({ accessToken: arg.accessToken });
+
+    if (!SchemaSync.isEnabled(this)) {
+      await this.importSchemasInternal(schemas, { ecSchemaXmlContext: arg.ecSchemaXmlContext }, nativeImportOp);
+      await this.pushChanges(arg);
+      return;
+    }
+
+    await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema upgrade" }, async (syncAccess) => {
+      this.saveSchemaChanges();
+      try {
+        nativeImportOp(schemas, {
+          schemaLockHeld: true,
+          ecSchemaXmlContext: arg.ecSchemaXmlContext?.nativeContext,
+          schemaSyncDbUri: syncAccess.getUri(),
+        });
+      } catch (err: any) {
+        this.abandonSchemaChanges();
+        throw new IModelError(err.errorNumber, err.message);
+      }
+
+      this.clearCaches();
+      syncAccess.closeDb();
+      await syncAccess.container.uploadChanges();
+      await this.pushChanges(arg);
+    });
   }
 
   public override close(options?: CloseIModelArgs) {
@@ -4590,6 +4762,7 @@ export class SnapshotDb extends IModelDb {
     const key = CheckpointManager.getKey(checkpoint);
     const db = SnapshotDb.openFile(dbName, { key, container });
     await db.loadWorkspaceSettings();
+    await db.initializeSharedElementReservations();
     return db;
   }
 
