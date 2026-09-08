@@ -31,6 +31,7 @@ import {
 } from "../../tile/internal";
 import { _backingView, _getModelClip, _scheduleScriptReference } from "../../common/internal/Symbols";
 import { IModelDisplayReference, SpatialIModelDisplayReference } from "../../IModelDisplayReference";
+import { FeatureSymbology } from "../../render/FeatureSymbology";
 
 interface PrimaryTreeId {
   treeId: PrimaryTileTreeId;
@@ -199,6 +200,10 @@ class PrimaryTreeReference extends TileTreeReference {
 
   protected override getViewFlagOverrides(_tree: TileTree) {
     return this._viewFlagOverrides;
+  }
+
+  protected override getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
+    return this.iModelRef.getSymbologyOverrides();
   }
 
   protected override getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {

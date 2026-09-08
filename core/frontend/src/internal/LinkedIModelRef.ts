@@ -15,13 +15,14 @@ import { IModelFeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { IModelDisplayReferences, IModelDisplayReferences2d, LinkIModel2dArgs, LinkIModelArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
-import { ModelDisplayTransformProvider } from "../ViewState";
+import { AttachToViewportArgs, ModelDisplayTransformProvider } from "../ViewState";
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialViewState } from "../SpatialViewState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
-import { AttachToViewportArgs, IModelApp } from "../core-frontend";
 import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
+import { FeatureSymbology } from "../render/FeatureSymbology";
+import { IModelApp } from "../IModelApp";
 
 abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -29,6 +30,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   #alwaysDrawnExclusive = false;
   #resolvedViewFlags: ViewFlags;
   #modelDisplayTransformProvider?: ModelDisplayTransformProvider;
+  #symbologyOverrides?: FeatureSymbology.Overrides;
 
   protected readonly _ovrs: IModelDisplayOverrides;
   protected readonly _subcategories = new SubCategoriesCache.Queue();
@@ -108,6 +110,14 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     });
 
     ovrs.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
+
+    const invalidateSymbologyOverrides = () => {
+      this.#symbologyOverrides = undefined;
+      // ###TODO probably need to notify viewport
+    };
+
+    this.featureOverrideProviders.onChanged.addListener(() => invalidateSymbologyOverrides);
+    // ###TODO when viewed models/categories change.
   }
 
   public isSpatial(): this is SpatialIModelDisplayReference { return false; }
@@ -149,6 +159,15 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
   public [_attachToViewport](_args: AttachToViewportArgs): void { }
   public [_detachFromViewport](): void { }
+
+  public getSymbologyOverrides(): FeatureSymbology.Overrides {
+    if (!this.#symbologyOverrides) {
+      this.#symbologyOverrides = new FeatureSymbology.Overrides();
+      this.#symbologyOverrides.initFromIModelDisplayReference(this);
+    }
+
+    return this.#symbologyOverrides;
+  }
 }
 
 class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReference2d {

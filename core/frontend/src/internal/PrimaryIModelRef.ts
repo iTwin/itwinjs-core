@@ -20,12 +20,14 @@ import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } fro
 import { SpatialTileTreeReferences } from "./cross-package";
 import { TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
+import { FeatureSymbology } from "../render/FeatureSymbology";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
 
   #alwaysDrawnExclusive = false;
   #resolvedViewFlags: ViewFlags;
+  #symbologyOverrides?: FeatureSymbology.Overrides;
 
   protected readonly _ovrs: IModelDisplayOverrides;
 
@@ -87,6 +89,14 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     ovrs.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
     view.onModelDisplayTransformProviderChanged.addListener(() => this.onModelDisplayTransformProviderChanged.raiseEvent());
+
+    const invalidateSymbologyOverrides = () => {
+      this.#symbologyOverrides = undefined;
+      // ###TODO probably need to notify viewport
+    };
+
+    this.featureOverrideProviders.onChanged.addListener(() => invalidateSymbologyOverrides);
+    // ###TODO when viewed models/categories change.
   }
 
   public get iModel() { return this._view.iModel; }
@@ -139,6 +149,15 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   [_attachToViewport](_args: AttachToViewportArgs): void { }
   [_detachFromViewport](): void { }
+
+  public getSymbologyOverrides(): FeatureSymbology.Overrides {
+    if (!this.#symbologyOverrides) {
+      this.#symbologyOverrides = new FeatureSymbology.Overrides();
+      this.#symbologyOverrides.initFromIModelDisplayReference(this);
+    }
+
+    return this.#symbologyOverrides;
+  }
 }
 
 class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayReference2d {

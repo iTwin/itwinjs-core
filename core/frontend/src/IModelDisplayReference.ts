@@ -9,15 +9,16 @@
 import { BeEvent, compareStrings, GuidString, Id64, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
-import { TileTreeReference } from "./tile/internal";
+import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { IModelFeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
-import { ModelDisplayTransformProvider } from "./ViewState";
-import { AttachToViewportArgs, RenderClipVolume, SpatialTileTreeReferences } from "./core-frontend";
+import { AttachToViewportArgs, ModelDisplayTransformProvider } from "./ViewState";
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
 import { Transform } from "@itwin/core-geometry";
+import { FeatureSymbology } from "./render/FeatureSymbology";
+import { RenderClipVolume } from "./render/RenderClipVolume";
 
 /** Describes a [Feature]($common) within the context of a specific iModel.
  * @beta
@@ -80,6 +81,8 @@ export interface IModelDisplayReference {
 
   // App-supplied providers that apply symbology overrides when displaying this reference.
   readonly featureOverrideProviders: ObservableSet<IModelFeatureOverrideProvider>;
+  // ###TODO maybe make @internal
+  getSymbologyOverrides(): FeatureSymbology.Overrides;
 
   modelDisplayTransformProvider: ModelDisplayTransformProvider | undefined;
   readonly onModelDisplayTransformProviderChanged: BeEvent<() => void>;
