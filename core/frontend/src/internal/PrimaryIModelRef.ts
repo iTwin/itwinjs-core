@@ -12,7 +12,7 @@ import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayR
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
 import { BeEvent, Guid, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { SpatialViewState } from "../SpatialViewState";
-import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
+import { IModelFeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
@@ -42,7 +42,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public readonly perModelCategoryVisibility: PerModelCategoryVisibility.Overrides;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();
   public readonly alwaysDrawnElements = new ObservableSet<Id64String>();
-  public readonly featureOverrideProviders = new ObservableSet<FeatureOverrideProvider>();
+  public readonly featureOverrideProviders = new ObservableSet<IModelFeatureOverrideProvider>();
 
   public readonly onViewFlagOverridesChanged = new BeEvent<() => void>;
   public readonly onIsAlwaysDrawnExclusiveChanged = new BeEvent<() => void>;

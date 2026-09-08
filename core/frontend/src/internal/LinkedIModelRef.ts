@@ -11,7 +11,7 @@ import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
-import { FeatureOverrideProvider } from "../FeatureOverrideProvider";
+import { IModelFeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { IModelDisplayReferences, IModelDisplayReferences2d, LinkIModel2dArgs, LinkIModelArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
@@ -45,7 +45,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public readonly [_excludedElements]?: Iterable<Id64String>;
   public readonly neverDrawnElements = new ObservableSet<Id64String>();
   public readonly alwaysDrawnElements = new ObservableSet<Id64String>();
-  public readonly featureOverrideProviders = new ObservableSet<FeatureOverrideProvider>();
+  public readonly featureOverrideProviders = new ObservableSet<IModelFeatureOverrideProvider>();
 
   public readonly subCategoryOverrides = new ObservableMap<Id64String, SubCategoryOverride>;
   public readonly modelAppearanceOverrides = new ObservableMap<Id64String, FeatureAppearance>;

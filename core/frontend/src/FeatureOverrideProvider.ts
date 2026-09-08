@@ -6,6 +6,7 @@
  * @module Views
  */
 
+import { IModelDisplayReference } from "./IModelDisplayReference";
 import { Viewport } from "./Viewport";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
@@ -21,4 +22,8 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 export interface FeatureOverrideProvider {
   /** Add to the supplied overrides any symbology overrides to be applied to the specified viewport. */
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
+}
+
+export interface IModelFeatureOverrideProvider {
+  addFeatureOverrides(overrides: FeatureSymbology.Overrides, iModelRef: IModelDisplayReference): void;
 }

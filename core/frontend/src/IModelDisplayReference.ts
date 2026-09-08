@@ -12,7 +12,7 @@ import { IModelConnection } from "./IModelConnection";
 import { TileTreeReference } from "./tile/internal";
 import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
-import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
+import { IModelFeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
 import { ModelDisplayTransformProvider } from "./ViewState";
 import { AttachToViewportArgs, RenderClipVolume, SpatialTileTreeReferences } from "./core-frontend";
@@ -79,7 +79,7 @@ export interface IModelDisplayReference {
   readonly onIsAlwaysDrawnExclusiveChanged: BeEvent<() => void>;
 
   // App-supplied providers that apply symbology overrides when displaying this reference.
-  readonly featureOverrideProviders: ObservableSet<FeatureOverrideProvider>;
+  readonly featureOverrideProviders: ObservableSet<IModelFeatureOverrideProvider>;
 
   modelDisplayTransformProvider: ModelDisplayTransformProvider | undefined;
   readonly onModelDisplayTransformProviderChanged: BeEvent<() => void>;
