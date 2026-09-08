@@ -8,6 +8,7 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, expectDefined, expectNotNull, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
+  ObservableSet,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -521,9 +522,6 @@ export abstract class Viewport implements Disposable, TileUser {
   private _viewingSpace!: ViewingSpace;
   private _target?: RenderTarget;
   private _fadeOutActive = false;
-  private _neverDrawn?: Id64Set;
-  private _alwaysDrawn?: Id64Set;
-  private _alwaysDrawnExclusive: boolean = false;
   private readonly _featureOverrideProviders: FeatureOverrideProvider[] = [];
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
@@ -1482,24 +1480,25 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
    * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
    */
-  public get neverDrawn(): Id64Set | undefined { return this._neverDrawn; }
+  public get neverDrawn(): ObservableSet<Id64String> { return this.iModelRefs.primary.neverDrawnElements; }
 
   /** Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
    * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
    * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
    * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
    */
-  public get alwaysDrawn(): Id64Set | undefined { return this._alwaysDrawn; }
+  public get alwaysDrawn(): ObservableSet<Id64String> { return this.iModelRefs.primary.alwaysDrawnElements; }
 
   /** Clear the set of always-drawn elements.
    * @see [[alwaysDrawn]]
    */
   public clearAlwaysDrawn(): void {
-    if ((undefined !== this.alwaysDrawn && 0 < this.alwaysDrawn.size) || this._alwaysDrawnExclusive) {
-      if (undefined !== this.alwaysDrawn)
-        this.alwaysDrawn.clear();
+    if (0 < this.alwaysDrawn.size || this.isAlwaysDrawnExclusive) {
+      this.alwaysDrawn.clear();
 
-      this._alwaysDrawnExclusive = false;
+      this.iModelRefs.primary.isAlwaysDrawnExclusive = false;
+
+      // ###TODO the following should be handled by an event listener.
       this._changeFlags.setAlwaysDrawn();
       this.maybeInvalidateScene();
     }
@@ -1509,8 +1508,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @see [[neverDrawn]]
    */
   public clearNeverDrawn(): void {
-    if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
+    if (0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
+
+      // ###TODO the following should be handled by an event listener.
       this._changeFlags.setNeverDrawn();
       this.maybeInvalidateScene();
     }
@@ -1520,7 +1521,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @see [[neverDrawn]].
    */
   public setNeverDrawn(ids: Id64Set): void {
-    this._neverDrawn = ids;
+    this.neverDrawn.clear();
+    this.neverDrawn.addAll(ids);
+
+    // ###TODO the following should be handled by an event listener.
     this._changeFlags.setNeverDrawn();
     this.maybeInvalidateScene();
   }
@@ -1532,14 +1536,17 @@ export abstract class Viewport implements Disposable, TileUser {
    * @see [[isAlwaysDrawnExclusive]]
    */
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
-    this._alwaysDrawn = ids;
-    this._alwaysDrawnExclusive = exclusive;
+    this.alwaysDrawn.clear();
+    this.alwaysDrawn.addAll(ids);
+    this.iModelRefs.primary.isAlwaysDrawnExclusive = exclusive;
+
+    // ###TODO the following should be handled by an event listener.
     this._changeFlags.setAlwaysDrawn();
     this.maybeInvalidateScene();
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
-  public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
+  public get isAlwaysDrawnExclusive(): boolean { return this.iModelRefs.primary.isAlwaysDrawnExclusive; }
 
   /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
   public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides {
