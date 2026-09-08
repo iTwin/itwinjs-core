@@ -2,6 +2,18 @@
   "name": "@itwin/core-quantity",
   "entries": [
     {
+      "version": "5.13.0",
+      "tag": "@itwin/core-quantity_v5.13.0",
+      "date": "Thu, 03 Sep 2026 18:49:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Units Schema to 01.00.11."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.12.5",
       "tag": "@itwin/core-quantity_v5.12.5",
       "date": "Tue, 25 Aug 2026 21:22:08 GMT",
