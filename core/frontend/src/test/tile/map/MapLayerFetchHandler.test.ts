@@ -519,6 +519,30 @@ describe("map-layer fetch handler", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("sends the URL verbatim when no handler changes the query parameters", async () => {
+    // URL serialization would normalize these (host casing, trailing slash on a bare origin).
+    const verbatim = "https://Maps.Example.com";
+    let seenUrl: string | undefined;
+    addHandler(decliningHandler);
+    addHandler(async (request, fetchRequest) => {
+      seenUrl = request.url;
+      return fetchRequest(request);   // forwarded unchanged
+    });
+    const provider = createProvider();
+    await provider.makeRequest(verbatim);
+
+    expect(seenUrl).toEqual(verbatim);
+    expect(getRequestUrl()).toEqual(verbatim);
+  });
+
+  it("sends the URL verbatim when every handler declines", async () => {
+    addHandler(decliningHandler);
+    const provider = createProvider();
+    await provider.makeRequest("https://Maps.Example.com");
+
+    expect(getRequestUrl()).toEqual("https://Maps.Example.com");
+  });
+
   it("issues the original request with the default behavior when every handler declines", async () => {
     fetchMock.mockResolvedValueOnce(ntlmChallengeResponse());
     fetchMock.mockResolvedValueOnce(okResponse());

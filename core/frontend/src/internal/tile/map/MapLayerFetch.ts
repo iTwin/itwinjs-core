@@ -66,18 +66,20 @@ export async function fetchMapLayerRequest(args: {
 
   const original = parsed;
   const originalSearch = original.searchParams.toString();
-  const request: MapLayerRequest = { url: original.toString(), layerUrl, layerProperties, formatId, searchParams: original.searchParams, headers };
+  const request: MapLayerRequest = { url: args.url, layerUrl, layerProperties, formatId, searchParams: original.searchParams, headers };
   // Copies the mutable fields (Headers/URLSearchParams are not made immutable by `readonly`), so a handler that
   // mutates its request in place and then declines cannot leak the mutation to the next handler or to the default
-  // send; the URL is recomputed from the copied query parameters, the target staying ours.
+  // send. The URL string stays ours verbatim (URL serialization would normalize it) unless the query parameters
+  // changed, in which case it is recomputed from them; the target never changes.
   const snapshot = (source: MapLayerRequest): MapLayerRequest => {
     const searchParams = new URLSearchParams(source.searchParams);
-    let url = original;
+    let url = args.url;
     if (searchParams.toString() !== originalSearch) {
-      url = new URL(original);
-      url.search = searchParams.toString();
+      const changed = new URL(original);
+      changed.search = searchParams.toString();
+      url = changed.toString();
     }
-    return { url: url.toString(), layerUrl, layerProperties, formatId, searchParams, headers: new Headers(source.headers) };
+    return { url, layerUrl, layerProperties, formatId, searchParams, headers: new Headers(source.headers) };
   };
   // Offers the request to handlers[index..]: a declined request goes unchanged to the next handler; a request a
   // handler sends is offered to the remaining ones, then issued credentialed.
