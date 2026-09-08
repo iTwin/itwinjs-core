@@ -208,7 +208,7 @@ Not every lock has to be requested by hand. These are handled for you:
 
 | Situation | What happens |
 | --- | --- |
-| **Elements you just created** | An element inserted by your briefcase since its last push is *implicitly* exclusively locked — no server round trip is needed to edit or delete it in the same session. This is inferred from a recorded local-Id "high-water mark" (see [How the briefcase tracks locks locally](#how-the-briefcase-tracks-locks-locally)), plus an explicit record for the cases the high-water mark can't cover. |
+| **Elements you just created** | An element inserted by your briefcase since its last push is *implicitly* exclusively locked — no server round trip is needed to edit or delete it in the same session. This is [tracked locally by the briefcase](#how-the-briefcase-tracks-locks-locally). |
 | **Owner locks** | `acquireLocks` adds the shared locks on models and parents up the hierarchy — see [Acquiring locks on elements](#acquiring-locks-on-elements). |
 | **Schema import** | [IModelDb.importSchemas]($backend) and `importSchemaStrings` acquire the lock needed by the import (schema lock, or a shared root lock, depending on configuration). Channel-upgrade and pre-import callbacks run *before* that acquisition and must acquire the locks needed by their own edits. A post-import callback runs afterwards, but must not assume it has the exclusive schema lock when schema sync or semantic rebase is enabled. You still control the surrounding pull/push. |
 | **Dropping schemas** | [IModelDb.dropSchemas]($backend) *(alpha)* acquires the schema lock. On success it retains the lock to protect the unpublished schema change; your subsequent push releases it. If dropping fails, it abandons the changes and releases the lock. |
