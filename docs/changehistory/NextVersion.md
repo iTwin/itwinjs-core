@@ -4,9 +4,28 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [@itwin/core-frontend](#itwincore-frontend)
+    - [Download progress for pushChanges](#download-progress-for-pushchanges)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
   - [Electron 44 support](#electron-44-support)
+
+## @itwin/core-frontend
+
+### Download progress for pushChanges
+
+Pushing local changes first pulls, applies, and merges any changesets made by other users. That download could not previously be observed or cancelled. A new `@beta` overload of [BriefcaseConnection.pushChanges]($frontend) accepts [PushChangesOptions]($frontend), mirroring the options already available on [BriefcaseConnection.pullChanges]($frontend):
+
+```ts
+const abortSignal = new AbortController();
+await briefcase.pushChanges("my changes", {
+  downloadProgressCallback: (progress) => console.log(`${progress.loaded} of ${progress.total} bytes`),
+  downloadProgressInterval: 500,
+  abortSignal: abortSignal.signal,
+});
+```
+
+Aborting rejects the returned promise and leaves the local changes pending, so the push can be retried later.
 
 ## @itwin/core-backend
 
