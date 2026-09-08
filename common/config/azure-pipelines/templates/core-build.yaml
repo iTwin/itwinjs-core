@@ -60,14 +60,7 @@ steps:
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
       VITE_CI: true
 
-  - script: |
-      export ANDROID_DIAGNOSTICS_DIR="$(Build.ArtifactStagingDirectory)/android-diagnostics"
-      rm -rf "$ANDROID_DIAGNOSTICS_DIR"
-      mkdir -p "$ANDROID_DIAGNOSTICS_DIR"
-      echo "##vso[task.setvariable variable=AndroidBuildStartedAt]$(date +%s)"
-      set -o pipefail
-      npm run android:all 2>&1 | python3 scripts/android_diagnostics.py capture "$ANDROID_DIAGNOSTICS_DIR/android-build-and-run.log"
-      exit "${PIPESTATUS[0]}"
+  - script: npm run android:all
     workingDirectory: test-apps/display-test-app
     displayName: Build & run Android display-test-app
     env:
@@ -75,27 +68,7 @@ steps:
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
       TOKEN: $(GitHubPAT)
-      ANDROID_DIAGNOSTICS_DIR: $(Build.ArtifactStagingDirectory)/android-diagnostics
     condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
-
-  - script: python3 scripts/android_diagnostics.py collect
-    displayName: Collect Android diagnostics
-    workingDirectory: test-apps/display-test-app
-    continueOnError: true
-    env:
-      ANDROID_BUILD_STARTED_AT: $(AndroidBuildStartedAt)
-      ANDROID_DIAGNOSTICS_DIR: $(Build.ArtifactStagingDirectory)/android-diagnostics
-      ANDROID_PROJECT_DIR: android/imodeljs-test-app
-      IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
-      IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
-      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-      TOKEN: $(GitHubPAT)
-    condition: and(succeededOrFailed(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'), ne(variables['AndroidBuildStartedAt'], ''))
-
-  - publish: $(Build.ArtifactStagingDirectory)/android-diagnostics
-    displayName: Publish Android diagnostics
-    artifact: android-diagnostics-$(System.JobId)-$(System.JobAttempt)
-    condition: and(succeededOrFailed(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'), ne(variables['AndroidBuildStartedAt'], ''))
 
   - script: npm run ios:all
     workingDirectory: test-apps/display-test-app
