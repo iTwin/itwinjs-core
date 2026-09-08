@@ -198,9 +198,11 @@ export class MapLayerFormatRegistry {
    * @beta
    */
   public addMapLayerFetchHandler(handler: MapLayerFetchHandler): () => void {
-    this._fetchHandlers.push(handler);
+    // One wrapper per registration, so registering the same function twice yields independent removers.
+    const registration: MapLayerFetchHandler = async (request, fetchRequest) => handler(request, fetchRequest);
+    this._fetchHandlers.push(registration);
     return () => {
-      const index = this._fetchHandlers.indexOf(handler);
+      const index = this._fetchHandlers.indexOf(registration);
       if (index >= 0)
         this._fetchHandlers.splice(index, 1);
     };

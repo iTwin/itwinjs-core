@@ -471,6 +471,24 @@ describe("map-layer fetch handler", () => {
     expect(getRequestHeaders(1)?.get("X-Late")).toEqual("1");
   });
 
+  it("gives each registration of the same function its own remover", async () => {
+    let calls = 0;
+    const counting: MapLayerFetchHandler = async (request, fetchRequest) => {
+      ++calls;
+      return fetchRequest(request);
+    };
+    const removeFirst = addHandler(counting);
+    addHandler(counting);
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+    expect(calls).toEqual(2);
+
+    removeFirst();
+    removeFirst();   // idempotent: must not remove the second registration
+    await provider.makeRequest(tileUrl);
+    expect(calls).toEqual(3);
+  });
+
   it("runs handlers in registration order, the first registered being the outermost", async () => {
     const order: string[] = [];
     addHandler(async (request, fetchRequest) => {
