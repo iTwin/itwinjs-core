@@ -428,6 +428,30 @@ describe("map-layer fetch handler", () => {
     expect(getSentHeaderNames()).toEqual(["x-second"]);
   });
 
+  it("keeps the pipeline of a request in flight stable when registrations change", async () => {
+    // The outer handler removes itself and a third handler registers while the request is in flight.
+    const remove = addHandler(async (request, fetchRequest) => {
+      remove();
+      addHandler(async (req, send) => send(withHeader(req, "X-Late", "1")));
+      return fetchRequest(withHeader(request, "X-Outer", "1"));
+    });
+    addHandler(async (request, fetchRequest) => fetchRequest(withHeader(request, "X-Inner", "2")));
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    // The still-registered downstream handler ran; the late registration did not join this request.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getRequestHeaders()?.get("X-Outer")).toEqual("1");
+    expect(getRequestHeaders()?.get("X-Inner")).toEqual("2");
+    expect(getRequestHeaders()?.has("X-Late")).toBe(false);
+
+    // Subsequent requests see the new registrations.
+    await provider.makeRequest(tileUrl);
+    expect(getRequestHeaders(1)?.has("X-Outer")).toBe(false);
+    expect(getRequestHeaders(1)?.get("X-Inner")).toEqual("2");
+    expect(getRequestHeaders(1)?.get("X-Late")).toEqual("1");
+  });
+
   it("runs handlers in registration order, the first registered being the outermost", async () => {
     const order: string[] = [];
     addHandler(async (request, fetchRequest) => {

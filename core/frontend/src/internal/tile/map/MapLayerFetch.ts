@@ -44,7 +44,8 @@ export async function fetchMapLayerRequest(args: {
   send: (request: MapLayerRequest, credentialed: boolean) => Promise<Response>;
 }): Promise<MapLayerFetchResult> {
   const headers = args.headers ?? new Headers();
-  const handlers = IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers ?? [];
+  // Snapshot: registrations changing while a handler awaits must not shift the pipeline of a request in flight.
+  const handlers = [...(IModelApp.mapLayerFormatRegistry?.mapLayerFetchHandlers ?? [])];
   let parsed: URL | undefined;
   if (handlers.length > 0) {
     try {
