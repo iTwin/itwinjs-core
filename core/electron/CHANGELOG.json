@@ -2,6 +2,24 @@
   "name": "@itwin/core-electron",
   "entries": [
     {
+      "version": "5.13.0",
+      "tag": "@itwin/core-electron_v5.13.0",
+      "date": "Thu, 03 Sep 2026 18:49:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed unused 'open' dependency"
+          },
+          {
+            "comment": "Remove unused '@openid/appauth' and 'username' dependencies"
+          },
+          {
+            "comment": "Improve Electron window state persistence and RPC shutdown reliability."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.12.5",
       "tag": "@itwin/core-electron_v5.12.5",
       "date": "Tue, 25 Aug 2026 21:22:08 GMT",
