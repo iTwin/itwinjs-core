@@ -1578,8 +1578,8 @@ export class ConvexPolygon2d {
 
 // @public
 export class CoordinateXYZ extends GeometryQuery {
-    clone(): GeometryQuery;
-    cloneTransformed(transform: Transform): GeometryQuery;
+    clone(): CoordinateXYZ;
+    cloneTransformed(transform: Transform): CoordinateXYZ;
     static create(point: Point3d): CoordinateXYZ;
     static createXYZ(x?: number, y?: number, z?: number): CoordinateXYZ;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
