@@ -2,7 +2,7 @@
 
 *How iTwin.js coordinates simultaneous edits from many users on the same iModel.*
 
-An iModel is a multi-user database that is edited through *briefcases*. Every user (or agent, or connector) works on their **own local copy** of the iModel, edits it offline, and then publishes their work as a [Changeset](../Glossary.md#changeset) to iModelHub. Concurrency control is the set of rules that make this safe: it decides **who is allowed to change what, and when**, so that everyone's work can be combined into a single, consistent timeline.
+An iModel is a multi-user database that is edited through *briefcases*. Every user (or agent, or connector) works on their **own local copy** of the iModel, edits it offline, and then pushes their work as a [Changeset](../Glossary.md#changeset) to iModelHub. Concurrency control is the set of rules that make this safe: it decides **who is allowed to change what, and when**, so that everyone's work can be combined into a single, consistent timeline.
 
 Concurrency control is *not* user access control. It says nothing about whether a person is *permitted* to edit; it only coordinates edits that are already permitted.
 
@@ -53,7 +53,7 @@ Three independent services can be involved:
 
 | Term | Definition |
 | --- | --- |
-| **Base** | Changeset B is *based on* changeset A if B comes after A in the timeline. |
+| **Base** | Changeset B is *based on* changeset A if B comes immediately after A in the timeline. |
 | **Conflict** | Two changesets change the same data in incompatible ways, and neither is based on the other. |
 | **DefinitionElement** | A reusable [DefinitionElement]($backend), such as a category, line style, or material, that is commonly shared by many other elements. Definition elements are a common use case for reservations, but reservations apply to any element with an explicit federation GUID. |
 | **Federation GUID** | A globally unique identifier that stably identifies an element across briefcases and iModels. Reservations associate an explicitly assigned federation GUID with a pre-allocated element Id. |
@@ -77,7 +77,7 @@ The policy is fixed when the iModel is created in iModelHub, via the `noLocks` p
 | **Locking (default)** | Locks *must* be held before elements/models are changed. The editing APIs check locks as each change is made, so two briefcases cannot concurrently change the same element. |
 | **No locks** (`noLocks: true`) | No locks are required or acquired. Simultaneous edits are reconciled by [change merging / rebase](./PullMerge.md). |
 
-> **`noLocks` is experimental.** Its conflict-resolution behavior is not yet a complete replacement for the default locking policy and it is not recommended for production applications. Reservations—not `noLocks`—are the mechanism for concurrent creation of shared definitions and component elements.
+> ⚠️ **`noLocks` is experimental.** Its conflict-resolution behavior is not yet a complete replacement for the default locking policy. **Do NOT use this in production applications.** Reservations—not `noLocks`—are the mechanism for concurrent creation of shared definitions and component elements.
 
 Every [IModelDb]($backend) exposes [IModelDb.locks]($backend), a [LockControl]($backend) implementation chosen automatically when the iModel is opened:
 
@@ -407,13 +407,13 @@ Note that re-acquiring an abandoned lock can fail: another briefcase may have ta
 
 - **Codes.** General element-code uniqueness is coordinated separately by reserving codes — see [Reserving Codes](./ReserveCodes.md) and [CodeService](./CodeService.md). A reservation also checks the non-empty Code attached to a reserved identity, but holding a lock alone does not reserve a code.
 - **Channels.** [Channels](./Channel.md) restrict *which* parts of an iModel a given application is allowed to write, which is an orthogonal (and additional) check to locks.
-- **Access control.** Whether a user may edit at all is decided by iTwin permissions, not by this document.
+- **Access control.** Whether a user may edit at all is decided by [iModel permissions](https://developer.bentley.com/apis/imodels-v2/operations/get-imodel-permissions/), not by anything in this document.
 
 ## Practical guidance
 
 - **Prefer pulling before locking.** Starting an editing session at the tip avoids `PullIsRequired`, which can sometimes be triggered by an ancestor element you did not request explicitly.
 - **Reserve before inserting an explicit federation GUID.** When reservations are enabled, batch reservations before acquiring locks and starting the editing transaction.
-- **Lock at the right granularity.** For bulk edits, take the exclusive lock on the model rather than on each element; for adding many elements to a model, one shared lock on the model covers them all.
+- **Lock at the right granularity.** For bulk edits, take the exclusive lock on a model or common parent rather than on each element; for adding many elements to a model, one shared lock on the model covers them all.
 - **Acquire locks in one call where possible.** `acquireLocks({ shared: [...], exclusive: [...] })` is atomic, so a batch either fully succeeds or leaves you holding nothing new — which avoids partially-locked states and reduces deadlock-like stalls between briefcases.
 - **Keep the schema lock for as short a time as possible.** While you hold it, every other briefcase in the iModel is blocked from acquiring anything. Push and release immediately after the import.
 - **Push often.** Locks are released on push; long-held locks are the main source of "another user is blocking me" complaints.
