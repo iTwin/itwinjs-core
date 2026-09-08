@@ -53,7 +53,7 @@ Three independent services can be involved:
 
 | Term | Definition |
 | --- | --- |
-| **Base** | Changeset B is *based on* changeset A if B comes after A in the timeline. |
+| **Base** | Changeset B is *based on* changeset A if B comes immediately after A in the timeline. |
 | **Conflict** | Two changesets change the same data in incompatible ways, and neither is based on the other. |
 | **DefinitionElement** | A reusable [DefinitionElement]($backend), such as a category, line style, or material, that is commonly shared by many other elements. Definition elements are a common use case for reservations, but reservations apply to any element with an explicit federation GUID. |
 | **Federation GUID** | A globally unique identifier that stably identifies an element across briefcases and iModels. Reservations associate an explicitly assigned federation GUID with a pre-allocated element Id. |
