@@ -9,7 +9,7 @@ Concurrency control is *not* user access control. It says nothing about whether 
 iTwin.js provides two complementary coordination mechanisms:
 
 - **Locks** protect existing models and elements from conflicting concurrent modification.
-- **Reservations** coordinate concurrent creation of elements that share an identity across briefcases. When Schema Sync is enabled, any element inserted with an explicit `federationGuid` must first be reserved.
+- **Reservations** coordinate concurrent creation of elements that share an identity across briefcases. When reservations are enabled, any element inserted with an explicit `federationGuid` must first be reserved.
 
 Locks serialize changes to established data; reservations allow many briefcases to create the same shared building block without producing duplicate elements or conflicting identities.
 
@@ -29,7 +29,7 @@ Related reading: [Synchronizing with iModelHub](./IModelDbSync.md), [Pull merge 
 ```mermaid
 graph LR
     Hub[("iModelHub<br/>timeline + lock server")]
-    Sync[("Schema Sync<br/>reservation store")]
+    Sync[("Reservations<br/>synchronous channel")]
     B1["Briefcase A<br/>(user 1)"]
     B2["Briefcase B<br/>(user 2)"]
 
@@ -47,7 +47,7 @@ Three independent services can be involved:
 
 - The **timeline** stores changesets in a strict order. You can only push a changeset that is based on the current tip.
 - The **lock server** hands out locks on elements. A lock is granted to a *briefcase*, not to a user, and it is remembered along with the changeset index at which it was last released.
-- The optional **Schema Sync reservation store** pre-allocates element Ids for explicitly assigned federation GUIDs so concurrent creators converge on the same identity.
+- The optional **reservations synchronous channel** pre-allocates element Ids for explicitly assigned federation GUIDs so concurrent creators converge on the same identity.
 
 ## Glossary
 
@@ -61,11 +61,12 @@ Three independent services can be involved:
 | **Merge / Rebase** | Applying incoming changesets to a briefcase that has local changes. See [PullMerge](./PullMerge.md). |
 | **Push** | Upload a changeset to iModelHub. |
 | **Pull** | Download and apply changesets from iModelHub. |
-| **Reservation** | An agreement, coordinated through Schema Sync, that pre-allocates an element Id for an explicitly assigned federation GUID so multiple briefcases can create the same element concurrently. |
+| **Reservation** | An agreement, coordinated through a synchronous channel, that pre-allocates an element Id for an explicitly assigned federation GUID so multiple briefcases can create the same element concurrently. |
 | **Schema Lock** | The exclusive lock on the root element ([IModel.repositoryModelId]($common)). Effectively locks the whole iModel. |
 | **Tip** | The most recent changeset on the timeline; the newest state of the iModel. |
 | **Txn** | A local transaction, created by [BriefcaseDb.saveChanges]($backend). Many Txns combine into one changeset. |
-| **Indirect change** | A change written by a dependency handler that [TxnManager]($backend) runs while propagating your direct changes (for example, an `ElementDrivesElement` handler), rather than by app code calling an editing API. |
+| **Direct change** | A change explicitly initiated by application code through an editing API. |
+| **Indirect change** | A consequential change produced while [TxnManager]($backend) propagates direct changes, for example through an `ElementDrivesElement` dependency. |
 
 ## Two policies: locking and "no locks"
 
@@ -78,12 +79,14 @@ The policy is fixed when the iModel is created in iModelHub, via the `noLocks` p
 
 > **`noLocks` is experimental.** Its conflict-resolution behavior is not yet a complete replacement for the default locking policy and it is not recommended for production applications. Reservations—not `noLocks`—are the mechanism for concurrent creation of shared definitions and component elements.
 
-Every [BriefcaseDb]($backend) exposes [BriefcaseDb.locks]($backend), a [LockControl]($backend) implementation chosen automatically when the briefcase is opened:
+Every [IModelDb]($backend) exposes [IModelDb.locks]($backend), a [LockControl]($backend) implementation chosen automatically when the iModel is opened:
 
 ```mermaid
-flowchart TD
-    A["BriefcaseDb opened"] --> B{"open for write?"}
-    B -- no --> N["No-op LockControl<br/>(locks are never required)"]
+flowchart LR
+    X["IModelDb opened"] --> A{"is BriefcaseDb?"}
+    A -- no --> N["No-op LockControl<br/>(locks are never required)"]
+    A -- yes --> B{"open for write?"}
+    B -- no --> N
     B -- yes --> C{"briefcaseId assigned?"}
     C -- no --> N
     C -- yes --> D{"iModel created<br/>with noLocks?"}
@@ -91,7 +94,7 @@ flowchart TD
     D -- no --> S["ServerBasedLocks<br/>(locks are enforced)"]
 ```
 
-You can check which one you got with `briefcase.locks.isServerBased`. The no-op implementation accepts every call and reports that no lock is ever held, so **the same application code works under either policy** — you should always request the locks your edits need.
+You can check which one you got with `iModel.locks.isServerBased`. The no-op implementation accepts every acquisition and check, but its `holdsExclusiveLock` and `holdsSharedLock` queries return `false` because no lock is actually held. Therefore, **the same application code works under either policy** — always request the locks your edits need.
 
 ## The editing lifecycle
 
@@ -118,7 +121,7 @@ sequenceDiagram
     end
     App->>BC: element.update() / insert() / delete()
     BC->>BC: checkExclusiveLock / checkSharedLock (throws if not held)
-    App->>BC: saveChanges("edit description")  %% creates a Txn
+    App->>BC: saveChanges("edit description")<br/>creates a Txn
     App->>Hub: pushChanges({ description })
     Hub-->>Hub: new changeset appended to timeline
     Hub-->>BC: locks released at the new changeset index
@@ -126,29 +129,9 @@ sequenceDiagram
 
 Key points illustrated above:
 
-- **Locks are checked at the moment of the edit**, not at push time. `Element.onUpdate`, `Element.onDelete`, `Model.onInsert`, aspect handlers, etc. all call [LockControl.checkExclusiveLock]($backend) / [LockControl.checkSharedLock]($backend) and throw `IModelStatus.LockNotHeld` when a required lock is missing.
-- **Bulk APIs that bypass the element handlers also bypass those checks.** `EditTxn.deleteElements` *(beta)* deletes straight through the native layer for performance and performs no per-element lock check, so it is the caller's responsibility to hold the exclusive locks (or a covering model lock) for everything in the batch before calling it.
+- **Locks are checked at the moment of the edit**, not at push time. The normal element, model, and aspect editing APIs call [LockControl.checkExclusiveLock]($backend) / [LockControl.checkSharedLock]($backend) and throw `IModelStatus.LockNotHeld` when a required lock is missing.
 - **Lock acquisition is all-or-nothing.** If any required lock in the request cannot be granted, none of them are.
 - **Failures come in three distinct flavors** — see [Acquiring locks on elements](#acquiring-locks-on-elements).
-
-## Acquiring locks on elements
-
-Locks are requested with [LockControl.acquireLocks]($backend), passing the elements you want a `shared` and/or an `exclusive` lock on. The request goes to the lock server, which grants all of them or none of them.
-
-Acquisition can fail for two reasons, and a third failure happens later at edit time. They are easy to confuse:
-
-| Failure | Raised by | Meaning |
-| --- | --- | --- |
-| `IModelHubStatus.LockOwnedByAnotherBriefcase` (a `ConflictingLocksError`, see [BackendHubAccess.acquireLocks]($backend)) | The lock server, during acquisition | Someone else holds a conflicting lock. Wait, or edit something else. |
-| `IModelHubStatus.PullIsRequired` | The lock server, during acquisition | The lock is free, but your briefcase is behind the changeset index at which it was last released. Pull, then retry. |
-| `IModelStatus.LockNotHeld` | Your own briefcase, at the moment of the edit | You attempted an edit without the required lock. This never reaches the server. |
-
-The freshness rule behind `PullIsRequired` is applied per lock:
-
-- To acquire a **shared** lock, your `changeset.index` must be at least the index at which that element's *exclusive* lock was last released.
-- To acquire the **exclusive** lock, your index must be at least the greater of the last *exclusive* release index and the last *shared* release index.
-
-In other words, **you must be up to date with an element before you can own it**. Because owner shared locks are requested automatically (see [Locks you get automatically](#locks-you-get-automatically)), a `PullIsRequired` can be triggered by an ancestor you never mentioned in your request. Pulling to tip before locking avoids all of this.
 
 ## Lock types and the ownership hierarchy
 
@@ -157,26 +140,29 @@ There are two lock states:
 - **Exclusive** — only the holder may modify or delete the element. Only one briefcase at a time.
 - **Shared** — prevents any other briefcase from taking the exclusive lock, but many briefcases can hold it simultaneously. This is what protects a model or a parent while you insert children into it.
 
-Locks apply to **elements**. A lock on a *model* is really the lock on the model's *modeled element*, because they share the same Id.
+An exclusive lock is stricter than a shared lock, so it also satisfies a shared-lock requirement.
 
-Elements form an ownership hierarchy through their `model` and `parent`, rooted at [IModel.repositoryModelId]($common):
+Locks apply to **elements** and implicitly to the [ElementAspect]($backend)s they own. A lock on a *model* is really the lock on the model's *modeled element*, because they share the same Id.
+
+The lock hierarchy follows the three owning relationships described by the [BIS information hierarchy](../../bis/guide/data-organization/information-hierarchy.md): `ModelContainsElements`, `ModelModelsElement`, and `ElementOwnsChildElements`.
 
 ```mermaid
-graph TD
-    Root["Root subject / RepositoryModel<br/>(exclusive lock here = Schema Lock)"]
-    M1["PhysicalModel"]
-    P["Parent element"]
-    C1["Child element"]
-    C2["Child element"]
-    Root --> M1 --> P
-    P --> C1
-    P --> C2
+graph LR
+    ME["Modeled element<br/>(lockable)"]
+    M["Model<br/>(same Id for locking)"]
+    E["Contained element"]
+    C["Child element"]
+    ME -. "ModelModelsElement" .-> M
+    M -- "ModelContainsElements" --> E
+    E -- "ElementOwnsChildElements" --> C
 ```
+
+Following those relationships recursively produces an ownership hierarchy rooted at [IModel.repositoryModelId]($common).
 
 Two rules follow from this hierarchy, and they are the source of most "why did I need *that* lock?" questions:
 
-1. **Locking downward is implicit.** Holding the exclusive lock on an element implicitly gives you the exclusive lock on all its children, and holding the exclusive lock on a model's element gives you exclusive control of everything in that model. `holdsExclusiveLock` walks up through models and parents to discover this.
-2. **Locking upward is automatic.** Requesting any lock on an element also requires shared locks on its model and parent, recursively, up to the root. [LockControl.acquireLocks]($backend) computes and requests those extra shared locks for you — you don't have to list them.
+1. **Exclusive locking downward is implicit.** Holding the exclusive lock on an element implicitly gives you the exclusive lock on all its children, and holding the exclusive lock on a model's element gives you exclusive control of everything in that model. `holdsExclusiveLock` and `checkExclusiveLock` each walk up through models and parents to discover this.
+2. **Shared locking upward is automatic.** Requesting any lock on an element also requires shared locks on its model and parent, recursively, up to the root. [LockControl.acquireLocks]($backend) computes and requests those extra shared locks for you — you don't have to list them.
 
 So this single call:
 
@@ -202,32 +188,56 @@ may actually request the exclusive lock on `elementId` **plus** shared locks on 
 
 Because acquiring the exclusive lock on the model's element implicitly covers everything in the model, a bulk editor commonly takes one exclusive lock on the model instead of thousands of element locks.
 
+### Direct and indirect changes
+
+A single Txn can contain both direct and indirect changes. Direct changes are the edits explicitly requested by application code; the normal editing APIs check their required locks. Indirect changes are consequences produced while propagating those direct changes, such as updates caused by an `ElementDrivesElement` dependency. Lock checks are suspended while those indirect changes are applied.
+
+Some bulk APIs also bypass the normal per-element checks. For example, [EditTxn.deleteElements]($backend) *(beta)* deletes through the native layer for performance. Before calling it, the application must hold exclusive locks on everything in the batch, either individually or through a covering model lock.
+
+## Acquiring locks on elements
+
+Locks are requested with [LockControl.acquireLocks]($backend), passing the elements you want a `shared` and/or an `exclusive` lock on. The request goes to the lock server, which grants all of them or none of them.
+
+Acquisition can fail for two reasons, and a third failure happens later at edit time. They are easy to confuse:
+
+| Failure | Raised by | Meaning |
+| --- | --- | --- |
+| `IModelHubStatus.LockOwnedByAnotherBriefcase` (a `ConflictingLocksError`, see [BackendHubAccess.acquireLocks]($backend)) | The lock server, during acquisition | Someone else holds a conflicting lock. Wait, or edit something else. |
+| `IModelHubStatus.PullIsRequired` | The lock server, during acquisition | The lock is free, but your briefcase is behind the changeset index at which it was last released. Pull, then retry. |
+| `IModelStatus.LockNotHeld` | Your own briefcase, at the moment of the edit | You attempted an edit without the required lock. This never reaches the server. |
+
+The freshness rule behind `PullIsRequired` is applied per lock:
+
+- To acquire a **shared** lock, your `changeset.index` must be at least the index at which that element's *exclusive* lock was last released.
+- To acquire the **exclusive** lock, your index must be at least the greater of the last *exclusive* release index and the last *shared* release index.
+
+In other words, **you must be up to date with an element before you can own it**. Because owner shared locks are requested automatically (see [Locks you get automatically](#locks-you-get-automatically)), a `PullIsRequired` can be triggered by an ancestor you never mentioned in your request. Pulling to tip before locking avoids all of this.
+
 ## Locks you get automatically
 
 Not every lock has to be requested by hand. These are handled for you:
 
 | Situation | What happens |
 | --- | --- |
-| **Elements you just created** | An element inserted by your briefcase since its last push is *implicitly* exclusively locked — no server round trip is needed to edit or delete it in the same session. This is inferred from a recorded local-Id "high-water mark" (see [How the briefcase tracks locks locally](#how-the-briefcase-tracks-locks-locally)), plus an explicit record for the cases the high-water mark can't cover. |
+| **Elements you just created** | An element inserted by your briefcase since its last push is *implicitly* exclusively locked — no server round trip is needed to edit or delete it in the same session. |
 | **Owner locks** | `acquireLocks` adds the shared locks on models and parents up the hierarchy — see [Acquiring locks on elements](#acquiring-locks-on-elements). |
-| **Schema import** | [IModelDb.importSchemas]($backend) and `importSchemaStrings` acquire the lock needed by the import (schema lock, or a shared root lock, depending on configuration). Channel-upgrade and pre-import callbacks run *before* that acquisition and must acquire the locks needed by their own edits. A post-import callback runs afterwards, but must not assume it has the exclusive schema lock when schema sync or semantic rebase is enabled. You still control the surrounding pull/push. |
-| **Dropping schemas** | [IModelDb.dropSchemas]($backend) *(alpha)* acquires the schema lock. On success it retains the lock to protect the unpublished schema change; your subsequent push releases it. If dropping fails, it abandons the changes and releases the lock. Schema sync does not support this operation. |
+| **Schema import** | [IModelDb.importSchemas]($backend) and `importSchemaStrings` acquire the schema lock in the default workflow. With Schema Sync, an import may proceed without it. Channel-upgrade and pre-import callbacks run *before* lock acquisition and must acquire the locks needed by their own edits. A post-import callback must not assume the schema lock is held when Schema Sync is enabled. You still control the surrounding pull/push. |
 | **Profile & domain schema upgrade** | [BriefcaseDb.upgradeSchemas]($backend) first attempts the upgrade *without* any lock. Only if the upgrade reports that a data transformation is required does it acquire the schema lock and retry, releasing all locks when done. |
 | **Reverting pushed changesets** | [BriefcaseDb.revertAndPushChanges]($backend) pulls to the tip, acquires the schema lock, creates the revert changeset, and pushes it. The push releases the lock unless `retainLocks` is set. |
 | **Embedding or allocating fonts** | [IModelDbFonts.embedFontFile]($backend) and [IModelDbFonts.acquireId]($backend) use the configured [CodeService](./CodeService.md) without locking when possible. Without that service, they acquire the schema lock to allocate collision-free identifiers; the caller must later push or abandon the changes and locks. |
-| **Importing the Functional schema** | [FunctionalSchema.importSchema]($backend) acquires the schema lock for a briefcase and retains it with the imported schema changes until the caller pushes or abandons them. |
-| **Indirect changes** | Changes made during change propagation (for example, from `ElementDrivesElement` dependency handlers) run in "indirect" Txn mode, where lock checks are suspended. Only *direct* edits by app code require locks. |
 | **Push** | [BriefcaseDb.pushChanges]($backend) releases all locks afterwards unless you pass `retainLocks: true`. |
 
 ## Reservations
 
 > Reservations are a beta feature. See [IModelDb.reservations]($backend) and [SynchronousChannel.Reservations]($backend).
 
+Reservations are currently provided by Schema Sync, a beta feature that is enabled per iModel. Enable it when creating the iModel by passing `containersEnabled: 1` to the [iModels API create operation](https://developer.bentley.com/apis/imodels-v2/operations/create-imodel/).
+
 Locks solve concurrent edits to existing data, but they do not establish that two briefcases creating a new element mean to create the *same* element. For example, two users may both need a `"Steel"` material, a `"Hidden"` line style, or the same component template from a catalog. Without coordination, each briefcase can allocate a different element Id for the same logical definition, producing duplicates or a Code conflict when their changesets merge.
 
 A reservation agrees on one caller-supplied federation GUID and one pre-allocated element Id before insertion. Every briefcase that inserts that reserved identity receives the same Id.
 
-The rule is deliberately broader than definition elements: **when Schema Sync is enabled, any [Element]($backend) inserted with an explicitly assigned `federationGuid` must first be reserved**, unless the briefcase holds the Schema Lock. Elements that leave `federationGuid` unset are unaffected.
+The rule is deliberately broader than definition elements: **when reservations are enabled, any [Element]($backend) inserted with an explicitly assigned `federationGuid` must first be reserved**, unless the briefcase holds the Schema Lock. Elements that leave `federationGuid` unset are unaffected.
 
 ### Reservations and locks are complementary
 
@@ -236,8 +246,8 @@ The rule is deliberately broader than definition elements: **when Schema Sync is
 | Protect against | Conflicting modification of existing elements | Conflicting creation of elements with a shared identity |
 | Coordination model | Serialize competing writers | Let many briefcases create the same thing |
 | Applies to | Models and elements | Elements inserted with an explicit `federationGuid` |
-| Enabled by | The default locking policy | Schema Sync |
-| API | [BriefcaseDb.locks]($backend) | [IModelDb.reservations]($backend) |
+| Enabled by | The default locking policy | A reservations-enabled synchronous channel |
+| API | [IModelDb.locks]($backend) | [IModelDb.reservations]($backend) |
 
 Inserting a reserved element still follows the normal locking rules. For example, inserting a shared definition into the dictionary model requires a shared lock on [IModel.dictionaryId]($common). The reservation prevents an identity conflict; the lock protects the containing model while it changes.
 
@@ -312,46 +322,29 @@ The schema lock is simply *the exclusive lock on the root element*, [IModel.repo
 
 It is, in effect, an exclusive lock on the entire iModel. Use [IModelDb.acquireSchemaLock]($backend) and [IModelDb.holdsSchemaLock]($backend).
 
-Schema changes should also be isolated in their own changeset, separate from data changes. `importSchemas` acquires the lock for you, but **the surrounding pull/push sequence is the application's responsibility**:
+In the default schema-lock workflow, `importSchemas` acquires the lock for you, but the surrounding synchronization remains the application's responsibility:
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant App
-    participant BC as Briefcase
-    participant Hub as iModelHub
-
-    App->>BC: pullChanges()   %% be at tip
-    App->>BC: pushChanges()   %% flush pending data changes first
-    App->>BC: importSchemas([...])
-    BC->>Hub: acquire exclusive lock on root element (Schema Lock)
-    Hub-->>BC: granted (only if nobody holds any lock)
-    BC->>BC: import schemas, saveChanges (schema-only Txn)
-    App->>BC: pushChanges("imported schema")
-    BC->>Hub: push schema changeset
-    Hub-->>BC: locks released
-```
+1. Call `pullChanges` to bring the briefcase to the tip.
+1. Call `pushChanges` to publish any pending data changes.
+1. Call `importSchemas` or `importSchemaStrings`. The import acquires the schema lock and saves its changes.
+1. Call `pushChanges` to publish the schema changes and release the lock.
 
 The beta schema-import extension points require additional care. A `channelUpgrade` callback and
 `preSchemaImportCallback` run before the import acquires its lock, so their editing APIs must acquire
 the normal element/model locks themselves. A `postSchemaImportCallback` runs after the import. It is
-covered by the schema lock in the default workflow, but schema sync may import without that lock and
-semantic rebase holds only a shared root lock. A post-import callback that changes data should therefore
+covered by the schema lock in the default workflow, but Schema Sync may import without that lock. A post-import callback that changes data should therefore
 request the locks for those changes explicitly; those requests are harmless when an exclusive schema
 lock already covers them.
 
-Two variations relax this bottleneck. **Neither is on by default** — both must be turned on explicitly, so unless your app opts in, the sequence above is what you get:
+Schema Sync relaxes this bottleneck. When it is enabled, the import is first attempted against the shared synchronous channel *without* the schema lock. Only if the native importer reports that a data transformation is required does it fall back to acquiring the full schema lock and retrying.
 
-- **Schema Sync.** Enabled per-iModel by initializing a schema-sync container. When it is enabled, the import is first attempted against that shared container *without* the schema lock. Only if the native importer reports that a data transformation is required does it fall back to acquiring the full schema lock and retrying.
-- **Semantic rebase** *(beta, experimental)*. Opted into per-host by setting `useSemanticRebase: true` in the options passed to [IModelHost.startup]($backend); it is disabled unless you set it. When it is on, schema imports take a *shared* lock on the root element instead of the exclusive one, allowing concurrent schema imports that are later reconciled semantically. It is mutually exclusive with schema sync — `importSchemas` throws if both are enabled — and it also requires that there be no unsaved changes when you import.
-
-Under a `noLocks` iModel, `acquireSchemaLock` is a no-op — the same code path still works, but nothing is actually reserved.
+Under a `noLocks` iModel, `acquireSchemaLock` is a no-op — the same code path still works, but nothing is actually locked.
 
 ### Profile and domain schema upgrades
 
 ([Domain schemas and profile schemas](./IModelDb.md#upgrading-schemas-in-an-imodel) explains what each of these is.)
 
-[BriefcaseDb.upgradeSchemas]($backend) follows the same "only lock if you must" strategy, but by a different mechanism than either of the optional variations above — it does not rely on schema sync or on semantic rebase, and it behaves this way on every iModel with no configuration. It upgrades the profile, then the domain schemas, each with the briefcase closed and reopened, pushing a changeset after each phase that produced changes. It takes **no lock at all** in the common case. Only when an upgrade fails with `BE_SQLITE_ERROR_DataTransformRequired` — meaning existing data must be rewritten — does it acquire the schema lock, retry the upgrade with the lock held, and release all locks in a `finally` block. When schema sync is enabled, each upgrade phase is additionally applied through the schema-sync container.
+[BriefcaseDb.upgradeSchemas]($backend) follows the same "only lock if you must" strategy, but it behaves this way on every iModel with no configuration. It upgrades the profile, then the domain schemas, each with the briefcase closed and reopened, pushing a changeset after each phase that produced changes. It takes **no lock at all** in the common case. Only when an upgrade fails with `BE_SQLITE_ERROR_DataTransformRequired` — meaning existing data must be rewritten — does it acquire the schema lock, retry the upgrade with the lock held, and release all locks in a `finally` block. When Schema Sync is enabled, each upgrade phase is additionally applied through the synchronous channel.
 
 The practical consequence: an upgrade that only adds schema definitions will not block other briefcases, while a data-transforming upgrade will lock the whole iModel for its duration.
 
@@ -398,27 +391,17 @@ Nothing blocks either briefcase. Whoever pushes first wins the timeline; the oth
 | API | When to use |
 | --- | --- |
 | [BriefcaseDb.pushChanges]($backend) | Normal path. Releases all locks after a successful push, recording the new changeset index against each. Pass `retainLocks: true` to keep them for the next edit round. |
-| [LockControl.releaseAllLocks]($backend) | Manual release after published work. **Fails if the briefcase still has local changes.** Normally `pushChanges` calls it for you. |
-| [LockControl.abandonAllLocks]($backend) *(beta)* | Use after deciding not to publish: either no protected element was edited, or every protected edit was reversed or discarded. It releases the locks without advancing their release changeset indices, so other briefcases are not forced to pull edits that were never published. |
+| [LockControl.releaseAllLocks]($backend) | Rarely needed directly. Use it to end a lock-retaining session after the protected work was published with `pushChanges({ retainLocks: true })`. **It fails if the briefcase has local changes.** |
+| [LockControl.abandonAllLocks]($backend) *(beta)* | A low-level option when locks were acquired but no protected edits remain—for example, no edit was made or every protected edit was independently reversed. If local changes remain, use `discardChanges` instead. |
 | [BriefcaseDb.discardChanges]($backend) *(preview)* | Throws away local changes and calls `abandonAllLocks` unless `retainLocks` is set. |
 
 Note that [BriefcaseDb.pullChanges]($backend) does **not** release locks — pulling only brings your briefcase up to date. Locks are released on push, or explicitly.
 
 For lock-aware undo, prefer the beta async APIs [TxnManager.reverseTxnsAsync]($backend), [TxnManager.reverseSingleTxnAsync]($backend), [TxnManager.reverseAllTxnsAsync]($backend), [TxnManager.reverseToTxnAsync]($backend), and [TxnManager.cancelToTxnAsync]($backend). They abandon the locks belonging to the reversed Txns by default; pass `retainLocks: true` only when you intentionally want to keep them. For redo, prefer [TxnManager.reinstateTxnAsync]($backend), which re-acquires abandoned locks before reinstating the Txn.
 
-The corresponding low-level beta helpers are [LockControl.abandonLocksForReversedTxn]($backend), [LockControl.abandonLocksForCurrentUnsavedTxn]($backend), [LockControl.acquireLocksForReinstatingTxn]($backend), [LockControl.holdsNecessaryLocksForReinstatingTxn]($backend), and [LockControl.clearTxnLockRecords]($backend). The synchronous reverse APIs do not abandon locks automatically, and synchronous [TxnManager.reinstateTxn]($backend) cannot re-acquire abandoned locks.
-
 Note that re-acquiring an abandoned lock can fail: another briefcase may have taken it in the meantime.
 
-## How the briefcase tracks locks locally
-
-`ServerBasedLocks` keeps a small SQLite database alongside the briefcase (`<briefcase temp base>-locks`) so that lock checks during editing are local and fast:
-
-- a `locks` table of currently-held locks, each tagged with its *origin*: `Acquired` (from the server), `NewElement` (implicit, because we created it), or `Discovered` (cached conclusion that an owner's exclusive lock covers this element);
-- a `txn_locks` table recording which locks each Txn needed, which is what makes the reverse/reinstate APIs possible;
-- a `metadata` table holding the `highWaterLocalId` — the value of the briefcase's local element-Id sequence as of the last push, refreshed on every push. Any element carrying this briefcase's Id with a local Id *above* that mark was created since the last push, so it is treated as implicitly, exclusively locked. (The mark is a sequence value, not necessarily the Id of a pushed element: Ids allocated and then abandoned are covered too, which is conservative and safe.)
-
-`Discovered` rows are a pure cache — they never grant rights the server didn't already give you — and are cleared when the locks they were inferred from are given up, for example when Txn locks are abandoned or re-acquired. A full release clears every local lock row.
+`ServerBasedLocks` maintains a local cache of held locks so lock checks during editing are local and fast.
 
 ## Related, but not the same thing
 
@@ -428,8 +411,8 @@ Note that re-acquiring an abandoned lock can fail: another briefcase may have ta
 
 ## Practical guidance
 
-- **Always pull before you lock.** This is the safe workflow: the server checks freshness per lock, so a stale briefcase is refused with `PullIsRequired` — sometimes because of an ancestor element you never asked about.
-- **Reserve before inserting an explicit federation GUID.** When Schema Sync is enabled, batch reservations before acquiring locks and starting the editing transaction.
+- **Prefer pulling before locking.** Starting an editing session at the tip avoids `PullIsRequired`, which can sometimes be triggered by an ancestor element you did not request explicitly.
+- **Reserve before inserting an explicit federation GUID.** When reservations are enabled, batch reservations before acquiring locks and starting the editing transaction.
 - **Lock at the right granularity.** For bulk edits, take the exclusive lock on the model rather than on each element; for adding many elements to a model, one shared lock on the model covers them all.
 - **Acquire locks in one call where possible.** `acquireLocks({ shared: [...], exclusive: [...] })` is atomic, so a batch either fully succeeds or leaves you holding nothing new — which avoids partially-locked states and reduces deadlock-like stalls between briefcases.
 - **Keep the schema lock for as short a time as possible.** While you hold it, every other briefcase in the iModel is blocked from acquiring anything. Push and release immediately after the import.

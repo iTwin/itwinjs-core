@@ -469,11 +469,10 @@ export interface SchemaImportCallbacks<T = any> {
   preSchemaImportCallback?: (context: PreImportContext) => Promise<PreImportCallbackResult<T>>;
 
   /**
-   * Will be executed after schemas are imported.
+   * Will be executed after schemas are imported, while schema lock is still held.
    * Use this to transform data to match the new schema.
    *
-   * @note With the default schema-import workflow, the schema lock is already held. When schema sync or semantic rebase is enabled,
-   * the import may hold no lock or only a shared lock on the root element. The callback must acquire any locks required by its data changes.
+   * @note Schema lock is already held after doing a schema import. No lock acquisition is necessary by the user.
    *
    * @throws If transformation fails, any changes done after the schema import are abandoned and snapshot is cleared.
    */
@@ -1398,8 +1397,6 @@ export abstract class IModelDb extends IModel {
   /** Removes unused schemas from the database.
    *
    * If the removal was successful, the database is automatically saved to disk.
-   * For a briefcase, this method acquires the schema lock and retains it after success so that the schema changes remain protected until
-   * they are pushed. [[BriefcaseDb.pushChanges]] releases the lock unless `retainLocks` is specified.
    * @param schemaNames Array of schema names to drop
    * @throws [[IModelError]] if the operation fails.
    * @alpha
@@ -1414,18 +1411,15 @@ export abstract class IModelDb extends IModel {
     if (this[_nativeDb].getITwinId() !== Guid.empty)
       await this.acquireSchemaLock();
 
-    let wasSuccessful = false;
     try {
       this[_nativeDb].dropSchemas(schemaNames);
       this.saveSchemaChanges("dropped unused schemas");
-      wasSuccessful = true;
     } catch (error: any) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
       this.abandonSchemaChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
     } finally {
-      if (!wasSuccessful)
-        await this.locks.releaseAllLocks();
+      await this.locks.releaseAllLocks();
       this.clearCaches();
     }
   }
@@ -3838,11 +3832,10 @@ export class BriefcaseDb extends IModelDb {
 
   /**
    * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
-   * This operation cannot be undone. By default, all locks held by this briefcase will be abandoned unless the `retainLocks` option is specified.
-   * Abandoning locks preserves their previous release changeset because the discarded edits were never published.
+   * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `retainLocks` option is specified.
    * @Note This operation can be performed at any point including after failed rebase attempts.
    * @param args - Options for discarding changes.
-   * @param args.retainLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be abandoned.
+   * @param args.retainLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
    * @returns A promise that resolves when the operation is complete.
    * @throws May throw if discarding changes fails.
    *
