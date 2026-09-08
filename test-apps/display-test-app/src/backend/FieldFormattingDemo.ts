@@ -5,8 +5,7 @@
 
 /*
  * Wires app-supplied [FormatSet]($ecschema-metadata)s into the FieldRun formatting pathway
- * exposed by `@itwin/core-backend`, the way a production consumer such as Drawing Production
- * would.
+ * exposed by `@itwin/core-backend`.
  *
  * The sets themselves are not defined here. `dta text import formatset <path> [id]` loads one
  * from a JSON file, so DTA carries no format catalog of its own and can be pointed at a real
@@ -89,8 +88,7 @@ const OVERRIDE_JSON_PREDICATE = `TextAnnotationData LIKE '%"kindOfQuantity"%' OR
  *
  * Core deliberately does not do this: which annotations are in scope is an application question
  * (a drawing? a sheet? the whole briefcase?), and the app already owns the FormatSets that the
- * requirements resolve against. DTA answers "the whole briefcase" because it is a test app. A
- * real application would more likely scope this to the model or view being opened.
+ * requirements resolve against. DTA answers "the whole briefcase" because it is a test app.
  *
  * Pass 1's substring test runs inside SQLite, so annotations that override nothing never reach
  * JavaScript. Pass 2 has no column to filter on and so constructs every element it selects, but
