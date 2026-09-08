@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
- 
+/* eslint-disable @typescript-eslint/no-deprecated -- unsavedQueryParams must keep working until it is removed. */
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ArcGisErrorCode, ArcGISImageryProvider, MapLayerAccessClient, MapLayerImageryProviderStatus } from "../../../tile/internal";

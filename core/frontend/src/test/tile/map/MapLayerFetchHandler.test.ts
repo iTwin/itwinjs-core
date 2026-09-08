@@ -855,7 +855,7 @@ describe("map-layer fetch handler", () => {
     setCredentialedHandler();
     const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl });
     settings.queryParams = { saved: "1" };
-     
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- must keep working until removed.
     settings.unsavedQueryParams = { unsaved: "2" };
     const provider = new TestImageryProvider(settings, false);
 

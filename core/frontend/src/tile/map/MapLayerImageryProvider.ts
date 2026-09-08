@@ -848,12 +848,12 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected appendCustomParams(url: string) {
-     
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- unsavedQueryParams kept for backward compatibility until removal.
     if (!this._settings.queryParams && !this._settings.unsavedQueryParams)
       return url;
 
     let tmpUrl = appendQueryParams(url, this._settings.queryParams);
-     
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     tmpUrl = appendQueryParams(tmpUrl, this._settings.unsavedQueryParams);
     return tmpUrl;
   }

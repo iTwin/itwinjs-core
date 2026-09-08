@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
- 
+/* eslint-disable @typescript-eslint/no-deprecated -- unsavedQueryParams must keep working until it is removed. */
 import { EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QuadId, WmtsCapabilities, WmtsCapability, WmtsMapLayerImageryProvider } from "../../../tile/internal";

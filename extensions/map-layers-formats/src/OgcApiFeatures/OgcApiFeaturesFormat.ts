@@ -50,7 +50,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
       };
 
       let url = appendQueryParams(source.url, source.queryParams);
-       
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- unsavedQueryParams kept for backward compatibility until removal.
       url = appendQueryParams(url, source.unsavedQueryParams);
       const allowLandingCredentials = IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(url, source.url);
       if (headers && allowLandingCredentials)
@@ -127,7 +127,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         // before appending query parameters or evaluating trust.
         let collectionsUrl = new URL(collectionsLink.href, response.url || url).toString();
         collectionsUrl = appendQueryParams(collectionsUrl, source.queryParams);
-         
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         collectionsUrl = appendQueryParams(collectionsUrl, source.unsavedQueryParams);
 
         // The collections link is advertised by the server-controlled landing document, so the trust

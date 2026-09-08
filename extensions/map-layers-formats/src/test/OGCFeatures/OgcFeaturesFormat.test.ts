@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
- 
+/* eslint-disable @typescript-eslint/no-deprecated -- unsavedQueryParams must keep working until it is removed. */
 import { IModelApp, MapLayerAuthenticationFailedError, MapLayerFormatRegistry, MapLayerSource, MapLayerSourceStatus } from "@itwin/core-frontend";
 import { expect } from "chai";
 import sinon from "sinon";
