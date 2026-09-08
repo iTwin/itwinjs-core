@@ -28,6 +28,7 @@ class MockAbortSignal implements GenericAbortSignal {
 }
 
 const testIModelId = "22222222-2222-2222-2222-222222222222";
+const testKey = "test-key";
 
 let addListenerSpy: MockInstance<(channel: string, handler: IpcListener) => RemoveFunction>;
 
@@ -35,7 +36,7 @@ let addListenerSpy: MockInstance<(channel: string, handler: IpcListener) => Remo
 async function openTestBriefcase(ipcFunctions: object, iTwinId = "11111111-1111-1111-1111-111111111111"): Promise<BriefcaseConnection> {
   vi.spyOn(IpcApp, "appFunctionIpc", "get").mockReturnValue({
     openBriefcase: vi.fn().mockResolvedValue({
-      key: "test-key",
+      key: testKey,
       rootSubject: { name: "test" },
       iTwinId,
       iModelId: testIModelId,
@@ -68,7 +69,7 @@ describe("BriefcaseConnection", () => {
 
   it("locks property is properly initiliazed", async () => {
     const fakeBriefcaseProps = {
-      key: "test-key",
+      key: testKey,
       rootSubject: { name: "test" },
       iTwinId: "00000000-0000-0000-0000-000000000000",
       iModelId: "00000000-0000-0000-0000-000000000000",
@@ -97,7 +98,7 @@ describe("BriefcaseConnection", () => {
       const pulledChangeset: ChangesetIndexAndId = { index: 3, id: "pulled-changeset-id" };
 
       const fakeBriefcaseProps = {
-        key: "test-key",
+        key: testKey,
         rootSubject: { name: "test" },
         iTwinId: "11111111-1111-1111-1111-111111111111",
         iModelId: "00000000-0000-0000-0000-000000000000",
@@ -157,7 +158,7 @@ describe("BriefcaseConnection", () => {
         progressInterval: undefined,
         enableCancellation: false,
       });
-      expect(findProgressListener(getPullChangesIpcChannel(testIModelId))).toBeUndefined();
+      expect(findProgressListener(getPullChangesIpcChannel(testKey))).toBeUndefined();
     });
 
     it("relays progress events from the pull channel to the callback", async () => {
@@ -168,7 +169,7 @@ describe("BriefcaseConnection", () => {
       const downloadProgressCallback = vi.fn();
       const pullPromise = connection.pullChanges(undefined, { downloadProgressCallback });
 
-      const progressListener = findProgressListener(getPullChangesIpcChannel(testIModelId));
+      const progressListener = findProgressListener(getPullChangesIpcChannel(testKey));
       expect(progressListener).toBeDefined();
 
       progressListener!({} as Event, { loaded: 50, total: 100 });
@@ -230,7 +231,7 @@ describe("BriefcaseConnection", () => {
       await expect(connection.pullChanges(undefined, { downloadProgressCallback: vi.fn(), abortSignal })).rejects.toThrow("iModel has no timeline");
 
       expect(pullChanges).not.toHaveBeenCalled();
-      expect(findProgressListener(getPullChangesIpcChannel(testIModelId))).toBeUndefined();
+      expect(findProgressListener(getPullChangesIpcChannel(testKey))).toBeUndefined();
       expect(abortSignal.listeners.size).toBe(0);
     });
   });
@@ -241,7 +242,7 @@ describe("BriefcaseConnection", () => {
       const pushedChangeset: ChangesetIndexAndId = { index: 5, id: "pushed-changeset-id" };
 
       const fakeBriefcaseProps = {
-        key: "test-key",
+        key: testKey,
         rootSubject: { name: "test" },
         iTwinId: "11111111-1111-1111-1111-111111111111",
         iModelId: "00000000-0000-0000-0000-000000000000",
@@ -302,7 +303,7 @@ describe("BriefcaseConnection", () => {
         downloadProgressInterval: undefined,
         enableCancellation: false,
       });
-      expect(findProgressListener(getPushChangesIpcChannel(testIModelId))).toBeUndefined();
+      expect(findProgressListener(getPushChangesIpcChannel(testKey))).toBeUndefined();
     });
 
     it("relays progress events from the push channel to the callback", async () => {
@@ -313,10 +314,10 @@ describe("BriefcaseConnection", () => {
       const downloadProgressCallback = vi.fn();
       const pushPromise = connection.pushChanges("test push", { downloadProgressCallback });
 
-      const progressListener = findProgressListener(getPushChangesIpcChannel(testIModelId));
+      const progressListener = findProgressListener(getPushChangesIpcChannel(testKey));
       expect(progressListener).toBeDefined();
       // The pull channel is used to report a pull's progress - a push must not listen on it.
-      expect(findProgressListener(getPullChangesIpcChannel(testIModelId))).toBeUndefined();
+      expect(findProgressListener(getPullChangesIpcChannel(testKey))).toBeUndefined();
 
       progressListener!({} as Event, { loaded: 50, total: 100 });
       expect(downloadProgressCallback).toHaveBeenCalledWith({ loaded: 50, total: 100 });
@@ -377,7 +378,7 @@ describe("BriefcaseConnection", () => {
       await expect(connection.pushChanges("description", { downloadProgressCallback: vi.fn(), abortSignal })).rejects.toThrow("iModel has no timeline");
 
       expect(pushChanges).not.toHaveBeenCalled();
-      expect(findProgressListener(getPushChangesIpcChannel(testIModelId))).toBeUndefined();
+      expect(findProgressListener(getPushChangesIpcChannel(testKey))).toBeUndefined();
       expect(abortSignal.listeners.size).toBe(0);
     });
   });

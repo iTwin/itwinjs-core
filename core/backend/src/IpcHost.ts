@@ -358,7 +358,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
 
     const { onDownloadProgress, done } = this.createDownloadProgressHandler({
       key,
-      channel: getPullChangesIpcChannel(iModelDb.iModelId),
+      channel: getPullChangesIpcChannel(key),
       statusMap: this._iModelKeyToPullStatus,
       reportProgress: options?.reportProgress,
       progressInterval: options?.progressInterval,
@@ -382,7 +382,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
 
     const { onDownloadProgress, done } = this.createDownloadProgressHandler({
       key,
-      channel: getPushChangesIpcChannel(iModelDb.iModelId),
+      channel: getPushChangesIpcChannel(key),
       statusMap: this._iModelKeyToPushStatus,
       reportProgress: options?.reportDownloadProgress,
       progressInterval: options?.downloadProgressInterval,

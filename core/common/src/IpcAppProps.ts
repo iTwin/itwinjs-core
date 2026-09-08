@@ -41,15 +41,17 @@ export interface PushChangesOptions {
 }
 
 /** Get IPC channel name used for reporting progress of pulling changes into iModel.
+ * @param key the key of the briefcase being pulled into.
  * @internal
  */
-export const getPullChangesIpcChannel = (iModelId: string) => `${ipcAppChannels.functions}/pullChanges/${iModelId}`;
+export const getPullChangesIpcChannel = (key: string) => `${ipcAppChannels.functions}/pullChanges/${key}`;
 
 /** Get IPC channel name used for reporting the progress of the changeset download that [[IpcAppFunctions.pushChanges]] performs before
  * uploading. Kept distinct from [[getPullChangesIpcChannel]] so that a listener attached for a pull never observes a push's download.
+ * @param key the key of the briefcase being pushed from.
  * @internal
  */
-export const getPushChangesIpcChannel = (iModelId: string) => `${ipcAppChannels.functions}/pushChanges/pullProgress/${iModelId}`;
+export const getPushChangesIpcChannel = (key: string) => `${ipcAppChannels.functions}/pushChanges/pullProgress/${key}`;
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal

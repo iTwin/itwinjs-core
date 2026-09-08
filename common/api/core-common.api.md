@@ -4502,10 +4502,10 @@ export function getMarkerText(marker: ListMarker, num: number): string;
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
 // @internal
-export const getPullChangesIpcChannel: (iModelId: string) => string;
+export const getPullChangesIpcChannel: (key: string) => string;
 
 // @internal
-export const getPushChangesIpcChannel: (iModelId: string) => string;
+export const getPushChangesIpcChannel: (key: string) => string;
 
 // @internal (undocumented)
 export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;

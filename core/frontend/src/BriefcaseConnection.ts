@@ -433,7 +433,7 @@ export class BriefcaseConnection extends IModelConnection {
     this.requireTimeline();
 
     const removeListeners = this.listenForChangesetDownloadProgress({
-      channel: getPullChangesIpcChannel(this.iModelId),
+      channel: getPullChangesIpcChannel(this.key),
       cancel: async () => IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key),
       downloadProgressCallback: options?.downloadProgressCallback,
       abortSignal: options?.abortSignal,
@@ -475,7 +475,7 @@ export class BriefcaseConnection extends IModelConnection {
     this.requireTimeline();
 
     const removeListeners = this.listenForChangesetDownloadProgress({
-      channel: getPushChangesIpcChannel(this.iModelId),
+      channel: getPushChangesIpcChannel(this.key),
       cancel: async () => IpcApp.appFunctionIpc.cancelPushChangesRequest(this.key),
       downloadProgressCallback: options?.downloadProgressCallback,
       abortSignal: options?.abortSignal,
