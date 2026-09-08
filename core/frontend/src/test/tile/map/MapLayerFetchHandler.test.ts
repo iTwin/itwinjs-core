@@ -966,21 +966,49 @@ describe("map-layer fetch handler", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("issues a non-absolute URL unhandled rather than failing", async () => {
+  it("routes a relative URL through the handler, resolved against the document like fetch does", async () => {
+    let seen: MapLayerRequest | undefined;
+    addHandler(async (request, fetchRequest) => {
+      seen = request;
+      return fetchRequest(withHeader(request, "Authorization", "Bearer secret-jwt"));
+    });
+    const provider = createProvider();
+    await provider.makeRequest("/relative/tile/0/0/0?f=json");
+
+    // The handler sees the URL as built and its query; the wire URL stays verbatim when the query is unchanged.
+    expect(seen?.url).toEqual("/relative/tile/0/0/0?f=json");
+    expect(seen?.searchParams.get("f")).toEqual("json");
+    expect(getRequestUrl()).toEqual("/relative/tile/0/0/0?f=json");
+    expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer secret-jwt");
+  });
+
+  it("resolves a relative URL against the document when a handler changes its query", async () => {
     setCredentialedHandler();
     const provider = createProvider();
     await provider.makeRequest("relative/tile/0/0/0");
 
-    expect(getRequestUrl()).toEqual("relative/tile/0/0/0");
-    expect(getSentHeaderNames()).toEqual([]);
+    const requested = new URL(getRequestUrl());   // absolute now, same target fetch would have resolved
+    expect(requested.origin).toEqual(document.location.origin);
+    expect(requested.pathname.endsWith("/relative/tile/0/0/0")).toBe(true);
+    expect(requested.searchParams.get("clientParam")).toEqual("clientParamValue");
+    expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer secret-jwt");
   });
 
-  it("issues a non-absolute capabilities URL unhandled rather than failing", async () => {
+  it("routes a relative capabilities URL through the handler", async () => {
     fetchMock.mockResolvedValue(new Response("<xml/>", { status: 200 }));
-    setCredentialedHandler();
+    addHandler(async (request, fetchRequest) => fetchRequest(withHeader(request, "Authorization", "Bearer secret-jwt")));
     await WmsUtilities.fetchXml("relative/wms?REQUEST=GetCapabilities");
 
     expect(getRequestUrl()).toEqual("relative/wms?REQUEST=GetCapabilities");
+    expect(getRequestHeaders()?.get("Authorization")).toEqual("Bearer secret-jwt");
+  });
+
+  it("issues an unparseable URL unhandled rather than failing", async () => {
+    setCredentialedHandler();
+    const provider = createProvider();
+    await provider.makeRequest("http://[bad/tile");
+
+    expect(getRequestUrl()).toEqual("http://[bad/tile");
     expect(getSentHeaderNames()).toEqual([]);
   });
 

@@ -53,9 +53,11 @@ export async function fetchMapLayerRequest(args: {
   let parsed: URL | undefined;
   if (handlers.length > 0) {
     try {
-      parsed = new URL(args.url);
+      // Relative URLs are valid targets (fetch resolves them against the document); resolve them the same way so
+      // they are not opted out of the pipeline. Parsing only: the URL sent stays the caller's unless its query changes.
+      parsed = new URL(args.url, typeof document !== "undefined" ? document.baseURI : undefined);
     } catch {
-      // Not a parseable absolute URL; issue the original request unhandled.
+      // Not a parseable URL; issue the original request unhandled.
     }
   }
 

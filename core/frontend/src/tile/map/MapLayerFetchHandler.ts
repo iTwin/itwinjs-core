@@ -18,8 +18,9 @@ import type { MapLayerProviderProperties } from "@itwin/core-common";
  * @beta
  */
 export interface MapLayerRequest {
-  /** The request URL, including its query parameters. Informational: a handler that changes
-   * [[searchParams]] does not need to — and cannot — update it; we recompute it for the next handler.
+  /** The request URL as the provider built it (possibly relative to the document), including its query parameters.
+   * Informational: a handler that changes [[searchParams]] does not need to — and cannot — update it; we recompute
+   * it for the next handler.
    */
   readonly url: string;
   /** The URL of the map-layer source this request is made for, as configured on the layer's settings.
