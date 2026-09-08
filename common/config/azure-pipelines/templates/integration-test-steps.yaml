@@ -2,6 +2,12 @@ parameters:
   - name: nodeVersion # name of the parameter; required
     type: string # data type of the parameter; required
 
+  # When false, skips the graphics-heavy Core full-stack tests (Chrome + Electron
+  # renderer suites). Used by Node-compatibility lanes that do not own renderer coverage.
+  - name: runRendererTests
+    type: boolean
+    default: true
+
 steps:
   - template: setup-integration-users.yaml
 
@@ -88,20 +94,21 @@ steps:
     condition: succeededOrFailed()
 
   # Linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
-    workingDirectory: "full-stack-tests/core"
-    env:
-      NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+  - ${{ if eq(parameters.runRendererTests, true) }}:
+      - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests"
+        condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
-  # MacOS and Windows agents work without any virtual display
-  - script: npm run test:integration
-    workingDirectory: "full-stack-tests/core"
-    env:
-      NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
-    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+      # MacOS and Windows agents work without any virtual display
+      - script: npm run test:integration
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests"
+        condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/ecschema-rpc-interface"
@@ -169,19 +176,20 @@ steps:
     continueOnError: true
     condition: succeededOrFailed()
 
-  - task: PublishTestResults@2
-    displayName: "Publish Core Integration Test Results (Chrome)"
-    inputs:
-      testResultsFiles: "full-stack-tests/core/lib/test/junit_results_chrome.xml"
-      testRunTitle: "Core - Integration Tests (Chrome) - ${{ parameters.nodeVersion }}"
-    condition: succeededOrFailed()
+  - ${{ if eq(parameters.runRendererTests, true) }}:
+      - task: PublishTestResults@2
+        displayName: "Publish Core Integration Test Results (Chrome)"
+        inputs:
+          testResultsFiles: "full-stack-tests/core/lib/test/junit_results_chrome.xml"
+          testRunTitle: "Core - Integration Tests (Chrome) - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
 
-  - task: PublishTestResults@2
-    displayName: "Publish Core Integration Test Results (Electron)"
-    inputs:
-      testResultsFiles: "full-stack-tests/core/lib/test/junit_results_electron.xml"
-      testRunTitle: "Core - Integration Tests (Electron) - ${{ parameters.nodeVersion }}"
-    condition: succeededOrFailed()
+      - task: PublishTestResults@2
+        displayName: "Publish Core Integration Test Results (Electron)"
+        inputs:
+          testResultsFiles: "full-stack-tests/core/lib/test/junit_results_electron.xml"
+          testRunTitle: "Core - Integration Tests (Electron) - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
 
   - task: PublishTestResults@2
     displayName: "Publish ECSchema Rpc Interface Integration Test Results"

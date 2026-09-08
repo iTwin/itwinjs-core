@@ -1,7 +1,31 @@
 # iTwin.js Core Integration Validation Build
 #
-# This integration test job currently runs on all supported operating systems and node versions of iTwin.js.
-# Runs against master on a weekly schedule, in the future this should be a required check before bumping versions.
+# Runs against master on a weekly schedule; in the future this should be a required check before bumping versions.
+#
+# Rather than running every integration test on the full Cartesian product of
+# OS x architecture x Node version, coverage is separated into targeted lanes:
+#
+# | Lane                  | Pool / image         | Node | Core renderer tests | Owns coverage for                            |
+# | --------------------- | -------------------- | ---- | ------------------- | -------------------------------------------- |
+# | Renderer_Linux_x64    | ubuntu-latest        | 24.x | yes                 | Chrome + Electron rendering on Linux x64     |
+# | Renderer_Windows_x64  | windows-latest       | 24.x | yes                 | Chrome + Electron rendering on Windows x64   |
+# | Renderer_MacOS_arm64  | iModelTechMacArm     | 24.x | yes                 | Chrome + Electron rendering on macOS arm64   |
+# | Arch_Linux_arm64      | Platform-Debian12-ARM| 24.x | yes                 | Linux arm64 architecture (incl. rendering)   |
+# | NodeCompat_20         | ubuntu-latest        | 20.x | no                  | Node 20 backend/RPC compatibility            |
+# | NodeCompat_22         | ubuntu-latest        | 22.x | no                  | Node 22 backend/RPC compatibility            |
+#
+# Rationale:
+# - Renderer behavior varies by OS, GPU stack, and architecture -- not by Node
+#   version (Chrome bundles its own runtime; Electron pins its own Node). So the
+#   graphics-heavy Core full-stack tests run once per OS/architecture on the
+#   latest supported Node only.
+# - Node-version compatibility concerns the backend/RPC layers, so older Node
+#   versions are validated on a single representative OS (Linux x64) with the
+#   expensive renderer suites skipped (runRendererTests: false).
+# - Architecture coverage (arm64) runs on the latest supported Node.
+#
+# The PR integration pipeline (integration-pr-validation.yaml) additionally runs
+# the full suite on Linux x64 with the latest Node for every pull request.
 
 trigger: none
 pr: none
@@ -19,49 +43,25 @@ variables:
   - group: Rush Build Cache SAS Token
 
 jobs:
-  - job: Integration_Tests_Full
+  # Renderer + architecture lanes: full integration suite (including the
+  # graphics-heavy Core full-stack tests) on the latest supported Node.
+  - job: Integration_Renderer_Lanes
     strategy:
       matrix:
-        Linux_node_20_x:
-          imageName: ubuntu-latest
-          poolName:
-          nodeVersion: 20.x
-        Windows_node_20_x:
-          imageName: windows-latest
-          poolName:
-          nodeVersion: 20.x
-        MacOS_node_20_x:
-          imageName: macos-latest
-          poolName: "iModelTechMacArm"
-          nodeVersion: 20.x
-        Linux_node_22_x:
-          imageName: ubuntu-latest
-          poolName:
-          nodeVersion: 22.x
-        Windows_node_22_x:
-          imageName: windows-latest
-          poolName:
-          nodeVersion: 22.x
-        MacOS_node_22_x:
-          imageName: macos-latest
-          poolName: "iModelTechMacArm"
-          nodeVersion: 22.x
-        LinuxARM64_node_22_x:
-          poolName: "Platform-Debian12-ARM"
-          nodeVersion: 22.x
-        LinuxX64_node_24_x:
+        Renderer_Linux_x64_node_24_x:
           imageName: ubuntu-latest
           poolName:
           nodeVersion: 24.x
-        Windows_node_24_x:
+        Renderer_Windows_x64_node_24_x:
           imageName: windows-latest
           poolName:
           nodeVersion: 24.x
-        MacOS_node_24_x:
+        Renderer_MacOS_arm64_node_24_x:
           imageName: macos-latest
           poolName: "iModelTechMacArm"
           nodeVersion: 24.x
-        LinuxARM64_node_24_x:
+        Arch_Linux_arm64_node_24_x:
+          imageName:
           poolName: "Platform-Debian12-ARM"
           nodeVersion: 24.x
     pool:
@@ -75,3 +75,25 @@ jobs:
       - template: templates/integration-test-steps.yaml
         parameters:
           nodeVersion: $(nodeVersion)
+          runRendererTests: true
+
+  # Node-compatibility lanes: backend/RPC integration suites on older supported
+  # Node versions, on one representative OS, skipping the renderer suites.
+  - job: Integration_Node_Compat_Lanes
+    strategy:
+      matrix:
+        NodeCompat_Linux_x64_node_20_x:
+          nodeVersion: 20.x
+        NodeCompat_Linux_x64_node_22_x:
+          nodeVersion: 22.x
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
+      - template: templates/integration-test-steps.yaml
+        parameters:
+          nodeVersion: $(nodeVersion)
+          runRendererTests: false
