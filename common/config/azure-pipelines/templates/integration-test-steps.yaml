@@ -165,10 +165,17 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Core Integration Test Results"
+    displayName: "Publish Core Integration Test Results (Chrome)"
     inputs:
-      testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
-      testRunTitle: "Core - Integration Tests - ${{ parameters.nodeVersion }}"
+      testResultsFiles: "full-stack-tests/core/lib/test/junit_results_chrome.xml"
+      testRunTitle: "Core - Integration Tests (Chrome) - ${{ parameters.nodeVersion }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish Core Integration Test Results (Electron)"
+    inputs:
+      testResultsFiles: "full-stack-tests/core/lib/test/junit_results_electron.xml"
+      testRunTitle: "Core - Integration Tests (Electron) - ${{ parameters.nodeVersion }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
