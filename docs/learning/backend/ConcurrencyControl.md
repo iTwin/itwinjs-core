@@ -2,7 +2,7 @@
 
 *How iTwin.js coordinates simultaneous edits from many users on the same iModel.*
 
-An iModel is a multi-user database that is edited through *briefcases*. Every user (or agent, or connector) works on their **own local copy** of the iModel, edits it offline, and then publishes their work as a [Changeset](../Glossary.md#changeset) to iModelHub. Concurrency control is the set of rules that make this safe: it decides **who is allowed to change what, and when**, so that everyone's work can be combined into a single, consistent timeline.
+An iModel is a multi-user database that is edited through *briefcases*. Every user (or agent, or connector) works on their **own local copy** of the iModel, edits it offline, and then pushes their work as a [Changeset](../Glossary.md#changeset) to iModelHub. Concurrency control is the set of rules that make this safe: it decides **who is allowed to change what, and when**, so that everyone's work can be combined into a single, consistent timeline.
 
 Concurrency control is *not* user access control. It says nothing about whether a person is *permitted* to edit; it only coordinates edits that are already permitted.
 
