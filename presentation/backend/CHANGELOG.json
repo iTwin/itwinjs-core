@@ -2,6 +2,18 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "5.13.0",
+      "tag": "@itwin/presentation-backend_v5.13.0",
+      "date": "Thu, 03 Sep 2026 18:49:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix `PresentationManager.getElementProperties` failing when called with class names that match SQLite keywords."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.12.5",
       "tag": "@itwin/presentation-backend_v5.12.5",
       "date": "Tue, 25 Aug 2026 21:22:08 GMT",

@@ -41,6 +41,8 @@ variables:
   - group: iTwin.js non-secret config variables
   - group: iTwin.js Integration Test Users
   - group: Rush Build Cache SAS Token
+  - name: ITWIN_INCLUDE_SCHEMASYNC_EXTENDED_TESTS
+    value: "1"
 
 jobs:
   # Renderer + architecture lanes: full integration suite (including the
@@ -77,6 +79,20 @@ jobs:
           nodeVersion: $(nodeVersion)
           runRendererTests: true
 
+      - script: npm test
+        workingDirectory: "core/backend"
+        env:
+          ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS: "1"
+        displayName: "Run Core Backend Tests"
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Core Backend Test Results"
+        inputs:
+          testResultsFiles: "core/backend/lib/test/junit_results.xml"
+          testRunTitle: "Core Backend - Tests - $(nodeVersion)"
+        condition: succeededOrFailed()
+
   # Node-compatibility lanes: backend/RPC integration suites on older supported
   # Node versions, on one representative OS, skipping the renderer suites.
   - job: Integration_Node_Compat_Lanes
@@ -97,3 +113,17 @@ jobs:
         parameters:
           nodeVersion: $(nodeVersion)
           runRendererTests: false
+
+      - script: npm test
+        workingDirectory: "core/backend"
+        env:
+          ITWIN_INCLUDE_SEMANTIC_REBASE_EXTENDED_TESTS: "1"
+        displayName: "Run Core Backend Tests"
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Core Backend Test Results"
+        inputs:
+          testResultsFiles: "core/backend/lib/test/junit_results.xml"
+          testRunTitle: "Core Backend - Tests - $(nodeVersion)"
+        condition: succeededOrFailed()

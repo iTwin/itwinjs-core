@@ -144,6 +144,7 @@ describe("SchemaSync element reservation", () => {
       sinon.stub(iModel[_nativeDb], "schemaSyncInit").callsFake(() => {
         schemaSyncEnabled = true;
       });
+      sinon.stub(iModel.locks, "isServerBased").value(true);
       sinon.stub(iModel, "acquireSchemaLock").resolves();
       sinon.stub(iModel, "pullChanges").resolves();
       sinon.stub(iModel, "pushChanges").resolves();
