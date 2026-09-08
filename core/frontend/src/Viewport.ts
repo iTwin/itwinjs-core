@@ -29,7 +29,7 @@ import { CoordSystem } from "./CoordSystem";
 import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
-import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
+import { FeatureOverrideProvider, IModelFeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { FrustumAnimator } from "./FrustumAnimator";
 import { GlobeAnimator } from "./GlobeAnimator";
 import { HitDetail, SnapDetail } from "./HitDetail";
@@ -70,6 +70,7 @@ import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
 import { IModelDisplayReferences } from "./IModelDisplayReferences";
+import { IModelDisplayReference } from "./core-frontend";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -273,6 +274,17 @@ export interface ReadPixelsArgs {
 export interface ReadImageToCanvasOptions {
   /** If true, canvas decorations will not be included in the saved image. */
   omitCanvasDecorations?: boolean;
+}
+
+class ProxyOverrideProvider implements IModelFeatureOverrideProvider {
+  constructor(
+    public readonly proxiedProvider: FeatureOverrideProvider,
+    private readonly _vp: Viewport,
+  ) { }
+
+  public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _iModelRef: IModelDisplayReference): void {
+    this.proxiedProvider.addFeatureOverrides(overrides, this._vp);
+  }
 }
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
@@ -1577,6 +1589,7 @@ export abstract class Viewport implements Disposable, TileUser {
       return false;
 
     this._featureOverrideProviders.push(provider);
+    this.iModelRefs.primary.featureOverrideProviders.add(new ProxyOverrideProvider(provider, this));
     this.setFeatureOverrideProviderChanged();
     return true;
   }
@@ -1592,6 +1605,14 @@ export abstract class Viewport implements Disposable, TileUser {
       return false;
 
     this._featureOverrideProviders.splice(index, 1);
+
+    for (const iModelProvider of this.iModelRefs.primary.featureOverrideProviders) {
+      if (iModelProvider instanceof ProxyOverrideProvider && iModelProvider.proxiedProvider === provider) {
+        this.iModelRefs.primary.featureOverrideProviders.delete(iModelProvider);
+        break;
+      }
+    }
+
     this.setFeatureOverrideProviderChanged();
     return true;
   }
