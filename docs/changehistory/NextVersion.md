@@ -8,6 +8,7 @@ publish: false
     - [Schema sync rework](#schema-sync-rework)
   - [@itwin/core-frontend](#itwincore-frontend)
     - [Custom authentication for map-layer requests](#custom-authentication-for-map-layer-requests)
+    - [Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`](#map-layer-query-parameters-queryparams-replaces-savedqueryparamsunsavedqueryparams)
   - [Electron 44 support](#electron-44-support)
 
 ## @itwin/core-backend
@@ -60,9 +61,37 @@ A handler owns authentication for the requests it manages, and only it knows whe
 
 The feature is fully backward compatible: without a handler, requests and failure detection are exactly as in previous releases, and [MapLayerAccessClient]($frontend) (including `ArcGisAccessClient` from `@itwin/map-layers-auth`) keeps serving the token-based ArcGIS facility unchanged. Because handlers are registered per session rather than persisted in [ImageMapLayerSettings]($common), no secret is ever serialized into display styles or saved views, and restored views authenticate without per-layer re-injection. While a handler is registered, URL-keyed capability/service-metadata caches are bypassed so customized responses are not shared across differing request contexts.
 
-Additionally, WMS and WMTS `GetCapabilities` requests issued when a layer initializes now include the layer's custom query parameters ([ImageMapLayerSettings.savedQueryParams]($common)/[ImageMapLayerSettings.unsavedQueryParams]($common)), matching the source-validation path; previously they were omitted, which could break reloading a layer whose server requires them.
+Additionally, WMS and WMTS `GetCapabilities` requests issued when a layer initializes now include the layer's custom query parameters ([ImageMapLayerSettings.queryParams]($common)), matching the source-validation path; previously they were omitted, which could break reloading a layer whose server requires them.
 
 See [Map-layer authentication](../learning/frontend/MapLayerAuthentication.md) for the full behavior and complete samples.
+
+### Map-layer query parameters: `queryParams` replaces `savedQueryParams`/`unsavedQueryParams`
+
+With the fetch handler as the designated channel for secrets, the split between persisted and non-persisted custom query parameters no longer has a purpose, and the non-persisted one was never a safe place for a secret (a value in `unsavedQueryParams` follows redirects and is sent along with an NTLM/Negotiate retry). Both `@beta` fields are deprecated on [ImageMapLayerSettings]($common) and [MapLayerSource]($frontend); they keep working until removed in the next major version.
+
+- `savedQueryParams` is renamed [ImageMapLayerSettings.queryParams]($common) / [MapLayerSource.queryParams]($frontend), matching the JSON property it has always been persisted as ([ImageMapLayerProps.queryParams]($common)). The old name remains as an accessor over the same value.
+- `unsavedQueryParams` has no direct replacement: a secret or per-session parameter is injected by a [MapLayerFetchHandler]($frontend), keyed on [MapLayerRequest.layerUrl]($frontend) when it differs per layer; a non-secret parameter goes in `queryParams`.
+
+```ts
+// Before
+settings.unsavedQueryParams = { apiKey: secret };
+
+// After: one handler for the session, parameters kept per layer by the application
+const secretParamsByLayer = new Map<string, { [key: string]: string }>();
+secretParamsByLayer.set(settings.url, { apiKey: secret });
+
+IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRequest) => {
+  const params = secretParamsByLayer.get(request.layerUrl);
+  if (!params)
+    return undefined;   // not a layer this handler manages
+  const searchParams = new URLSearchParams(request.searchParams);
+  for (const [name, value] of Object.entries(params))
+    searchParams.set(name, value);
+  return fetchRequest({ ...request, searchParams });
+});
+```
+
+`layerUrl` is also the URL of a [MapLayerSource]($frontend) during validation, so the same entry serves the attach dialog's validation request and every later request of the layer.
 
 ## Electron 44 support
 

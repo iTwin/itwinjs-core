@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+ 
 import { EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QuadId, WmtsCapabilities, WmtsCapability, WmtsMapLayerImageryProvider } from "../../../tile/internal";
@@ -65,9 +66,9 @@ describe("WmtsMapLayerImageryProvider", () => {
 
     const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param1.forEach((value: string, key: string) =>  settings.queryParams![key] = value);
     param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
 
     provider = new WmtsMapLayerImageryProvider(settings);
@@ -117,9 +118,9 @@ describe("WmtsMapLayerImageryProvider", () => {
 
     const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param1.forEach((value: string, key: string) =>  settings.queryParams![key] = value);
     param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
 
     provider = new WmtsMapLayerImageryProvider(settings);
@@ -188,9 +189,9 @@ describe("WmtsMapLayerImageryProvider", () => {
     // Now test with custom parameters
     const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param1.forEach((value: string, key: string) =>  settings.queryParams![key] = value);
     param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
 
     provider = new WmtsMapLayerImageryProvider(settings);

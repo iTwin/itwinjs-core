@@ -5219,9 +5219,16 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // @beta
     readonly properties?: MapLayerProviderProperties;
     // @beta
-    savedQueryParams?: {
+    queryParams?: {
         [key: string]: string;
     };
+    // @beta @deprecated
+    get savedQueryParams(): {
+        [key: string]: string;
+    } | undefined;
+    set savedQueryParams(value: {
+        [key: string]: string;
+    } | undefined);
     // (undocumented)
     setCredentials(userName?: string, password?: string): void;
     // (undocumented)
@@ -5230,7 +5237,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
     toJSON(): ImageMapLayerProps;
-    // @beta
+    // @beta @deprecated
     unsavedQueryParams?: {
         [key: string]: string;
     };

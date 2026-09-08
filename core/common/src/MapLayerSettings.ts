@@ -178,7 +178,9 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   /** @internal */
   modelId?: never;
 
-  /** List of query parameters that will get appended to the source.
+  /** Non-secret query parameters appended to every request made for the layer, persisted with it.
+   * Secrets must never be placed here; the hosting application injects them per session through a fetch handler
+   * (see `MapLayerFormatRegistry.addMapLayerFetchHandler` in `@itwin/core-frontend`).
    * @beta
   */
   queryParams?: { [key: string]: string };
@@ -321,13 +323,23 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public password?: string;
   public accessKey?: MapLayerKey;
 
-  /** List of query parameters to append to the settings URL and persisted as part of the JSON representation.
-   * @note Sensitive information like user credentials should be provided in [[unsavedQueryParams]] to ensure it is never persisted.
+  /** Non-secret query parameters appended to every request made for the layer, persisted as part of the JSON
+   * representation ([[ImageMapLayerProps.queryParams]]). Secrets must never be placed here; the hosting application
+   * injects them per session through a fetch handler (see `MapLayerFormatRegistry.addMapLayerFetchHandler` in
+   * `@itwin/core-frontend`), which also protects them against leaking through redirects.
    * @beta
   */
-  public savedQueryParams?: { [key: string]: string };
+  public queryParams?: { [key: string]: string };
+
+  /** Former name of [[queryParams]]; reads and writes the same value.
+   * @deprecated in 5.14. Use [[queryParams]].
+   * @beta
+  */
+  public get savedQueryParams(): { [key: string]: string } | undefined { return this.queryParams; }
+  public set savedQueryParams(value: { [key: string]: string } | undefined) { this.queryParams = value; }
 
   /** List of query parameters that will get appended to the settings URL that should *not* be be persisted part of the JSON representation.
+   * @deprecated in 5.14. Register a fetch handler (`MapLayerFormatRegistry.addMapLayerFetchHandler` in `@itwin/core-frontend`) to inject secret or per-session parameters, which unlike this field are protected against leaking through redirects; use [[queryParams]] for non-secret parameters.
    * @beta
   */
   public unsavedQueryParams?: { [key: string]: string };
@@ -349,7 +361,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.url = props.url;
     this.accessKey = props.accessKey;
     if (props.queryParams) {
-      this.savedQueryParams = {...props.queryParams};
+      this.queryParams = {...props.queryParams};
     }
 
     if (props.properties) {
@@ -380,8 +392,8 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (this.subLayers.length > 0)
       props.subLayers = this.subLayers.map((x) => x.toJSON());
 
-    if (this.savedQueryParams)
-      props.queryParams = {...this.savedQueryParams};
+    if (this.queryParams)
+      props.queryParams = {...this.queryParams};
 
     if (this.properties) {
       props.properties = structuredClone(this.properties);
@@ -400,10 +412,12 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // Clone members not part of MapLayerProps
     clone.userName = this.userName;
     clone.password = this.password;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- kept for backward compatibility until removal.
     if (this.unsavedQueryParams)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       clone.unsavedQueryParams = {...this.unsavedQueryParams};
-    if (this.savedQueryParams)
-      clone.savedQueryParams = {...this.savedQueryParams};
+    if (this.queryParams)
+      clone.queryParams = {...this.queryParams};
 
     return clone;
   }
@@ -418,8 +432,8 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     props.subLayers = changedProps.subLayers ?? this.subLayers;
     if (changedProps.queryParams) {
       props.queryParams = {...changedProps.queryParams};
-    } else if (this.savedQueryParams) {
-      props.queryParams = {...this.savedQueryParams};
+    } else if (this.queryParams) {
+      props.queryParams = {...this.queryParams};
     }
 
     if (changedProps.properties) {
@@ -513,15 +527,17 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.password = password;
   }
 
-  /** Collect all query parameters
+  /** Collect all query parameters: [[queryParams]] overlaid with the deprecated `unsavedQueryParams`.
  * @beta
  */
   public collectQueryParams() {
     let queryParams: {[key: string]: string} = {};
-    if (this.savedQueryParams)
-      queryParams = {...this.savedQueryParams};
+    if (this.queryParams)
+      queryParams = {...this.queryParams};
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- kept for backward compatibility until removal.
     if (this.unsavedQueryParams)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       queryParams = {...queryParams, ...this.unsavedQueryParams};
 
     return queryParams;

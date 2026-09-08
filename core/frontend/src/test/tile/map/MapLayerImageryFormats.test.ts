@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/no-deprecated -- unsavedQueryParams must keep working until it is removed. */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
 import {
@@ -63,7 +64,6 @@ describe("MapLayerImageryFormats", () => {
             break;
 
           case "BingMaps":
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
             expect(provider instanceof BingMapsImageryLayerProvider).toBe(true);
             break;
 
@@ -95,10 +95,10 @@ describe("MapLayerImageryFormats", () => {
 
       const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
       const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-      source.savedQueryParams = {};
+      source.queryParams = {};
       source.unsavedQueryParams = {};
       param1.forEach((value: string, key: string) => {
-        source.savedQueryParams![key] = value;
+        source.queryParams![key] = value;
         urlObj.searchParams.append(key, value);
       });
       param2.forEach((value: string, key: string) => {

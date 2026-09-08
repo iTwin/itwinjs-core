@@ -49,7 +49,8 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         return { status: MapLayerSourceStatus.InvalidUrl };
       };
 
-      let url = appendQueryParams(source.url, source.savedQueryParams);
+      let url = appendQueryParams(source.url, source.queryParams);
+       
       url = appendQueryParams(url, source.unsavedQueryParams);
       const allowLandingCredentials = IModelApp.mapLayerFormatRegistry.isCredentialsSharingAllowed(url, source.url);
       if (headers && allowLandingCredentials)
@@ -125,7 +126,8 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         // was actually served from (which may differ from the requested one if the request was redirected)
         // before appending query parameters or evaluating trust.
         let collectionsUrl = new URL(collectionsLink.href, response.url || url).toString();
-        collectionsUrl = appendQueryParams(collectionsUrl, source.savedQueryParams);
+        collectionsUrl = appendQueryParams(collectionsUrl, source.queryParams);
+         
         collectionsUrl = appendQueryParams(collectionsUrl, source.unsavedQueryParams);
 
         // The collections link is advertised by the server-controlled landing document, so the trust

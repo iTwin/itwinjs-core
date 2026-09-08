@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+ 
 import { IModelApp, MapLayerAuthenticationFailedError, MapLayerFormatRegistry, MapLayerSource, MapLayerSourceStatus } from "@itwin/core-frontend";
 import { expect } from "chai";
 import sinon from "sinon";
@@ -258,7 +259,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
       return fetchRequest({ ...request, searchParams, headers });
     });
     const source = createSource();
-    source.savedQueryParams = { saved: "1" };
+    source.queryParams = { saved: "1" };
     source.unsavedQueryParams = { unsaved: "2" };
     // Settings custom params are appended first, then the fetch handler customizes the request.
     const shapedLanding = `${sourceUrl}?saved=1&unsaved=2&clientParam=clientParamValue`;
@@ -364,7 +365,7 @@ describe("OgcApiFeaturesMapLayerFormat", () => {
   it("resolves a relative collections link and appends saved and unsaved query params", async () => {
     registry.restrictCredentialsToTrustedOrigins = true;
     const source = createSource();
-    source.savedQueryParams = { saved: "1" };
+    source.queryParams = { saved: "1" };
     source.unsavedQueryParams = { unsaved: "2" };
     stubFetch({
       [`${sourceUrl}?saved=1&unsaved=2`]: makeLandingPage("./collections"),

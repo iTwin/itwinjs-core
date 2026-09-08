@@ -6385,9 +6385,16 @@ export class MapLayerSource {
     // (undocumented)
     password?: string;
     // @beta
-    savedQueryParams?: {
+    queryParams?: {
         [key: string]: string;
     };
+    // @beta @deprecated
+    get savedQueryParams(): {
+        [key: string]: string;
+    } | undefined;
+    set savedQueryParams(value: {
+        [key: string]: string;
+    } | undefined);
     // (undocumented)
     toJSON(): Omit<MapLayerSourceProps, "formatId"> & {
         formatId: string;
@@ -6396,7 +6403,7 @@ export class MapLayerSource {
     toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined;
     // (undocumented)
     transparentBackground?: boolean;
-    // @beta
+    // @beta @deprecated
     unsavedQueryParams?: {
         [key: string]: string;
     };
@@ -6827,7 +6834,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;

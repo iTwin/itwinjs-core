@@ -663,7 +663,7 @@ describe("map-layer fetch handler", () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
     setCredentialedHandler({ throwOnAuthStatus: true });
     const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl });
-    settings.unsavedQueryParams = { custom: "1" };
+    settings.queryParams = { custom: "1" };
     const provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
 
@@ -733,7 +733,7 @@ describe("map-layer fetch handler", () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 403 }));
     setCredentialedHandler({ throwOnAuthStatus: true });
     const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMTS", name: "TestLayer", url: settingsUrl });
-    settings.unsavedQueryParams = { custom: "1" };
+    settings.queryParams = { custom: "1" };
     const provider = new WmtsMapLayerImageryProvider(settings);
     await provider.initialize();
 
@@ -835,7 +835,8 @@ describe("map-layer fetch handler", () => {
   it("preserves settings custom query parameters on handled tile requests", async () => {
     setCredentialedHandler();
     const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl });
-    settings.savedQueryParams = { saved: "1" };
+    settings.queryParams = { saved: "1" };
+     
     settings.unsavedQueryParams = { unsaved: "2" };
     const provider = new TestImageryProvider(settings, false);
 
@@ -853,7 +854,7 @@ describe("map-layer fetch handler", () => {
     fetchMock.mockResolvedValue(okResponse());
     setCredentialedHandler();
     const settings = ImageMapLayerSettings.fromJSON({ formatId: "ArcGIS", name: "TestLayer", url: "https://arcgis.example.com/MapServer" });
-    settings.unsavedQueryParams = { custom: "1" };
+    settings.queryParams = { custom: "1" };
     const provider = new ArcGISMapLayerImageryProvider(settings);
 
     await (provider as any).fetch(new URL("https://arcgis.example.com/MapServer/tile/0/0/0"), { method: "GET" });

@@ -846,10 +846,12 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   protected appendCustomParams(url: string) {
-    if (!this._settings.savedQueryParams && !this._settings.unsavedQueryParams)
+     
+    if (!this._settings.queryParams && !this._settings.unsavedQueryParams)
       return url;
 
-    let tmpUrl = appendQueryParams(url, this._settings.savedQueryParams);
+    let tmpUrl = appendQueryParams(url, this._settings.queryParams);
+     
     tmpUrl = appendQueryParams(tmpUrl, this._settings.unsavedQueryParams);
     return tmpUrl;
   }

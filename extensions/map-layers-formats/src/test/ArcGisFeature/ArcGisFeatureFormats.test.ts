@@ -4,6 +4,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+ 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import {
   ArcGisUtilities,
@@ -47,7 +48,7 @@ describe("ArcGisFeatureFormats", () => {
     }
 
     source.unsavedQueryParams = {key1_1: "value1_1", key1_2: "value1_2"};
-    source.savedQueryParams = { key2_1: "value2_1", key2_2: "value2_2"};
+    source.queryParams = { key2_1: "value2_1", key2_2: "value2_2"};
     source.userName = "username1";
     source.password = "password1";
 

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+ 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ArcGisErrorCode, ArcGISImageryProvider, MapLayerAccessClient, MapLayerImageryProviderStatus } from "../../../tile/internal";
@@ -34,7 +35,7 @@ describe("ArcGISImageryProvider", () => {
   it("retries a legacy-token request with a fresh token on the complete request URL", async () => {
     const settings = ImageMapLayerSettings.fromJSON(sampleSource);
     settings.setCredentials("user", "pwd");
-    settings.savedQueryParams = { custom: "1" };
+    settings.queryParams = { custom: "1" };
     const provider = new TestArcGISProvider(settings, true);
 
     const tokens = ["expired-token", "fresh-token"];
@@ -87,7 +88,7 @@ describe("ArcGISImageryProvider", () => {
       ["key2_2", "value2_2"],
     ]);
     settings.unsavedQueryParams = indexedArrayFromUrlParams(unsaved);
-    settings.savedQueryParams = indexedArrayFromUrlParams(saved);
+    settings.queryParams = indexedArrayFromUrlParams(saved);
 
     unsaved.delete("testParam");    // check that test'
     await provider.fetch(new URL(testUrl), { method: "GET" });
