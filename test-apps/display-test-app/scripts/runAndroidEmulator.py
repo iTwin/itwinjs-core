@@ -9,8 +9,11 @@ import sys
 import textwrap
 import threading
 import time
-from typing import Union
+from typing import TextIO, Union
 from pathlib import Path
+
+from android_diagnostics import capture_completed_process, capture_exception, diagnostics_dir as get_diagnostics_dir, redact
+
 
 class Env:
     '''
@@ -57,6 +60,8 @@ class Env:
     ''' The directory containing the sample bim file. '''
     env_json_path = f'{script_dir}/lib/mobile/env.json'
     ''' The full path to the env.json file used by display-test-app. '''
+    diagnostics_dir: Union[Path, None]
+    ''' The optional per-run directory for redacted Android diagnostics. '''
 
     def __init__(self):
         avd_ver_0 = self.avd_ver.split('.')[0]
@@ -65,6 +70,7 @@ class Env:
         self.emulator_dir = f'{self.sdk_dir}/emulator'
         self.adb = f'{self.sdk_dir}/platform-tools/adb'
         self.adb_cmd = f'{self.adb} -e'
+        self.diagnostics_dir = get_diagnostics_dir()
 
     def verify_paths(self) -> None:
         '''
@@ -91,7 +97,7 @@ class Env:
       bim_dir: {self.bim_dir}
 env_json_path: {self.env_json_path}'''
 
-env: Env
+env: Union[Env, None] = None
 
 class Emulator:
     '''
@@ -106,9 +112,11 @@ class Emulator:
     __avd_home: str
     __jdk_home: str
     __emulator_dir: str
+    __diagnostics_dir: Union[Path, None]
+    __output_file: Union[TextIO, None]
     __debug_log = False
 
-    def __init__(self, avd_name: str, avd_home: str, jdk_home: str, emulator_dir: str):
+    def __init__(self, avd_name: str, avd_home: str, jdk_home: str, emulator_dir: str, diagnostics: Union[Path, None]):
         self.__process = None
         self.__thread = None
         self.__launch_error = None
@@ -117,6 +125,8 @@ class Emulator:
         self.__avd_home = avd_home
         self.__jdk_home = jdk_home
         self.__emulator_dir = emulator_dir
+        self.__diagnostics_dir = diagnostics
+        self.__output_file = None
 
     def fix_ini_paths(self) -> None:
         ini_path = f'{self.__avd_home}/{self.__avd_name}.ini'
@@ -151,14 +161,25 @@ class Emulator:
                     text=True
                 )
                 self.__lock.release()
+                if self.__diagnostics_dir is not None:
+                    self.__output_file = (self.__diagnostics_dir / 'emulator.log').open('w', encoding='utf-8')
                 for line in self.__process.stdout:
+                    if self.__output_file is not None:
+                        self.__output_file.write(redact(line))
+                        self.__output_file.flush()
                     if self.__debug_log:
                         log(f'EMULATOR: {line}', end='')
                 self.__process.stdout.close()
                 self.__process.wait()
+                if self.__output_file is not None:
+                    self.__output_file.write(f'\nEmulator process exit code: {self.__process.returncode}\n')
             except Exception as e:
                 self.__launch_error = e
                 self.__lock.release()
+            finally:
+                if self.__output_file is not None:
+                    self.__output_file.close()
+                    self.__output_file = None
 
         self.__lock = threading.Lock()
         self.__lock.acquire()
@@ -191,7 +212,7 @@ def start_emulator() -> Emulator:
     '''
     Start the Android emulator and return an object representing it.
     '''
-    emulator = Emulator(env.avd_name, env.avd_dir, env.jdk_dir, env.emulator_dir)
+    emulator = Emulator(env.avd_name, env.avd_dir, env.jdk_dir, env.emulator_dir, env.diagnostics_dir)
     log('Fixing path setting in emulator\'s ini files...')
     emulator.fix_ini_paths()
     log('Starting Android emulator...')
@@ -211,6 +232,32 @@ def install_apk() -> None:
     log(f'Installing apk {env.apk_path}...')
     run_command(f'{env.adb_cmd} install -r -g {env.apk_path}', 'Error installing APK!')
     log('APK installed.')
+
+def capture_adb_command(name: str, arguments: list[str]) -> None:
+    if env is None or env.diagnostics_dir is None:
+        return
+    try:
+        result = subprocess.run(
+            [env.adb, '-e', *arguments],
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            timeout=30,
+        )
+        capture_completed_process(env.diagnostics_dir, name, result)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        capture_exception(env.diagnostics_dir, name, error)
+
+def capture_logcat(name: str) -> None:
+    capture_adb_command(name, ['logcat', '-d', '-v', 'threadtime'])
+
+def capture_adb_state() -> None:
+    capture_adb_command('adb-version', ['version'])
+    capture_adb_command('adb-state', ['get-state'])
+    capture_adb_command('device-properties', ['shell', 'getprop'])
+    capture_adb_command('device-activity', ['shell', 'dumpsys', 'activity', 'activities'])
+    capture_adb_command('device-memory', ['shell', 'dumpsys', 'meminfo', 'com.bentley.imodeljs_test_app'])
 
 def start_app() -> None:
     '''
@@ -247,9 +294,13 @@ def run_app() -> bool:
     Note: first run waits for 1 minute; second run waits for 5 minutes.
     '''
     for i in range(2):
-        start_app()
-        if wait_for_first_render(i * 4.0 + 1.0):
-            return True
+        attempt = i + 1
+        try:
+            start_app()
+            if wait_for_first_render(i * 4.0 + 1.0):
+                return True
+        finally:
+            capture_logcat(f'attempt-{attempt}-logcat')
     return False
 
 def stop_emulator(emulator: Union[Emulator, None]) -> None:
@@ -476,6 +527,9 @@ def main() -> None:
             exit_code = 0
     except Exception as e:
         log(e)
+    if env is not None and env.diagnostics_dir is not None:
+        capture_logcat('final-logcat')
+        capture_adb_state()
     stop_emulator(emulator)
     stop_adb()
     log('Done')
