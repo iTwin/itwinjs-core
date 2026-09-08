@@ -19,6 +19,11 @@ steps:
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 
+  # Determines whether this run is allowed to write to the Rush build cache
+  # (only trusted, non-PR builds on Linux; see the script for details).
+  - script: node common/scripts/set-rush-write-cache-variables.js
+    displayName: "Set Rush Write Cache Variables"
+
   # Build every package needed by the integration test suites in a single Rush
   # invocation. Each frontend test package (and @itwin/core-electron) already runs
   # webpack:test as part of its normal build script, so no separate webpack pass is needed.
@@ -30,6 +35,9 @@ steps:
       --to rpc-full-stack-tests
       --to rpcinterface-full-stack-tests
     displayName: "Rush build"
+    env:
+      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+      RUSH_BUILD_CACHE_ENABLED: 1
 
   # Electron 42+ no longer downloads the binary during npm install (postinstall removed).
   # Ensure the binary is present before configuring the AppArmor profile.
