@@ -90,13 +90,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
     view.onModelDisplayTransformProviderChanged.addListener(() => this.onModelDisplayTransformProviderChanged.raiseEvent());
 
-    const invalidateSymbologyOverrides = () => {
-      this.#symbologyOverrides = undefined;
-      // ###TODO probably need to notify viewport
-    };
-
-    this.featureOverrideProviders.onChanged.addListener(() => invalidateSymbologyOverrides);
-    // ###TODO when viewed models/categories change.
+    this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
   }
 
   public get iModel() { return this._view.iModel; }
@@ -158,6 +152,11 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
     return this.#symbologyOverrides;
   }
+
+  public invalidateSymbologyOverrides(): void {
+    this.#symbologyOverrides = undefined;
+    // probably need to notify viewport.
+  }
 }
 
 class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayReference2d {
@@ -175,6 +174,9 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
     this.parent = refs;
 
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
+
+    // ###TODO when viewed models/categories change. But not like this.
+    this.viewedCategories.onChanged.addListener(() => this.invalidateSymbologyOverrides());
   }
 
   public override is2d(): this is IModelDisplayReference2d {
@@ -221,6 +223,9 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     this._view.displayStyle.settings.onHiddenLineSettingsChanged.addListener(() => {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
+
+    // ###TODO when viewed models/categories change. But not like this.
+    this.viewedCategories.onChanged.addListener(() => this.invalidateSymbologyOverrides());
   }
 
   public override get tileTreeRefs(): Iterable<TileTreeReference> {

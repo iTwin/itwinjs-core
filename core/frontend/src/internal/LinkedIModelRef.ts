@@ -116,7 +116,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
       // ###TODO probably need to notify viewport
     };
 
-    this.featureOverrideProviders.onChanged.addListener(() => invalidateSymbologyOverrides);
+    this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
     // ###TODO when viewed models/categories change.
   }
 
@@ -168,6 +168,11 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
     return this.#symbologyOverrides;
   }
+
+  public invalidateSymbologyOverrides(): void {
+    this.#symbologyOverrides = undefined;
+    // ###TODO probably need to notify viewport
+  }
 }
 
 class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReference2d {
@@ -180,6 +185,8 @@ class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReferenc
     super(args, refs, createIModelDisplayOverrides(args.overrides));
     this.parent = refs;
     this.viewedModel = args.viewedModel;
+
+    this.viewedCategories.onChanged.addListener(() => this.invalidateSymbologyOverrides());
   }
 
   public override get tileTreeRefs() {
@@ -230,6 +237,8 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     });
 
     this.updateModelClips();
+
+    this.viewedCategories.onChanged.addListener(() => this.invalidateSymbologyOverrides());
   }
 
   public get modelClipGroups() {

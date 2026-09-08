@@ -83,6 +83,7 @@ export interface IModelDisplayReference {
   readonly featureOverrideProviders: ObservableSet<IModelFeatureOverrideProvider>;
   // ###TODO maybe make @internal
   getSymbologyOverrides(): FeatureSymbology.Overrides;
+  invalidateSymbologyOverrides(): void;
 
   modelDisplayTransformProvider: ModelDisplayTransformProvider | undefined;
   readonly onModelDisplayTransformProviderChanged: BeEvent<() => void>;
