@@ -641,6 +641,9 @@ export abstract class ViewState extends ElementState {
       for (const treeRef of iModelRef.tileTreeRefs)
         treeRef.addToScene(linkedContext);
 
+      for (const missingTile of linkedContext.missingTiles)
+        context.insertMissingTile(missingTile);
+
       // ###TODO classifiers, texture drapes
       for (const listName of ["foreground", "background", "overlay"] as const) {
         for (const entry of linkedContext.scene[listName])
