@@ -60,22 +60,26 @@ export async function fetchMapLayerRequest(args: {
   }
 
   const original = parsed;
+  const originalSearch = original.searchParams.toString();
   const request: MapLayerRequest = { url: original.toString(), layerUrl: args.layerUrl, formatId: args.formatId, searchParams: original.searchParams, headers };
-  // Only the query parameters and headers of a handler's request are honored; the target stays ours.
-  const normalize = (toSend: MapLayerRequest): MapLayerRequest => {
+  // Copies the mutable fields (Headers/URLSearchParams are not made immutable by `readonly`), so a handler that
+  // mutates its request in place and then declines cannot leak the mutation to the next handler or to the default
+  // send; the URL is recomputed from the copied query parameters, the target staying ours.
+  const snapshot = (source: MapLayerRequest): MapLayerRequest => {
+    const searchParams = new URLSearchParams(source.searchParams);
     let url = original;
-    if (toSend.searchParams !== original.searchParams) {
+    if (searchParams.toString() !== originalSearch) {
       url = new URL(original);
-      url.search = toSend.searchParams.toString();
+      url.search = searchParams.toString();
     }
-    return { url: url.toString(), layerUrl: args.layerUrl, formatId: args.formatId, searchParams: toSend.searchParams, headers: toSend.headers };
+    return { url: url.toString(), layerUrl: args.layerUrl, formatId: args.formatId, searchParams, headers: new Headers(source.headers) };
   };
   // Offers the request to handlers[index..]: a declined request goes unchanged to the next handler; a request a
   // handler sends is offered to the remaining ones, then issued credentialed.
   const dispatch = async (index: number, toOffer: MapLayerRequest): Promise<Response | undefined> => {
     for (let i = index; i < handlers.length; ++i) {
-      const handled = await handlers[i](toOffer, async (toSend) => {
-        const next = normalize(toSend);
+      const handled = await handlers[i](snapshot(toOffer), async (toSend) => {
+        const next = snapshot(toSend);
         return (await dispatch(i + 1, next)) ?? args.send(next, true);
       });
       if (handled)

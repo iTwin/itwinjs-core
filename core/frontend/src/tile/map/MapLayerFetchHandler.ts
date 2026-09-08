@@ -9,8 +9,10 @@
 /** Describes an outgoing map-layer request submitted to the [[MapLayerFetchHandler]]s registered via
  * [[MapLayerFormatRegistry.addMapLayerFetchHandler]]. Treat it as an immutable value: to change what is sent,
  * pass a copy with different [[searchParams]] or [[headers]] to [[MapLayerFetchRequest]], e.g.
- * `fetchRequest({ ...request, headers })`. The target (origin and path) is fixed by us and cannot be
- * changed, so a handler can never (accidentally or otherwise) reroute a request.
+ * `fetchRequest({ ...request, headers })`. Each handler receives its own copy of the request, and only what it
+ * passes to `fetchRequest` reaches the wire — a change made in place on a request the handler then declines has
+ * no effect. The target (origin and path) is fixed by us and cannot be changed, so a handler can never
+ * (accidentally or otherwise) reroute a request.
  * @beta
  */
 export interface MapLayerRequest {

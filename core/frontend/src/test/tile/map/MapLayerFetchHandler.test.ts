@@ -518,6 +518,41 @@ describe("map-layer fetch handler", () => {
     expect(getRequestInit()?.redirect).toEqual("error");
   });
 
+  it("does not let a handler that mutates its request in place and declines reach the default send", async () => {
+    IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
+    fetchMock.mockResolvedValue(ntlmChallengeResponse());
+    // Violates the immutable-value contract: injects a secret, then declines.
+    addHandler(async (request) => {
+      request.headers.set("Authorization", "Bearer secret-jwt");
+      request.searchParams.set("token", "abc");
+      return undefined;
+    });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    // The default send carries our original request, not the mutated copy.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getRequestUrl()).toEqual(tileUrl);
+    expect(getSentHeaderNames()).toEqual([]);
+  });
+
+  it("isolates handlers from each other's in-place mutations", async () => {
+    let seenByInner: MapLayerRequest | undefined;
+    addHandler(async (request) => {
+      request.headers.set("Authorization", "Bearer secret-jwt");
+      return undefined;
+    });
+    addHandler(async (request, fetchRequest) => {
+      seenByInner = request;
+      return fetchRequest(request);
+    });
+    const provider = createProvider();
+    await provider.makeRequest(tileUrl);
+
+    expect(seenByInner?.headers.has("Authorization")).toBe(false);
+    expect(getSentHeaderNames()).toEqual([]);
+  });
+
   it("recomputes the URL offered to the next handler from the sender's query parameters", async () => {
     let seenByInner: MapLayerRequest | undefined;
     addHandler(async (request, fetchRequest) => fetchRequest(withParam(request, "token", "abc")));
