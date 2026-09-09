@@ -1,18 +1,59 @@
-# This workflow adds geometry reviewers to PRs labled with "geometry"
+# This workflow adds geometry reviewers to PRs labeled with "geometry"
 
 name: add-geometry-reviewers
 
+# SECURITY: pull_request_target keeps this workflow on trusted base-branch code while
+# allowing its narrowly scoped token to request reviewers for fork PRs. Never check out,
+# source, or execute code from the pull request head in this workflow.
 on:
-  pull_request:
+  pull_request_target:
     types: [ labeled ]
 
 jobs:
   build:
     if: ${{ github.event.label.name == 'geometry' }}
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
     - name: Add Reviewers to PR
-      uses: madrapps/add-reviewers@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        reviewers: dassaf4,saeeedtorabi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPOSITORY: ${{ github.repository }}
+      run: |
+        PR_AUTHOR=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.user.login | ascii_downcase')
+        REVIEWS_JSON=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100" \
+          --paginate --slurp)
+
+        # Preserve the previous action's behavior: do not request the PR author or
+        # re-request reviewers whose latest review is terminal.
+        ELIGIBLE_REVIEWERS=$(jq -cn \
+          --argjson candidates '["dassaf4", "saeeedtorabi"]' \
+          --arg author "$PR_AUTHOR" \
+          --argjson pages "$REVIEWS_JSON" '
+            ($pages | add // []) as $reviews
+            | [
+                $candidates[] as $candidate
+                | ($reviews
+                    | map(select((.user.login // "" | ascii_downcase) == ($candidate | ascii_downcase)))
+                    | sort_by([.submitted_at, .id])
+                    | last
+                    | .state // "") as $latest_state
+                | select(
+                    ($candidate | ascii_downcase) != $author
+                    and $latest_state != "APPROVED"
+                    and $latest_state != "CHANGES_REQUESTED"
+                  )
+                | $candidate
+              ]
+          ')
+
+        if [ "$(jq 'length' <<< "$ELIGIBLE_REVIEWERS")" -eq 0 ]; then
+          echo "No geometry reviewers need to be requested."
+          exit 0
+        fi
+
+        jq -cn --argjson reviewers "$ELIGIBLE_REVIEWERS" '{reviewers: $reviewers}' \
+          | gh api "repos/$REPOSITORY/pulls/$PR_NUMBER/requested_reviewers" \
+              --method POST --input - --silent

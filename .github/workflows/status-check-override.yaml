@@ -6,7 +6,7 @@
 # real status check. That needs to be handled by each status check events' own config;
 # i.e., a Github Action's or Azure Pipeline's .yaml file.
 #
-# For example, if the extract-api status check is faked, the extract-api.yaml config
+# For example, if the "rush lint + extract-api" status check is faked, the ci.yaml config
 # needs to know for what files it should not run. (It will be faked as a successful
 # check, so there is no need for it to run.)
 #
@@ -22,23 +22,19 @@
 # GitHub's "required" check and thus these status checks do not need to be faked below.
 
 # HOW TO: Add New Files To The Exclusion List
-# 1. Add files to *this* config to trigger
-# 1. Add the glob of paths to trigger on to the "paths:" list below.
-# 2. Add the same paths to the "changed-files-specific" step below.
-#    IMPORTANT NOTE: The tj-actions/changed-files globs are slightly different than GitHub
-#    Actions' globs. There are at least two differences to be aware of:
-#    1. GitHub Actions globs require quotes if they start with a * character,
-#       tj-actions globs do not.
-#    2. ** matches slightly differently. For example, GitHub actions "**.md" would be
-#       tj-actions **/*.md.
+# 1. Add the path glob to the "paths:" list below.
+# 2. Add the same paths to the `allowed_path` function in the "Get specific changed files" step below.
 # 3. For any status check that should potentially be skipped and/or faked, go to the
 #    status check's config and add the relevant paths to the paths exclusion list.
 #    ("paths-ignore" for Github Actions and "paths.exclude" for Azure Pipelines.)
 
 name: Skip Check
 
+# SECURITY: pull_request_target keeps this workflow on trusted base-branch code while
+# allowing its narrowly scoped token to create checks for fork PRs. Never check out,
+# source, or execute code from the pull request head in this workflow.
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - master
       - release/*
@@ -54,60 +50,106 @@ jobs:
   detect-if-skip:
     name: Detect If Skip
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: read
     steps:
-      # actions/checkout v6.0.3
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-
       # Check for certain paths having been modified
       - name: Get specific changed files
         id: changed-files-specific
-        # tj-actions/changed-files v47.0.6
-        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96    # See https://github.com/marketplace/actions/changed-files
-        with:
-          files: |
-            **/*.md
-            docs/**
-            .github/CODEOWNERS
-            common/changes/**/*.json
-            **/CHANGELOG.json
-            **/CHANGELOG.md
+        env:
+          EXPECTED_CHANGED_FILES: ${{ github.event.pull_request.changed_files }}
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURRENT_HEAD_BEFORE=$(gh api \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+            --jq '.head.sha')
+          if [ "$CURRENT_HEAD_BEFORE" != "$EXPECTED_HEAD_SHA" ]; then
+            echo "The pull request head changed before file inspection; required checks will not be faked."
+            echo "only_modified=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-      # Fake required checks if neccessary
-      # LouisBrunner/checks-action v3.1.0
-      - uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff   # See https://github.com/marketplace/actions/github-checks
-        if: steps.changed-files-specific.outputs.only_modified == 'true'
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: rush check
-          conclusion: success
+          # Keep filenames as JSON so unusual Git filenames cannot affect record boundaries
+          # or inject workflow commands into the log.
+          FILES_JSON=$(gh api \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files?per_page=100" \
+            --paginate --slurp)
 
-      - uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff
-        if: steps.changed-files-specific.outputs.only_modified == 'true'
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: rush change
-          conclusion: success
+          CURRENT_HEAD_AFTER=$(gh api \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+            --jq '.head.sha')
+          if [ "$CURRENT_HEAD_AFTER" != "$EXPECTED_HEAD_SHA" ]; then
+            echo "The pull request head changed during file inspection; required checks will not be faked."
+            echo "only_modified=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-      - uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff
-        if: steps.changed-files-specific.outputs.only_modified == 'true'
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: rush audit
-          conclusion: success
+          # Both the event's changed_files count and the files endpoint are capped at 3,000.
+          # Fail closed at that cap because the response may be incomplete. For renames,
+          # both the old and new paths must be eligible so moving source code into docs
+          # cannot incorrectly fake required checks.
+          RESULT=$(jq -c --argjson expected "$EXPECTED_CHANGED_FILES" '
+            def allowed_path:
+              endswith(".md")
+              or startswith("docs/")
+              or . == ".github/CODEOWNERS"
+              or (startswith("common/changes/") and endswith(".json"))
+              or ((split("/") | last) == "CHANGELOG.json")
+              or ((split("/") | last) == "CHANGELOG.md");
 
-      - uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff
+            (add // []) as $files
+            | {
+                fetched: ($files | length),
+                only_modified: (
+                  $expected < 3000
+                  and ($files | length) == $expected
+                  and all($files[];
+                    (.filename | allowed_path)
+                    and (
+                      .status != "renamed"
+                      or ((.previous_filename? // "") | allowed_path)
+                    )
+                  )
+                )
+              }
+          ' <<< "$FILES_JSON")
+
+          FETCHED_CHANGED_FILES=$(jq -r '.fetched' <<< "$RESULT")
+          ONLY_MODIFIED=$(jq -r '.only_modified' <<< "$RESULT")
+          echo "Expected $EXPECTED_CHANGED_FILES changed files; fetched $FETCHED_CHANGED_FILES."
+          echo "only_modified=$ONLY_MODIFIED" >> "$GITHUB_OUTPUT"
+
+      # Fake required checks if necessary
+      - name: Fake required checks
         if: steps.changed-files-specific.outputs.only_modified == 'true'
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: rush lint + extract-api
-          conclusion: success
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMPLETED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          for CHECK_NAME in "rush check" "rush change" "rush audit" "rush lint + extract-api"; do
+            gh api "repos/${{ github.repository }}/check-runs" \
+              --method POST \
+              --field name="$CHECK_NAME" \
+              --field head_sha="${{ github.event.pull_request.head.sha }}" \
+              --field status="completed" \
+              --field conclusion="success" \
+              --field completed_at="$COMPLETED_AT"
+          done
 
       # Add more status checks below if necessary
 
       # TEMPLATE
-      # - uses: LouisBrunner/checks-action@<full-length-commit-sha>   # vX.Y.Z
+      # - name: Fake <name-of-any-status-check-to-simulate> check
       #   if: steps.changed-files-specific.outputs.only_modified == 'true'
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     name: <name-of-any-status-check-to-simulate>
-      #     conclusion: success
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     gh api "repos/${{ github.repository }}/check-runs" \
+      #       --method POST \
+      #       --field name="<name-of-any-status-check-to-simulate>" \
+      #       --field head_sha="${{ github.event.pull_request.head.sha }}" \
+      #       --field status="completed" \
+      #       --field conclusion="success" \
+      #       --field completed_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
