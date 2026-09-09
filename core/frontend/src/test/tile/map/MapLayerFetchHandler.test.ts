@@ -5,7 +5,7 @@
 
 import { EmptyLocalization, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ArcGisUtilities, MapLayerAuthenticationFailedError, MapLayerFetchHandler, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerSource, MapLayerSourceStatus, WmsUtilities } from "../../../tile/internal";
+import { ArcGisUtilities, fetchMapLayerRequest, MapLayerAuthenticationFailedError, MapLayerFetchHandler, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerRequest, MapLayerSource, MapLayerSourceStatus, WmsUtilities } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { WmsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmsMapLayerImageryProvider";
 import { WmtsMapLayerImageryProvider } from "../../../internal/tile/map/ImageryProviders/WmtsMapLayerImageryProvider";
@@ -636,6 +636,74 @@ describe("map-layer fetch handler", () => {
 
     expect(seenByInner?.headers.has("Authorization")).toBe(false);
     expect(getSentHeaderNames()).toEqual([]);
+  });
+
+  it.each([false, true])("isolates layer properties from mutations in a handler (forward: %s)", async (forward) => {
+    const properties = { tenant: "acme", ids: [1, 2], scopes: ["read"], flags: [true] };
+    const settings = ImageMapLayerSettings.fromJSON({ formatId: "WMS", name: "TestLayer", url: settingsUrl, properties });
+    const seen: MapLayerProviderProperties[] = [];
+    addHandler(async (request, fetchRequest) => {
+      const context = request.layerProperties!;
+      expect(context).toEqual(properties);
+      expect(context).not.toBe(settings.properties);
+      expect(context.ids).not.toBe(settings.properties!.ids);
+      context.tenant = "changed";
+      (context.ids as number[]).push(3);
+      (context.scopes as string[]).push("write");
+      (context.flags as boolean[])[0] = false;
+      delete context.ids;
+      return forward ? fetchRequest(request) : undefined;
+    });
+    addHandler(async (request) => {
+      seen.push(request.layerProperties!);
+      return undefined;
+    });
+
+    const send = vi.fn(async (request: MapLayerRequest, _credentialed: boolean) => {
+      expect(request.layerProperties).toEqual(properties);
+      return okResponse();
+    });
+    const result = await fetchMapLayerRequest({ url: tileUrl, layerUrl: settings.url, formatId: settings.formatId, layerProperties: settings.properties, send });
+    expect(result.managedByHandler).toBe(forward);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send.mock.calls[0][1]).toBe(forward);
+    expect(seen).toEqual([properties]);
+    expect(settings.properties).toEqual(properties);
+    expect(settings.toJSON().properties).toEqual(properties);
+
+    // Later provider requests must still receive the original context, not the previous handler's mutations.
+    await new TestImageryProvider(settings, false).makeRequest(tileUrl);
+    expect(seen).toEqual([properties, properties]);
+    expect(seen[0]).not.toBe(seen[1]);
+    expect(seen[0].scopes).not.toBe(seen[1].scopes);
+    expect(settings.toJSON().properties).toEqual(properties);
+  });
+
+  it("keeps original layer properties across retries and ignores replacement context", async () => {
+    const properties = { tenant: "acme", scopes: ["read"] };
+    const seen: MapLayerProviderProperties[] = [];
+    addHandler(async (request, fetchRequest) => {
+      await fetchRequest({ ...request, layerProperties: { tenant: "replacement", scopes: ["write"] } });
+      expect(request.layerProperties).toEqual(properties);
+      return fetchRequest(request);
+    });
+    addHandler(async (request, fetchRequest) => {
+      expect(request.layerProperties).toEqual(properties);
+      seen.push(request.layerProperties!);
+      (request.layerProperties!.scopes as string[]).push("write");
+      return fetchRequest(request);
+    });
+    const send = vi.fn(async (request: MapLayerRequest) => {
+      expect(request.layerProperties).toEqual(properties);
+      return okResponse();
+    });
+
+    await fetchMapLayerRequest({ url: tileUrl, layerUrl: settingsUrl, formatId: "WMS", layerProperties: properties, send });
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(seen).toHaveLength(2);
+    expect(seen[0]).not.toBe(seen[1]);
+    expect(seen[0].scopes).not.toBe(seen[1].scopes);
+    expect(properties).toEqual({ tenant: "acme", scopes: ["read"] });
   });
 
   it("recomputes the URL offered to the next handler from the sender's query parameters", async () => {
