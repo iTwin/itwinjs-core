@@ -72,10 +72,9 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { createNoOpReservations } from "./internal/NoReservations";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { IModelCustomAttributeProvider } from "./internal/SchemaViewCustomAttributeProvider";
 import { createSchemaSyncReservations } from "./internal/SchemaSyncReservations";
 import { _activeTxn, _cache, _close, _hubAccess, _implicitTxn, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
-import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, type IModelSchemaView, SchemaContext, SchemaJsonLocater, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
+import { ECSpecVersion, ECVersion, type GetSchemaViewArgs, SchemaContext, SchemaJsonLocater, SchemaView, type SchemaViewBlob, type SchemaViewDataProvider, SchemaViewManager } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 import { IModelIncrementalSchemaLocater } from "./IModelIncrementalSchemaLocater";
@@ -520,7 +519,6 @@ export abstract class IModelDb extends IModel {
   // Created lazily on the first getSchemaView call. Owns the SchemaView's lifetime and does all its
   // data access through the SchemaViewDataProvider implemented below.
   private _schemaViewManager?: SchemaViewManager;
-  private _schemaViewCustomAttributes?: IModelCustomAttributeProvider;
   /** @deprecated in 5.0.0 - might be removed in next major version. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -1872,10 +1870,7 @@ export abstract class IModelDb extends IModel {
    * navigating schema metadata - classes, properties, relationships, enumerations, etc.
    * It is the recommended default for runtime read-only metadata access and is significantly
    * faster and lower-memory than [[schemaContext]]. Use [[schemaContext]] for schema authoring,
-   * or anywhere you need the full ecschema-metadata object graph.
-   *
-   * The returned view is an `IModelSchemaView`: its `customAttributes` member resolves custom
-   * attributes asynchronously by querying the iModel.
+   * custom-attribute deserialization, or anywhere you need the full ecschema-metadata object graph.
    *
    * Every call shares one accumulating view instance and concurrent calls are serialized, so a
    * caller never observes a partially loaded view. The instance is discarded by [[clearCaches]],
@@ -1883,13 +1878,9 @@ export abstract class IModelDb extends IModel {
    * [GetSchemaViewArgs]($ecschema-metadata) for the arguments.
    * @beta
    */
-  public async getSchemaView(args?: GetSchemaViewArgs): Promise<IModelSchemaView> {
+  public async getSchemaView(args?: GetSchemaViewArgs): Promise<SchemaView> {
     this._schemaViewManager ??= new SchemaViewManager(this._createSchemaViewDataProvider());
-    const view = await this._schemaViewManager.getSchemaView(args);
-    // The iModel is the source, so it owns the modality: attach an async (ECSql-backed) provider and
-    // expose the view as an `IModelSchemaView`. `SchemaView` itself stays unaware of custom attributes.
-    this._schemaViewCustomAttributes ??= new IModelCustomAttributeProvider((ecsql, params) => this.createQueryReader(ecsql, params));
-    return Object.assign(view, { customAttributes: this._schemaViewCustomAttributes });
+    return this._schemaViewManager.getSchemaView(args);
   }
 
   /** The [SchemaViewDataProvider]($ecschema-metadata) backing this iModel's [[getSchemaView]]: the
