@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { ElectronHost } from "@itwin/core-electron/backend";
+import { ElectronHost } from "@itwin/core-electron/main";
 import { IModelHost } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcConfiguration } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";

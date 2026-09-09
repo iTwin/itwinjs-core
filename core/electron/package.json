@@ -3,7 +3,7 @@
   "version": "5.14.0-dev.7",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "exports": {
-    "./frontend": {
+    "./renderer": {
       "import": {
         "types": "./lib/esm/ElectronFrontend.d.ts",
         "default": "./lib/esm/ElectronFrontend.js"
@@ -13,7 +13,7 @@
         "default": "./lib/cjs/ElectronFrontend.js"
       }
     },
-    "./backend": {
+    "./main": {
       "types": "./lib/cjs/ElectronBackend.d.ts",
       "import": "./lib/cjs/ElectronBackend.js",
       "require": "./lib/cjs/ElectronBackend.js"
@@ -27,8 +27,8 @@
   },
   "typesVersions": {
     "*": {
-      "frontend": ["lib/cjs/ElectronFrontend.d.ts"],
-      "backend": ["lib/cjs/ElectronBackend.d.ts"]
+      "renderer": ["lib/cjs/ElectronFrontend.d.ts"],
+      "main": ["lib/cjs/ElectronBackend.d.ts"]
     }
   },
   "license": "MIT",

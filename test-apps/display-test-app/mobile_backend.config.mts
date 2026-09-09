@@ -14,7 +14,7 @@ function ignoreDesktopModules(): Plugin {
     name: "ignore-desktop-modules",
     enforce: "pre",
     resolveId(source) {
-      if (source === "@itwin/core-electron/backend"
+      if (source === "@itwin/core-electron/main"
         || source.includes("electron-authorization")
         || source.includes("AzCopyFileHandler"))
         return emptyModuleId;
