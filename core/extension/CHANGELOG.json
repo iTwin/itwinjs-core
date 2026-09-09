@@ -2,6 +2,18 @@
   "name": "@itwin/core-extension",
   "entries": [
     {
+      "version": "5.13.0",
+      "tag": "@itwin/core-extension_v5.13.0",
+      "date": "Thu, 03 Sep 2026 18:49:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update the @itwin/core-extension type declarations to re-export TxnEntityMetadata from @itwin/core-common."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.12.5",
       "tag": "@itwin/core-extension_v5.12.5",
       "date": "Tue, 25 Aug 2026 21:22:08 GMT",
