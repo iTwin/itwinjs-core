@@ -2,7 +2,7 @@
 
 `SchemaDocument` is an editable, in-memory representation of a single EC schema, designed for authoring: composing schemas in code, reading them from XML or JSON, editing them, comparing them, and writing them back. It lives in `@itwin/ecschema-metadata` under the `Authoring` namespace and works on both backend and frontend.
 
-> **Status: alpha.** The API described here is released under the `@alpha` tag and may change between minor versions. It is the second evolution of the metadata package, following [SchemaView](./SchemaView.md), and tracks [the Schema Authoring Revision initiative](https://github.com/iTwin/itwinjs-core/issues/9337). Feedback on the issue is welcome.
+> **Status: alpha.** The API described here is released under the `@alpha` tag and may change between minor versions.
 
 ## What a document is
 
@@ -12,16 +12,6 @@
 - **References are stored as names and resolved on demand.** No promise graph, no load order, no invalidation.
 - **Nothing enforces validity.** A document can hold a half-finished or contradictory schema, the way a source file can hold code that does not compile. Validation is a separate step you invoke when you want it.
 - **Everything is synchronous** except actual I/O.
-
-## Choosing the right API
-
-| You want to... | Use |
-| -------------- | --- |
-| Read schema metadata at runtime (property grids, IS-A checks, presentation) | [SchemaView](./SchemaView.md) - fast, synchronous, read-only |
-| Compose, load, edit, compare, or serialize a schema | `SchemaDocument` (this page) |
-| Workflows not yet covered by the above | [SchemaContext]($ecschema-metadata) / `@itwin/ecschema-editing` - the full resolved graph |
-
-`SchemaDocument` is additive: `SchemaView` remains the read path, and the existing packages stay in place during migration.
 
 ## Every document belongs to exactly one schema set
 

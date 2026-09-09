@@ -1,24 +1,30 @@
-# Metadata packages in the iTwin.js Library
+# Metadata in the iTwin.js Library
 
 ## Packages
 
 The metadata packages implement the abstract concepts of EC in typescript [EC overview](../../bis/ec/index.md).
 
-For schema access optimized for performance and synchronous lookups, see [SchemaView](./SchemaView.md).
+### Legacy API
 
-For composing, loading, editing, comparing, and serializing schemas, see [Schema Authoring with SchemaDocument](./SchemaAuthoring.md) (alpha).
-
-The API is split into these packages:
+There is a legacy API still used but slowly being replaced. It spans these packages:
 
 - ($ecschema-metadata) is the basic package that exposes metadata objects.
 - ($ecschema-editing) Since the basic package only implements an API for understanding schemas, this package adds editing on top of it.
 - ($ecschema-locaters) contains classes for locating and loading EC schema files from the file system.
 
+### Modern API
+
+Obtaining metadata from inside an iModel can be done via ECSql by querying the `ECDbMeta` schema, however, that is a quite low level mechanism, it does not cache, and for larger operations can get too chatty.
+
+The legacy `SchemaContext` still provides a way to load schemas from files or an iModel into a rich object model. For larger iModels above 100,000 expanded properties, it does not scale well, and the usability for editing is limited which is why two more modern APIs are now the primary choice:
+
+For readonly schema access inside an iModel, use [SchemaView](./SchemaView.md). If transfers data using a binary format that uses ~90% less space than what SchemaContext uses. It load asynchronously into a highly optimized in-memory model which uses significantly less memory (-89% over SchemaContext) and is faster (up to 10x).
+
+For authoring, comparing, merging and serializing schemas, see [Schema Authoring with SchemaDocument](./SchemaAuthoring.md) (alpha). This API is still only in alpha but will eventually become the primary way to work with schemas programmatically. Unlike `SchemaContext`, it does not cross-wire or load schemas from multiple sources automatically. Instead, it provides smaller more targeted building blocks for schema manipulation.
+
 ## Obtaining metadata from an imodel
 
-For runtime read-only access - class/property iteration, IS-A checks, KOQ lookups, presentation logic - prefer [SchemaView](./SchemaView.md), available from [IModelDb]($backend) and [IModelConnection]($frontend) via `getSchemaView()`.
-
-An [IModelDb]($backend) also owns a [SchemaContext]($ecschema-metadata) which exposes the full ecschema-metadata object graph. Use the SchemaContext when you need schema authoring (see `@itwin/ecschema-editing`), custom-attribute deserialization, or any workflow that depends on the complete EC type system.
+An [IModelDb]($backend) also owns a [SchemaContext]($ecschema-metadata) which exposes the full ecschema-metadata object graph.
 
 *Example:*
 
