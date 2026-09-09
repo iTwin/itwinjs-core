@@ -40,7 +40,7 @@
     "@types/semver": "7.3.10",
     "@types/spdy": "^3.4.4",
     "@vitest/browser": "^4.1.11",
-    "@vitest/browser-playwright": "^4.1.10",
+    "@vitest/browser-playwright": "^4.1.11",
     "assert": "^2.0.0",
     "buffer": "^6.0.3",
     "chai": "^4.3.10",
