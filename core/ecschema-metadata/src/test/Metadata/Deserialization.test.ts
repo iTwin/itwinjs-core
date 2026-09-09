@@ -1258,7 +1258,7 @@ describe("Full Schema Deserialization", () => {
       </ECEntityClass>
     </ECSchema>`;
 
-    it.only("must not retrieve the in-flight schema by name-only match (async)", async () => {
+    it("must not retrieve the in-flight schema by name-only match (async)", async () => {
       const context = new SchemaContext();
 
       const schemaV1 = await deserializeXml(refSchemaV1Xml, context);
@@ -1293,7 +1293,7 @@ describe("Full Schema Deserialization", () => {
       assert.isUndefined(await schemaV1.getItem("NewClass"));
     });
 
-    it.only("must not retrieve the in-flight schema by name-only match (sync)", () => {
+    it("must not retrieve the in-flight schema by name-only match (sync)", () => {
       const context = new SchemaContext();
 
       const schemaV1 = deserializeXmlSync(refSchemaV1Xml, context);
@@ -1316,7 +1316,7 @@ describe("Full Schema Deserialization", () => {
       assert.isUndefined(schemaV1.getItemSync("NewClass"));
     });
 
-    it.only("both read-incompatible versions must remain independently retrievable by exact match", async () => {
+    it("both read-incompatible versions must remain independently retrievable by exact match", async () => {
       const context = new SchemaContext();
       await deserializeXml(refSchemaV1Xml, context);
 
