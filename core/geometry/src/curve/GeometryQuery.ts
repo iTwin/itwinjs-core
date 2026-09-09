@@ -83,18 +83,22 @@ export abstract class GeometryQuery {
   public abstract extendRange(rangeToExtend: Range3d, transform?: Transform): void;
   /**
    * Attempt to transform in place.
-   * * LineSegment3d, Arc3d, LineString3d, BsplineCurve3d always succeed.
-   * * Some geometry types may fail if scaling is non-uniform.
+   * * Curve types always succeed.
+   * * Other geometry types may fail if the transform is not invertible.
+   * * Subclasses are free to ignore certain effects of the transform in lieu of failing.
    */
   public abstract tryTransformInPlace(transform: Transform): boolean;
   /** Try to move the geometry by dx,dy,dz. */
   public tryTranslateInPlace(dx: number, dy: number = 0.0, dz: number = 0.0): boolean {
     return this.tryTransformInPlace(Transform.createTranslationXYZ(dx, dy, dz));
   }
-  /** Return a transformed clone. */
+  /**
+   * Return a transformed clone.
+   * @see [[tryTransformInPlace]] for discussion of transform success.
+  */
   public abstract cloneTransformed(transform: Transform): GeometryQuery | undefined;
   /** Return a clone */
-  public abstract clone(): GeometryQuery | undefined;
+  public abstract clone(): GeometryQuery;
   /**
    * Return GeometryQuery children for recursive queries.
    * * leaf classes do not need to implement.
