@@ -1119,6 +1119,7 @@ describe("ITwinLocalization", () => {
       await itwinLocalization.initialize([]);
 
       const loggedErrors: string[] = [];
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- Preserve the exact method reference so the test can restore it.
       const originalLogError = Logger.logError;
       Logger.logError = (_category, message) => loggedErrors.push(String(message));
       try {
@@ -1126,9 +1127,9 @@ describe("ITwinLocalization", () => {
         const missingPromise = itwinLocalization.registerNamespace("Missing");
         assert.sameMembers([...pendingLoads.keys()], ["Loaded", "Missing"]);
 
-        pendingLoads.get("Missing")!(new Error("Missing namespace"), false);
+        pendingLoads.get("Missing")?.(new Error("Missing namespace"), false);
         await missingPromise;
-        pendingLoads.get("Loaded")!(null, { key: "value" });
+        pendingLoads.get("Loaded")?.(null, { key: "value" });
         await loadedPromise;
 
         assert.deepEqual(loggedErrors, ["No resources for namespace Missing could be loaded"]);
