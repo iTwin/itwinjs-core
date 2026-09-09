@@ -6,6 +6,11 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
+    - [ChangesetReader changes](#changesetreader-changes)
+      - [ChangesetReader row options](#changesetreader-row-options)
+      - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
+  - [@itwin/core-geometry](#itwincore-geometry)
+    - [`PlanarRegionProps` refactor](#planarregionprops-refactor)
   - [Electron 44 support](#electron-44-support)
 
 ## @itwin/core-backend
@@ -20,6 +25,26 @@ A change that would move or destroy existing data is now refused with `BE_SQLITE
 
 SchemaSync databases now require version 5.0.0. Existing version 4 containers are outside this compatibility boundary and cannot be opened by this release.
 
+### ChangesetReader changes
+
+#### ChangesetReader row options
+
+The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). Use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
+
+## @itwin/core-geometry
+
+### `PlanarRegionProps` refactor
+
+The flag `Loop.isInner` did not always survive round-trip through JSON or FlatBuffers due to an oversight. To address this, the `CurveCollection` class and `PlanarRegionProps` schema have been slightly refactored.
+
+`CurveCollection.isInner` is now moved to `Loop.isInner` since `Loop` is the only subclass of `CurveCollection` for which this flag is relevant. As this flag is a) only set by user code, b) does not effect region processing, and c) was previously accessible to `Loop` by virtue of inheritance, this should not break existing code.
+
+The JSON schema `IModelJson.PlanarRegionProps` has been refactored to extend 3 new interfaces: `LoopProps` (which includes `isInner`), `ParityRegionProps`, and `UnionProps`. This has 3 effects:
+  - `PlanarRegionProps.isInner` is a new optional property. In concert with the existing `PlanarRegionProps.loop` property, a `ParityRegionProps` can now specify a `Loop` that has been marked "inner" by the user.
+  - `PlanarRegionProps.parityRegion` is now an array of `LoopProps`, thus each of its entries now inherits the `isInner` property, allowing the specification of the common solid-with-holes type of parity region.
+  - `PlanarRegionProps.unionRegion` is now an array of `LoopProps | ParityRegionProps`, which explicitly disallows illegal nested `UnionRegion`s. Previously, this property could specify a nested union because it was an array of `PlanarRegionProps`. Regions code consistently assumes that `UnionRegion`s are not nested for efficiency.
+
 ## Electron 44 support
 
 In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 44](https://www.electronjs.org/blog/electron-44-0).
+
