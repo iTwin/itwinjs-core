@@ -23,7 +23,10 @@ import { Path } from "../../curve/Path";
 import { ConsolidateAdjacentPrimitivesOptions, RegionOps } from "../../curve/RegionOps";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
@@ -272,6 +275,31 @@ describe("CurveCollection", () => {
         }
       }
     }
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("IsInPlane", () => {
+    const ck = new Checker();
+    const arcXY = Arc3d.createXY(Point3d.createZero(), 1, AngleSweep.createStartEndDegrees(90, -90));
+    const lineXY = LineSegment3d.createXYXY(0, -1, 0, 1);
+    const loopXY = Loop.create(arcXY, lineXY);
+
+    const emptyCollection = BagOfCurves.create();
+    const inPlaneCollection = loopXY.clone();
+    const inPlaneCollectionWithEmptyChild = ParityRegion.create(loopXY.clone() as Loop, Loop.create());
+    const inPlaneCollectionWithEmptyChild2 = UnionRegion.create(inPlaneCollectionWithEmptyChild.clone(), Loop.create());
+    const outOfPlanePlanarCollection = inPlaneCollection.cloneTransformed(Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1, -1, -1), Angle.createDegrees(37))))!;
+    const nonPlanarCollection = Path.create(lineXY.clone(), LineSegment3d.createXYZXYZ(0, 1, 0, 1, 1, 1));
+
+    const xyPlane = Plane3dByOriginAndUnitNormal.createXYPlane();
+
+    ck.testFalse(emptyCollection.isInPlane(xyPlane), "empty collection is not in any plane");
+    ck.testTrue(inPlaneCollection.isInPlane(xyPlane), "in-plane collection is in xy plane");
+    ck.testTrue(inPlaneCollectionWithEmptyChild.isInPlane(xyPlane), "in-plane collection with empty child is in xy plane");
+    ck.testTrue(inPlaneCollectionWithEmptyChild2.isInPlane(xyPlane), "in-plane collection with empty grandchild is in xy plane");
+    ck.testFalse(outOfPlanePlanarCollection.isInPlane(xyPlane), "out-of-plane planar collection is not in xy plane");
+    ck.testFalse(nonPlanarCollection.isInPlane(xyPlane), "non-planar collection is not in any plane");
+
     expect(ck.getNumErrors()).toBe(0);
   });
 });
