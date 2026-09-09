@@ -620,6 +620,7 @@ beta;interface;SqliteChange
 beta;type;SqliteChangeOp
 beta;class;SqliteChangesetReader
 beta;interface;SqliteChangesetReaderArgs
+beta;type;SqliteChangesetReaderDb
 public;class;SQLiteDb
 public;namespace;SQLiteDb
 internal;interface;BlobIO

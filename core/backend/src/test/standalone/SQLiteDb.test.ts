@@ -7,7 +7,9 @@ import { expect } from "chai";
 import { BeDuration, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { SnapshotDb } from "../../IModelDb";
 import { SQLiteDb } from "../../SQLiteDb";
+import { SqliteChangesetReader } from "../../SqliteChangesetReader";
 import "../TestUtils"; // registers the global mocha before/after hooks that start/stop the backend
 
 describe("SQLiteDb", () => {
@@ -69,6 +71,37 @@ describe("SQLiteDb", () => {
         expect(val.minor).equal(0, "read minor version");
       });
     });
+  });
+
+  it("supports reading an iModel changeset with SQLiteDb", () => {
+    const iModelFileName = IModelTestUtils.resolveAssetFile("_mocks_/ReadOnlyTest/ReadOnlyTest.bim");
+    const changesetFileName = IModelTestUtils.resolveAssetFile("_mocks_/ReadOnlyTest/csets/dbe4b3824129f99e4eb485fb7cd9d2fea2354be1.cs");
+    const iModel = SnapshotDb.openFile(iModelFileName);
+    using schemaReader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db: iModel });
+    expect(schemaReader.step()).true;
+    const tableName = schemaReader.tableName;
+    const columnNames = schemaReader.getColumnNames(tableName);
+    iModel.close();
+
+    const dbFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "changeset-reader.db");
+    const db = new SQLiteDb();
+    db.createDb(dbFileName, undefined, { rawSQLite: true });
+    const declaredColumns = columnNames.slice(0, -1);
+    db.executeSQL(`CREATE TABLE "${tableName}" (${declaredColumns.map((name) => `"${name}"`).join(",")})`);
+
+    try {
+      using checkedReader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db });
+      expect(checkedReader.step()).true;
+      expect(() => checkedReader.getChangeValuesObject("New") ?? checkedReader.getChangeValuesObject("Old")).throws("columns count does not match");
+
+      using uncheckedReader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db, disableSchemaCheck: true });
+      expect(uncheckedReader.step()).true;
+      const values = uncheckedReader.getChangeValuesObject("New") ?? uncheckedReader.getChangeValuesObject("Old");
+      expect(values).not.undefined;
+      expect(Object.keys(values!)).deep.equal(declaredColumns);
+    } finally {
+      db.closeDb();
+    }
   });
 
   describe("applyChangeset", () => {

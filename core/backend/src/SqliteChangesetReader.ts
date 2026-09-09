@@ -10,6 +10,7 @@ import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import { SQLiteDb } from "./SQLiteDb";
 
 /** Changed value type
  * @beta
@@ -52,12 +53,17 @@ export type SqliteValueStage = "Old" | "New";
 */
 export type AnyDb = IModelDb | ECDb;
 
+/** A database that can supply SQLite table metadata to a changeset reader.
+ * @beta
+ */
+export type SqliteChangesetReaderDb = AnyDb | SQLiteDb;
+
 /** Arg to open a changeset file from disk
  * @beta
 */
-export interface SqliteChangesetReaderArgs {
+export interface SqliteChangesetReaderArgs<TDb extends SqliteChangesetReaderDb = AnyDb> {
   /** db from which schema will be read. It should be at or ahead of the latest changeset being opened.*/
-  readonly db: AnyDb;
+  readonly db: TDb;
   /** invert the changeset operations */
   readonly invert?: true;
   /** do not check if column of change match db schema instead ignore addition columns */
@@ -83,14 +89,14 @@ export interface SqliteChange {
  * a db provided.
  * @beta
  */
-export class SqliteChangesetReader implements Disposable {
+export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> implements Disposable {
   private readonly _nativeReader = new IModelNative.platform.SqliteChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
   private _changeIndex = 0;
   protected constructor(
     /** db from where sql schema will be read */
-    public readonly db: AnyDb,
+    public readonly db: TDb,
   ) { }
 
   /**
@@ -98,7 +104,7 @@ export class SqliteChangesetReader implements Disposable {
    * @param args fileName of changeset reader and other options.
    * @returns SqliteChangesetReader instance
    */
-  public static openFile(args: { readonly fileName: string } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+  public static openFile<TDb extends SqliteChangesetReaderDb>(args: { readonly fileName: string } & SqliteChangesetReaderArgs<TDb>): SqliteChangesetReader<TDb> {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openFile(args.fileName, args.invert ?? false);
