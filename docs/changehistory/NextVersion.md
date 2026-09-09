@@ -7,6 +7,9 @@ publish: false
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
     - [Import CSV data into ECDb](#import-csv-data-into-ecdb)
+    - [ChangesetReader changes](#changesetreader-changes)
+      - [ChangesetReader row options](#changesetreader-row-options)
+      - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
   - [Electron 44 support](#electron-44-support)
 
 ## @itwin/core-backend
@@ -39,6 +42,12 @@ ecdb.importCSVFile(csvFilePath, { ...options, hasHeader: true });
 ```
 
 [ECDb.importCSVData]($backend) uses V8 serialization to cross the JavaScript-to-native boundary once. [ECDb.importCSVFile]($backend) reads and parses the file in native code; its path must be accessible to the backend process. Both reuse one ECSQL statement, convert each CSV string according to its mapped EC property type, ignore unmapped columns, and roll back the complete import if parsing, conversion, or insertion fails.
+
+### ChangesetReader changes
+
+#### ChangesetReader row options
+
+The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). Use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
 
 ## Electron 44 support
 
