@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Changed @loaders.gl dependency range to ^4.4.5.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
