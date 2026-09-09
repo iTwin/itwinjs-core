@@ -130,9 +130,8 @@ export class BGFBWriter {
     const childrenVectorOffset = BGFBAccessors.CurveVector.createCurvesVector(this.builder, childrenOffsets);
     let cvType = 0;
     if (cv instanceof Path) cvType = 1;
-    else if (cv instanceof Loop) {
-      cvType = cv.isInner ? 3 : 2;
-    } else if (cv instanceof ParityRegion) cvType = 4;
+    else if (cv instanceof Loop) cvType = cv.isInner ? 3 : 2;
+    else if (cv instanceof ParityRegion) cvType = 4;
     else if (cv instanceof UnionRegion) cvType = 5;
     const curveVectorOffset = BGFBAccessors.CurveVector.createCurveVector(this.builder, cvType, childrenVectorOffset);
     return curveVectorOffset;
