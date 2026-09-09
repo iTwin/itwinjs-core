@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Deprecated \"useJsName\" from \"RowFormatOptions\" which is used by \"ChangesetReader\" api.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
