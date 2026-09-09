@@ -57,44 +57,77 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
       result = result && builder.appendGeometryParamsChange(params);
     }
 
-    const attachmentPoint = computeLeaderAttachmentPoint(leader, frameCurve, layout, transform);
-    if (!attachmentPoint) return false;
+    if (leaderStyle.leader.showLeaders) {
+      const attachmentPoint = computeLeaderAttachmentPoint(leader, frameCurve, layout, transform);
+      if (!attachmentPoint) return false;
 
-    // Leader line geometry
-    const leaderLinePoints: Point3d[] = [];
+      let elbowPoint: Point3d | undefined;
+      if (leaderStyle.leader.wantElbow) {
+        const elbowLength = leaderStyle.leader.elbowLength * scaledBlockTextHeight;
+        const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve, elbowLength);
+        if (elbowDirection)
+          elbowPoint = attachmentPoint.plusScaled(elbowDirection, elbowLength);
+      }
 
-    leaderLinePoints.push(leader.startPoint)
+      // Leader line geometry
+      const leaderLinePoints: Point3d[] = [];
+      const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledBlockTextHeight;
+      let leaderStartPoint = leader.startPoint;
+      if (leaderStyle.leader.showTargetPoint && leaderStyle.leader.targetPointOffsetFactor !== 0) {
+        const offset = leaderStyle.leader.targetPointOffsetFactor * scaledBlockTextHeight;
+        let firstSegmentEnd = leader.intermediatePoints?.[0];
 
-    leader.intermediatePoints?.forEach((point) => {
-      leaderLinePoints.push(point);
-    });
+        // If there are no intermediate points, offset along the elbow segment when present.
+        if (!firstSegmentEnd && elbowPoint)
+          firstSegmentEnd = elbowPoint;
 
-    if (leaderStyle.leader.wantElbow) {
-      const elbowLength = leaderStyle.leader.elbowLength * scaledBlockTextHeight;
-      const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve, elbowLength);
-      if (elbowDirection)
-        leaderLinePoints.push(attachmentPoint.plusScaled(elbowDirection, elbowLength))
+        if (!firstSegmentEnd)
+          firstSegmentEnd = attachmentPoint;
+
+
+        // Offset the target-point marker away from the start point along the first leader segment.
+        // Clamp the added distance so negative values resolve to 0 and large values cannot overshoot the first vertex.
+        // When terminators are hidden, use the text height as a conservative guard distance; otherwise use the terminator width.
+        const firstSegmentLength = leader.startPoint.distance(firstSegmentEnd);
+        const clampDistance = leaderStyle.leader.showTerminators ? terminatorWidth : scaledBlockTextHeight;
+        const maxOffset = Math.max(0, firstSegmentLength - clampDistance);
+        const clampedOffset = Math.min(Math.max(offset, 0), maxOffset);
+        const leaderDirection = Vector3d.createStartEnd(leader.startPoint, firstSegmentEnd).normalize();
+        if (leaderDirection)
+          leaderStartPoint = leader.startPoint.plusScaled(leaderDirection, clampedOffset);
+      }
+      leaderLinePoints.push(leaderStartPoint);
+
+      leader.intermediatePoints?.forEach((point) => {
+        leaderLinePoints.push(point);
+      });
+
+      if (elbowPoint)
+        leaderLinePoints.push(elbowPoint);
+
+      leaderLinePoints.push(attachmentPoint);
+
+      const terminatorDirection = Vector3d.createStartEnd(
+        leaderLinePoints[0], leaderLinePoints[1]
+      ).normalize();
+
+      // Truncate the first segment of the leader lines to account for the arrowhead size when closedArrow (hollow triangle) terminatorShape is used.
+      if (leaderStyle.leader.showTerminators && leaderStyle.leader.terminatorShape === "closedArrow") {
+        if (terminatorDirection)
+          leaderLinePoints[0] = leaderLinePoints[0].plusScaled(terminatorDirection, terminatorWidth);
+      }
+
+      result = result && builder.appendGeometryQuery(LineString3d.create(leaderLinePoints));
+      if (leaderStyle.leader.terminatorShape !== "none" && leaderStyle.leader.showTerminators) {
+        // Terminator geometry
+        if (!terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
+        result = result && createTerminatorGeometry({ builder, point: leaderStartPoint, dir: terminatorDirection, params, textStyleSettings: leaderStyle, textHeight: scaledBlockTextHeight });
+
+      }
     }
 
-    leaderLinePoints.push(attachmentPoint)
-
-    const terminatorDirection = Vector3d.createStartEnd(
-      leaderLinePoints[0], leaderLinePoints[1]
-    ).normalize();
-    const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledBlockTextHeight;
-    // Truncate the first segment of the leader lines to account for the arrowhead size when closedArrow (hollow triangle) terminatorShape is used.
-    if (leaderStyle.leader.terminatorShape === "closedArrow") {
-      if (terminatorDirection)
-        leaderLinePoints[0] = leaderLinePoints[0].plusScaled(terminatorDirection, terminatorWidth);
-    }
-
-    result = result && builder.appendGeometryQuery(LineString3d.create(leaderLinePoints));
-
-    if (leaderStyle.leader.terminatorShape !== "none") {
-      // Terminator geometry
-      if (!terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
-      result = result && createTerminatorGeometry(builder, leader.startPoint, terminatorDirection, params, leaderStyle, scaledBlockTextHeight);
-
+    if (leaderStyle.leader.showTargetPoint) {
+      result = result && createTerminatorGeometry({ builder, point: leader.startPoint, dir: Vector3d.unitX(), params, textStyleSettings: leaderStyle, textHeight: scaledBlockTextHeight, isArrow: false });
     }
 
   }
@@ -102,17 +135,35 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 }
 
 /**
+ * Arguments supplied to [[createTerminatorGeometry]].
+ * @beta
+ */
+export interface CreateTerminatorGeometryArgs {
+  /** The geometry builder to append the terminator geometry to. */
+  builder: ElementGeometry.Builder;
+  /** The point at which the terminator is placed - typically the start or end of a leader line. */
+  point: Point3d;
+  /** The direction vector of the leader line. */
+  dir: Vector3d;
+  /** The geometry parameters to use for the terminator. */
+  params: GeometryParams;
+  /** The text style settings describing the terminator's shape and dimensions. */
+  textStyleSettings: TextStyleSettings;
+  /** The height of the text block, used to scale the terminator's dimensions. */
+  textHeight: number;
+  /** If `true` (the default), the leader's terminator shape is used; otherwise the target-point shape is used. */
+  isArrow?: boolean;
+}
+
+/**
  * Creates the geometry for a terminator at the end of a leader line.
- * @param builder The geometry builder to append the terminator geometry to.
- * @param point The starting point of the leader line.
- * @param dir The direction vector of the leader line.
- * @param params The geometry parameters to use for the terminator.
- * @param textStyleSettings The text style settings to use for the terminator.
- * @param textHeight The height of the text block.
+ * @param args Describes the terminator geometry to create. See [[CreateTerminatorGeometryArgs]].
  * @returns True if the geometry was successfully created, false otherwise.
  * @beta
  */
-export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number): boolean {
+export function createTerminatorGeometry(args: CreateTerminatorGeometryArgs): boolean {
+  const { builder, point, dir, params, textStyleSettings, textHeight } = args;
+  const isArrow = args.isArrow ?? true;
 
   let result = true;
   const termY = dir.unitCrossProduct(Vector3d.unitZ());
@@ -135,8 +186,9 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
     const finalContent = useLoop ? Loop.create(content) : content;
     result = result && builder.appendGeometryQuery(finalContent);
   };
+  const shape = isArrow ? textStyleSettings.leader.terminatorShape : textStyleSettings.leader.targetPointShape;
 
-  switch (textStyleSettings.leader.terminatorShape) {
+  switch (shape) {
     case "openArrow": {
       const lineString = LineString3d.create([point1, point, point2]);
       addGeometry(lineString);
@@ -179,6 +231,52 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
 
       const slashLine = LineSegment3d.create(startPoint, endPoint);
       addGeometry(slashLine);
+      break;
+    }
+
+    case "cross": {
+      // Diagonal "X" centered on the point, axis-aligned (horizontal upright).
+      const halfSize = terminatorHalfHeight;
+      addGeometry(LineSegment3d.create(point.plusXYZ(-halfSize, -halfSize), point.plusXYZ(halfSize, halfSize)));
+      addGeometry(LineSegment3d.create(point.plusXYZ(-halfSize, halfSize), point.plusXYZ(halfSize, -halfSize)));
+      break;
+    }
+
+    case "plus": {
+      // Orthogonal "+" centered on the point, axis-aligned (horizontal upright).
+      const halfSize = terminatorHalfHeight;
+      addGeometry(LineSegment3d.create(point.plusXYZ(-halfSize, 0), point.plusXYZ(halfSize, 0)));
+      addGeometry(LineSegment3d.create(point.plusXYZ(0, -halfSize), point.plusXYZ(0, halfSize)));
+      break;
+    }
+
+    case "square": {
+      // Axis-aligned square centered on the point (horizontal upright).
+      const halfSize = terminatorHalfHeight;
+      const square = LineString3d.create([
+        point.plusXYZ(-halfSize, -halfSize),
+        point.plusXYZ(halfSize, -halfSize),
+        point.plusXYZ(halfSize, halfSize),
+        point.plusXYZ(-halfSize, halfSize),
+        point.plusXYZ(-halfSize, -halfSize),
+      ]);
+      addGeometry(square);
+      break;
+    }
+
+    case "rectangle": {
+      // Axis-aligned rectangle centered on the point (horizontal upright).
+      // Respect the configured width/height factors directly.
+      const halfWidth = terminatorWidth / 2;
+      const halfHeight = terminatorHalfHeight;
+      const rectangle = LineString3d.create([
+        point.plusXYZ(-halfWidth, -halfHeight),
+        point.plusXYZ(halfWidth, -halfHeight),
+        point.plusXYZ(halfWidth, halfHeight),
+        point.plusXYZ(-halfWidth, halfHeight),
+        point.plusXYZ(-halfWidth, -halfHeight),
+      ]);
+      addGeometry(rectangle);
       break;
     }
   }

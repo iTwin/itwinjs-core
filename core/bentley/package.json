@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-bentley",
-  "version": "5.13.0-dev.13",
+  "version": "5.14.0-dev.7",
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/core-bentley.js",
   "module": "lib/esm/core-bentley.js",
@@ -43,7 +43,7 @@
     "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

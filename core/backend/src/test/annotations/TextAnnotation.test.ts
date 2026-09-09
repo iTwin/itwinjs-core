@@ -1022,26 +1022,6 @@ describe("AnnotationTextStyle", () => {
 
     });
 
-    it("should return same data when version is 1.0.2", () => {
-      const styleData: VersionedJSON<TextStyleSettingsProps> = {
-        version: "1.0.2",
-        data: TextStyleSettings.defaultProps
-
-      };
-      const migratedStyle = makeStyle({
-        settings: JSON.stringify({
-          version: styleData.version,
-          data: styleData.data
-        }),
-      })
-      const jsonStyleData = migratedStyle.toJSON();
-      if (jsonStyleData.settings) {
-        const parsedJson = JSON.parse(jsonStyleData.settings);
-        expect(parsedJson.version).to.equal(styleData.version);
-        expect(parsedJson.data).to.deep.equal(styleData.data);
-      }
-    });
-
     it("should migrate text style settings to 1.0.2", () => {
       const oldStyleData: TextStyleSettingsProps = {
         ...TextStyleSettings.defaultProps,
@@ -1067,6 +1047,58 @@ describe("AnnotationTextStyle", () => {
 
       // Margins should be converted back to margin factors i.e 0.25/0.5=0.5
       expect(migratedStyle.settings.margins).to.deep.equal({ left: 0.5, right: 0.5, top: 0.5, bottom: 0.5 });
+    });
+
+    it("should migrate text style settings to 1.0.3", () => {
+      // Simulate 1.0.2 data whose leader object is missing the new target-point fields.
+      const oldLeader = { ...TextStyleSettings.defaultProps.leader } as Record<string, unknown>;
+      delete oldLeader.showLeaders;
+      delete oldLeader.showTerminators;
+      delete oldLeader.showTargetPoint;
+      delete oldLeader.targetPointShape;
+      delete oldLeader.targetPointOffsetFactor;
+
+      const oldStyleData = {
+        ...TextStyleSettings.defaultProps,
+        leader: oldLeader,
+      } as TextStyleSettingsProps;
+      const migratedStyle = makeStyle({
+        settings: JSON.stringify({
+          version: "1.0.2",
+          data: oldStyleData,
+        }),
+      });
+      const jsonStyleData = migratedStyle.toJSON();
+      if (jsonStyleData.settings) {
+        const jsonVersion = JSON.parse(jsonStyleData.settings).version;
+        expect(jsonVersion).to.equal(TEXT_STYLE_SETTINGS_JSON_VERSION);
+      }
+
+      const { leader } = migratedStyle.settings;
+      expect(leader.showLeaders).to.equal(TextStyleSettings.defaultProps.leader.showLeaders);
+      expect(leader.showTerminators).to.equal(TextStyleSettings.defaultProps.leader.showTerminators);
+      expect(leader.showTargetPoint).to.equal(TextStyleSettings.defaultProps.leader.showTargetPoint);
+      expect(leader.targetPointShape).to.equal(TextStyleSettings.defaultProps.leader.targetPointShape);
+      expect(leader.targetPointOffsetFactor).to.equal(TextStyleSettings.defaultProps.leader.targetPointOffsetFactor);
+    });
+
+    it("should return same data when version is 1.0.3", () => {
+      const styleData: VersionedJSON<TextStyleSettingsProps> = {
+        version: TEXT_STYLE_SETTINGS_JSON_VERSION,
+        data: TextStyleSettings.defaultProps,
+      };
+      const migratedStyle = makeStyle({
+        settings: JSON.stringify({
+          version: styleData.version,
+          data: styleData.data,
+        }),
+      });
+      const jsonStyleData = migratedStyle.toJSON();
+      if (jsonStyleData.settings) {
+        const parsedJson = JSON.parse(jsonStyleData.settings);
+        expect(parsedJson.version).to.equal(TEXT_STYLE_SETTINGS_JSON_VERSION);
+        expect(parsedJson.data).to.deep.equal(styleData.data);
+      }
     });
 
     it("should return defaultProps when styleData is unrecognized", () => {

@@ -476,9 +476,12 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       this._evaluator.clone(),
     );
   }
-  /** Apply `transform` to this spiral's local to world transform. */
-  public tryTransformInPlace(transformA: Transform): boolean {
-    const rigidData = this.applyRigidPartOfTransform(transformA);
+  /**
+   * Apply `transform` to this spiral's local to world transform.
+   * * Only the rigid part of the transform is applied.
+   */
+  public tryTransformInPlace(transform: Transform): boolean {
+    const rigidData = this.applyRigidPartOfTransform(transform);
     if (rigidData !== undefined) {
       this._nominalL1 *= rigidData.scale;
       this._nominalR1 *= rigidData.scale;

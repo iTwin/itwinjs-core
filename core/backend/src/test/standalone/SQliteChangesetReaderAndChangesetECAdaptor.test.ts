@@ -41,6 +41,30 @@ describe("Sqlite Changeset Reader + ChangesetECAdaptor API", async () => {
     iTwinId = HubMock.iTwinId;
   });
   after(() => HubMock.shutdown());
+  it("setValue() rejects prototype chain access strings", async () => {
+    const setValue = (targetObj: any, accessString: string, value: any) => (ChangesetECAdaptor as any).setValue(targetObj, accessString, value);
+    const pollutedProps = ["polluted", "pollutedNested"];
+
+    try {
+      for (const accessString of ["constructor.prototype.polluted", "nested.constructor.prototype.pollutedNested", "prototype.polluted", "__proto__.polluted"]) {
+        const target: any = {};
+        expect(() => setValue(target, accessString, "pwned"), accessString).to.throw(/access string cannot contain/);
+        expect(({} as any).polluted, accessString).to.be.undefined;
+        expect(({} as any).pollutedNested, accessString).to.be.undefined;
+        expect(target.nested, accessString).to.be.undefined;
+      }
+
+      // Legitimate nested struct access strings must continue to work.
+      const out: any = {};
+      setValue(out, "model.id", "0x1");
+      setValue(out, "location.origin.x", 10);
+      expect(out.model.id).to.equal("0x1");
+      expect(out.location.origin.x).to.equal(10);
+    } finally {
+      for (const prop of pollutedProps)
+        delete (Object.prototype as any)[prop];
+    }
+  });
   it("Able to recover from when ExclusiveRootClassId is NULL for overflow table", async () => {
     /**
      * 1. Import schema with class that span overflow table.
