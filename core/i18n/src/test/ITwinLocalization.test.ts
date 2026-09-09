@@ -1128,12 +1128,43 @@ describe("ITwinLocalization", () => {
         assert.sameMembers([...pendingLoads.keys()], ["Loaded", "Missing"]);
 
         pendingLoads.get("Missing")?.(new Error("Missing namespace"), false);
-        await missingPromise;
         pendingLoads.get("Loaded")?.(null, { key: "value" });
-        await loadedPromise;
+        await Promise.all([missingPromise, loadedPromise]);
 
         assert.deepEqual(loggedErrors, ["No resources for namespace Missing could be loaded"]);
         assert.isTrue(itwinLocalization.i18next.hasResourceBundle("en", "Loaded"));
+      } finally {
+        Logger.logError = originalLogError;
+      }
+    });
+
+    it("does not log an error when a namespace loads from a fallback language", async () => {
+      const pendingLoads = new Map<string, ReadCallback>();
+      const backend: BackendModule = {
+        type: "backend",
+        init: () => { },
+        read: (language, namespace, callback) => pendingLoads.set(`${language}/${namespace}`, callback),
+      };
+      itwinLocalization = new ITwinLocalization({
+        backendPlugin: backend,
+        initOptions: { lng: "fr", fallbackLng: "en" },
+      });
+      await itwinLocalization.initialize([]);
+
+      const loggedErrors: string[] = [];
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- Preserve the exact method reference so the test can restore it.
+      const originalLogError = Logger.logError;
+      Logger.logError = (_category, message) => loggedErrors.push(String(message));
+      try {
+        const loadPromise = itwinLocalization.registerNamespace("Fallback");
+        assert.sameMembers([...pendingLoads.keys()], ["fr/Fallback", "en/Fallback"]);
+
+        pendingLoads.get("fr/Fallback")?.(new Error("Missing French namespace"), false);
+        pendingLoads.get("en/Fallback")?.(null, { key: "value" });
+        await loadPromise;
+
+        assert.isEmpty(loggedErrors);
+        assert.isTrue(itwinLocalization.i18next.hasResourceBundle("en", "Fallback"));
       } finally {
         Logger.logError = originalLogError;
       }
