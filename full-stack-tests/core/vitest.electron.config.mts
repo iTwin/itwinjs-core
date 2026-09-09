@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import path from "node:path";
+import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
@@ -10,12 +11,25 @@ import { defineConfig } from "vitest/config";
 
 const require = createRequire(import.meta.url);
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
+const envFile = path.join(packageRoot, ".env");
+if (existsSync(envFile)) {
+  const envResult = require("dotenv").config({ path: envFile });
+  if (envResult.error)
+    throw envResult.error;
+
+  require("dotenv-expand")(envResult);
+}
+
+const rendererEnv = Object.fromEntries(Object.entries(process.env)
+  .filter(([key, value]) => key.startsWith("IMJS_") && value !== undefined)
+  .map(([key, value]) => [`process.env.${key}`, JSON.stringify(value)]));
 const grep = process.env.VITEST_CORE_GREP ?? "#integration|#performance";
 const invert = process.env.VITEST_CORE_GREP_INVERT !== "false";
 const testNamePattern = new RegExp(invert ? `^(?!.*(?:${grep})).*$` : grep);
 
 export default defineConfig({
   define: {
+    ...rendererEnv,
     "process.env.IMODELJS_CORE_DIRNAME": JSON.stringify(path.resolve(packageRoot, "../..")),
   },
   resolve: {
