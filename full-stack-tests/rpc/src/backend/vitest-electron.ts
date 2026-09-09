@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { registerBackendCallback } from "@itwin/vitest-browser-bridge/callbacks/backend";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/main";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { commonSetup } from "./CommonBackendSetup";
 import { setupIpcTestElectron } from "./ipc";

@@ -507,13 +507,13 @@ export class PolyfaceQuery {
     const vertices = source instanceof Polyface ? source.data.point : undefined;
     const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
     visitor.setNumWrap(1);
-    const facetNormals: Ray3d[] = [];
+    const facetNormals: Vector3d[] = [];
     let normalCounter = 0;
     for (visitor.reset(); visitor.moveToNextFacet();) {
       const numEdges = visitor.pointCount - 1;
-      const normal = PolygonOps.centroidAreaNormal(visitor.point);
+      const normal = PolygonOps.areaNormalGo(visitor.point);
       if (normal === undefined)
-        return -2;
+        continue; // skip degenerate facets
       facetNormals.push(normal);
       for (let i = 0; i < numEdges; i++) {
         const edge = edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), normalCounter);
@@ -545,8 +545,8 @@ export class PolyfaceQuery {
         } else {
           edgeVector.setFrom((sideA as any).edgeVector);
         }
-        const facetNormalA = facetNormals[sideA.facetIndex].direction;
-        const facetNormalB = facetNormals[sideB.facetIndex].direction;
+        const facetNormalA = facetNormals[sideA.facetIndex];
+        const facetNormalB = facetNormals[sideB.facetIndex];
         const dihedralAngle = facetNormalA.signedAngleTo(facetNormalB, edgeVector);
         if (dihedralAngle.isAlmostZero)
           numPlanar++;

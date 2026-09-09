@@ -1,30 +1,20 @@
 ---
 name: merge-conflict-resolving
-description: You resolve merge conflicts in code repositories, ensuring that the final merged code is functional and free of errors, and adheres to our code quality standards.
+description: You resolve merge conflicts in code repositories, ensuring that the final merged code is functional and free of errors, and adheres to our code quality standards. Covers routine feature-branch merges from master, and modify/delete conflicts where a branch has deleted, split, or renamed a file that master still changes. For Mergify backport cherry-picks onto release/X.X.x, see the `backport-resolution` skill.
 ---
 
 # Merge Conflict Resolution
 
-Resolve merge conflicts in backport PRs from Mergify. Mergify uses **cherry-pick** (not merge) to create backport branches with the pattern `mergify/bp/release/X.X.x/pr-NNNN`. When cherry-pick fails, Mergify comments with the conflict details and the branch must be fixed locally.
+Resolve merge conflicts in this repository. Two situations produce them, and they need **different recovery commands** — identify which one you are in before touching anything:
 
-**Prerequisite:** This skill references the `cve-remediation` skill for understanding `pnpm-config.json` structure (globalOverrides, ignoreCves). Load that skill when resolving conflicts in security-related backports.
+| Situation | How it arises | Recovery | Start here |
+| --- | --- | --- | --- |
+| **Backport** | Mergify **cherry-picks** a merged PR onto `release/X.X.x` | `git cherry-pick --continue` / `--abort` | `backport-resolution` skill |
+| **Feature branch** | Your branch **merges** `master` to stay current | `git merge --abort` | [Modify/delete conflicts](#modifydelete-conflicts-on-refactored-away-files) |
 
-## How Mergify Backports Work
+This skill is organized by **file type** (lock files, API reports, changelogs, source code) and applies to both. Backport-specific file types and rules — `pnpm-config.json`, `package.json` version precedence, `NextVersion.md` placement after a release, CI config, and anywhere the rule is *"keep the release branch side"* — live in the `backport-resolution` skill.
 
-1. A PR merges to `master`
-2. Mergify cherry-picks the commit(s) onto a new branch: `mergify/bp/release/X.X.x/pr-NNNN`
-3. If cherry-pick fails, Mergify marks the PR as conflicted and posts a generic comment (it does **not** list specific files — use `git status` locally to identify conflicts)
-4. A developer checks out the branch, resolves conflicts, and pushes
-
-To start resolving:
-
-```bash
-git fetch origin
-git checkout mergify/bp/release/X.X.x/pr-NNNN
-git cherry-pick --continue   # If mid cherry-pick
-# OR
-git merge origin/release/X.X.x  # If syncing with target branch
-```
+The highest-risk case is a **modify/delete conflict**: your branch deleted, split, or renamed a file that master then modified. Git offers "delete it" as a resolution, and taking it silently discards the incoming work with a clean build and green tests. That case has its own [workflow](#modifydelete-conflicts-on-refactored-away-files) and a mandatory [review gate](#review-gate-modifydelete-conflicts-only).
 
 ## Lock Files (common/config/rush/pnpm-lock.yaml)
 
@@ -40,76 +30,11 @@ Commit with: `git commit -m "resolve pnpm-lock conflicts"`
 
 **Examples:** [PR #8902](https://github.com/iTwin/itwinjs-core/pull/8902), [PR #8954](https://github.com/iTwin/itwinjs-core/pull/8954)
 
-## pnpm-config.json Conflicts
-
-**File:** `common/config/rush/pnpm-config.json`
-
-This is the **most common conflict file** in security backports. It contains `globalOverrides` (dependency version overrides) and `ignoreCves` (audit exceptions). For detailed structure, see the `cve-remediation` skill.
-
-### Resolution Strategy
-
-**Keep all existing entries from the release branch (HEAD). Add new entries from the incoming change.**
-
-1. Open the file and identify the conflicting sections (usually `globalOverrides` or `ignoreCves`)
-2. Keep every existing override/exception from the release branch
-3. Add the new override/exception being backported from the incoming change
-4. Fix JSON syntax — especially trailing commas:
-   - The last entry in a JSON object must NOT have a trailing comma
-   - When adding a new last entry, add a comma to the previously-last entry
-
-### Example Resolution
-
-Release branch (HEAD) has:
-
-```json
-"globalOverrides": {
-  "cross-spawn": "^7.0.5",
-  "axios": "^1.13.5"
-}
-```
-
-Incoming change adds `serialize-javascript` override:
-
-```json
-"globalOverrides": {
-  "cross-spawn": "^7.0.5",
-  "axios": "^1.13.5",
-  "serialize-javascript": "^7.0.3"
-}
-```
-
-After resolving, always run `rush update` to regenerate the lock file.
-
-**Examples:** [PR #9007](https://github.com/iTwin/itwinjs-core/pull/9007), [PR #9041](https://github.com/iTwin/itwinjs-core/pull/9041), [PR #9049](https://github.com/iTwin/itwinjs-core/pull/9049)
-
-## Package.json Conflicts in Backports
-
-**Rule:** When backporting to `release/X.X.x`, keep the release branch's version information and only accept new functional changes.
-
-### Keep from Release Branch (HEAD)
-
-- Version numbers: `"version": "5.5.0"`
-- Internal workspace dependencies (this repo uses `workspace:*` for internal deps — do not convert to hardcoded versions unless the release branch already uses them)
-- Branch-specific scripts and configurations
-
-### Accept from Incoming (master)
-
-- New dependencies being added
-- New scripts being added
-- External dependency updates (if that's the purpose of the backport)
-
-After resolving, always run `rush update` to regenerate the lock file.
-
-**Avoid:**
-
-- Accepting master's version numbers in release branches
-- Forgetting to run `rush update` after editing package.json
-
-## API Signature Files (common/api/*.api.md)
+## API Signature Files (common/api/\*.api.md)
 
 **Always regenerate. Never manually edit.**
 
-These files track the public API surface and are generated by `rush extract-api`. They conflict when the release branch has a different API surface than master.
+These files track the public API surface and are generated by `rush extract-api`. They conflict when both branches have a different API surface.
 
 ```bash
 rush build
@@ -126,56 +51,19 @@ Rush change files are JSON files in `common/changes/@itwin/<package>/` created b
 
 **If they do conflict:** Keep both files. If the same file has conflicts, merge the JSON content.
 
-**If change files are needed for the backport:** Generate them non-interactively:
+**If change files are needed:** Generate them non-interactively:
 
 ```bash
-rush change --verify -b origin/release/X.X.x
+rush change --verify -b origin/<base-branch>
 # If needed:
-rush change --bulk --message "" --bump-type none -b origin/release/X.X.x
+rush change --bulk --message "" --bump-type none -b origin/<base-branch>
 ```
 
-**Example:** [PR #8345](https://github.com/iTwin/itwinjs-core/pull/8345) — had 30+ rush change files for a multi-package backport
+**Example:** [PR #8345](https://github.com/iTwin/itwinjs-core/pull/8345) — had 30+ rush change files for a multi-package change
 
 ## Documentation Conflicts (NextVersion.md)
 
-Resolution depends on whether the target release branch has already shipped its initial release (`X.X.0`).
-
-### Detect: has `X.X.0` already been released?
-
-Check whether a version-specific changelog file already exists on the release branch:
-
-```bash
-# For a backport targeting release/5.7.x:
-ls docs/changehistory/5.7.0.md
-# Or check git tags:
-git tag --list 'release/5.7.*'
-```
-
-If `X.X.0.md` exists (or the `release/X.X.0` tag exists), the initial release has shipped and `NextVersion.md` on that branch should be empty.
-
-### Scenario A — Initial release has shipped (`X.X.0.md` exists)
-
-On backport branches targeting `release/X.X.x` **after** the `X.X.0` release, `NextVersion.md` on the release branch (HEAD) is intentionally empty. The incoming side from master will have content that was written for the next major/minor release — **not** for this patch branch.
-
-**Resolution:**
-
-1. **Keep `NextVersion.md` empty** — resolve to the HEAD (release branch) side, which has only the frontmatter and heading:
-   ```markdown
-   ---
-   publish: false
-   ---
-   # NextVersion
-   ```
-2. **Move relevant entries to `X.X.0.md`** — extract only the changelog entries that correspond to the change being backported (ignore unrelated master content like new features). Place them under the appropriate section in `docs/changehistory/X.X.0.md`.
-3. **Determine the right section** — look at the existing structure in `X.X.0.md` and add the entry under the matching category (e.g., `## Display > ### Fixes`). Create a subsection if needed.
-
-**What to discard:** Any incoming `NextVersion.md` content that describes features or changes **not** being backported. These belong on master only.
-
-**Example:** [PR #9059 backport](https://github.com/iTwin/itwinjs-core/pull/9059) — incoming side had both a `WithQueryReader` feature (master-only) and a reality data fix (being backported). Only the fix was moved to `5.7.0.md`.
-
-### Scenario B — Initial release has NOT shipped yet (no `X.X.0.md`)
-
-`NextVersion.md` is still the active changelog for the upcoming release. Merge both versions intelligently:
+`NextVersion.md` is the active changelog for the upcoming release. Merge both versions intelligently:
 
 1. Extract unique sections from both versions
 2. Merge into logical category order
@@ -184,91 +72,179 @@ On backport branches targeting `release/X.X.x` **after** the `X.X.0` release, `N
 
 Example: If one branch adds Electron support and another adds Presentation changes, include both sections in the proper order.
 
+> Backports follow a different rule once the target release branch has shipped `X.X.0` — `NextVersion.md` stays empty and entries move into `X.X.0.md`. See the `backport-resolution` skill.
+
 ### Verification
 
 ```bash
-npx markdownlint docs/changehistory/NextVersion.md
 rush docs  # Ensure documentation builds
 ```
 
 **Avoid:**
 
-- Blindly merging master's `NextVersion.md` content into a post-release patch branch
-- Discarding backported changelog entries entirely — they must go into `X.X.0.md`
-- Leaving mismatched table of contents (Scenario B)
+- Leaving mismatched table of contents
 - Keeping duplicate sections
-
-## CI/Config File Conflicts (.github/)
-
-CI workflows and configuration files can diverge significantly between major release branches.
-
-Common conflicting files:
-- `.github/workflows/extract-api.yaml` — node version, action versions
-- `.github/mergify.yml` — backport target branches
-- `.github/workflows/*.yaml` — CI pipeline changes
-
-**Resolution:** Generally keep the release branch's CI configuration. Only accept incoming changes that are specifically being backported (e.g., a node version bump needed for compatibility).
-
-**Example:** [PR #9049](https://github.com/iTwin/itwinjs-core/pull/9049) — needed additional edit to bump node version in `extract-api.yaml` for the older release branch
 
 ## Source Code Conflicts (.ts files)
 
-Rare in backports but possible when the same code area was modified on both branches.
+Possible whenever the same code area was modified on both branches.
 
 **Resolution:**
-- Understand the intent of the backported change
-- Apply the functional change to the release branch's version of the code
-- Do not blindly accept incoming — the release branch may have different surrounding context
 
-## Combined Backports
+- Understand the intent of the incoming change
+- Apply the functional change to your branch's version of the code
+- Do not blindly accept incoming — your branch may have different surrounding context
 
-Sometimes Mergify cannot cherry-pick cleanly because multiple related changes need to land together. In this case, combine the changes into a single backport PR.
+## Modify/Delete Conflicts on Refactored-Away Files
 
-**Example:** [PR #9007](https://github.com/iTwin/itwinjs-core/pull/9007) — combined 3 separate PRs into one backport due to dependency conflicts
+Not all conflicts come from Mergify. A long-lived feature branch that **deletes or splits** a file will conflict with every master commit that touches that file, and the conflict **recurs on each merge** until the branch lands.
 
-When combining:
-- List all original PR numbers in the PR description
-- Ensure all changes are compatible with each other on the release branch
-- Sometimes backport-specific edits are needed beyond the original PRs
+```
+CONFLICT (modify/delete): core/backend/src/test/imodel/IModel.test.ts
+deleted in HEAD and modified in origin/master.
+```
+
+**Never just re-delete the file.** Git is telling you master added work that would be silently lost. The deletion is usually correct, but the incoming change must be **ported to its new home** first.
+
+### Workflow
+
+1. Identify exactly what master changed — do not read the whole file. Use the ref for the operation in progress (`MERGE_HEAD` for a merge, `CHERRY_PICK_HEAD` for a cherry-pick, `REBASE_HEAD` for a rebase):
+
+   ```bash
+   base=$(git merge-base HEAD MERGE_HEAD)
+   git log --oneline $base..MERGE_HEAD -- <deleted-file>
+   git show <commit> -- <deleted-file>
+   ```
+
+2. Classify the incoming change **by what kind of file it is**, then port it:
+
+   | File kind                          | Incoming change            | Action                                                                                                    |
+   | ---------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------- |
+   | Source (`*.ts`)                    | New code added             | Port into the module that now owns that responsibility; keep the exported names the incoming code expects |
+   | Source (`*.ts`)                    | Existing code modified     | Apply the same edit to the migrated implementation                                                        |
+   | Source (`*.ts`)                    | Code removed               | Remove the migrated copy                                                                                  |
+   | Public API surface                 | Any of the above           | Re-run `rush extract-api` — a moved export changes `common/api/*.api.md`                                  |
+   | Docs / changelog                   | Entry added or edited      | Port the entry into the file that replaced it (see NextVersion.md guidance above)                          |
+   | Config / CI                        | Setting changed            | Apply the setting to the file that now carries it; do not assume the old key name survived the split       |
+   | Test                               | Added, modified, removed   | Port into the test file that now owns that feature area — see the `test-suite-refactoring` skill           |
+
+3. Port faithfully, then adapt to the new file's conventions. Keep the **behavior** identical — only the surrounding plumbing (imports, helper names, module layout) should change. For ported **tests** specifically, keep the assertions identical and change only the fixture plumbing (shared fixtures, teardown helpers, tracker).
+
+4. Resolve the deletion and stage the port together:
+
+   ```bash
+   git rm <deleted-file>
+   git add <file-that-received-the-port>
+   ```
+
+5. Verify before committing. **Run the tests, not just the build** — a ported test that compiles can still fail on a stale dependency. If exported API moved, also run `rush extract-api` and inspect the regenerated report.
+
+6. Stop and summarize the port for the user before finishing the operation — see [Review Gate](#review-gate-modifydelete-conflicts-only). This is the one conflict type that requires review: the whole point is that work could have been silently dropped, and nothing in a green build would reveal it.
+
+7. Once approved, finish the operation (`git commit` for a merge, `git cherry-pick --continue` for a cherry-pick, `git rebase --continue` for a rebase) and record in the message where the change went, so the next person does not think it was dropped.
+
+### Incoming changes often carry dependency bumps
+
+A ported test or module may depend on a native addon or package version bumped in the same master commit. The symptom is a **confusing assertion failure rather than a dependency error** — for example `expected undefined to equal 2`, because the older BisCore schema lacks a property the new test expects.
+
+Check the manifest against what is installed, then run the Rush update flow:
+
+```bash
+git show <commit> -- core/backend/package.json   # did it bump @bentley/imodeljs-native?
+rush update
+rush build --to @itwin/core-backend
+```
+
+**Avoid:**
+
+- Re-deleting the file without inspecting the incoming diff — this silently drops master's work
+- Porting a test but leaving the accompanying dependency bump uninstalled
+- Assuming a clean build means the port is correct; `tsc` emits on type errors by default
 
 ## Resolution Workflow
 
 1. **Identify conflict type:** Run `git status` to see which files need resolution
 
 2. **Apply strategy:**
-    - **Lock file:** `rush update` → stage → commit
-    - **pnpm-config.json:** Edit manually → `rush update` → stage both files → commit
-    - **package.json:** Edit manually → `rush update` → stage both files → commit
-    - **API files (common/api/):** `rush build` → `rush extract-api` → stage → commit
-    - **Rush change files:** Keep both / generate fresh → stage → commit
-    - **NextVersion.md:** Check if `X.X.0.md` exists → Scenario A (keep empty, move to `X.X.0.md`) or B (merge both) → stage → commit
-    - **CI/config files:** Manual edit favoring release branch → stage → commit
+   - **Lock file:** `rush update` → stage → commit
+   - **API files (common/api/):** `rush build` → `rush extract-api` → stage → commit
+   - **Rush change files:** Keep both / generate fresh → stage → commit
+   - **NextVersion.md:** Merge both versions → stage → commit
+   - **Source code:** Apply the incoming functional change to your branch's context → stage → commit
+   - **Modify/delete (file deleted on one side):** Port the incoming change to its new home → stage → **stop for review** (see [Review Gate](#review-gate-modifydelete-conflicts-only))
+   - **Backport-specific files (`pnpm-config.json`, `package.json`, CI config):** See the `backport-resolution` skill
 
 3. **Check for residual conflict markers:**
 
-    ```bash
-    grep -r "<<<<<<< " . --include="*.ts" --include="*.json" --include="*.md" --include="*.yaml" --include="*.yml"
-    ```
+   ```bash
+   grep -r "<<<<<<< " . --include="*.ts" --include="*.json" --include="*.md" --include="*.yaml" --include="*.yml"
+   ```
 
 4. **Verify:** Run `rush build` and ensure CI passes
 
-5. **Commit messages:**
-    - Lock files: `"resolve pnpm-lock conflicts"`
-    - pnpm-config.json: `"resolve pnpm-config.json conflicts in backport"`
-    - Package.json: `"resolve package.json conflicts in backport"`
-    - API files: `"regenerate api files after backport"`
-    - Documentation: `"merge NextVersion.md from both branches"`
-    - Multiple files: `"resolve conflicts"`
+5. **Finish the operation** — for every conflict type except modify/delete, complete it directly. If a **modify/delete** conflict was resolved, stop for review first (see [Review Gate](#review-gate-modifydelete-conflicts-only)).
+   - **Merge:** `git commit` using the messages below
+   - **Cherry-pick / rebase:** `git add` the resolved files, then `git cherry-pick --continue` / `git rebase --continue`. Do **not** create a separate `git commit` first — the continue step would then be empty or duplicate the change
+
+   Commit messages:
+   - Lock files: `"resolve pnpm-lock conflicts"`
+   - API files: `"regenerate api files after merge"`
+   - Documentation: `"merge NextVersion.md from both branches"`
+   - Multiple files: `"resolve conflicts"`
+
+## Completion Criteria
+
+The resolution is done only when every box is checked:
+
+- [ ] `git status` reports no unmerged paths and no operation still in progress
+- [ ] `grep -r "<<<<<<< " .` returns nothing
+- [ ] `rush build` succeeds
+- [ ] Tests pass for every package touched by the resolution
+- [ ] `rush extract-api` produces no unexpected `common/api/*.api.md` changes
+- [ ] `rush docs` succeeds if any file under `docs/` was resolved
+- [ ] Every modify/delete resolution was summarized and explicitly approved by the user
+- [ ] The final commit message records where any ported work went
+
+## Review Gate: Modify/Delete Conflicts Only
+
+**When a conflict is modify/delete — the file was deleted on one side and modified on the other — stop and ask the user to review before finishing the operation.** Every other conflict type can be completed directly once verification passes.
+
+This case alone gets a gate because its worst failure mode is **invisible**: the incoming change is silently dropped, and the result still builds and passes tests. A green verification run proves the code you kept is correct — it proves nothing about the code you discarded. For content conflicts both sides remain visible in the diff, so a reviewer can see what happened; for modify/delete, the discarded work leaves no trace.
+
+Present a summary and wait for explicit approval:
+
+- **Which operation is in progress** — merge, cherry-pick (including a Mergify backport), or rebase; this determines the abort and finish commands below
+- **What was deleted, and by which side**
+- **What the incoming side changed** — the specific commits and what they added or modified
+- **Where each change was ported** — the new file and location that now owns it
+- **What was dropped, if anything** — call this out explicitly, even when dropping was clearly correct
+- **Verification evidence** — build, lint, and test results, including test counts before and after
+
+Keep the resolution staged but unfinished while waiting. The tree stays inspectable, `git diff --cached` shows exactly what will land, and the abort for the operation in progress is still available:
+
+| Operation in progress | Abort | Finish after approval |
+| --- | --- | --- |
+| Merge | `git merge --abort` | `git commit` |
+| Cherry-pick (backports) | `git cherry-pick --abort` | `git cherry-pick --continue` |
+| Rebase | `git rebase --abort` | `git rebase --continue` |
+
+Never offer `git merge --abort` during a cherry-pick or rebase — it does not apply to that state. Confirm with `git status`, which names the operation in progress.
+
+Only after approval, finish the operation and record in the message where the ported work went, so the next person does not think it was lost.
+
+**Exception:** if the user has already stated they want the resolution completed without review, honor that. Otherwise, ask — including when the resolution looks trivial. A one-file deletion that quietly discarded a new test looks exactly like a one-file deletion that discarded nothing.
 
 ## Rollback
 
 If resolution goes wrong:
 
 ```bash
-# Abort an in-progress cherry-pick
+# Abort the operation in progress (check `git status` for which one)
+git merge --abort
+git rebase --abort
 git cherry-pick --abort
 
-# Or reset to the last good state (before the cherry-pick)
+# Or reset to the last good state (before the operation)
 git reset --hard ORIG_HEAD
 git clean -fd
 
@@ -278,22 +254,23 @@ rush update
 
 ## Quick Reference
 
-| File Type | Path | Resolution | Key Points |
-| --- | --- | --- | --- |
-| Lock file | `common/config/rush/pnpm-lock.yaml` | `rush update` | Never manually edit |
-| pnpm-config | `common/config/rush/pnpm-config.json` | Manual edit + `rush update` | Keep release entries, add new. See `cve-remediation` skill for structure |
-| package.json | `<package>/package.json` | Manual edit + `rush update` | Keep release versions, add new deps only |
-| API signatures | `common/api/*.api.md` | `rush build` + `rush extract-api` | Never manually edit |
-| Rush change files | `common/changes/@itwin/*/` | Keep both or regenerate | Usually unique filenames, rarely conflict |
-| NextVersion.md | `docs/changehistory/NextVersion.md` | See scenarios A/B | If `X.X.0.md` exists: keep empty, move entries to `X.X.0.md`. Otherwise: merge both. |
-| CI/config | `.github/workflows/*.yaml` | Manual edit | Favor release branch config |
+| File Type            | Path                                  | Resolution                                          | Key Points                                                                                              |
+| -------------------- | ------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Lock file            | `common/config/rush/pnpm-lock.yaml`   | `rush update`                                       | Never manually edit                                                                                     |
+| API signatures       | `common/api/*.api.md`                 | `rush build` + `rush extract-api`                   | Never manually edit                                                                                     |
+| Rush change files    | `common/changes/@itwin/*/`            | Keep both or regenerate                             | Usually unique filenames, rarely conflict                                                               |
+| NextVersion.md       | `docs/changehistory/NextVersion.md`   | Merge both versions                                 | Backports follow a different rule — see `backport-resolution`                                           |
+| Source code          | `*.ts`                                | Apply incoming intent to your branch's context      | Do not blindly accept incoming                                                                          |
+| Refactored-away file | any (modify/delete)                   | Port incoming change to its new home, then `git rm` | Never re-delete blindly; **stop for review before committing**; check for accompanying dependency bumps |
 
 ## For Automated Agents
 
 - **Check target branch first** — Strategy differs for `master` vs `release/X.X.x`
-- **Mergify uses cherry-pick** — Recovery is `git cherry-pick --continue`, not merge
+- **Not every conflict is a backport** — A feature branch merging `master` uses `git merge`; recovery is `git merge --abort`. Modify/delete conflicts here mean incoming work needs porting, not discarding
+- **Backports use cherry-pick** — Recovery is `git cherry-pick --continue`, and the release-branch rules live in the `backport-resolution` skill
 - **Parse structured data** — Extract version fields from package.json programmatically
 - **Always check for conflict markers** — `grep -r "<<<<<<< " .` before committing
 - **Verify after resolution** — Run `rush build`, `rush extract-api`, and check `git diff`
 - **Never commit without testing** — Ensure no syntax errors or breaking changes
-- **Reference the `cve-remediation` skill** — For understanding pnpm-config.json structure when resolving security backport conflicts
+- **Match the command to the operation** — `git status` names it; abort with `git merge --abort`, `git cherry-pick --abort`, or `git rebase --abort`, and finish with `git commit`, `git cherry-pick --continue`, or `git rebase --continue` accordingly
+- **Never commit a modify/delete resolution without user approval** — Stage it, summarize what was ported and what was dropped, then wait. Tests cannot detect discarded work. All other conflict types can be committed directly once verification passes

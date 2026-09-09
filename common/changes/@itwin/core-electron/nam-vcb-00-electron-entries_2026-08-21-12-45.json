@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add conditional renderer and CommonJS main-process entry points.",
+      "type": "none",
+      "packageName": "@itwin/core-electron"
+    }
+  ],
+  "packageName": "@itwin/core-electron"
+}

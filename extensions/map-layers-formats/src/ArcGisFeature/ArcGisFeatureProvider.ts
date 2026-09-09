@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
+import { base64StringToUint8Array, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, setRequestTimeout } from "@itwin/core-frontend";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
@@ -114,6 +114,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     const json = metadata?.content;
 
     if (json === undefined) {
+      // By returning (i.e., not throwing), we ensure the tile tree gets created and the current provider is preserved to report status.
+      if (this.status === MapLayerImageryProviderStatus.UntrustedOrigin)
+        return;
       Logger.logError(loggerCategory, "Could not get service JSON");
       throw new ServerError(IModelStatus.ValidationFailed, "");
     }
@@ -264,7 +267,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       this._renderer = EsriRenderer.fromJSON(this._layerMetadata?.drawingInfo?.renderer);
       await this._renderer.initialize();
     } catch (e) {
-      Logger.logError(loggerCategory, `Could not initialize symbology renderer for '${this._settings.name}': ${e}`);
+      Logger.logError(loggerCategory, `Could not initialize symbology renderer for '${this._settings.name}': ${BentleyError.getErrorMessage(e)}`);
     }
 
     // Sanity check: make sure we got default symbology for this geometry type
@@ -444,7 +447,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
           Logger.logInfo(loggerCategory, json);
         }
       } catch (e) {
-        Logger.logInfo(loggerCategory, `Error occurred with debug FeatureInfo: ${e}`);
+        Logger.logInfo(loggerCategory, `Error occurred with debug FeatureInfo: ${BentleyError.getErrorMessage(e)}`);
       }
     }
 
@@ -466,7 +469,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       await featureReader.readFeatureInfo(responseData, featureInfos, renderer);
 
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occurred while loading feature info data : ${e}`);
+      Logger.logError(loggerCategory, `Exception occurred while loading feature info data : ${BentleyError.getErrorMessage(e)}`);
       return;
     }
 
@@ -597,7 +600,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
             return;
           }
         } catch (e) {
-          Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
+          Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${BentleyError.getErrorMessage(e)}`);
           return;
         }
 
@@ -620,7 +623,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       if (this._drawDebugInfo)
         this.drawTileDebugInfo(row, column, zoomLevel, ctx);
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
+      Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${BentleyError.getErrorMessage(e)}`);
     }
 
     try {
@@ -629,7 +632,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       const dataUrl2 = dataUrl.substring(header.length);
       return new ImageSource(base64StringToUint8Array(dataUrl2), ImageSourceFormat.Png);
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);
+      Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${BentleyError.getErrorMessage(e)}.`);
     }
 
     return undefined;

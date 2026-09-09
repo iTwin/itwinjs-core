@@ -484,7 +484,8 @@ export class BriefcaseManager {
   }
 
   private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean, noUpdateLoop?: boolean) {
-    if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
+    // SchemaSync sets the Schema bit on top of its own, so test the bit rather than comparing whole values.
+    if ((changesetFile.changesType & ChangesetType.Schema) !== 0)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
     db[_nativeDb].applyChangeset(changesetFile, fastForward, noUpdateLoop);
@@ -618,7 +619,7 @@ export class BriefcaseManager {
       await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
     }
 
-    const hasIncomingSchemaChange: boolean = changesets.some((changeset) => changeset.changesType === ChangesetType.Schema);
+    const hasIncomingSchemaChange: boolean = changesets.some((changeset) => (changeset.changesType & ChangesetType.Schema) !== 0);
     const hasLocalSchemaTxn: boolean = briefcaseDb?.checkIfSchemaTxnExists() ?? false;
     const useSemanticRebase: boolean =
       briefcaseDb !== undefined &&
@@ -851,12 +852,17 @@ export class BriefcaseManager {
     while (true) {
       try {
         await BriefcaseManager.pullAndApplyChangesets(db, arg);
-        if (!db.skipSyncSchemasOnPullAndPush)
-          await SchemaSync.pull(db);
+        SchemaSync.updateDbSchema(db);
         // pullAndApply rebase changes and might remove redundant changes in local briefcase
         // this mean hasPendingTxns was true before but now after pullAndApply it might be false
-        if (!db[_nativeDb].hasPendingTxns())
+        if (!db[_nativeDb].hasPendingTxns()) {
+          // There is nothing left to push, so the locks this briefcase took for the dropped changes have to go
+          // back the same way the other exits from push release them. Otherwise it keeps the shared schema lock
+          // and no one else can take the exclusive one.
+          if (!arg.retainLocks)
+            await db.locks[_releaseAllLocks]();
           return;
+        }
 
         await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {
