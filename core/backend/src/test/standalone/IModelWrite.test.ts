@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { EditTxn } from "../../EditTxn";
+import { EditTxn, withEditTxn } from "../../EditTxn";
 import {
   ChangesetIdWithIndex, Code, ColorDef,
   GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
@@ -886,6 +886,99 @@ describe("IModelWriteTest", () => {
     }
     rwIModel.close();
     rwIModel2.close();
+  });
+
+  // Simulates the escalation described in https://github.com/iTwin/itwinjs-backlog/issues/2331:
+  // user1 pushes a schema changeset which also carries orphan rows in ec_CustomAttribute (custom attributes
+  // whose ECProperty container no longer exists). user2 must still be able to apply that changeset.
+  // Applying a changeset replays already accepted timeline changes, so the ECDb map validation which runs on
+  // schema import must not run on the apply path.
+  it("apply schema changeset which contains orphan ec_CustomAttribute rows", async () => {
+    const adminToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const userToken = await HubWrappers.getAccessToken(TestUserType.Super);
+    const iModelName = "OrphanCustomAttributeRows";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "orphan ec_CustomAttribute rows" });
+    assert.isNotEmpty(rwIModelId);
+
+    // two different users working on the same iModel
+    const user1 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    const user2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: userToken });
+    user1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    user2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    const schemaV1 = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="s" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+
+    // user1 pushes the initial schema, user2 picks it up
+    await user1.importSchemaStrings([schemaV1]);
+    await user1.pushChanges({ description: "schema v1", accessToken: adminToken });
+    await user2.pullChanges({ accessToken: userToken });
+    expect(user2.querySchemaVersion("TestDomain")).to.equal("1.0.0");
+
+    // user1 pushes a second schema changeset ...
+    const schemaV2 = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="s" typeName="string"/>
+            <ECProperty propertyName="v" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await user1.importSchemaStrings([schemaV2]);
+
+    // ... which also carries orphan ec_CustomAttribute rows, as produced by older versions of the software.
+    // Those rows are custom attributes applied to an ECProperty (container type 992) which no longer exists.
+    const classId = user1.withSqliteStatement(
+      "SELECT c.Id FROM ec_Class c JOIN ec_Schema s ON c.SchemaId=s.Id WHERE s.Name='TestDomain' AND c.Name='Test2dElement'",
+      (stmt) => {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        return stmt.getValueId(0);
+      });
+
+    const orphanContainerIds = [0x7ffffff1, 0x7ffffff2];
+    withEditTxn(user1, "orphan custom attribute rows", () => {
+      for (const containerId of orphanContainerIds) {
+        user1.withSqliteStatement("INSERT INTO ec_CustomAttribute(ClassId,ContainerId,ContainerType,Ordinal,Instance) VALUES(?,?,992,0,?)", (stmt) => {
+          stmt.bindId(1, classId);
+          stmt.bindInteger(2, containerId);
+          stmt.bindString(3, `<Dummy xmlns="TestDomain.01.00.01"/>`);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        });
+      }
+    });
+    await user1.pushChanges({ description: "schema v2 with orphan custom attribute rows", accessToken: adminToken });
+
+    const countOrphanCustomAttributes = (db: BriefcaseDb) => db.withSqliteStatement(
+      "SELECT count(*) FROM ec_CustomAttribute WHERE ContainerType=992 AND ContainerId NOT IN (SELECT Id FROM ec_Property)",
+      (stmt) => {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        return stmt.getValueInteger(0);
+      });
+    expect(countOrphanCustomAttributes(user1)).to.equal(orphanContainerIds.length);
+
+    // user2 applies the schema changeset. This used to fail with
+    // "Detected orphan custom attribute rows" because the changeset apply ran the ECDb map validator.
+    await user2.pullChanges({ accessToken: userToken });
+
+    // the schema change was applied and the orphan rows were replayed untouched
+    expect(user2.querySchemaVersion("TestDomain")).to.equal("1.0.1");
+    expect(countOrphanCustomAttributes(user2)).to.equal(orphanContainerIds.length);
+
+    // and the pulled schema is usable
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    user2.withPreparedStatement("SELECT s,v FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+      expect(stmt.step()).to.equal(DbResult.BE_SQLITE_DONE);
+    });
+
+    user1.close();
+    user2.close();
   });
 
   it("parent lock should suffice when inserting into deeply nested sub-model", async () => {

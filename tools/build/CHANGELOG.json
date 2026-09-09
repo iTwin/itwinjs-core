@@ -2,6 +2,24 @@
   "name": "@itwin/build-tools",
   "entries": [
     {
+      "version": "5.13.0",
+      "tag": "@itwin/build-tools_v5.13.0",
+      "date": "Thu, 03 Sep 2026 18:49:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Reduced the mocha-reporter handle-leak detection timeout for non-Chrome Node test runs from 30 to 10 seconds; Chrome remains at 30 seconds."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.12.5",
+      "tag": "@itwin/build-tools_v5.12.5",
+      "date": "Tue, 25 Aug 2026 21:22:08 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.12.4",
       "tag": "@itwin/build-tools_v5.12.4",
       "date": "Tue, 18 Aug 2026 15:45:34 GMT",
@@ -29,6 +47,12 @@
       "version": "5.12.0",
       "tag": "@itwin/build-tools_v5.12.0",
       "date": "Mon, 03 Aug 2026 12:25:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.11.4",
+      "tag": "@itwin/build-tools_v5.11.4",
+      "date": "Tue, 25 Aug 2026 19:54:22 GMT",
       "comments": {}
     },
     {

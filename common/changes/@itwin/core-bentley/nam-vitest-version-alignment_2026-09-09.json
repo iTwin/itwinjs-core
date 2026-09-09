@@ -1,0 +1,11 @@
+{
+  "changes": [
+    { "packageName": "@itwin/core-bentley", "comment": "", "type": "none" },
+    { "packageName": "@itwin/core-common", "comment": "", "type": "none" },
+    { "packageName": "@itwin/ecschema-metadata", "comment": "", "type": "none" },
+    { "packageName": "@itwin/core-frontend", "comment": "", "type": "none" },
+    { "packageName": "@itwin/core-geometry", "comment": "", "type": "none" },
+    { "packageName": "@itwin/core-quantity", "comment": "", "type": "none" },
+    { "packageName": "@itwin/cesium-renderer", "comment": "", "type": "none" }
+  ]
+}

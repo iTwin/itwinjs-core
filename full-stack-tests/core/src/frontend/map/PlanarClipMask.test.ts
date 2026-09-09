@@ -30,11 +30,11 @@ describeChrome("Planar clip mask (#integration)", () => {
       mapLayerOptions: {
         BingMaps: { // eslint-disable-line
           key: "key",
-          value: process.env.TEST_BING_MAPS_KEY!, // will be caught in the assert above if undefined.
+          value: process.env.TEST_BING_MAPS_KEY, // will be caught in the assert above if undefined.
         },
         MapBoxImagery: { // eslint-disable-line
           key: "access_token",
-          value: process.env.TEST_MAPBOX_KEY!, // will be caught in the assert above if undefined.
+          value: process.env.TEST_MAPBOX_KEY, // will be caught in the assert above if undefined.
         },
       },
     });

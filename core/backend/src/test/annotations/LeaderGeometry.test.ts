@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef, GeometryParams, LineBreakRun, TerminatorShape, terminatorShapes, TextAnnotation, TextAnnotationLeader, TextBlock, TextFrameStyleProps, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, GeometryParams, LineBreakRun, TargetPointShape, targetPointShapes, TerminatorShape, terminatorShapes, TextAnnotation, TextAnnotationLeader, TextBlock, TextFrameStyleProps, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { Arc3d, LineSegment3d, LineString3d, Point3d, Range2d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { appendLeadersToBuilder, computeElbowDirection, computeFrame, computeLeaderAttachmentPoint, TextStyleResolver } from "../../core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
@@ -238,6 +238,202 @@ describe("LeaderGeometry", () => {
           });
 
         });
+      });
+
+      it("should not append any geometry when both showLeaders and showTargetPoint are false", () => {
+        const targetLeaders: TextAnnotationLeader[] = [{
+          startPoint: Point3d.create(10, 0, 0),
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showLeaders: false, showTargetPoint: false } },
+        }];
+        const result = appendLeadersToBuilder(builder, targetLeaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        expect(builder.geometries.length).to.equal(0);
+      });
+
+      it("should not append leader line or terminator when showLeaders is false", () => {
+        const targetLeaders: TextAnnotationLeader[] = [{
+          startPoint: Point3d.create(10, 0, 0),
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showLeaders: false, showTargetPoint: true, targetPointShape: "cross" } },
+        }];
+        const result = appendLeadersToBuilder(builder, targetLeaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        // Only the target point graphic (a "cross" => two line segments) should be present.
+        expect(builder.geometries.length).to.equal(2);
+        for (const geometry of builder.geometries)
+          expect(geometry).to.be.instanceOf(LineSegment3d);
+      });
+
+      it("should append the leader line but no terminator when showTerminators is false", () => {
+        const targetLeaders: TextAnnotationLeader[] = [{
+          startPoint: Point3d.create(10, 0, 0),
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showLeaders: true, showTerminators: false, showTargetPoint: false } },
+        }];
+        const result = appendLeadersToBuilder(builder, targetLeaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        // Only the leader line should be present, with no terminator geometry.
+        expect(builder.geometries.length).to.equal(1);
+        expect(builder.geometries[0]).to.be.instanceOf(LineString3d);
+      });
+
+      it("should append the target point graphic in addition to the leader line and terminator when showTargetPoint is true", () => {
+        const targetLeaders: TextAnnotationLeader[] = [{
+          startPoint: Point3d.create(10, 0, 0),
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showLeaders: true, showTerminators: true, showTargetPoint: true, targetPointShape: "cross" } },
+        }];
+        const result = appendLeadersToBuilder(builder, targetLeaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        // leader line (1) + openArrow terminator (1) + cross target point (2) = 4 geometry entries.
+        expect(builder.geometries.length).to.equal(4);
+        expect(builder.geometries[0]).to.be.instanceOf(LineString3d); // leader line
+        expect(builder.geometries[1]).to.be.instanceOf(LineString3d); // openArrow terminator
+        expect(builder.geometries[2]).to.be.instanceOf(LineSegment3d); // cross segment
+        expect(builder.geometries[3]).to.be.instanceOf(LineSegment3d); // cross segment
+      });
+
+      // Disable the leader line so that only the target point graphic is produced, making the assertions unambiguous.
+      const makeTargetPointLeader = (shape: TargetPointShape): TextAnnotationLeader => ({
+        startPoint: Point3d.create(10, 0, 0),
+        attachment: { mode: "TextPoint", position: "TopLeft" },
+        styleOverrides: { leader: { showLeaders: false, showTargetPoint: true, targetPointShape: shape } },
+      });
+
+      it("should draw a 'cross' target point as two crossed line segments", () => {
+        const result = appendLeadersToBuilder(builder, [makeTargetPointLeader("cross")], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        expect(builder.geometries.length).to.equal(2);
+        for (const geometry of builder.geometries)
+          expect(geometry).to.be.instanceOf(LineSegment3d);
+      });
+
+      it("should draw a 'plus' target point as two orthogonal line segments", () => {
+        const result = appendLeadersToBuilder(builder, [makeTargetPointLeader("plus")], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        expect(builder.geometries.length).to.equal(2);
+        for (const geometry of builder.geometries)
+          expect(geometry).to.be.instanceOf(LineSegment3d);
+      });
+
+      it("should draw a 'circle' target point with a radius of half the terminator height", () => {
+        const terminatorHalfHeight = (TextStyleSettings.defaultProps.leader.terminatorHeightFactor ?? 1) * textHeight / 2;
+        const result = appendLeadersToBuilder(builder, [makeTargetPointLeader("circle")], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        expect(builder.geometries.length).to.equal(1);
+        const circle = builder.geometries[0] as Arc3d;
+        expect(circle).to.be.instanceOf(Arc3d);
+        expect(circle.circularRadius()).to.be.closeTo(terminatorHalfHeight, 0.01);
+      });
+
+      it("should draw a 'square' target point as a closed line string with equal width and height", () => {
+        const result = appendLeadersToBuilder(builder, [makeTargetPointLeader("square")], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        expect(builder.geometries.length).to.equal(1);
+        const square = builder.geometries[0] as LineString3d;
+        expect(square).to.be.instanceOf(LineString3d);
+        expect(square.points.length).to.equal(5); // closed loop
+        const width = Math.abs(square.points[1].x - square.points[0].x);
+        const height = Math.abs(square.points[2].y - square.points[1].y);
+        expect(width).to.be.closeTo(height, 0.01);
+      });
+
+      it("should draw a 'rectangle' target point as a closed line string using configured width and height", () => {
+        const terminatorWidth = (TextStyleSettings.defaultProps.leader.terminatorWidthFactor ?? 1) * textHeight;
+        const terminatorHeight = (TextStyleSettings.defaultProps.leader.terminatorHeightFactor ?? 1) * textHeight;
+        const result = appendLeadersToBuilder(builder, [makeTargetPointLeader("rectangle")], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        expect(builder.geometries.length).to.equal(1);
+        const rectangle = builder.geometries[0] as LineString3d;
+        expect(rectangle).to.be.instanceOf(LineString3d);
+        expect(rectangle.points.length).to.equal(5); // closed loop
+        const width = Math.abs(rectangle.points[1].x - rectangle.points[0].x);
+        const height = Math.abs(rectangle.points[2].y - rectangle.points[1].y);
+        expect(width).to.be.closeTo(terminatorWidth, 0.01);
+        expect(height).to.be.closeTo(terminatorHeight, 0.01);
+      });
+
+      it("should produce target point geometry for every predefined shape", () => {
+        for (const shape of targetPointShapes) {
+          const localBuilder = new MockBuilder();
+          const result = appendLeadersToBuilder(localBuilder, [makeTargetPointLeader(shape)], layout, transform, new GeometryParams(Id64.invalid), textStyleResolver, scaleFactor);
+          expect(result, `shape: ${shape}`).to.be.true;
+          expect(localBuilder.geometries.length, `shape: ${shape}`).to.be.greaterThan(0);
+        }
+      });
+
+      it("should not offset the leader start point when targetPointOffsetFactor is 0", () => {
+        const leader: TextAnnotationLeader = {
+          startPoint: Point3d.create(10, 0, 0),
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showTargetPoint: true, targetPointOffsetFactor: 0 } },
+        };
+        const result = appendLeadersToBuilder(builder, [leader], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        const leaderLine = builder.geometries[0] as LineString3d;
+        expect(leaderLine.points[0].isAlmostEqual(leader.startPoint)).to.be.true;
+      });
+
+      it("should offset the leader start point away from the target point when targetPointOffsetFactor is non-zero", () => {
+        const offsetFactor = 2;
+        const leader: TextAnnotationLeader = {
+          startPoint: Point3d.create(10, 0, 0),
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showTargetPoint: true, targetPointOffsetFactor: offsetFactor } },
+        };
+        const result = appendLeadersToBuilder(builder, [leader], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        const leaderLine = builder.geometries[0] as LineString3d;
+        // The leader line should start away from the original start point by offsetFactor * textHeight.
+        expect(leaderLine.points[0].isAlmostEqual(leader.startPoint)).to.be.false;
+        const offsetDistance = leaderLine.points[0].distance(leader.startPoint);
+        expect(offsetDistance).to.be.closeTo(offsetFactor * textHeight, 0.01);
+      });
+
+      it("should clamp oversized target-point offsets to the first leader segment", () => {
+        const leader: TextAnnotationLeader = {
+          startPoint: Point3d.create(10, 0, 0),
+          intermediatePoints: [Point3d.create(20, 0, 0)],
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showLeaders: true, showTargetPoint: true, showTerminators: false, targetPointOffsetFactor: 100 } },
+        };
+
+        const result = appendLeadersToBuilder(builder, [leader], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+
+        const leaderLine = builder.geometries[0] as LineString3d;
+        const offsetDistance = leaderLine.points[0].distance(leader.startPoint);
+        expect(offsetDistance).to.be.at.most(leader.startPoint.distance(leader.intermediatePoints![0]));
+      });
+
+      it("should treat negative target-point offsets as zero", () => {
+        const leader: TextAnnotationLeader = {
+          startPoint: Point3d.create(10, 0, 0),
+          intermediatePoints: [Point3d.create(20, 0, 0)],
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showLeaders: true, showTargetPoint: true, showTerminators: false, targetPointOffsetFactor: -2 } },
+        };
+
+        const result = appendLeadersToBuilder(builder, [leader], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+
+        const leaderLine = builder.geometries[0] as LineString3d;
+        expect(leaderLine.points[0].isAlmostEqual(leader.startPoint)).to.be.true;
+      });
+
+      it("should draw the target point graphic at the original start point regardless of the offset", () => {
+        const offsetFactor = 2;
+        const leader: TextAnnotationLeader = {
+          startPoint: Point3d.create(10, 0, 0),
+          attachment: { mode: "TextPoint", position: "TopLeft" },
+          styleOverrides: { leader: { showLeaders: false, showTargetPoint: true, targetPointShape: "circle", targetPointOffsetFactor: offsetFactor } },
+        };
+        const result = appendLeadersToBuilder(builder, [leader], layout, transform, defaultParams, textStyleResolver, scaleFactor);
+        expect(result).to.be.true;
+        const circle = builder.geometries[0] as Arc3d;
+        expect(circle).to.be.instanceOf(Arc3d);
+        expect(circle.center.isAlmostEqual(leader.startPoint)).to.be.true;
       });
 
     });
