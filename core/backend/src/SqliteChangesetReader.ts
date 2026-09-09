@@ -101,14 +101,18 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
     public readonly db: TDb,
   ) { }
 
+  private static requireOpenDb(db: SqliteChangesetReaderDb): void {
+    if (!db.isOpen)
+      throw new Error("db must be open.");
+  }
+
   /**
    * Open changeset file from disk
    * @param args fileName of changeset reader and other options.
    * @returns SqliteChangesetReader instance
    */
   public static openFile<TDb extends SqliteChangesetReaderDb>(args: { readonly fileName: string } & SqliteChangesetReaderArgs<TDb>): SqliteChangesetReader<TDb> {
-    if (!args.db.isOpen)
-      throw new Error("db must be open.");
+    this.requireOpenDb(args.db);
 
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
@@ -121,6 +125,7 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
    * @returns The SqliteChangesetReader instance.
    */
   public static openGroup(args: { readonly changesetFiles: string[] } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+    this.requireOpenDb(args.db);
     if (args.changesetFiles.length === 0) {
       throw new Error("changesetFiles must contain at least one file.");
     }
@@ -135,6 +140,7 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
    * @returns SqliteChangesetReader instance
    */
   public static openTxn(args: { txnId: Id64String } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+    this.requireOpenDb(args.db);
     if (args.db instanceof ECDb) {
       throw new Error("ECDb does not support openTxn");
     }
@@ -149,6 +155,7 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
    * @returns SqliteChangesetReader instance
    */
   public static openInMemory(args: SqliteChangesetReaderArgs & { db: IModelDb }): SqliteChangesetReader {
+    this.requireOpenDb(args.db);
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false);
@@ -172,6 +179,7 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
    * @returns SqliteChangesetReader instance
    */
   public static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & { db: IModelDb, includeInMemoryChanges?: true }): SqliteChangesetReader {
+    this.requireOpenDb(args.db);
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false);
