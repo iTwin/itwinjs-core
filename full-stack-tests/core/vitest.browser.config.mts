@@ -127,10 +127,6 @@ export default defineConfig({
         replacement: path.resolve(packageRoot, "../../core/frontend/lib/esm/core-frontend.js"),
       },
       {
-        find: "@itwin/core-electron/lib/cjs/frontend/ElectronApp",
-        replacement: path.resolve(packageRoot, "../../core/electron/src/frontend/ElectronApp.ts"),
-      },
-      {
         find: "../../package.json",
         replacement: path.resolve(packageRoot, "../../core/frontend/package.json"),
       },

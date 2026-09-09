@@ -5,7 +5,7 @@
 import { expect } from "vitest";
 import { CurrentImdlVersion, EmptyLocalization, IModelTileRpcInterface } from "@itwin/core-common";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/frontend/ElectronApp";
+import { ElectronApp } from "@itwin/core-electron/renderer";
 
 describe("iMdl format version", () => {
   beforeAll(async () => {

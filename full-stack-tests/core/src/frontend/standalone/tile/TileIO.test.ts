@@ -14,7 +14,7 @@ import {
 import {
   Batch, GraphicsArray, type ImdlModel, MeshGraphic, MockRender, parseImdlDocument, PolylineGeometry, Primitive, SurfaceType,
 } from "@itwin/core-frontend/lib/cjs/internal/test-support";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/frontend/ElectronApp";
+import { ElectronApp } from "@itwin/core-electron/renderer";
 import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";

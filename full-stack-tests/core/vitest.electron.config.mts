@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import path from "node:path";
+import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { electron } from "@itwin/vitest-browser-bridge/electron-provider";
@@ -10,11 +11,14 @@ import { defineConfig } from "vitest/config";
 
 const require = createRequire(import.meta.url);
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
-const dotenv = require("dotenv");
-const dotenvExpand = require("dotenv-expand");
-const envResult = dotenv.config({ path: path.join(packageRoot, ".env") });
-if (!envResult.error)
-  dotenvExpand(envResult);
+const envFile = path.join(packageRoot, ".env");
+if (existsSync(envFile)) {
+  const envResult = require("dotenv").config({ path: envFile });
+  if (envResult.error)
+    throw envResult.error;
+
+  require("dotenv-expand")(envResult);
+}
 const testEnvironment = Object.fromEntries(
   Object.entries(process.env)
     .filter(([key, value]) => value !== undefined && /^(IMJS_|TEST_|ITWINJS_)/.test(key)),
@@ -79,10 +83,6 @@ export default defineConfig({
       {
         find: "@itwin/core-frontend",
         replacement: path.resolve(packageRoot, "../../core/frontend/lib/esm/core-frontend.js"),
-      },
-      {
-        find: "@itwin/core-electron/lib/cjs/frontend/ElectronApp",
-        replacement: path.resolve(packageRoot, "../../core/electron/src/frontend/ElectronApp.ts"),
       },
       {
         find: "../../package.json",

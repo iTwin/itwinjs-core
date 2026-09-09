@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/main";
 
 interface FrameAwareWebContents {
   send(channel: string, ...args: any[]): unknown;

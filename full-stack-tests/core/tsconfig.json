@@ -8,7 +8,6 @@
     "types": ["vitest/globals", "node"],
     "baseUrl": ".",
     "paths": {
-      "@itwin/core-electron/lib/cjs/frontend/ElectronApp": ["../../core/electron/lib/cjs/frontend/ElectronApp.d.ts"],
       "@itwin/core-frontend/lib/cjs/internal/test-support": ["../../core/frontend/lib/cjs/internal/test-support.d.ts"],
       "@itwin/vitest-browser-bridge/callbacks/backend": ["../../tools/vitest-browser-bridge/lib/cjs/callbacks/backend.d.ts"],
       "@itwin/vitest-browser-bridge/callbacks/http": ["../../tools/vitest-browser-bridge/lib/cjs/callbacks/http.d.ts"],

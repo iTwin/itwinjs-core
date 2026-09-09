@@ -230,7 +230,7 @@ export class TestUtility {
       else
         iopts.tileAdmin = { decodeImdlInWorker: false };
 
-      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/frontend/ElectronApp");
+      const { ElectronApp: electronApp } = await import("@itwin/core-electron/renderer");
       return electronApp.startup({ iModelApp: iopts });
     }
 
@@ -254,7 +254,7 @@ export class TestUtility {
     await this.cleanupOpenIModels();
 
     if (ProcessDetector.isElectronAppFrontend) {
-      const { ElectronApp: electronApp } = await import("@itwin/core-electron/lib/cjs/frontend/ElectronApp");
+      const { ElectronApp: electronApp } = await import("@itwin/core-electron/renderer");
       return electronApp.shutdown();
     }
 

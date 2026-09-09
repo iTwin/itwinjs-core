@@ -120,6 +120,7 @@ describe("iModel lifecycle", () => {
       getITwinId: () => iTwinId,
       getCurrentChangeset: () => changeset,
       hasUnsavedChanges: () => false,
+      schemaSyncEnabled: () => false,
       setIModelDb: () => { },
       closeFile: () => { },
       clearECDbCache: () => { },
