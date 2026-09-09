@@ -281,9 +281,12 @@ export class SchemaSet implements Iterable<SchemaDocument> {
 }
 
 /**
- * An editable, single in-memory ECSchema. Models the latest spec with no validity assumptions: a
- * document may hold duplicate names, dangling references, or missing required fields, and reports
- * them only when validated.
+ * An editable ECSchema: a namespace containing classes, properties, relationships, and other EC definitions.
+ * @remarks
+ * Models EC 3.2 and permits unfinished edits: duplicate names, unresolved references, and missing
+ * required fields are reported by {@link validateSchemaDocument} or {@link validateSchemaSet}.
+ * Item names share one case-insensitive namespace across all item kinds. Schemas can reference
+ * other schemas, but cannot nest or form reference cycles in a valid schema set.
  *
  * Every document belongs to exactly one {@link SchemaSet}, which is the scope its item references
  * resolve against. A document created with `new` gets a private set of its own; see
@@ -305,19 +308,19 @@ export class SchemaSet implements Iterable<SchemaDocument> {
  * @alpha
  */
 export class SchemaDocument {
-  /** The invariant schema name. */
+  /** Stable schema identifier and namespace for its items. Must be a valid {@link Metadata.ECName | ECName}; comparisons ignore case. */
   public readonly name: string;
-  /** The namespace prefix used when this schema's items are referenced from other schemas. */
+  /** Short EC name for qualifying item references. Referencing schemas may choose a different local alias. */
   public alias: string;
-  /** Read component of the `RR.WW.mm` version. */
+  /** Read component of `RR.WW.mm`. Increment when the old schema can no longer read the new data. */
   public readVersion: number;
-  /** Write component of the `RR.WW.mm` version. */
+  /** Write component of `RR.WW.mm`. Increment when the old schema can still read, but cannot safely write, the new data. */
   public writeVersion: number;
-  /** Minor component of the `RR.WW.mm` version. */
+  /** Minor component of `RR.WW.mm`. Increment for changes that preserve read and write compatibility. */
   public minorVersion: number;
-  /** Optional display label. */
+  /** Human-readable display name for UI and localization; independent of the schema's identifier. */
   public label?: string;
-  /** Optional description. */
+  /** User-facing plain-text explanation of the schema's purpose. */
   public description?: string;
   /** Major component of the EC spec version this document was deserialized from (`3` for a 3.2
    * source), as a hint about its origin. `undefined` for documents created in memory, which are
@@ -730,8 +733,9 @@ export function formatMultiplicity(bounds: MultiplicityBounds): Multiplicity {
 /** A reference to a schema item, as a plain string. Either a bare local name (`"Pump"` - an item in
  * this same schema) or a full name (`"BisCore:PhysicalElement"`). On input it also tolerates the
  * alias-qualified form (`"bis:PhysicalElement"`) and the dot separator
- * (`"BisCore.PhysicalElement"`). The document is validity-free and resolves nothing,
- * so reference correctness is a validation finding - which is why this is a plain string. */
+ * (`"BisCore.PhysicalElement"`). Names compare case-insensitively. Store names here and use the
+ * corresponding getter to resolve them through the document's {@link SchemaSet}; an unresolved
+ * name is allowed during editing and reported by validation. */
 export type LocalOrFullName = string;
 
 /** The spec-defined value each optional, defaultable field reads as when absent. The document keeps
@@ -775,8 +779,14 @@ export const SpecDefaults = {
 /** A reference to another schema: invariant `name` + the three version components, plus the `alias`
  * this document uses for it within its own scope. Both {@link SchemaDocument} and a `SchemaView`
  * `Schema` satisfy this shape structurally, so a schema a caller already holds can be passed
- * directly wherever a reference is expected. */
+ * directly wherever a reference is expected.
+ * @remarks
+ * Declare a reference for each external schema whose items this document uses. A compatible
+ * referenced version has matching read/write components and a minor component at least as high
+ * as requested. Declaring a reference does not load its schema into the {@link SchemaSet}.
+ */
 export interface SchemaReference {
+  /** Stable name of the referenced schema, compared case-insensitively. */
   name: string;
   /** Read component of the referenced `RR.WW.mm` version. */
   readVersion: number;
@@ -784,14 +794,17 @@ export interface SchemaReference {
   writeVersion: number;
   /** Minor component of the referenced `RR.WW.mm` version. */
   minorVersion: number;
-  /** The alias is `string | null` rather than optional, so skipping it is an explicit decision.
-   * Serializing to XML requires an alias on every reference. The JSON format does not carry this field. */
+  /** Local shorthand for this schema in item references; may differ from the referenced schema's own alias.
+   * Must be unique among this document's own and reference aliases, ignoring case. Use `null` when
+   * unknown. ECXML requires an alias on every reference; ECJSON does not carry it. */
   alias: string | null;
 }
 
 /** Complementary schema-level data accepted by the {@link SchemaDocument} constructor. */
 export interface SchemaDocumentInit {
+  /** Human-readable display name for UI and localization. */
   label?: string;
+  /** User-facing plain-text explanation of the schema's purpose. */
   description?: string;
   originalECXmlVersionMajor?: number;
   originalECXmlVersionMinor?: number;
@@ -839,30 +852,20 @@ export interface CustomAttributeProps {
   values?: CustomAttributeValues;
 }
 
-/** A custom attribute instance: the custom attribute class it instantiates plus its values.
+/** Typed metadata applied to a schema, class, property, or relationship constraint.
+ * @remarks
+ * The custom attribute class defines the value shape and allowed container kinds. EC permits one
+ * instance of each attribute class per container. Use {@link CustomAttributeSet.set} to add or
+ * replace that instance; {@link CustomAttributeSet.add} preserves duplicates for repair workflows.
  *
- * A custom attribute attaches extra information to a piece of metadata, and the intent is to treat
- * that information as plain data. The ECXML serialization works against that intent: it carries no
- * types (every value is text) and it names a struct-array entry after the entry's struct class,
- * which ECJSON does not carry at all. So the values of a custom attribute can only be understood -
- * in either direction - with its custom attribute class in hand.
+ * An attribute read from ECXML retains its raw body until value access or output requires
+ * materialization. Its class is needed to interpret the text values, structs, and arrays.
+ * Resolution uses the document's {@link SchemaSet}, with built-in standard definitions
+ * ({@link CoreCustomAttributes}, {@link ECDbMap}) as fallbacks.
  *
- * The document therefore **materializes lazily**. A custom attribute read from ECXML starts out
- * unmaterialized: its body is held verbatim as an {@link XmlString}. Reading {@link values},
- * editing it, or writing the document to any format materializes it against its custom attribute
- * class, which that class must be resolvable for. Resolution goes through the owning document's
- * {@link SchemaSet} and falls back to built-in definitions of the standard custom attribute classes
- * ({@link CoreCustomAttributes}, {@link ECDbMap}), so the common ones need nothing loaded.
- *
- * {@link CustomAttribute.values} throws when the class cannot be resolved, because the fix - put
- * the custom attribute's schema in the schema set - is something only the caller can do, and a
- * half-typed bag handed back instead would surface the problem somewhere much harder to diagnose.
- * Use {@link CustomAttribute.tryGetValues} where not knowing is legitimate. Writers never throw:
- * they report an issue and, when the target format is the one the attribute came from, pass the
- * verbatim body through.
- *
- * An instance belongs to exactly one container. Prefer {@link CustomAttributeSet.add} over this
- * constructor; both do the same thing.
+ * {@link CustomAttribute.values} throws if materialization needs a class that cannot be resolved;
+ * {@link CustomAttribute.tryGetValues} returns `undefined`. Writers report issues and can preserve
+ * an unresolved XML body in XML output. Cross-format conversion requires the class metadata.
  * @alpha
  */
 export class CustomAttribute {
@@ -1093,7 +1096,9 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
 /** Complementary data shared by every schema item kind's constructor. Item kinds with no data of
  * their own (e.g. {@link UnitSystem}) accept this directly; the others extend it. */
 export interface SchemaItemInit {
+  /** Human-readable display name; consumers fall back to the item name when absent. */
   label?: string;
+  /** User-facing plain-text explanation of the item's purpose. */
   description?: string;
 }
 
@@ -1109,9 +1114,9 @@ export abstract class SchemaItem {
   /** Discriminates the item kind. A getter rather than a field: this constructor registers the
    * item with its document, and a subclass field initializer would not have run yet at that point. */
   public abstract get schemaItemType(): ItemKind;
-  /** Optional display label. */
+  /** Human-readable display name; consumers fall back to the item name when absent. */
   public label?: string;
-  /** Optional description. */
+  /** User-facing plain-text explanation of the item's purpose. */
   public description?: string;
 
   private _name: string;
@@ -1123,8 +1128,9 @@ export abstract class SchemaItem {
     document[_attach](this);
   }
 
-  /** The item name. Changing it preserves this object's identity and declaration position and
-   * updates its document's lookup. Stored references to the old name are not rewritten. */
+  /** The item's {@link Metadata.ECName | ECName}, unique case-insensitively across all item kinds in its schema.
+   * Changing it preserves object identity and declaration order and updates name lookup.
+   * Stored references to the old name are not rewritten. */
   public get name(): string {
     return this._name;
   }
@@ -1233,10 +1239,13 @@ export abstract class SchemaItem {
 
 /** Complementary data shared by every class kind's constructor. */
 export interface ClassInit {
+  /** Instantiability and subclassing: `None`, `Abstract`, or `Sealed`. See {@link ECClass.modifier}. */
   modifier?: ECClassModifier;
+  /** Human-readable display name; consumers fall back to the class name when absent. */
   label?: string;
+  /** User-facing explanation of what instances of this class represent. */
   description?: string;
-  /** The single base class reference, if any. */
+  /** Single base class of the same EC kind; must not be sealed. See {@link ECClass.baseClass}. */
   baseClass?: LocalOrFullName;
   /** Class-level custom attributes, added in order. */
   customAttributes?: ReadonlyArray<CustomAttributeProps>;
@@ -1253,14 +1262,21 @@ export interface ClassInit {
  * @alpha
  */
 export abstract class ECClass extends SchemaItem {
-  /** Abstract / sealed / none. `undefined` when the source carried no modifier, which reads as the
-   * spec default ({@link SpecDefaults.classModifier}, or {@link SpecDefaults.mixinModifier} for a
-   * mixin). The distinction is preserved so a document round-trips exactly. */
+  /** Whether the class can be instantiated or subclassed.
+   * @remarks
+   * `None` permits both; `Abstract` prohibits direct instances; `Sealed` prohibits subclasses.
+   * An absent value means {@link SpecDefaults.classModifier}, except for mixins, which are always
+   * abstract. The field retains `undefined` until explicitly set. ECXML 3.1 and later require a
+   * relationship modifier; the writer emits `None` when this field is absent.
+   */
   public modifier?: ECClassModifier;
   /** The single base class reference (e.g. `"BisCore:PhysicalElement"`), if any.
+   * The base must have the same EC class kind and must not be sealed. Entity classes can also
+   * apply {@link EntityClass.mixins}. Inheritance cycles are invalid.
    * @see {@link ECClass.getBaseClass} to resolve it, {@link ECClass.setBaseClass} to set it from a class. */
   public baseClass?: LocalOrFullName;
-  /** Class-level custom attributes. */
+  /** Custom attributes declared on this class. EC inherits base-class attributes unless a local
+   * instance of the same attribute class overrides them; this collection stores only local instances. */
   public readonly customAttributes: CustomAttributeSet;
 
   private readonly _properties: AnyProperty[] = [];
@@ -1566,7 +1582,9 @@ export interface StructArrayPropertyDeclaration extends StructArrayPropertyInit 
 export interface NavigationPropertyDeclaration extends PropertyInit {
   kind: PropertyKind.Navigation;
   name: string;
+  /** Root relationship to traverse; its destination endpoint must allow at most one instance. */
   relationship: LocalOrFullName;
+  /** `Forward`: source to target. `Backward`: target to source, independently of relationship strength. */
   direction: StrengthDirection;
 }
 
@@ -1590,11 +1608,15 @@ export interface PropertyDeclarationTypeMap {
 
 /** Complementary data accepted by the {@link EntityClass} constructor. */
 export interface EntityClassInit extends ClassInit {
-  /** Applied mixin references, in declaration order. */
+  /** Applied mixins, in declaration order. This entity must satisfy each mixin's {@link Mixin.appliesTo} constraint. */
   mixins?: LocalOrFullName[];
 }
 
-/** An entity class.
+/** A class of independently identifiable objects, with properties and relationships to other instances.
+ * @remarks
+ * An entity has at most one entity base class and can apply multiple mixins. It inherits properties
+ * from both; primary and mixin branches must not introduce conflicting property names. Properties
+ * inherited from a mixin cannot be overridden.
  * @alpha
  */
 export class EntityClass extends ECClass {
@@ -1628,22 +1650,21 @@ export class EntityClass extends ECClass {
   }
 }
 
-/** A mixin: an abstract class mixed into entity classes. In ECXML 3.2 it is an entity class carrying
- * an `IsMixin` custom attribute; the document promotes it to a first-class kind.
+/** A reusable set of properties and a secondary classification for entity classes.
+ * @remarks
+ * Mixins are always abstract. They can be relationship endpoints and can derive from one other
+ * mixin, but cannot override inherited properties. {@link Mixin.appliesTo} restricts which entity
+ * classes may apply the mixin; it does not make that entity class a base class of the mixin.
  *
- * A mixin is **abstract by definition**. Although it still carries the {@link ECClass.modifier}
- * field, that field is conceptually always `Abstract`, and nothing in this stack enforces, defaults,
- * or otherwise acts on it. An explicit non-abstract modifier (e.g. `modifier="None"`) is therefore
- * meaningless and does not round-trip consistently across stacks: ECObjects-native drops a mixin's
- * `None` when writing XML and omits the modifier entirely in ECJSON, whereas this document preserves
- * whatever the source carried. Treat any non-`Abstract` mixin modifier as a likely authoring
- * mistake. `omitDefaults` ({@link SpecDefaults.mixinModifier}) drops a redundant `Abstract` but
- * keeps such an odd value, so a comparison surfaces it rather than hiding it.
+ * ECXML represents a mixin as an entity class with `CoreCustomAttributes:IsMixin`; readers and
+ * writers handle that representation. Leave {@link ECClass.modifier} absent or set it to
+ * `Abstract`. Other values are retained as authored but have no useful meaning and do not
+ * round-trip consistently across EC implementations.
  * @alpha
  */
 export class Mixin extends ECClass {
   public get schemaItemType(): SchemaItemType.Mixin { return SchemaItemType.Mixin; }
-  /** The entity class (including its derived classes) that this mixin may be applied to. (3.2: `IsMixin.AppliesToEntityClass`). */
+  /** Entity class whose instances may carry this mixin, including derived entity classes. */
   public appliesTo: LocalOrFullName;
 
   /** Creates a mixin in `document`. `appliesTo` is mandatory. A mixin is abstract whether or not a
@@ -1693,7 +1714,12 @@ export class View extends ECClass {
   }
 }
 
-/** A struct class - the type of a struct (or struct-array) property's embedded value.
+/** A structured value embedded in a struct or struct-array property.
+ * @remarks
+ * Struct instances have no independent identity and cannot be relationship endpoints. A struct
+ * can contain primitive values, arrays, and other structs, but cannot contain itself at any depth.
+ * Declare structs without a base class; the authoring validator rejects struct inheritance.
+ * Struct-valued properties use exactly their declared type.
  * @alpha
  */
 export class StructClass extends ECClass {
@@ -1705,13 +1731,20 @@ export class StructClass extends ECClass {
   }
 }
 
-/** A custom attribute class - the definition a {@link CustomAttribute} instance instantiates.
+/** Defines typed metadata that {@link CustomAttribute} instances attach to schema containers.
+ * @remarks
+ * Properties define the attribute's value shape; {@link CustomAttributeClass.appliesTo} defines
+ * where it may be used. Attribute classes can contain primitive, struct, and array properties,
+ * but no navigation properties. An applied instance must use a concrete class. Declare attribute
+ * classes without a base class; the authoring validator rejects custom-attribute class inheritance.
  * @alpha
  */
 export class CustomAttributeClass extends ECClass {
   public get schemaItemType(): SchemaItemType.CustomAttributeClass { return SchemaItemType.CustomAttributeClass; }
-  /** Bitmask of container kinds an instance of this class may be applied to. The wire form is a
-   * delimited string; this is the parsed flags value. */
+  /** Allowed container kinds, combined with bitwise OR, for example
+   * `CustomAttributeContainerType.EntityClass | CustomAttributeContainerType.PrimitiveProperty`.
+   * Group flags such as `AnyClass` and `AnyProperty` include every kind in that group.
+   * Mixins use the `EntityClass` flag. At least one container kind must be allowed. */
   public appliesTo: CustomAttributeContainerType;
 
   /** Creates a custom attribute class in `document`. `appliesTo` is mandatory. */
@@ -1721,26 +1754,31 @@ export class CustomAttributeClass extends ECClass {
   }
 }
 
-/** Complementary data accepted by the {@link RelationshipClass} constructor. The two constraints are
- * not here - they are created empty and configured on the returned handle. */
 /** Complementary data accepted by {@link RelationshipConstraint.set} and by the `source` / `target`
  * fields of {@link RelationshipClassInit}. A pure field initializer: provided scalar fields are
  * assigned and `constraintClasses` are appended; omitted fields are left untouched.
  * @alpha
  */
 export interface RelationshipConstraintInit {
+  /** Number of instances at this end per instance at the opposite end. See {@link RelationshipConstraint.multiplicity}. */
   multiplicity?: Multiplicity;
+  /** Role when traversing from this end, e.g. `owns children`. Required unless inherited from a base relationship. */
   roleLabel?: string;
+  /** Whether derived constraint classes are accepted; defaults to true when absent. */
   polymorphic?: boolean;
+  /** Common base of the allowed classes; required for multiple classes unless inherited. See {@link RelationshipConstraint.abstractConstraint}. */
   abstractConstraint?: LocalOrFullName;
-  /** Constraint class references; appended to any already present. */
+  /** Allowed endpoint classes; appended to any already present. At least one is required. */
   constraintClasses?: LocalOrFullName[];
   /** Constraint-level custom attributes, added in order. */
   customAttributes?: ReadonlyArray<CustomAttributeProps>;
 }
 
+/** Complementary data accepted by the {@link RelationshipClass} constructor. */
 export interface RelationshipClassInit extends ClassInit {
+  /** Ownership/lifetime semantics: independent reference, shared holding, or exclusive embedding. See {@link RelationshipClass.strength}. */
   strength?: StrengthType;
+  /** Owner end for holding/embedding: `Forward` means source, `Backward` means target. Defaults to `Forward`. */
   strengthDirection?: StrengthDirection;
   /** Configures the source constraint in the same pass as the class (see {@link RelationshipConstraint.set}). */
   source?: RelationshipConstraintInit;
@@ -1758,18 +1796,32 @@ export class RelationshipConstraint {
   public readonly relationshipEnd: RelationshipEnd;
   /** The relationship class this constraint is one end of. */
   public readonly relationshipClass: RelationshipClass;
-  /** Multiplicity as an `(lo..hi)` string (e.g. `"(0..1)"`, `"(1..*)"`).
+  /** Number of instances at this end that may relate to one instance at the opposite end.
+   * @remarks
+   * `(0..1)` means optional and singular; `(1..1)` means required and singular; `*` is unbounded.
+   * For `ParentOwnsChildren`, source `(0..1)` permits at most one parent per child, while target
+   * `(0..*)` permits any number of children per parent. New constraints start at `(0..*)`.
+   * A derived relationship may narrow this range, but cannot widen it.
    * @see {@link parseMultiplicity} to read it as numbers. */
   public multiplicity: Multiplicity = "(0..*)";
-  /** Role label. The spec requires it; the document leaves it optional and defers to validation. */
+  /** Role when traversing from this end, e.g. source `owns children`, target `is owned by parent`.
+   * Include the opposite role to support translation. Required by EC 3.1 and later unless inherited
+   * from a base relationship; the field stores only the local label. */
   public roleLabel?: string;
-  /** Whether the constraint matches derived classes of its constraint classes. `undefined` when the
-   * source carried no value, which reads as the spec default ({@link SpecDefaults.constraintPolymorphic}). */
+  /** Whether instances of derived constraint classes are accepted. `false` accepts only the listed
+   * classes themselves. An absent value means {@link SpecDefaults.constraintPolymorphic} (`true`).
+   * A derived relationship can restrict `true` to `false`, but cannot widen `false` to `true`. */
   public polymorphic?: boolean;
-  /** The common base/abstract constraint, required when there is more than one constraint class and
-   * none is inherited. */
+  /** Common base that every listed constraint class must equal or derive from.
+   * @remarks
+   * Required when there are multiple constraint classes and no inherited abstract constraint.
+   * With one constraint class, that class supplies the effective constraint. The name does not
+   * require an `Abstract` modifier. It bounds the allowed classes without adding another allowed
+   * class to {@link RelationshipConstraint.constraintClasses}.
+   */
   public abstractConstraint?: LocalOrFullName;
-  /** Constraint class references (at least one is required by the spec). */
+  /** Classes allowed at this endpoint, extended to their subclasses when {@link RelationshipConstraint.polymorphic} is true.
+   * At least one is required. Entity classes, mixins, and relationship classes can be endpoints. */
   public readonly constraintClasses: LocalOrFullName[] = [];
   /** Constraint-level custom attributes. */
   public readonly customAttributes: CustomAttributeSet;
@@ -1829,16 +1881,34 @@ export class RelationshipConstraint {
   }
 }
 
-/** A relationship class relating instances of its source and target constraint classes.
+/** A directed association between instances allowed by its source and target constraints.
+ * @remarks
+ * The constraints define allowed classes and multiplicities; {@link RelationshipClass.strength}
+ * and {@link RelationshipClass.strengthDirection} describe ownership and lifetime. A relationship
+ * can have its own properties. Even an abstract relationship needs both endpoints defined.
+ * A derived relationship must keep or narrow both endpoint constraints.
  * @alpha
  */
 export class RelationshipClass extends ECClass {
   public get schemaItemType(): SchemaItemType.RelationshipClass { return SchemaItemType.RelationshipClass; }
-  /** How the lifetimes of source and target are related. `undefined` when the source carried no
-   * value, which reads as the spec default ({@link SpecDefaults.relationshipStrength}). */
+  /** Ownership and lifetime semantics for the related instances.
+   * @remarks
+   * - `Referencing`: the instances have independent lifetimes; no ownership is implied.
+   * - `Holding`: the held instance can be shared by multiple holders and depends on at least one.
+   * - `Embedding`: the embedded instance belongs to one owner and shares its lifetime.
+   *
+   * {@link RelationshipClass.strengthDirection} chooses the holder/owner end. These are schema
+   * semantics; the consuming application or persistence layer implements the lifetime behavior.
+   * An absent value means {@link SpecDefaults.relationshipStrength} (`Referencing`).
+   */
   public strength?: StrengthType;
-  /** Which end is the starting point. `undefined` when the source carried no value, which reads as
-   * the spec default ({@link SpecDefaults.relationshipStrengthDirection}). */
+  /** Which endpoint holds or owns the other in a holding or embedding relationship.
+   * @remarks
+   * `Forward` makes the source the holder/owner; `Backward` makes the target the holder/owner.
+   * For example, a backward embedding relationship has its parent at the target and its child
+   * at the source. Navigation properties choose their own traversal direction independently.
+   * An absent value means {@link SpecDefaults.relationshipStrengthDirection} (`Forward`).
+   */
   public strengthDirection?: StrengthDirection;
   /** The source end. */
   public readonly source = new RelationshipConstraint(this, RelationshipEnd.Source);
@@ -1864,9 +1934,13 @@ export type EnumerationBackingType = "int" | "string";
 
 /** One value of an {@link Enumeration}. The `value` type matches the enumeration's backing type. */
 export interface Enumerator {
+  /** Stable EC name, unique case-insensitively within the enumeration. */
   name: string;
+  /** Stored primitive value, unique within the enumeration and matching its backing type. */
   value: number | string;
+  /** Human-readable display text for this value. */
   label?: string;
+  /** User-facing explanation of when this value applies. */
   description?: string;
 }
 
@@ -1886,14 +1960,19 @@ export interface EnumerationInit {
   enumerators?: ReadonlyArray<Readonly<Enumerator>>;
 }
 
-/** An enumeration: a named set of `int` or `string` values.
+/** A named set of integer or string values for primitive and primitive-array properties.
+ * @remarks
+ * Instance data stores the enumerator's value; its name identifies the declaration, and its label
+ * supplies display text. {@link Enumeration.isStrict} determines whether undeclared values are
+ * permitted. Renaming or relabeling an enumerator does not change its stored value.
  * @alpha
  */
 export class Enumeration extends SchemaItem {
   public get schemaItemType(): SchemaItemType.Enumeration { return SchemaItemType.Enumeration; }
-  /** Backing primitive - `"int"` or `"string"`; the enumerators' values must match. */
+  /** Backing primitive: signed 32-bit `int` or `string`. Every enumerator value must use this type. */
   public backingType: EnumerationBackingType;
-  /** When `false`, undeclared values are allowed. */
+  /** Whether property values must be one of the declared values. Defaults to `true`;
+   * `false` also permits other values of the backing primitive type. */
   public isStrict: boolean = true;
   /** The declared values in declaration order. */
   public readonly enumerators: Enumerator[] = [];
@@ -1930,22 +2009,38 @@ export class Enumeration extends SchemaItem {
 export interface KindOfQuantityInit {
   label?: string;
   description?: string;
-  /** Presentation format override strings, in declaration order; the first is the default. */
+  /** Ordered display formats; the first is the default. See {@link KindOfQuantity.presentationFormats} for override syntax. */
   presentationFormats?: string[];
 }
 
-/** A kind of quantity: a persistence unit plus optional presentation formats, referenced by
- * properties via {@link PropertyInit.kindOfQuantity}.
+/** Defines what a property measures, its storage unit, and its available display formats.
+ * @remarks
+ * Multiple kinds of quantity can share a phenomenon and persistence unit while serving different
+ * purposes, such as short distances and geographic distances. Properties refer to this item through
+ * {@link Property.kindOfQuantity}; changing the display format does not change stored values.
  * @alpha
  */
 export class KindOfQuantity extends SchemaItem {
   public get schemaItemType(): SchemaItemType.KindOfQuantity { return SchemaItemType.KindOfQuantity; }
-  /** The unit reference the quantity persists in (e.g. `"Units:M"`). */
+  /** Unit in which property values are stored (e.g. `"Units:M"`). Presentation units must be
+   * compatible with it. Changing this field does not convert existing instance data. */
   public persistenceUnit: LocalOrFullName;
-  /** Conversion tolerance, as the ratio of absolute error to actual value (`0.001` reads
-   * "accurate to one part in a thousand"). */
+  /** Maximum acceptable relative error for unit round-trips: absolute error divided by the
+   * original value's magnitude. For example, `0.001` permits one part in a thousand. Must be nonnegative;
+   * this is a conversion tolerance, independent of display precision. */
   public relativeError: number;
-  /** Presentation format override strings, in declaration order; the first is the default presentation. */
+  /** Ordered display formats; the first is the default presentation.
+   * @remarks
+   * An entry names a format and can override its precision and unit labels, or supply units to a
+   * unitless format: `Formats:DefaultRealU(4)[Units:M|m]` displays metres with four decimal places.
+   * The grammar is `Schema:Format(precision)[Schema:Unit|label]...`, with up to four units.
+   * Precision and labels are optional. An omitted label uses the unit's display label; an empty
+   * label (`[Units:M|]`) suppresses it. If the base format already defines units, repeat those
+   * units in their original order and change only their labels, not their identities.
+   *
+   * Units must be compatible with {@link KindOfQuantity.persistenceUnit}. Overrides affect this
+   * quantity only; they do not modify the referenced format. Serialized as `presentationUnits`.
+   */
   public readonly presentationFormats: string[] = [];
 
   /** The unit the quantity persists in, resolved through the document's schema set. A unit
@@ -1977,18 +2072,23 @@ export class KindOfQuantity extends SchemaItem {
 
 /** Complementary data accepted by the {@link PropertyCategory} constructor. */
 export interface PropertyCategoryInit {
+  /** Display name of the group. */
   label?: string;
+  /** User-facing explanation of the properties in this group. */
   description?: string;
-  /** Display sort order. */
+  /** Relative display order; larger values place the category earlier. Defaults to zero when absent. */
   priority?: number;
 }
 
-/** A property category: a UI grouping referenced by properties via {@link PropertyInit.category}.
+/** A UI grouping shared by properties, such as dimensions or operating conditions.
+ * @remarks
+ * Assign it through {@link Property.category}. Its priority orders categories; a property's own
+ * priority orders properties within a class. Categories do not affect stored property values.
  * @alpha
  */
 export class PropertyCategory extends SchemaItem {
   public get schemaItemType(): SchemaItemType.PropertyCategory { return SchemaItemType.PropertyCategory; }
-  /** Display sort order. */
+  /** Relative display order; larger values place the category earlier. Defaults to zero when absent. */
   public priority?: number;
 
   /** Creates a property category in `document`. `name` is the only other mandatory argument. */
@@ -2009,7 +2109,8 @@ export class PropertyCategory extends SchemaItem {
 // capabilities are expected here.
 
 /** A unit system: a named family of units (`"SI"`, `"METRIC"`, `"USCUSTOM"`, ...) that
- * {@link Unit}s declare membership in. Carries no data beyond the common item envelope.
+ * {@link Unit}s declare membership in. Useful for choosing display units according to a convention;
+ * conversion compatibility is determined by the phenomenon, not the unit system.
  * @alpha
  */
 export class UnitSystem extends SchemaItem {
@@ -2026,14 +2127,15 @@ export class UnitSystem extends SchemaItem {
 }
 
 /** A phenomenon: the measurable quantity kind (length, area, temperature, ...) that units
- * quantify. Units of the same phenomenon are mutually convertible.
+ * quantify. Unit conversion requires the same phenomenon, even when different phenomena share
+ * the same dimensional expression.
  * @alpha
  */
 export class Phenomenon extends SchemaItem {
   public get schemaItemType(): SchemaItemType.Phenomenon { return SchemaItemType.Phenomenon; }
-  /** Defining expression in terms of other phenomena (e.g. `"LENGTH(2)"` for area,
-   * `"FORCE*LENGTH(-2)"` for pressure), or the phenomenon's own name for a base
-   * phenomenon (e.g. `"LENGTH"`). */
+  /** Product of phenomena with optional integer exponents, e.g. `"LENGTH(2)"` for area or
+   * `"FORCE*LENGTH(-2)"` for pressure. A base phenomenon names itself, e.g. `"LENGTH"`.
+   * Use negative exponents for division; the expression has no `/` or `+` operator. */
   public definition: string;
 
   /** Creates a phenomenon in `document`. `definition` is mandatory; `init` carries the rest. */
@@ -2049,16 +2151,22 @@ export class Phenomenon extends SchemaItem {
 
 /** Complementary data accepted by the {@link Unit} constructor. */
 export interface UnitInit extends SchemaItemInit {
-  /** Numerator of the factor relating this unit to its definition. */
+  /** Numerator of the conversion factor relating this unit to its definition; defaults to one. */
   numerator?: number;
-  /** Denominator of the factor relating this unit to its definition. */
+  /** Nonzero denominator of the conversion factor; defaults to one. */
   denominator?: number;
-  /** Offset applied when converting to this unit. */
+  /** Additive conversion offset, used for units such as Celsius; defaults to zero. */
   offset?: number;
 }
 
-/** A unit of measure. Its `definition` expresses it in terms of other units and constants;
- * `numerator` / `denominator` / `offset` carry the conversion factor that expression is scaled by.
+/** A unit of measure defined in terms of other units and constants.
+ * @remarks
+ * The definition and numeric scale/offset describe conversion within one phenomenon. For example,
+ * a centimetre can use definition `"M"` and denominator `100`. Unit systems group conventions;
+ * they do not restrict conversion to other units of the same phenomenon.
+ *
+ * Validation checks required fields and item references. It does not parse the definition's
+ * expression or evaluate conversion correctness and dimensional compatibility.
  * @alpha
  */
 export class Unit extends SchemaItem {
@@ -2067,17 +2175,16 @@ export class Unit extends SchemaItem {
   public phenomenon: LocalOrFullName;
   /** Reference to the {@link UnitSystem} this unit belongs to. */
   public unitSystem: LocalOrFullName;
-  /** Defining expression in terms of other units and constants (e.g. `"MILLI*M"`,
-   * `"M*SEC(-1)"`), or the unit's own name for a base unit (e.g. `"M"`). */
+  /** Product of units and bracketed constants, with optional integer exponents, e.g. `"[MILLI]*M"`
+   * or `"M*S(-1)"`. A base unit names itself, e.g. `"M"`. Use negative exponents for division;
+   * the expression has no `/` or `+` operator. */
   public definition: string;
   /** Numerator of the factor relating this unit to its definition. `undefined` reads as `1.0`
    * and is not persisted. */
   public numerator?: number;
-  /** Denominator of the factor relating this unit to its definition. `undefined` reads as `1.0`
-   * and is not persisted. */
+  /** Nonzero denominator of the factor relating this unit to its definition. An absent value means `1.0`. */
   public denominator?: number;
-  /** Offset applied when converting to this unit (e.g. Celsius is kelvin with an offset of
-   * `-273.15`). `undefined` reads as `0.0` and is not persisted. */
+  /** Additive conversion offset, used for units such as Celsius. An absent value means `0.0`. */
   public offset?: number;
 
   /** Creates a unit in `document`. `phenomenon`, `unitSystem`, and `definition` are mandatory. */
@@ -2108,8 +2215,8 @@ export class Unit extends SchemaItem {
 
 /** An inverted unit: the reciprocal of another unit, for quantities conventionally stated both
  * ways (e.g. a slope as horizontal-per-vertical inverting vertical-per-horizontal). It derives its
- * phenomenon and conversion from the unit it inverts, so unlike {@link Unit} it carries no
- * definition of its own.
+ * phenomenon and conversion from the unit it inverts and carries no definition of its own.
+ * Only units with a dimensionless derivation, such as slope, may be inverted.
  * @alpha
  */
 export class InvertedUnit extends SchemaItem {
@@ -2143,9 +2250,9 @@ export class InvertedUnit extends SchemaItem {
 
 /** Complementary data accepted by the {@link Constant} constructor. */
 export interface ConstantInit extends SchemaItemInit {
-  /** Numerator of the constant's value. */
+  /** Numerator scaling the defining expression; defaults to one. */
   numerator?: number;
-  /** Denominator of the constant's value. */
+  /** Nonzero denominator scaling the defining expression; defaults to one. */
   denominator?: number;
 }
 
@@ -2159,12 +2266,13 @@ export class Constant extends SchemaItem {
   /** Reference to the {@link Phenomenon} this constant belongs to (e.g. a dimensionless ratio
    * like `"NUMBER"` for `PI`). */
   public phenomenon: LocalOrFullName;
-  /** Defining expression, like {@link Unit.definition} (`"ONE"` for a plain number). */
+  /** Defining expression using the same product/exponent grammar as {@link Unit.definition}.
+   * A base constant names itself; other constants scale their definition by numerator/denominator. */
   public definition: string;
   /** Numerator of the constant's value (e.g. `3.14159...` for `PI`). `undefined` reads as `1.0`
    * and is not persisted. */
   public numerator?: number;
-  /** Denominator of the constant's value. `undefined` reads as `1.0` and is not persisted. */
+  /** Nonzero denominator scaling the defining expression. An absent value means `1.0`. */
   public denominator?: number;
 
   /** Creates a constant in `document`. `phenomenon` and `definition` are mandatory. */
@@ -2191,7 +2299,8 @@ export class Constant extends SchemaItem {
 export interface FormatCompositeUnit {
   /** Reference to the `Unit` or `InvertedUnit`. */
   name: LocalOrFullName;
-  /** Label rendered after this unit's segment, overriding the unit's own display label. */
+  /** Display label for this segment. Omit to use the unit's label, or set `""` to suppress it.
+   * Labels are rendered when {@link FormatTraits.ShowUnitLabel} is enabled. */
   label?: string;
 }
 
@@ -2201,60 +2310,77 @@ export interface FormatComposite {
   /** Separator between the unit segments. Empty or a single character; `undefined` reads as the
    * spec default ({@link SpecDefaults.compositeSpacer}). */
   spacer?: string;
-  /** Whether zero-magnitude segments are rendered. `undefined` reads as the spec default
-   * ({@link SpecDefaults.compositeIncludeZero}). */
+  /** Whether zero-valued unit segments are rendered, e.g. the feet segment in `0 ft 6 in`.
+   * An absent value means {@link SpecDefaults.compositeIncludeZero} (`true`). */
   includeZero?: boolean;
-  /** The composite's units in descending magnitude, each with an optional label override. The spec
-   * requires one to four; the document does not enforce that. */
+  /** One to four compatible units in descending magnitude, each with an optional label override.
+   * Units must measure the same phenomenon and convert between each other without an offset. */
   units: FormatCompositeUnit[];
 }
 
 /** Complementary data accepted by the {@link Format} constructor. */
 export interface FormatInit extends SchemaItemInit {
+  /** Decimal places or fractional denominator, according to the format type. See {@link Format.precision}. */
   precision?: DecimalPrecision | FractionalPrecision;
+  /** Rounding increment, active with `ApplyRounding`; zero means round to precision. */
   roundFactor?: number;
+  /** Minimum formatted width, padded with leading zeros. */
   minWidth?: number;
+  /** Sign rendering; defaults to `OnlyNegative`. */
   showSignOption?: ShowSignOption;
+  /** Rendering options combined with bitwise OR. See {@link Format.formatTraits}. */
   formatTraits?: FormatTraits;
+  /** Decimal separator; defaults to `"."`. */
   decimalSeparator?: string;
+  /** Thousands separator, used with `Use1000Separator`; defaults to `","`. */
   thousandSeparator?: string;
+  /** Separator between a value and its unit label; defaults to a space. */
   uomSeparator?: string;
+  /** Required for scientific formats: `Normalized` or `ZeroNormalized`. */
   scientificType?: ScientificType;
+  /** Digits in the station offset; required for station formats. See {@link Format.stationOffsetSize}. */
   stationOffsetSize?: number;
+  /** Separator before the station offset; defaults to `"+"`. */
   stationSeparator?: string;
-  /** Copied into an owned {@link Format.composite} object. */
+  /** One to four compatible units in descending size, copied into an owned {@link Format.composite} object. */
   composite?: Readonly<FormatComposite>;
 }
 
-/** A format: how a quantity value is rendered as a string - numeric type and precision, separators,
- * sign handling, and optionally a {@link FormatComposite} splitting the value across multiple
- * units. Referenced by a `KindOfQuantity`'s presentation format strings, which may override the
- * precision and composite units inline (e.g. `"f:DefaultRealU(4)[u:M]"`).
- * Every field beyond `type` is optional, `undefined` meaning "not set": it reads as the noted
- * default and is not persisted. Note the EC schema spec serializes only the decimal, fractional,
- * scientific, and station types; the remaining {@link FormatType} members belong to the quantity
- * formatting library and validation reports them on a schema format.
+/** Controls numeric display: precision, separators, signs, and optional composite units.
+ * @remarks
+ * A {@link KindOfQuantity} selects formats and can override precision or unit labels, or add
+ * units to a unitless format. See {@link KindOfQuantity.presentationFormats} for the syntax.
+ * Optional fields retain `undefined` when unset; the documented defaults describe their meaning.
+ * EC 3.2 supports decimal, fractional, scientific, and station formats. Other {@link FormatType}
+ * members belong to the quantity formatting library and are invalid on a schema format.
+ * Validation does not evaluate unit conversions or prove compatibility with a kind of quantity.
  * @alpha
  */
 export class Format extends SchemaItem {
   public get schemaItemType(): SchemaItemType.Format { return SchemaItemType.Format; }
   /** The numeric rendering kind (decimal, fractional, scientific, station). */
   public type: FormatType;
-  /** Precision of the numeric part: a {@link DecimalPrecision} (decimal places) for decimal-based
-   * types, a {@link FractionalPrecision} (fraction denominator) for fractional. `undefined` reads
-   * as the type's spec default. */
+  /** Decimal places (`0`–`12`) for decimal, scientific, and station formats; fractional denominator
+   * (`1`, `2`, `4`, ..., `256`) for fractional formats. For example, fractional precision `8`
+   * rounds to eighths. Set explicitly when the intended display precision matters. */
   public precision?: DecimalPrecision | FractionalPrecision;
   /** Rounding factor applied when the {@link FormatTraits.ApplyRounding} trait is set; `0` rounds
    * to precision. `undefined` reads as the spec default ({@link SpecDefaults.formatRoundFactor}). */
   public roundFactor?: number;
-  /** Minimum width of the formatted string, padded to fit; `undefined` pads nothing. */
+  /** Minimum formatted width, padded with leading zeros; `undefined` adds no padding.
+   * Applies to each component of a composite, counts separators, and never reduces precision. */
   public minWidth?: number;
-  /** How the sign of the value is rendered. `undefined` reads as the spec default
-   * ({@link SpecDefaults.formatShowSignOption}). */
+  /** How the sign is rendered: `NoSign`, `OnlyNegative`, `SignAlways`, or `NegativeParentheses`
+   * (e.g. `(10)` for minus ten). An absent value means {@link SpecDefaults.formatShowSignOption}. */
   public showSignOption?: ShowSignOption;
-  /** Bitmask of rendering traits ({@link FormatTraits.ShowUnitLabel}, ...). The wire form is a
-   * delimited string; this is the parsed flags value. `undefined` reads as no traits, same as
-   * {@link FormatTraits.Uninitialized} (`0`). */
+  /** Rendering options combined with bitwise OR, such as
+   * `FormatTraits.ShowUnitLabel | FormatTraits.KeepSingleZero`.
+   * @remarks
+   * `ShowUnitLabel` enables unit labels; add `PrependUnitLabel` to put them before the value.
+   * `Use1000Separator` enables digit grouping and `ApplyRounding` enables {@link Format.roundFactor}.
+   * `TrailZeroes` retains decimal places up to the precision. An absent value means no traits,
+   * the same as {@link FormatTraits.Uninitialized} (`0`).
+   */
   public formatTraits?: FormatTraits;
   /** Separator between the integer and fractional digits. Empty or a single character;
    * `undefined` reads as the spec default ({@link SpecDefaults.formatDecimalSeparator}). */
@@ -2266,15 +2392,18 @@ export class Format extends SchemaItem {
   /** Separator between the value and the unit label. Empty or a single character; `undefined`
    * reads as the spec default ({@link SpecDefaults.formatUomSeparator}). */
   public uomSeparator?: string;
-  /** Scientific notation variant; the spec requires it when {@link Format.type} is scientific. */
+  /** Required for scientific formats. `Normalized` uses a mantissa such as `1.234e+3`;
+   * `ZeroNormalized` uses `0.1234e+4` for the same value. */
   public scientificType?: ScientificType;
-  /** Number of digits right of the station separator; the spec requires it when
-   * {@link Format.type} is station. */
+  /** Number of integer digits in the station offset. Required and positive for station formats:
+   * with size `2`, a value of `1234.5` is displayed as `12+34.5` before precision and padding rules. */
   public stationOffsetSize?: number;
   /** Separator between the station and offset digits (`"3+25"`). Empty or a single character;
    * `undefined` reads as the spec default ({@link SpecDefaults.formatStationSeparator}). */
   public stationSeparator?: string;
-  /** The composite specification splitting the value across multiple units, if any. */
+  /** Units used to display the quantity, such as feet and inches. The smallest unit receives the
+   * format's numeric precision; larger units display whole numbers. Without a composite, the
+   * format supplies numeric rendering only and the kind of quantity can supply display units. */
   public composite?: FormatComposite;
 
   /** Creates a format in `document`. `type` is mandatory; `init` carries the rest. */
@@ -2325,14 +2454,18 @@ export class Format extends SchemaItem {
 
 /** Complementary data shared by every property kind's constructor. */
 export interface PropertyInit {
+  /** Human-readable display name; consumers fall back to the property name when absent. */
   label?: string;
+  /** User-facing explanation of what the property measures or records. */
   description?: string;
+  /** Whether instance values may only be initialized, then remain unchanged. Does not restrict schema edits. */
   isReadOnly?: boolean;
+  /** Relative importance for display ordering within a class; larger values indicate higher priority. */
   priority?: number;
-  /** Reference to a PropertyCategory */
+  /** UI grouping for this property; see {@link Property.category}. */
   category?: LocalOrFullName;
-  /** Reference to a KindOfQuantity (e.g. `"AecUnits:VOLUMETRIC_FLOW"`). Only meaningful on primitive
-   * and primitive-array properties (whose values are scalar quantities). */
+  /** Quantity semantics, storage unit, and display formats for a primitive or primitive-array property.
+   * See {@link Property.kindOfQuantity} for override and schema-update restrictions. */
   kindOfQuantity?: LocalOrFullName;
   /** Property-level custom attributes, added in order. */
   customAttributes?: ReadonlyArray<CustomAttributeProps>;
@@ -2340,9 +2473,12 @@ export interface PropertyInit {
 
 /** Common base of every property kind. `kind` is the discriminant for narrowing.
  *
- * A property belongs to exactly one {@link ECClass} from the moment it is constructed. Every
- * property constructor takes that class as its first argument and registers the property with it,
- * which is all the `create*` factories on the class do.
+ * @remarks
+ * A property belongs to its declaring {@link ECClass}. A declaration with the same name as an
+ * inherited property overrides it and must preserve its property kind, value type, and persistence
+ * unit. Labels, descriptions, categories, and priorities can be specialized in derived classes.
+ * This object stores only the local declaration; use {@link Property.getBaseProperty} to inspect
+ * inherited metadata.
  * @alpha
  */
 export abstract class Property {
@@ -2350,22 +2486,31 @@ export abstract class Property {
    * {@link SchemaItem.schemaItemType}: the property is registered with its class from this
    * constructor, before a subclass field initializer would have run. */
   public abstract get kind(): PropertyKind;
-  /** Optional display label. */
+  /** Human-readable display name; consumers fall back to the property name when absent. */
   public label?: string;
-  /** Optional description. */
+  /** User-facing explanation of what the property measures or records. */
   public description?: string;
-  /** Whether the property is read-only. */
+  /** Whether instance values may only be initialized, then remain unchanged. Does not restrict edits
+   * to this property definition. An absent value leaves the read-only setting unspecified. */
   public isReadOnly?: boolean;
-  /** Display priority. */
+  /** Relative importance for display ordering within a class; larger values indicate higher priority. */
   public priority?: number;
-  /** Reference to a PropertyCategory (e.g. `"MyDomain:Cat"`).
+  /** Reference to the UI grouping for this property (e.g. `"MyDomain:Dimensions"`).
+   * The category groups properties; {@link Property.priority} orders properties within the class.
    * @see {@link Property.getCategory}, {@link Property.setCategory}. */
   public category?: LocalOrFullName;
-  /** Reference to a KindOfQuantity (e.g. `"AecUnits:VOLUMETRIC_FLOW"`). Only meaningful on
-   * primitive / primitive-array properties.
+  /** Quantity semantics, storage unit, and display formats for a primitive or primitive-array property.
+   * @remarks
+   * Values are stored in the kind of quantity's persistence unit. A property override must preserve
+   * that unit. For schema updates, replacing the kind of quantity with another using the same unit
+   * is compatible; changing or removing the unit requires an explicit upgrade decision.
+   * `SchemaUpgradeCustomAttributes:AllowUnitChange` permits such a metadata correction on import,
+   * with matching `From` and `To` units. It does not convert stored values. To change only the
+   * display, choose another presentation format.
    * @see {@link Property.getKindOfQuantity}, {@link Property.setKindOfQuantity}. */
   public kindOfQuantity?: LocalOrFullName;
-  /** Property-level custom attributes. */
+  /** Custom attributes declared on this property. EC inherits base-property attributes unless a
+   * local instance of the same attribute class overrides them; this collection stores only local instances. */
   public readonly customAttributes: CustomAttributeSet;
 
   private _name: string;
@@ -2387,8 +2532,9 @@ export abstract class Property {
     }
   }
 
-  /** The property name. Changing it preserves this object's identity and declaration position and
-   * updates its declaring class's lookup. Stored references and derived overrides are not rewritten. */
+  /** The property's {@link Metadata.ECName | ECName}, unique case-insensitively among its class's own declarations.
+   * A declaration with an inherited property's name is an override. Renaming preserves object identity and
+   * declaration order and updates name lookup; references and derived overrides are not rewritten. */
   public get name(): string {
     return this._name;
   }
@@ -2520,6 +2666,7 @@ export abstract class Property {
 
 /** Complementary data accepted by the {@link PrimitiveProperty} constructor. */
 export interface PrimitivePropertyInit extends PropertyInit {
+  /** Application-specific interpretation of the primitive value; does not change storage. See {@link PrimitiveProperty.extendedTypeName}. */
   extendedTypeName?: string;
   /** Minimum value (int / long / double only). */
   minValue?: number;
@@ -2540,7 +2687,8 @@ export class PrimitiveProperty extends Property {
   /** Primitive keyword (e.g. `"string"`, `"int"`) or an enumeration reference.
    *  For enumerations this can be set to their name or full-name (e.g. `"MySchema.MyEnum"` or `"alias.MyEnum"`). */
   public typeName: string;
-  /** Extended type name, if any. */
+  /** Application-specific interpretation of the primitive value. Storage remains the base primitive
+   * type; consumers without an extended-type handler can still read the underlying value. */
   public extendedTypeName?: string;
   /** Minimum value (int / long / double only). */
   public minValue?: number;
@@ -2579,6 +2727,7 @@ export class PrimitiveProperty extends Property {
 
 /** Complementary data accepted by the {@link PrimitiveArrayProperty} constructor. */
 export interface PrimitiveArrayPropertyInit extends PropertyInit {
+  /** Application-specific interpretation of each element; does not change storage. See {@link PrimitiveProperty.extendedTypeName}. */
   extendedTypeName?: string;
   /** Minimum element value (int / long / double only). */
   minValue?: number;
@@ -2594,14 +2743,18 @@ export interface PrimitiveArrayPropertyInit extends PropertyInit {
   maxOccurs?: number;
 }
 
-/** A primitive (or enumeration-backed) array property.
+/** An ordered array of values sharing one primitive type or enumeration.
+ * @remarks
+ * Value and length bounds apply to each element. {@link PrimitiveArrayProperty.minOccurs} and
+ * {@link PrimitiveArrayProperty.maxOccurs} constrain the number of elements in the array.
  * @alpha
  */
 export class PrimitiveArrayProperty extends Property {
   public get kind(): PropertyKind.PrimitiveArray { return PropertyKind.PrimitiveArray; }
   /** Primitive keyword or enumeration reference of the array element. */
   public typeName: string;
-  /** Extended type name, if any. */
+  /** Application-specific interpretation of each element; storage remains the base primitive type.
+   * See {@link PrimitiveProperty.extendedTypeName}. */
   public extendedTypeName?: string;
   /** Minimum element value (int / long / double only). */
   public minValue?: number;
@@ -2646,7 +2799,10 @@ export class PrimitiveArrayProperty extends Property {
   }
 }
 
-/** A struct property - an embedded instance of a struct class.
+/** An embedded structured value with no independent identity.
+ * @remarks
+ * The value has exactly the declared struct type; polymorphic values are not supported.
+ * Use a navigation property to reference an independently identifiable instance.
  * @alpha
  */
 export class StructProperty extends Property {
@@ -2679,7 +2835,10 @@ export interface StructArrayPropertyInit extends PropertyInit {
   maxOccurs?: number;
 }
 
-/** A struct array property - an array of embedded struct instances.
+/** An ordered array of embedded structured values, all of the declared struct type.
+ * @remarks
+ * Elements have no independent identity and cannot use derived struct types. Occurrence bounds
+ * constrain the array length; nested struct properties must not form a containment cycle.
  * @alpha
  */
 export class StructArrayProperty extends Property {
@@ -2713,14 +2872,22 @@ export class StructArrayProperty extends Property {
   }
 }
 
-/** A navigation property - a reference to a related instance reached through a relationship.
+/** A reference to at most one related instance, reached through a relationship.
+ * @remarks
+ * Declare it on an entity, mixin, or relationship class supported by the starting endpoint. The
+ * destination endpoint must have an upper multiplicity of one. Reference the root relationship
+ * in its hierarchy; an override cannot substitute a different relationship.
+ *
+ * For a parent-to-child relationship, a child's `Parent` property traverses `Backward` to the
+ * source endpoint. Its source multiplicity must be `(0..1)` or `(1..1)`.
  * @alpha
  */
 export class NavigationProperty extends Property {
   public get kind(): PropertyKind.Navigation { return PropertyKind.Navigation; }
-  /** Reference to the `RelationshipClass` this property traverses. */
+  /** Reference to the root {@link RelationshipClass} this property traverses. */
   public relationshipName: LocalOrFullName;
-  /** Which end of the relationship this property starts from. */
+  /** `Forward` navigates from source to target; `Backward` navigates from target to source.
+   * This is independent of the relationship's {@link RelationshipClass.strengthDirection}. */
   public direction: StrengthDirection;
 
   /** Creates a navigation property on `declaringClass`. `relationship` and `direction` are mandatory. */

@@ -23,11 +23,11 @@ if (!(Symbol as any).asyncIterator) {
  * @public @preview
  */
 export enum ECClassModifier {
-  /* normal, instantiable class, can be subclassed */
+  /** Instantiable and open to subclassing. The default for classes other than mixins. */
   None = 0,
-  /* abstract class, cannot be instantiated, can be subclassed */
+  /** Cannot be instantiated directly; can be subclassed. */
   Abstract = 1,
-  /* sealed class, instantiable class, cannot be subclassed */
+  /** Instantiable, but cannot be subclassed. */
   Sealed = 2,
 }
 
@@ -92,16 +92,28 @@ export type SupportedSchemaItemType = SchemaItemType | AbstractSchemaItemType;
  * @public @preview
  */
 export enum PrimitiveType {
+  /** No type selected; invalid for a property declaration. */
   Uninitialized = 0x00,
+  /** An array of bytes. */
   Binary = 0x101,
+  /** A true or false value. */
   Boolean = 0x201,
+  /** A date, time of day, or combined date/time. Apply `CoreCustomAttributes:DateTimeInfo` to
+   * specify the component and time-zone interpretation. */
   DateTime = 0x301,
+  /** A double-precision floating-point value. */
   Double = 0x401,
+  /** A signed 32-bit integer; serialized as `int`. */
   Integer = 0x501,
+  /** A signed 64-bit integer. JavaScript numbers cannot exactly represent every value in this range. */
   Long = 0x601,
+  /** X and Y components, each a double. */
   Point2d = 0x701,
+  /** X, Y, and Z components, each a double. */
   Point3d = 0x801,
+  /** A text value. */
   String = 0x901,
+  /** A common geometry value; serialized as `Bentley.Geometry.Common.IGeometry`. */
   IGeometry = 0xa01,
 }
 
@@ -137,7 +149,8 @@ export enum PropertyKind {
 }
 
 /**
- * Defines the valid CustomAttribute container types.
+ * Container kinds that a custom attribute class permits. Combine flags with bitwise OR;
+ * the `AnyClass`, `AnyProperty`, and `AnyRelationshipConstraint` flags select whole groups.
  * @public @preview
  */
 export enum CustomAttributeContainerType {
@@ -189,23 +202,25 @@ export enum RelationshipEnd {
 }
 
 /**
- * Defines the how the lifetime of the source and target are related.
- *
+ * Ownership and lifetime semantics of a relationship. {@link StrengthDirection} selects the holder/owner end.
  * @public @preview */
 export enum StrengthType {
+  /** An association between independently existing instances; no ownership is implied. */
   Referencing,
+  /** Shared ownership: the held instance depends on at least one holder. */
   Holding,
+  /** Exclusive ownership: the embedded instance belongs to one owner and shares its lifetime. */
   Embedding,
 }
 
 /**
- * Defines the which side of the relationship is the starting point of the relationship.  This impacts how relationship strength is applied.
- *
+ * Direction from one relationship endpoint to the other. On a relationship class it determines
+ * which end holds or owns the other; on a navigation property it determines traversal independently.
  * @public @preview */
 export enum StrengthDirection {
-  /** The source is the starting point of the relationship. */
+  /** Source to target; on a holding or embedding relationship, the source is the holder/owner. */
   Forward = 1,
-  /** The target is the starting point of the relationship. */
+  /** Target to source; on a holding or embedding relationship, the target is the holder/owner. */
   Backward = 2,
 }
 
