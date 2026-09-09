@@ -3664,7 +3664,7 @@ export interface GcsDbProps extends WorkspaceDbCloudProps {
 }
 
 // @internal
-export function generateElementGraphics(_request: ElementGraphicsRequestProps, _iModel: IModelDb): Promise<Uint8Array | undefined>;
+export function generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise<Uint8Array | undefined>;
 
 // @public
 export class GenericDocument extends Document_2 {
