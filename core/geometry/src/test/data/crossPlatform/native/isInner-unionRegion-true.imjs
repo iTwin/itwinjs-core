@@ -1,0 +1,1 @@
+{"unionRegion":[{"parityRegion":[{"loop":[{"arc":{"center":[0.0,0.0,0.0],"vectorX":[1.0,0.0,0.0],"vectorY":[0.0,1.0,0.0],"sweepStartEnd":[0.0,360.0]}}]},{"loop":[{"arc":{"center":[0.0,0.0,0.0],"vectorX":[1.0,0.0,0.0],"vectorY":[0.0,1.0,0.0],"sweepStartEnd":[0.0,360.0]}}],"isInner":true}]}]}

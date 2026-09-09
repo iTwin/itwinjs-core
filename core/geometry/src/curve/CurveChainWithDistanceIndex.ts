@@ -266,11 +266,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @param transform transform to apply in the clone.
    * @param options how finely to stroke the path to create the distance index
    */
-  public cloneTransformed(transform: Transform, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined {
-    const c = this._path.clone() as Path;
-    if (c.tryTransformInPlace(transform))
-      return CurveChainWithDistanceIndex.createCapture(c, options);
-    return undefined;
+  public cloneTransformed(transform: Transform, options?: StrokeOptions): CurveChainWithDistanceIndex {
+    return CurveChainWithDistanceIndex.createCapture(this._path.cloneTransformed(transform), options);
   }
   /**
    * Reference to the contained path.
@@ -291,8 +288,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @param options how finely to stroke the path to create the distance index
    */
   public clone(options?: StrokeOptions): CurveChainWithDistanceIndex {
-    const c = this._path.clone() as Path;
-    return CurveChainWithDistanceIndex.createCapture(c, options);
+    return CurveChainWithDistanceIndex.createCapture(this._path.clone(), options);
   }
   /**
    * Return a portion of this curve with its own distance index.
@@ -472,16 +468,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @return cloned flattened CurveChain, or reference to the input chain if no nesting
   */
   private static flattenNestedChains(chain: CurveChain): CurveChain {
-    if (-1 === chain.children.findIndex((child: CurvePrimitive) => { return child instanceof CurveChainWithDistanceIndex; }))
+    if (-1 === chain.children.findIndex((c: CurvePrimitive) => c instanceof CurveChainWithDistanceIndex))
       return chain;
-    const flatChain = chain.clone() as CurveChain;
-    const flatChildren = flatChain.children.flatMap((child: CurvePrimitive) => {
-      if (child instanceof CurveChainWithDistanceIndex)
-        return child.path.children;
-      else
-        return [child];
-    },
-    );
+    const flatChain = chain.clone();
+    const flatChildren = flatChain.children.flatMap((c: CurvePrimitive) => c instanceof CurveChainWithDistanceIndex ? c.path.children : c);
     flatChain.children.splice(0, Infinity, ...flatChildren);
     return flatChain;
   }
@@ -664,18 +654,13 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return result;
   }
   /**
-   * Attempt to transform in place.
-   * * Warning: If any child transform fails, `this` object becomes invalid but that should never happen.
-   * @param transform the transform to be applied.
-   * @returns true if all of child transforms succeed and false otherwise.
+   * Transform the chain in place.
+   * * Does NOT recompute the distance index.
+   * * For best results, use a rigid transform. Otherwise, it is better to call [[cloneTransformed]] so that the
+   * distance index is recomputed.
    */
   public tryTransformInPlace(transform: Transform): boolean {
-    let numFail = 0;
-    for (const c of this._path.children) {
-      if (!c.tryTransformInPlace(transform))
-        numFail++;
-    }
-    return numFail === 0;
+    return this._path.tryTransformInPlace(transform);
   }
   /** Reverse the curve's data so that its fractional stroking moves in the opposite direction. */
   public reverseInPlace(): void {

@@ -181,8 +181,7 @@ export class InterpolationCurve3dOptions {
     result._endTangent = source.endTangent ? Vector3d.fromJSON(source.endTangent) : undefined;
     return result;
   }
-  // ugh.
-  // vector equality test with awkward rule that 000 matches undefined.
+  /** Vector equality test, with the additional rule that the zero vector matches undefined. */
   private static areAlmostEqualAllow000AsUndefined(a: Vector3d | undefined, b: Vector3d | undefined): boolean {
     if (a !== undefined && a.maxAbs() === 0)
       a = undefined;
@@ -192,6 +191,7 @@ export class InterpolationCurve3dOptions {
       return a.isAlmostEqual(b);
     return a === undefined && b === undefined;
   }
+  /** Whether the two options are equivalent or both undefined. */
   public static areAlmostEqual(dataA: InterpolationCurve3dOptions | undefined, dataB: InterpolationCurve3dOptions | undefined): boolean {
     if (dataA === undefined && dataB === undefined)
       return true;
@@ -241,6 +241,7 @@ export class InterpolationCurve3dOptions {
  * @public
  */
 export class InterpolationCurve3d extends ProxyCurve {
+  /** String name for schema properties. */
   public readonly curvePrimitiveType = "interpolationCurve";
   private _options: InterpolationCurve3dOptions;
   /** CAPTURE properties and proxy curve. */
@@ -315,15 +316,13 @@ export class InterpolationCurve3d extends ProxyCurve {
    * Transform this [[InterpolationCurve3d]] and its defining data in place
    */
   public tryTransformInPlace(transform: Transform): boolean {
-    const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
-    if (proxyOk) {
-      transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
-      if (this._options.startTangent)
-        transform.multiplyVectorInPlace(this._options.startTangent);
-      if (this._options.endTangent)
-        transform.multiplyVectorInPlace(this._options.endTangent);
-    }
-    return proxyOk;
+    this._proxyCurve.tryTransformInPlace(transform);
+    transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
+    if (this._options.startTangent)
+      transform.multiplyVectorInPlace(this._options.startTangent);
+    if (this._options.endTangent)
+      transform.multiplyVectorInPlace(this._options.endTangent);
+    return true; // we know this succeeds
   }
   /**
    * Find intervals of this CurvePrimitive that are interior to a clipper.
@@ -340,10 +339,11 @@ export class InterpolationCurve3d extends ProxyCurve {
     return new InterpolationCurve3d(this._options.clone(), this._proxyCurve.clone());
   }
   /** Return a transformed clone. */
-  public override cloneTransformed(transform: Transform): InterpolationCurve3d | undefined {
-    return super.cloneTransformed(transform) as InterpolationCurve3d | undefined;
+  public override cloneTransformed(transform: Transform): InterpolationCurve3d {
+    return super.cloneTransformed(transform) as InterpolationCurve3d;
   }
 
+  /** Test if this [[InterpolationCurve3d]] is almost equal to another GeometryQuery object. */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof InterpolationCurve3d) {
       return InterpolationCurve3dOptions.areAlmostEqual(this._options, other._options);
