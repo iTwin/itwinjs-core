@@ -21,9 +21,9 @@ export interface SchemaCopyOptions {
   /** Add to the destination document any schema reference the copied content needs and the
    * destination does not already declare, taking the version from the source document. On by
    * default. Purely additive: an existing reference is never modified, so a version disagreement
-   * stays visible to validation - the same rule {@link SchemaDocument.referenceTo} follows.
+   * stays visible to validation - the same rule [Authoring.SchemaDocument.referenceTo]($ecschema-metadata) follows.
    *
-   * This does **not** rewrite the copy's own references. See the remarks on {@link copyItemInto}.
+   * This does **not** rewrite the copy's own references. See the remarks on [Authoring.copyItemInto]($ecschema-metadata).
    * With this off, a reference the destination cannot resolve keeps whatever separator the
    * serializer wrote (`"BisCore.Element"`); the two EC separators compare equal, so it resolves as
    * soon as the destination declares that schema. */
@@ -35,7 +35,7 @@ export interface SchemaCopyOptions {
  *
  * Copying serializes the source and reads it back, so the issues are the serializer's: most often a
  * custom attribute whose class is in no schema the *source* document can reach, which is dropped
- * with an error rather than copied blind. Check {@link SchemaIssueList.hasErrors} before treating a
+ * with an error rather than copied blind. Check [Authoring.SchemaIssueList.hasErrors]($ecschema-metadata) before treating a
  * copy as faithful.
  * @alpha
  */
@@ -46,14 +46,14 @@ export interface SchemaCopyResult<T> {
 
 /** Copies a schema item into `document` and returns the copy - the way to lift the blueprint of a
  * class out of one schema and into another. The source is untouched; use
- * {@link SchemaDocument.moveItemIn} to relocate rather than duplicate.
+ * [Authoring.SchemaDocument.moveItemIn]($ecschema-metadata) to relocate rather than duplicate.
  *
  * The copy is deep: properties, custom attributes, relationship constraints, enumerators, and
  * composites all come along. It is made by round-tripping the item through the ECJSON serializer,
  * so it stays complete as fields are added to the model, rather than needing a hand-written clone
  * per item kind kept in step by hand.
  *
- * **References are copied verbatim**, the same rule {@link SchemaDocument.moveItemIn} follows. A
+ * **References are copied verbatim**, the same rule [Authoring.SchemaDocument.moveItemIn]($ecschema-metadata) follows. A
  * reference qualified by schema name (`"BisCore:PhysicalElement"`) keeps meaning what it meant, and
  * `carrySchemaReferences` makes sure the destination declares that schema. An **unqualified**
  * reference (`"Pump"`) meant "an item of the source schema" and in the destination means an item of
@@ -79,7 +79,7 @@ export function copyItemInto(document: SchemaDocument, item: SchemaItem, options
 }
 
 /** Copies a property into `declaringClass` and returns the copy. Same semantics as
- * {@link copyItemInto}, one level down - including that references are copied verbatim.
+ * [Authoring.copyItemInto]($ecschema-metadata), one level down - including that references are copied verbatim.
  * @alpha
  */
 export function copyPropertyInto(declaringClass: ECClass, property: Property, options?: SchemaCopyOptions): SchemaCopyResult<AnyProperty> {
@@ -94,14 +94,14 @@ export function copyPropertyInto(declaringClass: ECClass, property: Property, op
 }
 
 /** Copies a whole document into `schemaSet` and returns the copy, leaving the source where it is.
- * The counterpart of {@link SchemaSet.moveIn}.
+ * The counterpart of [Authoring.SchemaSet.moveIn]($ecschema-metadata).
  *
  * A document carries its own reference list, so nothing has to be carried or requalified here - the
- * caveat on {@link copyItemInto} does not apply.
+ * caveat on [Authoring.copyItemInto]($ecschema-metadata) does not apply.
  *
  * When the set already holds a schema of that name the incumbent is left alone, an error is
  * reported, and the copy is still returned - in a private set of its own, so a caller that wants to
- * rename and retry can. Check {@link SchemaCopyResult.issues} rather than assuming the copy joined
+ * rename and retry can. Check [Authoring.SchemaCopyResult.issues]($ecschema-metadata) rather than assuming the copy joined
  * the set.
  * @alpha
  */

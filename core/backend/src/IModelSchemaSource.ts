@@ -11,7 +11,7 @@ import { IModelDb } from "./IModelDb";
 import { querySchemaManifest } from "./internal/SchemaManifestQuery";
 
 /**
- * Reading the schemas of an iModel into an authoring {@link Authoring.SchemaSet}.
+ * Reading the schemas of an iModel into an authoring [Authoring.SchemaSet]($ecschema-metadata).
  *
  * This is deliberately not a member of {@link IModelDb}. A schema set is an authoring workspace with
  * an owner and a lifetime, unlike the old `SchemaContext` an iModel handed out - so the caller
@@ -23,7 +23,7 @@ import { querySchemaManifest } from "./internal/SchemaManifestQuery";
  *    name, version, alias and reference list, without reading any schema content. It is the same
  *    schema manifest SchemaView's fragment loading is built on - two ECDbMeta queries answering
  *    "what schemas does this iModel have, and how do they depend on each other".
- * 2. **Load.** {@link Authoring.SchemaResolver} turns those headers into a dependency-ordered plan,
+ * 2. **Load.** [Authoring.SchemaResolver]($ecschema-metadata) turns those headers into a dependency-ordered plan,
  *    and the plan hydrates the documents it names into the set.
  *
  * {@link readSchemasFromIModel} runs both for the common cases - everything in the iModel, or a few
@@ -32,7 +32,7 @@ import { querySchemaManifest } from "./internal/SchemaManifestQuery";
  * pool or prefer the first source that can satisfy each request.
  */
 
-/** A {@link Authoring.SchemaSource} over the schemas one iModel holds.
+/** A [Authoring.SchemaSource]($ecschema-metadata) over the schemas one iModel holds.
  *
  * Discovery costs the two ECDbMeta queries behind the schema manifest and reads no schema content.
  * Loading a document goes through `IModelDb.getSchemaProps`, which crosses the native boundary as a
@@ -144,7 +144,7 @@ export interface ReadSchemasFromIModelResult {
   issues: Authoring.SchemaIssueList;
 }
 
-/** Reads schemas out of an iModel into an authoring {@link Authoring.SchemaSet}.
+/** Reads schemas out of an iModel into an authoring [Authoring.SchemaSet]($ecschema-metadata).
  *
  * ```ts
  * // Everything the iModel holds.
@@ -157,7 +157,7 @@ export interface ReadSchemasFromIModelResult {
  *
  * Documents arrive in dependency order, so every reference a document makes resolves against a set
  * that already holds its target - which is what makes custom attributes readable and
- * {@link Authoring.ECClass.getExpandedProperties} walk the real base classes. The reference aliases
+ * [Authoring.ECClass.getExpandedProperties]($ecschema-metadata) walk the real base classes. The reference aliases
  * ECJSON does not carry are filled in from the set, so what is read can be written back as ECXML.
  *
  * Never throws on schema data. Everything that went wrong is in `issues`.

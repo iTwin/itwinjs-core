@@ -20,7 +20,7 @@ type JsonObject = Record<string, unknown>;
  * - `keepTarget` - leave the target's value. The default for every class of field.
  * - `takeIncoming` - overwrite with the incoming value.
  * - `rename` - carry both, by adding the incoming construct under a derived name. Applies to
- *   properties, and to schema items when {@link SchemaMergeOptions.renameItemOnConflict} is on;
+ *   properties, and to schema items when [Authoring.SchemaMergeOptions.renameItemOnConflict]($ecschema-metadata) is on;
  *   asked for anywhere else it is reported and treated as `keepTarget`.
  * - `skip` - drop the incoming construct entirely rather than merging any of it.
  *
@@ -29,7 +29,7 @@ type JsonObject = Record<string, unknown>;
 export type SchemaMergeResolution = "keepTarget" | "takeIncoming" | "rename" | "skip";
 
 /** One disagreement between the target and the incoming schema, handed to
- * {@link SchemaMergeOptions.onConflict}.
+ * [Authoring.SchemaMergeOptions.onConflict]($ecschema-metadata).
  * @alpha
  */
 export interface SchemaMergeConflict {
@@ -37,7 +37,7 @@ export interface SchemaMergeConflict {
   location: string;
   /** The disagreeing field (`"typeName"`). */
   field: string;
-  /** How the field is classified - see {@link MergeFieldClass}. */
+  /** How the field is classified - see [Authoring.MergeFieldClass]($ecschema-metadata). */
   fieldClass: MergeFieldClass;
   /** The value the target holds. `undefined` when the target does not carry the field. */
   target?: unknown;
@@ -48,7 +48,7 @@ export interface SchemaMergeConflict {
 }
 
 /** One custom attribute the merge is about to decide on, handed to
- * {@link SchemaMergeOptions.onCustomAttribute}. It fires for every class present on either side of
+ * [Authoring.SchemaMergeOptions.onCustomAttribute]($ecschema-metadata). It fires for every class present on either side of
  * every container in the result, including containers taken wholesale from the incoming schema, so
  * a caller can suppress an attribute on newly added content as readily as on merged content.
  * @alpha
@@ -83,7 +83,7 @@ export interface SchemaMergeOptions {
    * own. */
   renameItemOnConflict?: boolean;
   /** Decides a field-level disagreement. Return `undefined` to accept
-   * {@link SchemaMergeConflict.defaultResolution}. */
+   * [Authoring.SchemaMergeConflict.defaultResolution]($ecschema-metadata). */
   onConflict?: (conflict: SchemaMergeConflict) => SchemaMergeResolution | undefined;
   /** Decides one custom attribute. Return `undefined` for the default, which is that the incoming
    * instance wins and a one-sided instance is kept. */
@@ -103,7 +103,7 @@ export interface SchemaMergeRename {
   to: string;
 }
 
-/** The outcome of {@link mergeSchemaInto}.
+/** The outcome of [Authoring.mergeSchemaInto]($ecschema-metadata).
  * @alpha
  */
 export interface SchemaMergeResult {
@@ -119,17 +119,17 @@ export interface SchemaMergeResult {
  * accumulates schemas into it. `incoming` is never modified.
  *
  * **The merge never throws and never refuses.** Every disagreement it cannot reconcile is recorded
- * in {@link SchemaMergeResult.issues} with a name and a location, and the result is a document the
- * caller then runs {@link validateSchemaDocument} over and repairs. That division is what the
+ * in [Authoring.SchemaMergeResult.issues]($ecschema-metadata) with a name and a location, and the result is a document the
+ * caller then runs [Authoring.validateSchemaDocument]($ecschema-metadata) over and repairs. That division is what the
  * validity-free model buys: policy does not have to be encoded in merge-time flags and failures,
  * because there is a later step that can express it.
  *
  * **Merging is a union - nothing is ever removed.** A property, item, enumerator, or custom
  * attribute the target has and the incoming schema does not is left alone.
  *
- * How disagreements are settled is the {@link mergeFieldClasses} table: a field that says what a
+ * How disagreements are settled is the [Authoring.mergeFieldClasses]($ecschema-metadata) table: a field that says what a
  * construct *is* is a conflict, one that qualifies it keeps the target's value with a warning, and
- * annotation keeps the target's value quietly. {@link SchemaMergeOptions.onConflict} overrides any
+ * annotation keeps the target's value quietly. [Authoring.SchemaMergeOptions.onConflict]($ecschema-metadata) overrides any
  * of it, synchronously and in the one pass.
  *
  * Two things to know about what the result looks like:
@@ -210,7 +210,7 @@ function mergeSchemaVersion(context: MergeContext): void {
 }
 
 /** Adds every reference the incoming schema declares and the target does not. An existing reference
- * is never rewritten, the rule {@link SchemaDocument.referenceTo} already follows - a version
+ * is never rewritten, the rule [Authoring.SchemaDocument.referenceTo]($ecschema-metadata) already follows - a version
  * disagreement stays visible to validation rather than being silently resolved here. */
 function mergeSchemaReferences(context: MergeContext): void {
   const { document, incoming, issues } = context;
@@ -814,7 +814,7 @@ function mergeCustomAttributes(targetAttributes: JsonObject[], incomingAttribute
 }
 
 /** The tree form is the flattened ECJSON one (`className` plus the values inline); the callback sees
- * the nested authoring shape, which is what {@link CustomAttributeSet.add} takes. */
+ * the nested authoring shape, which is what [Authoring.CustomAttributeSet.add]($ecschema-metadata) takes. */
 function toCustomAttributeProps(attribute: JsonObject): CustomAttributeProps {
   const { className, ...values } = attribute;
   return { className: String(className), values: values as CustomAttributeValues };

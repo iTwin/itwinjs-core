@@ -23,7 +23,7 @@ import { SchemaIssueList } from "./SchemaIssues";
 const separatorPattern = /[.:]/;
 
 
-/** Serializes a {@link Authoring.SchemaDocument} to ECXML text, in any published spec version -
+/** Serializes a [Authoring.SchemaDocument]($ecschema-metadata) to ECXML text, in any published spec version -
  * 2.0, 3.0, 3.1 or 3.2. The document always models the latest spec; the writer converts at this
  * boundary.
  *
@@ -31,7 +31,7 @@ const separatorPattern = /[.:]/;
  * warning. 2.0 gives up the most: it has no enumerations, kinds of quantity, property categories,
  * units or formats, and it cannot express a navigation property or a class modifier beyond
  * abstract. Where the legacy custom attributes those constructs replaced are wanted in the output,
- * run {@link convertToEC2CustomAttributes} over a copy of the document first - the writer never
+ * run [Authoring.convertToEC2CustomAttributes]($ecschema-metadata) over a copy of the document first - the writer never
  * invents custom attributes on its own.
  *
  * Problems that do not prevent producing output (an item reference whose schema is missing from
@@ -40,9 +40,9 @@ const separatorPattern = /[.:]/;
  * @alpha
  */
 export class SchemaXmlWriter implements SchemaDocumentTextWriter {
-  /** Writes the document to ECXML text in the requested spec version (default {@link ECSpec.Latest}).
+  /** Writes the document to ECXML text in the requested spec version (default [Authoring.ECSpec.Latest]($ecschema-metadata)).
    * Builds the whole document as one string; for a schema large enough to approach the platform's
-   * maximum string length use {@link writeDocumentTo} instead. */
+   * maximum string length use [Authoring.SchemaXmlWriter.writeDocumentTo]($ecschema-metadata) instead. */
   public writeDocument(document: Authoring.SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult {
     const issues = new SchemaIssueList("xml");
     const emitter = this._prepare(document, issues, options);
@@ -53,7 +53,7 @@ export class SchemaXmlWriter implements SchemaDocumentTextWriter {
 
   /** Streams the document to `sink` as ECXML text in chunks, never materializing it as one string, so
    * a schema of any size can be written. The whole document still passes through `sink`; concatenating
-   * the chunks yields exactly what {@link writeDocument} returns. */
+   * the chunks yields exactly what [Authoring.SchemaXmlWriter.writeDocument]($ecschema-metadata) returns. */
   public async writeDocumentTo(document: Authoring.SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult> {
     const issues = new SchemaIssueList("xml");
     const emitter = this._prepare(document, issues, options);

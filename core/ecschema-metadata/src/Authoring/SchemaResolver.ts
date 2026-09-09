@@ -14,7 +14,7 @@ import { SchemaIssueList } from "./SchemaIssues";
 
 /** One schema a source can deliver: its header (obtained by a cheap peek, without loading the
  * content) plus the deferred load of the full document. Discovery works exclusively on headers;
- * nothing is hydrated until a {@link SchemaResolution} is loaded.
+ * nothing is hydrated until a [Authoring.SchemaResolution]($ecschema-metadata) is loaded.
  * @alpha
  */
 export interface SchemaCandidate {
@@ -28,9 +28,9 @@ export interface SchemaCandidate {
 
 /** A place schemas can be discovered in: a directory of schema files, an iModel, an in-memory set.
  * A source enumerates candidates by header; it does not resolve references or chase dependencies -
- * that is {@link SchemaResolver.resolve}'s job, so the loading order stays explicit instead of
+ * that is [Authoring.SchemaResolver.resolve]($ecschema-metadata)'s job, so the loading order stays explicit instead of
  * happening behind a locater. Implementations requiring platform access (the file system, an
- * iModel) live in the packages that have it; this package ships {@link InMemorySchemaSource}.
+ * iModel) live in the packages that have it; this package ships [Authoring.InMemorySchemaSource]($ecschema-metadata).
  * @alpha
  */
 export interface SchemaSource {
@@ -53,7 +53,7 @@ export enum SchemaCandidateSelectionMode {
 }
 
 /** A source over candidates the caller already holds in memory: pre-read texts (paired with the
- * reader that parses them) or constructed {@link SchemaDocument}s. Also the building block for
+ * reader that parses them) or constructed [Authoring.SchemaDocument]($ecschema-metadata)s. Also the building block for
  * tests and for adapters that gather candidates by other means.
  * @alpha
  */
@@ -109,7 +109,7 @@ export class InMemorySchemaSource implements SchemaSource {
   }
 }
 
-/** How one schema name was resolved (or not). Part of a {@link SchemaResolution}.
+/** How one schema name was resolved (or not). Part of a [Authoring.SchemaResolution]($ecschema-metadata).
  * @alpha
  */
 export interface ResolvedSchema {
@@ -118,7 +118,7 @@ export interface ResolvedSchema {
   /** The chosen candidate; `undefined` for roots (the caller already holds those documents) and
    * for missing schemas. */
   readonly candidate?: SchemaCandidate;
-  /** True when this entry is one of the roots passed to {@link SchemaResolver.resolve}. */
+  /** True when this entry is one of the roots passed to [Authoring.SchemaResolver.resolve]($ecschema-metadata). */
   readonly isRoot: boolean;
   /** Who asked for this schema: schema names, or `"<request>"` for the roots themselves. */
   readonly requestedBy: ReadonlyArray<string>;
@@ -150,7 +150,7 @@ export class SchemaResolution {
    * and returns the documents newly added to it. Root entries are skipped - the caller already
    * holds those documents. A same-version document already in the set satisfies the plan and is
    * skipped; a different existing version is reported as a conflict. Load problems are appended to
-   * {@link SchemaResolution.issues}; a candidate whose load produces no document is omitted. */
+   * [Authoring.SchemaResolution.issues]($ecschema-metadata); a candidate whose load produces no document is omitted. */
   public async loadDocuments(schemaSet: SchemaSet): Promise<SchemaDocument[]> {
     const documents: SchemaDocument[] = [];
     for (const resolved of this.schemas) {
@@ -177,7 +177,7 @@ export class SchemaResolution {
   }
 }
 
-/** A schema name under resolution, before it becomes a {@link ResolvedSchema}: the header it was
+/** A schema name under resolution, before it becomes a [Authoring.ResolvedSchema]($ecschema-metadata): the header it was
  * requested with, the candidate finally selected for it, and who asked for it. Module scope so the
  * closure walk and the topological order share one declaration. */
 interface ResolutionNode {
@@ -195,14 +195,14 @@ interface SourcedCandidate {
 }
 
 /** Works out which schemas a set of root documents needs, and in what order to load them. The
- * middle of the three discovery steps: a {@link SchemaSource} says what schemas exist and what each
+ * middle of the three discovery steps: a [Authoring.SchemaSource]($ecschema-metadata) says what schemas exist and what each
  * one declares about itself, this resolves the reference closure over those headers into a
- * dependency-ordered plan, and {@link SchemaResolution.loadDocuments} hydrates the plan into a
- * {@link SchemaSet}. Nothing is read until the plan exists, and the plan is inspectable first -
+ * dependency-ordered plan, and [Authoring.SchemaResolution.loadDocuments]($ecschema-metadata) hydrates the plan into a
+ * [Authoring.SchemaSet]($ecschema-metadata). Nothing is read until the plan exists, and the plan is inspectable first -
  * which is what the old locater chain, resolving references as it loaded them, could not offer.
  *
  * Candidate selection is explicit. The default chooses the highest compatible version across all
- * sources. {@link SchemaCandidateSelectionMode.FirstSource} instead chooses from the first source
+ * sources. [Authoring.SchemaCandidateSelectionMode.FirstSource]($ecschema-metadata) instead chooses from the first source
  * that can satisfy a request, then takes that source's highest compatible version. Exactly one
  * version of a name participates in a resolution; incompatible requirements are reported.
  * @alpha
@@ -214,7 +214,7 @@ export class SchemaResolver {
   public constructor(private readonly _selectionMode: SchemaCandidateSelectionMode = SchemaCandidateSelectionMode.HighestVersion) { }
 
   /** Adds a source. Registration order is significant only in
-   * {@link SchemaCandidateSelectionMode.FirstSource} mode and for equal-version ties. Adding a
+   * [Authoring.SchemaCandidateSelectionMode.FirstSource]($ecschema-metadata) mode and for equal-version ties. Adding a
    * source invalidates this resolver's cached discovery snapshot. */
   public addSource(source: SchemaSource): void {
     this._sources.push(source);
@@ -248,7 +248,7 @@ export class SchemaResolver {
   /** Resolves the reference closure of schemas named by `names`, taking every one of them from the
    * sources. This is the form to use when the caller wants schemas loaded rather than supplied:
    * asking an iModel or a directory for `["BisCore"]` yields BisCore plus everything it references,
-   * dependency-ordered and ready for {@link SchemaResolution.loadDocuments}.
+   * dependency-ordered and ready for [Authoring.SchemaResolution.loadDocuments]($ecschema-metadata).
    *
    * A bare name carries no version constraint; the resolver's selection mode chooses among the
    * available candidates, and `matchType` governs their references. A name no source offers is

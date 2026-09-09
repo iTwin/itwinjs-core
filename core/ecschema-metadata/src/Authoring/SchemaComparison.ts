@@ -38,7 +38,7 @@ export interface SchemaItemComparison {
   differences: SchemaValueDifference[];
 }
 
-/** The result of {@link compareSchemaDocuments}.
+/** The result of [Authoring.compareSchemaDocuments]($ecschema-metadata).
  * @alpha
  */
 export interface SchemaComparison {

@@ -30,7 +30,7 @@ import { CustomAttributeProps, CustomAttributeValues, SchemaDocument, SchemaSet 
  * `StandardSchemas.test.ts` asserts they still match the published `@bentley/*-schema` packages.
  *
  * The two legacy EC2 schemas `EditorCustomAttributes` and `Bentley_Standard_CustomAttributes` are
- * here for the same reason: {@link convertEC2CustomAttributes} has to read their attributes to turn
+ * here for the same reason: [Authoring.convertEC2CustomAttributes]($ecschema-metadata) has to read their attributes to turn
  * them into first-class items, and a 2.0 file rarely arrives with its standard schemas alongside.
  * Only the classes that conversion touches are defined, and those schemas are frozen, so there is
  * nothing for a drift test to track.
@@ -175,7 +175,7 @@ function buildECDbMap(set: SchemaSet): SchemaDocument {
 }
 
 /** `EditorCustomAttributes` - the EC2 schema whose attributes carried what EC3 promoted to
- * enumerations, property categories, and priorities. Only what {@link convertEC2CustomAttributes}
+ * enumerations, property categories, and priorities. Only what [Authoring.convertEC2CustomAttributes]($ecschema-metadata)
  * reads is defined. */
 function buildEditorCustomAttributes(set: SchemaSet): SchemaDocument {
   const doc = set.createSchema("EditorCustomAttributes", "beca", 1, 0, 3);
@@ -208,7 +208,7 @@ function buildEditorCustomAttributes(set: SchemaSet): SchemaDocument {
 }
 
 /** `Bentley_Standard_CustomAttributes` - the EC2 schema whose attributes EC3 relocated to
- * `CoreCustomAttributes`. Only what {@link convertEC2CustomAttributes} reads is defined. */
+ * `CoreCustomAttributes`. Only what [Authoring.convertEC2CustomAttributes]($ecschema-metadata) reads is defined. */
 function buildBentleyStandardCustomAttributes(set: SchemaSet): SchemaDocument {
   const doc = set.createSchema("Bentley_Standard_CustomAttributes", "bsca", 1, 0, 14);
 
@@ -238,7 +238,7 @@ function buildBentleyStandardCustomAttributes(set: SchemaSet): SchemaDocument {
 }
 
 /** `Unit_Attributes` - the EC2 schema whose attributes carried what EC3 promoted to kinds of
- * quantity. Only what {@link convertEC2CustomAttributes} reads is defined.
+ * quantity. Only what [Authoring.convertEC2CustomAttributes]($ecschema-metadata) reads is defined.
  *
  * `UnitSpecification` is declared both a struct class and a custom attribute class in the real
  * schema, which EC2 allows and EC3 does not. It is the custom attribute class here, because that is
@@ -279,7 +279,7 @@ function values(entries: Record<string, string | number | boolean | undefined>):
 }
 
 /** Typed constructors for the custom attributes of `CoreCustomAttributes`. Each returns the shape
- * {@link CustomAttributeSet.add} takes, with the property names and value types checked at compile
+ * [Authoring.CustomAttributeSet.add]($ecschema-metadata) takes, with the property names and value types checked at compile
  * time rather than at serialization time:
  *
  * ```ts
@@ -347,7 +347,7 @@ export namespace CoreCustomAttributes {
  * @alpha
  */
 export namespace ECDbMap {
-  /** One entry of {@link ECDbMap.dbIndexList}. */
+  /** One entry of [Authoring.ECDbMap.dbIndexList]($ecschema-metadata). */
   export interface DbIndex {
     name: string;
     properties: string[];

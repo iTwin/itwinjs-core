@@ -14,7 +14,7 @@ import { Authoring } from "@itwin/ecschema-metadata";
 /** A schema source that discovers ECXML files in a list of directories.
  *
  * Discovery reads only each file's header. Full documents are read on demand after a
- * {@link Authoring.SchemaResolver} selects them. Directories are searched non-recursively and files
+ * [Authoring.SchemaResolver]($ecschema-metadata) selects them. Directories are searched non-recursively and files
  * must end in `.ecschema.xml`.
  * @alpha
  */

@@ -14,25 +14,25 @@ import { SchemaAuthoringError } from "./SchemaAuthoringError";
 
 /** Item kinds the authoring model adds on top of {@link SchemaItemType}. The shared enum is what
  * the persisted formats and the read model speak, so it is not widened; the authoring discriminant
- * is the union of both ({@link ItemKind}).
+ * is the union of both ([Authoring.ItemKind]($ecschema-metadata)).
  * @alpha
  */
 export enum AuthoringSchemaItemType {
   /** An ECSQL-backed view. No format has a `View` element: it is an entity class carrying the
    * `ECDbMap:QueryView` custom attribute, which the readers promote and the writers undo.
-   * @see {@link View} */
+   * @see [Authoring.View]($ecschema-metadata) */
   // eslint-disable-next-line @typescript-eslint/no-shadow -- deliberately named for the View class, as every SchemaItemType member is
   View = "View",
 }
 
-/** The discriminant carried by {@link SchemaItem.schemaItemType}.
+/** The discriminant carried by [Authoring.SchemaItem.schemaItemType]($ecschema-metadata).
  * @alpha
  */
 export type ItemKind = SchemaItemType | AuthoringSchemaItemType;
 
 /** Whether `kind` satisfies `supported`, which may be a concrete kind or an
  * {@link AbstractSchemaItemType} grouping. Extends {@link isSupportedSchemaItemType} over the
- * authoring-only kinds: a {@link View} is a class, so it answers to the `Class` grouping.
+ * authoring-only kinds: a [Authoring.View]($ecschema-metadata) is a class, so it answers to the `Class` grouping.
  * @internal
  */
 export function isItemOfKind(kind: ItemKind, supported: keyof SchemaItemTypeMap): boolean {
@@ -144,23 +144,23 @@ function addCustomAttributes(target: CustomAttributeSet, customAttributes: Reado
     target.add(props);
 }
 
-/** A collection of {@link SchemaDocument}s that know about each other: the scope every item
+/** A collection of [Authoring.SchemaDocument]($ecschema-metadata)s that know about each other: the scope every item
  * reference in those documents resolves against, and the authority over their lifetime.
  *
  * A set holds at most **one document per schema name**, compared case-insensitively - `BisCore
  * 1.0.0` and `BisCore 1.0.15` cannot both be in one set. Nothing appears in a set unless someone
  * put it there. There is no locater, no on-demand loading, and no priority chain; use
- * {@link SchemaResolver} to work out *which* schemas a document needs and to load them in.
+ * [Authoring.SchemaResolver]($ecschema-metadata) to work out *which* schemas a document needs and to load them in.
  *
  * **Every document belongs to exactly one set, always.** That is what keeps a schema graph clean,
  * and it is the one rule to internalize:
  *
  * - `new SchemaDocument(...)` produces a document in a private set of its own, containing only it.
- * - {@link SchemaSet.createSchema} constructs a document directly into this set.
- * - {@link SchemaSet.moveIn} takes a document **out of** the set it is in and puts it here. There
+ * - [Authoring.SchemaSet.createSchema]($ecschema-metadata) constructs a document directly into this set.
+ * - [Authoring.SchemaSet.moveIn]($ecschema-metadata) takes a document **out of** the set it is in and puts it here. There
  *   is deliberately no `add` - a document cannot be in two sets, so joining one always means
  *   leaving another.
- * - {@link SchemaSet.moveOut} hands a document back in a fresh private set of its own, so it is
+ * - [Authoring.SchemaSet.moveOut]($ecschema-metadata) hands a document back in a fresh private set of its own, so it is
  *   never left without one.
  *
  * @example
@@ -178,7 +178,7 @@ export class SchemaSet implements Iterable<SchemaDocument> {
   /** Keyed by lowercased schema name - name lookup is the hot path of every reference resolution. */
   private readonly _byName = new Map<string, SchemaDocument>();
 
-  /** Creates a set, optionally moving documents in straight away (see {@link SchemaSet.moveIn}). */
+  /** Creates a set, optionally moving documents in straight away (see [Authoring.SchemaSet.moveIn]($ecschema-metadata)). */
   public constructor(documents?: Iterable<SchemaDocument>) {
     if (documents !== undefined) {
       for (const document of documents)
@@ -201,7 +201,7 @@ export class SchemaSet implements Iterable<SchemaDocument> {
     return [...this._byName.values()];
   }
 
-  /** Constructs a document and holds it here. Same arguments as the {@link SchemaDocument}
+  /** Constructs a document and holds it here. Same arguments as the [Authoring.SchemaDocument]($ecschema-metadata)
    * constructor. Throws if the set already holds a schema of that name. */
   public createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number, init?: SchemaDocumentInit): SchemaDocument {
     this._requireNameFree(name);
@@ -212,7 +212,7 @@ export class SchemaSet implements Iterable<SchemaDocument> {
 
   /** Moves documents into this set, removing each from the set it currently belongs to. A document
    * already in this set is left alone. Throws if this set already holds a *different* document of
-   * the same name - call {@link SchemaSet.moveOut} for the incumbent first, so evicting it is
+   * the same name - call [Authoring.SchemaSet.moveOut]($ecschema-metadata) for the incumbent first, so evicting it is
    * always the caller's decision. */
   public moveIn(...documents: SchemaDocument[]): void {
     for (const document of documents) {
@@ -252,7 +252,7 @@ export class SchemaSet implements Iterable<SchemaDocument> {
   /** Returns the item a schema-qualified full name (`"BisCore:Element"`, either separator) points
    * at, or `undefined` when the schema is not in the set or holds no such item. Aliases are not
    * accepted here - an alias is a property of the *referencing* document, so resolve through that
-   * document ({@link SchemaDocument.resolveItem}) when you have one. */
+   * document ([Authoring.SchemaDocument.resolveItem]($ecschema-metadata)) when you have one. */
   public getItem(fullName: LocalOrFullName): AnySchemaItem | undefined {
     const { qualifier, name } = splitReference(fullName);
     if (qualifier === undefined)
@@ -284,13 +284,13 @@ export class SchemaSet implements Iterable<SchemaDocument> {
  * An editable ECSchema: a namespace containing classes, properties, relationships, and other EC definitions.
  * @remarks
  * Models EC 3.2 and permits unfinished edits: duplicate names, unresolved references, and missing
- * required fields are reported by {@link validateSchemaDocument} or {@link validateSchemaSet}.
+ * required fields are reported by [Authoring.validateSchemaDocument]($ecschema-metadata) or [Authoring.validateSchemaSet]($ecschema-metadata).
  * Item names share one case-insensitive namespace across all item kinds. Schemas can reference
  * other schemas, but cannot nest or form reference cycles in a valid schema set.
  *
- * Every document belongs to exactly one {@link SchemaSet}, which is the scope its item references
+ * Every document belongs to exactly one [Authoring.SchemaSet]($ecschema-metadata), which is the scope its item references
  * resolve against. A document created with `new` gets a private set of its own; see
- * {@link SchemaSet} for how documents move between sets.
+ * [Authoring.SchemaSet]($ecschema-metadata) for how documents move between sets.
  *
  * Items are **owned**: an item is created into a document and belongs to exactly one, the same rule
  * a document has with its schema set. The `create*` factories are the front door; the equivalent
@@ -308,7 +308,7 @@ export class SchemaSet implements Iterable<SchemaDocument> {
  * @alpha
  */
 export class SchemaDocument {
-  /** Stable schema identifier and namespace for its items. Must be a valid {@link Metadata.ECName | ECName}; comparisons ignore case. */
+  /** Stable schema identifier and namespace for its items. Must be a valid [ECName]($ecschema-metadata); comparisons ignore case. */
   public readonly name: string;
   /** Short EC name for qualifying item references. Referencing schemas may choose a different local alias. */
   public alias: string;
@@ -326,7 +326,7 @@ export class SchemaDocument {
    * source), as a hint about its origin. `undefined` for documents created in memory, which are
    * treated as the latest known spec. Purely informational. */
   public originalECXmlVersionMajor?: number;
-  /** Minor component to go along with {@link originalECXmlVersionMajor} (`2` for a 3.2 source). */
+  /** Minor component to go along with [Authoring.SchemaDocument.originalECXmlVersionMajor]($ecschema-metadata) (`2` for a 3.2 source). */
   public originalECXmlVersionMinor?: number;
   /** Points back to the source the schema was deserialized from, e.g., a file path or URL. */
   public source?: string;
@@ -339,7 +339,7 @@ export class SchemaDocument {
   private readonly _itemLookup = new NameLookup(this._items);
   private _schemaSet: SchemaSet;
 
-  /** Creates a new document with the given identity, in a private {@link SchemaSet} of its own.
+  /** Creates a new document with the given identity, in a private [Authoring.SchemaSet]($ecschema-metadata) of its own.
    * `init` carries the complementary schema-level data; every field left out keeps its default. */
   public constructor(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number, init?: SchemaDocumentInit) {
     this.name = name;
@@ -366,7 +366,7 @@ export class SchemaDocument {
 
   /** The set this document belongs to - never `undefined`, and the scope every item reference in it
    * resolves against. A document created with `new` has a private set containing only itself. Use
-   * {@link SchemaSet.moveIn} / {@link SchemaSet.moveOut} to change it. */
+   * [Authoring.SchemaSet.moveIn]($ecschema-metadata) / [Authoring.SchemaSet.moveOut]($ecschema-metadata) to change it. */
   public get schemaSet(): SchemaSet {
     return this._schemaSet;
   }
@@ -379,13 +379,13 @@ export class SchemaDocument {
   /** The schema items (classes, enumerations, ...) in declaration order. Read-only because the
    * document owns them: an item is created into a document and stays there until it is removed or
    * moved. Use the `create*` factories (or the equivalent item constructors),
-   * {@link SchemaDocument.moveItemIn}, and {@link SchemaDocument.removeItem}. */
+   * [Authoring.SchemaDocument.moveItemIn]($ecschema-metadata), and [Authoring.SchemaDocument.removeItem]($ecschema-metadata). */
   public get items(): ReadonlyArray<AnySchemaItem> {
     return this._items;
   }
 
   /** Moves items into this document, removing each from the document it currently belongs to - an
-   * item belongs to exactly one, the way a document belongs to exactly one {@link SchemaSet}. The
+   * item belongs to exactly one, the way a document belongs to exactly one [Authoring.SchemaSet]($ecschema-metadata). The
    * item's own references are **not** rewritten: they were written in the origin's vocabulary and
    * only the caller knows what they should mean here. Duplicate names are allowed, consistent with
    * the document tolerating invalid states. */
@@ -402,7 +402,7 @@ export class SchemaDocument {
 
   /** Removes the first item with the given name (case-insensitive) and returns whether there was
    * one. The item is gone: to keep it, move it into another document instead
-   * ({@link SchemaDocument.moveItemIn}). */
+   * ([Authoring.SchemaDocument.moveItemIn]($ecschema-metadata)). */
   public removeItem(name: string): boolean {
     const index = this._items.findIndex((i) => namesEqual(i.name, name));
     if (index === -1)
@@ -440,8 +440,8 @@ export class SchemaDocument {
 
   /** Sets a schema reference: appends it, or replaces the existing reference of the same name
    * (case-insensitive) in place. The fields are copied into a stored reference, which is returned
-   * for further configuration. Any object of the {@link SchemaReference} shape can be
-   * passed - a hand-written literal, another {@link SchemaDocument}, or a `SchemaView` `Schema` -
+   * for further configuration. Any object of the [Authoring.SchemaReference]($ecschema-metadata) shape can be
+   * passed - a hand-written literal, another [Authoring.SchemaDocument]($ecschema-metadata), or a `SchemaView` `Schema` -
    * so a reference is derived from a schema a caller already holds by just passing it. The source's
    * own `alias` is then only the suggested default; set a different one on the returned reference
    * if this document uses one. */
@@ -467,7 +467,7 @@ export class SchemaDocument {
   }
 
   /** Gives every reference that has no alias the referenced schema's own, taken from this
-   * document's {@link SchemaSet}, and returns how many were filled in. References that already have
+   * document's [Authoring.SchemaSet]($ecschema-metadata), and returns how many were filled in. References that already have
    * an alias are left alone, and so are those whose schema the set does not hold.
    *
    * ECJSON qualifies item references by schema name and carries no alias at all, so a document read
@@ -489,7 +489,7 @@ export class SchemaDocument {
   }
 
   /** Returns the document a schema reference points at, looked up by name in this document's
-   * {@link SchemaSet}, or `undefined` when the set does not hold it. The set holds one version per
+   * [Authoring.SchemaSet]($ecschema-metadata), or `undefined` when the set does not hold it. The set holds one version per
    * name, so the reference's version components take no part in the lookup - a version mismatch
    * between the reference and the document in the set is a validation finding, not a resolve miss. */
   public getReferencedSchema(name: string): SchemaDocument | undefined {
@@ -534,7 +534,7 @@ export class SchemaDocument {
   /** Resolves an item reference to the item itself, or `undefined` when it does not resolve - the
    * schema set does not hold the target schema, or that schema has no such item. A miss is silent;
    * a dangling reference is reported by validation, not by an accessor.
-   * @see {@link SchemaDocument.resolveDocument} for how a reference maps to a schema. */
+   * @see [Authoring.SchemaDocument.resolveDocument]($ecschema-metadata) for how a reference maps to a schema. */
   public resolveItem(reference: LocalOrFullName): AnySchemaItem | undefined {
     const { name } = splitReference(reference);
     return this.resolveDocument(reference)?.getItem(name);
@@ -567,7 +567,7 @@ export class SchemaDocument {
    * kind's type, or `undefined` (no such name, or a name of a different kind). `itemType` may be a
    * concrete {@link SchemaItemType} or a grouping ({@link AbstractSchemaItemType.Class},
    * {@link AbstractSchemaItemType.SchemaItem}), in which case any member kind matches.
-   * Covers every item kind; dedicated getters like {@link SchemaDocument.getEntity} exist only for
+   * Covers every item kind; dedicated getters like [Authoring.SchemaDocument.getEntity]($ecschema-metadata) exist only for
    * the most common ones. */
   public getItemOfType<K extends keyof SchemaItemTypeMap>(name: string, itemType: K): SchemaItemTypeMap[K] | undefined {
     const item = this.getItem(name);
@@ -585,12 +585,12 @@ export class SchemaDocument {
   }
 
   /** Returns the first entity class with the given name, or `undefined`. Sugar over
-   * {@link SchemaDocument.getItemOfType} for the common case. */
+   * [Authoring.SchemaDocument.getItemOfType]($ecschema-metadata) for the common case. */
   public getEntity(name: string): EntityClass | undefined {
     return this.getItemOfType(name, SchemaItemType.EntityClass);
   }
 
-  /** Iterates every entity class in declaration order. Sugar over {@link SchemaDocument.getItemsOfType}. */
+  /** Iterates every entity class in declaration order. Sugar over [Authoring.SchemaDocument.getItemsOfType]($ecschema-metadata). */
   public getEntities(): IterableIterator<EntityClass> {
     return this.getItemsOfType(SchemaItemType.EntityClass);
   }
@@ -602,7 +602,7 @@ export class SchemaDocument {
 
   /** Creates a mixin, appends it, and returns it. `appliesTo` is the entity class the mixin may be
    * applied to (mandatory data). A mixin is abstract by definition regardless of its
-   * {@link ECClass.modifier} - see {@link Mixin}. */
+   * [Authoring.ECClass.modifier]($ecschema-metadata) - see [Authoring.Mixin]($ecschema-metadata). */
   public createMixin(name: string, appliesTo: LocalOrFullName, init?: ClassInit): Mixin {
     return new Mixin(this, name, appliesTo, init);
   }
@@ -613,7 +613,7 @@ export class SchemaDocument {
   }
 
   /** Creates a view, appends it, and returns it. `query` is the ECSQL its instances come from
-   * (mandatory data). Declare a property per column the query returns - see {@link View}. */
+   * (mandatory data). Declare a property per column the query returns - see [Authoring.View]($ecschema-metadata). */
   public createView(name: string, query: string, init?: ClassInit): View {
     return new View(this, name, query, init);
   }
@@ -625,15 +625,15 @@ export class SchemaDocument {
   }
 
   /** Creates a relationship class, appends it, and returns it. Configure the `source` and `target`
-   * constraints inline via `init`, or on the returned handle with {@link RelationshipConstraint.set}. */
+   * constraints inline via `init`, or on the returned handle with [Authoring.RelationshipConstraint.set]($ecschema-metadata). */
   public createRelationship(name: string, init?: RelationshipClassInit): RelationshipClass {
     return new RelationshipClass(this, name, init);
   }
 
   /** Creates an enumeration item, appends it, and returns it. `backingType` is the enumeration's
-   * backing primitive (`"int"` or `"string"`). Add values with {@link Enumeration.createEnumerator}.
+   * backing primitive (`"int"` or `"string"`). Add values with [Authoring.Enumeration.createEnumerator]($ecschema-metadata).
    * Note: this creates the enumeration *item*; to add an enumeration-backed *property* to a class use
-   * {@link ECClass.createEnumeration}. */
+   * [Authoring.ECClass.createEnumeration]($ecschema-metadata). */
   public createEnumeration(name: string, backingType: EnumerationBackingType, init?: EnumerationInit): Enumeration {
     return new Enumeration(this, name, backingType, init);
   }
@@ -690,20 +690,20 @@ export class SchemaDocument {
  * The four common values are spelled out so editors suggest them; any other well-formed range is
  * accepted, because bounded ranges above one are legal and do occur in published schemas
  * (`(2..2)`, `(0..2)`, `(2..*)`, `(1..2)` all appear in BIS). Use
- * {@link parseMultiplicity} / {@link formatMultiplicity} to work in numbers instead of strings;
+ * [Authoring.parseMultiplicity]($ecschema-metadata) / [Authoring.formatMultiplicity]($ecschema-metadata) to work in numbers instead of strings;
  * validation is what reports a malformed one.
  * @alpha
  */
 export type Multiplicity = "(0..1)" | "(0..*)" | "(1..1)" | "(1..*)" | (string & {});
 
-/** The bounds of a {@link Multiplicity}, as numbers.
+/** The bounds of a [Authoring.Multiplicity]($ecschema-metadata), as numbers.
  * @alpha
  */
 export interface MultiplicityBounds {
   /** Lower bound; `0` or more. */
   lowerLimit: number;
   /** Upper bound; at least `1` and no less than the lower bound, or `undefined` when unbounded (`*`)
-   * - the same convention {@link PrimitiveArrayProperty.maxOccurs} uses. */
+   * - the same convention [Authoring.PrimitiveArrayProperty.maxOccurs]($ecschema-metadata) uses. */
   upperLimit?: number;
 }
 
@@ -734,15 +734,19 @@ export function formatMultiplicity(bounds: MultiplicityBounds): Multiplicity {
  * this same schema) or a full name (`"BisCore:PhysicalElement"`). On input it also tolerates the
  * alias-qualified form (`"bis:PhysicalElement"`) and the dot separator
  * (`"BisCore.PhysicalElement"`). Names compare case-insensitively. Store names here and use the
- * corresponding getter to resolve them through the document's {@link SchemaSet}; an unresolved
- * name is allowed during editing and reported by validation. */
+ * corresponding getter to resolve them through the document's [Authoring.SchemaSet]($ecschema-metadata); an unresolved
+ * name is allowed during editing and reported by validation.
+ * @alpha
+ */
 export type LocalOrFullName = string;
 
 /** The spec-defined value each optional, defaultable field reads as when absent. The document keeps
  * "set to the default" and "absent" distinct so it can round-trip a source exactly, so these are
  * not applied on construction. They are the single source of truth for what the defaults are: the
  * per-field doc comments below point here, and a writer asked to drop redundant defaults (the
- * `omitDefaults` option of {@link SchemaJsonWriter}) consults this. */
+ * `omitDefaults` option of [Authoring.SchemaJsonWriter]($ecschema-metadata)) consults this.
+ * @alpha
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const SpecDefaults = {
   /** A class with no `modifier`. */
@@ -750,7 +754,7 @@ export const SpecDefaults = {
   /** A mixin's `modifier`. A mixin is abstract by definition, so this is the value `omitDefaults`
    * treats as redundant. An explicit non-abstract modifier on a mixin is meaningless - nothing in
    * this stack enforces or acts on it - but it is kept verbatim rather than silently rewritten
-   * (see {@link Mixin}). */
+   * (see [Authoring.Mixin]($ecschema-metadata)). */
   mixinModifier: ECClassModifier.Abstract,
   /** A relationship with no `strength`. */
   relationshipStrength: StrengthType.Referencing,
@@ -777,13 +781,14 @@ export const SpecDefaults = {
 } as const;
 
 /** A reference to another schema: invariant `name` + the three version components, plus the `alias`
- * this document uses for it within its own scope. Both {@link SchemaDocument} and a `SchemaView`
+ * this document uses for it within its own scope. Both [Authoring.SchemaDocument]($ecschema-metadata) and a `SchemaView`
  * `Schema` satisfy this shape structurally, so a schema a caller already holds can be passed
  * directly wherever a reference is expected.
  * @remarks
  * Declare a reference for each external schema whose items this document uses. A compatible
  * referenced version has matching read/write components and a minor component at least as high
- * as requested. Declaring a reference does not load its schema into the {@link SchemaSet}.
+ * as requested. Declaring a reference does not load its schema into the [Authoring.SchemaSet]($ecschema-metadata).
+ * @alpha
  */
 export interface SchemaReference {
   /** Stable name of the referenced schema, compared case-insensitively. */
@@ -800,7 +805,9 @@ export interface SchemaReference {
   alias: string | null;
 }
 
-/** Complementary schema-level data accepted by the {@link SchemaDocument} constructor. */
+/** Complementary schema-level data accepted by the [Authoring.SchemaDocument]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface SchemaDocumentInit {
   /** Human-readable display name for UI and localization. */
   label?: string;
@@ -809,8 +816,8 @@ export interface SchemaDocumentInit {
   originalECXmlVersionMajor?: number;
   originalECXmlVersionMinor?: number;
   source?: string;
-  /** Set through {@link SchemaDocument.setSchemaReference}, so the same shapes are accepted
-   * (a literal, a held {@link SchemaDocument}, a `SchemaView` `Schema`) and the fields are copied. */
+  /** Set through [Authoring.SchemaDocument.setSchemaReference]($ecschema-metadata), so the same shapes are accepted
+   * (a literal, a held [Authoring.SchemaDocument]($ecschema-metadata), a `SchemaView` `Schema`) and the fields are copied. */
   references?: ReadonlyArray<Readonly<SchemaReference>>;
   /** Schema-level custom attributes, added in order. */
   customAttributes?: ReadonlyArray<CustomAttributeProps>;
@@ -818,33 +825,35 @@ export interface SchemaDocumentInit {
 
 /** A raw ECXML custom-attribute body: the value elements of a custom attribute exactly as the XML
  * reader found them. Held verbatim until the attribute is materialized against its class, and
- * written straight back out when it never is. A type alias over `string`. */
+ * written straight back out when it never is. A type alias over `string`.
+ * @alpha
+ */
 export type XmlString = string;
 
-/** One value inside a {@link CustomAttribute}: a primitive, a nested struct, or an array of either.
+/** One value inside a [Authoring.CustomAttribute]($ecschema-metadata): a primitive, a nested struct, or an array of either.
  * Primitives are already typed - the conversion from a source format produced them against the
  * custom attribute class, so a `boolean` property is a `boolean` here and not the string `"True"`.
  * @alpha
  */
 export type CustomAttributeValue = string | number | boolean | CustomAttributeValues | CustomAttributeValue[];
 
-/** The values of a {@link CustomAttribute}, keyed by the property names of its custom attribute
+/** The values of a [Authoring.CustomAttribute]($ecschema-metadata), keyed by the property names of its custom attribute
  * class. This is the canonical ECJSON shape of a custom attribute instance minus its `className`,
  * and it serializes to any output format.
  * @alpha
  */
 export interface CustomAttributeValues { [name: string]: CustomAttributeValue }
 
-/** Anything a {@link CustomAttributeSet} can be attached to: a schema, a class, a property, or a
- * relationship constraint. A custom attribute reaches its {@link SchemaDocument} through its
+/** Anything a [Authoring.CustomAttributeSet]($ecschema-metadata) can be attached to: a schema, a class, a property, or a
+ * relationship constraint. A custom attribute reaches its [Authoring.SchemaDocument]($ecschema-metadata) through its
  * container, which is how it finds its own custom attribute class.
  * @alpha
  */
 export type CustomAttributeContainer = SchemaDocument | ECClass | Property | RelationshipConstraint;
 
-/** The plain shape accepted by {@link CustomAttributeSet.add}: a custom attribute class name and
+/** The plain shape accepted by [Authoring.CustomAttributeSet.add]($ecschema-metadata): a custom attribute class name and
  * optional values. The typed helpers for the standard custom attribute classes
- * ({@link CoreCustomAttributes}, {@link ECDbMap}) return this shape.
+ * ([Authoring.CoreCustomAttributes]($ecschema-metadata), [Authoring.ECDbMap]($ecschema-metadata)) return this shape.
  * @alpha
  */
 export interface CustomAttributeProps {
@@ -855,16 +864,16 @@ export interface CustomAttributeProps {
 /** Typed metadata applied to a schema, class, property, or relationship constraint.
  * @remarks
  * The custom attribute class defines the value shape and allowed container kinds. EC permits one
- * instance of each attribute class per container. Use {@link CustomAttributeSet.set} to add or
- * replace that instance; {@link CustomAttributeSet.add} preserves duplicates for repair workflows.
+ * instance of each attribute class per container. Use [Authoring.CustomAttributeSet.set]($ecschema-metadata) to add or
+ * replace that instance; [Authoring.CustomAttributeSet.add]($ecschema-metadata) preserves duplicates for repair workflows.
  *
  * An attribute read from ECXML retains its raw body until value access or output requires
  * materialization. Its class is needed to interpret the text values, structs, and arrays.
- * Resolution uses the document's {@link SchemaSet}, with built-in standard definitions
- * ({@link CoreCustomAttributes}, {@link ECDbMap}) as fallbacks.
+ * Resolution uses the document's [Authoring.SchemaSet]($ecschema-metadata), with built-in standard definitions
+ * ([Authoring.CoreCustomAttributes]($ecschema-metadata), [Authoring.ECDbMap]($ecschema-metadata)) as fallbacks.
  *
- * {@link CustomAttribute.values} throws if materialization needs a class that cannot be resolved;
- * {@link CustomAttribute.tryGetValues} returns `undefined`. Writers report issues and can preserve
+ * [Authoring.CustomAttribute.values]($ecschema-metadata) throws if materialization needs a class that cannot be resolved;
+ * [Authoring.CustomAttribute.tryGetValues]($ecschema-metadata) returns `undefined`. Writers report issues and can preserve
  * an unresolved XML body in XML output. Cross-format conversion requires the class metadata.
  * @alpha
  */
@@ -914,7 +923,7 @@ export class CustomAttribute {
   }
 
   /** False while the attribute still holds an unconverted ECXML body. Diagnostic only - reading
-   * {@link CustomAttribute.values} materializes. */
+   * [Authoring.CustomAttribute.values]($ecschema-metadata) materializes. */
   public get isMaterialized(): boolean {
     return this._values !== undefined;
   }
@@ -944,7 +953,7 @@ export class CustomAttribute {
   }
 
   /** The attribute's values, or `undefined` when materialization needs the custom attribute class
-   * and it cannot be resolved. The non-throwing form of {@link CustomAttribute.values}, for callers
+   * and it cannot be resolved. The non-throwing form of [Authoring.CustomAttribute.values]($ecschema-metadata), for callers
    * that legitimately do not know whether the class is reachable. */
   public tryGetValues(): CustomAttributeValues | undefined {
     if (this._values === undefined) {
@@ -956,7 +965,7 @@ export class CustomAttribute {
   }
 
   /** The value of one property, or `undefined` when the attribute does not carry it. Materializes,
-   * so it throws under the same conditions as {@link CustomAttribute.values}. */
+   * so it throws under the same conditions as [Authoring.CustomAttribute.values]($ecschema-metadata). */
   public getValue(name: string): CustomAttributeValue | undefined {
     return this.values[name];
   }
@@ -976,7 +985,7 @@ export class CustomAttribute {
   }
 }
 
-/** The plain shape a {@link CustomAttribute} renders as: its class name plus either the materialized
+/** The plain shape a [Authoring.CustomAttribute]($ecschema-metadata) renders as: its class name plus either the materialized
  * `values` or, while it still holds an unconverted ECXML body, that `xml`.
  * @alpha
  */
@@ -1015,7 +1024,7 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
 
   /** Adds custom attributes and returns the last one, for follow-up configuration in one
    * expression. A `{ className, values? }` literal - what the typed helpers for the standard
-   * classes return - is constructed here; an existing {@link CustomAttribute} instance is moved
+   * classes return - is constructed here; an existing [Authoring.CustomAttribute]($ecschema-metadata) instance is moved
    * over from the container it is currently applied to. */
   public add(customAttribute: CustomAttributeProps | CustomAttribute, ...more: Array<CustomAttributeProps | CustomAttribute>): CustomAttribute {
     let last = this._addOne(customAttribute);
@@ -1036,7 +1045,7 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
   }
 
   /** Adds or replaces the first instance of the same custom attribute class and returns it. Class
-   * names are compared by resolved identity, as in {@link get}. Replacement preserves the existing
+   * names are compared by resolved identity, as in [Authoring.CustomAttributeSet.get]($ecschema-metadata). Replacement preserves the existing
    * instance and its position; use `add` when duplicate instances are intentional. */
   public set(customAttribute: CustomAttributeProps): CustomAttribute {
     const existing = this.get(customAttribute.className);
@@ -1060,7 +1069,7 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
   }
 
   /** Removes the first instance of the named custom attribute class and returns whether there was
-   * one. Matching follows {@link get}. To keep it, add it to another container instead, which moves it. */
+   * one. Matching follows [Authoring.CustomAttributeSet.get]($ecschema-metadata). To keep it, add it to another container instead, which moves it. */
   public remove(className: string): boolean {
     const key = this._identity(className);
     const idx = this._items.findIndex((ca) => this._identity(ca.className) === key);
@@ -1094,7 +1103,9 @@ export class CustomAttributeSet implements Iterable<CustomAttribute> {
 }
 
 /** Complementary data shared by every schema item kind's constructor. Item kinds with no data of
- * their own (e.g. {@link UnitSystem}) accept this directly; the others extend it. */
+ * their own (e.g. [Authoring.UnitSystem]($ecschema-metadata)) accept this directly; the others extend it.
+ * @alpha
+ */
 export interface SchemaItemInit {
   /** Human-readable display name; consumers fall back to the item name when absent. */
   label?: string;
@@ -1105,7 +1116,7 @@ export interface SchemaItemInit {
 /** Common base of every schema item. `schemaItemType` is the discriminant for narrowing; the
  * `is*()` / `assert*()` methods below mirror the same checks on `SchemaView`.
  *
- * An item belongs to exactly one {@link SchemaDocument} - the one that resolves its references -
+ * An item belongs to exactly one [Authoring.SchemaDocument]($ecschema-metadata) - the one that resolves its references -
  * from the moment it is constructed. Every item constructor takes that document as its first
  * argument and registers the item with it, which is all the `create*` factories on the document do.
  * @alpha
@@ -1128,7 +1139,7 @@ export abstract class SchemaItem {
     document[_attach](this);
   }
 
-  /** The item's {@link Metadata.ECName | ECName}, unique case-insensitively across all item kinds in its schema.
+  /** The item's [ECName]($ecschema-metadata), unique case-insensitively across all item kinds in its schema.
    * Changing it preserves object identity and declaration order and updates name lookup.
    * Stored references to the old name are not rewritten. */
   public get name(): string {
@@ -1144,7 +1155,7 @@ export abstract class SchemaItem {
   }
 
   /** The document this item belongs to. Every reference the item holds resolves through this
-   * document and its {@link SchemaSet}. Changed only by {@link SchemaDocument.moveItemIn}. */
+   * document and its [Authoring.SchemaSet]($ecschema-metadata). Changed only by [Authoring.SchemaDocument.moveItemIn]($ecschema-metadata). */
   public get document(): SchemaDocument {
     return this._document;
   }
@@ -1159,37 +1170,37 @@ export abstract class SchemaItem {
     return `${this._document.name}:${this.name}`;
   }
 
-  /** Narrows to {@link EntityClass}. */
+  /** Narrows to [Authoring.EntityClass]($ecschema-metadata). */
   public isEntity(): this is EntityClass {
     return this.schemaItemType === SchemaItemType.EntityClass;
   }
 
-  /** Narrows to {@link Mixin}. */
+  /** Narrows to [Authoring.Mixin]($ecschema-metadata). */
   public isMixin(): this is Mixin {
     return this.schemaItemType === SchemaItemType.Mixin;
   }
 
-  /** Narrows to {@link StructClass}. */
+  /** Narrows to [Authoring.StructClass]($ecschema-metadata). */
   public isStruct(): this is StructClass {
     return this.schemaItemType === SchemaItemType.StructClass;
   }
 
-  /** Narrows to {@link CustomAttributeClass}. */
+  /** Narrows to [Authoring.CustomAttributeClass]($ecschema-metadata). */
   public isCustomAttribute(): this is CustomAttributeClass {
     return this.schemaItemType === SchemaItemType.CustomAttributeClass;
   }
 
-  /** Narrows to {@link RelationshipClass}. */
+  /** Narrows to [Authoring.RelationshipClass]($ecschema-metadata). */
   public isRelationship(): this is RelationshipClass {
     return this.schemaItemType === SchemaItemType.RelationshipClass;
   }
 
-  /** Narrows to {@link View}. */
+  /** Narrows to [Authoring.View]($ecschema-metadata). */
   public isView(): this is View {
     return this.schemaItemType === AuthoringSchemaItemType.View;
   }
 
-  /** Narrows to {@link AnyClass} - true for every class kind, {@link View} included. */
+  /** Narrows to [Authoring.AnyClass]($ecschema-metadata) - true for every class kind, [Authoring.View]($ecschema-metadata) included. */
   public isClass(): this is AnyClass {
     return isItemOfKind(this.schemaItemType, AbstractSchemaItemType.Class);
   }
@@ -1237,20 +1248,22 @@ export abstract class SchemaItem {
   }
 }
 
-/** Complementary data shared by every class kind's constructor. */
+/** Complementary data shared by every class kind's constructor.
+ * @alpha
+ */
 export interface ClassInit {
-  /** Instantiability and subclassing: `None`, `Abstract`, or `Sealed`. See {@link ECClass.modifier}. */
+  /** Instantiability and subclassing: `None`, `Abstract`, or `Sealed`. See [Authoring.ECClass.modifier]($ecschema-metadata). */
   modifier?: ECClassModifier;
   /** Human-readable display name; consumers fall back to the class name when absent. */
   label?: string;
   /** User-facing explanation of what instances of this class represent. */
   description?: string;
-  /** Single base class of the same EC kind; must not be sealed. See {@link ECClass.baseClass}. */
+  /** Single base class of the same EC kind; must not be sealed. See [Authoring.ECClass.baseClass]($ecschema-metadata). */
   baseClass?: LocalOrFullName;
   /** Class-level custom attributes, added in order. */
   customAttributes?: ReadonlyArray<CustomAttributeProps>;
   /** Properties to create on the class, in order, as plain declarations rather than constructed
-   * objects - see {@link ECClass.createProperties}. */
+   * objects - see [Authoring.ECClass.createProperties]($ecschema-metadata). */
   properties?: ReadonlyArray<AnyPropertyDeclaration>;
 }
 
@@ -1265,15 +1278,15 @@ export abstract class ECClass extends SchemaItem {
   /** Whether the class can be instantiated or subclassed.
    * @remarks
    * `None` permits both; `Abstract` prohibits direct instances; `Sealed` prohibits subclasses.
-   * An absent value means {@link SpecDefaults.classModifier}, except for mixins, which are always
+   * An absent value means [Authoring.SpecDefaults.classModifier]($ecschema-metadata), except for mixins, which are always
    * abstract. The field retains `undefined` until explicitly set. ECXML 3.1 and later require a
    * relationship modifier; the writer emits `None` when this field is absent.
    */
   public modifier?: ECClassModifier;
   /** The single base class reference (e.g. `"BisCore:PhysicalElement"`), if any.
    * The base must have the same EC class kind and must not be sealed. Entity classes can also
-   * apply {@link EntityClass.mixins}. Inheritance cycles are invalid.
-   * @see {@link ECClass.getBaseClass} to resolve it, {@link ECClass.setBaseClass} to set it from a class. */
+   * apply [Authoring.EntityClass.mixins]($ecschema-metadata). Inheritance cycles are invalid.
+   * @see [Authoring.ECClass.getBaseClass]($ecschema-metadata) to resolve it, [Authoring.ECClass.setBaseClass]($ecschema-metadata) to set it from a class. */
   public baseClass?: LocalOrFullName;
   /** Custom attributes declared on this class. EC inherits base-class attributes unless a local
    * instance of the same attribute class overrides them; this collection stores only local instances. */
@@ -1302,17 +1315,17 @@ export abstract class ECClass extends SchemaItem {
     return this.baseClass === undefined ? undefined : this.document.resolveItemOfType(this.baseClass, AbstractSchemaItemType.Class);
   }
 
-  /** Sets {@link ECClass.baseClass} from a class rather than a reference string, adding a schema
+  /** Sets [Authoring.ECClass.baseClass]($ecschema-metadata) from a class rather than a reference string, adding a schema
    * reference to that class's schema when this document has none (see
-   * {@link SchemaDocument.referenceTo}). */
+   * [Authoring.SchemaDocument.referenceTo]($ecschema-metadata)). */
   public setBaseClass(baseClass: AnyClass): void {
     this.baseClass = this.document.referenceTo(baseClass);
   }
 
   /** This class's own properties in declaration order. Read-only because the class owns them: a
    * property is created into a class and stays there until it is removed or moved. Use the
-   * `create*` factories (or the equivalent property constructors), {@link ECClass.movePropertyIn},
-   * and {@link ECClass.removeProperty}. */
+   * `create*` factories (or the equivalent property constructors), [Authoring.ECClass.movePropertyIn]($ecschema-metadata),
+   * and [Authoring.ECClass.removeProperty]($ecschema-metadata). */
   public get properties(): ReadonlyArray<AnyProperty> {
     return this._properties;
   }
@@ -1331,13 +1344,13 @@ export abstract class ECClass extends SchemaItem {
   }
 
   /** Returns this class's own property with the given name (case-insensitive), or `undefined`.
-   * @see {@link ECClass.getExpandedProperty} to search base classes and mixins too. */
+   * @see [Authoring.ECClass.getExpandedProperty]($ecschema-metadata) to search base classes and mixins too. */
   public getProperty(name: string): AnyProperty | undefined {
     return this._propertyLookup.get(name);
   }
 
   /** Removes this class's own property with the given name (case-insensitive) and returns whether
-   * there was one. To keep it, move it into another class instead ({@link ECClass.movePropertyIn}). */
+   * there was one. To keep it, move it into another class instead ([Authoring.ECClass.movePropertyIn]($ecschema-metadata)). */
   public removeProperty(name: string): boolean {
     const index = this._properties.findIndex((p) => namesEqual(p.name, name));
     if (index === -1)
@@ -1379,7 +1392,7 @@ export abstract class ECClass extends SchemaItem {
    * This is a structural expansion by name. It does not check that an override is compatible with
    * the property it overrides, so a struct property overridden by a primitive one is returned as
    * written; the validator is what reports that. Nor does it merge anything: use
-   * {@link Property.getBaseProperty} and decide for yourself what an inherited label, category or
+   * [Authoring.Property.getBaseProperty]($ecschema-metadata) and decide for yourself what an inherited label, category or
    * kind of quantity should be.
    *
    * Resilient by design. A base class or mixin the schema set cannot resolve contributes nothing,
@@ -1392,7 +1405,7 @@ export abstract class ECClass extends SchemaItem {
   /** The property with the given name (case-insensitive) this class has, inherited ones included,
    * or `undefined`: this class's own properties first, then the base class, then applied mixins in
    * declaration order, depth first, first match winning. That is the same property
-   * {@link ECClass.getExpandedProperties} yields for the name, found without expanding the rest.
+   * [Authoring.ECClass.getExpandedProperties]($ecschema-metadata) yields for the name, found without expanding the rest.
    *
    * `undefined` means no property of that name was reachable, which includes the case where a base
    * class does not resolve. */
@@ -1527,7 +1540,7 @@ export abstract class ECClass extends SchemaItem {
   }
 
   /** Creates one property from a plain declaration and returns it, narrowed to the kind the
-   * declaration names. @see {@link ECClass.createProperties} */
+   * declaration names. @see [Authoring.ECClass.createProperties]($ecschema-metadata) */
   public createProperty<D extends AnyPropertyDeclaration>(declaration: D): PropertyDeclarationTypeMap[D["kind"]] {
     const property = this._createDeclaredProperty(declaration);
     return property as PropertyDeclarationTypeMap[D["kind"]];
@@ -1549,36 +1562,46 @@ export abstract class ECClass extends SchemaItem {
   }
 }
 
-/** Describes a {@link PrimitiveProperty} to create. `type` is a primitive keyword or an enumeration
- * reference, exactly as {@link ECClass.createPrimitive} takes it. */
+/** Describes a [Authoring.PrimitiveProperty]($ecschema-metadata) to create. `type` is a primitive keyword or an enumeration
+ * reference, exactly as [Authoring.ECClass.createPrimitive]($ecschema-metadata) takes it.
+ * @alpha
+ */
 export interface PrimitivePropertyDeclaration extends PrimitivePropertyInit {
   kind: PropertyKind.Primitive;
   name: string;
   type: PrimitiveType | LocalOrFullName;
 }
 
-/** Describes a {@link PrimitiveArrayProperty} to create. */
+/** Describes a [Authoring.PrimitiveArrayProperty]($ecschema-metadata) to create.
+ * @alpha
+ */
 export interface PrimitiveArrayPropertyDeclaration extends PrimitiveArrayPropertyInit {
   kind: PropertyKind.PrimitiveArray;
   name: string;
   type: PrimitiveType | LocalOrFullName;
 }
 
-/** Describes a {@link StructProperty} to create. */
+/** Describes a [Authoring.StructProperty]($ecschema-metadata) to create.
+ * @alpha
+ */
 export interface StructPropertyDeclaration extends PropertyInit {
   kind: PropertyKind.Struct;
   name: string;
   structClass: LocalOrFullName;
 }
 
-/** Describes a {@link StructArrayProperty} to create. */
+/** Describes a [Authoring.StructArrayProperty]($ecschema-metadata) to create.
+ * @alpha
+ */
 export interface StructArrayPropertyDeclaration extends StructArrayPropertyInit {
   kind: PropertyKind.StructArray;
   name: string;
   structClass: LocalOrFullName;
 }
 
-/** Describes a {@link NavigationProperty} to create. */
+/** Describes a [Authoring.NavigationProperty]($ecschema-metadata) to create.
+ * @alpha
+ */
 export interface NavigationPropertyDeclaration extends PropertyInit {
   kind: PropertyKind.Navigation;
   name: string;
@@ -1589,15 +1612,17 @@ export interface NavigationPropertyDeclaration extends PropertyInit {
 }
 
 /** Plain data describing one property to create, discriminated by `kind` - the same discriminant
- * {@link Property.kind} carries, so a declaration reads like the property it produces. Accepted by
- * {@link ECClass.createProperties} and by {@link ClassInit.properties}.
+ * [Authoring.Property.kind]($ecschema-metadata) carries, so a declaration reads like the property it produces. Accepted by
+ * [Authoring.ECClass.createProperties]($ecschema-metadata) and by [Authoring.ClassInit.properties]($ecschema-metadata).
  * @alpha
  */
 export type AnyPropertyDeclaration = PrimitivePropertyDeclaration | PrimitiveArrayPropertyDeclaration
   | StructPropertyDeclaration | StructArrayPropertyDeclaration | NavigationPropertyDeclaration;
 
 /** Maps each {@link PropertyKind} discriminant to the property type a declaration of that kind
- * produces, so {@link ECClass.createProperty} returns the concrete kind rather than the union. */
+ * produces, so [Authoring.ECClass.createProperty]($ecschema-metadata) returns the concrete kind rather than the union.
+ * @alpha
+ */
 export interface PropertyDeclarationTypeMap {
   [PropertyKind.Primitive]: PrimitiveProperty;
   [PropertyKind.PrimitiveArray]: PrimitiveArrayProperty;
@@ -1606,9 +1631,11 @@ export interface PropertyDeclarationTypeMap {
   [PropertyKind.Navigation]: NavigationProperty;
 }
 
-/** Complementary data accepted by the {@link EntityClass} constructor. */
+/** Complementary data accepted by the [Authoring.EntityClass]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface EntityClassInit extends ClassInit {
-  /** Applied mixins, in declaration order. This entity must satisfy each mixin's {@link Mixin.appliesTo} constraint. */
+  /** Applied mixins, in declaration order. This entity must satisfy each mixin's [Authoring.Mixin.appliesTo]($ecschema-metadata) constraint. */
   mixins?: LocalOrFullName[];
 }
 
@@ -1622,10 +1649,10 @@ export interface EntityClassInit extends ClassInit {
 export class EntityClass extends ECClass {
   public get schemaItemType(): SchemaItemType.EntityClass { return SchemaItemType.EntityClass; }
   /** Applied mixin references, in declaration order. An entity has at most one
-   * {@link ECClass.baseClass}; mixins are separate. Note that, lacking validation, after XML
+   * [Authoring.ECClass.baseClass]($ecschema-metadata); mixins are separate. Note that, lacking validation, after XML
    * deserialization a mixin may land in `baseClass` instead (the deserializer cannot tell them
    * apart) when there is no other base class.
-   * @see {@link EntityClass.getMixins} to resolve them, {@link EntityClass.addMixin} to add one from a mixin. */
+   * @see [Authoring.EntityClass.getMixins]($ecschema-metadata) to resolve them, [Authoring.EntityClass.addMixin]($ecschema-metadata) to add one from a mixin. */
   public readonly mixins: LocalOrFullName[] = [];
 
   /** Creates an entity class in `document`. `name` is the only other mandatory argument. */
@@ -1636,14 +1663,14 @@ export class EntityClass extends ECClass {
   }
 
   /** The applied mixins, resolved through the document's schema set, positionally aligned with
-   * {@link EntityClass.mixins} - an entry that does not resolve is `undefined` rather than dropped,
+   * [Authoring.EntityClass.mixins]($ecschema-metadata) - an entry that does not resolve is `undefined` rather than dropped,
    * so a caller can tell which one is missing. */
   public getMixins(): Array<Mixin | undefined> {
     return this.mixins.map((mixin) => this.document.resolveItemOfType(mixin, SchemaItemType.Mixin));
   }
 
   /** Appends a mixin reference from the mixin itself, adding a schema reference to its schema when
-   * this document has none (see {@link SchemaDocument.referenceTo}). */
+   * this document has none (see [Authoring.SchemaDocument.referenceTo]($ecschema-metadata)). */
   public addMixin(...mixins: Mixin[]): void {
     for (const mixin of mixins)
       this.mixins.push(this.document.referenceTo(mixin));
@@ -1653,11 +1680,11 @@ export class EntityClass extends ECClass {
 /** A reusable set of properties and a secondary classification for entity classes.
  * @remarks
  * Mixins are always abstract. They can be relationship endpoints and can derive from one other
- * mixin, but cannot override inherited properties. {@link Mixin.appliesTo} restricts which entity
+ * mixin, but cannot override inherited properties. [Authoring.Mixin.appliesTo]($ecschema-metadata) restricts which entity
  * classes may apply the mixin; it does not make that entity class a base class of the mixin.
  *
  * ECXML represents a mixin as an entity class with `CoreCustomAttributes:IsMixin`; readers and
- * writers handle that representation. Leave {@link ECClass.modifier} absent or set it to
+ * writers handle that representation. Leave [Authoring.ECClass.modifier]($ecschema-metadata) absent or set it to
  * `Abstract`. Other values are retained as authored but have no useful meaning and do not
  * round-trip consistently across EC implementations.
  * @alpha
@@ -1679,7 +1706,7 @@ export class Mixin extends ECClass {
     return this.document.resolveItemOfType(this.appliesTo, SchemaItemType.EntityClass);
   }
 
-  /** Sets {@link Mixin.appliesTo} from the entity class itself (see {@link SchemaDocument.referenceTo}). */
+  /** Sets [Authoring.Mixin.appliesTo]($ecschema-metadata) from the entity class itself (see [Authoring.SchemaDocument.referenceTo]($ecschema-metadata)). */
   public setAppliesTo(entityClass: EntityClass): void {
     this.appliesTo = this.document.referenceTo(entityClass);
   }
@@ -1689,10 +1716,10 @@ export class Mixin extends ECClass {
  *
  * No persisted format has a `View` element. In both ECXML and ECJSON a view is an entity class
  * carrying the `ECDbMap:QueryView` custom attribute, which holds the query; the readers promote such
- * a class to this kind and the writers undo the promotion. That is the same treatment {@link Mixin}
+ * a class to this kind and the writers undo the promotion. That is the same treatment [Authoring.Mixin]($ecschema-metadata)
  * gets in ECXML, one step further because ECJSON has no view either.
  *
- * The {@link View.query} is stored and round-tripped verbatim - never parsed, and never rewritten
+ * The [Authoring.View.query]($ecschema-metadata) is stored and round-tripped verbatim - never parsed, and never rewritten
  * when an item it names is renamed. It is ECSQL, so it is the one place this otherwise
  * database-independent model depends on ECDb.
  *
@@ -1731,9 +1758,9 @@ export class StructClass extends ECClass {
   }
 }
 
-/** Defines typed metadata that {@link CustomAttribute} instances attach to schema containers.
+/** Defines typed metadata that [Authoring.CustomAttribute]($ecschema-metadata) instances attach to schema containers.
  * @remarks
- * Properties define the attribute's value shape; {@link CustomAttributeClass.appliesTo} defines
+ * Properties define the attribute's value shape; [Authoring.CustomAttributeClass.appliesTo]($ecschema-metadata) defines
  * where it may be used. Attribute classes can contain primitive, struct, and array properties,
  * but no navigation properties. An applied instance must use a concrete class. An attribute class
  * can inherit from another non-sealed custom attribute class.
@@ -1754,19 +1781,19 @@ export class CustomAttributeClass extends ECClass {
   }
 }
 
-/** Complementary data accepted by {@link RelationshipConstraint.set} and by the `source` / `target`
- * fields of {@link RelationshipClassInit}. A pure field initializer: provided scalar fields are
+/** Complementary data accepted by [Authoring.RelationshipConstraint.set]($ecschema-metadata) and by the `source` / `target`
+ * fields of [Authoring.RelationshipClassInit]($ecschema-metadata). A pure field initializer: provided scalar fields are
  * assigned and `constraintClasses` are appended; omitted fields are left untouched.
  * @alpha
  */
 export interface RelationshipConstraintInit {
-  /** Number of instances at this end per instance at the opposite end. See {@link RelationshipConstraint.multiplicity}. */
+  /** Number of instances at this end per instance at the opposite end. See [Authoring.RelationshipConstraint.multiplicity]($ecschema-metadata). */
   multiplicity?: Multiplicity;
   /** Role when traversing from this end, e.g. `owns children`. Required unless inherited from a base relationship. */
   roleLabel?: string;
   /** Whether derived constraint classes are accepted; defaults to true when absent. */
   polymorphic?: boolean;
-  /** Common base of the allowed classes; required for multiple classes unless inherited. See {@link RelationshipConstraint.abstractConstraint}. */
+  /** Common base of the allowed classes; required for multiple classes unless inherited. See [Authoring.RelationshipConstraint.abstractConstraint]($ecschema-metadata). */
   abstractConstraint?: LocalOrFullName;
   /** Allowed endpoint classes; appended to any already present. At least one is required. */
   constraintClasses?: LocalOrFullName[];
@@ -1774,20 +1801,22 @@ export interface RelationshipConstraintInit {
   customAttributes?: ReadonlyArray<CustomAttributeProps>;
 }
 
-/** Complementary data accepted by the {@link RelationshipClass} constructor. */
+/** Complementary data accepted by the [Authoring.RelationshipClass]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface RelationshipClassInit extends ClassInit {
-  /** Ownership/lifetime semantics: independent reference, shared holding, or exclusive embedding. See {@link RelationshipClass.strength}. */
+  /** Ownership/lifetime semantics: independent reference, shared holding, or exclusive embedding. See [Authoring.RelationshipClass.strength]($ecschema-metadata). */
   strength?: StrengthType;
   /** Owner end for holding/embedding: `Forward` means source, `Backward` means target. Defaults to `Forward`. */
   strengthDirection?: StrengthDirection;
-  /** Configures the source constraint in the same pass as the class (see {@link RelationshipConstraint.set}). */
+  /** Configures the source constraint in the same pass as the class (see [Authoring.RelationshipConstraint.set]($ecschema-metadata)). */
   source?: RelationshipConstraintInit;
   /** Configures the target constraint in the same pass as the class. */
   target?: RelationshipConstraintInit;
 }
 
 /** One end (source or target) of a relationship. Not a schema item - it is owned by its
- * {@link RelationshipClass}. A constraint is a custom attribute container, but unlike classes and
+ * [Authoring.RelationshipClass]($ecschema-metadata). A constraint is a custom attribute container, but unlike classes and
  * properties it does not inherit CAs from a base relationship's constraint.
  * @alpha
  */
@@ -1803,7 +1832,7 @@ export class RelationshipConstraint {
    * `(0..*)` permits any number of children per parent. New constraints start at `(0..*)`.
    * The upper bound must be at least one or `*`, and no less than the lower bound.
    * A derived relationship may narrow this range, but cannot widen it.
-   * @see {@link parseMultiplicity} to read it as numbers. */
+   * @see [Authoring.parseMultiplicity]($ecschema-metadata) to read it as numbers. */
   public multiplicity: Multiplicity = "(0..*)";
   /** Role when traversing from this end, e.g. source `owns children`, target `is owned by parent`.
    * Include the opposite role to support translation. Required by EC 3.1 and later unless inherited
@@ -1811,7 +1840,7 @@ export class RelationshipConstraint {
   public roleLabel?: string;
   /** Whether instances of derived constraint classes are accepted. ECObjects applies this flag to
    * both the abstract constraint and the listed classes; `false` accepts only exact class matches.
-   * An absent value means {@link SpecDefaults.constraintPolymorphic} (`true`).
+   * An absent value means [Authoring.SpecDefaults.constraintPolymorphic]($ecschema-metadata) (`true`).
    * A derived relationship can restrict `true` to `false`, but cannot widen `false` to `true`. */
   public polymorphic?: boolean;
   /** Common base that every listed constraint class must equal or derive from.
@@ -1819,16 +1848,16 @@ export class RelationshipConstraint {
    * Required when there are multiple constraint classes and no inherited abstract constraint.
    * When omitted, a single constraint class supplies the effective constraint. The name does not
    * require an `Abstract` modifier. ECObjects endpoint support checks accept this class alongside
-   * the listed constraint classes, including its subclasses when {@link RelationshipConstraint.polymorphic} is true.
+   * the listed constraint classes, including its subclasses when [Authoring.RelationshipConstraint.polymorphic]($ecschema-metadata) is true.
    */
   public abstractConstraint?: LocalOrFullName;
-  /** Classes allowed at this endpoint, extended to their subclasses when {@link RelationshipConstraint.polymorphic} is true.
+  /** Classes allowed at this endpoint, extended to their subclasses when [Authoring.RelationshipConstraint.polymorphic]($ecschema-metadata) is true.
    * At least one is required. Entity classes, mixins, and relationship classes can be endpoints. */
   public readonly constraintClasses: LocalOrFullName[] = [];
   /** Constraint-level custom attributes. */
   public readonly customAttributes: CustomAttributeSet;
 
-  /** @internal Constructed by its {@link RelationshipClass}. */
+  /** @internal Constructed by its [Authoring.RelationshipClass]($ecschema-metadata). */
   public constructor(relationshipClass: RelationshipClass, relationshipEnd: RelationshipEnd) {
     this.relationshipClass = relationshipClass;
     this.relationshipEnd = relationshipEnd;
@@ -1841,12 +1870,12 @@ export class RelationshipConstraint {
   }
 
   /** The constraint classes, resolved through the document's schema set, positionally aligned with
-   * {@link RelationshipConstraint.constraintClasses}; an entry that does not resolve is `undefined`. */
+   * [Authoring.RelationshipConstraint.constraintClasses]($ecschema-metadata); an entry that does not resolve is `undefined`. */
   public getConstraintClasses(): Array<AnyClass | undefined> {
     return this.constraintClasses.map((c) => this.document.resolveItemOfType(c, AbstractSchemaItemType.Class));
   }
 
-  /** Appends constraint class references from the classes themselves (see {@link SchemaDocument.referenceTo}). */
+  /** Appends constraint class references from the classes themselves (see [Authoring.SchemaDocument.referenceTo]($ecschema-metadata)). */
   public addConstraintClass(...constraintClasses: AnyClass[]): void {
     for (const constraintClass of constraintClasses)
       this.constraintClasses.push(this.document.referenceTo(constraintClass));
@@ -1857,7 +1886,7 @@ export class RelationshipConstraint {
     return this.abstractConstraint === undefined ? undefined : this.document.resolveItemOfType(this.abstractConstraint, AbstractSchemaItemType.Class);
   }
 
-  /** Sets {@link RelationshipConstraint.abstractConstraint} from the class itself. */
+  /** Sets [Authoring.RelationshipConstraint.abstractConstraint]($ecschema-metadata) from the class itself. */
   public setAbstractConstraint(constraintClass: AnyClass): void {
     this.abstractConstraint = this.document.referenceTo(constraintClass);
   }
@@ -1885,8 +1914,8 @@ export class RelationshipConstraint {
 
 /** A directed association between instances allowed by its source and target constraints.
  * @remarks
- * The constraints define allowed classes and multiplicities; {@link RelationshipClass.strength}
- * and {@link RelationshipClass.strengthDirection} describe ownership and lifetime. A relationship
+ * The constraints define allowed classes and multiplicities; [Authoring.RelationshipClass.strength]($ecschema-metadata)
+ * and [Authoring.RelationshipClass.strengthDirection]($ecschema-metadata) describe ownership and lifetime. A relationship
  * can have its own properties. Even an abstract relationship needs both endpoints defined.
  * A derived relationship must keep or narrow both endpoint constraints.
  * @alpha
@@ -1899,9 +1928,9 @@ export class RelationshipClass extends ECClass {
    * - `Holding`: the held instance can be shared by multiple holders and depends on at least one.
    * - `Embedding`: the embedded instance belongs to one owner and shares its lifetime.
    *
-   * {@link RelationshipClass.strengthDirection} chooses the holder/owner end. These are schema
+   * [Authoring.RelationshipClass.strengthDirection]($ecschema-metadata) chooses the holder/owner end. These are schema
    * semantics; the consuming application or persistence layer implements the lifetime behavior.
-   * An absent value means {@link SpecDefaults.relationshipStrength} (`Referencing`).
+   * An absent value means [Authoring.SpecDefaults.relationshipStrength]($ecschema-metadata) (`Referencing`).
    */
   public strength?: StrengthType;
   /** Which endpoint holds or owns the other in a holding or embedding relationship.
@@ -1909,7 +1938,7 @@ export class RelationshipClass extends ECClass {
    * `Forward` makes the source the holder/owner; `Backward` makes the target the holder/owner.
    * For example, a backward embedding relationship has its parent at the target and its child
    * at the source. Navigation properties choose their own traversal direction independently.
-   * An absent value means {@link SpecDefaults.relationshipStrengthDirection} (`Forward`).
+   * An absent value means [Authoring.SpecDefaults.relationshipStrengthDirection]($ecschema-metadata) (`Forward`).
    */
   public strengthDirection?: StrengthDirection;
   /** The source end. */
@@ -1919,7 +1948,7 @@ export class RelationshipClass extends ECClass {
 
   /** Creates a relationship class in `document`. `init` carries strength / direction, the shared
    * class fields, and optional `source` / `target` configuration; any constraint end left out of
-   * `init` starts empty and can be configured later via {@link RelationshipConstraint.set}. */
+   * `init` starts empty and can be configured later via [Authoring.RelationshipConstraint.set]($ecschema-metadata). */
   public constructor(document: SchemaDocument, name: string, init?: RelationshipClassInit) {
     super(document, name, init);
     this.strength = init?.strength;
@@ -1931,10 +1960,14 @@ export class RelationshipClass extends ECClass {
   }
 }
 
-/** The backing primitive of an {@link Enumeration} (XML attribute `backingTypeName`). */
+/** The backing primitive of an [Authoring.Enumeration]($ecschema-metadata) (XML attribute `backingTypeName`).
+ * @alpha
+ */
 export type EnumerationBackingType = "int" | "string";
 
-/** One value of an {@link Enumeration}. The `value` type matches the enumeration's backing type. */
+/** One value of an [Authoring.Enumeration]($ecschema-metadata). The `value` type matches the enumeration's backing type.
+ * @alpha
+ */
 export interface Enumerator {
   /** Stable EC name, unique case-insensitively within the enumeration. */
   name: string;
@@ -1946,13 +1979,17 @@ export interface Enumerator {
   description?: string;
 }
 
-/** Complementary data accepted by {@link Enumeration.createEnumerator}. */
+/** Complementary data accepted by [Authoring.Enumeration.createEnumerator]($ecschema-metadata).
+ * @alpha
+ */
 export interface EnumeratorInit {
   label?: string;
   description?: string;
 }
 
-/** Complementary data accepted by the {@link Enumeration} constructor. */
+/** Complementary data accepted by the [Authoring.Enumeration]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface EnumerationInit {
   label?: string;
   description?: string;
@@ -1965,7 +2002,7 @@ export interface EnumerationInit {
 /** A named set of integer or string values for primitive and primitive-array properties.
  * @remarks
  * Instance data stores the enumerator's value; its name identifies the declaration, and its label
- * supplies display text. {@link Enumeration.isStrict} determines whether undeclared values are
+ * supplies display text. [Authoring.Enumeration.isStrict]($ecschema-metadata) determines whether undeclared values are
  * permitted. Renaming or relabeling an enumerator does not change its stored value.
  * @alpha
  */
@@ -2007,11 +2044,13 @@ export class Enumeration extends SchemaItem {
   }
 }
 
-/** Complementary data accepted by the {@link KindOfQuantity} constructor. */
+/** Complementary data accepted by the [Authoring.KindOfQuantity]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface KindOfQuantityInit {
   label?: string;
   description?: string;
-  /** Ordered display formats; the first is the default. See {@link KindOfQuantity.presentationFormats} for override syntax. */
+  /** Ordered display formats; the first is the default. See [Authoring.KindOfQuantity.presentationFormats]($ecschema-metadata) for override syntax. */
   presentationFormats?: string[];
 }
 
@@ -2019,7 +2058,7 @@ export interface KindOfQuantityInit {
  * @remarks
  * Multiple kinds of quantity can share a phenomenon and persistence unit while serving different
  * purposes, such as short distances and geographic distances. Properties refer to this item through
- * {@link Property.kindOfQuantity}; changing the display format does not change stored values.
+ * [Authoring.Property.kindOfQuantity]($ecschema-metadata); changing the display format does not change stored values.
  * @alpha
  */
 export class KindOfQuantity extends SchemaItem {
@@ -2040,7 +2079,7 @@ export class KindOfQuantity extends SchemaItem {
    * label (`[Units:M|]`) suppresses it. If the base format already defines units, repeat those
    * units in their original order and change only their labels, not their identities.
    *
-   * Units must be compatible with {@link KindOfQuantity.persistenceUnit}. Overrides affect this
+   * Units must be compatible with [Authoring.KindOfQuantity.persistenceUnit]($ecschema-metadata). Overrides affect this
    * quantity only; they do not modify the referenced format. Serialized as `presentationUnits`.
    */
   public readonly presentationFormats: string[] = [];
@@ -2053,7 +2092,7 @@ export class KindOfQuantity extends SchemaItem {
     return item?.schemaItemType === SchemaItemType.Unit || item?.schemaItemType === SchemaItemType.InvertedUnit ? item : undefined;
   }
 
-  /** Sets {@link KindOfQuantity.persistenceUnit} from the unit itself (see {@link SchemaDocument.referenceTo}). */
+  /** Sets [Authoring.KindOfQuantity.persistenceUnit]($ecschema-metadata) from the unit itself (see [Authoring.SchemaDocument.referenceTo]($ecschema-metadata)). */
   public setPersistenceUnit(unit: Unit | InvertedUnit): void {
     this.persistenceUnit = this.document.referenceTo(unit);
   }
@@ -2072,7 +2111,9 @@ export class KindOfQuantity extends SchemaItem {
   }
 }
 
-/** Complementary data accepted by the {@link PropertyCategory} constructor. */
+/** Complementary data accepted by the [Authoring.PropertyCategory]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface PropertyCategoryInit {
   /** Display name of the group. */
   label?: string;
@@ -2084,7 +2125,7 @@ export interface PropertyCategoryInit {
 
 /** A UI grouping shared by properties, such as dimensions or operating conditions.
  * @remarks
- * Assign it through {@link Property.category}. Its priority orders categories; a property's own
+ * Assign it through [Authoring.Property.category]($ecschema-metadata). Its priority orders categories; a property's own
  * priority orders properties within a class. Categories do not affect stored property values.
  * @alpha
  */
@@ -2111,7 +2152,7 @@ export class PropertyCategory extends SchemaItem {
 // capabilities are expected here.
 
 /** A unit system: a named family of units (`"SI"`, `"METRIC"`, `"USCUSTOM"`, ...) that
- * {@link Unit}s declare membership in. Useful for choosing display units according to a convention;
+ * [Authoring.Unit]($ecschema-metadata)s declare membership in. Useful for choosing display units according to a convention;
  * conversion compatibility is determined by the phenomenon, not the unit system.
  * @alpha
  */
@@ -2151,7 +2192,9 @@ export class Phenomenon extends SchemaItem {
   }
 }
 
-/** Complementary data accepted by the {@link Unit} constructor. */
+/** Complementary data accepted by the [Authoring.Unit]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface UnitInit extends SchemaItemInit {
   /** Numerator of the conversion factor relating this unit to its definition; defaults to one. */
   numerator?: number;
@@ -2173,9 +2216,9 @@ export interface UnitInit extends SchemaItemInit {
  */
 export class Unit extends SchemaItem {
   public get schemaItemType(): SchemaItemType.Unit { return SchemaItemType.Unit; }
-  /** Reference to the {@link Phenomenon} this unit measures. */
+  /** Reference to the [Authoring.Phenomenon]($ecschema-metadata) this unit measures. */
   public phenomenon: LocalOrFullName;
-  /** Reference to the {@link UnitSystem} this unit belongs to. */
+  /** Reference to the [Authoring.UnitSystem]($ecschema-metadata) this unit belongs to. */
   public unitSystem: LocalOrFullName;
   /** Product of units and bracketed constants, with optional integer exponents, e.g. `"[MILLI]*M"`
    * or `"M*S(-1)"`. A base unit names itself, e.g. `"M"`. Use negative exponents for division;
@@ -2223,9 +2266,9 @@ export class Unit extends SchemaItem {
  */
 export class InvertedUnit extends SchemaItem {
   public get schemaItemType(): SchemaItemType.InvertedUnit { return SchemaItemType.InvertedUnit; }
-  /** Reference to the {@link Unit} this unit is the reciprocal of. */
+  /** Reference to the [Authoring.Unit]($ecschema-metadata) this unit is the reciprocal of. */
   public invertsUnit: LocalOrFullName;
-  /** Reference to the {@link UnitSystem} this unit belongs to. */
+  /** Reference to the [Authoring.UnitSystem]($ecschema-metadata) this unit belongs to. */
   public unitSystem: LocalOrFullName;
 
   /** Creates an inverted unit in `document`. `invertsUnit` and `unitSystem` are mandatory. */
@@ -2250,7 +2293,9 @@ export class InvertedUnit extends SchemaItem {
   }
 }
 
-/** Complementary data accepted by the {@link Constant} constructor. */
+/** Complementary data accepted by the [Authoring.Constant]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface ConstantInit extends SchemaItemInit {
   /** Numerator scaling the defining expression; defaults to one. */
   numerator?: number;
@@ -2259,16 +2304,16 @@ export interface ConstantInit extends SchemaItemInit {
 }
 
 /** A constant: a fixed quantity usable in unit definitions (e.g. `PI`, or `DECA` as `10`). Like a
- * {@link Unit} it has a phenomenon and a defining expression, but no unit system - it is not a
+ * [Authoring.Unit]($ecschema-metadata) it has a phenomenon and a defining expression, but no unit system - it is not a
  * unit values are stated in.
  * @alpha
  */
 export class Constant extends SchemaItem {
   public get schemaItemType(): SchemaItemType.Constant { return SchemaItemType.Constant; }
-  /** Reference to the {@link Phenomenon} this constant belongs to (e.g. a dimensionless ratio
+  /** Reference to the [Authoring.Phenomenon]($ecschema-metadata) this constant belongs to (e.g. a dimensionless ratio
    * like `"NUMBER"` for `PI`). */
   public phenomenon: LocalOrFullName;
-  /** Defining expression using the same product/exponent grammar as {@link Unit.definition}.
+  /** Defining expression using the same product/exponent grammar as [Authoring.Unit.definition]($ecschema-metadata).
    * A base constant names itself; other constants scale their definition by numerator/denominator. */
   public definition: string;
   /** Numerator of the constant's value (e.g. `3.14159...` for `PI`). `undefined` reads as `1.0`
@@ -2296,33 +2341,39 @@ export class Constant extends SchemaItem {
   }
 }
 
-/** One unit of a {@link FormatComposite}: a reference to a `Unit` or `InvertedUnit`, plus an
- * optional label overriding the unit's own when values are rendered. */
+/** One unit of a [Authoring.FormatComposite]($ecschema-metadata): a reference to a `Unit` or `InvertedUnit`, plus an
+ * optional label overriding the unit's own when values are rendered.
+ * @alpha
+ */
 export interface FormatCompositeUnit {
   /** Reference to the `Unit` or `InvertedUnit`. */
   name: LocalOrFullName;
   /** Display label for this segment. Omit to use the unit's label, or set `""` to suppress it.
-   * Labels are rendered when {@link FormatTraits.ShowUnitLabel} is enabled. */
+   * Labels are rendered when [FormatTraits.ShowUnitLabel]($quantity) is enabled. */
   label?: string;
 }
 
-/** The composite specification of a {@link Format}: how a single quantity is split across up to
- * four units of descending magnitude (e.g. feet-and-inches, degrees-minutes-seconds). */
+/** The composite specification of a [Authoring.Format]($ecschema-metadata): how a single quantity is split across up to
+ * four units of descending magnitude (e.g. feet-and-inches, degrees-minutes-seconds).
+ * @alpha
+ */
 export interface FormatComposite {
   /** Separator between the unit segments. Empty or a single character; `undefined` reads as the
-   * spec default ({@link SpecDefaults.compositeSpacer}). */
+   * spec default ([Authoring.SpecDefaults.compositeSpacer]($ecschema-metadata)). */
   spacer?: string;
   /** Whether zero-valued unit segments are rendered, e.g. the feet segment in `0 ft 6 in`.
-   * An absent value means {@link SpecDefaults.compositeIncludeZero} (`true`). */
+   * An absent value means [Authoring.SpecDefaults.compositeIncludeZero]($ecschema-metadata) (`true`). */
   includeZero?: boolean;
   /** One to four compatible units in descending magnitude, each with an optional label override.
    * Units must measure the same phenomenon and convert between each other without an offset. */
   units: FormatCompositeUnit[];
 }
 
-/** Complementary data accepted by the {@link Format} constructor. */
+/** Complementary data accepted by the [Authoring.Format]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface FormatInit extends SchemaItemInit {
-  /** Decimal places or fractional denominator, according to the format type. See {@link Format.precision}. */
+  /** Decimal places or fractional denominator, according to the format type. See [Authoring.Format.precision]($ecschema-metadata). */
   precision?: DecimalPrecision | FractionalPrecision;
   /** Rounding increment, active with `ApplyRounding`; zero means round to precision. */
   roundFactor?: number;
@@ -2330,7 +2381,7 @@ export interface FormatInit extends SchemaItemInit {
   minWidth?: number;
   /** Sign rendering; defaults to `OnlyNegative`. */
   showSignOption?: ShowSignOption;
-  /** Rendering options combined with bitwise OR. See {@link Format.formatTraits}. */
+  /** Rendering options combined with bitwise OR. See [Authoring.Format.formatTraits]($ecschema-metadata). */
   formatTraits?: FormatTraits;
   /** Decimal separator; defaults to `"."`. */
   decimalSeparator?: string;
@@ -2340,20 +2391,20 @@ export interface FormatInit extends SchemaItemInit {
   uomSeparator?: string;
   /** Required for scientific formats: `Normalized` or `ZeroNormalized`. */
   scientificType?: ScientificType;
-  /** Digits in the station offset; required for station formats. See {@link Format.stationOffsetSize}. */
+  /** Digits in the station offset; required for station formats. See [Authoring.Format.stationOffsetSize]($ecschema-metadata). */
   stationOffsetSize?: number;
   /** Separator before the station offset; defaults to `"+"`. */
   stationSeparator?: string;
-  /** One to four compatible units in descending size, copied into an owned {@link Format.composite} object. */
+  /** One to four compatible units in descending size, copied into an owned [Authoring.Format.composite]($ecschema-metadata) object. */
   composite?: Readonly<FormatComposite>;
 }
 
 /** Controls numeric display: precision, separators, signs, and optional composite units.
  * @remarks
- * A {@link KindOfQuantity} selects formats and can override precision or unit labels, or add
- * units to a unitless format. See {@link KindOfQuantity.presentationFormats} for the syntax.
+ * A [Authoring.KindOfQuantity]($ecschema-metadata) selects formats and can override precision or unit labels, or add
+ * units to a unitless format. See [Authoring.KindOfQuantity.presentationFormats]($ecschema-metadata) for the syntax.
  * Optional fields retain `undefined` when unset; the documented defaults describe their meaning.
- * EC 3.2 supports decimal, fractional, scientific, and station formats. Other {@link FormatType}
+ * EC 3.2 supports decimal, fractional, scientific, and station formats. Other [FormatType]($quantity)
  * members belong to the quantity formatting library and are invalid on a schema format.
  * Validation does not evaluate unit conversions or prove compatibility with a kind of quantity.
  * @alpha
@@ -2366,33 +2417,33 @@ export class Format extends SchemaItem {
    * (`1`, `2`, `4`, ..., `256`) for fractional formats. For example, fractional precision `8`
    * rounds to eighths. Set explicitly when the intended display precision matters. */
   public precision?: DecimalPrecision | FractionalPrecision;
-  /** Rounding factor applied when the {@link FormatTraits.ApplyRounding} trait is set; `0` rounds
-   * to precision. `undefined` reads as the spec default ({@link SpecDefaults.formatRoundFactor}). */
+  /** Rounding factor applied when the [FormatTraits.ApplyRounding]($quantity) trait is set; `0` rounds
+   * to precision. `undefined` reads as the spec default ([Authoring.SpecDefaults.formatRoundFactor]($ecschema-metadata)). */
   public roundFactor?: number;
   /** Minimum formatted width, padded with leading zeros; `undefined` adds no padding.
    * Applies to each component of a composite, counts separators, and never reduces precision. */
   public minWidth?: number;
   /** How the sign is rendered: `NoSign`, `OnlyNegative`, `SignAlways`, or `NegativeParentheses`
-   * (e.g. `(10)` for minus ten). An absent value means {@link SpecDefaults.formatShowSignOption}. */
+   * (e.g. `(10)` for minus ten). An absent value means [Authoring.SpecDefaults.formatShowSignOption]($ecschema-metadata). */
   public showSignOption?: ShowSignOption;
   /** Rendering options combined with bitwise OR, such as
    * `FormatTraits.ShowUnitLabel | FormatTraits.KeepSingleZero`.
    * @remarks
    * `ShowUnitLabel` enables unit labels; add `PrependUnitLabel` to put them before the value.
-   * `Use1000Separator` enables digit grouping and `ApplyRounding` enables {@link Format.roundFactor}.
+   * `Use1000Separator` enables digit grouping and `ApplyRounding` enables [Authoring.Format.roundFactor]($ecschema-metadata).
    * `TrailZeroes` retains decimal places up to the precision. An absent value means no traits,
-   * the same as {@link FormatTraits.Uninitialized} (`0`).
+   * the same as [FormatTraits.Uninitialized]($quantity) (`0`).
    */
   public formatTraits?: FormatTraits;
   /** Separator between the integer and fractional digits. Empty or a single character;
-   * `undefined` reads as the spec default ({@link SpecDefaults.formatDecimalSeparator}). */
+   * `undefined` reads as the spec default ([Authoring.SpecDefaults.formatDecimalSeparator]($ecschema-metadata)). */
   public decimalSeparator?: string;
   /** Separator grouping the integer digits by thousands, rendered only with the
-   * {@link FormatTraits.Use1000Separator} trait. Empty or a single character; `undefined` reads as
-   * the spec default ({@link SpecDefaults.formatThousandSeparator}). */
+   * [FormatTraits.Use1000Separator]($quantity) trait. Empty or a single character; `undefined` reads as
+   * the spec default ([Authoring.SpecDefaults.formatThousandSeparator]($ecschema-metadata)). */
   public thousandSeparator?: string;
   /** Separator between the value and the unit label. Empty or a single character; `undefined`
-   * reads as the spec default ({@link SpecDefaults.formatUomSeparator}). */
+   * reads as the spec default ([Authoring.SpecDefaults.formatUomSeparator]($ecschema-metadata)). */
   public uomSeparator?: string;
   /** Required for scientific formats. `Normalized` uses a mantissa such as `1.234e+3`;
    * `ZeroNormalized` uses `0.1234e+4` for the same value. */
@@ -2401,7 +2452,7 @@ export class Format extends SchemaItem {
    * with size `2`, a value of `1234.5` is displayed as `12+34.5` before precision and padding rules. */
   public stationOffsetSize?: number;
   /** Separator between the station and offset digits (`"3+25"`). Empty or a single character;
-   * `undefined` reads as the spec default ({@link SpecDefaults.formatStationSeparator}). */
+   * `undefined` reads as the spec default ([Authoring.SpecDefaults.formatStationSeparator]($ecschema-metadata)). */
   public stationSeparator?: string;
   /** Units used to display the quantity, such as feet and inches. The smallest unit receives the
    * format's numeric precision; larger units display whole numbers. Without a composite, the
@@ -2436,7 +2487,7 @@ export class Format extends SchemaItem {
     }
   }
 
-  /** True when the given trait is set in {@link Format.formatTraits}. */
+  /** True when the given trait is set in [Authoring.Format.formatTraits]($ecschema-metadata). */
   public hasFormatTrait(trait: FormatTraits): boolean {
     return this.formatTraits !== undefined && (this.formatTraits & trait) === trait;
   }
@@ -2454,7 +2505,9 @@ export class Format extends SchemaItem {
 
 // ===== End of units / formats family =====
 
-/** Complementary data shared by every property kind's constructor. */
+/** Complementary data shared by every property kind's constructor.
+ * @alpha
+ */
 export interface PropertyInit {
   /** Human-readable display name; consumers fall back to the property name when absent. */
   label?: string;
@@ -2464,10 +2517,10 @@ export interface PropertyInit {
   isReadOnly?: boolean;
   /** Relative importance for display ordering within a class; larger values indicate higher priority. */
   priority?: number;
-  /** UI grouping for this property; see {@link Property.category}. */
+  /** UI grouping for this property; see [Authoring.Property.category]($ecschema-metadata). */
   category?: LocalOrFullName;
   /** Quantity semantics, storage unit, and display formats for a primitive or primitive-array property.
-   * See {@link Property.kindOfQuantity} for override and schema-update restrictions. */
+   * See [Authoring.Property.kindOfQuantity]($ecschema-metadata) for override and schema-update restrictions. */
   kindOfQuantity?: LocalOrFullName;
   /** Property-level custom attributes, added in order. */
   customAttributes?: ReadonlyArray<CustomAttributeProps>;
@@ -2476,16 +2529,16 @@ export interface PropertyInit {
 /** Common base of every property kind. `kind` is the discriminant for narrowing.
  *
  * @remarks
- * A property belongs to its declaring {@link ECClass}. A declaration with the same name as an
+ * A property belongs to its declaring [Authoring.ECClass]($ecschema-metadata). A declaration with the same name as an
  * inherited property overrides it and must preserve its property kind, value type, and persistence
  * unit. Labels, descriptions, categories, and priorities can be specialized in derived classes.
- * This object stores only the local declaration; use {@link Property.getBaseProperty} to inspect
+ * This object stores only the local declaration; use [Authoring.Property.getBaseProperty]($ecschema-metadata) to inspect
  * inherited metadata.
  * @alpha
  */
 export abstract class Property {
   /** Discriminates the property kind. A getter rather than a field, for the same reason as
-   * {@link SchemaItem.schemaItemType}: the property is registered with its class from this
+   * [Authoring.SchemaItem.schemaItemType]($ecschema-metadata): the property is registered with its class from this
    * constructor, before a subclass field initializer would have run. */
   public abstract get kind(): PropertyKind;
   /** Human-readable display name; consumers fall back to the property name when absent. */
@@ -2498,8 +2551,8 @@ export abstract class Property {
   /** Relative importance for display ordering within a class; larger values indicate higher priority. */
   public priority?: number;
   /** Reference to the UI grouping for this property (e.g. `"MyDomain:Dimensions"`).
-   * The category groups properties; {@link Property.priority} orders properties within the class.
-   * @see {@link Property.getCategory}, {@link Property.setCategory}. */
+   * The category groups properties; [Authoring.Property.priority]($ecschema-metadata) orders properties within the class.
+   * @see [Authoring.Property.getCategory]($ecschema-metadata), [Authoring.Property.setCategory]($ecschema-metadata). */
   public category?: LocalOrFullName;
   /** Quantity semantics, storage unit, and display formats for a primitive or primitive-array property.
    * @remarks
@@ -2509,7 +2562,7 @@ export abstract class Property {
    * `SchemaUpgradeCustomAttributes:AllowUnitChange` permits such a metadata correction on import,
    * with matching `From` and `To` units. It does not convert stored values. To change only the
    * display, choose another presentation format.
-   * @see {@link Property.getKindOfQuantity}, {@link Property.setKindOfQuantity}. */
+   * @see [Authoring.Property.getKindOfQuantity]($ecschema-metadata), [Authoring.Property.setKindOfQuantity]($ecschema-metadata). */
   public kindOfQuantity?: LocalOrFullName;
   /** Custom attributes declared on this property. EC inherits base-property attributes unless a
    * local instance of the same attribute class overrides them; this collection stores only local instances. */
@@ -2534,7 +2587,7 @@ export abstract class Property {
     }
   }
 
-  /** The property's {@link Metadata.ECName | ECName}, unique case-insensitively among its class's own declarations.
+  /** The property's [ECName]($ecschema-metadata), unique case-insensitively among its class's own declarations.
    * A declaration with an inherited property's name is an override. Renaming preserves object identity and
    * declaration order and updates name lookup; references and derived overrides are not rewritten. */
   public get name(): string {
@@ -2549,7 +2602,7 @@ export abstract class Property {
     this._declaringClass[_nameChanged](this, previousName);
   }
 
-  /** The class this property belongs to. Changed only by {@link ECClass.movePropertyIn}. */
+  /** The class this property belongs to. Changed only by [Authoring.ECClass.movePropertyIn]($ecschema-metadata). */
   public get declaringClass(): ECClass {
     return this._declaringClass;
   }
@@ -2597,7 +2650,7 @@ export abstract class Property {
     return this.category === undefined ? undefined : this.document.resolveItemOfType(this.category, SchemaItemType.PropertyCategory);
   }
 
-  /** Sets {@link Property.category} from the category itself (see {@link SchemaDocument.referenceTo}). */
+  /** Sets [Authoring.Property.category]($ecschema-metadata) from the category itself (see [Authoring.SchemaDocument.referenceTo]($ecschema-metadata)). */
   public setCategory(category: PropertyCategory): void {
     this.category = this.document.referenceTo(category);
   }
@@ -2607,28 +2660,28 @@ export abstract class Property {
     return this.kindOfQuantity === undefined ? undefined : this.document.resolveItemOfType(this.kindOfQuantity, SchemaItemType.KindOfQuantity);
   }
 
-  /** Sets {@link Property.kindOfQuantity} from the kind of quantity itself (see {@link SchemaDocument.referenceTo}). */
+  /** Sets [Authoring.Property.kindOfQuantity]($ecschema-metadata) from the kind of quantity itself (see [Authoring.SchemaDocument.referenceTo]($ecschema-metadata)). */
   public setKindOfQuantity(kindOfQuantity: KindOfQuantity): void {
     this.kindOfQuantity = this.document.referenceTo(kindOfQuantity);
   }
 
-  /** Narrows to the primitive kinds ({@link PrimitiveProperty}, {@link PrimitiveArrayProperty}).
+  /** Narrows to the primitive kinds ([Authoring.PrimitiveProperty]($ecschema-metadata), [Authoring.PrimitiveArrayProperty]($ecschema-metadata)).
    * Includes primitive arrays, matching the same check on `SchemaView`. */
   public isPrimitive(): this is AnyPrimitiveProperty {
     return this.kind === PropertyKind.Primitive || this.kind === PropertyKind.PrimitiveArray;
   }
 
-  /** Narrows to the struct kinds ({@link StructProperty}, {@link StructArrayProperty}). */
+  /** Narrows to the struct kinds ([Authoring.StructProperty]($ecschema-metadata), [Authoring.StructArrayProperty]($ecschema-metadata)). */
   public isStruct(): this is AnyStructProperty {
     return this.kind === PropertyKind.Struct || this.kind === PropertyKind.StructArray;
   }
 
-  /** Narrows to the array kinds ({@link PrimitiveArrayProperty}, {@link StructArrayProperty}). */
+  /** Narrows to the array kinds ([Authoring.PrimitiveArrayProperty]($ecschema-metadata), [Authoring.StructArrayProperty]($ecschema-metadata)). */
   public isArray(): this is AnyArrayProperty {
     return this.kind === PropertyKind.PrimitiveArray || this.kind === PropertyKind.StructArray;
   }
 
-  /** Narrows to {@link NavigationProperty}. */
+  /** Narrows to [Authoring.NavigationProperty]($ecschema-metadata). */
   public isNavigation(): this is NavigationProperty {
     return this.kind === PropertyKind.Navigation;
   }
@@ -2666,9 +2719,11 @@ export abstract class Property {
   }
 }
 
-/** Complementary data accepted by the {@link PrimitiveProperty} constructor. */
+/** Complementary data accepted by the [Authoring.PrimitiveProperty]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface PrimitivePropertyInit extends PropertyInit {
-  /** Application-specific interpretation of the primitive value; does not change storage. See {@link PrimitiveProperty.extendedTypeName}. */
+  /** Application-specific interpretation of the primitive value; does not change storage. See [Authoring.PrimitiveProperty.extendedTypeName]($ecschema-metadata). */
   extendedTypeName?: string;
   /** Minimum value (int / long / double only). */
   minValue?: number;
@@ -2721,15 +2776,17 @@ export class PrimitiveProperty extends Property {
     return this.isEnumeration() ? this.document.resolveItemOfType(this.typeName, SchemaItemType.Enumeration) : undefined;
   }
 
-  /** Points {@link PrimitiveProperty.typeName} at the enumeration itself (see {@link SchemaDocument.referenceTo}). */
+  /** Points [Authoring.PrimitiveProperty.typeName]($ecschema-metadata) at the enumeration itself (see [Authoring.SchemaDocument.referenceTo]($ecschema-metadata)). */
   public setEnumeration(enumeration: Enumeration): void {
     this.typeName = this.document.referenceTo(enumeration);
   }
 }
 
-/** Complementary data accepted by the {@link PrimitiveArrayProperty} constructor. */
+/** Complementary data accepted by the [Authoring.PrimitiveArrayProperty]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface PrimitiveArrayPropertyInit extends PropertyInit {
-  /** Application-specific interpretation of each element; does not change storage. See {@link PrimitiveProperty.extendedTypeName}. */
+  /** Application-specific interpretation of each element; does not change storage. See [Authoring.PrimitiveProperty.extendedTypeName]($ecschema-metadata). */
   extendedTypeName?: string;
   /** Minimum element value (int / long / double only). */
   minValue?: number;
@@ -2747,8 +2804,8 @@ export interface PrimitiveArrayPropertyInit extends PropertyInit {
 
 /** An ordered array of values sharing one primitive type or enumeration.
  * @remarks
- * Value and length bounds apply to each element. {@link PrimitiveArrayProperty.minOccurs} and
- * {@link PrimitiveArrayProperty.maxOccurs} constrain the number of elements in the array.
+ * Value and length bounds apply to each element. [Authoring.PrimitiveArrayProperty.minOccurs]($ecschema-metadata) and
+ * [Authoring.PrimitiveArrayProperty.maxOccurs]($ecschema-metadata) constrain the number of elements in the array.
  * @alpha
  */
 export class PrimitiveArrayProperty extends Property {
@@ -2756,7 +2813,7 @@ export class PrimitiveArrayProperty extends Property {
   /** Primitive keyword or enumeration reference of the array element. */
   public typeName: string;
   /** Application-specific interpretation of each element; storage remains the base primitive type.
-   * See {@link PrimitiveProperty.extendedTypeName}. */
+   * See [Authoring.PrimitiveProperty.extendedTypeName]($ecschema-metadata). */
   public extendedTypeName?: string;
   /** Minimum element value (int / long / double only). */
   public minValue?: number;
@@ -2795,7 +2852,7 @@ export class PrimitiveArrayProperty extends Property {
     return this.isEnumeration() ? this.document.resolveItemOfType(this.typeName, SchemaItemType.Enumeration) : undefined;
   }
 
-  /** Points {@link PrimitiveArrayProperty.typeName} at the enumeration itself. */
+  /** Points [Authoring.PrimitiveArrayProperty.typeName]($ecschema-metadata) at the enumeration itself. */
   public setEnumeration(enumeration: Enumeration): void {
     this.typeName = this.document.referenceTo(enumeration);
   }
@@ -2823,13 +2880,15 @@ export class StructProperty extends Property {
     return this.document.resolveItemOfType(this.typeName, SchemaItemType.StructClass);
   }
 
-  /** Points {@link StructProperty.typeName} at the struct class itself (see {@link SchemaDocument.referenceTo}). */
+  /** Points [Authoring.StructProperty.typeName]($ecschema-metadata) at the struct class itself (see [Authoring.SchemaDocument.referenceTo]($ecschema-metadata)). */
   public setStructClass(structClass: StructClass): void {
     this.typeName = this.document.referenceTo(structClass);
   }
 }
 
-/** Complementary data accepted by the {@link StructArrayProperty} constructor. */
+/** Complementary data accepted by the [Authoring.StructArrayProperty]($ecschema-metadata) constructor.
+ * @alpha
+ */
 export interface StructArrayPropertyInit extends PropertyInit {
   /** Minimum number of elements (default 0). */
   minOccurs?: number;
@@ -2849,7 +2908,7 @@ export class StructArrayProperty extends Property {
   public typeName: LocalOrFullName;
   /** Minimum number of elements (default 0). */
   public minOccurs: number = 0;
-  /** Maximum number of elements; `undefined` means unbounded. See {@link PrimitiveArrayProperty.maxOccurs}. */
+  /** Maximum number of elements; `undefined` means unbounded. See [Authoring.PrimitiveArrayProperty.maxOccurs]($ecschema-metadata). */
   public maxOccurs?: number;
 
   /** Creates a struct array property on `declaringClass`. `structClass` is mandatory. */
@@ -2868,7 +2927,7 @@ export class StructArrayProperty extends Property {
     return this.document.resolveItemOfType(this.typeName, SchemaItemType.StructClass);
   }
 
-  /** Points {@link StructArrayProperty.typeName} at the struct class itself. */
+  /** Points [Authoring.StructArrayProperty.typeName]($ecschema-metadata) at the struct class itself. */
   public setStructClass(structClass: StructClass): void {
     this.typeName = this.document.referenceTo(structClass);
   }
@@ -2886,10 +2945,10 @@ export class StructArrayProperty extends Property {
  */
 export class NavigationProperty extends Property {
   public get kind(): PropertyKind.Navigation { return PropertyKind.Navigation; }
-  /** Reference to the root {@link RelationshipClass} this property traverses. */
+  /** Reference to the root [Authoring.RelationshipClass]($ecschema-metadata) this property traverses. */
   public relationshipName: LocalOrFullName;
   /** `Forward` navigates from source to target; `Backward` navigates from target to source.
-   * This is independent of the relationship's {@link RelationshipClass.strengthDirection}. */
+   * This is independent of the relationship's [Authoring.RelationshipClass.strengthDirection]($ecschema-metadata). */
   public direction: StrengthDirection;
 
   /** Creates a navigation property on `declaringClass`. `relationship` and `direction` are mandatory. */
@@ -2904,35 +2963,49 @@ export class NavigationProperty extends Property {
     return this.document.resolveItemOfType(this.relationshipName, SchemaItemType.RelationshipClass);
   }
 
-  /** Points {@link NavigationProperty.relationshipName} at the relationship class itself. */
+  /** Points [Authoring.NavigationProperty.relationshipName]($ecschema-metadata) at the relationship class itself. */
   public setRelationshipClass(relationshipClass: RelationshipClass): void {
     this.relationshipName = this.document.referenceTo(relationshipClass);
   }
 }
 
-/** Union of every property kind. */
+/** Union of every property kind.
+ * @alpha
+ */
 export type AnyProperty = PrimitiveProperty | PrimitiveArrayProperty | StructProperty | StructArrayProperty | NavigationProperty;
 
-/** The primitive (or enumeration-backed) property kinds: scalar or array. */
+/** The primitive (or enumeration-backed) property kinds: scalar or array.
+ * @alpha
+ */
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
 
-/** The struct property kinds: scalar or array of an embedded struct. */
+/** The struct property kinds: scalar or array of an embedded struct.
+ * @alpha
+ */
 export type AnyStructProperty = StructProperty | StructArrayProperty;
 
-/** The array property kinds. */
+/** The array property kinds.
+ * @alpha
+ */
 export type AnyArrayProperty = PrimitiveArrayProperty | StructArrayProperty;
 
-/** Union of every EC class kind. */
+/** Union of every EC class kind.
+ * @alpha
+ */
 export type AnyClass = EntityClass | Mixin | View | StructClass | CustomAttributeClass | RelationshipClass;
 
-/** Union of every schema item kind. */
+/** Union of every schema item kind.
+ * @alpha
+ */
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory
   | UnitSystem | Phenomenon | Unit | InvertedUnit | Constant | Format;
 
 /** Maps each {@link SchemaItemType} discriminant to its concrete item type, plus the
  * {@link AbstractSchemaItemType} groupings to their union types, so the typed accessors
- * ({@link SchemaDocument.getItemOfType}, {@link SchemaDocument.getItemsOfType}) can narrow either by
- * a single kind or by a grouping (e.g. `Class` for any class kind). */
+ * ([Authoring.SchemaDocument.getItemOfType]($ecschema-metadata), [Authoring.SchemaDocument.getItemsOfType]($ecschema-metadata)) can narrow either by
+ * a single kind or by a grouping (e.g. `Class` for any class kind).
+ * @alpha
+ */
 export interface SchemaItemTypeMap {
   [SchemaItemType.EntityClass]: EntityClass;
   [SchemaItemType.Mixin]: Mixin;

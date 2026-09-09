@@ -22,8 +22,8 @@ import { SchemaIssueList } from "./SchemaIssues";
  *
  * ECXML 2.0 has no enumerations, property categories, or property priorities; it expresses them as
  * custom attributes of the standard `EditorCustomAttributes` and `Bentley_Standard_CustomAttributes`
- * schemas. {@link convertEC2CustomAttributes} turns those into the items and fields the document
- * models directly, and {@link convertToEC2CustomAttributes} produces the ones a 2.0 file needs on
+ * schemas. [Authoring.convertEC2CustomAttributes]($ecschema-metadata) turns those into the items and fields the document
+ * models directly, and [Authoring.convertToEC2CustomAttributes]($ecschema-metadata) produces the ones a 2.0 file needs on
  * the way back out.
  *
  * **Both are opt-in passes over a document, not part of reading or writing.** Most of the mapping
@@ -32,7 +32,7 @@ import { SchemaIssueList } from "./SchemaIssues";
  * with no way to decline. Native draws the line in the same place: its `SchemaXmlReader2` does the
  * structural upgrade and the standalone converter does this.
  *
- * Both mutate the document in place. Copy it first ({@link copyDocumentInto}) to keep the original.
+ * Both mutate the document in place. Copy it first ([Authoring.copyDocumentInto]($ecschema-metadata)) to keep the original.
  */
 
 /** Full names of the legacy custom attribute classes, as they are compared. */
@@ -85,11 +85,11 @@ const relocations: ReadonlyMap<string, RelocationRule> = new Map([
  *
  * What it converts:
  *
- * - `EditorCustomAttributes:StandardValues` on an integer property becomes an {@link Enumeration},
+ * - `EditorCustomAttributes:StandardValues` on an integer property becomes an [Authoring.Enumeration]($ecschema-metadata),
  *   shared between properties whose value maps agree.
  * - `Unit_Attributes:UnitSpecification` and `DisplayUnitSpecification` become a
- *   {@link KindOfQuantity}, with the legacy unit names mapped to EC 3.2 units.
- * - `EditorCustomAttributes:Category` becomes a {@link PropertyCategory} the property points at.
+ *   [Authoring.KindOfQuantity]($ecschema-metadata), with the legacy unit names mapped to EC 3.2 units.
+ * - `EditorCustomAttributes:Category` becomes a [Authoring.PropertyCategory]($ecschema-metadata) the property points at.
  * - `EditorCustomAttributes:PropertyPriority` becomes the property's `priority`.
  * - `EditorCustomAttributes:HideProperty` becomes `CoreCustomAttributes:HiddenProperty`.
  * - `Bentley_Standard_CustomAttributes:DisplayOptions` becomes `CoreCustomAttributes:HiddenSchema`
@@ -98,7 +98,7 @@ const relocations: ReadonlyMap<string, RelocationRule> = new Map([
  *   `DynamicSchema` move from `Bentley_Standard_CustomAttributes` to `CoreCustomAttributes`.
  *
  * Reading a legacy attribute needs its custom attribute class, and the two standard schemas are
- * built in ({@link getStandardSchemas}), so nothing has to be loaded for this to work. An attribute
+ * built in ([Authoring.getStandardSchemas]($ecschema-metadata)), so nothing has to be loaded for this to work. An attribute
  * of a schema-defined class the schema set does not hold is reported and left alone.
  * @alpha
  */
@@ -425,7 +425,7 @@ class EC2Upgrade {
 
   /** `Unit_Attributes:UnitSpecification` on a property names the unit its values are stored in, and
    * `DisplayUnitSpecification` the one they are shown in. Together they are what EC 3.2 models as a
-   * {@link KindOfQuantity}, so that is what they become.
+   * [Authoring.KindOfQuantity]($ecschema-metadata), so that is what they become.
    *
    * The persistence unit is the legacy name mapped straight through
    * ({@link ecUnitNameFromLegacyName}). Native additionally rewrites a non-SI unit to its

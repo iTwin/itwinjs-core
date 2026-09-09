@@ -26,10 +26,10 @@ interface JsonObject {
   [name: string]: unknown;
 }
 
-/** Reads {@link Authoring.SchemaDocument}s from ECJSON text - the format `JSON.stringify` of a schema's
+/** Reads [Authoring.SchemaDocument]($ecschema-metadata)s from ECJSON text - the format `JSON.stringify` of a schema's
  * props produces, and what iModel APIs like `getSchemaProps` deliver. Accepts any ECJSON 3.x
  * `$schema` and records the source spec version on the document
- * ({@link Authoring.SchemaDocument.originalECXmlVersionMajor}).
+ * ([Authoring.SchemaDocument.originalECXmlVersionMajor]($ecschema-metadata)).
  *
  * The reader is as lenient as the validity-free document allows: it reports problems as issues and
  * keeps whatever it could extract, leaving semantic judgment to validation. Custom attribute
@@ -37,7 +37,7 @@ interface JsonObject {
  * unchanged (no struct-array ambiguity, unlike the XML reader).
  *
  * Unlike XML, JSON cannot be partially parsed with the standard tooling, so
- * {@link SchemaJsonReader.readHeader} parses the whole input and extracts the header - cheaper
+ * [Authoring.SchemaJsonReader.readHeader]($ecschema-metadata) parses the whole input and extracts the header - cheaper
  * than full hydration, but not the leading-kilobytes peek the XML reader manages. Acceptable
  * because the very large inputs discovery walks are schema *files*, which are XML; revisit with an
  * incremental scanner if a JSON source ever carries them.
@@ -55,9 +55,9 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
   }
 
   /** Reads a full document from an already-parsed ECJSON object, skipping the text decode and
-   * `JSON.parse` that {@link readDocument} performs. This is the entry for a JSON source that hands
+   * `JSON.parse` that [Authoring.SchemaJsonReader.readDocument]($ecschema-metadata) performs. This is the entry for a JSON source that hands
    * over a live object rather than text - notably an iModel's `getSchemaProps`, which crosses the
-   * native boundary as a JS object (never a string). Going through {@link readDocument} would force
+   * native boundary as a JS object (never a string). Going through [Authoring.SchemaJsonReader.readDocument]($ecschema-metadata) would force
    * that object back through `JSON.stringify`/`JSON.parse`, two needless full-graph passes that also
    * reintroduce the platform string-length ceiling on the one source most likely to hold a very large
    * schema; this avoids both. The object is read, not retained. */
@@ -79,8 +79,8 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
     return this._readHeader(parsed.root, issues, options?.source);
   }
 
-  /** Reads the header from an already-parsed ECJSON object, the {@link readHeader} counterpart to
-   * {@link readObject}; see that method for why an object entry exists. */
+  /** Reads the header from an already-parsed ECJSON object, the [Authoring.SchemaJsonReader.readHeader]($ecschema-metadata) counterpart to
+   * [Authoring.SchemaJsonReader.readObject]($ecschema-metadata); see that method for why an object entry exists. */
   public readHeaderObject(props: object, options?: SchemaTextReadOptions): SchemaHeaderReadResult {
     const issues = new SchemaIssueList("json");
     const parsed = validateRoot(props, issues, options?.source);
@@ -90,7 +90,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
   }
 
   /** Reads one schema item from an ECJSON object tree into an existing document, under `name`.
-   * The counterpart of {@link SchemaJsonWriter.writeItemTree}; there is deliberately no public
+   * The counterpart of [Authoring.SchemaJsonWriter.writeItemTree]($ecschema-metadata); there is deliberately no public
    * single-item deserialization API.
    * @internal */
   public readItemInto(document: Authoring.SchemaDocument, name: string, tree: object): SchemaIssueList {
@@ -101,7 +101,7 @@ export class SchemaJsonReader implements SchemaDocumentTextReader {
   }
 
   /** Reads one property from an ECJSON object tree into an existing class, under `name`.
-   * Companion to {@link readItemInto}.
+   * Companion to `readItemInto`.
    * @internal */
   public readPropertyInto(declaringClass: Authoring.AnyClass, name: string, tree: object): SchemaIssueList {
     const issues = new SchemaIssueList("json");
@@ -222,7 +222,7 @@ function asArray(value: unknown): unknown[] | undefined {
   return Array.isArray(value) ? value : undefined;
 }
 
-/** Validates that a parsed JSON value is a legal {@link Authoring.CustomAttributeValue} - a string,
+/** Validates that a parsed JSON value is a legal [Authoring.CustomAttributeValue]($ecschema-metadata) - a string,
  * number, boolean, nested value object, or array of those - and narrows it. `null`, `undefined`,
  * and anything JSON cannot hold in the first place (a function, a symbol) are rejected. */
 function asCustomAttributeValue(value: unknown): Authoring.CustomAttributeValue | undefined {
@@ -292,8 +292,8 @@ class ECJson32Walker {
     return this._documentInProgress;
   }
 
-  /** Single-item and single-property entries, for {@link SchemaJsonReader.readItemInto} /
-   * {@link SchemaJsonReader.readPropertyInto}. Both set `_documentInProgress` so the shared
+  /** Single-item and single-property entries, for [Authoring.SchemaJsonReader.readItemInto]($ecschema-metadata) /
+   * [Authoring.SchemaJsonReader.readPropertyInto]($ecschema-metadata). Both set `_documentInProgress` so the shared
    * per-field readers - which resolve references against the document under construction - see the
    * target document rather than a half-built one. */
   public readItemIntoDocument(document: Authoring.SchemaDocument, name: string, tree: JsonObject): void {

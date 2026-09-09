@@ -20,16 +20,16 @@ const separatorPattern = /[.:]/;
 /** The `$schema` URL of the ECJSON 3.2 spec. */
 const ECJSON_3_2_SCHEMA_URL = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 
-/** Options for {@link SchemaJsonWriter}, extending the {@link SchemaWriteOptions} shared by all
- * writers. The extra options are JSON-only for now; one moves up into {@link SchemaWriteOptions} if
+/** Options for [Authoring.SchemaJsonWriter]($ecschema-metadata), extending the [Authoring.SchemaWriteOptions]($ecschema-metadata) shared by all
+ * writers. The extra options are JSON-only for now; one moves up into [Authoring.SchemaWriteOptions]($ecschema-metadata) if
  * the XML writer ever gains it.
  * @alpha
  */
 export interface SchemaJsonWriteOptions extends SchemaWriteOptions {
-  /** Drop every field whose value equals its spec default ({@link Authoring.SpecDefaults}), so the
+  /** Drop every field whose value equals its spec default ([Authoring.SpecDefaults]($ecschema-metadata)), so the
    * output carries only what departs from the defaults. Off by default - a normal write keeps every
    * explicit value so the document round-trips exactly. Turned on where an explicit default and an
-   * absent field must read as the same schema: {@link compareSchemaDocuments} and schema fingerprinting. */
+   * absent field must read as the same schema: [Authoring.compareSchemaDocuments]($ecschema-metadata) and schema fingerprinting. */
   omitDefaults?: boolean;
 }
 
@@ -38,16 +38,16 @@ interface JsonObject {
   [name: string]: unknown;
 }
 
-/** Serializes a {@link Authoring.SchemaDocument} to ECJSON text. The document always models the latest spec;
+/** Serializes a [Authoring.SchemaDocument]($ecschema-metadata) to ECJSON text. The document always models the latest spec;
  * the writer converts to the requested spec version at this boundary (currently only
- * {@link ECSpec.V3_2}). Unlike ECXML, ECJSON 3.2 carries mixins first-class and schema references
+ * [Authoring.ECSpec.V3_2]($ecschema-metadata)). Unlike ECXML, ECJSON 3.2 carries mixins first-class and schema references
  * without aliases, so this writer has less conversion to do than its XML sibling - but the same
  * stance: problems that do not prevent producing output are reported as issues alongside
  * best-effort text; only an unsupported target spec yields no text at all.
  * @alpha
  */
 export class SchemaJsonWriter implements SchemaDocumentTextWriter {
-  /** Writes the document to ECJSON text in the requested spec version (default {@link ECSpec.Latest}). */
+  /** Writes the document to ECJSON text in the requested spec version (default [Authoring.ECSpec.Latest]($ecschema-metadata)). */
   public writeDocument(document: Authoring.SchemaDocument, options?: SchemaJsonWriteOptions): SchemaWriteResult {
     const result = this.writeDocumentTree(document, options);
     if (result.tree === undefined)
@@ -56,9 +56,9 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
   }
 
   /** Streams the document to `sink` as ECJSON text. Present for parity with the
-   * {@link SchemaDocumentTextWriter} contract and {@link SchemaXmlWriter}, but - unlike the XML writer -
+   * [Authoring.SchemaDocumentTextWriter]($ecschema-metadata) contract and [Authoring.SchemaXmlWriter]($ecschema-metadata), but - unlike the XML writer -
    * it does **not** yet avoid the single-string ceiling: it materializes the whole document with
-   * {@link writeDocument} and hands the one string to `sink`. The reason is the same asymmetry that
+   * [Authoring.SchemaJsonWriter.writeDocument]($ecschema-metadata) and hands the one string to `sink`. The reason is the same asymmetry that
    * shaped the read side: native `JSON.stringify` is all-or-nothing (it produces the entire string in
    * one step, with no streaming mode), so a true streaming ECJSON writer means hand-rolling a token
    * serializer, which is deferred. A chunk-emitting walk slots in behind this same signature with no API change. */
@@ -73,7 +73,7 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
 
   /** Writes the document as a plain ECJSON object tree instead of text - for consumers that want
    * the props shape directly (feeding APIs that take parsed JSON, comparison) without a
-   * stringify/parse round trip. Same conversion and issue reporting as {@link writeDocument}. */
+   * stringify/parse round trip. Same conversion and issue reporting as [Authoring.SchemaJsonWriter.writeDocument]($ecschema-metadata). */
   public writeDocumentTree(document: Authoring.SchemaDocument, options?: SchemaJsonWriteOptions): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
     const issues = new SchemaIssueList("json");
     const spec = options?.spec ?? ECSpec.Latest;
@@ -96,7 +96,7 @@ export class SchemaJsonWriter implements SchemaDocumentTextWriter {
   }
 
   /** Writes one property as an ECJSON object tree, exactly as it would appear in a class's
-   * `properties` array. Companion to {@link writeItemTree}.
+   * `properties` array. Companion to `writeItemTree`.
    * @internal */
   public writePropertyTree(property: Authoring.AnyProperty): { tree?: Record<string, unknown>, issues: SchemaIssueList } {
     const issues = new SchemaIssueList("json");
@@ -207,8 +207,8 @@ class ECJson32Emitter {
     return readCustomAttributeValues(ca, this._issues, location);
   }
 
-  /** Single-item and single-property entries, for {@link SchemaJsonWriter.writeItemTree} /
-   * {@link SchemaJsonWriter.writePropertyTree}. `prune` matches what the whole-document walk applies. */
+  /** Single-item and single-property entries, for [Authoring.SchemaJsonWriter.writeItemTree]($ecschema-metadata) /
+   * [Authoring.SchemaJsonWriter.writePropertyTree]($ecschema-metadata). `prune` matches what the whole-document walk applies. */
   public emitItemTree(item: Authoring.AnySchemaItem): JsonObject {
     return prune(this._emitItem(item));
   }

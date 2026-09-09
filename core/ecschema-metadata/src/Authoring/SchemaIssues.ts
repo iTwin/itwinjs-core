@@ -6,21 +6,21 @@
  * @module Schema
  */
 
-/** How severe a {@link SchemaIssue} is. Only `"error"` indicates the producing operation could not
+/** How severe a [Authoring.SchemaIssue]($ecschema-metadata) is. Only `"error"` indicates the producing operation could not
  * deliver a complete result; warnings and infos accompany an otherwise usable one.
  * @alpha
  */
 export type SchemaIssueSeverity = "error" | "warning" | "info";
 
-/** Which operation produced a {@link SchemaIssue}. The subject of the problem is carried by
- * {@link SchemaIssue.name}, so a custom attribute that fails to materialize while writing ECXML is
+/** Which operation produced a [Authoring.SchemaIssue]($ecschema-metadata). The subject of the problem is carried by
+ * [Authoring.SchemaIssue.name]($ecschema-metadata), so a custom attribute that fails to materialize while writing ECXML is
  * group `"xml"` and name `"custom-attribute-class-unresolved"`.
  * @alpha
  */
 export type SchemaIssueGroup = "xml" | "json" | "discovery" | "ec2-conversion" | "comparison" | "merge" | "validation";
 
 /** One problem found while reading, writing, resolving, converting, or validating schemas.
- * Operations on {@link SchemaDocument}s never throw on bad input data - they report issues and
+ * Operations on [Authoring.SchemaDocument]($ecschema-metadata)s never throw on bad input data - they report issues and
  * deliver as much of a result as they can, leaving the caller to decide what is fatal.
  * @alpha
  */
@@ -30,7 +30,7 @@ export interface SchemaIssue {
   group: SchemaIssueGroup;
   /** Stable kebab-case identifier of the kind of problem, unique within its group and starting with
    * the subject it is about (e.g. `"custom-attribute-class-unresolved"`). Names are public contract
-   * and are what to match on; {@link SchemaIssue.message} is not contract. */
+   * and are what to match on; [Authoring.SchemaIssue.message]($ecschema-metadata) is not contract. */
   name: string;
   /** Human-readable description, with the specifics interpolated. */
   message: string;
@@ -40,11 +40,11 @@ export interface SchemaIssue {
   location?: string;
   /** The numbered identifier this check carries in a published rule catalog, where one exists
    * (`"ECObjects-1300"`, `"BIS-601"`, `"ECDb_0299"`). Present only so findings can be matched
-   * against the older validators; {@link SchemaIssue.name} is the identity. */
+   * against the older validators; [Authoring.SchemaIssue.name]($ecschema-metadata) is the identity. */
   code?: string;
 }
 
-/** Formats a reader's source position as the `path:line:column` form {@link SchemaIssue.location}
+/** Formats a reader's source position as the `path:line:column` form [Authoring.SchemaIssue.location]($ecschema-metadata)
  * uses, dropping the parts that are not known.
  * @alpha
  */
@@ -55,11 +55,11 @@ export function formatSourceLocation(source: string | undefined, line?: number, 
   return `${source}${position}`;
 }
 
-/** An ordered collection of {@link SchemaIssue}s with convenience accessors. Producers append;
- * consumers iterate or test {@link SchemaIssueList.hasErrors}. There is deliberately no built-in
+/** An ordered collection of [Authoring.SchemaIssue]($ecschema-metadata)s with convenience accessors. Producers append;
+ * consumers iterate or test [Authoring.SchemaIssueList.hasErrors]($ecschema-metadata). There is deliberately no built-in
  * "throw if errors" helper - consumers decide severity policy and attach the details they need.
  *
- * The list carries the {@link SchemaIssueGroup} of the operation that owns it, so producers name
+ * The list carries the [Authoring.SchemaIssueGroup]($ecschema-metadata) of the operation that owns it, so producers name
  * their group once rather than at every call site. Issues merged in from another list keep their
  * own group.
  * @alpha
@@ -111,17 +111,17 @@ export class SchemaIssueList implements Iterable<SchemaIssue> {
       this._issues.push(issue);
   }
 
-  /** Shorthand for {@link add} with severity `"error"`, in this list's group. */
+  /** Shorthand for [Authoring.SchemaIssueList.add]($ecschema-metadata) with severity `"error"`, in this list's group. */
   public addError(name: string, message: string, location?: string, code?: string): SchemaIssue {
     return this.add({ severity: "error", group: this.group, name, message, location, code });
   }
 
-  /** Shorthand for {@link add} with severity `"warning"`, in this list's group. */
+  /** Shorthand for [Authoring.SchemaIssueList.add]($ecschema-metadata) with severity `"warning"`, in this list's group. */
   public addWarning(name: string, message: string, location?: string, code?: string): SchemaIssue {
     return this.add({ severity: "warning", group: this.group, name, message, location, code });
   }
 
-  /** Shorthand for {@link add} with severity `"info"`, in this list's group. */
+  /** Shorthand for [Authoring.SchemaIssueList.add]($ecschema-metadata) with severity `"info"`, in this list's group. */
   public addInfo(name: string, message: string, location?: string, code?: string): SchemaIssue {
     return this.add({ severity: "info", group: this.group, name, message, location, code });
   }

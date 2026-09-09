@@ -21,11 +21,11 @@ import {
   checkRelationshipConstraintStructure, checkStructPropertyRecursion, checkSystemPropertyName, checkView,
 } from "./StructureRules";
 
-/** How a {@link validateSchemaDocument} or {@link validateSchemaSet} run is configured.
+/** How a [Authoring.validateSchemaDocument]($ecschema-metadata) or [Authoring.validateSchemaSet]($ecschema-metadata) run is configured.
  * @alpha
  */
 export interface ValidationOptions {
-  /** The EC specification version the schema is held to. Defaults to {@link ECSpec.Latest}.
+  /** The EC specification version the schema is held to. Defaults to [Authoring.ECSpec.Latest]($ecschema-metadata).
    *
    * Only rules that genuinely got stricter between versions read this - three-component versions,
    * enumerator names, role labels, abstract constraints. A document read from
@@ -38,10 +38,10 @@ export interface ValidationOptions {
  * names and versions, duplicate declarations, illegal inheritance, incompatible property overrides,
  * malformed relationship constraints, and misapplied custom attributes.
  *
- * References resolve through the document's {@link SchemaSet}, so a document whose references are
+ * References resolve through the document's [Authoring.SchemaSet]($ecschema-metadata), so a document whose references are
  * not loaded reports each absent schema **once** and skips every reference into it - one missing
  * schema does not bury the output. Only the given document is walked; use
- * {@link validateSchemaSet} to validate the schemas it references as well.
+ * [Authoring.validateSchemaSet]($ecschema-metadata) to validate the schemas it references as well.
  *
  * @example
  * ```ts
@@ -58,7 +58,7 @@ export function validateSchemaDocument(document: SchemaDocument, options?: Valid
 }
 
 /** Reports everything wrong with every document in a schema set, in one pass, into one issue list.
- * The same checks {@link validateSchemaDocument} runs, plus the reference versions each document
+ * The same checks [Authoring.validateSchemaDocument]($ecschema-metadata) runs, plus the reference versions each document
  * declares are compared against the versions the set actually holds.
  *
  * Derivations shared between documents (the inherited-property walk in particular) are computed
@@ -77,14 +77,14 @@ export function validateSchemaSet(schemaSet: SchemaSet, options?: ValidationOpti
  *
  * One context serves a whole validation run, including a multi-document one, so a class's expanded
  * property list is built at most once no matter how many rules and how many documents need it.
- * @alpha
+ * @internal
  */
 export class ValidationContext {
   /** Everything reported so far. */
   public readonly issues = new SchemaIssueList("validation");
   /** The EC specification version being validated against. */
   public readonly spec: ECSpec;
-  /** The serialization switches of {@link ValidationContext.spec}, which is how the version-sensitive
+  /** The serialization switches of [Authoring.ValidationContext.spec]($ecschema-metadata), which is how the version-sensitive
    * rules ask what this spec requires instead of comparing version numbers themselves. */
   public readonly dialect: ECXmlDialect;
   /** The schema element the checks currently running are about, as a path
@@ -122,7 +122,7 @@ export class ValidationContext {
   }
 
   /** Every property of a class, inherited ones included, computed once per run.
-   * @see {@link ECClass.getExpandedProperties} for the ordering and the resolution rules. */
+   * @see [Authoring.ECClass.getExpandedProperties]($ecschema-metadata) for the ordering and the resolution rules. */
   public getExpandedProperties(ecClass: ECClass): AnyProperty[] {
     let properties = this._expandedProperties.get(ecClass);
     if (properties === undefined) {

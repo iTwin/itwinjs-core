@@ -371,6 +371,7 @@ public;class;IModelJsFs
 public;class;IModelJsFsStats
 public;interface;IModelNameArg
 internal;class;IModelNative
+alpha;class;IModelSchemaSource
 beta;type;ImplicitWriteEnforcement
 public;class;InformationContentElement
 preview;class;InformationContentElement
@@ -506,6 +507,10 @@ beta;interface;QueryMappedFamiliesArgs
 internal;function;queryStringResourceNames
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
+alpha;function;readSchemaFromIModel
+alpha;function;readSchemasFromIModel
+alpha;interface;ReadSchemasFromIModelOptions
+alpha;interface;ReadSchemasFromIModelResult
 alpha;interface;RebaseHandler
 alpha;class;RebaseManager
 beta;class;RecipeDefinitionElement

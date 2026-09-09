@@ -14,6 +14,7 @@ import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
+import { ITwinError } from '@itwin/core-bentley';
 import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
@@ -35,8 +36,14 @@ export enum AbstractSchemaItemType {
 // @public @preview (undocumented)
 export type AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty;
 
+// @alpha
+type AnyArrayProperty_2 = PrimitiveArrayProperty_2 | StructArrayProperty_2;
+
 // @public @preview (undocumented)
 export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
+
+// @alpha
+type AnyClass_2 = EntityClass_2 | Mixin_2 | View | StructClass_2 | CustomAttributeClass_2 | RelationshipClass_2;
 
 // @public @preview (undocumented)
 export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps;
@@ -53,8 +60,17 @@ export type AnyEnumerator = Enumerator<string | number>;
 // @public @preview (undocumented)
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
 
+// @alpha
+type AnyPrimitiveProperty_2 = PrimitiveProperty_2 | PrimitiveArrayProperty_2;
+
 // @public @preview (undocumented)
 export type AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty;
+
+// @alpha
+type AnyProperty_2 = PrimitiveProperty_2 | PrimitiveArrayProperty_2 | StructProperty_2 | StructArrayProperty_2 | NavigationProperty_2;
+
+// @alpha
+type AnyPropertyDeclaration = PrimitivePropertyDeclaration | PrimitiveArrayPropertyDeclaration | StructPropertyDeclaration | StructArrayPropertyDeclaration | NavigationPropertyDeclaration;
 
 // @public @preview (undocumented)
 export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps;
@@ -62,11 +78,17 @@ export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | Pr
 // @public @preview (undocumented)
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
 
+// @alpha
+type AnySchemaItem_2 = AnyClass_2 | Enumeration_2 | KindOfQuantity_2 | PropertyCategory_2 | UnitSystem_2 | Phenomenon_2 | Unit_2 | InvertedUnit_2 | Constant_2 | Format_2;
+
 // @public @preview (undocumented)
 export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | SchemaItemUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps | SchemaItemOverrideFormatProps;
 
 // @public @preview (undocumented)
 export type AnyStructProperty = StructProperty | StructArrayProperty;
+
+// @alpha
+type AnyStructProperty_2 = StructProperty_2 | StructArrayProperty_2;
 
 // @public @preview (undocumented)
 export abstract class ArrayProperty extends Property {
@@ -90,6 +112,167 @@ export interface ArrayPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
     readonly maxOccurs?: number;
     // (undocumented)
     readonly minOccurs?: number;
+}
+
+declare namespace Authoring {
+    export {
+        serializeCustomAttributeBody,
+        serializeCustomAttributeBodyLines,
+        materializeCustomAttribute,
+        readCustomAttributeValues,
+        writeCustomAttributeXmlBody,
+        writeCustomAttributeValuesToXmlBody,
+        resolveCustomAttributeClass,
+        CustomAttributeXmlNode,
+        mergeFieldClassOf,
+        MergeFieldClass,
+        mergeFieldClasses,
+        SchemaAuthoringError,
+        compareSchemaDocuments,
+        formatSchemaComparison,
+        SchemaValueDifference,
+        SchemaItemChange,
+        SchemaItemComparison,
+        SchemaComparison,
+        copyItemInto,
+        copyPropertyInto,
+        copyDocumentInto,
+        SchemaCopyOptions,
+        SchemaCopyResult,
+        isItemOfKind,
+        parseMultiplicity,
+        formatMultiplicity,
+        AuthoringSchemaItemType,
+        ItemKind,
+        SchemaSet,
+        SchemaDocument,
+        Multiplicity,
+        MultiplicityBounds,
+        LocalOrFullName,
+        SpecDefaults,
+        SchemaReference,
+        SchemaDocumentInit,
+        XmlString,
+        CustomAttributeValue,
+        CustomAttributeValues,
+        CustomAttributeContainer,
+        CustomAttributeProps,
+        CustomAttribute_2 as CustomAttribute,
+        CustomAttributeJson,
+        CustomAttributeSet,
+        SchemaItemInit,
+        SchemaItem_2 as SchemaItem,
+        ClassInit,
+        ECClass_2 as ECClass,
+        PrimitivePropertyDeclaration,
+        PrimitiveArrayPropertyDeclaration,
+        StructPropertyDeclaration,
+        StructArrayPropertyDeclaration,
+        NavigationPropertyDeclaration,
+        AnyPropertyDeclaration,
+        PropertyDeclarationTypeMap,
+        EntityClassInit,
+        EntityClass_2 as EntityClass,
+        Mixin_2 as Mixin,
+        View,
+        StructClass_2 as StructClass,
+        CustomAttributeClass_2 as CustomAttributeClass,
+        RelationshipConstraintInit,
+        RelationshipClassInit,
+        RelationshipConstraint_2 as RelationshipConstraint,
+        RelationshipClass_2 as RelationshipClass,
+        EnumerationBackingType,
+        Enumerator_2 as Enumerator,
+        EnumeratorInit,
+        EnumerationInit,
+        Enumeration_2 as Enumeration,
+        KindOfQuantityInit,
+        KindOfQuantity_2 as KindOfQuantity,
+        PropertyCategoryInit,
+        PropertyCategory_2 as PropertyCategory,
+        UnitSystem_2 as UnitSystem,
+        Phenomenon_2 as Phenomenon,
+        UnitInit,
+        Unit_2 as Unit,
+        InvertedUnit_2 as InvertedUnit,
+        ConstantInit,
+        Constant_2 as Constant,
+        FormatCompositeUnit,
+        FormatComposite,
+        FormatInit,
+        Format_2 as Format,
+        PropertyInit,
+        Property_2 as Property,
+        PrimitivePropertyInit,
+        PrimitiveProperty_2 as PrimitiveProperty,
+        PrimitiveArrayPropertyInit,
+        PrimitiveArrayProperty_2 as PrimitiveArrayProperty,
+        StructProperty_2 as StructProperty,
+        StructArrayPropertyInit,
+        StructArrayProperty_2 as StructArrayProperty,
+        NavigationProperty_2 as NavigationProperty,
+        AnyProperty_2 as AnyProperty,
+        AnyPrimitiveProperty_2 as AnyPrimitiveProperty,
+        AnyStructProperty_2 as AnyStructProperty,
+        AnyArrayProperty_2 as AnyArrayProperty,
+        AnyClass_2 as AnyClass,
+        AnySchemaItem_2 as AnySchemaItem,
+        SchemaItemTypeMap,
+        decodeSchemaText,
+        parseVersionString,
+        mapFormatStringReferences,
+        ECSpec,
+        SchemaDocumentReadResult,
+        SchemaDocumentHeader,
+        SchemaHeaderReadResult,
+        SchemaText,
+        SchemaTextReadOptions,
+        SchemaDocumentTextReader,
+        SchemaWriteOptions,
+        SchemaWriteResult,
+        SchemaTextSink,
+        SchemaStreamWriteResult,
+        SchemaDocumentTextWriter,
+        convertEC2CustomAttributes,
+        convertToEC2CustomAttributes,
+        formatSourceLocation,
+        SchemaIssueSeverity,
+        SchemaIssueGroup,
+        SchemaIssue,
+        SchemaIssueList,
+        SchemaJsonReader,
+        SchemaJsonWriteOptions,
+        SchemaJsonWriter,
+        mergeSchemaInto,
+        SchemaMergeResolution,
+        SchemaMergeConflict,
+        CustomAttributeMergeSite,
+        CustomAttributeMergeResolution,
+        SchemaMergeOptions,
+        SchemaMergeRename,
+        SchemaMergeResult,
+        SchemaCandidate,
+        SchemaSource,
+        SchemaCandidateSelectionMode,
+        InMemorySchemaSource,
+        ResolvedSchema,
+        SchemaResolution,
+        SchemaResolver,
+        SchemaXmlReader,
+        SchemaXmlWriter,
+        getStandardSchemas,
+        CoreCustomAttributes,
+        ECDbMap,
+        validateSchemaDocument,
+        validateSchemaSet,
+        ValidationOptions,
+        ValidationContext
+    }
+}
+
+// @alpha
+enum AuthoringSchemaItemType {
+    View = "View"
 }
 
 // @internal
@@ -128,6 +311,16 @@ export interface ClassData {
     readonly type: ClassType;
 }
 
+// @alpha
+interface ClassInit {
+    baseClass?: LocalOrFullName;
+    customAttributes?: ReadonlyArray<CustomAttributeProps>;
+    description?: string;
+    label?: string;
+    modifier?: ECClassModifier;
+    properties?: ReadonlyArray<AnyPropertyDeclaration>;
+}
+
 // @beta
 export enum ClassModifier {
     // (undocumented)
@@ -164,6 +357,9 @@ export enum ClassType {
     Struct = 2,
     View = 5
 }
+
+// @alpha
+function compareSchemaDocuments(left: Authoring_2.SchemaDocument, right: Authoring_2.SchemaDocument): SchemaComparison;
 
 // @public @preview
 export class Constant extends SchemaItem {
@@ -205,6 +401,24 @@ export class Constant extends SchemaItem {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @alpha
+class Constant_2 extends SchemaItem_2 {
+    constructor(document: SchemaDocument, name: string, phenomenon: LocalOrFullName, definition: string, init?: ConstantInit);
+    definition: string;
+    denominator?: number;
+    getPhenomenon(): Phenomenon_2 | undefined;
+    numerator?: number;
+    phenomenon: LocalOrFullName;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.Constant;
+}
+
+// @alpha
+interface ConstantInit extends SchemaItemInit {
+    denominator?: number;
+    numerator?: number;
+}
+
 // @public @preview (undocumented)
 export interface ConstantProps extends SchemaItemProps {
     // (undocumented)
@@ -220,12 +434,83 @@ export interface ConstantProps extends SchemaItemProps {
 // @beta
 export function containerTypeToString(type: CustomAttributeContainerType): string;
 
+// @alpha
+function convertEC2CustomAttributes(document: Authoring_2.SchemaDocument): SchemaIssueList;
+
+// @alpha
+function convertToEC2CustomAttributes(document: Authoring_2.SchemaDocument): SchemaIssueList;
+
+// @alpha
+function copyDocumentInto(schemaSet: SchemaSet, document: SchemaDocument, options?: Pick<SchemaCopyOptions, "name">): SchemaCopyResult<SchemaDocument>;
+
+// @alpha
+function copyItemInto(document: SchemaDocument, item: SchemaItem_2, options?: SchemaCopyOptions): SchemaCopyResult<AnySchemaItem_2>;
+
+// @alpha
+function copyPropertyInto(declaringClass: ECClass_2, property: Property_2, options?: SchemaCopyOptions): SchemaCopyResult<AnyProperty_2>;
+
+// @alpha
+namespace CoreCustomAttributes {
+    function classHasCurrentTimeStampProperty(props: {
+        propertyName: string;
+    }): CustomAttributeProps;
+    function dateTimeInfo(props?: {
+        dateTimeKind?: "Unspecified" | "Utc" | "Local";
+        dateTimeComponent?: "DateTime" | "Date" | "TimeOfDay";
+    }): CustomAttributeProps;
+    function deprecated(props?: {
+        description?: string;
+    }): CustomAttributeProps;
+    function dynamicSchema(): CustomAttributeProps;
+    function hiddenClass(props?: {
+        show?: boolean;
+    }): CustomAttributeProps;
+    function hiddenProperty(props?: {
+        show?: boolean;
+    }): CustomAttributeProps;
+    function hiddenSchema(props?: {
+        showClasses?: boolean;
+    }): CustomAttributeProps;
+    function isMixin(props: {
+        appliesToEntityClass: string;
+    }): CustomAttributeProps;
+    function localizable(): CustomAttributeProps;
+    function notSubclassableInReferencingSchemas(props?: {
+        exceptions?: string[];
+    }): CustomAttributeProps;
+    function partialSchema(): CustomAttributeProps;
+    function productionStatus(props?: {
+        supportedUse?: "NotForProduction" | "FieldTesting" | "Production" | "Deprecated";
+        checksum?: string;
+    }): CustomAttributeProps;
+}
+
 // @public @preview (undocumented)
 export interface CustomAttribute {
     // (undocumented)
     [propName: string]: any;
     // (undocumented)
     className: string;
+}
+
+// @alpha
+class CustomAttribute_2 {
+    // @internal (undocumented)
+    [_setOwner](container: CustomAttributeContainer): void;
+    constructor(container: CustomAttributeContainer, className: LocalOrFullName, values?: CustomAttributeValues);
+    className: LocalOrFullName;
+    get container(): CustomAttributeContainer;
+    get document(): SchemaDocument;
+    static fromXmlBody(container: CustomAttributeContainer, className: LocalOrFullName, body: XmlString | undefined): CustomAttribute_2;
+    getValue(name: string): CustomAttributeValue | undefined;
+    get isMaterialized(): boolean;
+    // @internal
+    get rawXml(): XmlString | undefined;
+    setValue(name: string, value: CustomAttributeValue): void;
+    toJSON(): CustomAttributeJson;
+    tryGetValues(): CustomAttributeValues | undefined;
+    get values(): CustomAttributeValues;
+    set values(values: CustomAttributeValues);
 }
 
 // @public @preview
@@ -252,15 +537,26 @@ export class CustomAttributeClass extends ECClass {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @alpha
+class CustomAttributeClass_2 extends ECClass_2 {
+    constructor(document: SchemaDocument, name: string, appliesTo: CustomAttributeContainerType, init?: ClassInit);
+    appliesTo: CustomAttributeContainerType;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.CustomAttributeClass;
+}
+
 // @public @preview (undocumented)
 export interface CustomAttributeClassProps extends ClassProps {
     readonly appliesTo: string;
 }
 
+// @alpha
+type CustomAttributeContainer = SchemaDocument | ECClass_2 | Property_2 | RelationshipConstraint_2;
+
 // @public @preview (undocumented)
 export interface CustomAttributeContainerProps {
     // (undocumented)
-    customAttributes?: CustomAttributeSet;
+    customAttributes?: CustomAttributeSet_2;
     // (undocumented)
     fullName: string;
     // (undocumented)
@@ -302,6 +598,74 @@ export enum CustomAttributeContainerType {
     // (undocumented)
     TargetRelationshipConstraint = 2048
 }
+
+// @alpha
+interface CustomAttributeJson {
+    // (undocumented)
+    className: LocalOrFullName;
+    // (undocumented)
+    values?: CustomAttributeValues;
+    // (undocumented)
+    xml?: XmlString;
+}
+
+// @alpha
+type CustomAttributeMergeResolution = "keepTarget" | "takeIncoming" | "drop" | CustomAttributeProps;
+
+// @alpha
+interface CustomAttributeMergeSite {
+    className: LocalOrFullName;
+    incoming?: CustomAttributeProps;
+    location: string;
+    target?: CustomAttributeProps;
+}
+
+// @alpha
+interface CustomAttributeProps {
+    // (undocumented)
+    className: LocalOrFullName;
+    // (undocumented)
+    values?: CustomAttributeValues;
+}
+
+// @alpha
+class CustomAttributeSet implements Iterable<CustomAttribute_2> {
+    // @internal
+    [_attach](customAttribute: CustomAttribute_2): void;
+    [Symbol.iterator](): IterableIterator<CustomAttribute_2>;
+    // @internal
+    constructor(_container: CustomAttributeContainer);
+    add(customAttribute: CustomAttributeProps | CustomAttribute_2, ...more: Array<CustomAttributeProps | CustomAttribute_2>): CustomAttribute_2;
+    get container(): CustomAttributeContainer;
+    get(className: string): CustomAttribute_2 | undefined;
+    has(className: string): boolean;
+    remove(className: string): boolean;
+    set(customAttribute: CustomAttributeProps): CustomAttribute_2;
+    get size(): number;
+    toJSON(): CustomAttributeJson[];
+}
+
+// @alpha
+type CustomAttributeValue = string | number | boolean | CustomAttributeValues | CustomAttributeValue[];
+
+// @alpha
+interface CustomAttributeValues {
+    // (undocumented)
+    [name: string]: CustomAttributeValue;
+}
+
+// @internal
+interface CustomAttributeXmlNode {
+    // (undocumented)
+    readonly children: ReadonlyArray<CustomAttributeXmlNode>;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly text: string;
+}
+
+// @alpha
+function decodeSchemaText(text: SchemaText, abortSignal?: AbortSignal): AsyncGenerator<string>;
 
 // @internal
 export class DelayedPromise<T> implements Promise<T> {
@@ -365,7 +729,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // @internal (undocumented)
     protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
     // (undocumented)
-    get customAttributes(): CustomAttributeSet | undefined;
+    get customAttributes(): CustomAttributeSet_2 | undefined;
     // @internal
     protected deleteProperty(name: string): Promise<void>;
     // @internal
@@ -379,8 +743,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     getAllBaseClassesSync(): Iterable<AnyClass>;
     // (undocumented)
     getBaseClassSync(): ECClass | undefined;
-    getCustomAttributes(): Promise<CustomAttributeSet>;
-    getCustomAttributesSync(): CustomAttributeSet;
+    getCustomAttributes(): Promise<CustomAttributeSet_2>;
+    getCustomAttributesSync(): CustomAttributeSet_2;
     getDerivedClasses(): Promise<ECClass[] | undefined>;
     getInheritedProperty(name: string): Promise<Property | undefined>;
     getInheritedPropertySync(name: string): Property | undefined;
@@ -420,14 +784,97 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     traverseBaseClassesSync(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): boolean;
 }
 
+// @alpha
+abstract class ECClass_2 extends SchemaItem_2 {
+    // @internal
+    [_attach](property: Property_2): void;
+    // @internal
+    [_nameChanged](property: Property_2, previousName: string): void;
+    protected constructor(document: SchemaDocument, name: string, init?: ClassInit);
+    baseClass?: LocalOrFullName;
+    createEnumeration(name: string, enumeration: LocalOrFullName, init?: PrimitivePropertyInit): PrimitiveProperty_2;
+    createEnumerationArray(name: string, enumeration: LocalOrFullName, init?: PrimitiveArrayPropertyInit): PrimitiveArrayProperty_2;
+    createNavigation(name: string, relationship: LocalOrFullName, direction: StrengthDirection, init?: PropertyInit): NavigationProperty_2;
+    createPrimitive(name: string, type: PrimitiveType, init?: PrimitivePropertyInit): PrimitiveProperty_2;
+    createPrimitiveArray(name: string, type: PrimitiveType, init?: PrimitiveArrayPropertyInit): PrimitiveArrayProperty_2;
+    createProperties(...declarations: AnyPropertyDeclaration[]): AnyProperty_2[];
+    createProperty<D extends AnyPropertyDeclaration>(declaration: D): PropertyDeclarationTypeMap[D["kind"]];
+    createStruct(name: string, structClass: LocalOrFullName, init?: PropertyInit): StructProperty_2;
+    createStructArray(name: string, structClass: LocalOrFullName, init?: StructArrayPropertyInit): StructArrayProperty_2;
+    readonly customAttributes: CustomAttributeSet;
+    getBaseClass(): AnyClass_2 | undefined;
+    getExpandedProperties(): AnyProperty_2[];
+    getExpandedProperty(name: string): AnyProperty_2 | undefined;
+    getProperty(name: string): AnyProperty_2 | undefined;
+    modifier?: ECClassModifier;
+    movePropertyIn(...properties: Property_2[]): void;
+    get properties(): ReadonlyArray<AnyProperty_2>;
+    removeProperty(name: string): boolean;
+    setBaseClass(baseClass: AnyClass_2): void;
+}
+
 // @public @preview
 export enum ECClassModifier {
-    // (undocumented)
     Abstract = 1,
-    // (undocumented)
     None = 0,
-    // (undocumented)
     Sealed = 2
+}
+
+// @alpha
+namespace ECDbMap {
+    function classMap(props: {
+        mapStrategy?: string;
+        tableName?: string;
+        ecInstanceIdColumn?: string;
+    }): CustomAttributeProps;
+    interface DbIndex {
+        // (undocumented)
+        isUnique?: boolean;
+        // (undocumented)
+        name: string;
+        // (undocumented)
+        properties: string[];
+        // (undocumented)
+        where?: string;
+    }
+    function dbIndexList(props: {
+        indexes: DbIndex[];
+    }): CustomAttributeProps;
+    function foreignKeyConstraint(props?: {
+        onDeleteAction?: string;
+        onUpdateAction?: string;
+    }): CustomAttributeProps;
+    function foreignKeyView(): CustomAttributeProps;
+    function importRequiresVersion(props: {
+        ecdbRuntimeVersion: string;
+    }): CustomAttributeProps;
+    function joinedTablePerDirectSubclass(): CustomAttributeProps;
+    function linkTableRelationshipMap(props?: {
+        sourceECInstanceIdColumn?: string;
+        targetECInstanceIdColumn?: string;
+        createForeignKeyConstraints?: boolean;
+        allowDuplicateRelationships?: boolean;
+    }): CustomAttributeProps;
+    function propertyMap(props?: {
+        columnName?: string;
+        isNullable?: boolean;
+        isUnique?: boolean;
+        collation?: string;
+    }): CustomAttributeProps;
+    function queryView(props: {
+        query: string;
+    }): CustomAttributeProps;
+    function schemaMap(props: {
+        tablePrefix: string;
+    }): CustomAttributeProps;
+    function shareColumns(props?: {
+        applyToSubclassesOnly?: boolean;
+        maxSharedColumnsBeforeOverflow?: number;
+    }): CustomAttributeProps;
+    function useRequiresVersion(props?: {
+        ecdbRuntimeVersion?: string;
+        ecsqlVersion?: string;
+    }): CustomAttributeProps;
 }
 
 // @public
@@ -522,6 +969,19 @@ export enum ECSchemaStatus {
     UnableToLoadSchema = 35080,
     // (undocumented)
     UnableToLocateSchema = 35071
+}
+
+// @alpha
+enum ECSpec {
+    Latest = "3.2",
+    // (undocumented)
+    V2_0 = "2.0",
+    // (undocumented)
+    V3_0 = "3.0",
+    // (undocumented)
+    V3_1 = "3.1",
+    // (undocumented)
+    V3_2 = "3.2"
 }
 
 // @beta
@@ -660,6 +1120,21 @@ export class EntityClass extends ECClass implements HasMixins {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @alpha
+class EntityClass_2 extends ECClass_2 {
+    constructor(document: SchemaDocument, name: string, init?: EntityClassInit);
+    addMixin(...mixins: Mixin_2[]): void;
+    getMixins(): Array<Mixin_2 | undefined>;
+    readonly mixins: LocalOrFullName[];
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.EntityClass;
+}
+
+// @alpha
+interface EntityClassInit extends ClassInit {
+    mixins?: LocalOrFullName[];
+}
+
 // @public @preview (undocumented)
 export interface EntityClassProps extends ClassProps {
     // (undocumented)
@@ -706,10 +1181,25 @@ export class Enumeration extends SchemaItem {
     get type(): PrimitiveType.Integer | PrimitiveType.String | undefined;
 }
 
+// @alpha
+class Enumeration_2 extends SchemaItem_2 {
+    constructor(document: SchemaDocument, name: string, backingType: EnumerationBackingType, init?: EnumerationInit);
+    backingType: EnumerationBackingType;
+    createEnumerator(name: string, value: number | string, init?: EnumeratorInit): Enumerator_2;
+    readonly enumerators: Enumerator_2[];
+    getEnumerator(name: string): Enumerator_2 | undefined;
+    isStrict: boolean;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.Enumeration;
+}
+
 // @public @preview (undocumented)
 export class EnumerationArrayProperty extends EnumerationArrayProperty_base {
     constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration);
 }
+
+// @alpha
+type EnumerationBackingType = "int" | "string";
 
 // @internal
 export interface EnumerationData {
@@ -730,6 +1220,16 @@ export interface EnumerationData {
     readonly primitiveType: SchemaViewPrimitiveType;
     // (undocumented)
     readonly schemaIdx: number;
+}
+
+// @alpha
+interface EnumerationInit {
+    // (undocumented)
+    description?: string;
+    enumerators?: ReadonlyArray<Readonly<Enumerator_2>>;
+    isStrict?: boolean;
+    // (undocumented)
+    label?: string;
 }
 
 // @public @preview (undocumented)
@@ -777,6 +1277,14 @@ export interface Enumerator<T> {
     readonly value: T;
 }
 
+// @alpha
+interface Enumerator_2 {
+    description?: string;
+    label?: string;
+    name: string;
+    value: number | string;
+}
+
 // @internal
 export interface EnumeratorData {
     // (undocumented)
@@ -787,6 +1295,14 @@ export interface EnumeratorData {
     readonly nameStringIdx: number;
     // (undocumented)
     readonly value: number | string;
+}
+
+// @alpha
+interface EnumeratorInit {
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    label?: string;
 }
 
 // @public @preview (undocumented)
@@ -895,6 +1411,63 @@ export class Format extends SchemaItem {
     get uomSeparator(): string;
 }
 
+// @alpha
+class Format_2 extends SchemaItem_2 {
+    constructor(document: SchemaDocument, name: string, type: FormatType, init?: FormatInit);
+    composite?: FormatComposite;
+    decimalSeparator?: string;
+    formatTraits?: FormatTraits;
+    getCompositeUnits(): Array<Unit_2 | InvertedUnit_2 | undefined>;
+    hasFormatTrait(trait: FormatTraits): boolean;
+    minWidth?: number;
+    precision?: DecimalPrecision | FractionalPrecision;
+    roundFactor?: number;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.Format;
+    scientificType?: ScientificType;
+    showSignOption?: ShowSignOption;
+    stationOffsetSize?: number;
+    stationSeparator?: string;
+    thousandSeparator?: string;
+    type: FormatType;
+    uomSeparator?: string;
+}
+
+// @alpha
+interface FormatComposite {
+    includeZero?: boolean;
+    spacer?: string;
+    units: FormatCompositeUnit[];
+}
+
+// @alpha
+interface FormatCompositeUnit {
+    label?: string;
+    name: LocalOrFullName;
+}
+
+// @alpha
+interface FormatInit extends SchemaItemInit {
+    composite?: Readonly<FormatComposite>;
+    decimalSeparator?: string;
+    formatTraits?: FormatTraits;
+    minWidth?: number;
+    precision?: DecimalPrecision | FractionalPrecision;
+    roundFactor?: number;
+    scientificType?: ScientificType;
+    showSignOption?: ShowSignOption;
+    stationOffsetSize?: number;
+    stationSeparator?: string;
+    thousandSeparator?: string;
+    uomSeparator?: string;
+}
+
+// @alpha
+function formatMultiplicity(bounds: MultiplicityBounds): Multiplicity;
+
+// @alpha
+function formatSchemaComparison(comparison: SchemaComparison): string;
+
 // @beta
 export interface FormatSet {
     description?: string;
@@ -920,6 +1493,9 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     removeFormat(name: string): Promise<void>;
 }
 
+// @alpha
+function formatSourceLocation(source: string | undefined, line?: number, column?: number): string | undefined;
+
 // @internal (undocumented)
 export function getFormatProps(format: Format | OverrideFormat): FormatProps;
 
@@ -929,6 +1505,9 @@ export interface GetSchemaViewArgs {
     readonly forceReload?: boolean;
     readonly schemas?: readonly string[];
 }
+
+// @internal
+function getStandardSchemas(): SchemaSet;
 
 // @public @preview
 export interface HasMixins {
@@ -960,6 +1539,15 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     protected abstract supportPartialSchemaLoading(context: SchemaContext): Promise<boolean>;
 }
 
+// @alpha
+class InMemorySchemaSource implements SchemaSource {
+    addCandidate(candidate: SchemaCandidate): void;
+    addDocument(document: SchemaDocument): void;
+    addText(text: string | Uint8Array, reader: SchemaDocumentTextReader, source?: string): void;
+    // (undocumented)
+    discoverCandidates(issues: SchemaIssueList): Promise<SchemaCandidate[]>;
+}
+
 // @public @preview
 export class InvertedUnit extends SchemaItem {
     // @internal
@@ -984,6 +1572,17 @@ export class InvertedUnit extends SchemaItem {
     toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
     get unitSystem(): LazyLoadedUnitSystem | undefined;
+}
+
+// @alpha
+class InvertedUnit_2 extends SchemaItem_2 {
+    constructor(document: SchemaDocument, name: string, invertsUnit: LocalOrFullName, unitSystem: LocalOrFullName, init?: SchemaItemInit);
+    getInvertsUnit(): Unit_2 | undefined;
+    getUnitSystem(): UnitSystem_2 | undefined;
+    invertsUnit: LocalOrFullName;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.InvertedUnit;
+    unitSystem: LocalOrFullName;
 }
 
 // @public @preview (undocumented)
@@ -1047,8 +1646,14 @@ export interface ISchemaPartVisitor {
     visitUnitSystemSync?: (unitSystem: UnitSystem) => void;
 }
 
+// @internal
+function isItemOfKind(kind: ItemKind, supported: keyof SchemaItemTypeMap): boolean;
+
 // @beta
 export function isSupportedSchemaItemType(value: SchemaItemType, supported: SupportedSchemaItemType): boolean;
+
+// @alpha
+type ItemKind = SchemaItemType | AuthoringSchemaItemType;
 
 // @public @preview
 export class KindOfQuantity extends SchemaItem {
@@ -1079,6 +1684,27 @@ export class KindOfQuantity extends SchemaItem {
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): KindOfQuantityProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
+}
+
+// @alpha
+class KindOfQuantity_2 extends SchemaItem_2 {
+    constructor(document: SchemaDocument, name: string, persistenceUnit: LocalOrFullName, relativeError: number, init?: KindOfQuantityInit);
+    getPersistenceUnit(): Unit_2 | InvertedUnit_2 | undefined;
+    persistenceUnit: LocalOrFullName;
+    readonly presentationFormats: string[];
+    relativeError: number;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.KindOfQuantity;
+    setPersistenceUnit(unit: Unit_2 | InvertedUnit_2): void;
+}
+
+// @alpha
+interface KindOfQuantityInit {
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    label?: string;
+    presentationFormats?: string[];
 }
 
 // @public @preview (undocumented)
@@ -1179,6 +1805,30 @@ export interface LocalizedText {
     label?: string;
 }
 
+// @alpha
+type LocalOrFullName = string;
+
+// @alpha
+function mapFormatStringReferences(formatString: string, mapReference: (reference: string) => string): string;
+
+// @internal
+function materializeCustomAttribute(customAttribute: CustomAttribute_2, throwOnMissingClass: true): CustomAttributeValues;
+
+// @internal (undocumented)
+function materializeCustomAttribute(customAttribute: CustomAttribute_2, throwOnMissingClass: boolean): CustomAttributeValues | undefined;
+
+// @alpha
+type MergeFieldClass = "identity" | "constrained" | "descriptive" | "structural";
+
+// @internal
+const mergeFieldClasses: ReadonlyMap<string, MergeFieldClass>;
+
+// @internal
+function mergeFieldClassOf(field: string): MergeFieldClass | undefined;
+
+// @alpha
+function mergeSchemaInto(target: SchemaSet, incoming: SchemaDocument, options?: SchemaMergeOptions): SchemaMergeResult;
+
 // @public @preview
 export class Mixin extends ECClass {
     // @internal
@@ -1209,10 +1859,29 @@ export class Mixin extends ECClass {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @alpha
+class Mixin_2 extends ECClass_2 {
+    constructor(document: SchemaDocument, name: string, appliesTo: LocalOrFullName, init?: ClassInit);
+    appliesTo: LocalOrFullName;
+    getAppliesTo(): EntityClass_2 | undefined;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.Mixin;
+    setAppliesTo(entityClass: EntityClass_2): void;
+}
+
 // @public @preview (undocumented)
 export interface MixinProps extends ClassProps {
     // (undocumented)
     readonly appliesTo: string;
+}
+
+// @alpha
+type Multiplicity = "(0..1)" | "(0..*)" | "(1..1)" | "(1..*)" | (string & {});
+
+// @alpha
+interface MultiplicityBounds {
+    lowerLimit: number;
+    upperLimit?: number;
 }
 
 // @public @preview (undocumented)
@@ -1232,6 +1901,27 @@ export class NavigationProperty extends Property {
     toJSON(): NavigationPropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
+}
+
+// @alpha
+class NavigationProperty_2 extends Property_2 {
+    constructor(declaringClass: ECClass_2, name: string, relationship: LocalOrFullName, direction: StrengthDirection, init?: PropertyInit);
+    direction: StrengthDirection;
+    getRelationshipClass(): RelationshipClass_2 | undefined;
+    // (undocumented)
+    get kind(): PropertyKind.Navigation;
+    relationshipName: LocalOrFullName;
+    setRelationshipClass(relationshipClass: RelationshipClass_2): void;
+}
+
+// @alpha
+interface NavigationPropertyDeclaration extends PropertyInit {
+    direction: StrengthDirection;
+    // (undocumented)
+    kind: PropertyKind.Navigation;
+    // (undocumented)
+    name: string;
+    relationship: LocalOrFullName;
 }
 
 // @public @preview (undocumented)
@@ -1325,6 +2015,9 @@ export function parseClassModifier(modifier: string): ECClassModifier | undefine
 // @beta
 export function parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined;
 
+// @alpha
+function parseMultiplicity(multiplicity: string): MultiplicityBounds | undefined;
+
 // @beta
 export function parsePrimitiveType(type: string): PrimitiveType | undefined;
 
@@ -1342,6 +2035,13 @@ export function parseStrength(strength: string): StrengthType | undefined;
 
 // @beta (undocumented)
 export function parseStrengthDirection(direction: string): StrengthDirection | undefined;
+
+// @alpha
+function parseVersionString(version: string | undefined): {
+    read: number;
+    write: number;
+    minor: number;
+} | undefined;
 
 // @public @preview (undocumented)
 export class Phenomenon extends SchemaItem {
@@ -1367,6 +2067,14 @@ export class Phenomenon extends SchemaItem {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @alpha
+class Phenomenon_2 extends SchemaItem_2 {
+    constructor(document: SchemaDocument, name: string, definition: string, init?: SchemaItemInit);
+    definition: string;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.Phenomenon;
+}
+
 // @public @preview (undocumented)
 export interface PhenomenonProps extends SchemaItemProps {
     // (undocumented)
@@ -1378,6 +2086,44 @@ export class PrimitiveArrayProperty extends PrimitiveArrayProperty_base {
     // @internal
     constructor(ecClass: ECClass, name: string, primitiveType?: PrimitiveType);
     toJSON(): PrimitiveArrayPropertyProps;
+}
+
+// @alpha
+class PrimitiveArrayProperty_2 extends Property_2 {
+    constructor(declaringClass: ECClass_2, name: string, type: PrimitiveType | string, init?: PrimitiveArrayPropertyInit);
+    extendedTypeName?: string;
+    getEnumeration(): Enumeration_2 | undefined;
+    // (undocumented)
+    get kind(): PropertyKind.PrimitiveArray;
+    maxLength?: number;
+    maxOccurs?: number;
+    maxValue?: number;
+    minLength?: number;
+    minOccurs: number;
+    minValue?: number;
+    setEnumeration(enumeration: Enumeration_2): void;
+    typeName: string;
+}
+
+// @alpha
+interface PrimitiveArrayPropertyDeclaration extends PrimitiveArrayPropertyInit {
+    // (undocumented)
+    kind: PropertyKind.PrimitiveArray;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    type: PrimitiveType | LocalOrFullName;
+}
+
+// @alpha
+interface PrimitiveArrayPropertyInit extends PropertyInit {
+    extendedTypeName?: string;
+    maxLength?: number;
+    maxOccurs?: number;
+    maxValue?: number;
+    minLength?: number;
+    minOccurs?: number;
+    minValue?: number;
 }
 
 // @public @preview (undocumented)
@@ -1458,6 +2204,40 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @alpha
+class PrimitiveProperty_2 extends Property_2 {
+    constructor(declaringClass: ECClass_2, name: string, type: PrimitiveType | string, init?: PrimitivePropertyInit);
+    extendedTypeName?: string;
+    getEnumeration(): Enumeration_2 | undefined;
+    // (undocumented)
+    get kind(): PropertyKind.Primitive;
+    maxLength?: number;
+    maxValue?: number;
+    minLength?: number;
+    minValue?: number;
+    setEnumeration(enumeration: Enumeration_2): void;
+    typeName: string;
+}
+
+// @alpha
+interface PrimitivePropertyDeclaration extends PrimitivePropertyInit {
+    // (undocumented)
+    kind: PropertyKind.Primitive;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    type: PrimitiveType | LocalOrFullName;
+}
+
+// @alpha
+interface PrimitivePropertyInit extends PropertyInit {
+    extendedTypeName?: string;
+    maxLength?: number;
+    maxValue?: number;
+    minLength?: number;
+    minValue?: number;
+}
+
 // @public @preview (undocumented)
 export interface PrimitivePropertyProps extends PrimitiveOrEnumPropertyBaseProps {
     // (undocumented)
@@ -1466,27 +2246,16 @@ export interface PrimitivePropertyProps extends PrimitiveOrEnumPropertyBaseProps
 
 // @public @preview
 export enum PrimitiveType {
-    // (undocumented)
     Binary = 257,
-    // (undocumented)
     Boolean = 513,
-    // (undocumented)
     DateTime = 769,
-    // (undocumented)
     Double = 1025,
-    // (undocumented)
     IGeometry = 2561,
-    // (undocumented)
     Integer = 1281,
-    // (undocumented)
     Long = 1537,
-    // (undocumented)
     Point2d = 1793,
-    // (undocumented)
     Point3d = 2049,
-    // (undocumented)
     String = 2305,
-    // (undocumented)
     Uninitialized = 0
 }
 
@@ -1519,7 +2288,7 @@ export abstract class Property implements CustomAttributeContainerProps {
     // (undocumented)
     get class(): AnyClass;
     // (undocumented)
-    get customAttributes(): CustomAttributeSet | undefined;
+    get customAttributes(): CustomAttributeSet_2 | undefined;
     // (undocumented)
     get description(): string | undefined;
     // (undocumented)
@@ -1529,8 +2298,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     get fullName(): string;
     // (undocumented)
     getCategorySync(): PropertyCategory | undefined;
-    getCustomAttributes(): Promise<CustomAttributeSet>;
-    getCustomAttributesSync(): CustomAttributeSet;
+    getCustomAttributes(): Promise<CustomAttributeSet_2>;
+    getCustomAttributesSync(): CustomAttributeSet_2;
     // (undocumented)
     getKindOfQuantitySync(): KindOfQuantity | undefined;
     // (undocumented)
@@ -1579,6 +2348,44 @@ export abstract class Property implements CustomAttributeContainerProps {
     protected _type: PropertyType;
 }
 
+// @alpha
+abstract class Property_2 {
+    // @internal (undocumented)
+    [_setOwner](declaringClass: ECClass_2): void;
+    protected constructor(declaringClass: ECClass_2, name: string, init?: PropertyInit);
+    // (undocumented)
+    assertArray(): asserts this is AnyArrayProperty_2;
+    // (undocumented)
+    assertNavigation(): asserts this is NavigationProperty_2;
+    // (undocumented)
+    assertPrimitive(): asserts this is AnyPrimitiveProperty_2;
+    // (undocumented)
+    assertStruct(): asserts this is AnyStructProperty_2;
+    category?: LocalOrFullName;
+    readonly customAttributes: CustomAttributeSet;
+    get declaringClass(): ECClass_2;
+    description?: string;
+    get document(): SchemaDocument;
+    get fullName(): string;
+    getBaseProperty(): AnyProperty_2 | undefined;
+    getCategory(): PropertyCategory_2 | undefined;
+    getKindOfQuantity(): KindOfQuantity_2 | undefined;
+    isArray(): this is AnyArrayProperty_2;
+    isEnumeration(): this is AnyPrimitiveProperty_2;
+    isNavigation(): this is NavigationProperty_2;
+    isPrimitive(): this is AnyPrimitiveProperty_2;
+    isReadOnly?: boolean;
+    isStruct(): this is AnyStructProperty_2;
+    abstract get kind(): PropertyKind;
+    kindOfQuantity?: LocalOrFullName;
+    label?: string;
+    get name(): string;
+    set name(name: string);
+    priority?: number;
+    setCategory(category: PropertyCategory_2): void;
+    setKindOfQuantity(kindOfQuantity: KindOfQuantity_2): void;
+}
+
 // @public @preview (undocumented)
 export class PropertyCategory extends SchemaItem {
     // @internal
@@ -1603,10 +2410,39 @@ export class PropertyCategory extends SchemaItem {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @alpha
+class PropertyCategory_2 extends SchemaItem_2 {
+    constructor(document: SchemaDocument, name: string, init?: PropertyCategoryInit);
+    priority?: number;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.PropertyCategory;
+}
+
+// @alpha
+interface PropertyCategoryInit {
+    description?: string;
+    label?: string;
+    priority?: number;
+}
+
 // @public @preview (undocumented)
 export interface PropertyCategoryProps extends SchemaItemProps {
     // (undocumented)
     readonly priority: number;
+}
+
+// @alpha
+interface PropertyDeclarationTypeMap {
+    // (undocumented)
+    [PropertyKind.Primitive]: PrimitiveProperty_2;
+    // (undocumented)
+    [PropertyKind.Struct]: StructProperty_2;
+    // (undocumented)
+    [PropertyKind.PrimitiveArray]: PrimitiveArrayProperty_2;
+    // (undocumented)
+    [PropertyKind.StructArray]: StructArrayProperty_2;
+    // (undocumented)
+    [PropertyKind.Navigation]: NavigationProperty_2;
 }
 
 // @internal
@@ -1641,6 +2477,17 @@ export interface PropertyDef {
     readonly primitiveType: SchemaViewPrimitiveType;
     // (undocumented)
     readonly structClassIdx: number;
+}
+
+// @alpha
+interface PropertyInit {
+    category?: LocalOrFullName;
+    customAttributes?: ReadonlyArray<CustomAttributeProps>;
+    description?: string;
+    isReadOnly?: boolean;
+    kindOfQuantity?: LocalOrFullName;
+    label?: string;
+    priority?: number;
 }
 
 // @beta
@@ -1753,7 +2600,7 @@ export enum PropertyType {
 }
 
 // @internal (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty";
 
 // @internal (undocumented)
 export namespace PropertyTypeUtils {
@@ -1774,6 +2621,9 @@ export namespace PropertyTypeUtils {
     // (undocumented)
     export function isStruct(type: PropertyType): boolean;
 }
+
+// @internal
+function readCustomAttributeValues(customAttribute: CustomAttribute_2, issues: SchemaIssueList, location: string): CustomAttributeValues | undefined;
 
 // @public @preview
 export class RelationshipClass extends ECClass {
@@ -1823,6 +2673,25 @@ export class RelationshipClass extends ECClass {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @alpha
+class RelationshipClass_2 extends ECClass_2 {
+    constructor(document: SchemaDocument, name: string, init?: RelationshipClassInit);
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.RelationshipClass;
+    readonly source: RelationshipConstraint_2;
+    strength?: StrengthType;
+    strengthDirection?: StrengthDirection;
+    readonly target: RelationshipConstraint_2;
+}
+
+// @alpha
+interface RelationshipClassInit extends ClassInit {
+    source?: RelationshipConstraintInit;
+    strength?: StrengthType;
+    strengthDirection?: StrengthDirection;
+    target?: RelationshipConstraintInit;
+}
+
 // @public @preview (undocumented)
 export interface RelationshipClassProps extends ClassProps {
     // (undocumented)
@@ -1849,7 +2718,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     // (undocumented)
     get constraintClasses(): ReadonlyArray<LazyLoadedRelationshipConstraintClass> | undefined;
     // (undocumented)
-    get customAttributes(): CustomAttributeSet | undefined;
+    get customAttributes(): CustomAttributeSet_2 | undefined;
     // (undocumented)
     fromJSON(relationshipConstraintProps: RelationshipConstraintProps): Promise<void>;
     // (undocumented)
@@ -1885,6 +2754,36 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     toJSON(): RelationshipConstraintProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
+}
+
+// @alpha
+class RelationshipConstraint_2 {
+    // @internal
+    constructor(relationshipClass: RelationshipClass_2, relationshipEnd: RelationshipEnd);
+    abstractConstraint?: LocalOrFullName;
+    addConstraintClass(...constraintClasses: AnyClass_2[]): void;
+    readonly constraintClasses: LocalOrFullName[];
+    readonly customAttributes: CustomAttributeSet;
+    get document(): SchemaDocument;
+    getAbstractConstraint(): AnyClass_2 | undefined;
+    getConstraintClasses(): Array<AnyClass_2 | undefined>;
+    multiplicity: Multiplicity;
+    polymorphic?: boolean;
+    readonly relationshipClass: RelationshipClass_2;
+    readonly relationshipEnd: RelationshipEnd;
+    roleLabel?: string;
+    set(init: RelationshipConstraintInit): this;
+    setAbstractConstraint(constraintClass: AnyClass_2): void;
+}
+
+// @alpha
+interface RelationshipConstraintInit {
+    abstractConstraint?: LocalOrFullName;
+    constraintClasses?: LocalOrFullName[];
+    customAttributes?: ReadonlyArray<CustomAttributeProps>;
+    multiplicity?: Multiplicity;
+    polymorphic?: boolean;
+    roleLabel?: string;
 }
 
 // @public @preview (undocumented)
@@ -1959,11 +2858,22 @@ export interface RelConstraintData {
 }
 
 // @internal
+function resolveCustomAttributeClass(document: SchemaDocument, className: string): CustomAttributeClass_2 | undefined;
+
+// @internal
 export interface ResolvedPropertyRef {
     // (undocumented)
     readonly classIdx: number;
     // (undocumented)
     readonly ref: PropertyRef;
+}
+
+// @alpha
+interface ResolvedSchema {
+    readonly candidate?: SchemaCandidate;
+    readonly isRoot: boolean;
+    readonly name: string;
+    readonly requestedBy: ReadonlyArray<string>;
 }
 
 // @public @preview (undocumented)
@@ -2048,7 +2958,7 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     static get currentECSpecMinorVersion(): number;
     // (undocumented)
-    get customAttributes(): CustomAttributeSet | undefined;
+    get customAttributes(): CustomAttributeSet_2 | undefined;
     // @internal
     protected deleteClass(name: string): Promise<void>;
     // @internal
@@ -2139,6 +3049,24 @@ export class Schema implements CustomAttributeContainerProps {
     get writeVersion(): number;
 }
 
+// @alpha
+interface SchemaAuthoringError extends ITwinError {
+    readonly itemName?: string;
+    readonly location?: string;
+}
+
+// @alpha (undocumented)
+namespace SchemaAuthoringError {
+    const // (undocumented)
+    scope = "itwin-ECSchemaAuthoring";
+    function isError(error: unknown, key?: Key): error is SchemaAuthoringError;
+    type Key = "custom-attribute-class-not-found" | "malformed-custom-attribute-xml" | "duplicate-schema-name";
+    function throwError(key: Key, message: string, context?: {
+        itemName?: string;
+        location?: string;
+    }): never;
+}
+
 // @internal (undocumented)
 export class SchemaCache implements ISchemaLocater {
     constructor();
@@ -2154,6 +3082,29 @@ export class SchemaCache implements ISchemaLocater {
     getSchemaItems(): Iterable<SchemaItem>;
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     schemaExists(schemaKey: SchemaKey): boolean;
+}
+
+// @alpha
+interface SchemaCandidate {
+    // (undocumented)
+    readonly header: SchemaDocumentHeader;
+    loadDocument(schemaSet: SchemaSet): Promise<SchemaDocumentReadResult>;
+    readonly source?: string;
+}
+
+// @alpha
+enum SchemaCandidateSelectionMode {
+    FirstSource = "firstSource",
+    HighestVersion = "highestVersion"
+}
+
+// @alpha
+interface SchemaComparison {
+    // (undocumented)
+    areEqual: boolean;
+    issues: SchemaIssueList;
+    itemDifferences: SchemaItemComparison[];
+    schemaDifferences: SchemaValueDifference[];
 }
 
 // @public @preview
@@ -2198,6 +3149,20 @@ export class SchemaContext {
     schemaExists(schemaKey: SchemaKey): boolean;
 }
 
+// @alpha
+interface SchemaCopyOptions {
+    carrySchemaReferences?: boolean;
+    name?: string;
+}
+
+// @alpha
+interface SchemaCopyResult<T> {
+    // (undocumented)
+    copy?: T;
+    // (undocumented)
+    issues: SchemaIssueList;
+}
+
 // @internal
 export interface SchemaData {
     // (undocumented)
@@ -2235,6 +3200,113 @@ export interface SchemaData {
     readonly versionWrite: number;
 }
 
+// @alpha
+class SchemaDocument {
+    // @internal
+    [_attach](item: SchemaItem_2): void;
+    // @internal
+    [_nameChanged](item: SchemaItem_2, previousName: string): void;
+    // @internal (undocumented)
+    [_setOwner](schemaSet: SchemaSet): void;
+    constructor(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number, init?: SchemaDocumentInit);
+    alias: string;
+    createConstant(name: string, phenomenon: LocalOrFullName, definition: string, init?: ConstantInit): Constant_2;
+    createCustomAttributeClass(name: string, appliesTo: CustomAttributeContainerType, init?: ClassInit): CustomAttributeClass_2;
+    createEntity(name: string, init?: EntityClassInit): EntityClass_2;
+    createEnumeration(name: string, backingType: EnumerationBackingType, init?: EnumerationInit): Enumeration_2;
+    createFormat(name: string, type: FormatType, init?: FormatInit): Format_2;
+    createInvertedUnit(name: string, invertsUnit: LocalOrFullName, unitSystem: LocalOrFullName, init?: SchemaItemInit): InvertedUnit_2;
+    createKindOfQuantity(name: string, persistenceUnit: LocalOrFullName, relativeError: number, init?: KindOfQuantityInit): KindOfQuantity_2;
+    createMixin(name: string, appliesTo: LocalOrFullName, init?: ClassInit): Mixin_2;
+    createPhenomenon(name: string, definition: string, init?: SchemaItemInit): Phenomenon_2;
+    createPropertyCategory(name: string, init?: PropertyCategoryInit): PropertyCategory_2;
+    createRelationship(name: string, init?: RelationshipClassInit): RelationshipClass_2;
+    createStructClass(name: string, init?: ClassInit): StructClass_2;
+    createUnit(name: string, phenomenon: LocalOrFullName, unitSystem: LocalOrFullName, definition: string, init?: UnitInit): Unit_2;
+    createUnitSystem(name: string, init?: SchemaItemInit): UnitSystem_2;
+    createView(name: string, query: string, init?: ClassInit): View;
+    readonly customAttributes: CustomAttributeSet;
+    description?: string;
+    fillMissingReferenceAliases(): number;
+    getEntities(): IterableIterator<EntityClass_2>;
+    getEntity(name: string): EntityClass_2 | undefined;
+    getItem(name: string): AnySchemaItem_2 | undefined;
+    getItemOfType<K extends keyof SchemaItemTypeMap>(name: string, itemType: K): SchemaItemTypeMap[K] | undefined;
+    getItemsOfType<K extends keyof SchemaItemTypeMap>(itemType: K): IterableIterator<SchemaItemTypeMap[K]>;
+    getReferencedSchema(name: string): SchemaDocument | undefined;
+    getSchemaReference(name: string): SchemaReference | undefined;
+    get items(): ReadonlyArray<AnySchemaItem_2>;
+    get key(): SchemaKey;
+    label?: string;
+    minorVersion: number;
+    moveItemIn(...items: SchemaItem_2[]): void;
+    readonly name: string;
+    originalECXmlVersionMajor?: number;
+    originalECXmlVersionMinor?: number;
+    readVersion: number;
+    readonly references: SchemaReference[];
+    referenceTo(item: SchemaItem_2): LocalOrFullName;
+    removeItem(name: string): boolean;
+    resolveDocument(reference: LocalOrFullName): SchemaDocument | undefined;
+    resolveItem(reference: LocalOrFullName): AnySchemaItem_2 | undefined;
+    resolveItemOfType<K extends keyof SchemaItemTypeMap>(reference: LocalOrFullName, itemType: K): SchemaItemTypeMap[K] | undefined;
+    resolveSchemaName(reference: LocalOrFullName): string;
+    get schemaSet(): SchemaSet;
+    setSchemaReference(reference: Readonly<SchemaReference>): SchemaReference;
+    source?: string;
+    writeVersion: number;
+}
+
+// @alpha
+interface SchemaDocumentHeader {
+    // (undocumented)
+    readonly alias?: string;
+    // (undocumented)
+    readonly minorVersion: number;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly readVersion: number;
+    // (undocumented)
+    readonly references: ReadonlyArray<Authoring_2.SchemaReference>;
+    // (undocumented)
+    readonly writeVersion: number;
+}
+
+// @alpha
+interface SchemaDocumentInit {
+    customAttributes?: ReadonlyArray<CustomAttributeProps>;
+    description?: string;
+    label?: string;
+    // (undocumented)
+    originalECXmlVersionMajor?: number;
+    // (undocumented)
+    originalECXmlVersionMinor?: number;
+    references?: ReadonlyArray<Readonly<SchemaReference>>;
+    // (undocumented)
+    source?: string;
+}
+
+// @alpha
+interface SchemaDocumentReadResult {
+    // (undocumented)
+    document?: Authoring_2.SchemaDocument;
+    // (undocumented)
+    issues: SchemaIssueList;
+}
+
+// @alpha
+interface SchemaDocumentTextReader {
+    readDocument(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaDocumentReadResult>;
+    readHeader(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaHeaderReadResult>;
+}
+
+// @alpha
+interface SchemaDocumentTextWriter {
+    writeDocument(document: Authoring_2.SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult;
+    writeDocumentTo(document: Authoring_2.SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult>;
+}
+
 // @beta
 export class SchemaFormatsProvider implements FormatsProvider {
     constructor(contextOrLocater: ISchemaLocater, unitSystem?: UnitSystemKey);
@@ -2262,6 +3334,14 @@ export class SchemaGraphUtil {
     static buildDependencyOrderedSchemaList(insertSchema: Schema, schemas?: Schema[]): Schema[];
 }
 
+// @alpha
+interface SchemaHeaderReadResult {
+    // (undocumented)
+    header?: SchemaDocumentHeader;
+    // (undocumented)
+    issues: SchemaIssueList;
+}
+
 // @public @preview
 export interface SchemaInfo {
     // (undocumented)
@@ -2271,6 +3351,40 @@ export interface SchemaInfo {
     // (undocumented)
     readonly schemaKey: SchemaKey;
 }
+
+// @alpha
+interface SchemaIssue {
+    code?: string;
+    group: SchemaIssueGroup;
+    location?: string;
+    message: string;
+    name: string;
+    // (undocumented)
+    severity: SchemaIssueSeverity;
+}
+
+// @alpha
+type SchemaIssueGroup = "xml" | "json" | "discovery" | "ec2-conversion" | "comparison" | "merge" | "validation";
+
+// @alpha
+class SchemaIssueList implements Iterable<SchemaIssue> {
+    [Symbol.iterator](): IterableIterator<SchemaIssue>;
+    constructor(group: SchemaIssueGroup);
+    add(issue: SchemaIssue): SchemaIssue;
+    addAll(issues: Iterable<SchemaIssue>): void;
+    addError(name: string, message: string, location?: string, code?: string): SchemaIssue;
+    addInfo(name: string, message: string, location?: string, code?: string): SchemaIssue;
+    addWarning(name: string, message: string, location?: string, code?: string): SchemaIssue;
+    get errors(): SchemaIssue[];
+    readonly group: SchemaIssueGroup;
+    get hasErrors(): boolean;
+    get size(): number;
+    toJSON(): SchemaIssue[];
+    get warnings(): SchemaIssue[];
+}
+
+// @alpha
+type SchemaIssueSeverity = "error" | "warning" | "info";
 
 // @public @preview
 export abstract class SchemaItem {
@@ -2314,8 +3428,61 @@ export abstract class SchemaItem {
     toXml(schemaXml: Document): Promise<Element>;
 }
 
+// @alpha
+abstract class SchemaItem_2 {
+    // @internal (undocumented)
+    [_setOwner](document: SchemaDocument): void;
+    protected constructor(document: SchemaDocument, name: string);
+    // (undocumented)
+    assertClass(): asserts this is AnyClass_2;
+    // (undocumented)
+    assertCustomAttribute(): asserts this is CustomAttributeClass_2;
+    // (undocumented)
+    assertEntity(): asserts this is EntityClass_2;
+    // (undocumented)
+    assertMixin(): asserts this is Mixin_2;
+    // (undocumented)
+    assertRelationship(): asserts this is RelationshipClass_2;
+    // (undocumented)
+    assertStruct(): asserts this is StructClass_2;
+    // (undocumented)
+    assertView(): asserts this is View;
+    description?: string;
+    get document(): SchemaDocument;
+    get fullName(): string;
+    isClass(): this is AnyClass_2;
+    isCustomAttribute(): this is CustomAttributeClass_2;
+    isEntity(): this is EntityClass_2;
+    isMixin(): this is Mixin_2;
+    isRelationship(): this is RelationshipClass_2;
+    isStruct(): this is StructClass_2;
+    isView(): this is View;
+    label?: string;
+    get name(): string;
+    set name(name: string);
+    abstract get schemaItemType(): ItemKind;
+}
+
+// @alpha
+type SchemaItemChange = "added" | "removed" | "modified";
+
+// @alpha
+interface SchemaItemComparison {
+    // (undocumented)
+    change: SchemaItemChange;
+    differences: SchemaValueDifference[];
+    // (undocumented)
+    name: string;
+}
+
 // @public @preview (undocumented)
 export type SchemaItemFormatProps = SchemaItemProps & FormatProps;
+
+// @alpha
+interface SchemaItemInit {
+    description?: string;
+    label?: string;
+}
 
 // @public @preview
 export class SchemaItemKey {
@@ -2364,18 +3531,6 @@ export interface SchemaItemProps {
     readonly schemaVersion?: string;
 }
 
-// @alpha
-export class SchemaItemReference {
-    constructor(name: string, schemaNameOrAlias?: string);
-    equals(other: SchemaItemReference): boolean;
-    static from(value: string | SchemaItemReference): SchemaItemReference;
-    get isLocal(): boolean;
-    readonly name: string;
-    static parse(text: string): SchemaItemReference;
-    readonly schemaNameOrAlias?: string;
-    toString(): string;
-}
-
 // @public @preview
 export enum SchemaItemType {
     // (undocumented)
@@ -2408,6 +3563,44 @@ export enum SchemaItemType {
     UnitSystem = "UnitSystem"
 }
 
+// @alpha
+interface SchemaItemTypeMap {
+    // (undocumented)
+    [AbstractSchemaItemType.Class]: AnyClass_2;
+    // (undocumented)
+    [SchemaItemType.Constant]: Constant_2;
+    // (undocumented)
+    [SchemaItemType.CustomAttributeClass]: CustomAttributeClass_2;
+    // (undocumented)
+    [SchemaItemType.EntityClass]: EntityClass_2;
+    // (undocumented)
+    [SchemaItemType.Enumeration]: Enumeration_2;
+    // (undocumented)
+    [SchemaItemType.Format]: Format_2;
+    // (undocumented)
+    [SchemaItemType.InvertedUnit]: InvertedUnit_2;
+    // (undocumented)
+    [SchemaItemType.KindOfQuantity]: KindOfQuantity_2;
+    // (undocumented)
+    [SchemaItemType.Mixin]: Mixin_2;
+    // (undocumented)
+    [SchemaItemType.Phenomenon]: Phenomenon_2;
+    // (undocumented)
+    [SchemaItemType.PropertyCategory]: PropertyCategory_2;
+    // (undocumented)
+    [SchemaItemType.RelationshipClass]: RelationshipClass_2;
+    // (undocumented)
+    [AbstractSchemaItemType.SchemaItem]: AnySchemaItem_2;
+    // (undocumented)
+    [SchemaItemType.StructClass]: StructClass_2;
+    // (undocumented)
+    [SchemaItemType.Unit]: Unit_2;
+    // (undocumented)
+    [SchemaItemType.UnitSystem]: UnitSystem_2;
+    // (undocumented)
+    [AuthoringSchemaItemType.View]: View;
+}
+
 // @beta @deprecated
 export function schemaItemTypeToString(value: SchemaItemType): string;
 
@@ -2436,6 +3629,43 @@ export class SchemaJsonLocater implements ISchemaLocater {
     getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
+}
+
+// @alpha
+class SchemaJsonReader implements SchemaDocumentTextReader {
+    readDocument(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaDocumentReadResult>;
+    readHeader(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaHeaderReadResult>;
+    readHeaderObject(props: object, options?: SchemaTextReadOptions): SchemaHeaderReadResult;
+    // @internal
+    readItemInto(document: Authoring_2.SchemaDocument, name: string, tree: object): SchemaIssueList;
+    readObject(props: object, options?: SchemaTextReadOptions): SchemaDocumentReadResult;
+    // @internal
+    readPropertyInto(declaringClass: Authoring_2.AnyClass, name: string, tree: object): SchemaIssueList;
+}
+
+// @alpha
+interface SchemaJsonWriteOptions extends SchemaWriteOptions {
+    omitDefaults?: boolean;
+}
+
+// @alpha
+class SchemaJsonWriter implements SchemaDocumentTextWriter {
+    writeDocument(document: Authoring_2.SchemaDocument, options?: SchemaJsonWriteOptions): SchemaWriteResult;
+    writeDocumentTo(document: Authoring_2.SchemaDocument, sink: SchemaTextSink, options?: SchemaJsonWriteOptions): Promise<SchemaStreamWriteResult>;
+    writeDocumentTree(document: Authoring_2.SchemaDocument, options?: SchemaJsonWriteOptions): {
+        tree?: Record<string, unknown>;
+        issues: SchemaIssueList;
+    };
+    // @internal
+    writeItemTree(item: Authoring_2.AnySchemaItem): {
+        tree?: Record<string, unknown>;
+        issues: SchemaIssueList;
+    };
+    // @internal
+    writePropertyTree(property: Authoring_2.AnyProperty): {
+        tree?: Record<string, unknown>;
+        issues: SchemaIssueList;
+    };
 }
 
 // @public @preview
@@ -2529,6 +3759,7 @@ export class SchemaManifest {
 
 // @internal
 export interface SchemaManifestEntry {
+    readonly alias?: string;
     // (undocumented)
     readonly minorVersion: number;
     // (undocumented)
@@ -2550,6 +3781,8 @@ export interface SchemaManifestReferenceRow {
 
 // @internal
 export interface SchemaManifestSchemaRow {
+    // (undocumented)
+    readonly alias?: string;
     // (undocumented)
     readonly ecInstanceId: number;
     // (undocumented)
@@ -2574,6 +3807,47 @@ export enum SchemaMatchType {
     LatestReadCompatible = 4,
     // (undocumented)
     LatestWriteCompatible = 2
+}
+
+// @alpha
+interface SchemaMergeConflict {
+    defaultResolution: SchemaMergeResolution;
+    field: string;
+    fieldClass: MergeFieldClass;
+    incoming?: unknown;
+    location: string;
+    target?: unknown;
+}
+
+// @alpha (undocumented)
+interface SchemaMergeOptions {
+    onConflict?: (conflict: SchemaMergeConflict) => SchemaMergeResolution | undefined;
+    onCustomAttribute?: (site: CustomAttributeMergeSite) => CustomAttributeMergeResolution | undefined;
+    renameItemOnConflict?: boolean;
+    renamePropertyOnConflict?: boolean;
+}
+
+// @alpha
+interface SchemaMergeRename {
+    // (undocumented)
+    from: string;
+    // (undocumented)
+    kind: "property" | "item";
+    location: string;
+    // (undocumented)
+    to: string;
+}
+
+// @alpha
+type SchemaMergeResolution = "keepTarget" | "takeIncoming" | "rename" | "skip";
+
+// @alpha
+interface SchemaMergeResult {
+    document?: SchemaDocument;
+    // (undocumented)
+    issues: SchemaIssueList;
+    // (undocumented)
+    renames: SchemaMergeRename[];
 }
 
 // @public @preview
@@ -2631,6 +3905,15 @@ export class SchemaReadHelper<T = unknown> {
     readSchemaSync(schema: Schema, rawSchema: T): Schema;
 }
 
+// @alpha
+interface SchemaReference {
+    alias: string | null;
+    minorVersion: number;
+    name: string;
+    readVersion: number;
+    writeVersion: number;
+}
+
 // @public @preview (undocumented)
 export interface SchemaReferenceProps {
     // (undocumented)
@@ -2638,6 +3921,65 @@ export interface SchemaReferenceProps {
     // (undocumented)
     readonly version: string;
 }
+
+// @alpha
+class SchemaResolution {
+    // @internal
+    constructor(schemas: ResolvedSchema[], issues: SchemaIssueList);
+    get isComplete(): boolean;
+    // (undocumented)
+    readonly issues: SchemaIssueList;
+    loadDocuments(schemaSet: SchemaSet): Promise<SchemaDocument[]>;
+    readonly schemas: ResolvedSchema[];
+}
+
+// @alpha
+class SchemaResolver {
+    constructor(_selectionMode?: SchemaCandidateSelectionMode);
+    addSource(source: SchemaSource): void;
+    resolve(roots: ReadonlyArray<SchemaDocumentHeader>, matchType?: SchemaMatchType): Promise<SchemaResolution>;
+    resolveNames(names: ReadonlyArray<string>, matchType?: SchemaMatchType): Promise<SchemaResolution>;
+}
+
+// @alpha
+class SchemaSet implements Iterable<SchemaDocument> {
+    // @internal
+    [_attach](document: SchemaDocument): void;
+    [Symbol.iterator](): IterableIterator<SchemaDocument>;
+    constructor(documents?: Iterable<SchemaDocument>);
+    createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number, init?: SchemaDocumentInit): SchemaDocument;
+    getItem(fullName: LocalOrFullName): AnySchemaItem_2 | undefined;
+    getSchema(name: string): SchemaDocument | undefined;
+    hasSchema(name: string): boolean;
+    moveIn(...documents: SchemaDocument[]): void;
+    moveOut(schema: string | SchemaDocument): SchemaDocument | undefined;
+    get schemas(): SchemaDocument[];
+    get size(): number;
+}
+
+// @alpha
+interface SchemaSource {
+    discoverCandidates(issues: SchemaIssueList): Promise<SchemaCandidate[]>;
+}
+
+// @alpha
+interface SchemaStreamWriteResult {
+    // (undocumented)
+    issues: SchemaIssueList;
+}
+
+// @alpha
+type SchemaText = string | Uint8Array | AsyncIterable<string | Uint8Array>;
+
+// @alpha
+interface SchemaTextReadOptions {
+    abortSignal?: AbortSignal;
+    schemaSet?: Authoring_2.SchemaSet;
+    source?: string;
+}
+
+// @alpha
+type SchemaTextSink = (chunk: string) => void | Promise<void>;
 
 // @beta
 export class SchemaUnitProvider implements UnitsProvider {
@@ -2647,6 +3989,15 @@ export class SchemaUnitProvider implements UnitsProvider {
     getAlternateDisplayLabels(unitName: string): Array<string>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getUnitsByFamily(phenomenon: string): Promise<Array<UnitProps>>;
+}
+
+// @alpha
+interface SchemaValueDifference {
+    // (undocumented)
+    left?: string;
+    path: string;
+    // (undocumented)
+    right?: string;
 }
 
 // @beta
@@ -3126,6 +4477,55 @@ export class SchemaWalker {
     traverseSchema(schema: Schema): Promise<Schema>;
 }
 
+// @alpha
+interface SchemaWriteOptions {
+    abortSignal?: AbortSignal;
+    spec?: ECSpec;
+}
+
+// @alpha
+interface SchemaWriteResult {
+    // (undocumented)
+    issues: SchemaIssueList;
+    // (undocumented)
+    text?: string;
+}
+
+// @alpha
+class SchemaXmlReader implements SchemaDocumentTextReader {
+    readDocument(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaDocumentReadResult>;
+    readHeader(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaHeaderReadResult>;
+}
+
+// @alpha
+class SchemaXmlWriter implements SchemaDocumentTextWriter {
+    writeDocument(document: Authoring_2.SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult;
+    writeDocumentTo(document: Authoring_2.SchemaDocument, sink: SchemaTextSink, options?: SchemaWriteOptions): Promise<SchemaStreamWriteResult>;
+}
+
+// @internal
+function serializeCustomAttributeBody(children: ReadonlyArray<CustomAttributeXmlNode>): XmlString | undefined;
+
+// @internal
+function serializeCustomAttributeBodyLines(children: ReadonlyArray<CustomAttributeXmlNode>): string[] | undefined;
+
+// @alpha
+const SpecDefaults: {
+    readonly classModifier: ECClassModifier.None;
+    readonly mixinModifier: ECClassModifier.Abstract;
+    readonly relationshipStrength: StrengthType.Referencing;
+    readonly relationshipStrengthDirection: StrengthDirection.Forward;
+    readonly constraintPolymorphic: true;
+    readonly formatRoundFactor: 0;
+    readonly formatShowSignOption: ShowSignOption.OnlyNegative;
+    readonly formatDecimalSeparator: ".";
+    readonly formatThousandSeparator: ",";
+    readonly formatUomSeparator: " ";
+    readonly formatStationSeparator: "+";
+    readonly compositeSpacer: " ";
+    readonly compositeIncludeZero: true;
+};
+
 // @public @preview
 export enum StrengthDirection {
     Backward = 2,
@@ -3140,11 +4540,8 @@ export function strengthToString(strength: StrengthType): string;
 
 // @public @preview
 export enum StrengthType {
-    // (undocumented)
     Embedding = 2,
-    // (undocumented)
     Holding = 1,
-    // (undocumented)
     Referencing = 0
 }
 
@@ -3152,6 +4549,34 @@ export enum StrengthType {
 export class StructArrayProperty extends StructArrayProperty_base {
     // @internal
     constructor(ecClass: ECClass, name: string, type: StructClass);
+}
+
+// @alpha
+class StructArrayProperty_2 extends Property_2 {
+    constructor(declaringClass: ECClass_2, name: string, structClass: LocalOrFullName, init?: StructArrayPropertyInit);
+    getStructClass(): StructClass_2 | undefined;
+    // (undocumented)
+    get kind(): PropertyKind.StructArray;
+    maxOccurs?: number;
+    minOccurs: number;
+    setStructClass(structClass: StructClass_2): void;
+    typeName: LocalOrFullName;
+}
+
+// @alpha
+interface StructArrayPropertyDeclaration extends StructArrayPropertyInit {
+    // (undocumented)
+    kind: PropertyKind.StructArray;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    structClass: LocalOrFullName;
+}
+
+// @alpha
+interface StructArrayPropertyInit extends PropertyInit {
+    maxOccurs?: number;
+    minOccurs?: number;
 }
 
 // @public @preview (undocumented)
@@ -3168,6 +4593,13 @@ export class StructClass extends ECClass {
     readonly schemaItemType: SchemaItemType;
     // @internal
     static get schemaItemType(): SchemaItemType;
+}
+
+// @alpha
+class StructClass_2 extends ECClass_2 {
+    constructor(document: SchemaDocument, name: string, init?: ClassInit);
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.StructClass;
 }
 
 // @public @preview (undocumented)
@@ -3188,6 +4620,26 @@ export class StructProperty extends Property {
     toJSON(): StructPropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
+}
+
+// @alpha
+class StructProperty_2 extends Property_2 {
+    constructor(declaringClass: ECClass_2, name: string, structClass: LocalOrFullName, init?: PropertyInit);
+    getStructClass(): StructClass_2 | undefined;
+    // (undocumented)
+    get kind(): PropertyKind.Struct;
+    setStructClass(structClass: StructClass_2): void;
+    typeName: LocalOrFullName;
+}
+
+// @alpha
+interface StructPropertyDeclaration extends PropertyInit {
+    // (undocumented)
+    kind: PropertyKind.Struct;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    structClass: LocalOrFullName;
 }
 
 // @public @preview (undocumented)
@@ -3245,10 +4697,32 @@ export class Unit extends SchemaItem {
     get unitSystem(): LazyLoadedUnitSystem | undefined;
 }
 
+// @alpha
+class Unit_2 extends SchemaItem_2 {
+    constructor(document: SchemaDocument, name: string, phenomenon: LocalOrFullName, unitSystem: LocalOrFullName, definition: string, init?: UnitInit);
+    definition: string;
+    denominator?: number;
+    getPhenomenon(): Phenomenon_2 | undefined;
+    getUnitSystem(): UnitSystem_2 | undefined;
+    numerator?: number;
+    offset?: number;
+    phenomenon: LocalOrFullName;
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.Unit;
+    unitSystem: LocalOrFullName;
+}
+
 // @internal
 export class UnitConverter {
     constructor(_context: SchemaContext);
     calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion>;
+}
+
+// @alpha
+interface UnitInit extends SchemaItemInit {
+    denominator?: number;
+    numerator?: number;
+    offset?: number;
 }
 
 // @public @preview (undocumented)
@@ -3262,14 +4736,63 @@ export class UnitSystem extends SchemaItem {
     static get schemaItemType(): SchemaItemType;
 }
 
+// @alpha
+class UnitSystem_2 extends SchemaItem_2 {
+    constructor(document: SchemaDocument, name: string, init?: SchemaItemInit);
+    // (undocumented)
+    get schemaItemType(): SchemaItemType.UnitSystem;
+}
+
 // @public @preview (undocumented)
 export type UnitSystemProps = SchemaItemProps;
+
+// @alpha
+function validateSchemaDocument(document: SchemaDocument, options?: ValidationOptions): SchemaIssueList;
+
+// @alpha
+function validateSchemaSet(schemaSet: SchemaSet, options?: ValidationOptions): SchemaIssueList;
+
+// @internal
+class ValidationContext {
+    constructor(options?: ValidationOptions);
+    readonly dialect: ECXmlDialect;
+    error(name: string, message: string, code?: string): void;
+    getExpandedProperties(ecClass: ECClass_2): AnyProperty_2[];
+    info(name: string, message: string, code?: string): void;
+    isSchemaAbsent(document: SchemaDocument, schemaName: string): boolean;
+    readonly issues: SchemaIssueList;
+    location: string;
+    noteSchemaUsed(schemaName: string): void;
+    report(severity: SchemaIssueSeverity, name: string, message: string, code?: string): void;
+    readonly spec: ECSpec;
+    takeUsedSchemas(): ReadonlySet<string>;
+    warning(name: string, message: string, code?: string): void;
+}
+
+// @alpha
+interface ValidationOptions {
+    spec?: ECSpec;
+}
+
+// @alpha
+class View extends ECClass_2 {
+    constructor(document: SchemaDocument, name: string, query: string, init?: ClassInit);
+    query: string;
+    // (undocumented)
+    get schemaItemType(): AuthoringSchemaItemType.View;
+}
 
 // @public @preview (undocumented)
 export interface WithSchemaKey {
     // (undocumented)
     readonly schemaKey: SchemaKey;
 }
+
+// @internal
+function writeCustomAttributeValuesToXmlBody(document: SchemaDocument, className: string, values: CustomAttributeValues, issues: SchemaIssueList, location: string): string[] | undefined;
+
+// @internal
+function writeCustomAttributeXmlBody(customAttribute: CustomAttribute_2, issues: SchemaIssueList, location: string): string[] | undefined;
 
 // @internal (undocumented)
 export class XmlParser extends AbstractParser<Element> {
@@ -3335,6 +4858,9 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     static parseXmlNamespace(xmlNamespace: string): ECSpecVersion | undefined;
 }
+
+// @alpha
+type XmlString = string;
 
 // (No @packageDocumentation comment for this package)
 

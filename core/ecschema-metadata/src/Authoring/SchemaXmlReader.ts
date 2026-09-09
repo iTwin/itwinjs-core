@@ -27,15 +27,15 @@ import { formatSourceLocation, SchemaIssueList } from "./SchemaIssues";
  * allocates a new RegExp on every evaluation, and this runs per reference. */
 const separatorPattern = /[.:]/;
 
-/** Reads {@link Authoring.SchemaDocument}s from ECXML text. Accepts every published ECXML version -
+/** Reads [Authoring.SchemaDocument]($ecschema-metadata)s from ECXML text. Accepts every published ECXML version -
  * 2.0, 3.0, 3.1 and 3.2 - detecting which from the namespace and recording it on the document
- * ({@link Authoring.SchemaDocument.originalECXmlVersionMajor}).
+ * ([Authoring.SchemaDocument.originalECXmlVersionMajor]($ecschema-metadata)).
  *
  * Reading 2.0 performs the lossless structural upgrade only: the element vocabulary, the attribute
  * renames, and `cardinality` to `multiplicity`. The legacy custom attributes 2.0 uses in place of
  * enumerations, kinds of quantity, and property categories are read as ordinary custom attributes
  * and stay that way. Turning them into first-class items is a separate opt-in pass
- * ({@link convertEC2CustomAttributes}), because that conversion is lossy and a caller has to be
+ * ([Authoring.convertEC2CustomAttributes]($ecschema-metadata)), because that conversion is lossy and a caller has to be
  * able to decline it.
  *
  * The reader is as lenient as the validity-free document allows: it reports problems as issues and
@@ -1017,7 +1017,7 @@ class ECXmlWalker {
    * by the entry element's name plus its `xmlns` (`Schema.RR.WW.mm` - the version is a serialization
    * artifact and is dropped). The value is kept as the raw ECXML body, exactly as written: the body
    * cannot be understood without the custom attribute class, so the attribute stays unmaterialized
-   * until something reads or writes it (see {@link Authoring.CustomAttribute}). */
+   * until something reads or writes it (see [Authoring.CustomAttribute]($ecschema-metadata)). */
   private readCustomAttributes(container: XmlElementNode, target: Authoring.CustomAttributeSet, _location: string, skipElementName?: string): void {
     for (const caNode of container.children) {
       if (skipElementName !== undefined && caNode.name.toLowerCase() === skipElementName)

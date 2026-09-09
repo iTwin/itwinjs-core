@@ -21,13 +21,13 @@ const separatorPattern = /[.:]/;
 
 /**
  * Conversion of custom attribute values between the raw ECXML body a document reads them from and
- * the typed {@link CustomAttributeValues} it holds them as, plus the way back out to ECXML.
+ * the typed [Authoring.CustomAttributeValues]($ecschema-metadata) it holds them as, plus the way back out to ECXML.
  *
  * Every conversion runs **against the custom attribute class**, which is what makes it exact: the
  * class says a value is a boolean rather than the text `"True"`, and that a nested element is a
  * one-entry struct array rather than a struct - two things neither serialization format can tell
  * you on its own. Resolution goes through the owning document's schema set first, then the
- * built-in definitions of the standard custom attribute classes ({@link getStandardSchemas}), so
+ * built-in definitions of the standard custom attribute classes ([Authoring.getStandardSchemas]($ecschema-metadata)), so
  * the common ones need nothing loaded.
  *
  * A property the class does not declare is still converted, by shape alone, so an attribute whose
@@ -38,7 +38,7 @@ const separatorPattern = /[.:]/;
 /** A minimal XML element node - the shape both the XML reader's parsed tree and this module's own
  * fragment parser expose. Attributes are irrelevant inside a custom attribute body (the only
  * attribute, `xmlns`, lives on the custom attribute element itself), so they are not modeled here.
- * @alpha
+ * @internal
  */
 export interface CustomAttributeXmlNode {
   readonly name: string;
@@ -47,17 +47,17 @@ export interface CustomAttributeXmlNode {
 }
 
 /** Serializes a custom attribute element's child nodes (its property value elements) into the raw
- * {@link XmlString} body an unmaterialized custom attribute holds. Returns `undefined` when there
+ * [Authoring.XmlString]($ecschema-metadata) body an unmaterialized custom attribute holds. Returns `undefined` when there
  * are no children. The XML reader calls this on the nodes it parsed; the formatting matches what
  * this module produces when writing, so an XML-sourced and an in-memory custom attribute of
  * identical content serialize to identical bytes.
- * @alpha
+ * @internal
  */
 export function serializeCustomAttributeBody(children: ReadonlyArray<CustomAttributeXmlNode>): XmlString | undefined {
   return serializeCustomAttributeBodyLines(children)?.join("\n");
 }
 
-/** The same body as {@link serializeCustomAttributeBody}, kept as one entry per XML line rather than
+/** The same body as [Authoring.serializeCustomAttributeBody]($ecschema-metadata), kept as one entry per XML line rather than
  * joined. A property value may itself contain newlines - an ECSQL string in `ECDbMap:QueryView`
  * does - and those are part of the value, not line breaks in the markup. A writer that re-splits
  * the joined form on newlines cannot tell the two apart and indents into the value, corrupting it a
@@ -71,12 +71,13 @@ export function serializeCustomAttributeBodyLines(children: ReadonlyArray<Custom
 }
 
 /** Converts a custom attribute's unconverted ECXML body into its typed values, against its custom
- * attribute class. Called by {@link CustomAttribute.values} and {@link CustomAttribute.tryGetValues}.
+ * attribute class. Called by [Authoring.CustomAttribute.values]($ecschema-metadata) and [Authoring.CustomAttribute.tryGetValues]($ecschema-metadata).
  * Throws when `throwOnMissingClass` is set and the class cannot be resolved, and returns
  * `undefined` otherwise - the two behaviours those two accessors promise.
  * @internal
  */
 export function materializeCustomAttribute(customAttribute: CustomAttribute, throwOnMissingClass: true): CustomAttributeValues;
+/** @internal */
 export function materializeCustomAttribute(customAttribute: CustomAttribute, throwOnMissingClass: boolean): CustomAttributeValues | undefined;
 export function materializeCustomAttribute(customAttribute: CustomAttribute, throwOnMissingClass: boolean): CustomAttributeValues | undefined {
   const body = customAttribute.rawXml;
@@ -142,9 +143,9 @@ export function writeCustomAttributeXmlBody(customAttribute: CustomAttribute, is
   return serializeNodes(nodes, 0);
 }
 
-/** The same ECXML body as {@link writeCustomAttributeXmlBody}, from values a writer holds directly
- * rather than from an applied {@link CustomAttribute}. This is what lets a writer emit a custom
- * attribute the document models first-class - a {@link View}'s `ECDbMap:QueryView` - through the
+/** The same ECXML body as [Authoring.writeCustomAttributeXmlBody]($ecschema-metadata), from values a writer holds directly
+ * rather than from an applied [Authoring.CustomAttribute]($ecschema-metadata). This is what lets a writer emit a custom
+ * attribute the document models first-class - a [Authoring.View]($ecschema-metadata)'s `ECDbMap:QueryView` - through the
  * one conversion path, so its values are typed against the class and a multi-line value keeps its
  * own newlines exactly as a hand-authored instance would.
  * @internal

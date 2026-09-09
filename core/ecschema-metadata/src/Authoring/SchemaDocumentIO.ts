@@ -9,7 +9,7 @@
 import * as Authoring from "./SchemaDocument";
 import { SchemaIssueList } from "./SchemaIssues";
 
-/** The EC specification (serialization format) versions a {@link Authoring.SchemaDocument} can be written to
+/** The EC specification (serialization format) versions a [Authoring.SchemaDocument]($ecschema-metadata) can be written to
  * or read from. The in-memory document always models the latest spec; readers and writers convert
  * at the boundary. `Latest` is an alias for the newest member and moves forward with the spec.
  * @alpha
@@ -39,7 +39,7 @@ export interface SchemaDocumentReadResult {
 /** The identity-and-dependencies summary of a schema obtained without loading its full content:
  * name, version, alias, and the reference list. This is what schema discovery peeks out of each
  * candidate (the cheap pass over a directory or an iModel) to build the dependency graph before
- * any full document is hydrated. A fully-loaded {@link Authoring.SchemaDocument} satisfies this shape, so a
+ * any full document is hydrated. A fully-loaded [Authoring.SchemaDocument]($ecschema-metadata) satisfies this shape, so a
  * document already in hand can stand in for its own header.
  * @alpha
  */
@@ -52,7 +52,7 @@ export interface SchemaDocumentHeader {
   readonly references: ReadonlyArray<Authoring.SchemaReference>;
 }
 
-/** The result of a header peek. Mirrors {@link SchemaDocumentReadResult}: `header` is `undefined`
+/** The result of a header peek. Mirrors [Authoring.SchemaDocumentReadResult]($ecschema-metadata): `header` is `undefined`
  * only when the input was unusable.
  * @alpha
  */
@@ -71,7 +71,7 @@ export interface SchemaHeaderReadResult {
  */
 export type SchemaText = string | Uint8Array | AsyncIterable<string | Uint8Array>;
 
-/** Normalizes a {@link SchemaText} into string chunks, decoding bytes as UTF-8 (the encoding of
+/** Normalizes a [Authoring.SchemaText]($ecschema-metadata) into string chunks, decoding bytes as UTF-8 (the encoding of
  * EC schema files). Reader implementations share this so the rest of their logic deals only in
  * strings. Lazy: chunks are pulled from the input only as the consumer iterates, and the input is
  * closed when the consumer stops early.
@@ -158,13 +158,15 @@ export function mapFormatStringReferences(formatString: string, mapReference: (r
   return result + rest;
 }
 
-/** Options shared by the text readers. */
+/** Options shared by the text readers.
+ * @alpha
+ */
 export interface SchemaTextReadOptions {
   /** Origin of the text (file path, URL, ...), copied onto every reported issue and onto
-   * {@link Authoring.SchemaDocument.source} so problems stay traceable to their file. */
+   * [Authoring.SchemaDocument.source]($ecschema-metadata) so problems stay traceable to their file. */
   source?: string;
   /** The set to read the document into. Every document belongs to exactly one
-   * {@link Authoring.SchemaSet}; leaving this out gives the document a private set of its own, so a
+   * [Authoring.SchemaSet]($ecschema-metadata); leaving this out gives the document a private set of its own, so a
    * schema read in isolation resolves nothing outside itself. Reading into a set is what lets the
    * document resolve its references - and what lets its custom attributes be understood. The read
    * fails with an issue, and the document stays in a private set, when the set already holds a
@@ -176,8 +178,8 @@ export interface SchemaTextReadOptions {
   abortSignal?: AbortSignal;
 }
 
-/** The contract of a reader that hydrates a {@link Authoring.SchemaDocument} from text in some format
- * (ECXML, ECJSON). Readers consume their input incrementally (see {@link SchemaText}): parsing a
+/** The contract of a reader that hydrates a [Authoring.SchemaDocument]($ecschema-metadata) from text in some format
+ * (ECXML, ECJSON). Readers consume their input incrementally (see [Authoring.SchemaText]($ecschema-metadata)): parsing a
  * chunk is synchronous work, but between chunks of a streamed input the event loop stays
  * responsive, so reading a very large file does not stall everything else. Readers for non-text
  * sources (e.g. an iModel) cannot share this exact signature, but return the same result shapes so
@@ -193,11 +195,13 @@ export interface SchemaDocumentTextReader {
   readHeader(text: SchemaText, options?: SchemaTextReadOptions): Promise<SchemaHeaderReadResult>;
 }
 
-/** Options shared by the schema writers. */
+/** Options shared by the schema writers.
+ * @alpha
+ */
 export interface SchemaWriteOptions {
-  /** The spec version to emit. Defaults to {@link ECSpec.Latest}. */
+  /** The spec version to emit. Defaults to [Authoring.ECSpec.Latest]($ecschema-metadata). */
   spec?: ECSpec;
-  /** Aborts a streamed write ({@link SchemaDocumentTextWriter.writeDocumentTo}). Checked between
+  /** Aborts a streamed write ([Authoring.SchemaDocumentTextWriter.writeDocumentTo]($ecschema-metadata)). Checked between
    * chunks handed to the sink. The returned promise rejects with the signal's reason. */
   abortSignal?: AbortSignal;
 }
@@ -207,9 +211,9 @@ export interface SchemaWriteOptions {
  * whose schema is missing from the reference list, a custom attribute that could not be
  * materialized - are reported as issues alongside best-effort output.
  *
- * Always check {@link issues} (in particular {@link SchemaIssueList.hasErrors}) before trusting the
+ * Always check [Authoring.SchemaWriteResult.issues]($ecschema-metadata) (in particular [Authoring.SchemaIssueList.hasErrors]($ecschema-metadata)) before trusting the
  * text: an error means the output is incomplete - typically a custom attribute was dropped because
- * its custom attribute class is not in the document's {@link Authoring.SchemaSet} - not that
+ * its custom attribute class is not in the document's [Authoring.SchemaSet]($ecschema-metadata) - not that
  * nothing was produced.
  * @alpha
  */
@@ -218,7 +222,7 @@ export interface SchemaWriteResult {
   issues: SchemaIssueList;
 }
 
-/** Where a streaming writer pushes its output, one chunk at a time. Symmetric to {@link SchemaText}
+/** Where a streaming writer pushes its output, one chunk at a time. Symmetric to [Authoring.SchemaText]($ecschema-metadata)
  * on the read side: any platform can supply one, and a chunk boundary carries no meaning (chunks
  * simply concatenate to the whole document). The sink may return a promise, so a file or network
  * sink can apply backpressure - a Node write stream adapts in one line
@@ -231,9 +235,9 @@ export interface SchemaWriteResult {
  */
 export type SchemaTextSink = (chunk: string) => void | Promise<void>;
 
-/** The result a streaming writer returns. Mirrors {@link SchemaWriteResult} but carries no `text`:
+/** The result a streaming writer returns. Mirrors [Authoring.SchemaWriteResult]($ecschema-metadata) but carries no `text`:
  * the text went to the sink. The same `issues` caveat applies - check
- * {@link SchemaIssueList.hasErrors} before trusting the written output, since a recoverable problem
+ * [Authoring.SchemaIssueList.hasErrors]($ecschema-metadata) before trusting the written output, since a recoverable problem
  * (e.g. a dropped custom attribute) means what reached the sink is incomplete.
  * @alpha
  */
@@ -241,23 +245,23 @@ export interface SchemaStreamWriteResult {
   issues: SchemaIssueList;
 }
 
-/** The contract of a writer that serializes a {@link Authoring.SchemaDocument} to text in some format (ECXML,
+/** The contract of a writer that serializes a [Authoring.SchemaDocument]($ecschema-metadata) to text in some format (ECXML,
  * ECJSON). Every writer offers both forms:
- *  - {@link writeDocument} materializes the whole document as one string - convenient, and the right
+ *  - [Authoring.SchemaDocumentTextWriter.writeDocument]($ecschema-metadata) materializes the whole document as one string - convenient, and the right
  *    choice for the ordinary small schema, but it builds a single string and so is bounded by the
  *    platform's maximum string length (on V8, ~512 MB); a sufficiently large schema makes it throw.
- *  - {@link writeDocumentTo} streams the document to a {@link SchemaTextSink} in chunks, never holding
+ *  - [Authoring.SchemaDocumentTextWriter.writeDocumentTo]($ecschema-metadata) streams the document to a [Authoring.SchemaTextSink]($ecschema-metadata) in chunks, never holding
  *    it as one string - the form to use for very large schemas (performance-test fixtures, the
  *    largest production schemas) and when piping straight to a file or socket.
  *
- * Whether {@link writeDocumentTo} achieves bounded memory or merely avoids the single-string ceiling
+ * Whether [Authoring.SchemaDocumentTextWriter.writeDocumentTo]($ecschema-metadata) achieves bounded memory or merely avoids the single-string ceiling
  * is format-specific and documented on each writer (the ECXML writer streams; the ECJSON writer
- * currently materializes internally - see {@link SchemaJsonWriter}).
+ * currently materializes internally - see [Authoring.SchemaJsonWriter]($ecschema-metadata)).
  * @alpha
  */
 export interface SchemaDocumentTextWriter {
   /** Writes the whole document as one string. Bounded by the platform's maximum string length; use
-   * {@link writeDocumentTo} for schemas large enough to approach it. Never throws on bad input data -
+   * [Authoring.SchemaDocumentTextWriter.writeDocumentTo]($ecschema-metadata) for schemas large enough to approach it. Never throws on bad input data -
    * problems land in the result's issues. */
   writeDocument(document: Authoring.SchemaDocument, options?: SchemaWriteOptions): SchemaWriteResult;
   /** Streams the document to `sink` in chunks instead of returning it as one string, so an arbitrarily
