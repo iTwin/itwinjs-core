@@ -2,6 +2,18 @@
   "name": "@itwin/map-layers-formats",
   "entries": [
     {
+      "version": "5.13.0",
+      "tag": "@itwin/map-layers-formats_v5.13.0",
+      "date": "Thu, 03 Sep 2026 18:49:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Google Maps attribution text is rendered as plain text instead of HTML. OGC API Features source validation now honors the opt-in map-layer credential origin restriction."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.12.5",
       "tag": "@itwin/map-layers-formats_v5.12.5",
       "date": "Tue, 25 Aug 2026 21:22:08 GMT",
