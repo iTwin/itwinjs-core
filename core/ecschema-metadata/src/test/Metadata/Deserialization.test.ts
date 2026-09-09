@@ -1246,12 +1246,12 @@ describe("Full Schema Deserialization", () => {
     });
 
     const refSchemaV1Xml = `<?xml version="1.0" encoding="utf-8"?>
-    <ECSchema xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2" schemaName="RefSchema" version="01.00.00" alias="ref">
+    <ECSchema schemaName="RefSchema" version="01.00.00" alias="ref" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
       <ECEntityClass typeName="OldClass" modifier="None"/>
     </ECSchema>`;
 
     const refSchemaV2Xml = `<?xml version="1.0" encoding="utf-8"?>
-    <ECSchema xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2" schemaName="RefSchema" version="02.00.00" alias="ref">
+    <ECSchema schemaName="RefSchema" version="02.00.00" alias="ref" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
       <ECEntityClass typeName="NewClass" modifier="None"/>
       <ECEntityClass typeName="UserOfNewClass" modifier="None">
         <BaseClass>NewClass</BaseClass>
