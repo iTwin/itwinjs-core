@@ -289,6 +289,8 @@ beta;interface;ElementMeshRequestProps
 public;interface;ElementPlanarClipMaskArgs
 public;interface;ElementProps
 preview;interface;ElementProps
+beta;interface;ElementReservationError
+beta;namespace;ElementReservationError
 public;interface;EmphasizeElementsProps
 public;class;EmptyLocalization
 public;interface;EntityIdAndClassId
@@ -1033,6 +1035,7 @@ public;class;Tween
 public;type;TweenCallback
 public;class;Tweens
 public;enum;TxnAction
+public;interface;TxnEntityMetadata
 internal;interface;TxnNotifications
 alpha;interface;TxnProps
 alpha;type;TxnType
