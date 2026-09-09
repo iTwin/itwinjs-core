@@ -94,7 +94,7 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
   const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 2), Matrix3d.createUniformScale(2));
   for (const s of solids) {
     if (s instanceof SolidPrimitive) {
-      const s1 = s.clone()!;
+      const s1 = s.clone();
       ck.testFalse(s1.tryTransformInPlace(Transform.createZero()));
       ck.testFalse(s1.isAlmostEqual(LineSegment3d.createXYXY(0, 0, 1, 1)));
       if (ck.testPointer(s1, "solid clone") && s1) {

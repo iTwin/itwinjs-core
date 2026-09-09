@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import type { BackendCallbackRegistrar } from "@itwin/vitest-browser-bridge/callbacks/backend";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/main";
 import { IModelHost } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcConfiguration } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";

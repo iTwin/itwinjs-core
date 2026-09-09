@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "improve schemasync, split upgrade scenario from regular updates",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

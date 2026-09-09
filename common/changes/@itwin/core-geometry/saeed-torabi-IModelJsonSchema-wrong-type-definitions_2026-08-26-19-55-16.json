@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Fixed wrong type definitions in IModelJsonSchema.ts",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

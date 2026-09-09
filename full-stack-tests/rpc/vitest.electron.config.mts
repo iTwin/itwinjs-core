@@ -14,7 +14,6 @@ export default defineConfig({
   define: { "process.env.VITEST_RPC_ENVIRONMENT": JSON.stringify("electron") },
   resolve: {
     alias: {
-      "@itwin/core-electron/lib/cjs/ElectronFrontend": path.resolve(packageRoot, "../../core/electron/src/ElectronFrontend.ts"),
       "@itwin/core-mobile/lib/cjs/MobileFrontend": path.resolve(packageRoot, "../../core/mobile/src/MobileFrontend.ts"),
     },
   },
