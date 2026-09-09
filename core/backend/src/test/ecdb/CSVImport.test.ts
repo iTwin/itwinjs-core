@@ -10,7 +10,7 @@ import { ECDb, ECSqlStatement } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
-const testSchema = `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+const testSchema = `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECStructClass typeName="Details">
     <ECProperty propertyName="Nickname" typeName="string"/>
   </ECStructClass>
