@@ -63,6 +63,7 @@ import { SaveImageTool } from "./SaveImageTool";
 import { ToggleSecondaryIModelTool } from "./TiledGraphics";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
+import { configureMapLayerAuth } from "./MapLayerAuthSetup";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
@@ -349,31 +350,6 @@ export class DisplayTestApp {
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
-    // Optionally restrict map-layer credentials (including SSO / Windows Authentication) to the exact
-    // origins listed in IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS. See README.md.
-    if (configuration.mapLayerTrustedCredentialsOrigins) {
-      const trustedOrigins: string[] = [];
-      for (const entry of configuration.mapLayerTrustedCredentialsOrigins.split(",")) {
-        const value = entry.trim();
-        if (!value)
-          continue;
-        try {
-          trustedOrigins.push(new URL(value).origin);
-        } catch {
-          // eslint-disable-next-line no-console
-          console.warn(`Ignoring invalid origin in IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS: "${value}"`);
-        }
-      }
-
-      if (trustedOrigins.length > 0) {
-        IModelApp.mapLayerFormatRegistry.trustedCredentialsOrigins = trustedOrigins;
-        IModelApp.mapLayerFormatRegistry.restrictCredentialsToTrustedOrigins = true;
-      } else {
-        // eslint-disable-next-line no-console
-        console.warn("IMJS_MAP_LAYER_TRUSTED_CREDENTIALS_ORIGINS was set but contained no valid origins; leaving restrictCredentialsToTrustedOrigins disabled.");
-      }
-    }
-
     IModelConnection.onOpen.addListener((imodel: IModelConnection) => {
       if (imodel.isBlankConnection()) return;
 
@@ -475,6 +451,9 @@ export class DisplayTestApp {
         ? { subscriptionKey: configuration.azureMapsKey }
         : undefined,
     });
+
+    // After MapLayersFormats.initialize so access clients can target the extension formats too.
+    configureMapLayerAuth(configuration);
 
     EditTools.registerProjectLocationTools();
   }

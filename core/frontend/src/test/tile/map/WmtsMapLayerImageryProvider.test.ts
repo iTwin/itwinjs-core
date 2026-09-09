@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/no-deprecated -- unsavedQueryParams must keep working until it is removed. */
 import { EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QuadId, WmtsCapabilities, WmtsCapability, WmtsMapLayerImageryProvider } from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
-import { RequestBasicCredentials } from "../../../request/Request";
 import { fakeTextFetch } from "./MapLayerTestUtilities";
 import { Range2d } from "@itwin/core-geometry";
 
@@ -28,7 +28,7 @@ describe("WmtsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
+    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _() {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
@@ -40,7 +40,7 @@ describe("WmtsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
+    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _() {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
@@ -66,9 +66,9 @@ describe("WmtsMapLayerImageryProvider", () => {
 
     const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param1.forEach((value: string, key: string) =>  settings.queryParams![key] = value);
     param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
 
     provider = new WmtsMapLayerImageryProvider(settings);
@@ -92,7 +92,7 @@ describe("WmtsMapLayerImageryProvider", () => {
     if (!settings)
       expect.fail("Could not create settings");
 
-    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
+    vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _() {
       throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
@@ -118,9 +118,9 @@ describe("WmtsMapLayerImageryProvider", () => {
 
     const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param1.forEach((value: string, key: string) =>  settings.queryParams![key] = value);
     param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
 
     provider = new WmtsMapLayerImageryProvider(settings);
@@ -189,9 +189,9 @@ describe("WmtsMapLayerImageryProvider", () => {
     // Now test with custom parameters
     const param1 = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
     const param2 = new URLSearchParams([["key2_1", "value2_2"], ["key2_2", "value2_2"]]);
-    settings.savedQueryParams = {};
+    settings.queryParams = {};
     settings.unsavedQueryParams = {};
-    param1.forEach((value: string, key: string) =>  settings.savedQueryParams![key] = value);
+    param1.forEach((value: string, key: string) =>  settings.queryParams![key] = value);
     param2.forEach((value: string, key: string) =>  settings.unsavedQueryParams![key] = value);
 
     provider = new WmtsMapLayerImageryProvider(settings);
