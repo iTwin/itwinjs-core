@@ -12,7 +12,7 @@
 * 3. Uncomment both lines in the MANUAL RUN BLOCK at the bottom of this file and
 *    replace X.X.X in each with the released version. Uncommenting only the checkout
 *    leaves the final push aimed at the protected target branch.
-* 4. node .github/workflows/automation-scripts/update-changelogs.mjs
+* 4. IMJS_ADMIN_GH_TOKEN=<token with push access> node .github/workflows/automation-scripts/update-changelogs.mjs
 * 5. Open a PR from finalize-release-X.X.X into the target branch.
 *****************************************************************/
 
@@ -23,6 +23,10 @@ import path from "node:path";
 const repoRoot = process.cwd();
 const targetPath = "temp-target-changelogs";
 const incomingPath = "temp-incoming-changelogs";
+
+// Captured once, then removed from process.env so no spawned child process can read it.
+const adminToken = process.env.IMJS_ADMIN_GH_TOKEN;
+delete process.env.IMJS_ADMIN_GH_TOKEN;
 
 // No shell is spawned, so arguments are not subject to word splitting or expansion.
 function run(command, args, options = {}) {
@@ -36,6 +40,18 @@ function run(command, args, options = {}) {
 
 function git(...args) {
   return run("git", args).trim();
+}
+
+// Pushes with the admin token via a per-invocation `-c http.extraheader`, so it's
+// never written to .git/config or exposed to any other process this script spawns.
+function authenticatedGitPush(...args) {
+  if (!adminToken)
+    throw new Error("IMJS_ADMIN_GH_TOKEN is not set; cannot push.");
+  const basicAuth = Buffer.from(`x-access-token:${adminToken}`).toString("base64");
+  return run("git", [
+    "-c", `http.https://github.com/.extraheader=AUTHORIZATION: basic ${basicAuth}`,
+    "push", ...args,
+  ]);
 }
 
 function rush(...args) {
@@ -172,7 +188,7 @@ if (commitMessage.endsWith(".0")) {
   editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
   git("add", docsYamlPath);
   git("commit", "-m", "Update gather-docs.yaml's branch name to the release branch");
-  git("push", "origin", `HEAD:${currentBranch}`);
+  authenticatedGitPush("origin", `HEAD:${currentBranch}`);
 }
 
 targetBranch = targetBranch.replace("origin/", "");
@@ -222,4 +238,4 @@ git("commit", "-m", `${commitMessage} Changelogs`);
 rush("change", "--bulk", "--message", "", "--bump-type", "none");
 git("add", ".");
 git("commit", "--amend", "--no-edit");
-git("push", "origin", `HEAD:${targetBranch}`);
+authenticatedGitPush("origin", `HEAD:${targetBranch}`);
