@@ -2,37 +2,37 @@
 // This is specifically to catch changes to @bentley/imodeljs-native and should only invalidate PRs that target master branch
 // This will also invalidate PRs if there's a new nightly build, however our 3 hour rule should also invalidate the same PRs
 
-import { Octokit, App } from "octokit"
-import dotenv from 'dotenv'
+const owner = "iTwin";
+const repo = "itwinjs-core";
+const token = process.env.GITHUB_TOKEN;
 
-dotenv.config();
+const headers = {
+  "Authorization": `token ${token}`,
+  "Accept": "application/vnd.github.v3+json",
+  "X-GitHub-Api-Version": "2022-11-28",
+  "User-Agent": "itwinjs-core-invalidate-open-prs",
+};
 
-const octokit = new Octokit({
-  auth: `${process.env.GITHUB_TOKEN}`
-});
+async function githubRequest(url, options = {}) {
+  const response = await fetch(url, { ...options, headers: { ...headers, ...options.headers } });
+  if (!response.ok)
+    throw new Error(`GitHub API request to ${url} failed with ${response.status} ${response.statusText}: ${await response.text()}`);
+  return response;
+}
 
-let pull_requests = await octokit.request('GET /repos/{owner}/{repo}/pulls', {
-  owner: 'iTwin',
-  repo: 'itwinjs-core',
-  headers: {
-    'X-GitHub-Api-Version': '2022-11-28'
-  }
-})
+const pullRequestsResponse = await githubRequest(`https://api.github.com/repos/${owner}/${repo}/pulls`);
+const pullRequests = await pullRequestsResponse.json();
 
-for (let i = 0; i < pull_requests.data.length; i++) {
-  let pr_sha = pull_requests.data[i].head.sha;
-
-  if (!pull_requests.data[i].draft && pull_requests.data[i].base.ref === 'master') {
-    await octokit.request('POST /repos/{owner}/{repo}/statuses/{sha}', {
-      owner: 'iTwin',
-      repo: 'itwinjs-core',
-      sha: `${pr_sha}`,
-      state: 'failure',
-      description: '@bentley/imodeljs-native may be out of date with master, please merge',
-      context: 'iTwin.js',
-      headers: {
-        'X-GitHub-Api-Version': '2022-11-28'
-      }
-    })
+for (const pullRequest of pullRequests) {
+  if (!pullRequest.draft && pullRequest.base.ref === "master") {
+    await githubRequest(`https://api.github.com/repos/${owner}/${repo}/statuses/${pullRequest.head.sha}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        state: "failure",
+        description: "@bentley/imodeljs-native may be out of date with master, please merge",
+        context: "iTwin.js",
+      }),
+    });
   }
 }
