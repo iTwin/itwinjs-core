@@ -4,7 +4,9 @@
 
 const owner = "iTwin";
 const repo = "itwinjs-core";
+// Captured once, then removed from process.env so no spawned child process can read it.
 const token = process.env.GITHUB_TOKEN;
+delete process.env.GITHUB_TOKEN;
 
 const headers = {
   "Authorization": `token ${token}`,
