@@ -54,6 +54,8 @@ export type SqliteValueStage = "Old" | "New";
 export type AnyDb = IModelDb | ECDb;
 
 /** A database that can supply SQLite table metadata to a changeset reader.
+ * The database must contain every table referenced by the changeset. When using a plain
+ * [[SQLiteDb]], `disableSchemaCheck` may be used to tolerate additional columns in the changeset.
  * @beta
  */
 export type SqliteChangesetReaderDb = AnyDb | SQLiteDb;
@@ -62,7 +64,7 @@ export type SqliteChangesetReaderDb = AnyDb | SQLiteDb;
  * @beta
 */
 export interface SqliteChangesetReaderArgs<TDb extends SqliteChangesetReaderDb = AnyDb> {
-  /** db from which schema will be read. It should be at or ahead of the latest changeset being opened.*/
+  /** Database from which table and column metadata will be read. It must be open and contain every table in the changeset. */
   readonly db: TDb;
   /** invert the changeset operations */
   readonly invert?: true;
@@ -105,6 +107,9 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
    * @returns SqliteChangesetReader instance
    */
   public static openFile<TDb extends SqliteChangesetReaderDb>(args: { readonly fileName: string } & SqliteChangesetReaderArgs<TDb>): SqliteChangesetReader<TDb> {
+    if (!args.db.isOpen)
+      throw new Error("db must be open.");
+
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openFile(args.fileName, args.invert ?? false);
@@ -411,6 +416,9 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         tblCols.push(stmt.getValueString(0));
       }
+      if (tblCols.length === 0)
+        throw new Error(`changeset table ${tableName} does not exist in the provided db.`);
+
       this._schemaCache.set(tableName, tblCols);
       return tblCols;
     });

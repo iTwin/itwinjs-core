@@ -77,31 +77,47 @@ describe("SQLiteDb", () => {
     const iModelFileName = IModelTestUtils.resolveAssetFile("_mocks_/ReadOnlyTest/ReadOnlyTest.bim");
     const changesetFileName = IModelTestUtils.resolveAssetFile("_mocks_/ReadOnlyTest/csets/dbe4b3824129f99e4eb485fb7cd9d2fea2354be1.cs");
     const iModel = SnapshotDb.openFile(iModelFileName);
-    using schemaReader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db: iModel });
-    expect(schemaReader.step()).true;
-    const tableName = schemaReader.tableName;
-    const columnNames = schemaReader.getColumnNames(tableName);
-    iModel.close();
+    let tableName: string;
+    let columnNames: string[];
+    let expectedValues: Record<string, unknown>;
+    let stage: "Old" | "New";
+    try {
+      using schemaReader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db: iModel });
+      expect(schemaReader.step()).true;
+      tableName = schemaReader.tableName;
+      columnNames = schemaReader.getColumnNames(tableName);
+      stage = schemaReader.op === "Deleted" ? "Old" : "New";
+      expectedValues = schemaReader.getChangeValuesObject(stage, { includeNullColumns: true })!;
+    } finally {
+      iModel.close();
+    }
 
     const dbFileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "changeset-reader.db");
     const db = new SQLiteDb();
     db.createDb(dbFileName, undefined, { rawSQLite: true });
     const declaredColumns = columnNames.slice(0, -1);
-    db.executeSQL(`CREATE TABLE "${tableName}" (${declaredColumns.map((name) => `"${name}"`).join(",")})`);
 
     try {
+      using missingTableReader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db, disableSchemaCheck: true });
+      expect(missingTableReader.step()).true;
+      expect(() => missingTableReader.getChangeValuesObject(stage)).throws(`changeset table ${tableName} does not exist`);
+
+      db.executeSQL(`CREATE TABLE "${tableName}" (${declaredColumns.map((name) => `"${name}"`).join(",")})`);
+
       using checkedReader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db });
       expect(checkedReader.step()).true;
-      expect(() => checkedReader.getChangeValuesObject("New") ?? checkedReader.getChangeValuesObject("Old")).throws("columns count does not match");
+      expect(() => checkedReader.getChangeValuesObject(stage)).throws("columns count does not match");
 
       using uncheckedReader = SqliteChangesetReader.openFile({ fileName: changesetFileName, db, disableSchemaCheck: true });
       expect(uncheckedReader.step()).true;
-      const values = uncheckedReader.getChangeValuesObject("New") ?? uncheckedReader.getChangeValuesObject("Old");
-      expect(values).not.undefined;
-      expect(Object.keys(values!)).deep.equal(declaredColumns);
+      const values = uncheckedReader.getChangeValuesObject(stage, { includeNullColumns: true });
+      const expectedDeclaredValues = Object.fromEntries(declaredColumns.map((name) => [name, expectedValues[name]]));
+      expect(values).deep.equal(expectedDeclaredValues);
     } finally {
       db.closeDb();
     }
+
+    expect(() => SqliteChangesetReader.openFile({ fileName: changesetFileName, db, disableSchemaCheck: true })).throws("db must be open");
   });
 
   describe("applyChangeset", () => {

@@ -9,6 +9,7 @@ publish: false
     - [ChangesetReader changes](#changesetreader-changes)
       - [ChangesetReader row options](#changesetreader-row-options)
       - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
+      - [SQLite changeset schema sources](#sqlite-changeset-schema-sources)
   - [Electron 44 support](#electron-44-support)
 
 ## @itwin/core-backend
@@ -28,6 +29,10 @@ SchemaSync databases now require version 5.0.0. Existing version 4 containers ar
 #### ChangesetReader row options
 
 The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). Use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
+
+#### SQLite changeset schema sources
+
+The `@beta` `SqliteChangesetReader.openFile` method now accepts a plain `SQLiteDb` as its source of table and column metadata. The database must be open and contain every table referenced by the changeset. Set `disableSchemaCheck` to tolerate changeset columns that are not present in the database. EC-specific consumers such as `ChangesetECAdaptor` continue to require an `IModelDb` or `ECDb`.
 
 ## Electron 44 support
 
