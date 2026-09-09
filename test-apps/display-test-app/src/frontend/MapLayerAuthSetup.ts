@@ -35,8 +35,8 @@ function configureTrustedCredentialsOrigins(configuration: DtaConfiguration): vo
 }
 
 /** Registers a map-layer fetch handler ([[MapLayerFormatRegistry.addMapLayerFetchHandler]]) injecting a
- * fixed header (e.g. "Authorization=Bearer ...") and/or query parameters into every map-layer request of
- * the formats listed in IMJS_MAP_LAYER_AUTH_FORMATS. See README.md.
+ * fixed header (e.g. "Authorization=Bearer ...") and/or query parameters for IMJS_MAP_LAYER_AUTH_FORMATS.
+ * The layer's own origin is allowed; IMJS_MAP_LAYER_AUTH_ORIGINS permits additional destinations. See README.md.
  */
 function configureAuthFetchHandler(configuration: DtaConfiguration): void {
   if (!configuration.mapLayerAuthHeader && !configuration.mapLayerAuthQueryParams)
@@ -74,6 +74,25 @@ function configureAuthFetchHandler(configuration: DtaConfiguration): void {
     return;
   }
 
+  // Optional additional origins for cross-origin requests; independent of SSO trust.
+  const origins = new Set<string>();
+  for (const entry of configuration.mapLayerAuthOrigins?.split(",") ?? []) {
+    const value = entry.trim();
+    if (!value)
+      continue;
+    try {
+      const url = new URL(value);
+      if ((url.protocol !== "https:" && url.protocol !== "http:") || url.username || url.password
+        || url.pathname !== "/" || url.search || url.hash || url.hostname.includes("*"))
+        throw new Error("Expected an exact HTTP(S) origin");
+      origins.add(url.origin);
+    } catch {
+      // Do not echo the value: a misconfigured URL could contain credentials.
+      // eslint-disable-next-line no-console
+      console.warn("Ignoring invalid origin in IMJS_MAP_LAYER_AUTH_ORIGINS; expected an exact HTTP(S) origin (scheme + host + port).");
+    }
+  }
+
   for (const formatId of formats) {
     if (!IModelApp.mapLayerFormatRegistry.isRegistered(formatId)) {
       // eslint-disable-next-line no-console
@@ -84,6 +103,20 @@ function configureAuthFetchHandler(configuration: DtaConfiguration): void {
   IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRequest) => {
     if (!formats.includes(request.formatId))
       return undefined;   // not ours: leave the request to the next handler or the default behavior
+    // Same-origin requests are allowed by default; server-advertised cross-origin links need explicit approval.
+    let target: URL;
+    let layer: URL;
+    try {
+      const baseUrl = typeof document !== "undefined" ? document.baseURI : undefined;
+      target = new URL(request.url, baseUrl);
+      layer = new URL(request.layerUrl, baseUrl);
+    } catch {
+      return undefined;
+    }
+    if ((target.protocol !== "https:" && target.protocol !== "http:")
+      || (target.origin !== layer.origin && !origins.has(target.origin)))
+      return undefined;
+
     const headers = new Headers(request.headers);
     if (header)
       headers.set(header[0], header[1]);

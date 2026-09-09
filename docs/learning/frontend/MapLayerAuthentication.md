@@ -97,21 +97,27 @@ Because requests are passed along as values, each handler builds its own copy on
 
 ### One credential per layer
 
-The pipeline is global, but [MapLayerRequest.layerUrl]($frontend) identifies the layer each request is made for. Unlike `request.url`, it is stable across every request kind (tiles, tooltips, capabilities, service metadata), so a single handler can serve any number of layers, each with its own credentials:
+The pipeline is global, but [MapLayerRequest.layerUrl]($frontend) identifies the layer each request is made for. Unlike `request.url`, it is stable across every request kind (tiles, tooltips, capabilities, service metadata), so a single handler can serve any number of layers, each with its own credentials. In this example, the application assigns a token to each layer it trusts, and sends that token only to the layer's own HTTP(S) origin. WMTS resource templates and OGC collection links pointing to another origin do not receive it:
 
 ```ts
-// Layer URL → token, obtained and refreshed by the hosting application through its own channels.
+// Layer URL → token, explicitly assigned by the application for that layer's origin.
 const tokensByLayer = new Map<string, string>();
 
 IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request: MapLayerRequest, fetchRequest: MapLayerFetchRequest) => {
   const token = tokensByLayer.get(request.layerUrl);
   if (token === undefined)
     return undefined;   // a layer this handler does not manage
+  const target = new URL(request.url, document.baseURI);
+  const layer = new URL(request.layerUrl, document.baseURI);
+  if ((target.protocol !== "https:" && target.protocol !== "http:") || target.origin !== layer.origin)
+    return undefined;   // do not send this layer's token to another origin
   const headers = new Headers(request.headers);
   headers.set("Authorization", `Bearer ${token}`);
   return fetchRequest({ ...request, headers });
 });
 ```
+
+Also enable `restrictCredentialsToTrustedOrigins` to prevent redirects from forwarding the injected token elsewhere; it does not replace the same-origin check. Serving authenticated tiles or collections from a different origin is an advanced case requiring explicit approval of that destination for the particular credential, not automatic trust in server-advertised links.
 
 When the handler throws [MapLayerAuthenticationFailedError]($frontend), the layer's provider transitions to the [MapLayerImageryProviderStatus]($frontend) member `RequireAuth` and raises [MapLayerImageryProvider.onStatusChanged]($frontend), which applications can use to prompt the user to re-authenticate. How the provider behaves afterwards varies by format: the ArcGIS providers stop requesting tiles while in `RequireAuth`, while the other formats keep requesting new tiles — each still routed through the handler, so a handler that refreshes its token keeps the layer alive without intervention. Applications should keep monitoring this event even with a handler in place: transparent retries can make it rare, but it remains the only signal for failures the handler cannot fix silently (revoked access, expired refresh token), and other statuses such as `UntrustedOrigin` flow through it as well.
 

@@ -38,9 +38,14 @@ A new `@beta` extension point, [MapLayerFormatRegistry.addMapLayerFetchHandler](
 - throw [MapLayerAuthenticationFailedError]($frontend) (now `@beta`) to report an unrecoverable authentication failure, transitioning the layer to [MapLayerImageryProviderStatus]($frontend).`RequireAuth`.
 
 ```ts
+// Approve destinations for this token explicitly; a format id alone is not a trust boundary.
+const authOrigins = new Set(["https://proxy.example.com"]);
 const removeHandler = IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRequest) => {
   if (request.formatId !== "WMS")
     return undefined;  // not ours: leave the request to the next handler, or to the default behavior
+  const target = new URL(request.url, document.baseURI);
+  if ((target.protocol !== "https:" && target.protocol !== "http:") || !authOrigins.has(target.origin))
+    return undefined;
   const withBearer = (token: string) => {
     const headers = new Headers(request.headers);
     headers.set("Authorization", `Bearer ${token}`);
@@ -76,7 +81,7 @@ With the fetch handler as the designated channel for secrets, the split between 
 // Before
 settings.unsavedQueryParams = { apiKey: secret };
 
-// After: one handler for the session, parameters kept per layer by the application
+// After: parameters assigned to each layer, sent only to that layer's own origin
 const secretParamsByLayer = new Map<string, { [key: string]: string }>();
 secretParamsByLayer.set(settings.url, { apiKey: secret });
 
@@ -84,6 +89,10 @@ IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRe
   const params = secretParamsByLayer.get(request.layerUrl);
   if (!params)
     return undefined;   // not a layer this handler manages
+  const target = new URL(request.url, document.baseURI);
+  const layer = new URL(request.layerUrl, document.baseURI);
+  if ((target.protocol !== "https:" && target.protocol !== "http:") || target.origin !== layer.origin)
+    return undefined;   // a server-advertised link must not inherit this layer's secrets
   const searchParams = new URLSearchParams(request.searchParams);
   for (const [name, value] of Object.entries(params))
     searchParams.set(name, value);
@@ -92,6 +101,8 @@ IModelApp.mapLayerFormatRegistry.addMapLayerFetchHandler(async (request, fetchRe
 ```
 
 `layerUrl` is also the URL of a [MapLayerSource]($frontend) during validation, so the same entry serves the attach dialog's validation request and every later request of the layer.
+
+This per-layer example intentionally supports only same-origin requests. Cross-origin authentication requires explicit approval for that particular secret. Also enable `MapLayerFormatRegistry.restrictCredentialsToTrustedOrigins` to block redirects of handler-injected values: it does not replace the direct-destination checks in these samples.
 
 ## Electron 44 support
 
