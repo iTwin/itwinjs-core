@@ -1,6 +1,6 @@
 # Relations Virtual Table
 
-`Relations` is an ECSQL built in table valued function that returns every instance directly related to a *seed* instance, without the caller having to know which relationships apply to that instance. It is backed by a native graph traversal that reads the relationship storage directly instead of preparing one ECSQL statement per candidate relationship class, which makes it substantially faster than discovering the applicable relationships yourself.
+`Relations` is an ECSQL built in table valued function that returns every instance directly related to a *seed* instance, without the caller having to know which relationships apply to that instance. It is backed by a native graph traversal that reads the relationship storage directly instead of preparing one ECSQL statement per candidate relationship class. The outer query still goes through ECSQL preparation.
 
 `Relations` is defined under the schema named `ECVLib`. The schema name is optional for table valued functions, so `Relations(...)` and `ECVLib.Relations(...)` are equivalent.
 
@@ -98,12 +98,13 @@ ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 
 ### Resolving the related instances
 
-`Relations` only returns keys. Join `RelatedECInstanceId` back to a class to turn them into rows. Note that such a join also acts as a filter — related instances that are not elements (an `ElementAspect` reached through `BisCore:ElementOwnsUniqueAspect`, for example) drop out:
+`Relations` only returns keys. Join both `RelatedECInstanceId` and `RelatedECClassId` back to a class to turn them into rows; instance IDs alone can overlap between different tables. This also filters out related instances that are not elements (an `ElementAspect` reached through `BisCore:ElementOwnsUniqueAspect`, for example):
 
 ```sql
 SELECT related.ECInstanceId, related.CodeValue
 FROM bis.Element seed, ECVLib.Relations(seed.ECInstanceId, seed.ECClassId, 'forward') r
   JOIN bis.Element related ON related.ECInstanceId = r.RelatedECInstanceId
+    AND related.ECClassId = r.RelatedECClassId
 WHERE seed.ECInstanceId = :elementId
 ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
@@ -123,7 +124,7 @@ ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 
 ## Recursive traversal with a CTE
 
-`Relations` reports the instances *directly* related to the seed — it does not recurse. To walk further, feed each newly discovered instance back in as the next seed with a [recursive CTE](./CTE.md). `UNION` (rather than `UNION ALL`) discards rows that have already been produced, which keeps cycles from looping forever:
+`Relations` reports the instances *directly* related to the seed — it does not recurse. To walk further, feed each newly discovered instance back in as the next seed with a [recursive CTE](./CTE.md). The depth limit bounds this walk even when the graph contains cycles; `UNION` removes duplicate rows at the same depth, not repeated visits at different depths:
 
 ```sql
 WITH RECURSIVE reachable(Id, ClassId, Depth) AS (

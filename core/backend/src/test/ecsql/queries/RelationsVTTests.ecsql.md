@@ -9,6 +9,10 @@ related to a seed instance, without having to know which relationships apply to 
 It returns the columns `RelatedECInstanceId`, `RelatedECClassId`, `Direction`,
 `RelationshipECClassId`, `RelationshipECInstanceId` and `NavPropertyName`.
 
+Expected `undefined` values are not compared by the runner. The link-table rows below
+therefore require `NavPropertyName IS NULL` in SQL; a non-null value removes an expected
+row and fails the row-count assertion.
+
 The first half of this file verifies the behavior of the function. The second half
 ("Learning ...") demonstrates how it is used against the BisCore schema.
 
@@ -41,7 +45,7 @@ and in the `AllProperties:TestElementRefersToElements` link table relationship.
 - dataset: AllProperties.bim
 
 ```sql
-SELECT r.RelatedECInstanceId, r.Direction, rc.Name RelName, r.NavPropertyName FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId) r JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId WHERE e.ECInstanceId = 0x14 ORDER BY r.RelatedECInstanceId, rc.Name ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+SELECT r.RelatedECInstanceId, r.Direction, rc.Name RelName, r.NavPropertyName FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId) r JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId WHERE e.ECInstanceId = 0x14 AND (rc.Name <> 'TestElementRefersToElements' OR r.NavPropertyName IS NULL) ORDER BY r.RelatedECInstanceId, rc.Name ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className        | accessString        | generated | index | jsonName            | name                | extendedType | typeName | type   | originPropertyName  |
@@ -70,7 +74,7 @@ the subset of the default result whose `Direction` is `forward`.
 - dataset: AllProperties.bim
 
 ```sql
-SELECT r.RelatedECInstanceId, rc.Name RelName, r.NavPropertyName FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId, 'forward') r JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId WHERE e.ECInstanceId = 0x14 ORDER BY r.RelatedECInstanceId, rc.Name ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+SELECT r.RelatedECInstanceId, rc.Name RelName, r.NavPropertyName FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId, 'forward') r JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId WHERE e.ECInstanceId = 0x14 AND (rc.Name <> 'TestElementRefersToElements' OR r.NavPropertyName IS NULL) ORDER BY r.RelatedECInstanceId, rc.Name ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className        | accessString        | generated | index | jsonName            | name                | extendedType | typeName | type   | originPropertyName  |
@@ -164,6 +168,10 @@ empty result, so that a typo cannot be mistaken for "no relationships".
 SELECT r.RelatedECInstanceId FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId, 'sideways') r WHERE e.ECInstanceId = 0x14 ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
+```json
+[]
+```
+
 # Relations() can be used without the ECVLib schema prefix
 
 <!--
@@ -198,7 +206,7 @@ the id of the element holding the foreign key.
 - dataset: AllProperties.bim
 
 ```sql
-SELECT r.RelatedECInstanceId, rc.Name RelName, r.RelationshipECInstanceId, r.NavPropertyName FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId, 'forward') r JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId WHERE e.ECInstanceId = 0x14 ORDER BY r.RelatedECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+SELECT r.RelatedECInstanceId, rc.Name RelName, r.RelationshipECInstanceId, r.NavPropertyName FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId, 'forward') r JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId WHERE e.ECInstanceId = 0x14 AND (rc.Name <> 'TestElementRefersToElements' OR r.NavPropertyName IS NULL) ORDER BY r.RelatedECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className        | accessString             | generated | index | jsonName                 | name                     | extendedType | typeName | type   | originPropertyName       |
@@ -226,6 +234,10 @@ A syntactically valid seed that does not exist simply has no relationships.
 
 ```sql
 SELECT RelatedECInstanceId FROM ECVLib.Relations(999999, 999999) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+```json
+[]
 ```
 
 # Relations() without an ECClassId is rejected
@@ -395,15 +407,16 @@ WITH RECURSIVE reachable(Id, ClassId, Depth) AS (SELECT ECInstanceId, ECClassId,
 # Learning - resolving the related instances back to elements
 
 <!--
-Relations() only returns keys. Joining `RelatedECInstanceId` back to `bis.Element` turns those
-keys into real rows. Note that the join also acts as a filter: the aspect `0x21` reached through
-`ElementOwnsUniqueAspect` is not an element and therefore drops out.
+Relations() only returns keys. Joining both `RelatedECInstanceId` and `RelatedECClassId` back
+to `bis.Element` turns those keys into real rows without confusing instances that share an ID
+across different tables. The aspect `0x21` reached through `ElementOwnsUniqueAspect` is not
+an element and therefore drops out.
 -->
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT related.ECInstanceId, related.CodeValue FROM bis.Element seed, ECVLib.Relations(seed.ECInstanceId, seed.ECClassId, 'forward') r JOIN bis.Element related ON related.ECInstanceId = r.RelatedECInstanceId WHERE seed.ECInstanceId = 0x14 ORDER BY related.ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+SELECT related.ECInstanceId, related.CodeValue FROM bis.Element seed, ECVLib.Relations(seed.ECInstanceId, seed.ECClassId, 'forward') r JOIN bis.Element related ON related.ECInstanceId = r.RelatedECInstanceId AND related.ECClassId = r.RelatedECClassId WHERE seed.ECInstanceId = 0x14 ORDER BY related.ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className       | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |

@@ -26,7 +26,7 @@ SchemaSync databases now require version 5.0.0. Existing version 4 containers ar
 
 ### Experimental `Relations()` table valued function
 
-ECSQL gains a new **experimental** table valued function, `ECVLib.Relations()`, that returns every instance directly related to a seed instance without the caller having to know which relationships apply to it. It is backed by a native graph traversal that bypasses ECSQL preparation and reads the relationship storage directly, so it is considerably faster than issuing one query per candidate relationship class.
+ECSQL gains a new **experimental** table valued function, `ECVLib.Relations()`, that returns every instance directly related to a seed instance without the caller having to know which relationships apply to it. Its native traversal generates SQL from property maps and reads relationship storage directly, avoiding ECSQL preparation for each candidate relationship class. The outer query still goes through ECSQL preparation.
 
 ```sql
 ECVLib.Relations(<ECInstanceId>, <ECClassId>[, <direction>])
