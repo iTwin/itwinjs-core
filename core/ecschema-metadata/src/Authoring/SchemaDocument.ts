@@ -702,8 +702,8 @@ export type Multiplicity = "(0..1)" | "(0..*)" | "(1..1)" | "(1..*)" | (string &
 export interface MultiplicityBounds {
   /** Lower bound; `0` or more. */
   lowerLimit: number;
-  /** Upper bound, or `undefined` when unbounded (`*`) - the same convention
-   * {@link PrimitiveArrayProperty.maxOccurs} uses. */
+  /** Upper bound; at least `1` and no less than the lower bound, or `undefined` when unbounded (`*`)
+   * - the same convention {@link PrimitiveArrayProperty.maxOccurs} uses. */
   upperLimit?: number;
 }
 
@@ -711,8 +711,8 @@ export interface MultiplicityBounds {
 const multiplicityPattern = /^\(\s*(\d+)\s*\.\.\s*(\d+|\*)\s*\)$/;
 
 /** Reads a multiplicity string into its numeric bounds, or `undefined` when it is not well-formed.
- * Does not judge whether the bounds make sense together - `"(5..2)"` parses; validation is what
- * reports it.
+ * Does not judge whether the bounds are valid - `"(0..0)"` and `"(5..2)"` parse; validation reports
+ * a zero upper bound or an upper bound below the lower bound.
  * @alpha
  */
 export function parseMultiplicity(multiplicity: string): MultiplicityBounds | undefined {
@@ -1718,8 +1718,8 @@ export class View extends ECClass {
  * @remarks
  * Struct instances have no independent identity and cannot be relationship endpoints. A struct
  * can contain primitive values, arrays, and other structs, but cannot contain itself at any depth.
- * Declare structs without a base class; the authoring validator rejects struct inheritance.
- * Struct-valued properties use exactly their declared type.
+ * A struct can inherit from another non-sealed struct class. Struct-valued properties use exactly
+ * their declared type.
  * @alpha
  */
 export class StructClass extends ECClass {
@@ -1735,8 +1735,8 @@ export class StructClass extends ECClass {
  * @remarks
  * Properties define the attribute's value shape; {@link CustomAttributeClass.appliesTo} defines
  * where it may be used. Attribute classes can contain primitive, struct, and array properties,
- * but no navigation properties. An applied instance must use a concrete class. Declare attribute
- * classes without a base class; the authoring validator rejects custom-attribute class inheritance.
+ * but no navigation properties. An applied instance must use a concrete class. An attribute class
+ * can inherit from another non-sealed custom attribute class.
  * @alpha
  */
 export class CustomAttributeClass extends ECClass {
@@ -1801,6 +1801,7 @@ export class RelationshipConstraint {
    * `(0..1)` means optional and singular; `(1..1)` means required and singular; `*` is unbounded.
    * For `ParentOwnsChildren`, source `(0..1)` permits at most one parent per child, while target
    * `(0..*)` permits any number of children per parent. New constraints start at `(0..*)`.
+   * The upper bound must be at least one or `*`, and no less than the lower bound.
    * A derived relationship may narrow this range, but cannot widen it.
    * @see {@link parseMultiplicity} to read it as numbers. */
   public multiplicity: Multiplicity = "(0..*)";
@@ -1808,16 +1809,17 @@ export class RelationshipConstraint {
    * Include the opposite role to support translation. Required by EC 3.1 and later unless inherited
    * from a base relationship; the field stores only the local label. */
   public roleLabel?: string;
-  /** Whether instances of derived constraint classes are accepted. `false` accepts only the listed
-   * classes themselves. An absent value means {@link SpecDefaults.constraintPolymorphic} (`true`).
+  /** Whether instances of derived constraint classes are accepted. ECObjects applies this flag to
+   * both the abstract constraint and the listed classes; `false` accepts only exact class matches.
+   * An absent value means {@link SpecDefaults.constraintPolymorphic} (`true`).
    * A derived relationship can restrict `true` to `false`, but cannot widen `false` to `true`. */
   public polymorphic?: boolean;
   /** Common base that every listed constraint class must equal or derive from.
    * @remarks
    * Required when there are multiple constraint classes and no inherited abstract constraint.
-   * With one constraint class, that class supplies the effective constraint. The name does not
-   * require an `Abstract` modifier. It bounds the allowed classes without adding another allowed
-   * class to {@link RelationshipConstraint.constraintClasses}.
+   * When omitted, a single constraint class supplies the effective constraint. The name does not
+   * require an `Abstract` modifier. ECObjects endpoint support checks accept this class alongside
+   * the listed constraint classes, including its subclasses when {@link RelationshipConstraint.polymorphic} is true.
    */
   public abstractConstraint?: LocalOrFullName;
   /** Classes allowed at this endpoint, extended to their subclasses when {@link RelationshipConstraint.polymorphic} is true.

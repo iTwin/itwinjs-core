@@ -18,7 +18,7 @@ import {
 } from "./ShapeRules";
 import {
   checkClassInheritance, checkCustomAttributeClass, checkEntityInheritance, checkMixin, checkNavigationProperty, checkPropertyOverride,
-  checkRelationshipConstraintStructure, checkStructClass, checkStructPropertyRecursion, checkSystemPropertyName, checkView,
+  checkRelationshipConstraintStructure, checkStructPropertyRecursion, checkSystemPropertyName, checkView,
 } from "./StructureRules";
 
 /** How a {@link validateSchemaDocument} or {@link validateSchemaSet} run is configured.
@@ -28,7 +28,7 @@ export interface ValidationOptions {
   /** The EC specification version the schema is held to. Defaults to {@link ECSpec.Latest}.
    *
    * Only rules that genuinely got stricter between versions read this - three-component versions,
-   * enumerator names, the strict multiplicity grammar, abstract constraints. A document read from
+   * enumerator names, role labels, abstract constraints. A document read from
    * an older source is modelled at the latest spec either way, so validating it against
    * `ECSpec.Latest` is what tells you what to fix before it can be saved as 3.2. */
   spec?: ECSpec;
@@ -212,7 +212,6 @@ function walkItem(item: AnySchemaItem, context: ValidationContext): void {
       return;
     case SchemaItemType.StructClass:
       walkClass(item, context);
-      checkStructClass(item, context);
       return;
     case SchemaItemType.CustomAttributeClass:
       walkClass(item, context);

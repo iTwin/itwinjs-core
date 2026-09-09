@@ -10,6 +10,19 @@ import {
 } from "../../ECObjects";
 import * as Authoring from "../../Authoring/SchemaDocument";
 
+describe("Authoring multiplicity bounds", () => {
+  it("parses bounds without validating their range", () => {
+    expect(Authoring.parseMultiplicity("(0..0)")).to.deep.equal({ lowerLimit: 0, upperLimit: 0 });
+    expect(Authoring.parseMultiplicity("(5..2)")).to.deep.equal({ lowerLimit: 5, upperLimit: 2 });
+    expect(Authoring.parseMultiplicity("(2..*)")).to.deep.equal({ lowerLimit: 2, upperLimit: undefined });
+  });
+
+  it("leaves legacy cardinality syntax to the XML reader", () => {
+    expect(Authoring.parseMultiplicity("(0,N)")).to.be.undefined;
+    expect(Authoring.parseMultiplicity("(0,1)")).to.be.undefined;
+  });
+});
+
 describe("Authoring.SchemaDocument", () => {
   describe("construction / version", () => {
     it("captures the envelope and the numeric version", () => {

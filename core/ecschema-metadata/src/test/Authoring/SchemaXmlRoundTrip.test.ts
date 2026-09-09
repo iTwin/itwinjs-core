@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { SchemaItemType, SchemaMatchType } from "../../ECObjects";
+import { CustomAttributeContainerType, ECClassModifier, PrimitiveType, SchemaItemType, SchemaMatchType } from "../../ECObjects";
 import * as Authoring from "../../Authoring/SchemaDocument";
 import { SchemaIssueList } from "../../Authoring/SchemaIssues";
 import { SchemaXmlReader } from "../../Authoring/SchemaXmlReader";
 import { SchemaXmlWriter } from "../../Authoring/SchemaXmlWriter";
+import { SchemaJsonWriter } from "../../Authoring/SchemaJsonWriter";
+import { SchemaJsonReader } from "../../Authoring/SchemaJsonReader";
 import { InMemorySchemaSource, SchemaCandidateSelectionMode, SchemaResolver } from "../../Authoring/SchemaResolver";
 import { composeFullDocument } from "./FullDocumentFixture";
 
@@ -29,6 +31,56 @@ describe("SchemaXmlWriter / SchemaXmlReader", () => {
     const secondWrite = writer.writeDocument(readBack.document!);
     expect(secondWrite.issues.hasErrors, JSON.stringify(secondWrite.issues)).to.be.false;
     expect(secondWrite.text).to.equal(firstWrite.text);
+  });
+
+  it.each([undefined, ECClassModifier.None])("writes None for relationship modifier %s", async (modifier) => {
+    const doc = new Authoring.SchemaDocument("Domain", "d", 1, 0, 0);
+    doc.createEntity("Element");
+    doc.createRelationship("Connects", {
+      modifier,
+      source: { roleLabel: "connects to", constraintClasses: ["Element"] },
+      target: { roleLabel: "is connected by", constraintClasses: ["Element"] },
+    });
+
+    const xml = new SchemaXmlWriter().writeDocument(doc);
+    expect(xml.issues.hasErrors).to.be.false;
+    expect(xml.text).to.contain('modifier="None"');
+    const readBack = await new SchemaXmlReader().readDocument(xml.text!);
+    expect(readBack.issues.hasErrors).to.be.false;
+    expect(readBack.document!.getItemOfType("Connects", SchemaItemType.RelationshipClass)!.modifier).to.equal(ECClassModifier.None);
+
+    const json = new SchemaJsonWriter().writeDocument(doc);
+    expect(json.issues.hasErrors).to.be.false;
+    expect(JSON.parse(json.text!).items.Connects.modifier).to.equal("None");
+  });
+
+  it("round-trips struct and custom attribute inheritance with inherited values", async () => {
+    const doc = new Authoring.SchemaDocument("Domain", "d", 1, 0, 0);
+    doc.createStructClass("BaseStruct").createPrimitive("Count", PrimitiveType.Integer);
+    doc.createStructClass("DerivedStruct", { baseClass: "BaseStruct" });
+    const baseAttribute = doc.createCustomAttributeClass("BaseAttribute", CustomAttributeContainerType.AnyClass);
+    baseAttribute.createPrimitive("Enabled", PrimitiveType.Boolean);
+    const derivedAttribute = doc.createCustomAttributeClass("DerivedAttribute", CustomAttributeContainerType.AnyClass, { baseClass: "BaseAttribute" });
+    derivedAttribute.createStruct("Details", "DerivedStruct");
+    doc.createEntity("Element").customAttributes.add({
+      className: "DerivedAttribute",
+      // eslint-disable-next-line @typescript-eslint/naming-convention -- EC property names
+      values: { Enabled: true, Details: { Count: 7 } },
+    });
+
+    for (const [writer, reader] of [[new SchemaXmlWriter(), new SchemaXmlReader()], [new SchemaJsonWriter(), new SchemaJsonReader()]] as const) {
+      const written = writer.writeDocument(doc);
+      expect(written.issues.hasErrors).to.be.false;
+      const readBack = await reader.readDocument(written.text!);
+      expect(readBack.issues.hasErrors).to.be.false;
+      const restored = readBack.document!;
+      expect(restored.getItemOfType("DerivedStruct", SchemaItemType.StructClass)!.getBaseClass()!.name).to.equal("BaseStruct");
+      expect(restored.getItemOfType("DerivedAttribute", SchemaItemType.CustomAttributeClass)!.getBaseClass()!.name).to.equal("BaseAttribute");
+      expect(restored.getEntity("Element")!.customAttributes.get("DerivedAttribute")!.values).to.deep.equal({
+        // eslint-disable-next-line @typescript-eslint/naming-convention -- EC property names
+        Enabled: true, Details: { Count: 7 },
+      });
+    }
   });
 
   it("prefers a referenced schema name over another reference's same-spelled alias", () => {

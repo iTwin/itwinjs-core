@@ -181,6 +181,13 @@ describe("Schema validation - the schema reference list", () => {
 });
 
 describe("Schema validation - shape", () => {
+  it("accepts leading underscores in schema, alias, item, and property names", () => {
+    const doc = new SchemaDocument("_Domain", "_d", 1, 0, 0);
+    doc.createEntity("_Entity").createPrimitive("_Value1", PrimitiveType.String);
+
+    expect(names(validateSchemaDocument(doc))).to.deep.equal([]);
+  });
+
   it("reports invalid names and version components", () => {
     const doc = new SchemaDocument("My Domain", "1md", 1, 0, -1);
     doc.createEntity("2Pump").createPrimitive("Serial Number", PrimitiveType.String);
@@ -264,16 +271,37 @@ describe("Schema validation - inheritance", () => {
     expect(reported).to.include("class-base-cycle");
   });
 
-  it("reports a struct or custom attribute class with a base class", () => {
+  it("accepts struct and custom attribute inheritance and inherited attribute values", () => {
     const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
-    doc.createStructClass("Base");
-    doc.createStructClass("Derived", { baseClass: "Base" });
-    doc.createCustomAttributeClass("Marker", CustomAttributeContainerType.AnyClass);
-    doc.createCustomAttributeClass("SubMarker", CustomAttributeContainerType.AnyClass, { baseClass: "Marker" });
+    const baseStruct = doc.createStructClass("Base");
+    baseStruct.createPrimitive("Value", PrimitiveType.String);
+    const derivedStruct = doc.createStructClass("Derived", { baseClass: "Base" });
+    const baseAttribute = doc.createCustomAttributeClass("Marker", CustomAttributeContainerType.AnyClass);
+    baseAttribute.createPrimitive("Enabled", PrimitiveType.Boolean);
+    const derivedAttribute = doc.createCustomAttributeClass("SubMarker", CustomAttributeContainerType.AnyClass, { baseClass: "Marker" });
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- EC property name
+    doc.createEntity("Element").customAttributes.add({ className: "SubMarker", values: { Enabled: true } });
+
+    expect(derivedStruct.getExpandedProperty("Value")).to.equal(baseStruct.getProperty("Value"));
+    expect(derivedAttribute.getExpandedProperty("Enabled")).to.equal(baseAttribute.getProperty("Enabled"));
+    expect(names(validateSchemaDocument(doc))).to.deep.equal([]);
+  });
+
+  it("enforces ordinary base-class rules for struct and custom attribute inheritance", () => {
+    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+    doc.createStructClass("SealedStruct", { modifier: ECClassModifier.Sealed });
+    doc.createStructClass("DerivedStruct", { baseClass: "SealedStruct" });
+    doc.createCustomAttributeClass("SealedAttribute", CustomAttributeContainerType.AnyClass, { modifier: ECClassModifier.Sealed });
+    doc.createCustomAttributeClass("DerivedAttribute", CustomAttributeContainerType.AnyClass, { baseClass: "SealedAttribute" });
+    doc.createStructClass("WrongStruct", { baseClass: "SealedAttribute" });
+    doc.createCustomAttributeClass("WrongAttribute", CustomAttributeContainerType.AnyClass, { baseClass: "SealedStruct" });
+    doc.createStructClass("LoopStruct", { baseClass: "LoopStruct" });
+    doc.createCustomAttributeClass("LoopAttribute", CustomAttributeContainerType.AnyClass, { baseClass: "LoopAttribute" });
 
     const reported = names(validateSchemaDocument(doc));
-    expect(reported).to.include("struct-base-not-allowed");
-    expect(reported).to.include("custom-attribute-class-base-not-allowed");
+    expect(reported.filter((name) => name === "class-base-sealed")).to.have.length(2);
+    expect(reported.filter((name) => name === "class-base-kind-mismatch")).to.have.length(2);
+    expect(reported.filter((name) => name === "class-base-cycle")).to.have.length(2);
   });
 
   it("reports a mixin applied to a class outside its appliesTo, and a mixin overriding a property", () => {
@@ -331,6 +359,18 @@ describe("Schema validation - inheritance", () => {
 });
 
 describe("Schema validation - relationships", () => {
+  it.each([undefined, ECClassModifier.None, ECClassModifier.Abstract, ECClassModifier.Sealed])("accepts relationship modifier %s", (modifier) => {
+    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+    doc.createEntity("Element");
+    doc.createRelationship("Connects", {
+      modifier,
+      source: { multiplicity: "(0..1)", roleLabel: "connects to", constraintClasses: ["Element"] },
+      target: { multiplicity: "(0..*)", roleLabel: "is connected by", constraintClasses: ["Element"] },
+    });
+
+    expect(names(validateSchemaDocument(doc))).to.deep.equal([]);
+  });
+
   it("reports a constraint with no class, a missing role label, and a redundant abstract constraint", () => {
     const { domain } = makeSet();
     domain.createEntity("Pump", { baseClass: "bis:PhysicalElement" });
@@ -419,6 +459,28 @@ describe("Schema validation - relationships", () => {
     expect(reported).to.include("property-navigation-target-not-singular");
   });
 
+  it.each(["(0..0)", "(1..0)"])("rejects zero upper multiplicity %s", (multiplicity) => {
+    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+    doc.createEntity("Element");
+    doc.createRelationship("Connects", {
+      source: { multiplicity, roleLabel: "connects to", constraintClasses: ["Element"] },
+      target: { multiplicity: "(0..*)", roleLabel: "is connected by", constraintClasses: ["Element"] },
+    });
+
+    expect(find(validateSchemaDocument(doc), "relationship-constraint-multiplicity-invalid")?.location).to.equal("MyDomain:Connects(Source)");
+  });
+
+  it.each(["(0..1)", "(1..1)", "(0..2)", "(2..2)", "(2..*)"])("accepts multiplicity %s", (multiplicity) => {
+    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+    doc.createEntity("Element");
+    doc.createRelationship("Connects", {
+      source: { multiplicity, roleLabel: "connects to", constraintClasses: ["Element"] },
+      target: { multiplicity: "(0..*)", roleLabel: "is connected by", constraintClasses: ["Element"] },
+    });
+
+    expect(names(validateSchemaDocument(doc))).to.deep.equal([]);
+  });
+
   it("reports a malformed multiplicity", () => {
     const { domain } = makeSet();
     domain.createEntity("Pump", { baseClass: "bis:PhysicalElement" });
@@ -487,6 +549,28 @@ describe("Schema validation - ECDb import constraints", () => {
     expect(find(validateSchemaDocument(doc), "property-struct-recursive")?.code).to.equal("ECDb_0299");
   });
 
+  it.each([false, true])("reports a struct containing a derived struct (array: %s)", (isArray) => {
+    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+    const base = doc.createStructClass("Base");
+    doc.createStructClass("Derived", { baseClass: "Base" });
+    if (isArray)
+      base.createStructArray("Children", "Derived");
+    else
+      base.createStruct("Child", "Derived");
+
+    expect(find(validateSchemaDocument(doc), "property-struct-recursive")?.code).to.equal("ECDb_0299");
+  });
+
+  it("detects recursion through inherited struct properties", () => {
+    const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
+    doc.createStructClass("Outer").createStruct("Inner", "Derived");
+    doc.createStructClass("Base").createStruct("Outer", "Outer");
+    doc.createStructClass("Derived", { baseClass: "Base" });
+
+    const issues = [...validateSchemaDocument(doc)];
+    expect(issues.some((issue) => issue.name === "property-struct-recursive" && issue.location === "MyDomain:Outer.Inner")).to.be.true;
+  });
+
   it("reports AnyClass as a relationship constraint", () => {
     const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
     doc.createEntity("Pump");
@@ -548,14 +632,14 @@ describe("Schema validation - reading then validating", () => {
 describe("Schema validation - issue shape", () => {
   it("stamps the group, a schema element path, and the catalog code where one exists", () => {
     const doc = new SchemaDocument("MyDomain", "md", 1, 0, 0);
-    doc.createStructClass("Base");
+    doc.createStructClass("Base", { modifier: ECClassModifier.Sealed });
     doc.createStructClass("Derived", { baseClass: "Base" });
 
-    const issue = find(validateSchemaDocument(doc), "struct-base-not-allowed")!;
+    const issue = find(validateSchemaDocument(doc), "class-base-sealed")!;
     expect(issue.group).to.equal("validation");
     expect(issue.severity).to.equal("error");
     expect(issue.location).to.equal("MyDomain:Derived");
-    expect(issue.code).to.equal("BIS-1700");
+    expect(issue.code).to.equal("ECObjects-100");
   });
 });
 

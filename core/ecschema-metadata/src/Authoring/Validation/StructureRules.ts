@@ -126,22 +126,10 @@ export function checkView(view: View, context: ValidationContext): void {
     context.warning("view-no-properties", `View "${view.name}" declares no properties, so its query returns nothing a caller can select.`);
 }
 
-/** A struct class may not have a base class.
- * @internal
- */
-export function checkStructClass(structClass: StructClass, context: ValidationContext): void {
-  if (structClass.baseClass !== undefined)
-    context.error("struct-base-not-allowed", `Struct class "${structClass.name}" has a base class; struct classes do not inherit.`, "BIS-1700");
-}
-
-/** A custom attribute class may not have a base class.
+/** A custom attribute class must apply to at least one container kind.
  * @internal
  */
 export function checkCustomAttributeClass(customAttributeClass: CustomAttributeClass, context: ValidationContext): void {
-  if (customAttributeClass.baseClass !== undefined) {
-    context.error("custom-attribute-class-base-not-allowed",
-      `Custom attribute class "${customAttributeClass.name}" has a base class; custom attribute classes do not inherit.`, "BIS-400");
-  }
   if (Number(customAttributeClass.appliesTo) === 0)
     context.error("custom-attribute-class-applies-to-nothing", `Custom attribute class "${customAttributeClass.name}" declares no container kind it applies to.`);
 }
@@ -272,12 +260,12 @@ export function checkStructPropertyRecursion(property: AnyProperty, context: Val
 }
 
 function containsStruct(candidate: StructClass, target: StructClass, visited: Set<StructClass>): boolean {
-  if (candidate === target)
+  if (derivesFrom(candidate, target))
     return true;
   if (visited.has(candidate))
     return false;
   visited.add(candidate);
-  for (const property of candidate.properties) {
+  for (const property of candidate.getExpandedProperties()) {
     if (!property.isStruct())
       continue;
     const structClass = property.getStructClass();
@@ -352,14 +340,13 @@ function checkConstraintNarrowsBase(constraint: RelationshipConstraint, context:
   if (baseRelationship === undefined || baseRelationship.schemaItemType !== SchemaItemType.RelationshipClass)
     return;
   const baseConstraint = baseRelationship.source.relationshipEnd === constraint.relationshipEnd ? baseRelationship.source : baseRelationship.target;
-  if (baseConstraint.constraintClasses.length === 0)
-    return;
-
-  for (const constraintClass of constraint.getConstraintClasses()) {
-    if (constraintClass !== undefined && !constraintSupports(baseConstraint, constraintClass)) {
-      context.error("relationship-constraint-class-widens-base",
-        `The constraint class "${constraintClass.fullName}" is not supported by the corresponding constraint of the base relationship "${baseRelationship.fullName}".`,
-        "ECObjects-1501");
+  if (baseConstraint.constraintClasses.length !== 0) {
+    for (const constraintClass of constraint.getConstraintClasses()) {
+      if (constraintClass !== undefined && !constraintSupports(baseConstraint, constraintClass)) {
+        context.error("relationship-constraint-class-widens-base",
+          `The constraint class "${constraintClass.fullName}" is not supported by the corresponding constraint of the base relationship "${baseRelationship.fullName}".`,
+          "ECObjects-1501");
+      }
     }
   }
 
@@ -401,17 +388,23 @@ function inheritedAbstractConstraint(constraint: RelationshipConstraint): string
   return undefined;
 }
 
-/** Whether a constraint accepts instances of a class: it is, or derives from, the abstract
- * constraint when there is one, or one of the constraint classes otherwise. A non-polymorphic
- * constraint accepts only the classes it names.
+/** Whether a constraint accepts a class under ECObjects' endpoint support rules. Both the abstract
+ * constraint and the listed classes participate, with the same polymorphism flag.
  * @internal
  */
 export function constraintSupports(constraint: RelationshipConstraint, ecClass: ECClass): boolean {
-  const abstractConstraint = constraint.getAbstractConstraint();
-  if (abstractConstraint !== undefined)
-    return satisfiesConstraintClass(ecClass, abstractConstraint);
+  if (!ecClass.isEntity() && !ecClass.isMixin() && !ecClass.isRelationship() && !ecClass.isView())
+    return false;
+
+  function supports(constraintClass: ECClass | undefined): boolean {
+    return constraintClass !== undefined && (constraintClass === ecClass
+      || (constraint.polymorphic !== false && satisfiesConstraintClass(ecClass, constraintClass)));
+  }
+
+  if (supports(constraint.getAbstractConstraint()))
+    return true;
   return constraint.getConstraintClasses().some((constraintClass) =>
-    constraintClass !== undefined && (constraint.polymorphic === false ? constraintClass === ecClass : satisfiesConstraintClass(ecClass, constraintClass)));
+    constraintClass !== undefined && (namesEqual(constraintClass.name, "AnyClass") || supports(constraintClass)));
 }
 
 /** Whether a class named as a constraint class satisfies another class named there.

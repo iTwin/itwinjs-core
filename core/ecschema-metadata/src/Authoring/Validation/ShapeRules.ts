@@ -254,6 +254,9 @@ export function checkRelationshipConstraintShape(constraint: RelationshipConstra
   if (bounds === undefined) {
     context.error("relationship-constraint-multiplicity-invalid",
       `"${constraint.multiplicity}" is not a multiplicity; the form is "(lower..upper)", with upper a number or "*".`);
+  } else if (bounds.upperLimit === 0) {
+    context.error("relationship-constraint-multiplicity-invalid",
+      `The multiplicity "${constraint.multiplicity}" has an upper bound of zero; the upper bound must be at least one or "*".`);
   } else if (bounds.upperLimit !== undefined && bounds.upperLimit < bounds.lowerLimit) {
     context.error("relationship-constraint-multiplicity-inverted",
       `The multiplicity "${constraint.multiplicity}" has an upper bound below its lower bound.`);

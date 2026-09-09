@@ -185,7 +185,7 @@ await resolution.loadDocuments(doc.schemaSet);
 const issues = Authoring.validateSchemaSet(doc.schemaSet);
 ```
 
-**Match on `issue.name`.** Names are kebab-case and start with the subject they are about, so sorting an issue list groups it by subject: `class-base-sealed`, `entity-mixin-not-applicable`, `property-override-kind-mismatch`, `relationship-constraint-abstract-required`, `custom-attribute-container-not-allowed`, `schema-reference-alias-duplicate`. Where a check exists in one of the published rule catalogs, its number comes along in `issue.code` (`ECObjects-1300`, `ECDb_0299`, `BIS-1700`) so findings can be lined up against the older validators - but the name is the identity, and no new numbers are allocated.
+**Match on `issue.name`.** Names are kebab-case and start with the subject they are about, so sorting an issue list groups it by subject: `class-base-sealed`, `entity-mixin-not-applicable`, `property-override-kind-mismatch`, `relationship-constraint-abstract-required`, `custom-attribute-container-not-allowed`, `schema-reference-alias-duplicate`. Where a check exists in one of the published rule catalogs, its number comes along in `issue.code` (`ECObjects-1300`, `ECDb_0299`, `BIS-602`) so findings can be lined up against the older validators - but the name is the identity, and no new numbers are allocated.
 
 **Severity says whether the schema is invalid.** Errors mean it is; warnings cover everything else, and these fire on healthy schemas:
 
@@ -193,7 +193,7 @@ const issues = Authoring.validateSchemaSet(doc.schemaSet);
 - A reference to a **deprecated** item, unless the thing referring to it is deprecated too.
 - A **schema reference nothing uses**, and a reference with no alias (which ECJSON does not carry - see `fillMissingReferenceAliases`).
 
-**`options.spec`** is the specification version the document is held to; it defaults to `ECSpec.Latest`. Most of the spec's history cannot be represented in a latest-spec document at all, so this only affects the handful of rules that got stricter going up - three-component versions, enumerator names, the strict multiplicity grammar, role labels and abstract constraints. Validating a document read from a 3.0 file against the default therefore tells you what to fix before it can be saved as 3.2, which is usually what you want; pass the older spec when you mean to check it as what it is.
+**`options.spec`** is the specification version the document is held to; it defaults to `ECSpec.Latest`. Most of the spec's history cannot be represented in a latest-spec document at all, so this only affects the handful of rules that got stricter going up - three-component versions, enumerator names, role labels and abstract constraints. Validating a document read from a 3.0 file against the default therefore tells you what to fix before it can be saved as 3.2, which is usually what you want; pass the older spec when you mean to check it as what it is.
 
 The rule set is the universal one: what the EC specification requires, plus the constraints an ECDb import enforces (tagged with their `ECDb_` codes). BIS conventions are a separate pack and are not applied here.
 
