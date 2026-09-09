@@ -6,6 +6,9 @@ publish: false
 - [NextVersion](#nextversion)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
+    - [ChangesetReader changes](#changesetreader-changes)
+      - [ChangesetReader row options](#changesetreader-row-options)
+      - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
     - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
   - [Electron 44 support](#electron-44-support)
 
@@ -20,6 +23,12 @@ Updates no longer automatically end up in other users' briefcases when they impo
 A change that would move or destroy existing data is now refused with `BE_SQLITE_ERROR_DataTransformRequired` or the new `BE_SQLITE_ERROR_DataDeletionRequired`; the new `@alpha` `BriefcaseDb.upgradeSchemas` runs those under the exclusive schema lock and lands the changeset and the sync db together. iModels without schema sync are unaffected.
 
 SchemaSync databases now require version 5.0.0. Existing version 4 containers are outside this compatibility boundary and cannot be opened by this release.
+
+### ChangesetReader changes
+
+#### ChangesetReader row options
+
+The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). Use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
 
 ### Quantity formatting for text annotation fields
 

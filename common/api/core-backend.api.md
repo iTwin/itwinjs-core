@@ -6299,6 +6299,7 @@ export class RoleModel extends Model {
 export interface RowFormatOptions {
     abbreviateBlobs?: boolean;
     classIdsToClassNames?: boolean;
+    // @deprecated
     useJsName?: boolean;
 }
 
