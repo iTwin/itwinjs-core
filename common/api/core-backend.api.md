@@ -5954,6 +5954,8 @@ export interface PushChangesArgs extends TokenArg {
     mergeRetryDelay?: BeDuration;
     // @internal @deprecated
     noFastForward?: true;
+    // @beta
+    onDownloadProgress?: ProgressFunction;
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
     retainLocks?: true;

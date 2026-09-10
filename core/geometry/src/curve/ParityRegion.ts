@@ -8,12 +8,14 @@
  */
 
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { AnyCurve } from "./CurveTypes";
+import { Transform } from "../geometry3d/Transform";
 import { CurveCollection } from "./CurveCollection";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { AnyCurve } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { Loop } from "./Loop";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { RecursiveCurveProcessor } from "./CurveProcessor";
 
 /**
  * * A `ParityRegion` is a collection of `Loop` objects.
@@ -84,14 +86,15 @@ export class ParityRegion extends CurveCollection {
   }
   /** Return a deep copy. */
   public override clone(): ParityRegion {
-    const clone = new ParityRegion();
-    let child;
-    for (child of this.children) {
-      const childClone = child.clone();
-      if (childClone instanceof Loop)
-        clone.children.push(childClone);
-    }
-    return clone;
+    return super.clone() as ParityRegion;
+  }
+  /** Create a deep copy of transformed curves. */
+  public override cloneTransformed(transform: Transform): ParityRegion {
+    return super.cloneTransformed(transform) as ParityRegion;
+  }
+  /** Create a deep copy with all linestrings broken down into multiple LineSegment3d. */
+  public override cloneWithExpandedLineStrings(): ParityRegion {
+    return super.cloneWithExpandedLineStrings() as ParityRegion;
   }
   /** Stroke these curves into a new ParityRegion. */
   public cloneStroked(options?: StrokeOptions): ParityRegion {
