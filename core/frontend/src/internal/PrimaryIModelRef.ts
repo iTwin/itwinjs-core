@@ -99,7 +99,14 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public isSpatial(): this is SpatialIModelDisplayReference { return false; }
   public is2d(): this is IModelDisplayReference2d { return false }
 
-  public get isLoadingComplete() { return this._view.areAllTileTreesLoaded; }
+  public get isLoadingComplete() {
+    for (const ref of this.tileTreeRefs)
+      if (!ref.isLoadingComplete)
+        return false;
+
+    return true;
+  }
+
   public abstract get tileTreeRefs(): Iterable<TileTreeReference>;
 
   public get subCategoryOverrides() {

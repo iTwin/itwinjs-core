@@ -124,7 +124,11 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public is2d(): this is IModelDisplayReference2d { return false; }
 
   public get isLoadingComplete() {
-    return false; // ###TODO
+    for (const ref of this.tileTreeRefs)
+      if (!ref.isLoadingComplete)
+        return false;
+
+    return true;
   }
 
   public get isAlwaysDrawnExclusive() {

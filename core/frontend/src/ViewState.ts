@@ -425,11 +425,13 @@ export abstract class ViewState extends ElementState {
    * map tiles as well call [[Viewport.areAreAllTileTreesLoaded]].
    */
   public get areAllTileTreesLoaded(): boolean {
-    for (const ref of this.getTileTreeRefs()) {
-      if (!ref.isLoadingComplete) {
+    for (const ref of this.displayStyle.getTileTreeRefs())
+      if (!ref.isLoadingComplete)
         return false;
-      }
-    }
+
+    for (const iModelRef of this.iModelRefs)
+      if (!iModelRef.isLoadingComplete)
+        return false;
 
     return true;
   }
