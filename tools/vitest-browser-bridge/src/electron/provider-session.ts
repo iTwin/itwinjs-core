@@ -71,6 +71,10 @@ function exitProviderProcess(exitCode: number): void {
  * @internal
  */
 export async function runProviderSession(environment: ProviderSessionConfiguration): Promise<number> {
+  // Linux/Xvfb agents need explicit software WebGL opt-in, as in the former Certa harness.
+  if (process.platform === "linux")
+    app.commandLine.appendSwitch("enable-unsafe-swiftshader");
+
   // Isolate Electron profile state in the provider-created per-session temporary directory.
   app.setPath("userData", path.join(environment.cacheDir, "electron-user-data"));
 

@@ -111,6 +111,8 @@ export default defineConfig({
     },
   },
   server: {
+    // Avoid Electron's resource failures when revalidating cached modules across tester iframes.
+    headers: { "Cache-Control": "no-store" },
     fs: {
       allow: [path.resolve(packageRoot, "../.."), path.resolve(packageRoot, "../../core/electron")],
     },
