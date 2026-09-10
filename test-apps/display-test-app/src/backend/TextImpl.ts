@@ -108,8 +108,7 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 
   const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
-  // Acquire locks and warm the formatting provider *before* mutating the in-memory element, so
-  // a failure here leaves the cached element untouched rather than dirty-but-unwritten.
+  // Acquire locks and warm before mutating, so a failure leaves the cached element untouched.
   await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
   if (textAnnotationProps)
     await prepareFieldFormattingFor(iModel, TextAnnotation.fromJSON(textAnnotationProps).textBlock);
@@ -130,9 +129,7 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
   withEditTxn(iModel, "Updated annotation", (txn) => text.update(txn));
 }
 
-/** Re-registers the field formatting provider for the specified iModel, or unregisters when
- * `defaultSet` and `sets` are both absent.
- */
+/** Re-registers the field formatting provider for the specified iModel, or unregisters when both are absent. */
 export async function registerFieldFormattingProviderForIModel(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): Promise<void> {
   await registerFieldFormattingProviderFor(BriefcaseDb.findByKey(iModelKey), defaultSet, sets);
 }

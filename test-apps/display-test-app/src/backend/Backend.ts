@@ -200,9 +200,6 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
 
-    // Dynamic geometry is generated for a block that may not be persisted yet, so warm the
-    // demo provider for exactly this block before evaluating. Evaluation itself is synchronous
-    // and shares one code path with the txn callback, so both render identical strings.
     await prepareFieldFormattingFor(iModel, textBlock);
     ElementDrivesTextAnnotation.evaluateFields({ block: textBlock, iModel });
 

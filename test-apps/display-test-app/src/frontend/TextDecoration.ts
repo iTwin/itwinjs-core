@@ -11,12 +11,7 @@ import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { dtaIpc } from "./App";
 
-/** Renders a [TextAnnotation]($common) loaded from a JSON fixture as a decoration graphic.
- *
- * The annotation is authored offline and loaded whole rather than assembled command by command:
- * a fixture round-trips exactly, can be checked in next to the test it supports, and does not
- * need a keyin for every property the annotation schema grows.
- */
+/** Renders a [TextAnnotation]($common) loaded from a JSON fixture as a decoration graphic. */
 class TextEditor implements Decorator {
   private _iModel?: IModelConnection;
   private _entityId: Id64String = Id64.invalid;
@@ -28,12 +23,7 @@ class TextEditor implements Decorator {
   public origin: Point3d = new Point3d(0, 0, 0);
   public debugAnchorPointAndRange = false;
 
-  /** The anchor DTA assumes when an imported annotation does not specify one.
-   *
-   * Core defaults to top-left, which would hang the text down and to the right of the origin
-   * `init` picked. Centering on the anchor point instead puts the text where the view is
-   * actually looking, which is what makes `init` and `center` land it on screen.
-   */
+  /** Core defaults to top-left, which would hang the text down and to the right of the origin. */
   private static readonly _defaultAnchor: TextAnnotationAnchor = { horizontal: "center", vertical: "middle" };
 
   public annotation: TextAnnotation = TextAnnotation.fromJSON({ anchor: TextEditor._defaultAnchor });
@@ -70,9 +60,7 @@ class TextEditor implements Decorator {
   }
 
   public setAnnotation(props: TextAnnotationProps): void {
-    // A fixture that says nothing about anchoring gets DTA's centered default rather than
-    // Core's top-left, so an imported annotation lands where `init` centered the editor. A
-    // fixture that does specify an anchor is honored exactly as written.
+    // A fixture that specifies an anchor is honored exactly; otherwise DTA centers.
     this.annotation = TextAnnotation.fromJSON({ anchor: TextEditor._defaultAnchor, ...props });
   }
 
@@ -188,8 +176,6 @@ export class TextDecorationTool extends Tool {
         }
 
         editor.init(vp.iModel, category);
-        // Centered so the annotation is on screen the moment it is created. `dta text center`
-        // repeats this, since the annotation keeps its world origin when the view moves.
         editor.origin = vp.view.getCenter();
         const defaultStyleId = inArgs[2];
         if (defaultStyleId) {
@@ -229,9 +215,8 @@ export class TextDecorationTool extends Tool {
 
           const formatSet = JSON.parse(await dtaIpc.readTextFile(path)) as FormatSet;
           const id = inArgs[3];
-          // An id makes the set addressable by a FieldRun's `formatSet` option; without one it
-          // is adopted as the iModel's default. Importing twice with different ids builds up the
-          // set of addressable FormatSets, which is what exercises per-field routing.
+          // An id makes the set addressable by a FieldRun's `formatSet` option; without one it is
+          // adopted as the iModel's default.
           await dtaIpc.registerFieldFormattingProvider(vp.iModel.key, id ? undefined : formatSet, id ? [{ id, formatSet }] : undefined);
           // eslint-disable-next-line no-console
           console.log(`Registered FormatSet '${formatSet.name}'${id ? ` as '${id}'` : " (adopted)"} for iModel ${vp.iModel.key}`);

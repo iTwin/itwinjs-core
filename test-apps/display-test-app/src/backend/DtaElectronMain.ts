@@ -86,9 +86,7 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
     const resolved = path.resolve(filePath);
     await fs.mkdir(path.dirname(resolved), { recursive: true });
     try {
-      // "wx" fails when the file exists, so the check and the write are one atomic operation.
-      // A mistyped export path is otherwise indistinguishable from an intended overwrite, and
-      // this keyin resolves against the cwd - which is usually a source tree.
+      // "wx" fails when the file exists, making the check and the write atomic.
       await fs.writeFile(resolved, contents, { encoding: "utf8", flag: overwrite ? "w" : "wx" });
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "EEXIST")
