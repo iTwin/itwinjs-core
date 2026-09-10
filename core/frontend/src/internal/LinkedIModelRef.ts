@@ -59,6 +59,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public readonly onModelDisplayTransformProviderChanged = new BeEvent<() => void>;
   public readonly onActiveViewFlagsChanged = new BeEvent<() => void>();
   public readonly onActiveClipStyleChanged = new BeEvent<() => void>();
+  public readonly onViewedCategoriesLoaded = new BeEvent<() => void>();
 
   public abstract readonly overrides: IModelDisplayOverrides;
 
@@ -87,7 +88,14 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
       queue: refs.subcategories,
     });
 
+    this.perModelCategoryVisibility.onChanged.addListener(() => {
+      this.invalidateSymbologyOverrides();
+      this.onViewedCategoriesLoaded.raiseEvent();
+    });
+
     this.viewedCategories.addAll(args.viewedCategories ?? []);
+    this.loadViewedCategories();
+    this.viewedCategories.onChanged.addListener(async () => this.loadViewedCategories());
 
     const updateViewFlags = () => {
       this.#resolvedViewFlags = view.viewFlags.override(this._ovrs.viewFlags);
@@ -111,13 +119,14 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
     ovrs.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
-    const invalidateSymbologyOverrides = () => {
-      this.#symbologyOverrides = undefined;
-      // ###TODO probably need to notify viewport
-    };
-
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
     // ###TODO when viewed models/categories change.
+  }
+
+  private async loadViewedCategories(): Promise<void> {
+    await this.iModel.subcategories.load(this.viewedCategories)?.promise;
+    this.invalidateSymbologyOverrides();
+    this.onViewedCategoriesLoaded.raiseEvent();
   }
 
   public isSpatial(): this is SpatialIModelDisplayReference { return false; }
@@ -189,8 +198,6 @@ class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReferenc
     super(args, refs, createIModelDisplayOverrides(args.overrides));
     this.parent = refs;
     this.viewedModel = args.viewedModel;
-
-    this.viewedCategories.onChanged.addListener(() => this.invalidateSymbologyOverrides());
   }
 
   public override get tileTreeRefs() {
@@ -216,6 +223,7 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
 
   public readonly onActiveHiddenLineSettingsChanged = new BeEvent<() => void>();
   public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
+  public readonly onViewedModelsLoaded = new BeEvent<() => void>();
 
   public override get overrides() {
     return this._ovrs as SpatialIModelDisplayOverrides;
@@ -233,6 +241,8 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
 
     this.viewedModels.addAll(args.viewedModels ?? []);
+    this.loadViewedModels();
+    this.viewedModels.onChanged.addListener(async () => this.loadViewedModels());
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
 
@@ -241,8 +251,11 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     });
 
     this.updateModelClips();
+  }
 
-    this.viewedCategories.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+  private async loadViewedModels(): Promise<void> {
+    await this.iModel.models.load(this.viewedModels);
+    this.onViewedModelsLoaded.raiseEvent();
   }
 
   public get modelClipGroups() {

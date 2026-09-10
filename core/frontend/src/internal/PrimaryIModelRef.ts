@@ -52,6 +52,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public readonly onClipStyleChanged = new BeEvent<() => void>;
   public readonly onActiveViewFlagsChanged = new BeEvent<() => void>();
   public readonly onActiveClipStyleChanged = new BeEvent<() => void>();
+  public readonly onViewedCategoriesLoaded = new BeEvent<() => void>();
 
   public constructor(refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides) {
     this._ovrs = ovrs;
@@ -64,6 +65,11 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     this.perModelCategoryVisibility = PerModelCategoryVisibility.Overrides.create({
       iModel: view.iModel,
       queue: refs.subcategories,
+    });
+
+    this.perModelCategoryVisibility.onChanged.addListener(() => {
+      this.invalidateSymbologyOverrides();
+      this.onViewedCategoriesLoaded.raiseEvent();
     });
 
     const updateViewFlags = () => {
@@ -91,6 +97,12 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     view.onModelDisplayTransformProviderChanged.addListener(() => this.onModelDisplayTransformProviderChanged.raiseEvent());
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+  }
+
+  protected async loadViewedCategories(): Promise<void> {
+    await this.iModel.subcategories.load(this.viewedCategories)?.promise;
+    this.invalidateSymbologyOverrides();
+    this.onViewedCategoriesLoaded.raiseEvent();
   }
 
   public get iModel() { return this._view.iModel; }
@@ -182,8 +194,9 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
 
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
-    // ###TODO when viewed models/categories change. But not like this.
-    this.viewedCategories.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+    this.loadViewedCategories();
+    this.viewedCategories.onChanged.addListener(async () => this.loadViewedCategories());
+
   }
 
   public override is2d(): this is IModelDisplayReference2d {
@@ -214,6 +227,7 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
   public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
   public readonly onActiveHiddenLineSettingsChanged = new BeEvent<() => void>();
+  public readonly onViewedModelsLoaded = new BeEvent<() => void>();
 
   public constructor(refs: SpatialIModelDisplayReferences) {
     super(refs, createSpatialIModelDisplayOverrides());
@@ -231,8 +245,16 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
 
-    // ###TODO when viewed models/categories change. But not like this.
-    this.viewedCategories.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+    this.loadViewedCategories();
+    this.viewedCategories.onChanged.addListener(async () => this.loadViewedCategories());
+
+    this.loadViewedModels();
+    this.viewedModels.onChanged.addListener(async () => this.loadViewedModels());
+  }
+
+  private async loadViewedModels(): Promise<void> {
+    await this.iModel.models.load(this.viewedModels);
+    this.onViewedModelsLoaded.raiseEvent();
   }
 
   public override get tileTreeRefs(): Iterable<TileTreeReference> {

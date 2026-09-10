@@ -735,22 +735,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
     if (excludedModels)
       this._excludedModels = new Set(excludedModels);
 
-    iModelRef.iModel.models.load(iModelRef.viewedModels).then(() => this.update());
-    iModelRef.viewedModels.onChanged.addListener(async () => {
-      // ###TODO this is only supposed to be done while attached to a viewport
-      await iModelRef.iModel.models.load(iModelRef.viewedModels);
-      this.update();
-    });
-
-    // ###TODO viewport needs to know when category loading completes.
-    iModelRef.iModel.subcategories.load(iModelRef.viewedCategories);
-    iModelRef.viewedCategories.onChanged.addListener(async () => {
-      const promise = iModelRef.iModel.subcategories.load(iModelRef.viewedCategories)?.promise;
-      if (promise) {
-        await promise;
-        // ###TODO viewport needs to know when category loading completes.
-      }
-    })
+    iModelRef.onViewedModelsLoaded.addListener(() => this.update());
   }
 
   public update(): void {

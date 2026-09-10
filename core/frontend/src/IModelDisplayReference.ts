@@ -58,6 +58,7 @@ export interface IModelDisplayReference {
   readonly parent: IModelDisplayReferences;
   readonly linearTransformToParent: Transform;
   readonly viewedCategories: ObservableSet<Id64String>;
+  readonly onViewedCategoriesLoaded: BeEvent<() => void>;
 
   readonly isSpatial: () => this is SpatialIModelDisplayReference;
   readonly is2d: () => this is IModelDisplayReference2d;
@@ -130,6 +131,7 @@ export interface SpatialIModelDisplayReference extends IModelDisplayReference {
   readonly parent: SpatialIModelDisplayReferences;
 
   readonly viewedModels: ObservableSet<Id64String>;
+  readonly onViewedModelsLoaded: BeEvent<() => void>;
 
   readonly planarClipMasks: ObservableMap<Id64String, PlanarClipMaskSettings>;
   readonly realityModelDisplaySettings: ObservableMap<Id64String, RealityModelDisplaySettings>;
