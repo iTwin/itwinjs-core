@@ -12,7 +12,7 @@ An application adopts a [FormatSet]($ecschema-metadata) for an iModel, then eval
 
 [[include:TextAnnotationFields.HappyPath]]
 
-Three things had to line up:
+Three things have to line up:
 
 - **A FormatSet** naming the KindOfQuantity to present and the units to present it in.
 - **A registration**, which pre-warms a [FormatterSpec]($quantity) for every requirement it is given. This is the only asynchronous step.
@@ -41,7 +41,7 @@ A field that should not simply inherit its property's KindOfQuantity configures 
 For each `"quantity"` or `"coordinate"` field the formatter looks up a [FormatterSpec]($quantity) by (KindOfQuantity name, persistence unit name) pair, in this order:
 
 1. **Effective override pair.** `formatOptions.quantity.kindOfQuantity ?? propertyKindOfQuantity` for the name, `formatOptions.quantity.persistenceUnit ?? propertyPersistenceUnit` for the unit.
-2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped when identical to the effective pair, and skipped entirely when `persistenceUnit` names a *different* unit than the property's own (see below).
+2. **Property-side pair.** `(propertyKindOfQuantity, propertyPersistenceUnit)` — skipped when identical to the effective pair, and skipped entirely when `persistenceUnit` names a *different* unit than the property's own.
 
 The first pair whose format-props lookup **and** persistence-unit lookup both succeed in the active provider wins. If none succeeds, `"quantity"` and `"coordinate"` fields fall back to their raw string representation (`value.toString()` for `"quantity"`, a `(x, y[, z])` tuple for `"coordinate"`).
 
@@ -67,7 +67,7 @@ Three sources compose:
 
 `collectSchemaFormattingRequirements` is a sensible floor because its cost is bounded by the schemas rather than by the data. It enumerates every KindOfQuantity the schemas declare — referenced by a property or not — each paired with its own persistence unit.
 
-What it cannot see are any `persistenceUnit`-`kindOfQuantity` pairs overridden by **fields** inside `BisCore.ITextAnnotation` elements. The schema has no knowledge of these. Any annotations that contain pairs not declared by the schema will fallback to their raw string representations. Applications that allow such overrides should gather requirements from the annotations themselves as well — see [Advanced](#advanced) below for a query that finds them.
+What it cannot see are any `persistenceUnit`/`kindOfQuantity` pairs overridden by **fields** inside annotation elements. The schema has no knowledge of these. Any annotations that contain pairs not declared by the schema will fall back to their raw string representations. Applications that allow such overrides should gather requirements from the annotations themselves as well — see [Advanced](#advanced) below for a query that finds them.
 
 A block authored later in the session may need a spec the initial warm-up never saw. Warm it before writing the annotation:
 
@@ -79,7 +79,7 @@ If a field needs a spec that was never warmed, it renders as its raw string repr
 
 [[include:TextAnnotationFields.HandleMisses]]
 
-Because Core never discovers requirements on its own, [FieldFormattingSpecProvider.misses]($backend) is the check that a requirement set was complete — treat it as an expected part of an incremental workflow rather than an error report.
+Because Core never discovers requirements on its own, [FieldFormattingSpecProvider.misses]($backend) is the check that a requirement set is complete — treat it as an expected part of an incremental workflow rather than an error report.
 
 ## Multiple FormatSets and provider lifetime
 
