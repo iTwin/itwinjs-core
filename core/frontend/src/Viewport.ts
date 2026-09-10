@@ -69,7 +69,7 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
-import { IModelDisplayReferences } from "./IModelDisplayReferences";
+import { IModelDisplayReferences, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
 import { IModelDisplayReference } from "./core-frontend";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
@@ -1265,6 +1265,31 @@ export abstract class Viewport implements Disposable, TileUser {
       removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
         this.synchWithView();
       }));
+    }
+
+    removals.push(this.iModelRefs.onLinked.addListener((ref) => {
+      this.addIModelRefListeners(ref);
+      this.invalidateScene();
+    }));
+
+    removals.push(this.iModelRefs.onUnlinked.addListener(() => {
+      // Event listeners are automatically removed when IModelDisplayReference is unlinked - no need to clean them up here.
+      this.invalidateScene();
+    }));
+
+    for (const ref of this.iModelRefs) {
+      removals.push(ref.onViewedCategoriesLoaded.addListener(() => this.invalidateScene()));
+      if (ref.isSpatial()) {
+        removals.push(ref.onViewedModelsLoaded.addListener(() => this.invalidateScene()));
+      }
+    }
+  }
+
+  private addIModelRefListeners(ref: IModelDisplayReference): void {
+    this._detachFromView.push(ref.onViewedCategoriesLoaded.addListener(() => this.invalidateScene()));
+
+    if (ref.isSpatial()) {
+      this._detachFromView.push(ref.onViewedModelsLoaded.addListener(() => this.invalidateScene()));
     }
   }
 
