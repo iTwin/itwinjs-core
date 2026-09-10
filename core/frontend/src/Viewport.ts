@@ -329,8 +329,8 @@ export abstract class Viewport implements Disposable, TileUser {
   public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of never-drawn elements changes. */
   public readonly onNeverDrawnChanged = new BeEvent<(vp: Viewport) => void>();
-  /** Event called on the next frame after this viewport's [[DisplayStyleState]] or its members change.
-   * Aspects of the display style include [ViewFlags]($common), [SubCategoryOverride]($common)s, and [[Environment]] settings.
+  /** Event called on the next frame after one or more aspects of this viewport's [[DisplayStyleState]] change.
+   * Aspects of the display style include [ViewFlags]($common), [SubCategoryOverride]($common)s, and [[Environment]] settings, among others.
    */
   public readonly onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of displayed categories changes. */
@@ -1244,18 +1244,9 @@ export abstract class Viewport implements Disposable, TileUser {
       this.maybeInvalidateScene();
     }));
 
+    // ###TODO this belongs on IModelDisplayReference not Viewport.
     removals.push(this.iModel.subcategories.addChangedListener(() => {
       this.updateSubCategories(this.getSubCategoryReloadCategoryIds(), undefined);
-    }));
-
-    removals.push(view.onDisplayStyleChanged.addListener((newStyle) => {
-      this._changeFlags.setDisplayStyle();
-      this.setFeatureOverrideProviderChanged();
-      this.invalidateRenderPlan();
-
-      this.detachFromDisplayStyle();
-      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, newStyle);
-      this.registerDisplayStyleListeners(newStyle);
     }));
 
     if (view.isSpatialView()) {
@@ -3078,23 +3069,14 @@ export abstract class Viewport implements Disposable, TileUser {
     const addSettingsListener = (style: DisplayStyleState) => style.settings.onAnalysisStyleChanged.addListener(listener);
     let removeSettingsListener = addSettingsListener(this.displayStyle);
 
-    const addStyleListener = (view: ViewState) => view.onDisplayStyleChanged.addListener((style) => {
-      listener(style.settings.analysisStyle);
-      removeSettingsListener();
-      removeSettingsListener = addSettingsListener(view.displayStyle);
-    });
-
-    const removeStyleListener = addStyleListener(this.view);
-
     const removeViewListener = this.onChangeView.addListener((vp) => {
       listener(vp.view.displayStyle.settings.analysisStyle);
-      removeStyleListener();
-      addStyleListener(vp.view);
+      removeSettingsListener();
+      addSettingsListener(vp.view.displayStyle);
     });
 
     return () => {
       removeSettingsListener();
-      removeStyleListener();
       removeViewListener();
     };
   }

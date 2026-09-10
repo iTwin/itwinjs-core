@@ -147,7 +147,6 @@ describe("Viewport", () => {
           expect(viewport.onChangeView.numberOfListeners).toEqual(expectedNum);
 
           // The viewport registers its own listener for each of these.
-          expect(viewport.view.onDisplayStyleChanged.numberOfListeners).toEqual(expectedNum + 1);
           expect(viewport.displayStyle.settings.onAnalysisStyleChanged.numberOfListeners).toEqual(expectedNum + 1);
         }
 

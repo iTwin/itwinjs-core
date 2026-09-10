@@ -256,11 +256,6 @@ export abstract class ViewState extends ElementState {
   /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]]. */
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
 
-  /** An event raised just before assignment to the [[displayStyle]] property, *only* if the view is attached to a [[Viewport]].
-   * @see [[DisplayStyleSettings]] for events raised when properties of the display style change.
-   */
-  public readonly onDisplayStyleChanged = new BeEvent<(newStyle: DisplayStyleState) => void>();
-
   /** Event raised just before assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
    * @beta
    */

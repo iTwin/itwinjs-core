@@ -121,6 +121,33 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
     // ###TODO when viewed models/categories change.
+
+    refs.onUnlinked.addOnce((ref: IModelDisplayReference) => {
+      if (ref === this) {
+        this._dispose();
+      }
+    });
+  }
+
+  protected _dispose(): void {
+
+    this.onPerModelCategoryVisibilityChanged.clear();
+    this.onIsAlwaysDrawnExclusiveChanged.clear();
+    this.onModelDisplayTransformProviderChanged.clear();
+    this.onActiveViewFlagsChanged.clear();
+    this.onActiveClipStyleChanged.clear();
+    this.onViewedCategoriesLoaded.clear();
+
+    this.viewedCategories.clearEventListeners();
+    this.perModelCategoryVisibility.onChanged.clear();
+    this.neverDrawnElements.onChanged.clear();
+    this.alwaysDrawnElements.onChanged.clear();
+    this.featureOverrideProviders.clearEventListeners();
+    this.subCategoryOverrides.onChanged.clear();
+    this.modelAppearanceOverrides.onChanged.clear();
+
+    this.overrides.onViewFlagsChanged.clear();
+    this.overrides.onClipStyleChanged.clear();
   }
 
   private async loadViewedCategories(): Promise<void> {
@@ -251,6 +278,21 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     });
 
     this.updateModelClips();
+  }
+
+  protected override _dispose(): void {
+    super._dispose();
+
+    this.onActiveClipStyleChanged.clear();
+    this.onModelClipGroupsChanged.clear();
+    this.onViewedModelsLoaded.clear();
+
+    this.viewedModels.clearEventListeners();
+    this.planarClipMasks.onChanged.clear();
+    this.realityModelDisplaySettings.clear();
+    this.planProjectionSettings.clear();
+
+    this.overrides.onHiddenLineSettingsChanged.clear();
   }
 
   private async loadViewedModels(): Promise<void> {

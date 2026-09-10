@@ -46,7 +46,6 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
   public unlink(ref: R): void {
     const index = this.linked.indexOf(ref);
     if (index !== -1) {
-      // ###TODO dispose
       this.linked.splice(index, 1);
       this.onUnlinked.raiseEvent(ref);
     }
