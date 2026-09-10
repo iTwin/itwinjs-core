@@ -12,7 +12,7 @@ import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
-import { ReadImageBufferArgs, Viewport } from "../Viewport";
+import { FlashedElement, ReadImageBufferArgs, Viewport } from "../Viewport";
 import { ViewRect } from "../common/ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
@@ -121,7 +121,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** @internal */
   public setHiliteSet(_hilited: HiliteSet): void { }
   /** @internal */
-  public setFlashed(_elementId: Id64String, _intensity: number): void { }
+  public setFlashed(_element: FlashedElement | undefined, _intensity: number): void { }
   /** @internal */
   public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void { }
   /** @internal */

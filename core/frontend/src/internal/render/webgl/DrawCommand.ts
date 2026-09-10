@@ -254,8 +254,8 @@ export type DrawCommands = DrawCommand[];
  * The primitive should be right in the middle of a set.  We need to find the set which matches the flashID.
  * @internal
  */
-export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cmds: DrawCommands, numCmdsPerClassifier: number): DrawCommands | undefined {
-  if (!Id64.isValid(flashedId) || 0 === numCmdsPerClassifier)
+export function extractFlashedVolumeClassifierCommands(flashedId: Id64String | undefined, cmds: DrawCommands, numCmdsPerClassifier: number): DrawCommands | undefined {
+  if (undefined === flashedId || 0 === numCmdsPerClassifier)
     return undefined;
 
   const firstPrim = (numCmdsPerClassifier - 1) / 2;

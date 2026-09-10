@@ -15,7 +15,7 @@ import { ViewRect } from "../../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../../SelectionSet";
 import { SceneContext } from "../../../ViewContext";
-import { ReadImageBufferArgs, Viewport } from "../../../Viewport";
+import { FlashedElement, ReadImageBufferArgs, Viewport } from "../../../Viewport";
 import { IModelConnection } from "../../../IModelConnection";
 import { CanvasDecoration } from "../../../render/CanvasDecoration";
 import { Decorations } from "../../../render/Decorations";
@@ -100,6 +100,13 @@ interface ReadPixelResources {
 }
 
 /** @internal */
+export interface FlashedElem {
+  id: Id64String;
+  idPair: Id64.Uint32Pair;
+  iModel: IModelConnection;
+}
+
+/** @internal */
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
   protected override readonly [_implementationProhibited] = undefined;
   public readonly graphics = new TargetGraphics();
@@ -111,8 +118,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _hilites: Hilites = new EmptyHiliteSet();
   private readonly _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
-  private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
-  private _flashedId = Id64.invalid;
+  private _flashedElem?: FlashedElem;
   private _flashIntensity: number = 0;
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
@@ -198,8 +204,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get pickExclusions(): Id64.Uint32Set { return this._currPickExclusions; }
 
-  public get flashed(): Id64.Uint32Pair | undefined { return Id64.isValid(this._flashedId) ? this._flashed : undefined; }
-  public get flashedId(): Id64String { return this._flashedId; }
+  public get flashedElem(): FlashedElem | undefined { return this._flashedElem; }
   public get flashIntensity(): number { return this._flashIntensity; }
 
   public get analysisFraction(): number { return this._analysisFraction; }
@@ -484,13 +489,20 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._hilites = hilite;
     desync(this._hiliteSyncTarget);
   }
-  public override setFlashed(id: Id64String, intensity: number) {
-    if (id !== this._flashedId) {
-      this._flashedId = id;
-      this._flashed = Id64.getUint32Pair(id);
-    }
-
+  public override setFlashed(flashed: FlashedElement, intensity: number) {
     this._flashIntensity = intensity;
+    if (flashed?.id === this._flashedElem?.id && flashed?.iModel === this._flashedElem?.iModel)
+      return;
+
+    if (flashed) {
+      this._flashedElem = {
+        id: flashed.id,
+        iModel: flashed.iModel,
+        idPair: Id64.getUint32Pair(flashed.id),
+      };
+    } else {
+      this._flashedElem = undefined;
+    }
   }
 
   public changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void {

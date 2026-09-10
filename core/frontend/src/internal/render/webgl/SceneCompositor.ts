@@ -2220,7 +2220,7 @@ class Compositor extends SceneCompositor {
 
     // Process the flashed classifier if there is one.
     // Like the selected volumes, we do not need to do this step if we used by-element-color since the flashing is included in the element color.
-    const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedId, cmdsByIndex, numCmdsPerClassifier);
+    const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedElem?.id, cmdsByIndex, numCmdsPerClassifier);
     if (undefined !== flashedClassifierCmds && !doColorByElement) {
       // Set the stencil for this one classifier.
       fbStack.execute(this._fbos.stencilSet, false, this.useMsBuffers, () => {

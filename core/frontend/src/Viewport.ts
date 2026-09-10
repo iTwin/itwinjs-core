@@ -2750,7 +2750,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
     let requestNextAnimation = false;
     if (this.processFlash()) {
-      target.setFlashed(undefined !== this.flashedId ? this.flashedId : Id64.invalid, this._flashIntensity);
+      target.setFlashed(this._flashedElem, this._flashIntensity);
       isRedrawNeeded = true;
       requestNextAnimation = undefined !== this.flashedId;
     }
