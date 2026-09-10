@@ -204,9 +204,7 @@ export class TextDecorationTool extends Tool {
         if (what === "formatset") {
           if (path === "off") {
             await dtaIpc.registerFieldFormattingProvider(vp.iModel.key);
-            // eslint-disable-next-line no-console
-            console.log(`Unregistered all FormatSets for iModel ${vp.iModel.key}`);
-            return true;
+            break;
           }
 
           if (!path) {
@@ -218,9 +216,7 @@ export class TextDecorationTool extends Tool {
           // An id makes the set addressable by a FieldRun's `formatSet` option; without one it is
           // adopted as the iModel's default.
           await dtaIpc.registerFieldFormattingProvider(vp.iModel.key, id ? undefined : formatSet, id ? [{ id, formatSet }] : undefined);
-          // eslint-disable-next-line no-console
-          console.log(`Registered FormatSet '${formatSet.name}'${id ? ` as '${id}'` : " (adopted)"} for iModel ${vp.iModel.key}`);
-          return true;
+          break;
         }
 
         throw new Error("Expected 'annotation' or 'formatset'");
