@@ -50,8 +50,6 @@ describe("Text annotation field formatting", () => {
 
   /** Formats Snippets.LENGTH in millimeters, so the 2.5 m widget renders as "2500 mm". */
   const millimeterFormatSet = formatSetOf("Millimeters", { "Snippets.LENGTH": decimalFormat("Units.MM", "mm") });
-  /** Formats the same KindOfQuantity in feet, for the multi-FormatSet example. */
-  const imperialFormatSet = formatSetOf("Imperial", { "Snippets.LENGTH": decimalFormat("Units.FT", "ft") });
 
   before(async () => {
     iModel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("TextAnnotationFields.bim"), {
@@ -223,25 +221,52 @@ describe("Text annotation field formatting", () => {
   });
 
   it("mixes formats within one iModel", async () => {
-    const formatSet = millimeterFormatSet;
-    const imperialFormatSetId = "0x1000";
-
     // __PUBLISH_EXTRACT_START__ TextAnnotationFields.MultipleFormatSets
+    // A second FormatSet presenting the same KindOfQuantity in feet, registered under an
+    // application-chosen id that fields reference to opt into it.
+    const imperialFormatSetId = "0x1000";
+    const imperialFormatSet: FormatSet = {
+      name: "Imperial",
+      label: "Imperial",
+      unitSystem: "imperial",
+      formats: {
+        "Snippets.LENGTH": {
+          type: "Decimal",
+          precision: 2,
+          formatTraits: ["keepSingleZero", "showUnitLabel"],
+          uomSeparator: " ",
+          composite: { includeZero: true, units: [{ name: "Units.FT", label: "ft" }] },
+        },
+      },
+    };
+
     await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
       iModel,
-      formatSet,                                      // applies to every field that names no other
+      formatSet: millimeterFormatSet,                 // applies to every field that names no other
       formatSets: [{ id: imperialFormatSetId, formatSet: imperialFormatSet }],
       requirements: FieldFormattingSpecProvider.collectSchemaFormattingRequirements(iModel),
     });
+
+    // A field opts into the imperial set by naming its id.
+    const imperialField = FieldRun.create({
+      propertyHost: { elementId, schemaName: "Snippets", className: "Widget" },
+      propertyPath: { propertyName: "length" },
+      formatOptions: { quantity: { formatSet: imperialFormatSetId } },
+    });
+
+    const block = TextBlock.create();
+    block.appendRun(imperialField);
+    ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
+
+    const imperialContent = imperialField.cachedContent; // "8.2 ft"
     // __PUBLISH_EXTRACT_END__
 
+    expect(imperialContent).to.equal("8.2 ft");
+
+    // A field naming no FormatSet still renders through the adopted one.
     const metric = blockWithLengthField();
     ElementDrivesTextAnnotation.evaluateFields({ iModel, block: metric.block });
     expect(metric.field.cachedContent).to.equal("2500 mm");
-
-    const imperial = blockWithLengthField(imperialFormatSetId);
-    ElementDrivesTextAnnotation.evaluateFields({ iModel, block: imperial.block });
-    expect(imperial.field.cachedContent).to.equal("8.2 ft");
   });
 
   it("detects and repairs a warm-up gap", async () => {
