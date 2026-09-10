@@ -111,7 +111,7 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_STANDALONE_SIGNIN)
     configuration.signInForStandalone = true;
 
-  if (undefined !== process.env.IMJS_READ_WRITE)
+  // if (undefined !== process.env.IMJS_READ_WRITE)
     configuration.openReadWrite = true;
 
   if (undefined !== process.env.IMJS_ALLOWED_CHANNELS)

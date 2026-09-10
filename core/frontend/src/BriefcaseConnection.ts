@@ -63,6 +63,8 @@ export interface PullChangesOptions {
   abortSignal?: GenericAbortSignal;
 }
 
+export const pendingTileReplaceStartMs = new Map<Id64String, number>();
+
 /** Keeps track of changes to models, buffering them until synchronization points.
  * While a GraphicalEditingScope is open, the changes are buffered until the scope exits, at which point they are processed.
  * Otherwise, the buffered changes are processed after undo/redo, commit, or pull+merge changes.
@@ -101,6 +103,9 @@ class ModelChangeMonitor {
         return;
 
       const modelIds = Array.from(this._modelIdToGuid.keys());
+      for (const modelId of modelIds)
+        pendingTileReplaceStartMs.set(modelId, performance.now());
+
       if (modelIds.length > 0)
         await IModelApp.tileAdmin.purgeTileTrees(this._briefcase, modelIds);
 

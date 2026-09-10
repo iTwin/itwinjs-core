@@ -190,6 +190,10 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
  * Its contentId is the element's Id.
  */
 class ElementTile extends Tile {
+  // Logging information
+  private _updateStartMs: number | undefined;
+  private _hasLoggedShownForUpdate = false;
+
   public readonly absolutePositionThreshold: number;
 
   public constructor(parent: RootTile, elementId: Id64String, range: Range3d) {
@@ -296,10 +300,18 @@ class ElementTile extends Tile {
     } else if (exactMatch.hasGraphics) {
       selected.push(exactMatch);
       args.markUsed(exactMatch);
+
+      if (undefined !== this._updateStartMs && !this._hasLoggedShownForUpdate) {
+        this._hasLoggedShownForUpdate = true;
+        console.log(`DynamicIModelTile: element ${this.contentId} shown after ${(performance.now() - this._updateStartMs).toFixed(2)} ms`); // eslint-disable-line no-console
+      }
     }
   }
 
   public update(range: Range3d): void {
+    this._updateStartMs = performance.now();
+    this._hasLoggedShownForUpdate = false;
+
     range.clone(this.range);
     const center = this.range.low.interpolate(0.5, this.range.high);
     const radius = 0.5 * this.range.low.distance(this.range.high);

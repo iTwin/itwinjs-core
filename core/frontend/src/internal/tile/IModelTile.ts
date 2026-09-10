@@ -18,6 +18,7 @@ import {
   addRangeGraphic, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
   TileRequestChannel, TileTreeLoadStatus, TileVisibility,
 } from "./../../tile/internal";
+import { pendingTileReplaceStartMs } from "../../BriefcaseConnection";
 
 /** Parameters used to construct an [[IModelTile]].
  */
@@ -220,6 +221,14 @@ export class IModelTile extends Tile {
         // It can be drawn - select it
         args.markReady(this);
         selected.push(this);
+
+        const treeId = this.iModelTree.modelId;
+        const start = pendingTileReplaceStartMs.get(treeId);
+        if (undefined !== start) {
+          pendingTileReplaceStartMs.delete(treeId);
+          // eslint-disable-next-line no-console
+          console.log(`IModelTileTree: model ${treeId} shown after ${(performance.now() - start).toFixed(2)} ms`);
+        }
       } else if (!this.isReady) {
         // It can't be drawn. Try to draw children in its place; otherwise draw the parent.
         // Do not load/request the children for this purpose.
