@@ -200,7 +200,7 @@ export namespace SchemaSync {
   const syncProperty = { namespace: "itwinjs", name: "SchemaSync" };
   const defaultDbName = "SchemaSyncDb";
   /** The `containerType` recorded on a BlobContainer that holds an iModel's `SchemaSyncDb`. */
-  export const containerType = "schema-sync";
+  export const containerType = "schemasync";
   const testSyncCachePropKey = "test.schema_sync.cache_name";
   // for tests only
   export function setTestCache(iModel: IModelDb, cacheName?: string): void {
@@ -607,7 +607,7 @@ export namespace SchemaSync {
       return super._initializeDb({ props, dbType: SchemaSyncDb, dbName: defaultDbName });
     }
 
-    /** Create and initialize a new `schema-sync` BlobContainer to hold a `SchemaSyncDb`. */
+    /** Create and initialize a new `schemasync` BlobContainer to hold a `SchemaSyncDb`. */
     public static async createNewContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps> {
       const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType } });
       await this.initializeDb(props);
