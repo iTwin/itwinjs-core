@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Placement2dProps, TextAnnotation, TextAnnotationAnchor, TextAnnotationProps } from "@itwin/core-common";
+import { Placement2dProps, TextAnnotation, TextAnnotationProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { FormatSet } from "@itwin/ecschema-metadata";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -23,10 +23,7 @@ class TextEditor implements Decorator {
   public origin: Point3d = new Point3d(0, 0, 0);
   public debugAnchorPointAndRange = false;
 
-  /** Core defaults to top-left, which would hang the text down and to the right of the origin. */
-  private static readonly _defaultAnchor: TextAnnotationAnchor = { horizontal: "center", vertical: "middle" };
-
-  public annotation: TextAnnotation = TextAnnotation.fromJSON({ anchor: TextEditor._defaultAnchor });
+  public annotation: TextAnnotation = TextAnnotation.create();
 
   public get annotationProps(): TextAnnotationProps {
     return this.annotation.toJSON();
@@ -53,15 +50,14 @@ class TextEditor implements Decorator {
     this._graphic?.disposeGraphic();
     this._graphic = undefined;
 
-    this.annotation = TextAnnotation.fromJSON({ anchor: TextEditor._defaultAnchor });
+    this.annotation = TextAnnotation.create();
     this.defaultTextStyleId = Id64.invalid;
     this.origin.setZero();
     this.debugAnchorPointAndRange = false;
   }
 
   public setAnnotation(props: TextAnnotationProps): void {
-    // A fixture that specifies an anchor is honored exactly; otherwise DTA centers.
-    this.annotation = TextAnnotation.fromJSON({ anchor: TextEditor._defaultAnchor, ...props });
+    this.annotation = TextAnnotation.fromJSON(props);
   }
 
   /**
@@ -122,10 +118,10 @@ export class TextDecorationTool extends Tool {
 
   private static readonly _helpEntries: ReadonlyArray<readonly [string, string]> = [
     ["help", "Print this help message."],
-    ["init [category] [defaultTextStyleId]", "Initialize the editor. Uses the first category in the view if omitted. **REQUIRED** before any other commands. Text will be centered in the view."],
+    ["init [category] [defaultTextStyleId]", "Initialize the editor. Uses the first category in the view if omitted. **REQUIRED** before any other commands."],
     ["clear", "Reset the editor and remove the decoration."],
-    ["center", "Move the annotation to the center of the current view. `init` does this once; re-run after panning or zooming."],
-    ["import annotation <path>", "Load TextAnnotationProps from a JSON file and display it."],
+    ["center", "Center the annotation in the current view, overriding the anchor from the imported file. Re-run after panning or zooming."],
+    ["import annotation <path>", "Load TextAnnotationProps from a JSON file and display it. Placement and anchor are taken from the file."],
     ["import formatset <path> [id]", "Load a FormatSet from a JSON file and register it for the current iModel. Adopted by default, or addressable under [id]."],
     ["import formatset off", "Unregister every FormatSet previously imported for the current iModel."],
     ["export annotation <path> [force]", "Write the current TextAnnotationProps to <path>. Refuses to overwrite an existing file unless 'force' is passed."],
@@ -185,6 +181,7 @@ export class TextDecorationTool extends Tool {
       }
       case "center":
         editor.origin = vp.view.getCenter();
+        editor.annotation.anchor = { horizontal: "center", vertical: "middle" };
         break;
       case "debug":
         editor.debugAnchorPointAndRange = !editor.debugAnchorPointAndRange;
