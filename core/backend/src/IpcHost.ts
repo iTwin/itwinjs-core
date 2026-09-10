@@ -452,7 +452,8 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction {
   const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
   let nextTime = Date.now() + interval;
-  const progressCallback: ProgressFunction = (loaded, total) => {
+
+  return (loaded, total) => {
     const now = Date.now();
     if (loaded >= total || now >= nextTime) {
       nextTime = now + interval;
@@ -460,6 +461,4 @@ export function throttleProgressCallback(func: ProgressFunction, checkAbort: () 
     }
     return checkAbort();
   };
-
-  return progressCallback;
 }
