@@ -11,7 +11,7 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubMock } from "../../internal/HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
-import { _nativeDb, ChannelControl } from "../../core-backend";
+import { _nativeDb, ChannelControl, ProgressStatus } from "../../core-backend";
 import { withEditTxn } from "../../EditTxn";
 
 describe("BriefcaseManager", async () => {
@@ -203,5 +203,85 @@ describe("BriefcaseManager", async () => {
     // Delete iModel from the Hub and disk
     await HubWrappers.closeAndDeleteBriefcaseDb(userToken2, iModelPullAndPush);
     await testUtility.deleteTestIModel();
+  });
+
+  describe("pushChanges download progress", () => {
+    const user1 = "user1 mock token";
+    const user2 = "user2 mock token";
+
+    /** Creates an iModel owned by user1, opens a briefcase for user2, then pushes another changeset as user1 so
+     * that user2's briefcase is behind by one changeset and must pull-and-merge before it can push.
+     */
+    async function setupOutdatedBriefcase(testName: string) {
+      HubMock.startup(testName, KnownTestLocations.outputDir);
+
+      const testUtility = new TestChangeSetUtility(user1, testName);
+      await testUtility.createTestIModel();
+
+      const briefcase = await HubWrappers.downloadAndOpenBriefcase({ accessToken: user2, iTwinId: testUtility.iTwinId, iModelId: testUtility.iModelId });
+      briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+      await testUtility.pushTestChangeSet();
+
+      // Make a local change so that this briefcase actually has something to push.
+      const rootEl: Element = briefcase.elements.getRootSubject();
+      rootEl.userLabel = `${rootEl.userLabel} changed`;
+      withEditTxn(briefcase, (txn) => txn.updateElement(rootEl.toJSON()));
+
+      return { testUtility, briefcase };
+    }
+
+    it("reports download progress for the changesets pulled before pushing", async () => {
+      const { testUtility, briefcase } = await setupOutdatedBriefcase("pushProgress");
+      const changesetBeforePush = briefcase.changeset.id;
+
+      const progress: { loaded: number, total: number }[] = [];
+      await briefcase.pushChanges({
+        accessToken: user2,
+        description: "push with progress",
+        onDownloadProgress: (loaded, total) => {
+          progress.push({ loaded, total });
+          return ProgressStatus.Continue;
+        },
+      });
+
+      assert.isTrue(progress.every((p) => p.loaded <= p.total), "loaded should never exceed total");
+
+      // A push performs more than one pull, and the later ones have nothing left to download. Only the first
+      // sequence actually transfers bytes.
+      const downloaded = progress.filter((p) => p.total > 0);
+      assert.isNotEmpty(downloaded, "expected progress to be reported while pulling changesets");
+      for (let i = 1; i < downloaded.length; ++i)
+        assert.isAtLeast(downloaded[i].loaded, downloaded[i - 1].loaded, "loaded should be monotonically increasing");
+      assert.strictEqual(downloaded[downloaded.length - 1].loaded, downloaded[downloaded.length - 1].total, "the last report should indicate the download completed");
+
+      assert.notStrictEqual(briefcase.changeset.id, changesetBeforePush, "briefcase should have pulled and pushed");
+
+      await HubWrappers.closeAndDeleteBriefcaseDb(user2, briefcase);
+      await testUtility.deleteTestIModel();
+    });
+
+    it("aborts the push when the download progress callback requests it", async () => {
+      const { testUtility, briefcase } = await setupOutdatedBriefcase("pushProgressAbort");
+      const changesetBeforePush = briefcase.changeset.id;
+
+      let error: Error | undefined;
+      try {
+        await briefcase.pushChanges({
+          accessToken: user2,
+          description: "push that gets aborted",
+          onDownloadProgress: () => ProgressStatus.Abort,
+        });
+      } catch (err) {
+        error = err as Error;
+      }
+
+      assert.isDefined(error, "aborting the download should cause pushChanges to throw");
+      assert.strictEqual(briefcase.changeset.id, changesetBeforePush, "briefcase should not have advanced");
+      assert.isTrue(briefcase[_nativeDb].hasPendingTxns(), "local changes should still be pending");
+
+      await HubWrappers.closeAndDeleteBriefcaseDb(user2, briefcase);
+      await testUtility.deleteTestIModel();
+    });
   });
 });
