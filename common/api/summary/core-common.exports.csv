@@ -422,6 +422,7 @@ public;enum;GeometrySummaryVerbosity
 beta;function;getMarkerText
 internal;function;getMaximumMajorTileFormatVersion
 internal;const;getPullChangesIpcChannel
+internal;const;getPushChangesIpcChannel
 internal;function;getTileObjectReference
 internal;class;GlbHeader
 public;enum;GlobeMode
@@ -712,6 +713,7 @@ public;class;PropertyMetaDataMap
 beta;interface;PropertyMetaDataProps
 deprecated;interface;PropertyMetaDataProps
 internal;interface;PullChangesOptions
+internal;interface;PushChangesOptions
 public;class;QParams2d
 alpha;interface;QParams2dProps
 public;class;QParams3d

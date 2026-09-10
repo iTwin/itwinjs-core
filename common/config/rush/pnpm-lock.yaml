@@ -28,8 +28,8 @@ importers:
         specifier: ^12.28.0
         version: 12.33.0
       '@bentley/imodeljs-native':
-        specifier: 5.14.19
-        version: 5.14.19
+        specifier: 5.14.20
+        version: 5.14.20
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.1.3
@@ -4683,8 +4683,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.14.19':
-    resolution: {integrity: sha512-GXGgMQGTW3lR6pnBwthCffoIQ/naHkYL1NepVxtHGRYJQZA1pEuVtH1rf1bb31SVK473ekq7q2f63U4sysVRQQ==}
+  '@bentley/imodeljs-native@5.14.20':
+    resolution: {integrity: sha512-qPceNHkg336IKiiinbB3ziKuJVpze5FOexjiinUTAlB+zO1Q6kTWBW6U0olCoKDzskQ/x87DGhKVwkLxgBaARA==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -11361,7 +11361,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.14.19': {}
+  '@bentley/imodeljs-native@5.14.20': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -13091,7 +13091,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.1
-      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.11(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.0)
       ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
@@ -13111,7 +13111,7 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@20.17.58)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.0)
+      vitest: 4.1.11(@opentelemetry/api@1.0.4)(@types/node@20.17.58)(@vitest/coverage-v8@4.1.10)(jsdom@26.1.0)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.0)
     optionalDependencies:
       '@vitest/browser': 4.1.10(vite@6.4.3(@types/node@20.17.58)(terser@5.51.2)(tsx@4.22.5)(yaml@2.9.0))(vitest@4.1.11)
 
