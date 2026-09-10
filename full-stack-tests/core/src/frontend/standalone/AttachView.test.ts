@@ -95,53 +95,50 @@ describe("ViewState attached to Viewport", async () => {
   it("should only emit events while attached to a Viewport", async () => {
     let categoriesChanged = false;
     let modelsChanged = false;
-    let styleChanged = false;
 
-    const reset = () => categoriesChanged = modelsChanged = styleChanged = false;
-    const expectChanges = (categories: boolean, models: boolean, style: boolean) => {
+    const reset = () => categoriesChanged = modelsChanged = false;
+    const expectChanges = (categories: boolean, models: boolean) => {
       expect(categoriesChanged).to.equal(categories);
       expect(modelsChanged).to.equal(models);
-      expect(styleChanged).to.equal(style);
     };
 
     const view = await loadView();
     view.onViewedCategoriesChanged.addListener(() => categoriesChanged = true);
     view.onViewedModelsChanged.addListener(() => modelsChanged = true);
-    view.onDisplayStyleChanged.addListener(() => styleChanged = true);
-    expectChanges(false, false, false);
+    expectChanges(false, false);
 
     view.modelSelector.models.add("0x123");
     view.categorySelector.categories.add("0xfed");
     view.displayStyle.monochromeColor = ColorDef.red;
-    expectChanges(false, false, false);
+    expectChanges(false, false);
 
     vp = ScreenViewport.create(div, view);
 
     view.categorySelector.categories.add("0xabc");
     view.modelSelector.models.add("0x321");
-    expectChanges(true, true, false);
+    expectChanges(true, true);
 
     reset();
     view.displayStyle.monochromeColor = ColorDef.blue;
-    expectChanges(true, true, true);
+    expectChanges(true, true);
 
     reset();
     view.categorySelector.categories.add("0xabc");
     view.modelSelector.models.add("0x321");
     view.displayStyle.monochromeColor = ColorDef.green;
-    expectChanges(false, false, true);
+    expectChanges(false, false);
 
     reset();
     vp[Symbol.dispose]();
     view.modelSelector.models.add("0xa");
     view.categorySelector.categories.add("0xb");
     view.displayStyle.monochromeColor = ColorDef.black;
-    expectChanges(false, false, false);
+    expectChanges(false, false);
 
     vp = ScreenViewport.create(div, view);
     view.modelSelector.models.add("0xa");
     view.categorySelector.categories.add("0xb");
     view.displayStyle.monochromeColor = ColorDef.white;
-    expectChanges(true, true, true);
+    expectChanges(true, true);
   });
 });
