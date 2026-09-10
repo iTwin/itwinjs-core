@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Id64 } from "@itwin/core-bentley";
+import { assert, Id64 } from "@itwin/core-bentley";
 import { BatchType, PackedFeature } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { QueryTileFeaturesOptions, VisibleFeature } from "../../../render/VisibleFeature";
@@ -76,7 +76,8 @@ function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
     if (command.opcode !== "pushBatch")
       continue;
 
-    const ovrs = command.batch.getOverrides(features.target, features.target.currentBranch);
+    assert(undefined !== features.target.currentBranch.iModelRef);
+    const ovrs = command.batch.getOverrides(features.target.currentBranch.iModelRef.iModel, features.target, features.target.currentBranch);
     if (ovrs.allHidden)
       continue;
 

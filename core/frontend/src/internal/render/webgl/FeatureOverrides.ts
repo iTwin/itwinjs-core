@@ -22,6 +22,7 @@ import { BatchOptions } from "../../../common/render/BatchOptions";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 import { computeDimensions } from "../../../common/internal/render/VertexTable";
+import { IModelConnection } from "../../../IModelConnection";
 
 export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isModelHilited: boolean): boolean {
   if (hilites.isEmpty)
@@ -42,6 +43,7 @@ const scratchPackedFeature = PackedFeature.createWithIndex();
 export class FeatureOverrides implements WebGLDisposable {
   public readonly target: Target;
   private readonly _options: BatchOptions;
+  private readonly _iModel: IModelConnection;
   private _lut?: Texture2DHandle;
   private _mostRecentSymbologyOverrides?: FeatureSymbology.Overrides;
   private _lastFlashId = Id64.invalid;
@@ -374,14 +376,15 @@ export class FeatureOverrides implements WebGLDisposable {
     this.updateUniformSymbologyFlags();
   }
 
-  private constructor(target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
+  private constructor(iModel: IModelConnection, target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
     this.target = target;
+    this._iModel = iModel;
     this._options = options;
     this._cleanup = cleanup;
   }
 
-  public static createFromTarget(target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
-    return new FeatureOverrides(target, options, cleanup);
+  public static createFromTarget(iModel: IModelConnection, target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
+    return new FeatureOverrides(iModel, target, options, cleanup);
   }
 
   public get isDisposed(): boolean { return undefined === this._lut; }

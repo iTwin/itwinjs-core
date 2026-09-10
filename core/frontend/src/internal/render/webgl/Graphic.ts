@@ -29,6 +29,7 @@ import { BatchOptions } from "../../../common/render/BatchOptions";
 import { Contours } from "./Contours";
 import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
 import { IModelDisplayReference } from "../../../IModelDisplayReference";
+import { IModelConnection } from "../../../IModelConnection";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -118,12 +119,12 @@ export class PerTargetBatchData {
     return this._thematicSensors;
   }
 
-  public getFeatureOverrides(batch: Batch, provider: FeatureAppearanceProvider): FeatureOverrides {
+  public getFeatureOverrides(batch: Batch, provider: FeatureAppearanceProvider, iModel: IModelConnection): FeatureOverrides {
     const source = this.target.currentFeatureSymbologyOverrides?.source;
     let ovrs = this._featureOverrides.get(source);
     if (!ovrs) {
       const cleanup = source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
-      this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(this.target, batch.options, cleanup));
+      this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(iModel, this.target, batch.options, cleanup));
       ovrs.initFromMap(batch.featureTable, provider);
     }
 
@@ -211,8 +212,8 @@ export class PerTargetData {
     return this.getBatchData(target).getThematicSensors(this._batch);
   }
 
-  public getFeatureOverrides(target: Target, provider: FeatureAppearanceProvider): FeatureOverrides {
-    return this.getBatchData(target).getFeatureOverrides(this._batch, provider);
+  public getFeatureOverrides(iModel: IModelConnection, target: Target, provider: FeatureAppearanceProvider): FeatureOverrides {
+    return this.getBatchData(target).getFeatureOverrides(this._batch, provider, iModel);
   }
 
   public getContours(target: Target): Contours {
@@ -316,8 +317,8 @@ export class Batch extends Graphic {
     return this.perTargetData.getThematicSensors(target);
   }
 
-  public getOverrides(target: Target, provider: FeatureAppearanceProvider): FeatureOverrides {
-    return this.perTargetData.getFeatureOverrides(target, provider);
+  public getOverrides(iModel: IModelConnection, target: Target, provider: FeatureAppearanceProvider): FeatureOverrides {
+    return this.perTargetData.getFeatureOverrides(iModel, target, provider);
   }
 
   public getContours(target: Target): Contours {
