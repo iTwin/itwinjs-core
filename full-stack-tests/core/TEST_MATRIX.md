@@ -10,7 +10,7 @@ This matrix records which `full-stack-tests/core` tests run in each Vitest brows
 | Integration | `npm run -s test:integration:chrome` | `npm run -s test:integration:electron` |
 | Performance | `npm run -s test:performance:chrome` | `npm run -s test:performance:electron` |
 
-Normal commands exclude `#integration` and `#performance`. Integration and performance commands select those tags explicitly. Azurite is started by the surrounding package scripts where required.
+Normal commands exclude `#integration` and `#performance`. Integration and performance commands select those tags explicitly. Both performance runners collect only `standalone/QueryExtents.test.ts`, the owner of all nine performance tests, instead of creating tester frames for unrelated skipped suites. Update that file selection if performance coverage moves or expands to other files. Azurite is started by the surrounding package scripts where required.
 
 ## 5a decisions
 

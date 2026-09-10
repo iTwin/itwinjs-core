@@ -162,7 +162,8 @@ export default defineConfig({
   },
   test: {
     dir: "src/frontend",
-    include: ["**/*.test.ts"],
+    // QueryExtents owns the performance partition; do not create tester frames for unrelated suites.
+    include: !invert && grep === "#performance" ? ["**/QueryExtents.test.ts"] : ["**/*.test.ts"],
     exclude: [
       "**/app/NativeApp.test.ts",
       "**/standalone/BriefcaseConnection.test.ts",
