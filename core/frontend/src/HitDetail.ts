@@ -276,7 +276,7 @@ export class HitDetail {
 
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
   public draw(_context: DecorateContext) {
-    this.viewport.flashedId = this.sourceId;
+    this.viewport.flashedElement = { id: this.sourceId, iModel: this.iModel };
   }
 
   /** Get the tooltip content for this HitDetail. */
