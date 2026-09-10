@@ -344,7 +344,9 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
         IpcHost.send(channel, { loaded, total });
         return checkAbort();
       };
-      return { onDownloadProgress: throttleProgressCallback(progressCallback, checkAbort, progressInterval), done };
+      const throttledProgressCallback = throttleProgressCallback(progressCallback, checkAbort, progressInterval);
+
+      return { onDownloadProgress: throttledProgressCallback, done };
     }
 
     if (enableCancellation)
