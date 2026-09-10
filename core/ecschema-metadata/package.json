@@ -51,7 +51,7 @@
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/benchmark": "^2.1.0",
     "@types/node": "~20.17.0",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "@xmldom/xmldom": "~0.8.13",
     "benchmark": "^2.1.4",
     "cpx2": "^8.0.0",
