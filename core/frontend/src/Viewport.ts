@@ -69,7 +69,7 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
-import { IModelDisplayReferences, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
+import { IModelDisplayReferences } from "./IModelDisplayReferences";
 import { IModelDisplayReference } from "./core-frontend";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
@@ -191,6 +191,15 @@ export type OnFlashedIdChangedEventArgs = {
   readonly previous: Id64String;
   readonly current: undefined;
 };
+
+export interface FlashedElement {
+  readonly iModel: IModelConnection;
+  readonly id: Id64String;
+}
+
+function areFlashedElementsEqual(a: FlashedElement | undefined, b: FlashedElement | undefined): boolean {
+  return a?.id === b?.id && a?.iModel === b?.iModel;
+}
 
 /** Arguments to [[Viewport.getPixelDataWorldPoint]].
  * @public
@@ -361,6 +370,8 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
+  public readonly onFlashedElementChanged = new BeEvent<(previousFlashedElement: FlashedElement | undefined) => void>();
+
   /** Event indicating when a map-layer scale range visibility change for the current viewport scale.
  * @beta
  */
@@ -482,11 +493,14 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Current flash intensity from [0..this.flashSettings.maxIntensity] */
   private _flashIntensity = 0;
   /** Id of the currently flashed element. */
-  private _flashedElem?: string;
+  private _flashedElem?: FlashedElement;
   /** Id of last flashed element. */
-  private _lastFlashedElem?: string;
+  private _lastFlashedElem?: FlashedElement;
   /** The Id of the most recently flashed element, if any. */
   public get lastFlashedElementId(): Id64String | undefined {
+    return this._lastFlashedElem?.id;
+  }
+  public get lastFlashedElement(): FlashedElement | undefined {
     return this._lastFlashedElem;
   }
 
@@ -1826,7 +1840,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.invalidateDecorations();
   }
 
-  private _assigningFlashedId = false;
+  private _assigningFlashedElement = false;
 
   /** The Id of the currently-flashed object.
    * The "flashed" visual effect is typically applied to the object in the viewport currently under the mouse cursor, to indicate
@@ -1839,32 +1853,44 @@ export abstract class Viewport implements Disposable, TileUser {
    * @see [[flashSettings]] to customize the visual effect.
    */
   public get flashedId(): Id64String | undefined {
-    return this._flashedElem;
+    return this._flashedElem?.id;
   }
   public set flashedId(id: Id64String | undefined) {
-    if (this._assigningFlashedId)
-      throw new Error("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback.");
+    this.flashedElement = undefined !== id ? { id, iModel: this.iModel } : undefined;
+  }
 
-    if (id === Id64.invalid)
-      id = undefined;
+  public get flashedElement(): FlashedElement | undefined {
+    return this._flashedElem;
+  }
+
+  public set flashedElement(flashed: FlashedElement | undefined) {
+    if (this._assigningFlashedElement)
+      throw new Error("Cannot assign to Viewport.flashedElement from within an onFlashedElementChanged event callback.");
+
+    if (flashed?.id === Id64.invalid)
+      flashed = undefined;
+
+    if (undefined !== flashed && !Id64.isId64(flashed.id))
+      return;
 
     const previous = this._flashedElem;
-    if (id === previous || (undefined !== id && !Id64.isId64(id)))
+    if (areFlashedElementsEqual(flashed, previous))
       return;
 
     this._lastFlashedElem = this._flashedElem;
-    this._flashedElem = id;
+    this._flashedElem = flashed ? { id: flashed.id, iModel: flashed.iModel } : undefined;
 
-    this._assigningFlashedId = true;
+    this._assigningFlashedElement = true;
     try {
       // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
-      assert(undefined !== id || undefined !== previous);
-      // Note; we don't actually know that id is defined below, but since only current of previous needs to be
+      assert(undefined !== flashed || undefined !== previous);
+      // Note; we don't actually know that flashed is defined below, but since only current or previous needs to be
       // defined, we only need to assert that one of them is defined. Either would work.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.onFlashedIdChanged.raiseEvent(this, { current: id!, previous });
+      this.onFlashedIdChanged.raiseEvent(this, { current: flashed?.id!, previous: previous?.id });
+      this.onFlashedElementChanged.raiseEvent(previous);
     } finally {
-      this._assigningFlashedId = false;
+      this._assigningFlashedElement = false;
     }
   }
 
@@ -2563,14 +2589,14 @@ export abstract class Viewport implements Disposable, TileUser {
   private processFlash(): boolean {
     let needsFlashUpdate = false;
 
-    if (this.flashedId !== this._lastFlashedElem) {
+    if (!areFlashedElementsEqual(this._flashedElem, this._lastFlashedElem)) {
       this._flashIntensity = 0.0;
       this._flashUpdateTime = BeTimePoint.now();
-      this._lastFlashedElem = this.flashedId; // flashing has begun; this is now the previous flash
-      needsFlashUpdate = this.flashedId === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
+      this._lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
+      needsFlashUpdate = this.flashedElement === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (this.flashedId !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
+    if (this.flashedElement !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
       assert(undefined !== this._flashUpdateTime);
 
       const flashDuration = this.flashSettings.duration;
