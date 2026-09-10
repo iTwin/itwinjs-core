@@ -42,7 +42,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/eslint-plugin": "^6.0.0",
     "@types/node": "~20.17.0",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
     "tsx": "~4.22.0",
