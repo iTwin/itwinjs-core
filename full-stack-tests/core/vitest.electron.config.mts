@@ -39,7 +39,7 @@ export default defineConfig({
         replacement: require.resolve("path-browserify"),
       },
       {
-        find: "@itwin/core-frontend/lib/cjs/internal/render/MockRender",
+        find: /^@itwin\/core-frontend\/lib\/cjs\/internal\/render\/MockRender(?:\.js)?$/,
         replacement: path.resolve(packageRoot, "src/frontend/DeferredMockRender.mjs"),
       },
       {
@@ -111,7 +111,8 @@ export default defineConfig({
   },
   test: {
     dir: "src/frontend",
-    include: ["**/*.test.ts"],
+    // QueryExtents owns the performance partition; do not create tester frames for unrelated suites.
+    include: !invert && grep === "#performance" ? ["**/QueryExtents.test.ts"] : ["**/*.test.ts"],
     exclude: ["**/_Setup.test.ts"],
     setupFiles: [path.resolve(packageRoot, "src/frontend/vitest.setup.ts")],
     globals: true,

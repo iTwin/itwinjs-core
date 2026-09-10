@@ -69,8 +69,8 @@ function installFrameRouting(): void {
 
 installFrameRouting();
 
-// The existing backend initializer is also used by Certa. Reuse it unchanged and add only
-// the frame routing required by Vitest's child tester iframe.
+// Select the bridge callback registry before loading the shared backend initializer.
+process.env.VITEST_CORE_RUNNER = "vitest";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const backendInitialization = require("./backend") as Promise<(() => Promise<void>) | undefined>;
 

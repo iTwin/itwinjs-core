@@ -217,9 +217,13 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("properly deserializes gcs latitude", async () => {
-      const iTwinId = await TestUtility.getTestITwinId();
-      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.smallTex);
-      iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
-      assert.notEqual(iModel.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude, 0);
-    })
+    const iTwinId = await TestUtility.getTestITwinId();
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.smallTex);
+    const connection = await CheckpointConnection.openRemote(iTwinId, iModelId);
+    try {
+      assert.notEqual(connection.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude, 0);
+    } finally {
+      await connection.close();
+    }
+  });
 });
