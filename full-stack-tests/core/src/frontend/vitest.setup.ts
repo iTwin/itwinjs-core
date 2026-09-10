@@ -5,13 +5,19 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinonChai from "sinon-chai";
-import { afterEach, beforeEach } from "vitest";
+import { afterEach, beforeAll, beforeEach } from "vitest";
+import { setBackendCallbackInvoker } from "../certa/certaCommon";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 import "./testHooks";
 import { installChaiAssertions, resolveChaiPlugin } from "./testAssertions";
+
+beforeAll(async () => {
+  const { invokeBackendCallback } = await import("@itwin/vitest-browser-bridge/callbacks/browser");
+  setBackendCallbackInvoker(invokeBackendCallback);
+});
 
 chai.use(resolveChaiPlugin(chaiAsPromised));
 chai.use(resolveChaiPlugin(sinonChai));
