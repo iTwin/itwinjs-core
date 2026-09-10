@@ -192,12 +192,12 @@ export type OnFlashedIdChangedEventArgs = {
   readonly current: undefined;
 };
 
-export interface FlashedElement {
+export interface IModelAndElementId {
   readonly iModel: IModelConnection;
   readonly id: Id64String;
 }
 
-function areFlashedElementsEqual(a: FlashedElement | undefined, b: FlashedElement | undefined): boolean {
+function areIModelElementsEqual(a: IModelAndElementId | undefined, b: IModelAndElementId | undefined): boolean {
   return a?.id === b?.id && a?.iModel === b?.iModel;
 }
 
@@ -370,7 +370,7 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
-  public readonly onFlashedElementChanged = new BeEvent<(previousFlashedElement: FlashedElement | undefined) => void>();
+  public readonly onFlashedElementChanged = new BeEvent<(previousFlashedElement: IModelAndElementId | undefined) => void>();
 
   /** Event indicating when a map-layer scale range visibility change for the current viewport scale.
  * @beta
@@ -493,14 +493,14 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Current flash intensity from [0..this.flashSettings.maxIntensity] */
   private _flashIntensity = 0;
   /** Id of the currently flashed element. */
-  private _flashedElem?: FlashedElement;
+  private _flashedElem?: IModelAndElementId;
   /** Id of last flashed element. */
-  private _lastFlashedElem?: FlashedElement;
+  private _lastFlashedElem?: IModelAndElementId;
   /** The Id of the most recently flashed element, if any. */
   public get lastFlashedElementId(): Id64String | undefined {
     return this._lastFlashedElem?.id;
   }
-  public get lastFlashedElement(): FlashedElement | undefined {
+  public get lastFlashedElement(): IModelAndElementId | undefined {
     return this._lastFlashedElem;
   }
 
@@ -1859,11 +1859,11 @@ export abstract class Viewport implements Disposable, TileUser {
     this.flashedElement = undefined !== id ? { id, iModel: this.iModel } : undefined;
   }
 
-  public get flashedElement(): FlashedElement | undefined {
+  public get flashedElement(): IModelAndElementId | undefined {
     return this._flashedElem;
   }
 
-  public set flashedElement(flashed: FlashedElement | undefined) {
+  public set flashedElement(flashed: IModelAndElementId | undefined) {
     if (this._assigningFlashedElement)
       throw new Error("Cannot assign to Viewport.flashedElement from within an onFlashedElementChanged event callback.");
 
@@ -1874,7 +1874,7 @@ export abstract class Viewport implements Disposable, TileUser {
       return;
 
     const previous = this._flashedElem;
-    if (areFlashedElementsEqual(flashed, previous))
+    if (areIModelElementsEqual(flashed, previous))
       return;
 
     this._lastFlashedElem = this._flashedElem;
@@ -2589,7 +2589,7 @@ export abstract class Viewport implements Disposable, TileUser {
   private processFlash(): boolean {
     let needsFlashUpdate = false;
 
-    if (!areFlashedElementsEqual(this._flashedElem, this._lastFlashedElem)) {
+    if (!areIModelElementsEqual(this._flashedElem, this._lastFlashedElem)) {
       this._flashIntensity = 0.0;
       this._flashUpdateTime = BeTimePoint.now();
       this._lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash

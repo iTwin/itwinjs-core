@@ -15,7 +15,7 @@ import { ViewRect } from "../../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../../SelectionSet";
 import { SceneContext } from "../../../ViewContext";
-import { FlashedElement, ReadImageBufferArgs, Viewport } from "../../../Viewport";
+import { IModelAndElementId, ReadImageBufferArgs, Viewport } from "../../../Viewport";
 import { IModelConnection } from "../../../IModelConnection";
 import { CanvasDecoration } from "../../../render/CanvasDecoration";
 import { Decorations } from "../../../render/Decorations";
@@ -489,7 +489,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._hilites = hilite;
     desync(this._hiliteSyncTarget);
   }
-  public override setFlashed(flashed: FlashedElement, intensity: number) {
+  public override setFlashed(flashed: IModelAndElementId, intensity: number) {
     this._flashIntensity = intensity;
     if (flashed?.id === this._flashedElem?.id && flashed?.iModel === this._flashedElem?.iModel)
       return;
