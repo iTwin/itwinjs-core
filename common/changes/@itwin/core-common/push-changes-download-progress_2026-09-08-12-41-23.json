@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add download progress reporting and cancellation to pushChanges",
+      "type": "none",
+      "packageName": "@itwin/core-common"
+    }
+  ],
+  "packageName": "@itwin/core-common",
+  "email": "98940208+GytisCepk@users.noreply.github.com"
+}
