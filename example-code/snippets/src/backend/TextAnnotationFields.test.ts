@@ -86,6 +86,52 @@ describe("Text annotation field formatting", () => {
     ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel);
   });
 
+  it("formats a field from an adopted FormatSet", async () => {
+    // __PUBLISH_EXTRACT_START__ TextAnnotationFields.HappyPath
+    // The `Snippets.LENGTH` KindOfQuantity persists its values in meters. This FormatSet
+    // presents that KindOfQuantity in millimeters instead.
+    const formatSet: FormatSet = {
+      name: "Millimeters",
+      label: "Millimeters",
+      unitSystem: "metric",
+      formats: {
+        "Snippets.LENGTH": {
+          type: "Decimal",
+          precision: 2,
+          formatTraits: ["keepSingleZero", "showUnitLabel"],
+          uomSeparator: " ",
+          composite: { includeZero: true, units: [{ name: "Units.MM", label: "mm" }] },
+        },
+      },
+    };
+
+    // Adopt it for the iModel. Registration is asynchronous because it pre-warms a
+    // FormatterSpec for every requirement it is given, so evaluation itself needs no `await`.
+    await ElementDrivesTextAnnotation.registerFieldFormattingProvider({
+      iModel,
+      formatSet,
+      requirements: FieldFormattingSpecProvider.collectSchemaFormattingRequirements(iModel),
+    });
+    iModel.onBeforeClose.addOnce(() => ElementDrivesTextAnnotation.unregisterFieldFormattingProvider(iModel));
+
+    // A field displaying the `length` property of a widget that is 2.5 meters long.
+    const fieldRun = FieldRun.create({
+      propertyHost: { elementId, schemaName: "Snippets", className: "Widget" },
+      propertyPath: { propertyName: "length" },
+    });
+
+    const block = TextBlock.create();
+    block.appendRun(fieldRun);
+
+    // Evaluation updates the cached content of every field in the block, in memory.
+    ElementDrivesTextAnnotation.evaluateFields({ iModel, block });
+
+    const formattedContent = fieldRun.cachedContent; // "2500 mm"
+    // __PUBLISH_EXTRACT_END__
+
+    expect(formattedContent).to.equal("2500 mm");
+  });
+
   /** Builds a block containing a single field targeting the widget's `length` property. */
   function blockWithLengthField(formatSetId?: string): { block: TextBlock, field: FieldRun } {
     // __PUBLISH_EXTRACT_START__ TextAnnotationFields.ConfigureFieldRun
