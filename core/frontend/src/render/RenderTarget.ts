@@ -119,7 +119,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** @internal */
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
   /** @internal */
-  public setHiliteSet(_hilited: HiliteSet): void { }
+  public invalidateHilites(): void { }
   /** @internal */
   public setFlashed(_element: IModelAndElementId | undefined, _intensity: number): void { }
   /** @internal */

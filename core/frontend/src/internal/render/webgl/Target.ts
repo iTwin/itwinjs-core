@@ -116,7 +116,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _currPickExclusions = new Id64.Uint32Set();
   private _swapPickExclusions = new Id64.Uint32Set();
   public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
-  private _hilites: Hilites = new EmptyHiliteSet();
   private readonly _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _flashedElem?: FlashedElem;
   private _flashIntensity: number = 0;
@@ -199,7 +198,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get techniques(): Techniques { return this.renderSystem.techniques; }
 
-  public get hilites(): Hilites { return this._hilites; }
   public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
 
   public get pickExclusions(): Id64.Uint32Set { return this._currPickExclusions; }
@@ -485,8 +483,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public override overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this.uniforms.branch.overrideFeatureSymbology(ovr);
   }
-  public override setHiliteSet(hilite: HiliteSet): void {
-    this._hilites = hilite;
+  public override invalidateHilites(): void {
     desync(this._hiliteSyncTarget);
   }
   public override setFlashed(flashed: IModelAndElementId, intensity: number) {

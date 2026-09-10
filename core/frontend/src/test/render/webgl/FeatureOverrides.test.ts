@@ -340,7 +340,6 @@ describe("FeatureOverrides", () => {
           setup();
           vp.renderFrame();
 
-          expect(target.hilites).toEqual(vp.iModel.hilited);
           expect(b1.perTargetData.data.length).toEqual(1);
 
           const expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);

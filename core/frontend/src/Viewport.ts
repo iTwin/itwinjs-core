@@ -2679,7 +2679,7 @@ export abstract class Viewport implements Disposable, TileUser {
       this.setupFromView();
 
     if (this._selectionSetDirty) {
-      target.setHiliteSet(view.iModel.hilited);
+      target.invalidateHilites();
       this._selectionSetDirty = false;
       isRedrawNeeded = true;
     }

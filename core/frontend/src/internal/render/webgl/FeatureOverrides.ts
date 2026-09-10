@@ -411,7 +411,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
     this._mostRecentSymbologyOverrides = ovrs;
-    const hilite = this.target.hilites;
+    const hilite = this._iModel.hilited;
     this._lut = this._initialize(provider, map, ovrs, this.target.pickExclusions, hilite, this.target.flashedElem);
     this._lastFlashId = undefined;
     this._hiliteSyncObserver = {};
@@ -428,7 +428,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
     const flashedId = this._iModel === this.target.flashedElem?.iModel ? this.target.flashedElem.id : undefined;
 
-    const hilite = this.target.hilites;
+    const hilite = this._iModel.hilited;
     const hiliteUpdated = !sync(this.target.hiliteSyncTarget, this._hiliteSyncObserver);
     const pickExcludesUpdated = !sync(this.target.pickExclusionsSyncTarget, this._pickExclusionsSyncObserver);
 
