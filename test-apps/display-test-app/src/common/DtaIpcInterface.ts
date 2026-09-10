@@ -78,24 +78,18 @@ export interface DtaIpcInterface {
   setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
 
   /**
-   * Re-registers the field formatting provider for the specified iModel from `defaultSet`,
-   * `sets`, and everything previously imported for it - so importing a second FormatSet builds
-   * up a routing table rather than replacing the first. Pre-warms a formatter for every
-   * KindOfQuantity the iModel's schemas declare, then resolves; after which all field evaluation
-   * is synchronous.
-   *
-   * `defaultSet` is *adopted*: it applies to every FieldRun that names no FormatSet. Each entry
-   * of `sets` is addressable under its `id` by a FieldRun's `formatSet` option. Re-supplying the
-   * default, or an id, replaces it. Supplying neither unregisters and discards everything
-   * imported so far.
+   * Re-registers the field formatting provider for the specified iModel, adding to whatever was
+   * previously imported rather than replacing it. `defaultSet` applies to every FieldRun that
+   * names no FormatSet; each `sets` entry is addressable by its `id`. Supplying neither
+   * unregisters and discards everything imported so far.
    */
   registerFieldFormattingProvider(iModelKey: string, defaultSet?: FormatSet, sets?: { id: string, formatSet: FormatSet }[]): Promise<void>;
 
   /** Reads a UTF-8 text file from the local filesystem. Intended for DTA dev-loop keyins only. */
   readTextFile(filePath: string): Promise<string>;
 
-  /** Writes `contents` as a UTF-8 text file to the local filesystem. Intended for DTA dev-loop
-   * keyins only. Rejects rather than clobbering an existing file unless `overwrite` is true.
+  /** Writes `contents` as a UTF-8 text file. Rejects rather than clobbering an existing file
+   * unless `overwrite` is true.
    */
   writeTextFile(filePath: string, contents: string, overwrite?: boolean): Promise<void>;
 }
