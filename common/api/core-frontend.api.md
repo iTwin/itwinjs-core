@@ -1762,6 +1762,8 @@ export class BriefcaseConnection extends IModelConnection {
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
+    // @beta
+    pushChanges(description: string, options?: PushChangesOptions): Promise<ChangesetIndexAndId>;
     // (undocumented)
     protected requireTimeline(): void;
     // @deprecated
@@ -8139,6 +8141,13 @@ export interface PullChangesOptions {
     abortSignal?: GenericAbortSignal;
     downloadProgressCallback?: OnDownloadProgress;
     progressInterval?: number;
+}
+
+// @beta
+export interface PushChangesOptions {
+    abortSignal?: GenericAbortSignal;
+    downloadProgressCallback?: OnDownloadProgress;
+    downloadProgressInterval?: number;
 }
 
 // @public
