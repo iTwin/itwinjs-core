@@ -15,13 +15,15 @@
 # | NodeCompat_22         | ubuntu-latest        | 22.x | no                  | Node 22 backend/RPC compatibility            |
 #
 # Rationale:
-# - Renderer behavior varies by OS, GPU stack, and architecture -- not by Node
-#   version (Chrome bundles its own runtime; Electron pins its own Node). So the
-#   graphics-heavy Core full-stack tests run once per OS/architecture on the
-#   latest supported Node only.
+# - Renderer behavior varies by OS, GPU stack, and architecture.
 # - Node-version compatibility concerns the backend/RPC layers, so older Node
 #   versions are validated on a single representative OS (Linux x64) with the
 #   expensive renderer suites skipped (runRendererTests: false).
+#   Known limitation: Node-version behavior rarely CAN differ by platform. Node 20 tests
+#   failed on Linux ARM64 (the only known instance), and the support matrix was
+#   updated to exclude Node 20 on Linux ARM64 rather than cover that combination
+#   here. If another platform-specific Node issue arises, add a targeted lane for
+#   that specific combination instead of reverting to the full Cartesian product.
 # - Architecture coverage (arm64) runs on the latest supported Node.
 #
 # The PR integration pipeline (integration-pr-validation.yaml) additionally runs
