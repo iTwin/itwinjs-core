@@ -19,6 +19,11 @@ steps:
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 
+  # Electron 42+ installs lazily; prepare it before concurrent consumers can race extraction.
+  - script: node node_modules/electron/install.js
+    displayName: "Ensure Electron binary is downloaded"
+    workingDirectory: "tools/vitest-browser-bridge"
+
   - script: |
       # full-stack-tests/backend/package.json
       node ./common/scripts/install-run-rush build -v --to backend-integration-tests
@@ -33,23 +38,6 @@ steps:
 
       node ./common/scripts/install-run-rush webpack:test -v
     displayName: "Rush build"
-
-  # Electron 42+ no longer downloads the binary during npm install (postinstall removed).
-  # Ensure the binary is present before configuring the AppArmor profile.
-  - script: |
-      ELECTRON_DIR=$(find $PWD/common/temp/node_modules/.pnpm -path "*/electron@*/node_modules/electron" -type d 2>/dev/null | head -n 1)
-      if [ ! -d "$ELECTRON_DIR" ]; then
-        echo "##vso[task.logissue type=warning]Unable to find Electron package directory"
-      elif [ -f "$ELECTRON_DIR/dist/electron" ]; then
-        echo "Electron binary already present"
-      elif [ -f "$ELECTRON_DIR/install.js" ]; then
-        echo "Downloading Electron binary..."
-        node "$ELECTRON_DIR/install.js"
-      else
-        echo "##vso[task.logissue type=warning]Unable to find Electron install script at $ELECTRON_DIR/install.js"
-      fi
-    displayName: "Ensure Electron binary is downloaded"
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # Starting Ubuntu 24.04, unprivileged user namespaces are restricted by default via AppArmor.
   # Electron's sandbox requires user namespaces, so we create an AppArmor profile that grants the 'userns' permission to the Electron binary.

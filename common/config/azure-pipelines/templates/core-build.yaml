@@ -52,6 +52,11 @@ steps:
     timeoutInMinutes: 5
     retryCountOnTaskFailure: 1
 
+  # Electron 42+ installs lazily; prepare it before concurrent consumers can race extraction.
+  - script: node node_modules/electron/install.js
+    displayName: "Ensure Electron binary is downloaded"
+    workingDirectory: ${{ parameters.workingDir }}/tools/vitest-browser-bridge
+
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
