@@ -76,12 +76,12 @@ describe("MomentData", () => {
       LineString3d.create([[1, 4], [0, 4], [0, 0], [1, 0]]),
       Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0), Point3d.create(3, 2), Point3d.create(1, 4)));
     const mirrorX = Transform.createFixedPointAndMatrix(undefined, Matrix3d.createScale(-1, 1, 1));
-    const regionD1 = regionD0.cloneTransformed(mirrorX)!;
-    regions.push(regionD0, regionD1 as Loop);
+    const regionD1 = regionD0.cloneTransformed(mirrorX);
+    regions.push(regionD0, regionD1);
     const skewFactor = 0.25;
     const skew = Transform.createFixedPointAndMatrix(undefined, Matrix3d.createRowValues(1, skewFactor, 0, 0, 1, 0, 0, 0, 1));
-    regions.push(regionD0.cloneTransformed(skew)! as AnyRegion);
-    regions.push(regionD1.cloneTransformed(skew)! as AnyRegion);
+    regions.push(regionD0.cloneTransformed(skew));
+    regions.push(regionD1.cloneTransformed(skew));
     const poles = new Float64Array([
       1, 0, 0,
       4, 0, 0,
@@ -99,12 +99,12 @@ describe("MomentData", () => {
       regions.push(regionE0);
     }
     for (const r0 of regions) {
-      const r1 = r0.cloneTransformed(mirrorX)!;
+      const r1 = r0.cloneTransformed(mirrorX);
       const areas: Array<number | undefined> = [];
       let x0 = 0;
       for (const r of [r0, r1]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, r, x0, y0);
-        const rawMomentData = RegionOps.computeXYAreaMoments(r as AnyRegion)!;
+        const rawMomentData = RegionOps.computeXYAreaMoments(r)!;
         const principalMomentData = MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums)!;
         ck.testDefined(principalMomentData.absoluteQuantity);
         GeometryCoreTestIO.showMomentData(allGeometry, principalMomentData, false, x0, y0);
