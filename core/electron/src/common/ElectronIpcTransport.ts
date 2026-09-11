@@ -7,10 +7,9 @@ import { BentleyError, BentleyStatus, ProcessDetector } from "@itwin/core-bentle
 import {
   IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
 } from "@itwin/core-common";
-import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
-import { ElectronRpcConfiguration } from "./ElectronRpcManager";
-import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
-import { ElectronRpcRequest } from "./ElectronRpcRequest";
+import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush.js";
+import { ElectronRpcConfiguration } from "./ElectronRpcManager.js";
+import { ElectronRpcProtocol } from "./ElectronRpcProtocol.js";
 
 const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
 const DATA_CHANNEL = iTwinChannel("rpc.data");
@@ -164,7 +163,11 @@ export class FrontendIpcTransport extends ElectronIpcTransport<RpcRequestFulfill
     }
 
     const protocol = this._protocol;
-    const request = protocol.requests.get(message.id) as ElectronRpcRequest;
+    const request = protocol.requests.get(message.id);
+    // A response may arrive after shutdown has removed the request.
+    if (!request)
+      return;
+
     request.notifyResponse(message);
   }
 }

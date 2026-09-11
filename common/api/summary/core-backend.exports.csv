@@ -117,6 +117,7 @@ beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
 public;interface;CreateSheetViewDefinitionArgs
 beta;function;createTerminatorGeometry
+beta;interface;CreateTerminatorGeometryArgs
 beta;interface;CustomHandledProperty
 beta;interface;DataTransformationResources
 beta;enum;DataTransformationStrategy
@@ -499,6 +500,7 @@ preview;type;PropertyHandler
 beta;namespace;PropertyStore
 public;type;PullChangesArgs
 public;interface;PushChangesArgs
+beta;interface;QueryAspectOptions
 beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
 internal;function;queryStringResourceNames
@@ -537,6 +539,9 @@ public;class;SchemaMap
 internal;type;SchemaMatchType
 public;class;Schemas
 internal;namespace;SchemaSync
+alpha;function;repairForIModel
+alpha;interface;RepairForIModelArgs
+alpha;type;RepairScope
 public;class;SectionCallout
 public;class;SectionDrawing
 preview;class;SectionDrawing
@@ -636,6 +641,7 @@ public;class;SubjectOwnsSubjects
 beta;class;SynchronizationConfigLink
 beta;class;SynchronizationConfigProcessesSources
 beta;class;SynchronizationConfigSpecifiesRootSources
+beta;namespace;SynchronousChannel
 beta;type;SynchronousQueryOptions
 beta;class;TemplateRecipe2d
 beta;class;TemplateRecipe3d
@@ -667,6 +673,12 @@ public;interface;ToChangesetArgs
 public;interface;TokenArg
 public;interface;TxnChangedEntities
 preview;interface;TxnChangedEntities
+public;interface;TxnChangedEntitiesWithMetadata
+preview;interface;TxnChangedEntitiesWithMetadata
+public;interface;TxnChangedEntity
+preview;interface;TxnChangedEntity
+public;type;TxnChangedEntityIterable
+preview;type;TxnChangedEntityIterable
 public;type;TxnIdString
 preview;type;TxnIdString
 public;class;TxnManager
@@ -676,6 +688,7 @@ public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
+alpha;interface;UpgradeSchemasArgs
 public;class;UrlLink
 preview;class;UrlLink
 public;interface;V2CheckpointAccessProps

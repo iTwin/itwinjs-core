@@ -65,7 +65,9 @@ let iModelJsCss: string | undefined = `
 
 .logo-cards {
   position:relative;
-  width:100%
+  width:100%;
+  margin-block-start:1em;
+  margin-block-end:1em
 }
 
 .imodeljs-modal-overlay {
@@ -109,7 +111,7 @@ let iModelJsCss: string | undefined = `
     max-width: calc(100% - (2 * var(--width-border))) !important;
     width: unset !important;
   }
-  .imodeljs-about .logo-card-message p {
+  .imodeljs-about .logo-card-message p, .imodeljs-about .logo-card-message .logo-cards {
     margin-block-end: 1em;
   }
   .imodeljs-about .logo-cards {

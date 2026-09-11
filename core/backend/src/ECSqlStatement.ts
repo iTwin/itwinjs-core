@@ -354,7 +354,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     const resp = this._stmt.toRow({
       classIdsToClassNames: args.classIdsToClassNames,
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
+      useJsNames: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
       abbreviateBlobs: false,
       // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
       // converted into classNames which is a bug that we must now support.This option preserves this special behavior until

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Clean up the Chrome test webserver when browser tests fail",
+      "type": "none",
+      "packageName": "@itwin/certa"
+    }
+  ],
+  "packageName": "@itwin/certa",
+  "email": "77415528+tcobbs-bentley@users.noreply.github.com"
+}

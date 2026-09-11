@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AuxCoordSystemProps, BisCodeSpec, Code } from "@itwin/core-common";
+import { AuxCoordSystemProps, BisCodeSpec, Code, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { AxisOrder, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { AccuDraw, AccuDrawFlags, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
@@ -883,14 +883,30 @@ export class AccuDrawShortcuts {
 
   private static async getNamedACS(view: ViewState, acsName: string): Promise<{ validForView: boolean, acs?: AuxCoordSystemState }> {
     const acsCode = await this.getACSCode(view, acsName);
-    const acsProps = await view.iModel.elements.loadProps(acsCode.toJSON());
-    if (!acsProps)
-      return { validForView: false };
+    // Search by spec+name across all scopes; prefer view.model scope when duplicates exist.
+    const ecsql = "SELECT ECInstanceId, CodeScope.Id scopeId FROM BisCore.AuxCoordSystem WHERE CodeSpec.Id=? AND CodeValue=?";
+    const candidateIds: string[] = [];
+    for await (const row of view.iModel.createQueryReader(ecsql, QueryBinder.from([acsCode.spec, acsName]), { rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+      if (row.scopeId === view.model)
+        candidateIds.unshift(row.ECInstanceId);
+      else
+        candidateIds.push(row.ECInstanceId);
+    }
 
-    const namedAcs = AuxCoordSystemState.fromProps(acsProps, view.iModel);
-    const validForView = namedAcs.isValidForView(view);
+    let firstFound: AuxCoordSystemState | undefined;
+    for (const elementId of candidateIds) {
+      const acsProps = await view.iModel.elements.loadProps(elementId);
+      if (!acsProps)
+        continue;
+      const namedAcs = AuxCoordSystemState.fromProps(acsProps, view.iModel);
+      if (namedAcs.isValidForView(view))
+        return { validForView: true, acs: namedAcs };
+      // Keep the first invalid match so callers can distinguish "found but wrong type" from "not found".
+      if (undefined === firstFound)
+        firstFound = namedAcs;
+    }
 
-    return { validForView, acs: namedAcs };
+    return { validForView: false, acs: firstFound };
   }
 
   private static async createNewACS(view: ViewState, acsName: string): Promise<AuxCoordSystemState> {

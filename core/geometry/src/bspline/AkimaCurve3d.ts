@@ -19,25 +19,28 @@ import { XYZProps } from "../geometry3d/XYZProps";
 import { BSplineCurve3d } from "./BSplineCurve";
 
 /**
- * fitPoints  [[AkimaCurve3d]]
- * * This is a "json compatible" version of the serializer-friendly [[AkimaCurve3dOptions]]
+ * * This is a "json compatible" version of the serializer-friendly [[AkimaCurve3dOptions]].
  * @public
  */
  export interface AkimaCurve3dProps {
- /** Points that the curve must pass through */
+ /** Points that the curve must pass through. */
  fitPoints: XYZProps[];
 }
 
 /**
- * fitPoints and end condition data for [[AkimaCurve3d]]
+ * Data for an [[AkimaCurve3d]]
  * * This is a "typed object" version of the serializer-friendly [[AkimaCurve3dProps]]
- * * Typical use cases rarely require all parameters, so the constructor does not itemize them as parameters.
  * @public
  */
 export class AkimaCurve3dOptions {
-  public fitPoints: Point3d[];
   /**
-   *
+   * Points that the curve must pass through.
+   * * Traditional DGN-style Akima curves interpret the first two and last two fit points as end tangent conditions,
+   * however as the current implementation uses another interpolation algorithm, there is no such interpretation here.
+   */
+  public fitPoints: Point3d[];
+
+  /**
    * @param fitPoints points to CAPTURE
    * @param knots array to CAPTURE
    */
@@ -49,44 +52,45 @@ export class AkimaCurve3dOptions {
   * First and last 2 points are "beyond the end" for control of end slope.
  fitPoints: Point3d[];
 
-/** Clone with strongly typed members reduced to simple json. */
+  /** Clone with strongly typed members reduced to simple json. */
   public cloneAsAkimaCurve3dProps(): AkimaCurve3dProps {
     const props = {
       fitPoints: Point3dArray.cloneDeepJSONNumberArrays(this.fitPoints),
     };
     return props;
   }
-/** Clone with strongly typed members reduced to simple json. */
+  /** Clone with strongly typed members reduced to simple json. */
   public clone(): AkimaCurve3dOptions {
     const clone = new AkimaCurve3dOptions(Point3dArray.clonePoint3dArray(this.fitPoints));
     return clone;
   }
 
-/** Clone with strongly typed members reduced to simple json. */
-public static create(source: AkimaCurve3dProps): AkimaCurve3dOptions {
-  const result = new AkimaCurve3dOptions(Point3dArray.clonePoint3dArray(source.fitPoints));
-  return result;
-}
+  /** Clone with strongly typed members reduced to simple json. */
+  public static create(source: AkimaCurve3dProps): AkimaCurve3dOptions {
+    const result = new AkimaCurve3dOptions(Point3dArray.clonePoint3dArray(source.fitPoints));
+    return result;
+  }
 
+  /** Whether the two options are equivalent or both undefined. */
   public static areAlmostEqual(dataA: AkimaCurve3dOptions | undefined, dataB: AkimaCurve3dOptions | undefined): boolean {
     if (dataA === undefined && dataB === undefined)
       return true;
-    if (dataA !== undefined && dataB !== undefined) {
-        return Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) => a.isAlmostEqual(b));
-    }
+    if (dataA !== undefined && dataB !== undefined)
+      return Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) => a.isAlmostEqual(b));
     return false;
   }
 }
 
 /**
- * Interpolating curve.
+ * Interpolating curve using the Akima formulation.
  * * Derive from [[ProxyCurve]]
  * * Use a [[BSplineCurve3d]] as the proxy
- * *
+ * * Currently the Akima formulation is replaced with a Greville interpolation.
  * @public
  */
 export class AkimaCurve3d extends ProxyCurve  {
-  public readonly curvePrimitiveType = "interpolationCurve";
+  /** String name for schema properties. */
+  public readonly curvePrimitiveType = "akimaCurve";
   private _options: AkimaCurve3dOptions;
   /** CAPTURE properties and proxy curve. */
   private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive) {
@@ -100,11 +104,11 @@ export class AkimaCurve3d extends ProxyCurve  {
       result = this._proxyCurve.dispatchToGeometryHandler(handler);
     return result;
   }
-/**
- * Create an [[AkimaCurve3d]] based on points, knots, and other properties in the [[AkimaCurve3dProps]] or [[AkimaCurve3dOptions]].
- * * This saves a COPY OF the options or props.
- * * Use createCapture () if the options or props can be used without copy
- */
+  /**
+   * Create an [[AkimaCurve3d]] based on an [[AkimaCurve3dProps]] or [[AkimaCurve3dOptions]].
+   * * This saves a COPY OF the options or props.
+   * * Use createCapture() if the options or props can be used without copy
+   */
   public static create(options: AkimaCurve3dOptions | AkimaCurve3dProps): AkimaCurve3d | undefined {
     let optionsCopy;
     if (options instanceof AkimaCurve3dOptions) {
@@ -157,11 +161,9 @@ export class AkimaCurve3d extends ProxyCurve  {
    * Transform this [[AkimaCurve3d]] and its defining data in place
    */
   public tryTransformInPlace(transform: Transform): boolean {
-    const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
-    if (proxyOk) {
-      transform.multiplyPoint3dArray(this._options.fitPoints);
-    }
-    return proxyOk;
+    this._proxyCurve.tryTransformInPlace(transform);
+    transform.multiplyPoint3dArray(this._options.fitPoints);
+    return true; // we know this succeeds
   }
   /**
    * Find intervals of this CurvePrimitive that are interior to a clipper.
@@ -178,13 +180,14 @@ export class AkimaCurve3d extends ProxyCurve  {
     return new AkimaCurve3d(this._options.clone(), this._proxyCurve.clone());
   }
   /** Return a transformed clone. */
-  public override cloneTransformed(transform: Transform): AkimaCurve3d | undefined {
-    return super.cloneTransformed(transform) as AkimaCurve3d | undefined;
+  public override cloneTransformed(transform: Transform): AkimaCurve3d {
+    return super.cloneTransformed(transform) as AkimaCurve3d;
   }
 
   /** Test if `other` is also an [[AkimaCurve3d]] */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof AkimaCurve3d; }
 
+  /** Test if this [[AkimaCurve3d]] is almost equal to another GeometryQuery object. */
   public override isAlmostEqual(other: GeometryQuery): boolean{
     if (other instanceof AkimaCurve3d) {
       return AkimaCurve3dOptions.areAlmostEqual(this._options, other._options);

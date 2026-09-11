@@ -507,7 +507,11 @@ export abstract class InteractiveTool extends Tool {
   /** Override Call to reset tool to initial state */
   public async onReinitialize(): Promise<void> { }
 
-  /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
+  /** Invoked when the tool becomes no longer active, to perform additional cleanup logic.
+   * Cleanup must not assume that the EditCommand associated with the tool is still active: an immediate tool may have finished or
+   * replaced it while this tool remained active. Tools must not start an EditCommand from onCleanup; ToolAdmin owns finishing the active EditCommand during tool cleanup.
+   * @note A ViewTool should never start an EditCommand. An InputCollector may start an EditCommand only if suspending a tool that supports EditManipulators (ex. SelectionTool).
+   */
   public async onCleanup(): Promise<void> { }
 
   /** Notification of a ViewTool or InputCollector starting and this tool is being suspended.
