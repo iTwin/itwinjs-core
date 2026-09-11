@@ -4,6 +4,8 @@ publish: false
 # NextVersion
 
 - [NextVersion](#nextversion)
+  - [@itwin/core-frontend](#itwincore-frontend)
+    - [Download progress for pushChanges](#download-progress-for-pushchanges)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
     - [ChangesetReader changes](#changesetreader-changes)
@@ -46,6 +48,23 @@ The shared [TxnEntityMetadata]($common) contract is now exported from `@itwin/co
 The frontend [BriefcaseTxns]($frontend) events continue to supply [TxnEntityChanges]($frontend), which has its own metadata and filtering API. The backend and frontend payloads describe the same transaction activity but are different types and should be documented and used separately.
 
 The existing `TxnEntityMetadata` export from `@itwin/core-frontend` is deprecated; import [TxnEntityMetadata]($common) from `@itwin/core-common` instead.
+
+## @itwin/core-frontend
+
+### Download progress for pushChanges
+
+Pushing local changes first pulls, applies, and merges any changesets made by other users. That download could not previously be observed or cancelled. A new `@beta` overload of [BriefcaseConnection.pushChanges]($frontend) accepts [PushChangesOptions]($frontend), mirroring the options already available on [BriefcaseConnection.pullChanges]($frontend):
+
+```ts
+const abortSignal = new AbortController();
+await briefcase.pushChanges("my changes", {
+  downloadProgressCallback: (progress) => console.log(`${progress.loaded} of ${progress.total} bytes`),
+  downloadProgressInterval: 500,
+  abortSignal: abortSignal.signal,
+});
+```
+
+Aborting rejects the returned promise and leaves the local changes pending, so the push can be retried later.
 
 ## @itwin/core-backend
 
