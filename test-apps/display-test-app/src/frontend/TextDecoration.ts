@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Placement2dProps, TextAnnotation, TextAnnotationProps } from "@itwin/core-common";
+// cspell:ignore formatset, insertstyle, updatestyle, deletestyle
+
+import { Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { FormatSet } from "@itwin/ecschema-metadata";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -128,6 +130,10 @@ export class TextDecorationTool extends Tool {
     ["insert", "Insert the current annotation into the iModel (2d views only)."],
     ["update <annotationId>", "Update the given annotation element with the current annotation."],
     ["delete <annotationId>", "Delete the given annotation element."],
+    ["insertstyle <name> <path>", "Insert an AnnotationTextStyle named <name> from a JSON file of TextStyleSettingsProps."],
+    ["updatestyle <name> <path>", "Update the AnnotationTextStyle named <name> from a JSON file of TextStyleSettingsProps."],
+    ["deletestyle <name>", "Delete the AnnotationTextStyle with the given name."],
+    ["scale <factor>", "Set the scale factor on the current Drawing element."],
     ["debug", "Toggle drawing of the anchor point and range."],
   ];
 
@@ -272,6 +278,51 @@ export class TextDecorationTool extends Tool {
 
         await dtaIpc.deleteText(vp.iModel.key, arg);
         return true;
+      }
+      case "insertstyle": {
+        const path = inArgs[2];
+        if (!arg || !path) {
+          throw new Error("Expected a style name and a path to a JSON file containing TextStyleSettingsProps");
+        }
+
+        const settings = JSON.parse(await dtaIpc.readTextFile(path)) as TextStyleSettingsProps;
+        const styleId = await dtaIpc.insertTextStyle(vp.iModel.key, arg, settings);
+        // eslint-disable-next-line no-console
+        console.log(`Inserted text style with id ${styleId} and name ${arg}`);
+
+        return true;
+      }
+      case "updatestyle": {
+        const path = inArgs[2];
+        if (!arg || !path) {
+          throw new Error("Expected a style name and a path to a JSON file containing TextStyleSettingsProps");
+        }
+
+        const settings = JSON.parse(await dtaIpc.readTextFile(path)) as TextStyleSettingsProps;
+        await dtaIpc.updateTextStyle(vp.iModel.key, arg, settings);
+
+        break;
+      }
+      case "deletestyle": {
+        if (!arg) {
+          throw new Error("Expected style name");
+        }
+
+        await dtaIpc.deleteTextStyle(vp.iModel.key, arg);
+        return true;
+      }
+      case "scale": {
+        if (!arg) {
+          throw new Error("Expected scale factor");
+        }
+
+        const scaleFactor = Number(arg);
+        if (isNaN(scaleFactor)) {
+          throw new Error("Expected a number for scale factor");
+        }
+
+        await dtaIpc.setScaleFactor(vp.iModel.key, editor.modelId, scaleFactor);
+        break;
       }
       default:
         throw new Error(`unrecognized command ${cmd}`);
