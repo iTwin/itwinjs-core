@@ -6,6 +6,8 @@ A [Workspace]($backend) provides the binary resources an iTwin.js application ne
 
 [Settings](./Settings.md) tell the application *which* `WorkspaceDb`s to load; this file explains how those databases are structured, created, and accessed. For everything about settings — schemas, dictionaries, priorities, iTwin settings, iModel settings, and cloud-hosted settings containers — see [Settings](./Settings.md).
 
+> To organize reusable elements that applications can copy into an iModel, see [Catalogs](./Catalogs.md).
+
 ## Choosing the right workspace
 
 At runtime, settings and resources are accessed through one of three workspace scopes. Which one you use depends on what you're configuring and who it applies to. Think in terms of *who should see this*: everyone in the app, everyone in one iTwin, or only one iModel.
@@ -136,5 +138,3 @@ Because the setting is stored at the iTwin scope, every iModel in the iTwin reso
 ```
 
 In this example, the setting explicitly references version 1.1.1 of the cornus `WorkspaceDb` — the patch that added the Northern Swamp Dogwood. If we had omitted the [WorkspaceDbProps.version]($backend) property, it would have defaulted to the latest available version. In this case the result would be the same (1.1.1), but in the future, if a newer version were published, it would be picked up automatically. When you need **deterministic, reproducible** behavior — for example, in a regulated workflow — set `version` to a specific value to pin it. We could also configure the version more precisely using [semantic versioning](https://semver.org) rules to specify a range of acceptable versions. When compatible new versions of a `WorkspaceDb` are published, the workspace would automatically consume them without requiring any explicit changes to its [Settings]($backend).
-
-
