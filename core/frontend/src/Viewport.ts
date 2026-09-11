@@ -1692,7 +1692,8 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
-    this.maybeInvalidateScene();
+    this.iModelRefs.primary.invalidateSymbologyOverrides();
+    this.invalidateScene();
   }
 
   /** Notifies this viewport that a change in application state requires its [[FeatureSymbology.Overrides]] to be recomputed.
