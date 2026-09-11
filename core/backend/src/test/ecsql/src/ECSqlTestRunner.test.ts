@@ -18,6 +18,7 @@ enum TestDataset {
 }
 
 const snapshotDbs: { [key in TestDataset]?: SnapshotDb } = {};
+let supportsRelations = false;
 
 describe("Markdown based ECDb test runner", async () => {
   before(async () => {
@@ -26,7 +27,20 @@ describe("Markdown based ECDb test runner", async () => {
     if (!fs.existsSync(datasetFilePath)) {
       throw new Error(`Dataset file ${datasetFilePath} does not exist`);
     }
-    snapshotDbs[TestDataset.AllProperties] = SnapshotDb.openFile(datasetFilePath);
+    const snapshotDb = SnapshotDb.openFile(datasetFilePath);
+    snapshotDbs[TestDataset.AllProperties] = snapshotDb;
+
+    supportsRelations = snapshotDb.withSqliteStatement(
+      "SELECT 1 FROM pragma_module_list WHERE name='relations'",
+      (statement) => statement.step() === DbResult.BE_SQLITE_ROW,
+    );
+    if (supportsRelations) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      using _statement = snapshotDb.prepareStatement(
+        "SELECT RelatedECInstanceId FROM ECVLib.Relations(1, 1) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES",
+        false,
+      );
+    }
   });
 
   after(() => {
@@ -50,16 +64,22 @@ describe("Markdown based ECDb test runner", async () => {
       continue;
     }
     const dataset = TestDataset.AllProperties;
+    const skipIfUnsupported = function (this: Mocha.Context) {
+      if ("RelationsVTTests.ecsql.md" === test.fileName && !supportsRelations)
+        this.skip();
+    };
 
     if (test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.Statement) {
       if (test.skip)
         it(`${test.fileName}: ${test.title} (Statement) skipped. Reason: ${test.skip}`);
       else if (test.only)
-        it.only(`${test.fileName}: ${test.title} (Statement)`, () => {
+        it.only(`${test.fileName}: ${test.title} (Statement)`, function () {
+          skipIfUnsupported.call(this);
           runECSqlStatementTest(test, dataset);
         });
       else
-        it(`${test.fileName}: ${test.title} (Statement)`, () => {
+        it(`${test.fileName}: ${test.title} (Statement)`, function () {
+          skipIfUnsupported.call(this);
           runECSqlStatementTest(test, dataset);
         });
     }
@@ -70,18 +90,22 @@ describe("Markdown based ECDb test runner", async () => {
         it(`${test.fileName}: ${test.title} (ECSqlSyncReader) skipped. Reason: ${test.skip}`);
       }
       else if (test.only) {
-        it.only(`${test.fileName}: ${test.title} (ECSqlReader)`, async () => {
+        it.only(`${test.fileName}: ${test.title} (ECSqlReader)`, async function () {
+          skipIfUnsupported.call(this);
           await runECSqlReaderTest(test, dataset);
         });
-        it.only(`${test.fileName}: ${test.title} (ECSqlSyncReader)`, async () => {
+        it.only(`${test.fileName}: ${test.title} (ECSqlSyncReader)`, async function () {
+          skipIfUnsupported.call(this);
           await runECSqlSyncReaderTest(test, dataset);
         });
       }
       else {
-        it(`${test.fileName}: ${test.title} (ECSqlReader)`, async () => {
+        it(`${test.fileName}: ${test.title} (ECSqlReader)`, async function () {
+          skipIfUnsupported.call(this);
           await runECSqlReaderTest(test, dataset);
         });
-        it(`${test.fileName}: ${test.title} (ECSqlSyncReader)`, async () => {
+        it(`${test.fileName}: ${test.title} (ECSqlSyncReader)`, async function () {
+          skipIfUnsupported.call(this);
           await runECSqlSyncReaderTest(test, dataset);
         });
       }

@@ -8,6 +8,7 @@ publish: false
     - [Download progress for pushChanges](#download-progress-for-pushchanges)
   - [@itwin/core-backend](#itwincore-backend)
     - [Schema sync rework](#schema-sync-rework)
+    - [Experimental `Relations()` table valued function](#experimental-relations-table-valued-function)
     - [ChangesetReader changes](#changesetreader-changes)
       - [ChangesetReader row options](#changesetreader-row-options)
       - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
@@ -77,6 +78,43 @@ Updates no longer automatically end up in other users' briefcases when they impo
 A change that would move or destroy existing data is now refused with `BE_SQLITE_ERROR_DataTransformRequired` or the new `BE_SQLITE_ERROR_DataDeletionRequired`; the new `@alpha` `BriefcaseDb.upgradeSchemas` runs those under the exclusive schema lock and lands the changeset and the sync db together. iModels without schema sync are unaffected.
 
 SchemaSync databases now require version 5.0.0. Existing version 4 containers are outside this compatibility boundary and cannot be opened by this release.
+
+### Experimental `Relations()` table valued function
+
+ECSQL gains a new **experimental** table valued function, `ECVLib.Relations()`, that returns every instance directly related to a seed instance without the caller having to know which relationships apply to it. Its native traversal generates SQL from property maps and reads relationship storage directly, avoiding ECSQL preparation for each candidate relationship class. The outer query still goes through ECSQL preparation.
+
+```sql
+ECVLib.Relations(<ECInstanceId>, <ECClassId>[, <direction>])
+```
+
+The `ECInstanceId` and `ECClassId` arguments are mandatory; a query that omits either is rejected rather than silently returning no rows. The optional third argument is the traversal direction — `'forward'`, `'backward'` or `'both'` (the default, also used when the argument is `NULL`). The comparison is case insensitive; any other value is an error. The function may also be written unqualified as `Relations(...)`.
+
+Each row describes one traversed relationship:
+
+| Column                     | Description                                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `RelatedECInstanceId`      | `ECInstanceId` of the related instance.                                                                                          |
+| `RelatedECClassId`         | `ECClassId` of the related instance.                                                                                             |
+| `Direction`                | `forward` when the seed is the source of the relationship, `backward` when it is the target.                                      |
+| `RelationshipECClassId`    | `ECClassId` of the relationship that was traversed.                                                                              |
+| `RelationshipECInstanceId` | `ECInstanceId` of the relationship instance, which distinguishes two link table rows connecting the same pair of instances.       |
+| `NavPropertyName`          | Name of the navigation property holding the relationship for end table (foreign key) relationships; `NULL` for link tables.       |
+
+Because `Relations()` is experimental it is disabled by default. Enable it with `PRAGMA experimental_features_enabled=true` or per query with `ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`.
+
+**Example** — find the model that contains an element, without knowing that `BisCore:ModelContainsElements` is stored in the `Model` navigation property:
+
+```sql
+SELECT r.RelatedECInstanceId
+FROM bis.Element e, ECVLib.Relations(e.ECInstanceId, e.ECClassId, 'backward') r
+  JOIN meta.ECClassDef rc ON rc.ECInstanceId = r.RelationshipECClassId
+WHERE e.ECInstanceId = :elementId AND rc.Name = 'ModelContainsElements'
+ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+Only instances of the primary (`main`) table space are traversed, and the ECSQL version was bumped to `2.0.4.1`.
+
+See the [Relations virtual table reference](../learning/ECSqlReference/Relations.md) for more details.
 
 ### ChangesetReader changes
 
