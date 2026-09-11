@@ -7,6 +7,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { DbResult } from "@itwin/core-bentley";
 import { ECDb, ECSqlStatement } from "../../core-backend";
+import { supportsNativeECDbCSVImport } from "../../internal/NativeECDbCSVImporter";
+import { _nativeDb } from "../../internal/Symbols";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
@@ -49,57 +51,65 @@ function readPeople(ecdb: ECDb): Array<{ name: string, age: number, salary: numb
 describe("ECDb CSV import", () => {
   const outDir = KnownTestLocations.outputDir;
 
-  it("imports in-memory CSV data atomically", () => {
-    using ecdb = ECDbTestHelper.createECDb(outDir, "csv-import-data.ecdb", testSchema);
-    expect(ecdb.importCSVData([
-      ["Alice", "42", "1234.5", "Résumé"],
-      ["用户", "31", "2500.25", "昵称"],
-    ], { className: "Test.Person", mapping })).to.equal(2);
+  describe("with native CSV support", () => {
+    before(function () {
+      using ecdb = new ECDb();
+      if (!supportsNativeECDbCSVImport(ecdb[_nativeDb]))
+        this.skip();
+    });
 
-    expect(() => ecdb.importCSVData([
-      ["Valid", "20", "1000", "valid"],
-      ["Invalid", "not-an-integer", "1001", "invalid"],
-    ], { className: "Test.Person", mapping })).to.throw(/CSV data row 2 column 1/);
+    it("imports in-memory CSV data atomically", () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "csv-import-data.ecdb", testSchema);
+      expect(ecdb.importCSVData([
+        ["Alice", "42", "1234.5", "Résumé"],
+        ["用户", "31", "2500.25", "昵称"],
+      ], { className: "Test.Person", mapping })).to.equal(2);
 
-    expect(readPeople(ecdb)).to.deep.equal([
-      { name: "Alice", age: 42, salary: 1234.5, nickname: "Résumé" },
-      { name: "用户", age: 31, salary: 2500.25, nickname: "昵称" },
-    ]);
-  });
+      expect(() => ecdb.importCSVData([
+        ["Valid", "20", "1000", "valid"],
+        ["Invalid", "not-an-integer", "1001", "invalid"],
+      ], { className: "Test.Person", mapping })).to.throw(/CSV data row 2 column 1/);
 
-  it("streams a CSV file and rolls back malformed input", () => {
-    const csvPath = path.join(outDir, "csv-import.csv");
-    fs.writeFileSync(csvPath, [
-      "Ignored,Age,Name,Salary,Nickname",
-      'skip,42,"Doe, Jane",1234.5,"said ""hello""\nnext"',
-      String.raw`skip,31,用户,2500.25,\N`,
-    ].join("\r\n"));
+      expect(readPeople(ecdb)).to.deep.equal([
+        { name: "Alice", age: 42, salary: 1234.5, nickname: "Résumé" },
+        { name: "用户", age: 31, salary: 2500.25, nickname: "昵称" },
+      ]);
+    });
 
-    using ecdb = ECDbTestHelper.createECDb(outDir, "csv-import-file.ecdb", testSchema);
-    const fileMapping = [
-      { columnIndex: 1, propertyName: "Age" },
-      { columnIndex: 2, propertyName: "Name" },
-      { columnIndex: 3, propertyName: "Salary" },
-      { columnIndex: 4, propertyName: "Details.Nickname" },
-    ];
-    expect(ecdb.importCSVFile(csvPath, {
-      className: "Test.Person",
-      mapping: fileMapping,
-      hasHeader: true,
-      nullValue: String.raw`\N`,
-    })).to.equal(2);
+    it("streams a CSV file and rolls back malformed input", () => {
+      const csvPath = path.join(outDir, "csv-import.csv");
+      fs.writeFileSync(csvPath, [
+        "Ignored,Age,Name,Salary,Nickname",
+        'skip,42,"Doe, Jane",1234.5,"said ""hello""\nnext"',
+        String.raw`skip,31,用户,2500.25,\N`,
+      ].join("\r\n"));
 
-    fs.writeFileSync(csvPath, [
-      "skip,20,Valid,1000,valid",
-      'skip,21,"unterminated,1001,invalid',
-    ].join("\n"));
-    expect(() => ecdb.importCSVFile(csvPath, { className: "Test.Person", mapping: fileMapping }))
-      .to.throw(/unterminated quoted field/);
+      using ecdb = ECDbTestHelper.createECDb(outDir, "csv-import-file.ecdb", testSchema);
+      const fileMapping = [
+        { columnIndex: 1, propertyName: "Age" },
+        { columnIndex: 2, propertyName: "Name" },
+        { columnIndex: 3, propertyName: "Salary" },
+        { columnIndex: 4, propertyName: "Details.Nickname" },
+      ];
+      expect(ecdb.importCSVFile(csvPath, {
+        className: "Test.Person",
+        mapping: fileMapping,
+        hasHeader: true,
+        nullValue: String.raw`\N`,
+      })).to.equal(2);
 
-    expect(readPeople(ecdb)).to.deep.equal([
-      { name: "Doe, Jane", age: 42, salary: 1234.5, nickname: 'said "hello"\nnext' },
-      { name: "用户", age: 31, salary: 2500.25, nickname: undefined },
-    ]);
+      fs.writeFileSync(csvPath, [
+        "skip,20,Valid,1000,valid",
+        'skip,21,"unterminated,1001,invalid',
+      ].join("\n"));
+      expect(() => ecdb.importCSVFile(csvPath, { className: "Test.Person", mapping: fileMapping }))
+        .to.throw(/unterminated quoted field/);
+
+      expect(readPeople(ecdb)).to.deep.equal([
+        { name: "Doe, Jane", age: 42, salary: 1234.5, nickname: 'said "hello"\nnext' },
+        { name: "用户", age: 31, salary: 2500.25, nickname: undefined },
+      ]);
+    });
   });
 
   it("rejects invalid column mappings before calling native code", () => {

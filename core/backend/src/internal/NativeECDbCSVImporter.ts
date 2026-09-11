@@ -16,13 +16,26 @@ export interface NativeECDbCSVImporter {
   importCSVFile(className: string, csvFilePath: string, mapping: ReadonlyArray<{ columnIndex: number, propertyName: string }>, options?: { hasHeader?: boolean, nullValue?: string }): number;
 }
 
+const csvImportMethods = ["importCSVData", "importCSVFile"] as const;
+
+function findMissingCSVImportMethod(nativeDb: IModelJsNative.ECDb): typeof csvImportMethods[number] | undefined {
+  const candidate = nativeDb as Partial<NativeECDbCSVImporter>;
+  return csvImportMethods.find((methodName) => "function" !== typeof candidate[methodName]);
+}
+
+function assertNativeECDbCSVImport(nativeDb: IModelJsNative.ECDb): asserts nativeDb is IModelJsNative.ECDb & NativeECDbCSVImporter {
+  const missingMethod = findMissingCSVImportMethod(nativeDb);
+  if (undefined !== missingMethod)
+    throw new Error(`The loaded @bentley/imodeljs-native does not support ECDb.${missingMethod}.`);
+}
+
+/** @internal */
+export function supportsNativeECDbCSVImport(nativeDb: IModelJsNative.ECDb): nativeDb is IModelJsNative.ECDb & NativeECDbCSVImporter {
+  return undefined === findMissingCSVImportMethod(nativeDb);
+}
+
 /** @internal */
 export function getNativeECDbCSVImporter(nativeDb: IModelJsNative.ECDb): NativeECDbCSVImporter {
-  const candidate = nativeDb as Partial<NativeECDbCSVImporter>;
-  for (const methodName of ["importCSVData", "importCSVFile"] as const) {
-    if ("function" !== typeof candidate[methodName])
-      throw new Error(`The loaded @bentley/imodeljs-native does not support ECDb.${methodName}.`);
-  }
-
-  return candidate as NativeECDbCSVImporter;
+  assertNativeECDbCSVImport(nativeDb);
+  return nativeDb;
 }
