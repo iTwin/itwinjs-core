@@ -12,6 +12,7 @@ import { serialize } from "node:v8";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
+import { getNativeECDbCSVImporter, type NativeECDbCSVImporter } from "./internal/NativeECDbCSVImporter";
 import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
@@ -83,6 +84,7 @@ export enum ECDbOpenMode {
  */
 export class ECDb implements Disposable {
   private _nativeDb?: IModelJsNative.ECDb;
+  private _nativeCSVImporterCache?: NativeECDbCSVImporter;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
@@ -111,6 +113,7 @@ export class ECDb implements Disposable {
     this.closeDb();
     this._nativeDb.dispose();
     this._nativeDb = undefined;
+    this._nativeCSVImporterCache = undefined;
   }
   /**
    * Attach an iModel file to this connection and load and register its schemas.
@@ -280,7 +283,7 @@ export class ECDb implements Disposable {
    */
   public importCSVData(rows: readonly (readonly string[])[], options: CSVImportOptions): number {
     validateCSVMapping(options.mapping);
-    return this[_nativeDb].importCSVData(options.className, serialize(rows), options.mapping, { nullValue: options.nullValue });
+    return this._nativeCSVImporter.importCSVData(options.className, serialize(rows), options.mapping, { nullValue: options.nullValue });
   }
 
   /** Stream a CSV file into an ECClass.
@@ -296,10 +299,14 @@ export class ECDb implements Disposable {
    */
   public importCSVFile(csvFilePath: string, options: CSVFileImportOptions): number {
     validateCSVMapping(options.mapping);
-    return this[_nativeDb].importCSVFile(options.className, csvFilePath, options.mapping, {
+    return this._nativeCSVImporter.importCSVFile(options.className, csvFilePath, options.mapping, {
       hasHeader: options.hasHeader,
       nullValue: options.nullValue,
     });
+  }
+
+  private get _nativeCSVImporter(): NativeECDbCSVImporter {
+    return this._nativeCSVImporterCache ??= getNativeECDbCSVImporter(this[_nativeDb]);
   }
 
   /**
