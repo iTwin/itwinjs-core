@@ -344,6 +344,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
     * `u` or `n`: output only used or not-used shaders, respectively.
 * `dta drawing aid points` - start tool for testing AccuSnap.
 * `dta refresh tiles` *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
+* `dta invoke frontend ipc` - Calls the backend through `DtaRpcInterface`; the backend then invokes the frontend through `IpcHost.invoke` and reports the renderer dimensions. This exercises the Electron RPC response path and the backend-to-frontend IPC round trip.
 * `dta exit` - Shuts down the backend server and exits the app.
 * `dta shutdown` - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
 * `dta shadow tiles` - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.

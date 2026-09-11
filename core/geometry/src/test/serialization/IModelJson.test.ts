@@ -471,24 +471,32 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
     const seg2: IModelJson.CurvePrimitiveProps = { lineSegment: [[1, 0, 0], [1, 1, 0]] };
     const seg3: IModelJson.CurvePrimitiveProps = { lineSegment: [[1, 1, 0], [0, 0, 0]] };
 
-    const loopProps: IModelJson.PlanarRegionProps = { loop: [seg1, seg2, seg3] };
-    const parityProps: IModelJson.PlanarRegionProps = {
-      parityRegion: [{ loop: [seg1, seg2, seg3] }, { loop: [seg1, seg2, seg3] }],
-    };
-    const unionProps: IModelJson.PlanarRegionProps = { unionRegion: [loopProps, loopProps] };
+    const outerLoopProps: IModelJson.LoopProps = { loop: [seg1, seg2, seg3] };
+    const innerLoopProps: IModelJson.LoopProps = { loop: [seg1, seg2, seg3], isInner: true };
+    const parityProps: IModelJson.ParityRegionProps = { parityRegion: [outerLoopProps, innerLoopProps] };
+    const unionProps: IModelJson.UnionRegionProps = { unionRegion: [outerLoopProps, parityProps] };
 
-    ck.testExactNumber(3, loopProps.loop!.length, "loop has 3 primitives");
-    ck.testExactNumber(2, parityProps.parityRegion!.length, "parityRegion has 2 loops");
-    ck.testExactNumber(3, parityProps.parityRegion![0].loop.length, "inner loop has 3 primitives");
-    ck.testExactNumber(2, unionProps.unionRegion!.length, "unionRegion has 2 regions");
+    ck.testExactNumber(3, outerLoopProps.loop.length, "loop has 3 primitives");
+    ck.testFalse(outerLoopProps.isInner ?? false, "outer loop is not marked as inner");
+    ck.testExactNumber(3, innerLoopProps.loop.length, "inner loop has 3 primitives");
+    ck.testTrue(innerLoopProps.isInner ?? false, "inner loop is marked as inner");
+    ck.testExactNumber(2, parityProps.parityRegion.length, "parityRegion has 2 loops");
+    ck.testExactNumber(3, parityProps.parityRegion[0].loop.length, "parity region first loop has 3 primitives");
+    ck.testTrue(parityProps.parityRegion[1].isInner ?? false, "parity region second loop is marked as inner");
+    ck.testExactNumber(2, unionProps.unionRegion.length, "unionRegion has 2 children");
 
-    const parsedLoop = IModelJson.Reader.parse(loopProps);
-    if (ck.testTrue(parsedLoop instanceof Loop, "parsed loop is a Loop")) {
-      const loop = parsedLoop as Loop;
+    const parsedOuterLoop = IModelJson.Reader.parse(outerLoopProps);
+    if (ck.testTrue(parsedOuterLoop instanceof Loop, "parsed loop is a Loop")) {
+      const loop = parsedOuterLoop as Loop;
       ck.testExactNumber(3, loop.children.length, "loop has 3 children");
       for (let i = 0; i < loop.children.length; ++i)
         ck.testTrue(loop.children[i] instanceof LineSegment3d, `loop child ${i} is a LineSegment3d`);
+      ck.testFalse(loop.isInner, "parsed loop is not marked as inner");
     }
+
+    const parsedInnerLoop = IModelJson.Reader.parse(innerLoopProps);
+    if (ck.testType(parsedInnerLoop, Loop, "parsed loop is a Loop"))
+      ck.testTrue(parsedInnerLoop.isInner, "parsed loop is marked as inner");
 
     const parsedParity = IModelJson.Reader.parse(parityProps);
     if (ck.testTrue(parsedParity instanceof ParityRegion, "parsed parityRegion is a ParityRegion")) {
@@ -503,10 +511,20 @@ describe("IModelJsonSchemaWrongTypeDefinitions", () => {
     const parsedUnion = IModelJson.Reader.parse(unionProps);
     if (ck.testTrue(parsedUnion instanceof UnionRegion, "parsed unionRegion is a UnionRegion")) {
       const union = parsedUnion as UnionRegion;
-      ck.testExactNumber(2, union.children.length, "unionRegion has 2 loops");
-      for (let i = 0; i < union.children.length; ++i)
-        ck.testTrue(union.children[i] instanceof Loop, `unionRegion child ${i} is a Loop`);
+      ck.testExactNumber(2, union.children.length, "unionRegion has 2 children");
+      ck.testTrue(union.children[0] instanceof Loop, `unionRegion child 0 is a Loop`);
+      if (ck.testTrue(union.children[1] instanceof ParityRegion, `unionRegion child 1 is a ParityRegion`))
+        ck.testExactNumber(2, union.children[1].children.length, "unionRegion's parityRegion has 2 loops");
     }
+
+    // user test
+    const myLoop = Loop.create(Arc3d.createXYEllipse(Point3d.createZero(), 1, 1));
+    myLoop.isInner = true;
+    const serializedLoop = IModelJson.Writer.toIModelJson(myLoop);
+    const parsedLoop = IModelJson.Reader.parse(serializedLoop);
+    if (ck.testType(parsedLoop, Loop, "Loop round-trips thru JSON to a Loop"))
+      ck.testTrue(parsedLoop.isInner, "round-tripped Loop is marked as inner");
+
     expect(ck.getNumErrors()).toBe(0);
   });
 

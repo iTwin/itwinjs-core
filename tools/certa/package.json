@@ -1,9 +1,34 @@
 {
   "name": "@itwin/certa",
-  "version": "5.14.0-dev.7",
+  "version": "5.14.0-dev.9",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
+  "exports": {
+    ".": "./bin/certa.js",
+    "./callbacks": {
+      "types": "./lib/callbacks.d.ts",
+      "import": "./lib/callbacks.js",
+      "require": "./lib/callbacks.js"
+    },
+    "./lib/*.js": "./lib/*.js",
+    "./lib/*.d.ts": "./lib/*.d.ts",
+    "./lib/*.js.map": "./lib/*.js.map",
+    "./lib/*.d.ts.map": "./lib/*.d.ts.map",
+    "./lib/*": {
+      "types": "./lib/*.d.ts",
+      "default": "./lib/*.js"
+    },
+    "./bin/*.js": "./bin/*.js",
+    "./bin/*": "./bin/*.js",
+    "./certa.schema.json": "./certa.schema.json",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "callbacks": ["lib/callbacks.d.ts"]
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/iTwin/itwinjs-core.git",

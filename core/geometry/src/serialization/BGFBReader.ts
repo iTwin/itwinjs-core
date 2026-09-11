@@ -781,7 +781,11 @@ function nullToUndefined<T>(data: any): T | undefined {
 
 function createTypedCurveCollection(collectionType: number): CurveCollection {
   if (collectionType === 1) return new Path();
-  if (collectionType === 2 || collectionType === 3) return new Loop();
+  if (collectionType === 2 || collectionType === 3) {
+    const loop = new Loop();
+    loop.isInner = collectionType === 3;
+    return loop;
+  }
   if (collectionType === 4) return new ParityRegion();
   if (collectionType === 5) return new UnionRegion();
   return new BagOfCurves();
