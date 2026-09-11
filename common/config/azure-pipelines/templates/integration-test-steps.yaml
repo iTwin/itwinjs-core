@@ -2,6 +2,12 @@ parameters:
   - name: nodeVersion # name of the parameter; required
     type: string # data type of the parameter; required
 
+  # When false, skips the graphics-heavy Core full-stack tests (Chrome + Electron
+  # renderer suites). Used by Node-compatibility lanes that do not own renderer coverage.
+  - name: runRendererTests
+    type: boolean
+    default: true
+
 steps:
   - template: setup-integration-users.yaml
 
@@ -19,20 +25,25 @@ steps:
   - script: node ./common/scripts/install-run-rush install
     displayName: rush install
 
-  - script: |
-      # full-stack-tests/backend/package.json
-      node ./common/scripts/install-run-rush build -v --to backend-integration-tests
-      # full-stack-tests/core/package.json
-      node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
-      # full-stack-tests/ecschema-rpc-interface/package.json
-      node ./common/scripts/install-run-rush build -v --to @itwin/ecschema-rpcinterface-tests
-      # full-stack-tests/rpc/package.json
-      node ./common/scripts/install-run-rush build -v --to rpc-full-stack-tests
-      # full-stack-tests/rpc-interface/package.json
-      node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
+  # Determines whether this run is allowed to write to the Rush build cache
+  # (only trusted, non-PR builds on Linux; see the script for details).
+  - script: node common/scripts/set-rush-write-cache-variables.js
+    displayName: "Set Rush Write Cache Variables"
 
-      node ./common/scripts/install-run-rush webpack:test -v
+  # Build every package needed by the integration test suites in a single Rush
+  # invocation. Each frontend test package (and @itwin/core-electron) already runs
+  # webpack:test as part of its normal build script, so no separate webpack pass is needed.
+  - script: >
+      node ./common/scripts/install-run-rush build -v
+      --to backend-integration-tests
+      --to core-full-stack-tests
+      --to @itwin/ecschema-rpcinterface-tests
+      --to rpc-full-stack-tests
+      --to rpcinterface-full-stack-tests
     displayName: "Rush build"
+    env:
+      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+      RUSH_BUILD_CACHE_ENABLED: 1
 
   # Electron 42+ no longer downloads the binary during npm install (postinstall removed).
   # Ensure the binary is present before configuring the AppArmor profile.
@@ -83,20 +94,21 @@ steps:
     condition: succeededOrFailed()
 
   # Linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
-    workingDirectory: "full-stack-tests/core"
-    env:
-      NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
-    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+  - ${{ if eq(parameters.runRendererTests, true) }}:
+      - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests"
+        condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
-  # MacOS and Windows agents work without any virtual display
-  - script: npm run test:integration
-    workingDirectory: "full-stack-tests/core"
-    env:
-      NODE_ENV: development
-    displayName: "Run Core Full Stack Tests"
-    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+      # MacOS and Windows agents work without any virtual display
+      - script: npm run test:integration
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests"
+        condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/ecschema-rpc-interface"
@@ -164,12 +176,20 @@ steps:
     continueOnError: true
     condition: succeededOrFailed()
 
-  - task: PublishTestResults@2
-    displayName: "Publish Core Integration Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
-      testRunTitle: "Core - Integration Tests - ${{ parameters.nodeVersion }}"
-    condition: succeededOrFailed()
+  - ${{ if eq(parameters.runRendererTests, true) }}:
+      - task: PublishTestResults@2
+        displayName: "Publish Core Integration Test Results (Chrome)"
+        inputs:
+          testResultsFiles: "full-stack-tests/core/lib/test/junit_results_chrome.xml"
+          testRunTitle: "Core - Integration Tests (Chrome) - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Core Integration Test Results (Electron)"
+        inputs:
+          testResultsFiles: "full-stack-tests/core/lib/test/junit_results_electron.xml"
+          testRunTitle: "Core - Integration Tests (Electron) - ${{ parameters.nodeVersion }}"
+        condition: succeededOrFailed()
 
   - task: PublishTestResults@2
     displayName: "Publish ECSchema Rpc Interface Integration Test Results"
