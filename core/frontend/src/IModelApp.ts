@@ -17,7 +17,7 @@ import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, expectDefined, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { FormatsProvider } from "@itwin/core-quantity";
+import { FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -161,6 +161,14 @@ export interface IModelAppOptions {
    * @beta
    */
   incrementalSchemaLoading?: "enabled" | "disabled";
+}
+
+/** Options for [[IModelApp.setFormatsProvider]].
+ * @beta
+ */
+export interface SetFormatsProviderOptions {
+  /** The unit system implied by the formats provider. If omitted, the active unit system remains unchanged. */
+  readonly unitSystem?: UnitSystemKey;
 }
 
 /** CSS class name applied to the notice element of a logo card created by [[IModelApp.makeLogoCard]]. */
@@ -350,11 +358,26 @@ export class IModelApp {
 
   /** The [[FormatsProvider]] for this session.
    * @param provider The provider to use for formatting quantities.
+   * @note Prefer [[IModelApp.setFormatsProvider]] when replacing the provider; assigning this property starts an asynchronous reload without returning a promise.
    * @beta
    */
   public static get formatsProvider(): FormatsProvider { return this._formatsProviderManager; }
   public static set formatsProvider(provider: FormatsProvider) {
     this._formatsProviderManager.formatsProvider = provider;
+  }
+
+  /**
+   * Replaces the formats provider and optionally changes the active unit system.
+   * Resolves after the formatter has rebuilt its formatting and parsing caches.
+   * Incompatible provider entries are logged and skipped, so they do not reject this Promise.
+   * If a later setFormatsProvider call supersedes this request, this Promise rejects.
+   * It also rejects if the application shuts down first.
+   * @beta
+   */
+  public static async setFormatsProvider(provider: FormatsProvider, options?: SetFormatsProviderOptions): Promise<void> {
+    await this.quantityFormatter.runAndWaitForReload(() => {
+      this._formatsProviderManager.setFormatsProvider(provider, options?.unitSystem);
+    });
   }
 
   /** @alpha */
