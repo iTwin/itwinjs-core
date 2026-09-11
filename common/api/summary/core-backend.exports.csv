@@ -118,6 +118,9 @@ beta;interface;CreateNewWorkspaceDbVersionArgs
 public;interface;CreateSheetViewDefinitionArgs
 beta;function;createTerminatorGeometry
 beta;interface;CreateTerminatorGeometryArgs
+beta;interface;CSVColumnMapping
+beta;interface;CSVFileImportOptions
+beta;interface;CSVImportOptions
 beta;interface;CustomHandledProperty
 beta;interface;DataTransformationResources
 beta;enum;DataTransformationStrategy
