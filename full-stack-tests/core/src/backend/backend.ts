@@ -51,6 +51,8 @@ function shouldLogToConsole(): boolean {
 }
 
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
+  private readonly _tempBimCopies = new Set<string>();
+
   public get channelName() { return fullstackIpcChannel; }
 
   public async ping(): Promise<{ commandId: string, version: string }> {
@@ -60,6 +62,28 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public async closeAndReopenDb(key: string): Promise<void> {
     const iModel = BriefcaseDb.findByKey(key);
     return iModel.executeWritable(async () => undefined);
+  }
+
+  public async createTempBimCopy(sourcePath: string): Promise<string> {
+    const directory = fs.mkdtempSync(path.join(IModelHost.cacheDir, "bim-copy-"));
+    const filePath = path.join(directory, path.basename(sourcePath));
+    try {
+      fs.copyFileSync(sourcePath, filePath);
+      this._tempBimCopies.add(filePath);
+      return filePath;
+    } catch (error) {
+      fs.rmSync(directory, { recursive: true, force: true, maxRetries: 3 });
+      throw error;
+    }
+  }
+
+  public async deleteTempBimCopy(filePath: string): Promise<void> {
+    if (!this._tempBimCopies.has(filePath))
+      throw new Error("Cannot delete an iModel copy not created by this test backend");
+
+    // Each copy owns its directory, including any SQLite sidecar files.
+    fs.rmSync(path.dirname(filePath), { recursive: true, force: true, maxRetries: 3 });
+    this._tempBimCopies.delete(filePath);
   }
 
   public async throwChannelError(errorKey: ChannelControlError.Key, message: string, channelKey: string) {
