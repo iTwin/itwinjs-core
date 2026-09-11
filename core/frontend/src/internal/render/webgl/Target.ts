@@ -575,7 +575,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
   public override reset(realityMapLayerChanged?: boolean, primaryIModelRef?: IModelDisplayReference): void {
-    this.currentBranch.iModelRef = primaryIModelRef;
+    this.currentBranch.iModelRef = this.decorationsState.iModelRef = primaryIModelRef;
     this.graphics[Symbol.dispose]();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
