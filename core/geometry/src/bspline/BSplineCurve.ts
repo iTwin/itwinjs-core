@@ -580,10 +580,11 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   }
   /**
    * Create a B-spline curve from an Akima curve.
-   * @param options collection of points and end conditions.
+   * * The Akima formulation of the curve is currently replaced by a Greville interpolation.
+   * @param options data for construction
    */
   public static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined {
-    return BSplineCurveOps.createThroughPoints(options.fitPoints, 4);  // temporary
+    return BSplineCurveOps.createThroughPoints(options.fitPoints, 4);
   }
   /**
    * Create a B-spline curve with given knots.

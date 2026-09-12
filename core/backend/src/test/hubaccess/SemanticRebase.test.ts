@@ -236,6 +236,60 @@ class TestIModel {
         <ECProperty propertyName="PropD" typeName="string"/>
       </ECEntityClass>
     </ECSchema>`,
+
+    /** v01x00x01 - Adds a link-table relationship class ARefersToA (ElementRefersToElements subclass) between A elements */
+    v01x00x01WithRelationship: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropC" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+      <ECRelationshipClass typeName="ARefersToA" strength="referencing" modifier="None">
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+          <Class class="A"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referred to by" polymorphic="true">
+          <Class class="A"/>
+        </Target>
+      </ECRelationshipClass>
+    </ECSchema>`,
+
+    /** v01x00x02 - Moves PropC from C to A (transforming) while keeping the ARefersToA relationship class */
+    v01x00x02WithRelationshipMovePropCToA: `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="td" version="01.00.02" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+      <ECEntityClass typeName="A">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="PropA" typeName="string"/>
+        <ECProperty propertyName="PropC" typeName="string"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="C">
+        <BaseClass>A</BaseClass>
+      </ECEntityClass>
+      <ECEntityClass typeName="D">
+        <BaseClass>A</BaseClass>
+        <ECProperty propertyName="PropD" typeName="string"/>
+      </ECEntityClass>
+      <ECRelationshipClass typeName="ARefersToA" strength="referencing" modifier="None">
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+          <Class class="A"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referred to by" polymorphic="true">
+          <Class class="A"/>
+        </Target>
+      </ECRelationshipClass>
+    </ECSchema>`,
   };
 
   /** Additional schemas for extended edge-case tests */
@@ -1530,6 +1584,176 @@ describe("Semantic Rebase", function (this: Suite) {
     const schema = t.local.getSchemaProps("TestDomain");
     chai.expect(schema.version).to.equal("01.00.00", "Schema should remain at v01.00.00");
     chai.expect(t.local.isOpen).to.be.true;
+  });
+
+  it("navigation property (parent) with explicit relationship class survives trivial schema rebase", async () => {
+    t = await TestIModel.initialize("ClassIdNavTrivial");
+    const localTxn = startTestTxn(t.local, "nav parent trivial local");
+    const farTxn = startTestTxn(t.far, "nav parent trivial far");
+
+    // Far imports a trivial additive schema change and pushes it (incoming change to rebase onto).
+    await t.far.locks.acquireLocks({ shared: t.drawingModelId });
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    await pushChanges(farTxn, "add PropC2 to class C");
+
+    // Local inserts (unpushed) a parent element and a child whose `parent` navigation property
+    // carries an explicit relationship class (RelECClassId). These inserts are the changes that
+    // get captured and reinstated during the rebase.
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const parentId = t.insertElement(localTxn, "TestDomain:A", { propA: "parent_a" });
+    const childId = t.insertElement(localTxn, "TestDomain:C", {
+      propA: "child_a",
+      propC: "child_c",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    });
+    localTxn.saveChanges("local insert parent + child");
+
+    // Local pulls and rebases its local inserts onto the incoming schema change.
+    await pullChanges(localTxn);
+    t.local.clearCaches();
+
+    // The navigation property (id + relClassName) captured from the insert must survive the rebase.
+    const child = t.getElementProps(t.local, childId);
+    chai.expect(child.parent).to.not.be.undefined;
+    chai.expect(child.parent.id).to.equal(parentId, "parent navigation id must be preserved");
+    chai.expect(child.parent.relClassName.replace(":", ".")).to.equal(
+      "BisCore.ElementOwnsChildElements",
+      "parent navigation relationship class name must be preserved",
+    );
+    chai.expect(child.classFullName).to.equal("TestDomain:C", "child classFullName must be preserved");
+    chai.expect(child.propA).to.equal("child_a", "propA must be preserved");
+    chai.expect(child.propC).to.equal("child_c", "propC must be preserved");
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.01");
+  });
+
+  it("navigation property + multi-class ECClassId survive transforming schema rebase", async () => {
+    t = await TestIModel.initialize("ClassIdNavTransforming");
+    let localTxn = startTestTxn(t.local, "nav parent transforming local");
+    let farTxn = startTestTxn(t.far, "nav parent transforming far");
+
+    // Baseline: bump both briefcases to v01.00.01 so the incoming transforming change (v01.00.02
+    // MovePropCToA) applies cleanly on top of it.
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01AddPropC2]);
+    await pushChanges(localTxn, "baseline v01.00.01");
+    localTxn = startTestTxn(t.local, "nav parent transforming local");
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "nav parent transforming far");
+
+    // Local inserts a parent (class A) and children of classes C and D, with explicit parent
+    // relationship classes, then makes them local (unpushed) changes.
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const parentId = t.insertElement(localTxn, "TestDomain:A", { propA: "parent_a" });
+    const cChildId = t.insertElement(localTxn, "TestDomain:C", {
+      propA: "c_a",
+      propC: "c_c",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    });
+    const dChildId = t.insertElement(localTxn, "TestDomain:D", {
+      propA: "d_a",
+      propD: "d_d",
+      parent: { id: parentId, relClassName: "BisCore:ElementOwnsChildElements" },
+    });
+    localTxn.saveChanges("local insert parent + C + D children");
+
+    // Far pushes a transforming schema change (moves PropC from C to A).
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02MovePropCToA]);
+    await pushChanges(farTxn, "far transforming schema v01.00.02");
+
+    // Local pulls and rebases its local inserts onto the transforming schema change.
+    await pullChanges(localTxn);
+    t.local.clearCaches();
+
+    // ECClassId of each element (a class-id-typed value) must resolve to the correct class name.
+    const cChild = t.getElementProps(t.local, cChildId);
+    chai.expect(cChild.classFullName).to.equal("TestDomain:C", "C child classFullName must be preserved");
+    chai.expect(cChild.propC).to.equal("c_c", "propC value must survive column migration C→A");
+    chai.expect(cChild.parent.id).to.equal(parentId, "C child parent id must be preserved");
+    chai.expect(cChild.parent.relClassName.replace(":", ".")).to.equal("BisCore.ElementOwnsChildElements");
+
+    const dChild = t.getElementProps(t.local, dChildId);
+    chai.expect(dChild.classFullName).to.equal("TestDomain:D", "D child classFullName must be preserved");
+    chai.expect(dChild.propD).to.equal("d_d");
+    chai.expect(dChild.parent.id).to.equal(parentId, "D child parent id must be preserved");
+
+    // ECSql resolves ECClassId to the correct class names after rebase.
+    const rows = await TestIModel.queryToMap(
+      t.local,
+      `SELECT ECInstanceId, ec_className(ECClassId) AS className FROM TestDomain.A`,
+    );
+    chai.expect(rows.get(cChildId)?.className).to.include("C");
+    chai.expect(rows.get(dChildId)?.className).to.include("D");
+
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02");
+  });
+
+  it("link-table relationship (with constraint class ids) survives transforming schema rebase", async () => {
+    t = await TestIModel.initialize("LinkTableRelTransforming");
+    let localTxn = startTestTxn(t.local, "link table rel transforming local");
+    let farTxn = startTestTxn(t.far, "link table rel transforming far");
+
+    // Baseline: bump both briefcases to v01.00.01 so the ARefersToA link-table relationship class
+    // exists on both sides and the incoming transforming change (v01.00.02 MovePropCToA) applies cleanly.
+    await importSchemaStrings(localTxn, [TestIModel.schemas.v01x00x01WithRelationship]);
+    await pushChanges(localTxn, "baseline v01.00.01 with relationship class");
+    localTxn = startTestTxn(t.local, "link table rel transforming local");
+    await pullChanges(farTxn);
+    farTxn = startTestTxn(t.far, "link table rel transforming far");
+
+    // Local inserts a source (class C) and a target (class D) element and a link-table relationship
+    // (ARefersToA) between them - all unpushed local changes to be reinstated during rebase.
+    await t.local.locks.acquireLocks({ shared: t.drawingModelId });
+    const sourceId = t.insertElement(localTxn, "TestDomain:C", { propA: "src_a", propC: "src_c" });
+    const targetId = t.insertElement(localTxn, "TestDomain:D", { propA: "tgt_a", propD: "tgt_d" });
+    const relId = localTxn.insertRelationship({
+      classFullName: "TestDomain:ARefersToA",
+      sourceId,
+      targetId,
+    });
+    localTxn.saveChanges("local insert source + target + relationship");
+
+    // Far pushes a transforming schema change (moves PropC from C to A) which migrates the source
+    // element's column, so the relationship's SourceECClassId must survive the migration.
+    await importSchemaStrings(farTxn, [TestIModel.schemas.v01x00x02WithRelationshipMovePropCToA]);
+    await pushChanges(farTxn, "far transforming schema v01.00.02");
+
+    // Local pulls and rebases its local inserts onto the transforming schema change.
+    await pullChanges(localTxn);
+    t.local.clearCaches();
+
+    // The relationship instance and its endpoints must survive the rebase.
+    const rel = t.local.relationships.tryGetInstanceProps("TestDomain:ARefersToA", relId);
+    chai.expect(rel, "relationship should exist after rebase").to.not.be.undefined;
+    chai.expect(rel!.sourceId).to.equal(sourceId, "relationship source id must be preserved");
+    chai.expect(rel!.targetId).to.equal(targetId, "relationship target id must be preserved");
+
+    // ECSql resolves the relationship's ECClassId and its constraint class ids (Source/Target) to the
+    // correct class names even after the transforming schema change migrated the endpoint columns.
+    const rows = await TestIModel.queryToMap(
+      t.local,
+      `SELECT ECInstanceId, SourceECInstanceId AS sourceId, TargetECInstanceId AS targetId,
+              ec_className(ECClassId, 's.c') AS className,
+              ec_className(SourceECClassId, 's.c') AS sourceClassName,
+              ec_className(TargetECClassId, 's.c') AS targetClassName
+       FROM TestDomain.ARefersToA`,
+    );
+    const relRow = rows.get(relId);
+    chai.expect(relRow, "relationship row should be queryable after rebase").to.not.be.undefined;
+    chai.expect(relRow!.sourceId).to.equal(sourceId);
+    chai.expect(relRow!.targetId).to.equal(targetId);
+    chai.expect(relRow!.className).to.equal("TestDomain.ARefersToA", "relationship class id must resolve to ARefersToA");
+    chai.expect(relRow!.sourceClassName).to.equal("TestDomain.C", "source constraint class id must resolve to class C");
+    chai.expect(relRow!.targetClassName).to.equal("TestDomain.D", "target constraint class id must resolve to class D");
+
+    // The endpoint elements themselves survive the transforming change with values intact.
+    const source = t.getElementProps(t.local, sourceId);
+    chai.expect(source.classFullName).to.equal("TestDomain:C", "source classFullName must be preserved");
+    chai.expect(source.propC).to.equal("src_c", "propC value must survive column migration C→A");
+
+    const target = t.getElementProps(t.local, targetId);
+    chai.expect(target.classFullName).to.equal("TestDomain:D", "target classFullName must be preserved");
+    chai.expect(target.propD).to.equal("tgt_d", "propD value must be preserved");
+
+    chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02");
   });
 
 });
@@ -4220,4 +4444,3 @@ semanticRebaseExtendedDescribe("Semantic Rebase - Multi-Pull Verification", func
     chai.expect(t.local.getSchemaProps("TestDomain").version).to.equal("01.00.02", "Schema must be v02 after pull #3");
   });
 });
-

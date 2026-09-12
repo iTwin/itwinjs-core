@@ -2134,10 +2134,10 @@ describe("BsplineCloseApproach", () => {
   ]);
   interpOptions.order = 4;
   const interpCurve0 = InterpolationCurve3d.create(interpOptions)!;
-  const interpProxy1 = interpCurve0.cloneTransformed(rotationTransform0)!;
-  const interpProxy2 = interpCurve0.cloneTransformed(rotationTransform1)!;
-  const interpProxy3 = interpCurve0.cloneTransformed(moveTransform)!;
-  const interpProxy4 = interpCurve0.cloneTransformed(compositeTransform)!;
+  const interpProxy1 = interpCurve0.cloneTransformed(rotationTransform0);
+  const interpProxy2 = interpCurve0.cloneTransformed(rotationTransform1);
+  const interpProxy3 = interpCurve0.cloneTransformed(moveTransform);
+  const interpProxy4 = interpCurve0.cloneTransformed(compositeTransform);
 
   const normalBsplines = [normalBspline1, normalBspline2, normalBspline3, normalBspline4];
   const periodicBsplines = [periodicBspline1, periodicBspline2, periodicBspline3, periodicBspline4];

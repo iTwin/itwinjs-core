@@ -126,6 +126,45 @@ export namespace IModelJson {
   }
 
   /**
+   * Interface for a `Loop`.
+   * @public
+   */
+  export interface LoopProps {
+    /** Flag for inner loop status. */
+    isInner?: boolean;
+    /** A sequence of curves which connect head to tail, with the final connecting back to the first. */
+    loop: CurvePrimitiveProps[];
+  }
+
+  /**
+   * Interface for a `ParityRegion`.
+   * @public
+   */
+  export interface ParityRegionProps {
+    /**
+     * A collection of loops, with composite inside/outside determined by parity rules.
+     * * A single outer boundary with one or more holes is a parityRegion.
+     */
+    parityRegion: LoopProps[];
+  }
+
+  /**
+   * Interface for a `UnionRegion`.
+   * @public
+   */
+  export interface UnionRegionProps {
+    /** A collection of loops and parityRegions. */
+    unionRegion: (LoopProps | ParityRegionProps)[];
+  }
+
+  /**
+   * Interface for a collection of curves that bound a planar region.
+   * @public
+   */
+  export interface PlanarRegionProps extends Partial<LoopProps>, Partial<ParityRegionProps>, Partial<UnionRegionProps> {
+  }
+
+  /**
    * Interface for a collection of curves, e.g. as used as a swept contour.
    * @public
    */
@@ -143,25 +182,6 @@ export namespace IModelJson {
     bagOfCurves?: (CurveCollectionProps | CurvePrimitiveProps)[];
   }
 
-  /**
-   * Interface for a collection of curves that bound a planar region
-   * @public
-   */
-  export interface PlanarRegionProps {
-    /** `{loop:...}`
-     * * A sequence of curves which connect head to tail, with the final connecting back to the first
-     */
-    loop?: CurvePrimitiveProps[];
-    /** `{parityRegion:...}`
-     * * A collection of loops, with composite inside/outside determined by parity rules.
-     * * (The single outer boundary with one or more holes is a parityRegion)
-     */
-    parityRegion?: { loop: CurvePrimitiveProps[] }[];
-    /** `{unionRegion:...}`
-     * * A collection of loops and parityRegions
-     */
-    unionRegion?: PlanarRegionProps[];
-  }
   /**
    * Interface for solid primitives: box, sphere, cylinder, cone, torusPipe, linear sweep, rotational sweep, ruled sweep.
    * @public
@@ -1030,16 +1050,17 @@ export namespace IModelJson {
       return undefined;
     }
     /** parse contents of a curve collection to a CurveCollection instance */
-    public static parseCurveCollectionMembers(result: CurveCollection, data?: any): CurveCollection | undefined {
-      if (data && Array.isArray(data)) {
-        for (const c of data) {
-          const g = Reader.parse(c);
-          if (g instanceof GeometryQuery && ("curveCollection" === g.geometryCategory || "curvePrimitive" === g.geometryCategory))
-            result.tryAddChild(g);
-        }
-        return result;
+    public static parseCurveCollectionMembers(result: CurveCollection, data?: any, isInner: boolean = false): CurveCollection | undefined {
+      if (!data || !Array.isArray(data))
+        return undefined;
+      for (const c of data) {
+        const g = Reader.parse(c);
+        if (g instanceof GeometryQuery && ("curveCollection" === g.geometryCategory || "curvePrimitive" === g.geometryCategory))
+          result.tryAddChild(g);
       }
-      return undefined;
+      if (isInner && result instanceof Loop)
+        result.isInner = true;
+      return result;
     }
 
     /** Parse content of `bsurf` to BSplineSurface3d or BSplineSurface3dH */
@@ -1269,7 +1290,7 @@ export namespace IModelJson {
         } else if (json.hasOwnProperty("path")) {
           return Reader.parseCurveCollectionMembers(new Path(), json.path);
         } else if (json.hasOwnProperty("loop")) {
-          return Reader.parseCurveCollectionMembers(new Loop(), json.loop);
+          return Reader.parseCurveCollectionMembers(new Loop(), json.loop, json.hasOwnProperty("isInner") && true === json.isInner);
         } else if (json.hasOwnProperty("parityRegion")) {
           return Reader.parseCurveCollectionMembers(new ParityRegion(), json.parityRegion);
         } else if (json.hasOwnProperty("unionRegion")) {
@@ -1600,7 +1621,7 @@ export namespace IModelJson {
     }
     /** Convert strongly typed instance to tagged json */
     public override handleLoop(data: Loop): any {
-      return { loop: this.collectChildren(data) };
+      return { loop: this.collectChildren(data), isInner: data.isInner ? true : undefined };
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -1620,12 +1641,10 @@ export namespace IModelJson {
 
     private collectChildren(data: CurveCollection): any[] {
       const children = [];
-      if (data.children && Array.isArray(data.children)) {
-        for (const child of data.children) {
-          const cdata = child.dispatchToGeometryHandler(this);
-          if (cdata)
-            children.push(cdata);
-        }
+      for (const child of data.children) {
+        const cdata = child.dispatchToGeometryHandler(this);
+        if (cdata)
+          children.push(cdata);
       }
       return children;
     }

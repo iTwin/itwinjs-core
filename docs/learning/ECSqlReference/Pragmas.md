@@ -136,33 +136,91 @@ PRAGMA explain_query ('SELECT * FROM bis.GeometricElement3d')
 
 ## `PRAGMA integrity_check` (experimental)
 
-1. `check_ec_profile` - checks if the profile table, indexes, and triggers are present. Does not check be\_\* tables. Issues are returned as a list of tables/indexes/triggers which were not found or have different DDL.
-2. `check_data_schema` - checks if all the required data tables and indexes exist for mapped classes. Issues are returned as a list of tables/columns which were not found or have different DDL.
-3. `check_data_columns` - checks if all the required columns exist in data tables. Issues are returned as a list of those tables/columns.
-4. `check_nav_class_ids` - checks if `RelClassId` of a Navigation property is a valid ECClassId. It does not check the value to match the relationship class.
-5. `check_nav_ids` - checks if `Id` of a Navigation property matches a valid row primary class.
-6. `check_linktable_fk_class_ids` - checks if `SourceECClassId` or `TargetECClassId` of a link table matches a valid ECClassId.
-7. `check_linktable_fk_ids`- checks if `SourceECInstanceId` or `TargetECInstanceId` of a link table matches a valid row in primary class.
-8. `check_class_ids`- checks persisted `ECClassId` in all data tables and makes sure they are valid.
-9. `check_schema_load` - checks if all schemas can be loaded into memory.
+Checks ECDb schema and data consistency without modifying the database. It is available on read-only connections. [IModelDb.integrityCheck]($core-backend) wraps the pragma for backend TypeScript callers.
+
+| Check | Reports |
+| --- | --- |
+| `check_ec_profile` | Expected EC profile tables/indexes or iModel triggers that are missing or have different SQL definitions. Does not check `be_*` tables. |
+| `check_data_schema` | Missing physical tables or indexes recorded in ECDb's mapping metadata. Checks names and object types, not SQL definitions. |
+| `check_data_columns` | Nonvirtual mapped columns missing from their physical tables. Checks column names, not types or constraints. |
+| `check_nav_class_ids` | Non-null stored `RelECClassId` values outside the navigation property's declared relationship class and its derived classes. This is a relationship class ID, not the referenced instance's class ID. |
+| `check_nav_ids` | Non-null navigation `.Id` values that do not resolve to an instance in the referenced-class query. See [Navigation ID results](#navigation-id-results). |
+| `check_linktable_fk_class_ids` | `SourceECClassId` or `TargetECClassId` values that do not match an ECClass definition. Does not compare the class ID with the endpoint instance's actual class. |
+| `check_linktable_fk_ids` | Source or target instance IDs that are null or do not resolve to a row in the endpoint-class query. The query uses the first relationship constraint class for that endpoint and includes derived classes. |
+| `check_class_ids` | Persisted `ECClassId` values with no matching ECClass definition, checked through primary, joined and overflow tables. Checks class existence, not whether the class belongs in that table. |
+| `check_schema_load` | Schemas recorded in the database that the schema manager cannot load. The result identifies the schema but does not explain why loading failed. |
+| `check_missing_child_rows` | Elements with a `bis_Element` row but missing a required row in another mapped table. See [Missing child-row results](#missing-child-row-results). |
+| `check_diverged_prop_maps` | An inherited property mapped to different columns by a derived class and a base class within the same physical table hierarchy. See [Diverged property-map results](#diverged-property-map-results). |
+
+### Summary results
+
+Without a check name, the pragma runs all checks listed above **except `check_missing_child_rows`**. It stops each check at its first problem and returns one summary row per check. This is the quick mode used by `IModelDb.integrityCheck()` by default.
 
 ```sql
 PRAGMA integrity_check ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES;
 ```
 
-The output of `integrety_check` is a table with each test performed, the result and time took to run the test.
+| Column | Meaning |
+| --- | --- |
+| `sno` | One-based result row number. |
+| `check` | Check name from the table above. |
+| `result` | `true` if the check found no problems; `false` if it found a problem. |
+| `elapsed_sec` | Elapsed time for that check, in seconds, formatted as a string. |
 
-| sno | check                        | result | elapsed_sec |
-| --- | ---------------------------- | ------ | ----------- |
-| 1   | check_data_columns           | True   | 0.005       |
-| 2   | check_ec_profile             | True   | 0.001       |
-| 3   | check_nav_class_ids          | True   | 0.179       |
-| 4   | check_nav_ids                | True   | 0.403       |
-| 5   | check_linktable_fk_class_ids | True   | 0.001       |
-| 6   | check_linktable_fk_ids       | False  | 0.003       |
-| 7   | check_class_ids              | True   | 0.039       |
-| 8   | check_data_schema            | True   | 0.000       |
-| 9   | check_schema_load            | True   | 0.000       |
+### Detailed results
+
+Pass a check name to return its problem rows. An empty result means the selected check found no problems. Query execution errors can prevent a check from completing and are distinct from returned problem rows.
+
+```sql
+PRAGMA integrity_check(check_nav_ids) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES;
+```
+
+Each detailed result includes a one-based `sno`. Other fields depend on the selected check. `IModelDb.integrityCheck` accepts selections through `IntegrityCheckOptions.specificChecks`; enable all eleven options and set `quickCheck: false` to get full detailed coverage without also running the summary checks.
+
+### Navigation ID results
+
+A [navigation property](../ECSQL.md#navigation-properties) stores the **referenced instance's ECInstanceId** in its `.Id` member. For example, `Element.Model.Id` identifies the model containing that element.
+
+`check_nav_ids` resolves the navigation property's relationship constraint class, then looks for a referenced row with that ID. The query includes derived classes and uses the first constraint class for the navigation direction. Null navigation IDs are ignored.
+
+| Pragma column | API field | Meaning |
+| --- | --- | --- |
+| `id` | `id` | ECInstanceId of the instance containing the navigation property. |
+| `class` | `class` | Class declaring the navigation property and used to query source rows. A reported instance may belong to a derived class. |
+| `property` | `property` | Navigation property name. |
+| `nav_id` | `navId` | The property's non-null `.Id`: the referenced instance's ECInstanceId. |
+| `primary_class` | `primaryClass` | The class queried for the referenced instance, including derived classes. |
+
+A result means the referenced-class query found **no row with that ID**. The class definition was resolved before the query ran. The result does not distinguish an absent instance from an instance outside that class hierarchy, and contains no further per-row error message.
+
+For `Element.Model`, the check is equivalent to:
+
+```sql
+SELECT e.ECInstanceId AS id, e.Model.Id AS nav_id
+FROM BisCore.Element e
+LEFT JOIN BisCore.Model m ON m.ECInstanceId = e.Model.Id
+WHERE e.Model.Id IS NOT NULL AND m.ECInstanceId IS NULL;
+```
+
+### Missing child-row results
+
+```sql
+PRAGMA integrity_check(check_missing_child_rows) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES;
+```
+
+An element can occupy rows in several physical tables. This check starts with existing `bis_Element` rows and looks for required child-table rows with the same element ID. It checks physical storage rows, not parent/child element relationships.
+
+Results contain `class` (`BisCore:Element`), `id` (element ID), `class_id` (the element's ECClassId), and `MissingRowInTables`. The last field is a comma-separated list of **all child tables checked** for that class; at least one lacks a row, but the list does not identify which ones are missing. The TypeScript API names these last two fields `classId` and `missingRowInTables`.
+
+### Diverged property-map results
+
+```sql
+PRAGMA integrity_check(check_diverged_prop_maps) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES;
+```
+
+This check compares the storage mappings of an inherited property in a derived class and each base class. It reports different columns within a shared physical table hierarchy. It excludes `ECDbSystem` properties and mappings under different physical table roots, and does not compare instance values.
+
+Results identify the derived class (`derivedClassId`, `derivedClassName`), base class (`baseClassId`, `baseClassName`), property access path (`propertyName`), and the two `table.column` mappings (`baseColumn`, `divergedColumn`).
 
 ## `PRAGMA parse_tree` (experimental)
 
