@@ -2,79 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, BeEvent, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
+import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
 import { GeometricModel3dProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { GeometricModel3dState, IModelDisplayReference, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
-import { CheckBox, ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
+import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
+import { IModelDisplayReferencePicker } from "./IModelDisplayReferencePicker";
 
 // cspell:ignore dehilite textbox subcat
-
-class IModelDisplayReferencePicker {
-  #selectedIModelRef: IModelDisplayReference;
-  #element: HTMLElement;
-
-  public readonly onChanged = new BeEvent<() => void>();
-
-  public constructor(vp: ScreenViewport, idPrefix: string, parent: HTMLElement) {
-    this.#selectedIModelRef = vp.primaryIModelRef;
-
-    this.#element = document.createElement("div");
-    parent.appendChild(this.#element);
-
-    this.#populate(vp, idPrefix, this.#selectedIModelRef.guid);
-
-    vp.iModelRefs.onLinked.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
-    vp.iModelRefs.onUnlinked.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
-    vp.onChangeView.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
-  }
-
-  public get selectedIModelRef(): IModelDisplayReference {
-    return this.#selectedIModelRef;
-  }
-
-  #populate(vp: ScreenViewport, idPrefix: string, selectedGuid: string): void {
-    while (this.#element.hasChildNodes())
-      this.#element.removeChild(this.#element.firstChild!);
-
-    let selectedIModelRef = undefined;
-    const comboBoxEntries = [];
-    for (const ref of vp.iModelRefs) {
-      comboBoxEntries.push({ name: ref.iModel.key, value: ref.guid })
-      if (ref.guid === selectedGuid)
-        selectedIModelRef = ref;
-    }
-
-    createComboBox({
-      id: `${idPrefix}_iModelRefPicker`,
-      name: "iModel: ",
-      value: selectedGuid,
-      entries: comboBoxEntries,
-      parent: this.#element,
-      handler: (select: HTMLSelectElement) => {
-        for (const ref of vp.iModelRefs) {
-          if (ref.guid === select.value) {
-            this.#selectedIModelRef = ref;
-            this.onChanged.raiseEvent();
-            return;
-          }
-        }
-
-        assert(false && "IModelDisplayReference with specified GUID not found");
-        this.#selectedIModelRef = vp.primaryIModelRef;
-        this.onChanged.raiseEvent();
-      },
-    });
-
-    if (!selectedIModelRef)
-      selectedIModelRef = vp.primaryIModelRef;
-
-    if (selectedIModelRef !== this.#selectedIModelRef) {
-      this.#selectedIModelRef = selectedIModelRef;
-      this.onChanged.raiseEvent();
-    }
-  }
-}
 
 export abstract class IdPicker extends ToolBarDropDown {
   private _iModelRefPicker?: IModelDisplayReferencePicker;
@@ -155,7 +90,9 @@ export abstract class IdPicker extends ToolBarDropDown {
     if (!visible)
       return;
 
-    this._iModelRefPicker = new IModelDisplayReferencePicker(this._vp, this._elementType, this._element);
+    const selectedRef = this._iModelRefPicker?.selectedIModelRef ?? this._vp.primaryIModelRef;
+    this._iModelRefPicker = new IModelDisplayReferencePicker(this._vp, this._elementType, this._element, selectedRef);
+    this._iModelRefPicker.onChanged.addListener(async () => this.populate());
 
     createComboBox({
       name: "Display: ",
@@ -315,7 +252,9 @@ export class CategoryPicker extends IdPicker {
 
   protected get _elementType(): "Category" { return "Category"; }
   protected get _enabledIds() { return this._vp.view.categorySelector.categories; }
-  protected changeDisplay(ids: Id64Arg, enabled: boolean) { this._vp.changeCategoryDisplay(ids, enabled); }
+  protected changeDisplay(ids: Id64Arg, enabled: boolean) {
+    this.iModelRef.viewedCategories[enabled ? "addAll" : "deleteAll"](Id64.toIdSet(ids));
+  }
 
   protected override get _comboBoxEntries(): ComboBoxEntry[] {
     const entries = super._comboBoxEntries;
@@ -406,10 +345,8 @@ export class ModelPicker extends IdPicker {
   protected get _enabledIds() { return (this._vp.view as SpatialViewState).modelSelector.models; }
   protected override get _showIn2d() { return false; }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) {
-    if (enabled)
-      this._vp.addViewedModels(ids); // eslint-disable-line @typescript-eslint/no-floating-promises
-    else
-      this._vp.changeModelDisplay(ids, enabled);
+    assert(this.iModelRef.isSpatial());
+    this.iModelRef.viewedModels[enabled ? "addAll" : "deleteAll"](Id64.toIdSet(ids));
   }
 
   protected hiliteEnabled(hiliteOn: boolean): void {
