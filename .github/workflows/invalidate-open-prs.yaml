@@ -16,19 +16,21 @@ jobs:
     name: Invalidate imodeljs-native status check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # actions/checkout v6.0.3
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
-          token: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
+          persist-credentials: false # admin PAT is only needed for the API calls below, never written to .git/config on disk
           ref: ${{ github.ref }} # checkouts the branch that triggered the workflow
           fetch-depth: 0
-      - name: Set Git Config
-        run: |
-          git config --local user.email imodeljs-admin@users.noreply.github.com
-          git config --local user.name imodeljs-admin
+
+      # actions/setup-node v6.5.0
+      - name: Setup node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24.x"
+
       - name: Run invalidate-status-checks.mjs
         run: |
-          npm install octokit
-          npm install dotenv
           node ./.github/workflows/automation-scripts/invalidate-status-checks.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
