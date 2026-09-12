@@ -163,5 +163,7 @@ export interface SpatialIModelDisplayReference extends IModelDisplayReference {
 
   readonly activeHiddenLineSettings: HiddenLine.Settings;
   readonly onActiveHiddenLineSettingsChanged: BeEvent<() => void>;
+
+  addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void>;
 }
 

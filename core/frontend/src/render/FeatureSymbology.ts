@@ -112,7 +112,7 @@ export namespace FeatureSymbology {
       this._initFromView(viewport.view);
 
       viewport.addFeatureOverrides(this);
-      viewport.addModelSubCategoryVisibilityOverrides(this, this._modelSubCategoryOverrides);
+      viewport.perModelCategoryVisibility.addOverrides(this, this._modelSubCategoryOverrides);
 
       // This will include any per-model subcategory visibility overrides added above.
       this._initSubCategoryOverrides(viewport.view.displayStyle.settings.subCategoryOverrides);

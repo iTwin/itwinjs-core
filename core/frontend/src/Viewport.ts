@@ -763,17 +763,19 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the model.
    * @param ovr The symbology overrides to apply to all geometry belonging to the specified model.
    * @see [DisplayStyleSettings.overrideModelAppearance]($common)
+   * @deprecated use [[IModelDisplayReference.modelAppearanceOverrides]].
    */
   public overrideModelAppearance(id: Id64String, ovr: FeatureAppearance): void {
-    this.view.displayStyle.settings.overrideModelAppearance(id, ovr);
+    this.primaryIModelRef.modelAppearanceOverrides.set(id, ovr);
   }
 
   /** Remove any model appearance override for the specified model.
    * @param id The Id of the model.
    * @see [DisplayStyleSettings.dropModelAppearanceOverride]($common)
+   * @deprecated use [[IModelDisplayReference.modelAppearanceOverrides]].
    */
   public dropModelAppearanceOverride(id: Id64String): void {
-    this.view.displayStyle.settings.dropModelAppearanceOverride(id);
+    this.primaryIModelRef.modelAppearanceOverrides.delete(id);
   }
 
   /** Enable or disable display of elements belonging to a set of categories specified by Id.
@@ -925,7 +927,9 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public resetMapLayer(mapLayerIndex: MapLayerIndex) { this._mapTiledGraphicsProvider?.resetMapLayer(mapLayerIndex); }
 
-  /** Returns true if this Viewport is currently displaying the model with the specified Id. */
+  /** Returns true if this Viewport is currently displaying the model with the specified Id.
+   * @deprecated Use [[SpatialIModelDisplayReference.viewedModels]] or [[IModelDisplayReference2d.viewedModel]].
+   */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
   /** Attempt to change the 2d Model this Viewport is displaying, if its ViewState is a ViewState2d.
@@ -955,15 +959,17 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param modelIds The Ids of the models to be displayed.
    * @returns false if this Viewport is not viewing a [[SpatialViewState]]
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
-   * @note This function *does not load* any models. If any of the supplied `modelIds` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
-   * @see [[replaceViewedModels]] for a similar function that also ensures the requested models are loaded.
+   * @note This function returns immediately; any requested models that aren't yet loaded are subsequently loaded in the background.
+   * @see [[replaceViewedModels]] for a similar function returning a promise that resolves after all unloaded models are loaded.
+   * @deprecated Use [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
    */
   public changeViewedModels(modelIds: Id64Arg): boolean {
-    if (!this.view.isSpatialView())
+    const ref = this.primaryIModelRef;
+    if (!ref.isSpatial())
       return false;
 
-    this.view.modelSelector.models.clear();
-    this.view.modelSelector.addModels(modelIds);
+    ref.viewedModels.clear();
+    ref.viewedModels.addAll(Id64.iterable(modelIds));
     return true;
   }
 
@@ -971,12 +977,15 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param modelIds The Ids of the models to be displayed.
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
+   * @deprecated Use `clear` on [[SpatialIModelDisplayReference.viewedModels]] and then [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
    */
   public async replaceViewedModels(modelIds: Id64Arg): Promise<void> {
-    if (this.view.isSpatialView()) {
-      this.view.modelSelector.models.clear();
-      return this.addViewedModels(modelIds);
-    }
+    const ref = this.primaryIModelRef;
+    if (!ref.isSpatial())
+      return;
+
+    ref.viewedModels.clear();
+    return ref.addAndLoadViewedModels(modelIds);
   }
 
   /** Add or remove a set of models from those models currently displayed in this viewport.
@@ -986,16 +995,14 @@ export abstract class Viewport implements Disposable, TileUser {
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note This function *does not load* any models. If `display` is `true` and any of the supplied `models` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
    * @see [[addViewedModels]] for a similar function that also ensures the requested models are loaded.
+   * @deprecated Use [[SpatialIModelDisplayReference.viewedModels]].
    */
   public changeModelDisplay(models: Id64Arg, display: boolean): boolean {
-    if (!this.view.isSpatialView())
+    const ref = this.primaryIModelRef;
+    if (!ref.isSpatial())
       return false;
 
-    if (display)
-      this.view.modelSelector.addModels(models);
-    else
-      this.view.modelSelector.dropModels(models);
-
+    ref.viewedModels[display ? "addAll" : "deleteAll"](models);
     return true;
   }
 
@@ -1004,22 +1011,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param display Whether or not to display the specified models in the viewport.
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
+   * @deprecated Use [[SpatialIModelDisplayReference.addAndLoadViewedModels]].
    */
   public async addViewedModels(models: Id64Arg): Promise<void> {
-    // NB: We want the model selector to update immediately, to avoid callers repeatedly requesting we load+display the same models while we are already loading them.
-    // This will also trigger scene invalidation and changed events.
-    if (!this.changeModelDisplay(models, true))
-      return; // means it's a 2d model - this function can do nothing useful in 2d.
-
-    const unloaded = this.iModel.models.filterLoaded(models);
-    if (undefined === unloaded)
-      return;
-
-    // Need to redraw once models are available. Don't want to trigger events again.
-    await this.iModel.models.load(models);
-    this.invalidateScene();
-    assert(this.view.isSpatialView());
-    this.view.markModelSelectorChanged();
+    return this.primaryIModelRef.isSpatial() ? this.primaryIModelRef.addAndLoadViewedModels(Id64.iterable(models)) : Promise.resolve();
   }
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes. Chiefly for debugging.
@@ -1186,19 +1181,9 @@ export abstract class Viewport implements Disposable, TileUser {
     // When we detach from the view, also unregister display style listeners.
     removals.push(() => this.detachFromDisplayStyle());
 
-    removals.push(view.onModelDisplayTransformProviderChanged.addListener(() => this.invalidateScene()));
     removals.push(view.details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
 
     if (view.isSpatialView()) {
-      removals.push(view.onViewedModelsChanged.addListener(() => {
-        this._changeFlags.setViewedModels();
-        this.invalidateScene();
-      }));
-
-      removals.push(view.details.onModelClipGroupsChanged.addListener(() => {
-        this.invalidateScene();
-      }));
-
       // If a map elevation request is required (only in cases where terrain is not geodetic)
       // then the completion of the request will require synching with the view so that the
       // frustum depth is recalculated correctly.  Register this for removal when the view is detached.
@@ -1259,7 +1244,6 @@ export abstract class Viewport implements Disposable, TileUser {
     };
 
     removals.push(settings.onSubCategoryOverridesChanged.addListener(styleAndOverridesChanged));
-    removals.push(settings.onModelAppearanceOverrideChanged.addListener(styleAndOverridesChanged));
     removals.push(settings.onBackgroundColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeColorChanged.addListener(displayStyleChanged));
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
@@ -1270,7 +1254,6 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onInvisibleChanged.addListener(invalidateControllerAndDisplayStyleChanged));
-    removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener((previousModel, _newModel) => {
       displayStyleChanged();
       // When a reality model is removed or replaced, detach its layer listeners to prevent leaks.
@@ -1526,17 +1509,11 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
   public get isAlwaysDrawnExclusive(): boolean { return this.primaryIModelRef.isAlwaysDrawnExclusive; }
 
-  /** Allows visibility of categories within this viewport to be overridden on a per-model basis. */
+  /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
+   * @deprecated Use [[IModelDisplayReference.perModelCategoryVisibility]].
+   */
   public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides {
     return this.primaryIModelRef.perModelCategoryVisibility;
-  }
-
-  /** Adds visibility overrides for any subcategories whose visibility differs from that defined by the view's
-   * category selector in the context of specific models.
-   * @internal
-   */
-  public addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void {
-    this.perModelCategoryVisibility.addOverrides(fs, ovrs);
   }
 
   /** Add a [[FeatureOverrideProvider]] to customize the appearance of [[Feature]]s within the viewport.

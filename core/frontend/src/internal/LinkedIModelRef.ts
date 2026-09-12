@@ -23,7 +23,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelApp } from "../IModelApp";
-import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
+import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -351,6 +351,10 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   public override [_detachFromViewport](): void {
     this[_treeRefs].detachFromViewport();
     super[_detachFromViewport]();
+  }
+
+  public async addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void> {
+    return addAndLoadViewedModels(this, modelIds);
   }
 }
 

@@ -21,7 +21,7 @@ import { SpatialTileTreeReferences } from "./cross-package";
 import { TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
+import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -306,6 +306,10 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   public override [_detachFromViewport](): void {
     this[_treeRefs].detachFromViewport();
     super[_detachFromViewport]();
+  }
+
+  public async addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void> {
+    return addAndLoadViewedModels(this, modelIds);
   }
 }
 

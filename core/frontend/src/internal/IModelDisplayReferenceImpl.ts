@@ -117,3 +117,12 @@ export function listenForSubCategoryChanges(ref: IModelDisplayReference): () => 
     });
   });
 }
+
+export async function addAndLoadViewedModels(ref: SpatialIModelDisplayReference, modelIds: Iterable<Id64String>): Promise<void> {
+  ref.viewedModels.addAll(modelIds);
+  const unloaded = ref.iModel.models.filterLoaded(Id64.toIdSet(modelIds));
+  if (!unloaded)
+    return;
+
+  return ref.iModel.models.load(unloaded);
+}
