@@ -24,7 +24,6 @@ export const _detachFromViewport = Symbol.for(sym("detachFromViewport"));
 export const _excludedElements = Symbol.for(sym("excludedElements"));
 export const _featureTable = Symbol.for(sym("featureTable"));
 export const _getModelClip = Symbol.for(sym("getModelClip"))
-export const _guid = Symbol.for(sym("guid"))
 export const _nodes = Symbol.for(sym("nodes"));
 export const _onScheduleScriptReferenceChanged = Symbol.for(sym("onScheduleScriptReferenceChanged"));
 export const _requestSnap = Symbol.for(sym("requestSnap"));

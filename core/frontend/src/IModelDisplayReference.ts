@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, compareStrings, GuidString, Id64, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
-import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
+import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
@@ -29,7 +29,7 @@ export interface IModelFeature extends ModelFeature {
 
 export namespace IModelFeature {
   export function compare(lhs: IModelFeature, rhs: IModelFeature): number {
-    return ModelFeature.compare(lhs, rhs) || compareStrings(lhs.iModelRef[_guid], rhs.iModelRef[_guid]);
+    return ModelFeature.compare(lhs, rhs) || compareStrings(lhs.iModelRef.guid, rhs.iModelRef.guid);
   }
 
   export function create(iModelRef: IModelDisplayReference): IModelFeature {
@@ -61,7 +61,7 @@ export interface IModelDisplayReference {
   readonly [_implementationProhibited]: unknown;
 
   // Chiefly used for sorting.
-  readonly [_guid]: GuidString;
+  readonly guid: GuidString;
   readonly iModel: IModelConnection;
   readonly parent: IModelDisplayReferences;
   readonly linearTransformToParent: Transform;

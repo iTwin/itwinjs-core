@@ -7,7 +7,7 @@
  */
 
 import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
-import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
@@ -41,7 +41,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public abstract readonly parent: IModelDisplayReferences;
   public abstract get tileTreeRefs(): Iterable<TileTreeReference>;
 
-  public readonly [_guid]: string;
+  public readonly guid: string;
   public readonly iModel;
   public readonly linearTransformToParent: Transform;
   public readonly viewedCategories = new ObservableSet<Id64String>();
@@ -69,7 +69,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   protected constructor(args: LinkIModelArgs, refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides) {
     this.iModel = args.iModel;
     this._ovrs = ovrs;
-    this[_guid] = Guid.createValue();
+    this.guid = Guid.createValue();
 
     const view = refs[_backingView];
     this.#resolvedViewFlags = view.viewFlags.override(ovrs.viewFlags);
@@ -308,11 +308,6 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     this.planProjectionSettings.clear();
 
     this.overrides.onHiddenLineSettingsChanged.clear();
-  }
-
-  private async loadViewedModels(): Promise<void> {
-    await this.iModel.models.load(this.viewedModels);
-    this.onViewedModelsLoaded.raiseEvent();
   }
 
   public get modelClipGroups() {

@@ -7,7 +7,7 @@
  */
 
 import { ModelClipGroups, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
-import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
+import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
 import { BeEvent, Guid, Id64, Id64Set, Id64String, ObservableSet } from "@itwin/core-bentley";
@@ -37,7 +37,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public abstract readonly parent: IModelDisplayReferences;
   public abstract readonly overrides: IModelDisplayOverrides;
 
-  public readonly [_guid]: string;
+  public readonly guid: string;
   public readonly linearTransformToParent = Transform.identity;
 
   public get [_excludedElements]() { return this._view.displayStyle.settings.excludedElementIds; }
@@ -57,7 +57,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
   public constructor(refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides) {
     this._ovrs = ovrs;
-    this[_guid] = Guid.createValue();
+    this.guid = Guid.createValue();
 
     const view = refs[_backingView];
 
@@ -98,9 +98,6 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     view.onModelDisplayTransformProviderChanged.addListener(() => this.onModelDisplayTransformProviderChanged.raiseEvent());
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
-
-    // ###TODO should probably be registered in attachToViewport and removed in detachFromViewport.
-    listenForSubCategoryChanges(this);
   }
 
   public get iModel() { return this._view.iModel; }
@@ -206,6 +203,9 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
 
     loadViewedCategories(this);
     this.viewedCategories.onChanged.addListener(async () => loadViewedCategories(this));
+
+    // ###TODO should probably be registered in attachToViewport and removed in detachFromViewport.
+    listenForSubCategoryChanges(this);
   }
 
   public override is2d(): this is IModelDisplayReference2d {
@@ -256,6 +256,9 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
     loadViewedCategories(this);
     this.viewedCategories.onChanged.addListener(async () => loadViewedCategories(this));
+
+    // ###TODO should probably be registered in attachToViewport and removed in detachFromViewport.
+    listenForSubCategoryChanges(this);
 
     loadViewedModels(this);
     this.viewedModels.onChanged.addListener(async () => loadViewedModels(this));
