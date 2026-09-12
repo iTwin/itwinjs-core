@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
-import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
+import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { IModelFeatureOverrideProvider } from "../FeatureOverrideProvider";
@@ -23,6 +23,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelApp } from "../IModelApp";
+import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isSubCategoryVisible } from "./IModelDisplayReferenceImpl";
 
 abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -212,6 +213,22 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public invalidateSymbologyOverrides(): void {
     this.#symbologyOverrides = undefined;
     // ###TODO probably need to notify viewport
+  }
+
+  public changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void {
+    changeCategoryDisplay(this, args);
+  }
+
+  public isSubCategoryVisible(id: Id64String): boolean {
+    return isSubCategoryVisible(this, id);
+  }
+
+  public changeSubCategoryDisplay(id: Id64String, visible: boolean): boolean {
+    return changeSubCategoryDisplay(this, id, visible);
+  }
+
+  public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
+    return getSubCategoryAppearance(this, id);
   }
 }
 

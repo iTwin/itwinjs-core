@@ -21,6 +21,7 @@ import { SpatialTileTreeReferences } from "./cross-package";
 import { TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
+import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isSubCategoryVisible } from "./IModelDisplayReferenceImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -178,77 +179,19 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   }
 
   public changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void {
-    const ids = Id64.iterable(args.categories);
-    if (!args.display) {
-      if (args.noBatchNotify) {
-        for (const id of ids)
-          this.viewedCategories.delete(id);
-      } else {
-        this.viewedCategories.deleteAll(ids);
-      }
-
-      return;
-    }
-
-    if (args.noBatchNotify) {
-      for (const id of ids)
-        this.viewedCategories.add(id);
-    } else {
-      this.viewedCategories.addAll(ids);
-    }
-
-    const categories = Id64.toIdSet(args.categories);
-    this.parent.subcategories.push(this.iModel.subcategories, categories, (anySubCategoriesLoaded) => {
-      if (args.enableAllSubCategories) {
-        for (const catId of categories) {
-          const subCatIds = this.iModel.subcategories.getSubCategories(catId);
-          if (subCatIds)
-            for (const subCatId of subCatIds)
-              this.changeSubCategoryDisplay(subCatId, true);
-        }
-      }
-
-      if (anySubCategoriesLoaded)
-        this.viewedCategories.onChanged.raiseEvent();
-    });
+    changeCategoryDisplay(this, args);
   }
 
   public isSubCategoryVisible(id: Id64String): boolean {
-    const app = this.iModel.subcategories.getSubCategoryAppearance(id);
-    if (!app)
-      return false;
-
-    const ovr = this.subCategoryOverrides.get(id);
-    if (!ovr || undefined === ovr.invisible)
-      return !app.invisible;
-
-    return !ovr.invisible;
+    return isSubCategoryVisible(this, id);
   }
 
   public changeSubCategoryDisplay(id: Id64String, visible: boolean): boolean {
-    const app = this.iModel.subcategories.getSubCategoryAppearance(id);
-    if (!app)
-      return false; // category not enabled or not loaded
-
-    const curOvr = this.subCategoryOverrides.get(id);
-    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
-    if (isAlreadyVisible === visible)
-      return false;
-
-    // Preserve existing overrides - just flip the visibility flag.
-    const json = undefined !== curOvr ? curOvr.toJSON() : {};
-    json.invisible = !visible;
-    this.subCategoryOverrides.set(id, SubCategoryOverride.fromJSON(json));
-    return true;
+    return changeSubCategoryDisplay(this, id, visible);
   }
 
   public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
-    const app = this.iModel.subcategories.getSubCategoryAppearance(id);
-    if (!app)
-      return SubCategoryAppearance.defaults;
-
-    const ovr = this.subCategoryOverrides.get(id);
-    return ovr?.override(app) ?? app;
+    return getSubCategoryAppearance(this, id);
   }
 }
 
