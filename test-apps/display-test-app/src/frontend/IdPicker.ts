@@ -2,13 +2,79 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
+import { assert, BeEvent, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
 import { GeometricModel3dProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
-import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
+import { GeometricModel3dState, IModelDisplayReference, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
+import { CheckBox, ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
 // cspell:ignore dehilite textbox subcat
+
+class IModelDisplayReferencePicker {
+  #selectedIModelRef: IModelDisplayReference;
+  #element: HTMLElement;
+
+  public readonly onChanged = new BeEvent<() => void>();
+
+  private constructor(vp: ScreenViewport, idPrefix: string, parent: HTMLElement) {
+    this.#selectedIModelRef = vp.primaryIModelRef;
+
+    this.#element = document.createElement("div");
+    parent.appendChild(this.#element);
+
+    this.#populate(vp, idPrefix, this.#selectedIModelRef.guid);
+
+    vp.iModelRefs.onLinked.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
+    vp.iModelRefs.onUnlinked.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
+    vp.onChangeView.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
+  }
+
+  public get selectedIModelRef(): IModelDisplayReference {
+    return this.#selectedIModelRef;
+  }
+
+  #populate(vp: ScreenViewport, idPrefix: string, selectedGuid: string): void {
+    while (this.#element.hasChildNodes())
+      this.#element.removeChild(this.#element.firstChild!);
+
+    let selectedIModelRef = undefined;
+    const comboBoxEntries = [];
+    for (const ref of vp.iModelRefs) {
+      comboBoxEntries.push({ name: ref.iModel.name, value: ref.guid })
+      if (ref.guid === selectedGuid)
+        selectedIModelRef = ref;
+    }
+
+    createComboBox({
+      id: `${idPrefix}_iModelRefPicker`,
+      name: "iModel: ",
+      value: selectedGuid,
+      entries: comboBoxEntries,
+      parent: this.#element,
+      handler: (select: HTMLSelectElement) => {
+        for (const ref of vp.iModelRefs) {
+          if (ref.guid === select.value) {
+            this.#selectedIModelRef = ref;
+            this.onChanged.raiseEvent();
+            return;
+          }
+        }
+
+        assert(false && "IModelDisplayReference with specified GUID not found");
+        this.#selectedIModelRef = vp.primaryIModelRef;
+        this.onChanged.raiseEvent();
+      },
+    });
+
+    if (!selectedIModelRef)
+      selectedIModelRef = vp.primaryIModelRef;
+
+    if (selectedIModelRef !== this.#selectedIModelRef) {
+      this.#selectedIModelRef = selectedIModelRef;
+      this.onChanged.raiseEvent();
+    }
+  }
+}
 
 export abstract class IdPicker extends ToolBarDropDown {
   protected readonly _vp: ScreenViewport;
