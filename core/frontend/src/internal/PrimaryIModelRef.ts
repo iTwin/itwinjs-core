@@ -21,7 +21,7 @@ import { SpatialTileTreeReferences } from "./cross-package";
 import { TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isSubCategoryVisible } from "./IModelDisplayReferenceImpl";
+import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -100,24 +100,14 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
   }
 
-  protected async loadViewedCategories(): Promise<void> {
-    await this.iModel.subcategories.load(this.viewedCategories)?.promise;
-    this.invalidateSymbologyOverrides();
-    this.onViewedCategoriesLoaded.raiseEvent();
-  }
-
   public get iModel() { return this._view.iModel; }
   public get viewedCategories() { return this._view.categorySelector.observableCategories; }
 
   public isSpatial(): this is SpatialIModelDisplayReference { return false; }
   public is2d(): this is IModelDisplayReference2d { return false }
 
-  public get isLoadingComplete() {
-    for (const ref of this.tileTreeRefs)
-      if (!ref.isLoadingComplete)
-        return false;
-
-    return true;
+  public get isLoadingComplete(): boolean {
+    return isLoadingComplete(this);
   }
 
   public abstract get tileTreeRefs(): Iterable<TileTreeReference>;
@@ -211,9 +201,8 @@ class PrimaryIModelRef2d extends PrimaryIModelRef implements IModelDisplayRefere
 
     this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
-    this.loadViewedCategories();
-    this.viewedCategories.onChanged.addListener(async () => this.loadViewedCategories());
-
+    loadViewedCategories(this);
+    this.viewedCategories.onChanged.addListener(async () => loadViewedCategories(this));
   }
 
   public override is2d(): this is IModelDisplayReference2d {
@@ -262,16 +251,11 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
 
-    this.loadViewedCategories();
-    this.viewedCategories.onChanged.addListener(async () => this.loadViewedCategories());
+    loadViewedCategories(this);
+    this.viewedCategories.onChanged.addListener(async () => loadViewedCategories(this));
 
-    this.loadViewedModels();
-    this.viewedModels.onChanged.addListener(async () => this.loadViewedModels());
-  }
-
-  private async loadViewedModels(): Promise<void> {
-    await this.iModel.models.load(this.viewedModels);
-    this.onViewedModelsLoaded.raiseEvent();
+    loadViewedModels(this);
+    this.viewedModels.onChanged.addListener(async () => loadViewedModels(this));
   }
 
   public override get tileTreeRefs(): Iterable<TileTreeReference> {

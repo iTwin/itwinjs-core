@@ -23,7 +23,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelApp } from "../IModelApp";
-import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isSubCategoryVisible } from "./IModelDisplayReferenceImpl";
+import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -95,8 +95,8 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     });
 
     this.viewedCategories.addAll(args.viewedCategories ?? []);
-    this.loadViewedCategories();
-    this.viewedCategories.onChanged.addListener(async () => this.loadViewedCategories());
+    loadViewedCategories(this);
+    this.viewedCategories.onChanged.addListener(async () => loadViewedCategories(this));
 
     const updateViewFlags = () => {
       this.#resolvedViewFlags = view.viewFlags.override(this._ovrs.viewFlags);
@@ -151,21 +151,11 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     this.overrides.onClipStyleChanged.clear();
   }
 
-  private async loadViewedCategories(): Promise<void> {
-    await this.iModel.subcategories.load(this.viewedCategories)?.promise;
-    this.invalidateSymbologyOverrides();
-    this.onViewedCategoriesLoaded.raiseEvent();
-  }
-
   public isSpatial(): this is SpatialIModelDisplayReference { return false; }
   public is2d(): this is IModelDisplayReference2d { return false; }
 
-  public get isLoadingComplete() {
-    for (const ref of this.tileTreeRefs)
-      if (!ref.isLoadingComplete)
-        return false;
-
-    return true;
+  public get isLoadingComplete(): boolean {
+    return isLoadingComplete(this);
   }
 
   public get isAlwaysDrawnExclusive() {
@@ -285,8 +275,8 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
 
     this.viewedModels.addAll(args.viewedModels ?? []);
-    this.loadViewedModels();
-    this.viewedModels.onChanged.addListener(async () => this.loadViewedModels());
+    loadViewedModels(this);
+    this.viewedModels.onChanged.addListener(async () => loadViewedModels(this));
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
 

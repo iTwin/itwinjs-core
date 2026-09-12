@@ -7,8 +7,10 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ChangeCategoryDisplayArgs, IModelDisplayReference } from "../IModelDisplayReference";
+import { ChangeCategoryDisplayArgs, IModelDisplayReference, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { SubCategoryAppearance, SubCategoryOverride } from "@itwin/core-common";
+
+// This file contains glue code common to the primary and linked implementations of IModelDisplayReference.
 
 export function changeCategoryDisplay(ref: IModelDisplayReference, args: ChangeCategoryDisplayArgs): void {
   const ids = Id64.iterable(args.categories);
@@ -82,4 +84,23 @@ export function getSubCategoryAppearance(ref: IModelDisplayReference, id: Id64St
 
   const ovr = ref.subCategoryOverrides.get(id);
   return ovr?.override(app) ?? app;
+}
+
+export async function loadViewedCategories(ref: IModelDisplayReference): Promise<void> {
+  await ref.iModel.subcategories.load(ref.viewedCategories)?.promise;
+  ref.invalidateSymbologyOverrides();
+  ref.onViewedCategoriesLoaded.raiseEvent();
+}
+
+export async function loadViewedModels(ref: SpatialIModelDisplayReference): Promise<void> {
+  await ref.iModel.models.load(ref.viewedModels);
+  ref.onViewedModelsLoaded.raiseEvent();
+}
+
+export function isLoadingComplete(iModelRef: IModelDisplayReference): boolean {
+  for (const ttRef of iModelRef.tileTreeRefs)
+    if (!ttRef.isLoadingComplete)
+      return false;
+
+  return true;
 }
