@@ -3,7 +3,7 @@
 The shape of data in iModels is expressed using [ECSchemas](../../bis/ec/ec-schema.md).
 Sometimes, these schemas can grow quite large and complex. It is possible to have a hundred schemas, thousands of classes and hundreds of thousands of properties flat, which expands to millions of properties when you include inherited properties. When that happens, performance and memory consumption suffer. 
 
-`SchemaView` is the first library primarily aimed at performance and memory consumption. It uses a binary blob to fetch exactly the data it needs from the iModel in as few (async) calls as possible, including string and property deduplication. It is read-only and designed for synchronous access to schema metadata that is held in memory for the lifetime of a connection.
+`SchemaView` is primarily aimed at performance and memory consumption. It uses a binary blob to fetch exactly the data it needs from the iModel in as few (async) calls as possible, including string and property deduplication. It is read-only and designed for synchronous access to schema metadata that is held in memory for the lifetime of a connection.
 
 It lives in `@itwin/ecschema-metadata` and should be the first choice for accessing schema metadata at runtime - for example in presentation layers, property grids, or data-driven UI.
 
@@ -13,9 +13,9 @@ For the binary transport format specification, see [SchemaViewBinaryFormat.md](.
 
 ## When to use SchemaView
 
-Use `SchemaView` when you need fast, synchronous, repeated lookups at runtime without chatty calls into the iModel.
+Use `SchemaView` when you need readonly lookups.
 
-Reach for the full-fidelity [SchemaContext]($ecschema-metadata) instead when you are: authoring, validating, serializing to XML/JSON, or accessing data that `SchemaView` deliberately omits (see [What is included](#what-is-included)). `SchemaContext` is the more expensive option - a full object graph with cross-references - use it when its completeness is what you actually need.
+Reach for [Schema Authoring with SchemaDocument](./SchemaAuthoring.md) when you need to compose or modify schemas..
 
 ## What is included
 
@@ -81,7 +81,7 @@ Classes expose their type (entity, relationship, struct, mixin, custom attribute
 
 ## Working with properties
 
-Properties include inherited properties from base classes and mixins, in base-first declaration order. Each property exposes its kind (primitive, struct, array, navigation) and type-specific attributes.
+Properties include inherited properties from base classes and mixins, in base-first declaration order. A property a derived class overrides appears once, at the overriding class's own position, matching native ecobjects and the column order of an ECSQL `SELECT *`. Each property exposes its kind (primitive, struct, array, navigation) and type-specific attributes.
 
 ```ts
 [[include:SchemaView.properties]]

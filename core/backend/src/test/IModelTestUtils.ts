@@ -18,6 +18,7 @@ import {
   RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Authoring } from "@itwin/ecschema-metadata";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointManager, CheckpointProps, DownloadRequest, V2CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
@@ -293,6 +294,25 @@ export class IModelTestUtils {
 
 
   protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
+
+  /** Import one or more authored [[SchemaDocument]]s into an iModel.
+   *
+   * IModelDb's importSchema methods currently consume ECXML text or files.
+   * This is a helper that takes [[SchemaDocument]]s, each document is serialized through [[SchemaXmlWriter]]
+   * and forwarded to [[IModelDb.importSchemaStrings]]. If we expose a method on IModelDb that takes SchemaDocuments directly,
+   * this helper can be removed and tests can call that method instead.
+   */
+  public static async importSchemaDocuments(iModel: IModelDb, schemaDocuments: Authoring.SchemaDocument[]): Promise<void> {
+    const serializedXmlSchemas = schemaDocuments.map((schemaDocument) => {
+      const result = new Authoring.SchemaXmlWriter().writeDocument(schemaDocument);
+      if (result.text === undefined || result.issues.hasErrors) {
+        const detail = result.issues.errors.map((issue) => `${issue.code}: ${issue.message}`).join("; ");
+        throw new IModelError(IModelStatus.BadSchema, `Failed to serialize SchemaDocument '${schemaDocument.name}' to ECXML: ${detail}`);
+      }
+      return result.text;
+    });
+    await iModel.importSchemaStrings(serializedXmlSchemas);
+  }
 
   /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
   public static generateUniqueName(baseName: string) {

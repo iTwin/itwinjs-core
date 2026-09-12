@@ -7,6 +7,7 @@
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
 import { AnnotationTextStyleProps } from '@itwin/core-common';
+import { Authoring } from '@itwin/ecschema-metadata';
 import { AuthorizationClient } from '@itwin/core-common';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
@@ -4689,6 +4690,13 @@ export class IModelNative {
     static get platform(): typeof IModelJsNative;
 }
 
+// @alpha
+export class IModelSchemaSource implements Authoring.SchemaSource {
+    constructor(iModel: IModelDb);
+    discoverCandidates(_issues: Authoring.SchemaIssueList): Promise<Authoring.SchemaCandidate[]>;
+    getSchemaNames(): Promise<string[]>;
+}
+
 // @beta
 export type ImplicitWriteEnforcement = "allow" | "log" | "throw";
 
@@ -5998,6 +6006,26 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
     name: string;
     db: WorkspaceDb;
 }>) => void;
+
+// @alpha
+export function readSchemaFromIModel(iModel: IModelDb, schemaName: string, schemaSet: Authoring.SchemaSet): Authoring.SchemaDocumentReadResult;
+
+// @alpha
+export function readSchemasFromIModel(iModel: IModelDb, options?: ReadSchemasFromIModelOptions): Promise<ReadSchemasFromIModelResult>;
+
+// @alpha
+export interface ReadSchemasFromIModelOptions {
+    schemaNames?: ReadonlyArray<string>;
+    schemaSet?: Authoring.SchemaSet;
+}
+
+// @alpha
+export interface ReadSchemasFromIModelResult {
+    documents: Authoring.SchemaDocument[];
+    issues: Authoring.SchemaIssueList;
+    resolution: Authoring.SchemaResolution;
+    schemaSet: Authoring.SchemaSet;
+}
 
 // @alpha
 export interface RebaseHandler {

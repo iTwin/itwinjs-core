@@ -53,6 +53,7 @@ export * from "./IModelDbFonts";
 export * from "./IModelElementCloneContext";
 export * from "./IModelHost";
 export * from "./IModelJsFs";
+export * from "./IModelSchemaSource";
 export * from "./SchemaSync";
 export * from "./IpcHost";
 export * from "./LineStyle";
