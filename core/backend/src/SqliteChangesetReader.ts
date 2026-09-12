@@ -10,6 +10,7 @@ import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import { SQLiteDb } from "./SQLiteDb";
 
 /** Changed value type
  * @beta
@@ -52,12 +53,19 @@ export type SqliteValueStage = "Old" | "New";
 */
 export type AnyDb = IModelDb | ECDb;
 
+/** A database that can supply SQLite table metadata to a changeset reader.
+ * The database must contain every table referenced by the changeset. When using a plain
+ * [[SQLiteDb]], `disableSchemaCheck` may be used to tolerate additional columns in the changeset.
+ * @beta
+ */
+export type SqliteChangesetReaderDb = AnyDb | SQLiteDb;
+
 /** Arg to open a changeset file from disk
  * @beta
 */
-export interface SqliteChangesetReaderArgs {
-  /** db from which schema will be read. It should be at or ahead of the latest changeset being opened.*/
-  readonly db: AnyDb;
+export interface SqliteChangesetReaderArgs<TDb extends SqliteChangesetReaderDb = AnyDb> {
+  /** Database from which table and column metadata will be read. It must be open and contain every table in the changeset. */
+  readonly db: TDb;
   /** invert the changeset operations */
   readonly invert?: true;
   /** do not check if column of change match db schema instead ignore addition columns */
@@ -83,22 +91,29 @@ export interface SqliteChange {
  * a db provided.
  * @beta
  */
-export class SqliteChangesetReader implements Disposable {
+export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> implements Disposable {
   private readonly _nativeReader = new IModelNative.platform.SqliteChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
   private _changeIndex = 0;
   protected constructor(
     /** db from where sql schema will be read */
-    public readonly db: AnyDb,
+    public readonly db: TDb,
   ) { }
+
+  private static requireOpenDb(db: SqliteChangesetReaderDb): void {
+    if (!db.isOpen)
+      throw new Error("db must be open.");
+  }
 
   /**
    * Open changeset file from disk
    * @param args fileName of changeset reader and other options.
    * @returns SqliteChangesetReader instance
    */
-  public static openFile(args: { readonly fileName: string } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+  public static openFile<TDb extends SqliteChangesetReaderDb>(args: { readonly fileName: string } & SqliteChangesetReaderArgs<TDb>): SqliteChangesetReader<TDb> {
+    this.requireOpenDb(args.db);
+
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openFile(args.fileName, args.invert ?? false);
@@ -110,6 +125,7 @@ export class SqliteChangesetReader implements Disposable {
    * @returns The SqliteChangesetReader instance.
    */
   public static openGroup(args: { readonly changesetFiles: string[] } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+    this.requireOpenDb(args.db);
     if (args.changesetFiles.length === 0) {
       throw new Error("changesetFiles must contain at least one file.");
     }
@@ -124,6 +140,7 @@ export class SqliteChangesetReader implements Disposable {
    * @returns SqliteChangesetReader instance
    */
   public static openTxn(args: { txnId: Id64String } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+    this.requireOpenDb(args.db);
     if (args.db instanceof ECDb) {
       throw new Error("ECDb does not support openTxn");
     }
@@ -138,6 +155,7 @@ export class SqliteChangesetReader implements Disposable {
    * @returns SqliteChangesetReader instance
    */
   public static openInMemory(args: SqliteChangesetReaderArgs & { db: IModelDb }): SqliteChangesetReader {
+    this.requireOpenDb(args.db);
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false);
@@ -161,6 +179,7 @@ export class SqliteChangesetReader implements Disposable {
    * @returns SqliteChangesetReader instance
    */
   public static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & { db: IModelDb, includeInMemoryChanges?: true }): SqliteChangesetReader {
+    this.requireOpenDb(args.db);
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false);
@@ -405,6 +424,9 @@ export class SqliteChangesetReader implements Disposable {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         tblCols.push(stmt.getValueString(0));
       }
+      if (tblCols.length === 0)
+        throw new Error(`changeset table ${tableName} does not exist in the provided db.`);
+
       this._schemaCache.set(tableName, tblCols);
       return tblCols;
     });
