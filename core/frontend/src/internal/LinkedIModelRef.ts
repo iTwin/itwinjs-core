@@ -310,6 +310,8 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     this.overrides.onHiddenLineSettingsChanged.clear();
   }
 
+  public override isSpatial(): this is SpatialIModelDisplayReference { return true; }
+
   public get modelClipGroups() {
     return this.#modelClipGroups;
   }

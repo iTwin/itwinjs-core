@@ -6,11 +6,11 @@
  * @module Views
  */
 
-import { ModelClipGroups, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { ModelClipGroups, PlanProjectionSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
-import { BeEvent, Guid, Id64, Id64Set, Id64String, ObservableSet } from "@itwin/core-bentley";
+import { BeEvent, Guid, Id64, Id64Set, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelFeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
@@ -264,6 +264,8 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
     this.viewedModels.onChanged.addListener(async () => loadViewedModels(this));
   }
 
+  public override isSpatial(): this is SpatialIModelDisplayReference { return true; }
+
   public override get tileTreeRefs(): Iterable<TileTreeReference> {
     return this[_treeRefs];
   }
@@ -281,8 +283,8 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
   }
 
   public get planProjectionSettings() {
-    // ###TODO
-    return this._view.displayStyle.settings.planProjectionSettings as unknown as any;
+    // ###TODO return this._view.displayStyle.settings.planProjectionSettings;
+    return new ObservableMap<string, PlanProjectionSettings>();
   }
 
   public get modelClipGroups() {
