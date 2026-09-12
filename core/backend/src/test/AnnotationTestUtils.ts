@@ -7,6 +7,28 @@ import { ElementGeometry, GeometryParams, TextBlock, TextString, TextStyleSettin
 import { AnyCurvePrimitive, Range2d } from "@itwin/core-geometry";
 import { ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../core-backend";
 import { Id64String } from "@itwin/core-bentley";
+import { FormatDefinition } from "@itwin/core-quantity";
+import { FormatSet } from "@itwin/ecschema-metadata";
+
+
+/** Builds a decimal [FormatDefinition] rendering a magnitude in `unitName`, labelled `unitLabel`. */
+export function decimalFormat(unitName: string, unitLabel: string, precision = 4): FormatDefinition {
+  return {
+    composite: { includeZero: true, units: [{ label: unitLabel, name: unitName }] },
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision,
+    type: "Decimal",
+    uomSeparator: " ",
+  };
+}
+
+/** Wraps a KindOfQuantity -> format map in a metric [FormatSet] named `name`.
+ * `name` is cosmetic -- a FormatSet is routed by the id it is registered under, not by its name --
+ * so it exists to tell a reader which set an assertion is about.
+ */
+export function toFormatSet(name: string, formats: Record<string, FormatDefinition> = {}): FormatSet {
+  return { name, label: name, unitSystem: "metric", formats };
+}
 
 
 export function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add `QuantityFieldFormatOptions` to `FieldFormatOptions`, letting a `FieldRun` override the KindOfQuantity, persistence unit, and `FormatSet` used to format its value. `@itwin/core-quantity` is now a peer dependency of this package.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common",
+  "email": "claudiaareneee@users.noreply.github.com"
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Quantity and coordinate `FieldRun` values in text annotations now render through the iTwin.js quantity formatting pipeline instead of `toString()`; opt in by registering a per-iModel provider with `ElementDrivesTextAnnotation.registerFieldFormattingProvider`. `@itwin/core-quantity` is now a peer dependency of this package.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "claudiaareneee@users.noreply.github.com"
+}

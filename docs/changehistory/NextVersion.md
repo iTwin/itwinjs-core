@@ -11,6 +11,7 @@ publish: false
     - [ChangesetReader changes](#changesetreader-changes)
       - [ChangesetReader row options](#changesetreader-row-options)
       - [ChangeInstance ECInstanceId and ECClassId](#changeinstance-ecinstanceid-and-ecclassid)
+    - [Quantity formatting for text annotation fields](#quantity-formatting-for-text-annotation-fields)
     - [Reserving elements for concurrent creation](#reserving-elements-for-concurrent-creation)
     - [Edit from element, model, and aspect callbacks](#edit-from-element-model-and-aspect-callbacks)
     - [WorkspaceDb file resource APIs deprecated](#workspacedb-file-resource-apis-deprecated)
@@ -83,6 +84,17 @@ SchemaSync databases now require version 5.0.0. Existing version 4 containers ar
 #### ChangesetReader row options
 
 The `useJsName` option has been deprecated in the `@beta` `RowFormatOptions` used by [ChangesetReader]($backend). Use `classIdsToClassNames` to resolve class Id values to fully-qualified class names.
+
+### Quantity formatting for text annotation fields
+
+[FieldRun]($common)s whose target property resolves to a `"quantity"` or `"coordinate"` value are now rendered through the standard iTwin.js quantity formatting pipeline instead of the previous placeholder `toString()` representation. An application adopts a [FormatSet]($ecschema-metadata) for an iModel via the new [ElementDrivesTextAnnotation.registerFieldFormattingProvider]($backend), and individual fields can override the KindOfQuantity, persistence unit, or FormatSet used to format them.
+
+Two changes need attention when upgrading:
+
+- An `int` or `long` property carrying a KindOfQuantity previously rendered as a bare number and now renders as a formatted quantity: one persisting 2500 mm under a KindOfQuantity presenting meters changes from `2500` to `2.5 m`.
+- `@itwin/core-quantity` is now a **peer dependency** of both `@itwin/core-common` and `@itwin/core-backend`. Applications that depend on either package but did not already list `@itwin/core-quantity` must add it, at the same version as the rest of their iTwin.js core packages.
+
+See [Quantity formatting for text annotation fields](../learning/backend/TextAnnotationFields.md) for a walkthrough covering format resolution, choosing what to pre-warm, provider lifetime, and evaluating fields.
 
 ### Reserving elements for concurrent creation
 

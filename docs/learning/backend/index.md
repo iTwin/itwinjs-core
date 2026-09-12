@@ -30,6 +30,9 @@ These packages provide the following functions to support backend operations:
   - [Optimize iModel with SQLite commands](./IModelOptimization.md)
   - [Fonts](./Fonts.md)
 
+- Text Annotations
+  - [Quantity formatting for text annotation fields](./TextAnnotationFields.md)
+
 - Working with Schemas and Elements in TypeScript
   - [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
   - [Data upgrade callbacks when importing Schemas](./SchemaEvolutionCallbacks.md)
