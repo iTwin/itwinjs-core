@@ -9,7 +9,7 @@
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { _backingView, _implementationProhibited } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
-import { IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
+import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "./IModelDisplayReference";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { ModelClipGroups } from "@itwin/core-common";
 import { IModelDisplayOverridesProps, SpatialIModelDisplayOverridesProps } from "./IModelDisplayOverrides";
@@ -50,7 +50,7 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
   readonly onUnlinked: BeEvent<(ref: IModelDisplayReference2d) => void>;
 
   link(args: LinkIModel2dArgs): IModelDisplayReference2d;
-  unlink(ref: IModelDisplayReference2d): void;
+  unlink(ref: IModelDisplayReference): void;
 
   // ###TODO access to timePoint for schedule scripts
 }
@@ -71,7 +71,7 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   readonly onUnlinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
 
   link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference;
-  unlink(ref: SpatialIModelDisplayReference): void;
+  unlink(ref: IModelDisplayReference): void;
 }
 
 /** Represents the set of [[IModelConnection]]'s displayed by a [[ViewState]] within a [[Viewport]].

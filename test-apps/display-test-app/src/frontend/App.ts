@@ -60,7 +60,7 @@ import { MacroTool } from "./MacroTools";
 import { RecordTileSizesTool } from "./TileSizeRecorder";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
-import { LinkIModelTool } from "./LinkedIModelTools";
+import { LinkIModelTool, UnlinkIModelsTool } from "./LinkedIModelTools";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
@@ -453,6 +453,7 @@ export class DisplayTestApp {
       LinkIModelTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
+      UnlinkIModelsTool,
       ViewClipByElementGeometryTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
