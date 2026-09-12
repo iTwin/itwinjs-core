@@ -309,10 +309,15 @@ export class CategoryPicker extends IdPicker {
   }
 
   protected override show(which: string): void {
-    if ("Subcategories" === which)
-      this._vp.changeCategoryDisplay(this._enabledIds, true, true);
-    else
+    if ("Subcategories" === which) {
+      this.iModelRef.changeCategoryDisplay({
+        categories: this._enabledIds,
+        display: true,
+        enableAllSubCategories: true,
+      })
+    } else {
       super.show(which);
+    }
   }
 
   protected hiliteEnabled(hiliteOn: boolean): void {
