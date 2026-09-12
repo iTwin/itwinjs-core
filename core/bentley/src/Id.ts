@@ -329,21 +329,11 @@ export namespace Id64 {
    * @param makeCopy If true, and the input is already an Id64Set, returns a deep copy of the input.
    * @returns An Id64Set containing the set of [[Id64String]]s represented by the Id64Arg.
    */
-  export function toIdSet(arg: Id64Arg, makeCopy: boolean = false): Id64Set {
+  export function toIdSet(arg: Id64String | Iterable<Id64String>, makeCopy: boolean = false): Id64Set {
     if (arg instanceof Set)
       return makeCopy ? new Set<string>(arg) : arg;
 
-    const ids = new Set<Id64String>();
-    if (typeof arg === "string")
-      ids.add(arg);
-    else if (Array.isArray(arg)) {
-      arg.forEach((id: Id64String) => {
-        if (typeof id === "string")
-          ids.add(id);
-      });
-    }
-
-    return ids;
+    return new Set<Id64String>(typeof arg === "string" ? [arg] : arg);
   }
 
   /** Obtain iterator over the specified Ids.
@@ -365,7 +355,7 @@ export namespace Id64 {
    *    console.log(id);
    * ```
    */
-  export function iterable(ids: Id64Arg): Iterable<Id64String> {
+  export function iterable(ids: Id64String | Iterable<Id64String>): Iterable<Id64String> {
     return typeof ids === "string" ? [ids] : ids;
   }
 

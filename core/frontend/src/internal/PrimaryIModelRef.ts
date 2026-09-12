@@ -6,11 +6,11 @@
  * @module Views
  */
 
-import { ModelClipGroups, ViewFlags } from "@itwin/core-common";
+import { ModelClipGroups, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
-import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
+import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState, ViewState2d } from "../ViewState";
-import { BeEvent, Guid, Id64String, ObservableSet } from "@itwin/core-bentley";
+import { BeEvent, Guid, Id64, Id64Set, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelFeatureOverrideProvider } from "../FeatureOverrideProvider";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
@@ -175,6 +175,80 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
   public invalidateSymbologyOverrides(): void {
     this.#symbologyOverrides = undefined;
     // probably need to notify viewport.
+  }
+
+  public changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void {
+    const ids = Id64.iterable(args.categories);
+    if (!args.display) {
+      if (args.noBatchNotify) {
+        for (const id of ids)
+          this.viewedCategories.delete(id);
+      } else {
+        this.viewedCategories.deleteAll(ids);
+      }
+
+      return;
+    }
+
+    if (args.noBatchNotify) {
+      for (const id of ids)
+        this.viewedCategories.add(id);
+    } else {
+      this.viewedCategories.addAll(ids);
+    }
+
+    const categories = Id64.toIdSet(args.categories);
+    this.parent.subcategories.push(this.iModel.subcategories, categories, (anySubCategoriesLoaded) => {
+      if (args.enableAllSubCategories) {
+        for (const catId of categories) {
+          const subCatIds = this.iModel.subcategories.getSubCategories(catId);
+          if (subCatIds)
+            for (const subCatId of subCatIds)
+              this.changeSubCategoryDisplay(subCatId, true);
+        }
+      }
+
+      if (anySubCategoriesLoaded)
+        this.viewedCategories.onChanged.raiseEvent();
+    });
+  }
+
+  public isSubCategoryVisible(id: Id64String): boolean {
+    const app = this.iModel.subcategories.getSubCategoryAppearance(id);
+    if (!app)
+      return false;
+
+    const ovr = this.subCategoryOverrides.get(id);
+    if (!ovr || undefined === ovr.invisible)
+      return !app.invisible;
+
+    return !ovr.invisible;
+  }
+
+  public changeSubCategoryDisplay(id: Id64String, visible: boolean): boolean {
+    const app = this.iModel.subcategories.getSubCategoryAppearance(id);
+    if (!app)
+      return false; // category not enabled or not loaded
+
+    const curOvr = this.subCategoryOverrides.get(id);
+    const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
+    if (isAlreadyVisible === visible)
+      return false;
+
+    // Preserve existing overrides - just flip the visibility flag.
+    const json = undefined !== curOvr ? curOvr.toJSON() : {};
+    json.invisible = !visible;
+    this.subCategoryOverrides.set(id, SubCategoryOverride.fromJSON(json));
+    return true;
+  }
+
+  public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
+    const app = this.iModel.subcategories.getSubCategoryAppearance(id);
+    if (!app)
+      return SubCategoryAppearance.defaults;
+
+    const ovr = this.subCategoryOverrides.get(id);
+    return ovr?.override(app) ?? app;
   }
 }
 

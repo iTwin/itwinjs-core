@@ -10,7 +10,7 @@ import { BeEvent, compareStrings, GuidString, Id64, Id64String, ObservableMap, O
 import { _attachToViewport, _detachFromViewport, _excludedElements, _getModelClip, _guid, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "./common/internal/Symbols";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
-import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
+import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { IModelFeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
@@ -41,6 +41,14 @@ export namespace IModelFeature {
       iModelRef,
     };
   }
+}
+
+export interface ChangeCategoryDisplayArgs {
+  categories: Iterable<Id64String>
+  display: boolean;
+  enableAllSubCategories?: boolean;
+  /** @internal */
+  noBatchNotify?: boolean;
 }
 
 /** A reference to an [[IModelConnection]] for display and interaction within a [[Viewport]].
@@ -112,6 +120,11 @@ export interface IModelDisplayReference {
 
   readonly [_attachToViewport]: (args: AttachToViewportArgs) => void;
   readonly [_detachFromViewport]: () => void;
+
+  changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void;
+  isSubCategoryVisible(id: Id64String): boolean;
+  changeSubCategoryDisplay(id: Id64String, visible: boolean): void;
+  getSubCategoryAppearance(id: Id64String): SubCategoryAppearance;
 }
 
 /** A reference to a drawing or sheet.
