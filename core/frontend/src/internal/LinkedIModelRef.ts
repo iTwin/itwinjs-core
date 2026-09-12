@@ -23,7 +23,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelApp } from "../IModelApp";
-import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
+import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 abstract class LinkedIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -32,6 +32,8 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   #resolvedViewFlags: ViewFlags;
   #modelDisplayTransformProvider?: ModelDisplayTransformProvider;
   #symbologyOverrides?: FeatureSymbology.Overrides;
+
+  protected readonly _disposalFunctions: Array<() => void> = [];
 
   protected readonly _ovrs: IModelDisplayOverrides;
   protected readonly _subcategories = new SubCategoriesCache.Queue();
@@ -128,9 +130,15 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
         this._dispose();
       }
     });
+
+    this._disposalFunctions.push(listenForSubCategoryChanges(this));
   }
 
   protected _dispose(): void {
+    for (const disposalFunction of this._disposalFunctions)
+      disposalFunction();
+
+    this._disposalFunctions.length = 0;
 
     this.onPerModelCategoryVisibilityChanged.clear();
     this.onIsAlwaysDrawnExclusiveChanged.clear();

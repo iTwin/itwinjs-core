@@ -743,6 +743,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the subcategory.
    * @return The symbology of the subcategory within this viewport, including any overrides.
    * @see [[overrideSubCategory]]
+   * @deprecated Use [[IModelDisplayReference.getSubCategoryAppearance]].
    */
   public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
     return this.primaryIModelRef.getSubCategoryAppearance(id);
@@ -752,6 +753,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param id The Id of the subcategory
    * @returns true if the subcategory is visible in this viewport.
    * @note Because this function does not know the Id of the containing Category, it does not check if the Category is enabled for display. The caller should check that separately if he knows the Id of the Category.
+   * @deprecated Use [[IModelDisplayReference.isSubCategoryVisible]].
    */
   public isSubCategoryVisible(id: Id64String): boolean {
     return this.primaryIModelRef.isSubCategoryVisible(id);
@@ -795,6 +797,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Change the visibility of geometry belonging to the specified subcategory when displayed in this viewport.
    * @param subCategoryId The Id of the subcategory
    * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
+   * @deprecated Use [[IModelDisplayReference.changeSubCategoryDisplay]].
    */
   public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
     this.primaryIModelRef.changeSubCategoryDisplay(subCategoryId, display);
@@ -1176,14 +1179,6 @@ export abstract class Viewport implements Disposable, TileUser {
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, this.displayStyle);
   }
 
-  private getSubCategoryReloadCategoryIds(): Id64Set {
-    const categoryIds = Id64.toIdSet(this.view.categorySelector.categories);
-    for (const { categoryId } of this.perModelCategoryVisibility)
-      categoryIds.add(categoryId);
-
-    return categoryIds;
-  }
-
   private registerViewListeners(): void {
     const view = this.view;
     const removals = this._detachFromView;
@@ -1193,11 +1188,6 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(view.onModelDisplayTransformProviderChanged.addListener(() => this.invalidateScene()));
     removals.push(view.details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
-
-    // ###TODO this belongs on IModelDisplayReference not Viewport.
-    removals.push(this.iModel.subcategories.addChangedListener(() => {
-      // ###TODO this.updateSubCategories(this.getSubCategoryReloadCategoryIds(), undefined);
-    }));
 
     if (view.isSpatialView()) {
       removals.push(view.onViewedModelsChanged.addListener(() => {

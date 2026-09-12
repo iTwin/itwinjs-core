@@ -21,7 +21,7 @@ import { SpatialTileTreeReferences } from "./cross-package";
 import { TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
+import { changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
 abstract class PrimaryIModelRef implements IModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
@@ -98,6 +98,9 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     view.onModelDisplayTransformProviderChanged.addListener(() => this.onModelDisplayTransformProviderChanged.raiseEvent());
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
+
+    // ###TODO should probably be registered in attachToViewport and removed in detachFromViewport.
+    listenForSubCategoryChanges(this);
   }
 
   public get iModel() { return this._view.iModel; }

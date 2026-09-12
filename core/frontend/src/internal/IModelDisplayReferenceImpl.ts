@@ -104,3 +104,16 @@ export function isLoadingComplete(iModelRef: IModelDisplayReference): boolean {
 
   return true;
 }
+
+export function listenForSubCategoryChanges(ref: IModelDisplayReference): () => void {
+  return ref.iModel.subcategories.addChangedListener(() => {
+    const categoryIds = Id64.toIdSet(ref.viewedCategories);
+    for (const { categoryId } of ref.perModelCategoryVisibility)
+      categoryIds.add(categoryId);
+
+    ref.parent.subcategories.push(ref.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
+      if (anySubCategoriesLoaded)
+        ref.onViewedCategoriesLoaded.raiseEvent();
+    });
+  });
+}
