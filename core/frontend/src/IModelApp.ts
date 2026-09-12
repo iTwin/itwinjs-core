@@ -833,6 +833,7 @@ export class IModelApp {
   }
 
   /** Format the tooltip strings returned by [[IModelConnection.getToolTipMessage]].
+   * @note Each string is interpreted as HTML. Any untrusted content must be HTML-escaped or sanitized before calling this method.
    * @alpha
    */
   public static formatElementToolTip(msg: string[]): HTMLElement {

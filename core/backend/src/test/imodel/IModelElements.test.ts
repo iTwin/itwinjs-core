@@ -192,6 +192,13 @@ describe("iModel elements", () => {
     txn.end();
   });
 
+  it("should escape element labels in tooltip messages", () => {
+    const element = testBimReadonly.elements.getElement("0x38");
+    element.userLabel = `<img src="does-not-exist.jpg" onerror="alert('XSS Bug Found!')">`;
+
+    expect(element.getToolTipMessage()[0]).equal("&#60;img src=&#34;does-not-exist.jpg&#34; onerror=&#34;alert(&#39;XSS Bug Found!&#39;)&#34;&#62;");
+  });
+
   it("should optionally detect class mismatches", () => {
     const imodel1 = testBimReadonly;
     // tryGetElement
