@@ -136,8 +136,8 @@ export class ToggleSecondaryIModelTool extends Tool {
 }
 */
 
-export class ToggleSecondaryIModelTool extends Tool {
-  public static override toolId = "ToggleSecondaryIModel";
+export class LinkIModelTool extends Tool {
+  public static override toolId = "LinkIModel";
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -173,5 +173,21 @@ export class ToggleSecondaryIModelTool extends Tool {
       alert(err.toString());
       return false;
     }
+  }
+}
+
+export class UnlinkIModelsTool extends Tool {
+  public static override toolId = "UnlinkIModels";
+
+  public override async run(): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
+      return false;
+
+    for (const ref of vp.iModelRefs.linked) {
+      vp.iModelRefs.unlink(ref);
+    }
+
+    return true;
   }
 }
