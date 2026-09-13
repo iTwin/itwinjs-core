@@ -159,9 +159,11 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     return this.#symbologyOverrides;
   }
 
+  public readonly onSymbologyOverridesInvalidated = new BeEvent<() => void>();
+
   public invalidateSymbologyOverrides(): void {
     this.#symbologyOverrides = undefined;
-    // probably need to notify viewport.
+    this.onSymbologyOverridesInvalidated.raiseEvent();
   }
 
   public changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void {

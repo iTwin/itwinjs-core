@@ -8,36 +8,61 @@ import {
   ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
 } from "@itwin/frontend-devtools";
 import { FeatureAppearance, FeatureAppearanceProps, LinePixels } from "@itwin/core-common";
-import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@itwin/core-frontend";
+import { FeatureSymbology, IModelConnection, IModelDisplayReference, IModelFeatureOverrideProvider, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
+import { IModelDisplayReferences } from "@itwin/core-frontend/lib/cjs/IModelDisplayReferences";
 
-export class Provider implements FeatureOverrideProvider {
-  private readonly _elementOvrs = new Map<Id64String, FeatureAppearance>();
+export class Provider implements IModelFeatureOverrideProvider {
+  private readonly _elementOvrs = new Map<IModelConnection, Map<Id64String, FeatureAppearance>>();
   private _defaultOvrs: FeatureAppearance | undefined;
-  private readonly _vp: Viewport;
+  private readonly _refs: IModelDisplayReferences;
+  private readonly _dispose: () => void;
 
-  private constructor(vp: Viewport) { this._vp = vp; }
+  private constructor(vp: Viewport) {
+    this._refs = vp.iModelRefs;
+    for (const ref of this._refs)
+      ref.featureOverrideProviders.add(this);
 
-  public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
-    this._elementOvrs.forEach((appearance, elementId) => ovrs.override({ elementId, appearance }));
-    if (undefined !== this._defaultOvrs)
+    this._dispose = this._refs.onLinked.addListener((ref) => {
+      ref.featureOverrideProviders.add(this);
+    });
+  }
+
+  public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, ref: IModelDisplayReference): void {
+    if (this._defaultOvrs)
       ovrs.setDefaultOverrides(this._defaultOvrs);
+
+    const map = this._elementOvrs.get(ref.iModel)
+    if (map)
+      for (const [elementId, appearance] of map)
+        ovrs.override({ elementId, appearance });
   }
 
   public overrideElements(app: FeatureAppearance): void {
-    for (const id of this._vp.iModel.selectionSet.elements)
-      this._elementOvrs.set(id, app);
+    for (const iModel of this._refs.iModels) {
+      let map = this._elementOvrs.get(iModel);
+      if (!map)
+        this._elementOvrs.set(iModel, map = new Map());
+
+      for (const id of iModel.selectionSet.elements)
+        map.set(id, app);
+    }
 
     this.sync();
   }
 
   public overrideElementsByArray(elementOvrs: any[]): void {
+    const iModel = this._refs.primary.iModel;
+    let map = this._elementOvrs.get(iModel);
+    if (!map)
+      this._elementOvrs.set(iModel, map = new Map());
+
     elementOvrs.forEach((eo) => {
       const fsa = FeatureAppearance.fromJSON(JSON.parse(eo.fsa) as FeatureAppearanceProps);
       if (eo.id === "-default-")
         this.defaults = fsa;
       else
-        this._elementOvrs.set(eo.id, fsa);
+        map.set(eo.id, fsa);
     });
 
     this.sync();
@@ -48,10 +73,13 @@ export class Provider implements FeatureOverrideProvider {
       return undefined;
 
     const elementOvrs: any[] = [];
-    this._elementOvrs.forEach((value, key) => {
-      const elem = { id: key, fsa: JSON.stringify(value.toJSON()) };
-      elementOvrs.push(elem);
-    });
+    const map = this._elementOvrs.get(this._refs.primary.iModel);
+    if (map) {
+      for (const [key, value] of map) {
+        const elem = { id: key, fsa: JSON.stringify(value.toJSON()) };
+        elementOvrs.push(elem);
+      }
+    }
 
     // Put the default override into the array as well, at the end with a special ID that we can find later.
     if (undefined !== this._defaultOvrs) {
@@ -73,23 +101,32 @@ export class Provider implements FeatureOverrideProvider {
     this.sync();
   }
 
-  private sync(): void { this._vp.setFeatureOverrideProviderChanged(); }
+  private sync(): void {
+    for (const ref of this._refs)
+      ref.invalidateSymbologyOverrides();
+  }
+
+  private static _providers = new Map<Viewport, Provider>();
 
   public static get(vp: Viewport): Provider | undefined {
-    return vp.findFeatureOverrideProvider((x) => x instanceof Provider) as Provider | undefined;
+    return this._providers.get(vp);
   }
 
   public static remove(vp: Viewport): void {
     const provider = this.get(vp);
-    if (provider)
-      vp.dropFeatureOverrideProvider(provider);
+    if (provider) {
+      this._providers.delete(vp);
+      provider._dispose();
+      for (const ref of provider._refs)
+        ref.featureOverrideProviders.delete(provider);
+    }
   }
 
   public static getOrCreate(vp: Viewport): Provider {
     let provider = this.get(vp);
     if (undefined === provider) {
       provider = new Provider(vp);
-      vp.addFeatureOverrideProvider(provider);
+      this._providers.set(vp, provider);
     }
 
     return provider;

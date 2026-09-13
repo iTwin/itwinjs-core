@@ -142,6 +142,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     this.onActiveViewFlagsChanged.clear();
     this.onActiveClipStyleChanged.clear();
     this.onViewedCategoriesLoaded.clear();
+    this.onSymbologyOverridesInvalidated.clear();
 
     this.viewedCategories.clearEventListeners();
     this.perModelCategoryVisibility.onChanged.clear();
@@ -204,9 +205,11 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     return this.#symbologyOverrides;
   }
 
+  public readonly onSymbologyOverridesInvalidated = new BeEvent<() => void>();
+
   public invalidateSymbologyOverrides(): void {
     this.#symbologyOverrides = undefined;
-    // ###TODO probably need to notify viewport
+    this.onSymbologyOverridesInvalidated.raiseEvent();
   }
 
   public changeCategoryDisplay(args: ChangeCategoryDisplayArgs): void {
