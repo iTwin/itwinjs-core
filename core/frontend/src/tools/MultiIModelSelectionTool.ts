@@ -6,8 +6,8 @@
  * @module SelectionSet
  */
 
-import { assert, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
+import { assert, Id64, Id64Arg, Id64Set, SortedArray } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range2d, XAndY } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
@@ -21,9 +21,12 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
-import { ElementSetTool } from "./ElementSetTool";
 import { SelectionMethod, SelectionMode, SelectionProcessing } from "./SelectTool";
 import { IModelConnection } from "../IModelConnection";
+import { compareIModelElements, IModelAndElementId, Viewport } from "../Viewport";
+import { ViewRect } from "../common/ViewRect";
+import { Pixel } from "../render/Pixel";
+import { ToolSettings } from "./ToolSettings";
 
 // cSpell:ignore buttongroup
 
@@ -321,8 +324,8 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
     if (!vp)
       return false;
 
-    const filter = (id: Id64String) => { return !Id64.isTransient(id); };
-    const contents = await ElementSetTool.getAreaOrVolumeSelectionCandidates(vp, origin, corner, method, overlap, this.wantPickableDecorations() ? undefined : filter, this.wantPickableDecorations());
+    const filter = (elem: IModelAndElementId) => { return !Id64.isTransient(elem.id); };
+    const contents = await getAreaOrVolumeSelectionCandidates(vp, origin, corner, method, overlap, this.wantPickableDecorations() ? undefined : filter, this.wantPickableDecorations());
 
     if (0 === contents.size) {
       if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev)) {
@@ -332,20 +335,17 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
       return false;
     }
 
-    // ###TODO getAreaOrVolumeSelectionCandidates should return results from multiple iModels
-    const elementIds = new Map<IModelConnection, Id64Arg>();
-    elementIds.set(this.iModel, contents);
     switch (this.selectionMode) {
       case SelectionMode.Replace:
         if (!ev.isControlKey)
-          return this.processSelection(elementIds, SelectionProcessing.ReplaceSelectionWithElement);
-        return this.processSelection(elementIds, SelectionProcessing.InvertElementInSelection);
+          return this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
+        return this.processSelection(contents, SelectionProcessing.InvertElementInSelection);
 
       case SelectionMode.Add:
-        return this.processSelection(elementIds, SelectionProcessing.AddElementToSelection);
+        return this.processSelection(contents, SelectionProcessing.AddElementToSelection);
 
       case SelectionMode.Remove:
-        return this.processSelection(elementIds, SelectionProcessing.RemoveElementFromSelection);
+        return this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection);
     }
   }
 
@@ -649,4 +649,258 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
       this.initSelectTool();
     return true; // return true if change is valid
   }
+}
+
+class ElementSet extends SortedArray<IModelAndElementId> {
+  public constructor() {
+    super(compareIModelElements);
+  }
+}
+
+function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (id: IModelAndElementId) => boolean): ElementIds {
+  const result = new Map<IModelConnection, Id64Set>();
+
+  const pts: Point2d[] = [];
+  pts[0] = new Point2d(Math.floor(origin.x + 0.5), Math.floor(origin.y + 0.5));
+  pts[1] = new Point2d(Math.floor(corner.x + 0.5), Math.floor(corner.y + 0.5));
+  const range = Range2d.createArray(pts);
+
+  const rect = new ViewRect();
+  rect.initFromRange(range);
+  vp.readPixels(rect, Pixel.Selector.Feature, (pixels) => {
+    let contents: ElementSet = new ElementSet();
+    if (undefined === pixels)
+      return;
+
+    const sRange = Range2d.createNull();
+    sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.low.x), vp.cssPixelsToDevicePixels(range.low.y)));
+    sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.high.x), vp.cssPixelsToDevicePixels(range.high.y)));
+
+    pts[0].x = vp.cssPixelsToDevicePixels(pts[0].x);
+    pts[0].y = vp.cssPixelsToDevicePixels(pts[0].y);
+
+    pts[1].x = vp.cssPixelsToDevicePixels(pts[1].x);
+    pts[1].y = vp.cssPixelsToDevicePixels(pts[1].y);
+
+    const testPoint = Point2d.createZero();
+
+    const getPixelElement = (pixel: Pixel.Data): IModelAndElementId | undefined => {
+      if (undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
+        return undefined; // no geometry at this location...
+
+      if (!vp.isPixelSelectable(pixel))
+        return undefined; // reality model, terrain, etc - not selectable
+
+      const element = {
+        iModel: pixel.feature!.iModelRef.iModel,
+        id: pixel.elementId,
+      };
+
+      if (undefined !== filter && !filter(element))
+        return undefined;
+
+      return element;
+    };
+
+    if (SelectionMethod.Box === method) {
+      const outline = allowOverlaps ? undefined : new ElementSet();
+      const offset = sRange.clone();
+      offset.expandInPlace(-2);
+      for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
+        for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
+          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+          const elementId = getPixelElement(pixel);
+          if (undefined === elementId)
+            continue;
+
+          if (undefined !== outline && !offset.containsPoint(testPoint))
+            outline.insert(elementId);
+          else
+            contents.insert(elementId);
+        }
+      }
+      if (undefined !== outline && 0 !== outline.length) {
+        const inside = new ElementSet();
+        contents.forEach((id) => {
+          if (!outline.contains(id))
+            inside.contains(id);
+        });
+
+        contents = inside;
+      }
+    } else {
+      const closePoint = Point2d.createZero();
+      for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
+        for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
+          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+          const elementId = getPixelElement(pixel);
+          if (undefined === elementId)
+            continue;
+
+          const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
+          pts[0].interpolate(fraction, pts[1], closePoint);
+          if (closePoint.distance(testPoint) < 1.5)
+            contents.insert(elementId);
+        }
+      }
+    }
+
+    for (const element of contents) {
+      let set = result.get(element.iModel);
+      if (!set)
+        result.set(element.iModel, set = new Set<string>());
+
+      set.add(element.id);
+    }
+  }, true);
+
+  return result;
+}
+
+async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corner: XAndY, _allowOverlaps: boolean, _filter?: (elem: IModelAndElementId) => boolean): Promise<ElementIds> {
+  /* ###TODO
+  const contents = new Set<Id64String>();
+  if (!vp.view.isSpatialView())
+    return contents;
+
+  const boxRange = Range2d.createXYXY(origin.x, origin.y, corner.x, corner.y);
+  if (boxRange.isNull || boxRange.isAlmostZeroX || boxRange.isAlmostZeroY)
+    return contents;
+
+  const getClipPlane = (viewPt: Point2d, viewDir: Vector3d, negate: boolean): ClipPlane | undefined => {
+    const point = vp.viewToWorld(Point3d.createFrom(viewPt));
+    const boresite = AccuDrawHintBuilder.getBoresite(point, vp);
+    const normal = viewDir.crossProduct(boresite.direction);
+
+    if (negate)
+      normal.negate(normal);
+
+    return ClipPlane.createNormalAndPoint(normal, point)
+  };
+
+  const planeSet = ConvexClipPlaneSet.createEmpty();
+
+  planeSet.addPlaneToConvexSet(getClipPlane(boxRange.low, vp.rotation.rowX(), true));
+  planeSet.addPlaneToConvexSet(getClipPlane(boxRange.low, vp.rotation.rowY(), true));
+  planeSet.addPlaneToConvexSet(getClipPlane(boxRange.high, vp.rotation.rowX(), false));
+  planeSet.addPlaneToConvexSet(getClipPlane(boxRange.high, vp.rotation.rowY(), false));
+
+  if (0 === planeSet.planes.length)
+    return contents;
+
+  const clip = ClipVector.createCapture([ClipPrimitive.createCapture(planeSet)]);
+  const viewRange = vp.computeViewRange();
+  const range = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, viewRange);
+
+  if (range.isNull)
+    return contents;
+
+  // TODO: Possible to make UnionOfComplexClipPlaneSets from view clip and planes work and remove 2nd containment check?
+  const viewClip = (vp.viewFlags.clipVolume ? vp.view.getViewClip()?.clone() : undefined);
+  if (viewClip) {
+    const viewClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(viewClip, viewRange);
+    if (viewClipRange.isNull || !viewClipRange.intersectsRange(range))
+      return contents;
+  }
+
+  const candidates: Id64Array = [];
+  const categories = new Set<Id64String>();
+
+  try {
+    const viewedModels = [...vp.view.modelSelector.models].join(",");
+    const viewedCategories = [...vp.view.categorySelector.categories].join(",");
+    const ecsql = `SELECT e.ECInstanceId, Category.Id as category FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE Model.Id IN (${viewedModels}) AND Category.Id IN (${viewedCategories}) AND i.MinX <= ${range.xHigh} AND i.MinY <= ${range.yHigh} AND i.MinZ <= ${range.zHigh} AND i.MaxX >= ${range.xLow} AND i.MaxY >= ${range.yLow} AND i.MaxZ >= ${range.zLow}`;
+    const reader = vp.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+
+    for await (const row of reader) {
+      candidates.push(row.ECInstanceId);
+      categories.add(row.category);
+    }
+  } catch { }
+
+  if (0 === candidates.length)
+    return contents;
+
+  let offSubCategories: Id64Array | undefined;
+  if (0 !== categories.size) {
+    for (const categoryId of categories) {
+      const subcategories = vp.iModel.subcategories.getSubCategories(categoryId);
+      if (undefined === subcategories)
+        continue;
+
+      for (const subCategoryId of subcategories) {
+        const appearance = vp.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+        if (undefined === appearance || (!appearance.invisible && !appearance.dontLocate))
+          continue;
+
+        if (undefined === offSubCategories)
+          offSubCategories = new Array<Id64String>;
+        offSubCategories.push(subCategoryId);
+      }
+    }
+  }
+
+  const requestProps: GeometryContainmentRequestProps = {
+    candidates,
+    clip: clip.toJSON(),
+    allowOverlaps,
+    viewFlags: vp.viewFlags.toJSON(),
+    offSubCategories,
+  };
+
+  const result = await vp.iModel.getGeometryContainment(requestProps);
+  if (BentleyStatus.SUCCESS !== result.status || undefined === result.candidatesContainment)
+    return contents;
+
+  result.candidatesContainment.forEach((status: ClipPlaneContainment, index: number) => {
+    if (ClipPlaneContainment.StronglyOutside !== status && (undefined === filter || filter(candidates[index])))
+      contents.add(candidates[index]);
+  });
+
+  if (0 !== contents.size && viewClip) {
+    requestProps.clip = viewClip.toJSON();
+    requestProps.candidates.length = 0;
+    for (const id of contents)
+      requestProps.candidates.push(id);
+    contents.clear();
+
+    const resultViewClip = await vp.iModel.getGeometryContainment(requestProps);
+    if (BentleyStatus.SUCCESS !== resultViewClip.status || undefined === resultViewClip.candidatesContainment)
+      return contents;
+
+    resultViewClip.candidatesContainment.forEach((status: ClipPlaneContainment, index: number) => {
+      if (ClipPlaneContainment.StronglyOutside !== status)
+        contents.add(candidates[index]);
+    });
+  }
+
+  return contents;
+  */
+  return new Map<IModelConnection, string>();
+}
+
+async function getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (elem: IModelAndElementId) => boolean, includeDecorationsForVolume?: boolean): Promise<ElementIds> {
+  let contents;
+
+  if (ToolSettings.enableVolumeSelection && SelectionMethod.Box === method && vp.view.isSpatialView()) {
+    contents = await getVolumeSelectionCandidates(vp, origin, corner, allowOverlaps, filter);
+
+    // Use area select to identify pickable transients...
+    if (includeDecorationsForVolume) {
+      const acceptTransientsFilter = (elem: IModelAndElementId) => { return Id64.isTransient(elem.id) && (undefined === filter || filter(elem)); };
+      const transients = getAreaSelectionCandidates(vp, origin, corner, method, allowOverlaps, acceptTransientsFilter);
+      for (const [iModel, id] of transients) {
+        let set = contents.get(iModel);
+        if (!set)
+          contents.set(iModel, set = new Set<string>());
+
+        assert(set instanceof SortedArray);
+        set.insert(id);
+      }
+    }
+  } else {
+    contents = getAreaSelectionCandidates(vp, origin, corner, method, allowOverlaps, filter);
+  }
+
+  return contents;
 }

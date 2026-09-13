@@ -7,7 +7,7 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, expectDefined, expectNotNull, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, expectDefined, expectNotNull, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
   ObservableSet,
   StopWatch,
 } from "@itwin/core-bentley";
@@ -195,6 +195,10 @@ export type OnFlashedIdChangedEventArgs = {
 export interface IModelAndElementId {
   readonly iModel: IModelConnection;
   readonly id: Id64String;
+}
+
+export function compareIModelElements(a: IModelAndElementId, b: IModelAndElementId): number {
+  return compareStrings(a.id, b.id) || compareStrings(a.iModel.key, b.iModel.key);
 }
 
 function areIModelElementsEqual(a: IModelAndElementId | undefined, b: IModelAndElementId | undefined): boolean {
