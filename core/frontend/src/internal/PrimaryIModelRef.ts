@@ -79,11 +79,11 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
     };
 
     // ###TODO handle event listener cleanup...
-    view.displayStyle.settings.onViewFlagsChanged.addListener(() => updateViewFlags());
+    view.displayStyle.settings.onAfterViewFlagsChanged.addListener(() => updateViewFlags());
 
     ovrs.onViewFlagsChanged.addListener(() => updateViewFlags);
 
-    view.displayStyle.settings.onClipStyleChanged.addListener(() => {
+    view.displayStyle.settings.onAfterClipStyleChanged.addListener(() => {
       if (undefined === this.overrides.clipStyle) {
         this.onActiveClipStyleChanged.raiseEvent();
       }
@@ -91,7 +91,7 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
     ovrs.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
-    view.onModelDisplayTransformProviderChanged.addListener(() => this.onModelDisplayTransformProviderChanged.raiseEvent());
+    view.onAfterModelDisplayTransformProviderChanged.addListener(() => this.onModelDisplayTransformProviderChanged.raiseEvent());
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
   }
@@ -240,13 +240,13 @@ class PrimarySpatialIModelRef extends PrimaryIModelRef implements SpatialIModelD
 
     this[_treeRefs] = SpatialTileTreeReferences.create(this);
 
-    this._view.details.onModelClipGroupsChanged.addListener(
+    this._view.details.onAfterModelClipGroupsChanged.addListener(
       () => this.onModelClipGroupsChanged.raiseEvent()
     );
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
 
-    this._view.displayStyle.settings.onHiddenLineSettingsChanged.addListener(() => {
+    this._view.displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
 

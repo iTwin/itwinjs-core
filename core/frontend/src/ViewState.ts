@@ -260,6 +260,10 @@ export abstract class ViewState extends ElementState {
    * @beta
    */
   public readonly onModelDisplayTransformProviderChanged = new BeEvent<(newProvider: ModelDisplayTransformProvider | undefined) => void>();
+  /** Event raised just after assignment to the [[modelDisplayTransformProvider]] property, *only* if the view is attached to a [[Viewport]].
+   * @beta
+   */
+  public readonly onAfterModelDisplayTransformProviderChanged = new BeEvent<() => void>();
 
   /** Selects the categories that are display by this ViewState. */
   public get categorySelector(): CategorySelectorState {
@@ -1355,6 +1359,8 @@ export abstract class ViewState extends ElementState {
       this.onModelDisplayTransformProviderChanged.raiseEvent(provider);
 
     this._modelDisplayTransformProvider = provider;
+    if (this.isAttachedToViewport)
+      this.onAfterModelDisplayTransformProviderChanged.raiseEvent();
   }
 
   /** Compute the transform applied to a model or element at display time, if any.

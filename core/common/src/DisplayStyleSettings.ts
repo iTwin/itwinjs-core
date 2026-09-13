@@ -474,6 +474,8 @@ export class DisplayStyleSettings {
   public readonly onOverridesApplied = new BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>();
   /** Event raised just prior to assignment to the [[viewFlags]] property. */
   public readonly onViewFlagsChanged = new BeEvent<(newFlags: Readonly<ViewFlags>) => void>();
+  /** Event raised just after assignment to the [[viewFlags]] property. */
+  public readonly onAfterViewFlagsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[backgroundColor]] property. */
   public readonly onBackgroundColorChanged = new BeEvent<(newColor: ColorDef) => void>();
   /** Event raised just prior to assignment to the [[monochromeColor]] property. */
@@ -503,6 +505,8 @@ export class DisplayStyleSettings {
   public readonly onExcludedElementsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[clipStyle]] property. */
   public readonly onClipStyleChanged = new BeEvent<(newStyle: ClipStyle) => void>();
+  /** Event raised just after assignment to the [[clipStyle]] property. */
+  public readonly onAfterClipStyleChanged = new BeEvent<() => void>();
   /** Event raised when the [[SubCategoryOverride]]s change. */
   public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
@@ -517,6 +521,8 @@ export class DisplayStyleSettings {
   public readonly onContoursChanged = new BeEvent<(newContours: ContourDisplay) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
+  /** Event raised just after assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
+  public readonly onAfterHiddenLineSettingsChanged = new BeEvent<() => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
   public readonly onAmbientOcclusionSettingsChanged = new BeEvent<(newSettings: AmbientOcclusion.Settings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.solarShadows]] property. */
@@ -611,6 +617,7 @@ export class DisplayStyleSettings {
     this.onViewFlagsChanged.raiseEvent(flags);
     this._viewFlags = flags;
     this._json.viewflags = flags.toJSON();
+    this.onAfterViewFlagsChanged.raiseEvent();
   }
 
   /** The color displayed in the view background - by default, [[ColorDef.black]]. */
@@ -918,6 +925,8 @@ export class DisplayStyleSettings {
       delete this._json.clipStyle;
     else
       this._json.clipStyle = style.toJSON();
+
+    this.onAfterClipStyleChanged.raiseEvent();
   }
 
   /** Convert these settings to their JSON representation. */
@@ -1251,6 +1260,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this.onHiddenLineSettingsChanged.raiseEvent(hline);
     this._hline = hline;
     this._json3d.hline = hline.toJSON();
+    this.onAfterHiddenLineSettingsChanged.raiseEvent();
   }
 
   /** The settings that control how ambient occlusion is displayed. */

@@ -106,11 +106,11 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     };
 
     // ###TODO handle event listener cleanup...
-    view.displayStyle.settings.onViewFlagsChanged.addListener(() => updateViewFlags());
+    view.displayStyle.settings.onAfterViewFlagsChanged.addListener(() => updateViewFlags());
 
     ovrs.onViewFlagsChanged.addListener(() => updateViewFlags);
 
-    view.displayStyle.settings.onClipStyleChanged.addListener(() => {
+    view.displayStyle.settings.onAfterClipStyleChanged.addListener(() => {
       if (undefined === this._ovrs.clipStyle) {
         this.onActiveClipStyleChanged.raiseEvent();
       }
@@ -284,7 +284,7 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
 
     this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
 
-    refs[_backingView].displayStyle.settings.onHiddenLineSettingsChanged.addListener(() => {
+    refs[_backingView].displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
       this.onActiveHiddenLineSettingsChanged.raiseEvent();
     });
 
