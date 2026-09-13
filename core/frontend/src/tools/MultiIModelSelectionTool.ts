@@ -6,9 +6,9 @@
  * @module SelectionSet
  */
 
-import { assert, Id64, Id64Arg, Id64Set, SortedArray } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range2d, XAndY } from "@itwin/core-geometry";
-import { ColorDef } from "@itwin/core-common";
+import { assert, BentleyStatus, Id64, Id64Arg, Id64Array, Id64Set, Id64String, SortedArray } from "@itwin/core-bentley";
+import { ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipUtilities, ClipVector, ConvexClipPlaneSet, Point2d, Point3d, Range2d, Vector3d, XAndY } from "@itwin/core-geometry";
+import { ColorDef, GeometryContainmentRequestProps, QueryRowFormat } from "@itwin/core-common";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
   SuppressLabelEditorParams,
@@ -27,6 +27,7 @@ import { compareIModelElements, IModelAndElementId, Viewport } from "../Viewport
 import { ViewRect } from "../common/ViewRect";
 import { Pixel } from "../render/Pixel";
 import { ToolSettings } from "./ToolSettings";
+import { AccuDrawHintBuilder } from "../AccuDraw";
 
 // cSpell:ignore buttongroup
 
@@ -655,10 +656,23 @@ class ElementSet extends SortedArray<IModelAndElementId> {
   public constructor() {
     super(compareIModelElements);
   }
+
+  public toElementIds(): ElementIds {
+    const result = new Map<IModelConnection, Id64Set>();
+    for (const elem of this) {
+      let set = result.get(elem.iModel);
+      if (!set)
+        result.set(elem.iModel, set = new Set<string>());
+
+      set.add(elem.id);
+    }
+
+    return result;
+  }
 }
 
 function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (id: IModelAndElementId) => boolean): ElementIds {
-  const result = new Map<IModelConnection, Id64Set>();
+  let result: ElementIds | undefined;
 
   const pts: Point2d[] = [];
   pts[0] = new Point2d(Math.floor(origin.x + 0.5), Math.floor(origin.y + 0.5));
@@ -745,27 +759,20 @@ function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, 
       }
     }
 
-    for (const element of contents) {
-      let set = result.get(element.iModel);
-      if (!set)
-        result.set(element.iModel, set = new Set<string>());
-
-      set.add(element.id);
-    }
+    result = contents.toElementIds();
   }, true);
 
-  return result;
+  return result ?? new Map();
 }
 
-async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corner: XAndY, _allowOverlaps: boolean, _filter?: (elem: IModelAndElementId) => boolean): Promise<ElementIds> {
-  /* ###TODO
-  const contents = new Set<Id64String>();
+async function getVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, allowOverlaps: boolean, filter?: (elem: IModelAndElementId) => boolean): Promise<ElementIds> {
+  const contents = new ElementSet();
   if (!vp.view.isSpatialView())
-    return contents;
+    return new Map();
 
   const boxRange = Range2d.createXYXY(origin.x, origin.y, corner.x, corner.y);
   if (boxRange.isNull || boxRange.isAlmostZeroX || boxRange.isAlmostZeroY)
-    return contents;
+    return new Map();
 
   const getClipPlane = (viewPt: Point2d, viewDir: Vector3d, negate: boolean): ClipPlane | undefined => {
     const point = vp.viewToWorld(Point3d.createFrom(viewPt));
@@ -786,21 +793,21 @@ async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corn
   planeSet.addPlaneToConvexSet(getClipPlane(boxRange.high, vp.rotation.rowY(), false));
 
   if (0 === planeSet.planes.length)
-    return contents;
+    return new Map();
 
   const clip = ClipVector.createCapture([ClipPrimitive.createCapture(planeSet)]);
   const viewRange = vp.computeViewRange();
   const range = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, viewRange);
 
   if (range.isNull)
-    return contents;
+    return new Map();
 
   // TODO: Possible to make UnionOfComplexClipPlaneSets from view clip and planes work and remove 2nd containment check?
   const viewClip = (vp.viewFlags.clipVolume ? vp.view.getViewClip()?.clone() : undefined);
   if (viewClip) {
     const viewClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(viewClip, viewRange);
     if (viewClipRange.isNull || !viewClipRange.intersectsRange(range))
-      return contents;
+      return new Map();
   }
 
   const candidates: Id64Array = [];
@@ -819,7 +826,7 @@ async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corn
   } catch { }
 
   if (0 === candidates.length)
-    return contents;
+    return new Map();
 
   let offSubCategories: Id64Array | undefined;
   if (0 !== categories.size) {
@@ -850,7 +857,7 @@ async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corn
 
   const result = await vp.iModel.getGeometryContainment(requestProps);
   if (BentleyStatus.SUCCESS !== result.status || undefined === result.candidatesContainment)
-    return contents;
+    return new Map();
 
   result.candidatesContainment.forEach((status: ClipPlaneContainment, index: number) => {
     if (ClipPlaneContainment.StronglyOutside !== status && (undefined === filter || filter(candidates[index])))
@@ -875,8 +882,6 @@ async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corn
   }
 
   return contents;
-  */
-  return new Map<IModelConnection, string>();
 }
 
 async function getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (elem: IModelAndElementId) => boolean, includeDecorationsForVolume?: boolean): Promise<ElementIds> {
