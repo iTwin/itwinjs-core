@@ -738,7 +738,7 @@ function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, 
         const inside = new ElementSet();
         contents.forEach((id) => {
           if (!outline.contains(id))
-            inside.contains(id);
+            inside.insert(id);
         });
 
         contents = inside;
