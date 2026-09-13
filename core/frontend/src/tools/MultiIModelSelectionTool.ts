@@ -765,7 +765,8 @@ function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, 
   return result ?? new Map();
 }
 
-async function getVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, allowOverlaps: boolean, filter?: (elem: IModelAndElementId) => boolean): Promise<ElementIds> {
+async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corner: XAndY, _allowOverlaps: boolean, _filter?: (elem: IModelAndElementId) => boolean): Promise<ElementIds> {
+  /* ###TODO
   const contents = new ElementSet();
   if (!vp.view.isSpatialView())
     return new Map();
@@ -882,6 +883,8 @@ async function getVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner:
   }
 
   return contents;
+  */
+  return new Map();
 }
 
 async function getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (elem: IModelAndElementId) => boolean, includeDecorationsForVolume?: boolean): Promise<ElementIds> {
