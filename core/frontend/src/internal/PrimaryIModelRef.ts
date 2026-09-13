@@ -83,10 +83,6 @@ abstract class PrimaryIModelRef implements IModelDisplayReference {
 
     ovrs.onViewFlagsChanged.addListener(() => updateViewFlags);
 
-    // ###TODO we gotta handle cases where somebody does view.displayStyle = someNewStyle too...
-    // Which means we also gotta clean up these listeners when that happens so we're not listening to stale events
-    // e.g. if the display style gets attached to a *different* view.
-    // Nobody sane will do that, but our API allows it (I guess we're not sane).
     view.displayStyle.settings.onClipStyleChanged.addListener(() => {
       if (undefined === this.overrides.clipStyle) {
         this.onActiveClipStyleChanged.raiseEvent();
