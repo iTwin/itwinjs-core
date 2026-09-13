@@ -69,6 +69,8 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   readonly linked: Iterable<SpatialIModelDisplayReference>;
   readonly subcategories: SubCategoriesCache.Queue;
 
+  readonly iModels: Iterable<IModelConnection>;
+
   readonly onLinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
   readonly onUnlinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;
 

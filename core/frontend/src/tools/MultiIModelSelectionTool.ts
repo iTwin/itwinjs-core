@@ -6,7 +6,7 @@
  * @module SelectionSet
  */
 
-import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { assert, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import {
@@ -23,8 +23,17 @@ import { ManipulatorToolEvent } from "./ToolAdmin";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 import { ElementSetTool } from "./ElementSetTool";
 import { SelectionMethod, SelectionMode, SelectionProcessing } from "./SelectTool";
+import { IModelConnection } from "../IModelConnection";
 
 // cSpell:ignore buttongroup
+
+type ElementIds = Map<IModelConnection, Id64Arg>;
+
+function elementIdsFromHit(hit: HitDetail): ElementIds {
+  const map = new Map<IModelConnection, Id64Arg>();
+  map.set(hit.iModel, hit.sourceId);
+  return map;
+}
 
 /** Tool for picking a set of elements of interest, selected by the user.
  * ###TODO This is just a prototype of what a SelectionTool that supports any number of iModels might look like - TBD where it belongs and
@@ -205,38 +214,58 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
   }
 
   protected processMiss(_ev: BeButtonEvent): boolean {
-    if (!this.iModel.selectionSet.isActive)
-      return false;
-    this.iModel.selectionSet.emptyAll();
-    return true;
+    let anyEmptied = false;
+    assert(undefined !== this.targetView);
+    for (const iModel of this.targetView.iModelRefs.iModels) {
+      if (iModel.selectionSet.isActive) {
+        iModel.selectionSet.emptyAll();
+        anyEmptied = true;
+      }
+    }
+
+    return anyEmptied;
   }
 
-  public updateSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
+  public updateSelection(elementIds: ElementIds, process: SelectionProcessing): boolean {
     let returnValue = false;
-    switch (process) {
-      case SelectionProcessing.AddElementToSelection:
-        returnValue = this.iModel.selectionSet.add(elementId);
-        break;
-      case SelectionProcessing.RemoveElementFromSelection:
-        returnValue = this.iModel.selectionSet.remove(elementId);
-        break;
-      case SelectionProcessing.InvertElementInSelection: // (if element is in selection remove it else add it.)
-        returnValue = this.iModel.selectionSet.invert(elementId);
-        break;
-      case SelectionProcessing.ReplaceSelectionWithElement:
-        this.iModel.selectionSet.replace(elementId);
-        returnValue = true;
-        break;
-      default:
-        return false;
+    for (const [iModel, elementId] of elementIds) {
+      switch (process) {
+        case SelectionProcessing.AddElementToSelection:
+          if (iModel.selectionSet.add(elementId))
+            returnValue = true;
+          break;
+        case SelectionProcessing.RemoveElementFromSelection:
+          if (iModel.selectionSet.remove(elementId))
+            returnValue = true;
+          break;
+        case SelectionProcessing.InvertElementInSelection: // (if element is in selection remove it else add it.)
+          if (iModel.selectionSet.invert(elementId))
+            returnValue = true;
+          break;
+        case SelectionProcessing.ReplaceSelectionWithElement:
+          iModel.selectionSet.replace(elementId); // ###TODO ask Brien why this doesn't check return value of `replace`.
+          returnValue = true;
+          break;
+        default:
+          return false;
+      }
     }
+
+    if (SelectionProcessing.ReplaceSelectionWithElement === process) {
+      assert(undefined !== this.targetView);
+      for (const iModel of this.targetView.iModelRefs.iModels)
+        if (!elementIds.has(iModel))
+          iModel.selectionSet.emptyAll();
+    }
+
     // always force UI to sync display of options since the select option of Remove should only be enabled if the selection set has elements.
     if (returnValue)
       this.syncSelectionMode();
+
     return returnValue;
   }
 
-  public async processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean> { return this.updateSelection(elementId, process); }
+  public async processSelection(elementIds: ElementIds, process: SelectionProcessing): Promise<boolean> { return this.updateSelection(elementIds, process); }
 
   protected useOverlapSelection(ev: BeButtonEvent): boolean {
     if (undefined === ev.viewport)
@@ -305,17 +334,20 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
       return false;
     }
 
+    // ###TODO getAreaOrVolumeSelectionCandidates should return results from multiple iModels
+    const elementIds = new Map<IModelConnection, Id64Arg>();
+    elementIds.set(this.iModel, contents);
     switch (this.selectionMode) {
       case SelectionMode.Replace:
         if (!ev.isControlKey)
-          return this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
-        return this.processSelection(contents, SelectionProcessing.InvertElementInSelection);
+          return this.processSelection(elementIds, SelectionProcessing.ReplaceSelectionWithElement);
+        return this.processSelection(elementIds, SelectionProcessing.InvertElementInSelection);
 
       case SelectionMode.Add:
-        return this.processSelection(contents, SelectionProcessing.AddElementToSelection);
+        return this.processSelection(elementIds, SelectionProcessing.AddElementToSelection);
 
       case SelectionMode.Remove:
-        return this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection);
+        return this.processSelection(elementIds, SelectionProcessing.RemoveElementFromSelection);
     }
   }
 
@@ -374,15 +406,15 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
 
     switch (this.selectionMode) {
       case SelectionMode.Replace:
-        await this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
+        await this.processSelection(elementIdsFromHit(hit), ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
         break;
 
       case SelectionMode.Add:
-        await this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
+        await this.processSelection(elementIdsFromHit(hit), SelectionProcessing.AddElementToSelection);
         break;
 
       case SelectionMode.Remove:
-        await this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+        await this.processSelection(elementIdsFromHit(hit), SelectionProcessing.RemoveElementFromSelection);
         break;
     }
     return EventHandled.Yes;
@@ -441,7 +473,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
 
     // Check for overlapping hits...
     const lastHit = SelectionMode.Remove === this.selectionMode ? undefined : IModelApp.locateManager.currHit;
-    if (lastHit && this.iModel.selectionSet.elements.has(lastHit.sourceId)) {
+    if (lastHit && lastHit.iModel.selectionSet.elements.has(lastHit.sourceId)) {
       const autoHit = IModelApp.accuSnap.currHit;
 
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
@@ -454,11 +486,11 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.selectionMode || undefined !== nextHit)
-          await this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
+          await this.processSelection(elementIdsFromHit(lastHit), SelectionProcessing.RemoveElementFromSelection);
 
         // add element(s) located via reset button
         if (undefined !== nextHit)
-          await this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
+          await this.processSelection(elementIdsFromHit(nextHit), SelectionProcessing.AddElementToSelection);
 
         return EventHandled.Yes;
       }
@@ -520,7 +552,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
     if (SelectionMode.Replace === mode)
       return LocateFilterStatus.Accept;
 
-    const isSelected = this.iModel.selectionSet.elements.has(hit.sourceId);
+    const isSelected = hit.iModel.selectionSet.elements.has(hit.sourceId);
     const status = ((SelectionMode.Add === mode ? !isSelected : isSelected) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject);
     if (out && LocateFilterStatus.Reject === status)
       out.explanation = CoreTools.translate(`ElementSet.Error.${isSelected ? "AlreadySelected" : "NotSelected"}`);
@@ -545,8 +577,17 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
 
   public static async startTool(): Promise<boolean> { return new MultiIModelSelectionTool().run(); }
 
+  private get isAnySelectionSetActive(): boolean {
+    assert(undefined !== this.targetView);
+    for (const iModel of this.targetView.iModelRefs.iModels)
+      if (iModel.selectionSet.isActive)
+        return true;
+
+    return false;
+  }
+
   private syncSelectionMode(): void {
-    if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
+    if (SelectionMode.Remove === this.selectionMode && !this.isAnySelectionSetActive) {
       // No selection active resetting selection mode since there is nothing to Remove
       this.selectionMode = SelectionMode.Replace;
       this.initSelectTool();
@@ -572,7 +613,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
     });
 
     // Make sure a mode of SelectionMode.Remove is valid
-    if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
+    if (SelectionMode.Remove === this.selectionMode && !this.isAnySelectionSetActive) {
       this.selectionMode = SelectionMode.Replace;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: MultiIModelSelectionTool._modesName, value: this._selectionModeValue });
     }
