@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, Id64, Id64Arg, Id64Array, Id64Set, Id64String, SortedArray } from "@itwin/core-bentley";
-import { ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipUtilities, ClipVector, ConvexClipPlaneSet, Point2d, Point3d, Range2d, Vector3d, XAndY } from "@itwin/core-geometry";
+import { ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipUtilities, ClipVector, ConvexClipPlaneSet, Point2d, Point3d, Range2d, Range3d, Vector3d, XAndY } from "@itwin/core-geometry";
 import { ColorDef, GeometryContainmentRequestProps, QueryRowFormat } from "@itwin/core-common";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
@@ -28,6 +28,7 @@ import { ViewRect } from "../common/ViewRect";
 import { Pixel } from "../render/Pixel";
 import { ToolSettings } from "./ToolSettings";
 import { AccuDrawHintBuilder } from "../AccuDraw";
+import { SpatialIModelDisplayReference } from "../IModelDisplayReference";
 
 // cSpell:ignore buttongroup
 
@@ -723,14 +724,14 @@ function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, 
       for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
         for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          const elementId = getPixelElement(pixel);
-          if (undefined === elementId)
+          const element = getPixelElement(pixel);
+          if (undefined === element)
             continue;
 
           if (undefined !== outline && !offset.containsPoint(testPoint))
-            outline.insert(elementId);
+            outline.insert(element);
           else
-            contents.insert(elementId);
+            contents.insert(element);
         }
       }
       if (undefined !== outline && 0 !== outline.length) {
@@ -747,14 +748,14 @@ function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, 
       for (testPoint.x = sRange.low.x; testPoint.x <= sRange.high.x; ++testPoint.x) {
         for (testPoint.y = sRange.low.y; testPoint.y <= sRange.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          const elementId = getPixelElement(pixel);
-          if (undefined === elementId)
+          const element = getPixelElement(pixel);
+          if (undefined === element)
             continue;
 
           const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
           pts[0].interpolate(fraction, pts[1], closePoint);
           if (closePoint.distance(testPoint) < 1.5)
-            contents.insert(elementId);
+            contents.insert(element);
         }
       }
     }
@@ -765,15 +766,14 @@ function getAreaSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, 
   return result ?? new Map();
 }
 
-async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corner: XAndY, _allowOverlaps: boolean, _filter?: (elem: IModelAndElementId) => boolean): Promise<ElementIds> {
-  /* ###TODO
-  const contents = new ElementSet();
+async function getVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, allowOverlaps: boolean, filter?: (elem: IModelAndElementId) => boolean): Promise<ElementIds> {
+  const result = new Map<IModelConnection, Id64Set>();
   if (!vp.view.isSpatialView())
-    return new Map();
+    return result;
 
   const boxRange = Range2d.createXYXY(origin.x, origin.y, corner.x, corner.y);
   if (boxRange.isNull || boxRange.isAlmostZeroX || boxRange.isAlmostZeroY)
-    return new Map();
+    return result;
 
   const getClipPlane = (viewPt: Point2d, viewDir: Vector3d, negate: boolean): ClipPlane | undefined => {
     const point = vp.viewToWorld(Point3d.createFrom(viewPt));
@@ -794,31 +794,74 @@ async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corn
   planeSet.addPlaneToConvexSet(getClipPlane(boxRange.high, vp.rotation.rowY(), false));
 
   if (0 === planeSet.planes.length)
-    return new Map();
+    return result;
 
   const clip = ClipVector.createCapture([ClipPrimitive.createCapture(planeSet)]);
   const viewRange = vp.computeViewRange();
   const range = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, viewRange);
 
   if (range.isNull)
-    return new Map();
+    return result;
 
   // TODO: Possible to make UnionOfComplexClipPlaneSets from view clip and planes work and remove 2nd containment check?
   const viewClip = (vp.viewFlags.clipVolume ? vp.view.getViewClip()?.clone() : undefined);
   if (viewClip) {
     const viewClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(viewClip, viewRange);
     if (viewClipRange.isNull || !viewClipRange.intersectsRange(range))
-      return new Map();
+      return result;
   }
+
+  const queries = [];
+  const scratchElem = { id: "0", iModel: vp.iModel };
+  assert(true === vp.iModelRefs.isSpatial);
+  for (const ref of vp.iModelRefs) {
+    queries.push((async () => {
+      const elemFilter = filter ? (id: Id64String) => {
+        scratchElem.iModel = ref.iModel;
+        scratchElem.id = id;
+        return filter(scratchElem);
+      } : undefined;
+
+      const ids = await getVolumeSelectionCandidatesForIModel(ref, allowOverlaps, clip, range, viewClip, elemFilter);
+      return { ids, iModel: ref.iModel };
+    })());
+  }
+
+  const queryResults = await Promise.allSettled(queries);
+  for (const queryResult of queryResults) {
+    if (queryResult.status !== "fulfilled")
+      continue;
+
+    const value = queryResult.value;
+    let set = result.get(value.iModel);
+    if (!set)
+      result.set(value.iModel, set = new Set<Id64String>());
+
+    for (const id of value.ids)
+      set.add(id);
+  }
+
+  return result;
+}
+
+async function getVolumeSelectionCandidatesForIModel(ref: SpatialIModelDisplayReference, allowOverlaps: boolean, clip: ClipVector, range: Range3d, viewClip?: ClipVector, filter?: (elem: Id64String) => boolean): Promise<Id64Set> {
+  const contents = new Set<Id64String>();
+  const toIModel = ref.linearTransformToParent.inverse();
+  if (!toIModel)
+    return contents;
+
+  clip = clip.clone();
+  clip.transformInPlace(toIModel);
+  range = toIModel.multiplyRange(range);
 
   const candidates: Id64Array = [];
   const categories = new Set<Id64String>();
 
   try {
-    const viewedModels = [...vp.view.modelSelector.models].join(",");
-    const viewedCategories = [...vp.view.categorySelector.categories].join(",");
+    const viewedModels = Array.from(ref.viewedModels).join(",");
+    const viewedCategories = Array.from(ref.viewedCategories).join(",");
     const ecsql = `SELECT e.ECInstanceId, Category.Id as category FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE Model.Id IN (${viewedModels}) AND Category.Id IN (${viewedCategories}) AND i.MinX <= ${range.xHigh} AND i.MinY <= ${range.yHigh} AND i.MinZ <= ${range.zHigh} AND i.MaxX >= ${range.xLow} AND i.MaxY >= ${range.yLow} AND i.MaxZ >= ${range.zLow}`;
-    const reader = vp.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    const reader = ref.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
 
     for await (const row of reader) {
       candidates.push(row.ECInstanceId);
@@ -827,17 +870,18 @@ async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corn
   } catch { }
 
   if (0 === candidates.length)
-    return new Map();
+    return contents;
 
   let offSubCategories: Id64Array | undefined;
   if (0 !== categories.size) {
     for (const categoryId of categories) {
-      const subcategories = vp.iModel.subcategories.getSubCategories(categoryId);
+      const subcategories = ref.iModel.subcategories.getSubCategories(categoryId);
       if (undefined === subcategories)
         continue;
 
       for (const subCategoryId of subcategories) {
-        const appearance = vp.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+        // ###TODO why Brien ignores view's subcategory appearance overrides? const appearance = vp.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+        const appearance = ref.getSubCategoryAppearance(subCategoryId);
         if (undefined === appearance || (!appearance.invisible && !appearance.dontLocate))
           continue;
 
@@ -852,13 +896,13 @@ async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corn
     candidates,
     clip: clip.toJSON(),
     allowOverlaps,
-    viewFlags: vp.viewFlags.toJSON(),
+    viewFlags: ref.activeViewFlags.toJSON(),
     offSubCategories,
   };
 
-  const result = await vp.iModel.getGeometryContainment(requestProps);
+  const result = await ref.iModel.getGeometryContainment(requestProps);
   if (BentleyStatus.SUCCESS !== result.status || undefined === result.candidatesContainment)
-    return new Map();
+    return contents;
 
   result.candidatesContainment.forEach((status: ClipPlaneContainment, index: number) => {
     if (ClipPlaneContainment.StronglyOutside !== status && (undefined === filter || filter(candidates[index])))
@@ -866,13 +910,16 @@ async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corn
   });
 
   if (0 !== contents.size && viewClip) {
+    viewClip = viewClip.clone();
+    viewClip.transformInPlace(toIModel);
+
     requestProps.clip = viewClip.toJSON();
     requestProps.candidates.length = 0;
     for (const id of contents)
       requestProps.candidates.push(id);
     contents.clear();
 
-    const resultViewClip = await vp.iModel.getGeometryContainment(requestProps);
+    const resultViewClip = await ref.iModel.getGeometryContainment(requestProps);
     if (BentleyStatus.SUCCESS !== resultViewClip.status || undefined === resultViewClip.candidatesContainment)
       return contents;
 
@@ -883,8 +930,6 @@ async function getVolumeSelectionCandidates(_vp: Viewport, _origin: XAndY, _corn
   }
 
   return contents;
-  */
-  return new Map();
 }
 
 async function getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (elem: IModelAndElementId) => boolean, includeDecorationsForVolume?: boolean): Promise<ElementIds> {
