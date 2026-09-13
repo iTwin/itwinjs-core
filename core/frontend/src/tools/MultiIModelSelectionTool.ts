@@ -215,8 +215,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
 
   protected processMiss(_ev: BeButtonEvent): boolean {
     let anyEmptied = false;
-    assert(undefined !== this.targetView);
-    for (const iModel of this.targetView.iModelRefs.iModels) {
+    for (const iModel of this.iModels) {
       if (iModel.selectionSet.isActive) {
         iModel.selectionSet.emptyAll();
         anyEmptied = true;
@@ -252,8 +251,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
     }
 
     if (SelectionProcessing.ReplaceSelectionWithElement === process) {
-      assert(undefined !== this.targetView);
-      for (const iModel of this.targetView.iModelRefs.iModels)
+      for (const iModel of this.iModels)
         if (!elementIds.has(iModel))
           iModel.selectionSet.emptyAll();
     }
@@ -578,8 +576,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
   public static async startTool(): Promise<boolean> { return new MultiIModelSelectionTool().run(); }
 
   private get isAnySelectionSetActive(): boolean {
-    assert(undefined !== this.targetView);
-    for (const iModel of this.targetView.iModelRefs.iModels)
+    for (const iModel of this.iModels)
       if (iModel.selectionSet.isActive)
         return true;
 
