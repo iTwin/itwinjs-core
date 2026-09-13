@@ -176,6 +176,7 @@ export * from "./tools/IdleTool";
 export * from "./tools/MeasureTool";
 export * from "./tools/PrimitiveTool";
 export * from "./tools/SelectTool";
+export * from "./tools/MultiIModelSelectionTool";
 export * from "./tools/SetupCameraTools";
 export * from "./tools/Tool";
 export * from "./tools/ToolSettings";
