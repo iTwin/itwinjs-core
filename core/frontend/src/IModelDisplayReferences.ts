@@ -46,6 +46,8 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
   readonly linked: Iterable<IModelDisplayReference2d>;
   readonly subcategories: SubCategoriesCache.Queue; // ###TODO may be able to remove the need for this.
 
+  readonly iModels: Iterable<IModelConnection>;
+
   readonly onLinked: BeEvent<(ref: IModelDisplayReference2d) => void>;
   readonly onUnlinked: BeEvent<(ref: IModelDisplayReference2d) => void>;
 

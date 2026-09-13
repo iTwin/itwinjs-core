@@ -15,9 +15,12 @@ import { SubCategoriesCache } from "../SubCategoriesCache";
 import { ViewState, ViewState2d } from "../ViewState";
 import { createLinkedIModelDisplayReference2d, createLinkedSpatialIModelDisplayReference } from "./LinkedIModelRef";
 import { createPrimarySpatialIModelDisplayReference, createPrimaryIModelDisplayReference2d } from "./PrimaryIModelRef";
+import { IModelConnection } from "../IModelConnection";
 
 abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewState, A extends LinkIModel2dArgs | LinkSpatialIModelArgs> {
   public readonly [_implementationProhibited] = undefined;
+
+  readonly #iModels = new Set<IModelConnection>();
 
   public readonly [_backingView]: V;
 
@@ -34,20 +37,33 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
   protected constructor(view: V) {
     this[_backingView] = view;
     this.primary = this.createPrimaryRef(view);
+    this.#iModels.add(this.primary.iModel);
   }
 
   public link(args: A): R {
     const ref = this.createLinkedRef(args);
     this.linked.push(ref);
+    this.#iModels.add(ref.iModel);
     this.onLinked.raiseEvent(ref);
     return ref;
   }
 
-  public unlink(ref: R): void {
-    const index = this.linked.indexOf(ref);
+  public unlink(refToRemove: R): void {
+    const index = this.linked.indexOf(refToRemove);
     if (index !== -1) {
       this.linked.splice(index, 1);
-      this.onUnlinked.raiseEvent(ref);
+      let removeIModel = true;
+      for (const remainingRef of this) {
+        if (remainingRef.iModel === refToRemove.iModel) {
+          removeIModel = false;
+          break;
+        }
+      }
+
+      if (removeIModel)
+        this.#iModels.delete(refToRemove.iModel);
+
+      this.onUnlinked.raiseEvent(refToRemove);
     }
   }
 
@@ -55,6 +71,10 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
     yield this.primary;
     for (const linked of this.linked)
       yield linked;
+  }
+
+  public get iModels(): Iterable<IModelConnection> {
+    return this.#iModels;
   }
 }
 
