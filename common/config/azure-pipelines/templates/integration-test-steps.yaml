@@ -93,8 +93,8 @@ steps:
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
 
-  # Linux agents do not have a real display so use the virtual framebuffer
   - ${{ if eq(parameters.runRendererTests, true) }}:
+      # Linux agents do not have a real display so use the virtual framebuffer
       - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
         workingDirectory: "full-stack-tests/core"
         env:
