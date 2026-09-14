@@ -370,7 +370,6 @@ export class SqliteChangesetReader<TDb extends SqliteChangesetReaderDb = AnyDb> 
     const row = this.getChangeValuesArray(stage);
     if (!row)
       return undefined;
-    process.env;
     const minLen = Math.min(cols.length, row.length);
 
     if (!this._disableSchemaCheck && cols.length !== this.columnCount)
