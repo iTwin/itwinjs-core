@@ -17,7 +17,7 @@ import { Branch } from "./Graphic";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
-import { IModelDisplayReference } from "../../../core-frontend";
+import { IModelDisplayReference } from "../../../IModelDisplayReference";
 
 /** Options used to construct a BranchState.
  * @internal

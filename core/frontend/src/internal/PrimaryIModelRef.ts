@@ -17,7 +17,7 @@ import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
 import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
-import { SpatialTileTreeReferences } from "./cross-package";
+import { SpatialTileTreeReferences } from "./tile/PrimaryTileTree";
 import { TileTreeReference } from "../tile/internal";
 import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../render/FeatureSymbology";

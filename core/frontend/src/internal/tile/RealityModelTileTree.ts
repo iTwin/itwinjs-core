@@ -35,7 +35,7 @@ import {
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
-import { IModelDisplayReference } from "../../core-frontend";
+import { IModelDisplayReference } from "../../IModelDisplayReference";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;

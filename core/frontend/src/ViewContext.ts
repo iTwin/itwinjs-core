@@ -30,7 +30,7 @@ import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator
 import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
 import { GraphicType } from "./common/render/GraphicType";
 import { RenderTextureDrape } from "./internal/render/RenderTextureDrape";
-import { IModelDisplayReference } from "./core-frontend";
+import { IModelDisplayReference } from "./IModelDisplayReference";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public

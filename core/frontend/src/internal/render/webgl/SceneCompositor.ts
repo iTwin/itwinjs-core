@@ -45,7 +45,7 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
 import { FrustumUniformType } from "./FrustumUniforms";
-import { IModelDisplayReference, IModelDisplayFeature } from "../../../core-frontend";
+import { IModelDisplayFeature, IModelDisplayReference } from "../../../IModelDisplayReference";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)

@@ -10,7 +10,7 @@ import { assert, Id64, Id64String, lowerBound } from "@itwin/core-bentley";
 import { ModelFeature } from "@itwin/core-common";
 import { BranchStack } from "./BranchStack";
 import { Batch } from "./Graphic";
-import { IModelDisplayReference, IModelDisplayFeature } from "../../../IModelDisplayReference";
+import { IModelDisplayFeature, IModelDisplayReference } from "../../../IModelDisplayReference";
 
 /**
  * Assigns a transient, unique 32-bit integer ID to each Batch in a RenderCommands.

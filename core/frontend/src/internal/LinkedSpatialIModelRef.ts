@@ -37,7 +37,7 @@ class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   #modelClipGroups: ModelClipGroups;
 
   get #spatialView() {
-    return this.parent[_backingView] as SpatialViewState;
+    return this.parent[_backingView];
   }
 
   public readonly parent: SpatialIModelDisplayReferences;

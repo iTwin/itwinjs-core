@@ -10,7 +10,7 @@ import { BeEvent, Id64, Id64String } from "@itwin/core-bentley";
 import { FeatureAppearance, FeatureOverrides, SubCategoryOverride } from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
-import { IModelDisplayReference } from "../core-frontend";
+import { IModelDisplayReference } from "../IModelDisplayReference";
 import { _excludedElements, _scheduleScriptReference } from "../common/internal/Symbols";
 
 // cspell:ignore subcat subcats

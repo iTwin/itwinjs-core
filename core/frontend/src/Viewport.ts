@@ -70,7 +70,7 @@ import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
 import { IModelDisplayReferences } from "./IModelDisplayReferences";
-import { IModelDisplayReference } from "./core-frontend";
+import { IModelDisplayReference } from "./IModelDisplayReference";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -3083,7 +3083,7 @@ export abstract class Viewport implements Disposable, TileUser {
    */
   public addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void {
     const addSettingsListener = (style: DisplayStyleState) => style.settings.onAnalysisStyleChanged.addListener(listener);
-    let removeSettingsListener = addSettingsListener(this.displayStyle);
+    const removeSettingsListener = addSettingsListener(this.displayStyle);
 
     const removeViewListener = this.onChangeView.addListener((vp) => {
       listener(vp.view.displayStyle.settings.analysisStyle);

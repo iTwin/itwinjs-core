@@ -14,7 +14,7 @@ import { SpatialViewState } from "../SpatialViewState";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { ViewState, ViewState2d } from "../ViewState";
 import { createLinkedSpatialIModelDisplayReference } from "./LinkedSpatialIModelRef";
-import { createPrimarySpatialIModelDisplayReference, createPrimaryIModelDisplayReference2d } from "./PrimaryIModelRef";
+import { createPrimaryIModelDisplayReference2d, createPrimarySpatialIModelDisplayReference } from "./PrimaryIModelRef";
 import { IModelConnection } from "../IModelConnection";
 
 abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewState> {
