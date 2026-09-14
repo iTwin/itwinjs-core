@@ -247,7 +247,7 @@ export class MultiIModelSelectionTool extends PrimitiveTool {
             returnValue = true;
           break;
         case SelectionProcessing.ReplaceSelectionWithElement:
-          iModel.selectionSet.replace(elementId); // ###TODO ask Brien why this doesn't check return value of `replace`.
+          iModel.selectionSet.replace(elementId);
           returnValue = true;
           break;
         default:
@@ -880,7 +880,6 @@ async function getVolumeSelectionCandidatesForIModel(ref: SpatialIModelDisplayRe
         continue;
 
       for (const subCategoryId of subcategories) {
-        // ###TODO why Brien ignores view's subcategory appearance overrides? const appearance = vp.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
         const appearance = ref.getSubCategoryAppearance(subCategoryId);
         if (undefined === appearance || (!appearance.invisible && !appearance.dontLocate))
           continue;
