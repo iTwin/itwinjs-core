@@ -13,7 +13,7 @@ import { IModelDisplayReferences2d, LinkSpatialIModelArgs, SpatialIModelDisplayR
 import { SpatialViewState } from "../SpatialViewState";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { ViewState, ViewState2d } from "../ViewState";
-import { createLinkedSpatialIModelDisplayReference } from "./LinkedIModelRef";
+import { createLinkedSpatialIModelDisplayReference } from "./LinkedSpatialIModelRef";
 import { createPrimarySpatialIModelDisplayReference, createPrimaryIModelDisplayReference2d } from "./PrimaryIModelRef";
 import { IModelConnection } from "../IModelConnection";
 

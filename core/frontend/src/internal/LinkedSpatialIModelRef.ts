@@ -10,11 +10,10 @@ import { FeatureAppearance, ModelClipGroups, PlanarClipMaskSettings, PlanProject
 import { _attachToViewport, _backingView, _detachFromViewport, _excludedElements, _getModelClip, _implementationProhibited, _scheduleScriptReference, _treeRefs } from "../common/internal/Symbols";
 import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
 import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
-import { SubCategoriesCache } from "../SubCategoriesCache";
 import { FeatureSymbologyOverrider } from "../FeatureOverrideProvider";
-import { IModelDisplayReferences, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
+import { LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
-import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
+import { SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
 import { AttachToViewportArgs, ModelDisplayTransformProvider } from "../ViewState";
 import { createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialViewState } from "../SpatialViewState";
@@ -25,21 +24,25 @@ import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelApp } from "../IModelApp";
 import { addAndLoadViewedModels, changeCategoryDisplay, changeSubCategoryDisplay, getSubCategoryAppearance, isLoadingComplete, isSubCategoryVisible, listenForSubCategoryChanges, loadViewedCategories, loadViewedModels } from "./IModelDisplayReferenceImpl";
 
-abstract class LinkedIModelRef implements IModelDisplayReference {
+class LinkedSpatialIModelRef implements SpatialIModelDisplayReference {
   readonly [_implementationProhibited] = undefined;
+
+  readonly #disposalFunctions: Array<() => void> = [];
+  readonly #modelClips: Array<RenderClipVolume | undefined> = [];
 
   #alwaysDrawnExclusive = false;
   #resolvedViewFlags: ViewFlags;
   #modelDisplayTransformProvider?: ModelDisplayTransformProvider;
   #symbologyOverrides?: FeatureSymbology.Overrides;
+  #modelClipGroups: ModelClipGroups;
 
-  protected readonly _disposalFunctions: Array<() => void> = [];
+  get #spatialView() {
+    return this.parent[_backingView] as SpatialViewState;
+  }
 
-  protected readonly _ovrs: IModelDisplayOverrides;
-  protected readonly _subcategories = new SubCategoriesCache.Queue();
-
-  public abstract readonly parent: IModelDisplayReferences;
-  public abstract get tileTreeRefs(): Iterable<TileTreeReference>;
+  public readonly parent: SpatialIModelDisplayReferences;
+  public readonly [_treeRefs]: SpatialTileTreeReferences;
+  public get tileTreeRefs(): Iterable<TileTreeReference> { return this[_treeRefs]; }
 
   public readonly guid: string;
   public readonly iModel;
@@ -64,15 +67,24 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public readonly onActiveClipStyleChanged = new BeEvent<() => void>();
   public readonly onViewedCategoriesLoaded = new BeEvent<() => void>();
 
-  public abstract readonly overrides: IModelDisplayOverrides;
+  public readonly overrides: SpatialIModelDisplayOverrides;
 
-  protected constructor(args: LinkSpatialIModelArgs, refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides) {
+  public readonly viewedModels = new ObservableSet<Id64String>();
+  public readonly planarClipMasks = new ObservableMap<Id64String, PlanarClipMaskSettings>();
+  public readonly realityModelDisplaySettings = new ObservableMap<Id64String, RealityModelDisplaySettings>();
+  public readonly planProjectionSettings = new ObservableMap<Id64String, PlanProjectionSettings>();
+
+  public readonly onActiveHiddenLineSettingsChanged = new BeEvent<() => void>();
+  public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
+  public readonly onViewedModelsLoaded = new BeEvent<() => void>();
+
+  public constructor(args: LinkSpatialIModelArgs, refs: SpatialIModelDisplayReferences) {
     this.iModel = args.iModel;
-    this._ovrs = ovrs;
+    this.overrides = createSpatialIModelDisplayOverrides(args.overrides);
     this.guid = Guid.createValue();
 
     const view = refs[_backingView];
-    this.#resolvedViewFlags = view.viewFlags.override(ovrs.viewFlags);
+    this.#resolvedViewFlags = view.viewFlags.override(this.overrides.viewFlags);
     if (args.excludedElements)
       this[_excludedElements] = new Set<Id64String>(args.excludedElements);
 
@@ -101,34 +113,57 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     this.viewedCategories.onChanged.addListener(async () => loadViewedCategories(this));
 
     const updateViewFlags = () => {
-      this.#resolvedViewFlags = view.viewFlags.override(this._ovrs.viewFlags);
+      this.#resolvedViewFlags = view.viewFlags.override(this.overrides.viewFlags);
       this.onActiveViewFlagsChanged.raiseEvent();
     };
 
     // ###TODO handle event listener cleanup...
     view.displayStyle.settings.onAfterViewFlagsChanged.addListener(() => updateViewFlags());
 
-    ovrs.onViewFlagsChanged.addListener(() => updateViewFlags);
+    this.overrides.onViewFlagsChanged.addListener(() => updateViewFlags);
 
     view.displayStyle.settings.onAfterClipStyleChanged.addListener(() => {
-      if (undefined === this._ovrs.clipStyle) {
+      if (undefined === this.overrides.clipStyle) {
         this.onActiveClipStyleChanged.raiseEvent();
       }
     });
 
-    ovrs.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
+    this.overrides.onClipStyleChanged.addListener(() => this.onActiveClipStyleChanged.raiseEvent());
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
     // ###TODO when viewed models/categories change.
 
-    this._disposalFunctions.push(listenForSubCategoryChanges(this));
+    this.#disposalFunctions.push(listenForSubCategoryChanges(this));
+
+    refs.onUnlinked.addOnce((ref: IModelDisplayReference) => {
+      if (ref === this) {
+        this.#dispose();
+      }
+    });
+
+    this.parent = refs;
+    this[_treeRefs] = SpatialTileTreeReferences.create(this);
+
+    this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
+
+    this.viewedModels.addAll(args.viewedModels ?? []);
+    loadViewedModels(this);
+    this.viewedModels.onChanged.addListener(async () => loadViewedModels(this));
+
+    this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
+
+    refs[_backingView].displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
+      this.onActiveHiddenLineSettingsChanged.raiseEvent();
+    });
+
+    this.#updateModelClips();
   }
 
-  protected _dispose(): void {
-    for (const disposalFunction of this._disposalFunctions)
+  #dispose(): void {
+    for (const disposalFunction of this.#disposalFunctions)
       disposalFunction();
 
-    this._disposalFunctions.length = 0;
+    this.#disposalFunctions.length = 0;
 
     this.onPerModelCategoryVisibilityChanged.clear();
     this.onIsAlwaysDrawnExclusiveChanged.clear();
@@ -148,9 +183,20 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
     this.overrides.onViewFlagsChanged.clear();
     this.overrides.onClipStyleChanged.clear();
+
+    this.onActiveClipStyleChanged.clear();
+    this.onModelClipGroupsChanged.clear();
+    this.onViewedModelsLoaded.clear();
+
+    this.viewedModels.clearEventListeners();
+    this.planarClipMasks.onChanged.clear();
+    this.realityModelDisplaySettings.clear();
+    this.planProjectionSettings.clear();
+
+    this.overrides.onHiddenLineSettingsChanged.clear();
   }
 
-  public isSpatial(): this is SpatialIModelDisplayReference { return false; }
+  public isSpatial(): this is SpatialIModelDisplayReference { return true; }
   public is2d(): this is IModelDisplayReference2d { return false; }
 
   public get isLoadingComplete(): boolean {
@@ -187,9 +233,6 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
     return this.#resolvedViewFlags;
   }
 
-  public [_attachToViewport](_args: AttachToViewportArgs): void { }
-  public [_detachFromViewport](): void { }
-
   public getSymbologyOverrides(): FeatureSymbology.Overrides {
     if (!this.#symbologyOverrides) {
       this.#symbologyOverrides = new FeatureSymbology.Overrides();
@@ -221,79 +264,6 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   public getSubCategoryAppearance(id: Id64String): SubCategoryAppearance {
     return getSubCategoryAppearance(this, id);
   }
-}
-
-class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDisplayReference {
-  #modelClipGroups: ModelClipGroups;
-  readonly #modelClips: Array<RenderClipVolume | undefined> = [];
-
-  private get _spatialView() {
-    return this.parent[_backingView] as SpatialViewState;
-  }
-
-  public readonly parent: SpatialIModelDisplayReferences;
-  public readonly [_treeRefs]: SpatialTileTreeReferences;
-
-  public readonly viewedModels = new ObservableSet<Id64String>();
-  public readonly planarClipMasks = new ObservableMap<Id64String, PlanarClipMaskSettings>();
-  public readonly realityModelDisplaySettings = new ObservableMap<Id64String, RealityModelDisplaySettings>();
-  public readonly planProjectionSettings = new ObservableMap<Id64String, PlanProjectionSettings>();
-
-  public readonly onActiveHiddenLineSettingsChanged = new BeEvent<() => void>();
-  public readonly onModelClipGroupsChanged = new BeEvent<() => void>();
-  public readonly onViewedModelsLoaded = new BeEvent<() => void>();
-
-  public override get overrides() {
-    return this._ovrs as SpatialIModelDisplayOverrides;
-  }
-
-  public override get tileTreeRefs() {
-    return this[_treeRefs];
-  }
-
-  public constructor(args: LinkSpatialIModelArgs, refs: SpatialIModelDisplayReferences) {
-    super(args, refs, createSpatialIModelDisplayOverrides(args.overrides));
-
-    refs.onUnlinked.addOnce((ref: IModelDisplayReference) => {
-      if (ref === this) {
-        this._dispose();
-      }
-    });
-
-    this.parent = refs;
-    this[_treeRefs] = SpatialTileTreeReferences.create(this);
-
-    this.#modelClipGroups = args.modelClipGroups ?? new ModelClipGroups();
-
-    this.viewedModels.addAll(args.viewedModels ?? []);
-    loadViewedModels(this);
-    this.viewedModels.onChanged.addListener(async () => loadViewedModels(this));
-
-    this.overrides.onHiddenLineSettingsChanged.addListener(() => this.onActiveHiddenLineSettingsChanged.raiseEvent());
-
-    refs[_backingView].displayStyle.settings.onAfterHiddenLineSettingsChanged.addListener(() => {
-      this.onActiveHiddenLineSettingsChanged.raiseEvent();
-    });
-
-    this.updateModelClips();
-  }
-
-  protected override _dispose(): void {
-    super._dispose();
-
-    this.onActiveClipStyleChanged.clear();
-    this.onModelClipGroupsChanged.clear();
-    this.onViewedModelsLoaded.clear();
-
-    this.viewedModels.clearEventListeners();
-    this.planarClipMasks.onChanged.clear();
-    this.realityModelDisplaySettings.clear();
-    this.planProjectionSettings.clear();
-
-    this.overrides.onHiddenLineSettingsChanged.clear();
-  }
-
-  public override isSpatial(): this is SpatialIModelDisplayReference { return true; }
 
   public get modelClipGroups() {
     return this.#modelClipGroups;
@@ -304,7 +274,7 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
     this.onModelClipGroupsChanged.raiseEvent();
   }
 
-  private updateModelClips(): void {
+  #updateModelClips(): void {
     this.#modelClips.length = 0;
     for (const group of this.modelClipGroups.groups) {
       const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
@@ -320,17 +290,15 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   }
 
   public get activeHiddenLineSettings() {
-    return this.overrides.hiddenLineSettings ?? this._spatialView.displayStyle.settings.hiddenLineSettings;
+    return this.overrides.hiddenLineSettings ?? this.#spatialView.displayStyle.settings.hiddenLineSettings;
   }
 
-  public override [_attachToViewport](args: AttachToViewportArgs): void {
-    super[_attachToViewport](args);
+  public [_attachToViewport](args: AttachToViewportArgs): void {
     this[_treeRefs].attachToViewport(args);
   }
 
-  public override [_detachFromViewport](): void {
+  public [_detachFromViewport](): void {
     this[_treeRefs].detachFromViewport();
-    super[_detachFromViewport]();
   }
 
   public async addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void> {
