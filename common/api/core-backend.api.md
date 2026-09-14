@@ -5954,6 +5954,8 @@ export interface PushChangesArgs extends TokenArg {
     mergeRetryDelay?: BeDuration;
     // @internal @deprecated
     noFastForward?: true;
+    // @beta
+    onDownloadProgress?: ProgressFunction;
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
     retainLocks?: true;
@@ -6389,7 +6391,7 @@ export namespace SchemaSync {
         scope: BlobContainer.Scope;
     }
     export function enableForIModel(arg: EnableForIModelArgs): Promise<CloudSqlite.ContainerProps>;
-    const containerType = "schema-sync";
+    const containerType = "schemasync";
     export interface EnableForIModelArgs {
         containerProps?: CloudSqlite.ContainerProps;
         // (undocumented)
