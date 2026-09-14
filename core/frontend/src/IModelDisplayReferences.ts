@@ -78,12 +78,13 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   unlink(ref: IModelDisplayReference): void;
 }
 
-/** Represents the set of [[IModelConnection]]'s displayed by a [[ViewState]] within a [[Viewport]].
+/** Represents the set of [[IModelConnection]]'s displayed by a [[ViewState]] and interactble with via a [[Viewport]].
  * A view always has exactly one "primary" iModel reference, which cannot be changed.
  * Any number of additional iModel references can be freely linked to and unlinked from the view.
  * The primary iModel determines the coordinate system for the view; the contents of all linked iModels
  * are transformed into the primary iModel's coordinate space.
  * @see [[ViewState.iModelRefs]] to inspect or modify the iModel references associated with a view.
+ * @note Currently, linking additional iModels is only supported for spatial views, not 2d views.
  * @beta
  */
 export type IModelDisplayReferences = IModelDisplayReferences2d | SpatialIModelDisplayReferences;
