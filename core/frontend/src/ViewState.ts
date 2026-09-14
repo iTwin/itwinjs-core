@@ -251,6 +251,9 @@ export abstract class ViewState extends ElementState {
   private readonly _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
 
+  /** The set of iModels displayed by this view.
+   * @beta
+   */
   public abstract get iModelRefs(): IModelDisplayReferences;
 
   /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]]. */
@@ -398,6 +401,7 @@ export abstract class ViewState extends ElementState {
     await Promise.all(promises);
   }
 
+  /** Create a copy of this view with a different display style. */
   public async cloneWithDisplayStyle(style: DisplayStyleState): Promise<this> {
     if (style.iModel !== this.iModel)
       throw new Error("Display style must be from the same iModel as the view");
@@ -2390,6 +2394,7 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   protected _treeRef?: TileTreeReference;
 
+  /** The set of iModels displayed by this view. */
   public readonly iModelRefs: IModelDisplayReferences2d;
 
   /** @internal */

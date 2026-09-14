@@ -45,6 +45,7 @@ export class SpatialViewState extends ViewState3d {
   private readonly _modelSelector: ModelSelectorState;
   private readonly _unregisterModelSelectorListeners: VoidFunction[] = [];
 
+  /** The set of iModels displayed by this view. */
   public readonly iModelRefs: SpatialIModelDisplayReferences;
 
   /** An event raised when the set of models viewed by this view changes, *only* if the view is attached to a [[Viewport]].

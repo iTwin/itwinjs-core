@@ -64,6 +64,9 @@ export namespace PerModelCategoryVisibility {
   }
 
   export namespace Overrides {
+    /** Instantiate a [[PerModelCategoryVisibility.Overrides]].
+     * @internal nobody else needs this.
+     */
     export function create(args: CreateOverridesArgs): Overrides {
       return new PerModelCategoryVisibilityOverrides(args);
     }
@@ -82,8 +85,13 @@ export namespace PerModelCategoryVisibility {
     visOverride: PerModelCategoryVisibility.Override;
   }
 
+  /** Arguments supplied to [[PerModelCategoryVisibility.Overrides.create]].
+   * @internal
+   */
   export interface CreateOverridesArgs {
+    /** The iModel whose models and categories will be used. */
     iModel: IModelConnection;
+    /** ###TODO see if we can get rid of this. */
     queue: SubCategoriesCache.Queue;
   }
 

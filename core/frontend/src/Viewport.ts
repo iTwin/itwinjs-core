@@ -180,6 +180,7 @@ declare global {
 
 /** Payload for the [[Viewport.onFlashedIdChanged]] event indicating Ids of the currently- and/or previously-flashed objects.
  * @public
+ * @deprecated Use [[Viewport.onFlashedElementChanged]].
  */
 export type OnFlashedIdChangedEventArgs = {
   readonly current: Id64String;
@@ -192,11 +193,17 @@ export type OnFlashedIdChangedEventArgs = {
   readonly current: undefined;
 };
 
+/** Pairs and element Id with the IModelConnection that contains it.
+ * @public
+ */
 export interface IModelAndElementId {
   readonly iModel: IModelConnection;
   readonly id: Id64String;
 }
 
+/** Serves as an [OrderedComparator](@bentley) for two [[IModelAndElementId]]s.
+ * @public
+ */
 export function compareIModelElements(a: IModelAndElementId, b: IModelAndElementId): number {
   return compareStrings(a.id, b.id) || compareStrings(a.iModel.key, b.iModel.key);
 }
@@ -289,6 +296,9 @@ export interface ReadImageToCanvasOptions {
   omitCanvasDecorations?: boolean;
 }
 
+/** Wraps a deprecated FeatureOverrideProvider (which is registered with a Viewport and operates on Viewport.iModel) with a FeatureSymbologyOverrider
+ * (which is registered with and operates upon the viewport's primary IModelDisplayReference), until such time as we can remove FeatureOverrideProvider.
+ */
 class ProxyOverrideProvider implements FeatureSymbologyOverrider {
   constructor(
     public readonly proxiedProvider: FeatureOverrideProvider,
@@ -371,9 +381,11 @@ export abstract class Viewport implements Disposable, TileUser {
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
   /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previously and/or currently-flashed objects.
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
+   * @deprecated Use [[onFlashedElementChanged]].
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
+  /** Event dispatched immediately after [[flashedElement]] changes, supplying the previously-flashed element (if any) as the event payload. */
   public readonly onFlashedElementChanged = new BeEvent<(previousFlashedElement: IModelAndElementId | undefined) => void>();
 
   /** Event indicating when a map-layer scale range visibility change for the current viewport scale.
@@ -500,10 +512,13 @@ export abstract class Viewport implements Disposable, TileUser {
   private _flashedElem?: IModelAndElementId;
   /** Id of last flashed element. */
   private _lastFlashedElem?: IModelAndElementId;
-  /** The Id of the most recently flashed element, if any. */
+  /** The Id of the most recently flashed element, if any.
+   * @deprecated Use [[lastFlashedElement]].
+   */
   public get lastFlashedElementId(): Id64String | undefined {
     return this._lastFlashedElem?.id;
   }
+  /** The most-recently-flashed element, if any. */
   public get lastFlashedElement(): IModelAndElementId | undefined {
     return this._lastFlashedElem;
   }
@@ -1430,10 +1445,16 @@ export abstract class Viewport implements Disposable, TileUser {
     return this._view;
   }
 
+  /** The set of iModel references displayed by and interacted with via this viewport.
+   * @beta
+   */
   public get iModelRefs(): IModelDisplayReferences {
     return this._view.iModelRefs;
   }
 
+  /** The reference to the primary iModel displayed by and interacted with via this Viewport.
+   * @beta
+   */
   public get primaryIModelRef(): IModelDisplayReference {
     return this.iModelRefs.primary;
   }
@@ -1775,6 +1796,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @throws Error if an attempt is made to change this property from within an [[onFlashedIdChanged]] event callback.
    * @see [[onFlashedIdChanged]] to be notified when the flashed object changes.
    * @see [[flashSettings]] to customize the visual effect.
+   * @deprecated Use [[flashedElement]].
    */
   public get flashedId(): Id64String | undefined {
     return this._flashedElem?.id;
@@ -1783,6 +1805,17 @@ export abstract class Viewport implements Disposable, TileUser {
     this.flashedElement = undefined !== id ? { id, iModel: this.iModel } : undefined;
   }
 
+  /** Identifies the currently-flashed object.
+   * The "flashed" visual effect is typically applied to the object in the viewport currently under the mouse cursor, to indicate
+   * it is ready to be interacted with by a tool. [[ToolAdmin]] is responsible for updating it when the mouse cursor moves.
+   * The object is usually an [Element]($backend) but could also be a [Model]($backend) or pickable decoration produced by a [[Decorator]],
+   * in which case the element Id will be a transient Id.
+   * The setter ignores any string that is not a well-formed [Id64String]($core-bentley). Passing [Id64.invalid]($core-bentley) to the
+   * setter is equivalent to passing `undefined` - both mean "nothing is flashed".
+   * @throws Error if an attempt is made to change this property from within an [[onFlashedElementChanged]] event callback.
+   * @see [[onFlashedElementChanged]] to be notified when the flashed object changes.
+   * @see [[flashSettings]] to customize the visual effect.
+   */
   public get flashedElement(): IModelAndElementId | undefined {
     return this._flashedElem;
   }

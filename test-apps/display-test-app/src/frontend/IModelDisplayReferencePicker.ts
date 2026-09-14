@@ -17,6 +17,7 @@ function getIModelName(iModel: IModelConnection): string {
   return index !== -1 ? key.substring(index + 1) : key;
 }
 
+/** Provides a combo box from which the user can select any of the iModel references displayed in the active viewport. */
 export class IModelDisplayReferencePicker {
   #selectedIModelRef: IModelDisplayReference;
   #element: HTMLElement;
