@@ -8,11 +8,11 @@ import {
   ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
 } from "@itwin/frontend-devtools";
 import { FeatureAppearance, FeatureAppearanceProps, LinePixels } from "@itwin/core-common";
-import { FeatureSymbology, IModelConnection, IModelDisplayReference, IModelFeatureOverrideProvider, Viewport } from "@itwin/core-frontend";
+import { FeatureSymbology, IModelConnection, IModelDisplayReference, FeatureSymbologyOverrider, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 import { IModelDisplayReferences } from "@itwin/core-frontend/lib/cjs/IModelDisplayReferences";
 
-export class Provider implements IModelFeatureOverrideProvider {
+export class Provider implements FeatureSymbologyOverrider {
   private readonly _elementOvrs = new Map<IModelConnection, Map<Id64String, FeatureAppearance>>();
   private _defaultOvrs: FeatureAppearance | undefined;
   private readonly _refs: IModelDisplayReferences;
