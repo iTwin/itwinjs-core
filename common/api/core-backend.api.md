@@ -6413,7 +6413,7 @@ export namespace SchemaSync {
         scope: BlobContainer.Scope;
     }
     export function enableForIModel(arg: EnableForIModelArgs): Promise<CloudSqlite.ContainerProps>;
-    const containerType = "schema-sync";
+    const containerType = "schemasync";
     export interface EnableForIModelArgs {
         containerProps?: CloudSqlite.ContainerProps;
         // (undocumented)
