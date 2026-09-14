@@ -53,7 +53,7 @@ describe("ECDb CSV import", () => {
 
   describe("with native CSV support", () => {
     before(function () {
-      using ecdb = new ECDb();
+      using ecdb = ECDbTestHelper.createECDb(outDir, "csv-import-support.ecdb");
       if (!supportsNativeECDbCSVImport(ecdb[_nativeDb]))
         this.skip();
     });
