@@ -16,72 +16,27 @@ import { collectFieldQuantityPairs, lookupFieldSpec, specKey } from "./fieldSpec
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
-/** The scalar leaves `JSON.parse` can produce. Deliberately excludes `null`: a JSON `null` is
- * not a [FieldPrimitiveValue]($common), so a path terminating on one is unresolvable rather
- * than a value to stringify.
- */
-type JsonPrimitiveValue = string | number | boolean;
-
-// An intermediate value obtained while evaluating a FieldPropertyPath.
+// An intermediate value obtained while walking a FieldPropertyPath through the EC schema.
 type FieldValueType = {
   primitive: FieldPrimitiveValue;
   struct?: never;
   primitiveArray?: never;
   structArray?: never;
-  deserializedJson?: never;
-  deserializedArray?: never;
-  jsonPrimitive?: never;
 } | {
   primitive?: never;
   struct: FieldStructValue;
   primitiveArray?: never;
   structArray?: never;
-  deserializedJson?: never;
-  deserializedArray?: never;
-  jsonPrimitive?: never;
 } | {
   primitive?: never;
   struct?: never;
   primitiveArray: FieldPrimitiveValue[];
   structArray?: never;
-  deserializedJson?: never;
-  deserializedArray?: never;
-  jsonPrimitive?: never;
 } | {
   primitive?: never;
   struct?: never;
   primitiveArray?: never;
   structArray: FieldStructValue[];
-  deserializedJson?: never;
-  deserializedArray?: never;
-  jsonPrimitive?: never;
-} | {
-  primitive?: never;
-  struct?: never;
-  primitiveArray?: never;
-  structArray?: never;
-  deserializedJson: FieldStructValue;
-  deserializedArray?: never;
-  jsonPrimitive?: never;
-} | {
-  primitive?: never;
-  struct?: never;
-  primitiveArray?: never;
-  structArray?: never;
-  deserializedJson?: never;
-  deserializedArray: FieldStructValue[];
-  jsonPrimitive?: never;
-} | {
-  // A scalar read out of a deserialized JSON blob. Kept distinct from `primitive` because it
-  // has no EC property behind it: its type is inferred from the JSON value rather than from
-  // schema metadata, and it carries no KindOfQuantity.
-  primitive?: never;
-  struct?: never;
-  primitiveArray?: never;
-  structArray?: never;
-  deserializedJson?: never;
-  deserializedArray?: never;
-  jsonPrimitive: JsonPrimitiveValue;
 }
 
 /** A (property, containing class) pair identifying where a partially-walked
@@ -148,20 +103,8 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
 
     const rootValue = reshapePropertyValue(rawRootValue, rootProp, iModel);
-    if (rootProp.isPrimitive() && !rootProp.isArray()) {
-      if (rootProp.primitiveType === PrimitiveType.DateTime) {
-        return { primitive: new Date(rootValue) };
-      }
-
-      // If the property is a string holding serialized JSON and the field indexes into it, parse
-      // and treat as a deserialized object/array. Without accessors, keep the raw string so the
-      // field can display it directly.
-      if (rootProp.primitiveType === PrimitiveType.String && typeof rootValue === "string" && accessors && accessors.length > 0) {
-        const deserialized = tryDeserializeJson(rootValue);
-        if (deserialized) {
-          return deserialized;
-        }
-      }
+    if (rootProp.isPrimitive() && !rootProp.isArray() && rootProp.primitiveType === PrimitiveType.DateTime) {
+      return { primitive: new Date(rootValue) };
     }
 
     return classifyEcValue(rootProp, rootValue);
@@ -171,24 +114,18 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     return undefined;
   }
 
+  // Indexed JSON strings are handled by `readJsonLeaf`. An un-indexed string stays on the EC path, where it resolves to
+  // itself.
+  if (accessors && accessors.length > 0 && isIndexableJsonString(rootProp, curValue)) {
+    return readJsonLeaf(curValue.primitive, accessors);
+  }
+
   let cursor = enterProperty(rootProp, schemaItem);
   if (accessors) {
     for (const accessor of accessors) {
-      if (undefined !== curValue.primitive || undefined !== curValue.jsonPrimitive) {
+      if (undefined !== curValue.primitive) {
         // Can't index into a primitive.
         return undefined;
-      }
-
-      if (curValue.deserializedJson || curValue.deserializedArray) {
-        // Inside a deserialized JSON blob there is no EC metadata to consult; index the raw
-        // value directly. The schema cursor deliberately stops advancing here.
-        const next = indexDeserializedJson(curValue, accessor);
-        if (!next) {
-          return undefined;
-        }
-
-        curValue = next;
-        continue;
       }
 
       const advanced = advanceSchemaCursor(cursor, accessor);
@@ -234,27 +171,24 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   const { ecProp } = cursor;
-  const jsonLeaf = curValue.jsonPrimitive;
-  const propertyType = undefined !== jsonLeaf
-    ? inferJsonPrimitiveType(jsonLeaf)
-    : (undefined !== curValue.primitive && !ecProp.isPrimitive() ? undefined : determineFieldPropertyType(ecProp));
+  const propertyType = undefined !== curValue.primitive && !ecProp.isPrimitive() ? undefined : determineFieldPropertyType(ecProp);
   if (!propertyType) {
     return undefined;
   }
 
   // The ultimate result must be a primitive value.
-  const value = curValue.primitive ?? jsonLeaf;
+  const value = curValue.primitive;
   if (undefined === value) {
     return undefined;
   }
 
   // Property-side KoQ + persistence unit only. Overrides in `formatOptions.quantity` are
   // merged at formatting time (see `collectFieldQuantityPairs`) so these serve as the fallback
-  // when the override doesn't resolve. JSON-in-string values have no reliable KoQ, so skip.
+  // when the override doesn't resolve.
   let kindOfQuantityFullName: string | undefined;
   let persistenceUnitFullName: string | undefined;
   if (propertyType === "quantity" || propertyType === "coordinate") {
-    const koq = undefined === jsonLeaf && ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
+    const koq = ecProp.kindOfQuantity ? ecProp.getKindOfQuantitySync() : undefined;
     kindOfQuantityFullName = koq?.fullName;
     persistenceUnitFullName = koq?.persistenceUnit?.fullName;
   }
@@ -314,40 +248,71 @@ function classifyEcValue(prop: Property, value: any): FieldValueType | undefined
   return prop.isPrimitive() ? { primitive: value } : undefined;
 }
 
-/** Applies one accessor to a deserialized JSON object or array. */
-function indexDeserializedJson(curValue: FieldValueType, accessor: string | number): FieldValueType | undefined {
-  if (typeof accessor === "number") {
-    const arr = curValue.deserializedArray;
-    if (!arr) {
+/** Whether `curValue` is a string property the field can index into, i.e. a candidate serialized
+ * JSON blob. Narrows `curValue.primitive` to `string` for the caller.
+ */
+function isIndexableJsonString(rootProp: Property, curValue: FieldValueType): curValue is { primitive: string } {
+  return rootProp.isPrimitive() && !rootProp.isArray() && rootProp.primitiveType === PrimitiveType.String
+    && typeof curValue.primitive === "string";
+}
+
+/** Resolves a [FieldPropertyPath]($common) that indexes into a string property holding serialized
+ * JSON, as a walk entirely separate from the EC one: there is no schema behind a JSON blob,
+ * so no EC metadata is consulted.
+ *
+ * Returns `undefined` when `raw` is not JSON, when an accessor does not resolve, or when the path
+ * stops anywhere but a scalar — including on a JSON `null`, which is not a
+ * [FieldPrimitiveValue]($common).
+ */
+function readJsonLeaf(raw: string, accessors: ReadonlyArray<string | number>): FieldValue | undefined {
+  let cur = parseJsonContainer(raw);
+  if (undefined === cur) {
+    return undefined;
+  }
+
+  for (const accessor of accessors) {
+    if (typeof cur !== "object" || null === cur) {
+      // Can't index into a scalar.
       return undefined;
     }
 
-    const idx = accessor < 0 ? arr.length + accessor : accessor;
-    return classifyDeserializedValue(arr[idx]);
+    if (typeof accessor === "number") {
+      if (!Array.isArray(cur)) {
+        return undefined;
+      }
+
+      cur = cur[accessor < 0 ? cur.length + accessor : accessor];
+    } else {
+      cur = Array.isArray(cur) ? undefined : (cur as FieldStructValue)[accessor];
+    }
+
+    if (undefined === cur) {
+      return undefined;
+    }
   }
 
-  return curValue.deserializedJson ? classifyDeserializedValue(curValue.deserializedJson[accessor]) : undefined;
-}
-
-/** Types a JSON-in-string leaf. A numeric leaf is a `"quantity"`: JSON carries no units, so the
- * field is expected to declare a [QuantityFieldFormatOptions.kindOfQuantity]($common) and
- * [QuantityFieldFormatOptions.persistenceUnit]($common) of its own. It costs nothing when it
- * doesn't — `collectFieldQuantityPairs` emits a candidate only when both halves are present, so
- * an incomplete key yields no candidates, records no pre-warm miss, and renders through the same
- * raw `toString()` fallback a `"string"` leaf would have used.
- */
-function inferJsonPrimitiveType(value: JsonPrimitiveValue): FieldPropertyType {
-  switch (typeof value) {
-    case "boolean":
-      return "boolean";
+  // A numeric leaf is typed a `"quantity"`: JSON carries no units, so the field is expected to
+  // declare a [QuantityFieldFormatOptions.kindOfQuantity]($common) and
+  // [QuantityFieldFormatOptions.persistenceUnit]($common) of its own. It costs nothing when it
+  // doesn't -- `collectFieldQuantityPairs` emits a candidate only when both halves are present, so
+  // an incomplete key yields no candidates, records no pre-warm miss, and renders through the same
+  // raw `toString()` fallback a `"string"` leaf would have used.
+  switch (typeof cur) {
     case "number":
-      return "quantity";
+      return { value: cur, type: "quantity" };
+    case "boolean":
+      return { value: cur, type: "boolean" };
+    case "string":
+      return { value: cur, type: "string" };
     default:
-      return "string";
+      return undefined;
   }
 }
 
-function tryDeserializeJson(raw: string): FieldValueType | undefined {
+/** Parses `raw` if it looks like a JSON object or array, else `undefined` -- in which case the
+ * string is just a string, and a field indexing into it resolves to nothing.
+ */
+function parseJsonContainer(raw: string): unknown {
   const trimmed = raw.trimStart();
   const firstChar = trimmed.charAt(0);
   if (firstChar !== "{" && firstChar !== "[") {
@@ -355,37 +320,11 @@ function tryDeserializeJson(raw: string): FieldValueType | undefined {
   }
 
   try {
-    const parsed = JSON.parse(trimmed);
-    if (parsed !== null && typeof parsed === "object") {
-      return classifyDeserializedValue(parsed);
-    }
+    const parsed: unknown = JSON.parse(trimmed);
+    return (parsed !== null && typeof parsed === "object") ? parsed : undefined;
   } catch {
-    // Not valid JSON; fall through and treat as a normal string.
-  }
-  return undefined;
-}
-
-/** Wraps a value pulled out of a deserialized JSON blob. Returns `undefined` for JSON `null`
- * (and for a missing key), since neither is a [FieldPrimitiveValue]($common) — the path is
- * simply unresolvable, and inventing a value here would hand the formatters something they
- * cannot stringify.
- */
-function classifyDeserializedValue(value: unknown): FieldValueType | undefined {
-  if (Array.isArray(value)) {
-    return { deserializedArray: value };
-  }
-
-  if (value !== null && typeof value === "object") {
-    return { deserializedJson: value };
-  }
-
-  switch (typeof value) {
-    case "string":
-    case "number":
-    case "boolean":
-      return { jsonPrimitive: value };
-    default:
-      return undefined;
+    // Not valid JSON; treat as a normal string.
+    return undefined;
   }
 }
 
