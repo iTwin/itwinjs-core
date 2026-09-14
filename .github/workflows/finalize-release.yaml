@@ -13,6 +13,9 @@ on:
     paths:
     - '**/CHANGELOG.md'
 
+permissions:
+  contents: write
+
 jobs:
   finalize:
     name: Cherry-pick Changelogs
