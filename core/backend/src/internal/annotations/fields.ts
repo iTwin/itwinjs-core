@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { collectFieldQuantityPairs, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, formatFieldValueWithSpecProvider, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, FormatMagnitude, QueryBinder, QueryRowFormat, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -12,7 +12,7 @@ import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType } from "@i
 import { FormattingSpecArgs } from "@itwin/core-quantity";
 import type { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { reshapePropertyValue } from "../ECSqlInstanceReshaper";
-import { specKey } from "./specKey";
+import { collectFieldQuantityPairs, lookupFieldSpec, specKey } from "./fieldSpecs";
 import type { EditTxn } from "../../EditTxn";
 interface FieldStructValue { [key: string]: any }
 
@@ -414,7 +414,7 @@ function determineFieldPropertyType(prop: Property): FieldPropertyType | undefin
       case PrimitiveType.Long:
         // Any numeric property is a potential quantity. Classifying one as "quantity" is not an
         // assertion that it *has* units -- it only decides whether the KoQ/units pipeline is
-        // consulted (see formatFieldValueWithProvider). A number that resolves no spec, because
+        // consulted (see `resolveFormatMagnitude`). A number that resolves no spec, because
         // neither the property nor the field names a KindOfQuantity, falls back to the exact same
         // `toString()` the "string" formatter would have produced. So counts and identifiers still
         // render bare, while a caller that declares `formatOptions.quantity` on one keeps the
@@ -446,6 +446,30 @@ export function createUpdateContext(
   };
 }
 
+/** Resolves the [FormatterSpec]($core-quantity) this field should render its magnitudes through,
+ * returning a callback bound to it, or `undefined` when the value is not unitized, no provider is
+ * registered, or nothing was pre-warmed for any of the field's candidate (KoQ, persistence unit)
+ * pairs. In that last case the shortfall is recorded on the provider.
+ */
+function resolveFormatMagnitude(value: FieldValue, field: FieldRun, context: UpdateFieldsContext): FormatMagnitude | undefined {
+  const specProvider = context.formattingSpecProvider;
+  if (!specProvider || (value.type !== "quantity" && value.type !== "coordinate")) {
+    return undefined;
+  }
+
+  const formatSet = field.formatOptions?.quantity?.formatSet;
+  const bucket = specProvider.getProviderFor(formatSet);
+  const { spec, candidates } = lookupFieldSpec(field.formatOptions?.quantity, value, bucket);
+  if (!spec) {
+    if (candidates.length > 0) {
+      specProvider.recordMisses(candidates, formatSet);
+    }
+    return undefined;
+  }
+
+  return (magnitude) => bucket.formatQuantity(magnitude, spec);
+}
+
 /** Recomputes a single field's cached display string synchronously. Returns true iff
  * cachedContent changed.
  *
@@ -464,18 +488,7 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   try {
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
-      const specProvider = context.formattingSpecProvider;
-      if (specProvider) {
-        const formatSet = field.formatOptions?.quantity?.formatSet;
-        newContent = formatFieldValueWithSpecProvider(
-          propValue,
-          field.formatOptions,
-          specProvider.getProviderFor(formatSet),
-          (candidates) => specProvider.recordMisses(candidates, formatSet),
-        );
-      } else {
-        newContent = formatFieldValue(propValue, field.formatOptions);
-      }
+      newContent = formatFieldValue(propValue, field.formatOptions, resolveFormatMagnitude(propValue, field, context));
     }
   } catch (err) {
     Logger.logError(BackendLoggerCategory.IModelDb, err);
@@ -602,8 +615,8 @@ function resolveFieldTerminalProperty(field: FieldRun, iModel: IModelDb): FieldT
 /** Returns the [FormattingSpecArgs]($core-quantity) entries the field may consult at
  * formatting time; empty when the EC property is not `"quantity"` / `"coordinate"` or no
  * (KoQ, persistenceUnit) pair can be assembled from the property plus `formatOptions.quantity`
- * overrides. Delegates to `collectFieldQuantityPairs` (`@itwin/core-common` internal) so
- * pre-warm enumerates the same candidates the runtime iterates. See
+ * overrides. Delegates to [[collectFieldQuantityPairs]] so pre-warm enumerates the same
+ * candidates the runtime iterates. See
  * [[QuantityFieldFormatOptions]] for the priority contract and the coordinate/no-KoQ caveat.
  *
  * This is the single source of the `field -> (KoQ, persistenceUnit)` mapping. Pre-warm and

@@ -26,8 +26,6 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DeepReadonlyObject } from '@itwin/core-bentley';
 import { DeepRequiredObject } from '@itwin/core-bentley';
-import { FormatterSpec } from '@itwin/core-quantity';
-import { FormattingSpecArgs } from '@itwin/core-quantity';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
@@ -1501,14 +1499,6 @@ export interface CodeSpecProperties {
     // (undocumented)
     version?: string;
 }
-
-// @internal
-export function collectFieldQuantityPairs(args: {
-    overrideName?: string;
-    overridePersistence?: string;
-    propertyName?: string;
-    propertyPersistence?: string;
-}): FormattingSpecArgs[];
 
 // @public
 export const ColorByName: {
@@ -3779,12 +3769,6 @@ export interface FieldRunProps extends TextBlockComponentProps {
 }
 
 // @internal
-export interface FieldSpecProvider {
-    formatQuantity(magnitude: number, formatSpec: FormatterSpec): string;
-    getFormatterSpec(args: FormattingSpecArgs): FormatterSpec | undefined;
-}
-
-// @internal
 export interface FieldValue {
     kindOfQuantityFullName?: string;
     persistenceUnitFullName?: string;
@@ -3883,10 +3867,10 @@ export enum FontType {
 }
 
 // @internal
-export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
+export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined, formatMagnitude?: FormatMagnitude): string | undefined;
 
 // @internal
-export function formatFieldValueWithSpecProvider(value: FieldValue, options: FieldFormatOptions | undefined, provider: FieldSpecProvider, onUnresolved?: (candidates: FormattingSpecArgs[]) => void): string | undefined;
+export type FormatMagnitude = (magnitude: number) => string;
 
 // @internal (undocumented)
 export interface FormDataCommon {

@@ -107,7 +107,6 @@ import { ExternalSourceAttachmentProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentRole } from '@itwin/core-common';
 import { ExternalSourceProps } from '@itwin/core-common';
 import { FieldRun } from '@itwin/core-common';
-import { FieldSpecProvider } from '@itwin/core-common';
 import { FilePropertyProps } from '@itwin/core-common';
 import { FontFace as FontFace_2 } from '@itwin/core-common';
 import { FontFamilyDescriptor } from '@itwin/core-common';

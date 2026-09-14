@@ -13,9 +13,8 @@ import {
   UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import { FormatSet, FormatSetFormatsProvider, SchemaFormatsProvider, SchemaItem, SchemaUnitProvider } from "@itwin/ecschema-metadata";
-import { FieldSpecProvider } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { specKey } from "../internal/annotations/specKey";
+import { FieldSpecProvider, specKey } from "../internal/annotations/fieldSpecs";
 
 /** Describes a [FormatterSpec]($core-quantity) that a [FieldRun]($common) asked for but which
  * [[FieldFormattingSpecProvider]] had not pre-warmed, recorded by

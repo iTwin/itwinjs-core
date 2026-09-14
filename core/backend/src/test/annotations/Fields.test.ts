@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldSpecProvider, FieldValue, formatFieldValueWithSpecProvider, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
-import { FormatDefinition, FormatterSpec } from "@itwin/core-quantity";
+import { Code, ElementAspectProps, FieldFormatOptions, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun, traverseTextBlockComponent } from "@itwin/core-common";
+import { FormatDefinition, FormatterSpec, FormattingSpecArgs } from "@itwin/core-quantity";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
+import { createUpdateContext, updateField, updateFields, UpdateFieldsContext } from "../../internal/annotations/fields";
+import { FieldSpecProvider } from "../../internal/annotations/fieldSpecs";
 import { DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import { FieldFormattingSpecProvider } from "../../annotations/FieldFormattingSpecProvider";
 import { SpatialCategory } from "../../Category";
@@ -665,6 +666,39 @@ describe("Field evaluation", () => {
     });
   });
 
+  /** Drives the production format path for a hand-built [[FieldValue]]: `updateField` resolves a
+   * [FormatterSpec]($core-quantity) from `provider` and hands `formatFieldValue` a magnitude
+   * callback bound to it. Returns the resulting cached content.
+   *
+   * Going through `updateField` rather than reimplementing the composition here is the point —
+   * these tests pin how the backend wires spec lookup to formatting, so a change to that wiring
+   * fails them. `onMiss` fires when the field produced candidates but none were pre-warmed.
+   */
+  function formatThroughProvider(
+    value: FieldValue,
+    options: FieldFormatOptions | undefined,
+    provider: FieldSpecProvider,
+    onMiss?: (candidates: FormattingSpecArgs[]) => void,
+  ): string | undefined {
+    const field = FieldRun.create({
+      propertyHost: { elementId: "0x1", schemaName: "Fields", className: "TestElement" },
+      propertyPath: { propertyName: "unused" },
+      formatOptions: options,
+    });
+
+    const context: UpdateFieldsContext = {
+      hostElementId: undefined,
+      getProperty: () => value,
+      formattingSpecProvider: {
+        getProviderFor: () => provider,
+        recordMisses: (candidates: FormattingSpecArgs[]) => onMiss?.(candidates),
+      } as unknown as FieldFormattingSpecProvider,
+    };
+
+    updateField(field, context);
+    return field.cachedContent;
+  }
+
   describe("JSON-in-string properties", () => {
     // `JsonProperties` is a plain String column; accessors index into the parsed JSON, so none
     // of these paths have an EC property — and therefore no schema-side KindOfQuantity — behind
@@ -766,9 +800,10 @@ describe("Field evaluation", () => {
 
       let missed = false;
       for (const quantity of [undefined, { kindOfQuantity: "AecUnits.LENGTH" }, { persistenceUnit: "Units.M" }]) {
-        const value = evaluateJson(["lengthMeters"], quantity ? { quantity } : undefined);
+        const options = quantity ? { quantity } : undefined;
+        const value = evaluateJson(["lengthMeters"], options);
         expect(value?.type).to.equal("quantity");
-        expect(formatFieldValueWithSpecProvider(value!, quantity ? { quantity } : undefined, provider, () => { missed = true; })).to.equal("2.5");
+        expect(formatThroughProvider(value!, options, provider, () => { missed = true; })).to.equal("2.5");
       }
 
       expect(missed, "an unformattable JSON leaf is not an under-warmed requirement").to.be.false;
@@ -964,7 +999,7 @@ describe("Field evaluation", () => {
       };
 
       const value: FieldValue = { value: 2.5, type: "quantity", kindOfQuantityFullName: "Fields.LENGTH", persistenceUnitFullName: "Units.M" };
-      const result = formatFieldValueWithSpecProvider(value, undefined, provider);
+      const result = formatThroughProvider(value, undefined, provider);
 
       expect(result).to.equal("PROVIDER:2.5");
     });
@@ -984,7 +1019,7 @@ describe("Field evaluation", () => {
       };
 
       const value: FieldValue = { value: { x: 1, y: 2, z: 3 }, type: "coordinate", kindOfQuantityFullName: "Fields.LENGTH", persistenceUnitFullName: "Units.M" };
-      const result = formatFieldValueWithSpecProvider(value, undefined, provider);
+      const result = formatThroughProvider(value, undefined, provider);
 
       expect(result).to.equal("(PROVIDER:1, PROVIDER:2, PROVIDER:3)");
     });
