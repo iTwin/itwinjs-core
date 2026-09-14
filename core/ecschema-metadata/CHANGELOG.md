@@ -1,6 +1,11 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Tue, 08 Sep 2026 18:43:29 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Sep 2026 20:22:20 GMT and should not be manually modified.
+
+## 5.13.2
+Mon, 14 Sep 2026 20:22:20 GMT
+
+_Version update only_
 
 ## 5.13.1
 Tue, 08 Sep 2026 18:43:29 GMT
