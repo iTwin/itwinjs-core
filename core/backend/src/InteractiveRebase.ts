@@ -47,6 +47,8 @@ export namespace InteractiveRebaseError {
 }
 
 export interface RebaseConflict {
+  instanceKey: string;
+
   id: Id64String;
   classFullName: string;
 
@@ -197,7 +199,7 @@ export interface UniqueConstraintViolation {
     /** The property whose value was substituted, as an access string into {@link conflictingInstance}, e.g. `code.value`. */
     property: string;
     /** The value assigned to {@link property} in place of the value that collided. */
-    value: string;
+    value: any;
   };
 }
 
@@ -236,7 +238,6 @@ export interface TxnRebaseGroup {
   txns: TxnProps[];
 }
 
-const INTERACTIVE_REBASE_CONFLICT_HANDLER_ID = "InteractiveRebaseConflictHandler";
 const MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS = 10;
 
 /** A node in the per-Txn embedding-ownership forest built by [[InteractiveRebase.buildDependencyForest]].
@@ -244,6 +245,7 @@ const MAX_UNIQUE_CONSTRAINT_FIX_ATTEMPTS = 10;
  * inserted or otherwise left behind that our own local Txn never captured a change for.
  */
 interface DependencyNode {
+  instanceKey: string;
   id: Id64String;
   classFullName: string;
   change: RebaseInstanceChange | undefined;
@@ -251,14 +253,6 @@ interface DependencyNode {
    * captured by this Txn - see [[InteractiveRebase.getOwnerId]]). */
   ownerId: Id64String | undefined;
   dependents: DependencyNode[];
-}
-
-/** Composite key used by [[InteractiveRebase._dependencyNodesById]] and [[InteractiveRebase._theirsSnapshot]],
- * both of which can hold a mix of Element and non-Element (e.g. aspect) instances that draw their
- * ECInstanceIds from independent sequences and so can share a numeric id (see the design doc section 5)
- * - a plain `id` key would risk conflating them. */
-function makeInstanceKey(id: Id64String, classFullName: string): string {
-  return `${id}|${classFullName}`;
 }
 
 export class InteractiveRebase {
@@ -283,7 +277,8 @@ export class InteractiveRebase {
   /** Every node of the current group's dependency forest (section 5 of the design), keyed by
    * [[makeInstanceKey]]. Includes both captured changes and any live-discovered dependents (section 6).
    */
-  private _dependencyNodesById = new Map<string, DependencyNode>();
+  private _dependencyNodesByInstanceKey = new Map<string, DependencyNode>();
+
 
   /** The subset of [[_dependencyNodesById]] whose class is `BisCore:Element` or a subclass, keyed by plain
    * `id` - safe because two Elements can never share an id (see the design doc section 5). Every embedding
@@ -302,7 +297,6 @@ export class InteractiveRebase {
     if (this._editTxn) {
       this._editTxn.end("abandon");
     }
-    this._db.txns.rebaser.removeConflictHandler(INTERACTIVE_REBASE_CONFLICT_HANDLER_ID);
   }
 
   /**
@@ -567,7 +561,7 @@ export class InteractiveRebase {
    * [[_dependencyNodesById]] with `change: undefined` so they can still be reported and cascaded away.
    */
   private buildDependencyForest(store: RebaseInstanceStore): DependencyNode[] {
-    this._dependencyNodesById = new Map();
+    this._dependencyNodesByInstanceKey = new Map();
     this._ownersById = new Map();
 
     for (const change of store.all()) {
@@ -575,19 +569,20 @@ export class InteractiveRebase {
       if (props === undefined)
         continue;
       const node: DependencyNode = {
+        instanceKey: props.$meta.instanceKey,
         id: props.id,
         classFullName: props.classFullName,
         change,
         ownerId: undefined,
         dependents: []
       };
-      this._dependencyNodesById.set(makeInstanceKey(node.id, node.classFullName), node);
+      this._dependencyNodesByInstanceKey.set(node.instanceKey, node);
       if (this.isElementOrSubclass(node.classFullName))
         this._ownersById.set(node.id, node);
     }
 
     const roots: DependencyNode[] = [];
-    for (const node of this._dependencyNodesById.values()) {
+    for (const node of this._dependencyNodesByInstanceKey.values()) {
       const change = node.change!;
       node.ownerId = this.getOwnerId(node.classFullName, change.new ?? change.old!);
       const owner = node.ownerId !== undefined ? this._ownersById.get(node.ownerId) : undefined;
@@ -597,7 +592,7 @@ export class InteractiveRebase {
         roots.push(node);
     }
 
-    for (const node of this._dependencyNodesById.values()) {
+    for (const node of this._dependencyNodesByInstanceKey.values()) {
       if (node.change?.old !== undefined && node.change?.new === undefined && this.isElementOrSubclass(node.classFullName))
         this.discoverUpstreamDependents(node);
     }
@@ -610,31 +605,32 @@ export class InteractiveRebase {
    * our local edits) to the forest as a dependent of `ownerNode`, recursively.
    */
   private discoverUpstreamDependents(ownerNode: DependencyNode): void {
-    const discovered: { id: Id64String, classFullName: string }[] = [];
+    const discovered: { id: Id64String, classId: string, classFullName: string }[] = [];
     // `Element` is declared separately on ElementUniqueAspect (via ElementOwnsUniqueAspect) and
     // ElementMultiAspect (via ElementOwnsMultiAspects), not on the abstract ElementAspect base -
     // querying the base class directly fails with "No property or enumeration found for
     // expression 'Element.Id'". `Parent` is declared directly on Element, so no such split is needed there.
     const queries = [
-      "SELECT ECInstanceId, ec_classname(ECClassId, 's:c') FROM BisCore:ElementUniqueAspect WHERE Element.Id = ?",
-      "SELECT ECInstanceId, ec_classname(ECClassId, 's:c') FROM BisCore:ElementMultiAspect WHERE Element.Id = ?",
-      "SELECT ECInstanceId, ec_classname(ECClassId, 's:c') FROM BisCore:Element WHERE Parent.Id = ?",
+      "SELECT ECInstanceId, ECClassId, ec_classname(ECClassId, 's:c') FROM BisCore:ElementUniqueAspect WHERE Element.Id = ?",
+      "SELECT ECInstanceId, ECClassId, ec_classname(ECClassId, 's:c') FROM BisCore:ElementMultiAspect WHERE Element.Id = ?",
+      "SELECT ECInstanceId, ECClassId, ec_classname(ECClassId, 's:c') FROM BisCore:Element WHERE Parent.Id = ?",
     ];
     for (const sql of queries) {
       const binder = new QueryBinder().bindId(1, ownerNode.id);
       this._db.withQueryReader(sql, (reader) => {
         for (const row of reader)
-          discovered.push({ id: row[0], classFullName: row[1] });
+          discovered.push({ id: row[0], classId: row[1], classFullName: row[2] });
         return true;
       }, binder);
     }
 
-    for (const { id, classFullName } of discovered) {
-      if (this._dependencyNodesById.has(makeInstanceKey(id, classFullName)))
+    for (const { id, classId, classFullName } of discovered) {
+      const instanceKey = `${id}-${classId}`;
+      if (this._dependencyNodesByInstanceKey.has(instanceKey))
         continue;
 
-      const node: DependencyNode = { id, classFullName, change: undefined, ownerId: ownerNode.id, dependents: [] };
-      this._dependencyNodesById.set(makeInstanceKey(id, classFullName), node);
+      const node: DependencyNode = { instanceKey, id, classFullName, change: undefined, ownerId: ownerNode.id, dependents: [] };
+      this._dependencyNodesByInstanceKey.set(instanceKey, node);
       if (this.isElementOrSubclass(classFullName))
         this._ownersById.set(id, node);
       ownerNode.dependents.push(node);
@@ -649,8 +645,8 @@ export class InteractiveRebase {
    */
   private captureTheirsSnapshot(): void {
     this._theirsSnapshot = new Map();
-    for (const node of this._dependencyNodesById.values())
-      this._theirsSnapshot.set(makeInstanceKey(node.id, node.classFullName), this.tryReadCurrentInstance(node.id, node.classFullName));
+    for (const node of this._dependencyNodesByInstanceKey.values())
+      this._theirsSnapshot.set(node.instanceKey, this.tryReadCurrentInstance(node.id, node.classFullName));
   }
 
   /** Design doc section 8: replays the forest depth-first. Owners are applied before dependents for
@@ -835,14 +831,14 @@ export class InteractiveRebase {
    * our local Txn never touched that would otherwise be silently cascaded away by our owner's delete.
    */
   private applyUpstreamDependentDelete(node: DependencyNode): void {
-    const theirs = this._theirsSnapshot.get(makeInstanceKey(node.id, node.classFullName));
+    const theirs = this._theirsSnapshot.get(node.instanceKey);
     if (theirs === undefined) {
       // Already gone by the time we discovered it (e.g. a real ON DELETE CASCADE already removed an
       // aspect earlier in this same replay) - nothing to report or remove.
       return;
     }
 
-    RebaseConflictImpl.recordUpstreamDependent(this, this._conflicts, theirs);
+    RebaseConflictImpl.recordUpstreamDependent(this, this._conflicts, node.instanceKey, theirs);
     this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
   }
 
@@ -850,11 +846,14 @@ export class InteractiveRebase {
    * conflicts where one instance is the other's `ownerId`, once every conflict for this group is known.
    */
   private linkConflictOwnership(): void {
-    for (const node of this._dependencyNodesById.values()) {
+    for (const node of this._dependencyNodesByInstanceKey.values()) {
       if (node.ownerId === undefined)
         continue;
-      const dependentConflict = this._conflicts.find((c) => c.id === node.id) as RebaseConflictImpl | undefined;
-      const ownerConflict = this._conflicts.find((c) => c.id === node.ownerId) as RebaseConflictImpl | undefined;
+      const dependentConflict = this._conflicts.find((c) => c.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
+      const ownerNode = this._ownersById.get(node.ownerId);
+      const ownerConflict = ownerNode === undefined
+        ? undefined
+        : this._conflicts.find((conflict) => conflict.instanceKey === ownerNode.instanceKey) as RebaseConflictImpl | undefined;
       if (dependentConflict !== undefined && ownerConflict !== undefined) {
         dependentConflict.ownerConflict = ownerConflict;
         ownerConflict.dependentConflicts.push(dependentConflict);
@@ -889,17 +888,17 @@ export class InteractiveRebase {
       const { $meta: _newMeta, ...newProps } = change.new;
       if (change.old) {
         const { $meta: _oldMeta, ...oldProps } = change.old;
-        this.applyInteractiveUpdate(oldProps, newProps, change.changedProperties);
+        this.applyInteractiveUpdate(change.instanceKey, oldProps, newProps, change.changedProperties);
       } else {
-        this.applyInteractiveInsert(newProps);
+        this.applyInteractiveInsert(change.instanceKey, newProps);
       }
     } else if (change.old) {
       const { $meta: _oldMeta, ...oldProps } = change.old;
-      this.applyInteractiveDelete(oldProps);
+      this.applyInteractiveDelete(change.instanceKey, oldProps);
     }
   }
 
-  private applyInteractiveUpdate(oldProps: RebaseConflictProperties, newProps: RebaseConflictProperties, changedProperties: string[] | undefined): void {
+  private applyInteractiveUpdate(instanceKey: string, oldProps: RebaseConflictProperties, newProps: RebaseConflictProperties, changedProperties: string[] | undefined): void {
     const nativeDb = this._db[_nativeDb];
     const expectedOldValues = pickProperties(withoutIdentityProperties(oldProps), changedProperties);
     // Native always applies `updateInstance` incrementally (properties omitted from the write are left
@@ -908,7 +907,7 @@ export class InteractiveRebase {
     const propsToWrite = changedProperties === undefined
       ? newProps
       : { id: newProps.id, classFullName: newProps.classFullName, ...pickProperties(newProps, changedProperties) };
-    const result = this.applyOrRecordConstraintConflict(propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () =>
+    const result = this.applyOrRecordConstraintConflict(instanceKey, propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () =>
       nativeDb.updateInstance(propsToWrite, { useJsNames: true, expectedOldValues }) as { updated: boolean, conflictingProperties: string[] });
     if (result === undefined) {
       // A constraint conflict occurred and was already recorded.
@@ -919,22 +918,22 @@ export class InteractiveRebase {
     }
 
     // Does the updated instance exist at all?
-    const theirs = this._theirsSnapshot.get(makeInstanceKey(oldProps.id, oldProps.classFullName));
+    const theirs = this._theirsSnapshot.get(instanceKey);
     if (theirs === undefined) {
       // The incoming changes deleted the instance that our local change updated. Their delete stands.
-      RebaseConflictImpl.recordTheirDeleteOurUpdate(this, this._conflicts, oldProps, newProps, result.conflictingProperties);
+      RebaseConflictImpl.recordTheirDeleteOurUpdate(this, this._conflicts, instanceKey, oldProps, newProps, result.conflictingProperties);
     } else {
       // The row still exists, but at least one property we touched (result.conflictingProperties) no
       // longer matches our captured baseline, meaning the incoming changes also modified it.
-      RebaseConflictImpl.recordUpdate(this, this._conflicts, oldProps, theirs, newProps, result.conflictingProperties);
-      this.applyOrRecordConstraintConflict(propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
+      RebaseConflictImpl.recordUpdate(this, this._conflicts, instanceKey, oldProps, theirs, newProps, result.conflictingProperties);
+      this.applyOrRecordConstraintConflict(instanceKey, propsToWrite.id, propsToWrite.classFullName, oldProps, newProps, () => nativeDb.updateInstance(propsToWrite, { useJsNames: true }));
     }
   }
 
-  private applyInteractiveDelete(oldProps: RebaseConflictProperties): void {
+  private applyInteractiveDelete(instanceKey: string, oldProps: RebaseConflictProperties): void {
     const nativeDb = this._db[_nativeDb];
     const key = { id: oldProps.id, classFullName: oldProps.classFullName };
-    const result = this.applyOrRecordConstraintConflict(oldProps.id, oldProps.classFullName, oldProps, undefined, () =>
+    const result = this.applyOrRecordConstraintConflict(instanceKey, oldProps.id, oldProps.classFullName, oldProps, undefined, () =>
       nativeDb.deleteInstance(key, { useJsNames: true, expectedOldValues: withoutIdentityProperties(oldProps) }) as { deleted: boolean, conflictingProperties: string[] });
     if (result === undefined || result.deleted) {
       // Either a constraint conflict was already recorded, or we deleted it - nothing more to do.
@@ -943,7 +942,7 @@ export class InteractiveRebase {
 
     // Native reports `conflictingProperties` populated with every checked property when the row itself no
     // longer exists, so existence (not `conflictingProperties.length`) is what distinguishes the two cases.
-    const theirs = this._theirsSnapshot.get(makeInstanceKey(oldProps.id, oldProps.classFullName));
+    const theirs = this._theirsSnapshot.get(instanceKey);
     if (theirs === undefined) {
       // The incoming changes already deleted it - nothing more to do.
       return;
@@ -952,13 +951,13 @@ export class InteractiveRebase {
     // The row still exists but no longer matches our captured baseline (result.conflictingProperties),
     // meaning the incoming changes modified it. Report the conflict, but proceed with the delete (matching
     // the native changeset-conflict model for a Deleted opcode with a "Data" conflict cause).
-    RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, oldProps, theirs, result.conflictingProperties);
+    RebaseConflictImpl.recordTheirUpdateOurDelete(this, this._conflicts, instanceKey, oldProps, theirs, result.conflictingProperties);
     nativeDb.deleteInstance(key, { useJsNames: true });
   }
 
-  private applyInteractiveInsert(newProps: RebaseConflictProperties): void {
+  private applyInteractiveInsert(instanceKey: string, newProps: RebaseConflictProperties): void {
     const nativeDb = this._db[_nativeDb];
-    this.applyOrRecordConstraintConflict(newProps.id, newProps.classFullName, undefined, newProps, () => {
+    this.applyOrRecordConstraintConflict(instanceKey, newProps.id, newProps.classFullName, undefined, newProps, () => {
       const id = nativeDb.insertInstance(newProps, { forceUseId: true, useJsNames: true });
       if (!Id64.isValidId64(id)) {
         throw new IModelError(IModelStatus.BadRequest, `Failed to insert instance with id ${newProps.id}`);
@@ -977,7 +976,7 @@ export class InteractiveRebase {
    * for updates/deletes the row already exists by definition, so id-collision detection doesn't apply and
    * the write is not retried (it would just fail again).
    */
-  private applyOrRecordConstraintConflict<T>(id: Id64String, classFullName: string, oldProps: RebaseConflictProperties | undefined, newProps: RebaseConflictProperties | undefined, apply: () => T): T | undefined {
+  private applyOrRecordConstraintConflict<T>(instanceKey: string, id: Id64String, classFullName: string, oldProps: RebaseConflictProperties | undefined, newProps: RebaseConflictProperties | undefined, apply: () => T): T | undefined {
     // PRINCIPLE: The application of "our" change must succeed in the end, because that increases the chances
     // that future changes and txns apply successfully. Explicit interactive resolution can restore "their" changes
     // if desired.
@@ -1013,7 +1012,7 @@ export class InteractiveRebase {
         const brokenRelationships = targetProps !== undefined ? this.findBrokenRelationships(targetProps) : [];
         const isInsert = oldProps === undefined;
         const theirRow = isInsert ? undefined : this.tryReadCurrentInstance(id, classFullName);
-        RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, oldProps, newProps, theirRow, brokenRelationships);
+        RebaseConflictImpl.recordForeignKeyConstraint(this, this._conflicts, instanceKey, oldProps, newProps, theirRow, brokenRelationships);
         return undefined;
       }
       if (err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_UNIQUE && err.errorNumber !== DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY) {
@@ -1024,17 +1023,17 @@ export class InteractiveRebase {
       const theirs = isInsert ? this.tryReadCurrentInstance(id, classFullName) : undefined;
       if (theirs !== undefined) {
         // Both local and incoming changes wrote an instance with the same id.
-        RebaseConflictImpl.recordInsert(this, this._conflicts, newProps!, theirs);
+        RebaseConflictImpl.recordInsert(this, this._conflicts, instanceKey, newProps!, theirs);
 
         // Attempt to apply "our" change to the existing row, which may trigger further conflicts (e.g. UNIQUE constraint violations).
-        this.applyOrRecordConstraintConflict(id, classFullName, theirs, newProps, () => this._db[_nativeDb].updateInstance(newProps!, { useJsNames: true }));
+        this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, theirs, newProps, () => this._db[_nativeDb].updateInstance(newProps!, { useJsNames: true }));
       } else {
         // Some other UNIQUE index (not the primary key) was violated.
         const conflictDetail = err.conflictDetail as UniqueConstraintConflictDetail | undefined;
         // The write failed, so the row as it currently stands is still "their" version of it. For an insert
         // there is no such row - they have no version of this instance at all - so `theirs` stays undefined.
         const theirRow = isInsert ? undefined : this.tryReadCurrentInstance(id, classFullName);
-        const violation = RebaseConflictImpl.recordUniqueConstraint(this, this._conflicts, oldProps, newProps!, theirRow, conflictDetail);
+        const violation = RebaseConflictImpl.recordUniqueConstraint(this, this._conflicts, instanceKey, oldProps, newProps!, theirRow, conflictDetail);
 
         // Fix this UNIQUE constraint violation by changing the value of one of the properties involved in the constraint until we
         // find a value that doesn't collide.
@@ -1046,7 +1045,7 @@ export class InteractiveRebase {
             property: this._db.getJsClass<typeof Element>(classFullName).toPropsAccessString(fix.property),
             value: fix.value,
           };
-          this.applyOrRecordConstraintConflict(id, classFullName, oldProps, fix.props, () => {
+          this.applyOrRecordConstraintConflict(instanceKey, id, classFullName, oldProps, fix.props, () => {
             if (oldProps === undefined) {
               this._db[_nativeDb].insertInstance(fix.props, { forceUseId: true, useJsNames: true });
             } else {
@@ -1312,7 +1311,7 @@ export class InteractiveRebase {
    * see [[restoreDependentClosure]] for the (downward) case that does.
    */
   private ensureOwnerExists(conflict: RebaseConflictImpl, side: "ours" | "theirs"): void {
-    const node = this._dependencyNodesById.get(makeInstanceKey(conflict.id, conflict.classFullName));
+    const node = this._dependencyNodesByInstanceKey.get(conflict.instanceKey);
     if (node?.ownerId === undefined)
       return;
     const ownerNode = this._ownersById.get(node.ownerId);
@@ -1321,13 +1320,13 @@ export class InteractiveRebase {
     if (this.tryReadCurrentInstance(ownerNode.id, ownerNode.classFullName) !== undefined)
       return;
 
-    const ownerConflict = this._conflicts.find((c) => c.id === ownerNode.id) as RebaseConflictImpl | undefined;
+    const ownerConflict = this._conflicts.find((c) => c.instanceKey === ownerNode.instanceKey) as RebaseConflictImpl | undefined;
     if (ownerConflict !== undefined)
       this.ensureOwnerExists(ownerConflict, side);
 
     const ownerProps = ownerConflict !== undefined
       ? this.serializeConflictSide(ownerNode.classFullName, side === "ours" ? ownerConflict.ours : ownerConflict.theirs)
-      : this._theirsSnapshot.get(makeInstanceKey(ownerNode.id, ownerNode.classFullName));
+      : this._theirsSnapshot.get(ownerNode.instanceKey);
     if (ownerProps === undefined)
       return;
 
@@ -1344,7 +1343,7 @@ export class InteractiveRebase {
    * its owner's deletion.
    */
   private cascadeDeleteToDependents(conflict: RebaseConflictImpl): void {
-    const node = this._dependencyNodesById.get(makeInstanceKey(conflict.id, conflict.classFullName));
+    const node = this._dependencyNodesByInstanceKey.get(conflict.instanceKey);
     if (node === undefined)
       return;
     for (const dependent of node.dependents)
@@ -1355,7 +1354,7 @@ export class InteractiveRebase {
     for (const child of node.dependents)
       this.cascadeDeleteDependentNode(child);
     this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
-    const conflict = this._conflicts.find((c) => c.id === node.id) as RebaseConflictImpl | undefined;
+    const conflict = this._conflicts.find((c) => c.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
     conflict?.clearSupersededUniqueConstraintViolations(undefined);
   }
 
@@ -1370,7 +1369,7 @@ export class InteractiveRebase {
    *   state, unmodified by either side.
    */
   private restoreDependentClosure(conflict: RebaseConflictImpl, side: "ours" | "theirs"): void {
-    const node = this._dependencyNodesById.get(makeInstanceKey(conflict.id, conflict.classFullName));
+    const node = this._dependencyNodesByInstanceKey.get(conflict.instanceKey);
     if (node === undefined)
       return;
     for (const dependent of node.dependents)
@@ -1378,11 +1377,11 @@ export class InteractiveRebase {
   }
 
   private restoreClosureNode(node: DependencyNode, inheritedSide: "ours" | "theirs"): void {
-    const conflict = this._conflicts.find((c) => c.id === node.id) as RebaseConflictImpl | undefined;
+    const conflict = this._conflicts.find((c) => c.instanceKey === node.instanceKey) as RebaseConflictImpl | undefined;
     const side = conflict?._selectedSide ?? inheritedSide;
     const props = conflict !== undefined
       ? this.serializeConflictSide(node.classFullName, side === "ours" ? conflict.ours : conflict.theirs)
-      : this._theirsSnapshot.get(makeInstanceKey(node.id, node.classFullName));
+      : this._theirsSnapshot.get(node.instanceKey);
 
     if (props === undefined) {
       this._db[_nativeDb].deleteInstance({ id: node.id, classFullName: node.classFullName }, { useJsNames: true });
@@ -1658,6 +1657,7 @@ function applyResolution(
  * {@link RebaseConflict} reports at most one entry per instance.
  */
 class RebaseConflictImpl implements RebaseConflict {
+  public readonly instanceKey: string;
   public readonly id: Id64String;
   public readonly classFullName: string;
   public original: RebaseConflictProperties | undefined = undefined;
@@ -1680,24 +1680,25 @@ class RebaseConflictImpl implements RebaseConflict {
    */
   public _selectedSide: "ours" | "theirs" | undefined = undefined;
 
-  private constructor(private readonly _rebase: InteractiveRebase, id: Id64String, classFullName: string) {
+  private constructor(private readonly _rebase: InteractiveRebase, instanceKey: string, id: Id64String, classFullName: string) {
+    this.instanceKey = instanceKey;
     this.id = id;
     this.classFullName = classFullName;
   }
 
-  private static getOrCreate(rebase: InteractiveRebase, conflicts: RebaseConflict[], id: Id64String, classFullName: string): RebaseConflictImpl {
-    let conflict = conflicts.find((c) => c.id === id) as RebaseConflictImpl | undefined;
+  private static getOrCreate(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, id: Id64String, classFullName: string): RebaseConflictImpl {
+    let conflict = conflicts.find((c) => c.instanceKey === instanceKey) as RebaseConflictImpl | undefined;
     if (conflict === undefined) {
-      conflict = new RebaseConflictImpl(rebase, id, classFullName);
+      conflict = new RebaseConflictImpl(rebase, instanceKey, id, classFullName);
       conflicts.push(conflict);
     }
     return conflict;
   }
 
   /** Both the incoming (their) changes and the local (our) changes modified the same instance. */
-  public static recordUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
+  public static recordUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties, theirs: RebaseConflictProperties, ours: RebaseConflictProperties, conflictingProperties: string[]): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
-    const conflict = this.getOrCreate(rebase, conflicts, original.id, original.classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, original.id, original.classFullName);
 
     addPropsAccessStrings(conflict.conflictingProperties, classDef, conflictingProperties);
     addPropsAccessStrings(conflict.theirModifiedProperties, classDef, computeChangedProperties(original, theirs));
@@ -1710,9 +1711,9 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   /** The incoming (their) changes modified properties on an instance that was deleted by the local (our) changes. */
-  public static recordTheirUpdateOurDelete(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
+  public static recordTheirUpdateOurDelete(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties, theirs: RebaseConflictProperties, updatedProperties: string[]): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
-    const conflict = this.getOrCreate(rebase, conflicts, original.id, original.classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, original.id, original.classFullName);
 
     addPropsAccessStrings(conflict.theirModifiedProperties, classDef, updatedProperties);
 
@@ -1721,9 +1722,9 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   /** The incoming (their) changes deleted an instance that was modified by the local (our) changes. */
-  public static recordTheirDeleteOurUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties, ours: RebaseConflictProperties, updatedProperties: string[]): void {
+  public static recordTheirDeleteOurUpdate(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties, ours: RebaseConflictProperties, updatedProperties: string[]): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(original.classFullName);
-    const conflict = this.getOrCreate(rebase, conflicts, original.id, original.classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, original.id, original.classFullName);
 
     addPropsAccessStrings(conflict.ourModifiedProperties, classDef, updatedProperties);
 
@@ -1732,9 +1733,9 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   /** Both the incoming (their) changes and the local (our) changes inserted an instance with the same id. */
-  public static recordInsert(rebase: InteractiveRebase, conflicts: RebaseConflict[], ours: RebaseConflictProperties, theirs: RebaseConflictProperties): void {
+  public static recordInsert(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, ours: RebaseConflictProperties, theirs: RebaseConflictProperties): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(ours.classFullName);
-    const conflict = this.getOrCreate(rebase, conflicts, ours.id, ours.classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, ours.id, ours.classFullName);
 
     addPropsAccessStrings(conflict.differentProperties, classDef, computeChangedProperties(ours, theirs));
 
@@ -1747,17 +1748,17 @@ class RebaseConflictImpl implements RebaseConflict {
    * cascade would silently discard it with nothing reported. Has no `original` or `ours`: our Txn has
    * no knowledge of it at all, only `theirs`.
    */
-  public static recordUpstreamDependent(rebase: InteractiveRebase, conflicts: RebaseConflict[], theirs: RebaseConflictProperties): void {
+  public static recordUpstreamDependent(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, theirs: RebaseConflictProperties): void {
     const classDef = rebase.iModel.getJsClass<typeof Element>(theirs.classFullName);
-    const conflict = this.getOrCreate(rebase, conflicts, theirs.id, theirs.classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, theirs.id, theirs.classFullName);
     conflict.theirs = classDef.deserialize({ row: theirs, iModel: rebase.iModel });
   }
 
   /** Our change (insert or update) violated a UNIQUE constraint against some other, unrelated instance. */
-  public static recordUniqueConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, theirs: RebaseConflictProperties | undefined, detail?: UniqueConstraintConflictDetail): UniqueConstraintViolation {
+  public static recordUniqueConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties, theirs: RebaseConflictProperties | undefined, detail?: UniqueConstraintConflictDetail): UniqueConstraintViolation {
     const instanceId = ours.id ?? original?.id;
     const classFullName = ours.classFullName ?? original?.classFullName;
-    const conflict = this.getOrCreate(rebase, conflicts, instanceId, classFullName);
+    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, instanceId, classFullName);
 
     const classDef = rebase.iModel.getJsClass<typeof Element>(ours.classFullName);
 
@@ -1773,10 +1774,10 @@ class RebaseConflictImpl implements RebaseConflict {
   }
 
   /** Our change (insert or update) violated a FOREIGN KEY constraint, e.g. referencing a deleted instance. */
-  public static recordForeignKeyConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties | undefined, theirs: RebaseConflictProperties | undefined, brokenRelationships: BrokenRelationship[]): RebaseConflictImpl {
+  public static recordForeignKeyConstraint(rebase: InteractiveRebase, conflicts: RebaseConflict[], instanceKey: string, original: RebaseConflictProperties | undefined, ours: RebaseConflictProperties | undefined, theirs: RebaseConflictProperties | undefined, brokenRelationships: BrokenRelationship[]): RebaseConflictImpl {
     const instanceId = ours?.id ?? original?.id ?? theirs?.id;
     const classFullName = ours?.classFullName ?? original?.classFullName ?? theirs?.classFullName;
-    const conflict = this.getOrCreate(rebase, conflicts, instanceId!, classFullName!);
+    const conflict = this.getOrCreate(rebase, conflicts, instanceKey, instanceId!, classFullName!);
 
     const classDef = rebase.iModel.getJsClass<typeof Element>(conflict.classFullName);
 
