@@ -3717,6 +3717,7 @@ export interface FieldFormatOptions {
     case?: FieldCase;
     dateTime?: DateTimeFieldFormatOptions;
     prefix?: string;
+    quantity?: QuantityFieldFormatOptions;
     suffix?: string;
 }
 
@@ -3769,9 +3770,9 @@ export interface FieldRunProps extends TextBlockComponentProps {
 
 // @internal
 export interface FieldValue {
-    // (undocumented)
+    kindOfQuantityFullName?: string;
+    persistenceUnitFullName?: string;
     type: FieldPropertyType;
-    // (undocumented)
     value: FieldPrimitiveValue;
 }
 
@@ -3865,8 +3866,11 @@ export enum FontType {
     TrueType = 1
 }
 
-// @internal (undocumented)
-export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
+// @internal
+export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined, formatMagnitude?: FormatMagnitude): string | undefined;
+
+// @internal
+export type FormatMagnitude = (magnitude: number) => string;
 
 // @internal (undocumented)
 export interface FormDataCommon {
@@ -5817,7 +5821,7 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
-// @internal (undocumented)
+// @internal
 export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
 
 // @internal
@@ -7850,6 +7854,13 @@ export class QPoint3dList {
     reset(params: QParams3d): void;
     toTypedArray(): Uint16Array;
     unquantize(index: number, out?: Point3d): Point3d;
+}
+
+// @beta
+export interface QuantityFieldFormatOptions {
+    formatSet?: string;
+    kindOfQuantity?: string;
+    persistenceUnit?: string;
 }
 
 // @public

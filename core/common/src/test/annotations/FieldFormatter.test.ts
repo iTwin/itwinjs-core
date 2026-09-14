@@ -4,12 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { formatFieldValue as fmtFldVal } from "../../internal/annotations/FieldFormatter";
+import { FieldValue, formatFieldValue as fmtFldVal, FormatMagnitude } from "../../internal/annotations/FieldFormatter";
 import type { FieldFormatOptions, FieldPrimitiveValue, FieldPropertyType } from "../../core-common";
 
 function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
   return fmtFldVal({ value, type }, options);
 }
+
+//cspell:ignore WUZZY Freitag Jumat Juni петак
 
 describe("Field formatting", () => {
   describe("string", () => {
@@ -196,3 +198,66 @@ describe("Field formatting", () => {
   })
 });
 
+describe("magnitude callback", () => {
+  /** Stands in for a caller that resolved a [FormatterSpec]($core-quantity) ahead of time. Real
+   * spec resolution is `core-backend`'s job and is covered by its `FieldFormat.test.ts`; what
+   * matters here is only that `formatFieldValue` routes the right magnitudes through whatever
+   * callback it is handed, and assembles the result correctly around them.
+   */
+  const millimeters: FormatMagnitude = (magnitude) => `${magnitude * 1000} mm`;
+
+  function format(value: FieldValue, options?: FieldFormatOptions, formatMagnitude?: FormatMagnitude): string | undefined {
+    return fmtFldVal(value, options, formatMagnitude);
+  }
+
+  describe("quantity", () => {
+    it("renders the magnitude through the callback", () => {
+      expect(format({ value: 2.5, type: "quantity" }, undefined, millimeters)).toBe("2500 mm");
+    });
+
+    it("falls back to the raw string when no callback is supplied", () => {
+      expect(format({ value: 2.5, type: "quantity" })).toBe("2.5");
+    });
+
+    it("ignores the callback for a non-numeric quantity value", () => {
+      // A "quantity" FieldValue whose value is not a number has no magnitude to convert, so it
+      // renders raw rather than being handed to a callback that expects a number.
+      expect(format({ value: "N/A", type: "quantity" }, undefined, millimeters)).toBe("N/A");
+    });
+
+    it("applies prefix, suffix, and case around the formatted magnitude", () => {
+      const result = format({ value: 2.5, type: "quantity" }, { prefix: "<", suffix: ">", case: "upper" }, millimeters);
+      expect(result).toBe("<2500 MM>");
+    });
+  });
+
+  describe("coordinate", () => {
+    it("renders each component of a Point2d through the callback", () => {
+      expect(format({ value: { x: 1, y: 2 }, type: "coordinate" }, undefined, millimeters)).toBe("(1000 mm, 2000 mm)");
+    });
+
+    it("renders each component of a Point3d through the callback", () => {
+      expect(format({ value: { x: 1, y: 2, z: 3 }, type: "coordinate" }, undefined, millimeters)).toBe("(1000 mm, 2000 mm, 3000 mm)");
+    });
+
+    it("falls back to the raw coordinate when no callback is supplied", () => {
+      // Core has no built-in coordinate format: presentation is app policy and belongs to the
+      // FormatsProvider. When the caller resolves no spec, the components render bare.
+      expect(format({ value: { x: 1.5, y: 2 }, type: "coordinate" })).toBe("(1.5, 2)");
+    });
+
+    it("returns undefined for a coordinate value that is not a point", () => {
+      expect(format({ value: 5, type: "coordinate" }, undefined, millimeters)).to.be.undefined;
+    });
+
+    it("applies prefix/suffix/case around the joined coordinate", () => {
+      const result = format({ value: { x: 1, y: 2 }, type: "coordinate" }, { prefix: "at ", case: "upper" }, millimeters);
+      expect(result).toBe("at (1000 MM, 2000 MM)");
+    });
+  });
+
+  it("ignores the callback for types that carry no magnitude", () => {
+    expect(format({ value: "hello", type: "string" }, undefined, millimeters)).toBe("hello");
+    expect(format({ value: true, type: "boolean" }, undefined, millimeters)).toBe("true");
+  });
+});

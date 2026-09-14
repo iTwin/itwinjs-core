@@ -15,11 +15,31 @@ export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYA
  * @internal
  */
 export interface FieldValue {
+  /** The raw property value, typed by [[type]]. For structured or array properties, this is
+   * the primitive scalar the [FieldRun]($common)'s propertyPath ultimately resolved to.
+   */
   value: FieldPrimitiveValue;
+  /** How [[value]] should be formatted; drives the per-type branch in [[formatFieldValue]].
+   * `"quantity"` and `"coordinate"` render their magnitudes through the caller-supplied
+   * `formatMagnitude` callback when one is given, and stringify them otherwise.
+   */
   type: FieldPropertyType;
+  /** Full name of the property's KindOfQuantity, e.g. `"AecUnits.LENGTH"`, if it has one. */
+  kindOfQuantityFullName?: string;
+  /** Full name of the property's persistence unit, e.g. `"Units.M"`, if one is derivable
+   * from its KindOfQuantity. This is the unit the stored magnitude is expressed in.
+   */
+  persistenceUnitFullName?: string;
 }
 
-type FieldFormatter = (value: FieldPrimitiveValue, options: FieldFormatOptions | undefined) => string | undefined;
+/** Renders one magnitude of a `"quantity"` or `"coordinate"` value — typically by applying a
+ * [FormatterSpec]($core-quantity) the caller resolved ahead of time. Supplying one is what lets
+ * field evaluation stay synchronous on paths that cannot await.
+ * @internal
+ */
+export type FormatMagnitude = (magnitude: number) => string;
+
+type FieldFormatter = (value: FieldPrimitiveValue, options: FieldFormatOptions | undefined, formatMagnitude?: FormatMagnitude) => string | undefined;
 
 const formatters: { [type: string]: FieldFormatter | undefined } = {
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -27,10 +47,9 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
 
   "datetime": (v, o) => formatString(formatDateTime(v, o?.dateTime), o),
 
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string
-  "quantity": (v, o) => formatString(v.toString(), o),
-   
-  "coordinate": (v, o) => formatString(formatPointBasic(v), o),
+  "quantity": (v, o, fm) => formatString(formatMagnitudeValue(v, fm), o),
+
+  "coordinate": (v, o, fm) => formatString(formatPoint(v, fm), o),
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
   "boolean": (v, o) => formatString(v.toString(), o),
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -79,29 +98,64 @@ function formatDateTime(v: FieldPrimitiveValue, o?: DateTimeFieldFormatOptions):
   return undefined;
 }
 
-// ###TODO replace this with actual quantity coordinate formatting.
-function formatPointBasic(v: FieldPrimitiveValue): string | undefined {
-  if (typeof v === "object" && "x" in v && "y" in v) {
-    const parts = [v.x, v.y];
-    const z = (v as any).z;
-    if (undefined !== z) {
-      parts.push(z);
-    }
-
-    return `(${parts.join(", ")})`;
+/** A `"quantity"` magnitude rendered through `formatMagnitude`, or its raw string
+ * representation when no callback was supplied or the value is not a number.
+ */
+function formatMagnitudeValue(v: FieldPrimitiveValue, formatMagnitude?: FormatMagnitude): string | undefined {
+  if (formatMagnitude && typeof v === "number") {
+    return formatMagnitude(v);
   }
 
-  return undefined;
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  return v.toString();
 }
 
-/** @internal */
-export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined {
+/** A coordinate rendered as `(x, y[, z])`, each component passed through `formatMagnitude` when
+ * one is supplied. Without a callback the components render bare, with no unit labels: Core
+ * deliberately carries no built-in coordinate format, because presentation is a
+ * [FormatsProvider]($core-quantity) / FormatSet concern. See [[QuantityFieldFormatOptions]].
+ */
+function formatPoint(v: FieldPrimitiveValue, formatMagnitude?: FormatMagnitude): string | undefined {
+  const magnitudes = getCoordinateMagnitudes(v);
+  if (!magnitudes) {
+    return undefined;
+  }
+
+  return `(${magnitudes.map((m) => formatMagnitude ? formatMagnitude(m) : `${m}`).join(", ")})`;
+}
+
+/** Formats `value` through the per-type entry in the built-in formatter table (see [[formatters]]),
+ * wrapping the result with prefix/suffix/case.
+ *
+ * `formatMagnitude` is consulted only by the `"quantity"` and `"coordinate"` branches. Callers
+ * that have resolved a [FormatterSpec]($core-quantity) for the field pass one to render its
+ * magnitudes through that spec; callers that have not — or that resolved none — omit it, and
+ * those values fall back to their raw string representation.
+ * @internal
+ */
+export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined, formatMagnitude?: FormatMagnitude): string | undefined {
   const formatter = formatters[value.type];
-  return formatter ? formatter(value.value, options) : undefined;
+  return formatter ? formatter(value.value, options, formatMagnitude) : undefined;
 }
 
-/** @internal */
+/** Type guard for [[FieldPropertyType]] strings that have a built-in per-type formatter.
+ * @internal
+ */
 export function isKnownFieldPropertyType(type: string): type is FieldPropertyType {
   return type in formatters;
 }
 
+/** The `x`, `y` and (when present) `z` components of a coordinate value, or `undefined` if `v` is
+ * not one.
+ */
+function getCoordinateMagnitudes(v: FieldPrimitiveValue): number[] | undefined {
+  if (typeof v !== "object" || !("x" in v) || !("y" in v)) {
+    return undefined;
+  }
+  const parts = [v.x, v.y];
+  const z = "z" in v ? v.z : undefined;
+  if (undefined !== z) {
+    parts.push(z);
+  }
+  return parts;
+}
