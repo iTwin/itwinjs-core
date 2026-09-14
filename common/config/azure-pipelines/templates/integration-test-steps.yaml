@@ -8,6 +8,14 @@ parameters:
     type: boolean
     default: true
 
+  # Rush build-cache reads. Cache entries are keyed [os]-[arch]-[hash] with no
+  # Node-version contribution, so lanes that exist to prove a specific Node version
+  # can build the packages must pass 0 to avoid restoring output built under a
+  # different Node version.
+  - name: rushBuildCacheEnabled
+    type: number
+    default: 1
+
 steps:
   - template: setup-integration-users.yaml
 
@@ -43,7 +51,7 @@ steps:
     displayName: "Rush build"
     env:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-      RUSH_BUILD_CACHE_ENABLED: 1
+      RUSH_BUILD_CACHE_ENABLED: ${{ parameters.rushBuildCacheEnabled }}
       RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
   # Electron 42+ no longer downloads the binary during npm install (postinstall removed).

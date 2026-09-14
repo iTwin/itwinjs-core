@@ -115,6 +115,10 @@ jobs:
         parameters:
           nodeVersion: $(nodeVersion)
           runRendererTests: false
+          # Cache entries are keyed [os]-[arch]-[hash] without the Node version, so a
+          # cache hit here would restore lib output built under Node 24 and this lane
+          # would no longer prove that the packages build under Node 20/22.
+          rushBuildCacheEnabled: 0
 
       - script: npm test
         workingDirectory: "core/backend"
