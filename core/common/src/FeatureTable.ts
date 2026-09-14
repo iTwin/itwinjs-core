@@ -47,13 +47,20 @@ export class Feature {
   }
 }
 
+/** Describes a [[Feature]].
+ * @public
+ */
 export interface FeatureProps {
+  /** The Id of the [Element]($backend) to which this feature belongs. */
   elementId: Id64String;
+  /** The Id of the [SubCategory]($backend) to which this feature belongs. */
   subCategoryId: Id64String;
+  /** The kind of geometry this feature represents. */
   geometryClass: GeometryClass;
 }
 
 export namespace Feature {
+  /** An [OrderedComparator]($bentley) used for comparing [[Feature]]s. */
   export function compare(lhs: FeatureProps, rhs: FeatureProps): number {
     if (lhs === rhs)
       return 0;
@@ -90,6 +97,7 @@ export namespace ModelFeature {
     };
   }
 
+  /** An [OrderedComparator]($bentley) that compares two [[ModeFeature]]s. */
   export function compare(lhs: ModelFeature, rhs: ModelFeature): number {
     return Feature.compare(lhs, rhs) || compareStrings(lhs.modelId, rhs.modelId);
   }

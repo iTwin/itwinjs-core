@@ -28,6 +28,7 @@ export class ObservableSet<T> extends Set<T> {
   /** Emitted after any change to the contents of this set. */
   public readonly onChanged = new BeEvent<() => void>();
 
+  /** Remove all listeners from every [[BeEvent]] exposed by this set. */
   public clearEventListeners(): void {
     this.onAdded.clear();
     this.onDeleted.clear();
