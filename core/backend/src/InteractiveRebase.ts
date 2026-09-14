@@ -270,12 +270,12 @@ export class InteractiveRebase {
   /** Pre-replay ("theirs") snapshot of every instance involved in the current group's Txn, captured
    * immediately after `pullMergeRebaseNext()` and before any local replay writes anything. Retained for
    * the lifetime of the group's conflicts - resolution (restoring an owner's closure) needs it. Keyed by
-   * [[makeInstanceKey]].
+   * `instanceKey`.
    */
   private _theirsSnapshot = new Map<string, RebaseConflictProperties | undefined>();
 
   /** Every node of the current group's dependency forest (section 5 of the design), keyed by
-   * [[makeInstanceKey]]. Includes both captured changes and any live-discovered dependents (section 6).
+   * `instanceKey`. Includes both captured changes and any live-discovered dependents (section 6).
    */
   private _dependencyNodesByInstanceKey = new Map<string, DependencyNode>();
 
