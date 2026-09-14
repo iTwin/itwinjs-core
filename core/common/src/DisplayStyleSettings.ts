@@ -870,6 +870,10 @@ export class DisplayStyleSettings {
       this._realityModelDisplaySettings.delete(modelId);
   }
 
+  /** Maps the Id of a persistent reality model (@see [SpatialModelState.isRealityModel]($frontend) to
+   * a description of how to customize its display.
+   * @beta
+   */
   public get realityModelDisplaySettings(): ObservableMap<Id64String, RealityModelDisplaySettings> {
     return this._realityModelDisplaySettings;
   }

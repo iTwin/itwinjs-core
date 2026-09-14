@@ -59,6 +59,7 @@ export interface FeatureProps {
   geometryClass: GeometryClass;
 }
 
+/** @public */
 export namespace Feature {
   /** An [OrderedComparator]($bentley) used for comparing [[Feature]]s. */
   export function compare(lhs: FeatureProps, rhs: FeatureProps): number {

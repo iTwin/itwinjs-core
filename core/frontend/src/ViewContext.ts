@@ -374,6 +374,9 @@ export class SceneContext extends RenderContext {
   private _missingChildTiles = false;
   /** The graphics comprising the scene. */
   public readonly scene = new Scene();
+  /** The iModel reference from which this context's graphics originate.
+   * @beta
+   */
   public readonly iModelRef: IModelDisplayReference;
 
   /** @internal */

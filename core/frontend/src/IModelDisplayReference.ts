@@ -28,6 +28,7 @@ export interface IModelDisplayFeature extends ModelFeature {
   iModelRef: IModelDisplayReference;
 }
 
+/** @beta */
 export namespace IModelDisplayFeature {
   /** Serves as an [OrderedComparator]($bentley) for a pair of [[IModelDiplayFeature]]s. */
   export function compare(lhs: IModelDisplayFeature, rhs: IModelDisplayFeature): number {

@@ -2374,7 +2374,9 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   protected _treeRef?: TileTreeReference;
 
-  /** The set of iModels displayed by this view. */
+  /** The set of iModels displayed by this view.
+   * @beta
+   */
   public readonly iModelRefs: IModelDisplayReferences2d;
 
   /** @internal */
