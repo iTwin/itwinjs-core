@@ -19,15 +19,26 @@ import { _nativeDb } from "./Symbols";
  * @internal
  */
 export interface RebaseInstanceChange {
+  /**
+   * The unique key identifying the EC instance.
+   */
   instanceKey: string;
 
-  /** The JS-cased names of the properties that were part of the actual changeset Update captured for
+  /**
+   * The JS-cased names of the properties that were part of the actual changeset Update captured for
    * `change` (across however many tables it spans), or `undefined` for an Insert/Delete (whose raw rows
    * always carry every column already, so there's nothing to narrow down).
    */
   changedProperties?: string[];
 
+  /**
+   * The old (pre-local-change) snapshot of the EC instance. Undefined for an Insert.
+   */
   old?: ChangeInstance;
+
+  /**
+   * The new (post-local-change) snapshot of the EC instance. Undefined for a Delete.
+   */
   new?: ChangeInstance;
 }
 
@@ -83,16 +94,18 @@ export class RebaseInstanceStore implements Disposable {
    */
   public appendChange(source: ChangeSource): void {
     const instanceKey = source.inserted?.$meta?.instanceKey ?? source.deleted?.$meta?.instanceKey;
-    assert(!!instanceKey, "$meta.instanceKey must be defined.");
+    assert(instanceKey !== undefined, "$meta.instanceKey must be defined.");
+    assert(source.inserted?.$meta?.instanceKey === undefined || source.deleted?.$meta?.instanceKey === undefined || source.inserted?.$meta?.instanceKey === source.deleted?.$meta?.instanceKey, "Instance keys must match if both inserted and deleted instances are defined.");
+
     const change = this.get(instanceKey) ?? { instanceKey };
 
     if (source.op === "Updated") {
-      assert(!!source.inserted, "Inserted instance must be defined for an update operation.");
-      assert(!!source.deleted, "Deleted instance must be defined for an update operation.");
+      assert(source.inserted !== undefined, "Inserted instance must be defined for an update operation.");
+      assert(source.deleted !== undefined, "Deleted instance must be defined for an update operation.");
 
       this.seedBaselineIfNeeded(source, change);
-      assert(!!change.new, "seedBaselineIfNeeded should set the `new` instance.");
-      assert(!!change.old, "seedBaselineIfNeeded should set the `old` instance.");
+      assert(change.new !== undefined, "seedBaselineIfNeeded should set the `new` instance.");
+      assert(change.old !== undefined, "seedBaselineIfNeeded should set the `old` instance.");
       change.new = RebaseInstanceStore.combine(change.new, source.inserted);
       change.old = RebaseInstanceStore.combine(change.old, source.deleted);
 
@@ -100,13 +113,13 @@ export class RebaseInstanceStore implements Disposable {
       const changedNow = Object.keys(source.inserted).filter((prop) => prop !== "$meta");
       change.changedProperties = [...new Set([...priorChanged, ...changedNow])];
     } else if (source.op === "Inserted") {
-      assert(!!source.inserted, "Inserted instance must be defined for an insert operation.");
-      assert(!source.deleted, "Deleted instance must not be defined for an insert operation.");
-      change.new = RebaseInstanceStore.combine(change.new ?? source.inserted, source.inserted);
+      assert(source.inserted !== undefined, "Inserted instance must be defined for an insert operation.");
+      assert(source.deleted === undefined, "Deleted instance must not be defined for an insert operation.");
+      change.new = change.new ? RebaseInstanceStore.combine(change.new, source.inserted) : { ...source.inserted };
     } else if (source.op === "Deleted") {
-      assert(!!source.deleted, "Deleted instance must be defined for a delete operation.");
-      assert(!source.inserted, "Inserted instance must not be defined for a delete operation.");
-      change.old = RebaseInstanceStore.combine(change.old ?? source.deleted, source.deleted);
+      assert(source.deleted !== undefined, "Deleted instance must be defined for a delete operation.");
+      assert(source.inserted === undefined, "Inserted instance must not be defined for a delete operation.");
+      change.old = change.old ? RebaseInstanceStore.combine(change.old, source.deleted) : { ...source.deleted };
     }
 
     this.set(change);
@@ -120,8 +133,8 @@ export class RebaseInstanceStore implements Disposable {
         if (stmt.step() === DbResult.BE_SQLITE_ROW) {
           return {
             instanceKey: instanceKey,
-            old: stmt.isValueNull(0) ? undefined : JSON.parse(stmt.getValueString(0), RebaseInstanceStore.reviveJson) as ChangeInstance,
-            new: stmt.isValueNull(1) ? undefined : JSON.parse(stmt.getValueString(1), RebaseInstanceStore.reviveJson) as ChangeInstance,
+            old: stmt.isValueNull(0) ? undefined : JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ChangeInstance,
+            new: stmt.isValueNull(1) ? undefined : JSON.parse(stmt.getValueString(1), Base64EncodedString.reviver) as ChangeInstance,
             changedProperties: stmt.isValueNull(2) ? undefined : JSON.parse(stmt.getValueString(2)) as string[],
           };
         }
@@ -138,8 +151,8 @@ export class RebaseInstanceStore implements Disposable {
        DO UPDATE SET [old] = [excluded].[old], [new] = [excluded].[new], [changedProperties] = [excluded].[changedProperties]`,
       (stmt: SqliteStatement) => {
         stmt.bindString(1, change.instanceKey);
-        stmt.maybeBindString(2, change.old ? JSON.stringify(change.old, RebaseInstanceStore.replaceJson) : undefined);
-        stmt.maybeBindString(3, change.new ? JSON.stringify(change.new, RebaseInstanceStore.replaceJson) : undefined);
+        stmt.maybeBindString(2, change.old ? JSON.stringify(change.old, Base64EncodedString.replacer) : undefined);
+        stmt.maybeBindString(3, change.new ? JSON.stringify(change.new, Base64EncodedString.replacer) : undefined);
         stmt.maybeBindString(4, change.changedProperties ? JSON.stringify(change.changedProperties) : undefined);
         stmt.step();
       },
@@ -152,28 +165,22 @@ export class RebaseInstanceStore implements Disposable {
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       yield {
         instanceKey: stmt.getValueString(0),
-        old: stmt.isValueNull(1) ? undefined : JSON.parse(stmt.getValueString(1), RebaseInstanceStore.reviveJson) as ChangeInstance,
-        new: stmt.isValueNull(2) ? undefined : JSON.parse(stmt.getValueString(2), RebaseInstanceStore.reviveJson) as ChangeInstance,
+        old: stmt.isValueNull(1) ? undefined : JSON.parse(stmt.getValueString(1), Base64EncodedString.reviver) as ChangeInstance,
+        new: stmt.isValueNull(2) ? undefined : JSON.parse(stmt.getValueString(2), Base64EncodedString.reviver) as ChangeInstance,
         changedProperties: stmt.isValueNull(3) ? undefined : JSON.parse(stmt.getValueString(3)) as string[],
       };
     }
   }
 
-  /** Number of distinct instances captured. */
-  public count(): number {
-    return this._db.withPreparedSqliteStatement(`SELECT COUNT(*) FROM ${tableName}`, (stmt: SqliteStatement) => {
-      return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getInteger() : 0;
-    });
-  }
-
-  /** Unlike inserts and deletes - which always carry every column - a changeset update only carries the
-    * columns that actually changed. The first time we see a given instance, seed its old *and* new
-    * snapshot with the instance's complete current row, so that merging in just the columns a changeset
-    * update actually carries - from however many tables the instance spans - still leaves a complete
-    * instance once every table's contribution has been merged in. Later tables' merges then only ever
-    * overlay their own changed columns on top, so an already-corrected column is never clobbered by a
-    * stale baseline value from a table that hasn't merged yet.
-    */
+  /**
+   * Unlike inserts and deletes - which always carry every column - a changeset update only carries the
+   * columns that actually changed. The first time we see a given instance, seed its old *and* new
+   * snapshot with the instance's complete current row, so that merging in just the columns a changeset
+   * update actually carries - from however many tables the instance spans - still leaves a complete
+   * instance once every table's contribution has been merged in. Later tables' merges then only ever
+   * overlay their own changed columns on top, so an already-corrected column is never clobbered by a
+   * stale baseline value from a table that hasn't merged yet.
+   */
   private seedBaselineIfNeeded(source: ChangeSource, change: RebaseInstanceChange): void {
     if (change.old !== undefined || change.new !== undefined)
       return;
@@ -187,28 +194,22 @@ export class RebaseInstanceStore implements Disposable {
     change.new = { ...baseline, $meta: { ...source.inserted.$meta } };
   }
 
-  /** Merge partial per-table properties for the same instance/stage into a single snapshot.
+  /**
+   * Merge partial per-table properties for the same instance/stage into a single snapshot.
    * Mirrors `PartialChangeUnifier`'s private `combine`, but operates on one old/new snapshot rather
    * than a generic keyed cache.
    */
   private static combine(lhs: ChangeInstance, rhs: ChangeInstance): ChangeInstance {
+    assert(lhs.$meta.instanceKey === rhs.$meta.instanceKey);
+
     const { $meta: _rhsMeta, ...rhsData } = rhs;
     Object.assign(lhs, rhsData);
-    lhs.$meta.tables = [...lhs.$meta.tables, ...rhs.$meta.tables];
-    lhs.$meta.changeIndexes = [...lhs.$meta.changeIndexes, ...rhs.$meta.changeIndexes];
-    lhs.$meta.changeFetchedPropNames = [...new Set([...lhs.$meta.changeFetchedPropNames, ...rhs.$meta.changeFetchedPropNames])];
+    lhs.$meta.tables.push(...rhs.$meta.tables);
+    lhs.$meta.changeIndexes.push(...rhs.$meta.changeIndexes);
+    for (const propName of rhs.$meta.changeFetchedPropNames) {
+      if (!lhs.$meta.changeFetchedPropNames.includes(propName))
+        lhs.$meta.changeFetchedPropNames.push(propName);
+    }
     return lhs;
-  }
-
-  private static replaceJson(name: string, value: any) {
-    // The native layer unhelpfully represents nulls as `undefined`. So turn them back into nulls for the JSON.
-    //if (value === undefined) return null;
-    return Base64EncodedString.replacer(name, value);
-  }
-
-  private static reviveJson(name: string, value: any) {
-    // Turn nulls back into undefineds to match the native layer.
-    //if (value === null) return undefined;
-    return Base64EncodedString.reviver(name, value);
   }
 }
