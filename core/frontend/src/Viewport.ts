@@ -1471,6 +1471,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Ids of a set of elements which should not be rendered within this view.
    * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
    * @note This set takes precedence over the [[alwaysDrawn]] set - if an element is present in both sets, it is never drawn.
+   * @deprecated Use [[IModelDisplayReference.neverDrawn]].
    */
   public get neverDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.neverDrawnElements; }
 
@@ -1478,11 +1479,13 @@ export abstract class Viewport implements Disposable, TileUser {
    * If the [[isAlwaysDrawnExclusive]] flag is also set, *only* those elements in this set will be drawn.
    * @note Do not modify this set directly - use [[setAlwaysDrawn]] or [[clearAlwaysDrawn]] instead.
    * @note The [[neverDrawn]] set takes precedence - if an element is present in both sets, it is never drawn.
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public get alwaysDrawn(): ObservableSet<Id64String> { return this.primaryIModelRef.alwaysDrawnElements; }
 
   /** Clear the set of always-drawn elements.
    * @see [[alwaysDrawn]]
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public clearAlwaysDrawn(): void {
     if (0 < this.alwaysDrawn.size || this.isAlwaysDrawnExclusive) {
@@ -1498,6 +1501,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Clear the set of never-drawn elements.
    * @see [[neverDrawn]]
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public clearNeverDrawn(): void {
     if (0 < this.neverDrawn.size) {
@@ -1511,6 +1515,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Specify the Ids of a set of elements which should never be rendered within this view.
    * @see [[neverDrawn]].
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]].
    */
   public setNeverDrawn(ids: Id64Set): void {
     this.neverDrawn.clear();
@@ -1526,6 +1531,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @param exclusive If true, *only* the specified elements will be drawn.
    * @see [[alwaysDrawn]]
    * @see [[isAlwaysDrawnExclusive]]
+   * @deprecated Use [[IModelDisplayReference.alwaysDrawn]] and [[IModelDisplayReference.isAlwaysDrawnExclusive]].
    */
   public setAlwaysDrawn(ids: Id64Set, exclusive: boolean = false): void {
     this.alwaysDrawn.clear();
@@ -1537,7 +1543,9 @@ export abstract class Viewport implements Disposable, TileUser {
     this.invalidateScene();
   }
 
-  /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
+  /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view.
+   * @deprecated Use [[IModelDisplayReference.isAlwaysDrawnExclusive]].
+   */
   public get isAlwaysDrawnExclusive(): boolean { return this.primaryIModelRef.isAlwaysDrawnExclusive; }
 
   /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
