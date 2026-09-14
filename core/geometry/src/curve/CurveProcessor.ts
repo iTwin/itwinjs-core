@@ -5,13 +5,15 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { AnyCurve } from "./CurveTypes";
-import { BagOfCurves, CurveCollection } from "./CurveCollection";
+
 import { CurvePrimitive } from "./CurvePrimitive";
-import { Loop } from "./Loop";
-import { ParityRegion } from "./ParityRegion";
-import { Path } from "./Path";
-import { UnionRegion } from "./UnionRegion";
+
+import type { BagOfCurves, CurveCollection } from "./CurveCollection";
+import type { AnyCurve } from "./CurveTypes";
+import type { Loop } from "./Loop";
+import type { ParityRegion } from "./ParityRegion";
+import type { Path } from "./Path";
+import type { UnionRegion } from "./UnionRegion";
 
 /** base class for detailed traversal of curve artifacts.
  * * This recurses to children in the quickest way (no records of path)
@@ -50,7 +52,10 @@ export abstract class RecursiveCurveProcessor {
   public announceUnionRegion(data: UnionRegion, _indexInParent: number = -1): void {
     let i = 0;
     for (const child of data.children) {
-      child.announceToCurveProcessor(this, i++);
+      if (child.curveCollectionType === "loop")
+        this.announceLoop(child, i++);
+      else
+        this.announceParityRegion(child, i++);
     }
   }
 
@@ -117,9 +122,15 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
     this.leave();
   }
   /** announce beginning or end of a parity region */
-  public override announceUnionRegion(data: UnionRegion, indexInParent: number = -1): void {
+  public override announceUnionRegion(data: UnionRegion, _indexInParent: number = -1): void {
     this.enter(data);
-    super.announceUnionRegion(data, indexInParent);
+    let i = 0;
+    for (const child of data.children) {
+      if (child.curveCollectionType === "loop")
+        this.announceLoop(child, i++);
+      else
+        this.announceParityRegion(child, i++);
+    }
     this.leave();
   }
   /**

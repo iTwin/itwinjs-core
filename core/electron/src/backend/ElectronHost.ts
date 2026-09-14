@@ -16,8 +16,8 @@ import * as path from "path";
 import { AsyncMethodsOf, BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
-import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { electronIpcStrings } from "../common/ElectronIpcInterface";
+import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager.js";
+import { electronIpcStrings } from "../common/ElectronIpcInterface.js";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 

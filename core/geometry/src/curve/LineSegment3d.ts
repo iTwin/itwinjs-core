@@ -335,7 +335,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     this._point0 = this._point1;
     this._point1 = a;
   }
-  /** Transform the two endpoints of this LinSegment. */
+  /** Transform the two endpoints of this line segment. */
   public tryTransformInPlace(transform: Transform): boolean {
     this._point0 = transform.multiplyPoint3d(this._point0, this._point0);
     this._point1 = transform.multiplyPoint3d(this._point1, this._point1);

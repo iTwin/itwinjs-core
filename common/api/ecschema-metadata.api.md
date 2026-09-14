@@ -2150,6 +2150,7 @@ export class SchemaCache implements ISchemaLocater {
     getAllSchemas(): Iterable<Schema>;
     getSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<SchemaInfo | undefined>;
+    getSchemaInfoSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): SchemaInfo | undefined;
     getSchemaItems(): Iterable<SchemaItem>;
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     schemaExists(schemaKey: SchemaKey): boolean;
@@ -2169,6 +2170,8 @@ export class SchemaContext {
     get classHierarchy(): ECClassHierarchy;
     // @internal
     getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
+    // @internal
+    getCachedSchemaInfoSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): SchemaInfo | undefined;
     // @internal
     getCachedSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     getKnownSchemas(): Iterable<Schema>;

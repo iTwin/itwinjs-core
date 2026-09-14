@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Expose Certa backend callback helpers through a public callbacks entry point.",
+      "type": "none",
+      "packageName": "@itwin/certa"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

@@ -368,7 +368,7 @@ describe("RegionOps", () => {
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 1;
     lineString = LineString3d.create([1, 1], [2, 1], [2, 2], [1, 2], [1, 1]);
-    loop = Loop.create(lineString).cloneTransformed(rotationTransform) as Loop;
+    loop = Loop.create(lineString).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop, ray);
     if (ck.testDefined(ray, "ray defined for square in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -399,7 +399,7 @@ describe("RegionOps", () => {
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 2;
     lineString = LineString3d.create([1, 1], [3, 1], [3, 2], [1, 2], [1, 1]);
-    loop = Loop.create(lineString).cloneTransformed(rotationTransform) as Loop;
+    loop = Loop.create(lineString).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop, ray);
     if (ck.testDefined(ray, "ray defined for rectangle in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -430,7 +430,7 @@ describe("RegionOps", () => {
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 0.5;
     lineString = LineString3d.create([0, 0], [2, 1], [0.5, 0.5], [1, 2], [0, 0]);
-    loop = Loop.create(lineString).cloneTransformed(rotationTransform) as Loop;
+    loop = Loop.create(lineString).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop, ray);
     if (ck.testDefined(ray, "ray defined for dart in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -461,7 +461,7 @@ describe("RegionOps", () => {
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = Math.PI;
     arc = Arc3d.createXY(center, 1.0);
-    loop = Loop.create(arc).cloneTransformed(rotationTransform) as Loop;
+    loop = Loop.create(arc).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop, ray);
     if (ck.testDefined(ray, "ray defined for circle in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -494,7 +494,7 @@ describe("RegionOps", () => {
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, -1)));
     expectedArea = 4 * Math.PI;
     arc = Arc3d.create(center, Vector3d.create(2, 2), Vector3d.create(-1, 1), AngleSweep.createStartEndDegrees(360, 0));
-    loop = Loop.create(arc).cloneTransformed(rotationTransform) as Loop;
+    loop = Loop.create(arc).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop, ray);
     if (ck.testDefined(ray, "ray defined for arc in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -533,7 +533,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(-0.002899711646546525, 1.6846557155837842));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, -1)));
     expectedArea = 4.817806468040612;
-    loop0 = Loop.create(bspline0).cloneTransformed(rotationTransform) as Loop;
+    loop0 = Loop.create(bspline0).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop0, ray);
     if (ck.testDefined(ray, "ray defined for bspline0 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -570,7 +570,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(1.238143022179664, 1.2381197066333935));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, -1)));
     expectedArea = 2.9971577457816796;
-    loop1 = Loop.create(bspline1).cloneTransformed(rotationTransform) as Loop;
+    loop1 = Loop.create(bspline1).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop1, ray);
     if (ck.testDefined(ray, "ray defined for bspline1 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -607,7 +607,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(1, 1));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 2 + Math.PI / 2;
-    loop0 = Loop.create(arc0, linestring0, arc1, linestring1).cloneTransformed(rotationTransform) as Loop;
+    loop0 = Loop.create(arc0, linestring0, arc1, linestring1).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop0, ray);
     if (ck.testDefined(ray, "ray defined for loop0 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -647,7 +647,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(1, 1));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 4 + 2 * Math.PI;
-    loop1 = Loop.create(arc0, arc1, arc2, arc3).cloneTransformed(rotationTransform) as Loop;
+    loop1 = Loop.create(arc0, arc1, arc2, arc3).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop1, ray);
     if (ck.testDefined(ray, "ray defined for loop1 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -679,7 +679,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(0.9510277451111325, -0.02140759703854831));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 7 + Math.PI / 4;
-    loop2 = Loop.create(arc0, linestring0).cloneTransformed(rotationTransform) as Loop;
+    loop2 = Loop.create(arc0, linestring0).cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, dx, dy);
     ray = RegionOps.centroidAreaNormal(loop2, ray);
     if (ck.testDefined(ray, "ray defined for loop2 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -712,7 +712,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(0.5, 1));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 2 * Math.PI - overlapArea;
-    let rotatedUnionRegion = unionRegion.cloneTransformed(rotationTransform) as Loop;
+    let rotatedUnionRegion = unionRegion.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, rotatedUnionRegion, dx, dy);
     ray = RegionOps.centroidAreaNormal(rotatedUnionRegion, ray);
     if (ck.testDefined(ray, "ray defined for union region 1 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -742,7 +742,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(1, 2));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 2 * Math.PI;
-    rotatedUnionRegion = unionRegion.cloneTransformed(rotationTransform) as Loop;
+    rotatedUnionRegion = unionRegion.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, rotatedUnionRegion, dx, dy);
     ray = RegionOps.centroidAreaNormal(rotatedUnionRegion, ray);
     if (ck.testDefined(ray, "ray defined for union region 2 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -774,7 +774,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(2.4399541531178177, 1));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 19.251373275327744;
-    rotatedUnionRegion = unionRegion.cloneTransformed(rotationTransform) as Loop;
+    rotatedUnionRegion = unionRegion.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, rotatedUnionRegion, dx, dy);
     ray = RegionOps.centroidAreaNormal(rotatedUnionRegion, ray);
     if (ck.testDefined(ray, "ray defined for union region 3 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -806,7 +806,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(0.5, 1));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 2 * Math.PI - 2 * overlapArea;
-    let rotatedParityRegion = parityRegion.cloneTransformed(rotationTransform) as Loop;
+    let rotatedParityRegion = parityRegion.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, rotatedParityRegion, dx, dy);
     ray = RegionOps.centroidAreaNormal(rotatedParityRegion, ray);
     if (ck.testDefined(ray, "ray defined for parity region 1 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -836,7 +836,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(1, 2));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 2 * Math.PI;
-    rotatedParityRegion = parityRegion.cloneTransformed(rotationTransform) as Loop;
+    rotatedParityRegion = parityRegion.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, rotatedParityRegion, dx, dy);
     ray = RegionOps.centroidAreaNormal(rotatedParityRegion, ray);
     if (ck.testDefined(ray, "ray defined for parity region 2 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -867,7 +867,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(1, 1));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 3 * Math.PI - 4 * overlapArea;
-    rotatedParityRegion = parityRegion.cloneTransformed(rotationTransform) as Loop;
+    rotatedParityRegion = parityRegion.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, rotatedParityRegion, dx, dy);
     ray = RegionOps.centroidAreaNormal(rotatedParityRegion, ray);
     if (ck.testDefined(ray, "ray defined for parity region 3 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -897,7 +897,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(5, 3.8136483127358547));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 80 - 4 * Math.PI;
-    const rotatedRegion = region.cloneTransformed(rotationTransform) as AnyRegion;
+    const rotatedRegion = region.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, rotatedRegion, dx, dy);
     ray = RegionOps.centroidAreaNormal(rotatedRegion, ray);
     if (ck.testDefined(ray, "ray defined for parity region 4 in 3d") && ck.testDefined(ray.a, "computed area")) {
@@ -1001,12 +1001,12 @@ describe("RegionOps", () => {
     const rect7x6 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 7, 6, 0, true)));
     const rect11x9 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 11, 9, 0, true)));
     const parityRegion = ParityRegion.create(
-      rect11x9.clone() as Loop, // outer
-      rect1x1.cloneTransformed(Transform.createTranslationXYZ(1, 7)) as Loop, // hole in outer
-      rect7x6.cloneTransformed(Transform.createTranslationXYZ(3, 1)) as Loop, // large hole in outer
-      rect1x1.cloneTransformed(Transform.createTranslationXYZ(4, 5)) as Loop, // small island in large hole
-      rect3x3.cloneTransformed(Transform.createTranslationXYZ(6, 2)) as Loop, // large island in large hole
-      rect1x1.cloneTransformed(Transform.createTranslationXYZ(7, 3)) as Loop, // hole in large island
+      rect11x9.clone(), // outer
+      rect1x1.cloneTransformed(Transform.createTranslationXYZ(1, 7)), // hole in outer
+      rect7x6.cloneTransformed(Transform.createTranslationXYZ(3, 1)), // large hole in outer
+      rect1x1.cloneTransformed(Transform.createTranslationXYZ(4, 5)), // small island in large hole
+      rect3x3.cloneTransformed(Transform.createTranslationXYZ(6, 2)), // large island in large hole
+      rect1x1.cloneTransformed(Transform.createTranslationXYZ(7, 3)), // hole in large island
     );
     regionArea = RegionOps.computeXYArea(parityRegion)!;
     ck.testCoordinate(regionArea, 65, "parity region area as expected");
@@ -1031,7 +1031,7 @@ describe("RegionOps", () => {
 
     // disjoint union of two copies of the previous parity region
     dx += 15;
-    const unionRegion = UnionRegion.create(parityRegion.clone(), parityRegion.cloneTransformed(Transform.createTranslationXYZ(0, 10)) as ParityRegion);
+    const unionRegion = UnionRegion.create(parityRegion.clone(), parityRegion.cloneTransformed(Transform.createTranslationXYZ(0, 10)));
     regionArea = RegionOps.computeXYArea(unionRegion)!;
     ck.testCoordinate(regionArea, 130, "union region area as expected");
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, unionRegion, dx);
@@ -1040,9 +1040,9 @@ describe("RegionOps", () => {
     dx += 20;
     const dy = 5;
     const circle = Loop.create(Arc3d.createXY(Point3d.createZero(), 2.5));
-    const venn0 = circle.cloneTransformed(Transform.createTranslationXYZ(Math.sqrt(3), 1)) as Loop;
-    const venn1 = circle.cloneTransformed(Transform.createTranslationXYZ(-Math.sqrt(3), 1)) as Loop;
-    const venn2 = circle.cloneTransformed(Transform.createTranslationXYZ(0, -2)) as Loop;
+    const venn0 = circle.cloneTransformed(Transform.createTranslationXYZ(Math.sqrt(3), 1));
+    const venn1 = circle.cloneTransformed(Transform.createTranslationXYZ(-Math.sqrt(3), 1));
+    const venn2 = circle.cloneTransformed(Transform.createTranslationXYZ(0, -2));
     const vennRegion = ParityRegion.create(venn0, venn1, venn2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, vennRegion, dx, dy);
     ck.testCoordinate(RegionOps.computeXYArea(vennRegion)!, 40.41956377576274, "venn region area as expected");
@@ -1401,12 +1401,12 @@ describe("RegionOps", () => {
     const ck = new Checker();
     let loop0: AnyRegion = Loop.create(Arc3d.createUnitCircle());
     const loop1: AnyRegion = Loop.create(Arc3d.createXY(Point3d.create(1, 1), 1));
-    let parity1: AnyRegion = ParityRegion.create(loop0.clone() as Loop);
-    let parity2: AnyRegion = ParityRegion.create(loop0.clone() as Loop, loop1.clone() as Loop);
-    let union1A: AnyRegion = UnionRegion.create(loop0.clone() as Loop);
+    let parity1: AnyRegion = ParityRegion.create(loop0.clone());
+    let parity2: AnyRegion = ParityRegion.create(loop0.clone(), loop1.clone());
+    let union1A: AnyRegion = UnionRegion.create(loop0.clone());
     let union1B: AnyRegion = UnionRegion.create(parity1.clone());
     let union1C: AnyRegion = UnionRegion.create(parity2.clone());
-    const union2: AnyRegion = UnionRegion.create(loop0.clone() as Loop, parity1.clone());
+    const union2: AnyRegion = UnionRegion.create(loop0.clone(), parity1.clone());
 
     ck.testType(RegionOps.simplifyRegionType(loop0), Loop, "simplifying a Loop returns a Loop");
     ck.testType(RegionOps.simplifyRegionType(parity1), Loop, "simplifying a ParityRegion with one Loop returns a Loop");
@@ -1417,7 +1417,7 @@ describe("RegionOps", () => {
     ck.testType(RegionOps.simplifyRegionType(union2), UnionRegion, "simplifying a UnionRegion with multiple children returns a UnionRegion");
 
     const testValidate = (inputRegion: AnyRegion, expectedResult: AnyRegion | CurvePrimitive | undefined, msg: string): AnyRegion => {
-      const saveInput = inputRegion.clone() as AnyRegion;
+      const saveInput = inputRegion.clone();
       const expectedChildCount = expectedResult?.children?.length ?? 0;
       const result = RegionOps.simplifyRegion(inputRegion); // mutates inputRegion
       ck.testTrue(result === expectedResult, msg);
@@ -1658,7 +1658,7 @@ describe("RegionInOut", () => {
     const range = Range2d.createXYXY(-2, 1, 4, 3);
     const rectangle = Sample.createRectangleInRange2d(range, 0, true);
     const loop = Loop.create(LineString3d.create(rectangle));
-    const loopWithSegments = loop.cloneWithExpandedLineStrings() as Loop;
+    const loopWithSegments = loop.cloneWithExpandedLineStrings();
     for (const geometry of [loop, loopWithSegments]) {
       /** pure rectangle interior hits */
       for (const u of [-1, 0.5, 2]) {
@@ -2840,7 +2840,7 @@ describe("RegionOps.tolerance", () => {
     };
 
     const verifyAstroidRegionDiscovery = (astroid: CurvePrimitive[], prefix: string, toOrigin?: Transform): void => {
-      const geom = toOrigin ? astroid.map((prim: CurvePrimitive) => prim.cloneTransformed(toOrigin)!) : astroid;
+      const geom = toOrigin ? astroid.map((prim: CurvePrimitive) => prim.cloneTransformed(toOrigin)) : astroid;
       const myPrefix = toOrigin ? `${prefix} [at origin]` : `${prefix}`;
       const result = RegionOps.constructAllXYRegionLoops(geom);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, geom);

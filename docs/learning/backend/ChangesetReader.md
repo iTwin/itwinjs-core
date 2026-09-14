@@ -229,8 +229,8 @@ assert.strictEqual(instance.$meta.propFilter, PropertyFilter.InstanceKey);
 |---|---|
 | `abbreviateBlobs: true` (or omitted) | Binary properties summarized as `{ bytes: N }` — this is the default behavior |
 | `abbreviateBlobs: false` | Binary properties returned as full `Uint8Array` instead of the default `{ bytes: N }` summary |
-| `classIdsToClassNames: true` | `ECClassId` and `RelECClassId` values converted from hex strings to fully-qualified names (e.g. `"BisCore.DrawingModel"`) |
-| `useJsName: true` | All property keys and struct sub-keys returned in camelCase (`id`, `className`, `lastMod`, `structProp.x`, etc.). Navigation property sub-keys use `{ id, relClassName }` instead of `{ Id, RelECClassId }`. `ECClassId` and nav-prop class identifiers are automatically resolved to class names. |
+| `classIdsToClassNames: true` | All classId values converted from hex strings to fully-qualified class names (e.g. `"BisCore.DrawingModel"`) |
+| `useJsName: true` _(deprecated)_ | All property keys and struct sub-keys returned in camelCase (`id`, `className`, `lastMod`, `structProp.x`, etc.). Navigation property sub-keys use `{ id, relClassName }` instead of `{ Id, RelECClassId }`. `ECClassId` and nav-prop class identifiers are automatically resolved to class names. |
 
 The active `rowOptions` object is stored on every instance's `$meta.rowOptions` for inspection.
 
@@ -240,7 +240,9 @@ The active `rowOptions` object is stored on every instance's `$meta.rowOptions` 
 [[include:ChangesetReader.RowOptionsClassNames]]
 ```
 
-### Example — `useJsName`
+### Example — `useJsName` (deprecated)
+
+> **Deprecated:** The `useJsName` row option is deprecated. Prefer the default EC property names.
 
 ```ts
 [[include:ChangesetReader.UseJsName]]
