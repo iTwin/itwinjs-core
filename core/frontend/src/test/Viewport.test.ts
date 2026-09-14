@@ -133,7 +133,7 @@ describe("Viewport", () => {
       testBlankViewport((viewport) => {
         const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
         viewport.onFlashedIdChanged.addOnce(() => viewport.flashedId = "0x12345");
-        expect(() => (viewport.flashedId = "0x12345")).toThrow("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
+        expect(() => (viewport.flashedId = "0x12345")).toThrow("Cannot assign to Viewport.flashedElement from within an onFlashedElementChanged event callback.");
         UnexpectedErrors.setHandler(oldHandler);
       });
     });
@@ -611,6 +611,7 @@ describe("Viewport", () => {
         expect(features.contains(new Feature("0xa"))).to.be.true;
 
         features = readUniqueFeatures(vp, undefined, undefined, ["0xa", "0xb"]);
+        expect(features).to.deep.equal([]);
         expect(features.length).to.equal(0);
       });
     });
@@ -655,6 +656,7 @@ describe("Viewport", () => {
         expect(features.contains(new Feature("0xc"))).to.be.true;
 
         features = readUniqueFeatures(vp, undefined, undefined, ["0xc", "0xd"]);
+        expect(features).to.deep.equal([]);
         expect(features.length).to.equal(0);
 
         features = readUniqueFeatures(vp, undefined, undefined, ["0xc"]);
