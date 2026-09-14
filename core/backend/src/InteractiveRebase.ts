@@ -13,7 +13,7 @@ import { ECJsNames, ElementProps, IModelError, QueryBinder, TxnProps } from "@it
 import { SchemaView, SchemaViewPrimitiveType, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { getChangedProperties, RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
+import { RebaseInstanceChange, RebaseInstanceStore } from "./internal/RebaseInstanceStore";
 import { Element } from "./Element";
 
 /** Errors originating from the server-based implementation of the [LockControl]($backend) interface.
@@ -889,7 +889,7 @@ export class InteractiveRebase {
       const { $meta: _newMeta, ...newProps } = change.new;
       if (change.old) {
         const { $meta: _oldMeta, ...oldProps } = change.old;
-        this.applyInteractiveUpdate(oldProps, newProps, getChangedProperties(change));
+        this.applyInteractiveUpdate(oldProps, newProps, change.changedProperties);
       } else {
         this.applyInteractiveInsert(newProps);
       }

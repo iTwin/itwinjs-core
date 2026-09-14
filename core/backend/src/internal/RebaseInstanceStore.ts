@@ -20,27 +20,15 @@ import { _nativeDb } from "./Symbols";
  */
 export interface RebaseInstanceChange {
   instanceKey: string;
+
+  /** The JS-cased names of the properties that were part of the actual changeset Update captured for
+   * `change` (across however many tables it spans), or `undefined` for an Insert/Delete (whose raw rows
+   * always carry every column already, so there's nothing to narrow down).
+   */
+  changedProperties?: string[];
+
   old?: ChangeInstance;
   new?: ChangeInstance;
-}
-
-/** Extends {@link ChangeMeta} with the JS-cased property names actually present in the raw changeset
- * row(s) merged into this snapshot - i.e. the columns our local Txn's Update actually touched, as
- * opposed to the full row that [[RebaseInstanceStore]]'s `seedBaselineIfNeeded` fills in for merging
- * convenience. Absent for Insert/Delete, whose raw rows always carry every column already.
- */
-interface RebaseChangeMeta extends ChangeMeta {
-  changedProperties?: string[];
-}
-
-/** The JS-cased names of the properties that were part of the actual changeset Update captured for
- * `change` (across however many tables it spans), or `undefined` for an Insert/Delete (whose raw rows
- * always carry every column already, so there's nothing to narrow down).
- * @internal
- */
-export function getChangedProperties(change: RebaseInstanceChange): string[] | undefined {
-  return (change.new?.$meta as RebaseChangeMeta | undefined)?.changedProperties
-    ?? (change.old?.$meta as RebaseChangeMeta | undefined)?.changedProperties;
 }
 
 const tableName = "[InstanceChanges]";
@@ -74,7 +62,7 @@ export class RebaseInstanceStore implements Disposable {
   public static createNew(path: string, db: AnyDb): RebaseInstanceStore {
     const store = new RebaseInstanceStore(true, db);
     store._db.createDb(path, undefined, { skipFileCheck: true, rawSQLite: true });
-    store._db.executeSQL(`CREATE TABLE ${tableName} ([instanceKey] TEXT PRIMARY KEY, [old] TEXT, [new] TEXT)`);
+    store._db.executeSQL(`CREATE TABLE ${tableName} ([instanceKey] TEXT PRIMARY KEY, [old] TEXT, [new] TEXT, [changedProperties] TEXT)`);
     return store;
   }
 
@@ -94,34 +82,79 @@ export class RebaseInstanceStore implements Disposable {
    * to the same EC instance - into that instance's old and/or new snapshot.
    */
   public appendChange(source: ChangeSource): void {
+    const instanceKey = source.inserted?.$meta?.instanceKey ?? source.deleted?.$meta?.instanceKey;
+    assert(!!instanceKey, "$meta.instanceKey must be defined.");
+    const change = this.get(instanceKey) ?? { instanceKey };
+
     if (source.op === "Updated") {
-      if (source.inserted)
-        this.merge("new", source.inserted);
-      if (source.deleted)
-        this.merge("old", source.deleted);
-    } else if (source.op === "Inserted" && source.inserted) {
-      this.merge("new", source.inserted);
-    } else if (source.op === "Deleted" && source.deleted) {
-      this.merge("old", source.deleted);
+      assert(!!source.inserted, "Inserted instance must be defined for an update operation.");
+      assert(!!source.deleted, "Deleted instance must be defined for an update operation.");
+
+      this.seedBaselineIfNeeded(source, change);
+      assert(!!change.new, "seedBaselineIfNeeded should set the `new` instance.");
+      assert(!!change.old, "seedBaselineIfNeeded should set the `old` instance.");
+      change.new = RebaseInstanceStore.combine(change.new, source.inserted);
+      change.old = RebaseInstanceStore.combine(change.old, source.deleted);
+
+      const priorChanged = change.changedProperties ?? [];
+      const changedNow = Object.keys(source.inserted).filter((prop) => prop !== "$meta");
+      change.changedProperties = [...new Set([...priorChanged, ...changedNow])];
+    } else if (source.op === "Inserted") {
+      assert(!!source.inserted, "Inserted instance must be defined for an insert operation.");
+      assert(!source.deleted, "Deleted instance must not be defined for an insert operation.");
+      change.new = RebaseInstanceStore.combine(change.new ?? source.inserted, source.inserted);
+    } else if (source.op === "Deleted") {
+      assert(!!source.deleted, "Deleted instance must be defined for a delete operation.");
+      assert(!source.inserted, "Inserted instance must not be defined for a delete operation.");
+      change.old = RebaseInstanceStore.combine(change.old ?? source.deleted, source.deleted);
     }
+
+    this.set(change);
   }
 
-  /** Look up the old/new snapshot pair for a single instance, or `undefined` if it was not captured. */
   public get(instanceKey: string): RebaseInstanceChange | undefined {
-    const key = instanceKey.toLowerCase();
-    const old = this.readColumn("old", key);
-    const newInstance = this.readColumn("new", key);
-    return (old || newInstance) ? { instanceKey: key, old, new: newInstance } : undefined;
+    return this._db.withPreparedSqliteStatement(
+      `SELECT [old], [new], [changedProperties] FROM ${tableName} WHERE [instanceKey]=?`,
+      (stmt: SqliteStatement) => {
+        stmt.bindString(1, instanceKey);
+        if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          return {
+            instanceKey: instanceKey,
+            old: stmt.isValueNull(0) ? undefined : JSON.parse(stmt.getValueString(0), RebaseInstanceStore.reviveJson) as ChangeInstance,
+            new: stmt.isValueNull(1) ? undefined : JSON.parse(stmt.getValueString(1), RebaseInstanceStore.reviveJson) as ChangeInstance,
+            changedProperties: stmt.isValueNull(2) ? undefined : JSON.parse(stmt.getValueString(2)) as string[],
+          };
+        }
+        return undefined;
+      },
+    );
+  }
+
+  public set(change: RebaseInstanceChange): void {
+    this._db.withPreparedSqliteStatement(
+      `INSERT INTO ${tableName} ([instanceKey], [old], [new], [changedProperties])
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT ([instanceKey])
+       DO UPDATE SET [old] = [excluded].[old], [new] = [excluded].[new], [changedProperties] = [excluded].[changedProperties]`,
+      (stmt: SqliteStatement) => {
+        stmt.bindString(1, change.instanceKey);
+        stmt.maybeBindString(2, change.old ? JSON.stringify(change.old, RebaseInstanceStore.replaceJson) : undefined);
+        stmt.maybeBindString(3, change.new ? JSON.stringify(change.new, RebaseInstanceStore.replaceJson) : undefined);
+        stmt.maybeBindString(4, change.changedProperties ? JSON.stringify(change.changedProperties) : undefined);
+        stmt.step();
+      },
+    );
   }
 
   /** Iterate over every captured instance's old/new snapshot pair. */
   public *all(): IterableIterator<RebaseInstanceChange> {
-    using stmt = this._db.prepareSqliteStatement(`SELECT [instanceKey], [old], [new] FROM ${tableName} ORDER BY [instanceKey]`);
+    using stmt = this._db.prepareSqliteStatement(`SELECT [instanceKey], [old], [new], [changedProperties] FROM ${tableName} ORDER BY [instanceKey]`);
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       yield {
         instanceKey: stmt.getValueString(0),
         old: stmt.isValueNull(1) ? undefined : JSON.parse(stmt.getValueString(1), RebaseInstanceStore.reviveJson) as ChangeInstance,
         new: stmt.isValueNull(2) ? undefined : JSON.parse(stmt.getValueString(2), RebaseInstanceStore.reviveJson) as ChangeInstance,
+        changedProperties: stmt.isValueNull(3) ? undefined : JSON.parse(stmt.getValueString(3)) as string[],
       };
     }
   }
@@ -133,64 +166,25 @@ export class RebaseInstanceStore implements Disposable {
     });
   }
 
-  private merge(column: "old" | "new", instance: ChangeInstance): void {
-    const key = instance.$meta.instanceKey.toLowerCase();
-    const isUpdate = instance.$meta.op === "Updated";
-    if (isUpdate)
-      this.seedBaselineIfNeeded(instance, key);
-
-    const existing = this.readColumn(column, key);
-    const merged = existing ? RebaseInstanceStore.combine(existing, instance) : instance;
-    if (isUpdate) {
-      // `instance`'s own keys are exactly the columns this raw changeset row actually carried, unlike
-      // the baseline-seeded properties that seedBaselineIfNeeded fills the rest of `merged` in with.
-      const priorTouched = (existing?.$meta as RebaseChangeMeta | undefined)?.changedProperties ?? [];
-      const touchedNow = Object.keys(instance).filter((prop) => prop !== "$meta");
-      (merged.$meta as RebaseChangeMeta).changedProperties = [...new Set([...priorTouched, ...touchedNow])];
-    }
-    this.write(column, key, merged);
-  }
-
   /** Unlike inserts and deletes - which always carry every column - a changeset update only carries the
-   * columns that actually changed. The first time we see a given instance, seed its old *and* new
-   * snapshot with the instance's complete current row, so that merging in just the columns a changeset
-   * update actually carries - from however many tables the instance spans - still leaves a complete
-   * instance once every table's contribution has been merged in. Later tables' merges then only ever
-   * overlay their own changed columns on top, so an already-corrected column is never clobbered by a
-   * stale baseline value from a table that hasn't merged yet.
-   */
-  private seedBaselineIfNeeded(instance: ChangeInstance, key: string): void {
-    if (this.readColumn("old", key) !== undefined || this.readColumn("new", key) !== undefined)
+    * columns that actually changed. The first time we see a given instance, seed its old *and* new
+    * snapshot with the instance's complete current row, so that merging in just the columns a changeset
+    * update actually carries - from however many tables the instance spans - still leaves a complete
+    * instance once every table's contribution has been merged in. Later tables' merges then only ever
+    * overlay their own changed columns on top, so an already-corrected column is never clobbered by a
+    * stale baseline value from a table that hasn't merged yet.
+    */
+  private seedBaselineIfNeeded(source: ChangeSource, change: RebaseInstanceChange): void {
+    if (change.old !== undefined || change.new !== undefined)
       return;
 
     assert(undefined !== this._sourceDb, "appendChange requires a store created via createNew");
-    const baseline = this._sourceDb[_nativeDb].readInstance({ id: instance.id, classFullName: instance.classFullName }, { useJsNames: true }) as ECSqlRow;
-    this.write("old", key, { ...baseline, $meta: { ...instance.$meta, stage: "Old", tables: [], changeIndexes: [], changeFetchedPropNames: [] } });
-    this.write("new", key, { ...baseline, $meta: { ...instance.$meta, stage: "New", tables: [], changeIndexes: [], changeFetchedPropNames: [] } });
-  }
+    assert(source.inserted !== undefined, "seedBaselineIfNeeded only applies to Updates, which should have an inserted instance");
+    assert(source.deleted !== undefined, "seedBaselineIfNeeded only applies to Updates, which should have a deleted instance");
 
-  private readColumn(column: "old" | "new", key: string): ChangeInstance | undefined {
-    return this._db.withPreparedSqliteStatement(
-      `SELECT [${column}] FROM ${tableName} WHERE [instanceKey]=?`,
-      (stmt: SqliteStatement) => {
-        stmt.bindString(1, key);
-        if (stmt.step() === DbResult.BE_SQLITE_ROW && !stmt.isValueNull(0))
-          return JSON.parse(stmt.getValueString(0), RebaseInstanceStore.reviveJson) as ChangeInstance;
-        return undefined;
-      },
-    );
-  }
-
-  private write(column: "old" | "new", key: string, instance: ChangeInstance): void {
-    const json = JSON.stringify(instance, RebaseInstanceStore.replaceJson);
-    this._db.withPreparedSqliteStatement(
-      `INSERT INTO ${tableName} ([instanceKey], [${column}]) VALUES (?, ?) ON CONFLICT ([instanceKey]) DO UPDATE SET [${column}] = [excluded].[${column}]`,
-      (stmt: SqliteStatement) => {
-        stmt.bindString(1, key);
-        stmt.bindString(2, json);
-        stmt.step();
-      },
-    );
+    const baseline = this._sourceDb[_nativeDb].readInstance({ id: source.inserted.id, classFullName: source.inserted.classFullName }, { useJsNames: true }) as ECSqlRow;
+    change.old = { ...baseline, $meta: { ...source.deleted.$meta } };
+    change.new = { ...baseline, $meta: { ...source.inserted.$meta } };
   }
 
   /** Merge partial per-table properties for the same instance/stage into a single snapshot.
