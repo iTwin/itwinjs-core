@@ -55,7 +55,7 @@ export type AnyDb = IModelDb | ECDb;
 
 /** A database that can supply SQLite table metadata to a changeset reader.
  * The database must contain every table referenced by the changeset. When using a plain
- * [[SQLiteDb]], `disableSchemaCheck` may be used to tolerate additional columns in the changeset.
+ * [[SQLiteDb]], [[SqliteChangesetReaderArgs.disableSchemaCheck]] may be used to tolerate additional columns in the changeset.
  * @beta
  */
 export type SqliteChangesetReaderDb = AnyDb | SQLiteDb;
