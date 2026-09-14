@@ -6,13 +6,17 @@ on:
   pull_request:
     types: [ labeled ]
 
+permissions:
+  pull-requests: write
+
 jobs:
   build:
     if: ${{ github.event.label.name == 'geometry' }}
     runs-on: ubuntu-latest
     steps:
+    # madrapps/add-reviewers v1
     - name: Add Reviewers to PR
-      uses: madrapps/add-reviewers@v1
+      uses: madrapps/add-reviewers@65189760f5efeb523262fcddf094fca894d1b7ae
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         reviewers: dassaf4,saeeedtorabi
