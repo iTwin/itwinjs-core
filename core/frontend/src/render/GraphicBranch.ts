@@ -139,7 +139,10 @@ export interface GraphicBranchOptions {
   classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
   /** Optionally replaces the view's hidden line settings when drawing the branch. */
   hline?: HiddenLine.Settings;
-  /** The iModel from which the graphics originate, if different than that associated with the view. */
+  /** The iModel reference from which these graphics originate. If unspecified, the iModel reference from any parent [[GraphicBranch]] is inherited by this branch.
+   * Otherwise, it defaults to the view's primary iModel reference ([[IModelDisplayReferences.primary]]).
+   * @beta
+   */
   iModelRef?: IModelDisplayReference;
   /** @internal */
   frustum?: GraphicBranchFrustum;

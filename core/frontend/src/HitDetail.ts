@@ -14,7 +14,7 @@ import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { GraphicType } from "./common/render/GraphicType";
-import { IModelFeature } from "./IModelDisplayReference";
+import { IModelDisplayFeature } from "./IModelDisplayReference";
 
 /**
  * @public
@@ -161,7 +161,7 @@ export interface HitDetailProps {
   readonly hitSource: HitSource;
   /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
   readonly hitPoint: Point3d;
-  readonly feature: IModelFeature;
+  readonly feature: IModelDisplayFeature;
   /** The hit geometry priority/classification. */
   readonly priority: HitPriority;
   /** The xy distance to the hit in view coordinates. */
@@ -196,7 +196,8 @@ export class HitDetail {
   public get hitSource(): HitSource { return this._props.hitSource; }
   /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
   public get hitPoint(): Point3d { return this._props.hitPoint; }
-  public get feature(): IModelFeature { return this._props.feature; }
+  /** The object from which this hit originated. */
+  public get feature(): IModelDisplayFeature { return this._props.feature; }
   /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
   public get sourceId(): Id64String { return this._props.feature.elementId; }
   /** The hit geometry priority/classification. */

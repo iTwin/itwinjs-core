@@ -29,7 +29,7 @@ import { CoordSystem } from "./CoordSystem";
 import { DecorationsCache } from "./DecorationsCache";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
-import { FeatureOverrideProvider, IModelFeatureOverrideProvider } from "./FeatureOverrideProvider";
+import { FeatureOverrideProvider, FeatureSymbologyOverrider } from "./FeatureOverrideProvider";
 import { FrustumAnimator } from "./FrustumAnimator";
 import { GlobeAnimator } from "./GlobeAnimator";
 import { HitDetail, SnapDetail } from "./HitDetail";
@@ -289,7 +289,7 @@ export interface ReadImageToCanvasOptions {
   omitCanvasDecorations?: boolean;
 }
 
-class ProxyOverrideProvider implements IModelFeatureOverrideProvider {
+class ProxyOverrideProvider implements FeatureSymbologyOverrider {
   constructor(
     public readonly proxiedProvider: FeatureOverrideProvider,
     private readonly _vp: Viewport,

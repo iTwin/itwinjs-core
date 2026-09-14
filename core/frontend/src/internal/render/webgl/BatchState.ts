@@ -10,7 +10,7 @@ import { assert, Id64, Id64String, lowerBound } from "@itwin/core-bentley";
 import { ModelFeature } from "@itwin/core-common";
 import { BranchStack } from "./BranchStack";
 import { Batch } from "./Graphic";
-import { IModelDisplayReference, IModelFeature } from "../../../IModelDisplayReference";
+import { IModelDisplayReference, IModelDisplayFeature } from "../../../IModelDisplayReference";
 
 /**
  * Assigns a transient, unique 32-bit integer ID to each Batch in a RenderCommands.
@@ -74,7 +74,7 @@ export class BatchState {
     return Id64.fromUint32Pair(parts.lower, parts.upper);
   }
 
-  public getFeature(featureId: number, result: IModelFeature): IModelFeature | undefined {
+  public getFeature(featureId: number, result: IModelDisplayFeature): IModelDisplayFeature | undefined {
     const batch = this.find(featureId);
     if (undefined === batch || undefined === batch.iModelRef)
       return undefined;

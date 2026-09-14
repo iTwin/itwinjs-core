@@ -12,7 +12,7 @@ import { IModelConnection } from "./IModelConnection";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 import { ClipStyle, FeatureAppearance, GeometryClass, HiddenLine, ModelClipGroups, ModelFeature, PlanarClipMaskSettings, PlanProjectionSettings, RealityModelDisplaySettings, RenderSchedule, SubCategoryAppearance, SubCategoryOverride, ViewFlags } from "@itwin/core-common";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
-import { IModelFeatureOverrideProvider } from "./FeatureOverrideProvider";
+import { FeatureSymbologyOverrider } from "./FeatureOverrideProvider";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "./IModelDisplayOverrides";
 import { AttachToViewportArgs, ModelDisplayTransformProvider } from "./ViewState";
 import { IModelDisplayReferences, IModelDisplayReferences2d, SpatialIModelDisplayReferences } from "./IModelDisplayReferences";
@@ -23,16 +23,16 @@ import { RenderClipVolume } from "./render/RenderClipVolume";
 /** Describes a [Feature]($common) within the context of a specific iModel.
  * @beta
  */
-export interface IModelFeature extends ModelFeature {
+export interface IModelDisplayFeature extends ModelFeature {
   iModelRef: IModelDisplayReference;
 }
 
-export namespace IModelFeature {
-  export function compare(lhs: IModelFeature, rhs: IModelFeature): number {
+export namespace IModelDisplayFeature {
+  export function compare(lhs: IModelDisplayFeature, rhs: IModelDisplayFeature): number {
     return ModelFeature.compare(lhs, rhs) || compareStrings(lhs.iModelRef.guid, rhs.iModelRef.guid);
   }
 
-  export function create(iModelRef: IModelDisplayReference): IModelFeature {
+  export function create(iModelRef: IModelDisplayReference): IModelDisplayFeature {
     return {
       modelId: Id64.invalid,
       elementId: Id64.invalid,
@@ -89,7 +89,7 @@ export interface IModelDisplayReference {
   readonly onIsAlwaysDrawnExclusiveChanged: BeEvent<() => void>;
 
   // App-supplied providers that apply symbology overrides when displaying this reference.
-  readonly featureOverrideProviders: ObservableSet<IModelFeatureOverrideProvider>;
+  readonly featureOverrideProviders: ObservableSet<FeatureSymbologyOverrider>;
   // ###TODO maybe make @internal
   getSymbologyOverrides(): FeatureSymbology.Overrides;
   invalidateSymbologyOverrides(): void;

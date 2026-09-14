@@ -45,7 +45,7 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
 import { FrustumUniformType } from "./FrustumUniforms";
-import { IModelDisplayReference, IModelFeature } from "../../../core-frontend";
+import { IModelDisplayReference, IModelDisplayFeature } from "../../../core-frontend";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -631,7 +631,7 @@ class PixelBuffer implements Pixel.Buffer {
   private readonly _featureId?: Uint32Array;
   private readonly _depthAndOrder?: Uint32Array;
   private readonly _batchState: BatchState;
-  private readonly _scratchFeature: IModelFeature;
+  private readonly _scratchFeature: IModelDisplayFeature;
 
   private get _numPixels(): number { return this._rect.width * this._rect.height; }
 
@@ -653,7 +653,7 @@ class PixelBuffer implements Pixel.Buffer {
     return pixelIndex < data.length ? data[pixelIndex] : undefined;
   }
 
-  private getPixelFeatureInfo(pixelIndex: number, outFeature: IModelFeature): BatchInfo | undefined {
+  private getPixelFeatureInfo(pixelIndex: number, outFeature: IModelDisplayFeature): BatchInfo | undefined {
     const featureId = undefined !== this._featureId ? this.getPixel32(this._featureId, pixelIndex) : undefined;
     if (undefined === featureId || undefined === this._batchState.getFeature(featureId, outFeature))
       return undefined;
@@ -775,7 +775,7 @@ class PixelBuffer implements Pixel.Buffer {
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {
     const iModelRef = compositor.target.currentBranch.iModelRef;
     assert(undefined !== iModelRef);
-    this._scratchFeature = IModelFeature.create(iModelRef);
+    this._scratchFeature = IModelDisplayFeature.create(iModelRef);
     this._rect = rect.clone();
     this._selector = selector;
     this._batchState = compositor.target.uniforms.batch.state;

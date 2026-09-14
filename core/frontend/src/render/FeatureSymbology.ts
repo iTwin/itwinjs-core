@@ -118,6 +118,7 @@ export namespace FeatureSymbology {
       this._initSubCategoryOverrides(viewport.view.displayStyle.settings.subCategoryOverrides);
     }
 
+    /** @internal */
     public initFromIModelDisplayReference(ref: IModelDisplayReference): void {
       this.neverDrawnAnimationNodes.clear();
       this.animationNodeOverrides.clear();

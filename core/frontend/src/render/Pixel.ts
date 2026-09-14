@@ -9,7 +9,7 @@
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, GeometryClass, ModelFeature } from "@itwin/core-common";
 import { HitPath, HitPriority } from "../HitDetail";
-import { IModelFeature } from "../IModelDisplayReference";
+import { IModelDisplayFeature } from "../IModelDisplayReference";
 import type { Viewport } from "../Viewport";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
@@ -21,7 +21,8 @@ export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
     /** The feature that produced the pixel. */
-    public readonly feature?: IModelFeature;
+    public readonly feature?: IModelDisplayFeature;
+    /** The Id of the model containing this pixel's [[feature]]. */
     public get modelId(): Id64String | undefined { return this.feature?.modelId; }
     /** The pixel's depth in [[CoordSystem.Npc]] coordinates (0 to 1), or -1 if depth was not written or not requested. */
     public readonly distanceFraction: number;
@@ -48,7 +49,7 @@ export namespace Pixel {
 
     /** @internal */
     public constructor(args?: {
-      feature?: IModelFeature;
+      feature?: IModelDisplayFeature;
       distanceFraction?: number;
       type?: GeometryType;
       planarity?: Planarity;
@@ -164,7 +165,7 @@ export namespace Pixel {
    */
   export interface HitProps {
     /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
-    feature: IModelFeature;
+    feature: IModelDisplayFeature;
     /** The hit geometry priority/classification. */
     priority: HitPriority;
     /** The distance in view coordinates between the hit and the near plane. */

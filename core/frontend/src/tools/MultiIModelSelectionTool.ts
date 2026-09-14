@@ -43,7 +43,7 @@ function elementIdsFromHit(hit: HitDetail): ElementIds {
 /** Tool for picking a set of elements of interest, selected by the user.
  * ###TODO This is just a prototype of what a SelectionTool that supports any number of iModels might look like - TBD where it belongs and
  * whether it should be subsumed into SelectionTool or remain separate or PrimitiveTool should be adjusted or whatever.
- * @public
+ * @beta
  */
 export class MultiIModelSelectionTool extends PrimitiveTool {
   public static override hidden = false;
