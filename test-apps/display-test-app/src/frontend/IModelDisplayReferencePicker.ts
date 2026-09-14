@@ -32,8 +32,11 @@ export class IModelDisplayReferencePicker {
 
     this.#populate(vp, idPrefix, this.#selectedIModelRef.guid);
 
-    vp.iModelRefs.onLinked.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
-    vp.iModelRefs.onUnlinked.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
+    if (vp.iModelRefs.isSpatial) {
+      vp.iModelRefs.onLinked.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
+      vp.iModelRefs.onUnlinked.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
+    }
+
     vp.onChangeView.addListener(() => this.#populate(vp, idPrefix, this.#selectedIModelRef.guid));
   }
 

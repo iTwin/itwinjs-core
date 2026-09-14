@@ -16,16 +16,18 @@ export class Provider implements FeatureSymbologyOverrider {
   private readonly _elementOvrs = new Map<IModelConnection, Map<Id64String, FeatureAppearance>>();
   private _defaultOvrs: FeatureAppearance | undefined;
   private readonly _refs: IModelDisplayReferences;
-  private readonly _dispose: () => void;
+  private _dispose?: () => void;
 
   private constructor(vp: Viewport) {
     this._refs = vp.iModelRefs;
     for (const ref of this._refs)
       ref.featureOverrideProviders.add(this);
 
-    this._dispose = this._refs.onLinked.addListener((ref) => {
-      ref.featureOverrideProviders.add(this);
-    });
+    if (this._refs.isSpatial) {
+      this._dispose = this._refs.onLinked.addListener((ref) => {
+        ref.featureOverrideProviders.add(this);
+      });
+    }
   }
 
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, ref: IModelDisplayReference): void {
@@ -116,7 +118,11 @@ export class Provider implements FeatureSymbologyOverrider {
     const provider = this.get(vp);
     if (provider) {
       this._providers.delete(vp);
-      provider._dispose();
+      if (provider._dispose) {
+        provider._dispose();
+        provider._dispose = undefined;
+      }
+
       for (const ref of provider._refs)
         ref.featureOverrideProviders.delete(provider);
     }

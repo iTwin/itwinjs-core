@@ -59,7 +59,7 @@ export class UnlinkIModelsTool extends Tool {
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
+    if (!vp || !vp.iModelRefs.isSpatial)
       return false;
 
     for (const ref of vp.iModelRefs.linked) {
