@@ -16,18 +16,13 @@ import { IModelDisplayOverridesProps, SpatialIModelDisplayOverridesProps } from 
 import { ViewState2d } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
 
-export interface LinkIModelArgs {
+/** Arguments supplied to [[SpatialIModelDisplayReferences.link]].
+ * @beta
+ */
+export interface LinkSpatialIModelArgs {
   iModel: IModelConnection;
   viewedCategories?: Iterable<Id64String>;
   excludedElements?: Iterable<Id64String>;
-  overrides?: IModelDisplayOverridesProps;
-}
-
-export interface LinkIModel2dArgs extends LinkIModelArgs {
-  viewedModel: Id64String;
-}
-
-export interface LinkSpatialIModelArgs extends LinkIModelArgs {
   viewedModel?: never;
   viewedModels?: Iterable<Id64String>;
   modelClipGroups?: ModelClipGroups;
@@ -43,18 +38,9 @@ export interface IModelDisplayReferences2d extends Iterable<IModelDisplayReferen
   readonly isSpatial?: never;
 
   readonly primary: IModelDisplayReference2d;
-  readonly linked: Iterable<IModelDisplayReference2d>;
-  readonly subcategories: SubCategoriesCache.Queue; // ###TODO may be able to remove the need for this.
+  readonly subcategories: SubCategoriesCache.Queue;
 
   readonly iModels: Iterable<IModelConnection>;
-
-  readonly onLinked: BeEvent<(ref: IModelDisplayReference2d) => void>;
-  readonly onUnlinked: BeEvent<(ref: IModelDisplayReference2d) => void>;
-
-  link(args: LinkIModel2dArgs): IModelDisplayReference2d;
-  unlink(ref: IModelDisplayReference): void;
-
-  // ###TODO access to timePoint for schedule scripts
 }
 
 export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDisplayReference> {
@@ -68,7 +54,6 @@ export interface SpatialIModelDisplayReferences extends Iterable<SpatialIModelDi
   readonly primary: SpatialIModelDisplayReference;
   readonly linked: Iterable<SpatialIModelDisplayReference>;
   readonly subcategories: SubCategoriesCache.Queue;
-
   readonly iModels: Iterable<IModelConnection>;
 
   readonly onLinked: BeEvent<(ref: SpatialIModelDisplayReference) => void>;

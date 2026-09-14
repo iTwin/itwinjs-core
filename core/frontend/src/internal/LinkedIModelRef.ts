@@ -12,11 +12,11 @@ import { ChangeCategoryDisplayArgs, IModelDisplayReference, IModelDisplayReferen
 import { BeEvent, Guid, Id64String, ObservableMap, ObservableSet } from "@itwin/core-bentley";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { FeatureSymbologyOverrider } from "../FeatureOverrideProvider";
-import { IModelDisplayReferences, IModelDisplayReferences2d, LinkIModel2dArgs, LinkIModelArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
+import { IModelDisplayReferences, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { PerModelCategoryVisibility } from "../PerModelCategoryVisibility";
 import { IModelDisplayOverrides, SpatialIModelDisplayOverrides } from "../IModelDisplayOverrides";
 import { AttachToViewportArgs, ModelDisplayTransformProvider } from "../ViewState";
-import { createIModelDisplayOverrides, createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
+import { createSpatialIModelDisplayOverrides } from "./IModelDisplayOverridesImpl";
 import { SpatialViewState } from "../SpatialViewState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SpatialTileTreeReferences, TileTreeReference } from "../tile/internal";
@@ -66,7 +66,7 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
   public abstract readonly overrides: IModelDisplayOverrides;
 
-  protected constructor(args: LinkIModelArgs, refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides) {
+  protected constructor(args: LinkSpatialIModelArgs, refs: IModelDisplayReferences, ovrs: IModelDisplayOverrides) {
     this.iModel = args.iModel;
     this._ovrs = ovrs;
     this.guid = Guid.createValue();
@@ -120,12 +120,6 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
 
     this.featureOverrideProviders.onChanged.addListener(() => this.invalidateSymbologyOverrides());
     // ###TODO when viewed models/categories change.
-
-    refs.onUnlinked.addOnce((ref: IModelDisplayReference) => {
-      if (ref === this) {
-        this._dispose();
-      }
-    });
 
     this._disposalFunctions.push(listenForSubCategoryChanges(this));
   }
@@ -229,23 +223,6 @@ abstract class LinkedIModelRef implements IModelDisplayReference {
   }
 }
 
-class LinkedIModelRef2d extends LinkedIModelRef implements IModelDisplayReference2d {
-  public readonly viewedModel: Id64String;
-  public readonly parent: IModelDisplayReferences2d;
-
-  public override get overrides() { return this._ovrs; }
-
-  public constructor(args: LinkIModel2dArgs, refs: IModelDisplayReferences2d) {
-    super(args, refs, createIModelDisplayOverrides(args.overrides));
-    this.parent = refs;
-    this.viewedModel = args.viewedModel;
-  }
-
-  public override get tileTreeRefs() {
-    return []; // ###TODO
-  }
-}
-
 class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDisplayReference {
   #modelClipGroups: ModelClipGroups;
   readonly #modelClips: Array<RenderClipVolume | undefined> = [];
@@ -276,6 +253,13 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
 
   public constructor(args: LinkSpatialIModelArgs, refs: SpatialIModelDisplayReferences) {
     super(args, refs, createSpatialIModelDisplayOverrides(args.overrides));
+
+    refs.onUnlinked.addOnce((ref: IModelDisplayReference) => {
+      if (ref === this) {
+        this._dispose();
+      }
+    });
+
     this.parent = refs;
     this[_treeRefs] = SpatialTileTreeReferences.create(this);
 
@@ -352,10 +336,6 @@ class LinkedSpatialIModelRef extends LinkedIModelRef implements SpatialIModelDis
   public async addAndLoadViewedModels(modelIds: Iterable<Id64String>): Promise<void> {
     return addAndLoadViewedModels(this, modelIds);
   }
-}
-
-export function createLinkedIModelDisplayReference2d(refs: IModelDisplayReferences2d, args: LinkIModel2dArgs): IModelDisplayReference2d {
-  return new LinkedIModelRef2d(args, refs);
 }
 
 export function createLinkedSpatialIModelDisplayReference(refs: SpatialIModelDisplayReferences, args: LinkSpatialIModelArgs): SpatialIModelDisplayReference {

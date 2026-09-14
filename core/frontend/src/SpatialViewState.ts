@@ -212,6 +212,27 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public override createScene(context: SceneContext): void {
     super.createScene(context);
+
+    for (const iModelRef of this.iModelRefs.linked) {
+      const linkedContext = new SceneContext({
+        viewport: context.viewport,
+        frustum: context.frustum,
+        iModelRef,
+      });
+
+      for (const treeRef of iModelRef.tileTreeRefs)
+        treeRef.addToScene(linkedContext);
+
+      for (const missingTile of linkedContext.missingTiles)
+        context.insertMissingTile(missingTile);
+
+      // ###TODO classifiers, texture drapes
+      for (const listName of ["foreground", "background", "overlay"] as const) {
+        for (const entry of linkedContext.scene[listName])
+          context.scene[listName].push(entry);
+      }
+    }
+
     context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
     context.viewport.target.updateSolarShadows(this.getDisplayStyle3d().wantShadows ? context : undefined);
   }

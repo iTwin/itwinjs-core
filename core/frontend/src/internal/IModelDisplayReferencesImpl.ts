@@ -9,46 +9,90 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { _backingView, _implementationProhibited } from "../common/internal/Symbols";
 import { IModelDisplayReference, IModelDisplayReference2d, SpatialIModelDisplayReference } from "../IModelDisplayReference";
-import { IModelDisplayReferences2d, LinkIModel2dArgs, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
+import { IModelDisplayReferences2d, LinkSpatialIModelArgs, SpatialIModelDisplayReferences } from "../IModelDisplayReferences";
 import { SpatialViewState } from "../SpatialViewState";
 import { SubCategoriesCache } from "../SubCategoriesCache";
 import { ViewState, ViewState2d } from "../ViewState";
-import { createLinkedIModelDisplayReference2d, createLinkedSpatialIModelDisplayReference } from "./LinkedIModelRef";
+import { createLinkedSpatialIModelDisplayReference } from "./LinkedIModelRef";
 import { createPrimarySpatialIModelDisplayReference, createPrimaryIModelDisplayReference2d } from "./PrimaryIModelRef";
 import { IModelConnection } from "../IModelConnection";
 
-abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewState, A extends LinkIModel2dArgs | LinkSpatialIModelArgs> {
+abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewState> {
   public readonly [_implementationProhibited] = undefined;
-
-  readonly #iModels = new Set<IModelConnection>();
 
   public readonly [_backingView]: V;
 
   protected abstract createPrimaryRef(view: V): R;
-  protected abstract createLinkedRef(args: A): R;
-
-  public abstract onLinked: BeEvent<(ref: IModelDisplayReference) => void>;
-  public abstract onUnlinked: BeEvent<(ref: IModelDisplayReference) => void>;
 
   public readonly primary: R;
-  public readonly linked: R[] = [];
   public readonly subcategories = new SubCategoriesCache.Queue();
 
   protected constructor(view: V) {
     this[_backingView] = view;
     this.primary = this.createPrimaryRef(view);
+  }
+
+  public abstract [Symbol.iterator](): Iterator<R>;
+}
+
+class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewState2d> implements IModelDisplayReferences2d {
+  protected override createPrimaryRef(): IModelDisplayReference2d {
+    return createPrimaryIModelDisplayReference2d(this)
+  }
+
+  public readonly is2d = true;
+
+  public constructor(view: ViewState2d) {
+    super(view);
+  }
+
+  public * [Symbol.iterator](): Iterator<IModelDisplayReference2d> {
+    yield this.primary;
+  }
+
+  public get iModels(): Iterable<IModelConnection> {
+    return [this.primary.iModel];
+  }
+}
+
+class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReference, SpatialViewState> implements SpatialIModelDisplayReferences {
+  readonly #iModels = new Set<IModelConnection>();
+
+  public readonly linked: SpatialIModelDisplayReference[] = [];
+
+  protected override createPrimaryRef(): SpatialIModelDisplayReference {
+    return createPrimarySpatialIModelDisplayReference(this);
+  }
+
+  public readonly isSpatial = true;
+
+  public readonly onLinked = new BeEvent<(ref: SpatialIModelDisplayReference) => void>;
+  public readonly onUnlinked = new BeEvent<(ref: SpatialIModelDisplayReference) => void>;
+
+  public constructor(view: SpatialViewState) {
+    super(view);
     this.#iModels.add(this.primary.iModel);
   }
 
-  public link(args: A): R {
-    const ref = this.createLinkedRef(args);
+  public * [Symbol.iterator](): Iterator<SpatialIModelDisplayReference> {
+    yield this.primary;
+    for (const linked of this.linked)
+      yield linked;
+  }
+
+  public get iModels(): Iterable<IModelConnection> {
+    return this.#iModels;
+  }
+
+  public link(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference {
+    const ref = createLinkedSpatialIModelDisplayReference(this, args);
     this.linked.push(ref);
     this.#iModels.add(ref.iModel);
     this.onLinked.raiseEvent(ref);
     return ref;
   }
 
-  public unlink(refToRemove: R): void {
+  public unlink(refToRemove: SpatialIModelDisplayReference): void {
     const index = this.linked.indexOf(refToRemove);
     if (index !== -1) {
       this.linked.splice(index, 1);
@@ -67,53 +111,6 @@ abstract class DisplayRefsImpl<R extends IModelDisplayReference, V extends ViewS
     }
   }
 
-  public * [Symbol.iterator](): Iterator<R> {
-    yield this.primary;
-    for (const linked of this.linked)
-      yield linked;
-  }
-
-  public get iModels(): Iterable<IModelConnection> {
-    return this.#iModels;
-  }
-}
-
-class DisplayRefs2dImpl extends DisplayRefsImpl<IModelDisplayReference2d, ViewState2d, LinkIModel2dArgs> implements IModelDisplayReferences2d {
-  protected override createPrimaryRef(): IModelDisplayReference2d {
-    return createPrimaryIModelDisplayReference2d(this)
-  }
-
-  protected override createLinkedRef(args: LinkIModel2dArgs): IModelDisplayReference2d {
-    return createLinkedIModelDisplayReference2d(this, args)
-  }
-
-  public readonly is2d = true;
-
-  public readonly onLinked = new BeEvent<(ref: IModelDisplayReference2d) => void>;
-  public readonly onUnlinked = new BeEvent<(ref: IModelDisplayReference2d) => void>;
-
-  public constructor(view: ViewState2d) {
-    super(view);
-  }
-}
-
-class SpatialDisplayRefsImpl extends DisplayRefsImpl<SpatialIModelDisplayReference, SpatialViewState, LinkSpatialIModelArgs> implements SpatialIModelDisplayReferences {
-  protected override createPrimaryRef(): SpatialIModelDisplayReference {
-    return createPrimarySpatialIModelDisplayReference(this);
-  }
-
-  protected override createLinkedRef(args: LinkSpatialIModelArgs): SpatialIModelDisplayReference {
-    return createLinkedSpatialIModelDisplayReference(this, args);
-  }
-
-  public readonly isSpatial = true;
-
-  public readonly onLinked = new BeEvent<(ref: SpatialIModelDisplayReference) => void>;
-  public readonly onUnlinked = new BeEvent<(ref: SpatialIModelDisplayReference) => void>;
-
-  public constructor(view: SpatialViewState) {
-    super(view);
-  }
 }
 
 /** @internal */

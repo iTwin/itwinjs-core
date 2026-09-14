@@ -635,26 +635,6 @@ export abstract class ViewState extends ElementState {
   public createScene(context: SceneContext): void {
     for (const ref of this.getTileTreeRefs())
       ref.addToScene(context);
-
-    for (const iModelRef of this.iModelRefs.linked) {
-      const linkedContext = new SceneContext({
-        viewport: context.viewport,
-        frustum: context.frustum,
-        iModelRef,
-      });
-
-      for (const treeRef of iModelRef.tileTreeRefs)
-        treeRef.addToScene(linkedContext);
-
-      for (const missingTile of linkedContext.missingTiles)
-        context.insertMissingTile(missingTile);
-
-      // ###TODO classifiers, texture drapes
-      for (const listName of ["foreground", "background", "overlay"] as const) {
-        for (const entry of linkedContext.scene[listName])
-          context.scene[listName].push(entry);
-      }
-    }
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()

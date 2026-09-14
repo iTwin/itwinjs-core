@@ -1202,24 +1202,24 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(view.details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
 
-    if (view.isSpatialView()) {
+    if (this.iModelRefs.isSpatial) {
       // If a map elevation request is required (only in cases where terrain is not geodetic)
       // then the completion of the request will require synching with the view so that the
       // frustum depth is recalculated correctly.  Register this for removal when the view is detached.
       removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
         this.synchWithView();
       }));
+
+      removals.push(this.iModelRefs.onLinked.addListener((ref) => {
+        this.addIModelRefListeners(ref);
+        this.invalidateScene();
+      }));
+
+      removals.push(this.iModelRefs.onUnlinked.addListener(() => {
+        // Event listeners are automatically removed when IModelDisplayReference is unlinked - no need to clean them up here.
+        this.invalidateScene();
+      }));
     }
-
-    removals.push(this.iModelRefs.onLinked.addListener((ref) => {
-      this.addIModelRefListeners(ref);
-      this.invalidateScene();
-    }));
-
-    removals.push(this.iModelRefs.onUnlinked.addListener(() => {
-      // Event listeners are automatically removed when IModelDisplayReference is unlinked - no need to clean them up here.
-      this.invalidateScene();
-    }));
 
     for (const ref of this.iModelRefs)
       this.addIModelRefListeners(ref);
