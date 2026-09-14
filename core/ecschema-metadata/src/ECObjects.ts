@@ -17,17 +17,34 @@ if (!(Symbol as any).asyncIterator) {
 }
 
 /**
- * Identifies a class as abstract or sealed
+ * Identifies a class as abstract or sealed.
  *
+ * The values match ec_Class.Modifier in ECDb (None=0, Abstract=1, Sealed=2).
  * @public @preview
  */
 export enum ECClassModifier {
-  /* normal, instantiable class, can be subclassed */
-  None,
-  /* abstract class, cannot be instantiated, can be subclassed */
-  Abstract,
-  /* sealed class, instantiable class, cannot be subclassed */
-  Sealed,
+  /** Instantiable and open to subclassing. The default for classes other than mixins. */
+  None = 0,
+  /** Cannot be instantiated directly; can be subclassed. */
+  Abstract = 1,
+  /** Instantiable, but cannot be subclassed. */
+  Sealed = 2,
+}
+
+/**
+ * Identifies a class as abstract or sealed; matches ec_Class.Modifier values.
+ *
+ * The un-prefixed name used as shared vocabulary by the SchemaView read model and the SchemaDocument
+ * authoring model, consistent with {@link ClassType} and {@link PropertyKind}. Its values are bound to
+ * {@link ECClassModifier} so the two cannot drift apart. The duplication with `ECClassModifier` is known:
+ * both have been released and cannot easily be consolidated without a deprecation cycle, so they coexist
+ * as distinct types with shared values.
+ * @beta
+ */
+export enum ClassModifier {
+  None = ECClassModifier.None,
+  Abstract = ECClassModifier.Abstract,
+  Sealed = ECClassModifier.Sealed,
 }
 
 /**
@@ -75,21 +92,65 @@ export type SupportedSchemaItemType = SchemaItemType | AbstractSchemaItemType;
  * @public @preview
  */
 export enum PrimitiveType {
+  /** No type selected; invalid for a property declaration. */
   Uninitialized = 0x00,
+  /** An array of bytes. */
   Binary = 0x101,
+  /** A true or false value. */
   Boolean = 0x201,
+  /** A date, time of day, or combined date/time. Apply `CoreCustomAttributes:DateTimeInfo` to
+   * specify the component and time-zone interpretation. */
   DateTime = 0x301,
+  /** A double-precision floating-point value. */
   Double = 0x401,
+  /** A signed 32-bit integer; serialized as `int`. */
   Integer = 0x501,
+  /** A signed 64-bit integer. JavaScript numbers cannot exactly represent every value in this range. */
   Long = 0x601,
+  /** X and Y components, each a double. */
   Point2d = 0x701,
+  /** X, Y, and Z components, each a double. */
   Point3d = 0x801,
+  /** A text value. */
   String = 0x901,
+  /** A common geometry value; serialized as `Bentley.Geometry.Common.IGeometry`. */
   IGeometry = 0xa01,
 }
 
+/** Identifies the category of an EC class. Matches ec_Class.Type values in ECDb.
+ *
+ * Shared EC vocabulary consumed by both the SchemaView read model and the SchemaDocument
+ * authoring model, so it lives here next to the other EC enums rather than under either.
+ * @beta
+ */
+export enum ClassType {
+  Entity = 0,
+  Relationship = 1,
+  Struct = 2,
+  CustomAttribute = 3,
+  /** Not stored in ec_Class.Type - synthesized from IsMixin CA during cache population. */
+  Mixin = 4,
+  /** Synthesized from the QueryView custom attribute. */
+  View = 5,
+}
+
+/** Identifies the kind of an EC property. Matches ec_Property.Kind values.
+ *
+ * Shared EC vocabulary consumed by both the SchemaView read model and the SchemaDocument
+ * authoring model, so it lives here next to the other EC enums rather than under either.
+ * @beta
+ */
+export enum PropertyKind {
+  Primitive = 0,
+  Struct = 1,
+  PrimitiveArray = 2,
+  StructArray = 3,
+  Navigation = 4,
+}
+
 /**
- * Defines the valid CustomAttribute container types.
+ * Container kinds that a custom attribute class permits. Combine flags with bitwise OR;
+ * the `AnyClass`, `AnyProperty`, and `AnyRelationshipConstraint` flags select whole groups.
  * @public @preview
  */
 export enum CustomAttributeContainerType {
@@ -141,23 +202,25 @@ export enum RelationshipEnd {
 }
 
 /**
- * Defines the how the lifetime of the source and target are related.
- *
+ * Ownership and lifetime semantics of a relationship. {@link StrengthDirection} selects the holder/owner end.
  * @public @preview */
 export enum StrengthType {
+  /** An association between independently existing instances; no ownership is implied. */
   Referencing,
+  /** Shared ownership: the held instance depends on at least one holder. */
   Holding,
+  /** Exclusive ownership: the embedded instance belongs to one owner and shares its lifetime. */
   Embedding,
 }
 
 /**
- * Defines the which side of the relationship is the starting point of the relationship.  This impacts how relationship strength is applied.
- *
+ * Direction from one relationship endpoint to the other. On a relationship class it determines
+ * which end holds or owns the other; on a navigation property it determines traversal independently.
  * @public @preview */
 export enum StrengthDirection {
-  /** The source is the starting point of the relationship. */
+  /** Source to target; on a holding or embedding relationship, the source is the holder/owner. */
   Forward = 1,
-  /** The target is the starting point of the relationship. */
+  /** Target to source; on a holding or embedding relationship, the target is the holder/owner. */
   Backward = 2,
 }
 

@@ -23,7 +23,7 @@ Relationship inheritance rules:
     - The minimal number of required endpoints can be increased but not decreased
     - The maximum number of required endpoints can be decreased but not increased
   - The polymorphic flag may be left unchanged or changed from true to false but not false to true
-    - **Note**: If the polymorphic flag is set to false for an abstract relationship class, all derived relationships can only apply to the classes specified in the abstract relationship constraints.
+    - **Note**: When the base endpoint is non-polymorphic, native ECObjects accepts only exact matches to its abstract constraint or listed constraint classes when checking a derived relationship.
 
 - Role labels may be customized with no restrictions in derived relationships.
 - An abstract constraint class defined in a derived relationship must be or derive from the base abstract constraint class
@@ -31,6 +31,8 @@ Relationship inheritance rules:
 - Only base relationships may set the order by attribute
 
 ## Additional Attributes
+
+**modifier** accepts `None`, `Abstract`, or `Sealed`. `None` permits instances and derived relationship classes. The attribute must be written explicitly in ECXML 3.1 and later.
 
 **strength** Identifies how the lifetime of the source and target objects are related.
 
@@ -51,7 +53,7 @@ The Source and Target of a relationship define the endpoint classes and their co
 
 ## Attributes
 
-**isPolymorphic** true if this end can also relate to instances of subclasses of the specific class.
+**polymorphic** true if this end can also relate to instances of subclasses. Native ECObjects applies this flag to both the abstract constraint and the listed constraint classes. When false, only exact class matches are supported.
 
 **roleLabel** label of the relationship as read from this end.
 
@@ -59,7 +61,7 @@ The Source and Target of a relationship define the endpoint classes and their co
 
 **multiplicity** multiplicity at this end of the relationship. It is specified using the UML format (x..y) where x >= 0 and (y >= 1 or y == "\*") and x <= y. It is typically set to (1..1) or (0..\*) if there is no limit.
 
-**abstractConstraint** an ECClass which all the constraint classes at this end of the relationship must be or derive from. Required in base relationship classes if there is more than one constraint class in this end of the relationship, otherwise is optional.
+**abstractConstraint** an ECClass which all the constraint classes at this end of the relationship must be or derive from. Required in base relationship classes if there is more than one constraint class in this end of the relationship, otherwise is optional. Native ECObjects endpoint support checks accept this class alongside the listed constraint classes, including its subclasses when `polymorphic` is true.
 
 ## Custom Attributes
 
