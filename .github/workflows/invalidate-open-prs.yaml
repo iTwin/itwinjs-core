@@ -11,6 +11,9 @@ on:
     paths:
     - '**/core/backend/package.json'
 
+permissions:
+  contents: read
+
 jobs:
   invalidate:
     name: Invalidate imodeljs-native status check
