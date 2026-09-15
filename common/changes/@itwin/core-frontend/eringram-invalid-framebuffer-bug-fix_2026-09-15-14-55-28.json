@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed GL_INVALID_FRAMEBUFFER_OPERATION that could occur when reading pixels right after a second viewport was closed",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
