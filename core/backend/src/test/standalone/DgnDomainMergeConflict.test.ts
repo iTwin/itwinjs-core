@@ -236,6 +236,21 @@ describe("dgn_Domain merge conflict", () => {
       expect(onRebaseConflict(args)).to.equal(DbConflictResolution.Skip);
     });
 
+    for (const conflict of [
+      { name: "insert conflict", cause: DbConflictCause.Conflict, opcode: DbOpcode.Insert },
+      { name: "data mismatch", cause: DbConflictCause.Data, opcode: DbOpcode.Update },
+    ]) {
+      it(`replaces a sqlite_stat1 ${conflict.name} while local transactions are pending`, () => {
+        const args = makeConflictArgs({ tableName: "sqlite_stat1", cause: conflict.cause, opcode: conflict.opcode });
+        const pending = sinon.stub(b2.txns, "hasPendingTxns").get(() => true);
+        try {
+          expect(onMergeConflict(args)).to.equal(DbConflictResolution.Replace);
+        } finally {
+          pending.restore();
+        }
+      });
+    }
+
     // A `Data` conflict means an UPDATE or DELETE whose "before" values do not match the row in
     // the briefcase, i.e. the two rows really do differ. Resolving those automatically would
     // silently discard a genuine change, so they must keep the pre-existing behavior.
