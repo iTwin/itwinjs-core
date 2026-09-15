@@ -184,6 +184,13 @@ export default defineConfig({
       ["junit", { outputFile: "lib/test/junit_results.xml" }],
     ],
     browser: {
+      commands: {
+        reportCoreChromeBackendFailure({ project }, message: string) {
+          project.vitest.state.catchError(new Error(message), "Core Chrome backend preflight");
+          void project.vitest.cancelCurrentRun("test-failure")
+            .catch((error) => project.vitest.state.catchError(error, "Core Chrome cancellation"));
+        },
+      },
       api: { host: "127.0.0.1", port: 3010, strictPort: true },
       enabled: true,
       provider: playwright({
