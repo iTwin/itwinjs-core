@@ -27,6 +27,7 @@ import * as testCommands from "./TestEditCommands";
 import { Range2d } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
 import { TestServer } from "./TestServer";
+import { ChromeBackendReadyMessage } from "../common/ChromeTestBackend";
 
 /* eslint-disable no-console */
 
@@ -298,6 +299,7 @@ async function init() {
   iModelHost.cacheDir = process.env.VITEST_BACKEND_CACHE_DIR ?? path.join(__dirname, ".cache");
 
   let shutdown: undefined | (() => Promise<void>);
+  let testServer: TestServer | undefined;
 
   exposeBackendCallbacks();
   if (ProcessDetector.isElectronAppBackend) {
@@ -320,7 +322,7 @@ async function init() {
 
     // create a basic express web server
     const port = Number(process.env.VITEST_FRONTEND_PORT || 3010) + 2000;
-    const testServer = new TestServer(rpcConfig.protocol);
+    testServer = new TestServer(rpcConfig.protocol);
     const httpServer = await testServer.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
@@ -343,6 +345,13 @@ async function init() {
     Logger.initializeToConsole();
   else
     Logger.initialize();
+
+  const backendId = process.env.VITEST_CORE_BACKEND_ID;
+  if (testServer && backendId && process.send) {
+    testServer.backendId = backendId;
+    const ready: ChromeBackendReadyMessage = { type: "core-chrome-ready", backendId, pid: process.pid };
+    process.send(ready);
+  }
   return shutdown;
 }
 
