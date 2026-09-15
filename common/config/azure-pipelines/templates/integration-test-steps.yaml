@@ -2,11 +2,20 @@ parameters:
   - name: nodeVersion # name of the parameter; required
     type: string # data type of the parameter; required
 
-  # When false, skips the graphics-heavy Core full-stack tests (Chrome + Electron
-  # renderer suites). Used by Node-compatibility lanes that do not own renderer coverage.
-  - name: runRendererTests
-    type: boolean
-    default: true
+  # Controls which Core full-stack integration suites run:
+  #   full        - Chrome and Electron suites, including graphics-heavy (#graphics) tests.
+  #   node-compat - Chrome suite only, excluding #graphics-tagged suites. Retains the
+  #                 cross-layer contracts that exercise the host Node backend (remote iModel
+  #                 connections, RPC, briefcase, tile/element-graphics requests) while
+  #                 skipping shader-compilation-bound rendering tests. Electron is omitted
+  #                 because it bundles its own Node runtime, so the host Node version does
+  #                 not affect it.
+  - name: coreFullStackTests
+    type: string
+    default: full
+    values:
+      - full
+      - node-compat
 
   # Rush build-cache reads. Cache entries are keyed [os]-[arch]-[hash] with no
   # Node-version contribution, so lanes that exist to prove a specific Node version
@@ -102,7 +111,7 @@ steps:
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
 
-  - ${{ if eq(parameters.runRendererTests, true) }}:
+  - ${{ if eq(parameters.coreFullStackTests, 'full') }}:
       # Linux agents do not have a real display so use the virtual framebuffer
       - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
         workingDirectory: "full-stack-tests/core"
@@ -117,6 +126,24 @@ steps:
         env:
           NODE_ENV: development
         displayName: "Run Core Full Stack Tests"
+        condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+
+  # Node-compat: Chrome suite only (Certa's backend runs in the host Node process, so
+  # these tests exercise the selected Node version); #graphics-tagged suites excluded.
+  # Electron is omitted because it bundles its own Node runtime.
+  - ${{ if eq(parameters.coreFullStackTests, 'node-compat') }}:
+      - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:chrome:no-graphics
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests (Chrome, no #graphics)"
+        condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+      - script: npm run test:integration:chrome:no-graphics
+        workingDirectory: "full-stack-tests/core"
+        env:
+          NODE_ENV: development
+        displayName: "Run Core Full Stack Tests (Chrome, no #graphics)"
         condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
@@ -185,14 +212,15 @@ steps:
     continueOnError: true
     condition: succeededOrFailed()
 
-  - ${{ if eq(parameters.runRendererTests, true) }}:
-      - task: PublishTestResults@2
-        displayName: "Publish Core Integration Test Results (Chrome)"
-        inputs:
-          testResultsFiles: "full-stack-tests/core/lib/test/junit_results_chrome.xml"
-          testRunTitle: "Core - Integration Tests (Chrome) - ${{ parameters.nodeVersion }}"
-        condition: succeededOrFailed()
+  # Chrome results are produced by both 'full' and 'node-compat' modes.
+  - task: PublishTestResults@2
+    displayName: "Publish Core Integration Test Results (Chrome)"
+    inputs:
+      testResultsFiles: "full-stack-tests/core/lib/test/junit_results_chrome.xml"
+      testRunTitle: "Core - Integration Tests (Chrome) - ${{ parameters.nodeVersion }}"
+    condition: succeededOrFailed()
 
+  - ${{ if eq(parameters.coreFullStackTests, 'full') }}:
       - task: PublishTestResults@2
         displayName: "Publish Core Integration Test Results (Electron)"
         inputs:
