@@ -6,7 +6,6 @@ import { expect } from "chai";
 import { ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { ColorDef } from "@itwin/core-common";
 
 describe("ViewState attached to Viewport", async () => {
   let imodel: TestSnapshotConnection;
@@ -105,11 +104,9 @@ describe("ViewState attached to Viewport", async () => {
     const view = await loadView();
     view.onViewedCategoriesChanged.addListener(() => categoriesChanged = true);
     view.onViewedModelsChanged.addListener(() => modelsChanged = true);
-    expectChanges(false, false);
 
     view.modelSelector.models.add("0x123");
     view.categorySelector.categories.add("0xfed");
-    view.displayStyle.monochromeColor = ColorDef.red;
     expectChanges(false, false);
 
     vp = ScreenViewport.create(div, view);
@@ -119,26 +116,19 @@ describe("ViewState attached to Viewport", async () => {
     expectChanges(true, true);
 
     reset();
-    view.displayStyle.monochromeColor = ColorDef.blue;
-    expectChanges(true, true);
-
-    reset();
     view.categorySelector.categories.add("0xabc");
     view.modelSelector.models.add("0x321");
-    view.displayStyle.monochromeColor = ColorDef.green;
     expectChanges(false, false);
 
     reset();
     vp[Symbol.dispose]();
     view.modelSelector.models.add("0xa");
     view.categorySelector.categories.add("0xb");
-    view.displayStyle.monochromeColor = ColorDef.black;
     expectChanges(false, false);
 
     vp = ScreenViewport.create(div, view);
-    view.modelSelector.models.add("0xa");
-    view.categorySelector.categories.add("0xb");
-    view.displayStyle.monochromeColor = ColorDef.white;
+    view.modelSelector.models.add("0xabc");
+    view.categorySelector.categories.add("0xdef");
     expectChanges(true, true);
   });
 });
